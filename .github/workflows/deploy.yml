@@ -14,9 +14,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Use Node 20 (required by recent Wrangler)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          packageManager: npm
+          wranglerVersion: "4.60.0"
+          command: deploy --log-level debug
+        env:
+          WRANGLER_LOG: debug
