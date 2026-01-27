@@ -1,0 +1,25 @@
+# Node / JS
+node_modules/
+.npm-cache/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.DS_Store
+.env
+.env.*
+.cache/
+dist/
+build/
+coverage/
+.tmp/
+*.log
+*.pid
+*.seed
+*.tgz
+*.swp
+*.swo
+# Wrangler
+.wrangler/
+# Editor
+.vscode/
+.idea/
