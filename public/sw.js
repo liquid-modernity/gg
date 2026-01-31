@@ -1,56 +1,43 @@
-/* sw.js — minimal, actually safe */
-const CACHE = "gg-v1";
-const OFFLINE_URL = "/offline.html";
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const { pathname } = url;
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await cache.addAll([OFFLINE_URL]); // wajib
-  })());
-});
+    const shouldTryAssets =
+      pathname.startsWith("/assets/") ||
+      pathname.startsWith("/gg-pwa-icon/") ||
+      pathname === "/sw.js" ||
+      pathname === "/manifest.webmanifest" ||
+      pathname === "/offline.html";
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => (k === CACHE ? null : caches.delete(k))));
-    await self.clients.claim();
-  })());
-});
+    if (!shouldTryAssets) return new Response("Not found", { status: 404 });
+    if (!env.ASSETS) return new Response("ASSETS binding missing", { status: 502 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+    const assetRes = await env.ASSETS.fetch(request);
 
-  // only same-origin
-  if (url.origin !== self.location.origin) return;
+    if (!assetRes.ok) {
+      const r = new Response(assetRes.body, assetRes);
+      r.headers.set("Cache-Control", "no-store");
+      return r;
+    }
 
-  // Cache-first for versioned assets (match struktur kamu)
-  if (url.pathname.startsWith("/assets/v/") || url.pathname.startsWith("/gg-pwa-icon/")) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const hit = await cache.match(req);
-      if (hit) return hit;
+    const res = new Response(assetRes.body, assetRes);
+    const setCache = (v) => res.headers.set("Cache-Control", v);
 
-      const res = await fetch(req);
-      if (res.ok) cache.put(req, res.clone());
-      return res;
-    })());
-    return;
-  }
+    if (pathname.startsWith("/assets/dev/")) {
+      setCache("no-cache, max-age=0, must-revalidate");
+    } else if (pathname.startsWith("/assets/v/")) {
+      setCache("public, max-age=31536000, immutable");
+    } else if (pathname === "/sw.js") {
+      setCache("no-store"); // saya sarankan keras
+    } else if (pathname === "/manifest.webmanifest" || pathname === "/offline.html") {
+      setCache("public, max-age=86400");
+    } else if (pathname.startsWith("/gg-pwa-icon/")) {
+      setCache("public, max-age=31536000, immutable");
+    } else {
+      setCache("public, max-age=86400");
+    }
 
-  // Network-first for navigations (HTML pages)
-  if (req.mode === "navigate") {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const res = await fetch(req);
-        return res;
-      } catch (e) {
-        const offline = await cache.match(OFFLINE_URL);
-        if (offline) return offline;
-        return new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
-      }
-    })());
-  }
-});
+    return res;
+  },
+};
