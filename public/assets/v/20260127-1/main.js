@@ -203,21 +203,31 @@ GG.actions.register('dock:toggle', () => {
   };
 
   services.sw = services.sw || {};
-  services.sw.init = services.sw.init || function(){
-    if(services.sw._init) return;
+  services.sw.init = services.sw.init || function () {
+    if (services.sw._init) return;
     services.sw._init = true;
-    if(!w.navigator || !('serviceWorker' in w.navigator)) return;
-    if(w.location && w.location.protocol !== 'https:') return;
-    function register(){
-      try{
-        w.navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(err){
-          if(w.console && console.error) console.error(err);
-        });
-      }catch(e){}
+  
+    if (!w.navigator || !("serviceWorker" in w.navigator)) return;
+    if (w.location && w.location.protocol !== "https:") return;
+  
+    function register() {
+      try {
+        w.navigator.serviceWorker
+          .register("/sw.js", { scope: "/" })
+          .then(function (reg) {
+            // optional: paksa cek update lebih cepat (aman)
+            try { reg.update(); } catch (e) {}
+          })
+          .catch(function (err) {
+            if (w.console && console.error) console.error(err);
+          });
+      } catch (e) {}
     }
-    if(d.readyState === 'complete') register();
-    else w.addEventListener('load', register, {once:true});
+  
+    if (d.readyState === "complete") register();
+    else w.addEventListener("load", register, { once: true });
   };
+  
 
   services.pwa = services.pwa || {};
   services.pwa.init = services.pwa.init || function(){
@@ -8431,7 +8441,7 @@ function openPosterSheet(meta, mode) {
 })();
 
 (function(){
-  var src='https://www.cdn.pakrpp.com/assets/main.js';
+  var src='https://www.pakrpp.com/assets/main.js';
   function load(){
     if(window.__ggMainLoaded) return;
     window.__ggMainLoaded=true;
@@ -8459,7 +8469,7 @@ function openPosterSheet(meta, mode) {
   GG.state = GG.state || {};
   GG.boot = GG.boot || {};
 
-  var SRC = 'https://www.cdn.pakrpp.com/assets/main.js';
+  var SRC = 'https://www.pakrpp.com/assets/main.js';
 
   function loadMain(){
     if(GG.state.mainLoaded) return;
@@ -8760,4 +8770,147 @@ function openPosterSheet(meta, mode) {
   GG.a11y.run = function(){ try{ run(document); }catch(e){} };
 
   init(document);
+})();
+/* GG prefetch — HOME/LISTING only (safe, no PJAX) */
+(() => {
+  const CACHE_PAGES = "gg-pages-v2"; // HARUS sama dengan CACHE_PAGES di public/sw.js
+  const MAX_PREFETCH = 10;
+  const MAX_INFLIGHT = 2;
+
+  function init() {
+    const container = document.querySelector("#postcards");
+    if (!container) return;
+
+    // extra guard: jangan jalan di post page (/YYYY/MM/...)
+    if (/^\/\d{4}\/\d{2}\//.test(location.pathname)) return;
+
+    // hormati data saver / koneksi buruk
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn && (conn.saveData || /2g/.test(conn.effectiveType || ""))) return;
+
+    if (!("caches" in window) || !window.fetch) return;
+
+    let budget = MAX_PREFETCH;
+    let inflight = 0;
+    const seen = new Set();
+
+    function normalizePostUrl(href) {
+      try {
+        const url = new URL(href, location.href);
+        if (url.origin !== location.origin) return null;
+
+        // hanya post pages (Blogger umum: /YYYY/MM/slug.html)
+        if (!/^\/\d{4}\/\d{2}\//.test(url.pathname)) return null;
+
+        // buang hash (#comments) & param aneh (mis: ?m=1)
+        url.hash = "";
+        if (url.searchParams.has("m")) url.searchParams.delete("m");
+
+        return url.toString();
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function schedule(fn) {
+      if ("requestIdleCallback" in window) requestIdleCallback(fn, { timeout: 1200 });
+      else setTimeout(fn, 150);
+    }
+
+    async function prefetchToCache(urlStr) {
+      if (!urlStr || budget <= 0) return;
+      if (seen.has(urlStr)) return;
+      if (inflight >= MAX_INFLIGHT) return;
+
+      seen.add(urlStr);
+      budget--;
+      inflight++;
+
+      try {
+        const cache = await caches.open(CACHE_PAGES);
+
+        // kalau sudah ada, stop
+        const hit = await cache.match(urlStr);
+        if (hit) return;
+
+        const res = await fetch(urlStr, {
+          credentials: "same-origin",
+          headers: { Accept: "text/html" },
+        });
+
+        const ct = res.headers.get("content-type") || "";
+        if (res.ok && ct.includes("text/html")) {
+          await cache.put(urlStr, res.clone());
+        }
+      } catch (e) {
+        // prefetch harus silent: jangan bikin error noisy
+      } finally {
+        inflight--;
+      }
+    }
+
+    // Kandidat link: hanya thumb + title link
+    function getCandidateAnchors() {
+      return container.querySelectorAll(
+        'a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]'
+      );
+    }
+
+    // 1) Hover/pointerover prefetch (paling efektif)
+    container.addEventListener(
+      "pointerover",
+      (e) => {
+        const a = e.target && e.target.closest
+          ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
+          : null;
+        if (!a) return;
+        const u = normalizePostUrl(a.getAttribute("href"));
+        if (u) schedule(() => prefetchToCache(u));
+      },
+      { passive: true }
+    );
+
+    // 2) Keyboard focus prefetch (aksesibilitas)
+    container.addEventListener(
+      "focusin",
+      (e) => {
+        const a = e.target && e.target.closest
+          ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
+          : null;
+        if (!a) return;
+        const u = normalizePostUrl(a.getAttribute("href"));
+        if (u) schedule(() => prefetchToCache(u));
+      }
+    );
+
+    // 3) Viewport prefetch (pelan + disiplin)
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const ent of entries) {
+          if (!ent.isIntersecting) continue;
+          io.unobserve(ent.target);
+          const u = normalizePostUrl(ent.target.getAttribute("href"));
+          if (u) schedule(() => prefetchToCache(u));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    getCandidateAnchors().forEach((a) => io.observe(a));
+
+    // 4) Warm-up 4 link pertama saat idle
+    schedule(() => {
+      const anchors = Array.from(getCandidateAnchors()).slice(0, 4);
+      anchors.forEach((a) => {
+        const u = normalizePostUrl(a.getAttribute("href"));
+        if (u) prefetchToCache(u);
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
 })();

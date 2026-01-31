@@ -4,7 +4,7 @@ Repo ini menyiapkan Worker yang hanya melayani asset dan file PWA untuk domain `
 
 ## Struktur
 - Worker: `src/worker.js`
-- Konfigurasi: `wrangler.toml`
+- Konfigurasi: `wrangler.jsonc`
 - Static assets: `public/`
 - Workflow: `.github/workflows/deploy.yml`
 
@@ -20,7 +20,7 @@ Repo ini menyiapkan Worker yang hanya melayani asset dan file PWA untuk domain `
 
 ## Deploy via GitHub Actions
 - Trigger otomatis: push ke branch `main` atau manual `workflow_dispatch`.
-- Workflow memanggil `cloudflare/wrangler-action@v3` dengan perintah `deploy` memakai `wrangler.toml` di repo.
+- Workflow memanggil `cloudflare/wrangler-action@v3` dengan perintah `deploy` memakai `wrangler.jsonc` di repo.
 
 ## Verifikasi setelah deploy
 Buka tiga endpoint ini dan pastikan 200 OK serta header `Cache-Control` sesuai:
