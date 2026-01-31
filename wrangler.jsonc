@@ -7,12 +7,13 @@
   
     "workers_dev": false,
   
-    "assets": {
-      "directory": "./public",
-      "binding": "ASSETS",
-      "run_worker_first": true
-    },
-  
+   "assets": {
+  "directory": "./public",
+  "binding": "ASSETS",
+  "run_worker_first": true,
+  "html_handling": "none"
+},
+
     "routes": [
       { "pattern": "www.pakrpp.com/assets/*", "zone_name": "pakrpp.com" },
       { "pattern": "www.pakrpp.com/sw.js", "zone_name": "pakrpp.com" },
