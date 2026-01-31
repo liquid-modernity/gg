@@ -572,7 +572,7 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left:-5px;
+  margin-left:-5px;f
 }
 
 .gg-blog-sidebar--left .widget{
@@ -3065,7 +3065,7 @@ nav.gg-dock .gg-dock__perimeter-progress{
   --gg-ce-h: 0px !important;
 
   color: var(--gg-ink);
-  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Arial);
 }
 
 /* ---------- Baseline reset (scoped) ---------- */
@@ -3085,14 +3085,14 @@ nav.gg-dock .gg-dock__perimeter-progress{
   list-style: none;
 }
 
-/* Blogger quirk: sometimes ol > div wraps li */
-.gg-comments .comment-thread ol > div,
-.gg-comments #cmt2-holder ol > div { display: contents; }
+/* Blogger quirk: sometimes ol &gt; div wraps li */
+.gg-comments .comment-thread ol &gt; div,
+.gg-comments #cmt2-holder ol &gt; div { display: contents; }
 
 /* ---------- Material Symbols (rounded) ---------- */
 .gg-comments .ms,
 .gg-comments .material-symbols-rounded {
-  font-family: "Material Symbols Rounded";
+  font-family: &quot;Material Symbols Rounded&quot;;
   font-weight: 400;
   font-style: normal;
   line-height: 1;
@@ -3101,7 +3101,7 @@ nav.gg-dock .gg-dock__perimeter-progress{
   justify-content: center;
   user-select: none;
   vertical-align: middle;
-  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
+  font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 20;
 }
 .gg-comments .ms { font-size: 18px; }
 
@@ -3111,7 +3111,7 @@ nav.gg-dock .gg-dock__perimeter-progress{
    ========================================================= */
 
 /* If your right sidebar is a drawer, keep it as flex column */
-main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] .gg-blog-sidebar--right {
   overflow: visible;
   height: calc(100dvh - (var(--gg-sticky-top, 0px) * 2));
   max-height: calc(100dvh - (var(--gg-sticky-top, 0px) * 2));
@@ -3119,13 +3119,13 @@ main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right {
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
 }
-main.gg-main[data-gg-right-mode="comments"] .gg-comments-panel {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] .gg-comments-panel {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-main.gg-main[data-gg-right-mode="comments"] .gg-comments-panel__body {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] .gg-comments-panel__body {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -3145,7 +3145,7 @@ main.gg-main[data-gg-right-mode="comments"] .gg-comments-panel__body {
 }
 
 /* HEAD */
-#comments > .gg-comments__head {
+#comments &gt; .gg-comments__head {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -3267,8 +3267,8 @@ body.gg-comments-help-open{
   color: var(--gg-muted);
 }
 
-#comments > .gg-comments__head-spacer,
-#comments > .gg-comments__footer-spacer {
+#comments &gt; .gg-comments__head-spacer,
+#comments &gt; .gg-comments__footer-spacer {
   height: 0;
   width: 100%;
   flex-shrink: 0;
@@ -3289,8 +3289,8 @@ body.gg-comments-help-open{
   display: block !important;
 }
 
-#comments:not(.gg-comments--docked) > .gg-comments__head,
-#comments:not(.gg-comments--docked) > .gg-comments__footer {
+#comments:not(.gg-comments--docked) &gt; .gg-comments__head,
+#comments:not(.gg-comments--docked) &gt; .gg-comments__footer {
   position: static !important;
   top: auto !important;
   bottom: auto !important;
@@ -3301,7 +3301,7 @@ body.gg-comments-help-open{
 }
 
 /* Docked (viewport) */
-#comments.gg-comments--docked > .gg-comments__head {
+#comments.gg-comments--docked &gt; .gg-comments__head {
   position: fixed;
   top: 0;
   left: var(--gg-dock-left);
@@ -3310,7 +3310,7 @@ body.gg-comments-help-open{
 }
 
 /* BODY scroll */
-#comments > .gg-comments__content {
+#comments &gt; .gg-comments__content {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -3322,7 +3322,7 @@ body.gg-comments-help-open{
   flex: 1 1 auto;
 }
 
-#comments > .gg-comments__content > * {
+#comments &gt; .gg-comments__content &gt; * {
   flex-shrink: 0;
 }
 
@@ -3391,14 +3391,14 @@ body.gg-comments-help-open{
   flex-direction: column;
   gap: 10px;
 }
-#comments .gg-comments__footer[data-gg-open="0"] #top-ce{
+#comments .gg-comments__footer[data-gg-open=&quot;0&quot;] #top-ce{
   display: none !important;
 }
-#comments .gg-comments__footer[data-gg-open="1"] #top-ce{
+#comments .gg-comments__footer[data-gg-open=&quot;1&quot;] #top-ce{
   display: block !important;
 }
 
-#comments.gg-comments--docked > .gg-comments__footer{
+#comments.gg-comments--docked &gt; .gg-comments__footer{
   position: fixed;
   bottom: 0;
   left: var(--gg-dock-left);
@@ -3407,7 +3407,7 @@ body.gg-comments-help-open{
   z-index: 119;
 }
 
-#comments.gg-comments--replying > .gg-comments__footer {
+#comments.gg-comments--replying &gt; .gg-comments__footer {
   position: static;
   width: auto;
   left: auto;
@@ -3415,18 +3415,18 @@ body.gg-comments-help-open{
   bottom: auto;
 }
 
-#comments.gg-comments--replying > .gg-comments__footer-spacer { height: 0 !important; }
+#comments.gg-comments--replying &gt; .gg-comments__footer-spacer { height: 0 !important; }
 
 /* Panel mode: keep head/footer in-flow and only scroll body */
-main.gg-main[data-gg-right-mode="comments"] #comments {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments {
   height: 100dvh;
   display: flex;
   flex-direction: column;
 }
-main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__head,
-main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__footer,
-main.gg-main[data-gg-right-mode="comments"] #comments.gg-comments--docked > .gg-comments__head,
-main.gg-main[data-gg-right-mode="comments"] #comments.gg-comments--docked > .gg-comments__footer {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments &gt; .gg-comments__head,
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments &gt; .gg-comments__footer,
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments.gg-comments--docked &gt; .gg-comments__head,
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments.gg-comments--docked &gt; .gg-comments__footer {
   position: relative !important;
   top: auto !important;
   bottom: auto !important;
@@ -3435,7 +3435,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments.gg-comments--docked > .gg-
   width: auto !important;
   transform: none !important;
 }
-main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] #comments &gt; .gg-comments__content {
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
@@ -3459,7 +3459,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
 }
 
 /* Avatar */
-.gg-comments #cmt2-holder li.comment > .avatar-image-container {
+.gg-comments #cmt2-holder li.comment &gt; .avatar-image-container {
   grid-column: 1;
   width: 38px;
   height: 38px;
@@ -3468,7 +3468,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
   border: 1px solid color-mix(in srgb, var(--gg-border) 70%, transparent);
   background: var(--gg-surface);
 }
-.gg-comments #cmt2-holder li.comment > .avatar-image-container img {
+.gg-comments #cmt2-holder li.comment &gt; .avatar-image-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -3476,14 +3476,14 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
 }
 
 /* Content block */
-.gg-comments #cmt2-holder li.comment > .comment-block {
+.gg-comments #cmt2-holder li.comment &gt; .comment-block {
   grid-column: 2;
   min-width: 0;
 }
 
 /* Ensure replies + replybox align under content column */
-.gg-comments #cmt2-holder li.comment > .comment-replies,
-.gg-comments #cmt2-holder li.comment > .comment-replybox-single {
+.gg-comments #cmt2-holder li.comment &gt; .comment-replies,
+.gg-comments #cmt2-holder li.comment &gt; .comment-replybox-single {
   grid-column: 2 / -1;
   min-width: 0;
   margin-left: -33px;
@@ -3612,7 +3612,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
   grid-template-columns: 32px minmax(0, 1fr);
   padding: 8px 0 10px;
 }
-.gg-comments #cmt2-holder .comment-replies li.comment > .avatar-image-container {
+.gg-comments #cmt2-holder .comment-replies li.comment &gt; .avatar-image-container {
   width: 32px;
   height: 32px;
 }
@@ -3628,10 +3628,10 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
 }
 .gg-comments #top-continue a.comment-reply::before,
 .gg-comments #gg-top-continue a.comment-reply::before {
-  content: "add_comment";
-  font-family: "Material Symbols Rounded";
+  content: &quot;add_comment&quot;;
+  font-family: &quot;Material Symbols Rounded&quot;;
   font-size: 18px;
-  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
+  font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 20;
 }
 
 /* =========================================================
@@ -3770,7 +3770,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
   overflow: auto;
 }
 .gg-comments .comment-content .cmt2-code code {
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, &quot;Liberation Mono&quot;, &quot;Courier New&quot;, monospace);
   font-size: .9em;
   line-height: 1.45;
   white-space: pre;
@@ -3804,10 +3804,10 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
    Responsive tightening
    ========================================================= */
 @media (max-width: 560px) {
-  #comments > .gg-comments__head { padding: 12px; }
-  #comments > .gg-comments__content { padding: 0 12px calc(var(--gg-ce-h) + 16px + env(safe-area-inset-bottom)); }
+  #comments &gt; .gg-comments__head { padding: 12px; }
+  #comments &gt; .gg-comments__content { padding: 0 12px calc(var(--gg-ce-h) + 16px + env(safe-area-inset-bottom)); }
   .gg-comments #cmt2-holder li.comment { grid-template-columns: 36px minmax(0, 1fr); }
-  .gg-comments #cmt2-holder li.comment > .avatar-image-container { width: 36px; height: 36px; }
+  .gg-comments #cmt2-holder li.comment &gt; .avatar-image-container { width: 36px; height: 36px; }
 }
 /* Hide &#8220;Load more...&#8221; yang muncul di body/list */
 
@@ -3832,7 +3832,7 @@ text-decoration: underline;
 }
     
     /* Wrapper sidebar: tidak scroll */
-main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right{
+main.gg-main[data-gg-right-mode=&quot;comments&quot;] .gg-blog-sidebar--right{
   overflow: hidden !important;
   height: calc(100dvh - var(--gg-sticky-top, 0px)) !important;
   max-height: calc(100dvh - var(--gg-sticky-top, 0px)) !important;
@@ -5343,3 +5343,292 @@ ul.tx-tasklist input[type=checkbox]{margin-top:3px}
 }
 
   /* /GAGA SUPER SMART SHARE */
+  
+  /* Screen-reader-only utility: must stay accessible (NOT display:none) */
+.gg-visually-hidden{
+  position:absolute!important;
+  width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+/* Global image hygiene */
+img{max-width:100%;height:auto;}
+/* Enforce consistent thumbnail/cover ratio (40/27 = 800/540) */
+.gg-post-card__thumb figure,
+.gg-post__cover{
+  max-width:720px;
+  margin-left:auto;
+  margin-right:auto;
+  aspect-ratio:40/27;
+  overflow:hidden;
+}
+.gg-post-card__thumb-img,
+.gg-post__cover-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* Touch target minimums */
+a, button{
+  -webkit-tap-highlight-color: transparent;
+}
+.gg-post-card__tool,
+.gg-footer__social-link,
+.gg-install,
+.gg-post__meta-item{
+  min-width:48px;
+  min-height:48px;
+}
+.gg-post-card__tool,
+.gg-footer__social-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Auto-touch target helper (added by JS) */
+.gg-touch{
+  min-width:48px!important;
+  min-height:48px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  margin:8px!important;
+  border-radius:12px!important;
+}
+.gg-visually-hidden{
+  position:absolute!important;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
+.gg-visually-hidden{
+  position:absolute!important;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
+
+
+
+/* --- GAGA A11Y + IMAGE HYGIENE (moved into GAGA HOME OF CSS) --- */
+/* Screen-reader-only utility: must stay accessible (NOT display:none) */
+.gg-visually-hidden{
+  position:absolute!important;
+  width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+/* Global image hygiene */
+img{max-width:100%;height:auto;}
+/* Enforce consistent thumbnail/cover ratio (40/27 = 800/540) */
+.gg-post-card__thumb figure,
+.gg-post__cover{
+  max-width:720px;
+  margin-left:auto;
+  margin-right:auto;
+  aspect-ratio:40/27;
+  overflow:hidden;
+}
+.gg-post-card__thumb-img,
+.gg-post__cover-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* Touch target minimums */
+a, button{
+  -webkit-tap-highlight-color: transparent;
+}
+.gg-post-card__tool,
+.gg-footer__social-link,
+.gg-install,
+.gg-post__meta-item{
+  min-width:48px;
+  min-height:48px;
+}
+.gg-post-card__tool,
+.gg-footer__social-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Auto-touch target helper (added by JS) */
+.gg-touch{
+  min-width:48px!important;
+  min-height:48px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  margin:8px!important;
+  border-radius:12px!important;
+}
+/* --- /GAGA  A11Y + IMAGE HYGIENE --- */
+
+/* GAGA MODULE: STATE UTILITIES (CSS) */
+.gg-is-hidden{ display:none!important; }
+/* /GAGA MODULE: STATE UTILITIES (CSS) */
+
+/* GAGA MODULE: COMMENTS (CSS) */
+.gg-cmt2{
+  padding:12px;
+  border:1px solid var(--gg-border);
+  border-radius:var(--gg-radius-md);
+  background:var(--gg-surface);
+}
+.gg-cmt2__row{
+  display:grid;
+  grid-template-columns:44px 1fr;
+  gap:var(--gg-gap);
+  align-items:start;
+}
+.gg-cmt2__avatar{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  overflow:hidden;
+}
+.gg-cmt2__head{
+  display:grid;
+  gap:2px;
+}
+.gg-cmt2__meta{
+  font-size:.88rem;
+  color:var(--gg-muted);
+}
+.gg-cmt2__del{
+  font-size:.85rem;
+  color:var(--gg-muted);
+  text-decoration:none;
+}
+.gg-comment__footer{
+  margin-top:var(--gg-gap);
+}
+/* /GAGA MODULE: COMMENTS (CSS) */
+
+/* /GAGA MODULE: CORE (CSS) */
+/* --- GAGA A11Y + IMAGE HYGIENE (moved into GAGA HOME OF CSS) --- */
+/* Screen-reader-only utility: must stay accessible (NOT display:none) */
+.gg-visually-hidden{
+  position:absolute!important;
+  width:1px!important;height:1px!important;
+  padding:0!important;margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+/* Global image hygiene */
+img{max-width:100%;height:auto;}
+/* Enforce consistent thumbnail/cover ratio (40/27 = 800/540) */
+.gg-post-card__thumb figure,
+.gg-post__cover{
+  max-width:720px;
+  margin-left:auto;
+  margin-right:auto;
+  aspect-ratio:40/27;
+  overflow:hidden;
+}
+.gg-post-card__thumb-img,
+.gg-post__cover-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+/* Touch target minimums */
+a, button{
+  -webkit-tap-highlight-color: transparent;
+}
+.gg-post-card__tool,
+.gg-footer__social-link,
+.gg-install,
+.gg-post__meta-item{
+  min-width:48px;
+  min-height:48px;
+}
+.gg-post-card__tool,
+.gg-footer__social-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Auto-touch target helper (added by JS) */
+.gg-touch{
+  min-width:48px!important;
+  min-height:48px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  margin:8px!important;
+  border-radius:12px!important;
+}
+/* --- /GAGA  A11Y + IMAGE HYGIENE --- */
+
+/* GAGA MODULE: STATE UTILITIES (CSS) */
+.gg-is-hidden{ display:none!important; }
+/* /GAGA MODULE: STATE UTILITIES (CSS) */
+
+/* GAGA MODULE: COMMENTS (CSS) */
+.gg-cmt2{
+  padding:12px;
+  border:1px solid var(--gg-border);
+  border-radius:var(--gg-radius-md);
+  background:var(--gg-surface);
+}
+.gg-cmt2__row{
+  display:grid;
+  grid-template-columns:44px 1fr;
+  gap:var(--gg-gap);
+  align-items:start;
+}
+.gg-cmt2__avatar{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  overflow:hidden;
+}
+.gg-cmt2__head{
+  display:grid;
+  gap:2px;
+}
+.gg-cmt2__meta{
+  font-size:.88rem;
+  color:var(--gg-muted);
+}
+.gg-cmt2__del{
+  font-size:.85rem;
+  color:var(--gg-muted);
+  text-decoration:none;
+}
+.gg-comment__footer{
+  margin-top:var(--gg-gap);
+}
+/* /GAGA MODULE: COMMENTS (CSS) */
+
+/* /GAGA MODULE: CORE (CSS) */
+
+.gg-dialog {
+
+},
+
+.gg-overlay/scrim {
+
+} 
+
+.gg-palette {}
