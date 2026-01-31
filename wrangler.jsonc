@@ -19,7 +19,9 @@
       { "pattern": "www.pakrpp.com/sw.js", "zone_name": "pakrpp.com" },
       { "pattern": "www.pakrpp.com/manifest.webmanifest", "zone_name": "pakrpp.com" },
       { "pattern": "www.pakrpp.com/offline.html", "zone_name": "pakrpp.com" },
-      { "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" }
+      { "pattern": "www.pakrpp.com/offline", "zone_name": "pakrpp.com" },
+{ "pattern": "www.pakrpp.com/offline/", "zone_name": "pakrpp.com" },
+{ "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" }
     ]
   }
   

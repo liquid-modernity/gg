@@ -1,45 +1,66 @@
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const { pathname } = url;
+/* sw.js — minimal, actually safe */
+const CACHE = "gg-v1";
+const OFFLINE_URL = "/offline.html";
 
-    const shouldTryAssets =
-      pathname.startsWith("/assets/") ||
-      pathname.startsWith("/gg-pwa-icon/") ||
-      pathname === "/sw.js" ||
-      pathname === "/manifest.webmanifest" ||
-      pathname === "/offline.html";
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // Precache offline shell (wajib)
+    await cache.addAll([OFFLINE_URL]);
+  })());
+});
 
-    if (!shouldTryAssets || !env.ASSETS) {
-      return new Response("Not handled by this Worker", { status: 404 });
-    }
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => (k === CACHE ? null : caches.delete(k))));
+    await self.clients.claim();
+  })());
+});
 
-    const assetRes = await env.ASSETS.fetch(request);
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
 
-    // Jangan cache error
-    if (!assetRes.ok) {
-      const r = new Response(assetRes.body, assetRes);
-      r.headers.set("Cache-Control", "no-store");
-      return r;
-    }
+  // only same-origin
+  if (url.origin !== self.location.origin) return;
 
-    const res = new Response(assetRes.body, assetRes);
-    const setCache = (v) => res.headers.set("Cache-Control", v);
+  // Cache-first for versioned assets
+  if (url.pathname.startsWith("/assets/v/") || url.pathname.startsWith("/gg-pwa-icon/")) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const hit = await cache.match(req);
+      if (hit) return hit;
 
-    if (pathname.startsWith("/assets/dev/")) {
-      setCache("no-cache, max-age=0, must-revalidate");
-    } else if (pathname.startsWith("/assets/v/")) {
-      setCache("public, max-age=31536000, immutable");
-    } else if (pathname === "/sw.js") {
-      setCache("no-cache, max-age=0, must-revalidate");
-    } else if (pathname === "/manifest.webmanifest" || pathname === "/offline.html") {
-      setCache("public, max-age=86400");
-    } else if (pathname.startsWith("/gg-pwa-icon/")) {
-      setCache("public, max-age=31536000, immutable");
-    } else {
-      setCache("public, max-age=86400");
-    }
+      const res = await fetch(req);
+      if (res.ok) cache.put(req, res.clone());
+      return res;
+    })());
+    return;
+  }
 
-    return res;
-  },
-};
+  // Network-first for navigations (HTML pages)
+  if (req.mode === "navigate") {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const res = await fetch(req);
+        // optional: cache successful navigations (bisa bikin cache besar, tapi oke untuk minimal)
+        if (res.ok) cache.put(req, res.clone());
+        return res;
+      } catch (e) {
+        // Try cached page first
+        const hit = await cache.match(req);
+        if (hit) return hit;
+
+        // Then offline fallback
+        const offline = await cache.match(OFFLINE_URL);
+        if (offline) return offline;
+
+        // Absolute last resort
+        return new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
+      }
+    })());
+  }
+});

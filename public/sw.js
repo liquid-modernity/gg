@@ -1,10 +1,13 @@
-/* sw.js — minimal safe */
+/* sw.js — minimal, actually safe */
 const CACHE = "gg-v1";
-const ASSET_RE = /\/assets\/v\/[^/]+\//;
+const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await cache.addAll([OFFLINE_URL]); // wajib
+  })());
 });
 
 self.addEventListener("activate", (event) => {
@@ -20,14 +23,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   // only same-origin
-  if (url.origin !== location.origin) return;
+  if (url.origin !== self.location.origin) return;
 
-  // Cache-first for versioned assets
-  if (ASSET_RE.test(url.pathname)) {
+  // Cache-first for versioned assets (match struktur kamu)
+  if (url.pathname.startsWith("/assets/v/") || url.pathname.startsWith("/gg-pwa-icon/")) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
       const hit = await cache.match(req);
       if (hit) return hit;
+
       const res = await fetch(req);
       if (res.ok) cache.put(req, res.clone());
       return res;
@@ -35,18 +39,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first for HTML pages
+  // Network-first for navigations (HTML pages)
   if (req.mode === "navigate") {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
       try {
         const res = await fetch(req);
-        if (res.ok) cache.put(req, res.clone());
         return res;
       } catch (e) {
-        const hit = await cache.match(req);
-        if (hit) return hit;
-        return caches.match("/");
+        const offline = await cache.match(OFFLINE_URL);
+        if (offline) return offline;
+        return new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
       }
     })());
   }
