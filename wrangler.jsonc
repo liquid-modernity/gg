@@ -1,27 +1,23 @@
 {
-    "$schema": "./node_modules/wrangler/config-schema.json",
-  
-    "name": "gg-cdn-pakrpp",
-    "main": "src/worker.js",
-    "compatibility_date": "2026-01-27",
-  
-    "workers_dev": false,
-  
-   "assets": {
-  "directory": "./public",
-  "binding": "ASSETS",
-  "run_worker_first": true,
-  "html_handling": "none"
-},
+  "$schema": "./node_modules/wrangler/config-schema.json",
 
-    "routes": [
-      { "pattern": "www.pakrpp.com/assets/*", "zone_name": "pakrpp.com" },
-      { "pattern": "www.pakrpp.com/sw.js", "zone_name": "pakrpp.com" },
-      { "pattern": "www.pakrpp.com/manifest.webmanifest", "zone_name": "pakrpp.com" },
-      { "pattern": "www.pakrpp.com/offline.html", "zone_name": "pakrpp.com" },
-      { "pattern": "www.pakrpp.com/offline", "zone_name": "pakrpp.com" },
-{ "pattern": "www.pakrpp.com/offline/", "zone_name": "pakrpp.com" },
-{ "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" }
-    ]
-  }
-  
+  "name": "gg",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-01-27",
+
+  "workers_dev": false,
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none"
+  },
+
+  "routes": [
+    { "pattern": "www.pakrpp.com/assets/*", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/sw.js", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/manifest.webmanifest", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/offline.html", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" }
+  ]
+}
