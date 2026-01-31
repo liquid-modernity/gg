@@ -21,7 +21,12 @@ export default {
       return new Response("ASSETS binding missing", { status: 502 });
     }
 
-    const assetRes = await env.ASSETS.fetch(request);
+    let assetRes;
+    try {
+      assetRes = await env.ASSETS.fetch(request);
+    } catch (e) {
+      return new Response("ASSETS fetch failed", { status: 502 });
+    }
 
     // Jangan cache response error
     if (!assetRes.ok) {
@@ -31,7 +36,6 @@ export default {
     }
 
     const res = new Response(assetRes.body, assetRes);
-
     const setCache = (v) => res.headers.set("Cache-Control", v);
 
     if (pathname.startsWith("/assets/dev/")) {
@@ -39,7 +43,7 @@ export default {
     } else if (pathname.startsWith("/assets/v/")) {
       setCache("public, max-age=31536000, immutable");
     } else if (pathname === "/sw.js") {
-      // paling aman untuk SW: jangan sampai nyangkut
+      // SW harus gampang update
       setCache("no-store");
     } else if (pathname === "/manifest.webmanifest" || pathname === "/offline.html") {
       setCache("public, max-age=86400");

@@ -6,7 +6,6 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // wajib: offline fallback harus ada di cache
     await cache.addAll([OFFLINE_URL]);
   })());
 });
@@ -23,7 +22,7 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // hanya same-origin
+  // only same-origin
   if (url.origin !== self.location.origin) return;
 
   // Cache-first untuk asset versioned dan ikon
