@@ -1,0 +1,8 @@
+{
+    "name": "gg-cdn-pakrpp",
+    "private": true,
+    "devDependencies": {
+      "wrangler": "3.99.0"
+    }
+  }
+  
