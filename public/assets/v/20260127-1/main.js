@@ -82,6 +82,8 @@ PATCHLOG (append newest first; keep last 10):
 (function(w){
   'use strict';
   var GG = w.GG = w.GG || {};
+  window.GG_BUILD = "20260201-1+LOCKED";
+  if (window.GG_DEBUG) console.log("[GG_BUILD]", window.GG_BUILD);
   // Minimal GG.store (get/set/subscribe) if missing
   if(!GG.store){
     (function(){
@@ -498,7 +500,27 @@ GG.actions.register('jump', function(ctx){
       });
     }
 
+    function getCurrentLabels(){
+      var main = document.querySelector('main.gg-main[data-gg-surface="post"]');
+      if(!main) return [];
+      var post = main.querySelector('article.gg-post') || main.querySelector('.post');
+      if(!post) return [];
+      var links = post.querySelectorAll('.post-labels a[rel="tag"]');
+      var out = [];
+      for(var i=0;i<links.length;i++){
+        var t = (links[i].textContent || '').trim();
+        if(t) out.push(t);
+      }
+      if(!out.length){
+        var a = post.querySelector('.gg-post__label-link[href*="/search/label/"]');
+        if(a && a.textContent) out.push(a.textContent.trim());
+      }
+      return out;
+    }
+
     function getActiveLabel(){
+      var fromPost = getCurrentLabels()[0];
+      if(fromPost) return fromPost;
       // 1) label utama di header
       var a = document.querySelector('.gg-post__label-link[href*="/search/label/"]');
       if(a && a.textContent) return a.textContent.trim();
@@ -524,8 +546,7 @@ GG.actions.register('jump', function(ctx){
 
     function shouldAutoOpen(){
       var mode = root.getAttribute('data-gg-labeltree');
-      if(mode === 'post' || mode === 'detail') return true;
-      return !!document.querySelector('main.gg-main[data-gg-surface="post"]');
+      return (mode === 'detail' || mode === 'post');
     }
 
     function renderLabels(labels){
@@ -558,6 +579,10 @@ GG.actions.register('jump', function(ctx){
         return (n.getAttribute('data-label') || '').toLowerCase() === activeLabel.toLowerCase();
       });
       if(!node) return;
+
+      node.classList.add('is-current');
+      var row = node.querySelector('.gg-lt__row');
+      if(row) row.classList.add('is-current');
 
       // buka label itu (akan fetch posts + render)
       toggleNode(node);
@@ -1195,11 +1220,57 @@ GG.util    = GG.util    || {};
 GG.state.surface   = GG.state.surface   || null;
 GG.state.homeState = GG.state.homeState || null;
 
+GG.util = GG.util || {};
+GG.util.homeRouter = GG.util.homeRouter || (function(){
+  var BASE_PATH = '';
+  function normalizeBase(){
+    var base = BASE_PATH || '';
+    if (!base) return '';
+    if (base.charAt(0) !== '/') base = '/' + base;
+    if (base.length > 1 && base.charAt(base.length - 1) === '/') base = base.slice(0, -1);
+    return base;
+  }
+  function stripBase(path){
+    var base = normalizeBase();
+    if (!base) return path || '/';
+    if (path && path.indexOf(base) === 0){
+      return path.slice(base.length) || '/';
+    }
+    return path || '/';
+  }
+  function isHomeRoute(main){
+    if(!main) return false;
+    var surface = main.getAttribute('data-gg-surface') || '';
+    if(surface === 'post') return false;
+    var hasLanding = !!main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
+    var hasBlog = !!main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
+    return hasLanding && hasBlog;
+  }
+  function desiredHomeStateFromPath(pathname){
+    var path = stripBase(pathname || location.pathname || '/');
+    if (path === '/' || path === '') return 'landing';
+    if (/^\/blog\/?$/.test(path)) return 'blog';
+    return null;
+  }
+  function pushState(state, path){
+    var base = normalizeBase();
+    var dest = (path || '/');
+    if (dest.charAt(0) !== '/') dest = '/' + dest;
+    try{ history.pushState({ ggHome: state }, '', base + dest); }catch(_){}
+  }
+  return {
+    isHomeRoute: isHomeRoute,
+    desiredHomeStateFromPath: desiredHomeStateFromPath,
+    pushState: pushState
+  };
+})();
+
 GG.modules.homeState = (function () {
   var root = null;
   var landingLayer = null;
   var blogLayer = null;
   var ALLOWED = ['landing', 'blog'];
+  var popBound = false;
 
   function findLayers() {
     if (!root) return;
@@ -1232,7 +1303,10 @@ GG.modules.homeState = (function () {
 
   function setState(next) {
     if (!root) return;
+    if (!landingLayer && !blogLayer) return;
     var state = ALLOWED.indexOf(next) !== -1 ? next : 'landing';
+    if (state === 'landing' && !landingLayer) state = 'blog';
+    if (state === 'blog' && !blogLayer) state = 'landing';
     GG.state.homeState = state;
     root.setAttribute('data-gg-home-state', state);
     applyVisibility(state);
@@ -1242,22 +1316,37 @@ GG.modules.homeState = (function () {
 function init(mainEl) {
   root = mainEl || document.querySelector('main.gg-main');
   if (!root) return;
-  if (root.getAttribute('data-gg-surface') !== 'home') return;
   findLayers();
+  if (!landingLayer && !blogLayer) return;
 
-  // default: baca dari atribut di main
+  var desired = null;
+  if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateFromPath === 'function') {
+    desired = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname);
+  }
   var attr = root.getAttribute('data-gg-home-state');
   var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : 'landing';
-
-  // override via hash, supaya breadcrumb & dock konsisten
-  var hash = window.location.hash || '';
-  if (hash === '#gg-home-blog-anchor') {
-    initial = 'blog';
-  } else if (hash.indexOf('#gg-landing-') === 0) {
-    initial = 'landing';
-  }
+  if (desired === 'landing' || desired === 'blog') initial = desired;
 
   setState(initial);
+  document.documentElement.removeAttribute('data-gg-prehome');
+  if (initial === 'blog') {
+    requestAnimationFrame(function(){
+      var anchor = document.getElementById('gg-home-blog-anchor') || document.querySelector('#gg-home-blog-anchor');
+      if (anchor && anchor.scrollIntoView) anchor.scrollIntoView({ block:'start', behavior:'auto' });
+    });
+  }
+  if (!popBound) {
+    popBound = true;
+    window.addEventListener('popstate', function(){
+      var next = null;
+      if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateFromPath === 'function') {
+        next = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname);
+      }
+      if (!next || !root) return;
+      var cur = root.getAttribute('data-gg-home-state') || 'landing';
+      if (next !== cur) setState(next);
+    });
+  }
 }
 
 
@@ -1271,13 +1360,13 @@ GG.modules.Dock = (function () {
   var dockEl;
   var mainEl;
   var buttons = [];
-  var surface = null;
   var homeUrl = '/';
   var searchUrl = null;
   var isSearchMode = false;
   var searchForm = null;
   var searchInput = null;
   var sizeRaf = null;
+  var homeObs = null;
 
   function scrollToAnchor(sel) {
     if (!sel) return;
@@ -1321,9 +1410,13 @@ GG.modules.Dock = (function () {
     return (attr === 'blog') ? 'blog' : 'landing';
   }
 
+  function isHomeCapable(){
+    return !!(mainEl && GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
+  }
+
   // Untuk dock: semua NON-home dianggap "blog mode"
   function effectiveDockState() {
-    if (surface === 'home') return currentHomeState();
+    if (isHomeCapable()) return currentHomeState();
     return 'blog';
   }
 
@@ -1373,8 +1466,13 @@ GG.modules.Dock = (function () {
 
     // HOME &#8594; landing hero
     if (action === 'home-landing') {
-      if (surface === 'home'  && GG.modules.homeState) {
+      if (isHomeCapable()  && GG.modules.homeState) {
         GG.modules.homeState.setState('landing');
+        if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+          GG.util.homeRouter.pushState('landing', '/');
+        } else {
+          history.pushState({ ggHome:'landing' }, '', '/');
+        }
         updateActive();
         scrollToAnchor(anchor || '#gg-landing-hero');
       } else {
@@ -1385,8 +1483,13 @@ GG.modules.Dock = (function () {
 
     // BLOG &#8594; blog sheet
     if (action === 'home-blog') {
-      if (surface === 'home' && GG.modules.homeState) {
+      if (isHomeCapable() && GG.modules.homeState) {
         GG.modules.homeState.setState('blog');
+        if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+          GG.util.homeRouter.pushState('blog', '/blog');
+        } else {
+          history.pushState({ ggHome:'blog' }, '', '/blog');
+        }
         updateActive();
         scrollToAnchor(anchor || '#gg-home-blog-anchor');
       } else {
@@ -1412,8 +1515,11 @@ GG.modules.Dock = (function () {
 
     // CONTACT: selalu tampil; di landing -> pindah ke landing lalu scroll; di luar home -> balik ke homepage + anchor
     if (action === 'contact') {
-      if (surface === 'home'  && GG.modules.homeState) {
+      if (isHomeCapable()  && GG.modules.homeState) {
         GG.modules.homeState.setState('landing');
+        if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+          GG.util.homeRouter.pushState('landing', '/');
+        }
         updateActive();
         scrollToAnchor(anchor || '#gg-landing-hero-5');
       } else {
@@ -1433,7 +1539,6 @@ GG.modules.Dock = (function () {
     if (!dockEl) return;
 
     mainEl = main || document.querySelector('main.gg-main[data-gg-surface]');
-    surface = mainEl ? mainEl.getAttribute('data-gg-surface') : null;
 
     homeUrl   = dockEl.getAttribute('data-home-url')   || '/';
     searchUrl = dockEl.getAttribute('data-search-url') || null;
@@ -1458,6 +1563,13 @@ GG.modules.Dock = (function () {
     updateActive();
     updateDockWidth();
     window.addEventListener('resize', scheduleWidthUpdate);
+    window.addEventListener('popstate', updateActive, true);
+    if (mainEl && window.MutationObserver){
+      homeObs = new MutationObserver(function(){
+        updateActive();
+      });
+      homeObs.observe(mainEl, { attributes:true, attributeFilter:['data-gg-home-state','data-gg-surface'] });
+    }
   }
 
   return {
@@ -4458,11 +4570,30 @@ document.addEventListener('DOMContentLoaded', function () {
   // ====== KONFIG ======
   var HOME_ANCHOR = '#gg-home-blog-anchor'; // target "mentok" utama
   var HOME_FALLBACK = '#gg-landing-hero';   // fallback kalau anchor utama gak ada
+  var HOME_LANDING_PATH = '/';
+  var HOME_BLOG_PATH = '/blog';
 
   // ====== UTIL ======
   function homeRoot(){
-    var base = (window.homeUrl || '/').split('#')[0];
-    return base.replace(/\/$/,'') + '/';
+    var raw = (window.homeUrl || '/');
+    var path = '/';
+    try{
+      if (typeof raw === 'string' && raw.indexOf('://') !== -1){
+        path = new URL(raw, location.origin).pathname || '/';
+      } else {
+        path = String(raw || '/');
+      }
+    }catch(e){
+      path = '/';
+    }
+    if (!path) path = '/';
+    if (path.charAt(0) !== '/') path = '/' + path;
+    if (path.charAt(path.length - 1) !== '/') path += '/';
+    return path;
+  }
+
+  function homeBlogPath(){
+    return homeRoot().replace(/\/$/,'') + HOME_BLOG_PATH;
   }
 
 function isSystemPath(pathname){
@@ -4513,11 +4644,27 @@ function isSystemPath(pathname){
 
     u.search = keep.toString() ? ('?' + keep.toString()) : '';
 
+    var path = (u.pathname || '/').replace(/\/$/,'');
+    if(path === '') path = '/';
+    var landingPath = homeRoot().replace(/\/$/,'');
+    if(landingPath === '') landingPath = '/';
+    var blogPath = homeBlogPath().replace(/\/$/,'');
+
+    if(path === landingPath && u.hash === HOME_ANCHOR){
+      return blogPath + u.search;
+    }
+    if(path === blogPath){
+      return blogPath + u.search;
+    }
+    if(path === landingPath){
+      return landingPath + u.search;
+    }
+
     // hash: hanya simpan 2 state home; lainnya dibuang
     if(u.hash !== HOME_ANCHOR && u.hash !== HOME_FALLBACK) u.hash = '';
 
     // return sebagai path+query+hash biar ringkas
-    return u.pathname + u.search + u.hash;
+    return path + u.search + u.hash;
   }
 
   // Saat navigasi, kalau user sedang di m=1, paksa tujuan juga m=1
@@ -4559,10 +4706,11 @@ function isSystemPath(pathname){
   }
 
   function homeLanding(){
-    // prioritas anchor utama; kalau elem gak ada, fallback
+    // prioritas route /blog sebagai mentok listing utama
+    var blogPath = homeBlogPath();
+    if(blogPath) return blogPath;
     var base = homeRoot();
-    var hasMain = !!document.getElementById(HOME_ANCHOR.replace('#',''));
-    return base + (hasMain ? HOME_ANCHOR : HOME_FALLBACK);
+    return base + HOME_FALLBACK;
   }
 
   // ====== TRACKING (jalan tiap page load) ======
@@ -4578,16 +4726,16 @@ function isSystemPath(pathname){
 
     // update last_listing:
     if (group === 'listing') {
-  if (location.pathname === '/') {
-    sessionStorage.setItem('gg_last_listing', canonicalKey(homeLanding()));
-  } else {
-    sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
-  }
-} else {
-  if (!sessionStorage.getItem('gg_last_listing')) {
-    sessionStorage.setItem('gg_last_listing', canonicalKey(homeLanding()));
-  }
-}
+      if (location.pathname === '/' || location.pathname === '/blog' || location.pathname === '/blog/') {
+        sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
+      } else {
+        sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
+      }
+    } else {
+      if (!sessionStorage.getItem('gg_last_listing')) {
+        sessionStorage.setItem('gg_last_listing', canonicalKey(homeLanding()));
+      }
+    }
 
 
     // kalau ini navigasi yang dipicu tombol back kita, jangan push ulang
@@ -4641,7 +4789,7 @@ function isSystemPath(pathname){
     }
 
     // 2) tidak ada history internal → jatuh ke last listing (mentok di anchor)
-    var lastListing = sessionStorage.getItem('gg_last_listing') || canonicalKey(homeLanding());
+    var lastListing = sessionStorage.getItem('gg_last_listing') || homeBlogPath();
     var group = pageGroup();
 
     if(group === 'content'){

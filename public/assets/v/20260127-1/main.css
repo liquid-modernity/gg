@@ -395,6 +395,13 @@ nav.gg-dock .gg-backtotop.is-visible{
   }
 /* /GAGA ADS PLACEHOLDER */
 
+/* HOME prepaint (avoid flash on hard refresh) */
+html[data-gg-prehome="blog"] [data-gg-home-layer="landing"],
+html[data-gg-prehome="blog"] .gg-home-landing{ display: none; }
+
+html[data-gg-prehome="landing"] [data-gg-home-layer="blog"],
+html[data-gg-prehome="landing"] .gg-home-blog{ display: none; }
+
 /* HOME dual-surface contract (CSS fallback) */
 main.gg-main[data-gg-surface="home"][data-gg-home-state="landing"] [data-gg-home-layer="blog"]{
   display: none;
