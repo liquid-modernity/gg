@@ -40,6 +40,7 @@ export default {
 
     if (pathname.startsWith("/assets/dev/")) {
       setCache("no-store, max-age=0");
+      res.headers.set("Pragma", "no-cache");
     } else if (pathname.startsWith("/assets/v/")) {
       setCache("public, max-age=31536000, immutable");
     } else if (pathname === "/sw.js") {
@@ -53,6 +54,7 @@ export default {
       setCache("public, max-age=86400");
     }
 
+    res.headers.set("X-GG-Worker", "assets");
     return res;
   },
 };
