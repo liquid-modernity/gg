@@ -39,7 +39,7 @@ export default {
     const setCache = (v) => res.headers.set("Cache-Control", v);
 
     if (pathname.startsWith("/assets/dev/")) {
-      setCache("no-cache, max-age=0, must-revalidate");
+      setCache("no-store, max-age=0");
     } else if (pathname.startsWith("/assets/v/")) {
       setCache("public, max-age=31536000, immutable");
     } else if (pathname === "/sw.js") {
