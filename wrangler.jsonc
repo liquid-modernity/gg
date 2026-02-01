@@ -15,7 +15,7 @@
 
   "routes": [
     { "pattern": "www.pakrpp.com/assets/*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/__gg_worker_ping", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/__gg_worker_ping*", "zone_name": "pakrpp.com" },
     { "pattern": "www.pakrpp.com/sw.js", "zone_name": "pakrpp.com" },
     { "pattern": "www.pakrpp.com/manifest.webmanifest", "zone_name": "pakrpp.com" },
     { "pattern": "www.pakrpp.com/offline.html", "zone_name": "pakrpp.com" },

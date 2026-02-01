@@ -20,24 +20,60 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Verify Cloudflare token can see this account
+      - name: Validate Cloudflare account and zone ownership
         run: |
           python - <<'PY'
-          import os, json, urllib.request
+          import os, json, sys, urllib.request, urllib.parse
 
           token = os.environ["CF_TOKEN"]
-          req = urllib.request.Request(
-              "https://api.cloudflare.com/client/v4/accounts",
-              headers={"Authorization": f"Bearer {token}"}
-          )
-          data = json.loads(urllib.request.urlopen(req).read().decode())
-          print("success:", data.get("success"))
-          ids = [a["id"] for a in data.get("result", [])]
-          print("accounts_visible_count:", len(ids))
-          print("visible_account_ids:", ids)
+          expected_account_id = os.environ["CF_ACCOUNT_ID"]
+
+          def cf_get(url):
+              req = urllib.request.Request(
+                  url,
+                  headers={"Authorization": f"Bearer {token}"}
+              )
+              with urllib.request.urlopen(req) as resp:
+                  return json.loads(resp.read().decode())
+
+          accounts = cf_get("https://api.cloudflare.com/client/v4/accounts")
+          if not accounts.get("success"):
+              print("accounts_success:", accounts.get("success"))
+              print("accounts_errors:", accounts.get("errors"))
+              sys.exit(1)
+
+          account_ids = [a.get("id") for a in accounts.get("result", [])]
+          if expected_account_id not in account_ids:
+              print("provided_account_id_secret:", expected_account_id)
+              print("visible_account_ids:", account_ids)
+              print("error: CLOUDFLARE_ACCOUNT_ID is not visible to this token")
+              sys.exit(1)
+
+          zones_url = "https://api.cloudflare.com/client/v4/zones?name=" + urllib.parse.quote("pakrpp.com")
+          zones = cf_get(zones_url)
+          if not zones.get("success"):
+              print("zones_success:", zones.get("success"))
+              print("zones_errors:", zones.get("errors"))
+              sys.exit(1)
+
+          results = zones.get("result", [])
+          if not results:
+              print("error: zone pakrpp.com not found for this token")
+              sys.exit(1)
+
+          zone_account_id = results[0].get("account", {}).get("id")
+          print("expected_account_id_from_zone:", zone_account_id)
+          print("provided_account_id_secret:", expected_account_id)
+
+          if zone_account_id != expected_account_id:
+              print("error: CLOUDFLARE_ACCOUNT_ID does not own zone pakrpp.com")
+              sys.exit(1)
+
+          print("validation_ok: account_id matches zone owner")
           PY
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
