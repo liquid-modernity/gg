@@ -3,6 +3,18 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
+    const WORKER_VERSION = "X-035";
+    const stamp = (res) => {
+      res.headers.set("X-GG-Worker", "assets");
+      res.headers.set("X-GG-Worker-Version", WORKER_VERSION);
+      return res;
+    };
+
+    if (pathname === "/__gg_worker_ping") {
+      const r = new Response("pong", { status: 200 });
+      r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
 
     // Path yang memang kamu host di Workers Static Assets
     const shouldTryAssets =
@@ -14,25 +26,31 @@ export default {
 
     // Worker ini bukan reverse proxy Blogger
     if (!shouldTryAssets) {
-      return new Response("Not found", { status: 404 });
+      return stamp(new Response("Not found", { status: 404 }));
     }
 
     if (!env.ASSETS) {
-      return new Response("ASSETS binding missing", { status: 502 });
+      return stamp(new Response("ASSETS binding missing", { status: 502 }));
     }
 
     let assetRes;
     try {
       assetRes = await env.ASSETS.fetch(request);
     } catch (e) {
-      return new Response("ASSETS fetch failed", { status: 502 });
+      return stamp(new Response("ASSETS fetch failed", { status: 502 }));
     }
 
     // Jangan cache response error
     if (!assetRes.ok) {
+      if (pathname === "/sw.js") {
+        const r = new Response("sw.js missing in ASSETS", { status: 404 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
       const r = new Response(assetRes.body, assetRes);
       r.headers.set("Cache-Control", "no-store");
-      return r;
+      return stamp(r);
     }
 
     const res = new Response(assetRes.body, assetRes);
@@ -54,7 +72,6 @@ export default {
       setCache("public, max-age=86400");
     }
 
-    res.headers.set("X-GG-Worker", "assets");
-    return res;
+    return stamp(res);
   },
 };
