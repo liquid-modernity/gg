@@ -178,6 +178,69 @@ GG.actions.register('dock:toggle', () => {
   const s = GG.store.get();
   GG.store.set({ dockOpen: !s.dockOpen });
 });
+function ggToast(message){
+  if(window.GG && GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function'){
+    GG.ui.toast.show(message);
+    return;
+  }
+  if(window.GG && GG.util && typeof GG.util.showToast === 'function'){
+    GG.util.showToast(message);
+    return;
+  }
+}
+function toggleCommentsHelp(open){
+  var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
+  if(!modal) return;
+  modal.hidden = !open;
+  modal.setAttribute('aria-hidden', open ? 'false' : 'true');
+  modal.classList.toggle('is-open', !!open);
+}
+GG.actions.register('comments-help', function(){
+  toggleCommentsHelp(true);
+});
+GG.actions.register('comments-help-close', function(){
+  toggleCommentsHelp(false);
+});
+GG.actions.register('like', function(){
+  ggToast('Coming soon');
+});
+// X-018A ACTION BRIDGE
+GG.actions.register('bookmark', function(ctx){
+  var event = ctx && ctx.event;
+  var element = ctx && ctx.element;
+  if (event && event.defaultPrevented) return;
+  if (GG.modules.library && typeof GG.modules.library.toggleFromAction === 'function') {
+    if (event && event.preventDefault) event.preventDefault();
+    GG.modules.library.toggleFromAction(element);
+  }
+});
+GG.actions.register('share', function(ctx){
+  var event = ctx && ctx.event;
+  var element = ctx && ctx.element;
+  var sheet = document.getElementById('gg-share-sheet') || document.getElementById('pc-poster-sheet');
+  if (sheet && sheet.classList && sheet.classList.contains('is-open')) return;
+  var meta = (GG.util && typeof GG.util.getMetaFromElement === 'function')
+    ? GG.util.getMetaFromElement(element)
+    : null;
+  if (!meta) return;
+  if (event && event.preventDefault) event.preventDefault();
+  if (GG.modules.shareSheet && typeof GG.modules.shareSheet.open === 'function') {
+    GG.modules.shareSheet.open(meta);
+  } else if (GG.util && typeof GG.util.openShareSheet === 'function') {
+    GG.util.openShareSheet(meta);
+  }
+});
+GG.actions.register('jump', function(ctx){
+  var event = ctx && ctx.event;
+  var element = ctx && ctx.element;
+  if (event && event.defaultPrevented) return;
+  if (event && event.preventDefault) event.preventDefault();
+  var icon = element && element.querySelector ? element.querySelector('.gg-icon') : null;
+  var dirDown = icon && icon.textContent && icon.textContent.indexOf('_down') > -1;
+  var doc = document.documentElement;
+  var maxY = Math.max(0, doc.scrollHeight - window.innerHeight);
+  window.scrollTo({ top: dirDown ? maxY : 0, behavior: 'smooth' });
+});
 
 (function(GG, w, d){
   'use strict';
@@ -277,237 +340,306 @@ GG.actions.register('dock:toggle', () => {
   
   
   (function(){
-  var root = document.getElementById('gg-labeltree');
-  if(!root) return;
+  var jsonpSeq = 0;
+  function initLabelTree(root){
+    if(!root || root.dataset.ggLabeltreeInit === '1') return;
+    root.dataset.ggLabeltreeInit = '1';
 
-  // guard against duplicate IDs (common mistake)
-  if(document.querySelectorAll('#gg-labeltree').length > 1){
-    console.warn('[gg-labeltree] Duplicate #gg-labeltree found. Remove duplicates.');
-  }
+    var treeEl = root.querySelector('.gg-lt__tree');
+    if(!treeEl) return;
+    var headBtn = root.querySelector('.gg-lt__headbtn');
+    var panelBtn = root.querySelector('.gg-lt__panelbtn');
 
-  var treeEl = root.querySelector('.gg-lt__tree');
-  var headBtn = root.querySelector('.gg-lt__headbtn');
-  var panelBtn = root.querySelector('.gg-lt__panelbtn');
+    var maxPosts = parseInt(root.getAttribute('data-max-posts') || '10', 10);
+    var origin = (location.origin || '').replace(/\/$/, '');
 
-  var maxPosts = parseInt(root.getAttribute('data-max-posts') || '10', 10);
-  var origin = (location.origin || '').replace(/\/$/, '');
+    var cache = {};     // label -> posts[]
+    var loaded = {};    // label -> true
+    var inFlight = {};  // label -> Promise
+    var panelOpen = true;
 
-  var cache = {};     // label -> posts[]
-  var loaded = {};    // label -> true
-  var inFlight = {};  // label -> Promise
-  var panelOpen = true;
-
-  function setPanel(open){
-    panelOpen = open;
-    root.classList.toggle('is-collapsed', !open);
-    if(headBtn) headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if(panelBtn){
-      panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
-      var i = panelBtn.querySelector('.material-symbols-rounded');
-      if(i) i.textContent = open ? 'collapse_content' : 'expand_content';
-    }
-  }
-
-  function jsonp(url){
-    return new Promise(function(resolve, reject){
-      var cb = 'ggJSONP_' + Math.random().toString(36).slice(2);
-      var s = document.createElement('script');
-      var done = false;
-
-      function cleanup(){
-        if(done) return;
-        done = true;
-        try{ delete window[cb]; }catch(_){}
-        if(s.parentNode) s.parentNode.removeChild(s);
+    function setPanel(open){
+      panelOpen = open;
+      root.classList.toggle('is-collapsed', !open);
+      if(headBtn) headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if(panelBtn){
+        panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
+        var i = panelBtn.querySelector('.material-symbols-rounded');
+        if(i) i.textContent = open ? 'collapse_content' : 'expand_content';
       }
-
-      window[cb] = function(data){ cleanup(); resolve(data); };
-      s.onerror = function(){ cleanup(); reject(new Error('JSONP failed')); };
-      s.src = url.replace('callback=?', 'callback=' + cb);
-      document.body.appendChild(s);
-
-      setTimeout(function(){
-        if(!done){ cleanup(); reject(new Error('JSONP timeout')); }
-      }, 12000);
-    });
-  }
-
-  function getAltUrl(entry){
-    var links = entry && entry.link ? entry.link : [];
-    for(var i=0;i<links.length;i++){
-      if(links[i].rel === 'alternate' && links[i].href) return links[i].href;
-    }
-    return '#';
-  }
-
-  function showChildrenLoading(node){
-    var ul = node.querySelector('.gg-lt__children');
-    if(!ul) return;
-    ul.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading…</li>';
-  }
-
-  function renderPosts(node, posts){
-    var ul = node.querySelector('.gg-lt__children');
-    if(!ul) return;
-    ul.innerHTML = '';
-
-    if(!posts || !posts.length){
-      ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
-      return;
     }
 
-    posts.forEach(function(p){
-      var li = document.createElement('li');
-      li.className = 'gg-lt__post';
-      li.setAttribute('role','none');
-      li.innerHTML =
-        '<a href="'+p.url+'" role="treeitem">' +
-          '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
-          '<span>'+escapeHtml(p.title)+'</span>' +
-        '</a>';
-      ul.appendChild(li);
-    });
-  }
+    function jsonp(url){
+      return new Promise(function(resolve, reject){
+        jsonpSeq += 1;
+        var cb = 'ggJSONP_' + jsonpSeq + '_' + Math.random().toString(36).slice(2);
+        var s = document.createElement('script');
+        var done = false;
 
-  function escapeHtml(str){
-    return String(str || '').replace(/[&<>"']/g, function(m){
-      return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"\'":'\u0026#39;'}[m]);
-    });
-  }
+        function cleanup(){
+          if(done) return;
+          done = true;
+          try{ delete window[cb]; }catch(_){}
+          if(s.parentNode) s.parentNode.removeChild(s);
+        }
 
-  function fetchPosts(label){
-    if(loaded[label]) return Promise.resolve(cache[label] || []);
-    if(inFlight[label]) return inFlight[label];
+        window[cb] = function(data){ cleanup(); resolve(data); };
+        s.onerror = function(){ cleanup(); reject(new Error('JSONP failed')); };
+        s.src = url.replace('callback=?', 'callback=' + cb);
+        document.body.appendChild(s);
 
-    var url = origin + '/feeds/posts/default/-/' + encodeURIComponent(label) +
-              '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
-
-    inFlight[label] = jsonp(url).then(function(data){
-      var entries = (data && data.feed && data.feed.entry) || [];
-      var posts = entries.map(function(e){
-        return { title:(e.title && e.title.$t) || 'Untitled', url:getAltUrl(e) };
+        setTimeout(function(){
+          if(!done){ cleanup(); reject(new Error('JSONP timeout')); }
+        }, 12000);
       });
-      cache[label] = posts;
-      loaded[label] = true;
-      return posts;
-    }).catch(function(){
-      cache[label] = [];
-      loaded[label] = true;
-      return [];
-    }).finally(function(){
-      delete inFlight[label];
-    });
-
-    return inFlight[label];
-  }
-
-  function setNodeOpen(node, open){
-    node.classList.toggle('is-open', open);
-    var row = node.querySelector('.gg-lt__row');
-    if(row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-    var folder = node.querySelector('.gg-lt__folder');
-    if(folder) folder.textContent = open ? 'folder_open' : 'folder';
-  }
-
-  function toggleNode(node){
-    var label = node.getAttribute('data-label');
-    if(!label) return;
-
-    var isOpen = node.classList.contains('is-open');
-    if(isOpen){
-      setNodeOpen(node, false);
-      return;
     }
 
-    setNodeOpen(node, true);
-
-    if(loaded[label]){
-      renderPosts(node, cache[label] || []);
-      return;
-    }
-
-    showChildrenLoading(node);
-    fetchPosts(label).then(function(posts){
-      // only render if still open
-      if(node.classList.contains('is-open')){
-        renderPosts(node, posts);
+    function getAltUrl(entry){
+      var links = entry && entry.link ? entry.link : [];
+      for(var i=0;i<links.length;i++){
+        if(links[i].rel === 'alternate' && links[i].href) return links[i].href;
       }
-    });
-  }
+      return '#';
+    }
 
-  function renderLabels(labels){
-    treeEl.innerHTML = '';
-    labels.forEach(function(label){
-      var node = document.createElement('li');
-      node.className = 'gg-lt__node';
-      node.setAttribute('data-label', label);
-      node.setAttribute('role','treeitem');
-      node.setAttribute('aria-expanded','false');
+    function showChildrenLoading(node){
+      var ul = node.querySelector('.gg-lt__children');
+      if(!ul) return;
+      ul.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading…</li>';
+    }
 
-      node.innerHTML =
-  '<button class="gg-lt__row" type="button" aria-expanded="false">' +
-    '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
-    '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
-  '</button>' +
-  '<ul class="gg-lt__children" role="group"></ul>';
+    function renderPosts(node, posts){
+      var ul = node.querySelector('.gg-lt__children');
+      if(!ul) return;
+      ul.innerHTML = '';
 
-
-      treeEl.appendChild(node);
-    });
-  }
-
-  function loadLabels(){
-    treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
-    var url = origin + '/feeds/posts/default?alt=json-in-script&max-results=1&callback=?';
-
-    jsonp(url).then(function(data){
-      var cats = (data && data.feed && data.feed.category) || [];
-      var labels = cats.map(function(c){ return c.term; }).filter(Boolean);
-      labels = Array.from(new Set(labels)).sort(function(a,b){
-        a=a.toLowerCase(); b=b.toLowerCase();
-        return a<b ? -1 : (a>b ? 1 : 0);
-      });
-
-      if(!labels.length){
-        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
+      if(!posts || !posts.length){
+        ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
         return;
       }
-      renderLabels(labels);
-    }).catch(function(){
-      treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+
+      posts.forEach(function(p){
+        var li = document.createElement('li');
+        li.className = 'gg-lt__post';
+        li.setAttribute('role','none');
+        li.innerHTML =
+          '<a href="'+p.url+'" role="treeitem">' +
+            '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
+            '<span>'+escapeHtml(p.title)+'</span>' +
+          '</a>';
+        ul.appendChild(li);
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, function(m){
+        return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"\'":'\u0026#39;'}[m]);
+      });
+    }
+
+    function fetchPosts(label){
+      if(loaded[label]) return Promise.resolve(cache[label] || []);
+      if(inFlight[label]) return inFlight[label];
+
+      var url = origin + '/feeds/posts/default/-/' + encodeURIComponent(label) +
+                '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
+
+      inFlight[label] = jsonp(url).then(function(data){
+        var entries = (data && data.feed && data.feed.entry) || [];
+        var posts = entries.map(function(e){
+          return { title:(e.title && e.title.$t) || 'Untitled', url:getAltUrl(e) };
+        });
+        cache[label] = posts;
+        loaded[label] = true;
+        return posts;
+      }).catch(function(){
+        cache[label] = [];
+        loaded[label] = true;
+        return [];
+      }).finally(function(){
+        delete inFlight[label];
+      });
+
+      return inFlight[label];
+    }
+
+    function setNodeOpen(node, open){
+      node.classList.toggle('is-open', open);
+      var row = node.querySelector('.gg-lt__row');
+      if(row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+      var folder = node.querySelector('.gg-lt__folder');
+      if(folder) folder.textContent = open ? 'folder_open' : 'folder';
+    }
+
+    function toggleNode(node){
+      var label = node.getAttribute('data-label');
+      if(!label) return;
+
+      var isOpen = node.classList.contains('is-open');
+      if(isOpen){
+        setNodeOpen(node, false);
+        return;
+      }
+
+      setNodeOpen(node, true);
+
+      if(loaded[label]){
+        renderPosts(node, cache[label] || []);
+        return;
+      }
+
+      showChildrenLoading(node);
+      fetchPosts(label).then(function(posts){
+        // only render if still open
+        if(node.classList.contains('is-open')){
+          renderPosts(node, posts);
+        }
+      });
+    }
+
+    function getActiveLabel(){
+      // 1) label utama di header
+      var a = document.querySelector('.gg-post__label-link[href*="/search/label/"]');
+      if(a && a.textContent) return a.textContent.trim();
+
+      // 2) breadcrumb label
+      var bc = document.querySelector('.gg-post__breadcrumbs a[href*="/search/label/"]');
+      if(bc && bc.textContent) return bc.textContent.trim();
+
+      // 3) fallback: label pertama di footer labels
+      var f = document.querySelector('.gg-post__labels a[href*="/search/label/"]');
+      if(f && f.textContent) return f.textContent.trim();
+
+      return '';
+    }
+
+    function normalizeUrl(u){
+      return String(u || '').split('#')[0].replace(/\/$/,'');
+    }
+
+    function getActivePostUrl(){
+      return normalizeUrl(location.href);
+    }
+
+    function shouldAutoOpen(){
+      var mode = root.getAttribute('data-gg-labeltree');
+      if(mode === 'post' || mode === 'detail') return true;
+      return !!document.querySelector('main.gg-main[data-gg-surface="post"]');
+    }
+
+    function renderLabels(labels){
+      treeEl.innerHTML = '';
+      labels.forEach(function(label){
+        var node = document.createElement('li');
+        node.className = 'gg-lt__node';
+        node.setAttribute('data-label', label);
+        node.setAttribute('role','treeitem');
+        node.setAttribute('aria-expanded','false');
+
+        node.innerHTML =
+    '<button class="gg-lt__row" type="button" aria-expanded="false">' +
+      '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
+      '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
+    '</button>' +
+    '<ul class="gg-lt__children" role="group"></ul>';
+
+        treeEl.appendChild(node);
+      });
+    }
+
+    function autoOpenCurrentLabel(){
+      var activeLabel = getActiveLabel();
+      if(!activeLabel) return;
+
+      // cari node label yang cocok (case-insensitive)
+      var nodes = Array.prototype.slice.call(treeEl.querySelectorAll('.gg-lt__node'));
+      var node = nodes.find(function(n){
+        return (n.getAttribute('data-label') || '').toLowerCase() === activeLabel.toLowerCase();
+      });
+      if(!node) return;
+
+      // buka label itu (akan fetch posts + render)
+      toggleNode(node);
+
+      // setelah posts dirender, highlight post aktif
+      var activeUrl = getActivePostUrl();
+
+      // polling ringan karena renderPosts async (jsonp)
+      var tries = 0, max = 60;
+      var t = setInterval(function(){
+        tries++;
+        var links = Array.prototype.slice.call(node.querySelectorAll('.gg-lt__children a[href]'));
+        if(links.length){
+          links.forEach(function(a){
+            if(normalizeUrl(a.href) === activeUrl){
+              a.classList.add('is-active');
+            }
+          });
+          clearInterval(t);
+        }
+        if(tries >= max) clearInterval(t);
+      }, 100);
+    }
+
+    function loadLabels(){
+      treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
+      var url = origin + '/feeds/posts/default?alt=json-in-script&max-results=1&callback=?';
+
+      jsonp(url).then(function(data){
+        var cats = (data && data.feed && data.feed.category) || [];
+        var labels = cats.map(function(c){ return c.term; }).filter(Boolean);
+        labels = Array.from(new Set(labels)).sort(function(a,b){
+          a=a.toLowerCase(); b=b.toLowerCase();
+          return a<b ? -1 : (a>b ? 1 : 0);
+        });
+
+        if(!labels.length){
+          treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
+          return;
+        }
+        renderLabels(labels);
+        if(shouldAutoOpen()) autoOpenCurrentLabel();
+      }).catch(function(){
+        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+      });
+    }
+
+    // events
+    root.addEventListener('click', function(e){
+      // panel toggle via header title OR right button
+      if(e.target.closest('.gg-lt__headbtn') || e.target.closest('.gg-lt__panelbtn')){
+        setPanel(!panelOpen);
+        return;
+      }
+
+      // per label toggle
+      var row = e.target.closest('.gg-lt__row');
+      if(row && root.contains(row)){
+        var node = row.closest('.gg-lt__node');
+        if(node) toggleNode(node);
+      }
     });
+
+    root.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter' && e.key !== ' ') return;
+      var row = e.target.closest('.gg-lt__row');
+      if(row){
+        e.preventDefault();
+        var node = row.closest('.gg-lt__node');
+        if(node) toggleNode(node);
+      }
+    });
+
+    setPanel(true);
+    loadLabels();
   }
 
-  // events
-  root.addEventListener('click', function(e){
-    // panel toggle via header title OR right button
-    if(e.target.closest('.gg-lt__headbtn') || e.target.closest('.gg-lt__panelbtn')){
-      setPanel(!panelOpen);
-      return;
-    }
-
-    // per label toggle
-    var row = e.target.closest('.gg-lt__row');
-    if(row && root.contains(row)){
-      var node = row.closest('.gg-lt__node');
-      if(node) toggleNode(node);
-    }
-  });
-
-  root.addEventListener('keydown', function(e){
-    if(e.key !== 'Enter' && e.key !== ' ') return;
-    var row = e.target.closest('.gg-lt__row');
-    if(row){
-      e.preventDefault();
-      var node = row.closest('.gg-lt__node');
-      if(node) toggleNode(node);
-    }
-  });
-
-  setPanel(true);
-  loadLabels();
+  var roots = document.querySelectorAll('.gg-labeltree[data-gg-module=\"labeltree\"]');
+  if(!roots.length) return;
+  Array.prototype.forEach.call(roots, initLabelTree);
 })();
+// [END LABELTREE MODULE]
 
 (function(){
   var root = document.getElementById('gg-postinfo');
@@ -1055,302 +1187,6 @@ function renderChips(slot, items, max){
   boot();
 })();
 
-(function(){
-  var root = document.getElementById('gg-labeltree');
-  if(!root) return;
-
-  // guard against duplicate IDs (common mistake)
-  if(document.querySelectorAll('#gg-labeltree').length > 1){
-    console.warn('[gg-labeltree] Duplicate #gg-labeltree found. Remove duplicates.');
-  }
-
-  var treeEl = root.querySelector('.gg-lt__tree');
-  var headBtn = root.querySelector('.gg-lt__headbtn');
-  var panelBtn = root.querySelector('.gg-lt__panelbtn');
-
-  var maxPosts = parseInt(root.getAttribute('data-max-posts') || '10', 10);
-  var origin = (location.origin || '').replace(/\/$/, '');
-
-  var cache = {};     // label -> posts[]
-  var loaded = {};    // label -> true
-  var inFlight = {};  // label -> Promise
-  var panelOpen = true;
-
-  function setPanel(open){
-    panelOpen = open;
-    root.classList.toggle('is-collapsed', !open);
-    if(headBtn) headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if(panelBtn){
-      panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
-      var i = panelBtn.querySelector('.material-symbols-rounded');
-      if(i) i.textContent = open ? 'collapse_content' : 'expand_content';
-    }
-  }
-
-  function jsonp(url){
-    return new Promise(function(resolve, reject){
-      var cb = 'ggJSONP_' + Math.random().toString(36).slice(2);
-      var s = document.createElement('script');
-      var done = false;
-
-      function cleanup(){
-        if(done) return;
-        done = true;
-        try{ delete window[cb]; }catch(_){}
-        if(s.parentNode) s.parentNode.removeChild(s);
-      }
-
-      window[cb] = function(data){ cleanup(); resolve(data); };
-      s.onerror = function(){ cleanup(); reject(new Error('JSONP failed')); };
-      s.src = url.replace('callback=?', 'callback=' + cb);
-      document.body.appendChild(s);
-
-      setTimeout(function(){
-        if(!done){ cleanup(); reject(new Error('JSONP timeout')); }
-      }, 12000);
-    });
-  }
-
-  function getAltUrl(entry){
-    var links = entry && entry.link ? entry.link : [];
-    for(var i=0;i<links.length;i++){
-      if(links[i].rel === 'alternate' && links[i].href) return links[i].href;
-    }
-    return '#';
-  }
-
-  function showChildrenLoading(node){
-    var ul = node.querySelector('.gg-lt__children');
-    if(!ul) return;
-    ul.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading…</li>';
-  }
-
-  function renderPosts(node, posts){
-    var ul = node.querySelector('.gg-lt__children');
-    if(!ul) return;
-    ul.innerHTML = '';
-
-    if(!posts || !posts.length){
-      ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
-      return;
-    }
-
-    posts.forEach(function(p){
-      var li = document.createElement('li');
-      li.className = 'gg-lt__post';
-      li.setAttribute('role','none');
-      li.innerHTML =
-        '<a href="'+p.url+'" role="treeitem">' +
-          '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
-          '<span>'+escapeHtml(p.title)+'</span>' +
-        '</a>';
-      ul.appendChild(li);
-    });
-  }
-
-  function escapeHtml(str){
-    return String(str || '').replace(/[&<>"']/g, function(m){
-      return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"\'":'\u0026#39;'}[m]);
-    });
-  }
-
-  function fetchPosts(label){
-    if(loaded[label]) return Promise.resolve(cache[label] || []);
-    if(inFlight[label]) return inFlight[label];
-
-    var url = origin + '/feeds/posts/default/-/' + encodeURIComponent(label) +
-              '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
-
-    inFlight[label] = jsonp(url).then(function(data){
-      var entries = (data && data.feed && data.feed.entry) || [];
-      var posts = entries.map(function(e){
-        return { title:(e.title && e.title.$t) || 'Untitled', url:getAltUrl(e) };
-      });
-      cache[label] = posts;
-      loaded[label] = true;
-      return posts;
-    }).catch(function(){
-      cache[label] = [];
-      loaded[label] = true;
-      return [];
-    }).finally(function(){
-      delete inFlight[label];
-    });
-
-    return inFlight[label];
-  }
-
-  function setNodeOpen(node, open){
-    node.classList.toggle('is-open', open);
-    var row = node.querySelector('.gg-lt__row');
-    if(row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-    var folder = node.querySelector('.gg-lt__folder');
-    if(folder) folder.textContent = open ? 'folder_open' : 'folder';
-  }
-
-  function toggleNode(node){
-    var label = node.getAttribute('data-label');
-    if(!label) return;
-
-    var isOpen = node.classList.contains('is-open');
-    if(isOpen){
-      setNodeOpen(node, false);
-      return;
-    }
-
-    setNodeOpen(node, true);
-
-    if(loaded[label]){
-      renderPosts(node, cache[label] || []);
-      return;
-    }
-
-    showChildrenLoading(node);
-    fetchPosts(label).then(function(posts){
-      // only render if still open
-      if(node.classList.contains('is-open')){
-        renderPosts(node, posts);
-      }
-    });
-  }
-
-function getActiveLabel(){
-  // 1) label utama di header
-  var a = document.querySelector('.gg-post__label-link[href*="/search/label/"]');
-  if(a && a.textContent) return a.textContent.trim();
-
-  // 2) breadcrumb label
-  var bc = document.querySelector('.gg-post__breadcrumbs a[href*="/search/label/"]');
-  if(bc && bc.textContent) return bc.textContent.trim();
-
-  // 3) fallback: label pertama di footer labels
-  var f = document.querySelector('.gg-post__labels a[href*="/search/label/"]');
-  if(f && f.textContent) return f.textContent.trim();
-
-  return '';
-}
-
-function normalizeUrl(u){
-  return String(u || '').split('#')[0].replace(/\/$/,'');
-}
-
-function getActivePostUrl(){
-  return normalizeUrl(location.href);
-}
-
-  function renderLabels(labels){
-    treeEl.innerHTML = '';
-    labels.forEach(function(label){
-      var node = document.createElement('li');
-      node.className = 'gg-lt__node';
-      node.setAttribute('data-label', label);
-      node.setAttribute('role','treeitem');
-      node.setAttribute('aria-expanded','false');
-
-      node.innerHTML =
-  '<button class="gg-lt__row" type="button" aria-expanded="false">' +
-    '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
-    '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
-  '</button>' +
-  '<ul class="gg-lt__children" role="group"></ul>';
-
-
-      treeEl.appendChild(node);
-    });
-  }
-
-  function loadLabels(){
-    treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
-    var url = origin + '/feeds/posts/default?alt=json-in-script&max-results=1&callback=?';
-
-    jsonp(url).then(function(data){
-      var cats = (data && data.feed && data.feed.category) || [];
-      var labels = cats.map(function(c){ return c.term; }).filter(Boolean);
-      labels = Array.from(new Set(labels)).sort(function(a,b){
-        a=a.toLowerCase(); b=b.toLowerCase();
-        return a<b ? -1 : (a>b ? 1 : 0);
-      });
-
-      if(!labels.length){
-        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
-        return;
-      }
-      renderLabels(labels);
-autoOpenCurrentLabel();
-    }).catch(function(){
-      treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
-    });
-  }
-
-  // events
-  root.addEventListener('click', function(e){
-    // panel toggle via header title OR right button
-    if(e.target.closest('.gg-lt__headbtn') || e.target.closest('.gg-lt__panelbtn')){
-      setPanel(!panelOpen);
-      return;
-    }
-
-    // per label toggle
-    var row = e.target.closest('.gg-lt__row');
-    if(row && root.contains(row)){
-      var node = row.closest('.gg-lt__node');
-      if(node) toggleNode(node);
-    }
-  });
-
-  root.addEventListener('keydown', function(e){
-    if(e.key !== 'Enter' && e.key !== ' ') return;
-    var row = e.target.closest('.gg-lt__row');
-    if(row){
-      e.preventDefault();
-      var node = row.closest('.gg-lt__node');
-      if(node) toggleNode(node);
-    }
-  });
-
-
-function autoOpenCurrentLabel(){
-  var activeLabel = getActiveLabel();
-  if(!activeLabel) return;
-
-  // cari node label yang cocok (case-insensitive)
-  var nodes = Array.prototype.slice.call(treeEl.querySelectorAll('.gg-lt__node'));
-  var node = nodes.find(function(n){
-    return (n.getAttribute('data-label') || '').toLowerCase() === activeLabel.toLowerCase();
-  });
-  if(!node) return;
-
-  // buka label itu (akan fetch posts + render)
-  toggleNode(node);
-
-  // setelah posts dirender, highlight post aktif
-  var activeUrl = getActivePostUrl();
-
-  // polling ringan karena renderPosts async (jsonp)
-  var tries = 0, max = 60;
-  var t = setInterval(function(){
-    tries++;
-    var links = Array.prototype.slice.call(node.querySelectorAll('.gg-lt__children a[href]'));
-    if(links.length){
-      links.forEach(function(a){
-        if(normalizeUrl(a.href) === activeUrl){
-          a.classList.add('is-active');
-          // opsional: scroll ke item aktif di panel
-          // a.scrollIntoView({block:'nearest'});
-        }
-      });
-      clearInterval(t);
-    }
-    if(tries >= max) clearInterval(t);
-  }, 100);
-}
-
-
-  setPanel(true);
-  loadLabels();
-})();
-
 window.GG = window.GG || {};
 GG.config  = GG.config  || {};
 GG.state   = GG.state   || {};
@@ -1400,11 +1236,13 @@ GG.modules.homeState = (function () {
     GG.state.homeState = state;
     root.setAttribute('data-gg-home-state', state);
     applyVisibility(state);
+    if (window.GG_DEBUG) console.log('[homeState]', state);
   }
 
 function init(mainEl) {
   root = mainEl || document.querySelector('main.gg-main');
   if (!root) return;
+  if (root.getAttribute('data-gg-surface') !== 'home') return;
   findLayers();
 
   // default: baca dari atribut di main
@@ -1531,6 +1369,7 @@ GG.modules.Dock = (function () {
     var btn = evt.currentTarget;
     var action = btn.getAttribute('data-gg-action');
     var anchor = btn.getAttribute('data-gg-anchor');
+    if (window.GG_DEBUG) console.log('[dock]', action, anchor || '');
 
     // HOME &#8594; landing hero
     if (action === 'home-landing') {
@@ -1710,6 +1549,10 @@ GG.modules.Dock = (function () {
     function sharePost(article){
       var title = text(qs('.gg-post__title', article)) || document.title;
       var url = location.href;
+      if (window.GG && GG.modules && GG.modules.shareSheet && typeof GG.modules.shareSheet.open === 'function' && GG.util && typeof GG.util.getMetaFromElement === 'function'){
+        var meta = GG.util.getMetaFromElement(article);
+        if (meta) { GG.modules.shareSheet.open(meta); return; }
+      }
       if(navigator.share){
         navigator.share({ title:title, url:url }).catch(function(){});
         return;
@@ -1719,6 +1562,7 @@ GG.modules.Dock = (function () {
       }
     }
 
+/* @GG_PATCH: X-015+X-016 (20260201-1) */
 function init(){
   var article = qs('.gg-post[data-gg-module="post-detail"]');
   if(!article) return;
@@ -1765,18 +1609,54 @@ function init(){
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
 
-  // -------- SINGLE SOURCE OF TRUTH (dataset), supaya nggak perang sama Panels module --------
-  if(!main.dataset.ggLeft)      main.dataset.ggLeft = main.getAttribute('data-gg-left-panel') || 'closed';
-  if(!main.dataset.ggRightOpen) main.dataset.ggRightOpen = (main.getAttribute('data-gg-info-panel') === 'open') ? '1' : '0';
-  if(!main.dataset.ggRightMode) main.dataset.ggRightMode = main.getAttribute('data-gg-right-mode') || '';
+  // -------- SINGLE SOURCE OF TRUTH (attributes) --------
+  function leftState(){ return main.getAttribute('data-gg-left-panel') || 'closed'; }
+  function rightState(){ return main.getAttribute('data-gg-info-panel') || 'closed'; }
+  function rightMode(){ return main.getAttribute('data-gg-right-mode') || ''; }
 
-  function syncAttrs(){
-    main.setAttribute('data-gg-left-panel', main.dataset.ggLeft);
-    main.setAttribute('data-gg-info-panel', main.dataset.ggRightOpen === '1' ? 'open' : 'closed');
-    if(main.dataset.ggRightOpen === '1' && main.dataset.ggRightMode){
-      main.setAttribute('data-gg-right-mode', main.dataset.ggRightMode);
-    } else {
-      main.removeAttribute('data-gg-right-mode');
+  function setLeftState(state){
+    main.setAttribute('data-gg-left-panel', state);
+    if(GG.modules.Panels && GG.modules.Panels.setLeft) GG.modules.Panels.setLeft(state);
+  }
+  function setRightState(state){
+    main.setAttribute('data-gg-info-panel', state);
+    if(GG.modules.Panels && GG.modules.Panels.setRight) GG.modules.Panels.setRight(state);
+  }
+  function setRightMode(mode){
+    if(mode) main.setAttribute('data-gg-right-mode', mode);
+    else main.removeAttribute('data-gg-right-mode');
+  }
+
+  function applyFromAttrs(){
+    var leftOpen = leftState() === 'open';
+    var rightOpen = rightState() === 'open';
+    var mode = rightMode();
+    var focusOn = document.body.classList.contains('gg-focus-mode');
+
+    setBtnActive('info', leftOpen);
+    setBtnActive('comments', rightOpen && mode === 'comments');
+    setFocusIcon(focusOn);
+
+    var showComments = rightOpen && mode === 'comments';
+    var showInfo = rightOpen && mode && mode !== 'comments';
+
+    if(commentsPanel){
+      commentsPanel.hidden = !showComments;
+      commentsPanel.setAttribute('inert','');
+      commentsPanel.setAttribute('tabindex','-1');
+      if(showComments){
+        commentsPanel.removeAttribute('inert');
+        try { commentsPanel.focus({ preventScroll:true }); } catch(_) {}
+      }
+    }
+    if(infoPanelRight){
+      infoPanelRight.hidden = !showInfo;
+      infoPanelRight.setAttribute('inert','');
+      infoPanelRight.setAttribute('tabindex','-1');
+      if(showInfo){
+        infoPanelRight.removeAttribute('inert');
+        try { infoPanelRight.focus({ preventScroll:true }); } catch(_) {}
+      }
     }
   }
 
@@ -1790,66 +1670,29 @@ function init(){
 
   // -------- left panel (info) --------
   function setLeft(open){
-    main.dataset.ggLeft = open ? 'open' : 'closed';
-    syncAttrs();
-    if(GG.modules.Panels) GG.modules.Panels.setLeft(main.dataset.ggLeft);
-    setBtnActive('info', open); // icon info filled only
+    setLeftState(open ? 'open' : 'closed');
+    applyFromAttrs();
   }
 
   // -------- right panel (comments) --------
   function showRightPanel(mode){
-    // optional: hidden/inert (biar native & fokus)
-    if(commentsPanel){
-      commentsPanel.hidden = true;
-      commentsPanel.setAttribute('inert','');
-      commentsPanel.setAttribute('tabindex','-1');
-    }
-    if(infoPanelRight){
-      infoPanelRight.hidden = true;
-      infoPanelRight.setAttribute('inert','');
-      infoPanelRight.setAttribute('tabindex','-1');
-    }
-
-    main.dataset.ggRightOpen = '1';
-    main.dataset.ggRightMode = mode || 'comments';
-    syncAttrs();
-
-    if(GG.modules.Panels) GG.modules.Panels.setRight('open');
-
-    var target = (main.dataset.ggRightMode === 'comments') ? commentsPanel : infoPanelRight;
-    if(target){
-      target.hidden = false;
-      target.removeAttribute('inert');
-      target.focus({ preventScroll:true });
-    }
-
-    setBtnActive('comments', main.dataset.ggRightMode === 'comments'); // forum filled only
+    var useMode = mode || 'comments';
+    setRightMode(useMode);
+    setRightState('open');
+    applyFromAttrs();
   }
 
   function hideRightPanel(focusBackBtn){
-    main.dataset.ggRightOpen = '0';
-    main.dataset.ggRightMode = '';
-    syncAttrs();
-
-    if(GG.modules.Panels) GG.modules.Panels.setRight('closed');
-
-    if(commentsPanel){
-      commentsPanel.hidden = true;
-      commentsPanel.setAttribute('inert','');
-    }
-    if(infoPanelRight){
-      infoPanelRight.hidden = true;
-      infoPanelRight.setAttribute('inert','');
-    }
-
-    setBtnActive('comments', false);
+    setRightMode('');
+    setRightState('closed');
+    applyFromAttrs();
     clearCommentsHashIfAny();
 
     if(focusBackBtn) focusBackBtn.focus({ preventScroll:true });
   }
 
   function isCommentsOpen(){
-    return main.dataset.ggRightOpen === '1' && main.dataset.ggRightMode === 'comments';
+    return rightState() === 'open' && rightMode() === 'comments';
   }
 
   function toggleComments(triggerBtn){
@@ -1858,24 +1701,23 @@ function init(){
   }
 
   // -------- focus mode (native restore) --------
+  var prevLeft, prevRight, prevMode;
   function rememberPanels(){
-    main.dataset.ggPrevLeft      = main.dataset.ggLeft;
-    main.dataset.ggPrevRightOpen = main.dataset.ggRightOpen;
-    main.dataset.ggPrevRightMode = main.dataset.ggRightMode;
+    prevLeft = leftState();
+    prevRight = rightState();
+    prevMode = rightMode();
   }
 
   function restorePanels(){
-    var prevLeftOpen  = (main.dataset.ggPrevLeft === 'open');
-    var prevRightOpen = (main.dataset.ggPrevRightOpen === '1');
-    var prevMode      = main.dataset.ggPrevRightMode || 'comments';
+    var pl = prevLeft || 'closed';
+    var pr = prevRight || 'closed';
+    var pm = prevMode || 'comments';
 
-    setLeft(prevLeftOpen);
-    if(prevRightOpen) showRightPanel(prevMode);
+    setLeftState(pl);
+    if(pr === 'open') showRightPanel(pm);
     else hideRightPanel();
 
-    delete main.dataset.ggPrevLeft;
-    delete main.dataset.ggPrevRightOpen;
-    delete main.dataset.ggPrevRightMode;
+    prevLeft = prevRight = prevMode = null;
   }
 
   function setFocus(on){
@@ -1895,7 +1737,7 @@ function init(){
   (function(){
     // default close
     hideRightPanel();
-    setLeft(main.dataset.ggLeft === 'open');
+    setLeft(leftState() === 'open');
 
     var h = location.hash || '';
     if(h === '#comments' || /^#c\d+/.test(h)){
@@ -1920,7 +1762,7 @@ function init(){
     }
 
     if(act === 'info'){
-      setLeft(main.dataset.ggLeft !== 'open');
+      setLeft(leftState() !== 'open');
       return;
     }
 
@@ -1939,50 +1781,26 @@ function init(){
     if(act === 'share'){ sharePost(article); return; }
   }, true);
 
-  // ESC: close right -> close left -> exit focus
-  if(!document.__ggToolbarEscBound){
-    document.__ggToolbarEscBound = true;
+  if(!bar.__ggEscBound){
+    bar.__ggEscBound = true;
     document.addEventListener('keydown', function(e){
       if(e.key !== 'Escape') return;
-
-      var m = qs('main.gg-main[data-gg-surface]');
-      if(!m) return;
-
-      // right open?
-      if(m.dataset && m.dataset.ggRightOpen === '1'){
-        var b = document.querySelector('[data-gg-module="post-toolbar"] [data-gg-postbar="comments"]');
-        // safest: simulate close by setting attrs directly
-        m.dataset.ggRightOpen = '0';
-        m.dataset.ggRightMode = '';
-        m.setAttribute('data-gg-info-panel','closed');
-        m.removeAttribute('data-gg-right-mode');
-        if(window.GG && GG.modules && GG.modules.Panels) GG.modules.Panels.setRight('closed');
-        if(b) b.classList.remove('is-active');
-        return;
-      }
-
-      // left open?
-      if(m.getAttribute('data-gg-left-panel') === 'open'){
-        m.setAttribute('data-gg-left-panel','closed');
-        if(window.GG && GG.modules && GG.modules.Panels) GG.modules.Panels.setLeft('closed');
-        var ib = document.querySelector('[data-gg-module="post-toolbar"] [data-gg-postbar="info"]');
-        if(ib) ib.classList.remove('is-active');
-        return;
-      }
-
-      // focus mode?
-      if(document.body.classList.contains('gg-focus-mode')){
-        document.body.classList.remove('gg-focus-mode');
-        var fb = document.querySelector('[data-gg-module="post-toolbar"] [data-gg-postbar="focus"]');
-        if(fb){
-          fb.classList.remove('is-active');
-          fb.setAttribute('aria-pressed','false');
-          var ic = fb.querySelector('.gg-icon.material-symbols-rounded');
-          if(ic) ic.textContent = 'center_focus_weak';
-        }
-      }
+      if(!document.body.classList.contains('gg-focus-mode')) return;
+      if(rightState() === 'open' || leftState() === 'open') return;
+      setFocus(false);
     });
   }
+
+  if(!bar.__ggAttrObs && window.MutationObserver){
+    bar.__ggAttrObs = new MutationObserver(function(){
+      applyFromAttrs();
+    });
+    bar.__ggAttrObs.observe(main, {
+      attributes: true,
+      attributeFilter: ['data-gg-left-panel','data-gg-info-panel','data-gg-right-mode']
+    });
+  }
+  applyFromAttrs();
 
   renderFooterTags(article);
 }
@@ -2284,7 +2102,170 @@ return { init: init };
   })();
 })();
 
-}
+window.GG = window.GG || {};
+GG.modules = GG.modules || {};
+GG.modules.InfoPanel = (function () {
+  var main, panel;
+  var WPM = 200;
+  var lastTrigger = null;
+  var closeObserver = null;
+  var backdrop = null;
+
+  // in-memory cache { url: { ts, tocItems, snippet, readtime } }
+  var cache = Object.create(null);
+  var inflight = null; // AbortController
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function closest(el, sel){
+    if (!el) return null;
+    if (el.closest) return el.closest(sel);
+    while (el && el.nodeType === 1){
+      if (el.matches && el.matches(sel)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function ensureBackdrop(){
+    if (backdrop) return backdrop;
+    backdrop = document.querySelector('.gg-infopanel-backdrop');
+    if (backdrop){
+      if (!backdrop.__ggInfoBound){
+        backdrop.__ggInfoBound = true;
+        backdrop.addEventListener('click', function(e){
+          var surface = main ? main.getAttribute('data-gg-surface') : '';
+          if(surface !== 'home' && surface !== 'feed') return;
+          if(!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
+          e.preventDefault();
+          handleClose();
+        });
+      }
+      return backdrop;
+    }
+    backdrop = document.createElement('div');
+    backdrop.className = 'gg-infopanel-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);';
+    document.body.appendChild(backdrop);
+    if (!backdrop.__ggInfoBound){
+      backdrop.__ggInfoBound = true;
+      backdrop.addEventListener('click', function(e){
+        var surface = main ? main.getAttribute('data-gg-surface') : '';
+        if(surface !== 'home' && surface !== 'feed') return;
+        if(!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
+        e.preventDefault();
+        handleClose();
+      });
+    }
+    return backdrop;
+  }
+
+  function setBackdropVisible(show){
+    var bd = ensureBackdrop();
+    if (!bd) return;
+    bd.classList.toggle('is-visible', !!show);
+  }
+
+  function ensurePanelSkeleton(){
+    if (!panel) return;
+    if (qs('.gg-info-panel__head', panel)) return;
+
+    panel.innerHTML =
+  '<div class="gg-info-panel__card">' +
+
+    '<div class="gg-info-panel__thumb gg-info-panel__hero">' +
+      '<img class="gg-info-panel__thumb-img" alt=""/>' +
+      '<div class="gg-info-panel__scrim" aria-hidden="true"></div>' +
+
+      '<div class="gg-info-panel__herohead">' +
+        '<div class="gg-info-panel__herohead-left">' +
+          '<span aria-hidden="true" class="gg-icon material-symbols-rounded">info</span>' +
+          '<span class="gg-info-panel__herotitle-sm">Information</span>' +
+        '</div>' +
+        '<button class="gg-info-panel__close" type="button" data-gg-action="info-close" aria-label="Close">×</button>' +
+      '</div>' +
+
+      '<div class="gg-info-panel__hero-title"></div>' +
+
+      '<a class="gg-info-panel__hero-cta" href="#">' +
+        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span>' +
+        '<span>Read this post</span>' +
+      '</a>' +
+    '</div>' +
+
+    '<div class="gg-info-panel__details">' +
+      '<div class="gg-info-panel__sec" data-gg-sec="author">' +
+        '<div class="gg-info-panel__sechead">' +
+          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
+          '<div class="gg-info-panel__kicker">Written by</div>' +
+        '</div>' +
+        '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
+      '</div>' +
+
+      '<div class="gg-info-panel__sec" data-gg-sec="contributors" hidden>' +
+        '<div class="gg-info-panel__sechead">' +
+          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">groups</span>' +
+          '<div class="gg-info-panel__kicker">Contributors</div>' +
+        '</div>' +
+        '<div class="gg-info-panel__people" data-gg-slot="contributors"></div>' +
+      '</div>' +
+
+'<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
+  '<span class="gg-icon" aria-hidden="true">label</span>' +
+  '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
+'</div>' +
+
+
+
+      '<div class="gg-info-panel__row gg-info-panel__row--tags" hidden>' +
+        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">sell</span>' +
+        '<div class="gg-chip-row" data-gg-slot="tags"></div>' +
+      '</div>' +
+
+'<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
+
+  '<span class="gg-info-panel__metaitem">' +
+    '<span class="gg-icon" aria-hidden="true">calendar_today</span>' +
+    '<span class="gg-info-panel__date"></span>' +
+  '</span>' +
+
+  '<span class="gg-meta-sep">•</span>' +
+
+  '<span class="gg-info-panel__metaitem">' +
+    '<span class="gg-icon" aria-hidden="true">comment</span>' +
+    '<span class="gg-info-panel__comments"></span>' +
+  '</span>' +
+
+  '<span class="gg-meta-sep">•</span>' +
+
+  '<span class="gg-info-panel__metaitem">' +
+    '<span class="gg-icon" aria-hidden="true">schedule</span>' +
+    '<span class="gg-info-panel__readtime"></span>' +
+  '</span>' +
+
+'</div>' +
+
+
+
+
+      '<div class="gg-info-panel__row gg-info-panel__row--snippet">' +
+'<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
+        '<p class="gg-info-panel__snippet"></p>' +
+      '</div>' +
+
+      '<div class="gg-info-panel__sec gg-info-panel__sec--toc">' +
+        '<div class="gg-info-panel__sechead">' +
+          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>' +
+          '<div class="gg-info-panel__kicker">Table of Contents</div>' +
+        '</div>' +
+        '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
+         '<div class="gg-info-panel__toc-empty" data-gg-slot="toc-empty" hidden></div>' +
+      '</div>' +
+    '</div>' +
+
+  '</div>';
+  }
 
 function extractThumbSrc(card){
   var img = qs('.gg-post-card__thumb-img', card);
@@ -2706,8 +2687,9 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
     setText('.gg-info-panel__readtime', '…');
   }
 
-  function openWithCard(card){
+  function openWithCard(card, trigger){
     ensurePanelSkeleton();
+    if (trigger) lastTrigger = trigger;
 
     var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
     var title = titleLink ? (titleLink.textContent||'').trim() : '';
@@ -2782,7 +2764,33 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setLoadingState();
     hydrateFromPost(href, card.getAttribute('data-id') || '');
 
-    GG.modules.Panels.setRight('open');
+    if (panel) panel.hidden = false;
+    setBackdropVisible(true);
+    if (GG.modules.Panels && GG.modules.Panels.setRight) {
+      GG.modules.Panels.setRight('open');
+    } else if (main) {
+      main.setAttribute('data-gg-info-panel', 'open');
+    }
+    var closeBtn = qs('.gg-info-panel__close', panel);
+    if (closeBtn && closeBtn.focus) {
+      try { closeBtn.focus({ preventScroll: true }); } catch(_) {}
+    } else if (panel && panel.focus) {
+      panel.setAttribute('tabindex', '-1');
+      try { panel.focus({ preventScroll: true }); } catch(_) {}
+    }
+  }
+
+  function handleClose(){
+    if (GG.modules.Panels && GG.modules.Panels.setRight) {
+      GG.modules.Panels.setRight('closed');
+    } else if (main) {
+      main.setAttribute('data-gg-info-panel', 'closed');
+    }
+    if (panel) panel.hidden = true;
+    setBackdropVisible(false);
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
+    }
   }
 
   async function hydrateFromPost(postUrl, postId){
@@ -2827,7 +2835,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(infoBtn, '.gg-post-card');
     if (!card) return;
     evt.preventDefault();
-    openWithCard(card);
+    openWithCard(card, infoBtn);
   }
 
   function init(mainEl){
@@ -2843,6 +2851,28 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!panel) return;
 
     main.addEventListener('click', handleClick, true);
+    panel.addEventListener('click', function(e){
+      if (closest(e.target, '[data-gg-action="info-close"]')) {
+        e.preventDefault();
+        handleClose();
+      }
+    }, true);
+    if (!closeObserver && main && window.MutationObserver) {
+      closeObserver = new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          if (muts[i].attributeName === 'data-gg-info-panel') {
+            if (main.getAttribute('data-gg-info-panel') === 'closed' && lastTrigger) {
+              if (panel) panel.hidden = true;
+              setBackdropVisible(false);
+              if (typeof lastTrigger.focus === 'function') {
+                try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
+              }
+            }
+          }
+        }
+      });
+      closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-panel'] });
+    }
     ensurePanelSkeleton();
   }
 
@@ -2961,7 +2991,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
   document.addEventListener('DOMContentLoaded', function () {
     GG.modules.Panels.init();
   });
-})();
 
 (function(){
   'use strict';
@@ -4830,16 +4859,31 @@ function isSystemPath(pathname){
     function init(){
       main = qs('main.gg-main[data-gg-surface]');
       if (!main) return;
-      var isPostLayout = !!qs('.gg-blog-layout--post', main);
+      var surface = main.getAttribute('data-gg-surface') || '';
+      var isPostSurface = surface === 'post';
+      var isDesktopPost = isPostSurface && !shouldMobile();
 
       left  = qs('.gg-blog-sidebar--left', main);
       right = qs('.gg-blog-sidebar--right', main);
 
-      if (!main.hasAttribute('data-gg-left-panel')){
-        setAttr(main, 'data-gg-left-panel', (shouldMobile() || isPostLayout) ? 'closed' : 'open');
-      }
-      if (!main.hasAttribute('data-gg-info-panel')){
-        setAttr(main, 'data-gg-info-panel', 'closed');
+      if (isDesktopPost){
+        if (!main.hasAttribute('data-gg-left-panel')){
+          setAttr(main, 'data-gg-left-panel', 'open');
+        }
+        if (!main.hasAttribute('data-gg-info-panel')){
+          setAttr(main, 'data-gg-info-panel', 'open');
+        }
+        setAttr(main, 'data-gg-right-mode', 'comments');
+      } else {
+        if (!main.hasAttribute('data-gg-left-panel')){
+          setAttr(main, 'data-gg-left-panel', shouldMobile() ? 'closed' : 'open');
+        }
+        if (!main.hasAttribute('data-gg-info-panel')){
+          setAttr(main, 'data-gg-info-panel', 'closed');
+        }
+        if (!isPostSurface && main.hasAttribute('data-gg-right-mode')){
+          main.removeAttribute('data-gg-right-mode');
+        }
       }
 
       backdrop = ensureBackdrop();
@@ -4857,115 +4901,7 @@ function isSystemPath(pathname){
 
     return { init: init, setLeft: setLeft, setRight: setRight };
   })();
-
-// GAGA PANEL KANAN
-
-  GG.modules.InfoPanel = (function () {
-  var main, panel;
-  var WPM = 200;
-
-  // in-memory cache { url: { ts, tocItems, snippet, readtime } }
-  var cache = Object.create(null);
-  var inflight = null; // AbortController
-
-  function ensurePanelSkeleton(){
-    if (!panel) return;
-    if (qs('.gg-info-panel__head', panel)) return;
-
-    panel.innerHTML =
-  '<div class="gg-info-panel__card">' +
-
-    '<div class="gg-info-panel__thumb gg-info-panel__hero">' +
-      '<img class="gg-info-panel__thumb-img" alt=""/>' +
-      '<div class="gg-info-panel__scrim" aria-hidden="true"></div>' +
-
-      '<div class="gg-info-panel__herohead">' +
-        '<div class="gg-info-panel__herohead-left">' +
-          '<span aria-hidden="true" class="gg-icon material-symbols-rounded">info</span>' +
-          '<span class="gg-info-panel__herotitle-sm">Information</span>' +
-        '</div>' +
-        '<button class="gg-info-panel__close" type="button" data-gg-action="info-close" aria-label="Close">×</button>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__hero-title"></div>' +
-
-      '<a class="gg-info-panel__hero-cta" href="#">' +
-        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span>' +
-        '<span>Read this post</span>' +
-      '</a>' +
-    '</div>' +
-
-    '<div class="gg-info-panel__details">' +
-      '<div class="gg-info-panel__sec" data-gg-sec="author">' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
-          '<div class="gg-info-panel__kicker">Written by</div>' +
-        '</div>' +
-        '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__sec" data-gg-sec="contributors" hidden>' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">groups</span>' +
-          '<div class="gg-info-panel__kicker">Contributors</div>' +
-        '</div>' +
-        '<div class="gg-info-panel__people" data-gg-slot="contributors"></div>' +
-      '</div>' +
-
-'<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
-  '<span class="gg-icon" aria-hidden="true">label</span>' +
-  '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
-'</div>' +
-
-
-
-      '<div class="gg-info-panel__row gg-info-panel__row--tags" hidden>' +
-        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">sell</span>' +
-        '<div class="gg-chip-row" data-gg-slot="tags"></div>' +
-      '</div>' +
-
-'<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">calendar_today</span>' +
-    '<span class="gg-info-panel__date"></span>' +
-  '</span>' +
-
-  '<span class="gg-meta-sep">•</span>' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">comment</span>' +
-    '<span class="gg-info-panel__comments"></span>' +
-  '</span>' +
-
-  '<span class="gg-meta-sep">•</span>' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">schedule</span>' +
-    '<span class="gg-info-panel__readtime"></span>' +
-  '</span>' +
-
-'</div>' +
-
-
-
-
-      '<div class="gg-info-panel__row gg-info-panel__row--snippet">' +
-'<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
-        '<p class="gg-info-panel__snippet"></p>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__sec gg-info-panel__sec--toc">' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>' +
-          '<div class="gg-info-panel__kicker">Table of Contents</div>' +
-        '</div>' +
-        '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
-         '<div class="gg-info-panel__toc-empty" data-gg-slot="toc-empty" hidden></div>' +
-      '</div>' +
-    '</div>' +
-
-  '</div>';
+})();
 
 (function (GG, d) {
   'use strict';
@@ -5805,6 +5741,11 @@ function isSystemPath(pathname){
       showToast(msg.saved, { icon: '#gg-ic-bookmark-added-line' });
     }
   }
+
+  // X-018A ACTION BRIDGE
+  Library.toggleFromAction = function(btn){
+    toggleBookmark(btn);
+  };
 
   function handleClick(e) {
     e.preventDefault();
@@ -6675,6 +6616,13 @@ function isSystemPath(pathname){
   var PosterCanvas = GG.modules.posterCanvas = GG.modules.posterCanvas || {};
   var U  = GG.util;
   var SHARE_TRIGGER_SELECTOR = '.gg-post-card__action--share, .gg-post__action--share';
+  function shareSheetPresent(){
+    return !!(d.getElementById('gg-share-sheet') || d.getElementById('pc-poster-sheet'));
+  }
+  if (shareSheetPresent() && GG.modules.shareSheet && typeof GG.modules.shareSheet.open === 'function') {
+    PosterCanvas.disabled = true;
+    return;
+  }
   function getShareLang() {
     return (GG.util && GG.util.getLangPack) ? GG.util.getLangPack('share') : {};
   }
@@ -8207,6 +8155,7 @@ function openPosterSheet(meta, mode) {
   var doc = w.document;
   var htmlLang = (doc && doc.documentElement && doc.documentElement.getAttribute('lang')) || 'id';
   GG.config.lang = (GG.config.lang || htmlLang || 'id').toLowerCase();
+})(window);
 
 (function(){
   var GG = window.GG = window.GG || {};
