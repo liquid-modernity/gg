@@ -22,6 +22,14 @@ jobs:
             echo "ERROR: public/sw.js missing"
             exit 1
           fi
+          if [ ! -f public/manifest.webmanifest ]; then
+            echo "ERROR: public/manifest.webmanifest missing"
+            exit 1
+          fi
+          if [ ! -f public/offline.html ]; then
+            echo "ERROR: public/offline.html missing"
+            exit 1
+          fi
           if [ ! -f public/_headers ]; then
             echo "ERROR: public/_headers missing"
             exit 1
@@ -98,6 +106,32 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.61.1"
           command: deploy --config wrangler.jsonc
+
+      - name: Post-deploy smoke test (sw.js + manifest + offline)
+        run: |
+          set -e
+          urls=(
+            "https://www.pakrpp.com/sw.js"
+            "https://www.pakrpp.com/manifest.webmanifest"
+            "https://www.pakrpp.com/offline.html"
+          )
+
+          for url in "${urls[@]}"; do
+            echo "==> ${url}"
+            headers="$(curl -sSI "${url}")"
+            status_line="$(printf "%s" "${headers}" | head -n 1)"
+            echo "${status_line}"
+            if ! echo "${status_line}" | grep -q " 200"; then
+              echo "ERROR: non-200 response"
+              exit 1
+            fi
+            x_assets="$(printf "%s" "${headers}" | grep -i '^x-gg-assets:' || true)"
+            if [ -z "${x_assets}" ]; then
+              echo "ERROR: missing x-gg-assets header"
+              exit 1
+            fi
+            echo "${x_assets}"
+          done
 
       - name: Verify token (Cloudflare endpoint)
         env:
