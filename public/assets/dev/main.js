@@ -274,6 +274,45 @@ GG.actions.register('jump', function(ctx){
   
     if (!w.navigator || !("serviceWorker" in w.navigator)) return;
     if (w.location && w.location.protocol !== "https:") return;
+
+    var debug = false;
+    try { debug = new URL(w.location.href).searchParams.get("ggdebug") === "1"; } catch (e) {}
+    function log(){
+      if(!debug || !w.console || !console.log) return;
+      console.log.apply(console, ["[GG_SW]"].concat([].slice.call(arguments)));
+    }
+
+    var refreshing = false;
+    function onControllerChange(){
+      if(refreshing) return;
+      refreshing = true;
+      w.location.reload();
+    }
+
+    function requestUpdate(reg){
+      if(!reg || !reg.waiting) return;
+      var ok = true;
+      try { ok = w.confirm ? w.confirm("Update tersedia. Muat ulang sekarang?") : true; } catch (e) { ok = true; }
+      if(!ok) return;
+      try { reg.waiting.postMessage({ type: "SKIP_WAITING" }); } catch (e) {}
+      try { w.navigator.serviceWorker.addEventListener("controllerchange", onControllerChange, { once: true }); } catch (e) {}
+    }
+
+    function trackUpdates(reg){
+      if(!reg) return;
+      if(reg.waiting) requestUpdate(reg);
+
+      reg.addEventListener("updatefound", function(){
+        var next = reg.installing;
+        if(!next) return;
+        next.addEventListener("statechange", function(){
+          if(next.state === "installed" && w.navigator.serviceWorker.controller){
+            log("update available");
+            requestUpdate(reg);
+          }
+        });
+      });
+    }
   
     function register() {
       try {
@@ -282,6 +321,7 @@ GG.actions.register('jump', function(ctx){
           .then(function (reg) {
             // optional: paksa cek update lebih cepat (aman)
             try { reg.update(); } catch (e) {}
+            trackUpdates(reg);
           })
           .catch(function (err) {
             if (w.console && console.error) console.error(err);
