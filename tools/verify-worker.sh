@@ -12,7 +12,7 @@ urls=(
 
 for url in "${urls[@]}"; do
   echo "==> ${url}"
-  curl -sSI "$url" | grep -i -E '^(HTTP/|cf-cache-status:|cache-control:|etag:|last-modified:|x-gg-assets:|x-gg-worker:|x-gg-worker-version:)'
+  curl -sSI "$url" | grep -i -E '^(HTTP/|cf-cache-status:|cache-control:|content-type:|x-gg-assets:)'
   echo
 done
 
