@@ -15,12 +15,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure public/sw.js exists
+      - name: Preflight static assets
         run: |
+          set -e
           if [ ! -f public/sw.js ]; then
             echo "ERROR: public/sw.js missing"
             exit 1
           fi
+          if [ ! -f public/_headers ]; then
+            echo "ERROR: public/_headers missing"
+            exit 1
+          fi
+          echo "ls -la public | head"
+          ls -la public | head
+          echo "public/_headers (first 120 lines)"
+          sed -n '1,120p' public/_headers
 
       - name: Use Node 20
         uses: actions/setup-node@v4
