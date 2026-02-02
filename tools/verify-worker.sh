@@ -6,6 +6,7 @@ urls=(
   "https://www.pakrpp.com/assets/dev/main.js?x=1"
   "https://www.pakrpp.com/sw.js?x=1"
   "https://www.pakrpp.com/manifest.webmanifest?x=1"
+  "https://www.pakrpp.com/offline.html?x=1"
   "https://www.pakrpp.com/__gg_worker_ping?x=1"
 )
 
