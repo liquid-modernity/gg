@@ -1,7 +1,7 @@
 /* public/sw.js — deterministic updates + offline fallback */
-const CACHE_VERSION = "v3";
-const CACHE_STATIC = `gg-cache-static-${CACHE_VERSION}`;
-const CACHE_RUNTIME = `gg-cache-runtime-${CACHE_VERSION}`;
+const VERSION = "X-046";
+const CACHE_STATIC = `gg-static-${VERSION}`;
+const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 
 const OFFLINE_URL = "/offline.html";
 const MANIFEST_URL = "/manifest.webmanifest";
@@ -40,17 +40,14 @@ const ICON_URLS = [
 const PRECACHE_URLS = [OFFLINE_URL, MANIFEST_URL, ...ICON_URLS];
 
 const sameOrigin = (u) => u.origin === self.location.origin;
-const isDebugUrl = (u) => u.searchParams.get("ggdebug") === "1";
+const isDebugUrl = (u) => u && u.searchParams.get("ggdebug") === "1";
 const log = (u, ...args) => {
-  if (u && isDebugUrl(u)) console.log("[gg-sw]", ...args);
+  if (isDebugUrl(u)) console.log("[gg-sw]", ...args);
 };
 
-async function isDebugClientPresent() {
-  const clientsList = await self.clients.matchAll({
-    type: "window",
-    includeUncontrolled: true,
-  });
-  return clientsList.some((c) => {
+async function hasDebugClient() {
+  const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  return list.some((c) => {
     try {
       return new URL(c.url).searchParams.get("ggdebug") === "1";
     } catch {
@@ -94,10 +91,8 @@ async function staleWhileRevalidate(req, cacheName, url) {
 }
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
   event.waitUntil((async () => {
-    const debug = await isDebugClientPresent();
-    if (debug) console.log("[gg-sw]", "install");
+    if (await hasDebugClient()) console.log("[gg-sw]", "install");
     const cache = await caches.open(CACHE_STATIC);
     await cache.addAll(PRECACHE_URLS);
   })());
@@ -105,8 +100,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
-    const debug = await isDebugClientPresent();
-    if (debug) console.log("[gg-sw]", "activate");
+    if (await hasDebugClient()) console.log("[gg-sw]", "activate");
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => {
       if (k === CACHE_STATIC || k === CACHE_RUNTIME) return null;
@@ -114,6 +108,11 @@ self.addEventListener("activate", (event) => {
     }));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener("message", (event) => {
+  const data = event && event.data ? event.data : {};
+  if (data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", (event) => {
