@@ -21,8 +21,11 @@ jobs:
           node-version: "20"
 
       - name: Validate Cloudflare account and zone ownership
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import os, json, sys, urllib.request, urllib.parse
 
           token = os.environ["CF_TOKEN"]
@@ -36,9 +39,9 @@ jobs:
               with urllib.request.urlopen(req) as resp:
                   return json.loads(resp.read().decode())
 
+          # 1) accountId must be visible to token
           accounts = cf_get("https://api.cloudflare.com/client/v4/accounts")
           if not accounts.get("success"):
-              print("accounts_success:", accounts.get("success"))
               print("accounts_errors:", accounts.get("errors"))
               sys.exit(1)
 
@@ -46,19 +49,19 @@ jobs:
           if expected_account_id not in account_ids:
               print("provided_account_id_secret:", expected_account_id)
               print("visible_account_ids:", account_ids)
-              print("error: CLOUDFLARE_ACCOUNT_ID is not visible to this token")
+              print("ERROR: CLOUDFLARE_ACCOUNT_ID is not visible to this token")
               sys.exit(1)
 
+          # 2) zone pakrpp.com must exist and be owned by that accountId
           zones_url = "https://api.cloudflare.com/client/v4/zones?name=" + urllib.parse.quote("pakrpp.com")
           zones = cf_get(zones_url)
           if not zones.get("success"):
-              print("zones_success:", zones.get("success"))
               print("zones_errors:", zones.get("errors"))
               sys.exit(1)
 
           results = zones.get("result", [])
           if not results:
-              print("error: zone pakrpp.com not found for this token")
+              print("ERROR: zone pakrpp.com not found for this token")
               sys.exit(1)
 
           zone_account_id = results[0].get("account", {}).get("id")
@@ -66,19 +69,24 @@ jobs:
           print("provided_account_id_secret:", expected_account_id)
 
           if zone_account_id != expected_account_id:
-              print("error: CLOUDFLARE_ACCOUNT_ID does not own zone pakrpp.com")
+              print("ERROR: CLOUDFLARE_ACCOUNT_ID does not own zone pakrpp.com")
               sys.exit(1)
 
-          print("validation_ok: account_id matches zone owner")
+          print("validation_ok")
           PY
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "3.99.0"
+          wranglerVersion: "4.61.1"
           command: deploy --config wrangler.jsonc
+
+      - name: Verify token (Cloudflare endpoint)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          curl -sS -H "Authorization: Bearer ${CF_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/tokens/verify" | head -c 2000
