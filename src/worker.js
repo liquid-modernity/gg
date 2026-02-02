@@ -3,7 +3,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "X-035";
+    const WORKER_VERSION = "bb9d16b";
     const stamp = (res) => {
       res.headers.set("X-GG-Worker", "assets");
       res.headers.set("X-GG-Worker-Version", WORKER_VERSION);

@@ -4,6 +4,8 @@ set -euo pipefail
 urls=(
   "https://www.pakrpp.com/assets/dev/main.css?x=1"
   "https://www.pakrpp.com/assets/dev/main.js?x=1"
+  "https://www.pakrpp.com/assets/v/bb9d16b/main.css?x=1"
+  "https://www.pakrpp.com/assets/v/bb9d16b/main.js?x=1"
   "https://www.pakrpp.com/sw.js?x=1"
   "https://www.pakrpp.com/manifest.webmanifest?x=1"
   "https://www.pakrpp.com/offline.html?x=1"

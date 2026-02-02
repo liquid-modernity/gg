@@ -1,0 +1,2745 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+  <head>
+    <b:if cond='data:view.isHomepage'>
+      <script>
+(function(){
+  try {
+    var pre = &#39;landing&#39;;
+    var search = location.search || &#39;&#39;;
+    var m = search.match(/[?&amp;]prehome=(blog|landing)(?:&amp;|$)/i);
+    if (m &amp;&amp; m[1]) {
+      pre = (m[1] + &#39;&#39;).toLowerCase();
+    } else {
+      var hash = (location.hash || &#39;&#39;).replace(/^#/,&#39;&#39;).toLowerCase();
+      if (hash === &#39;blog&#39; || hash === &#39;landing&#39;) {
+        pre = hash;
+      } else {
+        var p = (location.pathname || &#39;/&#39;).replace(/\/+$/,&#39;&#39;) || &#39;/&#39;;
+        if (p === &#39;/blog&#39;) pre = &#39;blog&#39;;
+      }
+    }
+    document.documentElement.setAttribute(&#39;data-gg-prehome&#39;, pre);
+  } catch(e){}
+})();
+      </script>
+      <style>
+html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;landing&quot;],
+html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] .gg-home-landing { display:none !important; }
+
+html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;blog&quot;],
+html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-home-blog { display:none !important; }
+      </style>
+    </b:if>
+
+    <script>
+      window.GG_ENV = { mode: "dev", assetBase: "https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public" };
+    </script>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css'/>
+    <!-- Structured data (Schema.org) -->
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;WebSite&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;,
+  &quot;potentialAction&quot;: {
+    &quot;@type&quot;: &quot;SearchAction&quot;,
+    &quot;target&quot;: &quot;<data:blog.searchUrl/>?q={search_term_string}&quot;,
+    &quot;query-input&quot;: &quot;required name=search_term_string&quot;
+  }
+}
+</script>
+
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;Organization&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;
+}
+</script>
+
+<b:if cond='data:view.isPost'>
+  <script type='application/ld+json'>
+  {
+    &quot;@context&quot;: &quot;https://schema.org&quot;,
+    &quot;@type&quot;: &quot;BlogPosting&quot;,
+    &quot;mainEntityOfPage&quot;: {
+      &quot;@type&quot;: &quot;WebPage&quot;,
+      &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
+    },
+    &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
+    &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,
+    &quot;author&quot;: {
+      &quot;@type&quot;: &quot;Person&quot;,
+      &quot;name&quot;: &quot;<data:post.author.name.escaped/>&quot;
+    },
+    &quot;publisher&quot;: {
+      &quot;@type&quot;: &quot;Organization&quot;,
+      &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;
+    }<b:if cond='data:post.firstImageUrl'>,
+    &quot;image&quot;: [&quot;<data:post.firstImageUrl/>&quot;]</b:if>
+  }
+  </script>
+
+  <script type='application/ld+json'>
+  {
+    &quot;@context&quot;: &quot;https://schema.org&quot;,
+    &quot;@type&quot;: &quot;BreadcrumbList&quot;,
+    &quot;itemListElement&quot;: [
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 1,
+        &quot;name&quot;: &quot;Home&quot;,
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 2,
+        &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
+        &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
+      }
+    ]
+  }
+  </script>
+</b:if>
+
+<b:if cond='data:view.isPage'>
+  <script type='application/ld+json'>
+  {
+    &quot;@context&quot;: &quot;https://schema.org&quot;,
+    &quot;@type&quot;: &quot;BreadcrumbList&quot;,
+    &quot;itemListElement&quot;: [
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 1,
+        &quot;name&quot;: &quot;Home&quot;,
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 2,
+        &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
+        &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
+      }
+    ]
+  }
+  </script>
+</b:if>
+
+
+
+    <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
+<meta content='noindex,nofollow' name='robots'/>
+
+
+<title><data:view.title.escaped/></title>
+
+    <!-- Meta description (avoid empty) -->
+    <b:if cond='data:view.isPost'>
+      <b:if cond='data:post.snippet'>
+        <meta expr:content='data:post.snippet' name='description'/>
+      <b:else/>
+        <meta expr:content='data:post.title' name='description'/>
+      </b:if>
+    <b:else/>
+      <b:if cond='data:blog.metaDescription'>
+        <meta expr:content='data:blog.metaDescription' name='description'/>
+      <b:elseif cond='data:blog.description'/>
+        <meta expr:content='data:blog.description' name='description'/>
+      <b:else/>
+        <meta expr:content='data:blog.title' name='description'/>
+      </b:if>
+    </b:if>
+
+    <b:include data='blog' name='all-head-content'/>
+<!-- GAGA HOME OF CSS -->
+        <link href='https://fonts.googleapis.com' rel='preconnect'/>
+<link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
+<link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0' rel='stylesheet'/>
+<link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0' rel='stylesheet'/>
+
+<b:skin><![CDATA[
+
+
+]]></b:skin>
+    
+<!-- /GAGA HOME OF CSS -->
+
+    <b:include data='blog' name='google-analytics'/>
+</head>
+
+  <body>
+    <b:include name='skipNavigation'/>
+    <!-- GAGA LOGO SVG -->
+    <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
+      <!-- Logo -->
+      <!-- BLACK -->
+  <symbol id='gg-logo-black' viewBox='0 0 600 600'>
+    <g fill='#000' stroke='none' transform='translate(0,600) scale(0.1,-0.1)'>
+      <path d='M2980 5899 c-861 -106 -1394 -357 -1918 -903 -171 -179 -316 -384 -431 -615 -369 -735 -418 -1472 -148 -2196 290 -776 751 -1347 1377 -1707 620 -356 1285 -423 1971 -197 735 242 1296 688 1644 1309 307 547 382 1127 221 1710 -43 156 -106 321 -181 470 -218 434 -520 694 -907 777 -127 28 -387 25 -538 -5 -236 -48 -524 -163 -699 -279 -173 -116 -341 -307 -401 -458 -13 -33 -25 -62 -26 -64 -2 -2 -43 11 -92 28 -169 58 -255 75 -397 75 -120 0 -137 -2 -217 -31 -283 -99 -507 -350 -624 -699 -33 -96 -38 -124 -42 -235 -5 -151 10 -238 68 -372 174 -404 552 -726 1040 -886 158 -52 298 -74 470 -73 180 1 385 44 503 104 61 30 151 103 212 170 123 137 157 266 136 518 -14 167 -51 361 -88 469 -26 76 -142 319 -233 491 -111 207 -77 320 125 415 201 96 411 155 547 155 241 -1 409 -138 558 -454 113 -240 164 -456 165 -701 0 -240 -45 -441 -148 -659 -198 -417 -538 -757 -971 -970 -678 -334 -1291 -312 -1861 69 -337 224 -594 522 -796 920 -179 352 -270 651 -299 980 -42 471 117 1000 415 1380 268 343 716 618 1145 704 168 33 253 39 645 46 204 3 389 8 412 12 57 7 140 58 179 110 73 95 97 240 60 350 -21 64 -87 140 -153 175 -106 58 -177 70 -423 74 -124 1 -259 -2 -300 -7z m-249 -2768 c105 -44 206 -116 378 -269 192 -171 231 -227 231 -330 0 -95 -96 -192 -242 -244 -97 -34 -181 -37 -290 -9 -214 55 -372 193 -490 428 -74 147 -76 238 -7 332 92 128 251 163 420 92z'/>
+      <path d='M2673 2979 c-80 -39 -123 -111 -123 -204 0 -93 43 -165 120 -205 87 -45 181 -33 253 31 128 112 95 320 -60 386 -50 20 -141 17 -190 -8z'/>
+    </g>
+  </symbol>
+
+  <!-- WHITE -->
+  <symbol id='gg-logo-white' viewBox='0 0 600 600'>
+    <g fill='#fff' stroke='none' transform='translate(0,600) scale(0.1,-0.1)'>
+      <path d='M2980 5899 c-861 -106 -1394 -357 -1918 -903 -171 -179 -316 -384 -431 -615 -369 -735 -418 -1472 -148 -2196 290 -776 751 -1347 1377 -1707 620 -356 1285 -423 1971 -197 735 242 1296 688 1644 1309 307 547 382 1127 221 1710 -43 156 -106 321 -181 470 -218 434 -520 694 -907 777 -127 28 -387 25 -538 -5 -236 -48 -524 -163 -699 -279 -173 -116 -341 -307 -401 -458 -13 -33 -25 -62 -26 -64 -2 -2 -43 11 -92 28 -169 58 -255 75 -397 75 -120 0 -137 -2 -217 -31 -283 -99 -507 -350 -624 -699 -33 -96 -38 -124 -42 -235 -5 -151 10 -238 68 -372 174 -404 552 -726 1040 -886 158 -52 298 -74 470 -73 180 1 385 44 503 104 61 30 151 103 212 170 123 137 157 266 136 518 -14 167 -51 361 -88 469 -26 76 -142 319 -233 491 -111 207 -77 320 125 415 201 96 411 155 547 155 241 -1 409 -138 558 -454 113 -240 164 -456 165 -701 0 -240 -45 -441 -148 -659 -198 -417 -538 -757 -971 -970 -678 -334 -1291 -312 -1861 69 -337 224 -594 522 -796 920 -179 352 -270 651 -299 980 -42 471 117 1000 415 1380 268 343 716 618 1145 704 168 33 253 39 645 46 204 3 389 8 412 12 57 7 140 58 179 110 73 95 97 240 60 350 -21 64 -87 140 -153 175 -106 58 -177 70 -423 74 -124 1 -259 -2 -300 -7z m-249 -2768 c105 -44 206 -116 378 -269 192 -171 231 -227 231 -330 0 -95 -96 -192 -242 -244 -97 -34 -181 -37 -290 -9 -214 55 -372 193 -490 428 -74 147 -76 238 -7 332 92 128 251 163 420 92z'/>
+      <path d='M2673 2979 c-80 -39 -123 -111 -123 -204 0 -93 43 -165 120 -205 87 -45 181 -33 253 31 128 112 95 320 -60 386 -50 20 -141 17 -190 -8z'/>
+    </g>
+  </symbol>
+
+        <!-- GAGA SOCIAL MEDIA ICON SVG -->
+      <symbol id='gg-ic-fb-line' viewBox='0 0 24 24'><path d='M22 12a10 10 0 1 0-11.6 9.9v-7H7.7V12h2.7V9.8c0-2.7 1.6-4.2 4-4.2 1.2 0 2.4.2 2.4.2v2.6h-1.3c-1.3 0-1.7.8-1.7 1.6V12h3l-.5 2.9h-2.5v7A10 10 0 0 0 22 12z' fill='currentColor'/></symbol>
+      <symbol id='gg-ic-li-line' viewBox='0 0 24 24'><path d='M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.24 8.32h4.52V24H.24zM8.89 8.32h4.33v2.13h.06c.6-1.14 2.06-2.34 4.24-2.34 4.53 0 5.37 2.98 5.37 6.86V24h-4.71v-7.5c0-1.79-.03-4.09-2.5-4.09-2.5 0-2.88 1.95-2.88 3.96V24H8.89z' fill='currentColor'/></symbol>
+      <symbol id='gg-ic-tg-line' viewBox='0 0 24 24'><path d='M9.9 15.5 9.6 19c.5 0 .7-.2.9-.4l2.1-2 4.4 3.2c.8.5 1.4.3 1.6-.8l2.9-13.6c.3-1.2-.4-1.7-1.2-1.4L1.7 9.8C.5 10.3.6 11 .6 11s.7.2 1.2 0l6.9-2.2 9.7-6.1-8.1 7.1-3.1 2.7z' fill='currentColor'/></symbol>
+      <symbol id='gg-ic-wa-line' viewBox='0 0 24 24'><path d='M20.5 3.5A11.7 11.7 0 0 0 12 0C5.4 0 0 5.4 0 12c0 2 .5 3.9 1.5 5.6L0 24l6.5-1.7A12 12 0 0 0 12 24c6.6 0 12-5.4 12-12 0-3.2-1.2-6.1-3.5-8.5zM12 21.4c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A9.3 9.3 0 1 1 21.3 12 9.3 9.3 0 0 1 12 21.4zm5.3-6.8c-.3-.2-1.8-.9-2-1s-.5-.2-.7.2-.8 1-.9 1.1-.3.2-.5.1a7.7 7.7 0 0 1-2.3-1.4 8.5 8.5 0 0 1-1.5-1.8c-.2-.3 0-.5.1-.6l.3-.4c.1-.2.1-.3 0-.5l-1-2.2c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.5.1-.8.4s-1 1-1 2.4 1.1 2.8 1.2 3c.2.2 2.1 3.2 5.1 4.5.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.8 2-1.5.2-.8.2-1.4.1-1.5-.1-.3-.3-.4-.6-.6z' fill='currentColor'/></symbol>
+      <symbol id='gg-ic-x-line' viewBox='0 0 24 24'><path d='M18.2 2H21l-6.4 7.3L22 22h-6.7l-5.2-6.9L3.9 22H1.1l6.9-7.9L2 2h6.8l4.7 6.3L18.2 2zM8.8 4H5.6l9.6 12.9h3.2L8.8 4z' fill='currentColor'/></symbol>
+      <symbol id='gg-ic-mail-line' viewBox='0 0 24 24'><path d='M22 4H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-10 6L2 8V6l10 6 10-6v2z' fill='currentColor'/></symbol>
+    </svg>
+    
+    
+    
+    <div class='gg-page-shell'>
+      
+  <header class='gg-header'>
+
+  </header>
+  
+    
+
+<!-- GAGA HOME SURFACE (HTML) -->
+
+  <main class='gg-main' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )'>
+    <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
+
+    
+     
+
+  <!-- ========== 404 SURFACE (HANYA UNTUK error_page) ========== -->
+  <b:if cond='data:blog.pageType == &quot;error_page&quot;'>
+
+    <section aria-labelledby='gg-error-title' class='gg-error'>
+      <div class='gg-error__inner'>
+        <p class='gg-error__code'>404</p>
+        <h1 class='gg-error__title' id='gg-error-title'>
+          Halaman tidak ditemukan
+        </h1>
+        <p class='gg-error__body'>
+          Link yang kamu buka sudah tidak aktif, dipindahkan, atau salah ketik.
+        </p>
+
+        <div class='gg-error__actions'>
+          <a class='gg-btn gg-btn--primary' expr:href='data:blog.homepageUrl'>
+            Kembali ke beranda
+          </a>
+          <a class='gg-btn gg-btn--ghost' href='#gg-search'>
+            Cari artikel
+          </a>
+        </div>
+
+        <form class='gg-error__search' expr:action='data:blog.searchUrl' id='gg-search' method='get' role='search'>
+          <label class='gg-error__search-label' for='gg-search-input'>
+            Cari di blog ini
+          </label>
+          <div class='gg-error__search-row'>
+            <input class='gg-error__search-input' id='gg-search-input' name='q' placeholder='Ketik kata kunci...' type='search'/>
+            <button class='gg-error__search-btn' type='submit'>
+              Search
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  <b:else/>
+    <!-- ========== NORMAL SURFACE: HOME / POST / PAGE ========== -->
+
+        <!-- Landing Layer: pertama kali terlihat ketika visitor masuk / tekan ikon Home -->
+      <!-- Landing Layer: pertama kali terlihat ketika visitor masuk / tekan ikon Home -->
+        <b:if cond='data:view.isHomepage'>
+          <section class='gg-home-landing' data-gg-home-layer='landing'>
+<!-- GAGA LANDING PAGE: DUMMY 5-SECTION -->
+
+            <!-- GAGA LANDING PAGE &#8212; VIDEO EDITING SERVICES (5 SECTIONS, ANCHOR IDS PRESERVED) -->
+<div class='gg-landing' id='gg-landing'>
+
+  <header class='gg-topbar' role='banner'>
+  </header>
+
+  <!-- SECTION 1 &#8212; HERO -->
+  <section aria-label='Hero' class='gg-section gg-hero' data-surface='dark' id='gg-landing-hero' role='region'>
+    <div aria-hidden='true' class='gg-hero__media'>
+      <!-- NOTE: Apple video is DUMMY and must remain -->
+      <video class='gg-hero__video' id='ggHeroVideo' loop='' muted='' playsinline='' poster='https://picsum.photos/200' preload='metadata'>
+        <source src='https://www.pakrpp.com/' type='video/mp4'/>
+      </video>
+      <noscript>
+        <img alt='Editorial reel teaser' height='900' src='https://picsum.photos/200' width='1600'/>
+      </noscript>
+    </div>
+    <div aria-hidden='true' class='gg-hero__scrim'/>
+
+    <div class='gg-wrap gg-hero__in'>
+      <div class='gg-hero__card'>
+        <p class='gg-kicker'>&#183; Intelligence by Creator &#183; Performance through Story &#183;</p>
+        <h1 class='gg-display'>Edited by pakrpp.</h1>
+        <p class='gg-lead'>
+          We cut for retention: hooks, pacing, sound, and clarity.
+          One second decides whether viewers stay. We edit for the stay.
+        </p>
+
+        <div class='gg-ctaRow'>
+          <a class='gg-btn gg-btn--accent wa-track' data-section='hero' href='https://wa.me/628999999999?text=Hi%20pakrpp%2C%20I%20need%20a%20quote%20(EN).%20Source%3A%20Hero' rel='noopener'>Get a Quote</a>
+
+          <a class='gg-btn gg-btn--ghost' href='#gg-landing-pillars-4'>See Packages</a>
+        </div>
+
+        <p class='gg-micro'>
+          Confidential by default &#183; NDA available &#183; First response &#8804; 1 business hour
+        </p>
+      </div>
+
+      <div aria-label='Quick proof points' class='gg-hero__stats'>
+        <div class='gg-stat'><div class='gg-stat__n'>0&#8211;3s</div><div class='gg-stat__t'>Hook engineering</div></div>
+        <div class='gg-stat'><div class='gg-stat__n'>1&#8211;2d</div><div class='gg-stat__t'>First cut (typical)</div></div>
+        <div class='gg-stat'><div class='gg-stat__n'>Clean</div><div class='gg-stat__t'>Sound + captions ready</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 &#8212; WHY -->
+  <section aria-label='Why pakrpp' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars' role='region'>
+    <div class='gg-wrap'>
+      <header class='gg-head'>
+        <p class='gg-kicker gg-kicker--dark'>Why it works</p>
+        <h2 class='gg-h2'>Retention-first editing, not &#8220;pretty cuts.&#8221;</h2>
+        <p class='gg-sub'>Disciplined pacing, intentional audio, and ruthless clarity.</p>
+      </header>
+
+      <div class='gg-grid3' role='list'>
+        <article class='gg-card' role='listitem'>
+          <div aria-hidden='true' class='gg-card__ic'>&#9889;</div>
+          <h3 class='gg-h3'>Hook &amp; pacing</h3>
+          <p class='gg-p'>Cut dead air, tighten intent, front-load value.</p>
+        </article>
+
+        <article class='gg-card' role='listitem'>
+          <div aria-hidden='true' class='gg-card__ic'>🎧</div>
+          <h3 class='gg-h3'>Sound design</h3>
+          <p class='gg-p'>Noise, leveling, music bed, SFX (tasteful).</p>
+        </article>
+
+        <article class='gg-card' role='listitem'>
+          <div aria-hidden='true' class='gg-card__ic'>🧠</div>
+          <h3 class='gg-h3'>Clarity &#8594; action</h3>
+          <p class='gg-p'>Structure, emphasis, captions that don&#8217;t scream.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 &#8212; WORKFLOW -->
+  <section aria-label='Workflow' class='gg-section gg-darkband' data-surface='dark' id='gg-landing-hero-3' role='region'>
+    <div class='gg-wrap'>
+      <header class='gg-head gg-head--dark'>
+        <p class='gg-kicker'>Workflow</p>
+        <h2 class='gg-h2 gg-h2--light'>Fast, predictable, no drama.</h2>
+        <p class='gg-sub gg-sub--light'>You always know what&#8217;s happening and when you&#8217;ll get it.</p>
+      </header>
+
+      <ol aria-label='Editing steps' class='gg-steps'>
+        <li class='gg-step'><div class='gg-step__n'>01</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Brief</h3><p class='gg-p gg-p--light'>Goal + references + raw footage.</p></div></li>
+        <li class='gg-step'><div class='gg-step__n'>02</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>First cut</h3><p class='gg-p gg-p--light'>Hook, pacing, structure. Then polish.</p></div></li>
+        <li class='gg-step'><div class='gg-step__n'>03</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Revisions</h3><p class='gg-p gg-p--light'>2&#8211;3 rounds standard, feedback consolidated.</p></div></li>
+        <li class='gg-step'><div class='gg-step__n'>04</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Delivery</h3><p class='gg-p gg-p--light'>Exports for platform + caption-safe framing.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SECTION 4 &#8212; PACKAGES -->
+  <section aria-label='Packages' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars-4' role='region'>
+    <div class='gg-wrap'>
+      <header class='gg-head'>
+        <p class='gg-kicker gg-kicker--dark'>Packages</p>
+        <h2 class='gg-h2'>Pick a lane. Ship faster.</h2>
+        <p class='gg-sub'>Simple packages. Custom quotes for campaigns and volume.</p>
+      </header>
+
+      <div class='gg-grid3' role='list'>
+        <article class='gg-card' role='listitem'>
+          <h3 class='gg-h3'>Starter</h3>
+          <p class='gg-p'>1 main edit &#183; 2 revisions &#183; clean captions</p>
+          <a class='gg-btn gg-btn--ghost' href='#gg-landing-hero-5'>Ask price</a>
+        </article>
+
+        <article class='gg-card gg-card--featured' role='listitem'>
+          <h3 class='gg-h3'>Growth</h3>
+          <p class='gg-p'>Hook/pacing &#183; sound design &#183; cutdowns</p>
+          <a class='gg-btn gg-btn--accent' href='#gg-landing-hero-5'>Start here</a>
+        </article>
+
+        <article class='gg-card' role='listitem'>
+          <h3 class='gg-h3'>Studio</h3>
+          <p class='gg-p'>Campaign &#183; multi-version exports &#183; priority</p>
+          <a class='gg-btn gg-btn--ghost' href='#gg-landing-hero-5'>Book consult</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 &#8212; CONTACT -->
+  <section aria-label='Contact' class='gg-section gg-contact' data-surface='light' id='gg-landing-hero-5' role='region'>
+    <div class='gg-wrap'>
+      <header class='gg-head'>
+        <p class='gg-kicker gg-kicker--dark'>Contact</p>
+        <h2 class='gg-h2'>Send the footage. Get the plan.</h2>
+        <p class='gg-sub'>Tell us your goal, platform, and deadline.</p>
+      </header>
+
+      <div class='gg-contactGrid'>
+        <div class='gg-card'>
+          <h3 class='gg-h3'>WhatsApp</h3>
+          <p class='gg-p'>Fastest route. Include references + deadline.</p>
+          <a class='gg-btn gg-btn--accent' href='https://wa.me/62999999999?text=Hi%20pakrpp%2C%20I%20want%20video%20editing.%20Goal%3A%20____.%20Platform%3A%20____.%20Deadline%3A%20____.' rel='noopener'>Chat on WhatsApp</a>
+        </div>
+
+        <div class='gg-card'>
+          <h3 class='gg-h3'>Quick brief</h3>
+          <p class='gg-p'>Dummy form (no backend). Use WhatsApp for real requests.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- /GAGA LANDING PAGE -->
+
+<!-- /GAGA LANDING PAGE: DUMMY 5-SECTION -->
+          </section>
+        </b:if>
+
+<!-- GAGA ADS LEADERBOARD -->
+      <b:section class='gg-ads' id='gg-ads' name='gg-ads' showaddelement='true'/>     
+     <!-- /GAGA ADS LEADERBOARD -->
+        <!-- Blog Layer: daftar posting, kategori, dll. -->
+   <section class='gg-home-blog' data-gg-home-layer='blog' id='gg-home-blog'>
+          
+  <h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>     
+  <div class='gg-blog-layout' expr:class='data:view.isSingleItem ? &quot;gg-blog-layout gg-blog-layout--post&quot; : &quot;gg-blog-layout gg-blog-layout--list&quot;'>
+    
+    
+    
+  
+    
+    
+    
+    <!-- SIDEBAR KIRI -->
+    <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
+      <div class='gg-leftnav'>
+        <div class='gg-leftnav__profile' role='presentation'>
+          <div class='gg-leftnav__avatar'>
+            <img decoding='async' expr:alt='data:blog.title + &quot; logo&quot;' height='96' loading='lazy' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png' width='96'/>
+          </div>
+          <div class='gg-leftnav__meta'>
+            <p class='gg-leftnav__title'><data:blog.title/></p>
+            <p class='gg-leftnav__desc'><data:blog.description/></p>
+          </div>
+          <span class='gg-leftnav__badge' title='Verified'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded gg-icon--md'>verified</span>
+          </span>
+        </div>
+      <!-- Versi HOME/LIST -->
+      <b:if cond='data:view.isMultipleItems'>
+        <b:section class='gg-blog-sidebar__section' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
+          <b:widget id='PageList2' locked='false' title='Pages' type='PageList' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='pageListJson'>{}</b:widget-setting>
+              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <b:include name='content'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='widget-content'>
+    <b:include name='pageList'/>
+  </div>
+</b:includable>
+            <b:includable id='overflowButton'>
+  <b:include name='verticalMoreIcon'/>
+</b:includable>
+            <b:includable id='overflowablePageList'>
+  <div class='overflowable-container'>
+    <div class='overflowable-contents'>
+      <div class='container'>
+        <b:with value='true' var='overflow'>
+        <b:with value='&quot;tabs&quot;' var='pageListClass'>
+          <b:include name='pageList'/>
+        </b:with>
+        </b:with>
+      </div>
+    </div>
+    <div class='overflow-button gg-is-hidden'>
+      <b:include name='overflowButton'/>
+    </div>
+  </div>
+</b:includable>
+            <b:includable id='pageLink'>
+  <li>
+    <b:class cond='data:overflow' name='overflowable-item'/>
+    <b:class cond='data:link.isCurrentPage' name='selected'/>
+
+    <a expr:href='data:link.href'><data:link.title/></a>
+  </li>
+</b:includable>
+            <b:includable id='pageList'>
+  <ul>
+    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
+    <b:loop values='data:links' var='link'>
+      <b:include name='pageLink'/>
+    </b:loop>
+  </ul>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML1' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA LABEL TREE VERSI HOME/LIST -->
+<div id="gg-labeltree-home" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="home" data-max-posts="10">
+  <div class="gg-lt__head">
+    <button class="gg-lt__headbtn" type="button" aria-expanded="true">
+      <span class="material-symbols-rounded gg-lt__hico" aria-hidden="true">interests</span>
+      <span class="gg-lt__htxt">Interests</span>
+    </button>
+
+    <button class="gg-lt__panelbtn" type="button" aria-label="Collapse panel">
+      <span class="material-symbols-rounded" aria-hidden="true">expand_content</span>
+    </button>
+  </div>
+
+  <ul class="gg-lt__tree" role="tree" aria-label="Label tree"></ul>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+    <b:include name='widget-title'/>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+          </b:widget>
+          <b:widget id='PageList1' locked='false' title='Page 1' type='PageList' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='pageListJson'>{}</b:widget-setting>
+              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <b:include name='content'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='widget-content'>
+    <b:include name='pageList'/>
+  </div>
+</b:includable>
+            <b:includable id='overflowButton'>
+  <b:include name='verticalMoreIcon'/>
+</b:includable>
+            <b:includable id='overflowablePageList'>
+  <div class='overflowable-container'>
+    <div class='overflowable-contents'>
+      <div class='container'>
+        <b:with value='true' var='overflow'>
+        <b:with value='&quot;tabs&quot;' var='pageListClass'>
+          <b:include name='pageList'/>
+        </b:with>
+        </b:with>
+      </div>
+    </div>
+    <div class='overflow-button gg-is-hidden'>
+      <b:include name='overflowButton'/>
+    </div>
+  </div>
+</b:includable>
+            <b:includable id='pageLink'>
+  <li>
+    <b:class cond='data:overflow' name='overflowable-item'/>
+    <b:class cond='data:link.isCurrentPage' name='selected'/>
+
+    <a expr:href='data:link.href'><data:link.title/></a>
+  </li>
+</b:includable>
+            <b:includable id='pageList'>
+  <ul>
+    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
+    <b:loop values='data:links' var='link'>
+      <b:include name='pageLink'/>
+    </b:loop>
+  </ul>
+</b:includable>
+          </b:widget>
+          <b:widget id='PageList3' locked='false' title='Page 2' type='PageList' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='pageListJson'>{}</b:widget-setting>
+              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <b:include name='content'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='widget-content'>
+    <b:include name='pageList'/>
+  </div>
+</b:includable>
+            <b:includable id='overflowButton'>
+  <b:include name='verticalMoreIcon'/>
+</b:includable>
+            <b:includable id='overflowablePageList'>
+  <div class='overflowable-container'>
+    <div class='overflowable-contents'>
+      <div class='container'>
+        <b:with value='true' var='overflow'>
+        <b:with value='&quot;tabs&quot;' var='pageListClass'>
+          <b:include name='pageList'/>
+        </b:with>
+        </b:with>
+      </div>
+    </div>
+    <div class='overflow-button gg-is-hidden'>
+      <b:include name='overflowButton'/>
+    </div>
+  </div>
+</b:includable>
+            <b:includable id='pageLink'>
+  <li>
+    <b:class cond='data:overflow' name='overflowable-item'/>
+    <b:class cond='data:link.isCurrentPage' name='selected'/>
+
+    <a expr:href='data:link.href'><data:link.title/></a>
+  </li>
+</b:includable>
+            <b:includable id='pageList'>
+  <ul>
+    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
+    <b:loop values='data:links' var='link'>
+      <b:include name='pageLink'/>
+    </b:loop>
+  </ul>
+</b:includable>
+          </b:widget>
+        </b:section>
+         </b:if>      
+
+      <!-- Versi POST DETAIL -->
+      <b:if cond='data:view.isSingleItem and data:view.isPost'>
+        <b:section class='gg-blog-sidebar__section' id='gg-left-sidebar-post' name='Left Sidebar (Post)' showaddelement='true'>
+          <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA INFORMATION (POST DETAIL) -->
+<!-- GAGA META DATA -->
+
+<!-- GAGA INFORMATION (POST DETAIL) -->
+<div id="gg-postinfo" class="gg-pi" data-wpm="200">
+  <div class="gg-pi__head">
+    <button class="gg-pi__headbtn" type="button" aria-expanded="true">
+      <span class="material-symbols-rounded gg-pi__ico" aria-hidden="true">info</span>
+      <span class="gg-pi__title">Information</span>
+    </button>
+    <button class="gg-pi__toggle" type="button" aria-label="Collapse">
+      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
+    </button>
+  </div>
+
+  <div class="gg-pi__body">
+
+    <!-- WRITTEN BY -->
+    <div class="gg-pi__sec">
+      <div class="gg-pi__sechead">
+        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">person</span>
+        <div class="gg-pi__kicker">Written by</div>
+      </div>
+      <div class="gg-pi__people" data-slot="author"></div>
+    </div>
+
+    <!-- CONTRIBUTORS (placeholder siap, data via data-contributors) -->
+    <div class="gg-pi__sec gg-pi__sec--contributors" hidden>
+      <div class="gg-pi__sechead">
+        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">groups</span>
+        <div class="gg-pi__kicker">Contributors</div>
+      </div>
+      <div class="gg-pi__people" data-slot="contributors"></div>
+    </div>
+
+    <!-- LABELS (icon kiri + chips; folder icon ada di dalam chip) -->
+<div class="gg-pi__sec gg-pi__sec--labels" hidden>
+  <div class="gg-pi__row">
+    <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">label</span>
+    <div class="gg-pi__chips gg-pi__chips--labels" data-slot="labels" aria-label="Labels"></div>
+  </div>
+</div>
+
+
+    <!-- TAGS (placeholder siap, ambil dari .gg-post-tags / #hashtag) -->
+    <div class="gg-pi__sec gg-pi__sec--tags" hidden>
+      <div class="gg-pi__sechead">
+        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">sell</span>
+        <div class="gg-pi__kicker">Tags</div>
+      </div>
+      <div class="gg-pi__chips" data-slot="tags" aria-label="Tags"></div>
+    </div>
+
+    <div class="gg-pi__meta">
+      <div class="gg-pi__metaitem">
+        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">calendar_today</span>
+        <span data-slot="date">&#8212;</span> • <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
+        <span data-slot="readtime">1 minutes read</span>
+      </div>
+    </div>
+
+  </div>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+    <b:include name='widget-title'/>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+          </b:widget>
+          <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
+<nav id="gg-toc" class="gg-toc" data-headings="h2,h3,h4" data-scroll-offset="84">
+  <div class="gg-toc__head">
+    <button class="gg-toc__headbtn" type="button" aria-expanded="true">
+      <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
+      <span class="gg-toc__title">Table of Contents</span>
+    </button>
+    <button class="gg-toc__toggle" type="button" aria-label="Collapse">
+      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
+    </button>
+  </div>
+
+  <div class="gg-toc__body">
+    <ol class="gg-toc__list" aria-label="Table of contents"></ol>
+    <div class="gg-toc__empty" hidden>No content found</div>
+  </div>
+</nav>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+    <b:include name='widget-title'/>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+          </b:widget>
+          <b:widget id='HTML2' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA LABEL TREE VERSI POST DETAIL -->
+<div id="gg-labeltree-detail" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="detail" data-max-posts="10">
+  <div class="gg-lt__head">
+    <button class="gg-lt__headbtn" type="button" aria-expanded="true">
+      <span class="material-symbols-rounded gg-lt__hico" aria-hidden="true">interests</span>
+      <span class="gg-lt__htxt">Interests</span>
+    </button>
+
+    <button class="gg-lt__panelbtn" type="button" aria-label="Collapse panel">
+      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
+    </button>
+  </div>
+
+  <ul class="gg-lt__tree" role="tree" aria-label="Label tree"></ul>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+    <b:include name='widget-title'/>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+          </b:widget>
+        </b:section>
+      </b:if>
+      
+      
+       <!-- Versi PAGE DETAIL -->
+  <b:if cond='data:view.isPage'>
+    <b:section class='gg-blog-sidebar__section-page' id='gg-left-sidebar-page' name='Left Sidebar (Page)' showaddelement='true'/>
+  </b:if>
+
+      
+      </div>
+    </aside>
+    
+        
+
+    <!-- KONTEN UTAMA: Blog1 (JANGAN DIUTAK-ATIK DALAMNYA) -->
+    <div class='gg-blog-main'>
+      <!-- GAGA FEATURED POST -->
+    <b:if cond='data:view.isMultipleItems'>
+    <b:section class='gg-home-blog__body' id='gg-featuredpost1' name='gg-featuredpost1' showaddelement='true'>
+      <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='showSnippet'>false</b:widget-setting>
+          <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+          <b:widget-setting name='postId'>166965650037739780</b:widget-setting>
+          <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+          <b:widget-setting name='useMostRecentPost'>false</b:widget-setting>
+        </b:widget-settings>
+        <b:includable id='main' var='this'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <b:include name='snippetedPosts'/>
+  </div>
+</b:includable>
+        <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+        <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+        <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+        <b:includable id='commentsLink'>
+         <!-- GAGA commentsLink -->
+  <b:if cond='data:post.allowComments'>
+    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='data:post.url + &quot;#comments&quot;'>
+
+      <span aria-hidden='true' class='material-symbols-rounded'>comment</span>
+
+      <span class='meta-count'>
+        <b:if cond='data:post.numberOfComments &gt; 0'>
+          <b:if cond='data:post.numberOfComments == 1'>
+            1 <span class='meta-comments__short'>Cmt</span>
+            <span class='meta-comments__long'>Comment</span>
+          <b:else/>
+            <data:post.numberOfComments/>
+            <span class='meta-comments__short'>Cmts</span>
+            <span class='meta-comments__long'>Comments</span>
+          </b:if>
+        <b:else/>
+          <data:messages.postAComment/>
+        </b:if>
+      </span>
+
+    </a>
+  </b:if>
+           <!-- /GAGA commentsLink -->
+</b:includable>
+        <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+        <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+        <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+        <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+        <b:includable id='googlePlusShare'>
+</b:includable>
+        <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+        <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+        <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+        <b:includable id='platformShare'>
+  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+        <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+        <b:includable id='postCommentsLink'>
+  <span class='byline post-comment-link container'>
+    <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+  </span>
+</b:includable>
+        <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+        <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+        <b:includable id='postLocation'>
+  <span class='byline post-location'>
+    <data:byline.label/>
+    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+  </span>
+</b:includable>
+        <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+        <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+        <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+        <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+        <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+        <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+        <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' class='gg-is-hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+        <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+        <b:includable id='snippetedPostByline'>
+  <b:with value='(data:widgets first (w =&gt; w.type == &quot;Blog&quot;)).allBylineItems' var='blogBylines'>
+    <div class='item-byline'>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;author&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showAuthor' data='post' name='postAuthor'/>
+      </b:with>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;timestamp&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showDate' data='post' name='postTimestamp'/>
+      </b:with>
+    </div>
+  </b:with>
+</b:includable>
+        <b:includable id='snippetedPostContent'>
+  <div class='post-content'>
+    <b:include cond='data:this.postDisplay.showTitle' name='snippetedPostTitle'/>
+    <b:include cond='data:this.postDisplay.showDate or data:this.postDisplay.showAuthor' name='snippetedPostByline'/>
+    <b:include cond='data:this.postDisplay.showSnippet' data='post' name='postSnippet'/>
+    <b:include cond='data:this.postDisplay.showFeaturedImage and data:post.featuredImage' name='snippetedPostThumbnail'/>
+  </div>
+</b:includable>
+        <b:includable id='snippetedPostThumbnail'>
+  <div class='item-thumbnail'>
+    <a expr:aria-label='data:post.title' expr:href='data:post.url' expr:title='data:post.title'>
+      <b:include data='{                         image: data:post.featuredImage,                         imageSizes: [72, 144],                         imageRatio: &quot;1:1&quot;,                         sourceSizes: &quot;72px&quot;                        }' name='responsiveImage'/>
+    </a>
+  </div>
+</b:includable>
+        <b:includable id='snippetedPostTitle'>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
+  </b:if>
+</b:includable>
+        <b:includable id='snippetedPosts'>
+  <div role='feed'>
+    <!-- Don't render the post that we're currently already looking at. -->
+    <b:loop values='data:posts filter (p =&gt; p.id != data:view.postId)' var='post'>
+      <article class='post' role='article'>
+        <b:include name='snippetedPostContent'/>
+      </article>
+    </b:loop>
+  </div>
+</b:includable>
+      </b:widget>
+    </b:section>
+    </b:if>
+    <!-- /GAGA FEATURED POST -->
+          <b:section class='gg-home-blog__body' id='blog' name='gg-page-body' showaddelement='true'>
+            <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
+              <b:widget-settings>
+                <b:widget-setting name='commentLabel'>Comments</b:widget-setting>
+                <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+                <b:widget-setting name='authorLabel'>Penned by</b:widget-setting>
+                <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+                <b:widget-setting name='timestampLabel'/>
+                <b:widget-setting name='reactionsLabel'/>
+                <b:widget-setting name='showAuthorProfile'>true</b:widget-setting>
+                <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+                <b:widget-setting name='showLocation'>false</b:widget-setting>
+                <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+                <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+                <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+                <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+                <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='postLocationLabel'>Thought from</b:widget-setting>
+                <b:widget-setting name='showAuthor'>true</b:widget-setting>
+                <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='showLabels'>true</b:widget-setting>
+                <b:widget-setting name='postLabelsLabel'>The</b:widget-setting>
+                <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+                <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+                <b:widget-setting name='showReactions'>false</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+                <div class='gg-stack' id='postcards'>
+                  <b:loop values='data:posts' var='post'>
+                    <b:if cond='data:view.isSingleItem'>
+                      <b:include data='post' name='postDetail'/>
+                    <b:else/>
+                      <b:include data='post' name='postCard'/>
+                    </b:if>
+                  </b:loop>
+                </div>
+                
+  <!-- LOAD MORE -->
+              <div class='gg-loadmore-wrap' data-gg-module='loadmore'>
+                  <b:if cond='data:view.isMultipleItems and data:olderPageUrl'>
+                    <button class='gg-loadmore' expr:data-next='data:olderPageUrl' id='loadmore' type='button'>
+                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>article</span>
+                      <span class='gg-loadmore__label'>Load More Articles</span>
+                      <span aria-hidden='true' class='gg-loadmore__spinner'/>
+                    </button>
+                  </b:if>
+                </div>
+              </b:includable>
+              <b:includable id='aboutPostAuthor'>
+                <div class='author-name'>
+                  <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+                    <span><data:post.author.name/></span>
+                  </a>
+                </div>
+                <div><span class='author-desc'><data:post.author.aboutMe/></span></div>
+              </b:includable>
+              <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+              <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+              <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+              <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container gg-cmt2__avatar'>
+    <img alt='' class='author-avatar' decoding='async' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+              <b:includable id='commentDeleteIcon' var='comment'>
+  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+        <img alt='Delete' decoding='async' height='13' src='https://resources.blogblog.com/img/icon_delete13.gif' width='13'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+              <b:includable id='commentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+              <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+              <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+              <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+              <b:includable id='commentPicker' var='post'>
+  <!-- GAGA/GG: Force modern threaded UI + keep form + empty state -->
+  <b:include data='post' name='threadedComments'/>
+</b:includable>
+              <b:includable id='comments' var='post'>
+                <section class='comments2 gg-comments classic' id='comments-ssr'>
+                  <a name='comments'/>
+                  
+                  <div class='cmt2-headbar'>
+                    <div class='cmt2-headbar__left'>
+                      <h3 class='cmt2-head'>Comments</h3>
+                      <span class='cmt2-count'><data:post.numberOfComments/> comments</span>
+                    </div>
+                    <div class='gg-comments__actions'>
+                      <button aria-label='Rich comment tags' class='cmt2-help__btn' data-gg-action='comments-help' title='Rich comment tags' type='button'>
+                        <span aria-hidden='true' class='ms'>format_shapes</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div aria-hidden='true' class='cmt2-help__modal' data-gg-modal='comments-help' role='presentation'>
+                    <div class='cmt2-help__overlay' data-gg-action='comments-help-close'/>
+                    <div aria-labelledby='ggCommentHelpTitleClassic' class='cmt2-help__dialog' role='dialog'>
+                      <div class='cmt2-help__dialog-head'>
+                        <div class='cmt2-help__title' id='ggCommentHelpTitleClassic'>Rich comment tags</div>
+                        <button aria-label='Close formatting help' class='cmt2-help__close' data-gg-action='comments-help-close' type='button'>
+                          <span aria-hidden='true' class='ms'>close</span>
+                        </button>
+                      </div>
+                      <div class='cmt2-help__body'>
+                        <div class='cmt2-help__row'><code>[quote]your_quote[/quote]</code></div>
+                        <div class='cmt2-help__row'><code>[code]your_code[/code]</code></div>
+                        <div class='cmt2-help__row'><code>[link]Text | https://pakrpp.com[/link]</code></div>
+                        <div class='cmt2-help__row'><code>[image]https://pakrpp.com/pic.jpg[/image]</code></div>
+                        <div class='cmt2-help__note'>Only http/https URLs are rendered.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <b:if cond='data:post.allowComments'>
+                    <div id='comments-block-ssr'>
+                      <b:loop values='data:post.comments' var='comment'>
+                        <article class='gg-cmt2 cmt2' expr:id='&quot;c&quot; + data:comment.id'>
+                          <div class='gg-cmt2__row'>
+                            <div class='avatar-image-container gg-cmt2__avatar'>
+                              <img alt='' class='author-avatar' decoding='async' expr:src='data:comment.authorAvatarSrc' height='44' width='44'/>
+                            </div>
+                            <div>
+                              <div class='gg-cmt2__head'>
+                                <strong><data:comment.author/></strong>
+                                <div class='meta gg-cmt2__meta'><a expr:href='data:comment.url'><data:comment.timestamp/></a></div>
+                              </div>
+                              <div class='c-sep'/>
+                              <div class='body'><data:comment.body/></div>
+                              <div class='meta gg-cmt2__meta'>
+                                <b:if cond='data:comment.deleteUrl'>
+                                  <a class='cmt2-del gg-cmt2__del gg-is-hidden' expr:href='data:comment.deleteUrl'>Delete</a>
+                                </b:if>
+                              </div>
+                            </div>
+                          </div>
+                        </article>
+                      </b:loop>
+                    </div>
+                    <div class='comment-footer gg-comment__footer'>
+                      <b:if cond='data:post.embedCommentForm and data:post.allowNewComments'>
+                        <b:include data='post' name='commentFormIframeSrc'/>
+                        <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+                        <data:post.cmtfpIframe/>
+                        <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
+                      <b:elseif cond='data:post.allowComments'/>
+                        <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'><b:message name='messages.postAComment'/></a>
+                      </b:if>
+                    </div>
+                  </b:if>
+                </section>
+                
+              </b:includable>
+              <b:includable id='commentsLink'>
+  <b:if cond='data:post.allowComments'>
+    <a class='gg-post__meta-item meta-comments' expr:href='data:post.url + &quot;#comments&quot;'>
+      <span aria-hidden='true' class='ms'>comment</span>
+      <b:if cond='data:post.numberOfComments &gt; 0'>
+        <data:post.numberOfComments/>
+      <b:else/>
+        <data:messages.postAComment/>
+      </b:if>
+    </a>
+  </b:if>
+</b:includable>
+              <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+              <b:includable id='defaultAdUnit'>
+  <ins class='adsbygoogle' data-ad-format='auto' expr:data-ad-client='data:adClientId ?: data:blog.adsenseClientId' expr:data-ad-host='data:blog.adsenseHostId' expr:style='data:style ?: &quot;display: block;&quot;'>
+    <b:attr cond='not data:blog.analytics4' expr:value='data:blog.analyticsAccountNumber' name='data-analytics-uacct'/>
+  </ins>
+
+</b:includable>
+              <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+              <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='feedLinks'>
+  <b:if cond='!data:view.isPost'> <!-- Blog feed links -->
+    <b:if cond='data:feedLinks'>
+      <div class='blog-feeds'>
+        <b:include data='feedLinks' name='feedLinksBody'/>
+      </div>
+    </b:if>
+  <b:else/> <!--Post feed links -->
+    <div class='post-feeds'>
+      <b:loop values='data:posts' var='post'>
+        <b:if cond='data:post.allowComments and data:post.feedLinks'>
+          <b:include data='post.feedLinks' name='feedLinksBody'/>
+        </b:if>
+      </b:loop>
+    </div>
+  </b:if>
+</b:includable>
+              <b:includable id='feedLinksBody' var='links'>
+  <div class='feed-links'>
+  <data:messages.subscribeTo/>
+  <b:loop values='data:links' var='f'>
+     <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+  </b:loop>
+  </div>
+</b:includable>
+              <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+              <b:includable id='googlePlusShare'>
+</b:includable>
+              <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+              <b:includable id='homePageLink'>
+  <a class='home-link' expr:href='data:blog.homepageUrl'>
+    <data:messages.home/>
+  </a>
+</b:includable>
+              <b:includable id='iframeComments' var='post'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='inlineAd' var='post'>
+  <b:if cond='!data:view.isPreview'>
+    <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+      <!-- Ad -->
+      <div class='inline-ad'>
+        <b:if cond='data:this.adCode != &quot;&quot;'>
+          <data:this.adCode/>
+        <b:else/>
+          <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+        </b:if>
+      </div>
+    </b:if>
+  <b:else/>
+    <div class='inline-ad'>
+      <div class='inline-ad-placeholder'>
+        <span><b:message name='messages.adsGoHere'/></span>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+              <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='nextPageLink'>
+  <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+    <data:messages.olderPosts/>
+  </a>
+</b:includable>
+              <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+              <b:includable id='platformShare'>
+  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+              <b:includable id='post' var='post'>
+                <b:include data='post' name='postDetail'/>
+</b:includable>
+              <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+              <b:includable id='postBody' var='post'>
+  <!-- If metaDescription is empty, use the post body as the schema.org description too, for G+/FB snippeting. -->
+  <div class='post-body entry-content float-container' expr:id='&quot;post-body-&quot; + data:post.id'>
+    <data:post.body/>
+  </div>
+</b:includable>
+              <b:includable id='postBodySnippet' var='post'>
+  <b:include data='post' name='postBody'/>
+</b:includable>
+              <b:includable id='postCard' var='post'>
+  <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
+  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' expr:data-author-avatar='data:post.author.authorPhoto.url ?: &quot;&quot;' expr:data-author-name='data:post.author.name' expr:data-author-url='data:post.author.profileUrl ?: &quot;&quot;' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+<b:if cond='data:post.labels'>
+  <div class='gg-post-card__labels' hidden='hidden'>
+    <b:loop values='data:post.labels' var='lab'>
+      <a expr:href='data:lab.url' rel='tag'><data:lab.name/></a>
+    </b:loop>
+  </div>
+</b:if>
+
+    <a class='gg-post-card__thumb' expr:href='data:post.url'>
+      <figure>
+        <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
+          <img class='gg-post-card__thumb-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 480, &quot;480:324&quot;) + &quot; 480w, &quot; + resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;) + &quot; 800w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w, &quot; + resizeImage(data:post.featuredImage, 1600, &quot;1600:1080&quot;) + &quot; 1600w&quot;' height='810' loading='lazy' sizes='(max-width: 680px) 92vw, 520px' width='1200'/>
+        <b:else/>
+          <div aria-hidden='true' class='gg-post-card__thumb-placeholder'/>
+        </b:if>
+      </figure>
+    </a>
+
+     
+
+    
+    
+    <div class='gg-post-card__body'>
+      <div class='gg-post-card__meta'>
+       <span class='gg-post-card__label'>
+  <b:if cond='data:post.labels'>
+    <a expr:href='data:post.labels.first.url' rel='tag'>
+      <data:post.labels.first.name/>
+    </a>
+  <b:else/>
+    Post
+  </b:if>
+</span>
+
+        <span class='gg-post-card__meta-sep'>&#8226;</span>
+
+        <span class='gg-post-card__meta-item gg-post-card__meta-item--date'>
+          <time class='gg-post-card__date' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+            <data:post.date/>
+          </time>
+        </span>
+
+        <span class='gg-post-card__meta-sep'>&#8226;</span>
+
+        <span class='gg-post-card__meta-item gg-post-card__meta-item--comments'>
+          <data:post.numberOfComments/> Comments
+        </span>
+      </div>
+
+      <h2 class='gg-post-card__title'>
+        <a class='gg-post-card__title-link' expr:href='data:post.url'>
+          <data:post.title/>
+        </a>
+      </h2>
+
+      <p class='gg-post-card__excerpt'>
+        <data:post.snippet/>
+      </p>
+    </div>
+
+<div aria-label='Post actions' class='gg-post-card__toolbar' role='group'>
+  <a class='gg-post-card__tool' expr:href='data:post.url + &quot;#comments&quot;' title='Comments'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>comment</span>
+    <span class='gg-visually-hidden'>Comments</span>
+    <span aria-hidden='true' class='gg-post-card__badge'><data:post.numberOfComments/></span>
+  </a>
+
+  <button class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' title='Bookmark' type='button'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
+    <span class='gg-visually-hidden'>Bookmark</span>
+  </button>
+
+  <button class='gg-post-card__tool' data-gg-action='like' title='Like' type='button'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>
+    <span class='gg-visually-hidden'>Like</span>
+  </button>
+
+  <button class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' title='Share' type='button'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
+    <span class='gg-visually-hidden'>Share</span>
+  </button>
+
+  <button class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' title='Information' type='button'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+    <span class='gg-visually-hidden'>Information</span>
+  </button>
+</div>
+
+  </article>
+</b:includable>
+              <b:includable id='postCommentsAndAd' var='post'>
+  <article class='post-outer-container'>
+    <!-- Post title and body -->
+    <div class='post-outer'>
+      <b:include data='post' name='post'/>
+    </div>
+
+    <!-- Comments -->
+    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+    <!-- Show ad inside post container, after comments, if single item. -->
+    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+  </article>
+
+  <!-- Show ad outside post container (between posts) for feed pages. -->
+  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+</b:includable>
+              <b:includable id='postCommentsLink'>
+  <b:if cond='data:view.isMultipleItems'>
+    <span class='byline post-comment-link container'>
+      <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+    </span>
+  </b:if>
+</b:includable>
+              <b:includable id='postDetail' var='post'>
+  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-id='data:post.id' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+    
+    <!-- GAGA TOOLBAR POST DETAIL -->
+    <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
+      <div class='gg-post__toolbar-group'>
+               <button aria-label='Back to blog' class='gg-post__tool' data-gg-postbar='back' type='button'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>
+        </button>
+      </div>
+      <div class='gg-post__toolbar-group'>
+        <button aria-expanded='false' aria-label='Toggle info panel' class='gg-post__tool' data-gg-postbar='info' type='button'>
+  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+</button>
+        <button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-postbar='focus' type='button'>
+  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>
+</button>
+        <button aria-label='Save post' class='gg-post__tool gg-post__action--bookmark' data-gg-postbar='save' type='button'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
+        </button>
+    <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-postbar='comments' type='button'>
+  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
+  <b:if cond='data:post.numberOfComments &gt; 0'>
+    <span aria-hidden='true' class='gg-post__tool-badge'><data:post.numberOfComments/></span>
+  </b:if>
+</button>
+
+        <button aria-label='Share post' class='gg-post__tool gg-post__action--share' data-gg-postbar='share' type='button'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
+        </button>
+      </div>
+    </div>
+    <!-- /GAGA TOOLBAR POST DETAIL -->
+
+   
+ <!-- GAGA HEADER -->
+    <header class='gg-post__header'>
+      <h1 class='gg-post__title'>
+        <data:post.title/>
+      </h1>      
+    </header>
+    <!-- /GAGA HEADER -->
+<!-- GAGA BREADCRUMBS -->
+<b:if cond='data:view.isPost or data:view.isPage'>
+  <nav aria-label='Breadcrumb' class='gg-post__breadcrumbs'>
+
+    <!-- HOME -->
+    <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl'>
+      <svg aria-label='GAGA Logo' height='14' viewBox='0 0 600 600' width='14'>
+  <use href='#gg-logo-black'/>
+</svg>
+    </a>
+
+    <!-- ====================== POST MODE ====================== -->
+    <b:if cond='data:view.isPost'>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+
+      <!-- BLOG -->
+      <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;#gg-home-blog-anchor&quot;'>
+        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
+        <span class='gg-post__breadcrumbs-label'>Home</span>
+      </a>
+
+      <!-- LABEL PERTAMA (opsional) -->
+      <b:if cond='data:post.labels'>
+        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+        <a class='gg-post__breadcrumbs-link' expr:href='data:post.labels[0].url'>
+          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
+          <span class='gg-post__breadcrumbs-label'>
+            <b:eval expr='data:post.labels[0].name'/>
+          </span>
+        </a>
+      </b:if>
+
+      <!-- TITLE POST (current) -->
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>article</span>
+      <span aria-current='page' class='gg-post__breadcrumbs-current'>
+        <data:post.title/>
+      </span>
+    </b:if>
+
+    <!-- ====================== PAGE MODE ====================== -->
+    
+    <b:if cond='data:view.isPage'>
+      <!-- "Blog-system pages": slug diawali /p/blog- -->
+     <b:if cond='data:post.url contains &quot;blog-&quot;'>
+    <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+        <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;#gg-home-blog-anchor&quot;'>
+          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
+          <span class='gg-post__breadcrumbs-label'>Home</span>
+        </a>
+       </b:if> 
+      
+      <!-- TITLE PAGE (current) -->
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+      <span aria-current='page' class='gg-post__breadcrumbs-current'>
+        
+          
+          <data:post.title/>
+       
+        
+      </span>
+    </b:if>
+
+
+  </nav>
+</b:if>
+<!-- /GAGA BREADCRUMBS -->
+
+ <!-- COVER (opsional) -->
+    <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
+      <figure class='gg-post__cover' expr:data-caption='data:post.title'>
+        <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
+        <img class='gg-post__cover-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 640, &quot;640:432&quot;) + &quot; 640w, &quot; + resizeImage(data:post.featuredImage, 960, &quot;960:648&quot;) + &quot; 960w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w&quot;' fetchpriority='high' height='810' loading='eager' sizes='(max-width: 680px) 100vw, 720px' width='1200'/>
+      </b:if>
+        <figcaption class='gg-post__cover-caption'>
+          <data:post.title/>
+        </figcaption>
+      </figure>
+    </b:if>
+     <!-- /COVER (opsional) -->
+
+
+
+
+   
+    
+    <div class='gg-post__body'>     
+
+      <!-- KONTEN POST -->
+      <section class='gg-post__content post-body entry-content' data-gg-module='post-content' expr:id='&quot;post-body-&quot; + data:post.id'>
+        <data:post.body/>
+
+        <!-- GAGA TAGS DIRECTORY / TAG HUB (PAGE: /p/tags.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;tags.html&quot;'>
+          <section class='gg-tags-page'>
+            <header class='gg-tags-page__head'>
+              <h2 class='gg-tags-page__title'>Tags</h2>
+              <p class='gg-tags-page__description'>Jelajahi artikel berdasarkan topik.</p>
+            </header>
+
+            <div class='gg-tags-page__controls'>
+              <label class='gg-tags-page__sort-label' for='ggTagsSort'>Sort</label>
+              <select class='gg-tags-page__sort' id='ggTagsSort'>
+                <option value='newest'>Newest</option>
+                <option value='oldest'>Oldest</option>
+              </select>
+            </div>
+
+            <section class='gg-tags-page__results'>
+              <div class='gg-post-list gg-is-loading'/>
+            </section>
+
+            <section class='gg-tags-page__directory'>
+              <div class='gg-tags-directory'/>
+            </section>
+          </section>
+        </b:if>
+
+        <!-- GAGA LIBRARY PAGE (PAGE: /p/library.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;library.html&quot;'>
+          <section class='gg-library'>
+            <header class='gg-library__head'>
+              <h2 class='gg-library__title'>Library</h2>
+              <p class='gg-library__description'>Posting yang kamu simpan akan muncul di sini.</p>
+            </header>
+            <div class='gg-library__body'>
+              <div class='gg-library__empty' id='gg-library-empty'>Belum ada posting disimpan.</div>
+              <div class='gg-library-list' id='gg-library-list'/>
+            </div>
+          </section>
+        </b:if>
+      </section>
+
+      <div class='gg-post__footer'>
+        <div aria-label='Tags' class='gg-post__footer-tags' data-gg-slot='footer-tags' hidden='true'/>
+
+        <!-- INLINE TAGS (untuk postTagsInline module) -->
+        <b:if cond='data:post.labels'>
+          <div aria-label='Tags' class='gg-post-tags'>
+            <b:loop values='data:post.labels' var='l'>
+              #<data:l.name/> <b:if cond='!data:l.isLast'> </b:if>
+            </b:loop>
+          </div>
+        </b:if>
+
+        <!-- LABELS -->
+        <p class='gg-post__label'>
+        <b:if cond='data:post.labels'>
+          <a class='gg-post__label-link' expr:href='data:post.labels.first.url'>
+            <data:post.labels.first.name/>
+          </a>
+        <b:else/>
+          Post
+        </b:if>
+      </p>
+
+      <div class='gg-post__meta'>
+        <span class='gg-post__meta-item gg-post__meta-item--author'>
+          <span aria-hidden='true' class='ms'>person</span>
+          <data:post.author.name/>
+        </span>
+
+        <span class='gg-post__meta-sep'>&#8226;</span>
+
+        <span class='gg-post__meta-item gg-post__meta-item--date'>
+          <span aria-hidden='true' class='ms'>event</span>
+          <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+            <data:post.date/>
+          </time>
+        </span>
+
+        <span class='gg-post__meta-sep'>&#8226;</span>
+
+        <span class='gg-post__meta-item gg-post__meta-item--comments'>
+          <span aria-hidden='true' class='ms'>chat_bubble</span>
+          <data:post.numberOfComments/>
+        </span>
+      </div>
+        
+        <b:if cond='data:post.labels'>
+          <div class='gg-post__labels'>
+            <span class='gg-post__labels-label'>Labels:</span>
+            <span class='gg-post__labels-list'>
+              <b:loop values='data:post.labels' var='l'>
+                <a class='gg-post__label-link' expr:href='data:l.url'>
+                  <data:l.name/>
+                </a>
+                <b:if cond='!data:l.isLast'>, </b:if>
+              </b:loop>
+            </span>
+          </div>
+        </b:if>
+      </div>
+
+      <!-- COMMENTS (forced threaded) -->
+      <div class='gg-post__comments' data-gg-module='comments'>
+        <b:include data='post' name='threadedComments'/>
+      </div>
+
+    </div>
+  </article>
+</b:includable>
+              <b:includable id='postFooter' var='post'>
+  <div class='post-footer'>
+    <b:include name='footerBylines'/>
+    <b:include data='post' name='postFooterAuthorProfile'/>
+  </div>
+</b:includable>
+              <b:includable id='postFooterAuthorProfile' var='post'>
+  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+    <div class='author-profile'>
+      <b:if cond='data:post.author.authorPhoto.url'>
+        <img class='author-image' decoding='async' expr:alt='data:post.author.name + &quot; photo&quot;' expr:src='data:post.author.authorPhoto.url' height='50' loading='lazy' width='50'/>
+        <div class='author-about'>
+          <b:include data='post' name='aboutPostAuthor'/>
+        </div>
+      <b:else/>
+        <b:include data='post' name='aboutPostAuthor'/>
+      </b:if>
+    </div>
+  </b:if>
+</b:includable>
+              <b:includable id='postHeader' var='post'>
+  <b:include name='headerByline'/>
+</b:includable>
+              <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+              <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+              <b:includable id='postLocation'>
+  <span class='byline post-location'>
+    <data:byline.label/>
+    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+  </span>
+</b:includable>
+              <b:includable id='postMeta' var='post'>
+  <b:include data='post' name='postMetadataJSON'/>
+</b:includable>
+              <b:includable id='postMetadataJSONImage'>
+  &quot;image&quot;: {
+    &quot;@type&quot;: &quot;ImageObject&quot;,
+    <b:if cond='data:post.featuredImage.isResizable'>
+    &quot;url&quot;: &quot;<b:eval expr='resizeImage(data:post.featuredImage, 1200, &quot;1200:630&quot;)'/>&quot;,
+    &quot;height&quot;: 630,
+    &quot;width&quot;: 1200
+    <b:else/>
+    &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/w1200/&quot;,
+    &quot;height&quot;: 348,
+    &quot;width&quot;: 1200
+    </b:if>
+  },
+</b:includable>
+              <b:includable id='postMetadataJSONPublisher'>
+ &quot;publisher&quot;: {
+    &quot;@type&quot;: &quot;Organization&quot;,
+    &quot;name&quot;: &quot;Blogger&quot;,
+    &quot;logo&quot;: {
+      &quot;@type&quot;: &quot;ImageObject&quot;,
+      &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/h60/&quot;,
+      &quot;width&quot;: 206,
+      &quot;height&quot;: 60
+    }
+  },
+</b:includable>
+              <b:includable id='postPagination'>
+  <div class='blog-pager container' id='blog-pager'>
+    <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+    <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+    <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+  </div>
+</b:includable>
+              <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+              <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+              <b:includable id='postTitle' var='post'>
+  <a expr:name='data:post.id'/>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title entry-title'>
+      <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+        <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+      <b:else/>
+        <data:post.title/>
+      </b:if>
+    </h3>
+  </b:if>
+</b:includable>
+              <b:includable id='previousPageLink'>
+  <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+    <data:messages.newerPosts/>
+  </a>
+</b:includable>
+              <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+              <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+              <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+              <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' class='gg-is-hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+              <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+              <b:includable id='threadedCommentForm' var='post'>
+  <div class='comment-form' id='top-ce'>
+    <a name='comment-form'/>
+
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p class='cmt2-note'><data:this.messages.blogComment/></p>
+    </b:if>
+
+    <b:include data='post' name='commentFormIframeSrc'/>
+
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
+  </div>
+</b:includable>
+              <b:includable id='threadedCommentJs' var='post'>
+
+  <!-- 1) Blogger native threaded engine (WAJIB) -->
+  <script expr:src='data:post.commentSrc' type='text/javascript'/>
+  <b:template-script inline='true' name='threaded_comments'/>
+  <script type='text/javascript'>
+    blogger.widgets.blog.initThreadedComments(
+      <data:post.commentJso/>, <data:post.commentMsgs/>, <data:post.commentConfig/>
+    );
+  </script>  
+
+</b:includable>
+              <b:includable id='threadedComments' var='post'>
+  <section class='gg-comments comments2 threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+
+    <a name='comments'/>
+
+    <div aria-hidden='true' class='gg-comments__head-spacer'/>
+
+    <!-- Header -->
+    <header class='gg-comments__head'>
+      <div class='gg-comments__title'>
+        <span aria-hidden='true' class='ms'>comment</span>
+        <h3 class='gg-comments__h'>
+          <b:if cond='data:post.numberOfComments == 1'>
+            1 Comment
+          <b:else/>
+            <data:post.numberOfComments/> Comments
+          </b:if>
+        </h3>
+      </div>
+      <div class='gg-comments__actions'>
+        <button aria-label='Rich comment tags' class='cmt2-help__btn' data-gg-action='comments-help' title='Rich comment tags' type='button'>
+          <span aria-hidden='true' class='ms'>format_shapes</span>
+        </button>
+      </div>
+    </header>
+
+    <div aria-hidden='true' class='cmt2-help__modal' data-gg-modal='comments-help' role='presentation'>
+      <div class='cmt2-help__overlay' data-gg-action='comments-help-close'/>
+      <div aria-labelledby='ggCommentHelpTitlePanel' class='cmt2-help__dialog' role='dialog'>
+        <div class='cmt2-help__dialog-head'>
+          <div class='cmt2-help__title' id='ggCommentHelpTitlePanel'>Rich comment tags</div>
+          <button aria-label='Close formatting help' class='cmt2-help__close' data-gg-action='comments-help-close' type='button'>
+            <span aria-hidden='true' class='ms'>close</span>
+          </button>
+        </div>
+        <div class='cmt2-help__body'>
+          <div class='cmt2-help__row'><code>[quote]...[/quote]</code></div>
+          <div class='cmt2-help__row'><code>[code]...[/code]</code></div>
+          <div class='cmt2-help__row'><code>[link]Text | https://example.com[/link]</code></div>
+          <div class='cmt2-help__row'><code>[image]https://example.com/pic.jpg[/image]</code></div>
+          <div class='cmt2-help__note'>Only http/https URLs are rendered.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class='gg-comments__content comments-content'>
+
+      <!-- SCROLLER: cuma ini yang scroll -->
+      <div class='gg-comments__list' id='cmt2-holder'>
+        <b:if cond='data:post.numberOfComments == 0'>
+          <div class='gg-cmt-empty'>
+            <strong>No comments yet.</strong> Be the first to add one.
+          </div>
+        </b:if>
+        <data:post.commentHtml/>
+      </div>
+
+      <!-- Enhancer JS -->
+      <b:include data='post' name='threadedCommentJs'/>
+
+    </div>
+    
+    <div aria-hidden='true' class='gg-comments__footer-spacer'/>
+    
+       <!-- FOOTER: selalu kelihatan -->
+      <div class='gg-comments__footer'>
+        
+            <!-- Add comment button versi mockup -->
+        <div id='gg-top-continue'>
+          <a class='comment-reply' data-gg-footer-cta='1' href='javascript:;' rel='nofollow'>Add comment</a>
+        </div>
+         
+        <b:if cond='data:post.allowNewComments'>
+          <b:include data='post' name='threadedCommentForm'/>
+        <b:else/>
+          <data:post.noNewCommentsText/>
+        </b:if>
+        
+            <div class='gg-comments__addslot' id='gg-addslot'/>
+  <div class='gg-comments__composerslot' id='gg-composer-slot'/>
+      </div>
+  </section>
+</b:includable>
+              <b:includable id='tooltipCss'>
+  <!-- LINT.IfChange -->
+  <style>
+    .post-body a.b-tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip {
+      display: block !important;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-20%, 1px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip iframe {
+      width: 200px;
+      height: 198px;
+      max-width: none;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (hover: hover) {
+      .post-body a.b-tooltip-container:hover .b-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
+</b:includable>
+            </b:widget>
+          </b:section>
+    </div>
+    
+
+
+    <!-- GAGA SIDEBAR RIGHT -->
+<aside class='gg-blog-sidebar gg-blog-sidebar--right'>
+  <div class='gg-info-panel' data-gg-panel='info'/>
+
+  <!-- GAGA COMMENTS PANEL (POST DETAIL) -->
+  <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
+    <div class='gg-comments-panel__body' data-gg-slot='comments'/>
+  </div>
+  <!-- /GAGA COMMENTS PANEL -->
+
+
+  <b:if cond='data:view.isMultipleItems'>
+    <b:section class='gg-blog-sidebar__section' id='gg-right-sidebar-list' name='Right Sidebar (List)' showaddelement='true'/>
+  </b:if>
+
+  <b:if cond='data:view.isSingleItem and data:view.isPost'>
+    <b:section class='gg-blog-sidebar__section' id='gg-right-sidebar-post' name='Right Sidebar (Post)' showaddelement='true'/>
+  </b:if>
+
+  <b:if cond='data:view.isPage'>
+    <b:section class='gg-blog-sidebar__section-page' id='gg-right-sidebar-page' name='Right Sidebar (Page)' showaddelement='true'/>
+  </b:if>
+</aside>
+
+<!-- /GAGA SIDEBAR RIGHT -->
+
+
+  </div>
+</section>
+
+  </b:if>
+    
+      <b:section class='gg-popularpost1' id='gg-popularpost1' name='gg-popularpost1' showaddelement='true'>
+        <b:widget id='PopularPosts1' locked='false' title='' type='PopularPosts' version='2' visible='true'>
+          <b:widget-settings>
+            <b:widget-setting name='numItemsToShow'>10</b:widget-setting>
+            <b:widget-setting name='showThumbnails'>true</b:widget-setting>
+            <b:widget-setting name='showSnippets'>false</b:widget-setting>
+            <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+          </b:widget-settings>
+          <b:includable id='main' var='this'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <b:include name='snippetedPosts'/>
+  </div>
+</b:includable>
+          <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+          <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+          <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+          <b:includable id='commentsLink'>
+  <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:if cond='data:post.numberOfComments &gt; 0'>
+      <b:message name='messages.numberOfComments'>
+        <b:param expr:value='data:post.numberOfComments' name='numComments'/>
+      </b:message>
+    <b:else/>
+      <data:messages.postAComment/>
+    </b:if>
+  </a>
+</b:includable>
+          <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+          <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+          <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+          <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+          <b:includable id='googlePlusShare'>
+</b:includable>
+          <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+          <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+          <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+          <b:includable id='platformShare'>
+  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+          <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+          <b:includable id='postCommentsLink'>
+  <span class='byline post-comment-link container'>
+    <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+  </span>
+</b:includable>
+          <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+          <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+          <b:includable id='postLocation'>
+  <span class='byline post-location'>
+    <data:byline.label/>
+    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+  </span>
+</b:includable>
+          <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+          <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+          <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+          <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+          <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+          <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+          <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' class='gg-is-hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+          <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+          <b:includable id='snippetedPostByline'>
+  <b:with value='(data:widgets first (w =&gt; w.type == &quot;Blog&quot;)).allBylineItems' var='blogBylines'>
+    <div class='item-byline'>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;author&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showAuthor' data='post' name='postAuthor'/>
+      </b:with>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;timestamp&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showDate' data='post' name='postTimestamp'/>
+      </b:with>
+    </div>
+  </b:with>
+</b:includable>
+          <b:includable id='snippetedPostContent'>
+  <div class='post-content'>
+    <b:include cond='data:this.postDisplay.showTitle' name='snippetedPostTitle'/>
+    <b:include cond='data:this.postDisplay.showDate or data:this.postDisplay.showAuthor' name='snippetedPostByline'/>
+    <b:include cond='data:this.postDisplay.showSnippet' data='post' name='postSnippet'/>
+    <b:include cond='data:this.postDisplay.showFeaturedImage and data:post.featuredImage' name='snippetedPostThumbnail'/>
+  </div>
+</b:includable>
+          <b:includable id='snippetedPostThumbnail'>
+  <div class='item-thumbnail'>
+    <a expr:aria-label='data:post.title' expr:href='data:post.url' expr:title='data:post.title'>
+      <b:include data='{                         image: data:post.featuredImage,                         imageSizes: [72, 144],                         imageRatio: &quot;1:1&quot;,                         sourceSizes: &quot;72px&quot;                        }' name='responsiveImage'/>
+    </a>
+  </div>
+</b:includable>
+          <b:includable id='snippetedPostTitle'>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
+  </b:if>
+</b:includable>
+          <b:includable id='snippetedPosts'>
+  <div role='feed'>
+    <!-- Don't render the post that we're currently already looking at. -->
+    <b:loop values='data:posts filter (p =&gt; p.id != data:view.postId)' var='post'>
+      <article class='post' role='article'>
+        <b:include name='snippetedPostContent'/>
+      </article>
+    </b:loop>
+  </div>
+</b:includable>
+        </b:widget>
+      </b:section>
+    
+      </main>
+   <!-- GAGA FOOTER -->
+  <footer class='gg-footer'>
+    <div class='gg-footer__inner'>
+      <div class='gg-footer__social'>
+        <p class='gg-footer__social-title'>Follow us</p>
+        <div class='gg-footer__social-links'>
+          <a aria-label='Email' class='gg-footer__social-link' href='mailto:hello@pakrpp.com'>
+            <svg height='18' width='18'><use href='#gg-ic-mail-line'/></svg>
+          </a>
+        </div>
+        <div class='gg-footer__social'>
+        <div class='gg-footer__social-links'>
+                    <button class='gg-install' id='install' type='button'>
+                      <span class='gg-install__label'>Add to your Devices</span>
+                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>                      
+                    </button>
+          </div>
+        </div>
+      </div>
+
+      <hr class='gg-footer__divider'/>
+
+       <div class='gg-footer__grid gg-footer__grid--minimal'>
+        <div>
+          <h3 class='gg-footer__heading'>Shop and Learn</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>pakrpp Store</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Mac</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Pad</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Phone</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Watch</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp TV &amp; Home</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Accessories</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Gift Cards</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='gg-footer__heading'>Account</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>Manage Your Account</a></li>
+            <li><a href='www.pakrpp.com'>Store Account</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp.com</a></li>
+          </ul>
+
+          <h3 class='gg-footer__heading gg-footer__subheading'>Entertainment</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>pakrpp TV+</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Music</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Arcade</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp News+</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Books</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='gg-footer__heading'>pakrpp Store</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>Find a Store</a></li>
+            <li><a href='www.pakrpp.com'>pakrpp Bar</a></li>
+            <li><a href='www.pakrpp.com'>Today at pakrpp</a></li>
+            <li><a href='www.pakrpp.com'>Certified Refurbished</a></li>
+            <li><a href='www.pakrpp.com'>Financing</a></li>
+            <li><a href='www.pakrpp.com'>Order Status</a></li>
+            <li><a href='www.pakrpp.com#'>Shopping Help</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='gg-footer__heading'>For Business</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>pakrpp and Business</a></li>
+            <li><a href='www.pakrpp.com'>Shop for Business</a></li>
+            <li><a href='www.pakrpp.com'>IT Deployment</a></li>
+          </ul>
+
+          <h3 class='gg-footer__heading gg-footer__subheading'>For Education</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>pakrpp and Education</a></li>
+            <li><a href='www.pakrpp.com'>Shop for K-12</a></li>
+            <li><a href='www.pakrpp.com#'>Shop for College</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='gg-footer__heading'>pakrpp Values</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='www.pakrpp.com'>Accessibility</a></li>
+            <li><a href='#www.pakrpp.com'>Education</a></li>
+            <li><a href='www.pakrpp.com'>Environment</a></li>
+            <li><a href='www.pakrpp.com'>Inclusion and Diversity</a></li>
+            <li><a href='www.pakrpp.com'>Privacy</a></li>
+            <li><a href='www.pakrpp.com'>Supplier Responsibility</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class='gg-footer__heading'>About pakrpp</h3>
+          <ul class='gg-footer__list'>
+            <li><a href='#'>Newsroom</a></li>
+            <li><a href='#'>pakrpp Leadership</a></li>
+            <li><a href='#'>Career Opportunities</a></li>
+            <li><a href='#'>Investors</a></li>
+            <li><a href='#'>Ethics &amp; Compliance</a></li>
+            <li><a href='#'>Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+
+      <p class='gg-footer__note'>For business inquiries, email <a href='mailto:hello@pakrpp.com'>hello@pakrpp.com</a>.</p>
+
+      <div class='gg-footer__legal'>
+        <span>&#169;<data:blog.title/>. All rights reserved.</span>
+        <div aria-label='Legal' class='gg-footer__legal-nav'>
+          <span>Privacy</span>
+          <span>Terms</span>
+          <span>Sales &amp; Refunds</span>
+          <span>Legal</span>
+          <span>Site Map</span>
+        </div>
+        <div aria-label='Language switcher' class='gg-lang-switcher'>
+          <button aria-controls='gg-lang-switcher-menu' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
+            <span class='gg-lang-switcher__current' data-gg-lang-current='true'>Bahasa</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
+          </button>
+          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu' role='listbox'>
+            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='id' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>Bahasa</span>
+            </button>
+            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='en' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>English</span>
+            </button>
+          </div>
+        </div>
+        <span class='gg-footer__locale'>United States</span>
+      </div>
+    </div>
+  </footer>
+      <!-- /GAGA FOOTER -->
+  
+      
+<nav aria-label='Primary navigation' class='gg-dock' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl'>
+  <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
+<button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-when='blog' type='button'>
+  <span aria-hidden='true' class='gg-dock__icon'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>left_panel_open</span>
+  </span>
+   <span class='gg-dock__label'>Open Sidebar</span>
+  </button>
+    
+  <!-- HOME: muncul di Landing & Blog/Post -->
+  <button aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+     <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'>
+  <use href='#gg-logo-white'/>
+</svg>
+    </span>
+    <span class='gg-dock__label'>Home (Landing Page)</span>
+  </button>
+
+  <!-- SECTION 2&#8211;5: HANYA di Landing -->
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars' data-gg-when='landing' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>interests</span>
+    </span>
+    <span class='gg-dock__label'>Our services</span>
+  </button>
+
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero-3' data-gg-when='landing' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>handyman</span>
+    </span>
+    <span class='gg-dock__label'>What we do</span>
+  </button>
+
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars-4' data-gg-when='landing' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>assignment</span>
+    </span>
+    <span class='gg-dock__label'>Assignment</span>
+  </button>
+
+  <button aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' type='button'>
+     <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
+    </span>
+    <span class='gg-dock__label'>Contact</span>
+  </button>
+
+  <!-- BLOG: muncul di semua mode -->
+  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' data-gg-anchor='#gg-home-blog-anchor' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
+    </span>
+    <span class='gg-dock__label'>Home (Blog Page)</span>
+  </button>
+  
+  <a href='https://pakrpp.com/p/shop.html'> <button aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' type='button'>
+  <span aria-hidden='true' class='gg-dock__icon'>
+    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>local_mall</span>
+  </span>
+    <span class='gg-dock__label'>Store</span>
+  </button></a>
+
+  <!-- SEARCH: muncul di semua mode -->
+  <button aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
+    </span>
+
+  </button>
+
+  <button aria-label='Go to bottom' class='gg-dock__item gg-backtotop' data-gg-action='jump' hidden='hidden' type='button'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>keyboard_double_arrow_down</span>
+    </span>
+    <span class='gg-dock__label'>Jump</span>
+  </button>
+
+  <div class='gg-dock__search'>
+    <form expr:action='data:blog.searchUrl' method='get' role='search'>
+      <input aria-label='Search input' name='q' placeholder='Search articles...' type='search'/>
+      <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
+      </button>
+      <button aria-label='Close search' class='gg-icon-btn' data-gg-action='search-exit' type='button'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
+      </button>
+    </form>
+  </div>
+</nav>
+
+</div>
+          
+    <!-- GAGA -->
+<div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' hidden='' id='gg-toast'>
+  <div class='gg-toast__inner'>
+    <p class='gg-toast__message'/>
+  </div>
+</div><div class='gg-dialog-host' data-gg-ui='dialog' hidden=''/>
+<div class='gg-palette-host' data-gg-ui='palette' hidden=''/>
+<div aria-hidden='true' class='gg-share-sheet' id='gg-share-sheet'>
+  <div aria-hidden='true' class='gg-share-sheet__overlay'/>
+  <div aria-labelledby='ggShareTitle' aria-modal='true' class='gg-share-sheet__panel' role='dialog' tabindex='-1'>
+    <div class='gg-share-sheet__bg'/>
+    <button aria-label='Close share' class='gg-share-sheet__close-btn' type='button'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
+    </button>
+    <div class='gg-share-sheet__head' id='ggShareTitle' tabindex='-1'>Share</div>
+
+    <div class='gg-share-sheet__canvas'>
+      <canvas aria-label='Share poster preview' id='gg-share-canvas'/>
+    </div>
+
+    <div class='gg-share-sheet__modes' role='tablist'>
+      <button aria-selected='true' class='gg-share-sheet__mode-btn is-active' data-mode='author' type='button'>Author</button>
+      <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='title' type='button'>Title</button>
+      <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='quote' type='button'>Quote</button>
+    </div>
+
+    <button class='gg-share-sheet__cta' data-role='gg-share-cta' type='button'>
+      <span aria-hidden='true' class='gg-share-sheet__cta-icon gg-share-sheet__cta-icon--idle'>
+        <svg aria-hidden='true' class='gg-icon__svg'><use href='#gg-ic-share-line'/></svg>
+      </span>
+      <span aria-hidden='true' class='gg-share-sheet__cta-icon gg-share-sheet__cta-icon--loading' style='display:none'>
+        <svg aria-hidden='true' class='gg-icon__svg'><use href='#gg-ic-loader-line'/></svg>
+      </span>
+      <span aria-hidden='true' class='gg-share-sheet__cta-icon gg-share-sheet__cta-icon--done' style='display:none'>
+        <svg aria-hidden='true' class='gg-icon__svg'><use href='#gg-ic-check-circle-solid'/></svg>
+      </span>
+      <span class='gg-share-sheet__cta-label'>Bagikan sebagai poster</span>
+    </button>
+
+    <p class='gg-share-sheet__hint'>Bagikan ke Story = Mobile &#8226; Unduh poster = Desktop</p>
+
+    <div aria-label='Share channels' class='gg-share-sheet__social' role='group'>
+      <button class='gg-share-sheet__social-btn' data-channel='copy' type='button'>Copy Link</button>
+      <button class='gg-share-sheet__social-btn' data-channel='wa' type='button'>WhatsApp</button>
+      <button class='gg-share-sheet__social-btn' data-channel='fb' type='button'>Facebook</button>
+      <button class='gg-share-sheet__social-btn' data-channel='x' type='button'>X</button>
+      <button class='gg-share-sheet__social-btn' data-channel='tg' type='button'>Telegram</button>
+      <button class='gg-share-sheet__social-btn' data-channel='li' type='button'>LinkedIn</button>
+      <button class='gg-share-sheet__social-btn' data-channel='mail' type='button'>Email</button>
+    </div>
+  </div>
+</div>
+<div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'/>
+<!-- /GAGA  -->
+<template id='gg-toast-tpl'>
+  <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
+</template>
+
+<!-- GAGA HOME OF JS -->
+<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js'/>
+<script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
+<!-- /GAGA HOME OF JS -->
+</body>
+</html>
