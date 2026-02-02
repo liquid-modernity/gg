@@ -1,52 +1,115 @@
-/* public/sw.js — app-like, safe for Blogger */
-const CACHE_STATIC = "gg-static-v2";
-const CACHE_PAGES  = "gg-pages-v2";
-const OFFLINE_URL  = "/offline.html";
+/* public/sw.js — deterministic updates + offline fallback */
+const CACHE_VERSION = "v3";
+const CACHE_STATIC = `gg-cache-static-${CACHE_VERSION}`;
+const CACHE_RUNTIME = `gg-cache-runtime-${CACHE_VERSION}`;
 
-// Batas cache halaman (biar tidak bengkak)
-const MAX_PAGE_ENTRIES = 40;
+const OFFLINE_URL = "/offline.html";
+const MANIFEST_URL = "/manifest.webmanifest";
+
+const ICON_URLS = [
+  "/gg-pwa-icon/android-icon-144x144.png",
+  "/gg-pwa-icon/android-icon-192x192.png",
+  "/gg-pwa-icon/android-icon-36x36.png",
+  "/gg-pwa-icon/android-icon-48x48.png",
+  "/gg-pwa-icon/android-icon-512x512.png",
+  "/gg-pwa-icon/android-icon-72x72.png",
+  "/gg-pwa-icon/android-icon-96x96.png",
+  "/gg-pwa-icon/apple-icon-114x114.png",
+  "/gg-pwa-icon/apple-icon-120x120.png",
+  "/gg-pwa-icon/apple-icon-144x144.png",
+  "/gg-pwa-icon/apple-icon-152x152.png",
+  "/gg-pwa-icon/apple-icon-180x180.png",
+  "/gg-pwa-icon/apple-icon-57x57.png",
+  "/gg-pwa-icon/apple-icon-60x60.png",
+  "/gg-pwa-icon/apple-icon-72x72.png",
+  "/gg-pwa-icon/apple-icon-76x76.png",
+  "/gg-pwa-icon/apple-icon-precomposed.png",
+  "/gg-pwa-icon/apple-icon.png",
+  "/gg-pwa-icon/favicon-16x16.png",
+  "/gg-pwa-icon/favicon-32x32.png",
+  "/gg-pwa-icon/favicon-96x96.png",
+  "/gg-pwa-icon/favicon.ico",
+  "/gg-pwa-icon/icon-192.png",
+  "/gg-pwa-icon/icon-512.png",
+  "/gg-pwa-icon/ms-icon-144x144.png",
+  "/gg-pwa-icon/ms-icon-150x150.png",
+  "/gg-pwa-icon/ms-icon-310x310.png",
+  "/gg-pwa-icon/ms-icon-70x70.png",
+];
+
+const PRECACHE_URLS = [OFFLINE_URL, MANIFEST_URL, ...ICON_URLS];
 
 const sameOrigin = (u) => u.origin === self.location.origin;
-
-const isVersionedAsset = (path) =>
-  path.startsWith("/assets/v/") || path.startsWith("/gg-pwa-icon/");
-
-// Jangan cache URL yang “sensitif” / bisa bikin komentar & tracking aneh
-const isSensitive = (url) => {
-  const p = url.pathname;
-  const sp = url.searchParams;
-
-  // feed, search, dan parameter komentar
-  if (p.startsWith("/feeds/")) return true;
-  if (p.startsWith("/search")) return true;
-  if (sp.has("showComment")) return true;
-  if (sp.has("commentPage")) return true;
-
-  return false;
+const isDebugUrl = (u) => u.searchParams.get("ggdebug") === "1";
+const log = (u, ...args) => {
+  if (u && isDebugUrl(u)) console.log("[gg-sw]", ...args);
 };
 
-async function trimCache(cacheName, maxEntries) {
+async function isDebugClientPresent() {
+  const clientsList = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  return clientsList.some((c) => {
+    try {
+      return new URL(c.url).searchParams.get("ggdebug") === "1";
+    } catch {
+      return false;
+    }
+  });
+}
+
+async function cacheFirst(req, cacheName, url) {
   const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  // hapus paling lama sampai <= maxEntries
-  while (keys.length > maxEntries) {
-    await cache.delete(keys.shift());
+  const cached = await cache.match(req);
+  if (cached) {
+    log(url, "cache-first hit", url.pathname);
+    return cached;
   }
+
+  const res = await fetch(req);
+  if (res.ok) cache.put(req, res.clone());
+  return res;
+}
+
+async function staleWhileRevalidate(req, cacheName, url) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+
+  const refresh = fetch(req)
+    .then((res) => {
+      if (res.ok) cache.put(req, res.clone());
+      return res;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    log(url, "swr hit", url.pathname);
+    return cached;
+  }
+
+  const res = await refresh;
+  if (res) return res;
+  return new Response("Offline", { status: 503 });
 }
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil((async () => {
+    const debug = await isDebugClientPresent();
+    if (debug) console.log("[gg-sw]", "install");
     const cache = await caches.open(CACHE_STATIC);
-    await cache.addAll([OFFLINE_URL]);
+    await cache.addAll(PRECACHE_URLS);
   })());
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
+    const debug = await isDebugClientPresent();
+    if (debug) console.log("[gg-sw]", "activate");
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => {
-      if (k === CACHE_STATIC || k === CACHE_PAGES) return null;
+      if (k === CACHE_STATIC || k === CACHE_RUNTIME) return null;
       return caches.delete(k);
     }));
     await self.clients.claim();
@@ -60,55 +123,34 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (!sameOrigin(url)) return;
 
-  // 1) Cache-first untuk asset versioned & icons
-  if (isVersionedAsset(url.pathname)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_STATIC);
-      const hit = await cache.match(req);
-      if (hit) return hit;
+  const path = url.pathname;
 
-      const res = await fetch(req);
-      if (res.ok) cache.put(req, res.clone());
-      return res;
-    })());
+  if (path.startsWith("/assets/dev/")) {
+    log(url, "assets/dev network-only", path);
+    event.respondWith(fetch(req, { cache: "no-store" }));
     return;
   }
 
-  // 2) Navigasi HTML: stale-while-revalidate (feel seperti app)
+  if (path.startsWith("/assets/v/") || path.startsWith("/gg-pwa-icon/")) {
+    event.respondWith(cacheFirst(req, CACHE_STATIC, url));
+    return;
+  }
+
+  if (path === MANIFEST_URL || path === OFFLINE_URL) {
+    event.respondWith(staleWhileRevalidate(req, CACHE_STATIC, url));
+    return;
+  }
+
   if (req.mode === "navigate") {
-    if (isSensitive(url)) return; // jangan disentuh
-
+    log(url, "navigate network-first", path);
     event.respondWith((async () => {
-      const cache = await caches.open(CACHE_PAGES);
-      const cached = await cache.match(req);
-
-      // fetch terbaru di belakang layar
-      const refresh = (async () => {
-        try {
-          const res = await fetch(req);
-          const ct = res.headers.get("content-type") || "";
-          if (res.ok && ct.includes("text/html")) {
-            await cache.put(req, res.clone());
-            await trimCache(CACHE_PAGES, MAX_PAGE_ENTRIES);
-          }
-          return res;
-        } catch (e) {
-          return null;
-        }
-      })();
-
-      // kalau ada cache: instant, sambil refresh
-      if (cached) {
-        event.waitUntil(refresh);
-        return cached;
+      try {
+        return await fetch(req);
+      } catch (e) {
+        const cache = await caches.open(CACHE_STATIC);
+        const offline = await cache.match(OFFLINE_URL);
+        return offline || new Response("Offline", { status: 503 });
       }
-
-      // kalau belum ada cache: network, kalau gagal → offline.html
-      const net = await refresh;
-      if (net) return net;
-
-      const offline = await caches.open(CACHE_STATIC).then(c => c.match(OFFLINE_URL));
-      return offline || new Response("Offline", { status: 503 });
     })());
   }
 });
