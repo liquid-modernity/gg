@@ -388,10 +388,38 @@ GG.actions.register('jump', function(ctx){
     services.sw.init();
   };
 
+  GG.boot.onReady = GG.boot.onReady || function(fn){
+    if (typeof fn !== 'function') return;
+    if (d.readyState !== 'loading') { fn(); return; }
+    GG.boot._readyQueue = GG.boot._readyQueue || [];
+    GG.boot._readyQueue.push(fn);
+    if (GG.boot._readyBound) return;
+    GG.boot._readyBound = true;
+    var flush = function(){
+      var q = GG.boot._readyQueue || [];
+      GG.boot._readyQueue = [];
+      for (var i = 0; i < q.length; i++) {
+        try { q[i](); } catch (e) {}
+      }
+    };
+    if (GG.util && GG.util.initOnce) {
+      GG.util.initOnce('GG.boot.onReady', function(){
+        d.addEventListener('DOMContentLoaded', flush, { once: true });
+      });
+    } else {
+      d.addEventListener('DOMContentLoaded', flush, { once: true });
+    }
+  };
+
   GG.boot.init = GG.boot.init || function(){
     if(GG.boot._init) return;
     GG.boot._init = true;
     services.pwa.init();
+    if (GG.boot.onReady) {
+      GG.boot.onReady(function(){
+        if (GG.app && typeof GG.app.init === 'function') GG.app.init();
+      });
+    }
   };
 
   GG.boot.init();
