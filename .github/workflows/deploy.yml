@@ -15,6 +15,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure public/sw.js exists
+        run: |
+          if [ ! -f public/sw.js ]; then
+            echo "ERROR: public/sw.js missing"
+            exit 1
+          fi
+
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
