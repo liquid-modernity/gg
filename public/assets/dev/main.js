@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 DOC-001 protect native scripts (protected zones + capsule)
-NEXT_TASK: T-003 architecture relocation (no refactor)
+LAST_PATCH: 2026-02-03 T-003 architecture relocation (namespace buckets)
+NEXT_TASK: C-001 CSS structure (z-index vars)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -53,7 +53,7 @@ posterEngine, shareMotion, langSwitcher, imgDims, a11yFix
 OPEN TASKS (update every patch):
 T-001 (done) Make main.js pure JS (remove script tags / C-DATA / HTML entities)
 T-002 (done) Index.xml cleanup: purge inline JS + keep single main.js entry
-T-003 (done) Add GG.services.sw.init() + manifest hooks
+T-003 (done) Architecture relocation: move globals into GG.core/store/services/ui/actions/boot
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -73,6 +73,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
 - 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
 - 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
@@ -82,11 +83,16 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
 - 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
-- 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.
 */
 (function(w){
   'use strict';
   var GG = w.GG = w.GG || {};
+  GG.core = GG.core || {};
+  GG.store = GG.store || {};
+  GG.services = GG.services || {};
+  GG.ui = GG.ui || {};
+  GG.actions = GG.actions || {};
+  GG.boot = GG.boot || {};
   var ENV = w.GG_ENV;
   if (!ENV) {
     try {
@@ -191,7 +197,7 @@ PATCHLOG (append newest first; keep last 10):
   window.GG_BUILD = "dev";
   if (window.GG_DEBUG) console.log("[GG_BUILD]", window.GG_BUILD);
   // Minimal GG.store (get/set/subscribe) if missing
-  if(!GG.store){
+  if(!GG.store || !GG.store.get){
     (function(){
       var state = {};
       var subs = [];
@@ -218,6 +224,15 @@ PATCHLOG (append newest first; keep last 10):
   }
   GG.view = GG.view || {};
   GG.config = GG.config || {};
+  GG.state = GG.state || {};
+  GG.core.util = GG.core.util || GG.util || {};
+  GG.util = GG.core.util;
+  GG.core.config = GG.core.config || GG.config || {};
+  GG.config = GG.core.config;
+  GG.store.state = GG.store.state || GG.state || {};
+  GG.state = GG.store.state;
+  GG.ui.view = GG.ui.view || GG.view || {};
+  GG.view = GG.ui.view;
 })(window);
 
 GG.store.set({
@@ -229,24 +244,27 @@ GG.store.set({
   paletteOpen: false,
   reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
 });
-GG.view.applyRootState = (root, s) => {
+GG.ui = GG.ui || {};
+GG.ui.applyRootState = GG.ui.applyRootState || function(root, s){
   root.dataset.ggLang = s.lang;
   root.dataset.ggInput = s.inputMode;
   root.dataset.ggDock = s.dockOpen ? '1' : '0';
   root.dataset.ggPalette = s.paletteOpen ? '1' : '0';
   root.classList.toggle('gg-reduced-motion', !!s.reducedMotion);
 };
+GG.view = GG.view || {};
+GG.view.applyRootState = GG.ui.applyRootState;
 
 // Keep <html> dataset/class in sync with GG.store
 (function(){
   try{
     var root = document.documentElement;
-    if(!root || !window.GG || !GG.store || !GG.store.get || !GG.store.subscribe || !GG.view || !GG.view.applyRootState) return;
+    if(!root || !window.GG || !GG.store || !GG.store.get || !GG.store.subscribe || !GG.ui || !GG.ui.applyRootState) return;
     // initial
-    GG.view.applyRootState(root, GG.store.get());
+    GG.ui.applyRootState(root, GG.store.get());
     // on updates
     GG.store.subscribe(function(s){
-      try{ GG.view.applyRootState(root, s); }catch(e){}
+      try{ GG.ui.applyRootState(root, s); }catch(e){}
     });
   }catch(e){}
 })();
@@ -286,7 +304,8 @@ GG.actions.register('dock:toggle', () => {
   const s = GG.store.get();
   GG.store.set({ dockOpen: !s.dockOpen });
 });
-function ggToast(message){
+GG.ui = GG.ui || {};
+GG.ui.ggToast = GG.ui.ggToast || function(message){
   if(window.GG && GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function'){
     GG.ui.toast.show(message);
     return;
@@ -295,22 +314,22 @@ function ggToast(message){
     GG.util.showToast(message);
     return;
   }
-}
-function toggleCommentsHelp(open){
+};
+GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open){
   var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
   if(!modal) return;
   modal.hidden = !open;
   modal.setAttribute('aria-hidden', open ? 'false' : 'true');
   modal.classList.toggle('is-open', !!open);
-}
+};
 GG.actions.register('comments-help', function(){
-  toggleCommentsHelp(true);
+  GG.ui.toggleCommentsHelp(true);
 });
 GG.actions.register('comments-help-close', function(){
-  toggleCommentsHelp(false);
+  GG.ui.toggleCommentsHelp(false);
 });
 GG.actions.register('like', function(){
-  ggToast('Coming soon');
+  GG.ui.ggToast('Coming soon');
 });
 // X-018A ACTION BRIDGE
 GG.actions.register('bookmark', function(ctx){
@@ -3446,7 +3465,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
   })();
 })();
 
-function safeInit(name, fn){
+GG.boot = GG.boot || {};
+GG.core = GG.core || {};
+GG.boot.safeInit = GG.boot.safeInit || function(name, fn){
   try {
     if (typeof fn === 'function') fn();
     if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[name] = 'ok';
@@ -3467,9 +3488,9 @@ function safeInit(name, fn){
   } finally {
     try { if (window.GG_DIAG_RENDER) window.GG_DIAG_RENDER(); } catch(_) {}
   }
-}
+};
 
-function initDebugOverlay(){
+GG.boot.initDebugOverlay = GG.boot.initDebugOverlay || function(){
   try {
     var debug = false;
     try { debug = new URL(window.location.href).searchParams.get('ggdebug') === '1'; } catch (e) {}
@@ -3514,9 +3535,9 @@ function initDebugOverlay(){
 
     window.GG_DIAG_RENDER();
   } catch(_) {}
-}
+};
 
-function initHomePrepaint(){
+GG.boot.initHomePrepaint = GG.boot.initHomePrepaint || function(){
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   if (GG.util && GG.util.isDebug && GG.util.isDebug()) {
     var pre = document.documentElement.getAttribute('data-gg-prehome');
@@ -3528,7 +3549,7 @@ function initHomePrepaint(){
 
   function disarm(){
     if (GG.homePrepaint && GG.homePrepaint.disarm) {
-      safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
+      GG.boot.safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
     }
   }
 
@@ -3550,9 +3571,9 @@ function initHomePrepaint(){
       disarm();
     }
   }, 1500);
-}
+};
 
-function initHomeState(){
+GG.boot.initHomeState = GG.boot.initHomeState || function(){
   var main = document.querySelector('main.gg-main[data-gg-surface]');
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
@@ -3565,9 +3586,9 @@ function initHomeState(){
   } else {
     GG.modules.homeState.init(main);
   }
-}
+};
 
-function resolveSelector(sel){
+GG.core.resolveSelector = GG.core.resolveSelector || function(sel){
   if (!sel) return null;
   if (typeof sel === 'function') return sel();
   if (Array.isArray(sel)) {
@@ -3578,20 +3599,20 @@ function resolveSelector(sel){
     return null;
   }
   return document.querySelector(sel);
-}
+};
 
-function selectorLabel(sel){
+GG.core.selectorLabel = GG.core.selectorLabel || function(sel){
   if (!sel) return '';
   if (Array.isArray(sel)) return sel.join(' | ');
   if (typeof sel === 'function') return '(custom)';
   return sel;
-}
+};
 
 GG.app = GG.app || {};
 GG.app.plan = [
-  { name: 'debugOverlay', selector: 'body', init: initDebugOverlay, optional: true },
-  { name: 'homePrepaint.guard', selector: null, init: initHomePrepaint, optional: true },
-  { name: 'homeState.init', selector: 'main.gg-main[data-gg-surface="home"]', init: initHomeState },
+  { name: 'debugOverlay', selector: 'body', init: GG.boot.initDebugOverlay, optional: true },
+  { name: 'homePrepaint.guard', selector: null, init: GG.boot.initHomePrepaint, optional: true },
+  { name: 'homeState.init', selector: 'main.gg-main[data-gg-surface="home"]', init: GG.boot.initHomeState },
   { name: 'Shortcodes.init', selector: '.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content', init: function(){ if (GG.modules.Shortcodes) GG.modules.Shortcodes.init(); } },
   { name: 'ShortcodesLite.init', selector: '.post-body, .entry-content, #post-body', init: function(){ if (GG.modules.shortcodesLite && GG.modules.shortcodesLite.init) GG.modules.shortcodesLite.init(); } },
   { name: 'Skeleton.init', selector: '#postcards', init: function(){ if (GG.modules.Skeleton) GG.modules.Skeleton.init(); } },
@@ -3626,7 +3647,7 @@ GG.app.plan = [
 
 GG.app.selectorMap = GG.app.selectorMap || {};
 GG.app.plan.forEach(function(item){
-  GG.app.selectorMap[item.name] = selectorLabel(item.selector);
+  GG.app.selectorMap[item.name] = GG.core.selectorLabel(item.selector);
 });
 
 GG.app.init = GG.app.init || function(){
@@ -3635,12 +3656,12 @@ GG.app.init = GG.app.init || function(){
   for (var i = 0; i < GG.app.plan.length; i++) {
     (function(item){
       if (!item || typeof item.init !== 'function') return;
-      var host = resolveSelector(item.selector);
+      var host = GG.core.resolveSelector(item.selector);
       if (item.selector && !host && !item.optional) {
         if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[item.name] = 'skip';
         return;
       }
-      safeInit(item.name, function(){ item.init(host); });
+      GG.boot.safeInit(item.name, function(){ item.init(host); });
     })(GG.app.plan[i]);
   }
 };
@@ -8269,7 +8290,7 @@ function openPosterSheet(meta, mode) {
     A.inert = A.inert || function(root, keep){ var host = root || d.body || d.documentElement; if(!host) return null; var kids = Array.prototype.slice.call(host.children || []); var record = []; kids.forEach(function(el){ if(!el || el === keep) return; record.push(setInert(el, true)); }); A._inertStack.push(record); return record; };
     A.restoreInert = A.restoreInert || function(){ var record = A._inertStack.pop(); if(!record) return; record.forEach(function(item){ if(item && item.el) setInert(item.el, false); }); };
     A.focusTrap = A.focusTrap || function(container, opts){ if(!container) return function(){}; var options = opts || {}; var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex=\"-1\"])'; function focusables(){ return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){ return el.offsetParent !== null && !el.hasAttribute('disabled'); }); } function onKey(e){ if(e.key !== 'Tab') return; var list = focusables(); if(!list.length){ container.focus(); e.preventDefault(); return; } var first = list[0]; var last = list[list.length - 1]; if(e.shiftKey && d.activeElement === first){ e.preventDefault(); last.focus(); } else if(!e.shiftKey && d.activeElement === last){ e.preventDefault(); first.focus(); } } container.addEventListener('keydown', onKey); if(options.autofocus !== false){ var list = focusables(); if(list[0]) list[0].focus(); } return function(){ container.removeEventListener('keydown', onKey); }; };
-    A.init = A.init || function(){ if(A._init) return; A._init = true; function sync(val){ if(GG.store && GG.store.set) GG.store.set({ reducedMotion: !!val }); if(GG.view && GG.view.applyRootState && GG.store && GG.store.get) GG.view.applyRootState(d.documentElement, GG.store.get()); else if(d.documentElement) d.documentElement.classList.toggle('gg-reduced-motion', !!val); } var initial = A.reducedMotion.get(); sync(initial); A._rmUnsub = A.reducedMotion.watch(sync); };
+    A.init = A.init || function(){ if(A._init) return; A._init = true; function sync(val){ if(GG.store && GG.store.set) GG.store.set({ reducedMotion: !!val }); if(GG.ui && GG.ui.applyRootState && GG.store && GG.store.get) GG.ui.applyRootState(d.documentElement, GG.store.get()); else if(d.documentElement) d.documentElement.classList.toggle('gg-reduced-motion', !!val); } var initial = A.reducedMotion.get(); sync(initial); A._rmUnsub = A.reducedMotion.watch(sync); };
     a11y.announce = a11y.announce || function(message, opts){ return A.announce(message, opts); };
     a11y.focusTrap = a11y.focusTrap || function(container, opts){ return A.focusTrap(container, opts); };
     a11y.inertManager = a11y.inertManager || { push: function(root, keep){ return A.inert(root, keep); }, pop: function(){ return A.restoreInert(); }, clear: function(){ while(A._inertStack.length) A.restoreInert(); } };
