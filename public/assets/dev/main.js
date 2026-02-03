@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 FIX-001 restore native Blogger comment scripts
-NEXT_TASK: C-001 CSS structure (z-index vars)
+LAST_PATCH: 2026-02-03 C-001 CSS structure + z-index scale
+NEXT_TASK: X-001 state contract (data-attributes)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -54,6 +54,7 @@ OPEN TASKS (update every patch):
 T-001 (done) Make main.js pure JS (remove script tags / C-DATA / HTML entities)
 T-002 (done) Index.xml cleanup: purge inline JS + keep single main.js entry
 T-003 (done) Architecture relocation: move globals into GG.core/store/services/ui/actions/boot
+C-001 (done) Define CSS layers & z-index variables (no visual change)
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -73,6 +74,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
 - 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
 - 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
@@ -83,7 +85,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 X-014: use Blogger summary feed for sitemap + parse standard JSON feed in module.
 - 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
-- 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
 */
 (function(w){
   'use strict';

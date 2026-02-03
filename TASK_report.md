@@ -1,21 +1,19 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: FIX-001
+Task ID: C-001
 Status: DONE
 
 Changes:
-- Restored `BLOG_CMT_createIframe` script blocks to comment form sections in `index.dev.xml` and `index.prod.xml`.
-- Marked `BLOG_CMT_createIframe` as protected in `tech-stack.md` Section 1.4.
-- Updated capsule patchlog to track the safeguard fix.
+- Added semantic z-index variables in `:root` and replaced numeric `z-index` values with variable references.
+- Inserted section headers for variables, reset/typography, layout, components, and utilities in `main.css`.
+- Updated capsule to record C-001 completion.
 
 ## TASK PROOF
-- `BLOG_CMT_createIframe` appears inside comment form containers in both XML templates.
-- Protected Code Zones list now explicitly includes `BLOG_CMT_createIframe` blocks.
+- `main.css` now declares `--z-*` variables and all `z-index` entries use `var(--z-*)`.
+- Section headers (`/* === ... === */`) are present in `main.css`.
 
 ## FILES TOUCHED
-- index.dev.xml
-- index.prod.xml
-- tech-stack.md
+- public/assets/dev/main.css
 - public/assets/dev/main.js
 - TASK_report.md
