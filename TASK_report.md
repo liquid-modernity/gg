@@ -1,16 +1,18 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: X-012
+Task ID: X-013
 Status: DONE
 
 Changes:
-- Replaced awk state variable `in` with `inside` in `report_short_change` for macOS awk compatibility.
+- Set `data-api` for `#gg-feed` to `/feeds/posts/default?alt=json` in DEV/PROD templates.
+- Set `data-api` for `#gg-sitemap` to `/sitemap.xml` in DEV/PROD templates.
 
 ## TASK PROOF
-- `tools/scripts:gg` no longer uses `BEGIN{in=0}` or `in==1` in report parsing.
+- `index.dev.xml` and `index.prod.xml` now have populated `data-api` attributes for `#gg-feed` and `#gg-sitemap`.
 
 ## FILES TOUCHED
-- tools/scripts:gg
+- index.dev.xml
+- index.prod.xml
 - public/assets/dev/main.js
 - TASK_report.md

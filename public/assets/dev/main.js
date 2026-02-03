@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-012 fix gg script awk var for report parsing
-NEXT_TASK: X-013 (TBD)
+LAST_PATCH: 2026-02-03 X-013 set feed/sitemap data-api endpoints
+NEXT_TASK: X-014 (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -72,6 +72,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
 - 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
 - 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.

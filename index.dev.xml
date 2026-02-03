@@ -1767,7 +1767,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 
         <!-- GAGA FEEDS PAGE (PAGE: /p/feeds.html) -->
         <b:if cond='data:view.isPage and data:post.url contains &quot;feeds.html&quot;'>
-          <section id='gg-feed' data-api=''>
+          <section id='gg-feed' data-api='/feeds/posts/default?alt=json'>
             <div class='bar'>
               <input aria-label='Search feeds' class='q' placeholder='Cari konten...' type='search'/>
               <button class='active' data-type='all' type='button'>All</button>
@@ -1781,7 +1781,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 
         <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
         <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
-          <section id='gg-sitemap' data-api=''>
+          <section id='gg-sitemap' data-api='/sitemap.xml'>
             <div class='gg-head'>
               <div class='gg-title'>
                 <h1>Sitemap</h1>
