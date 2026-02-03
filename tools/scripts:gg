@@ -59,6 +59,55 @@ task_report_path(){
   return 1
 }
 
+asset_ver_from_xml(){
+  local file="$1"
+  [[ -f "$file" ]] || die "File not found: $file"
+  local line ver
+  line="$(grep -m1 -E "GG_ASSET_VER:" "$file" || true)"
+  [[ -n "$line" ]] || die "GG_ASSET_VER comment not found in $file"
+  ver="$(echo "$line" | sed -E 's/.*GG_ASSET_VER:[[:space:]]*([A-Za-z0-9._-]+).*/\1/')"
+  [[ -n "$ver" ]] || die "GG_ASSET_VER parse failed in $file"
+  echo "$ver"
+}
+
+bump_asset_versions(){
+  local root; root="$(repo_root)"
+  local dev="$root/index.dev.xml"
+  local prod="$root/index.prod.xml"
+  local cur cur2
+  cur="$(asset_ver_from_xml "$dev")"
+  cur2="$(asset_ver_from_xml "$prod")"
+  [[ "$cur" == "$cur2" ]] || die "GG_ASSET_VER mismatch: $cur (dev) vs $cur2 (prod)"
+
+  local next
+  next="$(date -u +%Y%m%d%H%M%S)"
+  if [[ "$next" == "$cur" ]]; then next="${next}1"; fi
+
+  local f
+  for f in "$dev" "$prod"; do
+    python3 - "$f" "$next" <<'PY'
+import re, sys
+path, new = sys.argv[1], sys.argv[2]
+with open(path, "r", encoding="utf-8") as fh:
+    data = fh.read()
+
+def repl_comment(m):
+    return m.group(1) + new + m.group(3)
+
+data2 = re.sub(r"(GG_ASSET_VER:\s*)([A-Za-z0-9._-]+)(\s*)", repl_comment, data, count=1)
+data2 = re.sub(r"([?&]v=)([A-Za-z0-9._-]+)", lambda m: m.group(1) + new, data2)
+
+if data2 == data:
+    sys.stderr.write(f"GG_WARN: no changes applied to {path}\n")
+
+with open(path, "w", encoding="utf-8") as fh:
+    fh.write(data2)
+PY
+  done
+
+  echo "GG_BUMP: $cur -> $next"
+}
+
 current_branch(){
   git rev-parse --abbrev-ref HEAD
 }
@@ -86,14 +135,14 @@ capsule_get(){
   [[ -f "$file" ]] || die "File not found: $file"
 
   awk -v k="$key" '
-    /\/\* @GG_CAPSULE_V1/ {in=1}
-    in==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
+    /\/\* @GG_CAPSULE_V1/ {inside=1}
+    inside==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
       sub("^[[:space:]]*"k":[[:space:]]*", "", $0)
       gsub(/[[:space:]]+$/, "", $0)
       print $0
       exit
     }
-    in==1 && /\*\// {in=0}
+    inside==1 && /\*\// {inside=0}
   ' "$file"
 }
 
@@ -146,9 +195,9 @@ report_short_change(){
 
   # find first bullet after a "Changes:" line
   awk '
-    BEGIN{in=0}
-    /^(\*\*Changes:\*\*|Changes:)/ {in=1; next}
-    in==1 && /^[[:space:]]*[-*][[:space:]]+/ {
+    BEGIN{inside=0}
+    /^(\*\*Changes:\*\*|Changes:)/ {inside=1; next}
+    inside==1 && /^[[:space:]]*[-*][[:space:]]+/ {
       line=$0
       sub(/^[[:space:]]*[-*][[:space:]]+/, "", line)
       # trim
@@ -157,7 +206,7 @@ report_short_change(){
       exit
     }
     # stop if next section begins
-    in==1 && /^##[[:space:]]/ {exit}
+    inside==1 && /^##[[:space:]]/ {exit}
   ' "$f" | head -n1
 }
 
@@ -314,6 +363,10 @@ case "$CMD" in
     need_git
     commit_message_auto
     ;;
+  bump)
+    need_git
+    bump_asset_versions
+    ;;
   branch)
     need_git
     ensure_remote_safe
@@ -339,6 +392,7 @@ case "$CMD" in
     echo "Usage:"
     echo "  ./scripts/gg task        # print NEXT_TASK from @GG_CAPSULE_V1"
     echo "  ./scripts/gg msg         # generate commit message from TASK_report.md + NEXT_TASK"
+    echo "  ./scripts/gg bump        # bump GG_ASSET_VER + ?v= in index.dev.xml/index.prod.xml"
     echo "  ./scripts/gg branch      # ensure you're on a safe feature branch"
     echo "  ./scripts/gg verify      # run baseline checks"
     echo "  ./scripts/gg ship        # verify + commit + push (refuses on main/dev)"

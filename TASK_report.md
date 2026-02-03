@@ -1,17 +1,19 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: X-010
+Task ID: T-004
 Status: DONE
 
 Changes:
-- Added `GG.app.plan` with selector-to-module map and centralized init gateway via `GG.app.init`.
-- Removed deprecated `#gg-postinfo` module and migrated scattered auto-inits into plan-driven modules.
-- Deduplicated `shareMotion` and converted feed/sitemap/backPolicy/prefetch to explicit module inits.
+- Added `#gg-config` JSON container in `index.dev.xml` and `index.prod.xml`.
+- Hydrated config in `GG.boot.init()` and stored in `GG.store.config`.
+- Swapped feed endpoints/limits/labels to read from config (feed base, maxPosts, searchLabels).
 
 ## TASK PROOF
-- Remaining `DOMContentLoaded` usage is limited to `GG.boot.onReady` (single gateway).
-- Main init now runs through `GG.boot.init()` → `GG.boot.onReady()` → `GG.app.init()`.
+- `main.js` now loads config from XML and uses it for feed URLs and label limits.
 
 ## FILES TOUCHED
+- index.dev.xml
+- index.prod.xml
 - public/assets/dev/main.js
+- TASK_report.md

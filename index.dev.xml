@@ -4,27 +4,6 @@
 
   <head>
     <b:if cond='data:view.isHomepage'>
-      <script>
-(function(){
-  try {
-    var pre = &#39;landing&#39;;
-    var search = location.search || &#39;&#39;;
-    var m = search.match(/[?&amp;]prehome=(blog|landing)(?:&amp;|$)/i);
-    if (m &amp;&amp; m[1]) {
-      pre = (m[1] + &#39;&#39;).toLowerCase();
-    } else {
-      var hash = (location.hash || &#39;&#39;).replace(/^#/,&#39;&#39;).toLowerCase();
-      if (hash === &#39;blog&#39; || hash === &#39;landing&#39;) {
-        pre = hash;
-      } else {
-        var p = (location.pathname || &#39;/&#39;).replace(/\/+$/,&#39;&#39;) || &#39;/&#39;;
-        if (p === &#39;/blog&#39;) pre = &#39;blog&#39;;
-      }
-    }
-    document.documentElement.setAttribute(&#39;data-gg-prehome&#39;, pre);
-  } catch(e){}
-})();
-      </script>
       <style>
 html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;landing&quot;],
 html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] .gg-home-landing { display:none !important; }
@@ -34,10 +13,10 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
       </style>
     </b:if>
 
-    <script>
-      window.GG_ENV = { mode: "dev", assetBase: "https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public" };
-    </script>
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css'/>
+    <meta name='gg:mode' content='dev'/>
+    <meta name='gg:asset-base' content='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public'/>
+    <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css?v=20260203160035'/>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -485,7 +464,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -560,7 +539,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -610,7 +589,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -1001,13 +980,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
         <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -1183,7 +1162,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
     <data:post.cmtfpIframe/>
     <script type='text/javascript'>
-      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+      BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');
     </script>
   </div>
 </b:includable>
@@ -1282,7 +1261,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
                               <div class='body'><data:comment.body/></div>
                               <div class='meta gg-cmt2__meta'>
                                 <b:if cond='data:comment.deleteUrl'>
-                                  <a class='cmt2-del gg-cmt2__del gg-is-hidden' expr:href='data:comment.deleteUrl'>Delete</a>
+                                  <a class='cmt2-del gg-cmt2__del' data-gg-state='hidden' expr:href='data:comment.deleteUrl'>Delete</a>
                                 </b:if>
                               </div>
                             </div>
@@ -1295,7 +1274,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
                         <b:include data='post' name='commentFormIframeSrc'/>
                         <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
                         <data:post.cmtfpIframe/>
-                        <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
+                        <script type='text/javascript'>BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');</script>
                       <b:elseif cond='data:post.allowComments'/>
                         <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'><b:message name='messages.postAComment'/></a>
                       </b:if>
@@ -1742,7 +1721,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
             </div>
 
             <section class='gg-tags-page__results'>
-              <div class='gg-post-list gg-is-loading'/>
+              <div class='gg-post-list' data-gg-state='loading'/>
             </section>
 
             <section class='gg-tags-page__directory'>
@@ -1761,6 +1740,71 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
             <div class='gg-library__body'>
               <div class='gg-library__empty' id='gg-library-empty'>Belum ada posting disimpan.</div>
               <div class='gg-library-list' id='gg-library-list'/>
+            </div>
+          </section>
+        </b:if>
+
+        <!-- GAGA FEEDS PAGE (PAGE: /p/feeds.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;feeds.html&quot;'>
+          <section id='gg-feed' data-api='/feeds/posts/default?alt=json'>
+            <div class='bar'>
+              <input aria-label='Search feeds' class='q' placeholder='Cari konten...' type='search'/>
+              <button class='active' data-type='all' type='button'>All</button>
+              <button data-type='youtube' type='button'>YouTube</button>
+              <button data-type='image' type='button'>Image</button>
+            </div>
+            <div class='grid'></div>
+            <div class='loader'>Loading...</div>
+          </section>
+        </b:if>
+
+        <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
+          <section id='gg-sitemap' data-api='/feeds/posts/summary?alt=json&amp;max-results=500'>
+            <div class='gg-head'>
+              <div class='gg-title'>
+                <h1>Sitemap</h1>
+                <p class='gg-sub'>Jelajahi posting berdasarkan tanggal, label, atau tipe.</p>
+              </div>
+              <div class='gg-controls'>
+                <div class='gg-row'>
+                  <input aria-label='Search sitemap' class='gg-q' placeholder='Cari...' type='search'/>
+                  <button class='gg-reset' type='button'>Reset</button>
+                </div>
+                <div class='gg-row'>
+                  <div class='gg-tabs' role='tablist'>
+                    <button class='gg-tab' data-gg-state='active' data-type='all' type='button'>All</button>
+                    <button class='gg-tab' data-type='youtube' type='button'>YouTube</button>
+                    <button class='gg-tab' data-type='image' type='button'>Image</button>
+                  </div>
+                </div>
+                <div class='gg-row'>
+                  <select aria-label='Year' class='gg-year'>
+                    <option value=''>All years</option>
+                  </select>
+                  <select aria-label='Month' class='gg-month' disabled='disabled'>
+                    <option value=''>All months</option>
+                  </select>
+                  <select aria-label='Label' class='gg-label'>
+                    <option value=''>All labels</option>
+                  </select>
+                  <select aria-label='Sort' class='gg-sort'>
+                    <option value='newest'>Newest</option>
+                    <option value='oldest'>Oldest</option>
+                    <option value='title_asc'>Title A-Z</option>
+                    <option value='title_desc'>Title Z-A</option>
+                  </select>
+                </div>
+                <div class='gg-row'>
+                  <div class='gg-stats' id='gg-stats'></div>
+                  <div class='gg-meta' id='gg-meta'></div>
+                </div>
+              </div>
+            </div>
+            <div id='gg-groups'></div>
+            <div class='gg-foot'>
+              <button class='gg-more' type='button'>Load more</button>
+              <div class='gg-loader' id='gg-loader'>Loading...</div>
             </div>
           </section>
         </b:if>
@@ -1977,13 +2021,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
               <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -2005,20 +2049,12 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
 
     <data:post.cmtfpIframe/>
-    <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
+    <script type='text/javascript'>BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');</script>
   </div>
 </b:includable>
               <b:includable id='threadedCommentJs' var='post'>
 
   <!-- 1) Blogger native threaded engine (WAJIB) -->
-  <script expr:src='data:post.commentSrc' type='text/javascript'/>
-  <b:template-script inline='true' name='threaded_comments'/>
-  <script type='text/javascript'>
-    blogger.widgets.blog.initThreadedComments(
-      <data:post.commentJso/>, <data:post.commentMsgs/>, <data:post.commentConfig/>
-    );
-  </script>  
-
 </b:includable>
               <b:includable id='threadedComments' var='post'>
   <section class='gg-comments comments2 threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
@@ -2383,13 +2419,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
           <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -2680,11 +2716,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </div>
           
     <!-- GAGA -->
-<div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' hidden='' id='gg-toast'>
+<div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' data-gg-state='hidden' hidden='' id='gg-toast'>
   <div class='gg-toast__inner'>
     <p class='gg-toast__message'/>
   </div>
-</div><div class='gg-dialog-host' data-gg-ui='dialog' hidden=''/>
+</div>
+<div aria-hidden='true' aria-modal='true' class='gg-dialog gg-dialog-host' data-gg-state='hidden' data-gg-ui='dialog' hidden='' id='gg-dialog'/>
+<div aria-hidden='true' class='gg-overlay' data-gg-state='hidden' id='gg-overlay'/>
 <div class='gg-palette-host' data-gg-ui='palette' hidden=''/>
 <div aria-hidden='true' class='gg-share-sheet' id='gg-share-sheet'>
   <div aria-hidden='true' class='gg-share-sheet__overlay'/>
@@ -2700,7 +2738,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </div>
 
     <div class='gg-share-sheet__modes' role='tablist'>
-      <button aria-selected='true' class='gg-share-sheet__mode-btn is-active' data-mode='author' type='button'>Author</button>
+      <button aria-selected='true' class='gg-share-sheet__mode-btn' data-gg-state='active' data-mode='author' type='button'>Author</button>
       <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='title' type='button'>Title</button>
       <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='quote' type='button'>Quote</button>
     </div>
@@ -2733,13 +2771,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </div>
 <div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'/>
 <!-- /GAGA  -->
+<div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js'/>
-<script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
+<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>

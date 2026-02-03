@@ -16,6 +16,23 @@ export default {
       return stamp(r);
     }
 
+    if (pathname === "/api/telemetry") {
+      let payload = null;
+      try {
+        payload = await request.json();
+      } catch (e) {
+        try {
+          payload = await request.text();
+        } catch (err) {
+          payload = null;
+        }
+      }
+      console.log("GG_TELEMETRY", payload);
+      const r = new Response("", { status: 204 });
+      r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
+
     // Path yang memang kamu host di Workers Static Assets
     const shouldTryAssets =
       pathname.startsWith("/assets/") ||

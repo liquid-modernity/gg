@@ -31,6 +31,14 @@
 * Extensions: ESLint, Prettier, Error Lens, Auto Rename Tag.
 * Formatting: Indentation = 2 spaces. No trailing whitespace.
 
+### 1.4 Protected Code Zones
+The following Blogger XML tags MUST NEVER be deleted or modified as they control layout and widget functionality:
+- `<b:include data='blog' name='all-head-content'/>`
+- `<b:section ...>` and `<b:widget ...>`
+- `<b:skin>...</b:skin>` (unless moving to external CSS)
+- Standard Blogger comment includes
+- `BLOG_CMT_createIframe` script blocks
+
 ---
 
 ## 🏛️ SECTION 2: ARCHITECTURE (MVC-Lite)
@@ -48,6 +56,7 @@ We avoid a "Spaghetti Monolith" by enforcing these internal namespaces:
 * **Config Injection:** Do NOT hardcode config in JS. Use XML Widgets:
   `<div id="gg-config" data-json='{"authorMap":{...}, "labels":{...}}'></div>`
 * **Z-Index Strategy:** Use CSS variables (`--z-modal`, `--z-toast`) in `:root`. No magic numbers.
+* **State Contract:** JS writes `data-gg-state` values; CSS reads with `[data-gg-state~="..."]`. Standard States: active, open, loading, error, success, hidden.
 
 ---
 
@@ -125,12 +134,13 @@ Ini yang membedakan “keren di laptop” vs “aman di produksi”.
 
 ### 6.3 Release & Rollback Discipline
 * Asset versioning wajib (query hash atau filename hash).
+* Automated bump (tanpa CI/CD): jalankan `./scripts/gg bump` untuk update `GG_ASSET_VER` + `?v=` di `index.dev.xml` dan `index.prod.xml` setiap major JS/CSS change.
 * “Rollback in 1 step”: revert hash / revert deploy.
 * Jangan ubah banyak hal tanpa checklist smoke test.
 
 ### 6.4 Observability Minimal
 * Capture `window.onerror` + `unhandledrejection`.
-* Send ke Worker endpoint (rate-limited).
+* Kirim JSON ke Worker endpoint `/api/telemetry` via `sendBeacon` (fallback: `fetch` keepalive).
 * Simpan ringkas: route, user agent, version hash, stack trace.
 
 ### 6.5 Performance Budget
@@ -139,4 +149,3 @@ Ini yang membedakan “keren di laptop” vs “aman di produksi”.
   * INP target
   * CLS target
 * Third-party default off; enable jika ada alasan bisnis yang jelas.
-

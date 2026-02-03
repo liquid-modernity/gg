@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-010 init gateway + selector map; remove auto-inits + dead host
-NEXT_TASK: X-011 align template hosts with selector map (TBD)
+LAST_PATCH: 2026-02-03 T-004 config migration (gg-config -> GG.store.config)
+NEXT_TASK: F-002 super search (Fuse.js + IDB)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -29,6 +29,7 @@ CORE INVARIANTS:
 - One event gateway: GG.actions (delegated)
 - One state source: GG.store (get/set/subscribe)
 - Side effects only via GG.services.*
+- Native Blogger tags are immutable.
 - UI primitives live in GG.ui.* (toast/dialog/overlay/palette/inputMode)
 - i18n uses Intl.* (not string-only)
 - a11y is systemic (focus trap, inert, announce, reduced motion)
@@ -51,8 +52,16 @@ posterEngine, shareMotion, langSwitcher, imgDims, a11yFix
 
 OPEN TASKS (update every patch):
 T-001 (done) Make main.js pure JS (remove script tags / C-DATA / HTML entities)
-T-002 (done) Fix index.xml: main.js tag, remove SW inline, remove boot-loader duplication
-T-003 (done) Add GG.services.sw.init() + manifest hooks
+T-002 (done) Index.xml cleanup: purge inline JS + keep single main.js entry
+T-003 (done) Architecture relocation: move globals into GG.core/store/services/ui/actions/boot
+C-001 (done) Define CSS layers & z-index variables (no visual change)
+X-001 (done) State contract: JS writes data-gg-state, CSS reads data-gg-state
+X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI selects by id
+F-001 (done) Router engine: History API navigation with scroll restore + fallback
+F-003 (done) Metadata discipline: update title/description for client-only navigation
+F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
+F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
+T-004 (done) Config migration: gg-config JSON -> GG.store.config + feed endpoints
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -72,21 +81,237 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
-- 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.
-- 2026-01-28 T-006: add GG.a11y core + GG.services.a11y init for reduced motion.
-- 2026-01-28 T-005: add GG.i18n (t/nf/cf/df/rtf) + dir/locale/timezone helpers.
-- 2026-01-28 T-004: add GG.ui primitives, GG.actions registry + service init hook.
-- 2026-01-28 T-003: add GG.services.sw.init + manifest hooks (via GG.boot.init).
-- 2026-01-28 T-002: index.xml main.js tag fixed, inline SW removed, boot-loader duplicates removed.
-- 2026-01-28 T-001: remove script/C-DATA wrappers + decode HTML entities in JS body. PROOF (body-only): closing-script=0, opening-script=0, html-comment=0, C-DATA=0, quote-entity=0, apos-entity=0, gt-entity=0, lt-entity=0
+- 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
+- 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
+- 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
+- 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
+- 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
+- 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
+- 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
+- 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
+- 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
+- 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 */
 (function(w){
   'use strict';
   var GG = w.GG = w.GG || {};
-  var ENV = w.GG_ENV || {};
+  GG.core = GG.core || {};
+  GG.store = GG.store || {};
+  GG.store.config = GG.store.config || {};
+  GG.services = GG.services || {};
+  GG.ui = GG.ui || {};
+  GG.actions = GG.actions || {};
+  GG.boot = GG.boot || {};
+  GG.core.state = GG.core.state || (function(){
+    function stateList(el){
+      if (!el || !el.getAttribute) return [];
+      var raw = el.getAttribute('data-gg-state') || '';
+      if (!raw) return [];
+      var parts = raw.split(/\s+/);
+      var out = [];
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i]) out.push(parts[i]);
+      }
+      return out;
+    }
+    function set(el, list){
+      if (!el || !el.setAttribute) return;
+      if (!list || !list.length) { el.removeAttribute('data-gg-state'); return; }
+      el.setAttribute('data-gg-state', list.join(' '));
+    }
+    function has(el, stateName){
+      if (!el || !stateName) return false;
+      var list = stateList(el);
+      return list.indexOf(stateName) !== -1;
+    }
+    function add(el, stateName){
+      if (!el || !stateName) return;
+      var list = stateList(el);
+      if (list.indexOf(stateName) !== -1) return;
+      list.push(stateName);
+      set(el, list);
+    }
+    function remove(el, stateName){
+      if (!el || !stateName) return;
+      var list = stateList(el);
+      var idx = list.indexOf(stateName);
+      if (idx === -1) return;
+      list.splice(idx, 1);
+      set(el, list);
+    }
+    function toggle(el, stateName, force){
+      if (!el || !stateName) return false;
+      if (force === true) { add(el, stateName); return true; }
+      if (force === false) { remove(el, stateName); return false; }
+      var list = stateList(el);
+      var idx = list.indexOf(stateName);
+      if (idx === -1) {
+        list.push(stateName);
+        set(el, list);
+        return true;
+      }
+      list.splice(idx, 1);
+      set(el, list);
+      return false;
+    }
+    return { has: has, add: add, remove: remove, toggle: toggle };
+  })();
+  GG.core.telemetry = GG.core.telemetry || function(payload){
+    try {
+      var ep = '/api/telemetry';
+      var body = JSON.stringify(payload || {});
+      if (w.navigator && w.navigator.sendBeacon) {
+        try { w.navigator.sendBeacon(ep, w.Blob ? new Blob([body], { type: 'application/json' }) : body); } catch (e) {}
+      } else if (w.fetch) {
+        w.fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }).catch(function(){});
+      }
+    } catch (e) {}
+  };
+  GG.core.meta = GG.core.meta || (function(){
+    function findMeta(selector){
+      return w.document ? w.document.querySelector(selector) : null;
+    }
+    function update(data){
+      if(!data) return;
+      if(typeof data.title === 'string'){
+        w.document.title = data.title;
+      }
+      if(typeof data.description === 'string'){
+        var desc = findMeta('meta[name="description"]');
+        if(desc) desc.setAttribute('content', data.description);
+      }
+      var ogTitle = (typeof data.ogTitle === 'string') ? data.ogTitle : (typeof data.title === 'string' ? data.title : null);
+      if(ogTitle !== null){
+        var og = findMeta('meta[property="og:title"]');
+        if(og) og.setAttribute('content', ogTitle);
+      }
+    }
+    function titleFromUrl(url){
+      try {
+        var u = new URL(url, w.location.href);
+        var path = (u.pathname || '').replace(/\/+$/, '');
+        if(!path || path === '/') return w.document.title;
+        var parts = path.split('/');
+        var slug = decodeURIComponent(parts[parts.length - 1] || '').replace(/[-_]+/g, ' ').trim();
+        if(!slug) return w.document.title;
+        return slug.replace(/\b\w/g, function(m){ return m.toUpperCase(); });
+      } catch (e) {
+        return w.document.title;
+      }
+    }
+    return { update: update, titleFromUrl: titleFromUrl };
+  })();
+  GG.core.render = GG.core.render || (function(){
+    function fail(code, info){
+      var err = new Error('render-failed');
+      err.name = 'GGRenderError';
+      err.code = code || 'render';
+      if (info) err.info = info;
+      return err;
+    }
+    function findTarget(doc){
+      if (!doc || !doc.querySelector) return null;
+      var selectors = ['.gg-blog-main', '.blog-posts', '#main', 'main.gg-main', 'main'];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = doc.querySelector(selectors[i]);
+        if (el) return el;
+      }
+      return null;
+    }
+    function extractMeta(doc){
+      var out = { title: '', description: '', ogTitle: '' };
+      if (!doc) return out;
+      out.title = doc.title || '';
+      var desc = doc.querySelector && doc.querySelector('meta[name="description"]');
+      if (desc) out.description = desc.getAttribute('content') || '';
+      var og = doc.querySelector && doc.querySelector('meta[property="og:title"]');
+      if (og) out.ogTitle = og.getAttribute('content') || '';
+      return out;
+    }
+    function rehydrateComments(root){
+      var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+      if (cfg.commentsEnabled === false) return 0;
+      if (!root || !root.querySelectorAll) return 0;
+      var scripts = root.querySelectorAll('script');
+      if (!scripts || !scripts.length) return 0;
+      var count = 0;
+      for (var i = 0; i < scripts.length; i++) {
+        var code = scripts[i].text || scripts[i].textContent || '';
+        if (code.indexOf('BLOG_CMT_createIframe') === -1) continue;
+        try {
+          var s = w.document.createElement('script');
+          s.type = 'text/javascript';
+          s.text = code;
+          (w.document.body || w.document.documentElement).appendChild(s);
+          if (s.parentNode) s.parentNode.removeChild(s);
+          count++;
+        } catch (e) {}
+      }
+      return count;
+    }
+    function apply(html, url){
+      if (!html) throw fail('empty', { url: url });
+      if (!w.DOMParser) throw fail('parser', { url: url });
+      var parser = new w.DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+      if (!doc) throw fail('parse', { url: url });
+      var source = findTarget(doc);
+      var target = findTarget(w.document);
+      if (!source || !target) throw fail('target', { url: url });
+      target.innerHTML = source.innerHTML;
+      var meta = extractMeta(doc);
+      if (GG.core && GG.core.meta && GG.core.meta.update) {
+        var payload = {};
+        if (meta.title) payload.title = meta.title;
+        if (meta.description) payload.description = meta.description;
+        if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
+        if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+      }
+      var rehydrated = rehydrateComments(target);
+      if (!rehydrated) rehydrateComments(doc);
+      GG.core.render._lastUrl = url || '';
+      GG.core.render._lastAt = Date.now();
+      return true;
+    }
+    return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };
+  })();
+  var ENV = w.GG_ENV;
+  if (!ENV) {
+    try {
+      var doc = w.document;
+      var mMode = doc && doc.querySelector('meta[name="gg:mode"]');
+      var mAsset = doc && doc.querySelector('meta[name="gg:asset-base"]');
+      if (mMode || mAsset) {
+        ENV = { mode: mMode ? (mMode.getAttribute('content') || '') : '', assetBase: mAsset ? (mAsset.getAttribute('content') || '') : '' };
+        w.GG_ENV = ENV;
+      }
+    } catch(_) {}
+  }
+  ENV = ENV || {};
   var ASSET_BASE = ENV.assetBase || "";
   var IS_DEV = ENV.mode === "dev";
   GG.env = GG.env || ENV;
+  (function(){
+    try {
+      var root = w.document && w.document.documentElement;
+      if (!root || root.hasAttribute('data-gg-prehome')) return;
+      var pre = 'landing';
+      var search = (w.location && w.location.search) ? w.location.search : '';
+      var m = search.match(/[?&]prehome=(blog|landing)(?:&|$)/i);
+      if (m && m[1]) {
+        pre = (m[1] + '').toLowerCase();
+      } else {
+        var hash = (w.location && w.location.hash ? w.location.hash : '').replace(/^#/, '').toLowerCase();
+        if (hash === 'blog' || hash === 'landing') {
+          pre = hash;
+        } else {
+          var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
+          if (p === '/blog') pre = 'blog';
+        }
+      }
+      root.setAttribute('data-gg-prehome', pre);
+    } catch(_) {}
+  })();
   w.GG_ASSET_BASE = ASSET_BASE;
   w.GG_IS_DEV = IS_DEV;
   w.GG_ASSET = w.GG_ASSET || function(path){
@@ -125,10 +350,36 @@ PATCHLOG (append newest first; keep last 10):
       } catch(_) {}
     });
   }
+  if(!w.GG_TELEM){
+    w.GG_TELEM=1;(function(){
+      var ep='/api/telemetry',b=0;
+      function s(p){
+        if(b) return; b=1;
+        try{
+          var d=JSON.stringify(p||{});
+          if(w.navigator&&w.navigator.sendBeacon){
+            try{w.navigator.sendBeacon(ep,w.Blob?new Blob([d],{type:'application/json'}):d);}catch(e){}
+          }else if(w.fetch){
+            w.fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:d,keepalive:true}).catch(function(){});
+          }
+        }catch(e){}
+        b=0;
+      }
+      w.onerror=function(m,f,l,c,e){
+        s({m:m?''+m:'error',f:f||'',l:l||0,c:c||0,st:e&&e.stack?e.stack:''});
+        return false;
+      };
+      w.onunhandledrejection=function(e){
+        var r=e&&e.reason;
+        s({m:r&&r.message?r.message:''+(r||'rejection'),f:'',l:0,c:0,st:r&&r.stack?r.stack:''});
+        return false;
+      };
+    })();
+  }
   window.GG_BUILD = "dev";
   if (window.GG_DEBUG) console.log("[GG_BUILD]", window.GG_BUILD);
   // Minimal GG.store (get/set/subscribe) if missing
-  if(!GG.store){
+  if(!GG.store || !GG.store.get){
     (function(){
       var state = {};
       var subs = [];
@@ -155,6 +406,15 @@ PATCHLOG (append newest first; keep last 10):
   }
   GG.view = GG.view || {};
   GG.config = GG.config || {};
+  GG.state = GG.state || {};
+  GG.core.util = GG.core.util || GG.util || {};
+  GG.util = GG.core.util;
+  GG.core.config = GG.core.config || GG.config || {};
+  GG.config = GG.core.config;
+  GG.store.state = GG.store.state || GG.state || {};
+  GG.state = GG.store.state;
+  GG.ui.view = GG.ui.view || GG.view || {};
+  GG.view = GG.ui.view;
 })(window);
 
 GG.store.set({
@@ -166,24 +426,27 @@ GG.store.set({
   paletteOpen: false,
   reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
 });
-GG.view.applyRootState = (root, s) => {
+GG.ui = GG.ui || {};
+GG.ui.applyRootState = GG.ui.applyRootState || function(root, s){
   root.dataset.ggLang = s.lang;
   root.dataset.ggInput = s.inputMode;
   root.dataset.ggDock = s.dockOpen ? '1' : '0';
   root.dataset.ggPalette = s.paletteOpen ? '1' : '0';
-  root.classList.toggle('gg-reduced-motion', !!s.reducedMotion);
+  GG.core.state.toggle(root, 'reduced-motion', !!s.reducedMotion);
 };
+GG.view = GG.view || {};
+GG.view.applyRootState = GG.ui.applyRootState;
 
 // Keep <html> dataset/class in sync with GG.store
 (function(){
   try{
     var root = document.documentElement;
-    if(!root || !window.GG || !GG.store || !GG.store.get || !GG.store.subscribe || !GG.view || !GG.view.applyRootState) return;
+    if(!root || !window.GG || !GG.store || !GG.store.get || !GG.store.subscribe || !GG.ui || !GG.ui.applyRootState) return;
     // initial
-    GG.view.applyRootState(root, GG.store.get());
+    GG.ui.applyRootState(root, GG.store.get());
     // on updates
     GG.store.subscribe(function(s){
-      try{ GG.view.applyRootState(root, s); }catch(e){}
+      try{ GG.ui.applyRootState(root, s); }catch(e){}
     });
   }catch(e){}
 })();
@@ -198,12 +461,35 @@ GG.view.applyRootState = (root, s) => {
   actions.register = actions.register || function(name, fn){ if(!name || !fn) return; (actions._map[name] = actions._map[name] || []).push(fn); };
   actions.dispatch = actions.dispatch || function(name, evt, el){ var list = actions._map[name]; if(!list) return; list.slice().forEach(function(fn){ try{ fn({ name: name, event: evt, element: el }); }catch(e){}; }); };
   actions._handle = actions._handle || function(evt){ var el = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action]') : null; if(!el) return; var name = el.getAttribute('data-gg-action'); if(name) actions.dispatch(name, evt, el); };
-  actions.init = actions.init || function(){ if(actions._init) return; actions._init = true; d.addEventListener('click', actions._handle); };
+  actions.init = actions.init || function(){
+    if(actions._init) return;
+    actions._init = true;
+    d.addEventListener('click', actions._handle);
+    if(GG.core && GG.core.router && GG.core.router.handleClick && !actions._routerBound){
+      actions._routerBound = true;
+      GG.core.router._bound = true;
+      d.addEventListener('click', GG.core.router.handleClick);
+    }
+  };
   function host(sel){ return d.querySelector(sel); }
-  function toggleHost(sel, open){ var el = host(sel); if(!el) return null; el.hidden = !open; el.setAttribute('aria-hidden', open ? 'false' : 'true'); return el; }
+  function toggleHost(sel, open){
+    var el = host(sel);
+    if(!el) return null;
+    if(open){
+      el.hidden = false;
+      GG.core.state.remove(el, 'hidden');
+      GG.core.state.add(el, 'open');
+    } else {
+      GG.core.state.remove(el, 'open');
+      GG.core.state.add(el, 'hidden');
+      el.hidden = true;
+    }
+    el.setAttribute('aria-hidden', open ? 'false' : 'true');
+    return el;
+  }
   ui.toast = ui.toast || {};
-  ui.toast.show = ui.toast.show || function(message, opts){ var el = host('.gg-toast') || d.getElementById('gg-toast') || d.getElementById('pc-toast'); if(!el) return; var textNode = el.querySelector('.gg-toast__message') || el.querySelector('.gg-toast__text'); var msg = (message !== undefined && message !== null) ? String(message) : ''; if(textNode) textNode.textContent = msg; else el.textContent = msg; el.hidden = false; el.classList.add('is-visible'); clearTimeout(ui.toast._t); ui.toast._t = setTimeout(function(){ el.classList.remove('is-visible'); el.hidden = true; }, (opts && opts.duration) ? opts.duration : 2200); };
-  ui.toast.hide = ui.toast.hide || function(){ var el = host('.gg-toast') || d.getElementById('gg-toast') || d.getElementById('pc-toast'); if(!el) return; el.classList.remove('is-visible'); el.hidden = true; };
+  ui.toast.show = ui.toast.show || function(message, opts){ var el = d.getElementById('gg-toast') || d.getElementById('pc-toast') || host('.gg-toast'); if(!el) return; var textNode = el.querySelector('.gg-toast__message') || el.querySelector('.gg-toast__text'); var msg = (message !== undefined && message !== null) ? String(message) : ''; if(textNode) textNode.textContent = msg; else el.textContent = msg; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'visible'); clearTimeout(ui.toast._t); ui.toast._t = setTimeout(function(){ GG.core.state.remove(el, 'visible'); GG.core.state.add(el, 'hidden'); el.hidden = true; }, (opts && opts.duration) ? opts.duration : 2200); };
+  ui.toast.hide = ui.toast.hide || function(){ var el = d.getElementById('gg-toast') || d.getElementById('pc-toast') || host('.gg-toast'); if(!el) return; GG.core.state.remove(el, 'visible'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
   ui.dialog = ui.dialog || {};
   ui.dialog.open = ui.dialog.open || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', true); };
   ui.dialog.close = ui.dialog.close || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', false); };
@@ -211,19 +497,184 @@ GG.view.applyRootState = (root, s) => {
   ui.palette.open = ui.palette.open || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', true); };
   ui.palette.close = ui.palette.close || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', false); };
   ui.overlay = ui.overlay || {};
-  ui.overlay.open = ui.overlay.open || function(){ d.documentElement.classList.add('gg-overlay-open'); };
-  ui.overlay.close = ui.overlay.close || function(){ d.documentElement.classList.remove('gg-overlay-open'); };
+  ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); };
+  ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
   ui.inputMode = ui.inputMode || {};
   ui.inputMode.get = ui.inputMode.get || function(){ if(GG.store && GG.store.get){ var s = GG.store.get(); return s && s.inputMode; } return d.documentElement ? d.documentElement.dataset.ggInput : ''; };
   ui.inputMode.set = ui.inputMode.set || function(mode){ if(!mode) return; if(GG.store && GG.store.set) GG.store.set({ inputMode: mode }); else if(d.documentElement) d.documentElement.dataset.ggInput = mode; };
   GG.services.actions = GG.services.actions || {};
   GG.services.actions.init = GG.services.actions.init || function(){ if(GG.services.actions._init) return; GG.services.actions._init = true; actions.init(); };
 })(window.GG = window.GG || {}, window, document);
+(function(GG, w, d){
+  'use strict';
+  GG.core = GG.core || {};
+  GG.core.router = GG.core.router || {};
+  var router = GG.core.router;
+
+  function getScrollY(){
+    return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
+  }
+
+  router._supports = router._supports || function(){
+    return !!(w.history && w.history.pushState);
+  };
+
+  router._mergeState = router._mergeState || function(next){
+    var base = (w.history && w.history.state) ? w.history.state : {};
+    if (!base || typeof base !== 'object') base = {};
+    var out = {};
+    for (var k in base) {
+      if (Object.prototype.hasOwnProperty.call(base, k)) out[k] = base[k];
+    }
+    for (var k2 in next) {
+      if (Object.prototype.hasOwnProperty.call(next, k2)) out[k2] = next[k2];
+    }
+    return out;
+  };
+
+  router._stateFor = router._stateFor || function(url){
+    return router._mergeState({ gg: { url: url, scrollY: 0 } });
+  };
+
+  router.saveScroll = router.saveScroll || function(url){
+    if(!router._supports()) return;
+    var href = url || w.location.href;
+    try {
+      w.history.replaceState(router._mergeState({ gg: { url: href, scrollY: getScrollY() } }), '', href);
+    } catch (e) {}
+  };
+
+  router.fallback = router.fallback || function(url){
+    if(!url) return;
+    try { w.location.href = url; } catch (e) {}
+  };
+  router._setLoading = router._setLoading || function(on){
+    var body = d.body;
+    if(!body) return;
+    if (on) {
+      if (body.classList) body.classList.add('is-loading');
+      else body.className += ' is-loading';
+      if (GG.core && GG.core.state) GG.core.state.add(body, 'loading');
+    } else {
+      if (body.classList) body.classList.remove('is-loading');
+      else body.className = body.className.replace(/\bis-loading\b/g, '').trim();
+      if (GG.core && GG.core.state) GG.core.state.remove(body, 'loading');
+    }
+  };
+  router._load = router._load || function(url, opts){
+    if(!url) return;
+    if(!GG.services || !GG.services.api || !GG.services.api.getHtml) return router.fallback(url);
+    var options = opts || {};
+    var scrollY = (typeof options.scrollY === 'number') ? options.scrollY : null;
+    var done = false;
+    function finish(){
+      if (done) return;
+      done = true;
+      router._setLoading(false);
+    }
+    router._setLoading(true);
+    return GG.services.api.getHtml(url).then(function(html){
+      if (!GG.core || !GG.core.render || !GG.core.render.apply) throw new Error('render-missing');
+      var ok = GG.core.render.apply(html, url);
+      if (!ok) throw new Error('render-failed');
+      if (typeof scrollY === 'number') w.scrollTo(0, scrollY);
+      else w.scrollTo(0, 0);
+      if (options.pop && typeof router.onPopState === 'function') router.onPopState(url, w.history ? w.history.state : null);
+      if (!options.pop && typeof router.onNavigate === 'function') router.onNavigate(url);
+      finish();
+    }).catch(function(){
+      finish();
+      router.fallback(url);
+    });
+  };
+
+  router.handleClick = router.handleClick || function(evt){
+    try {
+      if(!evt || evt.defaultPrevented) return;
+      if (evt.button && evt.button !== 0) return;
+      if (evt.metaKey || evt.ctrlKey || evt.shiftKey || evt.altKey) return;
+      var anchor = evt.target && evt.target.closest ? evt.target.closest('a[href]') : null;
+      if(!anchor) return;
+      if (anchor.hasAttribute('download')) return;
+      if (anchor.getAttribute('data-gg-action')) return;
+      var target = anchor.getAttribute('target');
+      if (target && target !== '_self') return;
+      var href = anchor.getAttribute('href');
+      if(!href || href.charAt(0) === '#') return;
+      if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
+      var rel = anchor.getAttribute('rel') || '';
+      if (/\bexternal\b/i.test(rel)) return;
+      var url = new URL(href, w.location.href);
+      if (url.origin !== w.location.origin) return;
+      var samePath = (url.pathname === w.location.pathname && url.search === w.location.search);
+      if (samePath && url.hash) return;
+      evt.preventDefault();
+      router.navigate(url.href);
+    } catch (e) {
+      router.fallback((evt && evt.target && evt.target.href) ? evt.target.href : w.location.href);
+    }
+  };
+
+  router.navigate = router.navigate || function(url){
+    if(!router._supports()) return router.fallback(url);
+    try {
+      if(!url) return;
+      var from = w.location.href;
+      router.saveScroll(from);
+      if (url === from) return;
+      w.history.pushState(router._stateFor(url), '', url);
+      if (w.console && console.log) console.log('[GG.router] Navigating to', url);
+      router._load(url, { pop: false });
+    } catch (e) {
+      router.fallback(url);
+    }
+  };
+
+  router._onPopState = router._onPopState || function(evt){
+    try {
+      var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
+      var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
+      if (w.console && console.log) console.log('[GG.router] Popstate', w.location.href);
+      router._load(w.location.href, { pop: true, scrollY: y });
+    } catch (e) {
+      router.fallback(w.location.href);
+    }
+  };
+
+  router.init = router.init || function(){
+    if(router._init) return;
+    router._init = true;
+    if(!router._supports()) return;
+    try {
+      if ('scrollRestoration' in w.history) w.history.scrollRestoration = 'manual';
+    } catch (e) {}
+    router.saveScroll(w.location.href);
+    if (!router._bound) {
+      router._bound = true;
+      d.addEventListener('click', router.handleClick);
+    }
+    w.addEventListener('popstate', router._onPopState);
+  };
+  router.onNavigate = router.onNavigate || function(url){
+    if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    if (GG.core.render && GG.core.render._lastUrl === url) return;
+    var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
+    GG.core.meta.update({ title: title, description: title, ogTitle: title });
+  };
+  router.onPopState = router.onPopState || function(url){
+    if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    if (GG.core.render && GG.core.render._lastUrl === url) return;
+    var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
+    GG.core.meta.update({ title: title, description: title, ogTitle: title });
+  };
+})(window.GG = window.GG || {}, window, document);
+
 GG.actions.register('dock:toggle', () => {
   const s = GG.store.get();
   GG.store.set({ dockOpen: !s.dockOpen });
 });
-function ggToast(message){
+GG.ui = GG.ui || {};
+GG.ui.ggToast = GG.ui.ggToast || function(message){
   if(window.GG && GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function'){
     GG.ui.toast.show(message);
     return;
@@ -232,22 +683,22 @@ function ggToast(message){
     GG.util.showToast(message);
     return;
   }
-}
-function toggleCommentsHelp(open){
+};
+GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open){
   var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
   if(!modal) return;
   modal.hidden = !open;
   modal.setAttribute('aria-hidden', open ? 'false' : 'true');
-  modal.classList.toggle('is-open', !!open);
-}
+  GG.core.state.toggle(modal, 'open', !!open);
+};
 GG.actions.register('comments-help', function(){
-  toggleCommentsHelp(true);
+  GG.ui.toggleCommentsHelp(true);
 });
 GG.actions.register('comments-help-close', function(){
-  toggleCommentsHelp(false);
+  GG.ui.toggleCommentsHelp(false);
 });
 GG.actions.register('like', function(){
-  ggToast('Coming soon');
+  GG.ui.ggToast('Coming soon');
 });
 // X-018A ACTION BRIDGE
 GG.actions.register('bookmark', function(ctx){
@@ -263,7 +714,7 @@ GG.actions.register('share', function(ctx){
   var event = ctx && ctx.event;
   var element = ctx && ctx.element;
   var sheet = document.getElementById('gg-share-sheet') || document.getElementById('pc-poster-sheet');
-  if (sheet && sheet.classList && sheet.classList.contains('is-open')) return;
+  if (sheet && GG.core.state.has(sheet, 'open')) return;
   var meta = (GG.util && typeof GG.util.getMetaFromElement === 'function')
     ? GG.util.getMetaFromElement(element)
     : null;
@@ -389,6 +840,77 @@ GG.actions.register('jump', function(ctx){
     services.sw.init();
   };
 
+  services.api = services.api || {};
+  services.api._buildQuery = services.api._buildQuery || function(params){
+    if (!params) return '';
+    var list = [];
+    for (var key in params) {
+      if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+      var val = params[key];
+      if (val === undefined || val === null || val === '') continue;
+      list.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(val)));
+    }
+    return list.join('&');
+  };
+  services.api.getFeedBase = services.api.getFeedBase || function(summary){
+    var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+    var base = summary ? (cfg.feedSummaryBase || '/feeds/posts/summary') : (cfg.feedBase || '/feeds/posts/default');
+    if (base.charAt(0) !== '/') base = '/' + base;
+    return base.replace(/\/$/, '');
+  };
+  services.api._error = services.api._error || function(code, message, info){
+    var err = new Error(message || 'api-error');
+    err.name = 'GGApiError';
+    err.code = code;
+    if (info) err.info = info;
+    return err;
+  };
+  services.api._log = services.api._log || function(payload){
+    try {
+      if (GG.core && typeof GG.core.telemetry === 'function') GG.core.telemetry(payload);
+    } catch (e) {}
+  };
+  services.api.fetch = services.api.fetch || function(url, type){
+    var mode = type || 'json';
+    if (!url) return Promise.reject(services.api._error('invalid', 'invalid-url', { url: url }));
+    var opts = { method: 'GET', cache: 'default', credentials: 'same-origin' };
+    return w.fetch(url, opts).then(function(res){
+      if (!res || !res.ok) {
+        var err = services.api._error('http', 'request-failed', { url: url, status: res ? res.status : 0, type: mode });
+        services.api._log({ type: 'api', stage: 'response', url: url, status: res ? res.status : 0, code: err.code });
+        throw err;
+      }
+      if (mode === 'text' || mode === 'html') return res.text();
+      return res.json();
+    }).catch(function(err){
+      if (err && err.name === 'GGApiError') {
+        services.api._log({ type: 'api', stage: 'error', url: url, code: err.code });
+        throw err;
+      }
+      var wrapped = services.api._error('network', 'network-failure', { url: url, type: mode, message: err && err.message ? err.message : '' });
+      services.api._log({ type: 'api', stage: 'error', url: url, code: wrapped.code });
+      throw wrapped;
+    });
+  };
+  services.api.getFeed = services.api.getFeed || function(params){
+    var opts = params || {};
+    var base = opts.base || services.api.getFeedBase(!!opts.summary);
+    var source = (opts.query && typeof opts.query === 'object') ? opts.query : opts;
+    var query = {};
+    for (var key in source) {
+      if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+      if (key === 'summary' || key === 'base' || key === 'query' || key === 'type') continue;
+      query[key] = source[key];
+    }
+    if (!query.alt) query.alt = 'json';
+    var qs = services.api._buildQuery(query);
+    var url = base + (qs ? '?' + qs : '');
+    return services.api.fetch(url, 'json');
+  };
+  services.api.getHtml = services.api.getHtml || function(url){
+    return services.api.fetch(url, 'text');
+  };
+
   GG.boot.onReady = GG.boot.onReady || function(fn){
     if (typeof fn !== 'function') return;
     if (d.readyState !== 'loading') { fn(); return; }
@@ -415,6 +937,24 @@ GG.actions.register('jump', function(ctx){
   GG.boot.init = GG.boot.init || function(){
     if(GG.boot._init) return;
     GG.boot._init = true;
+    try {
+      var cfgEl = d.getElementById('gg-config');
+      if (cfgEl) {
+        var rawCfg = cfgEl.getAttribute('data-json') || '';
+        if (rawCfg) {
+          try {
+            var parsedCfg = JSON.parse(rawCfg);
+            if (parsedCfg && typeof parsedCfg === 'object') {
+              GG.store.config = Object.assign({}, GG.store.config || {}, parsedCfg);
+            }
+          } catch (e) {
+            if (GG.core && typeof GG.core.telemetry === 'function') {
+              GG.core.telemetry({ type: 'config', stage: 'parse', message: e && e.message ? e.message : 'parse-failed' });
+            }
+          }
+        }
+      }
+    } catch (_) {}
     services.pwa.init();
     if (GG.boot.onReady) {
       GG.boot.onReady(function(){
@@ -434,11 +974,13 @@ GG.actions.register('jump', function(ctx){
     GG.boot.init = function(){
       if(prevInit) prevInit();
       if(GG.services.actions && GG.services.actions.init) GG.services.actions.init();
+      if(GG.core && GG.core.router && GG.core.router.init) GG.core.router.init();
       if(GG.services.a11y && GG.services.a11y.init) GG.services.a11y.init();
     };
   }
   if(GG.boot._init){
     if(GG.services.actions && GG.services.actions.init) GG.services.actions.init();
+    if(GG.core && GG.core.router && GG.core.router.init) GG.core.router.init();
     if(GG.services.a11y && GG.services.a11y.init) GG.services.a11y.init();
   }
 })(window.GG = window.GG || {});
@@ -469,8 +1011,12 @@ GG.actions.register('jump', function(ctx){
     var headBtn = root.querySelector('.gg-lt__headbtn');
     var panelBtn = root.querySelector('.gg-lt__panelbtn');
 
-    var maxPosts = parseInt(root.getAttribute('data-max-posts') || '10', 10);
+    var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+    var maxPosts = parseInt(cfg.maxPosts || root.getAttribute('data-max-posts') || '10', 10);
     var origin = (location.origin || '').replace(/\/$/, '');
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
 
     var cache = {};     // label -> posts[]
     var loaded = {};    // label -> true
@@ -479,7 +1025,7 @@ GG.actions.register('jump', function(ctx){
 
     function setPanel(open){
       panelOpen = open;
-      root.classList.toggle('is-collapsed', !open);
+      GG.core.state.toggle(root, 'collapsed', !open);
       if(headBtn) headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       if(panelBtn){
         panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
@@ -560,7 +1106,7 @@ GG.actions.register('jump', function(ctx){
       if(loaded[label]) return Promise.resolve(cache[label] || []);
       if(inFlight[label]) return inFlight[label];
 
-      var url = origin + '/feeds/posts/default/-/' + encodeURIComponent(label) +
+      var url = origin + feedBase + '/-/' + encodeURIComponent(label) +
                 '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
 
       inFlight[label] = jsonp(url).then(function(data){
@@ -583,7 +1129,7 @@ GG.actions.register('jump', function(ctx){
     }
 
     function setNodeOpen(node, open){
-      node.classList.toggle('is-open', open);
+      GG.core.state.toggle(node, 'open', open);
       var row = node.querySelector('.gg-lt__row');
       if(row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
 
@@ -595,7 +1141,7 @@ GG.actions.register('jump', function(ctx){
       var label = node.getAttribute('data-label');
       if(!label) return;
 
-      var isOpen = node.classList.contains('is-open');
+      var isOpen = GG.core.state.has(node, 'open');
       if(isOpen){
         setNodeOpen(node, false);
         return;
@@ -611,7 +1157,7 @@ GG.actions.register('jump', function(ctx){
       showChildrenLoading(node);
       fetchPosts(label).then(function(posts){
         // only render if still open
-        if(node.classList.contains('is-open')){
+        if(GG.core.state.has(node, 'open')){
           renderPosts(node, posts);
         }
       });
@@ -697,9 +1243,9 @@ GG.actions.register('jump', function(ctx){
       });
       if(!node) return;
 
-      node.classList.add('is-current');
+      GG.core.state.add(node, 'current');
       var row = node.querySelector('.gg-lt__row');
-      if(row) row.classList.add('is-current');
+      if(row) GG.core.state.add(row, 'current');
 
       // buka label itu (akan fetch posts + render)
       toggleNode(node);
@@ -715,7 +1261,7 @@ GG.actions.register('jump', function(ctx){
         if(links.length){
           links.forEach(function(a){
             if(normalizeUrl(a.href) === activeUrl){
-              a.classList.add('is-active');
+              GG.core.state.add(a, 'active');
             }
           });
           clearInterval(t);
@@ -726,7 +1272,7 @@ GG.actions.register('jump', function(ctx){
 
     function loadLabels(){
       treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
-      var url = origin + '/feeds/posts/default?alt=json-in-script&max-results=1&callback=?';
+      var url = origin + feedBase + '?alt=json-in-script&max-results=1&callback=?';
 
       jsonp(url).then(function(data){
         var cats = (data && data.feed && data.feed.category) || [];
@@ -735,6 +1281,17 @@ GG.actions.register('jump', function(ctx){
           a=a.toLowerCase(); b=b.toLowerCase();
           return a<b ? -1 : (a>b ? 1 : 0);
         });
+        var cfgLabels = Array.isArray(cfg.searchLabels) ? cfg.searchLabels.filter(Boolean) : null;
+        if (cfgLabels && cfgLabels.length) {
+          var labelMap = {};
+          labels.forEach(function(l){ labelMap[String(l).toLowerCase()] = l; });
+          var filtered = [];
+          cfgLabels.forEach(function(l){
+            var key = String(l).toLowerCase();
+            if (labelMap[key]) filtered.push(labelMap[key]);
+          });
+          if (filtered.length) labels = filtered;
+        }
 
         if(!labels.length){
           treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
@@ -802,7 +1359,7 @@ GG.actions.register('jump', function(ctx){
   function txt(el){ return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim(); }
 
   function setCollapsed(collapsed){
-    root.classList.toggle('is-collapsed', collapsed);
+    GG.core.state.toggle(root, 'collapsed', collapsed);
     if(headBtn) headBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     if(toggleBtn){
       toggleBtn.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
@@ -869,7 +1426,7 @@ GG.actions.register('jump', function(ctx){
   }
 
   function setActiveById(id){
-    qsa('.gg-toc__item', list).forEach(function(x){ x.classList.remove('is-active'); });
+    qsa('.gg-toc__item', list).forEach(function(x){ GG.core.state.remove(x, 'active'); });
     if(!id) return;
 
     var a = list.querySelector('a.gg-toc__link[href="#' + id.replace(/"/g,'') + '"]');
@@ -877,7 +1434,7 @@ GG.actions.register('jump', function(ctx){
 
     var li = a.closest('.gg-toc__item');
     if(li){
-      li.classList.add('is-active');
+      GG.core.state.add(li, 'active');
       a.scrollIntoView({ block:'nearest' });
     }
   }
@@ -994,7 +1551,7 @@ GG.actions.register('jump', function(ctx){
   // collapse/expand panel
   root.addEventListener('click', function(e){
     if(e.target.closest('.gg-toc__headbtn') || e.target.closest('.gg-toc__toggle')){
-      setCollapsed(!root.classList.contains('is-collapsed'));
+      setCollapsed(!GG.core.state.has(root, 'collapsed'));
       return;
     }
   });
@@ -1150,11 +1707,11 @@ GG.modules.homeState = (function () {
       blogLayer.setAttribute('aria-hidden', showBlog ? 'false' : 'true');
     }
 
-    root.classList.toggle('gg-is-landing', isLanding);
-    root.classList.toggle('gg-is-blog', !isLanding);
+    GG.core.state.toggle(root, 'landing', isLanding);
+    GG.core.state.toggle(root, 'blog', !isLanding);
     if (document.body) {
-      document.body.classList.toggle('gg-is-landing', isLanding);
-      document.body.classList.toggle('gg-is-blog', !isLanding);
+      GG.core.state.toggle(document.body, 'landing', isLanding);
+      GG.core.state.toggle(document.body, 'blog', !isLanding);
     }
   }
 
@@ -1250,7 +1807,7 @@ GG.modules.Dock = (function () {
   function enterSearch(){
     if (isSearchMode) return;
     isSearchMode = true;
-    dockEl.classList.add('gg-dock--search');
+    GG.core.state.add(dockEl, 'search');
     if (searchInput){
       try { searchInput.focus(); } catch(e){}
     }
@@ -1260,7 +1817,7 @@ GG.modules.Dock = (function () {
   function exitSearch(){
     if (!isSearchMode) return;
     isSearchMode = false;
-    dockEl.classList.remove('gg-dock--search');
+    GG.core.state.remove(dockEl, 'search');
     scheduleWidthUpdate();
   }
 
@@ -1309,7 +1866,7 @@ GG.modules.Dock = (function () {
         (state === 'landing'  && action === 'home-landing') ||
         (state === 'blog'     && action === 'home-blog');
 
-      btn.classList.toggle('gg-dock__item--active', !!match);
+      GG.core.state.toggle(btn, 'active', !!match);
       btn.setAttribute('aria-pressed', match ? 'true' : 'false');
 
       if (match) btn.setAttribute('aria-current', 'page');
@@ -1447,15 +2004,17 @@ GG.modules.Dock = (function () {
   function text(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
 
   function showToast(msg){
-    var toast = document.querySelector('.gg-toast');
+    var toast = document.getElementById('gg-toast') || document.getElementById('pc-toast') || document.querySelector('.gg-toast');
     if(!toast){ return; }
     var inner = toast.querySelector('.gg-toast__message');
     if(inner){ inner.textContent = msg; }
     toast.hidden = false;
-    toast.classList.add('is-visible');
+    GG.core.state.remove(toast, 'hidden');
+    GG.core.state.add(toast, 'visible');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(function(){
-      toast.classList.remove('is-visible');
+      GG.core.state.remove(toast, 'visible');
+      GG.core.state.add(toast, 'hidden');
       toast.hidden = true;
     }, 2200);
   }
@@ -1567,7 +2126,7 @@ function init(){
   function setBtnActive(act, on){
     var b = btnByAct(act);
     if(!b) return;
-    b.classList.toggle('is-active', !!on);
+    GG.core.state.toggle(b, 'active', !!on);
     if(b.hasAttribute('aria-expanded')) b.setAttribute('aria-expanded', on ? 'true' : 'false');
     if(b.hasAttribute('aria-pressed'))  b.setAttribute('aria-pressed',  on ? 'true' : 'false');
   }
@@ -1577,7 +2136,7 @@ function init(){
     if(!b) return;
     var icon = b.querySelector('.gg-icon.material-symbols-rounded');
     if(icon) icon.textContent = on ? 'center_focus_strong' : 'center_focus_weak';
-    b.classList.toggle('is-active', !!on);           // filled via CSS .is-active
+    GG.core.state.toggle(b, 'active', !!on);           // filled via CSS [data-gg-state~="active"]
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
 
@@ -1603,7 +2162,7 @@ function init(){
     var leftOpen = leftState() === 'open';
     var rightOpen = rightState() === 'open';
     var mode = rightMode();
-    var focusOn = document.body.classList.contains('gg-focus-mode');
+    var focusOn = GG.core.state.has(document.body, 'focus-mode');
 
     setBtnActive('info', leftOpen);
     setBtnActive('comments', rightOpen && mode === 'comments');
@@ -1693,7 +2252,7 @@ function init(){
   }
 
   function setFocus(on){
-    document.body.classList.toggle('gg-focus-mode', !!on);
+    GG.core.state.toggle(document.body, 'focus-mode', !!on);
     setFocusIcon(!!on);
 
     if(on){
@@ -1739,7 +2298,7 @@ function init(){
     }
 
     if(act === 'focus'){
-      setFocus(!document.body.classList.contains('gg-focus-mode'));
+      setFocus(!GG.core.state.has(document.body, 'focus-mode'));
       return;
     }
 
@@ -1757,7 +2316,7 @@ function init(){
     bar.__ggEscBound = true;
     document.addEventListener('keydown', function(e){
       if(e.key !== 'Escape') return;
-      if(!document.body.classList.contains('gg-focus-mode')) return;
+      if(!GG.core.state.has(document.body, 'focus-mode')) return;
       if(rightState() === 'open' || leftState() === 'open') return;
       setFocus(false);
     });
@@ -1808,12 +2367,12 @@ return { init: init };
       function setVisibility(){
         if(!allowedSurface()){
           btn.hidden = true;
-          btn.classList.remove('is-visible');
+          GG.core.state.remove(btn, 'visible');
           return;
         }
         var scrollable = (document.documentElement.scrollHeight - window.innerHeight) > 200;
         btn.hidden = !scrollable;
-        btn.classList.toggle('is-visible', scrollable);
+        GG.core.state.toggle(btn, 'visible', scrollable);
       }
 
       function onScroll(){
@@ -1884,15 +2443,15 @@ return { init: init };
 
       function setLoading(state){
         isLoading = state;
-        btn.classList.toggle('is-loading', state);
-        if(!btn.classList.contains('is-disabled')){
+        GG.core.state.toggle(btn, 'loading', state);
+        if(!GG.core.state.has(btn, 'disabled')){
           btn.disabled = state;
         }
         btn.setAttribute('aria-busy', state ? 'true' : 'false');
       }
 
       function setDisabled(message){
-        btn.classList.add('is-disabled');
+        GG.core.state.add(btn, 'disabled');
         btn.disabled = true;
         btn.setAttribute('aria-disabled', 'true');
         if(message) setLabel(message);
@@ -2136,7 +2695,7 @@ GG.modules.InfoPanel = (function () {
   function setBackdropVisible(show){
     var bd = ensureBackdrop();
     if (!bd) return;
-    bd.classList.toggle('is-visible', !!show);
+    GG.core.state.toggle(bd, 'visible', !!show);
   }
 
   function ensurePanelSkeleton(){
@@ -2283,11 +2842,11 @@ function extractThumbSrc(card){
       if(!src){
         img.removeAttribute('src');
         img.style.display = 'none';
-        wrap.classList.add('is-noimg');
+        GG.core.state.add(wrap, 'noimg');
         wrap.style.display = '';
         return;
       }
-      wrap.classList.remove('is-noimg');
+      GG.core.state.remove(wrap, 'noimg');
       wrap.style.display = '';
       img.style.display = '';
       img.src = src;
@@ -2586,7 +3145,10 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
   async function fetchViaFeed(postUrl, postId, signal){
     if(!postId) throw new Error('No post id');
     var base = getBlogBaseFromUrl(postUrl);
-    var feedUrl = base.replace(/\/$/,'') + '/feeds/posts/default/' + encodeURIComponent(postId) + '?alt=json';
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
+    var feedUrl = base.replace(/\/$/,'') + feedBase + '/' + encodeURIComponent(postId) + '?alt=json';
     var res = await fetch(feedUrl, { method: 'GET', credentials: 'same-origin', signal: signal });
     if(!res.ok) throw new Error('Feed HTTP ' + res.status);
     var json = await res.json();
@@ -2905,8 +3467,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
           link.classList.add('gg-leftnav__link');
           link.setAttribute('data-gg-icon', 'folder');
 
-          li.classList.add('gg-tree', 'is-open');
-          li.classList.remove('is-collapsed');
+          li.classList.add('gg-tree');
+          GG.core.state.add(li, 'open');
+          GG.core.state.remove(li, 'collapsed');
 
           var toggle = qs('.gg-tree-toggle', li);
           if (!toggle) {
@@ -2997,11 +3560,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         var btn = qs('.gg-sc-accordion__toggle', acc);
         var body = qs('.gg-sc-accordion__body', acc);
         acc.__ggAccReady = true;
-        acc.classList.remove('is-open');
+        GG.core.state.remove(acc, 'open');
         if(body) body.style.display = 'none';
         if(btn){
           btn.addEventListener('click', function(){
-            var open = acc.classList.toggle('is-open');
+            var open = GG.core.state.toggle(acc, 'open');
             if(body) body.style.display = open ? 'block' : 'none';
           });
         }
@@ -3092,7 +3655,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         if(revealed) return;
         revealed = true;
         list.removeAttribute('data-gg-skeleton');
-        skeleton.classList.add('is-fading');
+        GG.core.state.add(skeleton, 'fading');
         setTimeout(function(){
           if(skeleton && skeleton.parentNode){ skeleton.parentNode.removeChild(skeleton); }
         }, 240);
@@ -3316,7 +3879,10 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
 
     function fetchRelated(label){
-      var url = getBase() + '/feeds/posts/default/-/' + encodeURIComponent(label) + '?alt=json&max-results=6';
+      var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+        ? GG.services.api.getFeedBase(false)
+        : '/feeds/posts/default';
+      var url = getBase() + feedBase + '/-/' + encodeURIComponent(label) + '?alt=json&max-results=6';
       return fetch(url, { credentials:'same-origin' })
         .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
         .then(function(json){
@@ -3383,7 +3949,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
   })();
 })();
 
-function safeInit(name, fn){
+GG.boot = GG.boot || {};
+GG.core = GG.core || {};
+GG.boot.safeInit = GG.boot.safeInit || function(name, fn){
   try {
     if (typeof fn === 'function') fn();
     if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[name] = 'ok';
@@ -3404,9 +3972,9 @@ function safeInit(name, fn){
   } finally {
     try { if (window.GG_DIAG_RENDER) window.GG_DIAG_RENDER(); } catch(_) {}
   }
-}
+};
 
-function initDebugOverlay(){
+GG.boot.initDebugOverlay = GG.boot.initDebugOverlay || function(){
   try {
     var debug = false;
     try { debug = new URL(window.location.href).searchParams.get('ggdebug') === '1'; } catch (e) {}
@@ -3451,9 +4019,9 @@ function initDebugOverlay(){
 
     window.GG_DIAG_RENDER();
   } catch(_) {}
-}
+};
 
-function initHomePrepaint(){
+GG.boot.initHomePrepaint = GG.boot.initHomePrepaint || function(){
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   if (GG.util && GG.util.isDebug && GG.util.isDebug()) {
     var pre = document.documentElement.getAttribute('data-gg-prehome');
@@ -3465,7 +4033,7 @@ function initHomePrepaint(){
 
   function disarm(){
     if (GG.homePrepaint && GG.homePrepaint.disarm) {
-      safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
+      GG.boot.safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
     }
   }
 
@@ -3487,9 +4055,9 @@ function initHomePrepaint(){
       disarm();
     }
   }, 1500);
-}
+};
 
-function initHomeState(){
+GG.boot.initHomeState = GG.boot.initHomeState || function(){
   var main = document.querySelector('main.gg-main[data-gg-surface]');
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
@@ -3502,9 +4070,9 @@ function initHomeState(){
   } else {
     GG.modules.homeState.init(main);
   }
-}
+};
 
-function resolveSelector(sel){
+GG.core.resolveSelector = GG.core.resolveSelector || function(sel){
   if (!sel) return null;
   if (typeof sel === 'function') return sel();
   if (Array.isArray(sel)) {
@@ -3515,20 +4083,20 @@ function resolveSelector(sel){
     return null;
   }
   return document.querySelector(sel);
-}
+};
 
-function selectorLabel(sel){
+GG.core.selectorLabel = GG.core.selectorLabel || function(sel){
   if (!sel) return '';
   if (Array.isArray(sel)) return sel.join(' | ');
   if (typeof sel === 'function') return '(custom)';
   return sel;
-}
+};
 
 GG.app = GG.app || {};
 GG.app.plan = [
-  { name: 'debugOverlay', selector: 'body', init: initDebugOverlay, optional: true },
-  { name: 'homePrepaint.guard', selector: null, init: initHomePrepaint, optional: true },
-  { name: 'homeState.init', selector: 'main.gg-main[data-gg-surface="home"]', init: initHomeState },
+  { name: 'debugOverlay', selector: 'body', init: GG.boot.initDebugOverlay, optional: true },
+  { name: 'homePrepaint.guard', selector: null, init: GG.boot.initHomePrepaint, optional: true },
+  { name: 'homeState.init', selector: 'main.gg-main[data-gg-surface="home"]', init: GG.boot.initHomeState },
   { name: 'Shortcodes.init', selector: '.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content', init: function(){ if (GG.modules.Shortcodes) GG.modules.Shortcodes.init(); } },
   { name: 'ShortcodesLite.init', selector: '.post-body, .entry-content, #post-body', init: function(){ if (GG.modules.shortcodesLite && GG.modules.shortcodesLite.init) GG.modules.shortcodesLite.init(); } },
   { name: 'Skeleton.init', selector: '#postcards', init: function(){ if (GG.modules.Skeleton) GG.modules.Skeleton.init(); } },
@@ -3563,7 +4131,7 @@ GG.app.plan = [
 
 GG.app.selectorMap = GG.app.selectorMap || {};
 GG.app.plan.forEach(function(item){
-  GG.app.selectorMap[item.name] = selectorLabel(item.selector);
+  GG.app.selectorMap[item.name] = GG.core.selectorLabel(item.selector);
 });
 
 GG.app.init = GG.app.init || function(){
@@ -3572,12 +4140,12 @@ GG.app.init = GG.app.init || function(){
   for (var i = 0; i < GG.app.plan.length; i++) {
     (function(item){
       if (!item || typeof item.init !== 'function') return;
-      var host = resolveSelector(item.selector);
+      var host = GG.core.resolveSelector(item.selector);
       if (item.selector && !host && !item.optional) {
         if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[item.name] = 'skip';
         return;
       }
-      safeInit(item.name, function(){ item.init(host); });
+      GG.boot.safeInit(item.name, function(){ item.init(host); });
     })(GG.app.plan[i]);
   }
 };
@@ -3973,8 +4541,8 @@ GG.app.init = GG.app.init || function(){
     // Bind buttons
     btns.forEach(function (b) {
       b.addEventListener("click", function () {
-        btns.forEach(function (x) { x.classList.remove("active"); });
-        b.classList.add("active");
+        btns.forEach(function (x) { GG.core.state.remove(x, "active"); });
+        GG.core.state.add(b, "active");
         state.type = (b.getAttribute("data-type") || "all").toLowerCase();
         reset();
       });
@@ -4063,6 +4631,36 @@ GG.app.init = GG.app.init || function(){
     return y + "-" + m + "-" + day;
   }
 
+  function fetchJson(url, timeoutMs){
+    timeoutMs = timeoutMs || 12000;
+    return new Promise(function(resolve, reject){
+      var done = false;
+      var t = setTimeout(function(){
+        if(done) return;
+        done = true;
+        reject(new Error("JSON fetch timeout"));
+      }, timeoutMs);
+
+      fetch(url, { credentials: "same-origin" })
+        .then(function(res){
+          if(!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function(data){
+          if(done) return;
+          done = true;
+          clearTimeout(t);
+          resolve(data);
+        })
+        .catch(function(err){
+          if(done) return;
+          done = true;
+          clearTimeout(t);
+          reject(err);
+        });
+    });
+  }
+
   function jsonp(url, timeoutMs){
     timeoutMs = timeoutMs || 12000;
     return new Promise(function(resolve, reject){
@@ -4099,6 +4697,89 @@ GG.app.init = GG.app.init || function(){
     });
   }
 
+  function loadJson(url, timeoutMs){
+    var useJsonp = (url.indexOf("callback=") !== -1) || (url.indexOf("alt=json-in-script") !== -1);
+    return useJsonp ? jsonp(url, timeoutMs) : fetchJson(url, timeoutMs);
+  }
+
+  function stripHtml(s){
+    return String(s || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function pickAltLink(entry){
+    var links = entry && entry.link ? entry.link : [];
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel === "alternate" && links[i].href) return links[i].href;
+    }
+    return "";
+  }
+
+  function extractLabels(entry){
+    var cats = entry && entry.category ? entry.category : [];
+    var out = [];
+    for (var i = 0; i < cats.length; i++) {
+      if (cats[i] && cats[i].term) out.push(String(cats[i].term));
+    }
+    return out;
+  }
+
+  function normalizeEntry(entry){
+    if(!entry) return null;
+    var id = entry.id && entry.id.$t ? entry.id.$t : "";
+    var title = (entry.title && entry.title.$t) ? entry.title.$t : "";
+    var postUrl = pickAltLink(entry);
+    var published = entry.published && entry.published.$t ? entry.published.$t : "";
+    var summary = entry.summary && entry.summary.$t ? entry.summary.$t : "";
+    var content = entry.content && entry.content.$t ? entry.content.$t : "";
+    var snippet = stripHtml(summary || content);
+    var labels = extractLabels(entry);
+
+    var thumb = "";
+    var media = "";
+    var mediaThumb = entry["media$thumbnail"] || entry.media$thumbnail;
+    if(mediaThumb && mediaThumb.url){
+      thumb = mediaThumb.url;
+      media = mediaThumb.url;
+    }
+    if(!media) media = content || summary || "";
+
+    return {
+      id: id || postUrl || title,
+      title: title || "(untitled)",
+      postUrl: postUrl || "#",
+      published: published,
+      labels: labels,
+      snippet: snippet,
+      media: media,
+      thumb: thumb
+    };
+  }
+
+  function findRelLink(feed, rel){
+    var links = feed && feed.link ? feed.link : [];
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel === rel && links[i].href) return links[i].href;
+    }
+    return "";
+  }
+
+  function parseFeed(data){
+    var feed = data && data.feed ? data.feed : null;
+    var entries = feed && feed.entry ? feed.entry : [];
+    var items = entries.map(normalizeEntry).filter(Boolean);
+    var total = null;
+    var totalNode = feed && feed["openSearch$totalResults"];
+    if(totalNode && totalNode.$t){
+      var n = Number(totalNode.$t);
+      if(!isNaN(n)) total = n;
+    }
+    var nextUrl = findRelLink(feed, "next");
+    return { items: items, total: total, nextUrl: nextUrl };
+  }
+
   function boot(){
     var root = document.getElementById("gg-sitemap");
     if(!root || root.dataset.ggBound === "1") return;
@@ -4127,7 +4808,7 @@ GG.app.init = GG.app.init || function(){
     var state = {
       type:"all", q:"", year:"", month:"", label:"", sort:"newest",
       offset:0, limit:80, loading:false, done:false, emptySkips:0,
-      totalFromServer:null,
+      totalFromServer:null, nextUrl:"",
 
       // store all loaded unique items so we can regroup/re-render instantly
       byId: new Map(),     // id -> item
@@ -4140,16 +4821,12 @@ GG.app.init = GG.app.init || function(){
     };
 
     function showLoader(on){
-      loader.classList.toggle("is-hidden", !on);
+      GG.core.state.toggle(loader, "hidden", !on);
     }
 
     function buildUrl(){
-      var u = new URL(api);
-      u.searchParams.set("limit", String(state.limit));
-      u.searchParams.set("offset", String(state.offset));
-      u.searchParams.set("type", "all");
-      if(state.q) u.searchParams.set("q", state.q);
-      return u.toString();
+      if (state.nextUrl) return state.nextUrl;
+      return api;
     }
 
     function rebuildYearOptions(){
@@ -4233,6 +4910,7 @@ GG.app.init = GG.app.init || function(){
       // label
       if(state.label){
         out = out.filter(function(x){
+          if (Array.isArray(x.labels)) return x.labels.indexOf(state.label) !== -1;
           return String(x.labels||"") === state.label;
         });
       }
@@ -4242,7 +4920,7 @@ GG.app.init = GG.app.init || function(){
         var q = state.q.toLowerCase();
         out = out.filter(function(x){
           var t = String(x.title||"").toLowerCase();
-          var l = String(x.labels||"").toLowerCase();
+          var l = Array.isArray(x.labels) ? x.labels.join(" ").toLowerCase() : String(x.labels||"").toLowerCase();
           return (t.indexOf(q)!==-1) || (l.indexOf(q)!==-1);
         });
       }
@@ -4317,13 +4995,14 @@ GG.app.init = GG.app.init || function(){
 
           var title = esc(item.title || "(untitled)");
           var url = esc(item.postUrl || "#");
-          var lbl = esc(item.labels || "");
+          var labelText = Array.isArray(item.labels) ? (item.labels[0] || "") : (item.labels || "");
+          var lbl = esc(labelText);
 
           // type badge (will be Unknown if API doesn't provide signals)
           var yt = isYT(item);
           var hasSignals = !!(item.type || item.media || item.thumb);
           var badgeText = !hasSignals ? "Type?" : (yt ? "YouTube" : "Image");
-          var badgeCls = !hasSignals ? "gg-badge is-unk" : (yt ? "gg-badge is-yt" : "gg-badge is-img");
+          var badgeState = !hasSignals ? "unk" : (yt ? "yt" : "img");
 
           var snippet = item && item.snippet ? esc(item.snippet) : "";
 
@@ -4337,7 +5016,7 @@ GG.app.init = GG.app.init || function(){
             '<div class="gg-main">' +
               '<a class="gg-link" href="'+url+'">'+title+'</a>' +
               '<div class="gg-badges">' +
-                '<span class="'+badgeCls+'">'+badgeText+'</span>' +
+                '<span class="gg-badge" data-gg-state="'+badgeState+'">'+badgeText+'</span>' +
                 (lbl ? '<span class="gg-badge">'+lbl+'</span>' : '') +
               '</div>' +
               '<div class="gg-snippet">'+ (snippet || "") +'</div>' +
@@ -4347,7 +5026,7 @@ GG.app.init = GG.app.init || function(){
           var btn = qs(el, ".gg-toggle");
           btn.addEventListener("click", function(e){
             e.stopPropagation();
-            el.classList.toggle("is-open");
+            GG.core.state.toggle(el, "open");
           });
 
           el.addEventListener("click", function(e){
@@ -4374,10 +5053,10 @@ GG.app.init = GG.app.init || function(){
 
     function applyFocus(idx){
       if(!state.focusables) return;
-      state.focusables.forEach(function(el){ el.classList.remove("is-focus"); });
+      state.focusables.forEach(function(el){ GG.core.state.remove(el, "focus"); });
       var el = state.focusables[idx];
       if(el){
-        el.classList.add("is-focus");
+        GG.core.state.add(el, "focus");
         // keep it in view without jumping too hard
         el.scrollIntoView({block:"nearest"});
         el.focus({preventScroll:true});
@@ -4399,10 +5078,14 @@ GG.app.init = GG.app.init || function(){
         set.add(String(d.getMonth()+1).padStart(2,"0"));
       }
 
-      var lbl = String(item.labels||"");
-      if(lbl){
-        state.labels.set(lbl, (state.labels.get(lbl)||0) + 1);
-      }
+      var lbls = Array.isArray(item.labels) ? item.labels : (item.labels ? [String(item.labels)] : []);
+      var seenLbl = {};
+      lbls.forEach(function(lbl){
+        var key = String(lbl || "").trim();
+        if(!key || seenLbl[key]) return;
+        seenLbl[key] = true;
+        state.labels.set(key, (state.labels.get(key)||0) + 1);
+      });
     }
 
     function mergeItems(serverItems){
@@ -4429,20 +5112,17 @@ GG.app.init = GG.app.init || function(){
       showLoader(true);
       moreBtn.disabled = true;
 
-      jsonp(buildUrl(), 12000).then(function(data){
-        var serverItems = (data && data.items) ? data.items : [];
-        state.totalFromServer = (data && typeof data.total === "number") ? data.total : state.totalFromServer;
+      loadJson(buildUrl(), 12000).then(function(data){
+        var parsed = parseFeed(data);
+        var serverItems = parsed.items || [];
+        if(parsed.total != null) state.totalFromServer = parsed.total;
+        state.nextUrl = parsed.nextUrl || "";
+        state.done = !state.nextUrl;
 
-        // use server nextOffset if present
-        if(data && typeof data.nextOffset === "number") state.offset = data.nextOffset;
-        else state.offset += serverItems.length;
-
-        if(data && data.done === true) state.done = true;
-
-        if(!serverItems.length){
-          state.done = true;
-        } else {
+        if(serverItems.length){
           mergeItems(serverItems);
+        } else if(!state.nextUrl){
+          state.done = true;
         }
 
         updateMeta();
@@ -4450,7 +5130,7 @@ GG.app.init = GG.app.init || function(){
 
         showLoader(false);
         moreBtn.disabled = false;
-        if(state.done) moreBtn.style.display = "none";
+        moreBtn.style.display = state.done ? "none" : "";
 
       }).catch(function(err){
         console.error("SITEMAP ERROR:", err);
@@ -4472,8 +5152,8 @@ GG.app.init = GG.app.init || function(){
     // ---- events ----
     tabs.forEach(function(btn){
       btn.addEventListener("click", function(){
-        tabs.forEach(function(x){ x.classList.remove("is-active"); });
-        btn.classList.add("is-active");
+        tabs.forEach(function(x){ GG.core.state.remove(x, "active"); });
+        GG.core.state.add(btn, "active");
         state.type = String(btn.getAttribute("data-type")||"all").toLowerCase();
         reset();
       });
@@ -4512,8 +5192,8 @@ GG.app.init = GG.app.init || function(){
     resetBtn.addEventListener("click", function(){
       qInput.value = ""; state.q = "";
       state.type = "all";
-      tabs.forEach(function(x){ x.classList.remove("is-active"); });
-      tabs[0].classList.add("is-active");
+      tabs.forEach(function(x){ GG.core.state.remove(x, "active"); });
+      GG.core.state.add(tabs[0], "active");
 
       state.year=""; state.month=""; state.label="";
       yearSel.value=""; rebuildMonthOptions(); labelSel.value="";
@@ -4895,8 +5575,8 @@ function isSystemPath(pathname){
   }
 
   function lockScroll(locked){
-    document.documentElement.classList.toggle('gg-scroll-lock', !!locked);
-    document.body.classList.toggle('gg-scroll-lock', !!locked);
+    GG.core.state.toggle(document.documentElement, 'scroll-lock', !!locked);
+    GG.core.state.toggle(document.body, 'scroll-lock', !!locked);
   }
 
   function shouldMobile(){
@@ -4926,7 +5606,7 @@ function isSystemPath(pathname){
       var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
       var rightOpen = getAttr(main, 'data-gg-info-panel') === 'open';
       var show = mobile && (leftOpen || rightOpen);
-      backdrop.classList.toggle('is-visible', show);
+      GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
     }
 
@@ -4971,7 +5651,8 @@ function isSystemPath(pathname){
           var childUl = qs(':scope > ul', li);
           if (!childUl) return;
 
-          li.classList.add('gg-tree', 'is-open');
+          li.classList.add('gg-tree');
+          GG.core.state.add(li, 'open');
           if (qs(':scope > .gg-tree-toggle', li)) return;
 
           var btn = document.createElement('button');
@@ -4997,9 +5678,9 @@ function isSystemPath(pathname){
       if (treeBtn){
         var li = closest(treeBtn, 'li.gg-tree');
         if (!li) return;
-        var isOpen = li.classList.contains('is-open');
-        li.classList.toggle('is-open', !isOpen);
-        li.classList.toggle('is-collapsed', isOpen);
+        var isOpen = GG.core.state.has(li, 'open');
+        GG.core.state.toggle(li, 'open', !isOpen);
+        GG.core.state.toggle(li, 'collapsed', isOpen);
         treeBtn.setAttribute('aria-expanded', (!isOpen).toString());
         evt.preventDefault();
         return;
@@ -5268,9 +5949,11 @@ function isSystemPath(pathname){
   GG.modules.tagHubPage.renderPosts = function (listRoot, posts) {
     if (!listRoot) { return; }
     listRoot.innerHTML = '';
-    listRoot.classList.remove('gg-is-loading', 'gg-is-empty', 'gg-is-error');
+    GG.core.state.remove(listRoot, 'loading');
+    GG.core.state.remove(listRoot, 'empty');
+    GG.core.state.remove(listRoot, 'error');
     if (!posts || !posts.length) {
-      listRoot.classList.add('gg-is-empty');
+      GG.core.state.add(listRoot, 'empty');
       var emptyMsg = document.createElement('p');
       emptyMsg.className = 'gg-post-list__empty';
       emptyMsg.textContent = (tagLang && tagLang.emptyMessage) || 'Belum ada artikel dengan tag ini.';
@@ -5287,8 +5970,9 @@ function isSystemPath(pathname){
   GG.modules.tagHubPage.renderError = function (listRoot) {
     if (!listRoot) { return; }
     listRoot.innerHTML = '';
-    listRoot.classList.remove('gg-is-loading', 'gg-is-empty');
-    listRoot.classList.add('gg-is-error');
+    GG.core.state.remove(listRoot, 'loading');
+    GG.core.state.remove(listRoot, 'empty');
+    GG.core.state.add(listRoot, 'error');
     var errMsg = document.createElement('p');
     errMsg.className = 'gg-post-list__error';
     errMsg.textContent = (tagLang && tagLang.errorMessage) || 'Tag tidak dapat dimuat. Coba segarkan halaman.';
@@ -5424,7 +6108,7 @@ function isSystemPath(pathname){
       if (descEl) { descEl.textContent = ((tagLang && tagLang.pageSubtitlePrefix) || 'Artikel dengan tag ') + '#' + tagSlug; }
       applyBreadcrumb(tagSlug);
       if (listRoot) {
-        listRoot.classList.add('gg-is-loading');
+        GG.core.state.add(listRoot, 'loading');
         GG.modules.tagHubPage.fetchPostsByTag(tagSlug)
           .then(function (posts) {
             currentPosts = posts || [];
@@ -5439,7 +6123,8 @@ function isSystemPath(pathname){
       if (directorySection) { directorySection.style.removeProperty('display'); }
       if (listRoot) {
         listRoot.innerHTML = '';
-        listRoot.classList.remove('gg-is-loading', 'gg-is-error');
+        GG.core.state.remove(listRoot, 'loading');
+        GG.core.state.remove(listRoot, 'error');
       }
       applyBreadcrumb(null);
       if (titleEl) { titleEl.textContent = (tagLang && tagLang.directoryTitle) || 'Tag'; }
@@ -5625,7 +6310,10 @@ function isSystemPath(pathname){
   };
 
   TagUtils.buildFeedUrl = function (params) {
-    var base = getBasePath() + '/feeds/posts/default';
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
+    var base = getBasePath() + feedBase;
     var url = new URL(base, w.location.href);
     url.searchParams.set('alt', 'json');
     if (params && params['max-results']) {
@@ -5839,12 +6527,11 @@ function isSystemPath(pathname){
     var labelText = active ? msg.in : msg.add;
     if (GG.a11y && typeof GG.a11y.setToggle === 'function') {
       GG.a11y.setToggle(btn, active);
-    } else {
-      btn.classList.toggle('gg-is-active', active);
-      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     }
-    btn.classList.toggle('is-marked', active);
-    btn.classList.remove('gg-is-just-added');
+    GG.core.state.toggle(btn, 'active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    GG.core.state.toggle(btn, 'marked', active);
+    GG.core.state.remove(btn, 'just-added');
     btn.setAttribute('aria-label', labelText);
     var label = btn.querySelector('.gg-post-card__action-label, .gg-post__action-label');
     if (label) label.textContent = labelText;
@@ -5987,7 +6674,7 @@ function isSystemPath(pathname){
       removeBtn.appendChild(removeIcon);
       removeBtn.appendChild(removeLabel);
       removeBtn.addEventListener('click', function () {
-        removeBtn.classList.add('gg-is-removed');
+        GG.core.state.add(removeBtn, 'removed');
         var iconUse = removeBtn.querySelector('.gg-library-list__remove-icon use');
         if (iconUse) {
           iconUse.setAttribute('href', '#gg-ic-check-circle-solid');
@@ -6144,10 +6831,16 @@ function isSystemPath(pathname){
     if (iconUse) {
       iconUse.setAttribute('href', opts.icon || '#gg-ic-check-circle-solid');
     }
-    el.classList.add('is-visible', 'is-show');
+    el.hidden = false;
+    GG.core.state.remove(el, 'hidden');
+    GG.core.state.add(el, 'visible');
+    GG.core.state.add(el, 'show');
     clearTimeout(shareState.toastTimer);
     shareState.toastTimer = setTimeout(function () {
-      el.classList.remove('is-visible', 'is-show');
+      GG.core.state.remove(el, 'visible');
+      GG.core.state.remove(el, 'show');
+      GG.core.state.add(el, 'hidden');
+      el.hidden = true;
     }, 2000);
   }
   GG.util.showToast = showToast;
@@ -6184,13 +6877,13 @@ function isSystemPath(pathname){
     });
   }
   function lockScroll() {
-    if (d.documentElement) d.documentElement.classList.add('gg-sheet-locked');
-    if (d.body) d.body.classList.add('gg-sheet-locked');
+    if (d.documentElement) GG.core.state.add(d.documentElement, 'sheet-locked');
+    if (d.body) GG.core.state.add(d.body, 'sheet-locked');
   }
 
   function unlockScroll() {
-    if (d.documentElement) d.documentElement.classList.remove('gg-sheet-locked');
-    if (d.body) d.body.classList.remove('gg-sheet-locked');
+    if (d.documentElement) GG.core.state.remove(d.documentElement, 'sheet-locked');
+    if (d.body) GG.core.state.remove(d.body, 'sheet-locked');
   }
 
   function setCtaState(sheet, state) {
@@ -6475,7 +7168,7 @@ function isSystemPath(pathname){
     shareSheetEl.querySelectorAll('.gg-share-sheet__mode-btn').forEach(function (btn) {
       var m = btn.getAttribute('data-mode') || 'author';
       var isActive = m === mode;
-      btn.classList.toggle('is-active', isActive);
+      GG.core.state.toggle(btn, 'active', isActive);
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
   }
@@ -6513,7 +7206,7 @@ function isSystemPath(pathname){
 
   function trapFocus(event) {
     if (event.key !== 'Tab') return;
-    if (!shareSheetEl || !shareSheetEl.classList.contains('gg-is-open')) return;
+    if (!shareSheetEl || !GG.core.state.has(shareSheetEl, 'open')) return;
     var focusables = shareSheetEl.querySelectorAll(focusableSelector);
     if (!focusables.length) {
       shareSheetEl.focus();
@@ -6539,8 +7232,7 @@ function isSystemPath(pathname){
     shareState.mode = shareState.mode || 'author';
     lastActiveElement = d.activeElement;
     shareSheetEl.setAttribute('aria-hidden', 'false');
-    shareSheetEl.classList.add('is-open');
-    shareSheetEl.classList.add('gg-is-open');
+    GG.core.state.add(shareSheetEl, 'open');
     lockScroll();
     applyPosterBackground(meta);
     updateModeButtons(shareState.mode);
@@ -6553,8 +7245,7 @@ function isSystemPath(pathname){
   function closeShareSheet() {
     if (!shareSheetEl) shareSheetEl = d.getElementById('gg-share-sheet') || d.getElementById('pc-poster-sheet');
     if (!shareSheetEl) return;
-    shareSheetEl.classList.remove('is-open');
-    shareSheetEl.classList.remove('gg-is-open');
+    GG.core.state.remove(shareSheetEl, 'open');
     unlockScroll();
     shareSheetEl.setAttribute('aria-hidden', 'true');
     if (lastActiveElement && typeof lastActiveElement.focus === 'function') {
@@ -6683,7 +7374,7 @@ function isSystemPath(pathname){
     var backdrop = shareSheetEl.querySelector('.gg-share-sheet__overlay');
     if (backdrop) backdrop.addEventListener('click', closeShareSheet);
     d.addEventListener('keydown', function (e) {
-      if (!shareSheetEl || !shareSheetEl.classList.contains('gg-is-open')) return;
+      if (!shareSheetEl || !GG.core.state.has(shareSheetEl, 'open')) return;
       if (e.key === 'Escape') {
         closeShareSheet();
       } else if (e.key === 'Tab') {
@@ -6709,7 +7400,7 @@ function isSystemPath(pathname){
       });
     });
     w.addEventListener('resize', function () {
-      if (!shareSheetEl || !shareSheetEl.classList.contains('gg-is-open')) return;
+      if (!shareSheetEl || !GG.core.state.has(shareSheetEl, 'open')) return;
       updateCtaLabel(shareSheetEl);
     });
   }
@@ -6858,12 +7549,12 @@ function isSystemPath(pathname){
   function openSheet(meta) {
     if (!sheet || !ctx) return;
     drawPoster(meta);
-    sheet.classList.add('is-open');
+    GG.core.state.add(sheet, 'open');
   }
 
   function closeSheet() {
     if (!sheet) return;
-    sheet.classList.remove('is-open');
+    GG.core.state.remove(sheet, 'open');
   }
 
   // gambar poster sederhana (background gradient + kartu putih + title + author + site)
@@ -7546,8 +8237,8 @@ if (meta.label) {
     var btns = sheet.querySelectorAll('.gg-share-sheet__mode-btn');
     for (var i = 0; i < btns.length; i++) {
       var m = btns[i].getAttribute('data-mode');
-      if (m === mode) btns[i].classList.add('is-active');
-      else btns[i].classList.remove('is-active');
+      if (m === mode) GG.core.state.add(btns[i], 'active');
+      else GG.core.state.remove(btns[i], 'active');
     }
   }
 
@@ -7569,7 +8260,7 @@ function openPosterSheet(meta, mode) {
   mode = mode || 'author';
   sheet._pcMeta = meta;
   setModeUi(sheet, mode);
-  sheet.classList.add('is-open');
+  GG.core.state.add(sheet, 'open');
   sheet.setAttribute('aria-hidden', 'false');
 
   // 🔹 Trigger gesture SUPER SHARE PREMIUM saat sheet dibuka
@@ -7584,7 +8275,7 @@ function openPosterSheet(meta, mode) {
   function closePosterSheet() {
     var sheet = d.getElementById('gg-share-sheet') || d.getElementById('pc-poster-sheet');
     if (!sheet) return;
-    sheet.classList.remove('is-open');
+    GG.core.state.remove(sheet, 'open');
     sheet.setAttribute('aria-hidden', 'true');
   }
 
@@ -7762,18 +8453,18 @@ function openPosterSheet(meta, mode) {
 
     var panel = sheet.querySelector('.gg-share-sheet');
     if (panel) {
-      panel.classList.remove('is-anim-in');
+      GG.core.state.remove(panel, 'anim-in');
       void panel.offsetWidth;
-      panel.classList.add('is-anim-in');
+      GG.core.state.add(panel, 'anim-in');
     }
 
     var firstSocial = sheet.querySelector('.gg-share-sheet__social-btn');
     if (firstSocial) {
-      firstSocial.classList.remove('is-nudge');
+      GG.core.state.remove(firstSocial, 'nudge');
       void firstSocial.offsetWidth;
-      firstSocial.classList.add('is-nudge');
+      GG.core.state.add(firstSocial, 'nudge');
       setTimeout(function () {
-        firstSocial.classList.remove('is-nudge');
+        GG.core.state.remove(firstSocial, 'nudge');
       }, 320);
     }
   };
@@ -7836,24 +8527,24 @@ function openPosterSheet(meta, mode) {
     }
 
     /* ========== 2. Press-effect untuk tombol ==========
-       tambahkan/removekan class .is-pressed supaya bisa di-style CSS  */
+       tambahkan/removekan data-gg-state="pressed" supaya bisa di-style CSS  */
     function addPressEffect(el, className) {
       if (!el) return;
-      className = className || 'is-pressed';
+      var stateName = String(className || 'pressed').replace(/^gg-is-/, '').replace(/^is-/, '');
 
       el.addEventListener('pointerdown', function () {
-        el.classList.add(className);
+        GG.core.state.add(el, stateName);
       });
 
       w.addEventListener('pointerup', function () {
-        el.classList.remove(className);
+        GG.core.state.remove(el, stateName);
       });
 
       el.addEventListener('blur', function () {
-        el.classList.remove(className);
+        GG.core.state.remove(el, stateName);
       });
       el.addEventListener('pointerleave', function () {
-        el.classList.remove(className);
+        GG.core.state.remove(el, stateName);
       });
     }
 
@@ -7863,9 +8554,9 @@ function openPosterSheet(meta, mode) {
     modeBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (prefersReduced) return;
-        btn.classList.remove('gg-share-sheet__mode-btn--pop');
+        GG.core.state.remove(btn, 'pop');
         void btn.offsetWidth;
-        btn.classList.add('gg-share-sheet__mode-btn--pop');
+        GG.core.state.add(btn, 'pop');
       });
     });
 
@@ -7878,11 +8569,11 @@ function openPosterSheet(meta, mode) {
         if (!icons.length) return;
 
         icons.forEach(function (icon, idx) {
-          icon.classList.remove('gg-share-sheet__social-btn--pop');
+          GG.core.state.remove(icon, 'pop');
           // force reflow supaya animasi bisa di-retrigger
           void icon.offsetWidth;
           setTimeout(function () {
-            icon.classList.add('gg-share-sheet__social-btn--pop');
+            GG.core.state.add(icon, 'pop');
           }, 40 * idx); // sedikit stagger
         });
       });
@@ -8077,7 +8768,7 @@ function openPosterSheet(meta, mode) {
   GG.a11y.setToggle = function (button, isOn) {
     if (!button) return;
     var active = !!isOn;
-    button.classList.toggle('gg-is-active', active);
+    GG.core.state.toggle(button, 'active', active);
     button.setAttribute('aria-pressed', active ? 'true' : 'false');
   };
   GG.services = GG.services || {};
@@ -8094,7 +8785,7 @@ function openPosterSheet(meta, mode) {
     A.inert = A.inert || function(root, keep){ var host = root || d.body || d.documentElement; if(!host) return null; var kids = Array.prototype.slice.call(host.children || []); var record = []; kids.forEach(function(el){ if(!el || el === keep) return; record.push(setInert(el, true)); }); A._inertStack.push(record); return record; };
     A.restoreInert = A.restoreInert || function(){ var record = A._inertStack.pop(); if(!record) return; record.forEach(function(item){ if(item && item.el) setInert(item.el, false); }); };
     A.focusTrap = A.focusTrap || function(container, opts){ if(!container) return function(){}; var options = opts || {}; var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex=\"-1\"])'; function focusables(){ return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){ return el.offsetParent !== null && !el.hasAttribute('disabled'); }); } function onKey(e){ if(e.key !== 'Tab') return; var list = focusables(); if(!list.length){ container.focus(); e.preventDefault(); return; } var first = list[0]; var last = list[list.length - 1]; if(e.shiftKey && d.activeElement === first){ e.preventDefault(); last.focus(); } else if(!e.shiftKey && d.activeElement === last){ e.preventDefault(); first.focus(); } } container.addEventListener('keydown', onKey); if(options.autofocus !== false){ var list = focusables(); if(list[0]) list[0].focus(); } return function(){ container.removeEventListener('keydown', onKey); }; };
-    A.init = A.init || function(){ if(A._init) return; A._init = true; function sync(val){ if(GG.store && GG.store.set) GG.store.set({ reducedMotion: !!val }); if(GG.view && GG.view.applyRootState && GG.store && GG.store.get) GG.view.applyRootState(d.documentElement, GG.store.get()); else if(d.documentElement) d.documentElement.classList.toggle('gg-reduced-motion', !!val); } var initial = A.reducedMotion.get(); sync(initial); A._rmUnsub = A.reducedMotion.watch(sync); };
+    A.init = A.init || function(){ if(A._init) return; A._init = true; function sync(val){ if(GG.store && GG.store.set) GG.store.set({ reducedMotion: !!val }); if(GG.ui && GG.ui.applyRootState && GG.store && GG.store.get) GG.ui.applyRootState(d.documentElement, GG.store.get()); else if(d.documentElement) GG.core.state.toggle(d.documentElement, 'reduced-motion', !!val); } var initial = A.reducedMotion.get(); sync(initial); A._rmUnsub = A.reducedMotion.watch(sync); };
     a11y.announce = a11y.announce || function(message, opts){ return A.announce(message, opts); };
     a11y.focusTrap = a11y.focusTrap || function(container, opts){ return A.focusTrap(container, opts); };
     a11y.inertManager = a11y.inertManager || { push: function(root, keep){ return A.inert(root, keep); }, pop: function(){ return A.restoreInert(); }, clear: function(){ while(A._inertStack.length) A.restoreInert(); } };
