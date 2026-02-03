@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-006 native transitions + skeleton UI
-NEXT_TASK: Phase4 Share Poster (Canvas + Image Proxy)
+LAST_PATCH: 2026-02-03 F-007 share poster + image proxy
+NEXT_TASK: QA-001 smoke test checklist
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -63,6 +63,7 @@ F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
 F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
 F-002 (done) Super Search: Fuse.js + IDB cache + command palette
 F-006 (done) Native transitions + skeleton UI for SPA navigation
+F-007 (done) Share poster + image proxy for CORS-safe canvas
 T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -82,6 +83,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-007: add poster share module + worker proxy usage.
 - 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
 - 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
 - 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
@@ -91,7 +93,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
-- 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
 */
 (function(w){
   'use strict';
@@ -2454,9 +2455,9 @@ GG.modules.Dock = (function () {
       }catch(_){}
     }
 
-    function sharePost(article){
-      var title = text(qs('.gg-post__title', article)) || document.title;
-      var url = location.href;
+  function sharePost(article){
+    var title = text(qs('.gg-post__title', article)) || document.title;
+    var url = location.href;
       if (window.GG && GG.modules && GG.modules.shareSheet && typeof GG.modules.shareSheet.open === 'function' && GG.util && typeof GG.util.getMetaFromElement === 'function'){
         var meta = GG.util.getMetaFromElement(article);
         if (meta) { GG.modules.shareSheet.open(meta); return; }
@@ -2468,6 +2469,14 @@ GG.modules.Dock = (function () {
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); });
       }
+    }
+
+    function posterPost(article){
+      if (window.GG && GG.modules && GG.modules.poster && typeof GG.modules.poster.shareFromArticle === 'function') {
+        GG.modules.poster.shareFromArticle(article);
+        return;
+      }
+      sharePost(article);
     }
 
 /* @GG_PATCH: X-015+X-016 (dev) */
@@ -2498,6 +2507,22 @@ function init(){
   // -------- toolbar helpers --------
   function btnByAct(act){
     return bar.querySelector('[data-gg-postbar="'+act+'"]');
+  }
+
+  function ensurePosterButton(){
+    if (btnByAct('poster')) return;
+    var shareBtn = btnByAct('share');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'gg-post__tool gg-post__action--poster';
+    btn.setAttribute('data-gg-postbar', 'poster');
+    btn.setAttribute('aria-label', 'Share as Poster');
+    btn.innerHTML = '<span aria-hidden="true" class="gg-icon material-symbols-rounded">image</span>';
+    if (shareBtn && shareBtn.parentNode) {
+      shareBtn.parentNode.insertBefore(btn, shareBtn.nextSibling);
+    } else {
+      bar.appendChild(btn);
+    }
   }
 
   function setBtnActive(act, on){
@@ -2646,6 +2671,7 @@ function init(){
     // default close
     hideRightPanel();
     setLeft(leftState() === 'open');
+    ensurePosterButton();
 
     var h = location.hash || '';
     if(h === '#comments' || /^#c\d+/.test(h)){
@@ -2687,6 +2713,7 @@ function init(){
     }
 
     if(act === 'share'){ sharePost(article); return; }
+    if(act === 'poster'){ posterPost(article); return; }
   }, true);
 
   if(!bar.__ggEscBound){
@@ -7822,6 +7849,180 @@ function isSystemPath(pathname){
   GG.util.openShareSheet = openShareSheet;
   GG.util.closeShareSheet = closeShareSheet;
   GG.util.initShareButtons = initShareButtons;
+})(window.GG, window, document);
+
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  GG.modules = GG.modules || {};
+  GG.modules.poster = GG.modules.poster || (function(){
+    var cfg = {
+      width: 1080,
+      height: 1920,
+      padding: 80,
+      brand: 'pakrpp.com'
+    };
+
+    function proxyUrl(src){
+      if (!src) return '';
+      if (/^data:|^blob:/i.test(src)) return src;
+      try {
+        var u = new URL(src, w.location.href);
+        if (u.pathname.indexOf('/api/proxy') === 0) return u.toString();
+        return '/api/proxy?url=' + encodeURIComponent(u.toString());
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function loadImage(src){
+      return new Promise(function(resolve){
+        if (!src) { resolve(null); return; }
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function(){ resolve(img); };
+        img.onerror = function(){ resolve(null); };
+        img.src = src;
+      });
+    }
+
+    function getCanvas(){
+      return d.getElementById('gg-share-canvas') ||
+        d.getElementById('pc-poster-canvas') ||
+        (function(){ var c = d.createElement('canvas'); return c; })();
+    }
+
+    function getMeta(article){
+      if (GG.util && typeof GG.util.getMetaFromElement === 'function') {
+        var meta = GG.util.getMetaFromElement(article);
+        if (meta) return meta;
+      }
+      var title = article ? (article.querySelector('.gg-post__title') || {}).textContent : '';
+      title = (title || d.title || '').trim();
+      var imgEl = article ? article.querySelector('img') : null;
+      var cover = imgEl ? (imgEl.getAttribute('src') || '') : '';
+      if (!cover) {
+        var og = d.querySelector('meta[property="og:image"], meta[name="og:image"]');
+        cover = og ? (og.getAttribute('content') || '') : '';
+      }
+      return {
+        title: title,
+        url: w.location.href,
+        cover: cover,
+        domain: (w.location && w.location.hostname) || '',
+        siteName: (w.location && w.location.hostname) || ''
+      };
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      if (!text) return y;
+      var words = String(text).split(/\s+/);
+      var line = '';
+      for (var i = 0; i < words.length; i++) {
+        var test = line ? line + ' ' + words[i] : words[i];
+        var wdt = ctx.measureText(test).width;
+        if (wdt > maxWidth && line) {
+          ctx.fillText(line, x, y);
+          line = words[i];
+          y += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      if (line) {
+        ctx.fillText(line, x, y);
+        y += lineHeight;
+      }
+      return y;
+    }
+
+    function draw(meta){
+      var canvas = getCanvas();
+      canvas.width = cfg.width;
+      canvas.height = cfg.height;
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      var coverSrc = proxyUrl(meta.cover || '');
+      return loadImage(coverSrc).then(function(img){
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (img) {
+          var scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+          var iw = img.width * scale;
+          var ih = img.height * scale;
+          var ix = (canvas.width - iw) / 2;
+          var iy = (canvas.height - ih) / 2;
+          ctx.drawImage(img, ix, iy, iw, ih);
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = '700 64px system-ui, -apple-system, Segoe UI, sans-serif';
+        var x = cfg.padding;
+        var y = cfg.padding + 120;
+        var maxWidth = canvas.width - cfg.padding * 2;
+        y = wrapText(ctx, meta.title || '', x, y, maxWidth, 72);
+
+        ctx.font = '500 34px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.fillText(cfg.brand, x, canvas.height - cfg.padding - 40);
+
+        return canvas;
+      });
+    }
+
+    function toBlob(canvas){
+      return new Promise(function(resolve, reject){
+        canvas.toBlob(function(blob){
+          if (blob) resolve(blob);
+          else reject(new Error('blob-failed'));
+        }, 'image/png', 0.92);
+      });
+    }
+
+    function share(meta){
+      return draw(meta).then(function(canvas){
+        return toBlob(canvas);
+      }).then(function(blob){
+        var file = new File([blob], 'poster.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: meta.title || d.title }).catch(function(){});
+        }
+        var url = URL.createObjectURL(blob);
+        var a = d.createElement('a');
+        a.href = url;
+        a.download = 'poster.png';
+        d.body.appendChild(a);
+        a.click();
+        setTimeout(function(){
+          URL.revokeObjectURL(url);
+          a.remove();
+        }, 1000);
+        return null;
+      }).catch(function(err){
+        if (GG.util && typeof GG.util.showToast === 'function') {
+          GG.util.showToast('Poster gagal dibuat', { icon: '#gg-ic-cancel-line' });
+        }
+        if (GG.core && typeof GG.core.telemetry === 'function') {
+          GG.core.telemetry({ type: 'poster', stage: 'share', message: err && err.message ? err.message : 'error' });
+        }
+        return null;
+      });
+    }
+
+    function shareFromArticle(article){
+      var meta = getMeta(article || d.querySelector('.gg-post[data-gg-module="post-detail"]'));
+      if (!meta) return;
+      if (meta.cover && meta.cover.indexOf('data:') === 0) meta.cover = '';
+      return share(meta);
+    }
+
+    return { share: share, shareFromArticle: shareFromArticle };
+  })();
 })(window.GG, window, document);
 
 (function (GG, w, d) {

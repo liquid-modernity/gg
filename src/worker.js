@@ -33,6 +33,80 @@ export default {
       return stamp(r);
     }
 
+    if (pathname === "/api/proxy") {
+      const target = url.searchParams.get("url");
+      if (!target) {
+        const r = new Response("Missing url", { status: 400 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      let upstream;
+      try {
+        upstream = new URL(target);
+      } catch (e) {
+        const r = new Response("Invalid url", { status: 400 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      if (upstream.protocol !== "https:" && upstream.protocol !== "http:") {
+        const r = new Response("Invalid protocol", { status: 400 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      const host = upstream.hostname || "";
+      const allowlisted =
+        host.endsWith(".bp.blogspot.com") ||
+        host.endsWith(".googleusercontent.com");
+      if (!allowlisted) {
+        const r = new Response("Host not allowed", { status: 403 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      let upstreamRes;
+      try {
+        upstreamRes = await fetch(upstream.toString(), {
+          method: "GET",
+          headers: {
+            "Accept": "image/*",
+          },
+        });
+      } catch (e) {
+        const r = new Response("Upstream fetch failed", { status: 502 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      if (!upstreamRes || !upstreamRes.ok) {
+        const r = new Response("Upstream error", { status: 502 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      const contentType = upstreamRes.headers.get("content-type") || "";
+      if (!contentType.startsWith("image/")) {
+        const r = new Response("Unsupported content", { status: 415 });
+        r.headers.set("Cache-Control", "no-store");
+        return stamp(r);
+      }
+
+      const headers = new Headers(upstreamRes.headers);
+      headers.delete("access-control-allow-origin");
+      headers.delete("access-control-allow-credentials");
+      headers.delete("access-control-expose-headers");
+      headers.delete("access-control-allow-methods");
+      headers.delete("access-control-allow-headers");
+      headers.delete("cross-origin-resource-policy");
+      headers.set("Access-Control-Allow-Origin", "*");
+      headers.set("Cache-Control", "public, max-age=86400");
+
+      const r = new Response(upstreamRes.body, { status: 200, headers });
+      return stamp(r);
+    }
+
     // Path yang memang kamu host di Workers Static Assets
     const shouldTryAssets =
       pathname.startsWith("/assets/") ||
