@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-002 hook alignment (XML placeholders)
-NEXT_TASK: F-001 router engine (History API)
+LAST_PATCH: 2026-02-03 F-001 router engine (History API)
+NEXT_TASK: F-003 metadata discipline (SEO-safe SPA)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -57,6 +57,7 @@ T-003 (done) Architecture relocation: move globals into GG.core/store/services/u
 C-001 (done) Define CSS layers & z-index variables (no visual change)
 X-001 (done) State contract: JS writes data-gg-state, CSS reads data-gg-state
 X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI selects by id
+F-001 (done) Router engine: History API navigation with scroll restore + fallback
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -76,6 +77,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
 - 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
@@ -85,7 +87,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
 - 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
 - 2026-02-03 R-002: add ./scripts/gg bump for GG_ASSET_VER + ?v= sync.
-- 2026-02-03 R-001: add asset version query strings + docs for manual bumping.
 */
 (function(w){
   'use strict';
@@ -336,7 +337,16 @@ GG.view.applyRootState = GG.ui.applyRootState;
   actions.register = actions.register || function(name, fn){ if(!name || !fn) return; (actions._map[name] = actions._map[name] || []).push(fn); };
   actions.dispatch = actions.dispatch || function(name, evt, el){ var list = actions._map[name]; if(!list) return; list.slice().forEach(function(fn){ try{ fn({ name: name, event: evt, element: el }); }catch(e){}; }); };
   actions._handle = actions._handle || function(evt){ var el = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action]') : null; if(!el) return; var name = el.getAttribute('data-gg-action'); if(name) actions.dispatch(name, evt, el); };
-  actions.init = actions.init || function(){ if(actions._init) return; actions._init = true; d.addEventListener('click', actions._handle); };
+  actions.init = actions.init || function(){
+    if(actions._init) return;
+    actions._init = true;
+    d.addEventListener('click', actions._handle);
+    if(GG.core && GG.core.router && GG.core.router.handleClick && !actions._routerBound){
+      actions._routerBound = true;
+      GG.core.router._bound = true;
+      d.addEventListener('click', GG.core.router.handleClick);
+    }
+  };
   function host(sel){ return d.querySelector(sel); }
   function toggleHost(sel, open){
     var el = host(sel);
@@ -371,6 +381,120 @@ GG.view.applyRootState = GG.ui.applyRootState;
   GG.services.actions = GG.services.actions || {};
   GG.services.actions.init = GG.services.actions.init || function(){ if(GG.services.actions._init) return; GG.services.actions._init = true; actions.init(); };
 })(window.GG = window.GG || {}, window, document);
+(function(GG, w, d){
+  'use strict';
+  GG.core = GG.core || {};
+  GG.core.router = GG.core.router || {};
+  var router = GG.core.router;
+
+  function getScrollY(){
+    return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
+  }
+
+  router._supports = router._supports || function(){
+    return !!(w.history && w.history.pushState);
+  };
+
+  router._mergeState = router._mergeState || function(next){
+    var base = (w.history && w.history.state) ? w.history.state : {};
+    if (!base || typeof base !== 'object') base = {};
+    var out = {};
+    for (var k in base) {
+      if (Object.prototype.hasOwnProperty.call(base, k)) out[k] = base[k];
+    }
+    for (var k2 in next) {
+      if (Object.prototype.hasOwnProperty.call(next, k2)) out[k2] = next[k2];
+    }
+    return out;
+  };
+
+  router._stateFor = router._stateFor || function(url){
+    return router._mergeState({ gg: { url: url, scrollY: 0 } });
+  };
+
+  router.saveScroll = router.saveScroll || function(url){
+    if(!router._supports()) return;
+    var href = url || w.location.href;
+    try {
+      w.history.replaceState(router._mergeState({ gg: { url: href, scrollY: getScrollY() } }), '', href);
+    } catch (e) {}
+  };
+
+  router.fallback = router.fallback || function(url){
+    if(!url) return;
+    try { w.location.href = url; } catch (e) {}
+  };
+
+  router.handleClick = router.handleClick || function(evt){
+    try {
+      if(!evt || evt.defaultPrevented) return;
+      if (evt.button && evt.button !== 0) return;
+      if (evt.metaKey || evt.ctrlKey || evt.shiftKey || evt.altKey) return;
+      var anchor = evt.target && evt.target.closest ? evt.target.closest('a[href]') : null;
+      if(!anchor) return;
+      if (anchor.hasAttribute('download')) return;
+      if (anchor.getAttribute('data-gg-action')) return;
+      var target = anchor.getAttribute('target');
+      if (target && target !== '_self') return;
+      var href = anchor.getAttribute('href');
+      if(!href || href.charAt(0) === '#') return;
+      if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
+      var rel = anchor.getAttribute('rel') || '';
+      if (/\bexternal\b/i.test(rel)) return;
+      var url = new URL(href, w.location.href);
+      if (url.origin !== w.location.origin) return;
+      var samePath = (url.pathname === w.location.pathname && url.search === w.location.search);
+      if (samePath && url.hash) return;
+      evt.preventDefault();
+      router.navigate(url.href);
+    } catch (e) {
+      router.fallback((evt && evt.target && evt.target.href) ? evt.target.href : w.location.href);
+    }
+  };
+
+  router.navigate = router.navigate || function(url){
+    if(!router._supports()) return router.fallback(url);
+    try {
+      if(!url) return;
+      var from = w.location.href;
+      router.saveScroll(from);
+      if (url === from) return;
+      w.history.pushState(router._stateFor(url), '', url);
+      if (w.console && console.log) console.log('[GG.router] Navigating to', url);
+      if (typeof router.onNavigate === 'function') router.onNavigate(url);
+    } catch (e) {
+      router.fallback(url);
+    }
+  };
+
+  router._onPopState = router._onPopState || function(evt){
+    try {
+      var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
+      var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
+      w.scrollTo(0, y || 0);
+      if (w.console && console.log) console.log('[GG.router] Popstate', w.location.href);
+      if (typeof router.onPopState === 'function') router.onPopState(w.location.href, state);
+    } catch (e) {
+      router.fallback(w.location.href);
+    }
+  };
+
+  router.init = router.init || function(){
+    if(router._init) return;
+    router._init = true;
+    if(!router._supports()) return;
+    try {
+      if ('scrollRestoration' in w.history) w.history.scrollRestoration = 'manual';
+    } catch (e) {}
+    router.saveScroll(w.location.href);
+    if (!router._bound) {
+      router._bound = true;
+      d.addEventListener('click', router.handleClick);
+    }
+    w.addEventListener('popstate', router._onPopState);
+  };
+})(window.GG = window.GG || {}, window, document);
+
 GG.actions.register('dock:toggle', () => {
   const s = GG.store.get();
   GG.store.set({ dockOpen: !s.dockOpen });
@@ -587,11 +711,13 @@ GG.actions.register('jump', function(ctx){
     GG.boot.init = function(){
       if(prevInit) prevInit();
       if(GG.services.actions && GG.services.actions.init) GG.services.actions.init();
+      if(GG.core && GG.core.router && GG.core.router.init) GG.core.router.init();
       if(GG.services.a11y && GG.services.a11y.init) GG.services.a11y.init();
     };
   }
   if(GG.boot._init){
     if(GG.services.actions && GG.services.actions.init) GG.services.actions.init();
+    if(GG.core && GG.core.router && GG.core.router.init) GG.core.router.init();
     if(GG.services.a11y && GG.services.a11y.init) GG.services.a11y.init();
   }
 })(window.GG = window.GG || {});

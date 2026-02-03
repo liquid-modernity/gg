@@ -1,20 +1,18 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: X-002
+Task ID: F-001
 Status: DONE
 
 Changes:
-- Added static toast/dialog/overlay containers in `index.dev.xml` and `index.prod.xml` with `data-gg-state="hidden"`.
-- Updated `GG.ui` toast/dialog/overlay handlers to use existing DOM nodes and `data-gg-state` transitions.
-- Ensured toast helpers remove/add `hidden` state when showing/hiding to match the state contract.
+- Added `GG.core.router` to intercept internal link clicks and manage History API navigation.
+- Implemented scroll position capture via `history.replaceState` and restoration on `popstate`.
+- Added safe fallback to hard navigation on errors or unsupported History API.
 
 ## TASK PROOF
-- `index.dev.xml` and `index.prod.xml` include `#gg-toast`, `#gg-dialog`, and `#gg-overlay` placeholders.
-- `main.js` toggles these primitives via `data-gg-state` values (`hidden`, `open`, `visible`).
+- `main.js` now logs navigation events and restores scroll positions on Back/Forward.
+- Router uses delegated click handling and `history.pushState` for internal links.
 
 ## FILES TOUCHED
-- index.dev.xml
-- index.prod.xml
 - public/assets/dev/main.js
 - TASK_report.md
