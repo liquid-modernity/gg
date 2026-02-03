@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-001 router engine (History API)
-NEXT_TASK: F-003 metadata discipline (SEO-safe SPA)
+LAST_PATCH: 2026-02-03 F-003 metadata discipline (SEO-safe SPA)
+NEXT_TASK: F-004 data fetching service (GG.services.api)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -58,6 +58,7 @@ C-001 (done) Define CSS layers & z-index variables (no visual change)
 X-001 (done) State contract: JS writes data-gg-state, CSS reads data-gg-state
 X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI selects by id
 F-001 (done) Router engine: History API navigation with scroll restore + fallback
+F-003 (done) Metadata discipline: update title/description for client-only navigation
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -77,6 +78,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
 - 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
@@ -86,7 +88,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
 - 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
 - 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
-- 2026-02-03 R-002: add ./scripts/gg bump for GG_ASSET_VER + ?v= sync.
 */
 (function(w){
   'use strict';
@@ -150,6 +151,40 @@ PATCHLOG (append newest first; keep last 10):
       return false;
     }
     return { has: has, add: add, remove: remove, toggle: toggle };
+  })();
+  GG.core.meta = GG.core.meta || (function(){
+    function findMeta(selector){
+      return w.document ? w.document.querySelector(selector) : null;
+    }
+    function update(data){
+      if(!data) return;
+      if(typeof data.title === 'string'){
+        w.document.title = data.title;
+      }
+      if(typeof data.description === 'string'){
+        var desc = findMeta('meta[name="description"]');
+        if(desc) desc.setAttribute('content', data.description);
+      }
+      var ogTitle = (typeof data.ogTitle === 'string') ? data.ogTitle : (typeof data.title === 'string' ? data.title : null);
+      if(ogTitle !== null){
+        var og = findMeta('meta[property="og:title"]');
+        if(og) og.setAttribute('content', ogTitle);
+      }
+    }
+    function titleFromUrl(url){
+      try {
+        var u = new URL(url, w.location.href);
+        var path = (u.pathname || '').replace(/\/+$/, '');
+        if(!path || path === '/') return w.document.title;
+        var parts = path.split('/');
+        var slug = decodeURIComponent(parts[parts.length - 1] || '').replace(/[-_]+/g, ' ').trim();
+        if(!slug) return w.document.title;
+        return slug.replace(/\b\w/g, function(m){ return m.toUpperCase(); });
+      } catch (e) {
+        return w.document.title;
+      }
+    }
+    return { update: update, titleFromUrl: titleFromUrl };
   })();
   var ENV = w.GG_ENV;
   if (!ENV) {
@@ -492,6 +527,16 @@ GG.view.applyRootState = GG.ui.applyRootState;
       d.addEventListener('click', router.handleClick);
     }
     w.addEventListener('popstate', router._onPopState);
+  };
+  router.onNavigate = router.onNavigate || function(url){
+    if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
+    GG.core.meta.update({ title: title, description: title, ogTitle: title });
+  };
+  router.onPopState = router.onPopState || function(url){
+    if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
+    GG.core.meta.update({ title: title, description: title, ogTitle: title });
   };
 })(window.GG = window.GG || {}, window, document);
 

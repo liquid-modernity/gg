@@ -1,17 +1,16 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: F-001
+Task ID: F-003
 Status: DONE
 
 Changes:
-- Added `GG.core.router` to intercept internal link clicks and manage History API navigation.
-- Implemented scroll position capture via `history.replaceState` and restoration on `popstate`.
-- Added safe fallback to hard navigation on errors or unsupported History API.
+- Added `GG.core.meta.update()` to update title/description/og:title safely.
+- Hooked router navigation and popstate to refresh metadata on client-side transitions.
+- Kept canonical untouched and limited updates to cosmetic metadata only.
 
 ## TASK PROOF
-- `main.js` now logs navigation events and restores scroll positions on Back/Forward.
-- Router uses delegated click handling and `history.pushState` for internal links.
+- `main.js` updates `document.title` and description/og:title meta tags during client navigation.
 
 ## FILES TOUCHED
 - public/assets/dev/main.js
