@@ -1,16 +1,16 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: T-006
+Task ID: T-007
 Status: DONE
 
 Changes:
-- Added SSR body surface markers and client-side surface syncing on navigation.
-- Implemented contextual right-panel handling (landing profile vs post comments).
-- Ensured surface updates trigger layout/dock refresh after SPA swaps.
+- Refined SSR and client surface detection for landing/listing/page/post.
+- Added surface-aware panel logic and home state toggles.
+- Implemented Smart Back action with internal referrer protection.
 
 ## TASK PROOF
-- `main.js` now updates `data-gg-surface` and aligns right panel content to the active surface.
+- `main.js` now sets precise `data-gg-surface` and enforces surface-aware navigation rules.
 
 ## FILES TOUCHED
 - public/assets/dev/main.js

@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 T-006 surface logic + context refinement
+LAST_PATCH: 2026-02-03 T-007 surface precision + smart navigation
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -67,6 +67,7 @@ F-007 (done) Share poster + image proxy for CORS-safe canvas
 T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
 T-005 (done) UI/UX re-integration after SPA render (layout + smart components)
 T-006 (done) Surface logic + context refinement (SSR body surface + client updates)
+T-007 (done) Surface precision + smart navigation (listing/page + smart back)
 
 STYLE INVARIANTS:
 - No behavior changes in T-001/T-002.
@@ -83,6 +84,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 T-007: refine surface precision + smart back navigation.
 - 2026-02-03 T-006: surface awareness + contextual right panel handling.
 - 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
 - 2026-02-03 F-007: add poster share module + worker proxy usage.
@@ -489,6 +491,35 @@ GG.view.applyRootState = GG.ui.applyRootState;
       d.addEventListener('click', GG.core.router.handleClick);
     }
   };
+  actions.back = actions.back || function(){
+    try {
+      var ref = d.referrer || '';
+      var host = w.location && w.location.hostname ? w.location.hostname : '';
+      var internal = false;
+      if (ref && host) {
+        try {
+          internal = (new URL(ref)).hostname === host;
+        } catch (_) {
+          internal = ref.indexOf(host) !== -1;
+        }
+      }
+      if (internal && w.history && typeof w.history.back === 'function') {
+        w.history.back();
+        return;
+      }
+      if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
+        GG.core.router.go('/');
+        return;
+      }
+      w.location.href = '/';
+    } catch (_) {
+      try { w.location.href = '/'; } catch (e) {}
+    }
+  };
+  if (!actions._backBound) {
+    actions._backBound = true;
+    actions.register('back', function(){ actions.back(); });
+  }
   function host(sel){ return d.querySelector(sel); }
   function toggleHost(sel, open){
     var el = host(sel);
@@ -535,7 +566,9 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/' || path === '' || path === '/blog') return 'landing';
+      if (path === '/') return 'landing';
+      if (path.indexOf('/search') !== -1) return 'listing';
+      if (path.indexOf('/p/') !== -1) return 'page';
     } catch (_) {}
     return 'post';
   };
@@ -548,7 +581,9 @@ GG.view.applyRootState = GG.ui.applyRootState;
     if (main) {
       var m = main.getAttribute('data-gg-surface') || '';
       if (m === 'home') return 'landing';
-      if (m) return 'post';
+      if (m === 'feed') return 'listing';
+      if (m === 'page') return 'page';
+      if (m === 'post') return 'post';
     }
     return ui.layout._inferSurfaceFromUrl(url || w.location.href);
   };
@@ -593,13 +628,35 @@ GG.view.applyRootState = GG.ui.applyRootState;
   ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
     var next = surface || ui.layout.detectSurface(doc, url);
     ui.layout.setSurface(next);
-    var isLanding = (next === 'landing');
-    if (isLanding) {
-      ui.layout._ensureLandingProfile();
-    } else {
+
+    if (GG.core && GG.core.state && d.body) {
+      GG.core.state.toggle(d.body, 'landing', next === 'landing');
+    }
+
+    var main = d.querySelector('main.gg-main[data-gg-surface]') || d.querySelector('main.gg-main');
+    var hasHomeRoot = !!(main && main.hasAttribute('data-gg-home-root'));
+
+    if (hasHomeRoot && GG.modules && GG.modules.homeState && typeof GG.modules.homeState.setState === 'function') {
+      if (next === 'landing') {
+        GG.modules.homeState.setState('landing');
+      } else if (next === 'listing') {
+        GG.modules.homeState.setState('blog');
+      }
+    }
+
+    if (next === 'post') {
       ui.layout._clearLandingProfile();
       ui.layout._dockComments();
+    } else {
+      ui.layout._ensureLandingProfile();
+      if (main) main.removeAttribute('data-gg-right-mode');
+      var commentsPanel = d.querySelector('.gg-comments-panel');
+      if (commentsPanel) {
+        commentsPanel.hidden = true;
+        commentsPanel.setAttribute('inert','');
+      }
     }
+
     if (GG.modules && GG.modules.Dock && typeof GG.modules.Dock.updateActive === 'function') {
       try { GG.modules.Dock.updateActive(); } catch (_) {}
     }
@@ -674,7 +731,9 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/' || path === '' || path === '/blog') return 'landing';
+      if (path === '/') return 'landing';
+      if (path.indexOf('/search') !== -1) return 'listing';
+      if (path.indexOf('/p/') !== -1) return 'page';
     } catch (_) {}
     return 'post';
   };
@@ -686,6 +745,11 @@ GG.view.applyRootState = GG.ui.applyRootState;
       d.body.setAttribute('data-gg-surface', surface);
     }
     return surface;
+  };
+  router.go = router.go || function(url){
+    if (!url) return;
+    if (!router._supports()) return router.fallback(url);
+    return router.navigate(url);
   };
 
   router._mergeState = router._mergeState || function(next){
