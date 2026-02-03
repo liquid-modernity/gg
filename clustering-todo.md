@@ -5,6 +5,12 @@ Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder 
 
 ---Namespace GG.*, Prefix .gg-*, Single Source of Truth
 
+
+## 🧭 Environment Model (Single Domain)
+- **Domain:** `www.pakrpp.com` (tidak ada staging domain terpisah).
+- **DEV:** pasang `index.dev.xml` di Blogger Theme → assets dari `/dev/` → Service Worker **OFF**.
+- **PROD:** pasang `index.prod.xml` di Blogger Theme → assets dari `/v/<TAG>/` → Service Worker **ON**.
+
 ## 🖥️ Phase 0: Environment & Tooling Setup
 *Tujuan: Menyiapkan lingkungan kerja Vibe Coder yang efisien agar CODEX fokus ke logika.*
 
@@ -82,7 +88,7 @@ Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder 
 ---
 
 ## 🧠 Phase 3: The "Brain" (Core SPA Logic)
-*Tujuan: Mengubah Blogspot menjadi Single Page Application (SPA) yang robust.*
+*Tujuan: Mengubah Blogger menjadi Single Page Application (SPA) yang robust.*
 
 - [ ] **Router Engine (History API):**
     - [ ] Intercept semua klik link internal (`<a>`).

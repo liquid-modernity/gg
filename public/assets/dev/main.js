@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-01-31 P-001 bootstrap GG.store + GG.view + root state sync
-NEXT_TASK: X-010 build selector→module→HTML map; add/kill missing hosts
+LAST_PATCH: 2026-02-03 X-010 init gateway + selector map; remove auto-inits + dead host
+NEXT_TASK: X-011 align template hosts with selector map (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -13,7 +13,7 @@ DEPLOYMENT:
 FILES (canonical roles):
 - index.xml: template (head/body hooks only; no heavy logic)
 - main.css : styles
-- main.js  : MUST be pure JavaScript (NO HTML entities like &quot;, NO <script>, NO CDATA)
+- main.js  : MUST be pure JavaScript (NO HTML entities like quote-entity, NO script tags, NO C-DATA)
 
 PWA:
 - Service Worker: /sw.js (scope: /)
@@ -50,7 +50,7 @@ tagDirectory, tagHubPage, postTagsInline, tagUtils, library, shareSheet, posterC
 posterEngine, shareMotion, langSwitcher, imgDims, a11yFix
 
 OPEN TASKS (update every patch):
-T-001 (done) Make main.js pure JS (remove <script>/CDATA/HTML entities)
+T-001 (done) Make main.js pure JS (remove script tags / C-DATA / HTML entities)
 T-002 (done) Fix index.xml: main.js tag, remove SW inline, remove boot-loader duplication
 T-003 (done) Add GG.services.sw.init() + manifest hooks
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
@@ -68,16 +68,17 @@ OUTPUT RULES (keep output under 80 lines):
 
 PROOF REQUIRED (T-001 completion gate):
 - PATCHLOG must include counts for:
-  </script, <script, <!--, CDATA, &quot;, &#39;, &gt;, &lt;
+  closing-script, opening-script, html-comment, C-DATA, quote-entity, apos-entity, gt-entity, lt-entity
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.
 - 2026-01-28 T-006: add GG.a11y core + GG.services.a11y init for reduced motion.
 - 2026-01-28 T-005: add GG.i18n (t/nf/cf/df/rtf) + dir/locale/timezone helpers.
 - 2026-01-28 T-004: add GG.ui primitives, GG.actions registry + service init hook.
 - 2026-01-28 T-003: add GG.services.sw.init + manifest hooks (via GG.boot.init).
 - 2026-01-28 T-002: index.xml main.js tag fixed, inline SW removed, boot-loader duplicates removed.
-- 2026-01-28 T-001: remove script/CDATA wrappers + decode HTML entities in JS body. PROOF (body-only): </script=0, <script=0, <!--=0, CDATA=0, &quot;=0, &#39;=0, &gt;=0, &lt;=0
+- 2026-01-28 T-001: remove script/C-DATA wrappers + decode HTML entities in JS body. PROOF (body-only): closing-script=0, opening-script=0, html-comment=0, C-DATA=0, quote-entity=0, apos-entity=0, gt-entity=0, lt-entity=0
 */
 (function(w){
   'use strict';
@@ -781,314 +782,6 @@ GG.actions.register('jump', function(ctx){
   Array.prototype.forEach.call(roots, initLabelTree);
 })();
 // [END LABELTREE MODULE]
-
-(function(){
-  var root = document.getElementById('gg-postinfo');
-  if(!root) return;
-
-  if(root.dataset.ggInit === '1') return;
-  root.dataset.ggInit = '1';
-
-  var headBtn = root.querySelector('.gg-pi__headbtn');
-  var toggleBtn = root.querySelector('.gg-pi__toggle');
-
-  function qs(sel, scope){ return (scope || document).querySelector(sel); }
-  function qsa(sel, scope){ return Array.prototype.slice.call((scope || document).querySelectorAll(sel)); }
-  function text(el){ return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim(); }
-
-  function setCollapsed(collapsed){
-    root.classList.toggle('is-collapsed', collapsed);
-    var expanded = collapsed ? 'false' : 'true';
-    if(headBtn) headBtn.setAttribute('aria-expanded', expanded);
-    if(toggleBtn){
-      toggleBtn.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
-      var i = toggleBtn.querySelector('.material-symbols-rounded');
-      if(i) i.textContent = collapsed ? 'expand_content' : 'collapse_content';
-    }
-  }
-
-  function initials(name){
-    name = (name||'').trim();
-    if(!name) return '?';
-    var parts = name.split(/\s+/).filter(Boolean);
-    var a = parts[0] ? parts[0][0] : '';
-    var b = parts.length > 1 ? parts[parts.length-1][0] : '';
-    return (a + b).toUpperCase() || '?';
-  }
-
-  function escapeHtml(str){
-    return String(str || '').replace(/[&<>"']/g, function(m){
-      return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"\'":'\u0026#39;'}[m]);
-    });
-  }
-
-  function setSlot(slot, val){
-    var el = root.querySelector('[data-slot="'+slot+'"]');
-    if(el) el.textContent = val || '\u2014';
-  }
-
-  function renderPeople(slot, people){
-    var wrap = root.querySelector('[data-slot="'+slot+'"]');
-    if(!wrap) return;
-    wrap.innerHTML = '';
-
-    (people || []).forEach(function(p){
-      var row = document.createElement('div');
-      row.className = 'gg-pi__person';
-
-      var av = document.createElement('div');
-      av.className = 'gg-pi__avatar';
-      av.textContent = initials(p.name);
-
-      var meta = document.createElement('div');
-      meta.className = 'gg-pi__pmeta';
-      meta.innerHTML = '<div class="gg-pi__pname"></div><div class="gg-pi__prole"></div>';
-
-      meta.querySelector('.gg-pi__pname').textContent = p.name || 'Unknown';
-      var roleEl = meta.querySelector('.gg-pi__prole');
-      if(p.role){
-        roleEl.textContent = p.role;
-        roleEl.style.display = '';
-      }else{
-        roleEl.style.display = 'none';
-      }
-
-      row.appendChild(av);
-      row.appendChild(meta);
-
-      if(p.href){
-        var a = document.createElement('a');
-        a.href = p.href;
-        a.appendChild(row);
-        wrap.appendChild(a);
-      }else{
-        wrap.appendChild(row);
-      }
-    });
-
-    if(!people || !people.length){
-      wrap.innerHTML =
-        '<div class="gg-pi__person">' +
-          '<div class="gg-pi__avatar">?</div>' +
-          '<div class="gg-pi__pmeta"><div class="gg-pi__pname">Unknown</div></div>' +
-        '</div>';
-    }
-  }
-
-function renderChips(slot, items, max){
-  var wrap = root.querySelector('[data-slot="'+slot+'"]');
-  if(!wrap) return;
-  wrap.innerHTML = '';
-
-  (items || []).slice(0, max || 12).forEach(function(x){
-    var a = document.createElement('a');
-    a.className = 'gg-pi__chip';
-    a.href = x.href || '#';
-
-    // LABEL chips: ada folder icon di dalam chip (kayak screenshot)
-    if(slot === 'labels'){
-      var ico = document.createElement('span');
-      ico.className = 'material-symbols-rounded gg-pi__chipico';
-      ico.setAttribute('aria-hidden','true');
-      ico.textContent = 'folder_open';
-
-      var t = document.createElement('span');
-      t.textContent = x.text || '';
-
-      a.appendChild(ico);
-      a.appendChild(t);
-    } else {
-      // slot lain (tags) cukup text aja
-      a.textContent = x.text || '';
-    }
-
-    wrap.appendChild(a);
-  });
-}
-
-
-  function getBasePath(){
-    var alt = document.querySelector('link[rel="alternate"][type="application/atom+xml"]');
-    if(alt && alt.href){
-      try{
-        var u = new URL(alt.href, location.href);
-        var base = u.origin + u.pathname.replace(/\/feeds\/posts\/default.*$/,'');
-        return base.replace(/\/$/,'');
-      }catch(_){}
-    }
-    return (location.origin || '').replace(/\/$/,'');
-  }
-
-  function normalizeTag(raw){
-    if(!raw) return '';
-    var slug = String(raw).replace(/^#+/,'').trim().toLowerCase();
-    slug = slug.replace(/[^a-z0-9_-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-    return slug;
-  }
-
-  function buildTagUrl(tag){
-    var base = getBasePath();
-    var slug = normalizeTag(tag);
-    return slug ? (base + '/p/tags.html?tag=' + encodeURIComponent(slug)) : (base + '/p/tags.html');
-  }
-
-  function collectLabels(){
-    var links = qsa('.gg-post__labels a, .gg-post__labels-list a, a.gg-post__label-link');
-    var out = links.map(function(a){
-      return { text: text(a), href: a.getAttribute('href') || '#' };
-    }).filter(function(x){ return x.text; });
-
-    var seen = new Set();
-    out = out.filter(function(x){
-      var k = x.text.toLowerCase();
-      if(seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-    return out;
-  }
-
-  function collectTags(){
-    var chips = qsa('.gg-post-tags__chip');
-    var tags = chips.map(function(a){
-      var t = text(a);
-      var pretty = t.replace(/^#/,'') ? ('#' + t.replace(/^#/,'').trim()) : t;
-      return { text: pretty, href: a.getAttribute('href') || buildTagUrl(t) };
-    }).filter(function(x){ return x.text; });
-
-    if(tags.length) return tags;
-
-    var block = qs('.gg-post-tags');
-    var raw = block ? text(block) : '';
-    if(!raw) return [];
-    var matches = raw.match(/#[^#\s]+/g) || [];
-    var uniq = Array.from(new Set(matches));
-    return uniq.map(function(t){
-      return { text: t, href: buildTagUrl(t) };
-    });
-  }
-
-  function findAuthor(){
-    // ambil yang PASTI ada di markup kamu
-    var el = qs('.gg-post__meta-item--author');
-    if(el){
-      var name = text(el);
-      // kalau ada SVG ikut kebaca, bersihin:
-      name = name.replace(/\s+/g,' ').trim();
-      return { name: name || 'Unknown', href: '', role: '' };
-    }
-
-    // fallback
-    var meta = qs('meta[name="author"]');
-    if(meta) return { name: (meta.getAttribute('content')||'').trim() || 'Unknown', href: '', role: '' };
-
-    return { name: 'Unknown', href: '', role: '' };
-  }
-
-  function findDate(){
-    var t = qs('.gg-post__meta-item--date time.published, time.published');
-    var label = text(t);
-    if(label) return label;
-    var dt = t ? t.getAttribute('datetime') : '';
-    return dt ? dt : '\u2014';
-  }
-
-  function computeReadTime(){
-    var wpm = parseInt(root.getAttribute('data-wpm') || '200', 10);
-    if(!wpm || wpm < 80) wpm = 200;
-
-    var content = qs('.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content');
-    var raw = content ? (content.innerText || content.textContent || '') : '';
-    raw = raw.replace(/\s+/g,' ').trim();
-    var words = raw ? raw.split(' ').filter(Boolean).length : 0;
-
-    var mins = Math.max(1, Math.round(words / wpm));
-    return mins + ' minutes read';
-  }
-
-  function hydrate(){
-    renderPeople('author', [findAuthor()]);
-
-    var contribRaw = root.getAttribute('data-contributors') || '';
-    var contrib = contribRaw.split(',').map(function(x){ return x.trim(); }).filter(Boolean).map(function(item){
-      var parts = item.split('|');
-      return { name: (parts[0]||'').trim(), role: (parts[1]||'').trim(), href: '' };
-    }).filter(function(p){ return p.name; });
-
-    var contribSec = root.querySelector('.gg-pi__sec--contributors');
-    if(contribSec){
-      if(contrib.length){
-        contribSec.hidden = false;
-        renderPeople('contributors', contrib);
-      }else{
-        contribSec.hidden = true;
-      }
-    }
-
-    var labels = collectLabels();
-    var labelsSec = root.querySelector('.gg-pi__sec--labels');
-    if(labelsSec){
-      if(labels.length){
-        labelsSec.hidden = false;
-        renderChips('labels', labels, 12);
-      }else{
-        labelsSec.hidden = true;
-      }
-    }
-
-    var tags = collectTags();
-    var tagsSec = root.querySelector('.gg-pi__sec--tags');
-    if(tagsSec){
-      if(tags.length){
-        tagsSec.hidden = false;
-        renderChips('tags', tags, 20);
-      }else{
-        tagsSec.hidden = true;
-      }
-    }
-
-    setSlot('date', findDate());
-    setSlot('readtime', computeReadTime());
-  }
-
-  function waitAndHydrate(){
-    var tries = 0;
-    var maxTries = 80;
-    var tickMs = 100;
-
-    var timer = setInterval(function(){
-      tries++;
-
-      var bodyOk   = !!qs('.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content');
-      var authorOk = !!qs('.gg-post__meta-item--author');
-      var dateOk   = !!qs('.gg-post__meta-item--date time.published, time.published');
-
-      if(bodyOk && (authorOk || dateOk || tries > 10)){
-        clearInterval(timer);
-        hydrate();
-      }
-
-      if(tries >= maxTries){
-        clearInterval(timer);
-        hydrate();
-      }
-    }, tickMs);
-  }
-
-  root.addEventListener('click', function(e){
-    if(e.target.closest('.gg-pi__headbtn') || e.target.closest('.gg-pi__toggle')){
-      setCollapsed(!root.classList.contains('is-collapsed'));
-    }
-  });
-
-  setCollapsed(false);
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', waitAndHydrate);
-  }else{
-    waitAndHydrate();
-  }
-})();
 
 (function(){
   var root = document.getElementById('gg-toc');
@@ -3267,10 +2960,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     return { init: init };
   })();
 
-  document.addEventListener('DOMContentLoaded', function () {
-    GG.modules.Panels.init();
-  });
-
 (function(){
   'use strict';
   window.GG = window.GG || {};
@@ -3764,8 +3453,7 @@ function initDebugOverlay(){
   } catch(_) {}
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  initDebugOverlay();
+function initHomePrepaint(){
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   if (GG.util && GG.util.isDebug && GG.util.isDebug()) {
     var pre = document.documentElement.getAttribute('data-gg-prehome');
@@ -3774,78 +3462,131 @@ document.addEventListener('DOMContentLoaded', function () {
       console.log('[prehome] has home root:', hasHomeRoot);
     } catch(_){}
   }
-  if (!hasHomeRoot && GG.homePrepaint && GG.homePrepaint.disarm) {
-    safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
-  }
-  var main = document.querySelector('main.gg-main[data-gg-surface]');
-  var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
-  var hasBlog = !!(main && main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog'));
-  if (hasHomeRoot && (!hasLanding || !hasBlog || !GG.modules || !GG.modules.homeState)) {
+
+  function disarm(){
     if (GG.homePrepaint && GG.homePrepaint.disarm) {
       safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
     }
   }
-  if (main && hasHomeRoot && hasLanding && hasBlog && GG.modules.homeState) {
-    safeInit('homeState.init', function(){
-      if (GG.util && GG.util.initOnce) {
-        GG.util.initOnce('homeState.init', function(){
-          GG.modules.homeState.init(main);
-        });
-      } else {
-        GG.modules.homeState.init(main);
-      }
-    });
-  }
-  if (GG.modules.Shortcodes) {
-    safeInit('Shortcodes.init', function(){ GG.modules.Shortcodes.init(); });
-  }
-  if (GG.modules.Skeleton) {
-    safeInit('Skeleton.init', function(){ GG.modules.Skeleton.init(); });
-  }
-  if (main && GG.modules.InfoPanel) {
-    safeInit('InfoPanel.init', function(){ GG.modules.InfoPanel.init(main); });
-  }
-  if (main && GG.modules.PostDetail) {
-    safeInit('PostDetail.init', function(){ GG.modules.PostDetail.init(main); });
-  }
-  if (main && GG.modules.LeftNav) {
-    safeInit('LeftNav.init', function(){ GG.modules.LeftNav.init(main); });
+
+  if (!hasHomeRoot) {
+    disarm();
+    return;
   }
 
-  var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]');
-  if (dock  && GG.modules.Dock) {
-    safeInit('Dock.init', function(){ GG.modules.Dock.init(dock, main); });
+  var main = document.querySelector('main.gg-main[data-gg-surface]');
+  var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
+  var hasBlog = !!(main && main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog'));
+
+  if (!hasLanding || !hasBlog || !GG.modules || !GG.modules.homeState) {
+    disarm();
   }
-  if (dock && GG.modules.ReadingProgress) {
-    safeInit('ReadingProgress.init', function(){ GG.modules.ReadingProgress.init(dock, main); });
+
+  setTimeout(function(){
+    if (document.documentElement.hasAttribute('data-gg-prehome')) {
+      disarm();
+    }
+  }, 1500);
+}
+
+function initHomeState(){
+  var main = document.querySelector('main.gg-main[data-gg-surface]');
+  var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
+  var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
+  var hasBlog = !!(main && main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog'));
+  if (!main || !hasHomeRoot || !hasLanding || !hasBlog || !GG.modules || !GG.modules.homeState) return;
+  if (GG.util && GG.util.initOnce) {
+    GG.util.initOnce('homeState.init', function(){
+      GG.modules.homeState.init(main);
+    });
+  } else {
+    GG.modules.homeState.init(main);
   }
-  if (dock && GG.modules.DockPerimeter) {
-    safeInit('DockPerimeter.init', function(){ GG.modules.DockPerimeter.init(dock); });
+}
+
+function resolveSelector(sel){
+  if (!sel) return null;
+  if (typeof sel === 'function') return sel();
+  if (Array.isArray(sel)) {
+    for (var i = 0; i < sel.length; i++) {
+      var el = document.querySelector(sel[i]);
+      if (el) return el;
+    }
+    return null;
   }
-  if (GG.modules.BackToTop) {
-    safeInit('BackToTop.init', function(){ GG.modules.BackToTop.init(); });
-  }
-  if (GG.modules.LoadMore) {
-    safeInit('LoadMore.init', function(){ GG.modules.LoadMore.init(); });
-  }
-  if (hasHomeRoot) {
-    setTimeout(function(){
-      if (document.documentElement.hasAttribute('data-gg-prehome')) {
-        if (GG.homePrepaint && GG.homePrepaint.disarm) {
-          safeInit('homePrepaint.disarm', function(){ GG.homePrepaint.disarm(); });
-        }
-      }
-    }, 1500);
-  }
-  if (GG.modules.PopularCarousel) {
-    safeInit('PopularCarousel.init', function(){ GG.modules.PopularCarousel.init(); });
-  }
-  if (GG.modules.RelatedInline) {
-    safeInit('RelatedInline.init', function(){ GG.modules.RelatedInline.init(); });
-  }
+  return document.querySelector(sel);
+}
+
+function selectorLabel(sel){
+  if (!sel) return '';
+  if (Array.isArray(sel)) return sel.join(' | ');
+  if (typeof sel === 'function') return '(custom)';
+  return sel;
+}
+
+GG.app = GG.app || {};
+GG.app.plan = [
+  { name: 'debugOverlay', selector: 'body', init: initDebugOverlay, optional: true },
+  { name: 'homePrepaint.guard', selector: null, init: initHomePrepaint, optional: true },
+  { name: 'homeState.init', selector: 'main.gg-main[data-gg-surface="home"]', init: initHomeState },
+  { name: 'Shortcodes.init', selector: '.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content', init: function(){ if (GG.modules.Shortcodes) GG.modules.Shortcodes.init(); } },
+  { name: 'ShortcodesLite.init', selector: '.post-body, .entry-content, #post-body', init: function(){ if (GG.modules.shortcodesLite && GG.modules.shortcodesLite.init) GG.modules.shortcodesLite.init(); } },
+  { name: 'Skeleton.init', selector: '#postcards', init: function(){ if (GG.modules.Skeleton) GG.modules.Skeleton.init(); } },
+  { name: 'Panels.init', selector: 'main.gg-main[data-gg-surface]', init: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
+  { name: 'InfoPanel.init', selector: '.gg-info-panel[data-gg-panel="info"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
+  { name: 'PostDetail.init', selector: 'main.gg-main[data-gg-surface="post"], main.gg-main[data-gg-surface="page"], main.gg-main[data-gg-surface="postdetail"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+  { name: 'LeftNav.init', selector: '.gg-blog-sidebar--left', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
+  { name: 'Dock.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.Dock) GG.modules.Dock.init(dock, main); } },
+  { name: 'ReadingProgress.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.ReadingProgress) GG.modules.ReadingProgress.init(dock, main); } },
+  { name: 'DockPerimeter.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); if (dock && GG.modules.DockPerimeter) GG.modules.DockPerimeter.init(dock); } },
+  { name: 'BackToTop.init', selector: '.gg-backtotop', init: function(){ if (GG.modules.BackToTop) GG.modules.BackToTop.init(); } },
+  { name: 'LoadMore.init', selector: '[data-gg-module="loadmore"]', init: function(){ if (GG.modules.LoadMore) GG.modules.LoadMore.init(); } },
+  { name: 'PopularCarousel.init', selector: '#gg-popularpost1 .widget-content [role="feed"]', init: function(){ if (GG.modules.PopularCarousel) GG.modules.PopularCarousel.init(); } },
+  { name: 'RelatedInline.init', selector: '.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content', init: function(){ if (GG.modules.RelatedInline) GG.modules.RelatedInline.init(); } },
+  { name: 'tagDirectory.init', selector: '.gg-tags-directory', init: function(){ if (GG.modules.tagDirectory && GG.modules.tagDirectory.init) GG.modules.tagDirectory.init(document.querySelector('.gg-tags-directory')); } },
+  { name: 'tagHubPage.init', selector: '.gg-tags-page', init: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
+  { name: 'postTagsInline.init', selector: '.gg-post-tags', init: function(){ if (GG.modules.postTagsInline && GG.modules.postTagsInline.init) GG.modules.postTagsInline.init(document); } },
+  { name: 'library.autoInit', selector: '#gg-library-list, .gg-library-list, .gg-post-card__action--bookmark, .gg-post__action--bookmark', init: function(){ if (GG.modules.library && GG.modules.library.autoInit) GG.modules.library.autoInit(); } },
+  { name: 'shareSheet.init', selector: '#gg-share-sheet, #pc-poster-sheet', init: function(){ if (GG.modules.shareSheet && GG.modules.shareSheet.init) GG.modules.shareSheet.init(); } },
+  { name: 'posterCanvas.init', selector: '#gg-share-sheet, #pc-poster-sheet', init: function(){ if (GG.modules.posterCanvas && GG.modules.posterCanvas.init) GG.modules.posterCanvas.init(); } },
+  { name: 'posterEngine.init', selector: '#gg-share-sheet, #pc-poster-sheet', init: function(){ if (GG.modules.posterEngine && GG.modules.posterEngine.init) GG.modules.posterEngine.init(); } },
+  { name: 'shareMotion.init', selector: '#gg-share-sheet, #pc-poster-sheet', init: function(){ if (GG.modules.shareMotion && GG.modules.shareMotion.init) GG.modules.shareMotion.init(); } },
+  { name: 'langSwitcher.init', selector: '.gg-lang-switcher', init: function(){ if (GG.modules.langSwitcher && GG.modules.langSwitcher.init) GG.modules.langSwitcher.init(); } },
+  { name: 'imgDims.init', selector: 'img', init: function(){ if (GG.modules.imgDims && GG.modules.imgDims.init) GG.modules.imgDims.init(document); } },
+  { name: 'a11yFix.init', selector: 'body', init: function(){ if (GG.modules.a11yFix && GG.modules.a11yFix.init) GG.modules.a11yFix.init(document); } },
+  { name: 'interactiveModules.init', selector: 'body', init: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } },
+  { name: 'feed.init', selector: '#gg-feed', init: function(){ if (GG.modules.feed && GG.modules.feed.init) GG.modules.feed.init(); } },
+  { name: 'sitemap.init', selector: '#gg-sitemap', init: function(){ if (GG.modules.sitemap && GG.modules.sitemap.init) GG.modules.sitemap.init(); } },
+  { name: 'backPolicy.init', selector: 'body', init: function(){ if (GG.modules.backPolicy && GG.modules.backPolicy.init) GG.modules.backPolicy.init(); } },
+  { name: 'prefetch.init', selector: '#postcards', init: function(){ if (GG.modules.prefetch && GG.modules.prefetch.init) GG.modules.prefetch.init(); } }
+];
+
+GG.app.selectorMap = GG.app.selectorMap || {};
+GG.app.plan.forEach(function(item){
+  GG.app.selectorMap[item.name] = selectorLabel(item.selector);
 });
 
-(() => {
+GG.app.init = GG.app.init || function(){
+  if (GG.app._init) return;
+  GG.app._init = true;
+  for (var i = 0; i < GG.app.plan.length; i++) {
+    (function(item){
+      if (!item || typeof item.init !== 'function') return;
+      var host = resolveSelector(item.selector);
+      if (item.selector && !host && !item.optional) {
+        if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[item.name] = 'skip';
+        return;
+      }
+      safeInit(item.name, function(){ item.init(host); });
+    })(GG.app.plan[i]);
+  }
+};
+
+(function(){
+  var GG = window.GG = window.GG || {};
+  GG.modules = GG.modules || {};
+  var Lite = GG.modules.shortcodesLite = GG.modules.shortcodesLite || {};
+
   // match: [youtube]...[/youtube]
   const SHORT_RE = /\[youtube\]([\s\S]*?)\[\/youtube\]/gi;
 
@@ -3937,17 +3678,24 @@ document.addEventListener('DOMContentLoaded', function () {
     hydrateLiteEmbeds(root);
   }
 
-  // initial
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => runAll());
-  } else {
+  function init(){
+    if (Lite._init) return;
+    Lite._init = true;
     runAll();
+
+    if (window.MutationObserver && !Lite._mo) {
+      Lite._mo = new MutationObserver(muts => {
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType === 1) runAll(n);
+          }
+        }
+      });
+      Lite._mo.observe(document.body, { childList:true, subtree:true });
+    }
   }
 
-  // kalau tema kamu render ulang konten
-  new MutationObserver(muts => {
-    for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1) runAll(n);
-  }).observe(document.body, { childList:true, subtree:true });
+  Lite.init = Lite.init || init;
 })();
 
 (function () {
@@ -4271,23 +4019,16 @@ document.addEventListener('DOMContentLoaded', function () {
     loadBatch();
   }
 
-  function bootWait(){
-    var tries = 0;
-    var t = setInterval(function(){
-      tries += 1;
-      var root = document.getElementById("gg-feed");
-      if (root) {
-        clearInterval(t);
-        initFeed(root);
-      } else if (tries >= 40) {
-        clearInterval(t);
-      }
-    }, 250);
+  function init(){
+    var root = document.getElementById("gg-feed");
+    if (!root) return;
+    initFeed(root);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootWait);
-  else bootWait();
-
+  window.GG = window.GG || {};
+  GG.modules = GG.modules || {};
+  GG.modules.feed = GG.modules.feed || {};
+  GG.modules.feed.init = GG.modules.feed.init || init;
 })();
 
 (function(){
@@ -4833,8 +4574,14 @@ document.addEventListener('DOMContentLoaded', function () {
     loadBatch();
   }
 
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+  function init(){
+    boot();
+  }
+
+  window.GG = window.GG || {};
+  GG.modules = GG.modules || {};
+  GG.modules.sitemap = GG.modules.sitemap || {};
+  GG.modules.sitemap.init = GG.modules.sitemap.init || init;
 })();
 
 (function(){
@@ -5102,15 +4849,15 @@ function isSystemPath(pathname){
   // expose
   window.GGBack = { go: goBack };
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){
-      track();
-      bindHashChange();
-    });
-  } else {
+  function init(){
     track();
     bindHashChange();
   }
+
+  window.GG = window.GG || {};
+  GG.modules = GG.modules || {};
+  GG.modules.backPolicy = GG.modules.backPolicy || {};
+  GG.modules.backPolicy.init = GG.modules.backPolicy.init || init;
 })();
 
 
@@ -5830,11 +5577,7 @@ function isSystemPath(pathname){
     GG.modules.postTagsInline.init(d);
   }
 
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', autoInitPostTags);
-  } else {
-    autoInitPostTags();
-  }
+  GG.modules.postTagsInline.autoInit = autoInitPostTags;
 })(window.GG, document);
 
 (function (GG, w, d) {
@@ -5947,11 +5690,6 @@ function isSystemPath(pathname){
     }
   }
   GG.util.initInteractiveModules = initInteractive;
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', function () { initInteractive(d); });
-  } else {
-    initInteractive(d);
-  }
 })(window.GG, document);
 
 // SUPER LIBRARY – Add to Library (bookmark) + Library page
@@ -6272,12 +6010,6 @@ function isSystemPath(pathname){
     Library._booted = true;
     init();
     renderList();
-  }
-
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
   }
 
   Library.init = init;
@@ -7012,15 +6744,10 @@ function isSystemPath(pathname){
     initShareButtons(d);
   }
 
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-
   shareModule.open = openShareSheet;
   shareModule.close = closeShareSheet;
   shareModule.renderPoster = renderPoster;
+  shareModule.init = boot;
   shareModule.initShareButtons = initShareButtons;
 
   GG.util.getMetaFromElement = getMetaFromElement;
@@ -7282,13 +7009,6 @@ function isSystemPath(pathname){
     if (shareUrl) {
       w.open(shareUrl, '_blank', 'noopener');
     }
-  }
-
-  // init ketika DOM siap
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', initPosterSheet);
-  } else {
-    initPosterSheet();
   }
 
   PosterCanvas.open = openSheet;
@@ -8022,12 +7742,6 @@ function openPosterSheet(meta, mode) {
     }
   };
 
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', U.initSuperShare);
-  } else {
-    U.initSuperShare();
-  }
-
   PosterEngine.init = U.initSuperShare;
 })(window.GG, window, document);
 
@@ -8039,6 +7753,30 @@ function openPosterSheet(meta, mode) {
   var SHARE_TRIGGER_SELECTOR = '.gg-post-card__action--share, .gg-post__action--share';
   var prefersReduced = w.matchMedia &&
                        w.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  Motion.onOpen = function () {
+    if (prefersReduced) return;
+
+    var sheet = d.getElementById('gg-share-sheet') || d.getElementById('pc-poster-sheet');
+    if (!sheet) return;
+
+    var panel = sheet.querySelector('.gg-share-sheet');
+    if (panel) {
+      panel.classList.remove('is-anim-in');
+      void panel.offsetWidth;
+      panel.classList.add('is-anim-in');
+    }
+
+    var firstSocial = sheet.querySelector('.gg-share-sheet__social-btn');
+    if (firstSocial) {
+      firstSocial.classList.remove('is-nudge');
+      void firstSocial.offsetWidth;
+      firstSocial.classList.add('is-nudge');
+      setTimeout(function () {
+        firstSocial.classList.remove('is-nudge');
+      }, 320);
+    }
+  };
 
   Motion.init = function () {
     var sheet = d.getElementById('gg-share-sheet') || d.getElementById('pc-poster-sheet');
@@ -8122,6 +7860,14 @@ function openPosterSheet(meta, mode) {
     addPressEffect(saveBtn);
     socials.forEach(function (btn) { addPressEffect(btn); });
     modeBtns.forEach(function (btn) { addPressEffect(btn); });
+    modeBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (prefersReduced) return;
+        btn.classList.remove('gg-share-sheet__mode-btn--pop');
+        void btn.offsetWidth;
+        btn.classList.add('gg-share-sheet__mode-btn--pop');
+      });
+    });
 
     /* ========== 3. Pop-in ikon sosial ketika sheet dibuka dari share btn */
     var shareBtns = d.querySelectorAll(SHARE_TRIGGER_SELECTOR);
@@ -8143,103 +7889,7 @@ function openPosterSheet(meta, mode) {
     });
   };
 
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', Motion.init);
-  } else {
-    Motion.init();
-  }
-  PosterEngine.init = U.initSuperShare;
 })(window.GG, window, document);
-
-// SUPER SHARE PREMIUM &#8211; Motion & Microinteraction
-(function (GG, w, d) {
-  'use strict';
-  GG.modules = GG.modules || {};
-  var Motion = GG.modules.shareMotion = GG.modules.shareMotion || {};
-  var prefersReduced =
-    w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Dipanggil setiap kali sheet dibuka (di-patch di openPosterSheet)
-  Motion.onOpen = function () {
-    if (prefersReduced) return;
-
-    var sheet = d.getElementById('pc-poster-sheet');
-    if (!sheet) return;
-
-    var panel = sheet.querySelector('.gg-share-sheet');
-    if (panel) {
-      panel.classList.remove('is-anim-in');
-      // force reflow untuk reset anim
-      void panel.offsetWidth;
-      panel.classList.add('is-anim-in');
-    }
-
-    // Nudge kecil di sosmed pertama (biasanya WhatsApp)
-    var firstSocial = sheet.querySelector('.gg-share-sheet__social-btn');
-    if (firstSocial) {
-      firstSocial.classList.remove('is-nudge');
-      void firstSocial.offsetWidth;
-      firstSocial.classList.add('is-nudge');
-      setTimeout(function () {
-        firstSocial.classList.remove('is-nudge');
-      }, 320);
-    }
-  };
-
-  Motion.init = function () {
-    var sheet = d.getElementById('pc-poster-sheet');
-    if (!sheet || sheet._pcShareMotionInit) return;
-    sheet._pcShareMotionInit = true;
-
-    /* ========== 1. Tombol Post to Story / Save Poster ========== */
-    var saveBtn = sheet.querySelector('.gg-share-sheet__cta');
-    if (saveBtn) {
-      saveBtn.addEventListener('pointerdown', function () {
-        saveBtn.classList.add('is-pressed');
-      });
-      w.addEventListener('pointerup', function () {
-        saveBtn.classList.remove('is-pressed');
-      });
-      saveBtn.addEventListener('pointerleave', function () {
-        saveBtn.classList.remove('is-pressed');
-      });
-      saveBtn.addEventListener('blur', function () {
-        saveBtn.classList.remove('is-pressed');
-      });
-    }
-
-    /* ========== 2. Mode toggle: Author / Site (tiny pop) ========== */
-    var modeBtns = sheet.querySelectorAll('.gg-share-sheet__mode-btn');
-    modeBtns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (prefersReduced) return;
-        btn.classList.remove('gg-share-sheet__mode-btn--pop');
-        void btn.offsetWidth;
-        btn.classList.add('gg-share-sheet__mode-btn--pop');
-      });
-    });
-
-    /* ========== 3. Social icons row: press-effect ========== */
-    var socials = sheet.querySelectorAll('.gg-share-sheet__social-btn');
-    socials.forEach(function (btn) {
-      btn.addEventListener('pointerdown', function () {
-        btn.classList.add('is-pressed');
-      });
-      ['pointerup', 'pointerleave', 'blur'].forEach(function (ev) {
-        btn.addEventListener(ev, function () {
-          btn.classList.remove('is-pressed');
-        });
-      });
-    });
-  };
-
-  if (d.readyState === 'loading') {
-    d.addEventListener('DOMContentLoaded', Motion.init);
-  } else {
-    Motion.init();
-  }
-})(window.GG, window, document);
-
 
 (function (GG, w, doc) {
   'use strict';
@@ -8358,13 +8008,6 @@ function openPosterSheet(meta, mode) {
   GG.modules.langSwitcher = {
     init: initLangSwitcher
   };
-
-  // Auto-init on DOM ready
-  if (doc.readyState !== 'loading') {
-    initLangSwitcher();
-  } else {
-    doc.addEventListener('DOMContentLoaded', initLangSwitcher);
-  }
 
 })(window.GG, window, document);
 
@@ -8581,6 +8224,7 @@ function openPosterSheet(meta, mode) {
 (function(){
   var GG = window.GG = window.GG || {};
   GG.a11y = GG.a11y || {};
+  GG.state = GG.state || {};
   function normSpace(s){ return (s||'').replace(/\s+/g,' ').trim(); }
   function getLabel(el){
     if(!el) return '';
@@ -8766,48 +8410,33 @@ function openPosterSheet(meta, mode) {
     }, 120);
   }
 
-  // Run once early, then re-run on mutations (widgets/JS may inject links/buttons after DOMContentLoaded)
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ run(); scheduleRun(); });
-  } else {
-    run(); scheduleRun();
-  }
-
-  // Observe DOM changes that can affect link names / identical links / target sizes
-  if(window.MutationObserver){
-    var mo = new MutationObserver(function(){
-      scheduleRun();
-    });
-    try{
-      mo.observe(document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:['href','aria-label','aria-labelledby','class','style']});
-    }catch(e){}
-  }
-
-  // Final pass after all resources load
-  window.addEventListener('load', function(){ scheduleRun(); }, {once:true});
-})();
-
-(function(){
-  function setDims(img){
-    try{
-      if(img.hasAttribute('width') && img.hasAttribute('height')) return;
-      var w = img.naturalWidth, h = img.naturalHeight;
-      if(w && h){
-        img.setAttribute('width', w);
-        img.setAttribute('height', h);
-      }
-    }catch(e){}
-  }
-  function scan(){
-    var imgs = document.querySelectorAll('img:not([width]):not([height])');
-    for(var i=0;i<imgs.length;i++){
-      var img = imgs[i];
-      if(img.complete) setDims(img);
-      else img.addEventListener('load', function(){ setDims(this); }, {once:true});
+  function init(){
+    if (GG.state.a11yFixBooted) {
+      run();
+      return;
     }
+    GG.state.a11yFixBooted = true;
+
+    run();
+    scheduleRun();
+
+    if(window.MutationObserver){
+      var mo = new MutationObserver(function(){
+        scheduleRun();
+      });
+      try{
+        mo.observe(document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:['href','aria-label','aria-labelledby','class','style']});
+      }catch(e){}
+    }
+
+    window.addEventListener('load', function(){ scheduleRun(); }, {once:true});
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
-  else scan();
+
+  GG.modules = GG.modules || {};
+  GG.modules.a11yFix = GG.modules.a11yFix || {};
+  GG.modules.a11yFix.init = GG.modules.a11yFix.init || function(){ init(); };
+  GG.modules.a11yFix.run = GG.modules.a11yFix.run || function(){ run(); };
+  GG.a11y.run = GG.a11y.run || function(){ try{ run(); }catch(e){} };
 })();
 
 (function(){
@@ -8908,238 +8537,14 @@ function openPosterSheet(meta, mode) {
   }
 
   function init(root){
+    if (GG.state.imgDimsBooted) return;
+    GG.state.imgDimsBooted = true;
     scan(root || document);
   }
 
   GG.modules.imgDims = GG.modules.imgDims || {};
   GG.modules.imgDims.init = GG.modules.imgDims.init || init;
 
-  // Boot once (idempotent)
-  if(GG.state.imgDimsBooted) return;
-  GG.state.imgDimsBooted = true;
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ init(document); }, {once:true});
-  } else {
-    init(document);
-  }
-})();
-
-
-
-(function(){
-  var GG = window.GG = window.GG || {};
-  GG.modules = GG.modules || {};
-  GG.state = GG.state || {};
-
-  function normSpace(s){ return (s||'').replace(/\s+/g,' ').trim(); }
-
-  function getLabel(el){
-    if(!el) return '';
-    var lbl = normSpace(el.getAttribute('aria-label'));
-    if(lbl) return lbl;
-
-    var by = el.getAttribute('aria-labelledby');
-    if(by){
-      var ref = document.getElementById(by);
-      if(ref) {
-        var t = normSpace(ref.textContent);
-        if(t) return t;
-      }
-    }
-    var t2 = normSpace(el.getAttribute('title'));
-    if(t2) return t2;
-
-    var txt = normSpace(el.textContent);
-    if(txt) return txt;
-
-    var img = el.querySelector('img[alt]');
-    if(img){
-      var a = normSpace(img.getAttribute('alt'));
-      if(a) return a;
-    }
-
-    var data = normSpace(el.getAttribute('data-label'));
-    if(data) return data;
-
-    var href = normSpace(el.getAttribute('href'));
-    if(href){
-      try{
-        var u = new URL(href, location.href);
-        var path = u.pathname.replace(/\/+$/,'');
-        var last = path.split('/').filter(Boolean).pop();
-        if(last) return last.replace(/[-_]/g,' ');
-        if(u.host) return u.host;
-      }catch(e){}
-    }
-    return 'Link';
-  }
-
-  function hasDiscernibleName(a){
-    if(!a) return true;
-    if(normSpace(a.getAttribute('aria-label'))) return true;
-    if(normSpace(a.getAttribute('title'))) return true;
-    var txt = normSpace(a.textContent);
-    if(txt) return true;
-    var img = a.querySelector('img[alt]:not([alt=""])');
-    if(img) return true;
-    return false;
-  }
-
-  function fixLinkNames(root){
-    root = root || document;
-    var links = root.querySelectorAll('a[href]');
-    for(var i=0;i<links.length;i++){
-      var a = links[i];
-      if(hasDiscernibleName(a)) continue;
-
-      var lbl = getLabel(a);
-      if(lbl){
-        a.removeAttribute('aria-labelledby');
-        a.setAttribute('aria-label', lbl);
-      }
-    }
-  }
-
-  function removeEmptyHeadings(root){
-    root = root || document;
-    var heads = root.querySelectorAll('h1,h2,h3,h4,h5,h6');
-    for(var i=0;i<heads.length;i++){
-      var h = heads[i];
-      var t = normSpace(h.textContent);
-      if(!t){
-        try{
-          h.setAttribute('aria-hidden','true');
-          h.classList.add('gg-visually-hidden');
-        }catch(e){}
-      }
-    }
-  }
-
-  function fixIdenticalLinks(root){
-    root = root || document;
-    var links = root.querySelectorAll('a[href]');
-    var map = {};
-    for(var i=0;i<links.length;i++){
-      var a = links[i];
-      var href = a.getAttribute('href');
-      if(!href) continue;
-
-      var txt = normSpace(a.textContent);
-      var img = a.querySelector('img[alt]:not([alt=""])');
-      if(img) txt = txt || normSpace(img.getAttribute('alt'));
-      var lbl = normSpace(a.getAttribute('aria-label')) || txt;
-
-      if(!map[href]) map[href] = [];
-      map[href].push({a:a, label:lbl});
-    }
-
-    for(var k in map){
-      var arr = map[k];
-      if(!arr || arr.length < 2) continue;
-
-      var labels = {};
-      for(var j=0;j<arr.length;j++){
-        labels[arr[j].label || ''] = 1;
-      }
-      var uniq = Object.keys(labels);
-
-      if(uniq.length <= 1) continue;
-
-      var best = '';
-      for(var u=0;u<uniq.length;u++){
-        var s = uniq[u];
-        if(!s) continue;
-        if(s.toLowerCase() === 'link') continue;
-        if(s.length > best.length) best = s;
-      }
-      if(!best) continue;
-
-      for(var j2=0;j2<arr.length;j2++){
-        var a2 = arr[j2].a;
-        try{
-          if(!normSpace(a2.getAttribute('aria-label'))){
-            a2.setAttribute('aria-label', best);
-          }
-        }catch(e){}
-      }
-    }
-  }
-
-  function fixTouchTargets(root){
-    root = root || document;
-    var chromeSel = 'header,nav,footer,.gg-footer,.gg-toolbar,.gg-sidebar,.gg-panel,.gg-comments,.gg-lt,.gg-toc,.gg-nav,.gg-post-card,.gg-post-card__meta,.gg-post-card__label,.gg-post-card__body,.gg-post-card__thumb,.post-body,.post,.blog-posts,.widget,.widget-content';
-    var els = root.querySelectorAll('a[href],button,[role="button"],summary,input[type="button"],input[type="submit"],[tabindex]:not([tabindex="-1"])');
-    for(var i=0;i<els.length;i++){
-      var el = els[i];
-      if(!el.closest || !el.closest(chromeSel)) continue;
-
-      if(el.getClientRects && el.getClientRects().length===0) continue;
-      var cs = window.getComputedStyle ? getComputedStyle(el) : null;
-      if(cs && (cs.display==='none' || cs.visibility==='hidden')) continue;
-
-      var r = el.getBoundingClientRect();
-      if((r.width && r.width < 48) || (r.height && r.height < 48)){
-        el.classList.add('gg-touch');
-      }
-    }
-  }
-
-  function run(root){
-    root = root || document;
-    removeEmptyHeadings(root);
-    fixLinkNames(root);
-    fixIdenticalLinks(root);
-    fixTouchTargets(root);
-  }
-
-  function scheduleRun(){
-    if(scheduleRun._t) return;
-    scheduleRun._t = setTimeout(function(){
-      scheduleRun._t = 0;
-      try{ run(document); }catch(e){}
-    }, 120);
-  }
-
-  function init(root){
-    root = root || document;
-
-    if(!GG.state.a11yFixBooted){
-      GG.state.a11yFixBooted = true;
-
-      if(document.readyState === 'loading'){
-        document.addEventListener('DOMContentLoaded', function(){ run(root); scheduleRun(); }, {once:true});
-      } else {
-        run(root); scheduleRun();
-      }
-
-      if(window.MutationObserver){
-        var mo = new MutationObserver(function(){ scheduleRun(); });
-        try{
-          mo.observe(document.documentElement, {
-            subtree:true,
-            childList:true,
-            attributes:true,
-            attributeFilter:['href','aria-label','aria-labelledby','class','style']
-          });
-        }catch(e){}
-      }
-
-      window.addEventListener('load', function(){ scheduleRun(); }, {once:true});
-    } else {
-      run(root);
-    }
-  }
-
-  GG.modules.a11yFix = GG.modules.a11yFix || {};
-  GG.modules.a11yFix.init = GG.modules.a11yFix.init || init;
-  GG.modules.a11yFix.run  = GG.modules.a11yFix.run  || run;
-
-  // Backward-compatible facade (still under GG.*)
-  GG.a11y = GG.a11y || {};
-  GG.a11y.run = function(){ try{ run(document); }catch(e){} };
-
-  init(document);
 })();
 /* GG prefetch — HOME/LISTING only (safe, no PJAX) */
 (() => {
@@ -9278,9 +8683,8 @@ function openPosterSheet(meta, mode) {
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
+  window.GG = window.GG || {};
+  GG.modules = GG.modules || {};
+  GG.modules.prefetch = GG.modules.prefetch || {};
+  GG.modules.prefetch.init = GG.modules.prefetch.init || init;
 })();

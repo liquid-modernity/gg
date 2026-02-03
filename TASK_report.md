@@ -1,22 +1,17 @@
 # TASK_report.md
 
-## 1. TASK SUMMARY
-**Task ID:** T-001 (Make main.js pure JS)
-**Status:** SUCCESS
-**Changes:**
-- Removed 2 instances of `<script>` tags.
-- Replaced `&quot;` with actual quotes in 5 locations.
-- Removed CDATA wrappers.
+## TASK SUMMARY
+Task ID: X-010
+Status: DONE
 
-## 2. TASK PROOF
-- `<script` count: 0 (PASSED)
-- `</script` count: 0 (PASSED)
-- `CDATA` count: 0 (PASSED)
-- `&quot;` count: 0 (PASSED)
+Changes:
+- Added `GG.app.plan` with selector-to-module map and centralized init gateway via `GG.app.init`.
+- Removed deprecated `#gg-postinfo` module and migrated scattered auto-inits into plan-driven modules.
+- Deduplicated `shareMotion` and converted feed/sitemap/backPolicy/prefetch to explicit module inits.
 
-## 3. FILE CONTENT (main.js)
-```javascript
-/* @GG_CAPSULE_V1 ... (Updated Header) ... */
-(function() {
-  // ... Cleaned pure JS code ...
-})();
+## TASK PROOF
+- Remaining `DOMContentLoaded` usage is limited to `GG.boot.onReady` (single gateway).
+- Main init now runs through `GG.boot.init()` → `GG.boot.onReady()` → `GG.app.init()`.
+
+## FILES TOUCHED
+- public/assets/dev/main.js

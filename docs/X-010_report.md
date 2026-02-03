@@ -32,7 +32,12 @@
 > Lengkapi tabel ini untuk semua item di `GG.app.plan`.
 
 ## Manual test checklist
-### DEV — devpakrpp.blogspot.com
+
+> Catatan: Sistem **single-domain**. DEV/PROD ditentukan oleh XML theme yang kamu pasang (manual swap).
+> - DEV: jangan register Service Worker (hindari cache/lock saat debugging).
+> - PROD: Service Worker aktif + assets versioned (`/v/<TAG>/`).
+
+### DEV — www.pakrpp.com (Theme = `index.dev.xml`; assets = `/dev/`; SW **OFF**)
 - [ ] Home: labeltree load & toggle OK
 - [ ] Home: hero video observer OK (tidak error)
 - [ ] Post: TOC generate OK
@@ -41,9 +46,9 @@
 - [ ] Lang switcher: toggle + pilih bahasa OK, tidak double listener
 - [ ] `?ggdebug=1`: semua module status OK, tidak ada error spam
 
-### PROD — www.pakrpp.com (setelah release baru)
+### PROD — www.pakrpp.com (Theme = `index.prod.xml`; assets = `/v/<TAG>/`; SW **ON**)
 - [ ] PWA tetap register SW (bukan DEV mode)
-- [ ] assets v/<TAG> loaded dengan cache immutable
+- [ ] assets `/v/<TAG>/` loaded dengan cache immutable
 - [ ] tidak ada regressions di halaman post
 
 ## Notes / risks

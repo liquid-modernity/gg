@@ -9,6 +9,13 @@
 
 Sebelum menulis satu baris kode, pahami aturan ini. Ini adalah hukum yang mengikat seluruh fase.
 
+
+### 0. Environment Model (Single Domain)
+- **Domain tunggal:** `www.pakrpp.com`.
+- **DEV:** theme = `index.dev.xml` → assets = `/dev/` → Service Worker **OFF**.
+- **PROD:** theme = `index.prod.xml` → assets = `/v/<TAG>/` → Service Worker **ON**.
+- **Aturan utama:** DEV tidak boleh mengaktifkan SW / caching agresif (sumber “debugging palsu”).
+
 ### 1. Arsitektur: MVC-Lite (Single File Monolith)
 Karena keterbatasan *context window* AI dan kemudahan maintenance, kita tetap menggunakan **satu file `main.js`**, namun dengan struktur internal yang ketat:
 * **`GG.store`**: Sumber kebenaran tunggal (State). Tidak ada variabel liar atau `localStorage` tanpa versi.

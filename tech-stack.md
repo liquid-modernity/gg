@@ -15,6 +15,12 @@
   3. Update Capsule (`LAST_PATCH`, `NEXT_TASK`).
   4. Generate `TASK_report.md`.
 
+
+### 1.1.1 Environment Model (Single Domain)
+- **Domain:** `www.pakrpp.com`.
+- **DEV:** pasang `index.dev.xml` → assets `/dev/` → SW **OFF** (hindari cache lock).
+- **PROD:** pasang `index.prod.xml` → assets `/v/<TAG>/` → SW **ON**.
+
 ### 1.2 Strict Coding Constraints
 * **Pure JS Only:** `main.js` must be valid ES6+. No `<script>` tags, no `CDATA`, no `&quot;` entities.
 * **Relocation Rule:** When moving code to MVC, **do not refactor logic** simultaneously. Use facades/wrappers.
