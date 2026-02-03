@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-004 centralized data fetching (GG.services.api)
-NEXT_TASK: SW-001 service worker safety (kill-switch + versioning)
+LAST_PATCH: 2026-02-03 F-005 SPA content injection (router + render)
+NEXT_TASK: F-002 super search (Fuse.js + IDB)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -60,6 +60,7 @@ X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI 
 F-001 (done) Router engine: History API navigation with scroll restore + fallback
 F-003 (done) Metadata discipline: update title/description for client-only navigation
 F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
+F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -79,6 +80,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
 - 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
 - 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
 - 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
@@ -88,7 +90,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
 - 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
-- 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
 */
 (function(w){
   'use strict';
@@ -197,6 +198,78 @@ PATCHLOG (append newest first; keep last 10):
       }
     }
     return { update: update, titleFromUrl: titleFromUrl };
+  })();
+  GG.core.render = GG.core.render || (function(){
+    function fail(code, info){
+      var err = new Error('render-failed');
+      err.name = 'GGRenderError';
+      err.code = code || 'render';
+      if (info) err.info = info;
+      return err;
+    }
+    function findTarget(doc){
+      if (!doc || !doc.querySelector) return null;
+      var selectors = ['.gg-blog-main', '.blog-posts', '#main', 'main.gg-main', 'main'];
+      for (var i = 0; i < selectors.length; i++) {
+        var el = doc.querySelector(selectors[i]);
+        if (el) return el;
+      }
+      return null;
+    }
+    function extractMeta(doc){
+      var out = { title: '', description: '', ogTitle: '' };
+      if (!doc) return out;
+      out.title = doc.title || '';
+      var desc = doc.querySelector && doc.querySelector('meta[name="description"]');
+      if (desc) out.description = desc.getAttribute('content') || '';
+      var og = doc.querySelector && doc.querySelector('meta[property="og:title"]');
+      if (og) out.ogTitle = og.getAttribute('content') || '';
+      return out;
+    }
+    function rehydrateComments(root){
+      if (!root || !root.querySelectorAll) return 0;
+      var scripts = root.querySelectorAll('script');
+      if (!scripts || !scripts.length) return 0;
+      var count = 0;
+      for (var i = 0; i < scripts.length; i++) {
+        var code = scripts[i].text || scripts[i].textContent || '';
+        if (code.indexOf('BLOG_CMT_createIframe') === -1) continue;
+        try {
+          var s = w.document.createElement('script');
+          s.type = 'text/javascript';
+          s.text = code;
+          (w.document.body || w.document.documentElement).appendChild(s);
+          if (s.parentNode) s.parentNode.removeChild(s);
+          count++;
+        } catch (e) {}
+      }
+      return count;
+    }
+    function apply(html, url){
+      if (!html) throw fail('empty', { url: url });
+      if (!w.DOMParser) throw fail('parser', { url: url });
+      var parser = new w.DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+      if (!doc) throw fail('parse', { url: url });
+      var source = findTarget(doc);
+      var target = findTarget(w.document);
+      if (!source || !target) throw fail('target', { url: url });
+      target.innerHTML = source.innerHTML;
+      var meta = extractMeta(doc);
+      if (GG.core && GG.core.meta && GG.core.meta.update) {
+        var payload = {};
+        if (meta.title) payload.title = meta.title;
+        if (meta.description) payload.description = meta.description;
+        if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
+        if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+      }
+      var rehydrated = rehydrateComments(target);
+      if (!rehydrated) rehydrateComments(doc);
+      GG.core.render._lastUrl = url || '';
+      GG.core.render._lastAt = Date.now();
+      return true;
+    }
+    return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };
   })();
   var ENV = w.GG_ENV;
   if (!ENV) {
@@ -471,6 +544,45 @@ GG.view.applyRootState = GG.ui.applyRootState;
     if(!url) return;
     try { w.location.href = url; } catch (e) {}
   };
+  router._setLoading = router._setLoading || function(on){
+    var body = d.body;
+    if(!body) return;
+    if (on) {
+      if (body.classList) body.classList.add('is-loading');
+      else body.className += ' is-loading';
+      if (GG.core && GG.core.state) GG.core.state.add(body, 'loading');
+    } else {
+      if (body.classList) body.classList.remove('is-loading');
+      else body.className = body.className.replace(/\bis-loading\b/g, '').trim();
+      if (GG.core && GG.core.state) GG.core.state.remove(body, 'loading');
+    }
+  };
+  router._load = router._load || function(url, opts){
+    if(!url) return;
+    if(!GG.services || !GG.services.api || !GG.services.api.getHtml) return router.fallback(url);
+    var options = opts || {};
+    var scrollY = (typeof options.scrollY === 'number') ? options.scrollY : null;
+    var done = false;
+    function finish(){
+      if (done) return;
+      done = true;
+      router._setLoading(false);
+    }
+    router._setLoading(true);
+    return GG.services.api.getHtml(url).then(function(html){
+      if (!GG.core || !GG.core.render || !GG.core.render.apply) throw new Error('render-missing');
+      var ok = GG.core.render.apply(html, url);
+      if (!ok) throw new Error('render-failed');
+      if (typeof scrollY === 'number') w.scrollTo(0, scrollY);
+      else w.scrollTo(0, 0);
+      if (options.pop && typeof router.onPopState === 'function') router.onPopState(url, w.history ? w.history.state : null);
+      if (!options.pop && typeof router.onNavigate === 'function') router.onNavigate(url);
+      finish();
+    }).catch(function(){
+      finish();
+      router.fallback(url);
+    });
+  };
 
   router.handleClick = router.handleClick || function(evt){
     try {
@@ -508,7 +620,7 @@ GG.view.applyRootState = GG.ui.applyRootState;
       if (url === from) return;
       w.history.pushState(router._stateFor(url), '', url);
       if (w.console && console.log) console.log('[GG.router] Navigating to', url);
-      if (typeof router.onNavigate === 'function') router.onNavigate(url);
+      router._load(url, { pop: false });
     } catch (e) {
       router.fallback(url);
     }
@@ -518,9 +630,8 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
       var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
-      w.scrollTo(0, y || 0);
       if (w.console && console.log) console.log('[GG.router] Popstate', w.location.href);
-      if (typeof router.onPopState === 'function') router.onPopState(w.location.href, state);
+      router._load(w.location.href, { pop: true, scrollY: y });
     } catch (e) {
       router.fallback(w.location.href);
     }
@@ -542,11 +653,13 @@ GG.view.applyRootState = GG.ui.applyRootState;
   };
   router.onNavigate = router.onNavigate || function(url){
     if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    if (GG.core.render && GG.core.render._lastUrl === url) return;
     var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
     GG.core.meta.update({ title: title, description: title, ogTitle: title });
   };
   router.onPopState = router.onPopState || function(url){
     if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
+    if (GG.core.render && GG.core.render._lastUrl === url) return;
     var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
     GG.core.meta.update({ title: title, description: title, ogTitle: title });
   };
