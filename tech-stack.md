@@ -37,6 +37,7 @@ The following Blogger XML tags MUST NEVER be deleted or modified as they control
 - `<b:section ...>` and `<b:widget ...>`
 - `<b:skin>...</b:skin>` (unless moving to external CSS)
 - Standard Blogger comment includes
+- `BLOG_CMT_createIframe` script blocks
 
 ---
 

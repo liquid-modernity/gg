@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 T-003 architecture relocation (namespace buckets)
+LAST_PATCH: 2026-02-03 FIX-001 restore native Blogger comment scripts
 NEXT_TASK: C-001 CSS structure (z-index vars)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -73,6 +73,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
 - 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
 - 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.

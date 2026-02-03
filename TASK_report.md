@@ -1,18 +1,21 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: T-003
+Task ID: FIX-001
 Status: DONE
 
 Changes:
-- Initialized GG namespace buckets (`core/store/services/ui/actions/boot`) and mapped util/config/state/view into their buckets.
-- Relocated global helper functions into `GG.boot`, `GG.core`, and `GG.ui` with updated call sites.
-- Routed root-state DOM updates through `GG.ui.applyRootState` while keeping `GG.view` compatibility.
+- Restored `BLOG_CMT_createIframe` script blocks to comment form sections in `index.dev.xml` and `index.prod.xml`.
+- Marked `BLOG_CMT_createIframe` as protected in `tech-stack.md` Section 1.4.
+- Updated capsule patchlog to track the safeguard fix.
 
 ## TASK PROOF
-- App plan now references `GG.boot.*` and `GG.core.*` helpers instead of global functions.
-- No standalone global helper functions remain for init/toast/comments/help.
+- `BLOG_CMT_createIframe` appears inside comment form containers in both XML templates.
+- Protected Code Zones list now explicitly includes `BLOG_CMT_createIframe` blocks.
 
 ## FILES TOUCHED
+- index.dev.xml
+- index.prod.xml
+- tech-stack.md
 - public/assets/dev/main.js
 - TASK_report.md
