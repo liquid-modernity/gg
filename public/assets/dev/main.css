@@ -4494,6 +4494,29 @@ main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right{
 }
 /* /GAGA MODULE: GLOBAL TOAST (CSS) */
 
+/* GAGA MODULE: SKELETON (CSS) */
+.gg-skeleton{
+  display:grid;
+  gap:12px;
+  padding:24px;
+}
+.gg-skeleton__bar{
+  height:12px;
+  border-radius:10px;
+  background:linear-gradient(90deg, rgba(148,163,184,.18) 25%, rgba(148,163,184,.32) 50%, rgba(148,163,184,.18) 75%);
+  background-size:200% 100%;
+  animation:gg-shimmer 1.2s ease-in-out infinite;
+}
+.gg-skeleton__hero{ height:180px; }
+.gg-skeleton__title{ height:22px; width:70%; }
+.gg-skeleton__line{ height:12px; width:100%; }
+.gg-skeleton__line--short{ width:65%; }
+@keyframes gg-shimmer{
+  0%{ background-position:200% 0; }
+  100%{ background-position:-200% 0; }
+}
+/* /GAGA MODULE: SKELETON (CSS) */
+
 /* 2 kolom ≤480px, sisanya 3 kolom */
 .gg-authorpage-grid{
   display: grid;

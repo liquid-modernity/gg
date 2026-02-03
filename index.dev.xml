@@ -2778,6 +2778,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 
 <!-- GAGA HOME OF JS -->
 <script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js?v=20260203160035'/>
+<script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>

@@ -1,19 +1,18 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: F-002
+Task ID: F-006
 Status: DONE
 
 Changes:
-- Added `searchCacheTTL` to `#gg-config` and wired IDB cache TTL.
-- Implemented `GG.modules.search` with dynamic imports (Fuse.js + idb-keyval), index caching, and live search.
-- Added command palette UI in `#gg-dialog` with Ctrl/Cmd+K and search icon triggers.
+- Added `GG.ui.skeleton` markup and CSS shimmer animation for instant loading feedback.
+- Injected skeleton UI before router fetch and scrolls to top immediately.
+- Wrapped content swaps in View Transitions API with a safe fallback.
 
 ## TASK PROOF
-- `main.js` now provides instant search over Blogger summary feeds with IDB caching.
+- `main.js` now shows skeleton placeholders during SPA navigation and animates transitions.
 
 ## FILES TOUCHED
-- index.dev.xml
-- index.prod.xml
+- public/assets/dev/main.css
 - public/assets/dev/main.js
 - TASK_report.md

@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-002 super search (Fuse.js + IDB)
-NEXT_TASK: QA-001 smoke test checklist
+LAST_PATCH: 2026-02-03 F-006 native transitions + skeleton UI
+NEXT_TASK: Phase4 Share Poster (Canvas + Image Proxy)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -62,6 +62,7 @@ F-003 (done) Metadata discipline: update title/description for client-only navig
 F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
 F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
 F-002 (done) Super Search: Fuse.js + IDB cache + command palette
+F-006 (done) Native transitions + skeleton UI for SPA navigation
 T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -81,6 +82,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
 - 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
 - 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
 - 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
@@ -90,7 +92,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
 - 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
-- 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
 */
 (function(w){
   'use strict';
@@ -258,19 +259,28 @@ PATCHLOG (append newest first; keep last 10):
       var source = findTarget(doc);
       var target = findTarget(w.document);
       if (!source || !target) throw fail('target', { url: url });
-      target.innerHTML = source.innerHTML;
       var meta = extractMeta(doc);
-      if (GG.core && GG.core.meta && GG.core.meta.update) {
-        var payload = {};
-        if (meta.title) payload.title = meta.title;
-        if (meta.description) payload.description = meta.description;
-        if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
-        if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+      var doSwap = function(){
+        target.innerHTML = source.innerHTML;
+        if (GG.core && GG.core.meta && GG.core.meta.update) {
+          var payload = {};
+          if (meta.title) payload.title = meta.title;
+          if (meta.description) payload.description = meta.description;
+          if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
+          if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+        }
+        var rehydrated = rehydrateComments(target);
+        if (!rehydrated) rehydrateComments(doc);
+        GG.core.render._lastUrl = url || '';
+        GG.core.render._lastAt = Date.now();
+      };
+      var docRef = w.document;
+      if (docRef && docRef.startViewTransition) {
+        try { docRef.startViewTransition(function(){ doSwap(); }); }
+        catch (e) { doSwap(); }
+      } else {
+        doSwap();
       }
-      var rehydrated = rehydrateComments(target);
-      if (!rehydrated) rehydrateComments(doc);
-      GG.core.render._lastUrl = url || '';
-      GG.core.render._lastAt = Date.now();
       return true;
     }
     return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };
@@ -499,6 +509,19 @@ GG.view.applyRootState = GG.ui.applyRootState;
   ui.overlay = ui.overlay || {};
   ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); };
   ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
+  ui.skeleton = ui.skeleton || {};
+  ui.skeleton.markup = ui.skeleton.markup || '' +
+    '<div class="gg-skeleton" aria-hidden="true">' +
+      '<div class="gg-skeleton__bar gg-skeleton__hero"></div>' +
+      '<div class="gg-skeleton__bar gg-skeleton__title"></div>' +
+      '<div class="gg-skeleton__bar gg-skeleton__line"></div>' +
+      '<div class="gg-skeleton__bar gg-skeleton__line"></div>' +
+      '<div class="gg-skeleton__bar gg-skeleton__line gg-skeleton__line--short"></div>' +
+    '</div>';
+  ui.skeleton.render = ui.skeleton.render || function(target){
+    if(!target) return;
+    target.innerHTML = ui.skeleton.markup;
+  };
   ui.inputMode = ui.inputMode || {};
   ui.inputMode.get = ui.inputMode.get || function(){ if(GG.store && GG.store.get){ var s = GG.store.get(); return s && s.inputMode; } return d.documentElement ? d.documentElement.dataset.ggInput : ''; };
   ui.inputMode.set = ui.inputMode.set || function(mode){ if(!mode) return; if(GG.store && GG.store.set) GG.store.set({ inputMode: mode }); else if(d.documentElement) d.documentElement.dataset.ggInput = mode; };
@@ -566,6 +589,13 @@ GG.view.applyRootState = GG.ui.applyRootState;
     if(!GG.services || !GG.services.api || !GG.services.api.getHtml) return router.fallback(url);
     var options = opts || {};
     var scrollY = (typeof options.scrollY === 'number') ? options.scrollY : null;
+    var target = (GG.core && GG.core.render && GG.core.render.findTarget)
+      ? GG.core.render.findTarget(d)
+      : null;
+    if (target && GG.ui && GG.ui.skeleton && GG.ui.skeleton.render) {
+      GG.ui.skeleton.render(target);
+    }
+    try { w.scrollTo(0, 0); } catch (e) {}
     var done = false;
     function finish(){
       if (done) return;
