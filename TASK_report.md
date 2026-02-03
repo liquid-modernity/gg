@@ -1,16 +1,16 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: F-003
+Task ID: F-004
 Status: DONE
 
 Changes:
-- Added `GG.core.meta.update()` to update title/description/og:title safely.
-- Hooked router navigation and popstate to refresh metadata on client-side transitions.
-- Kept canonical untouched and limited updates to cosmetic metadata only.
+- Added `GG.services.api` with a shared fetch wrapper and standardized errors.
+- Implemented `getFeed()` for Blogger JSON feeds and `getHtml()` for PJAX-ready HTML.
+- Logged API failures to telemetry while preserving browser cache defaults.
 
 ## TASK PROOF
-- `main.js` updates `document.title` and description/og:title meta tags during client navigation.
+- `main.js` now exposes `GG.services.api.fetch/getFeed/getHtml` for centralized data access.
 
 ## FILES TOUCHED
 - public/assets/dev/main.js

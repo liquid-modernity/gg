@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-003 metadata discipline (SEO-safe SPA)
-NEXT_TASK: F-004 data fetching service (GG.services.api)
+LAST_PATCH: 2026-02-03 F-004 centralized data fetching (GG.services.api)
+NEXT_TASK: SW-001 service worker safety (kill-switch + versioning)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -59,6 +59,7 @@ X-001 (done) State contract: JS writes data-gg-state, CSS reads data-gg-state
 X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI selects by id
 F-001 (done) Router engine: History API navigation with scroll restore + fallback
 F-003 (done) Metadata discipline: update title/description for client-only navigation
+F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -78,6 +79,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
 - 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
 - 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
@@ -87,7 +89,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 - 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
 - 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
-- 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
 */
 (function(w){
   'use strict';
@@ -152,6 +153,17 @@ PATCHLOG (append newest first; keep last 10):
     }
     return { has: has, add: add, remove: remove, toggle: toggle };
   })();
+  GG.core.telemetry = GG.core.telemetry || function(payload){
+    try {
+      var ep = '/api/telemetry';
+      var body = JSON.stringify(payload || {});
+      if (w.navigator && w.navigator.sendBeacon) {
+        try { w.navigator.sendBeacon(ep, w.Blob ? new Blob([body], { type: 'application/json' }) : body); } catch (e) {}
+      } else if (w.fetch) {
+        w.fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }).catch(function(){});
+      }
+    } catch (e) {}
+  };
   GG.core.meta = GG.core.meta || (function(){
     function findMeta(selector){
       return w.document ? w.document.querySelector(selector) : null;
@@ -709,6 +721,71 @@ GG.actions.register('jump', function(ctx){
     if (w.GG_IS_DEV) return;
     services.manifest.init();
     services.sw.init();
+  };
+
+  services.api = services.api || {};
+  services.api._buildQuery = services.api._buildQuery || function(params){
+    if (!params) return '';
+    var list = [];
+    for (var key in params) {
+      if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+      var val = params[key];
+      if (val === undefined || val === null || val === '') continue;
+      list.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(val)));
+    }
+    return list.join('&');
+  };
+  services.api._error = services.api._error || function(code, message, info){
+    var err = new Error(message || 'api-error');
+    err.name = 'GGApiError';
+    err.code = code;
+    if (info) err.info = info;
+    return err;
+  };
+  services.api._log = services.api._log || function(payload){
+    try {
+      if (GG.core && typeof GG.core.telemetry === 'function') GG.core.telemetry(payload);
+    } catch (e) {}
+  };
+  services.api.fetch = services.api.fetch || function(url, type){
+    var mode = type || 'json';
+    if (!url) return Promise.reject(services.api._error('invalid', 'invalid-url', { url: url }));
+    var opts = { method: 'GET', cache: 'default', credentials: 'same-origin' };
+    return w.fetch(url, opts).then(function(res){
+      if (!res || !res.ok) {
+        var err = services.api._error('http', 'request-failed', { url: url, status: res ? res.status : 0, type: mode });
+        services.api._log({ type: 'api', stage: 'response', url: url, status: res ? res.status : 0, code: err.code });
+        throw err;
+      }
+      if (mode === 'text' || mode === 'html') return res.text();
+      return res.json();
+    }).catch(function(err){
+      if (err && err.name === 'GGApiError') {
+        services.api._log({ type: 'api', stage: 'error', url: url, code: err.code });
+        throw err;
+      }
+      var wrapped = services.api._error('network', 'network-failure', { url: url, type: mode, message: err && err.message ? err.message : '' });
+      services.api._log({ type: 'api', stage: 'error', url: url, code: wrapped.code });
+      throw wrapped;
+    });
+  };
+  services.api.getFeed = services.api.getFeed || function(params){
+    var opts = params || {};
+    var base = opts.base || (opts.summary ? '/feeds/posts/summary' : '/feeds/posts/default');
+    var source = (opts.query && typeof opts.query === 'object') ? opts.query : opts;
+    var query = {};
+    for (var key in source) {
+      if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+      if (key === 'summary' || key === 'base' || key === 'query' || key === 'type') continue;
+      query[key] = source[key];
+    }
+    if (!query.alt) query.alt = 'json';
+    var qs = services.api._buildQuery(query);
+    var url = base + (qs ? '?' + qs : '');
+    return services.api.fetch(url, 'json');
+  };
+  services.api.getHtml = services.api.getHtml || function(url){
+    return services.api.fetch(url, 'text');
   };
 
   GG.boot.onReady = GG.boot.onReady || function(fn){
