@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 T-005 ui/ux re-integration after SPA render
+LAST_PATCH: 2026-02-03 T-006 surface logic + context refinement
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -66,7 +66,7 @@ F-006 (done) Native transitions + skeleton UI for SPA navigation
 F-007 (done) Share poster + image proxy for CORS-safe canvas
 T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
 T-005 (done) UI/UX re-integration after SPA render (layout + smart components)
-T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
+T-006 (done) Surface logic + context refinement (SSR body surface + client updates)
 
 STYLE INVARIANTS:
 - No behavior changes in T-001/T-002.
@@ -83,6 +83,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 T-006: surface awareness + contextual right panel handling.
 - 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
 - 2026-02-03 F-007: add poster share module + worker proxy usage.
 - 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
@@ -264,7 +265,7 @@ PATCHLOG (append newest first; keep last 10):
       var doSwap = function(){
         target.innerHTML = source.innerHTML;
         if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
-          try { GG.ui.layout.sync(doc); } catch (_) {}
+          try { GG.ui.layout.sync(doc, url); } catch (_) {}
         }
         if (GG.core && GG.core.meta && GG.core.meta.update) {
           var payload = {};
@@ -530,7 +531,80 @@ GG.view.applyRootState = GG.ui.applyRootState;
     target.innerHTML = ui.skeleton.markup;
   };
   ui.layout = ui.layout || {};
-  ui.layout.sync = ui.layout.sync || function(doc){
+  ui.layout._inferSurfaceFromUrl = ui.layout._inferSurfaceFromUrl || function(url){
+    try {
+      var u = new URL(url || w.location.href, w.location.href);
+      var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+      if (path === '/' || path === '' || path === '/blog') return 'landing';
+    } catch (_) {}
+    return 'post';
+  };
+  ui.layout.detectSurface = ui.layout.detectSurface || function(doc, url){
+    var ref = doc || d;
+    var body = ref && ref.body ? ref.body : null;
+    var attr = body ? (body.getAttribute('data-gg-surface') || (body.dataset && body.dataset.ggSurface)) : '';
+    if (attr) return attr;
+    var main = ref && ref.querySelector ? ref.querySelector('main.gg-main[data-gg-surface]') : null;
+    if (main) {
+      var m = main.getAttribute('data-gg-surface') || '';
+      if (m === 'home') return 'landing';
+      if (m) return 'post';
+    }
+    return ui.layout._inferSurfaceFromUrl(url || w.location.href);
+  };
+  ui.layout.setSurface = ui.layout.setSurface || function(surface){
+    if (!surface) return;
+    if (d.body) {
+      d.body.setAttribute('data-gg-surface', surface);
+    }
+    if (GG.state) GG.state.surface = surface;
+  };
+  ui.layout._ensureLandingProfile = ui.layout._ensureLandingProfile || function(){
+    var sidebar = d.querySelector('.gg-blog-sidebar--right');
+    if (!sidebar) return;
+    var existing = sidebar.querySelector('[data-gg-profile="landing"]');
+    if (existing) return;
+    var source = d.querySelector('.gg-leftnav__profile');
+    if (!source) return;
+    var clone = source.cloneNode(true);
+    clone.setAttribute('data-gg-profile', 'landing');
+    clone.classList.add('gg-right-profile');
+    sidebar.insertBefore(clone, sidebar.firstChild);
+  };
+  ui.layout._clearLandingProfile = ui.layout._clearLandingProfile || function(){
+    var sidebar = d.querySelector('.gg-blog-sidebar--right');
+    if (!sidebar) return;
+    var existing = sidebar.querySelectorAll('[data-gg-profile="landing"]');
+    for (var i = 0; i < existing.length; i++) {
+      if (existing[i] && existing[i].parentNode) {
+        existing[i].parentNode.removeChild(existing[i]);
+      }
+    }
+  };
+  ui.layout._dockComments = ui.layout._dockComments || function(){
+    var panel = d.querySelector('.gg-comments-panel [data-gg-slot="comments"]');
+    if (!panel) return;
+    var comments = d.querySelector('.gg-post__comments') || d.querySelector('#comments') || d.querySelector('.gg-comments');
+    if (!comments) return;
+    if (comments.__ggDocked) return;
+    panel.appendChild(comments);
+    comments.__ggDocked = true;
+  };
+  ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
+    var next = surface || ui.layout.detectSurface(doc, url);
+    ui.layout.setSurface(next);
+    var isLanding = (next === 'landing');
+    if (isLanding) {
+      ui.layout._ensureLandingProfile();
+    } else {
+      ui.layout._clearLandingProfile();
+      ui.layout._dockComments();
+    }
+    if (GG.modules && GG.modules.Dock && typeof GG.modules.Dock.updateActive === 'function') {
+      try { GG.modules.Dock.updateActive(); } catch (_) {}
+    }
+  };
+  ui.layout.sync = ui.layout.sync || function(doc, url){
     function pickMain(ref){
       if (!ref || !ref.querySelector) return null;
       return ref.querySelector('main.gg-main') || ref.querySelector('main');
@@ -562,6 +636,7 @@ GG.view.applyRootState = GG.ui.applyRootState;
       var surface = inferSurface(targetMain);
       if (surface) targetMain.setAttribute('data-gg-surface', surface);
     }
+    ui.layout.applySurface(ui.layout.detectSurface(doc, url), doc, url);
     return targetMain;
   };
   ui.layout.refresh = ui.layout.refresh || function(doc){
@@ -591,6 +666,26 @@ GG.view.applyRootState = GG.ui.applyRootState;
 
   router._supports = router._supports || function(){
     return !!(w.history && w.history.pushState);
+  };
+  router._inferSurface = router._inferSurface || function(url){
+    if (GG.ui && GG.ui.layout && typeof GG.ui.layout._inferSurfaceFromUrl === 'function') {
+      return GG.ui.layout._inferSurfaceFromUrl(url);
+    }
+    try {
+      var u = new URL(url || w.location.href, w.location.href);
+      var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+      if (path === '/' || path === '' || path === '/blog') return 'landing';
+    } catch (_) {}
+    return 'post';
+  };
+  router._applySurface = router._applySurface || function(url){
+    var surface = router._inferSurface(url);
+    if (GG.ui && GG.ui.layout && typeof GG.ui.layout.setSurface === 'function') {
+      GG.ui.layout.setSurface(surface);
+    } else if (d.body) {
+      d.body.setAttribute('data-gg-surface', surface);
+    }
+    return surface;
   };
 
   router._mergeState = router._mergeState || function(next){
@@ -704,6 +799,7 @@ GG.view.applyRootState = GG.ui.applyRootState;
       router.saveScroll(from);
       if (url === from) return;
       w.history.pushState(router._stateFor(url), '', url);
+      router._applySurface(url);
       if (w.console && console.log) console.log('[GG.router] Navigating to', url);
       router._load(url, { pop: false });
     } catch (e) {
@@ -716,6 +812,7 @@ GG.view.applyRootState = GG.ui.applyRootState;
       var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
       var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
       if (w.console && console.log) console.log('[GG.router] Popstate', w.location.href);
+      router._applySurface(w.location.href);
       router._load(w.location.href, { pop: true, scrollY: y });
     } catch (e) {
       router.fallback(w.location.href);
@@ -4693,6 +4790,7 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
   }
   var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
   var tasks = [
+    { name: 'homeState.reinit', fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
     { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
     { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
     { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },

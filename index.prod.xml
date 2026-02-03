@@ -149,7 +149,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <b:include data='blog' name='google-analytics'/>
 </head>
 
-  <body>
+  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : "post"'>
     <b:include name='skipNavigation'/>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
