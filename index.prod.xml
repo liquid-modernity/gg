@@ -462,7 +462,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -537,7 +537,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -587,7 +587,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
         </b:with>
       </div>
     </div>
-    <div class='overflow-button gg-is-hidden'>
+    <div class='overflow-button' data-gg-state='hidden'>
       <b:include name='overflowButton'/>
     </div>
   </div>
@@ -978,13 +978,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
         <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -1258,7 +1258,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
                               <div class='body'><data:comment.body/></div>
                               <div class='meta gg-cmt2__meta'>
                                 <b:if cond='data:comment.deleteUrl'>
-                                  <a class='cmt2-del gg-cmt2__del gg-is-hidden' expr:href='data:comment.deleteUrl'>Delete</a>
+                                  <a class='cmt2-del gg-cmt2__del' data-gg-state='hidden' expr:href='data:comment.deleteUrl'>Delete</a>
                                 </b:if>
                               </div>
                             </div>
@@ -1718,7 +1718,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
             </div>
 
             <section class='gg-tags-page__results'>
-              <div class='gg-post-list gg-is-loading'/>
+              <div class='gg-post-list' data-gg-state='loading'/>
             </section>
 
             <section class='gg-tags-page__directory'>
@@ -1770,7 +1770,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
                 </div>
                 <div class='gg-row'>
                   <div class='gg-tabs' role='tablist'>
-                    <button class='gg-tab is-active' data-type='all' type='button'>All</button>
+                    <button class='gg-tab' data-gg-state='active' data-type='all' type='button'>All</button>
                     <button class='gg-tab' data-type='youtube' type='button'>YouTube</button>
                     <button class='gg-tab' data-type='image' type='button'>Image</button>
                   </div>
@@ -2018,13 +2018,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
               <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -2416,13 +2416,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </b:includable>
           <b:includable id='sharingButtonsMenu'>
   <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons gg-is-hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
       <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
         <li>
           <b:include name='sharingButton'/>
         </li>
       </b:loop>
-      <li aria-hidden='true' class='gg-is-hidden'>
+      <li aria-hidden='true' data-gg-state='hidden'>
         <b:include name='otherSharingButton'/>
       </li>
     </ul>
@@ -2733,7 +2733,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </div>
 
     <div class='gg-share-sheet__modes' role='tablist'>
-      <button aria-selected='true' class='gg-share-sheet__mode-btn is-active' data-mode='author' type='button'>Author</button>
+      <button aria-selected='true' class='gg-share-sheet__mode-btn' data-gg-state='active' data-mode='author' type='button'>Author</button>
       <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='title' type='button'>Title</button>
       <button aria-selected='false' class='gg-share-sheet__mode-btn' data-mode='quote' type='button'>Quote</button>
     </div>

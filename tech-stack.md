@@ -56,6 +56,7 @@ We avoid a "Spaghetti Monolith" by enforcing these internal namespaces:
 * **Config Injection:** Do NOT hardcode config in JS. Use XML Widgets:
   `<div id="gg-config" data-json='{"authorMap":{...}, "labels":{...}}'></div>`
 * **Z-Index Strategy:** Use CSS variables (`--z-modal`, `--z-toast`) in `:root`. No magic numbers.
+* **State Contract:** JS writes `data-gg-state` values; CSS reads with `[data-gg-state~="..."]`. Standard States: active, open, loading, error, success, hidden.
 
 ---
 
