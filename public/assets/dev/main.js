@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-010 init gateway + selector map; remove auto-inits + dead host
-NEXT_TASK: X-011 align template hosts with selector map (TBD)
+LAST_PATCH: 2026-02-03 X-011 align template hosts with selector map
+NEXT_TASK: X-012 (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -72,6 +72,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
 - 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.
 - 2026-01-28 T-006: add GG.a11y core + GG.services.a11y init for reduced motion.
 - 2026-01-28 T-005: add GG.i18n (t/nf/cf/df/rtf) + dir/locale/timezone helpers.

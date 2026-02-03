@@ -1764,6 +1764,71 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
             </div>
           </section>
         </b:if>
+
+        <!-- GAGA FEEDS PAGE (PAGE: /p/feeds.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;feeds.html&quot;'>
+          <section id='gg-feed' data-api=''>
+            <div class='bar'>
+              <input aria-label='Search feeds' class='q' placeholder='Cari konten...' type='search'/>
+              <button class='active' data-type='all' type='button'>All</button>
+              <button data-type='youtube' type='button'>YouTube</button>
+              <button data-type='image' type='button'>Image</button>
+            </div>
+            <div class='grid'></div>
+            <div class='loader'>Loading...</div>
+          </section>
+        </b:if>
+
+        <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
+        <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
+          <section id='gg-sitemap' data-api=''>
+            <div class='gg-head'>
+              <div class='gg-title'>
+                <h1>Sitemap</h1>
+                <p class='gg-sub'>Jelajahi posting berdasarkan tanggal, label, atau tipe.</p>
+              </div>
+              <div class='gg-controls'>
+                <div class='gg-row'>
+                  <input aria-label='Search sitemap' class='gg-q' placeholder='Cari...' type='search'/>
+                  <button class='gg-reset' type='button'>Reset</button>
+                </div>
+                <div class='gg-row'>
+                  <div class='gg-tabs' role='tablist'>
+                    <button class='gg-tab is-active' data-type='all' type='button'>All</button>
+                    <button class='gg-tab' data-type='youtube' type='button'>YouTube</button>
+                    <button class='gg-tab' data-type='image' type='button'>Image</button>
+                  </div>
+                </div>
+                <div class='gg-row'>
+                  <select aria-label='Year' class='gg-year'>
+                    <option value=''>All years</option>
+                  </select>
+                  <select aria-label='Month' class='gg-month' disabled='disabled'>
+                    <option value=''>All months</option>
+                  </select>
+                  <select aria-label='Label' class='gg-label'>
+                    <option value=''>All labels</option>
+                  </select>
+                  <select aria-label='Sort' class='gg-sort'>
+                    <option value='newest'>Newest</option>
+                    <option value='oldest'>Oldest</option>
+                    <option value='title_asc'>Title A-Z</option>
+                    <option value='title_desc'>Title Z-A</option>
+                  </select>
+                </div>
+                <div class='gg-row'>
+                  <div class='gg-stats' id='gg-stats'></div>
+                  <div class='gg-meta' id='gg-meta'></div>
+                </div>
+              </div>
+            </div>
+            <div id='gg-groups'></div>
+            <div class='gg-foot'>
+              <button class='gg-more' type='button'>Load more</button>
+              <div class='gg-loader' id='gg-loader'>Loading...</div>
+            </div>
+          </section>
+        </b:if>
       </section>
 
       <div class='gg-post__footer'>

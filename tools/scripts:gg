@@ -86,14 +86,14 @@ capsule_get(){
   [[ -f "$file" ]] || die "File not found: $file"
 
   awk -v k="$key" '
-    /\/\* @GG_CAPSULE_V1/ {in=1}
-    in==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
+    /\/\* @GG_CAPSULE_V1/ {inside=1}
+    inside==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
       sub("^[[:space:]]*"k":[[:space:]]*", "", $0)
       gsub(/[[:space:]]+$/, "", $0)
       print $0
       exit
     }
-    in==1 && /\*\// {in=0}
+    inside==1 && /\*\// {inside=0}
   ' "$file"
 }
 
