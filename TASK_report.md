@@ -1,18 +1,20 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: R-001
+Task ID: R-002
 Status: DONE
 
 Changes:
-- Added asset version query strings (`?v=bb9d16b`) for `main.css` and `main.js` in both `index.dev.xml` and `index.prod.xml`.
-- Documented manual asset version bump procedure in `tech-stack.md` (Section 6.3).
+- Added `./scripts/gg bump` to automate `GG_ASSET_VER` + `?v=` updates in `index.dev.xml` and `index.prod.xml`.
+- Updated `tech-stack.md` to document the automated bump workflow.
+- Fixed previous bump output and re-synced asset query strings.
 
 ## TASK PROOF
-- `index.dev.xml` and `index.prod.xml` include `?v=` on main assets with `GG_ASSET_VER` comment.
-- `tech-stack.md` includes the manual version bump rule.
+- `tools/scripts:gg` now includes a `bump` command that updates both XML files.
+- `index.dev.xml` and `index.prod.xml` have matching `GG_ASSET_VER` and `?v=` values.
 
 ## FILES TOUCHED
+- tools/scripts:gg
 - index.dev.xml
 - index.prod.xml
 - tech-stack.md
