@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-013 set feed/sitemap data-api endpoints
-NEXT_TASK: X-014 (TBD)
+LAST_PATCH: 2026-02-03 X-014 sitemap summary feed + module parsing
+NEXT_TASK: X-015 (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -72,6 +72,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 X-014: use Blogger summary feed for sitemap + parse standard JSON feed in module.
 - 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
 - 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
@@ -4066,6 +4067,36 @@ GG.app.init = GG.app.init || function(){
     return y + "-" + m + "-" + day;
   }
 
+  function fetchJson(url, timeoutMs){
+    timeoutMs = timeoutMs || 12000;
+    return new Promise(function(resolve, reject){
+      var done = false;
+      var t = setTimeout(function(){
+        if(done) return;
+        done = true;
+        reject(new Error("JSON fetch timeout"));
+      }, timeoutMs);
+
+      fetch(url, { credentials: "same-origin" })
+        .then(function(res){
+          if(!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function(data){
+          if(done) return;
+          done = true;
+          clearTimeout(t);
+          resolve(data);
+        })
+        .catch(function(err){
+          if(done) return;
+          done = true;
+          clearTimeout(t);
+          reject(err);
+        });
+    });
+  }
+
   function jsonp(url, timeoutMs){
     timeoutMs = timeoutMs || 12000;
     return new Promise(function(resolve, reject){
@@ -4102,6 +4133,89 @@ GG.app.init = GG.app.init || function(){
     });
   }
 
+  function loadJson(url, timeoutMs){
+    var useJsonp = (url.indexOf("callback=") !== -1) || (url.indexOf("alt=json-in-script") !== -1);
+    return useJsonp ? jsonp(url, timeoutMs) : fetchJson(url, timeoutMs);
+  }
+
+  function stripHtml(s){
+    return String(s || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function pickAltLink(entry){
+    var links = entry && entry.link ? entry.link : [];
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel === "alternate" && links[i].href) return links[i].href;
+    }
+    return "";
+  }
+
+  function extractLabels(entry){
+    var cats = entry && entry.category ? entry.category : [];
+    var out = [];
+    for (var i = 0; i < cats.length; i++) {
+      if (cats[i] && cats[i].term) out.push(String(cats[i].term));
+    }
+    return out;
+  }
+
+  function normalizeEntry(entry){
+    if(!entry) return null;
+    var id = entry.id && entry.id.$t ? entry.id.$t : "";
+    var title = (entry.title && entry.title.$t) ? entry.title.$t : "";
+    var postUrl = pickAltLink(entry);
+    var published = entry.published && entry.published.$t ? entry.published.$t : "";
+    var summary = entry.summary && entry.summary.$t ? entry.summary.$t : "";
+    var content = entry.content && entry.content.$t ? entry.content.$t : "";
+    var snippet = stripHtml(summary || content);
+    var labels = extractLabels(entry);
+
+    var thumb = "";
+    var media = "";
+    var mediaThumb = entry["media$thumbnail"] || entry.media$thumbnail;
+    if(mediaThumb && mediaThumb.url){
+      thumb = mediaThumb.url;
+      media = mediaThumb.url;
+    }
+    if(!media) media = content || summary || "";
+
+    return {
+      id: id || postUrl || title,
+      title: title || "(untitled)",
+      postUrl: postUrl || "#",
+      published: published,
+      labels: labels,
+      snippet: snippet,
+      media: media,
+      thumb: thumb
+    };
+  }
+
+  function findRelLink(feed, rel){
+    var links = feed && feed.link ? feed.link : [];
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].rel === rel && links[i].href) return links[i].href;
+    }
+    return "";
+  }
+
+  function parseFeed(data){
+    var feed = data && data.feed ? data.feed : null;
+    var entries = feed && feed.entry ? feed.entry : [];
+    var items = entries.map(normalizeEntry).filter(Boolean);
+    var total = null;
+    var totalNode = feed && feed["openSearch$totalResults"];
+    if(totalNode && totalNode.$t){
+      var n = Number(totalNode.$t);
+      if(!isNaN(n)) total = n;
+    }
+    var nextUrl = findRelLink(feed, "next");
+    return { items: items, total: total, nextUrl: nextUrl };
+  }
+
   function boot(){
     var root = document.getElementById("gg-sitemap");
     if(!root || root.dataset.ggBound === "1") return;
@@ -4130,7 +4244,7 @@ GG.app.init = GG.app.init || function(){
     var state = {
       type:"all", q:"", year:"", month:"", label:"", sort:"newest",
       offset:0, limit:80, loading:false, done:false, emptySkips:0,
-      totalFromServer:null,
+      totalFromServer:null, nextUrl:"",
 
       // store all loaded unique items so we can regroup/re-render instantly
       byId: new Map(),     // id -> item
@@ -4147,12 +4261,8 @@ GG.app.init = GG.app.init || function(){
     }
 
     function buildUrl(){
-      var u = new URL(api);
-      u.searchParams.set("limit", String(state.limit));
-      u.searchParams.set("offset", String(state.offset));
-      u.searchParams.set("type", "all");
-      if(state.q) u.searchParams.set("q", state.q);
-      return u.toString();
+      if (state.nextUrl) return state.nextUrl;
+      return api;
     }
 
     function rebuildYearOptions(){
@@ -4236,6 +4346,7 @@ GG.app.init = GG.app.init || function(){
       // label
       if(state.label){
         out = out.filter(function(x){
+          if (Array.isArray(x.labels)) return x.labels.indexOf(state.label) !== -1;
           return String(x.labels||"") === state.label;
         });
       }
@@ -4245,7 +4356,7 @@ GG.app.init = GG.app.init || function(){
         var q = state.q.toLowerCase();
         out = out.filter(function(x){
           var t = String(x.title||"").toLowerCase();
-          var l = String(x.labels||"").toLowerCase();
+          var l = Array.isArray(x.labels) ? x.labels.join(" ").toLowerCase() : String(x.labels||"").toLowerCase();
           return (t.indexOf(q)!==-1) || (l.indexOf(q)!==-1);
         });
       }
@@ -4320,7 +4431,8 @@ GG.app.init = GG.app.init || function(){
 
           var title = esc(item.title || "(untitled)");
           var url = esc(item.postUrl || "#");
-          var lbl = esc(item.labels || "");
+          var labelText = Array.isArray(item.labels) ? (item.labels[0] || "") : (item.labels || "");
+          var lbl = esc(labelText);
 
           // type badge (will be Unknown if API doesn't provide signals)
           var yt = isYT(item);
@@ -4402,10 +4514,14 @@ GG.app.init = GG.app.init || function(){
         set.add(String(d.getMonth()+1).padStart(2,"0"));
       }
 
-      var lbl = String(item.labels||"");
-      if(lbl){
-        state.labels.set(lbl, (state.labels.get(lbl)||0) + 1);
-      }
+      var lbls = Array.isArray(item.labels) ? item.labels : (item.labels ? [String(item.labels)] : []);
+      var seenLbl = {};
+      lbls.forEach(function(lbl){
+        var key = String(lbl || "").trim();
+        if(!key || seenLbl[key]) return;
+        seenLbl[key] = true;
+        state.labels.set(key, (state.labels.get(key)||0) + 1);
+      });
     }
 
     function mergeItems(serverItems){
@@ -4432,20 +4548,17 @@ GG.app.init = GG.app.init || function(){
       showLoader(true);
       moreBtn.disabled = true;
 
-      jsonp(buildUrl(), 12000).then(function(data){
-        var serverItems = (data && data.items) ? data.items : [];
-        state.totalFromServer = (data && typeof data.total === "number") ? data.total : state.totalFromServer;
+      loadJson(buildUrl(), 12000).then(function(data){
+        var parsed = parseFeed(data);
+        var serverItems = parsed.items || [];
+        if(parsed.total != null) state.totalFromServer = parsed.total;
+        state.nextUrl = parsed.nextUrl || "";
+        state.done = !state.nextUrl;
 
-        // use server nextOffset if present
-        if(data && typeof data.nextOffset === "number") state.offset = data.nextOffset;
-        else state.offset += serverItems.length;
-
-        if(data && data.done === true) state.done = true;
-
-        if(!serverItems.length){
-          state.done = true;
-        } else {
+        if(serverItems.length){
           mergeItems(serverItems);
+        } else if(!state.nextUrl){
+          state.done = true;
         }
 
         updateMeta();
@@ -4453,7 +4566,7 @@ GG.app.init = GG.app.init || function(){
 
         showLoader(false);
         moreBtn.disabled = false;
-        if(state.done) moreBtn.style.display = "none";
+        moreBtn.style.display = state.done ? "none" : "";
 
       }).catch(function(err){
         console.error("SITEMAP ERROR:", err);

@@ -1777,7 +1777,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 
         <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
         <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
-          <section id='gg-sitemap' data-api='/sitemap.xml'>
+          <section id='gg-sitemap' data-api='/feeds/posts/summary?alt=json&amp;max-results=500'>
             <div class='gg-head'>
               <div class='gg-title'>
                 <h1>Sitemap</h1>
