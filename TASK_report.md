@@ -1,22 +1,21 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: R-002
+Task ID: O-001
 Status: DONE
 
 Changes:
-- Added `./scripts/gg bump` to automate `GG_ASSET_VER` + `?v=` updates in `index.dev.xml` and `index.prod.xml`.
-- Updated `tech-stack.md` to document the automated bump workflow.
-- Fixed previous bump output and re-synced asset query strings.
+- Added lightweight client telemetry hook using `window.onerror`/`window.onunhandledrejection` with `sendBeacon`/`fetch` keepalive.
+- Added `/api/telemetry` endpoint in Cloudflare Worker and routed it in `wrangler.jsonc`.
+- Documented telemetry endpoint usage in `tech-stack.md`.
 
 ## TASK PROOF
-- `tools/scripts:gg` now includes a `bump` command that updates both XML files.
-- `index.dev.xml` and `index.prod.xml` have matching `GG_ASSET_VER` and `?v=` values.
+- Client sends JSON to `/api/telemetry` and Worker logs `GG_TELEMETRY`.
+- `wrangler.jsonc` now routes `/api/telemetry*` to the Worker.
 
 ## FILES TOUCHED
-- tools/scripts:gg
-- index.dev.xml
-- index.prod.xml
-- tech-stack.md
 - public/assets/dev/main.js
+- src/worker.js
+- wrangler.jsonc
+- tech-stack.md
 - TASK_report.md

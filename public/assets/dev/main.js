@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 R-002 asset version bump script
-NEXT_TASK: O-001 (Observability Baseline)
+LAST_PATCH: 2026-02-03 O-001 observability baseline (client + worker)
+NEXT_TASK: O-002 (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -72,6 +72,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
 - 2026-02-03 R-002: add ./scripts/gg bump for GG_ASSET_VER + ?v= sync.
 - 2026-02-03 R-001: add asset version query strings + docs for manual bumping.
 - 2026-02-03 X-014: use Blogger summary feed for sitemap + parse standard JSON feed in module.
@@ -130,6 +131,32 @@ PATCHLOG (append newest first; keep last 10):
         if (w.GG_DIAG_RENDER) w.GG_DIAG_RENDER();
       } catch(_) {}
     });
+  }
+  if(!w.GG_TELEM){
+    w.GG_TELEM=1;(function(){
+      var ep='/api/telemetry',b=0;
+      function s(p){
+        if(b) return; b=1;
+        try{
+          var d=JSON.stringify(p||{});
+          if(w.navigator&&w.navigator.sendBeacon){
+            try{w.navigator.sendBeacon(ep,w.Blob?new Blob([d],{type:'application/json'}):d);}catch(e){}
+          }else if(w.fetch){
+            w.fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:d,keepalive:true}).catch(function(){});
+          }
+        }catch(e){}
+        b=0;
+      }
+      w.onerror=function(m,f,l,c,e){
+        s({m:m?''+m:'error',f:f||'',l:l||0,c:c||0,st:e&&e.stack?e.stack:''});
+        return false;
+      };
+      w.onunhandledrejection=function(e){
+        var r=e&&e.reason;
+        s({m:r&&r.message?r.message:''+(r||'rejection'),f:'',l:0,c:0,st:r&&r.stack?r.stack:''});
+        return false;
+      };
+    })();
   }
   window.GG_BUILD = "dev";
   if (window.GG_DEBUG) console.log("[GG_BUILD]", window.GG_BUILD);

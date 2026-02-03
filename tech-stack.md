@@ -131,7 +131,7 @@ Ini yang membedakan “keren di laptop” vs “aman di produksi”.
 
 ### 6.4 Observability Minimal
 * Capture `window.onerror` + `unhandledrejection`.
-* Send ke Worker endpoint (rate-limited).
+* Kirim JSON ke Worker endpoint `/api/telemetry` via `sendBeacon` (fallback: `fetch` keepalive).
 * Simpan ringkas: route, user agent, version hash, stack trace.
 
 ### 6.5 Performance Budget
