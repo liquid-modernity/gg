@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-014 sitemap summary feed + module parsing
-NEXT_TASK: X-015 (TBD)
+LAST_PATCH: 2026-02-03 R-001 asset versioning query strings in templates
+NEXT_TASK: R-002 (TBD)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -72,6 +72,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 R-001: add asset version query strings + docs for manual bumping.
 - 2026-02-03 X-014: use Blogger summary feed for sitemap + parse standard JSON feed in module.
 - 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.

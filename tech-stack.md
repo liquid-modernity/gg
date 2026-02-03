@@ -125,6 +125,7 @@ Ini yang membedakan “keren di laptop” vs “aman di produksi”.
 
 ### 6.3 Release & Rollback Discipline
 * Asset versioning wajib (query hash atau filename hash).
+* Manual bump (tanpa CI/CD): update nilai `?v=...` pada `main.css` dan `main.js` di `index.dev.xml` + `index.prod.xml` setiap major JS/CSS change. Gunakan hash/tag rilis atau tanggal, dan samakan dengan komentar `GG_ASSET_VER`.
 * “Rollback in 1 step”: revert hash / revert deploy.
 * Jangan ubah banyak hal tanpa checklist smoke test.
 
@@ -139,4 +140,3 @@ Ini yang membedakan “keren di laptop” vs “aman di produksi”.
   * INP target
   * CLS target
 * Third-party default off; enable jika ada alasan bisnis yang jelas.
-

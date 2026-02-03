@@ -37,7 +37,8 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <script>
       window.GG_ENV = { mode: "dev", assetBase: "https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public" };
     </script>
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css'/>
+    <!-- GG_ASSET_VER: bb9d16b (bump on major JS/CSS change) -->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css?v=bb9d16b'/>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -2803,7 +2804,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </template>
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js'/>
+<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js?v=bb9d16b'/>
 <script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
 <!-- /GAGA HOME OF JS -->
 </body>
