@@ -2716,11 +2716,13 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </div>
           
     <!-- GAGA -->
-<div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' hidden='' id='gg-toast'>
+<div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' data-gg-state='hidden' hidden='' id='gg-toast'>
   <div class='gg-toast__inner'>
     <p class='gg-toast__message'/>
   </div>
-</div><div class='gg-dialog-host' data-gg-ui='dialog' hidden=''/>
+</div>
+<div aria-hidden='true' aria-modal='true' class='gg-dialog gg-dialog-host' data-gg-state='hidden' data-gg-ui='dialog' hidden='' id='gg-dialog'/>
+<div aria-hidden='true' class='gg-overlay' data-gg-state='hidden' id='gg-overlay'/>
 <div class='gg-palette-host' data-gg-ui='palette' hidden=''/>
 <div aria-hidden='true' class='gg-share-sheet' id='gg-share-sheet'>
   <div aria-hidden='true' class='gg-share-sheet__overlay'/>

@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 X-001 state contract (data-gg-state)
-NEXT_TASK: X-002 hook alignment (XML placeholders)
+LAST_PATCH: 2026-02-03 X-002 hook alignment (XML placeholders)
+NEXT_TASK: F-001 router engine (History API)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -56,6 +56,7 @@ T-002 (done) Index.xml cleanup: purge inline JS + keep single main.js entry
 T-003 (done) Architecture relocation: move globals into GG.core/store/services/ui/actions/boot
 C-001 (done) Define CSS layers & z-index variables (no visual change)
 X-001 (done) State contract: JS writes data-gg-state, CSS reads data-gg-state
+X-002 (done) Hook alignment: static toast/dialog/overlay containers in XML + UI selects by id
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -75,6 +76,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
 - 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
 - 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
@@ -84,9 +86,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
 - 2026-02-03 R-002: add ./scripts/gg bump for GG_ASSET_VER + ?v= sync.
 - 2026-02-03 R-001: add asset version query strings + docs for manual bumping.
-- 2026-02-03 X-014: use Blogger summary feed for sitemap + parse standard JSON feed in module.
-- 2026-02-03 X-013: set data-api for gg-feed and gg-sitemap in templates (relative endpoints).
-- 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
 */
 (function(w){
   'use strict';
@@ -339,10 +338,24 @@ GG.view.applyRootState = GG.ui.applyRootState;
   actions._handle = actions._handle || function(evt){ var el = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action]') : null; if(!el) return; var name = el.getAttribute('data-gg-action'); if(name) actions.dispatch(name, evt, el); };
   actions.init = actions.init || function(){ if(actions._init) return; actions._init = true; d.addEventListener('click', actions._handle); };
   function host(sel){ return d.querySelector(sel); }
-  function toggleHost(sel, open){ var el = host(sel); if(!el) return null; el.hidden = !open; el.setAttribute('aria-hidden', open ? 'false' : 'true'); return el; }
+  function toggleHost(sel, open){
+    var el = host(sel);
+    if(!el) return null;
+    if(open){
+      el.hidden = false;
+      GG.core.state.remove(el, 'hidden');
+      GG.core.state.add(el, 'open');
+    } else {
+      GG.core.state.remove(el, 'open');
+      GG.core.state.add(el, 'hidden');
+      el.hidden = true;
+    }
+    el.setAttribute('aria-hidden', open ? 'false' : 'true');
+    return el;
+  }
   ui.toast = ui.toast || {};
-  ui.toast.show = ui.toast.show || function(message, opts){ var el = host('.gg-toast') || d.getElementById('gg-toast') || d.getElementById('pc-toast'); if(!el) return; var textNode = el.querySelector('.gg-toast__message') || el.querySelector('.gg-toast__text'); var msg = (message !== undefined && message !== null) ? String(message) : ''; if(textNode) textNode.textContent = msg; else el.textContent = msg; el.hidden = false; GG.core.state.add(el, 'visible'); clearTimeout(ui.toast._t); ui.toast._t = setTimeout(function(){ GG.core.state.remove(el, 'visible'); el.hidden = true; }, (opts && opts.duration) ? opts.duration : 2200); };
-  ui.toast.hide = ui.toast.hide || function(){ var el = host('.gg-toast') || d.getElementById('gg-toast') || d.getElementById('pc-toast'); if(!el) return; GG.core.state.remove(el, 'visible'); el.hidden = true; };
+  ui.toast.show = ui.toast.show || function(message, opts){ var el = d.getElementById('gg-toast') || d.getElementById('pc-toast') || host('.gg-toast'); if(!el) return; var textNode = el.querySelector('.gg-toast__message') || el.querySelector('.gg-toast__text'); var msg = (message !== undefined && message !== null) ? String(message) : ''; if(textNode) textNode.textContent = msg; else el.textContent = msg; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'visible'); clearTimeout(ui.toast._t); ui.toast._t = setTimeout(function(){ GG.core.state.remove(el, 'visible'); GG.core.state.add(el, 'hidden'); el.hidden = true; }, (opts && opts.duration) ? opts.duration : 2200); };
+  ui.toast.hide = ui.toast.hide || function(){ var el = d.getElementById('gg-toast') || d.getElementById('pc-toast') || host('.gg-toast'); if(!el) return; GG.core.state.remove(el, 'visible'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
   ui.dialog = ui.dialog || {};
   ui.dialog.open = ui.dialog.open || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', true); };
   ui.dialog.close = ui.dialog.close || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', false); };
@@ -350,8 +363,8 @@ GG.view.applyRootState = GG.ui.applyRootState;
   ui.palette.open = ui.palette.open || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', true); };
   ui.palette.close = ui.palette.close || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', false); };
   ui.overlay = ui.overlay || {};
-  ui.overlay.open = ui.overlay.open || function(){ GG.core.state.add(d.documentElement, 'overlay-open'); };
-  ui.overlay.close = ui.overlay.close || function(){ GG.core.state.remove(d.documentElement, 'overlay-open'); };
+  ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); };
+  ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
   ui.inputMode = ui.inputMode || {};
   ui.inputMode.get = ui.inputMode.get || function(){ if(GG.store && GG.store.get){ var s = GG.store.get(); return s && s.inputMode; } return d.documentElement ? d.documentElement.dataset.ggInput : ''; };
   ui.inputMode.set = ui.inputMode.set || function(mode){ if(!mode) return; if(GG.store && GG.store.set) GG.store.set({ inputMode: mode }); else if(d.documentElement) d.documentElement.dataset.ggInput = mode; };
@@ -1587,15 +1600,17 @@ GG.modules.Dock = (function () {
   function text(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
 
   function showToast(msg){
-    var toast = document.querySelector('.gg-toast');
+    var toast = document.getElementById('gg-toast') || document.getElementById('pc-toast') || document.querySelector('.gg-toast');
     if(!toast){ return; }
     var inner = toast.querySelector('.gg-toast__message');
     if(inner){ inner.textContent = msg; }
     toast.hidden = false;
+    GG.core.state.remove(toast, 'hidden');
     GG.core.state.add(toast, 'visible');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(function(){
       GG.core.state.remove(toast, 'visible');
+      GG.core.state.add(toast, 'hidden');
       toast.hidden = true;
     }, 2200);
   }
@@ -6403,12 +6418,16 @@ function isSystemPath(pathname){
     if (iconUse) {
       iconUse.setAttribute('href', opts.icon || '#gg-ic-check-circle-solid');
     }
+    el.hidden = false;
+    GG.core.state.remove(el, 'hidden');
     GG.core.state.add(el, 'visible');
     GG.core.state.add(el, 'show');
     clearTimeout(shareState.toastTimer);
     shareState.toastTimer = setTimeout(function () {
       GG.core.state.remove(el, 'visible');
       GG.core.state.remove(el, 'show');
+      GG.core.state.add(el, 'hidden');
+      el.hidden = true;
     }, 2000);
   }
   GG.util.showToast = showToast;
