@@ -146,9 +146,9 @@ report_short_change(){
 
   # find first bullet after a "Changes:" line
   awk '
-    BEGIN{in=0}
-    /^(\*\*Changes:\*\*|Changes:)/ {in=1; next}
-    in==1 && /^[[:space:]]*[-*][[:space:]]+/ {
+    BEGIN{inside=0}
+    /^(\*\*Changes:\*\*|Changes:)/ {inside=1; next}
+    inside==1 && /^[[:space:]]*[-*][[:space:]]+/ {
       line=$0
       sub(/^[[:space:]]*[-*][[:space:]]+/, "", line)
       # trim
@@ -157,7 +157,7 @@ report_short_change(){
       exit
     }
     # stop if next section begins
-    in==1 && /^##[[:space:]]/ {exit}
+    inside==1 && /^##[[:space:]]/ {exit}
   ' "$f" | head -n1
 }
 
