@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-005 SPA content injection (router + render)
+LAST_PATCH: 2026-02-03 T-004 config migration (gg-config -> GG.store.config)
 NEXT_TASK: F-002 super search (Fuse.js + IDB)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -61,6 +61,7 @@ F-001 (done) Router engine: History API navigation with scroll restore + fallbac
 F-003 (done) Metadata discipline: update title/description for client-only navigation
 F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
 F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
+T-004 (done) Config migration: gg-config JSON -> GG.store.config + feed endpoints
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
@@ -80,6 +81,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
 - 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
 - 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
 - 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
@@ -89,13 +91,13 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
 - 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
 - 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
-- 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
 */
 (function(w){
   'use strict';
   var GG = w.GG = w.GG || {};
   GG.core = GG.core || {};
   GG.store = GG.store || {};
+  GG.store.config = GG.store.config || {};
   GG.services = GG.services || {};
   GG.ui = GG.ui || {};
   GG.actions = GG.actions || {};
@@ -227,6 +229,8 @@ PATCHLOG (append newest first; keep last 10):
       return out;
     }
     function rehydrateComments(root){
+      var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+      if (cfg.commentsEnabled === false) return 0;
       if (!root || !root.querySelectorAll) return 0;
       var scripts = root.querySelectorAll('script');
       if (!scripts || !scripts.length) return 0;
@@ -848,6 +852,12 @@ GG.actions.register('jump', function(ctx){
     }
     return list.join('&');
   };
+  services.api.getFeedBase = services.api.getFeedBase || function(summary){
+    var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+    var base = summary ? (cfg.feedSummaryBase || '/feeds/posts/summary') : (cfg.feedBase || '/feeds/posts/default');
+    if (base.charAt(0) !== '/') base = '/' + base;
+    return base.replace(/\/$/, '');
+  };
   services.api._error = services.api._error || function(code, message, info){
     var err = new Error(message || 'api-error');
     err.name = 'GGApiError';
@@ -884,7 +894,7 @@ GG.actions.register('jump', function(ctx){
   };
   services.api.getFeed = services.api.getFeed || function(params){
     var opts = params || {};
-    var base = opts.base || (opts.summary ? '/feeds/posts/summary' : '/feeds/posts/default');
+    var base = opts.base || services.api.getFeedBase(!!opts.summary);
     var source = (opts.query && typeof opts.query === 'object') ? opts.query : opts;
     var query = {};
     for (var key in source) {
@@ -927,6 +937,24 @@ GG.actions.register('jump', function(ctx){
   GG.boot.init = GG.boot.init || function(){
     if(GG.boot._init) return;
     GG.boot._init = true;
+    try {
+      var cfgEl = d.getElementById('gg-config');
+      if (cfgEl) {
+        var rawCfg = cfgEl.getAttribute('data-json') || '';
+        if (rawCfg) {
+          try {
+            var parsedCfg = JSON.parse(rawCfg);
+            if (parsedCfg && typeof parsedCfg === 'object') {
+              GG.store.config = Object.assign({}, GG.store.config || {}, parsedCfg);
+            }
+          } catch (e) {
+            if (GG.core && typeof GG.core.telemetry === 'function') {
+              GG.core.telemetry({ type: 'config', stage: 'parse', message: e && e.message ? e.message : 'parse-failed' });
+            }
+          }
+        }
+      }
+    } catch (_) {}
     services.pwa.init();
     if (GG.boot.onReady) {
       GG.boot.onReady(function(){
@@ -983,8 +1011,12 @@ GG.actions.register('jump', function(ctx){
     var headBtn = root.querySelector('.gg-lt__headbtn');
     var panelBtn = root.querySelector('.gg-lt__panelbtn');
 
-    var maxPosts = parseInt(root.getAttribute('data-max-posts') || '10', 10);
+    var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+    var maxPosts = parseInt(cfg.maxPosts || root.getAttribute('data-max-posts') || '10', 10);
     var origin = (location.origin || '').replace(/\/$/, '');
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
 
     var cache = {};     // label -> posts[]
     var loaded = {};    // label -> true
@@ -1074,7 +1106,7 @@ GG.actions.register('jump', function(ctx){
       if(loaded[label]) return Promise.resolve(cache[label] || []);
       if(inFlight[label]) return inFlight[label];
 
-      var url = origin + '/feeds/posts/default/-/' + encodeURIComponent(label) +
+      var url = origin + feedBase + '/-/' + encodeURIComponent(label) +
                 '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
 
       inFlight[label] = jsonp(url).then(function(data){
@@ -1240,7 +1272,7 @@ GG.actions.register('jump', function(ctx){
 
     function loadLabels(){
       treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
-      var url = origin + '/feeds/posts/default?alt=json-in-script&max-results=1&callback=?';
+      var url = origin + feedBase + '?alt=json-in-script&max-results=1&callback=?';
 
       jsonp(url).then(function(data){
         var cats = (data && data.feed && data.feed.category) || [];
@@ -1249,6 +1281,17 @@ GG.actions.register('jump', function(ctx){
           a=a.toLowerCase(); b=b.toLowerCase();
           return a<b ? -1 : (a>b ? 1 : 0);
         });
+        var cfgLabels = Array.isArray(cfg.searchLabels) ? cfg.searchLabels.filter(Boolean) : null;
+        if (cfgLabels && cfgLabels.length) {
+          var labelMap = {};
+          labels.forEach(function(l){ labelMap[String(l).toLowerCase()] = l; });
+          var filtered = [];
+          cfgLabels.forEach(function(l){
+            var key = String(l).toLowerCase();
+            if (labelMap[key]) filtered.push(labelMap[key]);
+          });
+          if (filtered.length) labels = filtered;
+        }
 
         if(!labels.length){
           treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
@@ -3102,7 +3145,10 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
   async function fetchViaFeed(postUrl, postId, signal){
     if(!postId) throw new Error('No post id');
     var base = getBlogBaseFromUrl(postUrl);
-    var feedUrl = base.replace(/\/$/,'') + '/feeds/posts/default/' + encodeURIComponent(postId) + '?alt=json';
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
+    var feedUrl = base.replace(/\/$/,'') + feedBase + '/' + encodeURIComponent(postId) + '?alt=json';
     var res = await fetch(feedUrl, { method: 'GET', credentials: 'same-origin', signal: signal });
     if(!res.ok) throw new Error('Feed HTTP ' + res.status);
     var json = await res.json();
@@ -3833,7 +3879,10 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
 
     function fetchRelated(label){
-      var url = getBase() + '/feeds/posts/default/-/' + encodeURIComponent(label) + '?alt=json&max-results=6';
+      var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+        ? GG.services.api.getFeedBase(false)
+        : '/feeds/posts/default';
+      var url = getBase() + feedBase + '/-/' + encodeURIComponent(label) + '?alt=json&max-results=6';
       return fetch(url, { credentials:'same-origin' })
         .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
         .then(function(json){
@@ -6261,7 +6310,10 @@ function isSystemPath(pathname){
   };
 
   TagUtils.buildFeedUrl = function (params) {
-    var base = getBasePath() + '/feeds/posts/default';
+    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
+      ? GG.services.api.getFeedBase(false)
+      : '/feeds/posts/default';
+    var base = getBasePath() + feedBase;
     var url = new URL(base, w.location.href);
     url.searchParams.set('alt', 'json');
     if (params && params['max-results']) {

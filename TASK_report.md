@@ -1,17 +1,19 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: F-005
+Task ID: T-004
 Status: DONE
 
 Changes:
-- Wired router navigation to fetch HTML and inject content via `GG.core.render`.
-- Implemented comment script rehydration for `BLOG_CMT_createIframe` after swaps.
-- Added loading state toggle and scroll management during navigation.
+- Added `#gg-config` JSON container in `index.dev.xml` and `index.prod.xml`.
+- Hydrated config in `GG.boot.init()` and stored in `GG.store.config`.
+- Swapped feed endpoints/limits/labels to read from config (feed base, maxPosts, searchLabels).
 
 ## TASK PROOF
-- `main.js` now performs SPA HTML swaps with metadata updates and safe fallbacks.
+- `main.js` now loads config from XML and uses it for feed URLs and label limits.
 
 ## FILES TOUCHED
+- index.dev.xml
+- index.prod.xml
 - public/assets/dev/main.js
 - TASK_report.md
