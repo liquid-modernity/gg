@@ -1,16 +1,16 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: T-004
+Task ID: F-002
 Status: DONE
 
 Changes:
-- Added `#gg-config` JSON container in `index.dev.xml` and `index.prod.xml`.
-- Hydrated config in `GG.boot.init()` and stored in `GG.store.config`.
-- Swapped feed endpoints/limits/labels to read from config (feed base, maxPosts, searchLabels).
+- Added `searchCacheTTL` to `#gg-config` and wired IDB cache TTL.
+- Implemented `GG.modules.search` with dynamic imports (Fuse.js + idb-keyval), index caching, and live search.
+- Added command palette UI in `#gg-dialog` with Ctrl/Cmd+K and search icon triggers.
 
 ## TASK PROOF
-- `main.js` now loads config from XML and uses it for feed URLs and label limits.
+- `main.js` now provides instant search over Blogger summary feeds with IDB caching.
 
 ## FILES TOUCHED
 - index.dev.xml

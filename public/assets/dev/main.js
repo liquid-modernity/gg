@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 T-004 config migration (gg-config -> GG.store.config)
-NEXT_TASK: F-002 super search (Fuse.js + IDB)
+LAST_PATCH: 2026-02-03 F-002 super search (Fuse.js + IDB)
+NEXT_TASK: QA-001 smoke test checklist
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -61,8 +61,8 @@ F-001 (done) Router engine: History API navigation with scroll restore + fallbac
 F-003 (done) Metadata discipline: update title/description for client-only navigation
 F-004 (done) Centralized data fetching: GG.services.api fetch/getFeed/getHtml
 F-005 (done) SPA content injection: router fetch + render + comment script rehydrate
-T-004 (done) Config migration: gg-config JSON -> GG.store.config + feed endpoints
-T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
+F-002 (done) Super Search: Fuse.js + IDB cache + command palette
+T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
 
@@ -81,6 +81,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
 - 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
 - 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
 - 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
@@ -90,7 +91,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
 - 2026-02-03 C-001: add z-index scale vars + replace numeric z-index with vars + section headers.
 - 2026-02-03 FIX-001: restore BLOG_CMT_createIframe blocks in templates; mark as protected.
-- 2026-02-03 T-003: relocate global helpers into GG.core/store/ui/boot; initialize namespace buckets.
 */
 (function(w){
   'use strict';
@@ -667,6 +667,353 @@ GG.view.applyRootState = GG.ui.applyRootState;
     var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : w.document.title;
     GG.core.meta.update({ title: title, description: title, ogTitle: title });
   };
+})(window.GG = window.GG || {}, window, document);
+
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  GG.modules = GG.modules || {};
+  GG.modules.search = GG.modules.search || (function(){
+    var state = {
+      ready: false,
+      loading: false,
+      items: [],
+      fuse: null,
+      lastQuery: '',
+      ttlMin: 60,
+      ui: null,
+      _init: false,
+      _indexPromise: null,
+      _libs: null
+    };
+    var KEY = 'gg_search_index_v1';
+
+    function getCfg(){
+      return (GG.store && GG.store.config) ? GG.store.config : {};
+    }
+
+    function getTTL(){
+      var cfg = getCfg();
+      var ttl = parseInt(cfg.searchCacheTTL, 10);
+      return isNaN(ttl) || ttl <= 0 ? 60 : ttl;
+    }
+
+    function isTypingTarget(el){
+      if (!el) return false;
+      if (el.isContentEditable) return true;
+      var tag = (el.tagName || '').toUpperCase();
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    }
+
+    function importLibs(){
+      if (state._libs) return state._libs;
+      state._libs = Promise.all([
+        import('https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.mjs'),
+        import('https://unpkg.com/idb-keyval@6.2.1/dist/index.js')
+      ]).then(function(mods){
+        var Fuse = mods[0] && (mods[0].default || mods[0].Fuse || mods[0]);
+        var idb = mods[1] || {};
+        return { Fuse: Fuse, idb: idb };
+      });
+      return state._libs;
+    }
+
+    function getStore(idb){
+      if (idb && typeof idb.createStore === 'function') return idb.createStore('gg', 'search');
+      return null;
+    }
+
+    function idbGet(idb, key){
+      var store = getStore(idb);
+      return store ? idb.get(key, store) : idb.get(key);
+    }
+
+    function idbSet(idb, key, val){
+      var store = getStore(idb);
+      return store ? idb.set(key, val, store) : idb.set(key, val);
+    }
+
+    function logError(stage, err){
+      if (GG.core && typeof GG.core.telemetry === 'function') {
+        GG.core.telemetry({
+          type: 'search',
+          stage: stage,
+          message: err && err.message ? err.message : 'error'
+        });
+      }
+    }
+
+    function stripHtml(str){
+      return String(str || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function pickAltLink(entry){
+      var links = entry && entry.link ? entry.link : [];
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].rel === 'alternate' && links[i].href) return links[i].href;
+      }
+      return '';
+    }
+
+    function parseFeed(json){
+      var entries = (json && json.feed && json.feed.entry) ? json.feed.entry : [];
+      var items = [];
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i] || {};
+        var title = (e.title && e.title.$t) ? e.title.$t : '';
+        var url = pickAltLink(e);
+        var summary = '';
+        if (e.summary && e.summary.$t) summary = e.summary.$t;
+        else if (e.content && e.content.$t) summary = e.content.$t;
+        summary = stripHtml(summary);
+        if (title && url) items.push({ title: title, url: url, summary: summary });
+      }
+      return items;
+    }
+
+    function buildFuse(Fuse, items){
+      if (!Fuse) return null;
+      return new Fuse(items || [], {
+        keys: ['title', 'summary'],
+        threshold: 0.35,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      });
+    }
+
+    function ensureIndex(){
+      if (state.ready) return Promise.resolve(state.items);
+      if (state._indexPromise) return state._indexPromise;
+      state._indexPromise = loadIndex().finally(function(){
+        state._indexPromise = null;
+      });
+      return state._indexPromise;
+    }
+
+    async function loadIndex(){
+      state.loading = true;
+      state.ttlMin = getTTL();
+      try {
+        var libs = await importLibs();
+        var idb = libs.idb || {};
+        var Fuse = libs.Fuse;
+        var cached = null;
+        try { cached = await idbGet(idb, KEY); } catch (e) {}
+        var ttlMs = state.ttlMin * 60 * 1000;
+        if (cached && cached.ts && Array.isArray(cached.items) && (Date.now() - cached.ts) < ttlMs) {
+          state.items = cached.items;
+          state.fuse = buildFuse(Fuse, state.items);
+          state.ready = true;
+          state.loading = false;
+          return state.items;
+        }
+        if (!GG.services || !GG.services.api || !GG.services.api.getFeed) {
+          throw new Error('api-missing');
+        }
+        var json = await GG.services.api.getFeed({ summary: true, 'max-results': 500 });
+        var items = parseFeed(json);
+        state.items = items;
+        state.fuse = buildFuse(Fuse, items);
+        state.ready = true;
+        state.loading = false;
+        try { await idbSet(idb, KEY, { ts: Date.now(), items: items }); } catch (e2) {}
+        return items;
+      } catch (err) {
+        state.loading = false;
+        state.ready = false;
+        logError('load', err);
+        throw err;
+      }
+    }
+
+    function ensureUI(){
+      if (state.ui && state.ui.root) return state.ui;
+      var host = d.getElementById('gg-dialog') || d.querySelector('.gg-dialog-host,[data-gg-ui="dialog"]');
+      if (!host) return null;
+      host.setAttribute('role', 'dialog');
+      host.setAttribute('aria-label', 'Search');
+      host.innerHTML = '' +
+        '<div class="gg-search" data-gg-search-root>' +
+          '<div class="gg-search__header">' +
+            '<input class="gg-search__input" data-gg-search-input type="search" placeholder="Search..." aria-label="Search"/>' +
+            '<button class="gg-search__close" data-gg-search-close type="button" aria-label="Close">Close</button>' +
+          '</div>' +
+          '<div class="gg-search__status" data-gg-search-status></div>' +
+          '<div class="gg-search__results" data-gg-search-results role="listbox"></div>' +
+        '</div>';
+      var input = host.querySelector('[data-gg-search-input]');
+      var results = host.querySelector('[data-gg-search-results]');
+      var status = host.querySelector('[data-gg-search-status]');
+      var closeBtn = host.querySelector('[data-gg-search-close]');
+      state.ui = { root: host, input: input, results: results, status: status, close: closeBtn };
+
+      if (input) {
+        input.addEventListener('input', function(){
+          state.lastQuery = input.value || '';
+          renderResults();
+        });
+        input.addEventListener('keydown', function(e){
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            close();
+          }
+          if (e.key === 'Enter') {
+            var first = state.ui && state.ui.results ? state.ui.results.querySelector('[data-gg-search-item]') : null;
+            if (first) {
+              e.preventDefault();
+              navigate(first.getAttribute('data-url'));
+            }
+          }
+        });
+      }
+      if (results) {
+        results.addEventListener('click', function(e){
+          var item = e.target && e.target.closest ? e.target.closest('[data-gg-search-item]') : null;
+          if (!item) return;
+          e.preventDefault();
+          navigate(item.getAttribute('data-url'));
+        });
+      }
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function(){
+          close();
+        });
+      }
+      return state.ui;
+    }
+
+    function setStatus(msg){
+      if (!state.ui || !state.ui.status) return;
+      state.ui.status.textContent = msg || '';
+      state.ui.status.style.display = msg ? 'block' : 'none';
+    }
+
+    var _escNode = null;
+    function escapeHtml(str){
+      if (!d || !d.createElement) return String(str || '');
+      if (!_escNode) _escNode = d.createElement('span');
+      _escNode.textContent = String(str || '');
+      return _escNode.innerHTML;
+    }
+
+    function renderResults(){
+      var ui = ensureUI();
+      if (!ui) return;
+      var q = (ui.input && ui.input.value) ? ui.input.value.trim() : '';
+      if (!q) {
+        ui.results.innerHTML = '';
+        setStatus('Type to search');
+        return;
+      }
+      if (!state.ready) {
+        setStatus('Loading search index…');
+        ensureIndex().then(function(){ renderResults(); }).catch(function(){ setStatus('Search unavailable'); });
+        return;
+      }
+      if (!state.fuse) {
+        setStatus('Search unavailable');
+        return;
+      }
+      var found = state.fuse.search(q, { limit: 12 });
+      if (!found.length) {
+        ui.results.innerHTML = '';
+        setStatus('No results');
+        return;
+      }
+      setStatus('');
+      var html = found.map(function(res){
+        var item = res && res.item ? res.item : {};
+        var title = escapeHtml(item.title || '');
+        var summary = escapeHtml(item.summary || '');
+        var url = item.url || '';
+        return '' +
+          '<button class="gg-search__result" data-gg-search-item data-url="' + url + '" type="button">' +
+            '<span class="gg-search__title">' + title + '</span>' +
+            (summary ? '<span class="gg-search__summary">' + summary + '</span>' : '') +
+          '</button>';
+      }).join('');
+      ui.results.innerHTML = html;
+    }
+
+    function open(){
+      var ui = ensureUI();
+      if (!ui) return;
+      if (GG.ui && GG.ui.dialog && GG.ui.dialog.open) GG.ui.dialog.open();
+      if (GG.ui && GG.ui.overlay && GG.ui.overlay.open) GG.ui.overlay.open();
+      setStatus(state.ready ? '' : 'Loading search index…');
+      ensureIndex().then(function(){
+        setStatus('');
+        renderResults();
+      }).catch(function(){
+        setStatus('Search unavailable');
+      });
+      try { if (ui.input) { ui.input.value = state.lastQuery || ''; ui.input.focus(); } } catch (e) {}
+    }
+
+    function close(){
+      if (GG.ui && GG.ui.dialog && GG.ui.dialog.close) GG.ui.dialog.close();
+      if (GG.ui && GG.ui.overlay && GG.ui.overlay.close) GG.ui.overlay.close();
+    }
+
+    function navigate(url){
+      if (!url) return;
+      close();
+      if (GG.core && GG.core.router && typeof GG.core.router.navigate === 'function') {
+        GG.core.router.navigate(url);
+      } else {
+        w.location.href = url;
+      }
+    }
+
+    function onKeydown(e){
+      if (!e) return;
+      if (isTypingTarget(e.target)) return;
+      var key = (e.key || '').toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && key === 'k') {
+        e.preventDefault();
+        open();
+      }
+    }
+
+    function onClick(e){
+      var target = e && e.target ? e.target : null;
+      if (!target || !target.closest) return;
+      var trigger = target.closest('[data-gg-search],[data-gg-action="search"],.gg-dock__item--search,.gg-search-trigger,button[aria-label="Search"],a[aria-label="Search"]');
+      if (!trigger) return;
+      e.preventDefault();
+      e.stopPropagation();
+      open();
+    }
+
+    function bindTriggers(){
+      d.addEventListener('keydown', onKeydown);
+      d.addEventListener('click', onClick, true);
+    }
+
+    function warmIndex(){
+      var run = function(){
+        ensureIndex().catch(function(){});
+      };
+      if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 2000 });
+      else w.setTimeout(run, 1200);
+    }
+
+    function init(){
+      if (state._init) return;
+      state._init = true;
+      state.ttlMin = getTTL();
+      bindTriggers();
+      warmIndex();
+    }
+
+    return { init: init, open: open, close: close };
+  })();
+
+  if (GG.boot && GG.boot.onReady) {
+    GG.boot.onReady(function(){
+      if (GG.modules && GG.modules.search && GG.modules.search.init) GG.modules.search.init();
+    });
+  }
 })(window.GG = window.GG || {}, window, document);
 
 GG.actions.register('dock:toggle', () => {
