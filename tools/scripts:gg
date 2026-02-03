@@ -1,0 +1,348 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- Config (safe defaults) ---
+ALLOWED_MAIN_BRANCHES=("main" "dev")
+AUTO_BRANCH_PREFIX="gg"
+MAX_STAGED_FILE_BYTES=$((2 * 1024 * 1024)) # 2MB per file staged (adjust if needed)
+
+CMD="${1:-}"
+ARG1="${2:-}"
+
+die(){ echo "GG_ERROR: $*" >&2; exit 1; }
+warn(){ echo "GG_WARN: $*" >&2; }
+
+need_git(){
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "Not inside a git repo."
+}
+
+repo_root(){
+  git rev-parse --show-toplevel
+}
+
+main_js_path(){
+  local root; root="$(repo_root)"
+  if [[ -f "$root/main.js" ]]; then
+    echo "$root/main.js"
+    return 0
+  fi
+  if [[ -f "$root/public/assets/dev/main.js" ]]; then
+    echo "$root/public/assets/dev/main.js"
+    return 0
+  fi
+  return 1
+}
+
+main_css_path(){
+  local root; root="$(repo_root)"
+  if [[ -f "$root/main.css" ]]; then
+    echo "$root/main.css"
+    return 0
+  fi
+  if [[ -f "$root/public/assets/dev/main.css" ]]; then
+    echo "$root/public/assets/dev/main.css"
+    return 0
+  fi
+  return 1
+}
+
+task_report_path(){
+  local root; root="$(repo_root)"
+  if [[ -f "$root/TASK_report.md" ]]; then
+    echo "$root/TASK_report.md"
+    return 0
+  fi
+  if [[ -f "$root/task_report.md" ]]; then
+    echo "$root/task_report.md"
+    return 0
+  fi
+  return 1
+}
+
+current_branch(){
+  git rev-parse --abbrev-ref HEAD
+}
+
+has_value_in_array(){
+  local needle="$1"; shift
+  local item
+  for item in "$@"; do
+    [[ "$item" == "$needle" ]] && return 0
+  done
+  return 1
+}
+
+ensure_remote_safe(){
+  git remote get-url origin >/dev/null 2>&1 || die "Remote 'origin' not found."
+  local url
+  url="$(git remote get-url origin)"
+  [[ "$url" == *"github.com"* ]] || die "Unsafe remote URL (not github.com): $url"
+}
+
+# Read KEY: VALUE from inside /* @GG_CAPSULE_V1 ... */
+capsule_get(){
+  local file="$1"
+  local key="$2"
+  [[ -f "$file" ]] || die "File not found: $file"
+
+  awk -v k="$key" '
+    /\/\* @GG_CAPSULE_V1/ {in=1}
+    in==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
+      sub("^[[:space:]]*"k":[[:space:]]*", "", $0)
+      gsub(/[[:space:]]+$/, "", $0)
+      print $0
+      exit
+    }
+    in==1 && /\*\// {in=0}
+  ' "$file"
+}
+
+sanitize_taskid(){
+  local raw="$1"
+  # take first token only, drop comments etc
+  raw="${raw%% *}"
+  # allow patterns like T-001, R-001, SW-001, etc
+  if [[ "$raw" =~ ^[A-Za-z]{1,4}-[0-9]{1,4}$ ]]; then
+    echo "$raw"
+  else
+    echo ""
+  fi
+}
+
+get_taskid(){
+  local root; root="$(repo_root)"
+  local next
+  local mainjs
+  mainjs="$(main_js_path || true)"
+  [[ -n "$mainjs" ]] || { warn "main.js not found (checked root and public/assets/dev)"; echo ""; return 0; }
+  next="$(capsule_get "$mainjs" "NEXT_TASK" || true)"
+  next="$(sanitize_taskid "$next")"
+  echo "$next"
+}
+
+report_taskid(){
+  local f
+  f="$(task_report_path || true)"
+  [[ -n "$f" ]] || return 0
+
+  # accept patterns:
+  # **Task ID:** T-001
+  # Task ID: T-001
+  awk '
+    BEGIN{IGNORECASE=1}
+    /^\*\*Task ID:\*\*/{
+      for(i=1;i<=NF;i++) if($i ~ /[A-Za-z]+-[0-9]+/) {print $i; exit}
+    }
+    /^Task ID:/{
+      for(i=1;i<=NF;i++) if($i ~ /[A-Za-z]+-[0-9]+/) {print $i; exit}
+    }
+  ' "$f" | head -n1
+}
+
+report_short_change(){
+  local f
+  f="$(task_report_path || true)"
+  [[ -n "$f" ]] || return 0
+
+  # find first bullet after a "Changes:" line
+  awk '
+    BEGIN{in=0}
+    /^(\*\*Changes:\*\*|Changes:)/ {in=1; next}
+    in==1 && /^[[:space:]]*[-*][[:space:]]+/ {
+      line=$0
+      sub(/^[[:space:]]*[-*][[:space:]]+/, "", line)
+      # trim
+      gsub(/[[:space:]]+$/, "", line)
+      print line
+      exit
+    }
+    # stop if next section begins
+    in==1 && /^##[[:space:]]/ {exit}
+  ' "$f" | head -n1
+}
+
+commit_message_auto(){
+  local t1 t2 msg
+  t1="$(report_taskid || true)"
+  t1="$(sanitize_taskid "$t1")"
+  t2="$(get_taskid || true)"
+
+  local taskid="${t1:-$t2}"
+  [[ -n "$taskid" ]] || taskid="UPDATE"
+
+  local change
+  change="$(report_short_change || true)"
+
+  if [[ -n "$change" ]]; then
+    # keep it short, 72-ish chars
+    change="${change:0:60}"
+    msg="GG: $taskid $change"
+  else
+    msg="GG: $taskid update"
+  fi
+
+  echo "$msg"
+}
+
+ensure_work_branch(){
+  local branch; branch="$(current_branch)"
+  local taskid; taskid="$(get_taskid || true)"
+  [[ -n "$taskid" ]] || warn "NEXT_TASK not found or invalid. Branching will be generic."
+
+  # If already on feature branch, keep it.
+  if [[ "$branch" == "$AUTO_BRANCH_PREFIX/"* ]]; then
+    echo "$branch"
+    return 0
+  fi
+
+  # If on main/dev, create a task branch
+  if has_value_in_array "$branch" "${ALLOWED_MAIN_BRANCHES[@]}"; then
+    local new_branch
+    if [[ -n "$taskid" ]]; then
+      new_branch="$AUTO_BRANCH_PREFIX/$taskid"
+    else
+      new_branch="$AUTO_BRANCH_PREFIX/work"
+    fi
+
+    if git show-ref --verify --quiet "refs/heads/$new_branch"; then
+      git checkout "$new_branch"
+    else
+      git checkout -b "$new_branch"
+    fi
+    echo "$new_branch"
+    return 0
+  fi
+
+  # Otherwise leave as-is (user may be in custom branch)
+  echo "$branch"
+}
+
+secrets_scan_staged(){
+  # basic pattern scan; not perfect, but better than nothing
+  if git diff --cached | grep -E -i "(api[_-]?key|secret|token|BEGIN PRIVATE KEY|-----BEGIN|xoxb-|ghp_|pat_|AIza)" >/dev/null; then
+    die "Possible secret detected in staged diff. Aborting."
+  fi
+}
+
+size_scan_staged(){
+  # Abort if any staged file is too large (often a mistake)
+  local f size
+  while IFS= read -r f; do
+    # skip deletions
+    if ! git cat-file -e ":$f" 2>/dev/null; then
+      continue
+    fi
+    size="$(git cat-file -s ":$f")"
+    if [[ "$size" -gt "$MAX_STAGED_FILE_BYTES" ]]; then
+      die "Staged file too large (> ${MAX_STAGED_FILE_BYTES} bytes): $f ($size)"
+    fi
+  done < <(git diff --cached --name-only --diff-filter=AM)
+}
+
+verify_basics(){
+  local root; root="$(repo_root)"
+  local mainjs maincss
+  mainjs="$(main_js_path || true)"
+  maincss="$(main_css_path || true)"
+
+  [[ -n "$mainjs" ]] || warn "main.js not found (checked root and public/assets/dev)."
+  [[ -n "$maincss" ]] || warn "main.css not found (checked root and public/assets/dev)."
+
+  # main.js purity checks
+  if [[ -n "$mainjs" ]]; then
+    local bad
+    bad="$(grep -nE "<script|</script|CDATA|&quot;|&lt;|&gt;" "$mainjs" || true)"
+    [[ -z "$bad" ]] || { echo "$bad" >&2; die "main.js still contains HTML/script/CDATA/entities."; }
+  fi
+
+  # Optional: make sure TASK_report exists after changes (soft fail)
+  if ! task_report_path >/dev/null 2>&1; then
+    warn "TASK_report.md missing. Not fatal, but you said you want discipline."
+  fi
+}
+
+verify_repo(){
+  need_git
+  ensure_remote_safe
+
+  echo "GG_VERIFY: running checks..."
+  verify_basics
+
+  # Optional: npm lint/test if present
+  local root; root="$(repo_root)"
+  if [[ -f "$root/package.json" ]]; then
+    if npm run | grep -q "lint"; then npm run -s lint; fi
+    if npm run | grep -q "test"; then npm run -s test; fi
+  fi
+
+  echo "GG_VERIFY: PASSED"
+}
+
+ship_repo(){
+  need_git
+  ensure_remote_safe
+
+  # Force safe workflow: never auto-ship on main/dev
+  local branch; branch="$(current_branch)"
+  if has_value_in_array "$branch" "${ALLOWED_MAIN_BRANCHES[@]}"; then
+    die "Refusing to ship on '$branch'. Run: ./scripts/gg branch  (or create a feature branch manually)."
+  fi
+
+  git add -A
+
+  if git diff --cached --quiet; then
+    die "Nothing to commit."
+  fi
+
+  secrets_scan_staged
+  size_scan_staged
+
+  local msg
+  msg="$(commit_message_auto)"
+  git commit -m "$msg"
+  git push origin HEAD
+  echo "GG_SHIP: pushed successfully."
+  echo "GG_SHIP: branch=$(current_branch) message=\"$msg\""
+}
+
+case "$CMD" in
+  task)
+    need_git
+    get_taskid
+    ;;
+  msg)
+    need_git
+    commit_message_auto
+    ;;
+  branch)
+    need_git
+    ensure_remote_safe
+    ensure_work_branch >/dev/null
+    echo "GG_BRANCH: now on $(current_branch)"
+    ;;
+  verify)
+    verify_repo
+    ;;
+  ship)
+    verify_repo
+    ship_repo
+    ;;
+  auto)
+    # convenience: make branch (if needed) -> verify -> ship
+    need_git
+    ensure_remote_safe
+    ensure_work_branch >/dev/null
+    verify_repo
+    ship_repo
+    ;;
+  *)
+    echo "Usage:"
+    echo "  ./scripts/gg task        # print NEXT_TASK from @GG_CAPSULE_V1"
+    echo "  ./scripts/gg msg         # generate commit message from TASK_report.md + NEXT_TASK"
+    echo "  ./scripts/gg branch      # ensure you're on a safe feature branch"
+    echo "  ./scripts/gg verify      # run baseline checks"
+    echo "  ./scripts/gg ship        # verify + commit + push (refuses on main/dev)"
+    echo "  ./scripts/gg auto        # branch + verify + ship"
+    exit 2
+    ;;
+esac

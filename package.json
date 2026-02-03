@@ -1,6 +1,6 @@
 {
-    "name": "gg-cdn-pakrpp",
-    "private": true,
+  "name": "gg",
+  "private": true,
   "devDependencies": {
     "wrangler": "4.61.1"
   },
@@ -8,5 +8,4 @@
     "release": "node -e \"const {execSync}=require('child_process');const fs=require('fs');const path=require('path');const rel=process.env.RELEASE_ID||execSync('git rev-parse --short HEAD').toString().trim();const dest=path.join('public','assets','v',rel);fs.mkdirSync(dest,{recursive:true});fs.copyFileSync('public/assets/dev/main.css',path.join(dest,'main.css'));fs.copyFileSync('public/assets/dev/main.js',path.join(dest,'main.js'));const sw='public/sw.js';let s=fs.readFileSync(sw,'utf8');s=s.replace(/const VERSION = \\\"[^\\\"]+\\\";/,'const VERSION = \\\"'+rel+'\\\";');fs.writeFileSync(sw,s);console.log('RELEASE_ID',rel);\"",
     "deploy": "wrangler deploy --config wrangler.jsonc"
   }
-  }
-  
+}
