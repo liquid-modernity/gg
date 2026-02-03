@@ -31,6 +31,13 @@
 * Extensions: ESLint, Prettier, Error Lens, Auto Rename Tag.
 * Formatting: Indentation = 2 spaces. No trailing whitespace.
 
+### 1.4 Protected Code Zones
+The following Blogger XML tags MUST NEVER be deleted or modified as they control layout and widget functionality:
+- `<b:include data='blog' name='all-head-content'/>`
+- `<b:section ...>` and `<b:widget ...>`
+- `<b:skin>...</b:skin>` (unless moving to external CSS)
+- Standard Blogger comment includes
+
 ---
 
 ## 🏛️ SECTION 2: ARCHITECTURE (MVC-Lite)

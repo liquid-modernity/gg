@@ -4,27 +4,6 @@
 
   <head>
     <b:if cond='data:view.isHomepage'>
-      <script>
-(function(){
-  try {
-    var pre = &#39;landing&#39;;
-    var search = location.search || &#39;&#39;;
-    var m = search.match(/[?&amp;]prehome=(blog|landing)(?:&amp;|$)/i);
-    if (m &amp;&amp; m[1]) {
-      pre = (m[1] + &#39;&#39;).toLowerCase();
-    } else {
-      var hash = (location.hash || &#39;&#39;).replace(/^#/,&#39;&#39;).toLowerCase();
-      if (hash === &#39;blog&#39; || hash === &#39;landing&#39;) {
-        pre = hash;
-      } else {
-        var p = (location.pathname || &#39;/&#39;).replace(/\/+$/,&#39;&#39;) || &#39;/&#39;;
-        if (p === &#39;/blog&#39;) pre = &#39;blog&#39;;
-      }
-    }
-    document.documentElement.setAttribute(&#39;data-gg-prehome&#39;, pre);
-  } catch(e){}
-})();
-      </script>
       <style>
 html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;landing&quot;],
 html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] .gg-home-landing { display:none !important; }
@@ -34,9 +13,8 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
       </style>
     </b:if>
 
-    <script>
-      window.GG_ENV = { mode: "dev", assetBase: "https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public" };
-    </script>
+    <meta name='gg:mode' content='dev'/>
+    <meta name='gg:asset-base' content='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public'/>
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css?v=20260203160035'/>
     <!-- Structured data (Schema.org) -->
@@ -1183,9 +1161,6 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <b:include data='post' name='commentFormIframeSrc'/>
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
     <data:post.cmtfpIframe/>
-    <script type='text/javascript'>
-      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
-    </script>
   </div>
 </b:includable>
               <b:includable id='commentFormIframeSrc' var='post'>
@@ -1296,7 +1271,6 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
                         <b:include data='post' name='commentFormIframeSrc'/>
                         <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
                         <data:post.cmtfpIframe/>
-                        <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
                       <b:elseif cond='data:post.allowComments'/>
                         <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'><b:message name='messages.postAComment'/></a>
                       </b:if>
@@ -2071,20 +2045,11 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
 
     <data:post.cmtfpIframe/>
-    <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
   </div>
 </b:includable>
               <b:includable id='threadedCommentJs' var='post'>
 
   <!-- 1) Blogger native threaded engine (WAJIB) -->
-  <script expr:src='data:post.commentSrc' type='text/javascript'/>
-  <b:template-script inline='true' name='threaded_comments'/>
-  <script type='text/javascript'>
-    blogger.widgets.blog.initThreadedComments(
-      <data:post.commentJso/>, <data:post.commentMsgs/>, <data:post.commentConfig/>
-    );
-  </script>  
-
 </b:includable>
               <b:includable id='threadedComments' var='post'>
   <section class='gg-comments comments2 threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
@@ -2805,7 +2770,6 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 
 <!-- GAGA HOME OF JS -->
 <script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js?v=20260203160035'/>
-<script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>

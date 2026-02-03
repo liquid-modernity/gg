@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 O-001 observability baseline (client + worker)
-NEXT_TASK: O-002 (TBD)
+LAST_PATCH: 2026-02-03 DOC-001 protect native scripts (protected zones + capsule)
+NEXT_TASK: T-003 architecture relocation (no refactor)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -29,6 +29,7 @@ CORE INVARIANTS:
 - One event gateway: GG.actions (delegated)
 - One state source: GG.store (get/set/subscribe)
 - Side effects only via GG.services.*
+- Native Blogger tags are immutable.
 - UI primitives live in GG.ui.* (toast/dialog/overlay/palette/inputMode)
 - i18n uses Intl.* (not string-only)
 - a11y is systemic (focus trap, inert, announce, reduced motion)
@@ -51,7 +52,7 @@ posterEngine, shareMotion, langSwitcher, imgDims, a11yFix
 
 OPEN TASKS (update every patch):
 T-001 (done) Make main.js pure JS (remove script tags / C-DATA / HTML entities)
-T-002 (done) Fix index.xml: main.js tag, remove SW inline, remove boot-loader duplication
+T-002 (done) Index.xml cleanup: purge inline JS + keep single main.js entry
 T-003 (done) Add GG.services.sw.init() + manifest hooks
 T-004 (done) Promote primitives: GG.ui.toast/dialog/overlay/inputMode/palette + GG.actions
 T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
@@ -72,6 +73,8 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 DOC-001: document protected Blogger XML tags + mark them immutable in capsule.
+- 2026-02-03 T-002: purge inline JS in index.dev.xml/index.prod.xml; keep single main.js entry; move prehome/env to main.js.
 - 2026-02-03 O-001: add client telemetry hook + worker endpoint for logs.
 - 2026-02-03 R-002: add ./scripts/gg bump for GG_ASSET_VER + ?v= sync.
 - 2026-02-03 R-001: add asset version query strings + docs for manual bumping.
@@ -80,20 +83,47 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 X-012: fix tools/scripts:gg awk state var name in report_short_change.
 - 2026-02-03 X-011: align template hosts for feed/sitemap with GG.app.plan selectors.
 - 2026-02-03 X-010: add GG.app.plan selector map + single init gateway; drop gg-postinfo; dedupe shareMotion.
-- 2026-01-28 T-006: add GG.a11y core + GG.services.a11y init for reduced motion.
-- 2026-01-28 T-005: add GG.i18n (t/nf/cf/df/rtf) + dir/locale/timezone helpers.
-- 2026-01-28 T-004: add GG.ui primitives, GG.actions registry + service init hook.
-- 2026-01-28 T-003: add GG.services.sw.init + manifest hooks (via GG.boot.init).
-- 2026-01-28 T-002: index.xml main.js tag fixed, inline SW removed, boot-loader duplicates removed.
-- 2026-01-28 T-001: remove script/C-DATA wrappers + decode HTML entities in JS body. PROOF (body-only): closing-script=0, opening-script=0, html-comment=0, C-DATA=0, quote-entity=0, apos-entity=0, gt-entity=0, lt-entity=0
 */
 (function(w){
   'use strict';
   var GG = w.GG = w.GG || {};
-  var ENV = w.GG_ENV || {};
+  var ENV = w.GG_ENV;
+  if (!ENV) {
+    try {
+      var doc = w.document;
+      var mMode = doc && doc.querySelector('meta[name="gg:mode"]');
+      var mAsset = doc && doc.querySelector('meta[name="gg:asset-base"]');
+      if (mMode || mAsset) {
+        ENV = { mode: mMode ? (mMode.getAttribute('content') || '') : '', assetBase: mAsset ? (mAsset.getAttribute('content') || '') : '' };
+        w.GG_ENV = ENV;
+      }
+    } catch(_) {}
+  }
+  ENV = ENV || {};
   var ASSET_BASE = ENV.assetBase || "";
   var IS_DEV = ENV.mode === "dev";
   GG.env = GG.env || ENV;
+  (function(){
+    try {
+      var root = w.document && w.document.documentElement;
+      if (!root || root.hasAttribute('data-gg-prehome')) return;
+      var pre = 'landing';
+      var search = (w.location && w.location.search) ? w.location.search : '';
+      var m = search.match(/[?&]prehome=(blog|landing)(?:&|$)/i);
+      if (m && m[1]) {
+        pre = (m[1] + '').toLowerCase();
+      } else {
+        var hash = (w.location && w.location.hash ? w.location.hash : '').replace(/^#/, '').toLowerCase();
+        if (hash === 'blog' || hash === 'landing') {
+          pre = hash;
+        } else {
+          var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
+          if (p === '/blog') pre = 'blog';
+        }
+      }
+      root.setAttribute('data-gg-prehome', pre);
+    } catch(_) {}
+  })();
   w.GG_ASSET_BASE = ASSET_BASE;
   w.GG_IS_DEV = IS_DEV;
   w.GG_ASSET = w.GG_ASSET || function(path){
