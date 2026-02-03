@@ -1,18 +1,17 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: F-007
+Task ID: T-005
 Status: DONE
 
 Changes:
-- Added `/api/proxy` image allowlist in the Cloudflare Worker for CORS-safe poster assets.
-- Implemented `GG.modules.poster` to render a canvas poster and share/download.
-- Added a "Share as Poster" action in the post toolbar.
+- Added SPA rehydration after render to restore layout/panels and smart UI modules.
+- Ported Label Tree, Breadcrumbs, and Read Time into `GG.modules` and hooked them into init/rehydrate.
+- Made panel/info/load-more init idempotent for repeated SPA swaps.
 
 ## TASK PROOF
-- `main.js` now generates shareable posters and triggers proxy-based image fetches.
+- `main.js` now re-initializes layout and smart components after SPA content swaps.
 
 ## FILES TOUCHED
 - public/assets/dev/main.js
-- src/worker.js
 - TASK_report.md

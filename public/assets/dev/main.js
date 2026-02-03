@@ -1,7 +1,7 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 F-007 share poster + image proxy
-NEXT_TASK: QA-001 smoke test checklist
+LAST_PATCH: 2026-02-03 T-005 ui/ux re-integration after SPA render
+NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
 === CONTEXT (immutable unless infra changes) ===
@@ -47,7 +47,7 @@ MODULE LAYERS:
 CURRENT FEATURE MODULES FOUND:
 homeState, Dock, PostDetail, BackToTop, LoadMore, PopularCarousel, LeftNav,
 Shortcodes, Skeleton, ReadingProgress, DockPerimeter, RelatedInline, Panels, InfoPanel,
-tagDirectory, tagHubPage, postTagsInline, tagUtils, library, shareSheet, posterCanvas,
+labelTree, breadcrumbs, readTime, tagDirectory, tagHubPage, postTagsInline, tagUtils, library, shareSheet, posterCanvas,
 posterEngine, shareMotion, langSwitcher, imgDims, a11yFix
 
 OPEN TASKS (update every patch):
@@ -65,7 +65,7 @@ F-002 (done) Super Search: Fuse.js + IDB cache + command palette
 F-006 (done) Native transitions + skeleton UI for SPA navigation
 F-007 (done) Share poster + image proxy for CORS-safe canvas
 T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config)
-T-005 (done) Upgrade i18n to Intl-based formatting + RTL readiness
+T-005 (done) UI/UX re-integration after SPA render (layout + smart components)
 T-006 (done) a11y core: focus trap + inert + announce + global reduced motion
 
 STYLE INVARIANTS:
@@ -83,6 +83,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
 - 2026-02-03 F-007: add poster share module + worker proxy usage.
 - 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
 - 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
@@ -92,7 +93,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
 - 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
 - 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
-- 2026-02-03 X-001: switch state classes to data-gg-state in JS/CSS/XML; add standard state docs.
 */
 (function(w){
   'use strict';
@@ -263,6 +263,9 @@ PATCHLOG (append newest first; keep last 10):
       var meta = extractMeta(doc);
       var doSwap = function(){
         target.innerHTML = source.innerHTML;
+        if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
+          try { GG.ui.layout.sync(doc); } catch (_) {}
+        }
         if (GG.core && GG.core.meta && GG.core.meta.update) {
           var payload = {};
           if (meta.title) payload.title = meta.title;
@@ -272,6 +275,9 @@ PATCHLOG (append newest first; keep last 10):
         }
         var rehydrated = rehydrateComments(target);
         if (!rehydrated) rehydrateComments(doc);
+        if (GG.app && typeof GG.app.rehydrate === 'function') {
+          try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
+        }
         GG.core.render._lastUrl = url || '';
         GG.core.render._lastAt = Date.now();
       };
@@ -522,6 +528,50 @@ GG.view.applyRootState = GG.ui.applyRootState;
   ui.skeleton.render = ui.skeleton.render || function(target){
     if(!target) return;
     target.innerHTML = ui.skeleton.markup;
+  };
+  ui.layout = ui.layout || {};
+  ui.layout.sync = ui.layout.sync || function(doc){
+    function pickMain(ref){
+      if (!ref || !ref.querySelector) return null;
+      return ref.querySelector('main.gg-main') || ref.querySelector('main');
+    }
+    function inferSurface(mainEl){
+      if (!mainEl || !mainEl.querySelector) return '';
+      var surfaceEl = mainEl.querySelector('[data-gg-surface]');
+      if (surfaceEl && surfaceEl.getAttribute('data-gg-surface')) {
+        return surfaceEl.getAttribute('data-gg-surface');
+      }
+      if (mainEl.querySelector('.gg-blog-layout--post')) return 'post';
+      if (mainEl.querySelector('.gg-blog-layout--list')) return 'home';
+      return '';
+    }
+    var targetMain = pickMain(d);
+    if (!targetMain) return null;
+    var sourceMain = pickMain(doc);
+    var attrs = ['data-gg-surface', 'data-gg-home-state', 'data-gg-home-root'];
+    if (sourceMain) {
+      for (var i = 0; i < attrs.length; i++) {
+        var name = attrs[i];
+        if (sourceMain.hasAttribute(name)) {
+          targetMain.setAttribute(name, sourceMain.getAttribute(name));
+        } else {
+          targetMain.removeAttribute(name);
+        }
+      }
+    } else {
+      var surface = inferSurface(targetMain);
+      if (surface) targetMain.setAttribute('data-gg-surface', surface);
+    }
+    return targetMain;
+  };
+  ui.layout.refresh = ui.layout.refresh || function(doc){
+    ui.layout.sync(doc);
+    if (GG.modules && GG.modules.Panels && GG.modules.Panels.init) {
+      GG.modules.Panels.init();
+    }
+    if (GG.modules && GG.modules.Dock && typeof GG.modules.Dock.updateActive === 'function') {
+      try { GG.modules.Dock.updateActive(); } catch (_) {}
+    }
   };
   ui.inputMode = ui.inputMode || {};
   ui.inputMode.get = ui.inputMode.get || function(){ if(GG.store && GG.store.get){ var s = GG.store.get(); return s && s.inputMode; } return d.documentElement ? d.documentElement.dataset.ggInput : ''; };
@@ -1376,95 +1426,163 @@ GG.actions.register('jump', function(ctx){
     }, { threshold: 0.25 });
     io.observe(hero);
   })();
-  
-  
-  (function(){
-  var jsonpSeq = 0;
-  function initLabelTree(root){
-    if(!root || root.dataset.ggLabeltreeInit === '1') return;
-    root.dataset.ggLabeltreeInit = '1';
 
-    var treeEl = root.querySelector('.gg-lt__tree');
-    if(!treeEl) return;
-    var headBtn = root.querySelector('.gg-lt__headbtn');
-    var panelBtn = root.querySelector('.gg-lt__panelbtn');
 
-    var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
-    var maxPosts = parseInt(cfg.maxPosts || root.getAttribute('data-max-posts') || '10', 10);
-    var origin = (location.origin || '').replace(/\/$/, '');
-    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
-      ? GG.services.api.getFeedBase(false)
-      : '/feeds/posts/default';
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  GG.modules = GG.modules || {};
+  GG.modules.labelTree = GG.modules.labelTree || (function(){
+    var shared = { loaded:false, loading:false, map:null, promise:null };
 
-    var cache = {};     // label -> posts[]
-    var loaded = {};    // label -> true
-    var inFlight = {};  // label -> Promise
-    var panelOpen = true;
-
-    function setPanel(open){
-      panelOpen = open;
-      GG.core.state.toggle(root, 'collapsed', !open);
-      if(headBtn) headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if(panelBtn){
-        panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
-        var i = panelBtn.querySelector('.material-symbols-rounded');
-        if(i) i.textContent = open ? 'collapse_content' : 'expand_content';
-      }
+    function getCfg(root){
+      var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+      var maxPosts = parseInt(cfg.maxPosts || (root && root.getAttribute('data-max-posts')) || '10', 10);
+      if (!isFinite(maxPosts) || maxPosts <= 0) maxPosts = 10;
+      var filter = Array.isArray(cfg.searchLabels) ? cfg.searchLabels.filter(Boolean) : null;
+      return { maxPosts: maxPosts, filter: filter };
     }
 
-    function jsonp(url){
-      return new Promise(function(resolve, reject){
-        jsonpSeq += 1;
-        var cb = 'ggJSONP_' + jsonpSeq + '_' + Math.random().toString(36).slice(2);
-        var s = document.createElement('script');
-        var done = false;
+    function pickAltLink(entry){
+      var links = entry && entry.link ? entry.link : [];
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].rel === 'alternate' && links[i].href) return links[i].href;
+      }
+      return '';
+    }
 
-        function cleanup(){
-          if(done) return;
-          done = true;
-          try{ delete window[cb]; }catch(_){}
-          if(s.parentNode) s.parentNode.removeChild(s);
+    function buildMap(entries){
+      var map = Object.create(null);
+      (entries || []).forEach(function(entry){
+        var cats = entry && entry.category ? entry.category : [];
+        if (!cats || !cats.length) return;
+        var title = (entry.title && entry.title.$t) || 'Untitled';
+        var url = pickAltLink(entry);
+        if (!url) return;
+        for (var i = 0; i < cats.length; i++) {
+          var term = cats[i] && cats[i].term ? cats[i].term : '';
+          if (!term) continue;
+          if (!map[term]) map[term] = [];
+          map[term].push({ title: title, url: url });
         }
+      });
+      var keys = Object.keys(map);
+      keys.forEach(function(label){
+        var seen = Object.create(null);
+        map[label] = map[label].filter(function(p){
+          var key = (p && p.url) ? p.url : '';
+          if (!key || seen[key]) return false;
+          seen[key] = 1;
+          return true;
+        });
+      });
+      return map;
+    }
 
-        window[cb] = function(data){ cleanup(); resolve(data); };
-        s.onerror = function(){ cleanup(); reject(new Error('JSONP failed')); };
-        s.src = url.replace('callback=?', 'callback=' + cb);
-        document.body.appendChild(s);
-
-        setTimeout(function(){
-          if(!done){ cleanup(); reject(new Error('JSONP timeout')); }
-        }, 12000);
+    function sortLabels(list){
+      return list.sort(function(a, b){
+        a = String(a || '').toLowerCase();
+        b = String(b || '').toLowerCase();
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
       });
     }
 
-    function getAltUrl(entry){
-      var links = entry && entry.link ? entry.link : [];
-      for(var i=0;i<links.length;i++){
-        if(links[i].rel === 'alternate' && links[i].href) return links[i].href;
+    function normalizeUrl(u){
+      return String(u || '').split('#')[0].replace(/\/$/,'');
+    }
+
+    function escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, function(m){
+        return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"'":'\u0026#39;'}[m]);
+      });
+    }
+
+    function labelListForRoot(state){
+      if (!shared.map) return [];
+      var labels = Object.keys(shared.map).filter(Boolean);
+      labels = sortLabels(labels);
+      if (state.filter && state.filter.length) {
+        var labelMap = {};
+        labels.forEach(function(l){ labelMap[String(l).toLowerCase()] = l; });
+        var filtered = [];
+        state.filter.forEach(function(l){
+          var key = String(l).toLowerCase();
+          if (labelMap[key]) filtered.push(labelMap[key]);
+        });
+        if (filtered.length) labels = filtered;
       }
-      return '#';
+      return labels;
     }
 
-    function showChildrenLoading(node){
-      var ul = node.querySelector('.gg-lt__children');
-      if(!ul) return;
-      ul.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading…</li>';
+    function getActiveLabel(){
+      var main = d.querySelector('main.gg-main[data-gg-surface="post"]') || d.querySelector('main.gg-main[data-gg-surface="page"]');
+      if (main) {
+        var post = main.querySelector('article.gg-post') || main.querySelector('.post');
+        if (post) {
+          var links = post.querySelectorAll('.post-labels a[rel="tag"]');
+          for (var i = 0; i < links.length; i++) {
+            var t = (links[i].textContent || '').trim();
+            if (t) return t;
+          }
+          var a = post.querySelector('.gg-post__label-link[href*="/search/label/"]');
+          if (a && a.textContent) return a.textContent.trim();
+        }
+      }
+
+      var head = d.querySelector('.gg-post__label-link[href*="/search/label/"]');
+      if (head && head.textContent) return head.textContent.trim();
+      var bc = d.querySelector('.gg-post__breadcrumbs a[href*="/search/label/"]');
+      if (bc && bc.textContent) return bc.textContent.trim();
+      var foot = d.querySelector('.gg-post__labels a[href*="/search/label/"]');
+      if (foot && foot.textContent) return foot.textContent.trim();
+      return '';
     }
 
-    function renderPosts(node, posts){
+    function getActivePostUrl(){
+      return normalizeUrl(w.location.href);
+    }
+
+    function shouldAutoOpen(root){
+      var mode = root.getAttribute('data-gg-labeltree');
+      return (mode === 'detail' || mode === 'post');
+    }
+
+    function clearActive(treeEl){
+      if (!treeEl) return;
+      var current = treeEl.querySelectorAll('[data-gg-state~="current"]');
+      for (var i = 0; i < current.length; i++) {
+        GG.core.state.remove(current[i], 'current');
+      }
+      var actives = treeEl.querySelectorAll('[data-gg-state~="active"]');
+      for (var j = 0; j < actives.length; j++) {
+        GG.core.state.remove(actives[j], 'active');
+      }
+    }
+
+    function setNodeOpen(node, open){
+      GG.core.state.toggle(node, 'open', open);
+      var row = node.querySelector('.gg-lt__row');
+      if (row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var folder = node.querySelector('.gg-lt__folder');
+      if (folder) folder.textContent = open ? 'folder_open' : 'folder';
+    }
+
+    function renderPosts(state, node, label){
       var ul = node.querySelector('.gg-lt__children');
-      if(!ul) return;
+      if (!ul) return;
       ul.innerHTML = '';
-
-      if(!posts || !posts.length){
+      var posts = (shared.map && shared.map[label]) ? shared.map[label] : [];
+      posts = posts.slice(0, state.maxPosts || 10);
+      if (!posts.length) {
         ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
         return;
       }
-
       posts.forEach(function(p){
-        var li = document.createElement('li');
+        var li = d.createElement('li');
         li.className = 'gg-lt__post';
-        li.setAttribute('role','none');
+        li.setAttribute('role', 'none');
         li.innerHTML =
           '<a href="'+p.url+'" role="treeitem">' +
             '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
@@ -1472,251 +1590,254 @@ GG.actions.register('jump', function(ctx){
           '</a>';
         ul.appendChild(li);
       });
+      var activeUrl = getActivePostUrl();
+      var links = ul.querySelectorAll('a[href]');
+      for (var i = 0; i < links.length; i++) {
+        if (normalizeUrl(links[i].href) === activeUrl) {
+          GG.core.state.add(links[i], 'active');
+        }
+      }
     }
 
-    function escapeHtml(str){
-      return String(str || '').replace(/[&<>"']/g, function(m){
-        return ({'&':'\u0026amp;','<':'\u0026lt;','>':'\u0026gt;','"':'\u0026quot;',"\'":'\u0026#39;'}[m]);
-      });
-    }
-
-    function fetchPosts(label){
-      if(loaded[label]) return Promise.resolve(cache[label] || []);
-      if(inFlight[label]) return inFlight[label];
-
-      var url = origin + feedBase + '/-/' + encodeURIComponent(label) +
-                '?alt=json-in-script&max-results=' + maxPosts + '&callback=?';
-
-      inFlight[label] = jsonp(url).then(function(data){
-        var entries = (data && data.feed && data.feed.entry) || [];
-        var posts = entries.map(function(e){
-          return { title:(e.title && e.title.$t) || 'Untitled', url:getAltUrl(e) };
-        });
-        cache[label] = posts;
-        loaded[label] = true;
-        return posts;
-      }).catch(function(){
-        cache[label] = [];
-        loaded[label] = true;
-        return [];
-      }).finally(function(){
-        delete inFlight[label];
-      });
-
-      return inFlight[label];
-    }
-
-    function setNodeOpen(node, open){
-      GG.core.state.toggle(node, 'open', open);
-      var row = node.querySelector('.gg-lt__row');
-      if(row) row.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-      var folder = node.querySelector('.gg-lt__folder');
-      if(folder) folder.textContent = open ? 'folder_open' : 'folder';
-    }
-
-    function toggleNode(node){
+    function toggleNode(state, node){
       var label = node.getAttribute('data-label');
-      if(!label) return;
-
+      if (!label) return;
       var isOpen = GG.core.state.has(node, 'open');
-      if(isOpen){
+      if (isOpen) {
         setNodeOpen(node, false);
         return;
       }
-
       setNodeOpen(node, true);
+      renderPosts(state, node, label);
+    }
 
-      if(loaded[label]){
-        renderPosts(node, cache[label] || []);
+    function renderLabels(root, state){
+      var treeEl = state.tree;
+      if (!treeEl) return;
+      var labels = labelListForRoot(state);
+      if (!labels.length) {
+        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
         return;
       }
-
-      showChildrenLoading(node);
-      fetchPosts(label).then(function(posts){
-        // only render if still open
-        if(GG.core.state.has(node, 'open')){
-          renderPosts(node, posts);
-        }
-      });
-    }
-
-    function getCurrentLabels(){
-      var main = document.querySelector('main.gg-main[data-gg-surface="post"]');
-      if(!main) return [];
-      var post = main.querySelector('article.gg-post') || main.querySelector('.post');
-      if(!post) return [];
-      var links = post.querySelectorAll('.post-labels a[rel="tag"]');
-      var out = [];
-      for(var i=0;i<links.length;i++){
-        var t = (links[i].textContent || '').trim();
-        if(t) out.push(t);
-      }
-      if(!out.length){
-        var a = post.querySelector('.gg-post__label-link[href*="/search/label/"]');
-        if(a && a.textContent) out.push(a.textContent.trim());
-      }
-      return out;
-    }
-
-    function getActiveLabel(){
-      var fromPost = getCurrentLabels()[0];
-      if(fromPost) return fromPost;
-      // 1) label utama di header
-      var a = document.querySelector('.gg-post__label-link[href*="/search/label/"]');
-      if(a && a.textContent) return a.textContent.trim();
-
-      // 2) breadcrumb label
-      var bc = document.querySelector('.gg-post__breadcrumbs a[href*="/search/label/"]');
-      if(bc && bc.textContent) return bc.textContent.trim();
-
-      // 3) fallback: label pertama di footer labels
-      var f = document.querySelector('.gg-post__labels a[href*="/search/label/"]');
-      if(f && f.textContent) return f.textContent.trim();
-
-      return '';
-    }
-
-    function normalizeUrl(u){
-      return String(u || '').split('#')[0].replace(/\/$/,'');
-    }
-
-    function getActivePostUrl(){
-      return normalizeUrl(location.href);
-    }
-
-    function shouldAutoOpen(){
-      var mode = root.getAttribute('data-gg-labeltree');
-      return (mode === 'detail' || mode === 'post');
-    }
-
-    function renderLabels(labels){
       treeEl.innerHTML = '';
       labels.forEach(function(label){
-        var node = document.createElement('li');
+        var node = d.createElement('li');
         node.className = 'gg-lt__node';
         node.setAttribute('data-label', label);
-        node.setAttribute('role','treeitem');
-        node.setAttribute('aria-expanded','false');
-
+        node.setAttribute('role', 'treeitem');
+        node.setAttribute('aria-expanded', 'false');
         node.innerHTML =
-    '<button class="gg-lt__row" type="button" aria-expanded="false">' +
-      '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
-      '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
-    '</button>' +
-    '<ul class="gg-lt__children" role="group"></ul>';
-
+          '<button class="gg-lt__row" type="button" aria-expanded="false">' +
+            '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
+            '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
+          '</button>' +
+          '<ul class="gg-lt__children" role="group"></ul>';
         treeEl.appendChild(node);
       });
     }
 
-    function autoOpenCurrentLabel(){
+    function applyActive(root, state){
+      var treeEl = state.tree;
+      if (!treeEl) return;
+      clearActive(treeEl);
       var activeLabel = getActiveLabel();
-      if(!activeLabel) return;
-
-      // cari node label yang cocok (case-insensitive)
+      if (!activeLabel) return;
       var nodes = Array.prototype.slice.call(treeEl.querySelectorAll('.gg-lt__node'));
-      var node = nodes.find(function(n){
+      var match = nodes.find(function(n){
         return (n.getAttribute('data-label') || '').toLowerCase() === activeLabel.toLowerCase();
       });
-      if(!node) return;
-
-      GG.core.state.add(node, 'current');
-      var row = node.querySelector('.gg-lt__row');
-      if(row) GG.core.state.add(row, 'current');
-
-      // buka label itu (akan fetch posts + render)
-      toggleNode(node);
-
-      // setelah posts dirender, highlight post aktif
-      var activeUrl = getActivePostUrl();
-
-      // polling ringan karena renderPosts async (jsonp)
-      var tries = 0, max = 60;
-      var t = setInterval(function(){
-        tries++;
-        var links = Array.prototype.slice.call(node.querySelectorAll('.gg-lt__children a[href]'));
-        if(links.length){
-          links.forEach(function(a){
-            if(normalizeUrl(a.href) === activeUrl){
-              GG.core.state.add(a, 'active');
-            }
-          });
-          clearInterval(t);
-        }
-        if(tries >= max) clearInterval(t);
-      }, 100);
+      if (!match) return;
+      GG.core.state.add(match, 'current');
+      var row = match.querySelector('.gg-lt__row');
+      if (row) GG.core.state.add(row, 'current');
+      if (shouldAutoOpen(root)) {
+        setNodeOpen(match, true);
+        renderPosts(state, match, match.getAttribute('data-label') || '');
+      }
     }
 
-    function loadLabels(){
-      treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels…</li>';
-      var url = origin + feedBase + '?alt=json-in-script&max-results=1&callback=?';
+    function setPanel(state, open){
+      state.panelOpen = open;
+      GG.core.state.toggle(state.root, 'collapsed', !open);
+      if (state.headBtn) state.headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (state.panelBtn) {
+        state.panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
+        var icon = state.panelBtn.querySelector('.material-symbols-rounded');
+        if (icon) icon.textContent = open ? 'collapse_content' : 'expand_content';
+      }
+    }
 
-      jsonp(url).then(function(data){
-        var cats = (data && data.feed && data.feed.category) || [];
-        var labels = cats.map(function(c){ return c.term; }).filter(Boolean);
-        labels = Array.from(new Set(labels)).sort(function(a,b){
-          a=a.toLowerCase(); b=b.toLowerCase();
-          return a<b ? -1 : (a>b ? 1 : 0);
-        });
-        var cfgLabels = Array.isArray(cfg.searchLabels) ? cfg.searchLabels.filter(Boolean) : null;
-        if (cfgLabels && cfgLabels.length) {
-          var labelMap = {};
-          labels.forEach(function(l){ labelMap[String(l).toLowerCase()] = l; });
-          var filtered = [];
-          cfgLabels.forEach(function(l){
-            var key = String(l).toLowerCase();
-            if (labelMap[key]) filtered.push(labelMap[key]);
-          });
-          if (filtered.length) labels = filtered;
-        }
-
-        if(!labels.length){
-          treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
+    function bindEvents(state){
+      if (state.bound) return;
+      state.bound = true;
+      state.root.addEventListener('click', function(e){
+        if (e.target.closest('.gg-lt__headbtn') || e.target.closest('.gg-lt__panelbtn')) {
+          setPanel(state, !state.panelOpen);
           return;
         }
-        renderLabels(labels);
-        if(shouldAutoOpen()) autoOpenCurrentLabel();
-      }).catch(function(){
-        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+        var row = e.target.closest('.gg-lt__row');
+        if (row && state.root.contains(row)) {
+          var node = row.closest('.gg-lt__node');
+          if (node) toggleNode(state, node);
+        }
+      });
+      state.root.addEventListener('keydown', function(e){
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var row = e.target.closest('.gg-lt__row');
+        if (row) {
+          e.preventDefault();
+          var node = row.closest('.gg-lt__node');
+          if (node) toggleNode(state, node);
+        }
       });
     }
 
-    // events
-    root.addEventListener('click', function(e){
-      // panel toggle via header title OR right button
-      if(e.target.closest('.gg-lt__headbtn') || e.target.closest('.gg-lt__panelbtn')){
-        setPanel(!panelOpen);
-        return;
-      }
+    function loadData(maxResults){
+      if (shared.promise) return shared.promise;
+      shared.loading = true;
+      var params = { summary: true, 'max-results': maxResults || 500 };
+      shared.promise = GG.services.api.getFeed(params).then(function(json){
+        var entries = (json && json.feed && json.feed.entry) ? json.feed.entry : [];
+        shared.map = buildMap(entries);
+        shared.loaded = true;
+        shared.loading = false;
+        return shared;
+      }).catch(function(err){
+        shared.loading = false;
+        shared.map = null;
+        shared.promise = null;
+        throw err;
+      });
+      return shared.promise;
+    }
 
-      // per label toggle
-      var row = e.target.closest('.gg-lt__row');
-      if(row && root.contains(row)){
-        var node = row.closest('.gg-lt__node');
-        if(node) toggleNode(node);
-      }
-    });
+    function init(root){
+      var roots = root ? [root] : Array.prototype.slice.call(d.querySelectorAll('.gg-labeltree[data-gg-module="labeltree"]'));
+      if (!roots.length) return;
+      roots.forEach(function(el){
+        if (!el) return;
+        var treeEl = el.querySelector('.gg-lt__tree');
+        if (!treeEl) return;
 
-    root.addEventListener('keydown', function(e){
-      if(e.key !== 'Enter' && e.key !== ' ') return;
-      var row = e.target.closest('.gg-lt__row');
-      if(row){
-        e.preventDefault();
-        var node = row.closest('.gg-lt__node');
-        if(node) toggleNode(node);
-      }
-    });
+        var state = el.__ggLabelTree || {};
+        el.__ggLabelTree = state;
+        state.root = el;
+        state.tree = treeEl;
+        state.headBtn = el.querySelector('.gg-lt__headbtn');
+        state.panelBtn = el.querySelector('.gg-lt__panelbtn');
+        state.panelOpen = (state.panelOpen !== false);
 
-    setPanel(true);
-    loadLabels();
-  }
+        var cfg = getCfg(el);
+        state.maxPosts = cfg.maxPosts;
+        state.filter = cfg.filter;
 
-  var roots = document.querySelectorAll('.gg-labeltree[data-gg-module=\"labeltree\"]');
-  if(!roots.length) return;
-  Array.prototype.forEach.call(roots, initLabelTree);
-})();
+        bindEvents(state);
+        setPanel(state, state.panelOpen);
+
+        if (shared.loaded && shared.map) {
+          renderLabels(el, state);
+          applyActive(el, state);
+          return;
+        }
+
+        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels...</li>';
+        loadData(500).then(function(){
+          renderLabels(el, state);
+          applyActive(el, state);
+        }).catch(function(){
+          treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+        });
+      });
+    }
+
+    function refresh(root){
+      init(root);
+    }
+
+    return { init: init, refresh: refresh };
+  })();
+})(window.GG = window.GG || {}, window, document);
 // [END LABELTREE MODULE]
+
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  GG.modules = GG.modules || {};
+  GG.modules.breadcrumbs = GG.modules.breadcrumbs || (function(){
+    function text(el){
+      return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim();
+    }
+    function labelFromUrl(){
+      try {
+        var u = new URL(w.location.href);
+        var m = u.pathname.match(/\/search\/label\/([^/]+)/i);
+        if (m && m[1]) return decodeURIComponent(m[1]).replace(/\+/g, ' ');
+      } catch (_) {}
+      return '';
+    }
+    function init(root){
+      var scope = (root && root.querySelector) ? root : d;
+      if (scope.querySelector('.gg-tags-page')) return;
+      var nav = scope.querySelector('nav.gg-post__breadcrumbs') || scope.querySelector('nav.breadcrumbs.gg-post__breadcrumbs');
+      if (!nav) return;
+      var current = nav.querySelector('.gg-post__breadcrumbs-current') || nav.querySelector('.breadcrumbs__current');
+      var titleEl = scope.querySelector('.gg-post__title') || scope.querySelector('h1');
+      var title = text(titleEl) || d.title || '';
+      if (current && title) current.textContent = title;
+
+      var labelSrc = scope.querySelector('.gg-post__label-link[href*="/search/label/"]') ||
+                     scope.querySelector('.post-labels a[rel="tag"]') ||
+                     scope.querySelector('.gg-post__labels a[href*="/search/label/"]');
+      var labelLink = nav.querySelector('.gg-post__breadcrumbs-link[href*="/search/label/"]') ||
+                      nav.querySelector('.gg-post__breadcrumbs-link--label');
+      var labelText = labelSrc ? text(labelSrc) : '';
+      if (!labelText) labelText = labelFromUrl();
+      if (labelLink && labelText) {
+        var labelSpan = labelLink.querySelector('.gg-post__breadcrumbs-label') || labelLink;
+        labelSpan.textContent = labelText;
+        if (labelSrc && labelSrc.getAttribute('href')) {
+          labelLink.setAttribute('href', labelSrc.getAttribute('href'));
+        }
+      }
+    }
+    return { init: init };
+  })();
+})(window.GG = window.GG || {}, window, document);
+
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  GG.modules = GG.modules || {};
+  GG.modules.readTime = GG.modules.readTime || (function(){
+    var WPM = 200;
+    function findBody(scope){
+      return scope.querySelector('.gg-post__content.post-body.entry-content') ||
+             scope.querySelector('.post-body.entry-content') ||
+             scope.querySelector('.entry-content') ||
+             scope.querySelector('[itemprop="articleBody"]') ||
+             scope.querySelector('.post-body');
+    }
+    function compute(text){
+      var raw = String(text || '').replace(/\s+/g,' ').trim();
+      if (!raw) return '';
+      var words = raw.split(' ').filter(Boolean).length;
+      var mins = Math.max(1, Math.round(words / WPM));
+      return mins + ' minutes read';
+    }
+    function init(root){
+      var scope = (root && root.querySelector) ? root : d;
+      var body = findBody(scope);
+      if (!body) return;
+      var label = compute(body.innerText || body.textContent || '');
+      if (!label) return;
+      var slots = scope.querySelectorAll('[data-slot="readtime"]');
+      for (var i = 0; i < slots.length; i++) {
+        slots[i].textContent = label;
+      }
+    }
+    return { init: init };
+  })();
+})(window.GG = window.GG || {}, window, document);
 
 (function(){
   var root = document.getElementById('gg-toc');
@@ -2831,6 +2952,8 @@ return { init: init };
       if(!wrap) return;
       var btn = wrap.querySelector('#loadmore');
       if(!btn) return;
+      if (btn.__ggLoadMoreBound) return;
+      btn.__ggLoadMoreBound = true;
       var list = document.querySelector('#postcards');
       if(!list) return;
 
@@ -3788,13 +3911,19 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
     if (!panel) return;
 
-    main.addEventListener('click', handleClick, true);
-    panel.addEventListener('click', function(e){
-      if (closest(e.target, '[data-gg-action="info-close"]')) {
-        e.preventDefault();
-        handleClose();
-      }
-    }, true);
+    if (!main.__ggInfoPanelBound){
+      main.__ggInfoPanelBound = true;
+      main.addEventListener('click', handleClick, true);
+    }
+    if (!panel.__ggInfoPanelBound){
+      panel.__ggInfoPanelBound = true;
+      panel.addEventListener('click', function(e){
+        if (closest(e.target, '[data-gg-action="info-close"]')) {
+          e.preventDefault();
+          handleClose();
+        }
+      }, true);
+    }
     if (!closeObserver && main && window.MutationObserver) {
       closeObserver = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
@@ -4507,6 +4636,9 @@ GG.app.plan = [
   { name: 'Panels.init', selector: 'main.gg-main[data-gg-surface]', init: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
   { name: 'InfoPanel.init', selector: '.gg-info-panel[data-gg-panel="info"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
   { name: 'PostDetail.init', selector: 'main.gg-main[data-gg-surface="post"], main.gg-main[data-gg-surface="page"], main.gg-main[data-gg-surface="postdetail"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+  { name: 'labelTree.init', selector: '.gg-labeltree[data-gg-module="labeltree"]', init: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
+  { name: 'breadcrumbs.init', selector: 'nav.gg-post__breadcrumbs', init: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
+  { name: 'readTime.init', selector: '[data-slot="readtime"]', init: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
   { name: 'LeftNav.init', selector: '.gg-blog-sidebar--left', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
   { name: 'Dock.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.Dock) GG.modules.Dock.init(dock, main); } },
   { name: 'ReadingProgress.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.ReadingProgress) GG.modules.ReadingProgress.init(dock, main); } },
@@ -4551,6 +4683,29 @@ GG.app.init = GG.app.init || function(){
       }
       GG.boot.safeInit(item.name, function(){ item.init(host); });
     })(GG.app.plan[i]);
+  }
+};
+
+GG.app.rehydrate = GG.app.rehydrate || function(context){
+  var ctx = context || {};
+  if (GG.ui && GG.ui.layout && typeof GG.ui.layout.refresh === 'function') {
+    GG.ui.layout.refresh(ctx.doc || null);
+  }
+  var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
+  var tasks = [
+    { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
+    { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
+    { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+    { name: 'LeftNav.reinit', fn: function(){ if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
+    { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
+    { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
+    { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
+    { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) GG.modules.LoadMore.init(); } },
+    { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
+    { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
+  ];
+  for (var i = 0; i < tasks.length; i++) {
+    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
   }
 };
 
@@ -5989,6 +6144,7 @@ function isSystemPath(pathname){
 
   GG.modules.Panels = (function () {
     var main, left, right, backdrop;
+    var bound = false;
 
     function getAttr(el, name){ return el ? el.getAttribute(name) : null; }
 
@@ -6109,8 +6265,16 @@ function isSystemPath(pathname){
       if (main && main.getAttribute('data-gg-left-panel') === 'open'){ setLeft('closed'); }
     }
 
+    function bindEvents(){
+      if (bound) return;
+      bound = true;
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('keydown', handleKey);
+      window.addEventListener('resize', updateBackdrop);
+    }
+
     function init(){
-      main = qs('main.gg-main[data-gg-surface]');
+      main = qs('main.gg-main[data-gg-surface]') || qs('main.gg-main') || qs('main');
       if (!main) return;
       var surface = main.getAttribute('data-gg-surface') || '';
       var isPostSurface = surface === 'post';
@@ -6145,10 +6309,7 @@ function isSystemPath(pathname){
       injectLeftFab();
       enhanceTree();
 
-      document.addEventListener('click', handleClick, true);
-      document.addEventListener('keydown', handleKey);
-
-      window.addEventListener('resize', updateBackdrop);
+      bindEvents();
       updateBackdrop();
     }
 
