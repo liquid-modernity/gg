@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 T-007 surface precision + smart navigation
+LAST_PATCH: 2026-02-03 FIX-003 navigation + route logic
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -68,6 +68,7 @@ T-004 (done) Promote primitives + config migration (gg-config -> GG.store.config
 T-005 (done) UI/UX re-integration after SPA render (layout + smart components)
 T-006 (done) Surface logic + context refinement (SSR body surface + client updates)
 T-007 (done) Surface precision + smart navigation (listing/page + smart back)
+FIX-003 (done) Navigation + route logic fixes (view=blog + breadcrumb route)
 
 STYLE INVARIANTS:
 - No behavior changes in T-001/T-002.
@@ -84,6 +85,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 FIX-003: view=blog surface + breadcrumb home blog route.
 - 2026-02-03 T-007: refine surface precision + smart back navigation.
 - 2026-02-03 T-006: surface awareness + contextual right panel handling.
 - 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
@@ -566,7 +568,11 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/') return 'landing';
+      if (path === '/') {
+        var view = (u.searchParams.get('view') || '').toLowerCase();
+        if (view === 'blog') return 'listing';
+        return 'landing';
+      }
       if (path.indexOf('/search') !== -1) return 'listing';
       if (path.indexOf('/p/') !== -1) return 'page';
     } catch (_) {}
@@ -574,6 +580,8 @@ GG.view.applyRootState = GG.ui.applyRootState;
   };
   ui.layout.detectSurface = ui.layout.detectSurface || function(doc, url){
     var ref = doc || d;
+    var inferred = ui.layout._inferSurfaceFromUrl(url || w.location.href);
+    if (inferred === 'listing') return 'listing';
     var body = ref && ref.body ? ref.body : null;
     var attr = body ? (body.getAttribute('data-gg-surface') || (body.dataset && body.dataset.ggSurface)) : '';
     if (attr) return attr;
@@ -731,7 +739,11 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/') return 'landing';
+      if (path === '/') {
+        var view = (u.searchParams.get('view') || '').toLowerCase();
+        if (view === 'blog') return 'listing';
+        return 'landing';
+      }
       if (path.indexOf('/search') !== -1) return 'listing';
       if (path.indexOf('/p/') !== -1) return 'page';
     } catch (_) {}
@@ -1928,6 +1940,34 @@ GG.actions.register('jump', function(ctx){
     function text(el){
       return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim();
     }
+    function setHomeLinks(nav){
+      if (!nav) return;
+      var homeLanding = nav.querySelector('.gg-post__breadcrumbs-link--home') || nav.querySelector('.breadcrumbs__link--home');
+      if (homeLanding) homeLanding.setAttribute('href', '/');
+
+      var links = Array.prototype.slice.call(nav.querySelectorAll('a.gg-post__breadcrumbs-link'));
+      var blogLink = null;
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        if (a === homeLanding) continue;
+        var href = a.getAttribute('href') || '';
+        if (href.indexOf('gg-home-blog-anchor') !== -1) { blogLink = a; break; }
+      }
+      if (!blogLink) {
+        for (var j = 0; j < links.length; j++) {
+          var b = links[j];
+          if (b === homeLanding) continue;
+          var href2 = b.getAttribute('href') || '';
+          if (href2.indexOf('/search/label/') !== -1) continue;
+          if (b.classList.contains('gg-post__breadcrumbs-link--label')) continue;
+          blogLink = b;
+          break;
+        }
+      }
+      if (blogLink) {
+        blogLink.setAttribute('href', '/?view=blog');
+      }
+    }
     function labelFromUrl(){
       try {
         var u = new URL(w.location.href);
@@ -1941,6 +1981,7 @@ GG.actions.register('jump', function(ctx){
       if (scope.querySelector('.gg-tags-page')) return;
       var nav = scope.querySelector('nav.gg-post__breadcrumbs') || scope.querySelector('nav.breadcrumbs.gg-post__breadcrumbs');
       if (!nav) return;
+      setHomeLinks(nav);
       var current = nav.querySelector('.gg-post__breadcrumbs-current') || nav.querySelector('.breadcrumbs__current');
       var titleEl = scope.querySelector('.gg-post__title') || scope.querySelector('h1');
       var title = text(titleEl) || d.title || '';
@@ -1963,6 +2004,7 @@ GG.actions.register('jump', function(ctx){
     }
     return { init: init };
   })();
+  GG.modules.breadcrumb = GG.modules.breadcrumbs;
 })(window.GG = window.GG || {}, window, document);
 
 (function(GG, w, d){
