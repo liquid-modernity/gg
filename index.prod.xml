@@ -2724,7 +2724,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 </div>
           
-    <!-- GAGA -->
+    <!-- GAGA UI PRIMITIVE -->
 <div aria-atomic='true' aria-live='polite' class='gg-toast' data-gg-module='toast' data-gg-state='hidden' hidden='' id='gg-toast'>
   <div class='gg-toast__inner'>
     <p class='gg-toast__message'/>
@@ -2779,7 +2779,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </div>
 </div>
 <div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'/>
-<!-- /GAGA  -->
+<!-- /GAGA UI PRIMITIVE  -->
 <div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "searchCacheTTL": 60, "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
