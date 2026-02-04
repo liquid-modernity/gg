@@ -4,30 +4,34 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const WORKER_VERSION = "8f3d67c";
-    const stamp = (res) => {
+    const stampAssets = (res) => {
       res.headers.set("X-GG-Worker", "assets");
       res.headers.set("X-GG-Worker-Version", WORKER_VERSION);
       return res;
     };
+    const stampProxy = (res) => {
+      const out = new Response(res.body, res);
+      out.headers.set("X-GG-Worker", "proxy");
+      out.headers.set("X-GG-Worker-Version", WORKER_VERSION);
+      return out;
+    };
+
+    if (pathname === "/__gg_worker_ping") {
+      const r = new Response("pong", { status: 200 });
+      r.headers.set("Cache-Control", "no-store");
+      return stampAssets(r);
+    }
 
     if (pathname === "/gg-flags.json") {
-      const raw = env && env.GG_SW_ENABLED ? String(env.GG_SW_ENABLED).trim().toLowerCase() : "";
-      const enabled = !(raw === "0" || raw === "false");
       const body = JSON.stringify({
-        sw: { enabled },
+        sw: { enabled: true },
         release: WORKER_VERSION,
         ts: Date.now(),
       });
       const r = new Response(body, { status: 200 });
       r.headers.set("Content-Type", "application/json; charset=utf-8");
       r.headers.set("Cache-Control", "no-store");
-      return stamp(r);
-    }
-
-    if (pathname === "/__gg_worker_ping") {
-      const r = new Response("pong", { status: 200 });
-      r.headers.set("Cache-Control", "no-store");
-      return stamp(r);
+      return stampProxy(r);
     }
 
     if (pathname === "/api/telemetry") {
@@ -44,7 +48,7 @@ export default {
       console.log("GG_TELEMETRY", payload);
       const r = new Response("", { status: 204 });
       r.headers.set("Cache-Control", "no-store");
-      return stamp(r);
+      return stampAssets(r);
     }
 
     if (pathname === "/api/proxy") {
@@ -52,7 +56,7 @@ export default {
       if (!target) {
         const r = new Response("Missing url", { status: 400 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       let upstream;
@@ -61,13 +65,13 @@ export default {
       } catch (e) {
         const r = new Response("Invalid url", { status: 400 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       if (upstream.protocol !== "https:" && upstream.protocol !== "http:") {
         const r = new Response("Invalid protocol", { status: 400 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       const host = upstream.hostname || "";
@@ -77,7 +81,7 @@ export default {
       if (!allowlisted) {
         const r = new Response("Host not allowed", { status: 403 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       let upstreamRes;
@@ -91,20 +95,20 @@ export default {
       } catch (e) {
         const r = new Response("Upstream fetch failed", { status: 502 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       if (!upstreamRes || !upstreamRes.ok) {
         const r = new Response("Upstream error", { status: 502 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       const contentType = upstreamRes.headers.get("content-type") || "";
       if (!contentType.startsWith("image/")) {
         const r = new Response("Unsupported content", { status: 415 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       const headers = new Headers(upstreamRes.headers);
@@ -118,7 +122,7 @@ export default {
       headers.set("Cache-Control", "public, max-age=86400");
 
       const r = new Response(upstreamRes.body, { status: 200, headers });
-      return stamp(r);
+      return stampAssets(r);
     }
 
     // Path yang memang kamu host di Workers Static Assets
@@ -132,10 +136,10 @@ export default {
     // Reverse proxy Blogger untuk semua non-asset path.
     if (!shouldTryAssets) {
       let originRequest = request;
+      let originUrl = new URL(request.url);
       let forceListing = false;
 
       if (pathname === "/blog" || pathname === "/blog/") {
-        const originUrl = new URL(request.url);
         originUrl.pathname = "/";
         originUrl.searchParams.set("view", "blog");
         originRequest = new Request(originUrl.toString(), request);
@@ -143,14 +147,14 @@ export default {
       }
 
       try {
-        if (url.searchParams.get("view") === "blog") forceListing = true;
+        if (originUrl.searchParams.get("view") === "blog") forceListing = true;
       } catch (e) {}
 
       let originRes;
       try {
         originRes = await fetch(originRequest);
       } catch (e) {
-        return stamp(new Response("Upstream fetch failed", { status: 502 }));
+        return stampProxy(new Response("Upstream fetch failed", { status: 502 }));
       }
 
       const contentType = originRes.headers.get("content-type") || "";
@@ -162,21 +166,21 @@ export default {
             },
           })
           .transform(originRes);
-        return stamp(rewritten);
+        return stampProxy(rewritten);
       }
 
-      return stamp(originRes);
+      return stampProxy(originRes);
     }
 
     if (!env.ASSETS) {
-      return stamp(new Response("ASSETS binding missing", { status: 502 }));
+      return stampAssets(new Response("ASSETS binding missing", { status: 502 }));
     }
 
     let assetRes;
     try {
       assetRes = await env.ASSETS.fetch(request);
     } catch (e) {
-      return stamp(new Response("ASSETS fetch failed", { status: 502 }));
+      return stampAssets(new Response("ASSETS fetch failed", { status: 502 }));
     }
 
     // Jangan cache response error
@@ -184,12 +188,12 @@ export default {
       if (pathname === "/sw.js") {
         const r = new Response("sw.js missing in ASSETS", { status: 404 });
         r.headers.set("Cache-Control", "no-store");
-        return stamp(r);
+        return stampAssets(r);
       }
 
       const r = new Response(assetRes.body, assetRes);
       r.headers.set("Cache-Control", "no-store");
-      return stamp(r);
+      return stampAssets(r);
     }
 
     const res = new Response(assetRes.body, assetRes);
@@ -211,6 +215,6 @@ export default {
       setCache("public, max-age=86400");
     }
 
-    return stamp(res);
+    return stampAssets(res);
   },
 };
