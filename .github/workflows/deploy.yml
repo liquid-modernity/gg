@@ -83,7 +83,12 @@ jobs:
           echo "Fetch zone id for pakrpp.com"
           ZONE_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones?name=pakrpp.com")"
           echo "$ZONE_JSON" | head -c 800
-          ZONE_ID="$(printf "%s" "$ZONE_JSON" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p' | head -n 1)"
+          ZONE_ID=$(python3 - <<'PY'
+          import json,sys
+          data=json.load(sys.stdin)
+          print(data["result"][0]["id"] if data.get("result") else "")
+          PY
+          <<<"$ZONE_JSON")
           if [ -z "$ZONE_ID" ]; then
             echo "ERROR: could not parse zone_id (token lacks Zone:Read or zone not found)"
             exit 1
@@ -93,6 +98,16 @@ jobs:
           echo "Fetch workers/routes"
           ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes")"
           echo "$ROUTES_JSON" | head -c 2000
+          python3 - <<'PY'
+          import json,sys
+          txt=sys.stdin.read().strip()
+          data=json.loads(txt) if txt else {}
+          if not data.get("success"):
+            print("ERROR: workers/routes failed:", data.get("errors"))
+            sys.exit(1)
+          print("routes_ok")
+          PY
+          <<<"$ROUTES_JSON"
 
           echo "Extract patterns => script"
           printf "%s" "$ROUTES_JSON" | python3 - <<'PY'
