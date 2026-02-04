@@ -22,6 +22,8 @@
     { "pattern": "www.pakrpp.com/gg-flags.json*", "zone_name": "pakrpp.com" },
     { "pattern": "www.pakrpp.com/manifest.webmanifest*", "zone_name": "pakrpp.com" },
     { "pattern": "www.pakrpp.com/offline.html*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" }
+    { "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" },
+    { "pattern": "www.pakrpp.com/*", "zone_name": "pakrpp.com" },
+    { "pattern": "pakrpp.com/*", "zone_name": "pakrpp.com" }
   ]
 }

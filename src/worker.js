@@ -129,33 +129,43 @@ export default {
       pathname === "/manifest.webmanifest" ||
       pathname === "/offline.html";
 
-    // Edge-side surface rewrite for /?view=blog (SSR) when routed.
+    // Reverse proxy Blogger untuk semua non-asset path.
     if (!shouldTryAssets) {
-      if (url.searchParams.get("view") === "blog") {
-        let originRes;
-        try {
-          originRes = await fetch(request);
-        } catch (e) {
-          return stamp(new Response("Upstream fetch failed", { status: 502 }));
-        }
+      let originRequest = request;
+      let forceListing = false;
 
-        const contentType = originRes.headers.get("content-type") || "";
-        if (contentType.indexOf("text/html") !== -1) {
-          const rewritten = new HTMLRewriter()
-            .on("body", {
-              element(el) {
-                el.setAttribute("data-gg-surface", "listing");
-              },
-            })
-            .transform(originRes);
-          return stamp(rewritten);
-        }
-
-        return stamp(originRes);
+      if (pathname === "/blog" || pathname === "/blog/") {
+        const originUrl = new URL(request.url);
+        originUrl.pathname = "/";
+        originUrl.searchParams.set("view", "blog");
+        originRequest = new Request(originUrl.toString(), request);
+        forceListing = true;
       }
 
-      // Worker ini bukan reverse proxy Blogger
-      return stamp(new Response("Not found", { status: 404 }));
+      try {
+        if (url.searchParams.get("view") === "blog") forceListing = true;
+      } catch (e) {}
+
+      let originRes;
+      try {
+        originRes = await fetch(originRequest);
+      } catch (e) {
+        return stamp(new Response("Upstream fetch failed", { status: 502 }));
+      }
+
+      const contentType = originRes.headers.get("content-type") || "";
+      if (forceListing && contentType.indexOf("text/html") !== -1) {
+        const rewritten = new HTMLRewriter()
+          .on("body", {
+            element(el) {
+              el.setAttribute("data-gg-surface", "listing");
+            },
+          })
+          .transform(originRes);
+        return stamp(rewritten);
+      }
+
+      return stamp(originRes);
     }
 
     if (!env.ASSETS) {
