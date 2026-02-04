@@ -1,19 +1,18 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: FIX-005
+Task ID: FIX-007
 Status: DONE
 
 Changes:
-- Replaced hash-based Home Blog navigation with strict `/?view=blog` routing.
-- Added router-driven hero toggle for query-based listing view.
-- Updated breadcrumb and dock handlers to use Router navigation.
+- Added centralized surface state updater to sync `data-gg-surface` and `gg-is-landing`.
+- Wired surface updates to init and post-render routing flow.
+- Added safety CSS rule to hide hero section on listing surface.
 
 ## TASK PROOF
-- PJAX navigation to `/?view=blog` now forces listing surface and hides Hero immediately.
+- `/?view=blog` now removes `gg-is-landing` and sets `data-gg-surface="listing"` after navigation.
 
 ## FILES TOUCHED
 - public/assets/dev/main.js
-- index.dev.xml
-- index.prod.xml
+- public/assets/dev/main.css
 - TASK_report.md
