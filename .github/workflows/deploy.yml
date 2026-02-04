@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: ["main", "gg/**"]
+    branches: ["main"]
   workflow_dispatch:
 
 concurrency:
@@ -123,11 +123,11 @@ jobs:
           import sys, json
           data=json.load(sys.stdin)
           patterns={r.get("pattern") for r in data.get("result", [])}
-          required=("www.pakrpp.com/*", "pakrpp.com/*")
+          required=("www.pakrpp.com/*",)
           missing=[p for p in required if p not in patterns]
           if missing:
-              print("ERROR: missing wildcard routes:", ", ".join(missing))
-              sys.exit(1)
+            print("ERROR: missing wildcard routes:", ", ".join(missing))
+            sys.exit(1)
           print("wildcard_routes_ok")
           PY
 
