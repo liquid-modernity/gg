@@ -2,11 +2,15 @@
 set -euo pipefail
 
 base="https://www.pakrpp.com"
-sw_url="${base}/sw.js?x=1"
+SW_JS_URL="${base}/sw.js?x=1"
 
-REL="$(curl -sL "${sw_url}" | sed -n 's/.*const VERSION = "\([^"]\+\)";.*/\1/p' | head -n1)"
+REL="$(curl -sL "$SW_JS_URL" \
+  | grep -oE 'const[[:space:]]+VERSION[[:space:]]*=[[:space:]]*"[^"]+"' \
+  | head -n 1 \
+  | sed -E 's/.*"([^"]+)".*/\1/')"
 if [[ -z "${REL}" ]]; then
-  echo "ERROR: failed to extract VERSION from ${sw_url}"
+  echo "ERROR: failed to extract VERSION from ${SW_JS_URL}"
+  curl -sL "$SW_JS_URL" | head -n 20
   exit 1
 fi
 
