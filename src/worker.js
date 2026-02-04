@@ -10,6 +10,20 @@ export default {
       return res;
     };
 
+    if (pathname === "/gg-flags.json") {
+      const raw = env && env.GG_SW_ENABLED ? String(env.GG_SW_ENABLED).trim().toLowerCase() : "";
+      const enabled = !(raw === "0" || raw === "false");
+      const body = JSON.stringify({
+        sw: { enabled },
+        release: WORKER_VERSION,
+        ts: Date.now(),
+      });
+      const r = new Response(body, { status: 200 });
+      r.headers.set("Content-Type", "application/json; charset=utf-8");
+      r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
+
     if (pathname === "/__gg_worker_ping") {
       const r = new Response("pong", { status: 200 });
       r.headers.set("Cache-Control", "no-store");
@@ -104,20 +118,6 @@ export default {
       headers.set("Cache-Control", "public, max-age=86400");
 
       const r = new Response(upstreamRes.body, { status: 200, headers });
-      return stamp(r);
-    }
-
-    if (pathname === "/gg-flags.json") {
-      const raw = env && env.GG_SW_ENABLED ? String(env.GG_SW_ENABLED).trim().toLowerCase() : "";
-      const enabled = !(raw === "0" || raw === "false");
-      const body = JSON.stringify({
-        sw: { enabled },
-        release: WORKER_VERSION,
-        ts: Date.now(),
-      });
-      const r = new Response(body, { status: 200 });
-      r.headers.set("Content-Type", "application/json; charset=utf-8");
-      r.headers.set("Cache-Control", "no-store");
       return stamp(r);
     }
 
