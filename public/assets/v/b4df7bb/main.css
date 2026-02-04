@@ -121,6 +121,8 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
+body[data-gg-surface="listing"] .hero-section{ display: none !important; }
+
 img{ max-width: 100%; display: block; }
 a{ color: inherit; text-decoration: none; }
 a:hover{ text-decoration: none; }

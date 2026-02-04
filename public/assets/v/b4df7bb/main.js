@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 FIX-005 strict query routing + anchor removal
+LAST_PATCH: 2026-02-04 FIX-007 surface state logic overhaul
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -71,6 +71,7 @@ T-007 (done) Surface precision + smart navigation (listing/page + smart back)
 FIX-003 (done) Navigation + route logic fixes (view=blog + breadcrumb route)
 FIX-004 (done) Edge-side surface rewrite for view=blog SSR
 FIX-005 (done) Strict query routing + anchor removal for blog view
+FIX-007 (done) Surface state logic overhaul (central update + gg-is-landing class)
 
 STYLE INVARIANTS:
 - No behavior changes in T-001/T-002.
@@ -87,6 +88,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-04 FIX-007: surface state logic overhaul (central update + gg-is-landing class).
 - 2026-02-03 FIX-005: strict query routing + remove blog anchor usage.
 - 2026-02-03 FIX-004: edge rewrite for view=blog surface.
 - 2026-02-03 FIX-003: view=blog surface + breadcrumb home blog route.
@@ -96,12 +98,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 F-007: add poster share module + worker proxy usage.
 - 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
 - 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
-- 2026-02-03 T-004: move config into gg-config JSON + hydrate GG.store.config.
-- 2026-02-03 F-005: route fetch + render swap + rehydrate BLOG_CMT_createIframe.
-- 2026-02-03 F-004: add GG.services.api for feed/json/html fetch + standardized errors.
-- 2026-02-03 F-003: add GG.core.meta updates for title/description/og title on route changes.
-- 2026-02-03 F-001: add GG.core.router with click interception, History API, scroll restore, fallback.
-- 2026-02-03 X-002: hook alignment for toast/dialog/overlay placeholders + UI selection updates.
 */
 (function(w){
   'use strict';
@@ -275,6 +271,9 @@ PATCHLOG (append newest first; keep last 10):
         if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
           try { GG.ui.layout.sync(doc, url); } catch (_) {}
         }
+        if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
+          try { GG.core.surface.update(url); } catch (_) {}
+        }
         if (GG.core && GG.core.meta && GG.core.meta.update) {
           var payload = {};
           if (meta.title) payload.title = meta.title;
@@ -301,6 +300,44 @@ PATCHLOG (append newest first; keep last 10):
     }
     return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };
   })();
+  GG.core.surface = GG.core.surface || {};
+  GG.core.surface.update = GG.core.surface.update || function(url){
+    var body = w.document && w.document.body;
+    if (!body) return '';
+    if (body.classList) body.classList.remove('gg-is-landing');
+    else body.className = body.className.replace(/\bgg-is-landing\b/g, '').trim();
+    var href = url || w.location.href;
+    var surface = 'post';
+    try {
+      var u = new URL(href, w.location.href);
+      var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+      if (path === '/' && (u.searchParams.get('view') || '').toLowerCase() === 'blog') {
+        surface = 'listing';
+      } else if (path === '/') {
+        surface = 'landing';
+      } else if (path.indexOf('/search') !== -1) {
+        surface = 'listing';
+      } else if (path.indexOf('/p/') !== -1) {
+        surface = 'page';
+      } else {
+        surface = 'post';
+      }
+    } catch (_) {}
+    body.setAttribute('data-gg-surface', surface);
+    if (surface === 'landing') {
+      if (body.classList) body.classList.add('gg-is-landing');
+      else if (!/\bgg-is-landing\b/.test(body.className)) body.className = (body.className + ' gg-is-landing').trim();
+    }
+    if (GG.ui && GG.ui.layout && typeof GG.ui.layout.applySurface === 'function') {
+      try { GG.ui.layout.applySurface(surface, null, href); } catch (_) {}
+    }
+    return surface;
+  };
+  GG.core.init = GG.core.init || function(){
+    if (GG.core._init) return;
+    GG.core._init = true;
+    if (GG.core.surface && GG.core.surface.update) GG.core.surface.update(w.location.href);
+  };
   var ENV = w.GG_ENV;
   if (!ENV) {
     try {
@@ -768,7 +805,12 @@ GG.view.applyRootState = GG.ui.applyRootState;
     return 'post';
   };
   router._applySurface = router._applySurface || function(url){
-    var surface = router._inferSurface(url);
+    var surface = '';
+    if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
+      surface = GG.core.surface.update(url);
+      if (surface) return surface;
+    }
+    surface = router._inferSurface(url);
     if (GG.ui && GG.ui.layout && typeof GG.ui.layout.setSurface === 'function') {
       GG.ui.layout.setSurface(surface);
     } else if (d.body) {
@@ -1577,6 +1619,7 @@ GG.actions.register('jump', function(ctx){
         }
       }
     } catch (_) {}
+    if (GG.core && GG.core.init) GG.core.init();
     services.pwa.init();
     if (GG.boot.onReady) {
       GG.boot.onReady(function(){
