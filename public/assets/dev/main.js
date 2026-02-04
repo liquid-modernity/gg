@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-04 FIX-007 surface state logic overhaul
+LAST_PATCH: 2026-02-04 FIX-008 canonicalize blog home to /blog
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -88,6 +88,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-04 FIX-008: canonicalize blog home to /blog + normalize view=blog alias.
 - 2026-02-04 FIX-007: surface state logic overhaul (central update + gg-is-landing class).
 - 2026-02-03 FIX-005: strict query routing + remove blog anchor usage.
 - 2026-02-03 FIX-004: edge rewrite for view=blog surface.
@@ -97,7 +98,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
 - 2026-02-03 F-007: add poster share module + worker proxy usage.
 - 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
-- 2026-02-03 F-002: add super search (Fuse.js + IDB) with command palette.
 */
 (function(w){
   'use strict';
@@ -109,6 +109,21 @@ PATCHLOG (append newest first; keep last 10):
   GG.ui = GG.ui || {};
   GG.actions = GG.actions || {};
   GG.boot = GG.boot || {};
+  // Normalize legacy /?view=blog alias to /blog before routing decisions.
+  (function(){
+    try {
+      var loc = w.location;
+      if (!loc || loc.pathname !== '/') return;
+      var params = new URLSearchParams(loc.search || '');
+      if ((params.get('view') || '').toLowerCase() !== 'blog') return;
+      var dest = '/blog';
+      if (params.get('m') === '1') dest += '?m=1';
+      if (loc.hash) dest += loc.hash;
+      if (w.history && w.history.replaceState) {
+        w.history.replaceState(w.history.state || {}, '', dest);
+      }
+    } catch (_) {}
+  })();
   GG.core.state = GG.core.state || (function(){
     function stateList(el){
       if (!el || !el.getAttribute) return [];
@@ -311,7 +326,10 @@ PATCHLOG (append newest first; keep last 10):
     try {
       var u = new URL(href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/' && (u.searchParams.get('view') || '').toLowerCase() === 'blog') {
+      var view = (u.searchParams.get('view') || '').toLowerCase();
+      if (path === '/blog') {
+        surface = 'listing';
+      } else if (path === '/' && view === 'blog') {
         surface = 'listing';
       } else if (path === '/') {
         surface = 'landing';
@@ -361,8 +379,12 @@ PATCHLOG (append newest first; keep last 10):
       var pre = 'landing';
       var search = (w.location && w.location.search) ? w.location.search : '';
       var m = search.match(/[?&]prehome=(blog|landing)(?:&|$)/i);
+      var view = '';
+      try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
       if (m && m[1]) {
         pre = (m[1] + '').toLowerCase();
+      } else if (view === 'blog' || view === 'landing') {
+        pre = view;
       } else {
         var hash = (w.location && w.location.hash ? w.location.hash : '').replace(/^#/, '').toLowerCase();
         if (hash === 'blog' || hash === 'landing') {
@@ -609,6 +631,7 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+      if (path === '/blog') return 'listing';
       if (path === '/') {
         var view = (u.searchParams.get('view') || '').toLowerCase();
         if (view === 'blog') return 'listing';
@@ -2102,13 +2125,13 @@ GG.actions.register('jump', function(ctx){
         }
       }
       if (blogLink) {
-        blogLink.setAttribute('href', '/?view=blog');
+        blogLink.setAttribute('href', '/blog');
         if (!blogLink.__ggBlogBound) {
           blogLink.__ggBlogBound = true;
           blogLink.addEventListener('click', function(e){
             if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
               e.preventDefault();
-              GG.core.router.go('/?view=blog');
+              GG.core.router.go('/blog');
             }
           });
         }
@@ -2460,9 +2483,16 @@ GG.util.homeRouter = GG.util.homeRouter || (function(){
     var hasBlog = !!main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
     return hasLanding && hasBlog;
   }
-  function desiredHomeStateFromPath(pathname){
+  function desiredHomeStateFromPath(pathname, search){
     var path = stripBase(pathname || location.pathname || '/');
-    if (path === '/' || path === '') return 'landing';
+    var query = (typeof search === 'string') ? search : (location.search || '');
+    var view = '';
+    try { view = (new URLSearchParams(query).get('view') || '').toLowerCase(); } catch (_) {}
+    if (path === '/' || path === '') {
+      if (view === 'blog') return 'blog';
+      if (view === 'landing') return 'landing';
+      return 'landing';
+    }
     if (/^\/blog\/?$/.test(path)) return 'blog';
     return null;
   }
@@ -2584,7 +2614,7 @@ function init(mainEl) {
 
   var desired = null;
   if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateFromPath === 'function') {
-    desired = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname);
+    desired = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname, location.search);
   }
   var attr = root.getAttribute('data-gg-home-state');
   var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : 'landing';
@@ -2605,7 +2635,7 @@ function init(mainEl) {
     window.addEventListener('popstate', function(){
       var next = null;
       if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateFromPath === 'function') {
-        next = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname);
+        next = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname, location.search);
       }
       if (!next || !root) return;
       var cur = root.getAttribute('data-gg-home-state') || 'landing';
@@ -2750,9 +2780,9 @@ GG.modules.Dock = (function () {
     if (action === 'home-blog') {
       evt.preventDefault();
       if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
-        GG.core.router.go('/?view=blog');
+        GG.core.router.go('/blog');
       } else {
-        window.location.href = '/?view=blog';
+        window.location.href = '/blog';
       }
       return;
     }
@@ -6236,6 +6266,7 @@ function isSystemPath(pathname){
     var u = new URL(urlStr, location.origin);
     if (isSystemPath(u.pathname)) return null;
 
+    var view = (u.searchParams.get('view') || '').toLowerCase();
     var keep = new URLSearchParams();
     var q = u.searchParams.get('q');
     var umin = u.searchParams.get('updated-min');
@@ -6253,6 +6284,12 @@ function isSystemPath(pathname){
     if(landingPath === '') landingPath = '/';
     var blogPath = homeBlogPath().replace(/\/$/,'');
 
+    if(path === landingPath && view === 'blog'){
+      return blogPath + u.search;
+    }
+    if(path === landingPath && view === 'landing'){
+      return landingPath + u.search;
+    }
     if(path === landingPath && u.hash === HOME_ANCHOR){
       return blogPath + u.search;
     }
