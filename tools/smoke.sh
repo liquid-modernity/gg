@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 "${ROOT}/tools/verify-worker.sh"
+"${ROOT}/tools/check-links.sh"
 
 base="https://www.pakrpp.com"
 sw_url="${base}/sw.js?x=1"

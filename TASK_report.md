@@ -1,18 +1,19 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: FIX-007
+Task ID: FIX-009
 Status: DONE
 
 Changes:
-- Added centralized surface state updater to sync `data-gg-surface` and `gg-is-landing`.
-- Wired surface updates to init and post-render routing flow.
-- Added safety CSS rule to hide hero section on listing surface.
+- Normalized footer links in `index.dev.xml` and `index.prod.xml` to use `https://www.pakrpp.com`, plus `target="_blank"` and `rel="noopener noreferrer"` for external anchors.
+- Added `tools/check-links.sh` linter and wired it into `tools/smoke.sh`.
 
 ## TASK PROOF
-- `/?view=blog` now removes `gg-is-landing` and sets `data-gg-surface="listing"` after navigation.
+- `tools/check-links.sh` passes and `tools/smoke.sh` now includes link hygiene validation.
 
 ## FILES TOUCHED
-- public/assets/dev/main.js
-- public/assets/dev/main.css
+- index.dev.xml
+- index.prod.xml
+- tools/check-links.sh
+- tools/smoke.sh
 - TASK_report.md
