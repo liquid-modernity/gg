@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-03 FIX-003 navigation + route logic
+LAST_PATCH: 2026-02-03 FIX-004 edge-side surface rewriting
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -69,6 +69,7 @@ T-005 (done) UI/UX re-integration after SPA render (layout + smart components)
 T-006 (done) Surface logic + context refinement (SSR body surface + client updates)
 T-007 (done) Surface precision + smart navigation (listing/page + smart back)
 FIX-003 (done) Navigation + route logic fixes (view=blog + breadcrumb route)
+FIX-004 (done) Edge-side surface rewrite for view=blog SSR
 
 STYLE INVARIANTS:
 - No behavior changes in T-001/T-002.
@@ -85,6 +86,7 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-03 FIX-004: edge rewrite for view=blog surface.
 - 2026-02-03 FIX-003: view=blog surface + breadcrumb home blog route.
 - 2026-02-03 T-007: refine surface precision + smart back navigation.
 - 2026-02-03 T-006: surface awareness + contextual right panel handling.

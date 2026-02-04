@@ -115,8 +115,32 @@ export default {
       pathname === "/manifest.webmanifest" ||
       pathname === "/offline.html";
 
-    // Worker ini bukan reverse proxy Blogger
+    // Edge-side surface rewrite for /?view=blog (SSR) when routed.
     if (!shouldTryAssets) {
+      if (url.searchParams.get("view") === "blog") {
+        let originRes;
+        try {
+          originRes = await fetch(request);
+        } catch (e) {
+          return stamp(new Response("Upstream fetch failed", { status: 502 }));
+        }
+
+        const contentType = originRes.headers.get("content-type") || "";
+        if (contentType.indexOf("text/html") !== -1) {
+          const rewritten = new HTMLRewriter()
+            .on("body", {
+              element(el) {
+                el.setAttribute("data-gg-surface", "listing");
+              },
+            })
+            .transform(originRes);
+          return stamp(rewritten);
+        }
+
+        return stamp(originRes);
+      }
+
+      // Worker ini bukan reverse proxy Blogger
       return stamp(new Response("Not found", { status: 404 }));
     }
 

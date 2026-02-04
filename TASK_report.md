@@ -1,17 +1,17 @@
 # TASK_report.md
 
 ## TASK SUMMARY
-Task ID: FIX-003
+Task ID: FIX-004
 Status: DONE
 
 Changes:
-- Added `view=blog` handling to surface detection for correct listing state.
-- Updated breadcrumb home/blog links to use `/?view=blog`.
-- Ensured Smart Back routes external users to `/` without `/blog`.
+- Added edge HTML rewrite for `/?view=blog` to force `data-gg-surface="listing"`.
+- Passed through origin HTML while preserving non-HTML responses.
 
 ## TASK PROOF
-- Breadcrumb navigation now uses the virtual Home Blog route and SPA surface updates match it.
+- Full reload on `/?view=blog` now rewrites body surface at the edge.
 
 ## FILES TOUCHED
+- src/worker.js
 - public/assets/dev/main.js
 - TASK_report.md
