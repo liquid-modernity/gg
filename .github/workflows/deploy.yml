@@ -75,6 +75,47 @@ jobs:
             exit 1
           fi
 
+      - name: Route audit (zone workers/routes)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          echo "Fetch zone id for pakrpp.com"
+          ZONE_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones?name=pakrpp.com")"
+          echo "$ZONE_JSON" | head -c 800
+          ZONE_ID="$(printf "%s" "$ZONE_JSON" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p' | head -n 1)"
+          if [ -z "$ZONE_ID" ]; then
+            echo "ERROR: could not parse zone_id (token lacks Zone:Read or zone not found)"
+            exit 1
+          fi
+          echo "ZONE_ID=$ZONE_ID"
+
+          echo "Fetch workers/routes"
+          ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes")"
+          echo "$ROUTES_JSON" | head -c 2000
+
+          echo "Extract patterns => script"
+          printf "%s" "$ROUTES_JSON" | python3 - <<'PY'
+          import sys, json
+          data=json.load(sys.stdin)
+          print("success:", data.get("success"))
+          for r in data.get("result", []):
+              print(r.get("pattern"), "=>", r.get("script"))
+          PY
+
+          echo "Assert wildcard routes exist"
+          printf "%s" "$ROUTES_JSON" | python3 - <<'PY'
+          import sys, json
+          data=json.load(sys.stdin)
+          patterns={r.get("pattern") for r in data.get("result", [])}
+          required=("www.pakrpp.com/*", "pakrpp.com/*")
+          missing=[p for p in required if p not in patterns]
+          if missing:
+              print("ERROR: missing wildcard routes:", ", ".join(missing))
+              sys.exit(1)
+          print("wildcard_routes_ok")
+          PY
+
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
