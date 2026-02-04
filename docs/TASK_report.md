@@ -1,18 +1,16 @@
-# TASK_report.md
+TASK_SUMMARY
+- Added a CI workflow that runs link checks and XML well-formedness validation without any Cloudflare secrets.
+- Restricted Deploy workflow to `workflow_dispatch` only and kept RUN_SMOKE opt-in.
 
-## TASK SUMMARY
-Task ID: PIPE-001
-Status: DONE
+FILES_CHANGED
+- .github/workflows/ci.yml
+- .github/workflows/deploy.yml
+- docs/TASK_report.md
 
-Changes:
-- Made `./scripts/gg verify` local-only by removing production smoke calls.
-- Added `verify:prod` and `autodeploy` flows to run prod checks and deploy in order.
-- Decoupled `tools/smoke.sh` from `verify-worker` to avoid duplication.
+VERIFICATION
+- Not run (workflow changes only).
+- Expected: CI green on PRs without Cloudflare secrets; Deploy is manual with optional smoke test.
 
-## TASK PROOF
-- Local verify no longer hits production; prod checks are explicit via `verify:prod`.
-
-## FILES TOUCHED
-- tools/scripts:gg
-- tools/smoke.sh
-- TASK_report.md
+RISKS / ROLLBACK
+- Risk: Naive XML validator may reject malformed XML differently than `xmllint`.
+- Rollback: revert `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`, and `docs/TASK_report.md`.

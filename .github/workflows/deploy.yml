@@ -1,9 +1,12 @@
 name: Deploy to Cloudflare Workers
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
+    inputs:
+      RUN_SMOKE:
+        description: "Run post-deploy smoke test"
+        required: false
+        default: "false"
 
 concurrency:
   group: workers-${{ github.ref }}
@@ -78,32 +81,32 @@ jobs:
       - name: Route audit (zone workers/routes)
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
           set -e
-          echo "Fetch zone id for pakrpp.com"
-          ZONE_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones?name=pakrpp.com")"
-          echo "$ZONE_JSON" | head -c 800
-          ZONE_ID=$(python3 - <<'PY'
-          import json,sys
-          data=json.load(sys.stdin)
-          print(data["result"][0]["id"] if data.get("result") else "")
-          PY
-          <<<"$ZONE_JSON")
-          if [ -z "$ZONE_ID" ]; then
-            echo "ERROR: could not parse zone_id (token lacks Zone:Read or zone not found)"
+          if [ -z "${CF_ZONE_ID}" ]; then
+            echo "ERROR: CLOUDFLARE_ZONE_ID secret is missing or empty"
             exit 1
           fi
-          echo "ZONE_ID=$ZONE_ID"
+          echo "ZONE_ID=${CF_ZONE_ID}"
 
           echo "Fetch workers/routes"
-          ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes")"
+          ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes")"
           echo "$ROUTES_JSON" | head -c 2000
           python3 - <<'PY'
           import json,sys
           txt=sys.stdin.read().strip()
-          data=json.loads(txt) if txt else {}
+          if not txt:
+            print("ERROR: workers/routes empty response")
+            sys.exit(1)
+          try:
+            data=json.loads(txt)
+          except Exception as e:
+            print("ERROR: workers/routes invalid JSON:", e)
+            sys.exit(1)
           if not data.get("success"):
             print("ERROR: workers/routes failed:", data.get("errors"))
+            print("HINT: ensure token has Zone:Workers Routes:Read permissions")
             sys.exit(1)
           print("routes_ok")
           PY
@@ -140,6 +143,7 @@ jobs:
           command: deploy --config wrangler.jsonc
 
       - name: Post-deploy smoke test
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.RUN_SMOKE == 'true' }}
         run: |
           set -e
           check_status() {

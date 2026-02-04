@@ -8,6 +8,12 @@ You are Codex running inside this repository.
 - Run verification commands before committing.
 - Do not push if verification fails, if secrets are detected, or if branch/remote is unexpected.
 
+## Owner Context
+- Secrets available (GitHub Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID`.
+- Infra goals: "Saya mau GitHub Actions harus hijau".
+- Infra goals: "Saya mau deploy Cloudflare".
+- Infra goals: "Saya mau preview hasil style/JS".
+
 ## Default workflow for keyword "GG_RUN"
 1) Read @GG_CAPSULE_V1 in main.js and identify NEXT_TASK.
 2) Implement ONLY that task.
