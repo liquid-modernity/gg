@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link href='/assets/v/3386f40/main.css?v=20260203160035' rel='stylesheet'/>
+    <link href='/assets/v/5354c54/main.css?v=20260203160035' rel='stylesheet'/>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -2786,7 +2786,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </template>
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/3386f40/main.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/5354c54/main.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>
