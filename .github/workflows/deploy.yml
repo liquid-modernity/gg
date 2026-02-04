@@ -2,8 +2,12 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [main]
+    branches: ["main", "gg/**"]
   workflow_dispatch:
+
+concurrency:
+  group: workers-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -34,6 +38,19 @@ jobs:
             echo "ERROR: public/_headers missing"
             exit 1
           fi
+          rel="$(grep -oE '/assets/v/[A-Za-z0-9._-]+' index.prod.xml | head -n 1 | sed -E 's#/assets/v/##')"
+          if [ -z "${rel}" ]; then
+            echo "ERROR: release id not found in index.prod.xml"
+            exit 1
+          fi
+          if [ ! -f "public/assets/v/${rel}/main.css" ]; then
+            echo "ERROR: public/assets/v/${rel}/main.css missing"
+            exit 1
+          fi
+          if [ ! -f "public/assets/v/${rel}/main.js" ]; then
+            echo "ERROR: public/assets/v/${rel}/main.js missing"
+            exit 1
+          fi
           echo "ls -la public | head"
           ls -la public | head
           echo "public/_headers (first 120 lines)"
@@ -44,60 +61,19 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Validate Cloudflare account and zone ownership
+      - name: Verify Cloudflare token
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python3 - <<'PY'
-          import os, json, sys, urllib.request, urllib.parse
-
-          token = os.environ["CF_TOKEN"]
-          expected_account_id = os.environ["CF_ACCOUNT_ID"]
-
-          def cf_get(url):
-              req = urllib.request.Request(
-                  url,
-                  headers={"Authorization": f"Bearer {token}"}
-              )
-              with urllib.request.urlopen(req) as resp:
-                  return json.loads(resp.read().decode())
-
-          # 1) accountId must be visible to token
-          accounts = cf_get("https://api.cloudflare.com/client/v4/accounts")
-          if not accounts.get("success"):
-              print("accounts_errors:", accounts.get("errors"))
-              sys.exit(1)
-
-          account_ids = [a.get("id") for a in accounts.get("result", [])]
-          if expected_account_id not in account_ids:
-              print("provided_account_id_secret:", expected_account_id)
-              print("visible_account_ids:", account_ids)
-              print("ERROR: CLOUDFLARE_ACCOUNT_ID is not visible to this token")
-              sys.exit(1)
-
-          # 2) zone pakrpp.com must exist and be owned by that accountId
-          zones_url = "https://api.cloudflare.com/client/v4/zones?name=" + urllib.parse.quote("pakrpp.com")
-          zones = cf_get(zones_url)
-          if not zones.get("success"):
-              print("zones_errors:", zones.get("errors"))
-              sys.exit(1)
-
-          results = zones.get("result", [])
-          if not results:
-              print("ERROR: zone pakrpp.com not found for this token")
-              sys.exit(1)
-
-          zone_account_id = results[0].get("account", {}).get("id")
-          print("expected_account_id_from_zone:", zone_account_id)
-          print("provided_account_id_secret:", expected_account_id)
-
-          if zone_account_id != expected_account_id:
-              print("ERROR: CLOUDFLARE_ACCOUNT_ID does not own zone pakrpp.com")
-              sys.exit(1)
-
-          print("validation_ok")
-          PY
+          set -e
+          resp="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/tokens/verify")"
+          echo "${resp}" | head -c 2000
+          if ! echo "${resp}" | grep -q '"success":[[:space:]]*true'; then
+            echo "ERROR: token verify failed"
+            exit 1
+          fi
 
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
@@ -107,36 +83,57 @@ jobs:
           wranglerVersion: "4.61.1"
           command: deploy --config wrangler.jsonc
 
-      - name: Post-deploy smoke test (sw.js + manifest + offline)
+      - name: Post-deploy smoke test
         run: |
           set -e
-          urls=(
-            "https://www.pakrpp.com/sw.js"
-            "https://www.pakrpp.com/manifest.webmanifest"
-            "https://www.pakrpp.com/offline.html"
-          )
-
-          for url in "${urls[@]}"; do
-            echo "==> ${url}"
+          check_status() {
+            local url="$1"
+            local label="$2"
+            local headers status_line
             headers="$(curl -sSI "${url}")"
             status_line="$(printf "%s" "${headers}" | head -n 1)"
+            echo "==> ${label}"
             echo "${status_line}"
             if ! echo "${status_line}" | grep -q " 200"; then
-              echo "ERROR: non-200 response"
+              echo "ERROR: ${label} non-200 response"
               exit 1
             fi
-            x_assets="$(printf "%s" "${headers}" | grep -i '^x-gg-assets:' || true)"
-            if [ -z "${x_assets}" ]; then
-              echo "ERROR: missing x-gg-assets header"
-              exit 1
-            fi
-            echo "${x_assets}"
-          done
+            printf "%s" "${headers}"
+          }
 
-      - name: Verify token (Cloudflare endpoint)
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          curl -sS -H "Authorization: Bearer ${CF_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/tokens/verify" | head -c 2000
+          headers="$(check_status "https://www.pakrpp.com/__gg_worker_ping?x=1" "__gg_worker_ping")"
+          if ! echo "${headers}" | grep -qi '^x-gg-worker-version:'; then
+            echo "ERROR: missing x-gg-worker-version header"
+            exit 1
+          fi
+
+          headers="$(check_status "https://www.pakrpp.com/gg-flags.json?x=1" "gg-flags.json")"
+          if ! echo "${headers}" | grep -qi '^content-type:.*json'; then
+            echo "ERROR: gg-flags.json must be json content-type"
+            exit 1
+          fi
+          if ! echo "${headers}" | grep -qi '^cache-control:.*no-store'; then
+            echo "ERROR: gg-flags.json must be no-store"
+            exit 1
+          fi
+
+          headers="$(check_status "https://www.pakrpp.com/blog" "/blog")"
+          echo "${headers}" >/dev/null
+
+          headers="$(check_status "https://www.pakrpp.com/sw.js?x=1" "sw.js")"
+          if ! echo "${headers}" | grep -qi '^cache-control:.*no-store'; then
+            echo "ERROR: sw.js must be no-store"
+            exit 1
+          fi
+
+          headers="$(check_status "https://www.pakrpp.com/manifest.webmanifest" "manifest")"
+          if ! echo "${headers}" | grep -qi '^x-gg-worker:'; then
+            echo "ERROR: missing x-gg-worker header"
+            exit 1
+          fi
+
+          headers="$(check_status "https://www.pakrpp.com/offline.html" "offline")"
+          if ! echo "${headers}" | grep -qi '^x-gg-worker:'; then
+            echo "ERROR: missing x-gg-worker header"
+            exit 1
+          fi
