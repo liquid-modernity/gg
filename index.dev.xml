@@ -1628,7 +1628,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
       <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
 
       <!-- BLOG -->
-      <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;#gg-home-blog-anchor&quot;'>
+      <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;?view=blog&quot;'>
         <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
         <span class='gg-post__breadcrumbs-label'>Home</span>
       </a>
@@ -1658,7 +1658,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
       <!-- "Blog-system pages": slug diawali /p/blog- -->
      <b:if cond='data:post.url contains &quot;blog-&quot;'>
     <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-        <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;#gg-home-blog-anchor&quot;'>
+        <a class='gg-post__breadcrumbs-link' expr:href='data:blog.homepageUrl + &quot;?view=blog&quot;'>
           <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
           <span class='gg-post__breadcrumbs-label'>Home</span>
         </a>
@@ -2671,7 +2671,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
   </button>
 
   <!-- BLOG: muncul di semua mode -->
-  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' data-gg-anchor='#gg-home-blog-anchor' type='button'>
+  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
