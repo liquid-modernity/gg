@@ -1,6 +1,6 @@
 /* @GG_CAPSULE_V1
 VERSION: 2026-01-28
-LAST_PATCH: 2026-02-04 FIX-008 canonicalize blog home to /blog
+LAST_PATCH: 2026-02-04 FIX-012 worker-gated /blog + SW
 NEXT_TASK: QA-001 smoke test checklist (deferred)
 GOAL: single-file main.js (pure JS), modular MVC-lite (Store/Services/UI primitives) for Blogger theme + Cloudflare (mode B)
 
@@ -88,6 +88,8 @@ PROOF REQUIRED (T-001 completion gate):
 - T-001 is NOT DONE unless all counts are 0.
 
 PATCHLOG (append newest first; keep last 10):
+- 2026-02-04 FIX-012: gate /blog canonical + SW behind worker ping.
+- 2026-02-04 FIX-011: env-aware blog home routing for /blog vs view=blog.
 - 2026-02-04 FIX-008: canonicalize blog home to /blog + normalize view=blog alias.
 - 2026-02-04 FIX-007: surface state logic overhaul (central update + gg-is-landing class).
 - 2026-02-03 FIX-005: strict query routing + remove blog anchor usage.
@@ -96,8 +98,6 @@ PATCHLOG (append newest first; keep last 10):
 - 2026-02-03 T-007: refine surface precision + smart back navigation.
 - 2026-02-03 T-006: surface awareness + contextual right panel handling.
 - 2026-02-03 T-005: rehydrate layout + smart UI modules after SPA swaps.
-- 2026-02-03 F-007: add poster share module + worker proxy usage.
-- 2026-02-03 F-006: add skeleton UI + view transitions for router swaps.
 */
 (function(w){
   'use strict';
@@ -109,20 +109,65 @@ PATCHLOG (append newest first; keep last 10):
   GG.ui = GG.ui || {};
   GG.actions = GG.actions || {};
   GG.boot = GG.boot || {};
-  // Normalize legacy /?view=blog alias to /blog before routing decisions.
-  (function(){
+  GG.core.isProdHost = GG.core.isProdHost || function(hostname){
+    var host = (hostname || (w.location ? w.location.hostname : '') || '').toLowerCase();
+    return /(^|\.)pakrpp\.com$/.test(host);
+  };
+  GG.core.hasWorker = GG.core.hasWorker || function(){
+    return !!(GG.env && GG.env.worker === true);
+  };
+  GG.core.blogHomePath = GG.core.blogHomePath || function(basePath, hostname){
+    var base = (typeof basePath === 'string' && basePath) ? basePath : '/';
+    if (base.charAt(0) !== '/') base = '/' + base;
+    if (base.charAt(base.length - 1) !== '/') base += '/';
+    var useBlog = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
+    if (useBlog) {
+      return base.replace(/\/$/, '') + '/blog';
+    }
+    return base + '?view=blog';
+  };
+  GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, hostname){
+    var path = (pathname || '').replace(/\/+$/, '') || '/';
+    var view = '';
+    try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
+    var workerOk = GG.core.hasWorker && GG.core.hasWorker();
+    if (workerOk && path === '/blog') return true;
+    if (path === '/' && view === 'blog') return true;
+    return false;
+  };
+  // Normalize blog home alias once worker state is known.
+  GG.core.normalizeBlogAlias = GG.core.normalizeBlogAlias || function(){
     try {
       var loc = w.location;
-      if (!loc || loc.pathname !== '/') return;
+      if (!loc) return;
+      var env = (GG && GG.env) ? GG.env : (w.GG_ENV || {});
+      if (typeof env.worker !== 'boolean') return;
+      var workerOk = env.worker === true;
+      var isProd = GG.core && GG.core.isProdHost ? GG.core.isProdHost(loc.hostname) : false;
+      var path = (loc.pathname || '').replace(/\/+$/, '') || '/';
       var params = new URLSearchParams(loc.search || '');
-      if ((params.get('view') || '').toLowerCase() !== 'blog') return;
-      var dest = '/blog';
-      if (params.get('m') === '1') dest += '?m=1';
-      if (loc.hash) dest += loc.hash;
+      var view = (params.get('view') || '').toLowerCase();
+      if (workerOk && isProd) {
+        if (path !== '/' || view !== 'blog') return;
+        var dest = '/blog';
+        if (params.get('m') === '1') dest += '?m=1';
+        if (loc.hash) dest += loc.hash;
+        if (w.history && w.history.replaceState) {
+          w.history.replaceState(w.history.state || {}, '', dest);
+        }
+        return;
+      }
+      if (path !== '/blog') return;
+      params.set('view', 'blog');
+      var fallback = '/?' + params.toString();
+      if (loc.hash) fallback += loc.hash;
       if (w.history && w.history.replaceState) {
-        w.history.replaceState(w.history.state || {}, '', dest);
+        w.history.replaceState(w.history.state || {}, '', fallback);
       }
     } catch (_) {}
+  };
+  (function(){
+    try { if (GG.core && GG.core.normalizeBlogAlias) GG.core.normalizeBlogAlias(); } catch (_) {}
   })();
   GG.core.state = GG.core.state || (function(){
     function stateList(el){
@@ -327,9 +372,8 @@ PATCHLOG (append newest first; keep last 10):
       var u = new URL(href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
       var view = (u.searchParams.get('view') || '').toLowerCase();
-      if (path === '/blog') {
-        surface = 'listing';
-      } else if (path === '/' && view === 'blog') {
+      var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view === 'blog'));
+      if (isBlogHome) {
         surface = 'listing';
       } else if (path === '/') {
         surface = 'landing';
@@ -372,6 +416,45 @@ PATCHLOG (append newest first; keep last 10):
   var ASSET_BASE = ENV.assetBase || "";
   var IS_DEV = ENV.mode === "dev";
   GG.env = GG.env || ENV;
+  GG.core.ensureWorker = GG.core.ensureWorker || function(){
+    if (GG.core._workerPromise) return GG.core._workerPromise;
+    GG.core._workerPromise = new Promise(function(resolve){
+      var env = GG.env = GG.env || {};
+      if (typeof env.worker === 'boolean') { resolve(env.worker); return; }
+      if (!w.fetch) { env.worker = false; resolve(false); return; }
+      var done = false;
+      var timer = null;
+      var controller = w.AbortController ? new AbortController() : null;
+      function finish(ok){
+        if (done) return;
+        done = true;
+        if (timer) clearTimeout(timer);
+        env.worker = ok === true;
+        resolve(env.worker);
+      }
+      timer = setTimeout(function(){
+        try { if (controller) controller.abort(); } catch (e) {}
+        finish(false);
+      }, 1200);
+      try {
+        var opts = { method: 'GET', cache: 'no-store', credentials: 'same-origin' };
+        if (controller) opts.signal = controller.signal;
+        w.fetch('/__gg_worker_ping?x=1', opts)
+          .then(function(res){
+            var ver = res && res.headers ? res.headers.get('X-GG-Worker-Version') : '';
+            finish(!!ver);
+          })
+          .catch(function(){ finish(false); });
+      } catch (e) {
+        finish(false);
+      }
+    }).then(function(ok){
+      try { if (GG.core && GG.core.normalizeBlogAlias) GG.core.normalizeBlogAlias(); } catch (_) {}
+      return ok;
+    });
+    return GG.core._workerPromise;
+  };
+  if (GG.core && GG.core.ensureWorker) GG.core.ensureWorker();
   (function(){
     try {
       var root = w.document && w.document.documentElement;
@@ -391,7 +474,8 @@ PATCHLOG (append newest first; keep last 10):
           pre = hash;
         } else {
           var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
-          if (p === '/blog') pre = 'blog';
+          var isBlog = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(p, search, w.location ? w.location.hostname : '') : (p === '/blog');
+          if (isBlog) pre = 'blog';
         }
       }
       root.setAttribute('data-gg-prehome', pre);
@@ -631,10 +715,10 @@ GG.view.applyRootState = GG.ui.applyRootState;
     try {
       var u = new URL(url || w.location.href, w.location.href);
       var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-      if (path === '/blog') return 'listing';
+      var view = (u.searchParams.get('view') || '').toLowerCase();
+      var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view === 'blog'));
+      if (isBlogHome) return 'listing';
       if (path === '/') {
-        var view = (u.searchParams.get('view') || '').toLowerCase();
-        if (view === 'blog') return 'listing';
         return 'landing';
       }
       if (path.indexOf('/search') !== -1) return 'listing';
@@ -1451,6 +1535,8 @@ GG.actions.register('jump', function(ctx){
   services.sw = services.sw || {};
   services.sw.init = services.sw.init || function () {
     if (services.sw._init) return;
+    var env = (w.GG && GG.env) ? GG.env : {};
+    if (env.worker !== true) return;
     services.sw._init = true;
   
     if (!w.navigator || !("serviceWorker" in w.navigator)) return;
@@ -1597,6 +1683,13 @@ GG.actions.register('jump', function(ctx){
   services.pwa.init = services.pwa.init || function(){
     if (w.GG_IS_DEV) return;
     services.manifest.init();
+    if (GG.core && GG.core.ensureWorker) {
+      GG.core.ensureWorker().then(function(ok){
+        if (!ok) return;
+        services.sw.init();
+      });
+      return;
+    }
     services.sw.init();
   };
 
@@ -2125,13 +2218,14 @@ GG.actions.register('jump', function(ctx){
         }
       }
       if (blogLink) {
-        blogLink.setAttribute('href', '/blog');
+        var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
+        blogLink.setAttribute('href', blogHref);
         if (!blogLink.__ggBlogBound) {
           blogLink.__ggBlogBound = true;
           blogLink.addEventListener('click', function(e){
             if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
               e.preventDefault();
-              GG.core.router.go('/blog');
+              GG.core.router.go(blogHref);
             }
           });
         }
@@ -2493,7 +2587,7 @@ GG.util.homeRouter = GG.util.homeRouter || (function(){
       if (view === 'landing') return 'landing';
       return 'landing';
     }
-    if (/^\/blog\/?$/.test(path)) return 'blog';
+    if (GG.core && GG.core.isBlogHomePath && GG.core.isBlogHomePath(path, query, location.hostname)) return 'blog';
     return null;
   }
   function pushState(state, path){
@@ -2779,10 +2873,11 @@ GG.modules.Dock = (function () {
     // BLOG &#8594; blog sheet
     if (action === 'home-blog') {
       evt.preventDefault();
+      var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
       if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
-        GG.core.router.go('/blog');
+        GG.core.router.go(blogHref);
       } else {
-        window.location.href = '/blog';
+        window.location.href = blogHref;
       }
       return;
     }
@@ -6226,6 +6321,7 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
   }
 
   function homeBlogPath(){
+    if (GG.core && GG.core.blogHomePath) return GG.core.blogHomePath(homeRoot(), location.hostname);
     return homeRoot().replace(/\/$/,'') + HOME_BLOG_PATH;
   }
 
@@ -6282,19 +6378,29 @@ function isSystemPath(pathname){
     if(path === '') path = '/';
     var landingPath = homeRoot().replace(/\/$/,'');
     if(landingPath === '') landingPath = '/';
-    var blogPath = homeBlogPath().replace(/\/$/,'');
+    var isProdHost = (GG.core && GG.core.isProdHost) ? GG.core.isProdHost(u.hostname || location.hostname) : false;
+    var workerOk = (GG.core && GG.core.hasWorker) ? GG.core.hasWorker() : false;
+    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((workerOk && path === '/blog') || (path === '/' && view === 'blog'));
+    var blogKey = '';
+    if (isProdHost && workerOk) {
+      blogKey = homeRoot().replace(/\/$/,'') + '/blog' + u.search;
+    } else {
+      var blogParams = new URLSearchParams(u.search || '');
+      blogParams.set('view', 'blog');
+      blogKey = homeRoot() + '?' + blogParams.toString();
+    }
 
     if(path === landingPath && view === 'blog'){
-      return blogPath + u.search;
+      return blogKey;
     }
     if(path === landingPath && view === 'landing'){
       return landingPath + u.search;
     }
     if(path === landingPath && u.hash === HOME_ANCHOR){
-      return blogPath + u.search;
+      return blogKey;
     }
-    if(path === blogPath){
-      return blogPath + u.search;
+    if(isBlogHome){
+      return blogKey;
     }
     if(path === landingPath){
       return landingPath + u.search;
@@ -6366,11 +6472,7 @@ function isSystemPath(pathname){
 
     // update last_listing:
     if (group === 'listing') {
-      if (location.pathname === '/' || location.pathname === '/blog' || location.pathname === '/blog/') {
-        sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
-      } else {
-        sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
-      }
+      sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
     } else {
       if (!sessionStorage.getItem('gg_last_listing')) {
         sessionStorage.setItem('gg_last_listing', canonicalKey(homeLanding()));
@@ -10249,75 +10351,6 @@ function openPosterSheet(meta, mode) {
   GG.modules.a11yFix.run = GG.modules.a11yFix.run || function(){ run(); };
   GG.a11y.run = GG.a11y.run || function(){ try{ run(); }catch(e){} };
 })();
-
-(function(){
-  var src = window.GG_ASSET ? window.GG_ASSET('/assets/main.js') : 'https://www.pakrpp.com/assets/main.js';
-  function load(){
-    if(window.__ggMainLoaded) return;
-    window.__ggMainLoaded=true;
-    var s=document.createElement('script');
-    s.src=src;
-    s.defer=true;
-    s.crossOrigin='anonymous';
-    document.head.appendChild(s);
-  }
-  if('requestIdleCallback' in window){
-    requestIdleCallback(load,{timeout:2500});
-  }else{
-    setTimeout(load,2500);
-  }
-  ['pointerdown','keydown','touchstart','mousedown'].forEach(function(ev){
-    window.addEventListener(ev, load, {once:true, passive:true});
-  });
-})();
-
-
-
-
-(function(){
-  var GG = window.GG = window.GG || {};
-  GG.state = GG.state || {};
-  GG.boot = GG.boot || {};
-
-  var SRC = window.GG_ASSET ? window.GG_ASSET('/assets/main.js') : 'https://www.pakrpp.com/assets/main.js';
-
-  function loadMain(){
-    if(GG.state.mainLoaded) return;
-    GG.state.mainLoaded = true;
-
-    var s = document.createElement('script');
-    s.src = SRC;
-    s.defer = true;
-    s.crossOrigin = 'anonymous';
-    document.head.appendChild(s);
-  }
-
-  GG.boot.loadMain = loadMain;
-
-  function once(fn){
-    var called = false;
-    return function(){
-      if(called) return;
-      called = true;
-      try{ fn(); }catch(e){}
-    };
-  }
-
-  // Idle preload (non-blocking)
-  if('requestIdleCallback' in window){
-    requestIdleCallback(loadMain, {timeout: 2500});
-  } else {
-    setTimeout(loadMain, 2500);
-  }
-
-  // Fast path on first user intent
-  var trigger = once(loadMain);
-  ['pointerdown','keydown','touchstart','scroll'].forEach(function(ev){
-    window.addEventListener(ev, trigger, {passive:true, once:true});
-  });
-})();
-
-
 
 (function(){
   var GG = window.GG = window.GG || {};

@@ -49,9 +49,11 @@ fi
 
 headers_url="${base}/_headers?x=1"
 echo "==> ${headers_url}"
-status_line="$(curl -sSI "${headers_url}" | head -n 1)"
+headers_resp="$(curl -sSI "${headers_url}" | tr -d '\r')"
+status_line="$(echo "${headers_resp}" | head -n 1)"
 echo "${status_line}"
 if echo "${status_line}" | grep -q " 200"; then
   echo "ERROR: /_headers should not be publicly served"
+  echo "${headers_resp}" | grep -i -E '^(x-gg-worker|x-gg-worker-version|content-type|cache-control|server):' || true
   exit 1
 fi

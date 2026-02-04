@@ -1,5 +1,5 @@
 /* public/sw.js — deterministic updates + offline fallback */
-const VERSION = "8f3d67c";
+const VERSION = "152a929";
 const CACHE_STATIC = `gg-static-${VERSION}`;
 const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 
@@ -132,9 +132,22 @@ async function staleWhileRevalidate(req, cacheName, url) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    if (await hasDebugClient()) console.log("[gg-sw]", "install");
+    const debug = await hasDebugClient();
+    if (debug) console.log("[gg-sw]", "install");
     const cache = await caches.open(CACHE_STATIC);
-    await cache.addAll(PRECACHE_URLS);
+    for (const url of PRECACHE_URLS) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`http ${res.status}`);
+        await cache.put(url, res.clone());
+      } catch (e) {
+        if (url === OFFLINE_URL) {
+          if (debug) console.log("[gg-sw]", "install failed: OFFLINE_URL missing", url, String(e));
+          throw e;
+        }
+        if (debug) console.log("[gg-sw]", "install skip", url, String(e));
+      }
+    }
   })());
 });
 

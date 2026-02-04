@@ -3,13 +3,24 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "8f3d67c";
+    const WORKER_VERSION = "152a929";
     const stamp = (res) => {
       const out = new Response(res.body, res);
       out.headers.set("X-GG-Worker", "proxy");
       out.headers.set("X-GG-Worker-Version", WORKER_VERSION);
       return out;
     };
+
+    if (
+      pathname === "/_headers" ||
+      pathname === "/_redirects" ||
+      pathname === "/wrangler.toml" ||
+      pathname === "/wrangler.jsonc"
+    ) {
+      const r = new Response("Not Found", { status: 404 });
+      r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
 
     if (pathname === "/__gg_worker_ping") {
       const r = new Response("pong", { status: 200 });

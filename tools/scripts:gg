@@ -22,6 +22,7 @@ repo_root(){
 
 main_js_path(){
   local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
   if [[ -f "$root/main.js" ]]; then
     echo "$root/main.js"
     return 0
@@ -35,6 +36,7 @@ main_js_path(){
 
 main_css_path(){
   local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
   if [[ -f "$root/main.css" ]]; then
     echo "$root/main.css"
     return 0
@@ -48,6 +50,7 @@ main_css_path(){
 
 task_report_path(){
   local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
   if [[ -f "$root/TASK_report.md" ]]; then
     echo "$root/TASK_report.md"
     return 0
@@ -72,6 +75,7 @@ asset_ver_from_xml(){
 
 bump_asset_versions(){
   local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
   local dev="$root/index.dev.xml"
   local prod="$root/index.prod.xml"
   local cur cur2
@@ -290,6 +294,7 @@ size_scan_staged(){
 
 verify_basics(){
   local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
   local mainjs maincss
   mainjs="$(main_js_path || true)"
   maincss="$(main_css_path || true)"
@@ -314,17 +319,59 @@ verify_repo(){
   need_git
   ensure_remote_safe
 
+  local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
+
   echo "GG_VERIFY: running checks..."
   verify_basics
 
   # Optional: npm lint/test if present
-  local root; root="$(repo_root)"
   if [[ -f "$root/package.json" ]]; then
     if npm run | grep -q "lint"; then npm run -s lint; fi
     if npm run | grep -q "test"; then npm run -s test; fi
   fi
 
   echo "GG_VERIFY: PASSED"
+}
+
+verify_prod(){
+  need_git
+  ensure_remote_safe
+
+  local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
+
+  echo "GG_VERIFY_PROD: running checks..."
+  if [[ -x "$root/tools/verify-worker.sh" ]]; then
+    "$root/tools/verify-worker.sh"
+  else
+    die "tools/verify-worker.sh not found or not executable."
+  fi
+  if [[ -x "$root/tools/smoke.sh" ]]; then
+    "$root/tools/smoke.sh"
+  else
+    die "tools/smoke.sh not found or not executable."
+  fi
+  echo "GG_VERIFY_PROD: PASSED"
+}
+
+autodeploy_repo(){
+  need_git
+  ensure_remote_safe
+
+  local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
+
+  verify_repo
+
+  if [[ -f "$root/package.json" ]]; then
+    npm run -s deploy
+  else
+    die "package.json missing; cannot run deploy"
+  fi
+
+  verify_prod
+  ship_repo
 }
 
 ship_repo(){
@@ -376,9 +423,18 @@ case "$CMD" in
   verify)
     verify_repo
     ;;
+  verify:prod)
+    verify_prod
+    ;;
+  prod-verify)
+    verify_prod
+    ;;
   ship)
     verify_repo
     ship_repo
+    ;;
+  autodeploy)
+    autodeploy_repo
     ;;
   auto)
     # convenience: make branch (if needed) -> verify -> ship
@@ -395,7 +451,9 @@ case "$CMD" in
     echo "  ./scripts/gg bump        # bump GG_ASSET_VER + ?v= in index.dev.xml/index.prod.xml"
     echo "  ./scripts/gg branch      # ensure you're on a safe feature branch"
     echo "  ./scripts/gg verify      # run baseline checks"
+    echo "  ./scripts/gg verify:prod # run production checks (verify-worker + smoke)"
     echo "  ./scripts/gg ship        # verify + commit + push (refuses on main/dev)"
+    echo "  ./scripts/gg autodeploy  # local verify -> deploy -> prod verify -> ship"
     echo "  ./scripts/gg auto        # branch + verify + ship"
     exit 2
     ;;

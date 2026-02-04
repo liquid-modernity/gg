@@ -1,41 +1,44 @@
-# GG Repo Failure Audit Report
-
 ## 1. Executive Summary (max 10 bullets)
-- `/blog` is treated as the canonical blog home in JS/UI, but it only works when the Cloudflare Worker rewrites it to `/?view=blog`. Without the Worker, `/blog` is passed to origin unchanged and navigation can fail.
-- The footer contains dozens of protocol-less or malformed links (`href='www.pakrpp.com'`, `href='www.pakrpp.com#'`, `href='#www.pakrpp.com'`), which resolve to wrong in-site paths or no-op hashes instead of the intended external site.
-- PWA install/offline depends on Worker-served assets (`/sw.js`, `/manifest.webmanifest`, `/offline.html`, `/gg-pwa-icon/*`). If the Worker is bypassed or missing, the SW precache fails and offline features do not work.
-- `main.js` schedules a lazy-load of `/assets/main.js`, but the deployed entrypoint is `/assets/v/<release>/main.js`; the lazy-load requests a different path and results in a failed fetch if `/assets/main.js` is not separately deployed.
+- `/blog` canonicalization is now gated by the Worker ping; when the ping fails or lacks `x-gg-worker-version`, JS keeps `/?view=blog` and avoids forcing `/blog`. (public/assets/v/8f3d67c/main.js; src/worker.js:160-165)
+- If the Worker is deployed without the `ASSETS` binding, all static asset endpoints (including `/sw.js`, `/manifest.webmanifest`, `/offline.html`) return 502 from the Worker. (src/worker.js:193-202)
+- Service Worker registration is gated by the Worker ping; non-Worker hosts keep SW off and skip `/gg-flags.json`. (public/assets/v/8f3d67c/main.js; index.dev.xml:16-17; index.prod.xml:16-17)
+- Canonical host enforcement (www vs apex) is not handled in this repo; both apex and www are routed to the Worker and the Worker has no host-redirect logic. **Underspecified** because Cloudflare redirect rules live outside the repo. (wrangler.jsonc:16-27; src/worker.js:4-55)
+- Mobile mode (`?m=1`) is dropped when navigating to blog home via dock or breadcrumbs because `blogHomePath()` omits `m=1` and those links use it directly. (public/assets/v/8f3d67c/main.js:116-123, 2164-2172, 2816-2824)
+- The prefetch module writes HTML to `CacheStorage` (`gg-pages-v2`), but neither the router nor the Service Worker reads it, so prefetch provides no navigation/offline benefit. (public/assets/v/8f3d67c/main.js:10335-10405, 1669-1707; public/sw.js:176-221)
 
 ## 2. Failure Matrix
 
 | Area | File | Lines | What breaks | Why (root cause) | Failure condition(s) | Severity |
 |---|---|---:|---|---|---|---|
-| Routing & Navigation | public/assets/v/8f3d67c/main.js; index.prod.xml; src/worker.js | 112-124, 2779-2785; 1640-1671; 149-153 | Expected `/blog` to render the blog listing; actual behavior is a Worker-dependent rewrite (`/blog` → `/?view=blog`) and no fallback if the rewrite is absent. | UI hardcodes `/blog`, but only the Worker rewrites `/blog` to `/?view=blog`. No non-Worker fallback exists. | Worker inactive/bypassed (preview, origin/blogspot, CF route missing) or no real `/blog` page on origin. | 🔴 |
-| Static HTML/XML + Client-side JS | index.prod.xml; index.dev.xml; public/assets/v/8f3d67c/main.js | 2518-2584; 2521-2587; 929-950 | Expected footer links to open the external site; actual behavior resolves them to same-origin paths (e.g., `/www.pakrpp.com`) or hash-only no-ops. | `href` values omit scheme or use hash (`#www...`), so they resolve as relative in-site paths and are SPA-intercepted. | Always on click (JS on: router intercepts; JS off: browser resolves relative). | 🟠 |
-| Service Worker (PWA) | public/sw.js; src/worker.js; index.prod.xml | 6-47, 133-138, 167-195; 135-141; 134-135 | Expected SW install/offline to work; actual behavior fails when precache URLs are not served. | SW precaches `/offline.html`, `/manifest.webmanifest`, `/gg-pwa-icon/*` but those assets are only served via Worker static assets. | Worker inactive/bypassed (apex without route, preview, CF misrouting). | 🟠 |
-| Client-side JS | public/assets/v/8f3d67c/main.js; index.prod.xml | 10253-10318; 2788-2790 | Expected lazy-load to target the deployed entrypoint; actual request targets `/assets/main.js` (different from `/assets/v/<release>/main.js`). | Lazy-loader hardcodes `/assets/main.js` while deployed entrypoint is versioned `/assets/v/<release>/main.js`. | Always after idle timeout or first user interaction; request fails if `/assets/main.js` is not separately deployed. | 🟡 |
+| Routing & Navigation | public/assets/v/8f3d67c/main.js; src/worker.js | 112-152; 160-165 | Mitigated: blog home stays on `/?view=blog` when Worker ping fails. | Runtime ping sets `GG.env.worker=false`; `/blog` canonicalization is skipped. | Worker route missing/bypassed (preview, origin/blogspot, CF route removed). | 🟢 |
+| Integration (Assets) | src/worker.js | 193-202 | Expected: static assets are served. Actual: Worker returns 502 for asset paths when `ASSETS` is missing. | Worker hard-fails when `env.ASSETS` is undefined. | Worker deployed without `ASSETS` binding. | 🔴 |
+| Service Worker (PWA) | public/assets/v/8f3d67c/main.js; index.dev.xml; index.prod.xml | 1492-1637; 16-17; 16-17 | Mitigated: SW registers only when Worker ping succeeds. | Runtime ping gates SW init and `/gg-flags.json` fetch. | **Underspecified**: prod template used on non-Worker host, or Worker routes detached. | 🟢 |
+| Integration (Canonical Host) | wrangler.jsonc; src/worker.js | 16-27; 4-55 | Expected: apex redirects to `www` canonical. Actual: both apex and www can serve content. | Routes include both hosts and Worker has no host redirect logic. | **Underspecified**: depends on Cloudflare redirect rules outside the repo. | 🟠 |
+| Client-side JS | public/assets/v/8f3d67c/main.js | 116-123, 2164-2172, 2816-2824 | Expected: `?m=1` preserved when navigating to blog home. Actual: dock/breadcrumb links drop `m=1`. | `blogHomePath()` does not include `m=1`; callers use it directly. | Any session on `?m=1` using Home Blog in dock or breadcrumbs. | 🟠 |
+| Prefetch / Caching | public/assets/v/8f3d67c/main.js; public/sw.js | 10335-10405, 1669-1707; 176-221 | Expected: prefetch improves navigation/offline. Actual: prefetched HTML is never read. | Prefetch only writes `gg-pages-v2`; router uses `fetch` and SW does not consult that cache. | Always (prefetch cache unused). | 🟡 |
 
 ## 3. Hidden Couplings (Critical)
-- JS and UI assume `/blog` is canonical; it only works if the Worker rewrites `/blog` → `/?view=blog`. Without the Worker, core navigation fails. (public/assets/v/8f3d67c/main.js:112-124, 2779-2785; src/worker.js:149-153)
-- PWA assets (`/sw.js`, `/manifest.webmanifest`, `/offline.html`, `/gg-pwa-icon/*`) only exist when the Worker static-asset binding is active. (public/sw.js:6-47, 133-138; src/worker.js:135-141)
-- SPA click interception treats protocol-less links as same-origin, so HTML link mistakes become routing failures. (public/assets/v/8f3d67c/main.js:929-950; index.prod.xml:2518-2584; index.dev.xml:2521-2587)
+- Worker presence is now checked at runtime; `/blog` canonicalization is enabled only when the ping header is present. (public/assets/v/8f3d67c/main.js; src/worker.js:160-165)
+- Canonical host behavior depends on Cloudflare redirect rules not present in the repo. The Worker does not enforce `www`. (wrangler.jsonc:16-27; src/worker.js:4-55)
+- PWA depends on Worker-hosted endpoints (`/sw.js`, `/manifest.webmanifest`, `/offline.html`, `/gg-flags.json`). SW/flags are now gated by the Worker ping to avoid non-Worker hosts. (public/assets/v/8f3d67c/main.js; public/sw.js:6-47)
+- Prefetch writes to `gg-pages-v2`, but no runtime path reads it (router uses `fetch`, SW ignores it). (public/assets/v/8f3d67c/main.js:10335-10405, 1669-1707; public/sw.js:176-221)
 
 ## 4. False Positives
-- Hero video source appears invalid but is explicitly marked as dummy content and “must remain,” so playback failure is intentional. (index.prod.xml:266-269)
+- Missing `gg:mode=dev` in `index.prod.xml` is expected for production; it intentionally enables SW/PWA. (index.dev.xml:16-17; index.prod.xml:16-17)
+- The SW intentionally skips missing icon URLs during install (non-fatal) to remain resilient. (public/sw.js:133-149)
 
 ## 5. Stop Rule (Non-negotiable failures)
 If no fixes are made, the following user actions will ALWAYS fail:
-- Clicking any footer link that uses `href='www.pakrpp.com'` or `href='www.pakrpp.com#'` will navigate to an internal path like `/www.pakrpp.com` instead of the external site. (index.prod.xml:2518-2584)
-- Clicking the footer “Education” link (`href='#www.pakrpp.com'`) does not navigate away from the current page; it only changes the hash. (index.prod.xml:2580)
+- Navigating to blog home from the dock or breadcrumbs while on `?m=1` will drop mobile mode. (public/assets/v/8f3d67c/main.js:116-123, 2164-2172, 2816-2824)
 
 ## 6. Minimal Repro List
-1. Open `https://www.pakrpp.com/` and scroll to the footer.
-2. Click **pakrpp Store** (href `www.pakrpp.com`). Expected: external site. Observed: navigation to `/www.pakrpp.com` on the same origin.
-3. Click **Shopping Help** (href `www.pakrpp.com#`). Expected: external site. Observed: navigation to `/www.pakrpp.com#` on the same origin.
-4. Click **Education** (href `#www.pakrpp.com`). Expected: external site. Observed: hash change only, no navigation.
-5. Open DevTools → Network, reload any page, wait ~2.5 seconds. Observe request to `/assets/main.js` (lazy loader) and note it does not match the deployed `/assets/v/<release>/main.js` entrypoint.
-6. Open any post detail page and click breadcrumb **Home** (the blog breadcrumb). Expected: blog listing. Observed: `/blog` navigation.
-7. With Worker bypassed (e.g., preview/origin without CF), open `https://www.pakrpp.com/blog`. Expected: blog listing. Observed: origin handles `/blog` unchanged.
-8. With Worker bypassed, open `https://www.pakrpp.com/manifest.webmanifest`. Expected: JSON manifest. Observed: origin handles the request (Worker not serving assets).
-9. With Worker bypassed, open `https://www.pakrpp.com/sw.js`. Expected: service worker JS. Observed: origin handles the request (Worker not serving assets).
-10. With Worker bypassed, attempt PWA install; SW precache fails because required asset URLs are not served.
+1. **Worker bypassed**: disable/bypass the Worker route, then open `https://www.pakrpp.com/?view=blog`. Expected: stays on `/?view=blog` (no `/blog` canonicalization).
+2. **Worker bypassed**: open `https://www.pakrpp.com/blog` (if the page loads). Expected: JS replaces to `/?view=blog` after ping failure.
+3. **Mobile mode loss**: open `https://www.pakrpp.com/?m=1`, click the dock “Home (Blog)” button. Observe URL no longer contains `m=1`.
+4. **Mobile mode loss**: on a post detail URL with `?m=1`, click the breadcrumb blog link. Observe `m=1` is dropped.
+5. **Prefetch unused**: open any listing page, hover a post card to trigger prefetch, then go offline and click that post. Observe offline fallback rather than cached page (SW never reads `gg-pages-v2`).
+6. **Prod template on non-Worker host** (**Underspecified**): apply `index.prod.xml` on an HTTPS preview/origin host without Worker routes. Observe SW registration is skipped (no `/sw.js` or `/gg-flags.json` requests).
+7. **ASSETS binding missing** (**Underspecified**): deploy Worker without `ASSETS` binding, then request `https://www.pakrpp.com/sw.js`. Observe 502 from Worker. (src/worker.js:193-202)
+8. **Apex host without redirect** (**Underspecified**): if no redirect rule exists, open `https://pakrpp.com/` and observe no redirect to `https://www.pakrpp.com/`.
+9. **Apex + /blog** (**Underspecified**): open `https://pakrpp.com/blog` and note it is served directly (no enforced redirect).
+10. **Prefetch cache visibility**: open DevTools → Application → Cache Storage and confirm `gg-pages-v2` entries exist after hover, but navigation still uses network. (public/assets/v/8f3d67c/main.js:10335-10405; public/sw.js:176-221)
