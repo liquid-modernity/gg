@@ -3,7 +3,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "bb9d16b";
+    const WORKER_VERSION = "3386f40";
     const stamp = (res) => {
       res.headers.set("X-GG-Worker", "assets");
       res.headers.set("X-GG-Worker-Version", WORKER_VERSION);
@@ -104,6 +104,20 @@ export default {
       headers.set("Cache-Control", "public, max-age=86400");
 
       const r = new Response(upstreamRes.body, { status: 200, headers });
+      return stamp(r);
+    }
+
+    if (pathname === "/gg-flags.json") {
+      const raw = env && env.GG_SW_ENABLED ? String(env.GG_SW_ENABLED).trim().toLowerCase() : "";
+      const enabled = !(raw === "0" || raw === "false");
+      const body = JSON.stringify({
+        sw: { enabled },
+        release: WORKER_VERSION,
+        ts: Date.now(),
+      });
+      const r = new Response(body, { status: 200 });
+      r.headers.set("Content-Type", "application/json; charset=utf-8");
+      r.headers.set("Cache-Control", "no-store");
       return stamp(r);
     }
 

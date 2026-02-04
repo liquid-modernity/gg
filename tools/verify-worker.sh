@@ -1,24 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+base="https://www.pakrpp.com"
+sw_url="${base}/sw.js?x=1"
+
+REL="$(curl -sL "${sw_url}" | sed -n 's/.*const VERSION = "\([^"]\+\)";.*/\1/p' | head -n1)"
+if [[ -z "${REL}" ]]; then
+  echo "ERROR: failed to extract VERSION from ${sw_url}"
+  exit 1
+fi
+
+echo "RELEASE_ID ${REL}"
+
 urls=(
-  "https://www.pakrpp.com/assets/dev/main.css?x=1"
-  "https://www.pakrpp.com/assets/dev/main.js?x=1"
-  "https://www.pakrpp.com/assets/v/bb9d16b/main.css?x=1"
-  "https://www.pakrpp.com/assets/v/bb9d16b/main.js?x=1"
-  "https://www.pakrpp.com/sw.js?x=1"
-  "https://www.pakrpp.com/manifest.webmanifest?x=1"
-  "https://www.pakrpp.com/offline.html?x=1"
-  "https://www.pakrpp.com/__gg_worker_ping?x=1"
+  "${base}/assets/dev/main.css?x=1"
+  "${base}/assets/dev/main.js?x=1"
+  "${base}/assets/v/${REL}/main.css?x=1"
+  "${base}/assets/v/${REL}/main.js?x=1"
+  "${base}/sw.js?x=1"
+  "${base}/manifest.webmanifest?x=1"
+  "${base}/offline.html?x=1"
+  "${base}/__gg_worker_ping?x=1"
+  "${base}/gg-flags.json?x=1"
 )
 
 for url in "${urls[@]}"; do
   echo "==> ${url}"
-  curl -sSI "$url" | grep -i -E '^(HTTP/|cf-cache-status:|cache-control:|content-type:|x-gg-assets:)'
+  curl -sSI "$url" \
+    | tr -d '\r' \
+    | grep -i -E '^(HTTP/|x-gg-worker:|x-gg-worker-version:|cache-control:|content-type:)'
   echo
 done
 
-headers_url="https://www.pakrpp.com/_headers?x=1"
+flags_headers="$(curl -sSI "${base}/gg-flags.json?x=1" | tr -d '\r')"
+flags_status="$(echo "${flags_headers}" | head -n 1)"
+if ! echo "${flags_status}" | grep -q " 200"; then
+  echo "ERROR: gg-flags.json must return 200 (got: ${flags_status})"
+  exit 1
+fi
+if ! echo "${flags_headers}" | grep -qi '^cache-control:.*no-store'; then
+  echo "ERROR: gg-flags.json must be no-store"
+  exit 1
+fi
+
+headers_url="${base}/_headers?x=1"
 echo "==> ${headers_url}"
 status_line="$(curl -sSI "${headers_url}" | head -n 1)"
 echo "${status_line}"

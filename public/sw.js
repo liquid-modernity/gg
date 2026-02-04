@@ -1,10 +1,17 @@
 /* public/sw.js — deterministic updates + offline fallback */
-const VERSION = "b4df7bb";
+const VERSION = "3386f40";
 const CACHE_STATIC = `gg-static-${VERSION}`;
 const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 
 const OFFLINE_URL = "/offline.html";
 const MANIFEST_URL = "/manifest.webmanifest";
+const FLAGS_URL = "/gg-flags.json";
+const FLAGS_TTL_MS = 60 * 1000;
+
+let flagsCache = {
+  ts: 0,
+  value: { sw: { enabled: true }, release: VERSION },
+};
 
 const ICON_URLS = [
   "/gg-pwa-icon/android-icon-144x144.png",
@@ -44,6 +51,39 @@ const isDebugUrl = (u) => u && u.searchParams.get("ggdebug") === "1";
 const log = (u, ...args) => {
   if (isDebugUrl(u)) console.log("[gg-sw]", ...args);
 };
+
+function normalizeFlags(data) {
+  const enabled = !(data && data.sw && data.sw.enabled === false);
+  const release = data && typeof data.release === "string" ? data.release : VERSION;
+  return { sw: { enabled }, release };
+}
+
+async function fetchFlags(force) {
+  const now = Date.now();
+  if (!force && flagsCache && flagsCache.value && now - flagsCache.ts < FLAGS_TTL_MS) {
+    return flagsCache.value;
+  }
+  try {
+    const res = await fetch(FLAGS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("flags http");
+    const data = await res.json();
+    const value = normalizeFlags(data);
+    flagsCache = { ts: now, value };
+    return value;
+  } catch (e) {
+    return flagsCache && flagsCache.value ? flagsCache.value : { sw: { enabled: true }, release: VERSION };
+  }
+}
+
+async function disableSelf() {
+  const keys = await caches.keys();
+  await Promise.all(keys.map((k) => caches.delete(k)));
+  const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  list.forEach((client) => {
+    try { client.postMessage({ type: "GG_SW_DISABLED" }); } catch (e) {}
+  });
+  try { await self.registration.unregister(); } catch (e) {}
+}
 
 async function hasDebugClient() {
   const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
@@ -101,6 +141,11 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     if (await hasDebugClient()) console.log("[gg-sw]", "activate");
+    const flags = await fetchFlags(true);
+    if (flags && flags.sw && flags.sw.enabled === false) {
+      await disableSelf();
+      return;
+    }
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => {
       if (k === CACHE_STATIC || k === CACHE_RUNTIME) return null;
@@ -124,25 +169,33 @@ self.addEventListener("fetch", (event) => {
 
   const path = url.pathname;
 
-  if (path.startsWith("/assets/dev/")) {
-    log(url, "assets/dev network-only", path);
+  if (path === FLAGS_URL) {
     event.respondWith(fetch(req, { cache: "no-store" }));
     return;
   }
 
-  if (path.startsWith("/assets/v/") || path.startsWith("/gg-pwa-icon/")) {
-    event.respondWith(cacheFirst(req, CACHE_STATIC, url));
-    return;
-  }
+  event.respondWith((async () => {
+    const flags = await fetchFlags(false);
+    if (flags && flags.sw && flags.sw.enabled === false) {
+      await disableSelf();
+      return fetch(req, { cache: "no-store" });
+    }
 
-  if (path === MANIFEST_URL || path === OFFLINE_URL) {
-    event.respondWith(staleWhileRevalidate(req, CACHE_STATIC, url));
-    return;
-  }
+    if (path.startsWith("/assets/dev/")) {
+      log(url, "assets/dev network-only", path);
+      return fetch(req, { cache: "no-store" });
+    }
 
-  if (req.mode === "navigate") {
-    log(url, "navigate network-first", path);
-    event.respondWith((async () => {
+    if (path.startsWith("/assets/v/") || path.startsWith("/gg-pwa-icon/")) {
+      return cacheFirst(req, CACHE_STATIC, url);
+    }
+
+    if (path === MANIFEST_URL || path === OFFLINE_URL) {
+      return staleWhileRevalidate(req, CACHE_STATIC, url);
+    }
+
+    if (req.mode === "navigate") {
+      log(url, "navigate network-first", path);
       try {
         return await fetch(req);
       } catch (e) {
@@ -150,6 +203,8 @@ self.addEventListener("fetch", (event) => {
         const offline = await cache.match(OFFLINE_URL);
         return offline || new Response("Offline", { status: 503 });
       }
-    })());
-  }
+    }
+
+    return fetch(req);
+  })());
 });

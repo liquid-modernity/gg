@@ -14,9 +14,9 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta name='gg:mode' content='dev'/>
-    <meta name='gg:asset-base' content='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public'/>
+    <meta name='gg:asset-base' content='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@3386f40d89ddd155d60ad4925460bc1f0625b701/public'/>
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.css?v=20260203160035'/>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@3386f40d89ddd155d60ad4925460bc1f0625b701/public/assets/dev/main.css?v=20260203160035'/>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -142,7 +142,19 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0' rel='stylesheet'/>
 
 <b:skin><![CDATA[
+/* CRITICAL CSS: SURFACE CONTROL */
+/* Pastikan Hero TIDAK PERNAH muncul di halaman Listing/Search/Page */
+body[data-gg-surface="listing"] .hero-section,
+body[data-gg-surface="listing"] #hero-wrapper,
+body[data-gg-surface="page"] .hero-section,
+body[data-gg-surface="post"] .hero-section {
+    display: none !important;
+}
 
+/* Pastikan Hero HANYA muncul jika Landing murni */
+body:not([data-gg-surface="landing"]) .hero-section {
+    display: none !important;
+}
 
 ]]></b:skin>
     
@@ -2777,7 +2789,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 </template>
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@bb9d16b884e6f2093a0e16b5f7c4d092e91e34c7/public/assets/dev/main.js?v=20260203160035'/>
+<script defer='defer' src='https://cdn.jsdelivr.net/gh/liquid-modernity/gg@3386f40d89ddd155d60ad4925460bc1f0625b701/public/assets/dev/main.js?v=20260203160035'/>
 <script integrity='sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z' src='https://instant.page/5.2.0' type='module'/>
 <!-- /GAGA HOME OF JS -->
 </body>
