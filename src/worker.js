@@ -29,6 +29,18 @@ export default {
       return stamp(r);
     }
 
+    if (pathname === "/__gg_route_test") {
+      const body = [
+        "ROUTE_OK",
+        `pathname: ${pathname}`,
+        `host: ${url.host}`,
+      ].join("\n");
+      const r = new Response(body, { status: 200 });
+      r.headers.set("Content-Type", "text/plain; charset=utf-8");
+      r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
+
     if (pathname === "/api/telemetry") {
       let payload = null;
       try {
