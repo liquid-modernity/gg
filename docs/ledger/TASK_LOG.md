@@ -215,3 +215,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): wrangler removed from repo deps; local deploy unsupported; npm ci should now work on macOS 10.15.
 - RISKS: none
 - NEXT: TASK-0004A
+
+---
+
+## 2026-02-05 — TASK-0004A — Remove apex route from wrangler config
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004A
+- TITLE: Remove apex route from wrangler config
+- MODE (DEV/PROD impact): routing config + docs only
+- RELEASE_ID: c21421c
+- SCOPE: wrangler.jsonc routes, Cloudflare setup docs, ledger
+- CHANGES (files touched): wrangler.jsonc; docs/CLOUDFLARE_SETUP.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/validate-xml.js; node tools/verify-assets.mjs
+- CI STATUS: n/a (local)
+- DEPLOY STATUS: n/a (CI-only)
+- VERIFY (URLs + expected): curl -I https://pakrpp.com/ -> 301 Location: https://www.pakrpp.com/ ; curl -I https://www.pakrpp.com/__gg_worker_ping -> 200 + x-gg-worker-version
+- NOTES (gotchas): apex must redirect via Cloudflare Redirect Rule; remove any existing `pakrpp.com/*` Worker route in dashboard.
+- RISKS: none
+- NEXT: TASK-0004B

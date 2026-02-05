@@ -1,42 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0004.2
-TITLE: Wrangler CI-only + local npm ci fix
+TASK_ID: TASK-0004A
+TITLE: Remove apex route from wrangler config
 
 TASK_SUMMARY
-- Removed `wrangler` from repo dependencies and updated the lockfile accordingly.
-- Ensured workflows enforce lockfile presence and use `npm ci` only (no on-the-fly lockfile generation).
-- Documented Wrangler CI-only policy and local npm ci behavior.
+- Removed `pakrpp.com/*` from `wrangler.jsonc` routes so only `www.pakrpp.com/*` is served by Worker `gg`.
+- Updated Cloudflare setup docs to state apex must only redirect via Redirect Rule (not Worker routing).
+- Updated GG_CAPSULE and ledger entries for this change.
 
 FILES_CHANGED
-- package.json
-- package-lock.json
-- .github/workflows/ci.yml
-- .github/workflows/deploy.yml
-- docs/ci/PIPELINE.md
-- docs/LOCAL_DEV.md
+- wrangler.jsonc
+- docs/CLOUDFLARE_SETUP.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
-COMMANDS RUN
-- `npm install --package-lock-only --ignore-scripts`
+VERIFICATION (LOCAL)
+- Ran: `node tools/validate-xml.js`
+- Ran: `node tools/verify-assets.mjs`
+- Result: PASSED
 
-CI/DEPLOY EXPECTATIONS
-- CI fails fast if `package-lock.json` is missing, then runs `npm ci` + build/verifiers.
-- Deploy workflow also fails fast if lockfile is missing and uses `npm ci` only.
-- Deploy uses `cloudflare/wrangler-action` with pinned `wranglerVersion` in `.github/workflows/deploy.yml`.
+VERIFY IN CLOUDFLARE DASHBOARD
+1) Workers Routes: ensure ONLY `www.pakrpp.com/*` points to Worker `gg`.
+2) Redirect Rules: ensure `pakrpp.com/*` → `https://www.pakrpp.com/$1` with status 301 (preserve path + query).
+3) Remove any existing `pakrpp.com/*` Worker route if still present.
 
-LOCAL EXPECTATION (macOS 10.15)
-- `npm ci` should succeed (no local wrangler/esbuild install).
-
-HOW TO VERIFY IN GITHUB ACTIONS
-1) Open Actions → `CI` workflow.
-2) Confirm “Guard lockfile” step exists and fails if lockfile is removed.
-3) Confirm “Install deps (npm ci)” runs without lockfile generation.
-4) Confirm deploy workflow still runs only after CI success and smoke tests are mandatory.
+CURL CHECKS (expected)
+- `curl -I https://pakrpp.com/` → `301` with `Location: https://www.pakrpp.com/`
+- `curl -I https://www.pakrpp.com/__gg_worker_ping` → `200` + `x-gg-worker-version`
 
 RISKS / ROLLBACK
-- Risk: none (tooling + docs only).
+- Risk: If an apex Worker route still exists in the dashboard, it must be removed to honor Redirect Rule.
 - Rollback: revert this commit.

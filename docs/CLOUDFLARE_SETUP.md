@@ -17,6 +17,7 @@ Required route:
 
 Apex handling (required):
 - Cloudflare Redirect Rule 301 from `pakrpp.com/*` to `https://www.pakrpp.com/$1` (preserve path + query).
+- Do NOT route `pakrpp.com/*` to the Worker. Apex must only redirect via the Cloudflare rule.
 
 Only one canonical host must serve content. Do not allow both `www` and apex to serve pages.
 

@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Wrangler decoupled; npm ci fixed (TASK-0004.2)
+- Apex route purged from wrangler config (TASK-0004A)
 
 CONSTRAINTS:
 - main-only
@@ -25,10 +25,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0004A (Apex routing fix)
+- TASK-0004B (SW dev-poisoning fix)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004.2 remove wrangler dep (CI-only deploy) + local npm ci fix
+- 2026-02-05 TASK-0004A remove apex route from wrangler config
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
