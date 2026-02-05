@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "generated": "2026-02-05",
+  "buffer_ratio": 0.15,
+  "source_release": "cab6705",
+  "assets": [
+    {
+      "id": "main.js",
+      "path": "public/assets/v/<REL>/main.js",
+      "max_raw": 422202,
+      "max_gzip": 98588
+    },
+    {
+      "id": "main.css",
+      "path": "public/assets/v/<REL>/main.css",
+      "max_raw": 188433,
+      "max_gzip": 36932
+    },
+    {
+      "id": "sw.js",
+      "path": "public/sw.js",
+      "max_raw": 8282
+    },
+    {
+      "id": "offline.html",
+      "path": "public/offline.html",
+      "max_raw": 938
+    }
+  ]
+}

@@ -306,3 +306,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): `/manifest.webmanifest` and `/offline.html` now no-store; live checks run after deploy.
 - RISKS: none
 - NEXT: TASK-0006
+
+---
+
+## 2026-02-05 — TASK-0006 — CRP plan + perf budgets + CI budget guard
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006
+- TITLE: CRP plan + perf budgets + CI budget guard
+- MODE (DEV/PROD impact): docs + deterministic budget verification (no runtime changes)
+- RELEASE_ID: cab6705
+- SCOPE: CRP plan doc, perf budgets JSON, verify-budgets script, CI/deploy hooks, pipeline docs, ledger updates
+- CHANGES (files touched): docs/perf/CRP_PLAN.md; tools/perf-budgets.json; tools/verify-budgets.mjs; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-budgets.mjs
+- CI STATUS: expected green if budgets match built artifacts
+- DEPLOY STATUS: expected green if preflight budgets match built artifacts
+- VERIFY (URLs + expected): n/a (deterministic, no network)
+- NOTES (gotchas): budgets are based on current artifact sizes with a 15% buffer; update budgets intentionally when assets grow.
+- RISKS: overly tight budgets can block releases if not updated intentionally.
+- NEXT: TASK-0006A

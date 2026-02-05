@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Headers contract enforced (TASK-0005)
+- CRP plan + budgets enforced (TASK-0006)
 
 CONSTRAINTS:
 - main-only
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006 (CRP / Zero-TBT plan)
+- TASK-0006A (implement Phase 1 CRP changes)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0005 headers contract + verify-headers
+- 2026-02-05 TASK-0006 CRP plan + perf budgets + CI budget guard
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

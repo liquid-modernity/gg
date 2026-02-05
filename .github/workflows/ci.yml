@@ -58,6 +58,9 @@ jobs:
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
 
+      - name: Verify performance budgets
+        run: node tools/verify-budgets.mjs
+
       - name: XML well-formedness
         run: |
           set -e

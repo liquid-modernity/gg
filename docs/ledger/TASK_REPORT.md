@@ -1,47 +1,41 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0005
-TITLE: Headers contract + deterministic verifier (CI) + live verifier (deploy)
+TASK_ID: TASK-0006
+TITLE: CRP plan + perf budgets + CI budget guard
 
 TASK_SUMMARY
-- Added a single-source headers contract in `docs/perf/HEADERS_CONTRACT.md` and `tools/headers-contract.json`.
-- Implemented `tools/verify-headers.mjs` with config and live modes.
-- Wired config-mode into CI and live-mode into deploy workflow.
-- Aligned Worker + `_headers` with the contract for manifest/offline caching.
+- Added a CRP doctrine in `docs/perf/CRP_PLAN.md`.
+- Added performance budgets in `tools/perf-budgets.json` and a deterministic verifier `tools/verify-budgets.mjs`.
+- Wired budget checks into CI and deploy preflight.
+- Updated pipeline docs and ledger state.
 
 FILES_CHANGED
-- docs/perf/HEADERS_CONTRACT.md
-- tools/headers-contract.json
-- tools/verify-headers.mjs
+- docs/perf/CRP_PLAN.md
+- tools/perf-budgets.json
+- tools/verify-budgets.mjs
 - .github/workflows/ci.yml
 - .github/workflows/deploy.yml
 - docs/ci/PIPELINE.md
-- src/worker.js
-- public/_headers
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS
-- `node tools/verify-headers.mjs --mode=config`
-- `node tools/verify-ledger.mjs`
+- `node tools/verify-budgets.mjs`
 
 CI/DEPLOY HOOKS
-- CI runs: `node tools/verify-headers.mjs --mode=config` (deterministic, no network).
-- Deploy runs: `node tools/verify-headers.mjs --mode=live --base=https://www.pakrpp.com` after deploy.
+- CI runs: `node tools/verify-budgets.mjs` after build (deterministic).
+- Deploy preflight runs: `node tools/verify-budgets.mjs`.
 
-CONTRACT ENFORCED (HIGHLIGHTS)
-- `/assets/latest/*` is no-store.
-- `/assets/v/<RELEASE_ID>/*` is public, immutable, max-age>=31536000.
-- `/sw.js` and `/gg-flags.json` are no-store.
-- `/manifest.webmanifest` and `/offline.html` are no-store.
-- Apex must redirect to `https://www.pakrpp.com/`.
+BUDGETS ENFORCED (HIGHLIGHTS)
+- `main.js` and `main.css` raw + gzip size budgets (15% buffer).
+- `sw.js` and `offline.html` raw size budgets.
 
 HOW TO VERIFY IN ACTIONS
-1) CI → step “Verify headers contract (config)” should pass.
-2) Deploy → step “Verify headers contract (live)” should pass after publish.
+1) CI → step “Verify performance budgets” should pass.
+2) Deploy → step “Verify performance budgets” should pass during preflight.
 
 RISKS / ROLLBACK
-- Risk: live verification fails if production headers drift.
+- Risk: budgets too tight can block releases; adjust intentionally when assets grow.
 - Rollback: revert this commit.

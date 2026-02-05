@@ -18,6 +18,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `bash tools/check-links.sh` (if present)
 - XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
 - `node tools/verify-headers.mjs --mode=config` (deterministic, no network)
+- `node tools/verify-budgets.mjs` (deterministic, no network)
 
 **Lockfile Policy**
 - `package-lock.json` is mandatory and must be committed.
@@ -28,6 +29,12 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `docs/ledger/GG_CAPSULE.md` contains an AUTOGEN block for release metadata.
 - `tools/release.js` updates the AUTOGEN block during `npm run build`.
 - Do not edit `RELEASE_ID` manually; CI and deploy run `tools/verify-ledger.mjs` and fail on drift.
+
+**Performance Budgets**
+- Budgets are defined in `tools/perf-budgets.json` and checked by `tools/verify-budgets.mjs`.
+- CI runs `node tools/verify-budgets.mjs` after build (deterministic, no network).
+- Deploy preflight also runs `node tools/verify-budgets.mjs` to prevent regressions.
+- To update budgets, rebuild, measure current sizes, then update `tools/perf-budgets.json` with a 15% buffer and commit.
 
 **Wrangler Policy**
 - Wrangler is CI-only; local deploy is unsupported.
@@ -42,6 +49,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `npm run verify:xml`
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
+- `node tools/verify-budgets.mjs`
 
 **Deploy**
 - Uses `cloudflare/wrangler-action` with `wrangler.jsonc`.
