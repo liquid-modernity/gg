@@ -71,7 +71,7 @@ Last updated: 2026-02-05
 - CI STATUS: n/a
 - DEPLOY STATUS: n/a
 - VERIFY (URLs + expected): n/a
-- NOTES (gotchas): Warnings: main.js/main.css not found (root or public/assets/dev); TASK_report.md missing (not fatal)
+- NOTES (gotchas): Warnings: main.js/main.css not found (root or public/assets/latest); TASK_report.md missing (not fatal)
 - RISKS: none
 - NEXT: TASK-0002
 ---
@@ -267,5 +267,24 @@ Last updated: 2026-02-05
 - DEPLOY STATUS: n/a (CI-only)
 - VERIFY (URLs + expected): curl -I https://pakrpp.com/ -> 301 Location: https://www.pakrpp.com/ ; curl -I https://www.pakrpp.com/__gg_worker_ping -> 200 + x-gg-worker-version
 - NOTES (gotchas): DEV inline script runs before external JS to unregister SW + clear caches; one reload guarded by sessionStorage.
+- RISKS: none
+- NEXT: TASK-0005
+
+---
+
+## 2026-02-05 — TASK-0004B.2 — Auto-sync GG_CAPSULE release id + enforce ledger consistency
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004B.2
+- TITLE: Auto-sync GG_CAPSULE release id + enforce ledger consistency
+- MODE (DEV/PROD impact): tooling + CI/deploy verification + docs
+- RELEASE_ID: 7ca1211
+- SCOPE: GG_CAPSULE AUTOGEN, release.js sync, verify-ledger, CI/deploy checks, pipeline docs
+- CHANGES (files touched): docs/ledger/GG_CAPSULE.md; tools/release.js; tools/verify-ledger.mjs; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-ledger.mjs
+- CI STATUS: expected green if ledger matches build outputs
+- DEPLOY STATUS: expected green if ledger matches build outputs
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): run `npm run build` to sync release id and autogen block before commit.
+- CORRECTION: /assets/dev is retired; current dev path is /assets/latest.
 - RISKS: none
 - NEXT: TASK-0005

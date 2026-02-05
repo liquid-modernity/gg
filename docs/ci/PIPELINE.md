@@ -23,6 +23,11 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - CI and deploy both use `npm ci` with no lockfile generation fallback.
 - To update dependencies, run: `npm install --package-lock-only --ignore-scripts`, then commit `package-lock.json`.
 
+**Ledger Sync Policy**
+- `docs/ledger/GG_CAPSULE.md` contains an AUTOGEN block for release metadata.
+- `tools/release.js` updates the AUTOGEN block during `npm run build`.
+- Do not edit `RELEASE_ID` manually; CI and deploy run `tools/verify-ledger.mjs` and fail on drift.
+
 **Wrangler Policy**
 - Wrangler is CI-only; local deploy is unsupported.
 - Deploy uses `cloudflare/wrangler-action` with a pinned version.

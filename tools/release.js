@@ -19,6 +19,33 @@ function replaceAllOrThrow(file, pattern, replacement, label) {
   if (out !== src) fs.writeFileSync(file, out, "utf8");
 }
 
+function updateCapsuleAutogen(releaseId) {
+  const capsulePath = path.join("docs", "ledger", "GG_CAPSULE.md");
+  if (!fs.existsSync(capsulePath)) {
+    throw new Error("GG_CAPSULE missing: docs/ledger/GG_CAPSULE.md");
+  }
+  const begin = "<!-- GG:AUTOGEN:BEGIN -->";
+  const end = "<!-- GG:AUTOGEN:END -->";
+  const block =
+    `${begin}\n` +
+    `RELEASE_ID: ${releaseId}\n` +
+    `PROD_PINNED_JS: /assets/v/${releaseId}/main.js\n` +
+    `PROD_PINNED_CSS: /assets/v/${releaseId}/main.css\n` +
+    `${end}`;
+
+  const src = fs.readFileSync(capsulePath, "utf8");
+  let out = src;
+  if (src.includes(begin) && src.includes(end)) {
+    const re = new RegExp(`${begin}[\\s\\S]*?${end}`, "m");
+    out = src.replace(re, block);
+  } else if (src.includes("LIVE CONTRACT (must hold):")) {
+    out = src.replace("LIVE CONTRACT (must hold):", `${block}\n\nLIVE CONTRACT (must hold):`);
+  } else {
+    out = `${src.trim()}\n\n${block}\n`;
+  }
+  if (out !== src) fs.writeFileSync(capsulePath, out, "utf8");
+}
+
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("git rev-parse --short HEAD");
 const fullHash = run("git rev-parse HEAD");
@@ -61,6 +88,8 @@ replaceAllOrThrow(
   `/assets/v/${releaseId}/main.js`,
   "prod js"
 );
+
+updateCapsuleAutogen(releaseId);
 
 console.log(`RELEASE_ID ${releaseId}`);
 console.log(`FULL_HASH ${fullHash}`);

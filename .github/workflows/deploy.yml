@@ -73,6 +73,9 @@ jobs:
             echo "SKIP: tools/check-links.sh not found"
           fi
 
+      - name: Verify ledger sync
+        run: node tools/verify-ledger.mjs
+
       - name: Preflight static assets + release id
         id: rel
         run: |

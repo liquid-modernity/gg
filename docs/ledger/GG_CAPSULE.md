@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- SW install hardened + DEV inline kill-switch added (TASK-0004B.1)
+- GG_CAPSULE auto-sync enabled (TASK-0004B.2)
 
 CONSTRAINTS:
 - main-only
@@ -13,14 +13,17 @@ CONSTRAINTS:
 - local machine macOS 10.15: wrangler CI-only
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
-RELEASE_ID:
-- c21421c
+<!-- GG:AUTOGEN:BEGIN -->
+RELEASE_ID: 7ca1211
+PROD_PINNED_JS: /assets/v/7ca1211/main.js
+PROD_PINNED_CSS: /assets/v/7ca1211/main.css
+<!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
 - apex redirects → https://www.pakrpp.com/
 - worker ping: https://www.pakrpp.com/__gg_worker_ping
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
-- pinned assets (PROD): https://www.pakrpp.com/assets/v/c21421c/main.js (immutable)
+- pinned assets (PROD): see AUTOGEN block (immutable)
 - sw.js: https://www.pakrpp.com/sw.js (no-store)
 - offline: https://www.pakrpp.com/offline.html
 
@@ -28,7 +31,7 @@ NEXT_TASK:
 - TASK-0005 (Routing stabilization)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004B.1 resilient SW install + DEV inline kill-switch
+- 2026-02-05 TASK-0004B.2 auto-sync GG_CAPSULE release id
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
@@ -38,7 +41,7 @@ RISKS (top 5):
 - SW cache not updating if VERSION not bumped
 
 FAST VERIFY (60s):
-1) view-source → confirm main.js path matches `/assets/latest/` (DEV) or `/assets/v/c21421c/` (PROD).
+1) view-source → confirm main.js path matches `/assets/latest/` (DEV) or AUTOGEN pinned path (PROD).
 2) https://www.pakrpp.com/__gg_worker_ping returns `X-GG-Worker-Version`.
-3) https://www.pakrpp.com/assets/latest/main.js (DEV) and `/assets/v/c21421c/main.js` (PROD) return expected cache headers.
+3) https://www.pakrpp.com/assets/latest/main.js (DEV) and AUTOGEN pinned JS (PROD) return expected cache headers.
 4) DevTools → Application → Service Workers: DEV not controlled, PROD controlled.
