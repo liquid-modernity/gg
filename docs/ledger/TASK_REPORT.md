@@ -1,41 +1,40 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0006
-TITLE: CRP plan + perf budgets + CI budget guard
+TASK_ID: TASK-0006A
+TITLE: CRP Phase 1 (defer + idle bootstrap)
 
 TASK_SUMMARY
-- Added a CRP doctrine in `docs/perf/CRP_PLAN.md`.
-- Added performance budgets in `tools/perf-budgets.json` and a deterministic verifier `tools/verify-budgets.mjs`.
-- Wired budget checks into CI and deploy preflight.
-- Updated pipeline docs and ledger state.
+- Split boot into Stage 0 (minimal) and Stage 1 (idle) in `public/assets/latest/main.js`.
+- Deferred app init, router init, and a11y init to idle; router click binding occurs after DOMContentLoaded.
+- Deferred root-state sync and hero video observer to idle.
+- Added DEV-only Stage 0 performance mark with a single console info line.
+- Updated CRP plan to mark Phase 1 completed.
 
 FILES_CHANGED
+- public/assets/latest/main.js
 - docs/perf/CRP_PLAN.md
-- tools/perf-budgets.json
-- tools/verify-budgets.mjs
-- .github/workflows/ci.yml
-- .github/workflows/deploy.yml
-- docs/ci/PIPELINE.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS
+- `npm run build`
 - `node tools/verify-budgets.mjs`
+- `node tools/verify-ledger.mjs`
+- `node tools/verify-headers.mjs --mode=config`
+- `node tools/validate-xml.js`
 
-CI/DEPLOY HOOKS
-- CI runs: `node tools/verify-budgets.mjs` after build (deterministic).
-- Deploy preflight runs: `node tools/verify-budgets.mjs`.
+PERF MEASUREMENT (DevTools)
+1) Open Chrome DevTools → Performance.
+2) Enable CPU throttling (4x), Disable cache, Cold reload.
+3) Record from navigation start.
+4) Confirm Stage 0 has no long tasks > 50 ms and Stage 1 runs via idle.
 
-BUDGETS ENFORCED (HIGHLIGHTS)
-- `main.js` and `main.css` raw + gzip size budgets (15% buffer).
-- `sw.js` and `offline.html` raw size budgets.
-
-HOW TO VERIFY IN ACTIONS
-1) CI → step “Verify performance budgets” should pass.
-2) Deploy → step “Verify performance budgets” should pass during preflight.
+BEHAVIOR CHECKS
+- DEV: no SW controller, no reload loops, main.js still loads with `defer`.
+- PROD: navigation still works; SW unaffected; no functional regressions observed.
 
 RISKS / ROLLBACK
-- Risk: budgets too tight can block releases; adjust intentionally when assets grow.
+- Risk: delayed app init may postpone non-critical UI hydration.
 - Rollback: revert this commit.

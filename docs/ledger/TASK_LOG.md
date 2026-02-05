@@ -324,3 +324,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): budgets are based on current artifact sizes with a 15% buffer; update budgets intentionally when assets grow.
 - RISKS: overly tight budgets can block releases if not updated intentionally.
 - NEXT: TASK-0006A
+
+---
+
+## 2026-02-05 — TASK-0006A — CRP Phase 1 (defer + idle bootstrap)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006A
+- TITLE: CRP Phase 1 (defer + idle bootstrap)
+- MODE (DEV/PROD impact): main.js boot sequencing + docs
+- RELEASE_ID: 72ae928
+- SCOPE: main.js Stage0/Stage1 bootstrap, deferred router binding, idle init, CRP plan update, ledger updates
+- CHANGES (files touched): public/assets/latest/main.js; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build; node tools/verify-budgets.mjs; node tools/verify-ledger.mjs; node tools/verify-headers.mjs --mode=config; node tools/validate-xml.js
+- CI STATUS: expected green if budgets and headers remain within contract
+- DEPLOY STATUS: expected green (no deploy changes)
+- VERIFY (perf steps): Chrome DevTools Performance → record cold load → confirm no long tasks >50ms during Stage 0 window
+- NOTES (gotchas): router click interception now binds after DOMContentLoaded; app init is idle-deferred.
+- RISKS: delaying app init may postpone some non-critical UI hydration.
+- NEXT: TASK-0006B

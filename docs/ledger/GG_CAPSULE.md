@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- CRP plan + budgets enforced (TASK-0006)
+- CRP Phase 1 implemented (defer + idle bootstrap) (TASK-0006A)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 23ad260
-PROD_PINNED_JS: /assets/v/23ad260/main.js
-PROD_PINNED_CSS: /assets/v/23ad260/main.css
+RELEASE_ID: 72ae928
+PROD_PINNED_JS: /assets/v/72ae928/main.js
+PROD_PINNED_CSS: /assets/v/72ae928/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006A (implement Phase 1 CRP changes)
+- TASK-0006B (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006 CRP plan + perf budgets + CI budget guard
+- 2026-02-05 TASK-0006A defer main.js + idle bootstrap
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

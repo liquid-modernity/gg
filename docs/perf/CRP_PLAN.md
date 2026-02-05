@@ -41,3 +41,15 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Phase 1: Stop the bleeding. Enforce budgets, ensure all scripts are deferred, prevent new render blockers.
 - Phase 2: Zero long tasks. Split critical vs non-critical JS, idle-load secondary UI, reduce heavy parsing on first paint.
 - Phase 3: Luxury feel. Add micro-interactions only after CRP is stable and budgets pass consistently.
+
+**Phase 1 Implemented (2026-02-05)**
+- Split boot into Stage 0 (minimal) and Stage 1 (idle) in `main.js`.
+- Deferred app initialization to idle after DOMContentLoaded.
+- Router click interception binds after DOMContentLoaded.
+- Deferred root state sync and hero video observer to idle.
+- Added DEV-only Stage 0 performance mark with a single console info line.
+
+**Phase 2 Remaining**
+- Split heavy modules into explicit idle-load buckets.
+- Reduce long tasks by batching DOM reads/writes per module.
+- Defer non-critical media/analytics beyond first interaction.
