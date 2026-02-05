@@ -21,13 +21,17 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Install deps (npm ci)
+      - name: Guard lockfile
         run: |
           set -e
           if [ ! -f package-lock.json ]; then
-            echo "INFO: package-lock.json missing; generating for CI"
-            npm install --package-lock-only --ignore-scripts
+            echo "ERROR: package-lock.json is required. Run npm install --package-lock-only --ignore-scripts and commit it."
+            exit 1
           fi
+
+      - name: Install deps (npm ci)
+        run: |
+          set -e
           npm ci
 
       - name: Build + verifiers

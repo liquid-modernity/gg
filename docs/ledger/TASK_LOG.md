@@ -179,3 +179,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): CI now runs build + verifiers; package-lock is generated in CI if missing to allow npm ci.
 - RISKS: CI time slightly increased due to build step.
 - NEXT: TASK-0004A
+
+---
+
+## 2026-02-05 — TASK-0004.1 — Lockfile policy fix (npm ci deterministic)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004.1
+- TITLE: Lockfile policy fix (commit lockfile + enforce npm ci)
+- MODE (DEV/PROD impact): CI/deploy workflow only
+- RELEASE_ID: c21421c
+- SCOPE: lockfile commit, CI/deploy guards, pipeline docs
+- CHANGES (files touched): package-lock.json; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm install --package-lock-only --ignore-scripts
+- CI STATUS: expected green if lockfile present + build/verifiers pass
+- DEPLOY STATUS: expected green if CI passes + smoke passes
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): CI/deploy now hard-fail if package-lock.json is missing.
+- RISKS: none
+- NEXT: TASK-0004A

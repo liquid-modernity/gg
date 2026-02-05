@@ -46,6 +46,14 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Guard lockfile
+        run: |
+          set -e
+          if [ ! -f package-lock.json ]; then
+            echo "ERROR: package-lock.json is required. Run npm install --package-lock-only --ignore-scripts and commit it."
+            exit 1
+          fi
+
       - name: Preflight (build + verifiers)
         run: |
           set -e

@@ -9,7 +9,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - Manual deploy uses `workflow_dispatch`, but it still runs the full preflight gate and asserts the dispatch branch is `main`.
 
 **CI Gate (Primary)**
-- `npm ci` (CI generates a temporary `package-lock.json` if missing via `npm install --package-lock-only --ignore-scripts`)
+- `npm ci` (requires committed `package-lock.json`)
 - `npm run build`
 - `npm run verify:assets`
 - `npm run build:xml`
@@ -17,6 +17,11 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
 - XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
+
+**Lockfile Policy**
+- `package-lock.json` is mandatory and must be committed.
+- CI and deploy both use `npm ci` with no lockfile generation fallback.
+- To update dependencies, run: `npm install --package-lock-only --ignore-scripts`, then commit `package-lock.json`.
 
 **Preflight Gate (Deploy Workflow)**
 - `npm ci`

@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- CI gate upgraded (TASK-0004)
+- Lockfile policy enforced (TASK-0004.1)
 
 CONSTRAINTS:
 - main-only
@@ -28,7 +28,7 @@ NEXT_TASK:
 - TASK-0004A (Apex routing fix)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004 CI gate upgrade (build + verifiers)
+- 2026-02-05 TASK-0004.1 lockfile policy fix (npm ci + lockfile guard)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
