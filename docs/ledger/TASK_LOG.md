@@ -233,3 +233,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): apex must redirect via Cloudflare Redirect Rule; remove any existing `pakrpp.com/*` Worker route in dashboard.
 - RISKS: none
 - NEXT: TASK-0004B
+
+---
+
+## 2026-02-05 — TASK-0004B — DEV SW poisoning fix + /assets/latest SW rules
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004B
+- TITLE: DEV SW poisoning fix + /assets/latest SW alignment
+- MODE (DEV/PROD impact): SW + client JS + docs
+- RELEASE_ID: c21421c
+- SCOPE: sw.js fetch rules, dev cleanup in main.js, SW strategy docs, ledger
+- CHANGES (files touched): public/sw.js; public/assets/latest/main.js; docs/sw/SW_STRATEGY.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/validate-xml.js; node tools/verify-assets.mjs
+- CI STATUS: n/a (local)
+- DEPLOY STATUS: n/a (CI-only)
+- VERIFY (URLs + expected): curl -I https://pakrpp.com/ -> 301 Location: https://www.pakrpp.com/ ; curl -I https://www.pakrpp.com/__gg_worker_ping -> 200 + x-gg-worker-version
+- NOTES (gotchas): DEV cleanup runs on load and triggers one guarded reload if a controller existed.
+- RISKS: none
+- NEXT: TASK-0005

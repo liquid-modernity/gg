@@ -1433,6 +1433,56 @@ GG.actions.register('jump', function(ctx){
   };
 
   services.sw = services.sw || {};
+  services.sw.devCleanup = services.sw.devCleanup || function(){
+    if (services.sw._devCleaned) return;
+    services.sw._devCleaned = true;
+    if (!w.navigator || !("serviceWorker" in w.navigator)) {
+      try { if (w.console && console.info) console.info("GG DEV: SW & caches cleaned"); } catch (e) {}
+      return;
+    }
+
+    var reloadKey = "gg_dev_sw_cleaned";
+    var already = false;
+    try { already = !!(w.sessionStorage && w.sessionStorage.getItem(reloadKey)); } catch (e) {}
+
+    var tasks = [];
+    try {
+      tasks.push(
+        w.navigator.serviceWorker.getRegistrations()
+          .then(function(list){
+            return Promise.all(list.map(function(reg){
+              try { return reg.unregister(); } catch (e) { return null; }
+            }));
+          })
+          .catch(function(){})
+      );
+    } catch (e) {}
+
+    try {
+      if (w.caches && w.caches.keys) {
+        tasks.push(
+          w.caches.keys()
+            .then(function(keys){
+              var target = keys.filter(function(k){
+                return /^gg-/.test(k) || /^workbox-/.test(k);
+              });
+              return Promise.all(target.map(function(k){ return w.caches.delete(k); }));
+            })
+            .catch(function(){})
+        );
+      }
+    } catch (e) {}
+
+    Promise.all(tasks).then(function(){
+      var controlled = !!(w.navigator && w.navigator.serviceWorker && w.navigator.serviceWorker.controller);
+      if (controlled && !already) {
+        try { w.sessionStorage && w.sessionStorage.setItem(reloadKey, "1"); } catch (e) {}
+        w.location.reload();
+        return;
+      }
+      try { if (w.console && console.info) console.info("GG DEV: SW & caches cleaned"); } catch (e) {}
+    });
+  };
   services.sw.init = services.sw.init || function () {
     if (services.sw._init) return;
     var env = (w.GG && GG.env) ? GG.env : {};
@@ -1581,7 +1631,10 @@ GG.actions.register('jump', function(ctx){
 
   services.pwa = services.pwa || {};
   services.pwa.init = services.pwa.init || function(){
-    if (w.GG_IS_DEV) return;
+    if (w.GG_IS_DEV) {
+      if (services.sw && services.sw.devCleanup) services.sw.devCleanup();
+      return;
+    }
     services.manifest.init();
     if (GG.core && GG.core.ensureWorker) {
       GG.core.ensureWorker().then(function(ok){

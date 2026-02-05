@@ -194,8 +194,8 @@ self.addEventListener("fetch", (event) => {
       return fetch(req, { cache: "no-store" });
     }
 
-    if (path.startsWith("/assets/dev/")) {
-      log(url, "assets/dev network-only", path);
+    if (path.startsWith("/assets/latest/")) {
+      log(url, "assets/latest network-only", path);
       return fetch(req, { cache: "no-store" });
     }
 

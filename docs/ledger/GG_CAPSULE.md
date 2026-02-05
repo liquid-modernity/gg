@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Apex route purged from wrangler config (TASK-0004A)
+- DEV SW poisoning fixed (TASK-0004B)
 
 CONSTRAINTS:
 - main-only
@@ -25,10 +25,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0004B (SW dev-poisoning fix)
+- TASK-0005 (Routing stabilization)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004A remove apex route from wrangler config
+- 2026-02-05 TASK-0004B dev SW cleanup + /assets/latest SW rules
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
