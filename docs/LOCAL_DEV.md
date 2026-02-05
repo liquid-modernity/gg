@@ -1,4 +1,5 @@
 # Local Development
+Last updated: 2026-02-05
 
 ## Prereqs
 - macOS 10.15 (Catalina) tested
@@ -9,7 +10,7 @@
 
 ## Core Commands
 - Install deps: `npm ci`
-- Deploy Worker: `npm run deploy`
+- Deploy Worker: CI-only via GitHub Actions (`.github/workflows/deploy.yml`)
 - Verify repo: `./scripts/gg verify`
 - Smoke test: `./tools/smoke.sh`
 - Worker header audit: `./tools/verify-worker.sh`
@@ -22,8 +23,9 @@
   - Fix: ensure `www.pakrpp.com/*` routes to Worker `gg`.
 - Apex redirect missing:
   - Symptoms: `pakrpp.com` serves content without redirect.
-  - Fix: add Redirect Rule to `https://www.pakrpp.com/$1` or handle redirect in Worker.
+  - Fix: add Redirect Rule to `https://www.pakrpp.com/$1` (Cloudflare, 301).
 
 ## Notes
 - Canonical host is `www.pakrpp.com`.
 - `/_headers` and `/_redirects` must not be publicly served.
+- macOS 10.15 cannot run `wrangler` locally → deploy is CI-only.

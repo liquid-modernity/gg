@@ -1,4 +1,5 @@
 ## MASTER ROADMAP: Project "GAGA-ish" (Enterprise PWA on Blogger)
+Last updated: 2026-02-05
 
 **Target:** Enterprise Grade PWA | **Stack:** Blogger XML + Cloudflare (Mode B) + Vanilla JS (MVC-Lite)  
 **Filosofi:** "Stabilitas sebelum Ekspansi". Jangan membangun fitur "Beyond" di atas fondasi yang rapuh.
@@ -12,8 +13,8 @@ Sebelum menulis satu baris kode, pahami aturan ini. Ini adalah hukum yang mengik
 
 ### 0. Environment Model (Single Domain)
 - **Domain tunggal:** `www.pakrpp.com`.
-- **DEV:** theme = `index.dev.xml` → assets = `/dev/` → Service Worker **OFF**.
-- **PROD:** theme = `index.prod.xml` → assets = `/v/<TAG>/` → Service Worker **ON**.
+- **DEV:** theme = `index.dev.xml` → assets = `/assets/latest/` → Service Worker **OFF**.
+- **PROD:** theme = `index.prod.xml` → assets = `/assets/v/<RELEASE_ID>/` → Service Worker **ON**.
 - **Aturan utama:** DEV tidak boleh mengaktifkan SW / caching agresif (sumber “debugging palsu”).
 
 ### 1. Arsitektur: MVC-Lite (Single File Monolith)
@@ -64,8 +65,8 @@ Kalau ini tidak ada, jangan pakai label enterprise:
   - [ ] Git Repository Init (Struktur: `/src/js`, `/src/css`, `/src/xml`).
 - [ ] **Setup Cloudflare (Edge):**
   - [ ] Point domain ke Cloudflare.
-  - [ ] Setup Worker `gg-proxy` untuk Security Headers (CSP, HSTS).
-  - [ ] **CRITICAL:** Pastikan Worker bisa serve static assets (`sw.js`, `manifest.json`) dari root.
+  - [ ] Setup Worker `gg` untuk Security Headers (CSP, HSTS).
+  - [ ] **CRITICAL:** Worker `gg` harus serve static assets via `ASSETS` binding (same-domain).
 - [ ] **R-001: Release Safety Baseline (Wajib sebelum SPA):**
   - [ ] Skema versioning aset (`main.js?v=HASH`, `main.css?v=HASH`).
   - [ ] Cache-control policy (edge + browser) yang tidak mengunci user di versi lama.

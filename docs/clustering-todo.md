@@ -1,5 +1,8 @@
 # CLUSTERING_TODO.md: Project "GAGA-ish" (pakrpp.com)
-**Target:** Enterprise Grade PWA on Blogger | **Stack:** Blogger XML + Cloudflare Workers + GitHub Pages + Vanilla JS (ES6+)
+Last updated: 2026-02-05
+Status: BACKLOG/IDEAS (non-authoritative; see `docs/DOCUMENTATION.md` for authority ladder)
+
+**Target:** Enterprise Grade PWA on Blogger | **Stack:** Blogger XML + Cloudflare Workers + Worker Static Assets + Vanilla JS (ES6+)
 
 Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder & AI Agent. Kerjakan secara berurutan. Jangan melompat ke fase berikutnya sebelum fase saat ini selesai (checked).
 
@@ -8,8 +11,8 @@ Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder 
 
 ## 🧭 Environment Model (Single Domain)
 - **Domain:** `www.pakrpp.com` (tidak ada staging domain terpisah).
-- **DEV:** pasang `index.dev.xml` di Blogger Theme → assets dari `/dev/` → Service Worker **OFF**.
-- **PROD:** pasang `index.prod.xml` di Blogger Theme → assets dari `/v/<TAG>/` → Service Worker **ON**.
+- **DEV:** pasang `index.dev.xml` di Blogger Theme → assets dari `/assets/latest/` → Service Worker **OFF**.
+- **PROD:** pasang `index.prod.xml` di Blogger Theme → assets dari `/assets/v/<RELEASE_ID>/` → Service Worker **ON**.
 
 ## 🖥️ Phase 0: Environment & Tooling Setup
 *Tujuan: Menyiapkan lingkungan kerja Vibe Coder yang efisien agar CODEX fokus ke logika.*
@@ -44,12 +47,12 @@ Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder 
 - [ ] **Cloudflare Setup (DNS & Workers):**
     - [ ] Point domain `pakrpp.com` ke Cloudflare.
     - [ ] Aktifkan **Cloudflare Workers** (Free Plan).
-    - [ ] Buat Worker: `gg-proxy-worker`.
+    - [ ] Buat Worker: `gg`.
     - [ ] **Worker Logic 1 (HTMLRewriter):** Setup logic untuk inject Security Headers (CSP, HSTS) & Dynamic Meta Tags (OG Image).
     - [ ] **Worker Logic 2 (Image Proxy):** Setup endpoint untuk bypass CORS (solusi *Tainted Canvas* untuk fitur Share Poster).
     - [ ] **Worker Logic 3 (Sanitizer):** Auto-remove parameter `?m=1` dan canonical handling.
-- [ ] **GitHub Pages / Assets Host:**
-    - [ ] Setup branch `gh-pages` atau folder `/docs` untuk hosting file JS/CSS/Fonts (sebagai CDN pribadi).
+- [ ] **Worker Static Assets (same-domain):**
+    - [ ] Serve file JS/CSS/Fonts via Worker `ASSETS` binding di `www.pakrpp.com`.
 
 ---
 
@@ -165,10 +168,10 @@ Dokumen ini adalah panduan langkah demi langkah (step-by-step) untuk Vibe Coder 
     - [ ] Buat workflow `.yaml` untuk:
         - [ ] Linting (ESLint).
         - [ ] Bundling & Minification (Esbuild/Terser).
-        - [ ] Deploy ke branch `gh-pages`.
+        - [ ] Deploy Worker via GitHub Actions (CI-only `wrangler`).
 - [ ] **Font Subsetting:**
-    - [ ] Proses font (Inter/Roboto) menggunakan `glyphhanger` atau `pyftsubset`.
-    - [ ] Hapus glyph yang tidak terpakai, convert ke WOFF2, host di GitHub.
+  - [ ] Proses font (Inter/Roboto) menggunakan `glyphhanger` atau `pyftsubset`.
+  - [ ] Hapus glyph yang tidak terpakai, convert ke WOFF2, host via Worker `ASSETS` (same-domain).
 - [ ] **Keyboard Shortcuts (Tinykeys):**
     - [ ] Binding tombol `/`, `Esc`, `j`, `k` ke fungsi navigasi.
 - [ ] **Security Final Check:**

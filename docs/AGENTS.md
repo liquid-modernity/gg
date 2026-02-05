@@ -1,4 +1,5 @@
 # AGENTS.md — GAGA-ish Universal Instructions
+Last updated: 2026-02-05
 
 You are Codex running inside this repository.
 
@@ -7,6 +8,12 @@ You are Codex running inside this repository.
 - Make changes inside the repo only.
 - Run verification commands before committing.
 - Do not push if verification fails, if secrets are detected, or if branch/remote is unexpected.
+
+## TASK LOGGING (MANDATORY)
+- Append a new entry to `docs/ledger/TASK_LOG.md` for every task (never edit old entries).
+- Update `docs/ledger/GG_CAPSULE.md` (overwrite) with NOW/NEXT/LAST_PATCH and current RELEASE_ID.
+- Update `docs/ledger/TASK_REPORT.md` (overwrite) with full details and verification steps.
+- If any step cannot be completed, record the reason in `docs/ledger/TASK_LOG.md` and `docs/ledger/TASK_REPORT.md`.
 
 ## Owner Context
 - Secrets available (GitHub Actions): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID`.
@@ -17,7 +24,7 @@ You are Codex running inside this repository.
 ## Default workflow for keyword "GG_RUN"
 1) Read @GG_CAPSULE_V1 in main.js and identify NEXT_TASK.
 2) Implement ONLY that task.
-3) Update TASK_report.md (Task ID + Changes bullets must be present).
+3) Update `docs/ledger/TASK_REPORT.md` (Task ID + Changes bullets must be present).
 4) Run: ./scripts/gg auto
 5) If any step fails, STOP and report what failed.
 

@@ -1,4 +1,5 @@
 # TECH_STACK.md: Project "GAGA-ish" Technical Manual
+Last updated: 2026-02-05
 **Role:** The "How-To" & "Toolbox" for Vibe Coder & AI Agent.  
 **Authority:** Subservient to `roadmap.md`. Consult this file for implementation details, library choices, and strict architectural rules.
 
@@ -13,13 +14,13 @@
   1. Read Capsule -> Identify `NEXT_TASK`.
   2. Execute **ONE** task only.
   3. Update Capsule (`LAST_PATCH`, `NEXT_TASK`).
-  4. Generate `TASK_report.md`.
+  4. Generate `docs/ledger/TASK_REPORT.md`.
 
 
 ### 1.1.1 Environment Model (Single Domain)
 - **Domain:** `www.pakrpp.com`.
-- **DEV:** pasang `index.dev.xml` → assets `/dev/` → SW **OFF** (hindari cache lock).
-- **PROD:** pasang `index.prod.xml` → assets `/v/<TAG>/` → SW **ON**.
+- **DEV:** pasang `index.dev.xml` → assets `/assets/latest/` → SW **OFF** (hindari cache lock).
+- **PROD:** pasang `index.prod.xml` → assets `/assets/v/<RELEASE_ID>/` → SW **ON**.
 
 ### 1.2 Strict Coding Constraints
 * **Pure JS Only:** `main.js` must be valid ES6+. No `<script>` tags, no `CDATA`, no `&quot;` entities.
@@ -63,7 +64,7 @@ We avoid a "Spaghetti Monolith" by enforcing these internal namespaces:
 ## ⚡ SECTION 3: THE INFRASTRUCTURE (Cloudflare Mode B)
 *Enterprise-like control using Free Tier tools.*
 
-### 3.1 Cloudflare Workers (`gg-proxy`)
+### 3.1 Cloudflare Workers (`gg`)
 We place Cloudflare in front of Blogger to overcome platform limitations:
 * **Security Headers:** HSTS, CSP (hash-based), X-Frame-Options, Permissions-Policy.
 * **HTMLRewriter:**
@@ -72,8 +73,8 @@ We place Cloudflare in front of Blogger to overcome platform limitations:
   * Lazy-load native comments script (rename `src` -> `data-src`) to avoid main-thread blocking.
 * **Image Proxy:** CORS bypass for Canvas/Poster + Accept-based AVIF/WebP negotiation.
 
-### 3.2 GitHub Assets
-Host `main.js`, `main.css`, fonts (WOFF2), `manifest.json` on GitHub for fast static delivery.
+### 3.2 Worker Static Assets (same-domain)
+Host `main.js`, `main.css`, fonts (WOFF2), `manifest.webmanifest`, and `offline.html` via the Worker `ASSETS` binding on `www.pakrpp.com`.
 
 ---
 

@@ -1,4 +1,5 @@
 # Cloudflare Setup (Worker + Routes)
+Last updated: 2026-02-05
 
 ## 1) Domain + DNS
 - Ensure `pakrpp.com` is on Cloudflare.
@@ -7,16 +8,15 @@
 
 ## 2) Worker
 - Worker name: `gg`.
-- Deploy with `wrangler` using `wrangler.jsonc` in this repo.
+- Deploy via GitHub Actions using `wrangler` with `wrangler.jsonc` (CI-only on macOS 10.15).
 - Static assets are served from `public/` via the `ASSETS` binding.
 
 ## 3) Routes (HTTP Routes)
 Required route:
 - `www.pakrpp.com/*` -> Worker `gg`
 
-Apex handling (choose one):
-- Option A (recommended): Cloudflare Redirect Rule 301 from `pakrpp.com/*` to `https://www.pakrpp.com/$1` (preserve path + query).
-- Option B: Add Worker route for `pakrpp.com/*` and have the Worker return a 301 to `www`.
+Apex handling (required):
+- Cloudflare Redirect Rule 301 from `pakrpp.com/*` to `https://www.pakrpp.com/$1` (preserve path + query).
 
 Only one canonical host must serve content. Do not allow both `www` and apex to serve pages.
 
