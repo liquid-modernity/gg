@@ -133,45 +133,61 @@ jobs:
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-        run: |
-          set -e
-          if [ -z "${CF_ZONE_ID}" ]; then
-            echo "ERROR: CLOUDFLARE_ZONE_ID secret is missing or empty"
-            exit 1
-          fi
-          echo "ZONE_ID=${CF_ZONE_ID}"
-
-          echo "Fetch workers/routes"
-          ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes")"
-          echo "$ROUTES_JSON" | head -c 2000
-          printf '%s' "$ROUTES_JSON" | python3 - <<'PY'
+        run: |-
+          python3 - <<'PY'
           import json
-          import sys                                   
-                                     txt = sys.stdin.read().strip()
-                                     if not txt:
-                                         print("ERROR: workers/routes empty response")
-                                             sys.exit(1)
-                                             try:
-                                                 data = json.loads(txt)
-                                                 except Exception as e:
-                                                     print("ERROR: workers/routes invalid JSON:", e)
-                                                         sys.exit(1)
-                                                         if not data.get("success"):
-                                                             print("ERROR: workers/routes failed:", data.get("errors"))
-                                                                 print("HINT: ensure token has Zone:Workers Routes:Read permissions")
-                                                                     sys.exit(1)
-                                                                     print("routes_ok")                                                                     
-                                                                     print("Extract patterns => script")
-                                                                     for r in data.get("result", []):
-                                                                     print(r.get("pattern"), "=>", r.get("script"))
-                                                                     patterns = {r.get("pattern") for r in data.get("result", [])}
-                                                                     required = {"www.pakrpp.com/*"}
-                                                                     missing = sorted(required - patterns)
-                                                                     if missing:
-                                                                         print("ERROR: missing wildcard routes:", ", ".join(missing))
-                                                                             sys.exit(1)
-                                                                             print("wildcard_routes_ok")
-                                                                             PY
+          import os
+          import sys
+          import urllib.request
+
+          zone_id = os.environ.get("CF_ZONE_ID", "").strip()
+          token = os.environ.get("CF_TOKEN", "").strip()
+
+          if not zone_id:
+              print("ERROR: CLOUDFLARE_ZONE_ID secret is missing or empty")
+              sys.exit(1)
+
+          url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/workers/routes"
+          req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+          print(f"ZONE_ID={zone_id}")
+          print("Fetch workers/routes")
+          try:
+              with urllib.request.urlopen(req, timeout=20) as resp:
+                  txt = resp.read().decode("utf-8", "replace")
+          except Exception as e:
+              print("ERROR: workers/routes request failed:", e)
+              sys.exit(1)
+
+          print(txt[:2000])
+
+          if not txt.strip():
+              print("ERROR: workers/routes empty response")
+              sys.exit(1)
+          try:
+              data = json.loads(txt)
+          except Exception as e:
+              print("ERROR: workers/routes invalid JSON:", e)
+              sys.exit(1)
+          if not data.get("success"):
+              print("ERROR: workers/routes failed:", data.get("errors"))
+              print("HINT: ensure token has Zone:Workers Routes:Read permissions")
+              sys.exit(1)
+
+          print("Extract patterns => script")
+          for r in data.get("result", []):
+              print(f"{r.get('pattern')} => {r.get('script')}")
+
+          patterns = {r.get("pattern") for r in data.get("result", [])}
+          required = {"www.pakrpp.com/*"}
+          missing = sorted(required - patterns)
+          if missing:
+              print("ERROR: missing wildcard routes:", ", ".join(missing))
+              sys.exit(1)
+
+          print("wildcard_routes_ok")
+          PY
+
+      
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
