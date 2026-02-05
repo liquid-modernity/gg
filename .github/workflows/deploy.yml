@@ -93,46 +93,39 @@ jobs:
           echo "Fetch workers/routes"
           ROUTES_JSON="$(curl -sS -H "Authorization: Bearer ${CF_TOKEN}" "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes")"
           echo "$ROUTES_JSON" | head -c 2000
-          python3 - <<'PY'
-          import json,sys
-          txt=sys.stdin.read().strip()
-          if not txt:
-            print("ERROR: workers/routes empty response")
-            sys.exit(1)
-          try:
-            data=json.loads(txt)
-          except Exception as e:
-            print("ERROR: workers/routes invalid JSON:", e)
-            sys.exit(1)
-          if not data.get("success"):
-            print("ERROR: workers/routes failed:", data.get("errors"))
-            print("HINT: ensure token has Zone:Workers Routes:Read permissions")
-            sys.exit(1)
-          print("routes_ok")
-          PY
-          <<<"$ROUTES_JSON"
+          printf '%s' "$ROUTES_JSON" | python3 -c $'import json,sys\n\
+txt=sys.stdin.read().strip()\n\
+if not txt:\n\
+  print("ERROR: workers/routes empty response")\n\
+  sys.exit(1)\n\
+try:\n\
+  data=json.loads(txt)\n\
+except Exception as e:\n\
+  print("ERROR: workers/routes invalid JSON:", e)\n\
+  sys.exit(1)\n\
+if not data.get("success"):\n\
+  print("ERROR: workers/routes failed:", data.get("errors"))\n\
+  print("HINT: ensure token has Zone:Workers Routes:Read permissions")\n\
+  sys.exit(1)\n\
+print("routes_ok")'
 
           echo "Extract patterns => script"
-          printf "%s" "$ROUTES_JSON" | python3 - <<'PY'
-          import sys, json
-          data=json.load(sys.stdin)
-          print("success:", data.get("success"))
-          for r in data.get("result", []):
-              print(r.get("pattern"), "=>", r.get("script"))
-          PY
+          printf "%s" "$ROUTES_JSON" | python3 -c $'import sys, json\n\
+data=json.load(sys.stdin)\n\
+print("success:", data.get("success"))\n\
+for r in data.get("result", []):\n\
+  print(r.get("pattern"), "=>", r.get("script"))'
 
           echo "Assert wildcard routes exist"
-          printf "%s" "$ROUTES_JSON" | python3 - <<'PY'
-          import sys, json
-          data=json.load(sys.stdin)
-          patterns={r.get("pattern") for r in data.get("result", [])}
-          required=("www.pakrpp.com/*",)
-          missing=[p for p in required if p not in patterns]
-          if missing:
-            print("ERROR: missing wildcard routes:", ", ".join(missing))
-            sys.exit(1)
-          print("wildcard_routes_ok")
-          PY
+          printf "%s" "$ROUTES_JSON" | python3 -c $'import sys, json\n\
+data=json.load(sys.stdin)\n\
+patterns={r.get("pattern") for r in data.get("result", [])}\n\
+required=("www.pakrpp.com/*",)\n\
+missing=[p for p in required if p not in patterns]\n\
+if missing:\n\
+  print("ERROR: missing wildcard routes:", ", ".join(missing))\n\
+  sys.exit(1)\n\
+print("wildcard_routes_ok")'
 
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
