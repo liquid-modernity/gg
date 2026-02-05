@@ -55,12 +55,12 @@ task_report_path(){
     echo "$root/TASK_REPORT.md"
     return 0
   fi
-  if [[ -f "$root/TASK_report.md" ]]; then
-    echo "$root/TASK_report.md"
+  if [[ -f "$root/TASK_REPORT.md" ]]; then
+    echo "$root/TASK_REPORT.md"
     return 0
   fi
-  if [[ -f "$root/task_report.md" ]]; then
-    echo "$root/task_report.md"
+  if [[ -f "$root/TASK_REPORT.md" ]]; then
+    echo "$root/TASK_REPORT.md"
     return 0
   fi
   if [[ -f "$root/docs/ledger/TASK_REPORT.md" ]]; then
