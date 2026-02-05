@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Config (safe defaults) ---
-ALLOWED_MAIN_BRANCHES=("main" "dev")
+ALLOWED_MAIN_BRANCHES=("main")
 AUTO_BRANCH_PREFIX="gg"
 MAX_STAGED_FILE_BYTES=$((2 * 1024 * 1024)) # 2MB per file staged (adjust if needed)
 
@@ -140,21 +140,31 @@ ensure_remote_safe(){
   [[ "$url" == *"github.com"* ]] || die "Unsafe remote URL (not github.com): $url"
 }
 
-# Read KEY: VALUE from inside /* @GG_CAPSULE_V1 ... */
+capsule_md_path(){
+  local root; root="$(repo_root)"
+  [[ -n "$root" ]] || die "repo_root empty"
+  if [[ -f "$root/docs/ledger/GG_CAPSULE.md" ]]; then
+    echo "$root/docs/ledger/GG_CAPSULE.md"
+    return 0
+  fi
+  return 1
+}
+
+# Read NEXT_TASK from docs/ledger/GG_CAPSULE.md (markdown list)
 capsule_get(){
   local file="$1"
   local key="$2"
   [[ -f "$file" ]] || die "File not found: $file"
-
   awk -v k="$key" '
-    /\/\* @GG_CAPSULE_V1/ {inside=1}
-    inside==1 && $0 ~ "^[[:space:]]*"k":[[:space:]]*" {
-      sub("^[[:space:]]*"k":[[:space:]]*", "", $0)
-      gsub(/[[:space:]]+$/, "", $0)
-      print $0
+    BEGIN{found=0}
+    $0 ~ "^"k":[[:space:]]*$" {found=1; next}
+    found==1 && /^[[:space:]]*-[[:space:]]+/ {
+      line=$0
+      sub(/^[[:space:]]*-[[:space:]]+/, "", line)
+      print line
       exit
     }
-    inside==1 && /\*\// {inside=0}
+    found==1 && /^[[:space:]]*[A-Za-z0-9_-]+:/ {exit}
   ' "$file"
 }
 
@@ -173,10 +183,10 @@ sanitize_taskid(){
 get_taskid(){
   local root; root="$(repo_root)"
   local next
-  local mainjs
-  mainjs="$(main_js_path || true)"
-  [[ -n "$mainjs" ]] || { warn "main.js not found (checked root and public/assets/dev)"; echo ""; return 0; }
-  next="$(capsule_get "$mainjs" "NEXT_TASK" || true)"
+  local cap
+  cap="$(capsule_md_path || true)"
+  [[ -n "$cap" ]] || { warn "GG_CAPSULE.md not found (expected docs/ledger/GG_CAPSULE.md)"; echo ""; return 0; }
+  next="$(capsule_get "$cap" "NEXT_TASK" || true)"
   next="$(sanitize_taskid "$next")"
   echo "$next"
 }
@@ -247,34 +257,9 @@ commit_message_auto(){
 
 ensure_work_branch(){
   local branch; branch="$(current_branch)"
-  local taskid; taskid="$(get_taskid || true)"
-  [[ -n "$taskid" ]] || warn "NEXT_TASK not found or invalid. Branching will be generic."
-
-  # If already on feature branch, keep it.
-  if [[ "$branch" == "$AUTO_BRANCH_PREFIX/"* ]]; then
-    echo "$branch"
-    return 0
+  if [[ "$branch" != "main" ]]; then
+    die "Main-only workflow: switch to 'main' before proceeding."
   fi
-
-  # If on main/dev, create a task branch
-  if has_value_in_array "$branch" "${ALLOWED_MAIN_BRANCHES[@]}"; then
-    local new_branch
-    if [[ -n "$taskid" ]]; then
-      new_branch="$AUTO_BRANCH_PREFIX/$taskid"
-    else
-      new_branch="$AUTO_BRANCH_PREFIX/work"
-    fi
-
-    if git show-ref --verify --quiet "refs/heads/$new_branch"; then
-      git checkout "$new_branch"
-    else
-      git checkout -b "$new_branch"
-    fi
-    echo "$new_branch"
-    return 0
-  fi
-
-  # Otherwise leave as-is (user may be in custom branch)
   echo "$branch"
 }
 
@@ -386,10 +371,10 @@ ship_repo(){
   need_git
   ensure_remote_safe
 
-  # Force safe workflow: never auto-ship on main/dev
+  # Main-only workflow
   local branch; branch="$(current_branch)"
-  if has_value_in_array "$branch" "${ALLOWED_MAIN_BRANCHES[@]}"; then
-    die "Refusing to ship on '$branch'. Run: ./scripts/gg branch  (or create a feature branch manually)."
+  if [[ "$branch" != "main" ]]; then
+    die "Refusing to ship off 'main'. Switch to 'main' and retry."
   fi
 
   git add -A
@@ -454,7 +439,7 @@ case "$CMD" in
     ;;
   *)
     echo "Usage:"
-    echo "  ./scripts/gg task        # print NEXT_TASK from @GG_CAPSULE_V1"
+  echo "  ./scripts/gg task        # print NEXT_TASK from docs/ledger/GG_CAPSULE.md"
   echo "  ./scripts/gg msg         # generate commit message from TASK_REPORT.md + NEXT_TASK"
     echo "  ./scripts/gg bump        # bump GG_ASSET_VER + ?v= in index.dev.xml/index.prod.xml"
     echo "  ./scripts/gg branch      # ensure you're on a safe feature branch"

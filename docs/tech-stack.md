@@ -9,7 +9,7 @@ Last updated: 2026-02-05
 *Rules of engagement derived from `roadmap.md`.*
 
 ### 1.1 The "Living Ledger" Protocol
-* **Single Source of Truth:** Use `@GG_CAPSULE_V1` at the top of `main.js`.
+* **Single Source of Truth:** Use `docs/ledger/GG_CAPSULE.md` for NOW/NEXT/LAST_PATCH.
 * **The Loop:**
   1. Read Capsule -> Identify `NEXT_TASK`.
   2. Execute **ONE** task only.

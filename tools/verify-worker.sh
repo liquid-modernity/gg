@@ -17,8 +17,8 @@ fi
 echo "RELEASE_ID ${REL}"
 
 urls=(
-  "${base}/assets/dev/main.css?x=1"
-  "${base}/assets/dev/main.js?x=1"
+  "${base}/assets/latest/main.css?x=1"
+  "${base}/assets/latest/main.js?x=1"
   "${base}/assets/v/${REL}/main.css?x=1"
   "${base}/assets/v/${REL}/main.js?x=1"
   "${base}/sw.js?x=1"

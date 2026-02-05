@@ -6,7 +6,7 @@ chmod +x scripts/gg
 GG_RUN.
 
 Rules:
-- Follow NEXT_TASK in @GG_CAPSULE_V1 (main.js) unless user overrides.
+- Follow NEXT_TASK in `docs/ledger/GG_CAPSULE.md` unless user overrides.
 - Do ONE task only.
 - Task logging is mandatory:
   - Append `docs/ledger/TASK_LOG.md` (never edit old entries).

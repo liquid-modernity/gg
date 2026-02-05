@@ -1,3 +1,5 @@
+**Addendum (2026-02-05)**: DEV asset path changed to `/assets/latest/*` (replaces `/assets/dev/*`).
+
 **Executive Summary**
 - Manual paste is the release gate: `index.dev.xml` vs `index.prod.xml` drive asset origins and PWA behavior, but CI cannot verify which XML is actually pasted into Blogger, so a wrong paste can fully break CSS/JS or silently disable PWA/SW. `index.dev.xml:16` `index.dev.xml:19` `index.dev.xml:2792` `index.prod.xml:17` `index.prod.xml:2789` `.github/workflows/ci.yml:17` `.github/workflows/ci.yml:24`
 - Production assets and `/blog` routing depend on the Cloudflare Worker being active on the host; if Worker routes are missing (especially apex), assets 404 and `/blog` aliasing breaks. `src/worker.js:146` `src/worker.js:193` `src/worker.js:160` `wrangler.jsonc:16` `.github/workflows/deploy.yml:119`
@@ -81,4 +83,3 @@ Request flow: Browser → Cloudflare Worker → Blogger HTML/XML → Client JS �
 12. From a content page, use the back button and verify it returns to listing/home according to `gg_last_listing` behavior.
 13. In Blogger preview with dev XML, verify assets load from jsdelivr; then switch to prod XML and observe asset 404s.
 14. In prod, temporarily remove `/assets/v/1ce85ce` folder and run deploy preflight; confirm deploy fails on missing assets.
-

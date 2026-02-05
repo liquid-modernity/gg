@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- TASK-0002 asset release contract implemented (latest vs pinned)
+- TASK-0002A contract cleanup (main-only, GG_CAPSULE md-only, assets/latest consistency)
 
 CONSTRAINTS:
 - main-only
@@ -27,7 +27,7 @@ NEXT_TASK:
 - TASK-0003
 
 LAST_PATCH:
-- 2026-02-05 TASK-0002 implement asset release contract (latest vs pinned)
+- 2026-02-05 TASK-0002A contract cleanup (main-only + GG_CAPSULE md-only)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

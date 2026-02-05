@@ -4,10 +4,11 @@ Last updated: 2026-02-05
 You are Codex running inside this repository.
 
 ## Non-negotiables
-- Work on ONE task per run. Read @GG_CAPSULE_V1 in main.js and follow NEXT_TASK unless user overrides.
+- Work on ONE task per run. Read `docs/ledger/GG_CAPSULE.md` and follow NEXT_TASK unless user overrides.
 - Make changes inside the repo only.
 - Run verification commands before committing.
 - Do not push if verification fails, if secrets are detected, or if branch/remote is unexpected.
+- Main-only workflow: stay on `main` (no forced feature branches).
 
 ## TASK LOGGING (MANDATORY)
 - Append a new entry to `docs/ledger/TASK_LOG.md` for every task (never edit old entries).
@@ -22,7 +23,7 @@ You are Codex running inside this repository.
 - Infra goals: "Saya mau preview hasil style/JS".
 
 ## Default workflow for keyword "GG_RUN"
-1) Read @GG_CAPSULE_V1 in main.js and identify NEXT_TASK.
+1) Read `docs/ledger/GG_CAPSULE.md` and identify NEXT_TASK.
 2) Implement ONLY that task.
 3) Update `docs/ledger/TASK_REPORT.md` (Task ID + Changes bullets must be present).
 4) Run: ./scripts/gg auto

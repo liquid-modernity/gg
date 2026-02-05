@@ -151,44 +151,6 @@ Kalau ini tidak ada, jangan pakai label enterprise:
 
 ---
 
-## 📝 PART III: THE LIVING LEDGER (@GG_CAPSULE)
+## 📝 PART III: THE LIVING LEDGER (GG_CAPSULE.md)
 
-Gunakan blok di bawah ini sebagai **Single Source of Truth** di setiap sesi coding AI. Copy-paste blok ini ke paling atas file `main.js`. Update isinya setiap kali satu task selesai.
-
-```javascript
-/* @GG_CAPSULE_V1
-VERSION: 2026-02-03
-LAST_PATCH: (Initial Setup)
-NEXT_TASK: T-001
-GOAL: Establish Pure JS baseline & MVC-Lite Architecture
-
-=== CONTEXT ===
-STACK: Blogger XML + Cloudflare (Mode B) + Vanilla JS
-FILES: index.xml (View), main.js (Controller/Logic), main.css (Style)
-DEPLOY: Cloudflare Workers wraps Blogger Origin
-
-=== OPEN TASKS (Prioritized) ===
-R-001 [Critical] Release safety baseline (asset versioning + rollback)
-O-001 [Critical] Observability baseline (error logging endpoint + hooks)
-QA-001 [Critical] Smoke test checklist (no-JS readable + comments ok)
-T-001 [Critical] Make main.js pure JS (No HTML entities, No <script>, No CDATA)
-T-002 [Critical] Clean index.xml (Remove inline JS, deduplicate boot)
-T-003 [Arch] Relocate logic to GG.store / GG.services / GG.actions (No refactor yet)
-C-001 [Style] Define CSS layers & Z-Index variables (No visual change)
-X-001 [Conn] Audit JS<->CSS state contracts (data-attributes)
-F-001 [Feat] Implement Client-side Router (History API)
-SW-001 [Feat] SW safety (kill-switch + versioning)
-F-002 [Feat] Implement Super Search (Fuse.js + IDB)
-
-=== OUTPUT RULES ===
-- DO NOT output raw code or diffs in the chat.
-- GENERATE a single file: "TASK_report.md".
-- "TASK_report.md" MUST contain:
-  1. TASK_SUMMARY: What was done.
-  2. TASK_PROOF: Verification counts (e.g., <script> count = 0).
-  3. FILE_CONTENT: The full valid code (or large hunks) ready to copy.
-  4. CAPSULE_UPDATE: The updated @GG_CAPSULE_V1 block.
-
-=== PATCHLOG ===
-(Empty)
-*/
+Single source of truth per session is `docs/ledger/GG_CAPSULE.md` (NOW/NEXT/LAST_PATCH). Do not embed capsule blocks in `main.js`.
