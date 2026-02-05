@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- TASK-0003 update deploy workflow (auto after CI + manual gated + smoke always)
+- Docs freeze applied (TASK-0001.5)
 
 CONSTRAINTS:
 - main-only
@@ -21,13 +21,14 @@ LIVE CONTRACT (must hold):
 - worker ping: https://www.pakrpp.com/__gg_worker_ping
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
 - pinned assets (PROD): https://www.pakrpp.com/assets/v/c21421c/main.js (immutable)
+- sw.js: https://www.pakrpp.com/sw.js (no-store)
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0004
+- TASK-0004 (TBD next implementation)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0003 update deploy workflow (auto after CI + manual gated + smoke always)
+- 2026-02-05 TASK-0001.5 doc normalization freeze
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

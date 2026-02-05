@@ -4,21 +4,13 @@ Last updated: 2026-02-05
 ## Authority Ladder
 If any document conflicts, follow the highest authority below.
 
-**Authoritative (source of truth)**
-- `docs/AI/CONTEXT_PACK.md`
-- `docs/DOCUMENTATION.md`
-- `docs/CLOUDFLARE_SETUP.md`
-- `docs/LOCAL_DEV.md`
-- `docs/ledger/GG_CAPSULE.md`
+1) `docs/ledger/GG_CAPSULE.md` (live state: NOW/NEXT/RELEASE_ID, endpoints)
+2) `docs/AI/CONTEXT_PACK.md` (stable rules and constraints)
+3) `docs/release/ASSET_CONTRACT.md` (asset/cache contract details)
+4) `docs/ci/PIPELINE.md` (pipeline reference)
+5) Everything else (supporting, may be stale)
 
-**Secondary (plans/how-to)**
-- `docs/roadmap.md`
-- `docs/tech-stack.md`
-- `docs/note for gaga.md`
-- `docs/audit/AUDIT_REPORT.md`
-
-**Deprecated / Backlog**
-- `docs/clustering-todo.md` (explicitly marked BACKLOG/IDEAS)
+Conflict rule: **GG_CAPSULE wins for state**. **Contracts win for behavior**.
 
 ## What This Repo Is
 This repo contains the Blogger theme assets and the Cloudflare Worker that fronts the Blogger origin. The Worker serves root assets (`/sw.js`, `/manifest.webmanifest`, `/offline.html`), proxies Blogger pages, and adds required headers.
@@ -30,7 +22,7 @@ Canonical host is `www.pakrpp.com`. The apex `pakrpp.com` must redirect via a **
 - `docs/AI/CONTEXT_PACK.md`
 - `docs/CLOUDFLARE_SETUP.md`
 - `docs/LOCAL_DEV.md`
-- `tech-stack.md`
+- `docs/tech-stack.md`
 
 ## Production Invariants (Checklist)
 - `www.pakrpp.com/*` is routed to Worker `gg`.

@@ -143,3 +143,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): deploy workflow now triggers on CI workflow_run; manual dispatch enforces main and full preflight.
 - RISKS: smoke relies on live endpoints; failures will block deploy.
 - NEXT: TASK-0004
+
+---
+
+## 2026-02-05 — TASK-0001.5 — Doc contract normalization freeze
+- DATE: 2026-02-05
+- TASK_ID: TASK-0001.5
+- TITLE: Doc contract normalization freeze (single truth + no drift)
+- MODE (DEV/PROD impact): docs only
+- RELEASE_ID: c21421c
+- SCOPE: documentation authority ladder, context pack, audit snapshot handling
+- CHANGES (files touched): docs/AI/CONTEXT_PACK.md; docs/DOCUMENTATION.md; docs/audit/AUDIT_REPORT.md; docs/audit/AUDIT_REPORT_2026-02-05.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a (docs-only)
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): audit report is now a snapshot; live state is only in GG_CAPSULE + index.prod.xml.
+- RISKS: none
+- NEXT: TASK-0004

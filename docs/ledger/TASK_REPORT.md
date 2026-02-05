@@ -1,29 +1,30 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0003
-TITLE: Update deploy workflow (auto after CI + manual gated + smoke always)
+TASK_ID: TASK-0001.5
+TITLE: Doc contract normalization freeze (single truth + no drift)
 
 TASK_SUMMARY
-- Deploy workflow now triggers on CI workflow_run success for main and also allows manual dispatch with full preflight gate.
-- Manual dispatch is constrained to main and uses the same preflight checks as auto deploy.
-- Post-deploy smoke tests now run unconditionally and fail the workflow on any smoke failure.
-- Added pipeline documentation and XML helper scripts to satisfy preflight commands.
+- Rewrote `docs/AI/CONTEXT_PACK.md` to be stable-only (no live state) and point to GG_CAPSULE + index.prod.xml for live values.
+- Established a strict authority ladder at the top of `docs/DOCUMENTATION.md`.
+- Converted the audit report into a dated snapshot and added a new stub `AUDIT_REPORT.md` that flags staleness and points to rerun instructions.
+- Updated GG_CAPSULE to reflect the docs freeze as current state.
 
 FILES_CHANGED
-- .github/workflows/deploy.yml
-- docs/ci/PIPELINE.md
-- package.json
+- docs/AI/CONTEXT_PACK.md
+- docs/DOCUMENTATION.md
+- docs/audit/AUDIT_REPORT.md
+- docs/audit/AUDIT_REPORT_2026-02-05.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION
-- Ran: `bash tools/check-links.sh`
-- Ran: `node tools/validate-xml.js`
-- Ran: `node tools/verify-assets.mjs`
-- Result: PASSED
+- Manual check: `docs/AI/CONTEXT_PACK.md` contains no mutable release-id value.
+- Manual check: `docs/ledger/GG_CAPSULE.md` contains NOW/NEXT/RELEASE_ID/live endpoints.
+- Manual check: `docs/audit/AUDIT_REPORT.md` is a snapshot stub pointing to `AUDIT_REPORT_2026-02-05.md`.
+- Suggested grep: `rg -n "release_id" docs/AI docs/DOCUMENTATION.md` → no live values outside GG_CAPSULE.
 
 RISKS / ROLLBACK
-- Risk: smoke tests depend on live endpoints; failures will block deploy until endpoints are fixed.
+- Risk: none (docs-only).
 - Rollback: revert this commit.
