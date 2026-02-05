@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- TASK-0001.5 docs harmonization freeze completed
+- TASK-0001.6 updated gg verify paths for assets/latest and TASK_REPORT
 
 CONSTRAINTS:
 - main-only
@@ -27,7 +27,7 @@ NEXT_TASK:
 - TASK-0002
 
 LAST_PATCH:
-- 2026-02-05 TASK-0001.5 docs harmonization freeze
+- 2026-02-05 TASK-0001.6 update gg verify paths
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

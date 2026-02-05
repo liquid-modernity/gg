@@ -74,3 +74,20 @@ Last updated: 2026-02-05
 - NOTES (gotchas): Warnings: main.js/main.css not found (root or public/assets/dev); TASK_report.md missing (not fatal)
 - RISKS: none
 - NEXT: TASK-0002
+---
+
+## 2026-02-05 — TASK-0001.6 — gg verify path updates
+- DATE: 2026-02-05
+- TASK_ID: TASK-0001.6
+- TITLE: Update gg verify paths after dev→latest rename and TASK_REPORT rename
+- MODE (DEV/PROD impact): tooling only
+- RELEASE_ID: 1ce85ce
+- SCOPE: tools/scripts:gg + ledger updates
+- CHANGES (files touched): tools/scripts:gg; docs/ledger/TASK_REPORT.md; docs/ledger/TASK_LOG.md; docs/ledger/GG_CAPSULE.md
+- COMMANDS RUN (local): ./scripts/gg verify
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): verify now checks public/assets/latest and TASK_REPORT.md
+- RISKS: none
+- NEXT: TASK-0002

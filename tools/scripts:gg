@@ -27,8 +27,8 @@ main_js_path(){
     echo "$root/main.js"
     return 0
   fi
-  if [[ -f "$root/public/assets/dev/main.js" ]]; then
-    echo "$root/public/assets/dev/main.js"
+  if [[ -f "$root/public/assets/latest/main.js" ]]; then
+    echo "$root/public/assets/latest/main.js"
     return 0
   fi
   return 1
@@ -41,8 +41,8 @@ main_css_path(){
     echo "$root/main.css"
     return 0
   fi
-  if [[ -f "$root/public/assets/dev/main.css" ]]; then
-    echo "$root/public/assets/dev/main.css"
+  if [[ -f "$root/public/assets/latest/main.css" ]]; then
+    echo "$root/public/assets/latest/main.css"
     return 0
   fi
   return 1
@@ -51,12 +51,20 @@ main_css_path(){
 task_report_path(){
   local root; root="$(repo_root)"
   [[ -n "$root" ]] || die "repo_root empty"
+  if [[ -f "$root/TASK_REPORT.md" ]]; then
+    echo "$root/TASK_REPORT.md"
+    return 0
+  fi
   if [[ -f "$root/TASK_report.md" ]]; then
     echo "$root/TASK_report.md"
     return 0
   fi
   if [[ -f "$root/task_report.md" ]]; then
     echo "$root/task_report.md"
+    return 0
+  fi
+  if [[ -f "$root/docs/ledger/TASK_REPORT.md" ]]; then
+    echo "$root/docs/ledger/TASK_REPORT.md"
     return 0
   fi
   return 1
@@ -299,8 +307,8 @@ verify_basics(){
   mainjs="$(main_js_path || true)"
   maincss="$(main_css_path || true)"
 
-  [[ -n "$mainjs" ]] || warn "main.js not found (checked root and public/assets/dev)."
-  [[ -n "$maincss" ]] || warn "main.css not found (checked root and public/assets/dev)."
+  [[ -n "$mainjs" ]] || warn "main.js not found (checked root and public/assets/latest)."
+  [[ -n "$maincss" ]] || warn "main.css not found (checked root and public/assets/latest)."
 
   # main.js purity checks
   if [[ -n "$mainjs" ]]; then
@@ -309,9 +317,9 @@ verify_basics(){
     [[ -z "$bad" ]] || { echo "$bad" >&2; die "main.js still contains HTML/script/CDATA/entities."; }
   fi
 
-  # Optional: make sure TASK_report exists after changes (soft fail)
+  # Optional: make sure TASK_REPORT exists after changes (soft fail)
   if ! task_report_path >/dev/null 2>&1; then
-    warn "TASK_report.md missing. Not fatal, but you said you want discipline."
+    warn "TASK_REPORT.md missing. Not fatal, but you said you want discipline."
   fi
 }
 
@@ -447,7 +455,7 @@ case "$CMD" in
   *)
     echo "Usage:"
     echo "  ./scripts/gg task        # print NEXT_TASK from @GG_CAPSULE_V1"
-    echo "  ./scripts/gg msg         # generate commit message from TASK_report.md + NEXT_TASK"
+  echo "  ./scripts/gg msg         # generate commit message from TASK_REPORT.md + NEXT_TASK"
     echo "  ./scripts/gg bump        # bump GG_ASSET_VER + ?v= in index.dev.xml/index.prod.xml"
     echo "  ./scripts/gg branch      # ensure you're on a safe feature branch"
     echo "  ./scripts/gg verify      # run baseline checks"
