@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Docs freeze applied (TASK-0001.5)
+- CI gate upgraded (TASK-0004)
 
 CONSTRAINTS:
 - main-only
@@ -25,10 +25,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0004 (TBD next implementation)
+- TASK-0004A (Apex routing fix)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0001.5 doc normalization freeze
+- 2026-02-05 TASK-0004 CI gate upgrade (build + verifiers)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

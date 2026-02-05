@@ -1,12 +1,22 @@
 # CI/CD Pipeline
 Last updated: 2026-02-05
 
-This repo is main-only. Deployments are on `main` only. Wrangler runs in GitHub Actions only (macOS 10.15 local is unsupported).
+This repo is main-only. CI is the **primary gate**. Deployments are on `main` only. Wrangler runs in GitHub Actions only (macOS 10.15 local is unsupported).
 
 **Triggers**
-- CI workflow name: `CI` (runs on `push` and `pull_request`).
+- CI workflow name: `CI` (runs on `push` to `main` and `pull_request`).
 - Deploy workflow triggers automatically on `workflow_run` when `CI` completes successfully on `main`.
 - Manual deploy uses `workflow_dispatch`, but it still runs the full preflight gate and asserts the dispatch branch is `main`.
+
+**CI Gate (Primary)**
+- `npm ci` (CI generates a temporary `package-lock.json` if missing via `npm install --package-lock-only --ignore-scripts`)
+- `npm run build`
+- `npm run verify:assets`
+- `npm run build:xml`
+- `npm run verify:xml`
+- `node tools/verify-theme-diff.mjs` (if present)
+- `bash tools/check-links.sh` (if present)
+- XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
 
 **Preflight Gate (Deploy Workflow)**
 - `npm ci`

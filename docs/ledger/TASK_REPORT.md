@@ -1,30 +1,37 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0001.5
-TITLE: Doc contract normalization freeze (single truth + no drift)
+TASK_ID: TASK-0004
+TITLE: CI gate upgrade (build + verifiers)
 
 TASK_SUMMARY
-- Rewrote `docs/AI/CONTEXT_PACK.md` to be stable-only (no live state) and point to GG_CAPSULE + index.prod.xml for live values.
-- Established a strict authority ladder at the top of `docs/DOCUMENTATION.md`.
-- Converted the audit report into a dated snapshot and added a new stub `AUDIT_REPORT.md` that flags staleness and points to rerun instructions.
-- Updated GG_CAPSULE to reflect the docs freeze as current state.
+- Strengthened CI to run build + all verifiers; CI green now means build/verify passed.
+- Added Node 20 + npm cache and npm ci install in CI.
+- Documented CI as the primary gate in `docs/ci/PIPELINE.md`.
 
 FILES_CHANGED
-- docs/AI/CONTEXT_PACK.md
-- docs/DOCUMENTATION.md
-- docs/audit/AUDIT_REPORT.md
-- docs/audit/AUDIT_REPORT_2026-02-05.md
+- .github/workflows/ci.yml
+- docs/ci/PIPELINE.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
-VERIFICATION
-- Manual check: `docs/AI/CONTEXT_PACK.md` contains no mutable release-id value.
-- Manual check: `docs/ledger/GG_CAPSULE.md` contains NOW/NEXT/RELEASE_ID/live endpoints.
-- Manual check: `docs/audit/AUDIT_REPORT.md` is a snapshot stub pointing to `AUDIT_REPORT_2026-02-05.md`.
-- Suggested grep: `rg -n "release_id" docs/AI docs/DOCUMENTATION.md` → no live values outside GG_CAPSULE.
+EXACT CI STEPS ADDED
+- `npm ci` (generates temporary `package-lock.json` in CI if missing)
+- `npm run build`
+- `npm run verify:assets`
+- `npm run build:xml`
+- `npm run verify:xml`
+- `node tools/verify-theme-diff.mjs` (if present)
+- `bash tools/check-links.sh` (if present)
+- XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
+
+HOW TO VERIFY IN GITHUB ACTIONS
+1) Open Actions → workflow `CI`.
+2) Run on a main push or PR.
+3) Confirm these steps exist and pass: Install deps (npm ci), Build + verifiers, XML well-formedness.
+4) Confirm deploy workflow triggers only after CI success (workflow_run).
 
 RISKS / ROLLBACK
-- Risk: none (docs-only).
+- Risk: CI runtime slightly longer due to build/verify steps.
 - Rollback: revert this commit.

@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -14,8 +15,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Link hygiene
-        run: ./tools/check-links.sh
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps (npm ci)
+        run: |
+          set -e
+          if [ ! -f package-lock.json ]; then
+            echo "INFO: package-lock.json missing; generating for CI"
+            npm install --package-lock-only --ignore-scripts
+          fi
+          npm ci
+
+      - name: Build + verifiers
+        run: |
+          set -e
+          npm run build
+          npm run verify:assets
+          npm run build:xml
+          npm run verify:xml
+          if [ -f tools/verify-theme-diff.mjs ]; then
+            node tools/verify-theme-diff.mjs
+          else
+            echo "SKIP: tools/verify-theme-diff.mjs not found"
+          fi
+          if [ -f tools/check-links.sh ]; then
+            bash tools/check-links.sh
+          else
+            echo "SKIP: tools/check-links.sh not found"
+          fi
 
       - name: XML well-formedness
         run: |

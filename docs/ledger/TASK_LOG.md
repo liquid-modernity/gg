@@ -161,3 +161,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): audit report is now a snapshot; live state is only in GG_CAPSULE + index.prod.xml.
 - RISKS: none
 - NEXT: TASK-0004
+
+---
+
+## 2026-02-05 — TASK-0004 — CI gate upgrade (build + verifiers)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004
+- TITLE: CI gate upgrade (build + verifiers)
+- MODE (DEV/PROD impact): CI workflow only
+- RELEASE_ID: c21421c
+- SCOPE: CI workflow steps and pipeline docs
+- CHANGES (files touched): .github/workflows/ci.yml; docs/ci/PIPELINE.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a (workflow + docs only)
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): CI now runs build + verifiers; package-lock is generated in CI if missing to allow npm ci.
+- RISKS: CI time slightly increased due to build step.
+- NEXT: TASK-0004A
