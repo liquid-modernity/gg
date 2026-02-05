@@ -2,7 +2,7 @@
   "version": 1,
   "generated": "2026-02-05",
   "buffer_ratio": 0.15,
-  "source_release": "cab6705",
+  "source_release": "8eb881b",
   "assets": [
     {
       "id": "main.js",
@@ -15,6 +15,12 @@
       "path": "public/assets/v/<REL>/main.css",
       "max_raw": 188433,
       "max_gzip": 36932
+    },
+    {
+      "id": "boot.js",
+      "path": "public/assets/v/<REL>/boot.js",
+      "max_raw": 3873,
+      "max_gzip": 1404
     },
     {
       "id": "sw.js",

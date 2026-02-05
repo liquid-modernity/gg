@@ -12,14 +12,15 @@ if (!fs.existsSync(prodXml)) {
 let releaseId = null;
 if (fs.existsSync(prodXml)) {
   const xml = fs.readFileSync(prodXml, "utf8");
-  const jsMatch = xml.match(/\/assets\/v\/([^/]+)\/main\.js/);
+  const bootMatch = xml.match(/\/assets\/v\/([^/]+)\/boot\.js/);
   const cssMatch = xml.match(/\/assets\/v\/([^/]+)\/main\.css/);
-  if (!jsMatch) failures.push("index.prod.xml missing /assets/v/<RELEASE_ID>/main.js");
+  if (!bootMatch) failures.push("index.prod.xml missing /assets/v/<RELEASE_ID>/boot.js");
   if (!cssMatch) failures.push("index.prod.xml missing /assets/v/<RELEASE_ID>/main.css");
-  if (jsMatch && cssMatch && jsMatch[1] !== cssMatch[1]) {
-    failures.push(`index.prod.xml release id mismatch: js=${jsMatch[1]} css=${cssMatch[1]}`);
+  if (bootMatch && cssMatch && bootMatch[1] !== cssMatch[1]) {
+    failures.push(`index.prod.xml release id mismatch: boot=${bootMatch[1]} css=${cssMatch[1]}`);
   }
-  if (jsMatch) releaseId = jsMatch[1];
+  if (bootMatch) releaseId = bootMatch[1];
+  if (!releaseId && cssMatch) releaseId = cssMatch[1];
 }
 
 function ensureFile(p, label) {
@@ -36,11 +37,13 @@ function ensureFile(p, label) {
 const latestDir = path.join(root, "public", "assets", "latest");
 ensureFile(path.join(latestDir, "main.js"), "latest main.js");
 ensureFile(path.join(latestDir, "main.css"), "latest main.css");
+ensureFile(path.join(latestDir, "boot.js"), "latest boot.js");
 
 if (releaseId) {
   const vDir = path.join(root, "public", "assets", "v", releaseId);
   ensureFile(path.join(vDir, "main.js"), `v/${releaseId} main.js`);
   ensureFile(path.join(vDir, "main.css"), `v/${releaseId} main.css`);
+  ensureFile(path.join(vDir, "boot.js"), `v/${releaseId} boot.js`);
 } else {
   failures.push("release id not detected from index.prod.xml");
 }

@@ -55,11 +55,16 @@ fs.mkdirSync(destDir, { recursive: true });
 const latestDir = path.join("public", "assets", "latest");
 const latestCss = path.join(latestDir, "main.css");
 const latestJs = path.join(latestDir, "main.js");
+const latestBoot = path.join(latestDir, "boot.js");
 if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs)) {
   throw new Error("Latest assets missing: public/assets/latest/main.(css|js)");
 }
+if (!fs.existsSync(latestBoot)) {
+  throw new Error("Latest assets missing: public/assets/latest/boot.js");
+}
 fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
 fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
+fs.copyFileSync(latestBoot, path.join(destDir, "boot.js"));
 
 replaceAllOrThrow(
   "public/sw.js",
@@ -84,9 +89,9 @@ replaceAllOrThrow(
 
 replaceAllOrThrow(
   "index.prod.xml",
-  /\/assets\/v\/[^/]+\/main\.js/g,
-  `/assets/v/${releaseId}/main.js`,
-  "prod js"
+  /\/assets\/v\/[^/]+\/boot\.js/g,
+  `/assets/v/${releaseId}/boot.js`,
+  "prod boot"
 );
 
 updateCapsuleAutogen(releaseId);

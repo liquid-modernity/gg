@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- CRP Phase 1 implemented (defer + idle bootstrap) (TASK-0006A)
+- CRP Phase 2 step implemented (boot loader + late-load main.js) (TASK-0006B)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 72ae928
-PROD_PINNED_JS: /assets/v/72ae928/main.js
-PROD_PINNED_CSS: /assets/v/72ae928/main.css
+RELEASE_ID: 8eb881b
+PROD_PINNED_JS: /assets/v/8eb881b/main.js
+PROD_PINNED_CSS: /assets/v/8eb881b/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006B (Phase 2: split modules/long-task elimination)
+- TASK-0006C (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006A defer main.js + idle bootstrap
+- 2026-02-05 TASK-0006B boot loader + late-load main.js
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
@@ -41,7 +41,7 @@ RISKS (top 5):
 - SW cache not updating if VERSION not bumped
 
 FAST VERIFY (60s):
-1) view-source → confirm main.js path matches `/assets/latest/` (DEV) or AUTOGEN pinned path (PROD).
+1) view-source → confirm boot.js path matches `/assets/latest/` (DEV) or `/assets/v/<RELEASE_ID>/boot.js` (PROD).
 2) https://www.pakrpp.com/__gg_worker_ping returns `X-GG-Worker-Version`.
 3) https://www.pakrpp.com/assets/latest/main.js (DEV) and AUTOGEN pinned JS (PROD) return expected cache headers.
 4) DevTools → Application → Service Workers: DEV not controlled, PROD controlled.

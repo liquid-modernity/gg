@@ -1,18 +1,23 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0006A
-TITLE: CRP Phase 1 (defer + idle bootstrap)
+TASK_ID: TASK-0006B
+TITLE: Boot loader + late-load main.js (Phase 2 step 1)
 
 TASK_SUMMARY
-- Split boot into Stage 0 (minimal) and Stage 1 (idle) in `public/assets/latest/main.js`.
-- Deferred app init, router init, and a11y init to idle; router click binding occurs after DOMContentLoaded.
-- Deferred root-state sync and hero video observer to idle.
-- Added DEV-only Stage 0 performance mark with a single console info line.
-- Updated CRP plan to mark Phase 1 completed.
+- Added a tiny `boot.js` loader so initial HTML does not reference `main.js` directly.
+- Swapped dev/prod themes to load only `boot.js` (defer) and removed `instant.page` from HTML.
+- `boot.js` now loads `main.js` after idle/interaction and loads `instant.page` only after `main.js` in PROD.
+- Updated release tooling to version `boot.js` and updated asset verification and budgets.
+- Updated CRP plan and ledger state.
 
 FILES_CHANGED
-- public/assets/latest/main.js
+- public/assets/latest/boot.js
+- index.dev.xml
+- index.prod.xml
+- tools/release.js
+- tools/verify-assets.mjs
+- tools/perf-budgets.json
 - docs/perf/CRP_PLAN.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
@@ -20,6 +25,7 @@ FILES_CHANGED
 
 VERIFICATION COMMANDS
 - `npm run build`
+- `npm run verify:assets`
 - `node tools/verify-budgets.mjs`
 - `node tools/verify-ledger.mjs`
 - `node tools/verify-headers.mjs --mode=config`
@@ -27,14 +33,16 @@ VERIFICATION COMMANDS
 
 PERF MEASUREMENT (DevTools)
 1) Open Chrome DevTools → Performance.
-2) Enable CPU throttling (4x), Disable cache, Cold reload.
-3) Record from navigation start.
-4) Confirm Stage 0 has no long tasks > 50 ms and Stage 1 runs via idle.
+2) Disable cache, CPU 4x throttle, cold reload.
+3) Confirm only `boot.js` loads at first paint.
+4) Confirm `main.js` loads after idle/interaction (Network + Timing).
+5) Check for no long tasks > 50 ms before `main.js` executes.
 
 BEHAVIOR CHECKS
-- DEV: no SW controller, no reload loops, main.js still loads with `defer`.
-- PROD: navigation still works; SW unaffected; no functional regressions observed.
+- DEV: boot.js loads `/assets/latest/main.js` after idle/interaction; SW remains off as before.
+- PROD: boot.js loads `/assets/v/<RELEASE_ID>/main.js` after idle/interaction; instant.page loads only after main.js.
+- Native Blogger comments still work (no interception added).
 
 RISKS / ROLLBACK
-- Risk: delayed app init may postpone non-critical UI hydration.
+- Risk: initial interactivity is delayed until main.js loads.
 - Rollback: revert this commit.

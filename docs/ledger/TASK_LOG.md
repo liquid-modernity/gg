@@ -342,3 +342,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): router click interception now binds after DOMContentLoaded; app init is idle-deferred.
 - RISKS: delaying app init may postpone some non-critical UI hydration.
 - NEXT: TASK-0006B
+
+---
+
+## 2026-02-05 — TASK-0006B — Boot loader + late-load main.js (Phase 2 step 1)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006B
+- TITLE: Boot loader + late-load main.js (Phase 2 step 1)
+- MODE (DEV/PROD impact): boot.js loader + asset contract + docs
+- RELEASE_ID: 8eb881b
+- SCOPE: boot.js loader, release.js versioning for boot.js, HTML script swap, budgets, verifiers, CRP plan, ledger updates
+- CHANGES (files touched): public/assets/latest/boot.js; index.dev.xml; index.prod.xml; tools/release.js; tools/perf-budgets.json; tools/verify-budgets.mjs; tools/verify-assets.mjs; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build; npm run verify:assets; node tools/verify-budgets.mjs; node tools/verify-ledger.mjs; node tools/verify-headers.mjs --mode=config; node tools/validate-xml.js
+- CI STATUS: expected green if budgets and verifiers remain within contract
+- DEPLOY STATUS: expected green (no deploy changes)
+- VERIFY (perf steps): Chrome DevTools Performance → cold load → confirm main.js loads after idle/interaction and no long tasks >50ms before boot triggers.
+- NOTES (gotchas): boot.js is the only initial script; instant.page now loads only after main.js and only in PROD.
+- RISKS: delayed main.js may postpone non-critical interactivity until idle/first input.
+- NEXT: TASK-0006C
