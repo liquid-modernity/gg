@@ -3,7 +3,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "1ce85ce";
+    const WORKER_VERSION = "c21421c";
     const stamp = (res) => {
       const out = new Response(res.body, res);
       out.headers.set("X-GG-Worker", "proxy");
@@ -217,7 +217,7 @@ export default {
     const res = new Response(assetRes.body, assetRes);
     const setCache = (v) => res.headers.set("Cache-Control", v);
 
-    if (pathname.startsWith("/assets/dev/")) {
+    if (pathname.startsWith("/assets/latest/")) {
       setCache("no-store, max-age=0");
       res.headers.set("Pragma", "no-cache");
     } else if (pathname.startsWith("/assets/v/")) {

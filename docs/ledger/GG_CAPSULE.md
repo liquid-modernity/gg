@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- TASK-0001.6 updated gg verify paths for assets/latest and TASK_REPORT
+- TASK-0002 asset release contract implemented (latest vs pinned)
 
 CONSTRAINTS:
 - main-only
@@ -14,20 +14,20 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 RELEASE_ID:
-- 1ce85ce
+- c21421c
 
 LIVE CONTRACT (must hold):
 - apex redirects → https://www.pakrpp.com/
 - worker ping: https://www.pakrpp.com/__gg_worker_ping
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
-- pinned assets (PROD): https://www.pakrpp.com/assets/v/1ce85ce/main.js (immutable)
+- pinned assets (PROD): https://www.pakrpp.com/assets/v/c21421c/main.js (immutable)
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0002
+- TASK-0003
 
 LAST_PATCH:
-- 2026-02-05 TASK-0001.6 update gg verify paths
+- 2026-02-05 TASK-0002 implement asset release contract (latest vs pinned)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
@@ -37,7 +37,7 @@ RISKS (top 5):
 - SW cache not updating if VERSION not bumped
 
 FAST VERIFY (60s):
-1) view-source → confirm main.js path matches `/assets/latest/` (DEV) or `/assets/v/1ce85ce/` (PROD).
+1) view-source → confirm main.js path matches `/assets/latest/` (DEV) or `/assets/v/c21421c/` (PROD).
 2) https://www.pakrpp.com/__gg_worker_ping returns `X-GG-Worker-Version`.
-3) https://www.pakrpp.com/assets/latest/main.js (DEV) and `/assets/v/1ce85ce/main.js` (PROD) return expected cache headers.
+3) https://www.pakrpp.com/assets/latest/main.js (DEV) and `/assets/v/c21421c/main.js` (PROD) return expected cache headers.
 4) DevTools → Application → Service Workers: DEV not controlled, PROD controlled.

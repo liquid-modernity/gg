@@ -91,3 +91,20 @@ Last updated: 2026-02-05
 - NOTES (gotchas): verify now checks public/assets/latest and TASK_REPORT.md
 - RISKS: none
 - NEXT: TASK-0002
+---
+
+## 2026-02-05 — TASK-0002 — Asset Release Contract (latest vs pinned)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0002
+- TITLE: Implement asset release contract (latest vs pinned)
+- MODE (DEV/PROD impact): both (assets + cache policy + build)
+- RELEASE_ID: c21421c
+- SCOPE: worker cache policy, build outputs, asset verification, docs
+- CHANGES (files touched): index.dev.xml; index.prod.xml; package.json; public/_headers; public/sw.js; src/worker.js; tools/release.js; tools/verify-assets.mjs; docs/release/ASSET_CONTRACT.md; public/assets/v/c21421c/main.js; public/assets/v/c21421c/main.css; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build; npm run verify:assets
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a (CI-only wrangler)
+- VERIFY (URLs + expected): n/a (local tooling only)
+- NOTES (gotchas): DEV now uses same-domain /assets/latest; jsdelivr removed; build derives RELEASE_ID from git short SHA.
+- RISKS: manual paste can still desync DEV/PROD if wrong XML is used.
+- NEXT: TASK-0003

@@ -25,8 +25,14 @@ const fullHash = run("git rev-parse HEAD");
 
 const destDir = path.join("public", "assets", "v", releaseId);
 fs.mkdirSync(destDir, { recursive: true });
-fs.copyFileSync("public/assets/dev/main.css", path.join(destDir, "main.css"));
-fs.copyFileSync("public/assets/dev/main.js", path.join(destDir, "main.js"));
+const latestDir = path.join("public", "assets", "latest");
+const latestCss = path.join(latestDir, "main.css");
+const latestJs = path.join(latestDir, "main.js");
+if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs)) {
+  throw new Error("Latest assets missing: public/assets/latest/main.(css|js)");
+}
+fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
+fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
 
 replaceAllOrThrow(
   "public/sw.js",
@@ -54,13 +60,6 @@ replaceAllOrThrow(
   /\/assets\/v\/[^/]+\/main\.js/g,
   `/assets/v/${releaseId}/main.js`,
   "prod js"
-);
-
-replaceAllOrThrow(
-  "index.dev.xml",
-  /cdn\.jsdelivr\.net\/gh\/liquid-modernity\/gg@[^/]+\/public/g,
-  `cdn.jsdelivr.net/gh/liquid-modernity/gg@${fullHash}/public`,
-  "dev jsdelivr hash"
 );
 
 console.log(`RELEASE_ID ${releaseId}`);

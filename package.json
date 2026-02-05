@@ -5,7 +5,9 @@
     "wrangler": "4.61.1"
   },
   "scripts": {
+    "build": "node tools/release.js",
     "release": "node tools/release.js",
+    "verify:assets": "node tools/verify-assets.mjs",
     "deploy": "wrangler deploy --config wrangler.jsonc"
   }
 }
