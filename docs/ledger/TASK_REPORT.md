@@ -1,23 +1,19 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0002A
-TITLE: Contract cleanup (main-only, GG_CAPSULE md-only, asset path consistency)
+TASK_ID: TASK-0003
+TITLE: Update deploy workflow (auto after CI + manual gated + smoke always)
 
 TASK_SUMMARY
-- Enforced main-only workflow in `tools/scripts:gg` and removed feature-branch auto-creation.
-- Switched capsule parsing to `docs/ledger/GG_CAPSULE.md` (md-only) and updated related help text.
-- Updated worker verification script to check `/assets/latest/*` instead of `/assets/dev/*`.
-- Removed legacy capsule references from docs; added audit addendum about `/assets/latest`.
+- Deploy workflow now triggers on CI workflow_run success for main and also allows manual dispatch with full preflight gate.
+- Manual dispatch is constrained to main and uses the same preflight checks as auto deploy.
+- Post-deploy smoke tests now run unconditionally and fail the workflow on any smoke failure.
+- Added pipeline documentation and XML helper scripts to satisfy preflight commands.
 
 FILES_CHANGED
-- docs/AGENTS.md
-- docs/tech-stack.md
-- docs/roadmap.md
-- docs/note for gaga.md
-- tools/scripts:gg
-- tools/verify-worker.sh
-- docs/audit/AUDIT_REPORT.md
+- .github/workflows/deploy.yml
+- docs/ci/PIPELINE.md
+- package.json
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -29,5 +25,5 @@ VERIFICATION
 - Result: PASSED
 
 RISKS / ROLLBACK
-- Risk: None (workflow/tooling/doc consistency only).
+- Risk: smoke tests depend on live endpoints; failures will block deploy until endpoints are fixed.
 - Rollback: revert this commit.

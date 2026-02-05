@@ -1,28 +1,72 @@
 name: Deploy to Cloudflare Workers
 
 on:
-  workflow_dispatch:
-    inputs:
-      RUN_SMOKE:
-        description: "Run post-deploy smoke test"
-        required: false
-        default: "false"
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch: {}
 
 concurrency:
-  group: workers-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-main
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout (workflow_run)
+        if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Preflight static assets
+      - name: Checkout (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Assert manual dispatch on main
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          set -e
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "ERROR: manual dispatch must run from main (got ${GITHUB_REF_NAME})"
+            exit 1
+          fi
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Preflight (build + verifiers)
+        run: |
+          set -e
+          npm ci
+          npm run build
+          npm run verify:assets
+          npm run build:xml
+          npm run verify:xml
+          if [ -f tools/verify-theme-diff.mjs ]; then
+            node tools/verify-theme-diff.mjs
+          else
+            echo "SKIP: tools/verify-theme-diff.mjs not found"
+          fi
+          if [ -f tools/check-links.sh ]; then
+            bash tools/check-links.sh
+          else
+            echo "SKIP: tools/check-links.sh not found"
+          fi
+
+      - name: Preflight static assets + release id
+        id: rel
         run: |
           set -e
           if [ ! -f public/sw.js ]; then
@@ -54,15 +98,11 @@ jobs:
             echo "ERROR: public/assets/v/${rel}/main.js missing"
             exit 1
           fi
+          echo "release_id=${rel}" >> "$GITHUB_OUTPUT"
           echo "ls -la public | head"
           ls -la public | head
           echo "public/_headers (first 120 lines)"
           sed -n '1,120p' public/_headers
-
-      - name: Use Node 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
 
       - name: Verify Cloudflare token
         env:
@@ -135,58 +175,78 @@ print("wildcard_routes_ok")'
           wranglerVersion: "4.61.1"
           command: deploy --config wrangler.jsonc
 
-      - name: Post-deploy smoke test
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.RUN_SMOKE == 'true' }}
+      - name: Post-deploy smoke tests
+        env:
+          REL: ${{ steps.rel.outputs.release_id }}
         run: |
-          set -e
-          check_status() {
-            local url="$1"
-            local label="$2"
-            local headers status_line
-            headers="$(curl -sSI "${url}")"
-            status_line="$(printf "%s" "${headers}" | head -n 1)"
-            echo "==> ${label}"
-            echo "${status_line}"
-            if ! echo "${status_line}" | grep -q " 200"; then
-              echo "ERROR: ${label} non-200 response"
-              exit 1
-            fi
-            printf "%s" "${headers}"
+          set -euo pipefail
+
+          BASE="https://www.pakrpp.com"
+          APEX="https://pakrpp.com"
+
+          fetch_headers() {
+            curl -sSI "$1" | tr -d '\r'
           }
 
-          headers="$(check_status "https://www.pakrpp.com/__gg_worker_ping?x=1" "__gg_worker_ping")"
-          if ! echo "${headers}" | grep -qi '^x-gg-worker-version:'; then
-            echo "ERROR: missing x-gg-worker-version header"
-            exit 1
-          fi
+          status_code() {
+            printf "%s" "$1" | head -n 1 | awk '{print $2}'
+          }
 
-          headers="$(check_status "https://www.pakrpp.com/gg-flags.json?x=1" "gg-flags.json")"
-          if ! echo "${headers}" | grep -qi '^content-type:.*json'; then
-            echo "ERROR: gg-flags.json must be json content-type"
-            exit 1
-          fi
-          if ! echo "${headers}" | grep -qi '^cache-control:.*no-store'; then
-            echo "ERROR: gg-flags.json must be no-store"
-            exit 1
-          fi
+          require_status() {
+            local url="$1"
+            local expected="$2"
+            local label="$3"
+            local headers code
+            headers="$(fetch_headers "$url")"
+            code="$(status_code "$headers")"
+            echo "==> ${label} (${url})"
+            echo "${headers}" | head -n 1
+            if [ "${code}" != "${expected}" ]; then
+              echo "ERROR: ${label} expected ${expected}, got ${code}"
+              exit 1
+            fi
+            printf "%s" "$headers"
+          }
 
-          headers="$(check_status "https://www.pakrpp.com/blog" "/blog")"
-          echo "${headers}" >/dev/null
+          require_header() {
+            local headers="$1"
+            local pattern="$2"
+            local label="$3"
+            if ! printf "%s" "$headers" | grep -Eqi "$pattern"; then
+              echo "ERROR: ${label}"
+              exit 1
+            fi
+          }
 
-          headers="$(check_status "https://www.pakrpp.com/sw.js?x=1" "sw.js")"
-          if ! echo "${headers}" | grep -qi '^cache-control:.*no-store'; then
-            echo "ERROR: sw.js must be no-store"
+          apex_headers="$(fetch_headers "${APEX}/?x=1")"
+          apex_code="$(status_code "$apex_headers")"
+          echo "==> apex redirect (${APEX})"
+          echo "${apex_headers}" | head -n 1
+          if [ "${apex_code}" != "301" ]; then
+            echo "ERROR: apex must return 301"
             exit 1
           fi
+          require_header "$apex_headers" '^location: https://www\.pakrpp\.com/' "apex must redirect to www"
 
-          headers="$(check_status "https://www.pakrpp.com/manifest.webmanifest" "manifest")"
-          if ! echo "${headers}" | grep -qi '^x-gg-worker:'; then
-            echo "ERROR: missing x-gg-worker header"
+          ping_headers="$(require_status "${BASE}/__gg_worker_ping?x=1" "200" "__gg_worker_ping")"
+          require_header "$ping_headers" '^x-gg-worker-version:' "missing x-gg-worker-version"
+
+          flags_headers="$(require_status "${BASE}/gg-flags.json?x=1" "200" "gg-flags.json")"
+          require_header "$flags_headers" '^cache-control:.*(no-store|max-age=0)' "gg-flags.json must be no-store"
+
+          sw_headers="$(require_status "${BASE}/sw.js?x=1" "200" "sw.js")"
+          require_header "$sw_headers" '^cache-control:.*(no-store|max-age=0)' "sw.js must be no-store"
+
+          latest_headers="$(require_status "${BASE}/assets/latest/main.js?x=1" "200" "assets/latest/main.js")"
+          require_header "$latest_headers" '^cache-control:.*(no-store|max-age=0)' "assets/latest must be no-store"
+
+          if [ -z "${REL}" ]; then
+            echo "ERROR: release id missing from preflight"
             exit 1
           fi
+          pinned_headers="$(require_status "${BASE}/assets/v/${REL}/main.js?x=1" "200" "assets/v/${REL}/main.js")"
+          require_header "$pinned_headers" '^cache-control:.*immutable' "assets/v must be immutable"
 
-          headers="$(check_status "https://www.pakrpp.com/offline.html" "offline")"
-          if ! echo "${headers}" | grep -qi '^x-gg-worker:'; then
-            echo "ERROR: missing x-gg-worker header"
-            exit 1
-          fi
+          require_status "${BASE}/offline.html?x=1" "200" "offline.html"
+
+          echo "PASS: smoke tests"

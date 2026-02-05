@@ -125,3 +125,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): gg task now reads NEXT_TASK from docs/ledger/GG_CAPSULE.md; verify-worker uses /assets/latest
 - RISKS: none
 - NEXT: TASK-0003
+
+---
+
+## 2026-02-05 — TASK-0003 — Update deploy workflow (auto after CI + manual gated + smoke always)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0003
+- TITLE: Update deploy workflow (auto after CI + manual gated + smoke always)
+- MODE (DEV/PROD impact): CI/CD workflow only
+- RELEASE_ID: c21421c
+- SCOPE: deploy workflow triggers, preflight gate, smoke tests, pipeline docs
+- CHANGES (files touched): .github/workflows/deploy.yml; docs/ci/PIPELINE.md; package.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): bash tools/check-links.sh; node tools/validate-xml.js; node tools/verify-assets.mjs
+- CI STATUS: n/a (local)
+- DEPLOY STATUS: n/a (CI-only wrangler)
+- VERIFY (URLs + expected): n/a (runs in Actions smoke)
+- NOTES (gotchas): deploy workflow now triggers on CI workflow_run; manual dispatch enforces main and full preflight.
+- RISKS: smoke relies on live endpoints; failures will block deploy.
+- NEXT: TASK-0004

@@ -6,8 +6,10 @@
   },
   "scripts": {
     "build": "node tools/release.js",
+    "build:xml": "node tools/release.js",
     "release": "node tools/release.js",
     "verify:assets": "node tools/verify-assets.mjs",
+    "verify:xml": "node tools/validate-xml.js",
     "deploy": "wrangler deploy --config wrangler.jsonc"
   }
 }

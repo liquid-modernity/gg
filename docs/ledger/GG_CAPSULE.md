@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- TASK-0002A contract cleanup (main-only, GG_CAPSULE md-only, assets/latest consistency)
+- TASK-0003 update deploy workflow (auto after CI + manual gated + smoke always)
 
 CONSTRAINTS:
 - main-only
@@ -24,10 +24,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0003
+- TASK-0004
 
 LAST_PATCH:
-- 2026-02-05 TASK-0002A contract cleanup (main-only + GG_CAPSULE md-only)
+- 2026-02-05 TASK-0003 update deploy workflow (auto after CI + manual gated + smoke always)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
