@@ -23,6 +23,11 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - CI and deploy both use `npm ci` with no lockfile generation fallback.
 - To update dependencies, run: `npm install --package-lock-only --ignore-scripts`, then commit `package-lock.json`.
 
+**Wrangler Policy**
+- Wrangler is CI-only; local deploy is unsupported.
+- Deploy uses `cloudflare/wrangler-action` with a pinned version.
+- Pinned version is defined in `.github/workflows/deploy.yml` (`wranglerVersion`).
+
 **Preflight Gate (Deploy Workflow)**
 - `npm ci`
 - `npm run build`

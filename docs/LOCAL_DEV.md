@@ -29,3 +29,4 @@ Last updated: 2026-02-05
 - Canonical host is `www.pakrpp.com`.
 - `/_headers` and `/_redirects` must not be publicly served.
 - macOS 10.15 cannot run `wrangler` locally → deploy is CI-only.
+- macOS 10.15: `npm ci` should work normally now (no `--ignore-scripts` needed).

@@ -197,3 +197,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): CI/deploy now hard-fail if package-lock.json is missing.
 - RISKS: none
 - NEXT: TASK-0004A
+
+---
+
+## 2026-02-05 — TASK-0004.2 — Wrangler CI-only + local npm ci fix
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004.2
+- TITLE: Wrangler CI-only + local npm ci fix
+- MODE (DEV/PROD impact): build/release tooling only
+- RELEASE_ID: c21421c
+- SCOPE: remove wrangler dependency, update workflows, update docs
+- CHANGES (files touched): package.json; package-lock.json; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/LOCAL_DEV.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm install --package-lock-only --ignore-scripts
+- CI STATUS: expected green (npm ci + build/verifiers)
+- DEPLOY STATUS: expected green (wrangler-action with pinned version + smoke)
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): wrangler removed from repo deps; local deploy unsupported; npm ci should now work on macOS 10.15.
+- RISKS: none
+- NEXT: TASK-0004A

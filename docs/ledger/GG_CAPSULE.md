@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Lockfile policy enforced (TASK-0004.1)
+- Wrangler decoupled; npm ci fixed (TASK-0004.2)
 
 CONSTRAINTS:
 - main-only
@@ -28,7 +28,7 @@ NEXT_TASK:
 - TASK-0004A (Apex routing fix)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004.1 lockfile policy fix (npm ci + lockfile guard)
+- 2026-02-05 TASK-0004.2 remove wrangler dep (CI-only deploy) + local npm ci fix
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
