@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- DEV SW poisoning fixed (TASK-0004B)
+- SW install hardened + DEV inline kill-switch added (TASK-0004B.1)
 
 CONSTRAINTS:
 - main-only
@@ -28,7 +28,7 @@ NEXT_TASK:
 - TASK-0005 (Routing stabilization)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004B dev SW cleanup + /assets/latest SW rules
+- 2026-02-05 TASK-0004B.1 resilient SW install + DEV inline kill-switch
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

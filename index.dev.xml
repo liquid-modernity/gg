@@ -14,6 +14,55 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta name='gg:mode' content='dev'/>
+    <script>
+    (function(){
+      try{
+        var m=document.querySelector("meta[name='gg:mode']");
+        if(!m) return;
+        if(m.getAttribute("content")!=="dev") return;
+        var nav=window.navigator;
+        if(!nav){ try{console.info("GG DEV: inline SW cleanup");}catch(e){}; return; }
+        if(!nav.serviceWorker){ try{console.info("GG DEV: inline SW cleanup");}catch(e){}; return; }
+        var key="gg_dev_inline_sw_cleaned";
+        var already=false;
+        try{ already=!!sessionStorage.getItem(key); }catch(e){}
+        var had=false;
+        var tasks=[];
+        try{
+          tasks.push(nav.serviceWorker.getRegistrations().then(function(list){
+            if(list){ if(list.length) had=true; }
+            var regs=list?list:[];
+            return Promise.all(regs.map(function(reg){
+              try{ return reg.unregister(); }catch(e){ return null; }
+            }));
+          }).catch(function(){}));
+        }catch(e){}
+        try{
+          if(window.caches){
+            tasks.push(caches.keys().then(function(keys){
+              var target=keys.filter(function(k){ return /^gg-/.test(k)||/^workbox-/.test(k); });
+              if(target.length) had=true;
+              return Promise.all(target.map(function(k){ return caches.delete(k); }));
+            }).catch(function(){}));
+          }
+        }catch(e){}
+        Promise.all(tasks).then(function(){
+          var controlled=false;
+          try{ controlled=!!nav.serviceWorker.controller; }catch(e){}
+          var shouldReload=false;
+          if(!already){
+            if(controlled||had) shouldReload=true;
+          }
+          if(shouldReload){
+            try{ sessionStorage.setItem(key,"1"); }catch(e){}
+            location.reload();
+            return;
+          }
+          try{ console.info("GG DEV: inline SW cleanup"); }catch(e){}
+        });
+      }catch(e){}
+    })();
+    </script>
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link rel='stylesheet' href='/assets/latest/main.css?v=20260203160035'/>
     <!-- Structured data (Schema.org) -->

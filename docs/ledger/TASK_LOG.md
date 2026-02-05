@@ -251,3 +251,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): DEV cleanup runs on load and triggers one guarded reload if a controller existed.
 - RISKS: none
 - NEXT: TASK-0005
+
+---
+
+## 2026-02-05 — TASK-0004B.1 — Resilient SW install + inline DEV kill-switch
+- DATE: 2026-02-05
+- TASK_ID: TASK-0004B.1
+- TITLE: Resilient SW install + inline DEV kill-switch
+- MODE (DEV/PROD impact): SW + dev template + docs
+- RELEASE_ID: 7ca1211
+- SCOPE: sw.js install resilience, DEV inline cleanup in index.dev.xml, SW strategy docs, ledger
+- CHANGES (files touched): public/sw.js; index.dev.xml; docs/sw/SW_STRATEGY.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/validate-xml.js; node tools/verify-assets.mjs
+- CI STATUS: n/a (local)
+- DEPLOY STATUS: n/a (CI-only)
+- VERIFY (URLs + expected): curl -I https://pakrpp.com/ -> 301 Location: https://www.pakrpp.com/ ; curl -I https://www.pakrpp.com/__gg_worker_ping -> 200 + x-gg-worker-version
+- NOTES (gotchas): DEV inline script runs before external JS to unregister SW + clear caches; one reload guarded by sessionStorage.
+- RISKS: none
+- NEXT: TASK-0005

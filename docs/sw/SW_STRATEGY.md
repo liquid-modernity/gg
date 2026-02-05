@@ -20,6 +20,13 @@ When DEV mode is detected on page load:
 3) If the page is still controlled, do a one-time reload guarded by `sessionStorage` (`gg_dev_sw_cleaned`).
 4) Log once: `GG DEV: SW & caches cleaned`.
 
+## DEV Inline Kill-Switch (index.dev.xml)
+DEV runs an inline script **before** external JS loads:
+- Detects `<meta name='gg:mode' content='dev'/>`.
+- Unregisters any service workers and clears `gg-*` / `workbox-*` caches.
+- If a controller or registration existed, performs one guarded reload (`gg_dev_inline_sw_cleaned`).
+- Logs once: `GG DEV: inline SW cleanup`.
+
 ## SW Fetch Rules (public/sw.js)
 - `/assets/latest/*`: network-only (`cache: no-store`), never cached.
 - `/assets/v/*` and `/gg-pwa-icon/*`: cache-first (immutable assets).
@@ -27,11 +34,16 @@ When DEV mode is detected on page load:
 - Navigations: network-first with offline fallback to `/offline.html`.
 - Everything else (including Blogger comments endpoints): passthrough fetch with no caching.
 
+## SW Install Behavior
+- Install is **best-effort**: precache failures do not fail SW installation.
+- If `/offline.html` is missing in cache during offline navigation, SW returns a minimal inline offline page.
+
 ## Verification (DevTools)
 **DEV**
 - Application → Service Workers: no active registrations after one reload.
 - Application → Cache Storage: no `gg-*` or `workbox-*` caches after cleanup.
 - Console: one line `GG DEV: SW & caches cleaned`.
+- Console (early): one line `GG DEV: inline SW cleanup`.
 - Network: `/assets/latest/main.js` shows `Cache-Control: no-store`.
 
 **PROD**

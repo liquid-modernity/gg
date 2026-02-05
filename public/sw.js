@@ -1,5 +1,5 @@
 /* public/sw.js — deterministic updates + offline fallback */
-const VERSION = "c21421c";
+const VERSION = "7ca1211";
 const CACHE_STATIC = `gg-static-${VERSION}`;
 const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 
@@ -134,19 +134,19 @@ self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const debug = await hasDebugClient();
     if (debug) console.log("[gg-sw]", "install");
-    const cache = await caches.open(CACHE_STATIC);
-    for (const url of PRECACHE_URLS) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`http ${res.status}`);
-        await cache.put(url, res.clone());
-      } catch (e) {
-        if (url === OFFLINE_URL) {
-          if (debug) console.log("[gg-sw]", "install failed: OFFLINE_URL missing", url, String(e));
-          throw e;
+    try {
+      const cache = await caches.open(CACHE_STATIC);
+      for (const url of PRECACHE_URLS) {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) throw new Error(`http ${res.status}`);
+          await cache.put(url, res.clone());
+        } catch (e) {
+          if (debug) console.log("[gg-sw]", "install skip", url, String(e));
         }
-        if (debug) console.log("[gg-sw]", "install skip", url, String(e));
       }
+    } catch (e) {
+      if (debug) console.log("[gg-sw]", "install cache open failed", String(e));
     }
   })());
 });
@@ -207,14 +207,28 @@ self.addEventListener("fetch", (event) => {
       return staleWhileRevalidate(req, CACHE_STATIC, url);
     }
 
+    async function offlineFallback() {
+      try {
+        const cache = await caches.open(CACHE_STATIC);
+        const offline = await cache.match(OFFLINE_URL);
+        if (offline) return offline;
+      } catch (e) {}
+      try {
+        const res = await fetch(OFFLINE_URL, { cache: "no-store" });
+        if (res && res.ok) return res;
+      } catch (e) {}
+      return new Response(
+        "<!doctype html><title>Offline</title><h1>Offline</h1><p>Offline fallback unavailable.</p>",
+        { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
+      );
+    }
+
     if (req.mode === "navigate") {
       log(url, "navigate network-first", path);
       try {
         return await fetch(req);
       } catch (e) {
-        const cache = await caches.open(CACHE_STATIC);
-        const offline = await cache.match(OFFLINE_URL);
-        return offline || new Response("Offline", { status: 503 });
+        return await offlineFallback();
       }
     }
 
