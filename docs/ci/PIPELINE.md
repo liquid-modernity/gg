@@ -17,6 +17,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
 - XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
+- `node tools/verify-headers.mjs --mode=config` (deterministic, no network)
 
 **Lockfile Policy**
 - `package-lock.json` is mandatory and must be committed.
@@ -45,6 +46,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 **Deploy**
 - Uses `cloudflare/wrangler-action` with `wrangler.jsonc`.
 - Worker name: `gg`.
+- After deploy, the workflow runs: `node tools/verify-headers.mjs --mode=live --base=https://www.pakrpp.com`.
 
 **Smoke Tests (Always After Deploy)**
 - `https://pakrpp.com/*` returns `301` redirect to `https://www.pakrpp.com/`.

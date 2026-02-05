@@ -288,3 +288,21 @@ Last updated: 2026-02-05
 - CORRECTION: /assets/dev is retired; current dev path is /assets/latest.
 - RISKS: none
 - NEXT: TASK-0005
+
+---
+
+## 2026-02-05 — TASK-0005 — Headers contract + deterministic verifier (CI) + live verifier (deploy)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0005
+- TITLE: Headers contract + deterministic verifier (CI) + live verifier (deploy)
+- MODE (DEV/PROD impact): caching headers + CI/deploy verification
+- RELEASE_ID: 40583c4
+- SCOPE: headers contract docs, contract JSON, verify-headers script, CI/deploy hooks, worker/_headers alignment
+- CHANGES (files touched): docs/perf/HEADERS_CONTRACT.md; tools/headers-contract.json; tools/verify-headers.mjs; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; src/worker.js; public/_headers; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-headers.mjs --mode=config; node tools/verify-ledger.mjs
+- CI STATUS: expected green if worker headers match contract
+- DEPLOY STATUS: expected green if live headers match contract
+- VERIFY (URLs + expected): see tools/headers-contract.json + live mode check in deploy
+- NOTES (gotchas): `/manifest.webmanifest` and `/offline.html` now no-store; live checks run after deploy.
+- RISKS: none
+- NEXT: TASK-0006

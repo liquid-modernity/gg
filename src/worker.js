@@ -3,7 +3,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "da32cf5";
+    const WORKER_VERSION = "40583c4";
     const stamp = (res) => {
       const out = new Response(res.body, res);
       out.headers.set("X-GG-Worker", "proxy");
@@ -226,7 +226,7 @@ export default {
       // SW harus gampang update
       setCache("no-store");
     } else if (pathname === "/manifest.webmanifest" || pathname === "/offline.html") {
-      setCache("public, max-age=86400");
+      setCache("no-store");
     } else if (pathname.startsWith("/gg-pwa-icon/")) {
       setCache("public, max-age=31536000, immutable");
     } else {

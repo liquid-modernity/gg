@@ -196,6 +196,9 @@ jobs:
           wranglerVersion: "4.61.1"
           command: deploy --config wrangler.jsonc
 
+      - name: Verify headers contract (live)
+        run: node tools/verify-headers.mjs --mode=live --base=https://www.pakrpp.com
+
       - name: Post-deploy smoke tests
         env:
           REL: ${{ steps.rel.outputs.release_id }}

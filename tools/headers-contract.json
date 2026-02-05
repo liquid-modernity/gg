@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "base": "https://www.pakrpp.com",
+  "rules": [
+    {
+      "id": "assets-latest-js",
+      "path": "/assets/latest/main.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-latest-css",
+      "path": "/assets/latest/main.css",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^text/css" }
+    },
+    {
+      "id": "assets-v-js",
+      "path": "/assets/v/<REL>/main.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-css",
+      "path": "/assets/v/<REL>/main.css",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^text/css" }
+    },
+    {
+      "id": "sw-js",
+      "path": "/sw.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": { "allOf": ["no-store"] },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "gg-flags",
+      "path": "/gg-flags.json",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": { "allOf": ["no-store"] },
+      "contentType": { "regex": "^application/json" }
+    },
+    {
+      "id": "manifest",
+      "path": "/manifest.webmanifest",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": { "allOf": ["no-store"] },
+      "contentType": { "regex": "^(application/manifest\\+json|application/json)" }
+    },
+    {
+      "id": "offline",
+      "path": "/offline.html",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": { "allOf": ["no-store"] },
+      "contentType": { "regex": "^text/html" }
+    },
+    {
+      "id": "apex-redirect",
+      "type": "redirect",
+      "modes": ["live"],
+      "url": "https://pakrpp.com/",
+      "statusAny": [301, 308],
+      "locationPrefix": "https://www.pakrpp.com/"
+    }
+  ]
+}

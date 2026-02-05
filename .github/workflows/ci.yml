@@ -55,6 +55,9 @@ jobs:
       - name: Verify ledger sync
         run: node tools/verify-ledger.mjs
 
+      - name: Verify headers contract (config)
+        run: node tools/verify-headers.mjs --mode=config
+
       - name: XML well-formedness
         run: |
           set -e

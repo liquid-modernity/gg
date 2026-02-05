@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- GG_CAPSULE auto-sync enabled (TASK-0004B.2)
+- Headers contract enforced (TASK-0005)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: da32cf5
-PROD_PINNED_JS: /assets/v/da32cf5/main.js
-PROD_PINNED_CSS: /assets/v/da32cf5/main.css
+RELEASE_ID: 40583c4
+PROD_PINNED_JS: /assets/v/40583c4/main.js
+PROD_PINNED_CSS: /assets/v/40583c4/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0005 (Routing stabilization)
+- TASK-0006 (CRP / Zero-TBT plan)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0004B.2 auto-sync GG_CAPSULE release id
+- 2026-02-05 TASK-0005 headers contract + verify-headers
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

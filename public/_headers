@@ -11,11 +11,11 @@
   X-GG-Assets: bb9d16b
 
 /manifest.webmanifest
-  Cache-Control: public, max-age=86400
+  Cache-Control: no-store
   X-GG-Assets: bb9d16b
 
 /offline.html
-  Cache-Control: public, max-age=86400
+  Cache-Control: no-store
   X-GG-Assets: bb9d16b
 
 /gg-pwa-icon/*
