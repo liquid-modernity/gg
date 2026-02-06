@@ -54,7 +54,6 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `node tools/verify-inline-css.mjs`
 - `node tools/verify-crp.mjs`
 - `node tools/verify-headers.mjs --mode=config`
-- `node tools/verify-budgets.mjs`
 
 **Deploy**
 - Uses `cloudflare/wrangler-action` with `wrangler.jsonc`.
