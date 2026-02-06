@@ -39,7 +39,6 @@ jobs:
           set -e
           npm run build
           npm run verify:assets
-          npm run build:xml
           npm run verify:xml
           if [ -f tools/verify-theme-diff.mjs ]; then
             node tools/verify-theme-diff.mjs
