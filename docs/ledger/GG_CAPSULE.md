@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- CRP Phase 2 step implemented (boot loader + late-load main.js) (TASK-0006B)
+- CRP Phase 2 CSS/fonts stabilization (TASK-0006C)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 2f8b56b
-PROD_PINNED_JS: /assets/v/2f8b56b/main.js
-PROD_PINNED_CSS: /assets/v/2f8b56b/main.css
+RELEASE_ID: d5a84a3
+PROD_PINNED_JS: /assets/v/d5a84a3/main.js
+PROD_PINNED_CSS: /assets/v/d5a84a3/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006C (Phase 2: split modules/long-task elimination)
+- TASK-0006D (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006B boot loader + late-load main.js
+- 2026-02-05 TASK-0006C CSS/fonts CRP stabilization
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

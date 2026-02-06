@@ -5,7 +5,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 
 **Current Render Path (PROD, as built)**
 - HTML served by Blogger theme `index.prod.xml` (canonical: https://www.pakrpp.com).
-- Render-blocking CSS: `/assets/v/<RELEASE_ID>/main.css`.
+- CSS: minimal inline critical CSS + `main.css` loaded non-blocking via `preload` + `onload`.
 - Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads `main.js` after idle/interaction.
 - Fonts: Google Fonts preconnect + stylesheet (Material Symbols).
 - Service Worker registers from `main.js` in PROD; it does not block first paint but affects repeat visits.
@@ -53,6 +53,10 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Added a tiny `boot.js` loader so initial HTML does not reference `main.js` directly.
 - `main.js` now loads after first interaction or idle, not at first paint.
 - `instant.page` is loaded only after `main.js` and only in PROD.
+
+**Phase 2 Step Implemented (2026-02-05)**
+- Google Fonts uses `display=swap` and only the Rounded variant is requested.
+- `main.css` is loaded non-blocking via `preload` + `onload` with a minimal inline critical CSS fallback.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

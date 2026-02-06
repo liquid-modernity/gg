@@ -360,3 +360,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): boot.js is the only initial script; instant.page now loads only after main.js and only in PROD.
 - RISKS: delayed main.js may postpone non-critical interactivity until idle/first input.
 - NEXT: TASK-0006C
+
+---
+
+## 2026-02-05 — TASK-0006C — CSS/fonts CRP stabilization
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006C
+- TITLE: CSS/fonts CRP stabilization
+- MODE (DEV/PROD impact): HTML head changes + docs
+- RELEASE_ID: d5a84a3
+- SCOPE: font swap, remove unused font request, non-blocking CSS load + inline critical CSS, CRP plan update, ledger updates
+- CHANGES (files touched): index.dev.xml; index.prod.xml; tools/perf-budgets.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build; npm run verify:assets; node tools/verify-budgets.mjs; node tools/verify-ledger.mjs; node tools/verify-headers.mjs --mode=config; node tools/validate-xml.js
+- CI STATUS: expected green if budgets and verifiers remain within contract
+- DEPLOY STATUS: expected green (no deploy changes)
+- VERIFY (perf steps): DevTools Performance + Coverage → confirm only boot.js and critical CSS at first paint, main.css loads via preload/onload, no FOIT.
+- NOTES (gotchas): only Material Symbols Rounded requested with display=swap; main.css now non-blocking.
+- RISKS: brief FOUC possible if CSS preload delays on slow network.
+- NEXT: TASK-0006D
