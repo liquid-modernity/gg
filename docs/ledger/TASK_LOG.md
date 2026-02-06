@@ -504,3 +504,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): UI module only loads on interceptable internal clicks; fallback navigation after short delay if module not ready.
 - RISKS: first internal click may fallback to full navigation if module load is slow.
 - NEXT: TASK-0006I
+
+---
+
+## 2026-02-06 — TASK-0006H.1 — Ledger contract fix (single release truth)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006H.1
+- TITLE: Ledger contract fix (single release truth)
+- MODE (DEV/PROD impact): docs + verifier (CI guard)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: TASK_LOG policy change, verify-ledger enforcement, CI/deploy workflow naming, pipeline docs
+- CHANGES (files touched): docs/ledger/TASK_LOG.md; docs/ledger/TASK_LOG_POLICY.md; tools/verify-ledger.mjs; .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green if TASK_LOG contains no RELEASE_ID after policy marker
+- DEPLOY STATUS: expected green
+- VERIFY: `node tools/verify-ledger.mjs`
+- NOTES: POLICY CHANGE: TASK_LOG no longer records RELEASE_ID. Canonical source is GG_CAPSULE AUTOGEN.
+- RISKS: none
+- NEXT: TASK-0006I

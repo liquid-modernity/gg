@@ -35,6 +35,7 @@ function extractFromCapsule(md) {
 const indexXml = readFile("index.prod.xml");
 const swJs = readFile("public/sw.js");
 const capsule = readFile("docs/ledger/GG_CAPSULE.md");
+const taskLog = readFile("docs/ledger/TASK_LOG.md");
 
 const relIndex = indexXml ? extractFromIndex(indexXml) : null;
 const relSw = swJs ? extractFromSw(swJs) : null;
@@ -48,6 +49,27 @@ const refs = [relIndex, relSw, relCapsule].filter(Boolean);
 const mismatch = refs.some((v) => v !== refs[0]);
 if (mismatch) {
   failures.push(`release id mismatch: index=${relIndex || "?"} sw=${relSw || "?"} capsule=${relCapsule || "?"}`);
+}
+
+if (taskLog) {
+  const lines = taskLog.split(/\r?\n/);
+  const policyMarker = "POLICY CHANGE: TASK_LOG no longer records RELEASE_ID";
+  let markerIdx = -1;
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    if (lines[i].includes(policyMarker)) {
+      markerIdx = i;
+      break;
+    }
+  }
+  if (markerIdx === -1) {
+    failures.push("TASK_LOG policy marker missing: add entry 'POLICY CHANGE: TASK_LOG no longer records RELEASE_ID'");
+  } else {
+    const recent = lines.slice(markerIdx + 1);
+    const hasReleaseId = recent.some((line) => /RELEASE_ID\s*:/.test(line));
+    if (hasReleaseId) {
+      failures.push("TASK_LOG must not contain RELEASE_ID. Use RELEASE_REF: GG_CAPSULE AUTOGEN.");
+    }
+  }
 }
 
 if (failures.length) {

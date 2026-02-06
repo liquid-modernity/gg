@@ -52,7 +52,7 @@ jobs:
             echo "SKIP: tools/check-links.sh not found"
           fi
 
-      - name: Verify ledger sync
+      - name: Verify ledger + doc contracts
         run: node tools/verify-ledger.mjs
 
       - name: Verify headers contract (config)

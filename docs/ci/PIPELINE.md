@@ -29,6 +29,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `docs/ledger/GG_CAPSULE.md` contains an AUTOGEN block for release metadata.
 - `tools/release.js` updates the AUTOGEN block during `npm run build`.
 - Do not edit `RELEASE_ID` manually; CI and deploy run `tools/verify-ledger.mjs` and fail on drift.
+- **Release truth:** GG_CAPSULE AUTOGEN is canonical. `docs/ledger/TASK_LOG.md` must not contain `RELEASE_ID` (use `RELEASE_REF: GG_CAPSULE AUTOGEN`), enforced by `tools/verify-ledger.mjs`.
 
 **Performance Budgets**
 - Budgets are defined in `tools/perf-budgets.json` and checked by `tools/verify-budgets.mjs`.
