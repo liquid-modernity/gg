@@ -61,6 +61,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Boot auto-load in PROD waits for `window.load` then idle (timeout 5000) to reduce TBT volatility.
 - CI runs `tools/verify-crp.mjs` to block regressions (main.js in HTML, blocking fonts/CSS).
 - Deploy preflight repeats CRP/inline guards to prevent manual bypass.
+- F.1 fixed late-load ready lifecycle.
 - Phase 2F: split entrypoint so `main.js` is a tiny loader and heavy code moves to `app.js` with new budgets + header contract.
 
 **Phase 2 Remaining**
