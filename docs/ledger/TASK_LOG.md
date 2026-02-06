@@ -458,7 +458,7 @@ Last updated: 2026-02-06
 - TASK_ID: TASK-0006F.1
 - TITLE: Late-load safe onReady + boot.js header contract
 - MODE (DEV/PROD impact): both (runtime readiness + header contract)
-- RELEASE_ID: 5492b7d
+- RELEASE_ID: 3a28d18
 - SCOPE: GG.boot.onReady late-load safety, headers contract for boot.js, CRP plan + ledger updates
 - CHANGES (files touched): public/assets/latest/app.js; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
 - COMMANDS RUN (local): n/a
@@ -486,3 +486,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): app.js now shim; heavy code moved to modules/ui.js; pwa logic moved to modules/pwa.js.
 - RISKS: any missing module init could delay UI/pwa features; keep core under 25KB gzip.
 - NEXT: TASK-0006H
+
+---
+
+## 2026-02-06 — TASK-0006H — True lazy UI (no forced timeout)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006H
+- TITLE: True lazy UI (no forced timeout, no import auto-init)
+- MODE (DEV/PROD impact): both (runtime orchestration)
+- RELEASE_ID: 5492b7d
+- SCOPE: core click-triggered UI load, remove generic triggers, ui init idempotent + no auto-init, CRP + ledger
+- CHANGES (files touched): public/assets/latest/core.js; public/assets/latest/modules/ui.js; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build
+- CI STATUS: expected green if budgets/headers/ledger align
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): internal link click requests UI module; no pointerdown/keydown trigger; dev log shows UI module requested by internal click
+- NOTES (gotchas): UI module only loads on interceptable internal clicks; fallback navigation after short delay if module not ready.
+- RISKS: first internal click may fallback to full navigation if module load is slow.
+- NEXT: TASK-0006I

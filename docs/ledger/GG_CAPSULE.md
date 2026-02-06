@@ -2,7 +2,7 @@
 Last updated: 2026-02-06
 
 NOW:
-- Modular split app.js (core + modules) (TASK-0006G)
+- True lazy UI (no forced timeout, no auto-init) (TASK-0006H)
 
 CONSTRAINTS:
 - main-only
@@ -14,10 +14,10 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 6c478ea
-PROD_PINNED_JS: /assets/v/6c478ea/main.js
-PROD_PINNED_APP: /assets/v/6c478ea/app.js
-PROD_PINNED_CSS: /assets/v/6c478ea/main.css
+RELEASE_ID: 3a28d18
+PROD_PINNED_JS: /assets/v/3a28d18/main.js
+PROD_PINNED_APP: /assets/v/3a28d18/app.js
+PROD_PINNED_CSS: /assets/v/3a28d18/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -34,10 +34,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006H (Phase 2: long-task elimination)
+- TASK-0006I (Phase 2: long-task elimination)
 
 LAST_PATCH:
-- 2026-02-06 TASK-0006G split app into core + modules
+- 2026-02-06 TASK-0006H true lazy UI (no forced timeout)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
