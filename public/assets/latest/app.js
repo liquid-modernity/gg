@@ -1739,11 +1739,8 @@ GG.actions.register('jump', function(ctx){
 
   GG.boot.onReady = GG.boot.onReady || function(fn){
     if (typeof fn !== 'function') return;
-    if (d.readyState !== 'loading') { fn(); return; }
     GG.boot._readyQueue = GG.boot._readyQueue || [];
     GG.boot._readyQueue.push(fn);
-    if (GG.boot._readyBound) return;
-    GG.boot._readyBound = true;
     var flush = function(){
       var q = GG.boot._readyQueue || [];
       GG.boot._readyQueue = [];
@@ -1751,6 +1748,20 @@ GG.actions.register('jump', function(ctx){
         try { q[i](); } catch (e) {}
       }
     };
+    if (d.readyState !== 'loading') {
+      GG.boot._readyBound = true;
+      if (GG.boot._readyFlushScheduled) return;
+      GG.boot._readyFlushScheduled = true;
+      var run = function(){
+        GG.boot._readyFlushScheduled = false;
+        flush();
+      };
+      if (w.queueMicrotask) w.queueMicrotask(run);
+      else w.setTimeout(run, 0);
+      return;
+    }
+    if (GG.boot._readyBound) return;
+    GG.boot._readyBound = true;
     if (GG.util && GG.util.initOnce) {
       GG.util.initOnce('GG.boot.onReady', function(){
         d.addEventListener('DOMContentLoaded', flush, { once: true });

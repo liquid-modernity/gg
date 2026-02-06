@@ -2,7 +2,7 @@
 Last updated: 2026-02-06
 
 NOW:
-- Entrypoint split (loader main.js + heavy app.js) (TASK-0006F)
+- Late-load ready + boot headers contract (TASK-0006F.1)
 
 CONSTRAINTS:
 - main-only
@@ -24,6 +24,7 @@ LIVE CONTRACT (must hold):
 - apex redirects → https://www.pakrpp.com/
 - worker ping: https://www.pakrpp.com/__gg_worker_ping
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
+- latest assets (DEV): https://www.pakrpp.com/assets/latest/boot.js (no-store)
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/app.js (no-store)
 - pinned assets (PROD): see AUTOGEN block (immutable)
 - sw.js: https://www.pakrpp.com/sw.js (no-store)
@@ -33,7 +34,7 @@ NEXT_TASK:
 - TASK-0006G (Phase 2: long-task elimination)
 
 LAST_PATCH:
-- 2026-02-06 TASK-0006F entrypoint split (main loader + app.js heavy)
+- 2026-02-06 TASK-0006F.1 late-load safe onReady + boot.js headers contract
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

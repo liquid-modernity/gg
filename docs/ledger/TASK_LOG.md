@@ -450,3 +450,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): main.js is now a tiny loader; app.js holds previous heavy bundle.
 - RISKS: app.js load failure delays app init; keep main.js within 20KB gzip / 60KB raw.
 - NEXT: TASK-0006G
+
+---
+
+## 2026-02-06 — TASK-0006F.1 — Late-load safe onReady + boot.js header contract
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006F.1
+- TITLE: Late-load safe onReady + boot.js header contract
+- MODE (DEV/PROD impact): both (runtime readiness + header contract)
+- RELEASE_ID: 5492b7d
+- SCOPE: GG.boot.onReady late-load safety, headers contract for boot.js, CRP plan + ledger updates
+- CHANGES (files touched): public/assets/latest/app.js; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green if header contract passes and budgets unchanged
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): in console after load run GG.boot.onReady(()=>console.log('READY_OK')) → logs immediately; headers contract includes boot.js latest + v/ immutable rules
+- NOTES (gotchas): onReady now flushes queue asynchronously when DOM is already ready.
+- RISKS: low; only readiness behavior for late-loaded app.
+- NEXT: TASK-0006G

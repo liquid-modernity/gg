@@ -7,8 +7,8 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - HTML served by Blogger theme `index.prod.xml` (canonical: https://www.pakrpp.com).
 - CSS: minimal inline critical CSS + `main.css` loaded non-blocking via `preload` + `onload`.
 - Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads a tiny `main.js` loader after idle/interaction.
-- Entrypoint split: `main.js` now async-loads the heavy `app.js` bundle.
-- Fonts: Google Fonts preconnect + stylesheet (Material Symbols).
+- Entrypoint chain: `boot.js` → `main.js` (loader) → `app.js` (heavy bundle).
+- Fonts: Google Fonts preconnect + stylesheet loaded non-blocking via `preload` + `onload` (Material Symbols).
 - Service Worker registers from `app.js` in PROD; it does not block first paint but affects repeat visits.
 
 **Blocking Rules (Non-Negotiable for First Paint)**
