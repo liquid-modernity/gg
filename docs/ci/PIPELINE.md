@@ -6,7 +6,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 **Triggers**
 - CI workflow name: `CI` (runs on `push` to `main` and `pull_request`).
 - Deploy workflow triggers automatically on `workflow_run` when `CI` completes successfully on `main`.
-- Manual deploy uses `workflow_dispatch`, but it still runs the full preflight gate and asserts the dispatch branch is `main`.
+- Manual deploy uses `workflow_dispatch`, but it still runs the full preflight gate and asserts the dispatch branch is `main` (no bypass).
 
 **CI Gate (Primary)**
 - `npm ci` (requires committed `package-lock.json`)
@@ -49,6 +49,11 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `npm run verify:xml`
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
+- `node tools/verify-ledger.mjs`
+- `node tools/verify-budgets.mjs`
+- `node tools/verify-inline-css.mjs`
+- `node tools/verify-crp.mjs`
+- `node tools/verify-headers.mjs --mode=config`
 - `node tools/verify-budgets.mjs`
 
 **Deploy**

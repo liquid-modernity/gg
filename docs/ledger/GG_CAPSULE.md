@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Boot policy tuning + CRP regression guard (TASK-0006E)
+- Deploy parity (no manual bypass) (TASK-0006E.1)
 
 CONSTRAINTS:
 - main-only
@@ -31,7 +31,7 @@ NEXT_TASK:
 - TASK-0006F (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006E boot policy tuning + CRP regression guard
+- 2026-02-05 TASK-0006E.1 deploy parity (no manual bypass)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

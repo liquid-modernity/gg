@@ -59,6 +59,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Inline critical CSS now has a deterministic budget guard in CI.
 - Boot auto-load in PROD waits for `window.load` then idle (timeout 5000) to reduce TBT volatility.
 - CI runs `tools/verify-crp.mjs` to block regressions (main.js in HTML, blocking fonts/CSS).
+- Deploy preflight repeats CRP/inline guards to prevent manual bypass.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

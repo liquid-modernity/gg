@@ -79,6 +79,15 @@ jobs:
       - name: Verify performance budgets
         run: node tools/verify-budgets.mjs
 
+      - name: Verify inline CSS budget
+        run: node tools/verify-inline-css.mjs
+
+      - name: Verify CRP regressions
+        run: node tools/verify-crp.mjs
+
+      - name: Verify headers contract (config)
+        run: node tools/verify-headers.mjs --mode=config
+
       - name: Preflight static assets + release id
         id: rel
         run: |

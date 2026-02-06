@@ -414,3 +414,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): DEV remains more eager via afterPaint; PROD waits until load+idle(5s) unless user interacts.
 - RISKS: main.js may load later on slow pages if no interaction occurs.
 - NEXT: TASK-0006F
+
+---
+
+## 2026-02-05 — TASK-0006E.1 — Deploy parity (no manual bypass)
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006E.1
+- TITLE: Deploy parity (no manual bypass)
+- MODE (DEV/PROD impact): deploy workflow gate parity
+- RELEASE_ID: f7debf0
+- SCOPE: deploy preflight adds CRP/inline/headers config checks, pipeline docs update, ledger updates
+- CHANGES (files touched): .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-inline-css.mjs; node tools/verify-crp.mjs
+- CI STATUS: expected green if CRP/inline checks pass
+- DEPLOY STATUS: expected green; manual dispatch blocked by CRP/inline/ledger/budgets
+- VERIFY (dry run): introduce a temporary CRP violation (e.g., add `rel='stylesheet'` for fonts in index.prod.xml) and confirm deploy preflight fails at verify-crp.
+- NOTES (gotchas): deploy now repeats CI guards for defense in depth.
+- RISKS: stricter preflight can block deploy if CRP rules are violated.
+- NEXT: TASK-0006F
