@@ -2,7 +2,7 @@
   "version": 1,
   "generated": "2026-02-06",
   "buffer_ratio": 0.15,
-  "source_release": "dff9437",
+  "source_release": "5c59d9a",
   "assets": [
     {
       "id": "main.js",
@@ -31,8 +31,38 @@
     {
       "id": "modules/ui.js",
       "path": "public/assets/v/<REL>/modules/ui.js",
-      "max_raw": 417344,
-      "max_gzip": 97071
+      "max_raw": 3500,
+      "max_gzip": 1200
+    },
+    {
+      "id": "modules/ui.bucket.core.js",
+      "path": "public/assets/v/<REL>/modules/ui.bucket.core.js",
+      "max_raw": 227360,
+      "max_gzip": 54408
+    },
+    {
+      "id": "modules/ui.bucket.listing.js",
+      "path": "public/assets/v/<REL>/modules/ui.bucket.listing.js",
+      "max_raw": 73362,
+      "max_gzip": 18045
+    },
+    {
+      "id": "modules/ui.bucket.post.js",
+      "path": "public/assets/v/<REL>/modules/ui.bucket.post.js",
+      "max_raw": 16309,
+      "max_gzip": 4758
+    },
+    {
+      "id": "modules/ui.bucket.poster.js",
+      "path": "public/assets/v/<REL>/modules/ui.bucket.poster.js",
+      "max_raw": 81903,
+      "max_gzip": 18494
+    },
+    {
+      "id": "modules/ui.bucket.search.js",
+      "path": "public/assets/v/<REL>/modules/ui.bucket.search.js",
+      "max_raw": 13444,
+      "max_gzip": 3874
     },
     {
       "id": "main.css",

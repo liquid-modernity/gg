@@ -7,7 +7,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - HTML served by Blogger theme `index.prod.xml` (canonical: https://www.pakrpp.com).
 - CSS: minimal inline critical CSS + `main.css` loaded non-blocking via `preload` + `onload`.
 - Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads a tiny `main.js` loader after idle/interaction.
-- Entrypoint chain: `boot.js` → `main.js` (loader) → `core.js` (small) → modules (`pwa.js`, `ui.js`) on idle/interaction.
+- Entrypoint chain: `boot.js` → `main.js` (loader) → `core.js` (small) → modules (`pwa.js`, `ui.js` orchestrator → UI buckets on intent/idle).
 - Fonts: Google Fonts preconnect + stylesheet loaded non-blocking via `preload` + `onload` (Material Symbols).
 - Service Worker registers from `modules/pwa.js` in PROD; it does not block first paint but affects repeat visits.
 
@@ -68,8 +68,9 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Phase 2I: UI prefetch is idle-only (no timeout) and gated by connection/visibility heuristics.
 - Phase 2K: router is decoupled from UI; internal routing never waits for `modules/ui.js`.
 - Phase 2K.1: router intercept allowlist/denylist for non-page URLs; router logs are dev-only.
+- Phase 2L: UI module diet — `modules/ui.js` is a thin orchestrator that lazy-loads UI buckets by surface/intent.
 
 **Phase 2 Remaining**
-- Split heavy modules into explicit idle-load buckets.
+- Further slim `ui.bucket.core.js` by extracting optional features into buckets.
 - Reduce long tasks by batching DOM reads/writes per module.
 - Defer non-critical media/analytics beyond first interaction.

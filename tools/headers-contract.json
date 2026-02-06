@@ -81,6 +81,71 @@
       "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
     },
     {
+      "id": "assets-latest-mod-ui-core",
+      "path": "/assets/latest/modules/ui.bucket.core.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-latest-mod-ui-listing",
+      "path": "/assets/latest/modules/ui.bucket.listing.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-latest-mod-ui-post",
+      "path": "/assets/latest/modules/ui.bucket.post.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-latest-mod-ui-poster",
+      "path": "/assets/latest/modules/ui.bucket.poster.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-latest-mod-ui-search",
+      "path": "/assets/latest/modules/ui.bucket.search.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
       "id": "assets-latest-css",
       "path": "/assets/latest/main.css",
       "modes": ["config", "live"],
@@ -151,6 +216,61 @@
     {
       "id": "assets-v-mod-ui",
       "path": "/assets/v/<REL>/modules/ui.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-mod-ui-core",
+      "path": "/assets/v/<REL>/modules/ui.bucket.core.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-mod-ui-listing",
+      "path": "/assets/v/<REL>/modules/ui.bucket.listing.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-mod-ui-post",
+      "path": "/assets/v/<REL>/modules/ui.bucket.post.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-mod-ui-poster",
+      "path": "/assets/v/<REL>/modules/ui.bucket.poster.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-mod-ui-search",
+      "path": "/assets/v/<REL>/modules/ui.bucket.search.js",
       "modes": ["config", "live"],
       "status": 200,
       "cacheControl": {

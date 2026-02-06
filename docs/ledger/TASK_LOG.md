@@ -594,3 +594,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): deploy preflight now explicitly documents router verifier parity for manual dispatch.
 - RISKS: none; docs + gate parity only.
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A — UI Module Diet (reduce parse/exec + keep luxury feel)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A
+- TITLE: UI Module Diet (reduce parse/exec + keep luxury feel)
+- MODE (DEV/PROD impact): both (UI performance + lazy loading)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: split monolithic UI into buckets; on-demand loading; budgets + header contract coverage; CRP plan update
+- CHANGES (files touched): public/assets/latest/core.js; public/assets/latest/modules/ui.js; public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/modules/ui.bucket.post.js; public/assets/latest/modules/ui.bucket.poster.js; public/assets/latest/modules/ui.bucket.search.js; tools/perf-budgets.json; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; docs/ledger/GG_CAPSULE.md; public/assets/v/<REL>/*
+- COMMANDS RUN (local): npm run build; node tools/verify-router-contract.mjs; npm run verify:assets; npm run build:xml; npm run verify:xml; node tools/verify-budgets.mjs; node tools/verify-headers.mjs --mode=config; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs; node tools/verify-ledger.mjs
+- CI STATUS: expected green (verifiers pass)
+- DEPLOY STATUS: expected green (manual dispatch remains gated)
+- VERIFY (manual): internal routing works without UI; listing/post enhancements load via buckets; share/poster action lazy-loads poster bucket
+- NOTES (gotchas): `modules/ui.js` is now a thin orchestrator; `ui.bucket.core.js` still largest and can be further trimmed
+- RISKS: low/medium; bucket mapping mistakes would delay a feature until bucket loads
+- NEXT: consider extracting more optional features from `ui.bucket.core.js`
