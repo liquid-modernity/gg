@@ -7,9 +7,9 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - HTML served by Blogger theme `index.prod.xml` (canonical: https://www.pakrpp.com).
 - CSS: minimal inline critical CSS + `main.css` loaded non-blocking via `preload` + `onload`.
 - Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads a tiny `main.js` loader after idle/interaction.
-- Entrypoint chain: `boot.js` → `main.js` (loader) → `app.js` (heavy bundle).
+- Entrypoint chain: `boot.js` → `main.js` (loader) → `core.js` (small) → modules (`pwa.js`, `ui.js`) on idle/interaction.
 - Fonts: Google Fonts preconnect + stylesheet loaded non-blocking via `preload` + `onload` (Material Symbols).
-- Service Worker registers from `app.js` in PROD; it does not block first paint but affects repeat visits.
+- Service Worker registers from `modules/pwa.js` in PROD; it does not block first paint but affects repeat visits.
 
 **Blocking Rules (Non-Negotiable for First Paint)**
 - No synchronous `<script>` in the document head.
@@ -63,6 +63,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Deploy preflight repeats CRP/inline guards to prevent manual bypass.
 - F.1 fixed late-load ready lifecycle.
 - Phase 2F: split entrypoint so `main.js` is a tiny loader and heavy code moves to `app.js` with new budgets + header contract.
+- Phase 2G: split `app.js` into `core.js` + on-demand modules to reduce parse/compile cost.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

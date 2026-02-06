@@ -7,14 +7,32 @@
     {
       "id": "main.js",
       "path": "public/assets/v/<REL>/main.js",
-      "max_raw": 60000,
-      "max_gzip": 20000
+      "max_raw": 690,
+      "max_gzip": 444
     },
     {
       "id": "app.js",
       "path": "public/assets/v/<REL>/app.js",
-      "max_raw": 425273,
-      "max_gzip": 99006
+      "max_raw": 693,
+      "max_gzip": 447
+    },
+    {
+      "id": "core.js",
+      "path": "public/assets/v/<REL>/core.js",
+      "max_raw": 40893,
+      "max_gzip": 9935
+    },
+    {
+      "id": "modules/pwa.js",
+      "path": "public/assets/v/<REL>/modules/pwa.js",
+      "max_raw": 9376,
+      "max_gzip": 2589
+    },
+    {
+      "id": "modules/ui.js",
+      "path": "public/assets/v/<REL>/modules/ui.js",
+      "max_raw": 417344,
+      "max_gzip": 97071
     },
     {
       "id": "main.css",

@@ -2,7 +2,7 @@
 Last updated: 2026-02-06
 
 NOW:
-- Late-load ready + boot headers contract (TASK-0006F.1)
+- Modular split app.js (core + modules) (TASK-0006G)
 
 CONSTRAINTS:
 - main-only
@@ -26,15 +26,18 @@ LIVE CONTRACT (must hold):
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/boot.js (no-store)
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/app.js (no-store)
+- latest assets (DEV): https://www.pakrpp.com/assets/latest/core.js (no-store)
+- latest assets (DEV): https://www.pakrpp.com/assets/latest/modules/pwa.js (no-store)
+- latest assets (DEV): https://www.pakrpp.com/assets/latest/modules/ui.js (no-store)
 - pinned assets (PROD): see AUTOGEN block (immutable)
 - sw.js: https://www.pakrpp.com/sw.js (no-store)
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006G (Phase 2: long-task elimination)
+- TASK-0006H (Phase 2: long-task elimination)
 
 LAST_PATCH:
-- 2026-02-06 TASK-0006F.1 late-load safe onReady + boot.js headers contract
+- 2026-02-06 TASK-0006G split app into core + modules
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

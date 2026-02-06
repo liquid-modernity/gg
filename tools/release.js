@@ -57,17 +57,32 @@ const latestDir = path.join("public", "assets", "latest");
 const latestCss = path.join(latestDir, "main.css");
 const latestJs = path.join(latestDir, "main.js");
 const latestApp = path.join(latestDir, "app.js");
+const latestCore = path.join(latestDir, "core.js");
+const latestModulesDir = path.join(latestDir, "modules");
 const latestBoot = path.join(latestDir, "boot.js");
-if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs) || !fs.existsSync(latestApp)) {
-  throw new Error("Latest assets missing: public/assets/latest/(main.css|main.js|app.js)");
+if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs) || !fs.existsSync(latestApp) || !fs.existsSync(latestCore)) {
+  throw new Error("Latest assets missing: public/assets/latest/(main.css|main.js|app.js|core.js)");
 }
 if (!fs.existsSync(latestBoot)) {
   throw new Error("Latest assets missing: public/assets/latest/boot.js");
 }
+if (!fs.existsSync(latestModulesDir)) {
+  throw new Error("Latest assets missing: public/assets/latest/modules");
+}
 fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
 fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
 fs.copyFileSync(latestApp, path.join(destDir, "app.js"));
+fs.copyFileSync(latestCore, path.join(destDir, "core.js"));
 fs.copyFileSync(latestBoot, path.join(destDir, "boot.js"));
+const destModules = path.join(destDir, "modules");
+fs.mkdirSync(destModules, { recursive: true });
+const moduleFiles = fs.readdirSync(latestModulesDir).filter((f) => f.endsWith(".js"));
+if (!moduleFiles.length) {
+  throw new Error("Latest assets missing: public/assets/latest/modules/*.js");
+}
+moduleFiles.forEach((f) => {
+  fs.copyFileSync(path.join(latestModulesDir, f), path.join(destModules, f));
+});
 
 replaceAllOrThrow(
   "public/sw.js",

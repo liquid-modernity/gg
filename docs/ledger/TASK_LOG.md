@@ -468,3 +468,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): onReady now flushes queue asynchronously when DOM is already ready.
 - RISKS: low; only readiness behavior for late-loaded app.
 - NEXT: TASK-0006G
+
+---
+
+## 2026-02-06 — TASK-0006G — Modular split app.js (core + modules)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006G
+- TITLE: Modular split app.js (core + modules on-demand)
+- MODE (DEV/PROD impact): both (assets + budgets + headers + runtime)
+- RELEASE_ID: 5492b7d
+- SCOPE: core.js + modules split, main.js loader update, app.js shim, release/budget/header updates, CRP + ledger
+- CHANGES (files touched): public/assets/latest/main.js; public/assets/latest/app.js; public/assets/latest/core.js; public/assets/latest/modules/pwa.js; public/assets/latest/modules/ui.js; tools/release.js; tools/perf-budgets.json; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): wc -c public/assets/latest/{main.js,app.js,core.js}; gzip -c public/assets/latest/* | wc -c
+- CI STATUS: expected green if budgets/headers/release assets align
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): first interaction still intercepts; modules load after idle; /assets/latest/core.js + /assets/latest/modules/*.js no-store; versioned modules immutable
+- NOTES (gotchas): app.js now shim; heavy code moved to modules/ui.js; pwa logic moved to modules/pwa.js.
+- RISKS: any missing module init could delay UI/pwa features; keep core under 25KB gzip.
+- NEXT: TASK-0006H
