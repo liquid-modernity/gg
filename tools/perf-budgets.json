@@ -1,14 +1,20 @@
 {
   "version": 1,
-  "generated": "2026-02-05",
+  "generated": "2026-02-06",
   "buffer_ratio": 0.15,
-  "source_release": "a60693d",
+  "source_release": "dff9437",
   "assets": [
     {
       "id": "main.js",
       "path": "public/assets/v/<REL>/main.js",
-      "max_raw": 422202,
-      "max_gzip": 98588
+      "max_raw": 60000,
+      "max_gzip": 20000
+    },
+    {
+      "id": "app.js",
+      "path": "public/assets/v/<REL>/app.js",
+      "max_raw": 425273,
+      "max_gzip": 99006
     },
     {
       "id": "main.css",

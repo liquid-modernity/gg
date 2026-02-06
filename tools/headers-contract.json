@@ -16,6 +16,19 @@
       "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
     },
     {
+      "id": "assets-latest-app-js",
+      "path": "/assets/latest/app.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "anyOf": [
+          ["no-store"],
+          ["max-age=0", "must-revalidate"]
+        ]
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
       "id": "assets-latest-css",
       "path": "/assets/latest/main.css",
       "modes": ["config", "live"],
@@ -31,6 +44,17 @@
     {
       "id": "assets-v-js",
       "path": "/assets/v/<REL>/main.js",
+      "modes": ["config", "live"],
+      "status": 200,
+      "cacheControl": {
+        "allOf": ["public", "immutable"],
+        "minMaxAge": 31536000
+      },
+      "contentType": { "regex": "^(application|text)/javascript|application/x-javascript" }
+    },
+    {
+      "id": "assets-v-app-js",
+      "path": "/assets/v/<REL>/app.js",
       "modes": ["config", "live"],
       "status": 200,
       "cacheControl": {

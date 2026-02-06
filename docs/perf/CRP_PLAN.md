@@ -1,14 +1,15 @@
 # Critical Rendering Path (CRP) Plan
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
 Purpose: define a stable CRP doctrine and guardrails so performance cannot regress silently.
 
 **Current Render Path (PROD, as built)**
 - HTML served by Blogger theme `index.prod.xml` (canonical: https://www.pakrpp.com).
 - CSS: minimal inline critical CSS + `main.css` loaded non-blocking via `preload` + `onload`.
-- Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads `main.js` after idle/interaction.
+- Deferred boot loader: `/assets/v/<RELEASE_ID>/boot.js` (defer), which loads a tiny `main.js` loader after idle/interaction.
+- Entrypoint split: `main.js` now async-loads the heavy `app.js` bundle.
 - Fonts: Google Fonts preconnect + stylesheet (Material Symbols).
-- Service Worker registers from `main.js` in PROD; it does not block first paint but affects repeat visits.
+- Service Worker registers from `app.js` in PROD; it does not block first paint but affects repeat visits.
 
 **Blocking Rules (Non-Negotiable for First Paint)**
 - No synchronous `<script>` in the document head.
@@ -49,7 +50,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Deferred root state sync and hero video observer to idle.
 - Added DEV-only Stage 0 performance mark with a single console info line.
 
-**Phase 2 Steps Implemented (2026-02-05)**
+**Phase 2 Steps Implemented (through 2026-02-06)**
 - Added a tiny `boot.js` loader so initial HTML does not reference `main.js` directly.
 - `main.js` now loads after first interaction or idle, not at first paint.
 - `instant.page` is loaded only after `main.js` and only in PROD.
@@ -60,6 +61,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Boot auto-load in PROD waits for `window.load` then idle (timeout 5000) to reduce TBT volatility.
 - CI runs `tools/verify-crp.mjs` to block regressions (main.js in HTML, blocking fonts/CSS).
 - Deploy preflight repeats CRP/inline guards to prevent manual bypass.
+- Phase 2F: split entrypoint so `main.js` is a tiny loader and heavy code moves to `app.js` with new budgets + header contract.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

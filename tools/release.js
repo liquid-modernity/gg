@@ -30,6 +30,7 @@ function updateCapsuleAutogen(releaseId) {
     `${begin}\n` +
     `RELEASE_ID: ${releaseId}\n` +
     `PROD_PINNED_JS: /assets/v/${releaseId}/main.js\n` +
+    `PROD_PINNED_APP: /assets/v/${releaseId}/app.js\n` +
     `PROD_PINNED_CSS: /assets/v/${releaseId}/main.css\n` +
     `${end}`;
 
@@ -55,15 +56,17 @@ fs.mkdirSync(destDir, { recursive: true });
 const latestDir = path.join("public", "assets", "latest");
 const latestCss = path.join(latestDir, "main.css");
 const latestJs = path.join(latestDir, "main.js");
+const latestApp = path.join(latestDir, "app.js");
 const latestBoot = path.join(latestDir, "boot.js");
-if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs)) {
-  throw new Error("Latest assets missing: public/assets/latest/main.(css|js)");
+if (!fs.existsSync(latestCss) || !fs.existsSync(latestJs) || !fs.existsSync(latestApp)) {
+  throw new Error("Latest assets missing: public/assets/latest/(main.css|main.js|app.js)");
 }
 if (!fs.existsSync(latestBoot)) {
   throw new Error("Latest assets missing: public/assets/latest/boot.js");
 }
 fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
 fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
+fs.copyFileSync(latestApp, path.join(destDir, "app.js"));
 fs.copyFileSync(latestBoot, path.join(destDir, "boot.js"));
 
 replaceAllOrThrow(

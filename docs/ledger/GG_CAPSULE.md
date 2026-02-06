@@ -1,8 +1,8 @@
 # GG_CAPSULE (current session)
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
 NOW:
-- Deploy parity (no manual bypass) (TASK-0006E.1)
+- Entrypoint split (loader main.js + heavy app.js) (TASK-0006F)
 
 CONSTRAINTS:
 - main-only
@@ -16,6 +16,7 @@ CONSTRAINTS:
 <!-- GG:AUTOGEN:BEGIN -->
 RELEASE_ID: dff9437
 PROD_PINNED_JS: /assets/v/dff9437/main.js
+PROD_PINNED_APP: /assets/v/dff9437/app.js
 PROD_PINNED_CSS: /assets/v/dff9437/main.css
 <!-- GG:AUTOGEN:END -->
 
@@ -23,15 +24,16 @@ LIVE CONTRACT (must hold):
 - apex redirects → https://www.pakrpp.com/
 - worker ping: https://www.pakrpp.com/__gg_worker_ping
 - latest assets (DEV): https://www.pakrpp.com/assets/latest/main.js (no-store)
+- latest assets (DEV): https://www.pakrpp.com/assets/latest/app.js (no-store)
 - pinned assets (PROD): see AUTOGEN block (immutable)
 - sw.js: https://www.pakrpp.com/sw.js (no-store)
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006F (Phase 2: split modules/long-task elimination)
+- TASK-0006G (Phase 2: long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006E.1 deploy parity (no manual bypass)
+- 2026-02-06 TASK-0006F entrypoint split (main loader + app.js heavy)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

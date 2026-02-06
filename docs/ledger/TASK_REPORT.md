@@ -1,44 +1,34 @@
 TASK_REPORT
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
-TASK_ID: TASK-0006E.1
-TITLE: Deploy parity (no manual bypass)
+TASK_ID: TASK-0006F
+TITLE: Entrypoint split (main.js loader + app.js heavy)
 
 TASK_SUMMARY
-- Deploy preflight now runs the same CRP/inline/header config guards as CI.
-- Manual dispatch cannot bypass CRP/inline/ledger/budget checks.
-- Pipeline docs updated to list deploy verifiers explicitly.
+- main.js is now a tiny loader that derives app.js from its own script URL and async-loads it (dev-only info log).
+- The previous heavy main.js bundle was moved to public/assets/latest/app.js with no functional changes.
+- Release/build now versions app.js; budgets and header contract enforce app.js caching and smaller main.js limits.
 
 FILES_CHANGED
-- .github/workflows/deploy.yml
-- docs/ci/PIPELINE.md
+- public/assets/latest/main.js
+- public/assets/latest/app.js
+- tools/release.js
+- tools/perf-budgets.json
+- tools/headers-contract.json
+- docs/perf/CRP_PLAN.md
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS
-- `node tools/verify-inline-css.mjs`
-- `node tools/verify-crp.mjs`
-
-HOW TO VERIFY DEPLOY BLOCKS (DRY RUN)
-1) Temporarily edit `index.prod.xml` to add a blocking font CSS link:
-   - Change the fonts preload link to `rel='stylesheet'`.
-2) Run deploy workflow via manual dispatch.
-3) Confirm the deploy job fails at step `Verify CRP regressions`.
-4) Revert the temporary change.
-
-CI/DEPLOY GATES (DEPLOY PRECHECK)
-- `npm ci`
-- `npm run build`
-- `npm run verify:assets`
-- `npm run build:xml`
-- `npm run verify:xml`
-- `node tools/verify-ledger.mjs`
 - `node tools/verify-budgets.mjs`
-- `node tools/verify-inline-css.mjs`
-- `node tools/verify-crp.mjs`
 - `node tools/verify-headers.mjs --mode=config`
 
+MANUAL SMOKE (POST-DEPLOY)
+1) Load page → confirm main.js injects app.js (Network panel shows app.js requested).
+2) Interact once → confirm app features initialize normally.
+3) Check headers: latest app.js no-store; versioned app.js immutable.
+
 RISKS / ROLLBACK
-- Risk: stricter preflight blocks deploy if CRP rules are violated.
+- Risk: app.js load failure delays app init; loader is intentionally minimal.
 - Rollback: revert this commit.

@@ -1,5 +1,5 @@
 # TASK LOG (append-only)
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
 > Purpose: immutable-ish history for AI context + audit trail.
 > Rule: NEVER rewrite old entries. Only append.
@@ -432,3 +432,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): deploy now repeats CI guards for defense in depth.
 - RISKS: stricter preflight can block deploy if CRP rules are violated.
 - NEXT: TASK-0006F
+
+---
+
+## 2026-02-06 — TASK-0006F — Entrypoint split (main loader + app heavy)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006F
+- TITLE: Entrypoint split (main.js loader + app.js heavy)
+- MODE (DEV/PROD impact): both (assets + budgets + headers + build)
+- RELEASE_ID: dff9437
+- SCOPE: entrypoint split, release copy, budgets, header contract, CRP plan + ledger updates
+- CHANGES (files touched): public/assets/latest/main.js; public/assets/latest/app.js; tools/release.js; tools/perf-budgets.json; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): wc -c public/assets/latest/main.js; gzip -c public/assets/latest/main.js | wc -c
+- CI STATUS: expected green if budgets + header contract align and release.js copies app.js
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (URLs + expected): load page → app.js requested by main.js; /assets/latest/app.js no-store; /assets/v/<REL>/app.js immutable
+- NOTES (gotchas): main.js is now a tiny loader; app.js holds previous heavy bundle.
+- RISKS: app.js load failure delays app init; keep main.js within 20KB gzip / 60KB raw.
+- NEXT: TASK-0006G
