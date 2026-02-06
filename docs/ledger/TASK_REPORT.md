@@ -1,20 +1,17 @@
 TASK_REPORT
 Last updated: 2026-02-05
 
-TASK_ID: TASK-0006D
-TITLE: Fonts non-blocking + inline CSS budget guard
+TASK_ID: TASK-0006E
+TITLE: Boot policy tuning + CRP regression guard
 
 TASK_SUMMARY
-- Switched Google Fonts CSS to non-blocking preload+onload with noscript fallback in dev/prod.
-- Added deterministic inline CSS budget guard (`tools/critical-inline-budget.json` + `tools/verify-inline-css.mjs`).
-- Wired inline CSS budget check into CI.
+- Tuned `boot.js` so PROD waits for `window.load` then idle (timeout 5000) before auto-loading `main.js`; user interaction still triggers immediate load.
+- Added deterministic CRP regression verifier `tools/verify-crp.mjs` and wired it into CI.
 - Updated CRP plan and ledger state.
 
 FILES_CHANGED
-- index.dev.xml
-- index.prod.xml
-- tools/critical-inline-budget.json
-- tools/verify-inline-css.mjs
+- public/assets/latest/boot.js
+- tools/verify-crp.mjs
 - .github/workflows/ci.yml
 - docs/perf/CRP_PLAN.md
 - docs/ledger/GG_CAPSULE.md
@@ -22,8 +19,9 @@ FILES_CHANGED
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS
-- `node tools/verify-inline-css.mjs`
 - `npm run build`
+- `node tools/verify-inline-css.mjs`
+- `node tools/verify-crp.mjs`
 - `npm run verify:assets`
 - `node tools/verify-budgets.mjs`
 - `node tools/verify-ledger.mjs`
@@ -31,14 +29,10 @@ VERIFICATION COMMANDS
 - `node tools/validate-xml.js`
 
 PERF MEASUREMENT (DevTools)
-1) Network: confirm fonts CSS loads via preload and no blocking stylesheet request.
-2) Coverage: inline critical CSS stays minimal; main.css remains async.
-3) Performance: cold load, check no FOIT and stable LCP.
-
-BEHAVIOR CHECKS
-- DEV: boot.js loads main.js after idle/interaction; fonts swap behavior applied.
-- PROD: fonts CSS non-blocking; noscript fallback present; no UI regressions.
+1) Performance: cold reload and confirm `main.js` auto-load waits for `window.load` + idle in PROD.
+2) Interaction: pointerdown/keydown should load `main.js` immediately.
+3) Coverage: ensure no main.js in HTML and no blocking font CSS.
 
 RISKS / ROLLBACK
-- Risk: brief FOUC if font CSS preload delays on slow networks.
+- Risk: main.js may load later on slow pages if no interaction occurs.
 - Rollback: revert this commit.

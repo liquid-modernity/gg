@@ -64,6 +64,9 @@ jobs:
       - name: Verify inline CSS budget
         run: node tools/verify-inline-css.mjs
 
+      - name: Verify CRP regressions
+        run: node tools/verify-crp.mjs
+
       - name: XML well-formedness
         run: |
           set -e

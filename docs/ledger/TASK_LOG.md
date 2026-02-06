@@ -396,3 +396,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): inline CSS budget counts <style> blocks before main.css preload and <b:skin> CDATA.
 - RISKS: small FOUC possible if font CSS preload is slow.
 - NEXT: TASK-0006E
+
+---
+
+## 2026-02-05 — TASK-0006E — Boot policy tuning + CRP regression guard
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006E
+- TITLE: Boot policy tuning + CRP regression guard
+- MODE (DEV/PROD impact): boot loader timing + CI guard
+- RELEASE_ID: a60693d
+- SCOPE: boot.js conservative auto-load in PROD, CRP regression verifier, CI hook, CRP plan + ledger updates
+- CHANGES (files touched): public/assets/latest/boot.js; tools/verify-crp.mjs; .github/workflows/ci.yml; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs; npm run verify:assets; node tools/verify-budgets.mjs; node tools/verify-ledger.mjs; node tools/verify-headers.mjs --mode=config; node tools/validate-xml.js
+- CI STATUS: expected green if CRP checks pass
+- DEPLOY STATUS: expected green (no deploy changes)
+- VERIFY (perf steps): DevTools Performance → cold load → confirm main.js auto-load waits for window load + idle (PROD) and no long tasks early; verify interaction still triggers immediate load.
+- NOTES (gotchas): DEV remains more eager via afterPaint; PROD waits until load+idle(5s) unless user interacts.
+- RISKS: main.js may load later on slow pages if no interaction occurs.
+- NEXT: TASK-0006F

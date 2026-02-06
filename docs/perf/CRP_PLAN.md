@@ -57,6 +57,8 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - `main.css` is loaded non-blocking via `preload` + `onload` with a minimal inline critical CSS fallback.
 - Fonts CSS is now non-blocking via `preload` + `onload`, with a noscript fallback.
 - Inline critical CSS now has a deterministic budget guard in CI.
+- Boot auto-load in PROD waits for `window.load` then idle (timeout 5000) to reduce TBT volatility.
+- CI runs `tools/verify-crp.mjs` to block regressions (main.js in HTML, blocking fonts/CSS).
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

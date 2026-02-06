@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- Fonts non-blocking + inline CSS budget guard (TASK-0006D)
+- Boot policy tuning + CRP regression guard (TASK-0006E)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: cadaa03
-PROD_PINNED_JS: /assets/v/cadaa03/main.js
-PROD_PINNED_CSS: /assets/v/cadaa03/main.css
+RELEASE_ID: a60693d
+PROD_PINNED_JS: /assets/v/a60693d/main.js
+PROD_PINNED_CSS: /assets/v/a60693d/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006E (Phase 2: split modules/long-task elimination)
+- TASK-0006F (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006D fonts non-blocking + inline CSS budget guard
+- 2026-02-05 TASK-0006E boot policy tuning + CRP regression guard
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
