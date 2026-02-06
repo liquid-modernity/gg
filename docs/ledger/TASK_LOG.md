@@ -476,7 +476,7 @@ Last updated: 2026-02-06
 - TASK_ID: TASK-0006G
 - TITLE: Modular split app.js (core + modules on-demand)
 - MODE (DEV/PROD impact): both (assets + budgets + headers + runtime)
-- RELEASE_ID: 5492b7d
+- RELEASE_ID: 6c478ea
 - SCOPE: core.js + modules split, main.js loader update, app.js shim, release/budget/header updates, CRP + ledger
 - CHANGES (files touched): public/assets/latest/main.js; public/assets/latest/app.js; public/assets/latest/core.js; public/assets/latest/modules/pwa.js; public/assets/latest/modules/ui.js; tools/release.js; tools/perf-budgets.json; tools/headers-contract.json; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
 - COMMANDS RUN (local): wc -c public/assets/latest/{main.js,app.js,core.js}; gzip -c public/assets/latest/* | wc -c
