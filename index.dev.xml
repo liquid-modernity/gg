@@ -195,7 +195,7 @@ img{max-width:100%;height:auto;}
 <!-- GAGA HOME OF CSS -->
         <link href='https://fonts.googleapis.com' rel='preconnect'/>
 <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-<link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap' rel='stylesheet'/>
+<link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' rel='stylesheet'/>
 
 <b:skin><![CDATA[
 /* CRITICAL CSS: SURFACE CONTROL */
