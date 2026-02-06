@@ -612,3 +612,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): `modules/ui.js` is now a thin orchestrator; `ui.bucket.core.js` still largest and can be further trimmed
 - RISKS: low/medium; bucket mapping mistakes would delay a feature until bucket loads
 - NEXT: consider extracting more optional features from `ui.bucket.core.js`
+
+---
+
+## 2026-02-06 — TASK-0007A.1 — Immutable release enforcement + pinned-asset verification
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.1
+- TITLE: Immutable release enforcement + pinned-asset verification
+- MODE (DEV/PROD impact): both (release discipline + verifier scope)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: release preflight for clean tree + no overwrite; verify pinned v/<REL> artifacts
+- CHANGES (files touched): tools/release.js; tools/verify-assets.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; docs/ledger/GG_CAPSULE.md; public/assets/v/<REL>/*
+- COMMANDS RUN (local): npm run build; npm run verify:assets; node tools/verify-router-contract.mjs; node tools/verify-headers.mjs --mode=config; node tools/verify-budgets.mjs
+- CI STATUS: expected green (pinned artifacts now validated)
+- DEPLOY STATUS: expected green (manual dispatch remains gated)
+- VERIFY (manual): n/a (browser checks required)
+- NOTES (gotchas): release now fails on dirty tree unless ALLOW_DIRTY_RELEASE=1; existing v/<REL> cannot be overwritten if different
+- RISKS: low; safeguards reduce release drift
+- NEXT: none
