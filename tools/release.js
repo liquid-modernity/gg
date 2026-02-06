@@ -8,6 +8,61 @@ function run(cmd) {
   return execSync(cmd, { stdio: ["ignore", "pipe", "pipe"] }).toString().trim();
 }
 
+function ensureCleanTree() {
+  const allowDirty = String(process.env.ALLOW_DIRTY_RELEASE || "").trim() === "1";
+  if (allowDirty) return;
+  const status = run("git status --porcelain");
+  if (status) {
+    throw new Error(
+      "Release requires clean tree. Commit first. Set ALLOW_DIRTY_RELEASE=1 only for emergency."
+    );
+  }
+}
+
+function filesEqual(a, b) {
+  const bufA = fs.readFileSync(a);
+  const bufB = fs.readFileSync(b);
+  if (bufA.length !== bufB.length) return false;
+  return bufA.equals(bufB);
+}
+
+function diffExistingRelease({ destDir, latestDir, latestModulesDir }) {
+  if (!fs.existsSync(destDir)) return [];
+  const diffs = [];
+  const baseFiles = ["main.css", "main.js", "app.js", "core.js", "boot.js"];
+  baseFiles.forEach((name) => {
+    const latestPath = path.join(latestDir, name);
+    const destPath = path.join(destDir, name);
+    if (!fs.existsSync(destPath)) {
+      diffs.push(`${name} missing in ${destDir}`);
+      return;
+    }
+    if (!filesEqual(latestPath, destPath)) {
+      diffs.push(`${name} differs from latest`);
+    }
+  });
+
+  const latestModules = fs.readdirSync(latestModulesDir).filter((f) => f.endsWith(".js")).sort();
+  const destModulesDir = path.join(destDir, "modules");
+  if (!fs.existsSync(destModulesDir)) {
+    diffs.push("modules/ missing in release");
+    return diffs;
+  }
+  const destModules = fs.readdirSync(destModulesDir).filter((f) => f.endsWith(".js")).sort();
+  if (JSON.stringify(latestModules) !== JSON.stringify(destModules)) {
+    diffs.push("modules/ file list differs from latest");
+    return diffs;
+  }
+  latestModules.forEach((name) => {
+    const latestPath = path.join(latestModulesDir, name);
+    const destPath = path.join(destModulesDir, name);
+    if (!filesEqual(latestPath, destPath)) {
+      diffs.push(`modules/${name} differs from latest`);
+    }
+  });
+  return diffs;
+}
+
 function replaceAllOrThrow(file, pattern, replacement, label) {
   const src = fs.readFileSync(file, "utf8");
   pattern.lastIndex = 0;
@@ -47,12 +102,13 @@ function updateCapsuleAutogen(releaseId) {
   if (out !== src) fs.writeFileSync(capsulePath, out, "utf8");
 }
 
+ensureCleanTree();
+
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("git rev-parse --short HEAD");
 const fullHash = run("git rev-parse HEAD");
 
 const destDir = path.join("public", "assets", "v", releaseId);
-fs.mkdirSync(destDir, { recursive: true });
 const latestDir = path.join("public", "assets", "latest");
 const latestCss = path.join(latestDir, "main.css");
 const latestJs = path.join(latestDir, "main.js");
@@ -69,20 +125,37 @@ if (!fs.existsSync(latestBoot)) {
 if (!fs.existsSync(latestModulesDir)) {
   throw new Error("Latest assets missing: public/assets/latest/modules");
 }
-fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
-fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
-fs.copyFileSync(latestApp, path.join(destDir, "app.js"));
-fs.copyFileSync(latestCore, path.join(destDir, "core.js"));
-fs.copyFileSync(latestBoot, path.join(destDir, "boot.js"));
-const destModules = path.join(destDir, "modules");
-fs.mkdirSync(destModules, { recursive: true });
-const moduleFiles = fs.readdirSync(latestModulesDir).filter((f) => f.endsWith(".js"));
-if (!moduleFiles.length) {
-  throw new Error("Latest assets missing: public/assets/latest/modules/*.js");
+
+const destExists = fs.existsSync(destDir);
+let skipCopy = false;
+if (destExists) {
+  const diffs = diffExistingRelease({ destDir, latestDir, latestModulesDir });
+  if (diffs.length) {
+    throw new Error(
+      `Release ${releaseId} already exists with different contents. Refusing to overwrite. ` +
+        diffs[0]
+    );
+  }
+  skipCopy = true;
 }
-moduleFiles.forEach((f) => {
-  fs.copyFileSync(path.join(latestModulesDir, f), path.join(destModules, f));
-});
+
+if (!skipCopy) {
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.copyFileSync(latestCss, path.join(destDir, "main.css"));
+  fs.copyFileSync(latestJs, path.join(destDir, "main.js"));
+  fs.copyFileSync(latestApp, path.join(destDir, "app.js"));
+  fs.copyFileSync(latestCore, path.join(destDir, "core.js"));
+  fs.copyFileSync(latestBoot, path.join(destDir, "boot.js"));
+  const destModules = path.join(destDir, "modules");
+  fs.mkdirSync(destModules, { recursive: true });
+  const moduleFiles = fs.readdirSync(latestModulesDir).filter((f) => f.endsWith(".js"));
+  if (!moduleFiles.length) {
+    throw new Error("Latest assets missing: public/assets/latest/modules/*.js");
+  }
+  moduleFiles.forEach((f) => {
+    fs.copyFileSync(path.join(latestModulesDir, f), path.join(destModules, f));
+  });
+}
 
 replaceAllOrThrow(
   "public/sw.js",
