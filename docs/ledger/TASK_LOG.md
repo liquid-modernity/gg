@@ -792,3 +792,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): ship remains deterministic and does not auto-resolve conflicts
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.9 — ship two-stage commits (work + release)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.9
+- TITLE: ship: two-stage commits (work commit -> release commit)
+- MODE (DEV/PROD impact): dev tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: ship creates work commit on dirty tree, then release commit after prep:release
+- CHANGES (files touched): tools/ship.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): run ship with dirty tree; observe two commits; release commit skipped if no artifacts
+- NOTES (gotchas): work commit message override via --work-msg or SHIP_WORK_MSG
+- RISKS: low
+- NEXT: TBD

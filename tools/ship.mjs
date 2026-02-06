@@ -132,6 +132,7 @@ function isDirty() {
 function parseArgs() {
   const args = process.argv.slice(2);
   let msg = process.env.SHIP_MSG || "release: update artifacts";
+  let workMsg = process.env.SHIP_WORK_MSG || "chore: update work";
   let verbose = false;
   for (let i = 0; i < args.length; i++) {
     if ((args[i] === "-m" || args[i] === "--message") && args[i + 1]) {
@@ -139,11 +140,16 @@ function parseArgs() {
       i++;
       continue;
     }
+    if (args[i] === "--work-msg" && args[i + 1]) {
+      workMsg = args[i + 1];
+      i++;
+      continue;
+    }
     if (args[i] === "--verbose") {
       verbose = true;
     }
   }
-  return { msg, verbose };
+  return { msg, workMsg, verbose };
 }
 
 function ensureNoMergeInProgress() {
@@ -191,7 +197,7 @@ async function tryPush(label, verbose) {
 }
 
 async function main() {
-  const { msg, verbose } = parseArgs();
+  const { msg, workMsg, verbose } = parseArgs();
 
   if (!isInsideGit()) {
     console.error("ERROR: Not inside a git repository.");
@@ -237,7 +243,12 @@ async function main() {
     }
   }
 
-  // 4) Prep release (ci + build + verify:release)
+  // 4) Work commit if dirty
+  if (isDirty()) {
+    await stageAndCommit(workMsg, false, "WORK_COMMIT", verbose);
+  }
+
+  // 5) Prep release (ci + build + verify:release)
   try {
     await runStep("PREP_RELEASE", "npm run prep:release");
   } catch (err) {
@@ -245,10 +256,10 @@ async function main() {
     process.exit(1);
   }
 
-  // 5) Commit everything once
+  // 6) Commit release artifacts
   await stageAndCommit(msg, false, "COMMIT", verbose);
 
-  // 6) Push; if rejected, retry once with rebase + prep + amend + push
+  // 7) Push; if rejected, retry once with rebase + prep + amend + push
   const pushResult = await tryPush("PUSH", verbose);
   if (pushResult.ok) {
     console.log("\n✅ ship: done");

@@ -1,13 +1,12 @@
 TASK_REPORT
 Last updated: 2026-02-06
 
-TASK_ID: TASK-0007A.8
-TITLE: ship: Fail-fast Summary + Next-step Hints
+TASK_ID: TASK-0007A.9
+TITLE: ship Two-Stage Commits (work + release)
 
 TASK_SUMMARY
-- ship now labels each step and prints a short, actionable summary on failure.
-- Pattern-based hints cover release mismatch, dirty tree, push rejects, and stash conflicts.
-- Added a `--verbose` flag to show full output on failure; default prints last 40 lines.
+- ship now commits work changes before running prep:release, ensuring the tree is clean for release.js.
+- After prep:release, ship commits release artifacts separately (or skips if no changes).
 
 CHANGES
 - tools/ship.mjs
@@ -15,11 +14,12 @@ CHANGES
 - docs/ledger/TASK_REPORT.md
 
 NOTES
-- Success path remains unchanged; no auto-resolve of conflicts.
+- Work commit message defaults to "chore: update work" and can be overridden via `--work-msg` or `SHIP_WORK_MSG`.
 
 VERIFICATION COMMANDS (manual)
-- `npm run ship -- --verbose`
+- `npm run ship`
+- `npm run ship -- --work-msg "chore: work"`
 
 RISKS / ROLLBACK
-- Risk: low; output only.
+- Risk: low; behavior is deterministic and avoids dirty-tree release failures.
 - Rollback: revert this commit.
