@@ -666,3 +666,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): .vscode remains ignored except extensions.json
 - RISKS: none
 - NEXT: none
+
+---
+
+## 2026-02-06 — TASK-0007A.3 — Repo truthfulness + lockfile policy alignment
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.3
+- TITLE: Repo truthfulness + lockfile policy alignment
+- MODE (DEV/PROD impact): both (ledger truth + repo policy)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: stop ignoring package-lock.json; correct GG_CAPSULE statements; add capsule truth verifier
+- CHANGES (files touched): .gitignore; docs/ledger/GG_CAPSULE.md; tools/verify-capsule-truth.mjs; tools/verify-ledger.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green (ledger verifier now includes capsule truth check)
+- DEPLOY STATUS: expected green
+- VERIFY (manual): node tools/verify-ledger.mjs; node tools/verify-capsule-truth.mjs
+- NOTES (gotchas): capsule truth check only triggers if capsule claims "no auto-init UI"; lockfile now tracked
+- RISKS: low; failures indicate doc/code mismatch
+- NEXT: TBD

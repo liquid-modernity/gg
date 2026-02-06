@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { verifyCapsuleTruth } from "./verify-capsule-truth.mjs";
 
 const root = process.cwd();
 const failures = [];
@@ -49,6 +50,11 @@ const refs = [relIndex, relSw, relCapsule].filter(Boolean);
 const mismatch = refs.some((v) => v !== refs[0]);
 if (mismatch) {
   failures.push(`release id mismatch: index=${relIndex || "?"} sw=${relSw || "?"} capsule=${relCapsule || "?"}`);
+}
+
+const capsuleTruth = verifyCapsuleTruth();
+if (!capsuleTruth.ok) {
+  capsuleTruth.failures.forEach((f) => failures.push(f));
 }
 
 if (taskLog) {

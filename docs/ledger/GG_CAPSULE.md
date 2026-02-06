@@ -2,7 +2,7 @@
 Last updated: 2026-02-06
 
 NOW:
-- True lazy UI (no forced timeout, no auto-init) (TASK-0006H)
+- Repo truthfulness + lockfile policy alignment (TASK-0007A.3). UI prefetch is idle-only (no timeout) with heuristics and auto-inits on load (TASK-0006I).
 
 CONSTRAINTS:
 - main-only
@@ -34,10 +34,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006I (Phase 2: long-task elimination)
+- TBD (post-0007A.3)
 
 LAST_PATCH:
-- 2026-02-06 TASK-0006H true lazy UI (no forced timeout)
+- 2026-02-06 TASK-0007A.3 repo truthfulness + lockfile policy alignment
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
