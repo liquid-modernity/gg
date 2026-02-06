@@ -648,3 +648,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): determinism gate runs after build; router contract now checks pinned release core.js
 - RISKS: low; failures indicate uncommitted build output
 - NEXT: run build locally before release if artifacts are missing
+
+---
+
+## 2026-02-06 — TASK-0007A.2 (follow-up) — Track VSCode recommendations
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.2
+- TITLE: Track VSCode recommendations (gitignore exception)
+- MODE (DEV/PROD impact): dev tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: allow .vscode/extensions.json to be tracked
+- CHANGES (files touched): .gitignore; .vscode/extensions.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): n/a
+- NOTES (gotchas): .vscode remains ignored except extensions.json
+- RISKS: none
+- NEXT: none

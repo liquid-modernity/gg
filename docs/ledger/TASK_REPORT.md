@@ -14,6 +14,7 @@ CHANGES
 - .github/workflows/deploy.yml
 - tools/verify-router-contract.mjs
 - .vscode/extensions.json
+- .gitignore
 
 NOTES
 - Build not run locally for this task because release now requires a clean tree.

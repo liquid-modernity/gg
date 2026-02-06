@@ -21,7 +21,6 @@ coverage/
 # Wrangler
 .wrangler/
 # Editor
-.vscode/
-!.vscode/
+.vscode/*
 !.vscode/extensions.json
 .idea/
