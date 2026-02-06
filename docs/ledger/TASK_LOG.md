@@ -576,3 +576,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): router interception now explicitly skips static endpoints/extensions.
 - RISKS: low; interception is now stricter for non-page URLs.
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0006K.2 — Deploy gate parity proof (router verifier)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006K.2
+- TITLE: Deploy gate parity proof (router verifier)
+- MODE (DEV/PROD impact): docs + deploy gate parity
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: deploy preflight runs router verifier for workflow_run + manual dispatch; pipeline docs + negative test proof
+- CHANGES (files touched): .github/workflows/deploy.yml; docs/ci/PIPELINE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green (verifier already present in CI; deploy preflight parity documented)
+- DEPLOY STATUS: expected green (manual dispatch does not bypass verifiers)
+- VERIFY (manual): run `node tools/verify-router-contract.mjs` before deploy; see TASK_REPORT negative-test proof
+- NOTES (gotchas): deploy preflight now explicitly documents router verifier parity for manual dispatch.
+- RISKS: none; docs + gate parity only.
+- NEXT: TBD

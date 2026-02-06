@@ -73,6 +73,7 @@ jobs:
             echo "SKIP: tools/check-links.sh not found"
           fi
 
+      # Preflight verifiers apply to both workflow_run and workflow_dispatch.
       - name: Verify ledger + doc contracts
         run: node tools/verify-ledger.mjs
         

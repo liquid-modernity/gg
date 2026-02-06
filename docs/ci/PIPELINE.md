@@ -1,5 +1,5 @@
 # CI/CD Pipeline
-Last updated: 2026-02-05
+Last updated: 2026-02-06
 
 This repo is main-only. CI is the **primary gate**. Deployments are on `main` only. Wrangler runs in GitHub Actions only (macOS 10.15 local is unsupported).
 
@@ -17,6 +17,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
 - XML well-formedness check (xmllint if available, else `node tools/validate-xml.js`)
+- `node tools/verify-router-contract.mjs`
 - `node tools/verify-headers.mjs --mode=config` (deterministic, no network)
 - `node tools/verify-budgets.mjs` (deterministic, no network)
 
@@ -43,6 +44,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - Pinned version is defined in `.github/workflows/deploy.yml` (`wranglerVersion`).
 
 **Preflight Gate (Deploy Workflow)**
+Manual dispatch does not bypass gates. It runs the same preflight verifiers.
 - `npm ci`
 - `npm run build`
 - `npm run verify:assets`
@@ -51,6 +53,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 - `node tools/verify-theme-diff.mjs` (if present)
 - `bash tools/check-links.sh` (if present)
 - `node tools/verify-ledger.mjs`
+- `node tools/verify-router-contract.mjs`
 - `node tools/verify-budgets.mjs`
 - `node tools/verify-inline-css.mjs`
 - `node tools/verify-crp.mjs`
