@@ -756,3 +756,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): failure message is now actionable with exact mismatches
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.6 — Deterministic release id (content digest)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.6
+- TITLE: Deterministic release id (content digest, not HEAD)
+- MODE (DEV/PROD impact): both (release determinism)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: compute release id from normalized content; release.js + verify-release-aligned updated
+- CHANGES (files touched): tools/compute-release-id.mjs; tools/release.js; tools/verify-release-aligned.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green (build idempotent)
+- DEPLOY STATUS: expected green
+- VERIFY (manual): npm run build (twice, no diffs); node tools/verify-release-aligned.mjs
+- NOTES (gotchas): RELEASE_ID no longer equals git HEAD
+- RISKS: low; mismatches indicate normalization/input drift
+- NEXT: TBD

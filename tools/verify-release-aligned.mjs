@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
+import { computeReleaseId } from "./compute-release-id.mjs";
 
 const root = process.cwd();
 const details = [];
@@ -38,6 +39,14 @@ if (!head) {
 }
 note(`HEAD: ${head}`);
 
+let expectedRel = "";
+try {
+  expectedRel = computeReleaseId();
+} catch (err) {
+  addError(err && err.message ? err.message : "computeReleaseId failed");
+}
+note(`expected release id: ${expectedRel || "MISSING"}`);
+
 const indexXml = read("index.prod.xml");
 const swJs = read("public/sw.js");
 const workerJs = read("src/worker.js");
@@ -51,24 +60,26 @@ if (!capsule) addError("Missing file: docs/ledger/GG_CAPSULE.md");
 const relFromIndexMatch = indexXml && indexXml.match(/\/assets\/v\/([^/]+)\//);
 const relFromIndex = relFromIndexMatch ? relFromIndexMatch[1] : null;
 note(`index.prod.xml release: ${relFromIndex || "MISSING"}`);
-if (relFromIndex !== head) {
-  addError(`Mismatch: index.prod.xml release=${relFromIndex || "MISSING"} expected=${head}`);
+if (expectedRel && relFromIndex !== expectedRel) {
+  addError(`Mismatch: index.prod.xml release=${relFromIndex || "MISSING"} expected=${expectedRel}`);
 }
-const indexNeeds = [`/assets/v/${head}/main.css`, `/assets/v/${head}/boot.js`];
-if (indexXml && indexNeeds.some((token) => !indexXml.includes(token))) {
-  addError("index.prod.xml missing pinned main.css/boot.js for HEAD");
+const indexNeeds = expectedRel
+  ? [`/assets/v/${expectedRel}/main.css`, `/assets/v/${expectedRel}/boot.js`]
+  : [];
+if (indexXml && indexNeeds.length && indexNeeds.some((token) => !indexXml.includes(token))) {
+  addError("index.prod.xml missing pinned main.css/boot.js for expected release id");
 }
 
 const swVersion = extractVersion(swJs || "", /const\s+VERSION\s*=\s*"([^"]+)"/);
 note(`sw.js VERSION: ${swVersion || "MISSING"}`);
-if (swVersion !== head) {
-  addError(`Mismatch: sw.js VERSION=${swVersion || "MISSING"} expected=${head}`);
+if (expectedRel && swVersion !== expectedRel) {
+  addError(`Mismatch: sw.js VERSION=${swVersion || "MISSING"} expected=${expectedRel}`);
 }
 
 const workerVersion = extractVersion(workerJs || "", /const\s+WORKER_VERSION\s*=\s*"([^"]+)"/);
 note(`worker.js WORKER_VERSION: ${workerVersion || "MISSING"}`);
-if (workerVersion !== head) {
-  addError(`Mismatch: worker.js WORKER_VERSION=${workerVersion || "MISSING"} expected=${head}`);
+if (expectedRel && workerVersion !== expectedRel) {
+  addError(`Mismatch: worker.js WORKER_VERSION=${workerVersion || "MISSING"} expected=${expectedRel}`);
 }
 
 const capsuleBlockMatch = capsule && capsule.match(/<!-- GG:AUTOGEN:BEGIN -->[\s\S]*?<!-- GG:AUTOGEN:END -->/);
@@ -79,14 +90,14 @@ const capsuleRel = capsuleBlockMatch
   ? extractVersion(capsuleBlockMatch[0], /RELEASE_ID:\s*([A-Za-z0-9._-]+)/)
   : null;
 note(`GG_CAPSULE RELEASE_ID: ${capsuleRel || "MISSING"}`);
-if (capsuleRel !== head) {
-  addError(`Mismatch: GG_CAPSULE RELEASE_ID=${capsuleRel || "MISSING"} expected=${head}`);
+if (expectedRel && capsuleRel !== expectedRel) {
+  addError(`Mismatch: GG_CAPSULE RELEASE_ID=${capsuleRel || "MISSING"} expected=${expectedRel}`);
 }
 
-const relDir = path.join(root, "public", "assets", "v", head);
-const relDirExists = fs.existsSync(relDir);
-note(`assets dir exists: ${relDirExists ? "yes" : "no"} (${relDir})`);
-if (!relDirExists) {
+const relDir = expectedRel ? path.join(root, "public", "assets", "v", expectedRel) : "";
+const relDirExists = expectedRel ? fs.existsSync(relDir) : false;
+note(`assets dir exists: ${relDirExists ? "yes" : "no"} (${relDir || "MISSING"})`);
+if (expectedRel && !relDirExists) {
   addError(`Missing dir: ${relDir}`);
 }
 

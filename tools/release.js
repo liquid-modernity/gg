@@ -105,7 +105,7 @@ function updateCapsuleAutogen(releaseId) {
 ensureCleanTree();
 
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
-const releaseId = envRel || run("git rev-parse --short HEAD");
+const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
 
 const destDir = path.join("public", "assets", "v", releaseId);
