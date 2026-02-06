@@ -22,6 +22,7 @@ NOTES
 VERIFICATION COMMANDS (recommended)
 - `npm run verify:release`
 - `npm run prep:release`
+- `npm run verify:assets`
 - `node tools/install-hooks.mjs`
 
 RISKS / ROLLBACK

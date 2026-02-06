@@ -9,6 +9,6 @@
     "verify:assets": "node tools/verify-assets.mjs",
     "verify:xml": "node tools/validate-xml.js",
     "verify:release": "node tools/verify-release-aligned.mjs",
-    "prep:release": "npm ci && npm run build && npm run verify:release && npm run verify:assets"
+    "prep:release": "npm ci && npm run build && npm run verify:release"
   }
 }

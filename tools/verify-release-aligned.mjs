@@ -36,10 +36,10 @@ const capsule = read("docs/ledger/GG_CAPSULE.md");
 
 if (!indexXml || !swJs || !workerJs || !capsule) fail();
 
-const indexNeeds = [
-  `/assets/v/${head}/main.css`,
-  `/assets/v/${head}/boot.js`,
-];
+const relFromIndexMatch = indexXml.match(/\/assets\/v\/([^/]+)\//);
+const relFromIndex = relFromIndexMatch ? relFromIndexMatch[1] : null;
+if (relFromIndex !== head) fail();
+const indexNeeds = [`/assets/v/${head}/main.css`, `/assets/v/${head}/boot.js`];
 if (indexNeeds.some((token) => !indexXml.includes(token))) fail();
 
 const swVersion = extractVersion(swJs, /const\s+VERSION\s*=\s*"([^"]+)"/);
