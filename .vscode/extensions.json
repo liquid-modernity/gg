@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "formulahendry.auto-rename-tag",
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "oderwat.indent-rainbow",
+    "dbaeumer.vscode-eslint"
+  ]
+}
