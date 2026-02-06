@@ -738,3 +738,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): CI now fails fast if release is misaligned
 - RISKS: low; failures indicate build artifacts not committed
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.5.2 — Make verify:release actionable
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.5.2
+- TITLE: Make verify:release actionable
+- MODE (DEV/PROD impact): dev tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: print detailed release alignment mismatches and missing files
+- CHANGES (files touched): tools/verify-release-aligned.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green when release aligned
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): node tools/verify-release-aligned.mjs (prints details on failure)
+- NOTES (gotchas): failure message is now actionable with exact mismatches
+- RISKS: low
+- NEXT: TBD

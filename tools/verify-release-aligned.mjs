@@ -3,11 +3,15 @@ import path from "path";
 import { execSync } from "child_process";
 
 const root = process.cwd();
-const failMessage = "Release not aligned to HEAD. Run: npm ci && npm run build && commit artifacts.";
+const details = [];
+const errors = [];
 
-function fail() {
-  console.error(failMessage);
-  process.exit(1);
+function note(line) {
+  details.push(line);
+}
+
+function addError(line) {
+  errors.push(line);
 }
 
 function read(rel) {
@@ -25,36 +29,66 @@ let head = "";
 try {
   head = execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
 } catch (_) {
-  fail();
+  console.error("Release not aligned to HEAD (details above).");
+  process.exit(1);
 }
-if (!head) fail();
+if (!head) {
+  console.error("Release not aligned to HEAD (details above).");
+  process.exit(1);
+}
+note(`HEAD: ${head}`);
 
 const indexXml = read("index.prod.xml");
 const swJs = read("public/sw.js");
 const workerJs = read("src/worker.js");
 const capsule = read("docs/ledger/GG_CAPSULE.md");
 
-if (!indexXml || !swJs || !workerJs || !capsule) fail();
+if (!indexXml) addError("Missing file: index.prod.xml");
+if (!swJs) addError("Missing file: public/sw.js");
+if (!workerJs) addError("Missing file: src/worker.js");
+if (!capsule) addError("Missing file: docs/ledger/GG_CAPSULE.md");
 
-const relFromIndexMatch = indexXml.match(/\/assets\/v\/([^/]+)\//);
+const relFromIndexMatch = indexXml && indexXml.match(/\/assets\/v\/([^/]+)\//);
 const relFromIndex = relFromIndexMatch ? relFromIndexMatch[1] : null;
-if (relFromIndex !== head) fail();
+note(`index.prod.xml release: ${relFromIndex || "MISSING"}`);
+if (relFromIndex !== head) {
+  addError(`Mismatch: index.prod.xml release=${relFromIndex || "MISSING"} expected=${head}`);
+}
 const indexNeeds = [`/assets/v/${head}/main.css`, `/assets/v/${head}/boot.js`];
-if (indexNeeds.some((token) => !indexXml.includes(token))) fail();
+if (indexXml && indexNeeds.some((token) => !indexXml.includes(token))) {
+  addError("index.prod.xml missing pinned main.css/boot.js for HEAD");
+}
 
-const swVersion = extractVersion(swJs, /const\s+VERSION\s*=\s*"([^"]+)"/);
-if (swVersion !== head) fail();
+const swVersion = extractVersion(swJs || "", /const\s+VERSION\s*=\s*"([^"]+)"/);
+note(`sw.js VERSION: ${swVersion || "MISSING"}`);
+if (swVersion !== head) {
+  addError(`Mismatch: sw.js VERSION=${swVersion || "MISSING"} expected=${head}`);
+}
 
-const workerVersion = extractVersion(workerJs, /const\s+WORKER_VERSION\s*=\s*"([^"]+)"/);
-if (workerVersion !== head) fail();
+const workerVersion = extractVersion(workerJs || "", /const\s+WORKER_VERSION\s*=\s*"([^"]+)"/);
+note(`worker.js WORKER_VERSION: ${workerVersion || "MISSING"}`);
+if (workerVersion !== head) {
+  addError(`Mismatch: worker.js WORKER_VERSION=${workerVersion || "MISSING"} expected=${head}`);
+}
 
-const capsuleBlockMatch = capsule.match(/<!-- GG:AUTOGEN:BEGIN -->[\s\S]*?<!-- GG:AUTOGEN:END -->/);
-if (!capsuleBlockMatch) fail();
-const capsuleRel = extractVersion(capsuleBlockMatch[0], /RELEASE_ID:\s*([A-Za-z0-9._-]+)/);
-if (capsuleRel !== head) fail();
+const capsuleBlockMatch = capsule && capsule.match(/<!-- GG:AUTOGEN:BEGIN -->[\s\S]*?<!-- GG:AUTOGEN:END -->/);
+if (!capsuleBlockMatch) {
+  addError("Missing GG_CAPSULE AUTOGEN block");
+}
+const capsuleRel = capsuleBlockMatch
+  ? extractVersion(capsuleBlockMatch[0], /RELEASE_ID:\s*([A-Za-z0-9._-]+)/)
+  : null;
+note(`GG_CAPSULE RELEASE_ID: ${capsuleRel || "MISSING"}`);
+if (capsuleRel !== head) {
+  addError(`Mismatch: GG_CAPSULE RELEASE_ID=${capsuleRel || "MISSING"} expected=${head}`);
+}
 
 const relDir = path.join(root, "public", "assets", "v", head);
-if (!fs.existsSync(relDir)) fail();
+const relDirExists = fs.existsSync(relDir);
+note(`assets dir exists: ${relDirExists ? "yes" : "no"} (${relDir})`);
+if (!relDirExists) {
+  addError(`Missing dir: ${relDir}`);
+}
 
 const expectedFiles = [
   "main.css",
@@ -70,10 +104,23 @@ const expectedFiles = [
   "modules/ui.bucket.poster.js",
   "modules/ui.bucket.search.js",
 ];
-for (const rel of expectedFiles) {
-  if (!fs.existsSync(path.join(relDir, rel))) {
-    fail();
+const missingFiles = [];
+if (relDirExists) {
+  for (const rel of expectedFiles) {
+    if (!fs.existsSync(path.join(relDir, rel))) {
+      missingFiles.push(rel);
+    }
   }
+}
+if (missingFiles.length) {
+  addError(`Missing files in ${relDir}: ${missingFiles.join(", ")}`);
+}
+
+if (errors.length) {
+  details.forEach((line) => console.error(line));
+  errors.forEach((line) => console.error(line));
+  console.error("Release not aligned to HEAD (details above).");
+  process.exit(1);
 }
 
 console.log("VERIFY_RELEASE_ALIGNED: PASS");
