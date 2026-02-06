@@ -630,3 +630,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): release now fails on dirty tree unless ALLOW_DIRTY_RELEASE=1; existing v/<REL> cannot be overwritten if different
 - RISKS: low; safeguards reduce release drift
 - NEXT: none
+
+---
+
+## 2026-02-06 — TASK-0007A.2 — CI determinism gate + pinned router contract
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.2
+- TITLE: CI determinism gate + pinned router contract
+- MODE (DEV/PROD impact): both (CI/deploy gating + verifier scope)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: fail CI/deploy if build modifies tracked files; verify router contract against pinned v/<REL>/core.js; add VSCode recommendations
+- CHANGES (files touched): .github/workflows/ci.yml; .github/workflows/deploy.yml; tools/verify-router-contract.mjs; .vscode/extensions.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a (no build)
+- CI STATUS: expected green (determinism gate passes with committed artifacts)
+- DEPLOY STATUS: expected green (manual dispatch remains gated)
+- VERIFY (manual): n/a
+- NOTES (gotchas): determinism gate runs after build; router contract now checks pinned release core.js
+- RISKS: low; failures indicate uncommitted build output
+- NEXT: run build locally before release if artifacts are missing

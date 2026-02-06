@@ -92,6 +92,19 @@ jobs:
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
 
+      - name: Verify build determinism
+        run: |
+          set -e
+          if ! git diff --exit-code; then
+            echo "Build produced changes. Run npm run build locally and commit generated artifacts."
+            exit 1
+          fi
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Build produced changes. Run npm run build locally and commit generated artifacts."
+            git status --porcelain
+            exit 1
+          fi
+
       - name: Preflight static assets + release id
         id: rel
         run: |
