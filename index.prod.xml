@@ -22,8 +22,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link rel='preload' as='style' href='/assets/v/233025e/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"'/>
-    <noscript><link rel='stylesheet' href='/assets/v/233025e/main.css?v=20260203160035'/></noscript>
+    <link rel='preload' as='style' href='/assets/v/a43be61/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"'/>
+    <noscript><link rel='stylesheet' href='/assets/v/a43be61/main.css?v=20260203160035'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -145,7 +145,8 @@ img{max-width:100%;height:auto;}
 <!-- GAGA HOME OF CSS -->
         <link href='https://fonts.googleapis.com' rel='preconnect'/>
 <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-<link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' rel='stylesheet'/>
+<link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' onload='this.onload=null;this.rel="stylesheet"'/>
+<noscript><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap'/></noscript>
 
 <b:skin><![CDATA[
 /* CRITICAL CSS: SURFACE CONTROL */
@@ -2794,7 +2795,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </template>
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/233025e/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/a43be61/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>

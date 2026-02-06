@@ -2,7 +2,7 @@
 Last updated: 2026-02-05
 
 NOW:
-- CRP Phase 2 CSS/fonts stabilization (TASK-0006C)
+- Fonts non-blocking + inline CSS budget guard (TASK-0006D)
 
 CONSTRAINTS:
 - main-only
@@ -14,9 +14,9 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 233025e
-PROD_PINNED_JS: /assets/v/233025e/main.js
-PROD_PINNED_CSS: /assets/v/233025e/main.css
+RELEASE_ID: a43be61
+PROD_PINNED_JS: /assets/v/a43be61/main.js
+PROD_PINNED_CSS: /assets/v/a43be61/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -28,10 +28,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-0006D (Phase 2: split modules/long-task elimination)
+- TASK-0006E (Phase 2: split modules/long-task elimination)
 
 LAST_PATCH:
-- 2026-02-05 TASK-0006C CSS/fonts CRP stabilization
+- 2026-02-05 TASK-0006D fonts non-blocking + inline CSS budget guard
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

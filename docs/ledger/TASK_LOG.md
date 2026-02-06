@@ -378,3 +378,21 @@ Last updated: 2026-02-05
 - NOTES (gotchas): only Material Symbols Rounded requested with display=swap; main.css now non-blocking.
 - RISKS: brief FOUC possible if CSS preload delays on slow network.
 - NEXT: TASK-0006D
+
+---
+
+## 2026-02-05 — TASK-0006D — Fonts non-blocking + inline CSS budget guard
+- DATE: 2026-02-05
+- TASK_ID: TASK-0006D
+- TITLE: Fonts non-blocking + inline CSS budget guard
+- MODE (DEV/PROD impact): HTML head changes + CI guard
+- RELEASE_ID: a43be61
+- SCOPE: font CSS preload+onload, inline CSS budget files + verifier, CI step, CRP plan + ledger updates
+- CHANGES (files touched): index.dev.xml; index.prod.xml; tools/critical-inline-budget.json; tools/verify-inline-css.mjs; .github/workflows/ci.yml; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-inline-css.mjs; npm run build; npm run verify:assets; node tools/verify-budgets.mjs; node tools/verify-ledger.mjs; node tools/verify-headers.mjs --mode=config; node tools/validate-xml.js
+- CI STATUS: expected green if inline CSS budget stays within limits
+- DEPLOY STATUS: expected green (no deploy changes)
+- VERIFY (perf steps): DevTools Performance + Coverage → confirm font CSS is preload+onload and inline CSS stays minimal; no FOIT.
+- NOTES (gotchas): inline CSS budget counts <style> blocks before main.css preload and <b:skin> CDATA.
+- RISKS: small FOUC possible if font CSS preload is slow.
+- NEXT: TASK-0006E

@@ -49,14 +49,14 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Deferred root state sync and hero video observer to idle.
 - Added DEV-only Stage 0 performance mark with a single console info line.
 
-**Phase 2 Step Implemented (2026-02-05)**
+**Phase 2 Steps Implemented (2026-02-05)**
 - Added a tiny `boot.js` loader so initial HTML does not reference `main.js` directly.
 - `main.js` now loads after first interaction or idle, not at first paint.
 - `instant.page` is loaded only after `main.js` and only in PROD.
-
-**Phase 2 Step Implemented (2026-02-05)**
 - Google Fonts uses `display=swap` and only the Rounded variant is requested.
 - `main.css` is loaded non-blocking via `preload` + `onload` with a minimal inline critical CSS fallback.
+- Fonts CSS is now non-blocking via `preload` + `onload`, with a noscript fallback.
+- Inline critical CSS now has a deterministic budget guard in CI.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.

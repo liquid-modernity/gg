@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "generated": "2026-02-05",
+  "buffer_ratio": 0.15,
+  "source_totals": {
+    "prod_bytes": 1275,
+    "dev_bytes": 1275
+  },
+  "max_bytes_prod": 1467,
+  "max_bytes_dev": 1467
+}

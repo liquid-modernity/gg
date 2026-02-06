@@ -61,6 +61,9 @@ jobs:
       - name: Verify performance budgets
         run: node tools/verify-budgets.mjs
 
+      - name: Verify inline CSS budget
+        run: node tools/verify-inline-css.mjs
+
       - name: XML well-formedness
         run: |
           set -e
