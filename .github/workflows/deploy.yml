@@ -75,6 +75,9 @@ jobs:
 
       - name: Verify ledger + doc contracts
         run: node tools/verify-ledger.mjs
+        
+      - name: Verify router contract
+        run: node tools/verify-router-contract.mjs
 
       - name: Verify performance budgets
         run: node tools/verify-budgets.mjs
