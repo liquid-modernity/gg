@@ -540,3 +540,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): UI prefetch uses requestIdleCallback with no timeout; skipped when unsupported.
 - RISKS: low; idle prefetch is additive and gated.
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0006K — Decouple router from UI (no await UI on click)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006K
+- TITLE: Decouple router from UI (no await UI on click)
+- MODE (DEV/PROD impact): both (routing reliability)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: immediate router interception without UI dependency, CRP plan + ledger update
+- CHANGES (files touched): public/assets/latest/core.js; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<REL>/*
+- COMMANDS RUN (local): npm run build
+- CI STATUS: expected green if budgets/headers/ledger align
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): internal link click routes immediately without loading modules/ui.js; fallback to hard nav if router unavailable.
+- NOTES (gotchas): UI module remains optional and loads only via idle prefetch.
+- RISKS: low; routing no longer waits on UI.
+- NEXT: TBD
