@@ -522,3 +522,21 @@ Last updated: 2026-02-06
 - NOTES: POLICY CHANGE: TASK_LOG no longer records RELEASE_ID. Canonical source is GG_CAPSULE AUTOGEN.
 - RISKS: none
 - NEXT: TASK-0006I
+
+---
+
+## 2026-02-06 — TASK-0006I — True idle UI prefetch (no timeout) with connection heuristics
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006I
+- TITLE: True idle UI prefetch (no timeout) with connection heuristics
+- MODE (DEV/PROD impact): both (runtime orchestration)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: idle-only UI prefetch gated by connection/visibility, CRP plan + ledger update
+- CHANGES (files touched): public/assets/latest/core.js; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<REL>/*
+- COMMANDS RUN (local): npm run build; node tools/verify-budgets.mjs; node tools/verify-headers.mjs --mode=config
+- CI STATUS: expected green if budgets/headers/ledger align
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): internal click still triggers UI module; idle prefetch only when visible + good connection; no prefetch on saveData/2g/hidden
+- NOTES (gotchas): UI prefetch uses requestIdleCallback with no timeout; skipped when unsupported.
+- RISKS: low; idle prefetch is additive and gated.
+- NEXT: TBD

@@ -65,6 +65,7 @@ Purpose: define a stable CRP doctrine and guardrails so performance cannot regre
 - Phase 2F: split entrypoint so `main.js` is a tiny loader and heavy code moves to `app.js` with new budgets + header contract.
 - Phase 2G: split `app.js` into `core.js` + on-demand modules to reduce parse/compile cost.
 - Phase 2H: true lazy UI — `modules/ui.js` loads only on internal navigation intent (no forced timeouts, no import-side auto-init).
+- Phase 2I: UI prefetch is idle-only (no timeout) and gated by connection/visibility heuristics.
 
 **Phase 2 Remaining**
 - Split heavy modules into explicit idle-load buckets.
