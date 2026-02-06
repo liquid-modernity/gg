@@ -558,3 +558,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): UI module remains optional and loads only via idle prefetch.
 - RISKS: low; routing no longer waits on UI.
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0006K.1 — Router contract hardening (intercept allowlist + no prod logs)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0006K.1
+- TITLE: Router contract hardening (intercept allowlist + no prod logs)
+- MODE (DEV/PROD impact): both (routing reliability + logging)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: intercept allow/deny rules, dev-only router logs, router contract verifier, CRP + ledger updates
+- CHANGES (files touched): public/assets/latest/core.js; tools/verify-router-contract.mjs; .github/workflows/ci.yml; docs/perf/CRP_PLAN.md; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<REL>/*
+- COMMANDS RUN (local): npm run build
+- CI STATUS: expected green if router verifier passes
+- DEPLOY STATUS: expected green (no workflow change)
+- VERIFY (manual): /assets/* links not intercepted; page links intercepted; router logs silent in PROD by default
+- NOTES (gotchas): router interception now explicitly skips static endpoints/extensions.
+- RISKS: low; interception is now stricter for non-page URLs.
+- NEXT: TBD
