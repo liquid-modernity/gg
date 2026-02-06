@@ -1,30 +1,26 @@
 TASK_REPORT
 Last updated: 2026-02-06
 
-TASK_ID: TASK-0007A.3
-TITLE: Repo Truthfulness + Lockfile Policy Alignment
+TASK_ID: TASK-0007A.4
+TITLE: Deploy Trigger Hygiene (no fake green deploy)
 
 TASK_SUMMARY
-- Stop ignoring package-lock.json so lockfile policy matches CI guard.
-- Correct GG_CAPSULE NOW/NEXT/LAST_PATCH to reflect current state (idle-only UI prefetch + 7A.3).
-- Added capsule truth verifier and wired it into verify-ledger.
+- Deploy workflow now only runs on manual dispatch with a required `sha` input.
+- CI dispatches deploy on success for main, passing the exact SHA.
+- Deploy preflight verifies the provided SHA has a successful CI run before proceeding.
 
 CHANGES
-- .gitignore
-- docs/ledger/GG_CAPSULE.md
-- tools/verify-capsule-truth.mjs
-- tools/verify-ledger.mjs
+- .github/workflows/ci.yml
+- .github/workflows/deploy.yml
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 NOTES
-- No build run for this task.
-- Capsule truth check only applies if GG_CAPSULE claims "no auto-init UI"; it will fail if core.js calls requestUi('idle').
+- Manual dispatch is still allowed but fails fast if CI is not green for the SHA.
 
 VERIFICATION COMMANDS (recommended)
-- `node tools/verify-ledger.mjs`
-- `node tools/verify-capsule-truth.mjs`
+- n/a (workflow-level behavior)
 
 RISKS / ROLLBACK
-- Risk: low; failures indicate doc/code mismatch.
+- Risk: low; deploy is now strictly gated to green CI SHAs.
 - Rollback: revert this commit.

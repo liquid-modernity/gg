@@ -92,3 +92,25 @@ jobs:
           else
             node tools/validate-xml.js
           fi
+
+  trigger_deploy:
+    needs: ci
+    if: ${{ success() && github.ref_name == 'main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - name: Dispatch deploy workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -e
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${REPO}/actions/workflows/deploy.yml/dispatches" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"sha\":\"${SHA}\"}}"

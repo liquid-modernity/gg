@@ -1,10 +1,12 @@
 name: Deploy to Cloudflare Workers
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit SHA to deploy (must have green CI)
+        required: true
+        type: string
 
 concurrency:
   group: deploy-main
@@ -12,34 +14,68 @@ concurrency:
 
 jobs:
   deploy:
-    if: >-
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-      || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
 
     steps:
-      - name: Checkout (workflow_run)
-        if: ${{ github.event_name == 'workflow_run' }}
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
-      - name: Checkout (manual)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Assert manual dispatch on main
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Validate deploy SHA
         run: |
           set -e
-          if [ "${GITHUB_REF_NAME}" != "main" ]; then
-            echo "ERROR: manual dispatch must run from main (got ${GITHUB_REF_NAME})"
+          if [ -z "${{ inputs.sha }}" ]; then
+            echo "ERROR: inputs.sha is required"
             exit 1
           fi
+
+      - name: Verify CI success for SHA
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          set -e
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.request
+
+          token = os.environ.get("GH_TOKEN", "").strip()
+          repo = os.environ.get("REPO", "").strip()
+          sha = os.environ.get("SHA", "").strip()
+
+          if not sha:
+              print("ERROR: inputs.sha is required")
+              sys.exit(1)
+
+          url = f"https://api.github.com/repos/{repo}/actions/workflows/ci.yml/runs?head_sha={sha}&status=success&per_page=1"
+          req = urllib.request.Request(
+              url,
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Accept": "application/vnd.github+json",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=20) as resp:
+                  data = json.loads(resp.read().decode("utf-8", "replace"))
+          except Exception as e:
+              print("ERROR: failed to query CI workflow runs:", e)
+              sys.exit(1)
+
+          runs = data.get("workflow_runs", [])
+          ok = any(r.get("head_sha") == sha and r.get("conclusion") == "success" for r in runs)
+          if not ok:
+              print(f"ERROR: No successful CI run found for sha {sha}")
+              sys.exit(1)
+          print(f"CI_SUCCESS_OK {sha}")
+          PY
+
+      - name: Checkout (pinned SHA)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
 
       - name: Use Node 20
         uses: actions/setup-node@v4

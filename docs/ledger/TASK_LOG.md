@@ -684,3 +684,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): capsule truth check only triggers if capsule claims "no auto-init UI"; lockfile now tracked
 - RISKS: low; failures indicate doc/code mismatch
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.4 — Deploy trigger hygiene (no fake green deploy)
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.4
+- TITLE: Deploy trigger hygiene (no fake green deploy)
+- MODE (DEV/PROD impact): deploy workflow only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: deploy runs only via CI dispatch; manual dispatch requires green CI for SHA
+- CHANGES (files touched): .github/workflows/ci.yml; .github/workflows/deploy.yml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green
+- DEPLOY STATUS: gated by CI success for sha
+- VERIFY (manual): dispatch deploy with failing sha should fail preflight; green CI sha proceeds
+- NOTES (gotchas): deploy workflow now requires inputs.sha
+- RISKS: low; deploy won’t run for unverified SHAs
+- NEXT: TBD
