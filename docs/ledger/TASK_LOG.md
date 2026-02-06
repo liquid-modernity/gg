@@ -702,3 +702,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): deploy workflow now requires inputs.sha
 - RISKS: low; deploy won’t run for unverified SHAs
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.5 — Local push guard + one-command release prep
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.5
+- TITLE: Local push guard + one-command release prep
+- MODE (DEV/PROD impact): dev tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: verify release alignment to HEAD; add prep:release; opt-in pre-push hook installer
+- CHANGES (files touched): tools/verify-release-aligned.mjs; tools/install-hooks.mjs; package.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): npm run verify:release; node tools/verify-release-aligned.mjs; node tools/install-hooks.mjs
+- NOTES (gotchas): prep:release runs release.js (requires clean tree)
+- RISKS: low; guards prevent misaligned releases
+- NEXT: TBD
