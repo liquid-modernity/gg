@@ -10,6 +10,7 @@
     "verify:xml": "node tools/validate-xml.js",
     "verify:release": "node tools/verify-release-aligned.mjs",
     "prep:release": "npm ci && npm run build && npm run verify:release",
-    "install:hooks": "node tools/install-hooks.mjs"
+    "install:hooks": "node tools/install-hooks.mjs",
+    "ship": "node tools/ship.mjs"
   }
 }

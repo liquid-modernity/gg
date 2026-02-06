@@ -1,27 +1,25 @@
 TASK_REPORT
 Last updated: 2026-02-06
 
-TASK_ID: TASK-0007A.6
-TITLE: Deterministic Release ID (content digest)
+TASK_ID: TASK-0007A.8
+TITLE: ship: Fail-fast Summary + Next-step Hints
 
 TASK_SUMMARY
-- Release id is now computed from a normalized content digest (not git HEAD).
-- release.js uses compute-release-id; verify-release-aligned expects the digest.
+- ship now labels each step and prints a short, actionable summary on failure.
+- Pattern-based hints cover release mismatch, dirty tree, push rejects, and stash conflicts.
+- Added a `--verbose` flag to show full output on failure; default prints last 40 lines.
 
 CHANGES
-- tools/compute-release-id.mjs
-- tools/release.js
-- tools/verify-release-aligned.mjs
+- tools/ship.mjs
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 NOTES
-- Build should be idempotent when inputs are unchanged.
+- Success path remains unchanged; no auto-resolve of conflicts.
 
-VERIFICATION COMMANDS (recommended)
-- `npm run build` (twice; expect no diffs on second run)
-- `node tools/verify-release-aligned.mjs`
+VERIFICATION COMMANDS (manual)
+- `npm run ship -- --verbose`
 
 RISKS / ROLLBACK
-- Risk: low; normalization bugs could change release id unexpectedly.
+- Risk: low; output only.
 - Rollback: revert this commit.
