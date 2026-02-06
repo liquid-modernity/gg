@@ -720,3 +720,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): prep:release runs release.js (requires clean tree)
 - RISKS: low; guards prevent misaligned releases
 - NEXT: TBD
+
+---
+
+## 2026-02-06 — TASK-0007A.5.1 — Hook UX + CI fail-fast
+- DATE: 2026-02-06
+- TASK_ID: TASK-0007A.5.1
+- TITLE: Hook UX + CI fail-fast
+- MODE (DEV/PROD impact): dev tooling + CI gating
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add install:hooks script + local workflow doc + CI pre-build alignment check
+- CHANGES (files touched): package.json; tools/install-hooks.mjs; tools/verify-release-aligned.mjs; docs/ci/LOCAL_WORKFLOW.md; .github/workflows/ci.yml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: expected green when release aligned
+- DEPLOY STATUS: unchanged
+- VERIFY (manual): npm run install:hooks; npm run verify:release; npm run prep:release
+- NOTES (gotchas): CI now fails fast if release is misaligned
+- RISKS: low; failures indicate build artifacts not committed
+- NEXT: TBD

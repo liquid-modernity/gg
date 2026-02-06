@@ -34,6 +34,14 @@ jobs:
           set -e
           npm ci
 
+      - name: Verify release aligned (fast fail)
+        run: |
+          set -e
+          if ! node tools/verify-release-aligned.mjs; then
+            echo "Release not aligned to HEAD. Run npm run prep:release and commit artifacts."
+            exit 1
+          fi
+
       - name: Build + verifiers
         run: |
           set -e

@@ -1,30 +1,31 @@
 TASK_REPORT
 Last updated: 2026-02-06
 
-TASK_ID: TASK-0007A.5
-TITLE: Local Push Guard + One-Command Release Prep
+TASK_ID: TASK-0007A.5.1
+TITLE: Hook UX + CI Fail-Fast
 
 TASK_SUMMARY
-- Added `verify-release-aligned` to assert pinned release artifacts match HEAD.
-- Added `prep:release` to run build + alignment verification in one command.
-- Added opt-in `install-hooks` to install a pre-push hook that blocks misaligned releases.
+- Added `install:hooks` npm script for one-command hook setup.
+- Documented local workflow in `docs/ci/LOCAL_WORKFLOW.md`.
+- CI now fails before build if release artifacts are not aligned to HEAD.
 
 CHANGES
-- tools/verify-release-aligned.mjs
-- tools/install-hooks.mjs
 - package.json
+- tools/install-hooks.mjs
+- tools/verify-release-aligned.mjs
+- docs/ci/LOCAL_WORKFLOW.md
+- .github/workflows/ci.yml
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 NOTES
-- `prep:release` runs `tools/release.js` and therefore requires a clean tree.
+- CI prints a clear remediation message when alignment fails.
 
 VERIFICATION COMMANDS (recommended)
+- `npm run install:hooks`
 - `npm run verify:release`
 - `npm run prep:release`
-- `npm run verify:assets`
-- `node tools/install-hooks.mjs`
 
 RISKS / ROLLBACK
-- Risk: low; failures indicate release artifacts do not match HEAD.
+- Risk: low; failures indicate release artifacts not committed.
 - Rollback: revert this commit.
