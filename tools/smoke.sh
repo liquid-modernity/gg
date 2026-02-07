@@ -123,19 +123,37 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "SMOKE_LIVE_HTML=1 requires RELEASE_ID in GG_CAPSULE.md"
   fi
 
+  live_fetch_stream() {
+    local url="$1"
+    curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r'
+  }
+
+  live_has_token() {
+    local url="$1"
+    local token="$2"
+    live_fetch_stream "$url" | grep -F "$token" > /dev/null
+  }
+
+  live_debug_detect() {
+    local url="$1"
+    echo "LIVE_HTML detected pins (assets/v):"
+    live_fetch_stream "$url" | grep -Eo "/assets/v/[0-9a-f]+/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
+    echo "LIVE_HTML detected latest (assets/latest):"
+    live_fetch_stream "$url" | grep -Eo "/assets/latest/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
+  }
+
   live_check() {
     local url="$1"
     local label="$2"
     local ts
-    local html
     ts="$(date +%s)"
-    if ! html="$(curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=${ts}")"; then
-      die "LIVE_HTML fetch failed: ${label}"
-    fi
-    if ! echo "${html}" | grep -q "/assets/v/${live_rel}/main.css"; then
+    local fetch_url="${url}?x=${ts}"
+    if ! live_has_token "${fetch_url}" "/assets/v/${live_rel}/main.css"; then
+      live_debug_detect "${fetch_url}"
       die "LIVE_HTML missing main.css pin (${label})"
     fi
-    if ! echo "${html}" | grep -q "/assets/v/${live_rel}/boot.js"; then
+    if ! live_has_token "${fetch_url}" "/assets/v/${live_rel}/boot.js"; then
+      live_debug_detect "${fetch_url}"
       die "LIVE_HTML missing boot.js pin (${label})"
     fi
     echo "PASS: LIVE_HTML ${label} pinned to ${live_rel}"

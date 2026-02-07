@@ -357,6 +357,25 @@ jobs:
             exit 1
           fi
 
+          fetch_stream() {
+            local url="$1"
+            curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r'
+          }
+
+          has_token() {
+            local url="$1"
+            local token="$2"
+            fetch_stream "$url" | grep -F "$token" > /dev/null
+          }
+
+          debug_detect() {
+            local url="$1"
+            echo "DETECTED pins (assets/v):"
+            fetch_stream "$url" | grep -Eo "/assets/v/[0-9a-f]+/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
+            echo "DETECTED latest (assets/latest):"
+            fetch_stream "$url" | grep -Eo "/assets/latest/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
+          }
+
           check_url() {
             local url="$1"
             local label="$2"
@@ -365,23 +384,21 @@ jobs:
 
             while [ "${attempt}" -le "${max_attempts}" ]; do
               local ts
-              local html
               ts="$(date +%s)"
-              if html="$(curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=${ts}")"; then
-                if echo "${html}" | grep -q "/assets/v/${REL}/main.css" && echo "${html}" | grep -q "/assets/v/${REL}/boot.js"; then
-                  echo "PASS: ${label} pinned to ${REL}"
-                  return 0
-                fi
-              else
-                echo "WARN: fetch failed (${label}) attempt ${attempt}/${max_attempts}"
+              local fetch_url="${url}?x=${ts}"
+              if has_token "${fetch_url}" "/assets/v/${REL}/main.css" && has_token "${fetch_url}" "/assets/v/${REL}/boot.js"; then
+                echo "PASS: ${label} pinned to ${REL}"
+                return 0
               fi
 
               echo "WAIT: ${label} not pinned to ${REL} (attempt ${attempt}/${max_attempts})"
+              debug_detect "${fetch_url}"
               attempt=$((attempt + 1))
               sleep 15
             done
 
             echo "ERROR: ${label} did not show pinned assets after retries"
+            debug_detect "${url}?x=$(date +%s)"
             echo "Paste index.prod.xml into Blogger then re-run deploy (or re-run verify)."
             return 1
           }
