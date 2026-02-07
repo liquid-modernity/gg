@@ -882,3 +882,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): GH_TOKEN/REPO/SHA env required
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007B.5 — Deploy checkout before CI verify
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007B.5
+- TITLE: Fix deploy.yml order: checkout before verify-ci-success script
+- MODE (DEV/PROD impact): deploy gate (prod)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: move checkout before CI verify and guard missing script
+- CHANGES (files touched): .github/workflows/deploy.yml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: avoids missing-script failure
+- VERIFY (manual): trigger deploy for green CI SHA
+- NOTES (gotchas): guard fails fast if script missing
+- RISKS: low
+- NEXT: TBD

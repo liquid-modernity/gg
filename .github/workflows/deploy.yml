@@ -30,6 +30,11 @@ jobs:
             exit 1
           fi
 
+      - name: Checkout (pinned SHA)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+
       - name: Verify CI success for SHA
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -38,12 +43,11 @@ jobs:
           CI_WORKFLOW: ci.yml
         run: |
           set -e
+          if [ ! -f tools/verify-ci-success.py ]; then
+            echo "ERROR: tools/verify-ci-success.py missing in this SHA; cannot verify CI"
+            exit 1
+          fi
           python3 tools/verify-ci-success.py
-
-      - name: Checkout (pinned SHA)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.sha }}
 
       - name: Use Node 20
         uses: actions/setup-node@v4
