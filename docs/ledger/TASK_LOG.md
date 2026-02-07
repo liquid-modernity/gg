@@ -954,3 +954,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): npm run verify:budgets missing (used node tools/verify-budgets.mjs); no JS/fonts; Blogger comments untouched
 - RISKS: low; inline CSS only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008A.2.1 — Inline budget headroom
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008A.2.1
+- TITLE: Add tiny headroom to critical inline CSS budget
+- MODE (DEV/PROD impact): budget-only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: increase inline CSS max bytes by 96 to avoid micro-drift failures
+- CHANGES (files touched): tools/critical-inline-budget.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-inline-css.mjs
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run verify-inline-css
+- NOTES (gotchas): no CSS changes
+- RISKS: low; budget headroom only
+- NEXT: TBD
