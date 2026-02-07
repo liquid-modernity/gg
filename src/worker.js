@@ -153,6 +153,29 @@ export default {
 
     // Reverse proxy Blogger untuk semua non-asset path.
     if (!shouldTryAssets) {
+      const viewParam = url.searchParams.get("view");
+      const redirectToBlog = () => {
+        const dest = new URL(request.url);
+        dest.pathname = "/blog";
+        dest.searchParams.delete("view");
+        dest.hash = "";
+        const r = new Response(null, {
+          status: 301,
+          headers: {
+            "Location": dest.toString(),
+            "Cache-Control": "no-store",
+          },
+        });
+        return stamp(r);
+      };
+
+      if ((pathname === "/" || pathname === "") && viewParam === "blog") {
+        return redirectToBlog();
+      }
+      if (pathname === "/blog/" || (pathname === "/blog" && viewParam === "blog")) {
+        return redirectToBlog();
+      }
+
       let originRequest = request;
       let originUrl = new URL(request.url);
       let forceListing = false;
@@ -177,10 +200,30 @@ export default {
 
       const contentType = originRes.headers.get("content-type") || "";
       if (forceListing && contentType.indexOf("text/html") !== -1) {
+        const publicUrl = new URL(request.url);
+        publicUrl.pathname = "/blog";
+        publicUrl.searchParams.delete("view");
+        publicUrl.hash = "";
+        const canonicalPublic = publicUrl.toString();
         const rewritten = new HTMLRewriter()
           .on("body", {
             element(el) {
               el.setAttribute("data-gg-surface", "listing");
+            },
+          })
+          .on("link[rel=\"canonical\"]", {
+            element(el) {
+              el.setAttribute("href", canonicalPublic);
+            },
+          })
+          .on("meta[property=\"og:url\"]", {
+            element(el) {
+              el.setAttribute("content", canonicalPublic);
+            },
+          })
+          .on("meta[name=\"twitter:url\"]", {
+            element(el) {
+              el.setAttribute("content", canonicalPublic);
             },
           })
           .transform(originRes);

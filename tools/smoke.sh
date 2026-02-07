@@ -98,6 +98,40 @@ fi
 
 REL="${worker_version}"
 
+redirect_check() {
+  local url="$1"
+  local label="$2"
+  local headers status location
+  headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"
+  status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
+  if [[ "${status}" != "301" ]]; then
+    die "${label} (got ${status}, want 301)"
+  fi
+  location="$(echo "${headers}" | awk -F': *' 'tolower($1)=="location"{print $2}' | head -n1)"
+  if [[ -z "${location}" ]]; then
+    die "${label} missing Location header"
+  fi
+  if ! echo "${location}" | grep -qi "/blog"; then
+    die "${label} Location missing /blog"
+  fi
+  if echo "${location}" | grep -qi "view=blog"; then
+    die "${label} Location still contains view=blog"
+  fi
+  echo "PASS: ${label}"
+}
+
+listing_canonical_check() {
+  local url="$1"
+  local canon="${BASE}/blog"
+  if ! curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r' | grep -Eqi "<link[^>]+rel=['\"]canonical['\"][^>]+href=['\"]${canon}"; then
+    die "listing canonical missing ${canon}"
+  fi
+  if ! curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r' | grep -Eqi "<meta[^>]+property=['\"]og:url['\"][^>]+content=['\"]${canon}"; then
+    die "listing og:url missing ${canon}"
+  fi
+  echo "PASS: listing canonical/og:url ${canon}"
+}
+
 authoritative_header() {
   local url="$1"
   local pattern="$2"
@@ -132,6 +166,11 @@ authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*imm
 assert_status "${BASE}/api/proxy" "400" "/api/proxy missing url"
 assert_status "${BASE}/api/proxy?url=not-a-url" "400" "/api/proxy invalid url"
 assert_status "${BASE}/api/proxy?url=https://example.com/" "403" "/api/proxy host not allowed"
+
+redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
+redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
+redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
+listing_canonical_check "${BASE}/blog"
 
 sample_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png"
 status="$(curl -sSI -G --data-urlencode "url=${sample_url}" "${BASE}/api/proxy" | awk 'NR==1 {print $2}')"

@@ -1044,3 +1044,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): avoids false fails when capsule missing but worker header present
 - RISKS: low; local tool only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.2 — /blog normalization + listing canonical rewrite
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.2
+- TITLE: Normalize /?view=blog -> /blog + rewrite canonical/og:url for listing pages
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: redirect view=blog to /blog; canonical/og:url rewrite for listing HTML; smoke coverage
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build (FAILED: clean tree required); SMOKE_LIVE_HTML=1 tools/smoke.sh (FAILED: DNS)
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): smoke failed due DNS; no JS/template changes; preserve non-view query params
+- RISKS: low; worker-only
+- NEXT: TBD
