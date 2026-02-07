@@ -106,3 +106,27 @@ VERIFICATION COMMANDS (manual)
 RISKS / ROLLBACK
 - Risk: low; report-only CSP remains, logging changes only.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008D.2.1
+TITLE: Fix headers contract: /gg-flags.json must be Cache-Control no-store, max-age=0
+
+TASK_SUMMARY
+- Force `Cache-Control: no-store, max-age=0` on `/gg-flags.json` responses.
+
+BEHAVIOR
+- `/gg-flags.json` always returns `Cache-Control: no-store, max-age=0` while preserving JSON content type.
+
+CHANGES
+- src/worker.js
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+RISKS / ROLLBACK
+- Risk: low; header-only change.
+- Rollback: revert this commit.

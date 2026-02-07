@@ -186,7 +186,7 @@ export default {
       });
       const r = new Response(body, { status: 200 });
       r.headers.set("Content-Type", "application/json; charset=utf-8");
-      r.headers.set("Cache-Control", "no-store");
+      r.headers.set("Cache-Control", "no-store, max-age=0");
       return stamp(r);
     }
 

@@ -1278,3 +1278,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): CSP log lines deduped; URL queries stripped; gate via gg-flags.json
 - RISKS: low; report-only CSP remains
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008D.2.1 — Fix headers contract: /gg-flags.json must be Cache-Control no-store, max-age=0
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008D.2.1
+- TITLE: Fix headers contract: /gg-flags.json must be Cache-Control no-store, max-age=0
+- MODE (DEV/PROD impact): worker only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: gg-flags.json cache-control override
+- CHANGES (files touched): src/worker.js; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): gg-flags.json now forced to no-store, max-age=0
+- RISKS: low; header-only change
+- NEXT: TBD
