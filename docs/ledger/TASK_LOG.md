@@ -1152,3 +1152,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): single H1 guard; listing title added; sitemap h1 demoted (header brand already non-H1)
 - RISKS: low; markup-only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.3.1 — Listing surface heading normalization: remove/demote landing H1 and inject H1 Blog (worker-only)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.3.1
+- TITLE: Listing surface heading normalization: remove/demote landing H1 and inject H1 Blog (worker-only)
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: listing H1 normalization via HTMLRewriter
+- CHANGES (files touched): src/worker.js; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): listing H1 normalized in worker; landing H1 removed/demoted on listing
+- RISKS: low; listing-only HTML rewrite
+- NEXT: TBD

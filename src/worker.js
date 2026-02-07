@@ -219,10 +219,32 @@ export default {
           `<meta property="og:url" content="${canonicalPublic}">`,
           `<meta name="twitter:url" content="${canonicalPublic}">`,
         ].join("");
+        const listingH1 = `<h1 class="gg-listing__title">Blog</h1>`;
         const rewritten = new HTMLRewriter()
           .on("body", {
             element(el) {
               el.setAttribute("data-gg-surface", "listing");
+            },
+          })
+          .on("section.gg-home-landing", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("main#gg-main h1", {
+            element(el) {
+              const className = el.getAttribute("class") || "";
+              const isDisplay = className.split(/\s+/).includes("gg-display");
+              if (isDisplay) {
+                el.replace('<p class="gg-display">Edited by pakrpp.</p>', { html: true });
+                return;
+              }
+              el.remove();
+            },
+          })
+          .on("main#gg-main", {
+            element(el) {
+              el.prepend(listingH1, { html: true });
             },
           })
           .on("link[rel=\"canonical\"]", {
