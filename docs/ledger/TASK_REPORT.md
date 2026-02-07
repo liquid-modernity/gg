@@ -1,21 +1,20 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.2.1
-TITLE: Fix tools/smoke.sh redirect assertion (Location may be absolute URL)
+TASK_ID: TASK-0008B.2.2
+TITLE: Fix tools/smoke.sh Location parsing (preserve full URL value containing https://)
 
 TASK_SUMMARY
-- Make redirect smoke check tolerant of absolute or relative Location values by substring matching /blog.
-- Strip CR from headers and extract Location case-insensitively.
-- On failure, print Location and the first 30 header lines for diagnostics.
+- Fix Location parsing so https:// URLs are preserved in full.
+- Keep redirect assertions and failure diagnostics intact.
 
 RATIONALE
-- Live redirects can return absolute URLs; the smoke check should validate intent, not URL form.
+- Splitting on ':' truncates absolute URLs; smoke should validate the full Location value.
 
 BEHAVIOR
-- Redirect check passes for Location: /blog or https://www.pakrpp.com/blog.
+- Redirect check passes for Location: https://www.pakrpp.com/blog or /blog.
 - Redirect check still fails if status is not 301, Location is missing, or Location contains view=blog.
-- Failure logs include Location plus the first 30 response header lines.
+- Debug output prints the full Location value.
 
 CHANGES
 - tools/smoke.sh

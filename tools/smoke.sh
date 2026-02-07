@@ -104,7 +104,9 @@ redirect_check() {
   local headers status loc
   headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"
   status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
-  loc="$(echo "${headers}" | awk -F': *' 'tolower($1)=="location"{print $2; exit}')"
+  loc="$(printf '%s\n' "${headers}" \
+    | sed -n 's/^[Ll][Oo][Cc][Aa][Tt][Ii][Oo][Nn]:[[:space:]]*//p' \
+    | head -n 1)"
 
   redirect_fail() {
     local msg="$1"

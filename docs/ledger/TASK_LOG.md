@@ -1080,3 +1080,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): redirect smoke accepts absolute/relative Location
 - RISKS: low; local tool only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.2.2 — Fix tools/smoke.sh Location parsing (preserve full URL value containing https://)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.2.2
+- TITLE: Fix tools/smoke.sh Location parsing (preserve full URL value containing https://)
+- MODE (DEV/PROD impact): tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: smoke redirect Location parsing
+- CHANGES (files touched): tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): fixed Location parsing so https:// URLs don’t truncate
+- RISKS: low; local tool only
+- NEXT: TBD
