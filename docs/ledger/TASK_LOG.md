@@ -1242,3 +1242,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): BlogPosting forced for post surface; smoke prints failing condition
 - RISKS: low; HTML rewrite only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008D.1 — Add Security Headers v1 (CSP Report-Only) + /api/csp-report endpoint + smoke checks
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008D.1
+- TITLE: Add Security Headers v1 (CSP Report-Only) + /api/csp-report endpoint + smoke checks
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: security headers + CSP report-only + report endpoint + smoke checks
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): CSP is report-only; /api/csp-report logs to worker console
+- RISKS: low; header-only change (report-only)
+- NEXT: TBD

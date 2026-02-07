@@ -293,6 +293,40 @@ schema_check_post() {
   echo "PASS: schema post"
 }
 
+security_headers_check() {
+  local url="$1"
+  local label="$2"
+  local headers
+  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} headers fetch failed"
+  fi
+
+  header_fail() {
+    local msg="$1"
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} ${msg}"
+  }
+
+  if ! echo "${headers}" | grep -qi '^x-content-type-options:[[:space:]]*nosniff'; then
+    header_fail "missing x-content-type-options: nosniff"
+  fi
+  if ! echo "${headers}" | grep -qi '^referrer-policy:'; then
+    header_fail "missing referrer-policy"
+  fi
+  if ! echo "${headers}" | grep -qi '^permissions-policy:'; then
+    header_fail "missing permissions-policy"
+  fi
+  if ! echo "${headers}" | grep -qi '^x-frame-options:[[:space:]]*sameorigin'; then
+    header_fail "missing x-frame-options: sameorigin"
+  fi
+  if ! echo "${headers}" | grep -qi '^content-security-policy-report-only:'; then
+    header_fail "missing content-security-policy-report-only"
+  fi
+
+  echo "PASS: ${label} security headers"
+}
+
 authoritative_header() {
   local url="$1"
   local pattern="$2"
@@ -323,6 +357,15 @@ assert_status() {
 authoritative_header "${BASE}/sw.js?x=1" '^cache-control:.*no-store' "sw.js is no-store"
 authoritative_header "${BASE}/gg-flags.json?x=1" '^cache-control:.*no-store' "gg-flags.json is no-store"
 authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*immutable' "assets/v main.js is immutable"
+
+security_headers_check "${BASE}/?x=1" "home"
+security_headers_check "${BASE}/blog?x=1" "blog"
+
+csp_report_code="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "${BASE}/api/csp-report" -H "Content-Type: application/csp-report" --data '{"test":true}')"
+if [[ "${csp_report_code}" != "204" ]]; then
+  die "csp-report endpoint (got ${csp_report_code}, want 204)"
+fi
+echo "PASS: csp-report endpoint"
 
 assert_status "${BASE}/api/proxy" "400" "/api/proxy missing url"
 assert_status "${BASE}/api/proxy?url=not-a-url" "400" "/api/proxy invalid url"

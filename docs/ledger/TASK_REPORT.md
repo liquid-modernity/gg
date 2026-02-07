@@ -29,3 +29,37 @@ VERIFICATION COMMANDS (manual)
 RISKS / ROLLBACK
 - Risk: low; HTML rewrite only.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008D.1
+TITLE: Add Security Headers v1 (CSP Report-Only) + /api/csp-report endpoint + smoke checks
+
+TASK_SUMMARY
+- Add baseline security headers on all responses.
+- Add CSP report-only on HTML with reporting endpoints and a `/api/csp-report` handler.
+- Extend smoke checks to validate headers and report endpoint.
+
+BEHAVIOR
+- All responses include `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `X-Frame-Options`.
+- HTML responses include `Content-Security-Policy-Report-Only` plus `Report-To` and `Reporting-Endpoints` pointing to `/api/csp-report`.
+- `/api/csp-report` accepts POST, logs a compact one-liner (timestamp, cf-ray, UA, report keys/raw), and returns 204; non-POST returns 405.
+- Reports are visible in Cloudflare Worker logs; v2 can consider enforcement or nonce support.
+
+SMOKE COVERAGE
+- Home/blog response headers include security headers + CSP report-only.
+- `/api/csp-report` POST returns 204.
+
+CHANGES
+- src/worker.js
+- tools/smoke.sh
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+RISKS / ROLLBACK
+- Risk: low; report-only headers + logging endpoint.
+- Rollback: revert this commit.

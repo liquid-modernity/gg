@@ -19,6 +19,45 @@ const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
   return `${u.origin}${u.pathname}`;
 };
 
+const CSP_REPORT_ONLY = [
+  "default-src 'self' https:",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'self'",
+  "img-src 'self' data: https:",
+  "style-src 'self' 'unsafe-inline' https:",
+  "script-src 'self' 'unsafe-inline' https:",
+  "connect-src 'self' https:",
+  "font-src 'self' data: https:",
+  "frame-src https:",
+  "form-action 'self' https:",
+  "upgrade-insecure-requests",
+  "report-uri /api/csp-report",
+].join("; ");
+
+const addSecurityHeaders = (resp, requestUrl, contentType) => {
+  const headers = resp.headers;
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set(
+    "Permissions-Policy",
+    "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()"
+  );
+  headers.set("X-Frame-Options", "SAMEORIGIN");
+  const isHtml = (contentType || "").toLowerCase().includes("text/html");
+  if (isHtml) {
+    const origin = new URL(requestUrl).origin;
+    const reportTo = JSON.stringify({
+      group: "csp",
+      max_age: 10886400,
+      endpoints: [{ url: `${origin}/api/csp-report` }],
+    });
+    headers.set("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY);
+    headers.set("Report-To", reportTo);
+    headers.set("Reporting-Endpoints", `csp="${origin}/api/csp-report"`);
+  }
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -28,6 +67,8 @@ export default {
       const out = new Response(res.body, res);
       out.headers.set("X-GG-Worker", "proxy");
       out.headers.set("X-GG-Worker-Version", WORKER_VERSION);
+      const contentType = out.headers.get("content-type") || "";
+      addSecurityHeaders(out, request.url, contentType);
       return out;
     };
 
@@ -86,6 +127,58 @@ export default {
       console.log("GG_TELEMETRY", payload);
       const r = new Response("", { status: 204 });
       r.headers.set("Cache-Control", "no-store");
+      return stamp(r);
+    }
+
+    if (pathname === "/api/csp-report") {
+      if (request.method !== "POST") {
+        const r = new Response("Method Not Allowed", { status: 405 });
+        r.headers.set("Allow", "POST");
+        r.headers.set("Cache-Control", "no-store");
+        r.headers.set("Content-Type", "text/plain; charset=utf-8");
+        return stamp(r);
+      }
+
+      const MAX_BODY = 65536;
+      let body = "";
+      try {
+        body = await request.text();
+      } catch (e) {
+        body = "";
+      }
+      if (body.length > MAX_BODY) {
+        body = body.slice(0, MAX_BODY);
+      }
+
+      const ts = new Date().toISOString();
+      const cfRay = request.headers.get("cf-ray") || "-";
+      const uaRaw = request.headers.get("user-agent") || "";
+      const ua = uaRaw.slice(0, 120);
+      let keys = "";
+      let rawSnippet = "";
+
+      try {
+        const parsed = JSON.parse(body || "{}");
+        if (parsed && typeof parsed === "object") {
+          keys = Object.keys(parsed).slice(0, 8).join(",");
+        }
+      } catch (e) {
+        rawSnippet = body.slice(0, 200).replace(/\s+/g, " ").trim();
+      }
+
+      if (rawSnippet) {
+        console.log(
+          `CSP_REPORT ${ts} ray=${cfRay} ua="${ua}" raw="${rawSnippet}"`
+        );
+      } else {
+        console.log(
+          `CSP_REPORT ${ts} ray=${cfRay} ua="${ua}" keys=${keys || "-"}`
+        );
+      }
+
+      const r = new Response("", { status: 204 });
+      r.headers.set("Cache-Control", "no-store");
+      r.headers.set("Content-Type", "text/plain; charset=utf-8");
       return stamp(r);
     }
 
