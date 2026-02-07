@@ -1008,3 +1008,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): build blocked by clean-tree guard
 - RISKS: low; text + include removal
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007C.1 — Smoke capsule-first release id
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007C.1
+- TITLE: Make tools/smoke.sh read RELEASE_ID from GG_CAPSULE with fallback logs
+- MODE (DEV/PROD impact): local tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: prefer capsule release id; clear fallback to worker header; better logs
+- CHANGES (files touched): tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): run tools/smoke.sh with/without GG_CAPSULE to observe logs
+- NOTES (gotchas): POSIX-ish grep/sed only
+- RISKS: low; local tool only
+- NEXT: TBD

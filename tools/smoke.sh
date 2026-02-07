@@ -17,10 +17,44 @@ if ! "${ROOT}/tools/check-links.sh"; then
   die "check-links failed"
 fi
 
-expected_release="${RELEASE_ID:-}"
+read_release_id_from_capsule() {
+  local file="${ROOT}/docs/ledger/GG_CAPSULE.md"
+  if [[ ! -f "${file}" ]]; then
+    return 0
+  fi
+
+  local id
+  id="$(grep -E 'RELEASE_ID' "${file}" | head -n 1 | sed -E 's/.*RELEASE_ID[^0-9a-f]*([0-9a-f]{7,40}).*/\1/' | tr -d '[:space:]')"
+  if [[ "${id}" =~ ^[0-9a-f]{7,40}$ ]]; then
+    echo "${id}"
+    return 0
+  fi
+
+  id="$(grep -Eo '/assets/v/[0-9a-f]{7,40}/' "${file}" | head -n 1 | sed -E 's#/assets/v/([0-9a-f]{7,40})/#\1#')"
+  if [[ "${id}" =~ ^[0-9a-f]{7,40}$ ]]; then
+    echo "${id}"
+    return 0
+  fi
+
+  return 0
+}
+
+capsule_file="${ROOT}/docs/ledger/GG_CAPSULE.md"
+if [[ -f "${capsule_file}" ]]; then
+  echo "DEBUG: GG_CAPSULE present: yes (${capsule_file})"
+else
+  echo "DEBUG: GG_CAPSULE present: no (${capsule_file})"
+fi
+
+expected_release="${SMOKE_EXPECT:-${RELEASE_ID:-}}"
+fallback_reason=""
 if [[ -z "${expected_release}" ]]; then
-  if [[ -x "${ROOT}/tools/release-id.sh" ]]; then
-    expected_release="$("${ROOT}/tools/release-id.sh" | awk '/RELEASE_ID/{print $2; exit}')"
+  expected_release="$(read_release_id_from_capsule)"
+  if [[ -n "${expected_release}" ]]; then
+    echo "INFO: expected RELEASE_ID from GG_CAPSULE: ${expected_release}"
+  else
+    fallback_reason="capsule"
+    echo "WARN: GG_CAPSULE missing/unparseable; falling back to worker header"
   fi
 fi
 
@@ -44,7 +78,7 @@ fi
 
 if [[ -z "${expected_release}" ]]; then
   expected_release="${worker_version}"
-  echo "INFO: expected RELEASE_ID not found; using worker header ${expected_release}"
+  echo "WARN: could not parse RELEASE_ID from docs/ledger/GG_CAPSULE.md; using worker header: ${expected_release}"
 fi
 
 echo "SMOKE: base=${BASE} expected=${expected_release} got=${worker_version}"
@@ -118,7 +152,7 @@ else
 fi
 
 if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
-  live_rel="$(awk -F': *' '/RELEASE_ID:/ {print $2; exit}' "${ROOT}/docs/ledger/GG_CAPSULE.md" | tr -d '[:space:]')"
+  live_rel="$(read_release_id_from_capsule | tr -d '[:space:]')"
   if [[ -z "${live_rel}" ]]; then
     die "SMOKE_LIVE_HTML=1 requires RELEASE_ID in GG_CAPSULE.md"
   fi

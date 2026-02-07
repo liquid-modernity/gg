@@ -1,33 +1,43 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.1.1
-TITLE: Remove duplicate skipNavigation include + localize skip link text (ID)
+TASK_ID: TASK-0007C.1
+TITLE: Make tools/smoke.sh read RELEASE_ID from GG_CAPSULE with fallback logs
 
 TASK_SUMMARY
-- Removed the built-in Blogger skipNavigation include to avoid duplicate skip links.
-- Localized custom skip link text to Indonesian.
+- Added capsule-first RELEASE_ID detection in tools/smoke.sh.
+- Improved logs to explain when fallback to worker header is used.
+- Kept deploy workflow unchanged.
 
-A11Y CHECKLIST
-- Single skip link element in rendered HTML (class gg-skiplink).
-- Skip link targets #gg-main and main remains focusable.
-- Primary nav still labeled (aria-label="Primary").
+BEHAVIOR
+- If GG_CAPSULE has a valid RELEASE_ID:
+  - INFO: expected RELEASE_ID from GG_CAPSULE: <id>
+  - smoke uses that id.
+- If GG_CAPSULE missing/unparseable:
+  - WARN: GG_CAPSULE missing/unparseable; falling back to worker header
+  - WARN: could not parse RELEASE_ID from docs/ledger/GG_CAPSULE.md; using worker header: <id>
+
+EXAMPLE OUTPUT (capsule ok)
+- DEBUG: GG_CAPSULE present: yes (<abs path>)
+- INFO: expected RELEASE_ID from GG_CAPSULE: 1a2b3c4
+
+EXAMPLE OUTPUT (capsule missing)
+- DEBUG: GG_CAPSULE present: no (<abs path>)
+- WARN: GG_CAPSULE missing/unparseable; falling back to worker header
+- WARN: could not parse RELEASE_ID from docs/ledger/GG_CAPSULE.md; using worker header: 1a2b3c4
 
 CONSTRAINTS CONFIRMED
-- No JS changes.
-- No CSS changes.
-- Inline budget unchanged.
+- Local tool only; no workflow changes.
 
 CHANGES
-- index.prod.xml
-- index.dev.xml
+- tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
-- `npm run build` (FAILED: clean tree required)
-- `npm run verify-inline-css` (missing script; ran node tools/verify-inline-css.mjs)
+- `tools/smoke.sh`
+- `SMOKE_EXPECT=<id> tools/smoke.sh`
 
 RISKS / ROLLBACK
-- Risk: low; text + include removal.
+- Risk: low; log-only/tooling behavior.
 - Rollback: revert this commit.
