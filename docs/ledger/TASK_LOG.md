@@ -1188,3 +1188,39 @@ Last updated: 2026-02-07
 - NOTES (gotchas): GG_SCHEMA v1 injected by worker; article detection via og:type/article:published_time; query sanitizer
 - RISKS: low; HTML rewrite only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.4.1 — Fix tools/smoke.sh schema checks: parse-first extraction of script#gg-schema (accept single/double quotes)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.4.1
+- TITLE: Fix tools/smoke.sh schema checks: parse-first extraction of script#gg-schema (accept single/double quotes)
+- MODE (DEV/PROD impact): tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: smoke schema parsing + diagnostics
+- CHANGES (files touched): tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): smoke schema checks now parse-first; supports single/double quotes
+- RISKS: low; local tool only
+- NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008C.1 — Add SMOKE_POST_URL schema proof + strengthen BlogPosting fields (article pages)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008C.1
+- TITLE: Add SMOKE_POST_URL schema proof + strengthen BlogPosting fields (article pages)
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: BlogPosting schema fields + post schema smoke validation
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh; SMOKE_POST_URL=\"<post>\" SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): SMOKE_POST_URL schema proof; BlogPosting strictness
+- RISKS: low; HTML rewrite only
+- NEXT: TBD

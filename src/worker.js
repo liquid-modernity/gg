@@ -251,6 +251,7 @@ export default {
           pub: "",
           mod: "",
           titleText: "",
+          hasArticle: false,
         };
         const assignMeta = (key, value) => {
           if (value) {
@@ -267,6 +268,15 @@ export default {
             siteName;
           const pageDesc = (meta.ogDesc || "").trim() || (meta.desc || "").trim();
           const publisherName = (meta.author || "").trim() || "pakrpp";
+          const ogImage = (meta.ogImage || "").trim();
+          let imageUrl = "";
+          if (ogImage) {
+            try {
+              imageUrl = new URL(ogImage, origin).toString();
+            } catch (e) {
+              imageUrl = "";
+            }
+          }
           const graph = [
             {
               "@type": "WebSite",
@@ -298,19 +308,22 @@ export default {
             },
           ];
           const ogType = (meta.ogType || "").trim().toLowerCase();
-          const isArticle = ogType === "article" || !!meta.pub;
+          const isArticle =
+            ogType === "article" || !!meta.pub || (!forceListing && meta.hasArticle);
           if (isArticle) {
             const blogPosting = {
               "@type": "BlogPosting",
               "@id": `${pageUrl}#blogposting`,
               mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
+              url: pageUrl,
               headline: pageName,
               description: pageDesc,
               author: { "@id": `${origin}/#publisher` },
               publisher: { "@id": `${origin}/#publisher` },
+              isPartOf: { "@id": `${origin}/#website` },
             };
-            if (meta.ogImage) {
-              blogPosting.image = [meta.ogImage];
+            if (imageUrl) {
+              blogPosting.image = [imageUrl];
             }
             if (meta.pub) {
               blogPosting.datePublished = meta.pub;
@@ -371,6 +384,11 @@ export default {
           .on("title", {
             text(text) {
               meta.titleText += text.text;
+            },
+          })
+          .on("article", {
+            element() {
+              meta.hasArticle = true;
             },
           })
           .on("script#gg-schema", {

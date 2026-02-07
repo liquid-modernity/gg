@@ -191,8 +191,14 @@ listing_canonical_check() {
   echo "PASS: listing canonical/og/twitter clean ${canon}"
 }
 
-extract_gg_schema_json() {
-  node -e 'const fs=require("fs");const html=fs.readFileSync(0,"utf8");const m=html.match(/<script[^>]*id=["'"'"']gg-schema["'"'"'][^>]*>([\s\S]*?)<\/script>/i);if(!m){process.exit(2)};const json=JSON.parse(m[1]);console.log(JSON.stringify(json));'
+extract_schema_json() {
+  node -e '
+    const html = require("fs").readFileSync(0,"utf8");
+    const m = html.match(/<script[^>]*id=["'"'"']gg-schema["'"'"'][^>]*>([\s\S]*?)<\/script>/i);
+    if (!m) { process.exit(2); }
+    const obj = JSON.parse(m[1]);
+    process.stdout.write(JSON.stringify(obj));
+  '
 }
 
 schema_debug_snippet() {
@@ -202,21 +208,22 @@ schema_debug_snippet() {
   printf '%s\n' "${html}" | grep -in -C 2 "gg-schema" | head -n 20 || true
 }
 
+schema_debug_types() {
+  local schema="$1"
+  printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];const types=graph.flatMap(n=>Array.isArray(n["@type"])?n["@type"]:[n["@type"]]).filter(Boolean);console.log("DEBUG: schema types:", types.join(", "));'
+}
+
 schema_check_home() {
   local url="${BASE}/"
   local html schema
   if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
     die "schema home fetch failed"
   fi
-  if ! printf '%s\n' "${html}" | grep -qi "id=['\"]gg-schema['\"]"; then
+  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
     schema_debug_snippet "home" "${html}"
-    die "schema missing on home"
+    die "schema missing/invalid on home"
   fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
-    schema_debug_snippet "home" "${html}"
-    die "schema parse failed on home"
-  fi
-  if ! printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));if(!d["@context"]||!d["@graph"]){process.exit(2)}'; then
+  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
     schema_debug_snippet "home" "${html}"
     die "schema missing @context/@graph on home"
   fi
@@ -230,13 +237,13 @@ schema_check_listing() {
   if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
     die "schema listing fetch failed"
   fi
-  if ! printf '%s\n' "${html}" | grep -qi "id=['\"]gg-schema['\"]"; then
+  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
     schema_debug_snippet "listing" "${html}"
-    die "schema missing on listing"
+    die "schema missing/invalid on listing"
   fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
+  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
     schema_debug_snippet "listing" "${html}"
-    die "schema parse failed on listing"
+    die "schema missing @context/@graph on listing"
   fi
   if ! printf '%s\n' "${schema}" | EXPECTED_URL="${BASE}/blog" node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];const hasCollection=graph.some(n=>n["@type"]==="CollectionPage");if(!hasCollection)process.exit(2);const page=graph.find(n=>n["@type"]==="CollectionPage")||graph.find(n=>n["@type"]==="WebPage");if(!page||page.url!==process.env.EXPECTED_URL)process.exit(3);'; then
     schema_debug_snippet "listing" "${html}"
@@ -251,13 +258,33 @@ schema_check_post() {
   if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
     die "schema post fetch failed (${url})"
   fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
+  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
     schema_debug_snippet "post" "${html}"
-    die "schema parse failed on post"
+    die "schema missing/invalid on post"
   fi
-  if ! printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];if(!graph.some(n=>n["@type"]==="BlogPosting"))process.exit(2);'; then
+  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
+    schema_debug_types "${schema}"
     schema_debug_snippet "post" "${html}"
-    die "schema missing BlogPosting"
+    die "schema missing @context/@graph on post"
+  fi
+  if ! printf '%s\n' "${schema}" | node -e '
+    const fs=require("fs");
+    const d=JSON.parse(fs.readFileSync(0,"utf8"));
+    const graph=d["@graph"]||[];
+    const hasType=(node,t)=>{
+      const v=node["@type"];
+      if(Array.isArray(v)) return v.includes(t);
+      return v===t;
+    };
+    const post=graph.find(n=>hasType(n,"BlogPosting"));
+    if(!post) process.exit(2);
+    if(typeof post.url!=="string"||post.url.includes("?")) process.exit(3);
+    const page=graph.find(n=>hasType(n,"WebPage"));
+    if(!page||typeof page.url!=="string"||page.url.includes("?")) process.exit(4);
+  '; then
+    schema_debug_types "${schema}"
+    schema_debug_snippet "post" "${html}"
+    die "schema BlogPosting/WebPage invalid on post"
   fi
   echo "PASS: schema post"
 }
