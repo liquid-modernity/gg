@@ -1,4 +1,24 @@
 /* src/worker.js — Cloudflare Worker (edge) */
+const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
+  const u = new URL(inputUrl);
+  u.searchParams.delete("x");
+  u.searchParams.delete("view");
+  u.searchParams.delete("fbclid");
+  u.searchParams.delete("gclid");
+  u.searchParams.delete("msclkid");
+  for (const key of Array.from(u.searchParams.keys())) {
+    if (key.startsWith("utm_")) {
+      u.searchParams.delete(key);
+    }
+  }
+  u.hash = "";
+  if (forceBlog) {
+    u.pathname = "/blog";
+  }
+  u.search = "";
+  return `${u.origin}${u.pathname}`;
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -199,7 +219,7 @@ export default {
       }
 
       const contentType = originRes.headers.get("content-type") || "";
-      if (forceListing && contentType.indexOf("text/html") !== -1) {
+      if (contentType.indexOf("text/html") !== -1) {
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
         publicUrl.searchParams.delete("view");
@@ -220,33 +240,182 @@ export default {
           `<meta name="twitter:url" content="${canonicalPublic}">`,
         ].join("");
         const listingH1 = `<h1 class="gg-listing__title">Blog</h1>`;
+        const meta = {
+          ogType: "",
+          ogTitle: "",
+          ogDesc: "",
+          ogImage: "",
+          ogSiteName: "",
+          desc: "",
+          author: "",
+          pub: "",
+          mod: "",
+          titleText: "",
+        };
+        const assignMeta = (key, value) => {
+          if (value) {
+            meta[key] = value;
+          }
+        };
+        const buildSchema = () => {
+          const origin = new URL(request.url).origin;
+          const pageUrl = cleanUrlForSchema(request.url, { forceBlog: forceListing });
+          const siteName = (meta.ogSiteName || "").trim() || "pakrpp.com";
+          const pageName =
+            (meta.ogTitle || "").trim() ||
+            (meta.titleText || "").trim() ||
+            siteName;
+          const pageDesc = (meta.ogDesc || "").trim() || (meta.desc || "").trim();
+          const publisherName = (meta.author || "").trim() || "pakrpp";
+          const graph = [
+            {
+              "@type": "WebSite",
+              "@id": `${origin}/#website`,
+              url: `${origin}/`,
+              name: siteName,
+              inLanguage: "id-ID",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${origin}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            },
+            {
+              "@type": "Person",
+              "@id": `${origin}/#publisher`,
+              name: publisherName,
+              url: `${origin}/`,
+            },
+            {
+              "@type": forceListing ? "CollectionPage" : "WebPage",
+              "@id": `${pageUrl}#webpage`,
+              url: pageUrl,
+              name: pageName,
+              description: pageDesc,
+              isPartOf: { "@id": `${origin}/#website` },
+              publisher: { "@id": `${origin}/#publisher` },
+              inLanguage: "id-ID",
+            },
+          ];
+          const ogType = (meta.ogType || "").trim().toLowerCase();
+          const isArticle = ogType === "article" || !!meta.pub;
+          if (isArticle) {
+            const blogPosting = {
+              "@type": "BlogPosting",
+              "@id": `${pageUrl}#blogposting`,
+              mainEntityOfPage: { "@id": `${pageUrl}#webpage` },
+              headline: pageName,
+              description: pageDesc,
+              author: { "@id": `${origin}/#publisher` },
+              publisher: { "@id": `${origin}/#publisher` },
+            };
+            if (meta.ogImage) {
+              blogPosting.image = [meta.ogImage];
+            }
+            if (meta.pub) {
+              blogPosting.datePublished = meta.pub;
+            }
+            if (meta.mod || meta.pub) {
+              blogPosting.dateModified = meta.mod || meta.pub;
+            }
+            graph.push(blogPosting);
+          }
+          return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+        };
         const rewritten = new HTMLRewriter()
+          .on("meta[property=\"og:type\"]", {
+            element(el) {
+              assignMeta("ogType", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"og:title\"]", {
+            element(el) {
+              assignMeta("ogTitle", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"og:description\"]", {
+            element(el) {
+              assignMeta("ogDesc", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"og:image\"]", {
+            element(el) {
+              assignMeta("ogImage", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"og:site_name\"]", {
+            element(el) {
+              assignMeta("ogSiteName", el.getAttribute("content"));
+            },
+          })
+          .on("meta[name=\"description\"]", {
+            element(el) {
+              assignMeta("desc", el.getAttribute("content"));
+            },
+          })
+          .on("meta[name=\"author\"]", {
+            element(el) {
+              assignMeta("author", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"article:published_time\"]", {
+            element(el) {
+              assignMeta("pub", el.getAttribute("content"));
+            },
+          })
+          .on("meta[property=\"article:modified_time\"]", {
+            element(el) {
+              assignMeta("mod", el.getAttribute("content"));
+            },
+          })
+          .on("title", {
+            text(text) {
+              meta.titleText += text.text;
+            },
+          })
+          .on("script#gg-schema", {
+            element(el) {
+              el.remove();
+            },
+          })
           .on("body", {
             element(el) {
-              el.setAttribute("data-gg-surface", "listing");
-            },
-          })
-          .on("section.gg-home-landing", {
-            element(el) {
-              el.remove();
-            },
-          })
-          .on("main#gg-main h1", {
-            element(el) {
-              const className = el.getAttribute("class") || "";
-              const isDisplay = className.split(/\s+/).includes("gg-display");
-              if (isDisplay) {
-                el.replace('<p class="gg-display">Edited by pakrpp.</p>', { html: true });
-                return;
+              if (forceListing) {
+                el.setAttribute("data-gg-surface", "listing");
               }
-              el.remove();
+              const schemaJson = buildSchema();
+              el.prepend(
+                `<script id="gg-schema" type="application/ld+json">${schemaJson}</script>`,
+                { html: true }
+              );
             },
-          })
-          .on("main#gg-main", {
-            element(el) {
-              el.prepend(listingH1, { html: true });
-            },
-          })
+          });
+
+        if (forceListing) {
+          rewritten
+            .on("section.gg-home-landing", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("main#gg-main h1", {
+              element(el) {
+                const className = el.getAttribute("class") || "";
+                const isDisplay = className.split(/\s+/).includes("gg-display");
+                if (isDisplay) {
+                  el.replace('<p class="gg-display">Edited by pakrpp.</p>', {
+                    html: true,
+                  });
+                  return;
+                }
+                el.remove();
+              },
+            })
+            .on("main#gg-main", {
+              element(el) {
+                el.prepend(listingH1, { html: true });
+              },
+            })
           .on("link[rel=\"canonical\"]", {
             element(el) {
               el.remove();
@@ -262,13 +431,14 @@ export default {
               el.remove();
             },
           })
-          .on("head", {
-            element(el) {
-              el.append(listingInject, { html: true });
-            },
-          })
-          .transform(originRes);
-        return stamp(rewritten);
+            .on("head", {
+              element(el) {
+                el.append(listingInject, { html: true });
+              },
+            });
+        }
+        const transformed = rewritten.transform(originRes);
+        return stamp(transformed);
       }
 
       return stamp(originRes);

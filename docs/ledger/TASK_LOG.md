@@ -1170,3 +1170,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): listing H1 normalized in worker; landing H1 removed/demoted on listing
 - RISKS: low; listing-only HTML rewrite
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.4 — Inject GG_SCHEMA v1 JSON-LD (WebSite + Person/Organization + WebPage + BlogPosting when article) via Worker; add smoke schema checks
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.4
+- TITLE: Inject GG_SCHEMA v1 JSON-LD (WebSite + Person/Organization + WebPage + BlogPosting when article) via Worker; add smoke schema checks
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: schema injection + meta capture + smoke checks
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): GG_SCHEMA v1 injected by worker; article detection via og:type/article:published_time; query sanitizer
+- RISKS: low; HTML rewrite only
+- NEXT: TBD

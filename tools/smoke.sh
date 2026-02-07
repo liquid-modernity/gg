@@ -191,6 +191,77 @@ listing_canonical_check() {
   echo "PASS: listing canonical/og/twitter clean ${canon}"
 }
 
+extract_gg_schema_json() {
+  node -e 'const fs=require("fs");const html=fs.readFileSync(0,"utf8");const m=html.match(/<script[^>]*id=["'"'"']gg-schema["'"'"'][^>]*>([\s\S]*?)<\/script>/i);if(!m){process.exit(2)};const json=JSON.parse(m[1]);console.log(JSON.stringify(json));'
+}
+
+schema_debug_snippet() {
+  local label="$1"
+  local html="$2"
+  echo "DEBUG: ${label} gg-schema snippet"
+  printf '%s\n' "${html}" | grep -in -C 2 "gg-schema" | head -n 20 || true
+}
+
+schema_check_home() {
+  local url="${BASE}/"
+  local html schema
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+    die "schema home fetch failed"
+  fi
+  if ! printf '%s\n' "${html}" | grep -qi "id=['\"]gg-schema['\"]"; then
+    schema_debug_snippet "home" "${html}"
+    die "schema missing on home"
+  fi
+  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
+    schema_debug_snippet "home" "${html}"
+    die "schema parse failed on home"
+  fi
+  if ! printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));if(!d["@context"]||!d["@graph"]){process.exit(2)}'; then
+    schema_debug_snippet "home" "${html}"
+    die "schema missing @context/@graph on home"
+  fi
+  echo "PASS: schema home"
+}
+
+schema_check_listing() {
+  local ts url html schema
+  ts="$(date +%s)"
+  url="${BASE}/blog?x=${ts}"
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+    die "schema listing fetch failed"
+  fi
+  if ! printf '%s\n' "${html}" | grep -qi "id=['\"]gg-schema['\"]"; then
+    schema_debug_snippet "listing" "${html}"
+    die "schema missing on listing"
+  fi
+  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
+    schema_debug_snippet "listing" "${html}"
+    die "schema parse failed on listing"
+  fi
+  if ! printf '%s\n' "${schema}" | EXPECTED_URL="${BASE}/blog" node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];const hasCollection=graph.some(n=>n["@type"]==="CollectionPage");if(!hasCollection)process.exit(2);const page=graph.find(n=>n["@type"]==="CollectionPage")||graph.find(n=>n["@type"]==="WebPage");if(!page||page.url!==process.env.EXPECTED_URL)process.exit(3);'; then
+    schema_debug_snippet "listing" "${html}"
+    die "schema listing url/type invalid"
+  fi
+  echo "PASS: schema listing"
+}
+
+schema_check_post() {
+  local url="$1"
+  local html schema
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+    die "schema post fetch failed (${url})"
+  fi
+  if ! schema="$(printf '%s\n' "${html}" | extract_gg_schema_json)"; then
+    schema_debug_snippet "post" "${html}"
+    die "schema parse failed on post"
+  fi
+  if ! printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];if(!graph.some(n=>n["@type"]==="BlogPosting"))process.exit(2);'; then
+    schema_debug_snippet "post" "${html}"
+    die "schema missing BlogPosting"
+  fi
+  echo "PASS: schema post"
+}
+
 authoritative_header() {
   local url="$1"
   local pattern="$2"
@@ -230,6 +301,11 @@ redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
 redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
 redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
 listing_canonical_check "${BASE}/blog"
+schema_check_home
+schema_check_listing
+if [[ -n "${SMOKE_POST_URL:-}" ]]; then
+  schema_check_post "${SMOKE_POST_URL}"
+fi
 
 sample_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png"
 status="$(curl -sSI -G --data-urlencode "url=${sample_url}" "${BASE}/api/proxy" | awk 'NR==1 {print $2}')"
