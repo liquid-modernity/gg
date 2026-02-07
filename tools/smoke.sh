@@ -46,15 +46,20 @@ else
   echo "DEBUG: GG_CAPSULE present: no (${capsule_file})"
 fi
 
-expected_release="${SMOKE_EXPECT:-${RELEASE_ID:-}}"
+expected_release=""
+expected_source=""
 fallback_reason=""
-if [[ -z "${expected_release}" ]]; then
+
+if [[ -n "${SMOKE_EXPECT:-}" ]]; then
+  expected_release="${SMOKE_EXPECT}"
+  expected_source="SMOKE_EXPECT"
+else
   expected_release="$(read_release_id_from_capsule)"
   if [[ -n "${expected_release}" ]]; then
-    echo "INFO: expected RELEASE_ID from GG_CAPSULE: ${expected_release}"
+    expected_source="GG_CAPSULE"
   else
     fallback_reason="capsule"
-    echo "WARN: GG_CAPSULE missing/unparseable; falling back to worker header"
+    echo "WARN: GG_CAPSULE missing/unparseable; using worker header for expected release"
   fi
 fi
 
@@ -78,7 +83,11 @@ fi
 
 if [[ -z "${expected_release}" ]]; then
   expected_release="${worker_version}"
-  echo "WARN: could not parse RELEASE_ID from docs/ledger/GG_CAPSULE.md; using worker header: ${expected_release}"
+  expected_source="WORKER_HEADER"
+fi
+
+if [[ -n "${expected_release}" && -n "${expected_source}" ]]; then
+  echo "INFO: expected RELEASE_ID (${expected_source}): ${expected_release}"
 fi
 
 echo "SMOKE: base=${BASE} expected=${expected_release} got=${worker_version}"
@@ -152,9 +161,9 @@ else
 fi
 
 if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
-  live_rel="$(read_release_id_from_capsule | tr -d '[:space:]')"
+  live_rel="${expected_release}"
   if [[ -z "${live_rel}" ]]; then
-    die "SMOKE_LIVE_HTML=1 requires RELEASE_ID in GG_CAPSULE.md"
+    die "SMOKE_LIVE_HTML=1 requires a resolved expected release id"
   fi
 
   live_fetch_stream() {

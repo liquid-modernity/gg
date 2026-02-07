@@ -1026,3 +1026,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): POSIX-ish grep/sed only
 - RISKS: low; local tool only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007C.1.1 — Smoke live HTML uses resolved expected_release
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007C.1.1
+- TITLE: Harden tools/smoke.sh: SMOKE_LIVE_HTML uses expected_release
+- MODE (DEV/PROD impact): local tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: resolve expected_release once (SMOKE_EXPECT -> GG_CAPSULE -> worker header) and reuse for live HTML
+- CHANGES (files touched): tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): run tools/smoke.sh with/without GG_CAPSULE to validate logs
+- NOTES (gotchas): avoids false fails when capsule missing but worker header present
+- RISKS: low; local tool only
+- NEXT: TBD
