@@ -864,3 +864,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): removed status=success filter; uses workflow runs API
 - RISKS: low; only deploy gate logic
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007B.4.1 — Add verify-ci-success gate script
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007B.4.1
+- TITLE: Add missing tools/verify-ci-success.py with real CI gate logic
+- MODE (DEV/PROD impact): deploy gate (prod)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: ensure verify-ci-success.py exists and deploy calls it
+- CHANGES (files touched): tools/verify-ci-success.py; .github/workflows/deploy.yml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: gate now uses script with retry/wait
+- VERIFY (manual): run deploy for in-progress CI; ensure wait then pass/fail
+- NOTES (gotchas): GH_TOKEN/REPO/SHA env required
+- RISKS: low
+- NEXT: TBD
