@@ -152,9 +152,14 @@ export default {
     const { pathname } = url;
     const WORKER_VERSION = "652e471";
     const stamp = (res, opts = {}) => {
-      const out = new Response(res.body, res);
-      out.headers.set("X-GG-Worker", "proxy");
-      out.headers.set("X-GG-Worker-Version", WORKER_VERSION);
+      const h = new Headers(res.headers);
+      h.set("X-GG-Worker", "proxy");
+      h.set("X-GG-Worker-Version", WORKER_VERSION);
+      const out = new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers: h,
+      });
       const contentType = out.headers.get("content-type") || "";
       addSecurityHeaders(out, request.url, contentType, opts);
       return out;
@@ -187,7 +192,11 @@ export default {
       const r = new Response(body, { status: 200 });
       r.headers.set("Content-Type", "application/json; charset=utf-8");
       r.headers.set("Cache-Control", "no-store, max-age=0");
-      return stamp(r);
+      const out = stamp(r);
+      out.headers.set("Cache-Control", "no-store, max-age=0");
+      out.headers.set("Pragma", "no-cache");
+      out.headers.set("Expires", "0");
+      return out;
     }
 
     if (pathname === "/__gg_route_test") {

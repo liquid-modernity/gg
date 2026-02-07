@@ -1296,3 +1296,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): gg-flags.json now forced to no-store, max-age=0
 - RISKS: low; header-only change
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008D.2.2 — Preserve Cache-Control in stamp() + hard override no-store for /gg-flags.json
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008D.2.2
+- TITLE: Preserve Cache-Control in stamp() + hard override no-store for /gg-flags.json
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: stamp header cloning + gg-flags cache-control override
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): stamp clones headers explicitly; gg-flags.json forced no-store with legacy no-cache headers
+- RISKS: low; header-only changes
+- NEXT: TBD

@@ -331,7 +331,13 @@ authoritative_header() {
   local url="$1"
   local pattern="$2"
   local label="$3"
-  if ! curl -sSI "$url" | tr -d '\r' | grep -qi "$pattern"; then
+  local headers
+  if ! headers="$(curl -sSI "$url" | tr -d '\r')"; then
+    die "${label} (headers fetch failed)"
+  fi
+  if ! echo "${headers}" | grep -qi "$pattern"; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
     die "${label}"
   fi
   echo "PASS: ${label}"

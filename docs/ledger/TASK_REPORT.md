@@ -130,3 +130,31 @@ VERIFICATION COMMANDS (manual)
 RISKS / ROLLBACK
 - Risk: low; header-only change.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008D.2.2
+TITLE: Preserve Cache-Control in stamp() + hard override no-store for /gg-flags.json
+
+TASK_SUMMARY
+- Clone headers explicitly in `stamp()` to preserve Cache-Control and other upstream headers.
+- Force `/gg-flags.json` to no-store with legacy no-cache headers after stamping.
+- Improve smoke debug output for authoritative header checks.
+
+BEHAVIOR
+- `stamp()` uses `new Headers(res.headers)` and rebuilds the response with explicit status/headers.
+- `/gg-flags.json` always returns `Cache-Control: no-store, max-age=0` plus `Pragma: no-cache` and `Expires: 0`.
+
+CHANGES
+- src/worker.js
+- tools/smoke.sh
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+RISKS / ROLLBACK
+- Risk: low; header-only changes.
+- Rollback: revert this commit.
