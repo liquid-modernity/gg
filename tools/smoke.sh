@@ -117,4 +117,32 @@ else
   echo "INFO: /_headers status ${headers_code} - skipping"
 fi
 
+if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
+  live_rel="$(awk -F': *' '/RELEASE_ID:/ {print $2; exit}' "${ROOT}/docs/ledger/GG_CAPSULE.md" | tr -d '[:space:]')"
+  if [[ -z "${live_rel}" ]]; then
+    die "SMOKE_LIVE_HTML=1 requires RELEASE_ID in GG_CAPSULE.md"
+  fi
+
+  live_check() {
+    local url="$1"
+    local label="$2"
+    local ts
+    local html
+    ts="$(date +%s)"
+    if ! html="$(curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=${ts}")"; then
+      die "LIVE_HTML fetch failed: ${label}"
+    fi
+    if ! echo "${html}" | grep -q "/assets/v/${live_rel}/main.css"; then
+      die "LIVE_HTML missing main.css pin (${label})"
+    fi
+    if ! echo "${html}" | grep -q "/assets/v/${live_rel}/boot.js"; then
+      die "LIVE_HTML missing boot.js pin (${label})"
+    fi
+    echo "PASS: LIVE_HTML ${label} pinned to ${live_rel}"
+  }
+
+  live_check "${BASE}/" "home"
+  live_check "${BASE}/blog" "blog"
+fi
+
 echo "PASS: smoke tests"

@@ -1,25 +1,25 @@
 TASK_REPORT
-Last updated: 2026-02-06
+Last updated: 2026-02-07
 
-TASK_ID: TASK-0007A.9
-TITLE: ship Two-Stage Commits (work + release)
+TASK_ID: TASK-0007B.1
+TITLE: Deploy verifies live HTML pins release
 
 TASK_SUMMARY
-- ship now commits work changes before running prep:release, ensuring the tree is clean for release.js.
-- After prep:release, ship commits release artifacts separately (or skips if no changes).
+- Added a deploy workflow gate that checks live HTML for pinned /assets/v/<REL>/main.css and /assets/v/<REL>/boot.js on home and /blog.
+- Optional local smoke mode validates live HTML pins against the capsule release id.
 
 CHANGES
-- tools/ship.mjs
+- .github/workflows/deploy.yml
+- tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
-NOTES
-- Work commit message defaults to "chore: update work" and can be overridden via `--work-msg` or `SHIP_WORK_MSG`.
-
 VERIFICATION COMMANDS (manual)
-- `npm run ship`
-- `npm run ship -- --work-msg "chore: work"`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+NOTES
+- Deploy now fails with an actionable message until index.prod.xml is pasted into Blogger.
 
 RISKS / ROLLBACK
-- Risk: low; behavior is deterministic and avoids dirty-tree release failures.
+- Risk: low; adds a post-deploy gate only.
 - Rollback: revert this commit.

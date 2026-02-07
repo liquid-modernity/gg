@@ -810,3 +810,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): work commit message override via --work-msg or SHIP_WORK_MSG
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007B.1 — Deploy verifies live HTML pins release
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007B.1
+- TITLE: Deploy must verify live HTML pins release
+- MODE (DEV/PROD impact): deploy gate (prod)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add live HTML pin check for / and /blog after deploy
+- CHANGES (files touched): .github/workflows/deploy.yml; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: now fails if Blogger template not pasted
+- VERIFY (manual): SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): cache-busted HTML check with retries
+- RISKS: low; failure is actionable
+- NEXT: TBD
