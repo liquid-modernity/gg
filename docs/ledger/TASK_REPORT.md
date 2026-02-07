@@ -1,39 +1,30 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.2
-TITLE: Normalize /?view=blog -> /blog + rewrite canonical/og:url for listing pages
+TASK_ID: TASK-0008B.2.1
+TITLE: Fix tools/smoke.sh redirect assertion (Location may be absolute URL)
 
 TASK_SUMMARY
-- Added worker redirects to normalize listing URLs to /blog (drops view=blog, preserves other params).
-- Rewrote canonical/og:url/twitter:url for listing HTML when forceListing is true.
-- Added smoke checks for redirects and listing canonical.
+- Make redirect smoke check tolerant of absolute or relative Location values by substring matching /blog.
+- Strip CR from headers and extract Location case-insensitively.
+- On failure, print Location and the first 30 header lines for diagnostics.
+
+RATIONALE
+- Live redirects can return absolute URLs; the smoke check should validate intent, not URL form.
 
 BEHAVIOR
-- /?view=blog -> 301 /blog (view param removed; other params preserved).
-- /blog?view=blog -> 301 /blog.
-- /blog/ -> 301 /blog.
-- Listing HTML canonical + og:url + twitter:url point to /blog (plus non-view params).
-
-SMOKE COVERAGE
-- Redirect checks for /?view=blog, /blog?view=blog, /blog/.
-- Canonical and og:url checks on /blog.
-
-CONSTRAINTS CONFIRMED
-- No JS changes.
-- No template changes.
-- Worker-only behavior change.
+- Redirect check passes for Location: /blog or https://www.pakrpp.com/blog.
+- Redirect check still fails if status is not 301, Location is missing, or Location contains view=blog.
+- Failure logs include Location plus the first 30 response header lines.
 
 CHANGES
-- src/worker.js
 - tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
-- `npm run build` (FAILED: clean tree required)
-- `SMOKE_LIVE_HTML=1 tools/smoke.sh` (FAILED: DNS)
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
 
 RISKS / ROLLBACK
-- Risk: low; redirects and HTML rewrites on listing only.
+- Risk: low; local tooling only.
 - Rollback: revert this commit.

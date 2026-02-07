@@ -101,21 +101,29 @@ REL="${worker_version}"
 redirect_check() {
   local url="$1"
   local label="$2"
-  local headers status location
+  local headers status loc
   headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"
   status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
+  loc="$(echo "${headers}" | awk -F': *' 'tolower($1)=="location"{print $2; exit}')"
+
+  redirect_fail() {
+    local msg="$1"
+    echo "DEBUG: Location=${loc}"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} ${msg}"
+  }
+
   if [[ "${status}" != "301" ]]; then
-    die "${label} (got ${status}, want 301)"
+    redirect_fail "(got ${status}, want 301)"
   fi
-  location="$(echo "${headers}" | awk -F': *' 'tolower($1)=="location"{print $2}' | head -n1)"
-  if [[ -z "${location}" ]]; then
-    die "${label} missing Location header"
+  if [[ -z "${loc}" ]]; then
+    redirect_fail "missing Location header"
   fi
-  if ! echo "${location}" | grep -qi "/blog"; then
-    die "${label} Location missing /blog"
+  if ! echo "${loc}" | grep -qi "/blog"; then
+    redirect_fail "Location missing /blog"
   fi
-  if echo "${location}" | grep -qi "view=blog"; then
-    die "${label} Location still contains view=blog"
+  if echo "${loc}" | grep -qi "view=blog"; then
+    redirect_fail "Location still contains view=blog"
   fi
   echo "PASS: ${label}"
 }

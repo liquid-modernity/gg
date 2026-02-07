@@ -1,5 +1,5 @@
 # TASK LOG (append-only)
-Last updated: 2026-02-06
+Last updated: 2026-02-07
 
 > Purpose: immutable-ish history for AI context + audit trail.
 > Rule: NEVER rewrite old entries. Only append.
@@ -1061,4 +1061,22 @@ Last updated: 2026-02-06
 - VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
 - NOTES (gotchas): smoke failed due DNS; no JS/template changes; preserve non-view query params
 - RISKS: low; worker-only
+- NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.2.1 — Fix tools/smoke.sh redirect assertion (Location may be absolute URL)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.2.1
+- TITLE: Fix tools/smoke.sh redirect assertion (Location may be absolute URL)
+- MODE (DEV/PROD impact): tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: smoke redirect check robustness
+- CHANGES (files touched): tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): redirect smoke accepts absolute/relative Location
+- RISKS: low; local tool only
 - NEXT: TBD
