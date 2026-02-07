@@ -27,6 +27,36 @@
   --gg-color-border-subtle: var(--gg-border);
   --gg-dur-fast: .16s;
 
+  /* GG TOKENS v2 */
+  --gg-font-xs: 0.75rem;
+  --gg-font-sm: 0.875rem;
+  --gg-font-base: 1rem;
+  --gg-font-lg: 1.125rem;
+  --gg-font-xl: 1.25rem;
+  --gg-font-2xl: 1.5rem;
+
+  --gg-space-4: 4px;
+  --gg-space-8: 8px;
+  --gg-space-12: 12px;
+  --gg-space-16: 16px;
+  --gg-space-24: 24px;
+  --gg-space-32: 32px;
+
+  --gg-shadow-sm: 0 1px 2px rgba(15,23,42,.08);
+  --gg-shadow-md: 0 8px 24px rgba(15,23,42,.10);
+  --gg-shadow-lg: var(--gg-shadow);
+
+  --gg-state-hover: rgba(15,23,42,.05);
+  --gg-state-active: rgba(15,23,42,.08);
+
+  --gg-dur-1: var(--gg-dur-fast);
+  --gg-dur-2: .22s;
+  --gg-dur-3: .32s;
+  --gg-ease-standard: cubic-bezier(.2,0,0,1);
+
+  --gg-focus-ring: 2px solid color-mix(in srgb, currentColor 55%, transparent);
+  --gg-focus-offset: 2px;
+
   /* post card */
   --gg-card-ratio: 1.48;
 
@@ -126,6 +156,11 @@ body[data-gg-surface="listing"] .hero-section{ display: none !important; }
 img{ max-width: 100%; display: block; }
 a{ color: inherit; text-decoration: none; }
 a:hover{ text-decoration: none; }
+
+:where(a, button, input, textarea, select, summary, [role="button"], [tabindex]):focus-visible{
+  outline: var(--gg-focus-ring);
+  outline-offset: var(--gg-focus-offset);
+}
 
 /* === UTILITIES === */
 .gg-visually-hidden{
@@ -1704,6 +1739,33 @@ main.gg-main[data-gg-surface="post"] .gg-post__content{
   font-weight: 400;
   letter-spacing: .012em;
   font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+main.gg-main[data-gg-surface="post"] .gg-post__content :where(p, ul, ol, pre, figure, table, blockquote),
+.post-body :where(p, ul, ol, pre, figure, table, blockquote){
+  margin: 0 0 var(--gg-space-16);
+}
+main.gg-main[data-gg-surface="post"] .gg-post__content :where(h1, h2, h3, h4, h5, h6),
+.post-body :where(h1, h2, h3, h4, h5, h6){
+  margin: var(--gg-space-24) 0 var(--gg-space-12);
+  line-height: 1.2;
+}
+main.gg-main[data-gg-surface="post"] .gg-post__content :where(ul, ol),
+.post-body :where(ul, ol){
+  padding-left: 1.25rem;
+}
+main.gg-main[data-gg-surface="post"] .gg-post__content :where(a),
+.post-body :where(a){
+  text-decoration: underline;
+  text-decoration-thickness: .08em;
+  text-underline-offset: .18em;
+  text-decoration-skip-ink: auto;
+}
+main.gg-main[data-gg-surface="post"] .gg-post__content :where(blockquote),
+.post-body :where(blockquote){
+  padding: var(--gg-space-12) var(--gg-space-16);
+  border-left: 3px solid var(--gg-line-strong);
+  background: rgba(15,23,42,.03);
+  border-radius: 12px;
 }
 main.gg-main[data-gg-surface="post"] .gg-post__actions,
 main.gg-main[data-gg-surface="post"] .gg-post__actions{
@@ -5984,3 +6046,24 @@ a, button{
 
 /* X-013 targets: main.gg-main[data-gg-surface="home"] .gg-blog-layout--list, .gg-blog-sidebar--left, .gg-blog-sidebar--right, .gg-blog-main #postcards */
 /* X-014 targets: main.gg-main[data-gg-surface="post"] .gg-blog-layout--post, .gg-blog-sidebar--left, .gg-blog-sidebar--right, .gg-comments-panel, .gg-pi, .gg-toc, .gg-lt */
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after{
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active){
+  :where(a, button, input, textarea, select, summary, [role="button"], [tabindex]):focus-visible{
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  :where(.gg-overlay, .gg-share-sheet__overlay){
+    background: Canvas;
+  }
+}

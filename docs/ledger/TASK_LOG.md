@@ -900,3 +900,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): guard fails fast if script missing
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008A.1 — Quiet Luxury CSS Phase A
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008A.1
+- TITLE: Quiet Luxury CSS Phase A (tokens + focus ring + reading rhythm)
+- MODE (DEV/PROD impact): CSS-only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: tokens v2, global focus-visible ring, post reading rhythm, a11y media queries
+- CHANGES (files touched): public/assets/latest/main.css; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; npm run verify:assets; npm run verify:xml; npm run verify:budgets
+- NOTES (gotchas): no HTML edits; no JS changes
+- RISKS: low; CSS only
+- NEXT: TBD
