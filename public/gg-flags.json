@@ -1,0 +1,6 @@
+{
+  "sw": {
+    "enabled": true
+  },
+  "csp_report_enabled": true
+}

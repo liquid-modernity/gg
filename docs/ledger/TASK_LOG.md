@@ -1260,3 +1260,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): CSP is report-only; /api/csp-report logs to worker console
 - RISKS: low; header-only change (report-only)
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008D.2 — CSP report triage: redact + dedupe counters + optional gating flag (report-only stays)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008D.2
+- TITLE: CSP report triage: redact + dedupe counters + optional gating flag (report-only stays)
+- MODE (DEV/PROD impact): worker + flags + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: CSP report logging triage + redaction + gg-flags gate + smoke checks
+- CHANGES (files touched): src/worker.js; public/gg-flags.json; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): CSP log lines deduped; URL queries stripped; gate via gg-flags.json
+- RISKS: low; report-only CSP remains
+- NEXT: TBD

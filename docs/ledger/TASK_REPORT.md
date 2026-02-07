@@ -63,3 +63,46 @@ VERIFICATION COMMANDS (manual)
 RISKS / ROLLBACK
 - Risk: low; report-only headers + logging endpoint.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008D.2
+TITLE: CSP report triage: redact + dedupe counters + optional gating flag (report-only stays)
+
+TASK_SUMMARY
+- Add `csp_report_enabled` flag to gg-flags and gate CSP report-only headers/logging.
+- Redact URL queries/fragments in CSP report logs and dedupe with counters.
+- Extend smoke with gg-flags key check.
+
+BEHAVIOR
+- CSP report-only headers are only attached when `csp_report_enabled` is true.
+- `/api/csp-report` returns 204 always; when the flag is false it skips logging.
+- CSP report logs are deduped by directive + blocked URL + source URL and log on 1/10/50/100/200... counts.
+- Logged URLs strip query strings and fragments for privacy.
+
+HOW TO TOGGLE
+- Edit `public/gg-flags.json` and set `csp_report_enabled` to `false` to disable CSP report headers/logging (worker still returns 204 for reports).
+- Set it back to `true` to re-enable.
+
+LOG EXAMPLE
+- `CSP_REPORT count=10 dir=script-src blocked=https://example.com/path source=https://www.pakrpp.com/post doc=https://www.pakrpp.com/post ray=... ua="..."`
+
+SMOKE COVERAGE
+- gg-flags.json contains `csp_report_enabled`.
+- Home/blog still return CSP report-only headers when enabled.
+- `/api/csp-report` returns 204.
+
+CHANGES
+- src/worker.js
+- public/gg-flags.json
+- tools/smoke.sh
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+RISKS / ROLLBACK
+- Risk: low; report-only CSP remains, logging changes only.
+- Rollback: revert this commit.

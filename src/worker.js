@@ -19,6 +19,93 @@ const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
   return `${u.origin}${u.pathname}`;
 };
 
+const FLAGS_TTL_MS = 60 * 1000;
+let flagsCache = { ts: 0, value: null };
+
+const normalizeFlags = (data) => {
+  const out = {
+    sw: { enabled: true },
+    csp_report_enabled: true,
+  };
+  if (data && typeof data === "object") {
+    if (data.sw && typeof data.sw === "object") {
+      if (typeof data.sw.enabled === "boolean") {
+        out.sw.enabled = data.sw.enabled;
+      }
+    }
+    if (typeof data.csp_report_enabled === "boolean") {
+      out.csp_report_enabled = data.csp_report_enabled;
+    }
+    for (const [key, value] of Object.entries(data)) {
+      if (key === "sw" || key === "csp_report_enabled") continue;
+      out[key] = value;
+    }
+  }
+  return out;
+};
+
+const loadFlags = async (env) => {
+  const now = Date.now();
+  if (flagsCache.value && now - flagsCache.ts < FLAGS_TTL_MS) {
+    return { ...flagsCache.value };
+  }
+
+  let data = null;
+  if (env && env.ASSETS) {
+    try {
+      const req = new Request("https://flags.local/gg-flags.json");
+      const res = await env.ASSETS.fetch(req);
+      if (res && res.ok) {
+        data = await res.json();
+      }
+    } catch (e) {
+      data = null;
+    }
+  }
+
+  const flags = normalizeFlags(data);
+  flagsCache = { ts: now, value: flags };
+  return { ...flags };
+};
+
+const CSP_REPORT_BUCKET = new Map();
+const CSP_REPORT_MAX = 500;
+const CSP_REPORT_TRIM = 100;
+
+const redactUrlValue = (value) => {
+  if (!value || typeof value !== "string") return "";
+  const raw = value.trim();
+  if (!raw) return "";
+  try {
+    const u = new URL(raw);
+    if (u.protocol === "http:" || u.protocol === "https:") {
+      return `${u.origin}${u.pathname}`;
+    }
+    return u.protocol;
+  } catch (e) {
+    const noHash = raw.split("#")[0];
+    const noQuery = noHash.split("?")[0];
+    return noQuery;
+  }
+};
+
+const extractCspReport = (payload) => {
+  if (!payload || typeof payload !== "object") return null;
+  if (payload["csp-report"] && typeof payload["csp-report"] === "object") {
+    return payload["csp-report"];
+  }
+  if (payload.body && typeof payload.body === "object") {
+    return payload.body;
+  }
+  return payload;
+};
+
+const shouldLogCspCount = (count) => {
+  if (count === 1 || count === 10 || count === 50) return true;
+  if (count >= 100 && count % 100 === 0) return true;
+  return false;
+};
+
 const CSP_REPORT_ONLY = [
   "default-src 'self' https:",
   "base-uri 'self'",
@@ -35,7 +122,7 @@ const CSP_REPORT_ONLY = [
   "report-uri /api/csp-report",
 ].join("; ");
 
-const addSecurityHeaders = (resp, requestUrl, contentType) => {
+const addSecurityHeaders = (resp, requestUrl, contentType, opts = {}) => {
   const headers = resp.headers;
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -45,7 +132,8 @@ const addSecurityHeaders = (resp, requestUrl, contentType) => {
   );
   headers.set("X-Frame-Options", "SAMEORIGIN");
   const isHtml = (contentType || "").toLowerCase().includes("text/html");
-  if (isHtml) {
+  const cspReportEnabled = opts.cspReportEnabled !== false;
+  if (isHtml && cspReportEnabled) {
     const origin = new URL(requestUrl).origin;
     const reportTo = JSON.stringify({
       group: "csp",
@@ -63,12 +151,12 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const WORKER_VERSION = "78c8b07";
-    const stamp = (res) => {
+    const stamp = (res, opts = {}) => {
       const out = new Response(res.body, res);
       out.headers.set("X-GG-Worker", "proxy");
       out.headers.set("X-GG-Worker-Version", WORKER_VERSION);
       const contentType = out.headers.get("content-type") || "";
-      addSecurityHeaders(out, request.url, contentType);
+      addSecurityHeaders(out, request.url, contentType, opts);
       return out;
     };
 
@@ -90,8 +178,9 @@ export default {
     }
 
     if (pathname === "/gg-flags.json") {
+      const flags = await loadFlags(env);
       const body = JSON.stringify({
-        sw: { enabled: true },
+        ...flags,
         release: WORKER_VERSION,
         ts: Date.now(),
       });
@@ -139,6 +228,15 @@ export default {
         return stamp(r);
       }
 
+      const flags = await loadFlags(env);
+      const cspReportEnabled = flags.csp_report_enabled !== false;
+      if (!cspReportEnabled) {
+        const r = new Response("", { status: 204 });
+        r.headers.set("Cache-Control", "no-store");
+        r.headers.set("Content-Type", "text/plain; charset=utf-8");
+        return stamp(r);
+      }
+
       const MAX_BODY = 65536;
       let body = "";
       try {
@@ -153,26 +251,59 @@ export default {
       const ts = new Date().toISOString();
       const cfRay = request.headers.get("cf-ray") || "-";
       const uaRaw = request.headers.get("user-agent") || "";
-      const ua = uaRaw.slice(0, 120);
-      let keys = "";
-      let rawSnippet = "";
-
+      const ua = uaRaw.slice(0, 120).replace(/"/g, "'");
+      let payload = null;
       try {
-        const parsed = JSON.parse(body || "{}");
-        if (parsed && typeof parsed === "object") {
-          keys = Object.keys(parsed).slice(0, 8).join(",");
-        }
+        payload = JSON.parse(body || "{}");
       } catch (e) {
-        rawSnippet = body.slice(0, 200).replace(/\s+/g, " ").trim();
+        payload = null;
       }
 
-      if (rawSnippet) {
+      const report = extractCspReport(payload);
+      let dir = "parse_error";
+      let blocked = "-";
+      let source = "-";
+      let doc = "-";
+
+      if (report && typeof report === "object") {
+        const dirRaw =
+          report.effectiveDirective ||
+          report.violatedDirective ||
+          report["effective-directive"] ||
+          report["violated-directive"] ||
+          "";
+        const blockedRaw = report.blockedURI || report["blocked-uri"] || "";
+        const sourceRaw = report.sourceFile || report["source-file"] || "";
+        const docRaw = report.documentURI || report["document-uri"] || "";
+
+        dir = String(dirRaw || "-");
+        blocked = redactUrlValue(blockedRaw) || String(blockedRaw || "-");
+        source = redactUrlValue(sourceRaw) || String(sourceRaw || "-");
+        doc = redactUrlValue(docRaw) || String(docRaw || "-");
+      }
+
+      const key = `${dir}|${blocked}|${source}`;
+      const entry = CSP_REPORT_BUCKET.get(key) || {
+        count: 0,
+        firstTs: ts,
+        lastTs: ts,
+      };
+      entry.count += 1;
+      entry.lastTs = ts;
+      CSP_REPORT_BUCKET.set(key, entry);
+
+      if (CSP_REPORT_BUCKET.size > CSP_REPORT_MAX) {
+        let trimmed = 0;
+        for (const k of CSP_REPORT_BUCKET.keys()) {
+          CSP_REPORT_BUCKET.delete(k);
+          trimmed += 1;
+          if (trimmed >= CSP_REPORT_TRIM) break;
+        }
+      }
+
+      if (shouldLogCspCount(entry.count)) {
         console.log(
-          `CSP_REPORT ${ts} ray=${cfRay} ua="${ua}" raw="${rawSnippet}"`
-        );
-      } else {
-        console.log(
-          `CSP_REPORT ${ts} ray=${cfRay} ua="${ua}" keys=${keys || "-"}`
+          `CSP_REPORT count=${entry.count} dir=${dir} blocked=${blocked} source=${source} doc=${doc} ray=${cfRay} ua="${ua}"`
         );
       }
 
@@ -313,6 +444,8 @@ export default {
 
       const contentType = originRes.headers.get("content-type") || "";
       if (contentType.indexOf("text/html") !== -1) {
+        const flags = await loadFlags(env);
+        const cspReportEnabled = flags.csp_report_enabled !== false;
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
         publicUrl.searchParams.delete("view");
@@ -557,7 +690,7 @@ export default {
             });
         }
         const transformed = rewritten.transform(originRes);
-        return stamp(transformed);
+        return stamp(transformed, { cspReportEnabled });
       }
 
       return stamp(originRes);
@@ -584,6 +717,12 @@ export default {
 
       const r = new Response(assetRes.body, assetRes);
       r.headers.set("Cache-Control", "no-store");
+      const errContentType = r.headers.get("content-type") || "";
+      if (errContentType.toLowerCase().includes("text/html")) {
+        const flags = await loadFlags(env);
+        const cspReportEnabled = flags.csp_report_enabled !== false;
+        return stamp(r, { cspReportEnabled });
+      }
       return stamp(r);
     }
 
@@ -606,6 +745,12 @@ export default {
       setCache("public, max-age=86400");
     }
 
+    const assetContentType = res.headers.get("content-type") || "";
+    if (assetContentType.toLowerCase().includes("text/html")) {
+      const flags = await loadFlags(env);
+      const cspReportEnabled = flags.csp_report_enabled !== false;
+      return stamp(res, { cspReportEnabled });
+    }
     return stamp(res);
   },
 };

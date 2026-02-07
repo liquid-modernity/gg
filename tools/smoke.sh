@@ -361,6 +361,15 @@ authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*imm
 security_headers_check "${BASE}/?x=1" "home"
 security_headers_check "${BASE}/blog?x=1" "blog"
 
+flags_json="$(curl -fsSL "${BASE}/gg-flags.json?x=1" | tr -d '\r' || true)"
+if [[ -z "${flags_json}" ]]; then
+  die "gg-flags.json fetch failed"
+fi
+if ! echo "${flags_json}" | grep -q '"csp_report_enabled"'; then
+  die "gg-flags.json missing csp_report_enabled"
+fi
+echo "PASS: gg-flags.json csp_report_enabled present"
+
 csp_report_code="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "${BASE}/api/csp-report" -H "Content-Type: application/csp-report" --data '{"test":true}')"
 if [[ "${csp_report_code}" != "204" ]]; then
   die "csp-report endpoint (got ${csp_report_code}, want 204)"
