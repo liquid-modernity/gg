@@ -214,11 +214,11 @@ export default {
         }
         publicUrl.hash = "";
         const canonicalPublic = `${publicUrl.origin}${publicUrl.pathname}`;
-        const listingMeta = {
-          seenCanonical: false,
-          seenOg: false,
-          seenTwitter: false,
-        };
+        const listingInject = [
+          `<link rel="canonical" href="${canonicalPublic}">`,
+          `<meta property="og:url" content="${canonicalPublic}">`,
+          `<meta name="twitter:url" content="${canonicalPublic}">`,
+        ].join("");
         const rewritten = new HTMLRewriter()
           .on("body", {
             element(el) {
@@ -227,44 +227,22 @@ export default {
           })
           .on("link[rel=\"canonical\"]", {
             element(el) {
-              listingMeta.seenCanonical = true;
-              el.setAttribute("href", canonicalPublic);
+              el.remove();
             },
           })
           .on("meta[property=\"og:url\"]", {
             element(el) {
-              listingMeta.seenOg = true;
-              el.setAttribute("content", canonicalPublic);
+              el.remove();
             },
           })
           .on("meta[name=\"twitter:url\"]", {
             element(el) {
-              listingMeta.seenTwitter = true;
-              el.setAttribute("content", canonicalPublic);
+              el.remove();
             },
           })
           .on("head", {
-            end(el) {
-              if (
-                listingMeta.seenCanonical &&
-                listingMeta.seenOg &&
-                listingMeta.seenTwitter
-              ) {
-                return;
-              }
-              let inject = "";
-              if (!listingMeta.seenCanonical) {
-                inject += `<link rel="canonical" href="${canonicalPublic}">`;
-              }
-              if (!listingMeta.seenOg) {
-                inject += `<meta property="og:url" content="${canonicalPublic}">`;
-              }
-              if (!listingMeta.seenTwitter) {
-                inject += `<meta name="twitter:url" content="${canonicalPublic}">`;
-              }
-              if (inject) {
-                el.append(inject, { html: true });
-              }
+            element(el) {
+              el.append(listingInject, { html: true });
             },
           })
           .transform(originRes);

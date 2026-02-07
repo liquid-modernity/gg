@@ -1116,3 +1116,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): listing canonical sanitized (strip x/utm/fbclid/gclid/msclkid/view); rewrite or inject tags
 - RISKS: low; listing-only HTML rewrite
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.2.4 — Listing meta deterministic: remove existing canonical/og/twitter then inject clean set in <head> (listing only)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.2.4
+- TITLE: Listing meta deterministic: remove existing canonical/og/twitter then inject clean set in <head> (listing only)
+- MODE (DEV/PROD impact): worker only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: listing canonical/og/twitter deterministic injection
+- CHANGES (files touched): src/worker.js; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): listing meta deterministic; guarantee twitter:url
+- RISKS: low; listing-only HTML rewrite
+- NEXT: TBD

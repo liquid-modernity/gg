@@ -1,15 +1,15 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.2.3
-TITLE: Guarantee clean canonical/og/twitter URL for /blog (strip cache-buster & tracking params; rewrite or inject)
+TASK_ID: TASK-0008B.2.4
+TITLE: Listing meta deterministic: remove existing canonical/og/twitter then inject clean set in <head> (listing only)
 
 TASK_SUMMARY
-- Sanitize listing canonical/og/twitter URLs to a stable /blog target with no cache-buster or tracking params.
-- Rewrite existing tags and inject missing tags for listing HTML.
+- Remove existing canonical/og:url/twitter:url tags on listing HTML and inject a single clean set at end of <head>.
+- Guarantee twitter:url presence and stable canonical for /blog.
 
 RATIONALE
-- Cache-buster and tracking params create duplicate canonical URLs and dilute SEO signals; listing canonicals should be stable.
+- Blogger output can omit twitter:url and may emit variable canonical values; deterministic injection ensures a stable, single source of truth.
 
 BEHAVIOR
 - Listing canonical/og:url/twitter:url set to https://www.pakrpp.com/blog (origin + /blog only).
@@ -18,12 +18,8 @@ BEHAVIOR
 
 CHANGES
 - src/worker.js
-- tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
-
-SMOKE COVERAGE
-- Listing canonical/og/twitter clean check via cache-busted fetch; debug prints matching tag lines on failure.
 
 VERIFICATION COMMANDS (manual)
 - `npm run build`
