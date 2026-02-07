@@ -875,6 +875,9 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
     <!-- KONTEN UTAMA: Blog1 (JANGAN DIUTAK-ATIK DALAMNYA) -->
     <div class='gg-blog-main'>
+      <b:if cond='data:view.isMultipleItems and not data:view.isHomepage'>
+        <h1 class='gg-listing__title'>Blog</h1>
+      </b:if>
       <!-- GAGA FEATURED POST -->
     <b:if cond='data:view.isMultipleItems'>
     <b:section class='gg-home-blog__body' id='gg-featuredpost1' name='gg-featuredpost1' showaddelement='true'>
@@ -1879,7 +1882,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <section id='gg-sitemap' data-api='/feeds/posts/summary?alt=json&amp;max-results=500'>
             <div class='gg-head'>
               <div class='gg-title'>
-                <h1>Sitemap</h1>
+                <h2>Sitemap</h2>
                 <p class='gg-sub'>Jelajahi posting berdasarkan tanggal, label, atau tipe.</p>
               </div>
               <div class='gg-controls'>

@@ -300,8 +300,33 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     echo "PASS: LIVE_HTML ${label} pinned to ${live_rel}"
   }
 
+  live_h1_check() {
+    local url="$1"
+    local label="$2"
+    local expect_text="${3:-}"
+    local ts html count
+    ts="$(date +%s)"
+    html="$(live_fetch_stream "${url}?x=${ts}")"
+    count="$(printf '%s\n' "${html}" | grep -i -c "<h1" || true)"
+    if [[ "${count}" != "1" ]]; then
+      echo "DEBUG: ${label} h1 lines"
+      printf '%s\n' "${html}" | grep -in -C 1 "<h1" | head -n 20 || true
+      die "LIVE_HTML ${label} h1 count (got ${count}, want 1)"
+    fi
+    if [[ -n "${expect_text}" ]]; then
+      if ! printf '%s\n' "${html}" | grep -Ei "<h1[^>]*>[[:space:]]*${expect_text}[[:space:]]*<" > /dev/null; then
+        echo "DEBUG: ${label} h1 lines"
+        printf '%s\n' "${html}" | grep -in -C 1 "<h1" | head -n 20 || true
+        die "LIVE_HTML ${label} h1 missing ${expect_text}"
+      fi
+    fi
+    echo "PASS: LIVE_HTML ${label} h1 count"
+  }
+
   live_check "${BASE}/" "home"
   live_check "${BASE}/blog" "blog"
+  live_h1_check "${BASE}/" "home"
+  live_h1_check "${BASE}/blog" "blog" "Blog"
 fi
 
 echo "PASS: smoke tests"

@@ -1,23 +1,31 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.2.4
-TITLE: Listing meta deterministic: remove existing canonical/og/twitter then inject clean set in <head> (listing only)
+TASK_ID: TASK-0008B.3
+TITLE: Enforce single H1 per surface (landing/listing/post/page) with minimal template edits
 
 TASK_SUMMARY
-- Remove existing canonical/og:url/twitter:url tags on listing HTML and inject a single clean set at end of <head>.
-- Guarantee twitter:url presence and stable canonical for /blog.
+- Add a single listing H1 ("Blog") for /blog and demote the sitemap page H1 to H2 to keep page surfaces at one H1.
+- Add live smoke checks to enforce exactly one H1 on home and listing surfaces.
 
-RATIONALE
-- Blogger output can omit twitter:url and may emit variable canonical values; deterministic injection ensures a stable, single source of truth.
+H1 POLICY (PER SURFACE)
+- Landing: exactly one H1 (hero title).
+- Listing (/blog): exactly one H1 ("Blog").
+- Post: exactly one H1 (post title).
+- Page: exactly one H1 (page title).
 
-BEHAVIOR
-- Listing canonical/og:url/twitter:url set to https://www.pakrpp.com/blog (origin + /blog only).
-- Stripped params: x, view, utm_* (any key starting with utm_), fbclid, gclid, msclkid.
-- Changes apply only to listing responses (forceListing true); posts/pages are untouched.
+TEMPLATE CHANGES
+- Inserted <h1 class="gg-listing__title">Blog</h1> only for multiple-items views that are not homepage.
+- Demoted sitemap page heading from H1 to H2 to avoid duplicate H1s on page surfaces.
+- Header brand already non-H1; left unchanged.
+
+SMOKE COVERAGE
+- Live HTML mode checks H1 count == 1 on / and /blog; listing H1 must include "Blog".
 
 CHANGES
-- src/worker.js
+- index.prod.xml
+- index.dev.xml
+- tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
@@ -26,5 +34,5 @@ VERIFICATION COMMANDS (manual)
 - `SMOKE_LIVE_HTML=1 tools/smoke.sh`
 
 RISKS / ROLLBACK
-- Risk: low; listing-only HTML rewrite.
+- Risk: low; markup-only.
 - Rollback: revert this commit.

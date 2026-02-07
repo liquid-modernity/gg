@@ -1134,3 +1134,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): listing meta deterministic; guarantee twitter:url
 - RISKS: low; listing-only HTML rewrite
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.3 — Enforce single H1 per surface (landing/listing/post/page) with minimal template edits
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.3
+- TITLE: Enforce single H1 per surface (landing/listing/post/page) with minimal template edits
+- MODE (DEV/PROD impact): template + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: single H1 policy, listing title, sitemap H1 demotion, smoke guard
+- CHANGES (files touched): index.prod.xml; index.dev.xml; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): single H1 guard; listing title added; sitemap h1 demoted (header brand already non-H1)
+- RISKS: low; markup-only
+- NEXT: TBD
