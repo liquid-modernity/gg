@@ -972,3 +972,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): no CSS changes
 - RISKS: low; budget headroom only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.1 — XML a11y baseline (landmarks + skip link)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.1
+- TITLE: XML A11y baseline: semantic landmarks + skip link + main target
+- MODE (DEV/PROD impact): template markup + inline CSS
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add skip link, make main focusable, label primary nav, critical CSS for skip link
+- CHANGES (files touched): index.prod.xml; index.dev.xml; tools/critical-inline-budget.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-inline-css.mjs; npm run verify:xml; node tools/verify-budgets.mjs; npm run verify:assets
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; npm run verify-inline-css; npm run verify:xml; npm run verify:budgets; npm run verify:assets
+- NOTES (gotchas): npm run verify:budgets missing (used node tools/verify-budgets.mjs); no JS/fonts added
+- RISKS: low; minimal markup + inline CSS
+- NEXT: TBD

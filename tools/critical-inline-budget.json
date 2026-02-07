@@ -3,9 +3,9 @@
   "generated": "2026-02-07",
   "buffer_ratio": 0.15,
   "source_totals": {
-    "prod_bytes": 2359,
-    "dev_bytes": 2359
+    "prod_bytes": 2629,
+    "dev_bytes": 2629
   },
-  "max_bytes_prod": 2455,
-  "max_bytes_dev": 2455
+  "max_bytes_prod": 2725,
+  "max_bytes_dev": 2725
 }

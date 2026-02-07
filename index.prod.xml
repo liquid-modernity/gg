@@ -178,6 +178,20 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   outline-offset:3px;
 }
 
+.gg-skiplink{
+  position:absolute;
+  top:0;
+  left:0;
+  transform:translateY(-120%);
+  padding:10px 12px;
+  background:Canvas;
+  color:CanvasText;
+  border:1px solid currentColor;
+  z-index:9999;
+  text-decoration:none;
+}
+.gg-skiplink:focus{ transform:translateY(0); }
+
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
 }
@@ -204,6 +218,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </head>
 
   <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))'>
+    <a class='gg-skiplink' href='#gg-main'>Skip to main content</a>
     <b:include name='skipNavigation'/>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
@@ -245,7 +260,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )'>
+  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     
@@ -2673,7 +2688,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <!-- /GAGA FOOTER -->
   
       
-<nav aria-label='Primary navigation' class='gg-dock' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl'>
+<nav aria-label='Primary' class='gg-dock' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl'>
   <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
 <button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-when='blog' type='button'>
   <span aria-hidden='true' class='gg-dock__icon'>
