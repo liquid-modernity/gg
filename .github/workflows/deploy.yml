@@ -35,44 +35,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHA: ${{ inputs.sha }}
+          CI_WORKFLOW: ci.yml
         run: |
           set -e
-          python3 - <<'PY'
-          import json
-          import os
-          import sys
-          import urllib.request
-
-          token = os.environ.get("GH_TOKEN", "").strip()
-          repo = os.environ.get("REPO", "").strip()
-          sha = os.environ.get("SHA", "").strip()
-
-          if not sha:
-              print("ERROR: inputs.sha is required")
-              sys.exit(1)
-
-          url = f"https://api.github.com/repos/{repo}/actions/workflows/ci.yml/runs?head_sha={sha}&status=success&per_page=1"
-          req = urllib.request.Request(
-              url,
-              headers={
-                  "Authorization": f"Bearer {token}",
-                  "Accept": "application/vnd.github+json",
-              },
-          )
-          try:
-              with urllib.request.urlopen(req, timeout=20) as resp:
-                  data = json.loads(resp.read().decode("utf-8", "replace"))
-          except Exception as e:
-              print("ERROR: failed to query CI workflow runs:", e)
-              sys.exit(1)
-
-          runs = data.get("workflow_runs", [])
-          ok = any(r.get("head_sha") == sha and r.get("conclusion") == "success" for r in runs)
-          if not ok:
-              print(f"ERROR: No successful CI run found for sha {sha}")
-              sys.exit(1)
-          print(f"CI_SUCCESS_OK {sha}")
-          PY
+          python3 tools/verify-ci-success.py
 
       - name: Checkout (pinned SHA)
         uses: actions/checkout@v4

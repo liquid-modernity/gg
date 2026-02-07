@@ -846,3 +846,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): release id pulled from capsule, fallback to index.prod.xml
 - RISKS: low
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007B.4 — Deploy CI success check (retry + diagnostics)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007B.4
+- TITLE: Fix deploy gate "Verify CI success for SHA" for real
+- MODE (DEV/PROD impact): deploy gate (prod)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: robust CI success check with retry/wait and diagnostics
+- CHANGES (files touched): .github/workflows/deploy.yml; tools/verify-ci-success.py; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: waits for CI completion, fails on non-success
+- VERIFY (manual): use a SHA with in-progress CI; ensure deploy waits
+- NOTES (gotchas): removed status=success filter; uses workflow runs API
+- RISKS: low; only deploy gate logic
+- NEXT: TBD
