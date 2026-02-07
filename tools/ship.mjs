@@ -9,6 +9,7 @@
  */
 
 import { execSync, spawn } from "node:child_process";
+import fs from "node:fs";
 
 function sh(cmd, opts = {}) {
   return execSync(cmd, { stdio: "pipe", encoding: "utf8", ...opts }).trim();
@@ -129,6 +130,28 @@ function isDirty() {
   return sh("git status --porcelain").length > 0;
 }
 
+function readReleaseIdFromCapsule() {
+  try {
+    const capsule = fs.readFileSync("docs/ledger/GG_CAPSULE.md", "utf8");
+    const block = capsule.match(/AUTOGEN:BEGIN[\s\S]*?AUTOGEN:END/);
+    const scope = block ? block[0] : capsule;
+    const match = scope.match(/RELEASE_ID:\s*([A-Za-z0-9._-]+)/);
+    if (match) {
+      return match[1];
+    }
+  } catch {}
+
+  try {
+    const xml = fs.readFileSync("index.prod.xml", "utf8");
+    const match = xml.match(/\/assets\/v\/([A-Za-z0-9._-]+)\//);
+    if (match) {
+      return match[1];
+    }
+  } catch {}
+
+  return "";
+}
+
 function parseArgs() {
   const args = process.argv.slice(2);
   let msg = process.env.SHIP_MSG || "release: update artifacts";
@@ -173,7 +196,7 @@ async function stageAndCommit(msg, amend, label, verbose) {
   }
   if (!isDirty()) {
     console.log("Nothing to commit.");
-    return false;
+    return null;
   }
   const cmd = amend
     ? "git commit --amend --no-edit"
@@ -184,7 +207,11 @@ async function stageAndCommit(msg, amend, label, verbose) {
     printFailure(err, verbose);
     process.exit(1);
   }
-  return true;
+  try {
+    return sh("git rev-parse --short HEAD");
+  } catch {
+    return null;
+  }
 }
 
 async function tryPush(label, verbose) {
@@ -213,6 +240,8 @@ async function main() {
   }
 
   let stashed = false;
+  let workCommitSha = null;
+  let releaseCommitSha = null;
 
   // 1) Autostash if dirty, so pull --rebase can run
   if (isDirty()) {
@@ -245,7 +274,7 @@ async function main() {
 
   // 4) Work commit if dirty
   if (isDirty()) {
-    await stageAndCommit(workMsg, false, "WORK_COMMIT", verbose);
+    workCommitSha = await stageAndCommit(workMsg, false, "WORK_COMMIT", verbose);
   }
 
   // 5) Prep release (ci + build + verify:release)
@@ -257,47 +286,68 @@ async function main() {
   }
 
   // 6) Commit release artifacts
-  await stageAndCommit(msg, false, "COMMIT", verbose);
+  releaseCommitSha = await stageAndCommit(msg, false, "COMMIT", verbose);
 
   // 7) Push; if rejected, retry once with rebase + prep + amend + push
   const pushResult = await tryPush("PUSH", verbose);
   if (pushResult.ok) {
-    console.log("\n✅ ship: done");
-    return;
+    // continue to summary
+  } else {
+    const pushOutput = (pushResult.err && pushResult.err.output) || "";
+    if (!matchAny(pushOutput, [/non-fast-forward/i, /fetch first/i, /failed to push/i, /rejected/i])) {
+      printFailure(pushResult.err, verbose);
+      process.exit(1);
+    }
+
+    console.log("\n⚠️ push rejected. Retrying once (rebase + prep:release + amend) ...");
+    ensureNoMergeInProgress();
+    try {
+      await runStep("RETRY_PULL_REBASE", "git pull --rebase");
+    } catch (err) {
+      printFailure(err, verbose);
+      process.exit(1);
+    }
+    try {
+      await runStep("RETRY_PREP_RELEASE", "npm run prep:release");
+    } catch (err) {
+      printFailure(err, verbose);
+      process.exit(1);
+    }
+
+    if (isDirty()) {
+      const amendedSha = await stageAndCommit(msg, true, "RETRY_AMEND", verbose);
+      if (amendedSha) {
+        releaseCommitSha = amendedSha;
+      }
+    }
+
+    const retryPush = await tryPush("RETRY_PUSH", verbose);
+    if (!retryPush.ok) {
+      printFailure(retryPush.err, verbose);
+      process.exit(1);
+    }
   }
 
-  const pushOutput = (pushResult.err && pushResult.err.output) || "";
-  if (!matchAny(pushOutput, [/non-fast-forward/i, /fetch first/i, /failed to push/i, /rejected/i])) {
-    printFailure(pushResult.err, verbose);
+  const releaseId = readReleaseIdFromCapsule() || "unknown";
+  const finalStatus = sh("git status --porcelain");
+  const finalClean = finalStatus.length === 0;
+
+  console.log("\nSHIP SUMMARY");
+  console.log(`RELEASE_ID: ${releaseId}`);
+  console.log(`WORK_COMMIT: ${workCommitSha || "none"}`);
+  console.log(`RELEASE_COMMIT: ${releaseCommitSha || "none"}`);
+  console.log(`FINAL_TREE: ${finalClean ? "clean" : "dirty"}`);
+
+  if (!finalClean) {
+    if (finalStatus) {
+      console.error("\nFINAL STATUS (porcelain):");
+      console.error(finalStatus);
+    }
+    console.error("ERROR: ship ended with dirty working tree.");
     process.exit(1);
   }
 
-  console.log("\n⚠️ push rejected. Retrying once (rebase + prep:release + amend) ...");
-  ensureNoMergeInProgress();
-  try {
-    await runStep("RETRY_PULL_REBASE", "git pull --rebase");
-  } catch (err) {
-    printFailure(err, verbose);
-    process.exit(1);
-  }
-  try {
-    await runStep("RETRY_PREP_RELEASE", "npm run prep:release");
-  } catch (err) {
-    printFailure(err, verbose);
-    process.exit(1);
-  }
-
-  if (isDirty()) {
-    await stageAndCommit(msg, true, "RETRY_AMEND", verbose);
-  }
-
-  const retryPush = await tryPush("RETRY_PUSH", verbose);
-  if (!retryPush.ok) {
-    printFailure(retryPush.err, verbose);
-    process.exit(1);
-  }
-
-  console.log("\n✅ ship: done (after retry)");
+  console.log("\n✅ ship: done");
 }
 
 main();

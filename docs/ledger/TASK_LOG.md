@@ -828,3 +828,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): cache-busted HTML check with retries
 - RISKS: low; failure is actionable
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0007A.10 — ship summary + dirty-tree guard
+- DATE: 2026-02-07
+- TASK_ID: TASK-0007A.10
+- TITLE: ship prints final summary + fails if working tree not clean after completion
+- MODE (DEV/PROD impact): dev tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: ship shows work/release commit SHAs + release id; fails on dirty tree at end
+- CHANGES (files touched): tools/ship.mjs; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: unaffected
+- DEPLOY STATUS: unaffected
+- VERIFY (manual): npm run ship (dirty tree -> fail), npm run ship (clean -> summary)
+- NOTES (gotchas): release id pulled from capsule, fallback to index.prod.xml
+- RISKS: low
+- NEXT: TBD

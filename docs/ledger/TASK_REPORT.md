@@ -1,25 +1,24 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0007B.1
-TITLE: Deploy verifies live HTML pins release
+TASK_ID: TASK-0007A.10
+TITLE: ship Summary + Dirty-Tree Guard
 
 TASK_SUMMARY
-- Added a deploy workflow gate that checks live HTML for pinned /assets/v/<REL>/main.css and /assets/v/<REL>/boot.js on home and /blog.
-- Optional local smoke mode validates live HTML pins against the capsule release id.
+- ship now prints a final summary with work/release commit SHAs and release id.
+- ship fails if the working tree is dirty after completion.
 
 CHANGES
-- .github/workflows/deploy.yml
-- tools/smoke.sh
+- tools/ship.mjs
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
-- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+- `npm run ship`
 
 NOTES
-- Deploy now fails with an actionable message until index.prod.xml is pasted into Blogger.
+- RELEASE_ID is read from the capsule AUTOGEN block, with index.prod.xml fallback.
 
 RISKS / ROLLBACK
-- Risk: low; adds a post-deploy gate only.
+- Risk: low; adds a hard guard to prevent dirty release state.
 - Rollback: revert this commit.
