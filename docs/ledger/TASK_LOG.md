@@ -918,3 +918,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): no HTML edits; no JS changes
 - RISKS: low; CSS only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008A.1.2 — Focus ring fallback + reduced motion + orphan cleanup
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008A.1.2
+- TITLE: Implement focus-ring fallback + reduced-motion scroll disable + remove orphan assets/v/59ac756
+- MODE (DEV/PROD impact): CSS-only + artifact cleanup
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: focus ring fallback tokens, reduced-motion scroll disable, remove orphan release folder
+- CHANGES (files touched): public/assets/latest/main.css; public/assets/v/59ac756 (deleted); docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run ship (FAILED: .git/index.lock permission)
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run ship
+- NOTES (gotchas): no HTML/JS edits
+- RISKS: low; CSS only + cleanup
+- NEXT: TBD

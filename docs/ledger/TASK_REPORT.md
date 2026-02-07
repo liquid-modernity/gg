@@ -1,37 +1,33 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008A.1
-TITLE: Quiet Luxury CSS Phase A (tokens + focus ring + reading rhythm)
+TASK_ID: TASK-0008A.1.2
+TITLE: Implement focus-ring fallback + reduced-motion scroll disable + remove orphan assets/v/59ac756
 
 TASK_SUMMARY
-- Added a compact token block for typography, spacing, elevation, state, motion, and focus ring.
-- Introduced a consistent global focus-visible ring.
-- Improved post content reading rhythm (spacing, headings, links, blockquote).
-- Added reduced-motion and forced-colors baselines.
+- Set focus ring tokens to a safe baseline and added a color-mix enhancement behind @supports.
+- Extended reduced-motion overrides to disable smooth scrolling globally.
+- Removed orphan release folder public/assets/v/59ac756.
 
 VISIBLE CHANGES
-- More consistent focus ring across interactive elements.
-- Post content spacing is calmer with clearer headings and underline readability.
-- Blockquotes are softer and easier to scan.
+- Focus ring stays visible even without color-mix support.
+- Reduced-motion users no longer get smooth scrolling.
 
 CONSTRAINTS CONFIRMED
+- CSS-only changes.
 - No new JS.
-- No new external fonts.
-- No HTML changes.
-- Budgets unchanged.
+- No new resources.
+- No HTML edits.
 
 CHANGES
 - public/assets/latest/main.css
+- public/assets/v/59ac756 (deleted)
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
-- `npm run build`
-- `npm run verify:assets`
-- `npm run verify:xml`
-- `npm run verify:budgets`
+- `npm run ship` (FAILED: .git/index.lock permission in this environment)
 
 RISKS / ROLLBACK
-- Risk: low; CSS only.
+- Risk: low; CSS-only + cleanup.
 - Rollback: revert this commit.
