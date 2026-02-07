@@ -990,3 +990,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): npm run verify:budgets missing (used node tools/verify-budgets.mjs); no JS/fonts added
 - RISKS: low; minimal markup + inline CSS
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.1.1 — Skip link de-dup + ID localization
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.1.1
+- TITLE: Remove duplicate skipNavigation include + localize skip link text (ID)
+- MODE (DEV/PROD impact): template markup only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove built-in skipNavigation include; localize skip link text to Indonesian
+- CHANGES (files touched): index.prod.xml; index.dev.xml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run build (FAILED: clean tree required); npm run verify-inline-css (missing script); node tools/verify-inline-css.mjs
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; npm run verify-inline-css
+- NOTES (gotchas): build blocked by clean-tree guard
+- RISKS: low; text + include removal
+- NEXT: TBD

@@ -218,8 +218,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </head>
 
   <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))'>
-    <a class='gg-skiplink' href='#gg-main'>Skip to main content</a>
-    <b:include name='skipNavigation'/>
+    <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->
