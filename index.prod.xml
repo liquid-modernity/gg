@@ -149,6 +149,39 @@ img{max-width:100%;height:auto;}
 <noscript><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap'/></noscript>
 
 <b:skin><![CDATA[
+/* GG_CRITICAL_CSS v1 */
+:root{ --gg-main-max: 1111px; }
+html{ box-sizing:border-box; }
+*,*::before,*::after{ box-sizing:inherit; }
+body{
+  margin:0;
+  line-height:1.5;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji";
+  font-size:16px;
+}
+a{ color:inherit; text-decoration:underline; text-underline-offset:0.12em; }
+.gg-page-shell{ min-height:100%; }
+.gg-wrap{ width:min(var(--gg-main-max, 1111px), calc(100% - 32px)); margin-inline:auto; }
+.gg-header{ min-height:56px; }
+
+body[data-gg-surface="listing"] .gg-home-landing,
+body[data-gg-surface="page"] .gg-home-landing,
+body[data-gg-surface="post"] .gg-home-landing{
+  display:none !important;
+}
+body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
+
+:where(a, button, input, textarea, select, summary, [role="button"], [tabindex]):focus-visible{
+  outline:2px solid currentColor;
+  outline-offset:3px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+}
+
 /* CRITICAL CSS: SURFACE CONTROL */
 /* Pastikan Hero TIDAK PERNAH muncul di halaman Listing/Search/Page */
 body[data-gg-surface="listing"] .hero-section,

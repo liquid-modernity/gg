@@ -936,3 +936,21 @@ Last updated: 2026-02-06
 - NOTES (gotchas): no HTML/JS edits
 - RISKS: low; CSS only + cleanup
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008A.2 — Critical CSS inline shell + surface baseline
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008A.2
+- TITLE: Add minimal Critical CSS in b:skin (shell + surface control + ATF baseline)
+- MODE (DEV/PROD impact): CSS-only (inline)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: inline critical shell + surface anti-flash + focus baseline; update inline budget
+- CHANGES (files touched): index.prod.xml; index.dev.xml; tools/critical-inline-budget.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-inline-css.mjs; npm run verify:xml; node tools/verify-budgets.mjs; npm run verify:assets
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; npm run verify-inline-css; npm run verify:xml; npm run verify:budgets; npm run verify:assets
+- NOTES (gotchas): npm run verify:budgets missing (used node tools/verify-budgets.mjs); no JS/fonts; Blogger comments untouched
+- RISKS: low; inline CSS only
+- NEXT: TBD
