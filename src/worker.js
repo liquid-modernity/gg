@@ -203,8 +203,22 @@ export default {
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
         publicUrl.searchParams.delete("view");
+        publicUrl.searchParams.delete("x");
+        publicUrl.searchParams.delete("fbclid");
+        publicUrl.searchParams.delete("gclid");
+        publicUrl.searchParams.delete("msclkid");
+        for (const key of Array.from(publicUrl.searchParams.keys())) {
+          if (key.startsWith("utm_")) {
+            publicUrl.searchParams.delete(key);
+          }
+        }
         publicUrl.hash = "";
-        const canonicalPublic = publicUrl.toString();
+        const canonicalPublic = `${publicUrl.origin}${publicUrl.pathname}`;
+        const listingMeta = {
+          seenCanonical: false,
+          seenOg: false,
+          seenTwitter: false,
+        };
         const rewritten = new HTMLRewriter()
           .on("body", {
             element(el) {
@@ -213,17 +227,44 @@ export default {
           })
           .on("link[rel=\"canonical\"]", {
             element(el) {
+              listingMeta.seenCanonical = true;
               el.setAttribute("href", canonicalPublic);
             },
           })
           .on("meta[property=\"og:url\"]", {
             element(el) {
+              listingMeta.seenOg = true;
               el.setAttribute("content", canonicalPublic);
             },
           })
           .on("meta[name=\"twitter:url\"]", {
             element(el) {
+              listingMeta.seenTwitter = true;
               el.setAttribute("content", canonicalPublic);
+            },
+          })
+          .on("head", {
+            end(el) {
+              if (
+                listingMeta.seenCanonical &&
+                listingMeta.seenOg &&
+                listingMeta.seenTwitter
+              ) {
+                return;
+              }
+              let inject = "";
+              if (!listingMeta.seenCanonical) {
+                inject += `<link rel="canonical" href="${canonicalPublic}">`;
+              }
+              if (!listingMeta.seenOg) {
+                inject += `<meta property="og:url" content="${canonicalPublic}">`;
+              }
+              if (!listingMeta.seenTwitter) {
+                inject += `<meta name="twitter:url" content="${canonicalPublic}">`;
+              }
+              if (inject) {
+                el.append(inject, { html: true });
+              }
             },
           })
           .transform(originRes);

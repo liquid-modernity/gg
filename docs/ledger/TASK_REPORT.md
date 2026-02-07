@@ -1,29 +1,34 @@
 TASK_REPORT
 Last updated: 2026-02-07
 
-TASK_ID: TASK-0008B.2.2
-TITLE: Fix tools/smoke.sh Location parsing (preserve full URL value containing https://)
+TASK_ID: TASK-0008B.2.3
+TITLE: Guarantee clean canonical/og/twitter URL for /blog (strip cache-buster & tracking params; rewrite or inject)
 
 TASK_SUMMARY
-- Fix Location parsing so https:// URLs are preserved in full.
-- Keep redirect assertions and failure diagnostics intact.
+- Sanitize listing canonical/og/twitter URLs to a stable /blog target with no cache-buster or tracking params.
+- Rewrite existing tags and inject missing tags for listing HTML.
 
 RATIONALE
-- Splitting on ':' truncates absolute URLs; smoke should validate the full Location value.
+- Cache-buster and tracking params create duplicate canonical URLs and dilute SEO signals; listing canonicals should be stable.
 
 BEHAVIOR
-- Redirect check passes for Location: https://www.pakrpp.com/blog or /blog.
-- Redirect check still fails if status is not 301, Location is missing, or Location contains view=blog.
-- Debug output prints the full Location value.
+- Listing canonical/og:url/twitter:url set to https://www.pakrpp.com/blog (origin + /blog only).
+- Stripped params: x, view, utm_* (any key starting with utm_), fbclid, gclid, msclkid.
+- Changes apply only to listing responses (forceListing true); posts/pages are untouched.
 
 CHANGES
+- src/worker.js
 - tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
+SMOKE COVERAGE
+- Listing canonical/og/twitter clean check via cache-busted fetch; debug prints matching tag lines on failure.
+
 VERIFICATION COMMANDS (manual)
+- `npm run build`
 - `SMOKE_LIVE_HTML=1 tools/smoke.sh`
 
 RISKS / ROLLBACK
-- Risk: low; local tooling only.
+- Risk: low; listing-only HTML rewrite.
 - Rollback: revert this commit.

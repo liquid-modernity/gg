@@ -133,13 +133,62 @@ redirect_check() {
 listing_canonical_check() {
   local url="$1"
   local canon="${BASE}/blog"
-  if ! curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r' | grep -Eqi "<link[^>]+rel=['\"]canonical['\"][^>]+href=['\"]${canon}"; then
-    die "listing canonical missing ${canon}"
+  local ts html
+  ts="$(date +%s)"
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=${ts}" | tr -d '\r')"; then
+    die "listing fetch failed"
   fi
-  if ! curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r' | grep -Eqi "<meta[^>]+property=['\"]og:url['\"][^>]+content=['\"]${canon}"; then
-    die "listing og:url missing ${canon}"
+
+  local canon_line og_line tw_line
+  canon_line="$(printf '%s\n' "${html}" | grep -Eoi "<link[^>]+rel=['\"]canonical['\"][^>]*>" | head -n 1 || true)"
+  og_line="$(printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+property=['\"]og:url['\"][^>]*>" | head -n 1 || true)"
+  tw_line="$(printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+name=['\"]twitter:url['\"][^>]*>" | head -n 1 || true)"
+
+  listing_debug_tags() {
+    echo "DEBUG: listing canonical/og/twitter tags (first 20)"
+    printf '%s\n' "${html}" | grep -Eoi "<(link|meta)[^>]+(canonical|og:url|twitter:url)[^>]*>" | head -n 20 || true
+  }
+
+  if [[ -z "${canon_line}" ]]; then
+    listing_debug_tags
+    die "listing canonical missing"
   fi
-  echo "PASS: listing canonical/og:url ${canon}"
+  if ! echo "${canon_line}" | grep -Fqi "${canon}"; then
+    listing_debug_tags
+    die "listing canonical not ${canon}"
+  fi
+  if echo "${canon_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
+    listing_debug_tags
+    die "listing canonical contains tracking params"
+  fi
+
+  if [[ -z "${og_line}" ]]; then
+    listing_debug_tags
+    die "listing og:url missing"
+  fi
+  if ! echo "${og_line}" | grep -Fqi "${canon}"; then
+    listing_debug_tags
+    die "listing og:url not ${canon}"
+  fi
+  if echo "${og_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
+    listing_debug_tags
+    die "listing og:url contains tracking params"
+  fi
+
+  if [[ -z "${tw_line}" ]]; then
+    listing_debug_tags
+    die "listing twitter:url missing"
+  fi
+  if ! echo "${tw_line}" | grep -Fqi "${canon}"; then
+    listing_debug_tags
+    die "listing twitter:url not ${canon}"
+  fi
+  if echo "${tw_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
+    listing_debug_tags
+    die "listing twitter:url contains tracking params"
+  fi
+
+  echo "PASS: listing canonical/og/twitter clean ${canon}"
 }
 
 authoritative_header() {

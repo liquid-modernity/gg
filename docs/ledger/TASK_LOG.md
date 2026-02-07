@@ -1098,3 +1098,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): fixed Location parsing so https:// URLs don’t truncate
 - RISKS: low; local tool only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008B.2.3 — Guarantee clean canonical/og/twitter URL for /blog (strip cache-buster & tracking params; rewrite or inject)
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008B.2.3
+- TITLE: Guarantee clean canonical/og/twitter URL for /blog (strip cache-buster & tracking params; rewrite or inject)
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: listing canonical sanitization + tag rewrite/inject + smoke coverage
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): listing canonical sanitized (strip x/utm/fbclid/gclid/msclkid/view); rewrite or inject tags
+- RISKS: low; listing-only HTML rewrite
+- NEXT: TBD
