@@ -267,7 +267,7 @@ schema_check_post() {
     schema_debug_snippet "post" "${html}"
     die "schema missing @context/@graph on post"
   fi
-  if ! printf '%s\n' "${schema}" | node -e '
+  if ! cond_out="$(printf '%s\n' "${schema}" | node -e '
     const fs=require("fs");
     const d=JSON.parse(fs.readFileSync(0,"utf8"));
     const graph=d["@graph"]||[];
@@ -277,12 +277,16 @@ schema_check_post() {
       return v===t;
     };
     const post=graph.find(n=>hasType(n,"BlogPosting"));
-    if(!post) process.exit(2);
-    if(typeof post.url!=="string"||post.url.includes("?")) process.exit(3);
+    if(!post) { console.error("FAIL_COND: missing BlogPosting"); process.exit(2); }
+    if(typeof post.url!=="string"||post.url.includes("?")) { console.error("FAIL_COND: BlogPosting url has query"); process.exit(3); }
     const page=graph.find(n=>hasType(n,"WebPage"));
-    if(!page||typeof page.url!=="string"||page.url.includes("?")) process.exit(4);
-  '; then
+    if(!page) { console.error("FAIL_COND: missing WebPage"); process.exit(4); }
+    if(typeof page.url!=="string"||page.url.includes("?")) { console.error("FAIL_COND: WebPage url has query"); process.exit(5); }
+  ' 2>&1)"; then
     schema_debug_types "${schema}"
+    if [[ -n "${cond_out:-}" ]]; then
+      echo "DEBUG: ${cond_out}"
+    fi
     schema_debug_snippet "post" "${html}"
     die "schema BlogPosting/WebPage invalid on post"
   fi

@@ -1224,3 +1224,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): SMOKE_POST_URL schema proof; BlogPosting strictness
 - RISKS: low; HTML rewrite only
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008C.1.2 — Guarantee BlogPosting on post surface (data-gg-surface=post) + improve smoke debug
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008C.1.2
+- TITLE: Guarantee BlogPosting on post surface (data-gg-surface=post) + improve smoke debug
+- MODE (DEV/PROD impact): worker + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: post surface schema detection + smoke debug detail
+- CHANGES (files touched): src/worker.js; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_POST_URL=\"<post>\" SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): BlogPosting forced for post surface; smoke prints failing condition
+- RISKS: low; HTML rewrite only
+- NEXT: TBD

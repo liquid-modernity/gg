@@ -252,6 +252,7 @@ export default {
           mod: "",
           titleText: "",
           hasArticle: false,
+          surface: "",
         };
         const assignMeta = (key, value) => {
           if (value) {
@@ -308,8 +309,12 @@ export default {
             },
           ];
           const ogType = (meta.ogType || "").trim().toLowerCase();
+          const isPostSurface = meta.surface === "post";
           const isArticle =
-            ogType === "article" || !!meta.pub || (!forceListing && meta.hasArticle);
+            isPostSurface ||
+            ogType === "article" ||
+            !!meta.pub ||
+            (!forceListing && meta.hasArticle);
           if (isArticle) {
             const blogPosting = {
               "@type": "BlogPosting",
@@ -327,9 +332,11 @@ export default {
             }
             if (meta.pub) {
               blogPosting.datePublished = meta.pub;
-            }
-            if (meta.mod || meta.pub) {
-              blogPosting.dateModified = meta.mod || meta.pub;
+              if (meta.mod) {
+                blogPosting.dateModified = meta.mod;
+              } else {
+                blogPosting.dateModified = meta.pub;
+              }
             }
             graph.push(blogPosting);
           }
@@ -398,6 +405,7 @@ export default {
           })
           .on("body", {
             element(el) {
+              meta.surface = (el.getAttribute("data-gg-surface") || "").trim();
               if (forceListing) {
                 el.setAttribute("data-gg-surface", "listing");
               }
