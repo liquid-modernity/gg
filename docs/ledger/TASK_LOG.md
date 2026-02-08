@@ -1270,7 +1270,7 @@ Last updated: 2026-02-07
 - MODE (DEV/PROD impact): worker + flags + smoke
 - RELEASE_REF: GG_CAPSULE AUTOGEN
 - SCOPE: CSP report logging triage + redaction + gg-flags gate + smoke checks
-- CHANGES (files touched): src/worker.js; public/gg-flags.json; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- CHANGES (files touched): src/worker.js; public/__gg/flags.json; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
 - COMMANDS RUN (local): n/a
 - CI STATUS: pending
 - DEPLOY STATUS: pending
@@ -1314,3 +1314,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): stamp clones headers explicitly; gg-flags.json forced no-store with legacy no-cache headers
 - RISKS: low; header-only changes
 - NEXT: TBD
+
+---
+
+## 2026-02-07 — TASK-0008D.2.2 — Fix gg-flags caching by removing static collision
+- DATE: 2026-02-07
+- TASK_ID: TASK-0008D.2.2
+- TITLE: Fix gg-flags caching by removing static collision
+- MODE (DEV/PROD impact): worker + assets + smoke
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: move internal flags file; enforce worker-served /gg-flags.json; smoke header guard
+- CHANGES (files touched): src/worker.js; public/__gg/flags.json; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): n/a
+- CI STATUS: pending
+- DEPLOY STATUS: pending
+- VERIFY (manual): npm run build; SMOKE_LIVE_HTML=1 tools/smoke.sh
+- NOTES (gotchas): internal flags moved to avoid static collision; /gg-flags.json must be served by worker
+- RISKS: low; header/asset path changes
+- NEXT: purge Cloudflare cache for /gg-flags.json after deploy

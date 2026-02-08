@@ -364,6 +364,14 @@ authoritative_header "${BASE}/sw.js?x=1" '^cache-control:.*no-store' "sw.js is n
 authoritative_header "${BASE}/gg-flags.json?x=1" '^cache-control:.*no-store' "gg-flags.json is no-store"
 authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*immutable' "assets/v main.js is immutable"
 
+flags_headers="$(curl -sSI "${BASE}/gg-flags.json?x=1" | tr -d '\r')"
+if ! echo "${flags_headers}" | grep -qi '^x-gg-worker-version:'; then
+  echo "DEBUG: gg-flags headers"
+  echo "${flags_headers}" | sed -n '1,30p'
+  die "gg-flags.json must be served by worker (missing x-gg-worker-version)"
+fi
+echo "PASS: gg-flags.json served by worker"
+
 security_headers_check "${BASE}/?x=1" "home"
 security_headers_check "${BASE}/blog?x=1" "blog"
 

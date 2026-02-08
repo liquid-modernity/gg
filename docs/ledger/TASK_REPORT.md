@@ -81,7 +81,7 @@ BEHAVIOR
 - Logged URLs strip query strings and fragments for privacy.
 
 HOW TO TOGGLE
-- Edit `public/gg-flags.json` and set `csp_report_enabled` to `false` to disable CSP report headers/logging (worker still returns 204 for reports).
+- Edit `public/__gg/flags.json` and set `csp_report_enabled` to `false` to disable CSP report headers/logging (worker still returns 204 for reports).
 - Set it back to `true` to re-enable.
 
 LOG EXAMPLE
@@ -94,7 +94,7 @@ SMOKE COVERAGE
 
 CHANGES
 - src/worker.js
-- public/gg-flags.json
+- public/__gg/flags.json
 - tools/smoke.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -158,3 +158,38 @@ VERIFICATION COMMANDS (manual)
 RISKS / ROLLBACK
 - Risk: low; header-only changes.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008D.2.2
+TITLE: Fix gg-flags caching by removing static collision
+
+TASK_SUMMARY
+- Move internal flags file to `public/__gg/flags.json` to avoid static asset collision.
+- Update worker flag loader to read the new internal path.
+- Add smoke guard to ensure `/gg-flags.json` is served by the worker.
+
+BEHAVIOR
+- `/gg-flags.json` remains the public endpoint and is always stamped by the worker.
+- Cache-Control is forced to `no-store, max-age=0` and worker headers are present.
+
+SMOKE COVERAGE
+- Assert `x-gg-worker-version` exists on `/gg-flags.json` headers.
+
+CHANGES
+- src/worker.js
+- public/__gg/flags.json
+- tools/smoke.sh
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+OPERATOR NOTE
+- After deploy, purge Cloudflare cache for `/gg-flags.json` to drop the stale static object.
+
+RISKS / ROLLBACK
+- Risk: low; flags path update and header checks only.
+- Rollback: revert this commit and restore the previous flags file location.

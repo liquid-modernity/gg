@@ -53,7 +53,7 @@ const loadFlags = async (env) => {
   let data = null;
   if (env && env.ASSETS) {
     try {
-      const req = new Request("https://flags.local/gg-flags.json");
+      const req = new Request("https://flags.local/__gg/flags.json");
       const res = await env.ASSETS.fetch(req);
       if (res && res.ok) {
         data = await res.json();
