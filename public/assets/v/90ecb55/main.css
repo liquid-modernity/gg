@@ -5808,18 +5808,7 @@ a, button{
   justify-content:center;
 }
 
-/* Auto-touch target helper (added by JS) */
-.gg-touch{
-  min-width:48px!important;
-  min-height:48px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  padding:12px!important;
-  box-sizing:border-box!important;
-  margin:8px!important;
-  border-radius:12px!important;
-}
+
 .gg-visually-hidden{
   position:absolute!important;
   width:1px;height:1px;
@@ -5881,18 +5870,7 @@ a, button{
   justify-content:center;
 }
 
-/* Auto-touch target helper (added by JS) */
-.gg-touch{
-  min-width:48px!important;
-  min-height:48px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  padding:12px!important;
-  box-sizing:border-box!important;
-  margin:8px!important;
-  border-radius:12px!important;
-}
+
 /* --- /GAGA  A11Y + IMAGE HYGIENE --- */
 
 /* GAGA MODULE: STATE UTILITIES (CSS) */
@@ -5990,9 +5968,9 @@ a, button{
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
-  padding:12px!important;
+  padding:0px!important;
   box-sizing:border-box!important;
-  margin:8px!important;
+  margin:0px!important;
   border-radius:12px!important;
 }
 /* --- /GAGA  A11Y + IMAGE HYGIENE --- */
