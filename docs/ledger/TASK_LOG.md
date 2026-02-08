@@ -1340,7 +1340,7 @@ Last updated: 2026-02-08
 - TASK_ID: TASK-0008F.0
 - TITLE: UI feature wiring audit + DOM contract smoke checks
 - MODE (DEV/PROD impact): docs + tooling only
-- RELEASE_ID: n/a
+- RELEASE_REF: GG_CAPSULE AUTOGEN
 - SCOPE: audit + smoke guardrails
 - CHANGES (files touched): docs/ui/FEATURE_WIRING_MAP.md; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
 - COMMANDS RUN (local): pending
