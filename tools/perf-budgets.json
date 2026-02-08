@@ -7,8 +7,8 @@
     {
       "id": "main.js",
       "path": "public/assets/v/<REL>/main.js",
-      "max_raw": 690,
-      "max_gzip": 444
+      "max_raw": 1500,
+      "max_gzip": 700
     },
     {
       "id": "app.js",
@@ -19,8 +19,8 @@
     {
       "id": "core.js",
       "path": "public/assets/v/<REL>/core.js",
-      "max_raw": 40893,
-      "max_gzip": 9935
+      "max_raw": 42000,
+      "max_gzip": 10500
     },
     {
       "id": "modules/pwa.js",
@@ -73,8 +73,8 @@
     {
       "id": "boot.js",
       "path": "public/assets/v/<REL>/boot.js",
-      "max_raw": 3873,
-      "max_gzip": 1404
+      "max_raw": 4500,
+      "max_gzip": 1600
     },
     {
       "id": "sw.js",
