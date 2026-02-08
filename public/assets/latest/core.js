@@ -902,6 +902,27 @@
     return GG.boot.loadScript(url);
   };
 
+  function setBootStage(stage){
+    try {
+      if (w.GG_BOOT && typeof w.GG_BOOT.setStage === 'function') {
+        w.GG_BOOT.setStage(stage);
+        return;
+      }
+    } catch (_) {}
+    try {
+      var el = d.documentElement;
+      if (!el) return;
+      var cur = '';
+      if (el.dataset && typeof el.dataset.ggBoot !== 'undefined') cur = el.dataset.ggBoot;
+      else cur = el.getAttribute('data-gg-boot') || '';
+      var curNum = parseInt(cur, 10) || 0;
+      if (stage > curNum) {
+        if (el.dataset) el.dataset.ggBoot = String(stage);
+        else el.setAttribute('data-gg-boot', String(stage));
+      }
+    } catch (_) {}
+  }
+
   function scheduleIdle(fn, timeoutMs){
     var t = typeof timeoutMs === 'number' ? timeoutMs : 2000;
     if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: t });
@@ -942,8 +963,43 @@
       GG.boot._uiClickLogged = true;
       try { if (w.console && console.info) console.info('UI module requested by internal click'); } catch (_) {}
     }
+    setBootStage(3);
     return loadUi();
   };
+
+  function bindUiInteractRequest(){
+    if (GG.boot._uiInteractBound) return;
+    GG.boot._uiInteractBound = true;
+    var onPointer = function(){
+      if (GG.boot && typeof GG.boot.requestUi === 'function') GG.boot.requestUi('interact');
+    };
+    var onKey = function(e){
+      var key = (e && e.key ? e.key : '').toLowerCase();
+      if (e && (e.ctrlKey || e.metaKey) && key === 'k') return;
+      if (GG.boot && typeof GG.boot.requestUi === 'function') GG.boot.requestUi('key');
+    };
+    try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
+    try { d.addEventListener('keydown', onKey, { capture: true, once: true }); } catch (_) {}
+  }
+
+  function bindPendingCmdK(){
+    if (GG.boot._pendingCmdkBound) return;
+    GG.boot._pendingCmdkBound = true;
+    d.addEventListener('keydown', function(e){
+      if (!e) return;
+      var key = (e.key || '').toLowerCase();
+      if (!(e.ctrlKey || e.metaKey) || key !== 'k') return;
+      if (GG.boot && GG.boot._uiReady) return;
+      try { e.preventDefault(); } catch (_) {}
+      w.__GG_PENDING_SEARCH = true;
+      if (GG.boot && typeof GG.boot.requestUi === 'function') {
+        GG.boot.requestUi('cmdk');
+      }
+    }, true);
+  }
+
+  bindUiInteractRequest();
+  bindPendingCmdK();
 
   // Router binding for native feel
   if (GG.boot.onReady) {
@@ -959,8 +1015,25 @@
     w.addEventListener('load', function(){ scheduleIdle(loadPwa, 2000); }, { once: true });
   }
 
-  function uiPrefetchSkipReason(){
-    if (GG.boot && (GG.boot._uiReady === true || GG.boot._uiPromise || GG.boot._uiPrefetchScheduled)) {
+  function surfaceHint(){
+    var body = d && d.body ? d.body : null;
+    if (!body) return '';
+    return (body.getAttribute('data-gg-surface') || (body.dataset && body.dataset.ggSurface) || '').toLowerCase();
+  }
+
+  function isLandingSurface(){
+    return surfaceHint() === 'landing';
+  }
+
+  function afterPaint(fn){
+    if (!w.requestAnimationFrame) { w.setTimeout(fn, 0); return; }
+    w.requestAnimationFrame(function(){
+      w.requestAnimationFrame(fn);
+    });
+  }
+
+  function uiPrefetchSkipReason(ignoreScheduled){
+    if (GG.boot && (GG.boot._uiReady === true || GG.boot._uiPromise || (!ignoreScheduled && GG.boot._uiPrefetchScheduled))) {
       return 'already requested';
     }
     if (!w.requestIdleCallback) return 'no requestIdleCallback';
@@ -973,16 +1046,19 @@
     return '';
   }
 
-  function scheduleUiPrefetch(){
-    var reason = uiPrefetchSkipReason();
+  function scheduleUiPrefetch(mode){
+    var reason = uiPrefetchSkipReason(false);
     if (reason) {
       if (isDev() && w.console && console.info) console.info('UI prefetch skipped: ' + reason);
       return;
     }
     GG.boot._uiPrefetchScheduled = true;
-    if (isDev() && w.console && console.info) console.info('UI prefetch scheduled (idle)');
-    w.requestIdleCallback(function(){
-      var r = uiPrefetchSkipReason();
+    if (isDev() && w.console && console.info) {
+      var label = mode === 'early' ? 'early idle' : 'idle';
+      console.info('UI prefetch scheduled (' + label + ')');
+    }
+    var run = function(){
+      var r = uiPrefetchSkipReason(true);
       if (r) {
         if (isDev() && w.console && console.info) console.info('UI prefetch skipped: ' + r);
         return;
@@ -990,12 +1066,22 @@
       if (GG.boot && typeof GG.boot.requestUi === 'function') {
         GG.boot.requestUi('idle');
       }
-    });
+    };
+    if (mode === 'early') {
+      afterPaint(function(){
+        w.requestIdleCallback(run, { timeout: 1200 });
+      });
+      return;
+    }
+    w.requestIdleCallback(run);
   }
 
   if (w.requestIdleCallback) {
+    if (!isLandingSurface()) {
+      scheduleUiPrefetch('early');
+    }
     if (d.readyState === 'complete') scheduleUiPrefetch();
-    else w.addEventListener('load', scheduleUiPrefetch, { once: true });
+    else w.addEventListener('load', function(){ scheduleUiPrefetch(); }, { once: true });
   }
 
 })(window.GG = window.GG || {}, window, document);

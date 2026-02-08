@@ -1,6 +1,22 @@
 (function(w, d){
   'use strict';
   var GG_BOOT = w.GG_BOOT = w.GG_BOOT || {};
+  function setBootStage(stage){
+    try {
+      var el = d.documentElement;
+      if (!el) return;
+      var cur = '';
+      if (el.dataset && typeof el.dataset.ggBoot !== 'undefined') cur = el.dataset.ggBoot;
+      else cur = el.getAttribute('data-gg-boot') || '';
+      var curNum = parseInt(cur, 10) || 0;
+      if (stage > curNum) {
+        if (el.dataset) el.dataset.ggBoot = String(stage);
+        else el.setAttribute('data-gg-boot', String(stage));
+      }
+    } catch (_) {}
+  }
+  setBootStage(1);
+  GG_BOOT.setStage = GG_BOOT.setStage || setBootStage;
   if (GG_BOOT._booted) return;
   GG_BOOT._booted = true;
 
@@ -15,8 +31,7 @@
     return val;
   }
 
-  function devWarn(){
-    if (!isDev()) return;
+  function warn(){
     try { if (w.console && console.warn) console.warn.apply(console, arguments); } catch (_) {}
   }
 
@@ -84,7 +99,7 @@
     };
     s.onerror = function(){
       loading = false;
-      devWarn('GG boot: main.js failed to load');
+      warn('GG boot: main.js failed to load');
     };
     (d.head || d.documentElement).appendChild(s);
   }

@@ -500,6 +500,43 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   live_check "${BASE}/blog" "blog"
   live_h1_check "${BASE}/" "home"
   live_h1_check "${BASE}/blog" "blog" "Blog"
+  if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
+    die "verify-js-chain failed"
+  fi
+
+  live_dom_expect() {
+    local html="$1"
+    local label="$2"
+    local pattern="$3"
+    local debug_pattern="$4"
+    local desc="$5"
+    if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
+      echo "DEBUG: ${label} ${desc} lines"
+      printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
+      die "LIVE_HTML ${label} missing ${desc}"
+    fi
+  }
+
+  live_dom_check_page() {
+    local url="$1"
+    local label="$2"
+    local ts html
+    ts="$(date +%s)"
+    html="$(live_fetch_stream "${url}?x=${ts}")"
+    if [[ "${label}" == "home" ]]; then
+      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
+      live_dom_expect "${html}" "${label}" "id=[\"']gg-main[\"']" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
+    else
+      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
+      live_dom_expect "${html}" "${label}" "id=[\"']gg-main[\"']" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
+    fi
+    echo "PASS: LIVE_HTML ${label} DOM contract"
+  }
+
+  live_dom_check_page "${BASE}/" "home"
+  live_dom_check_page "${BASE}/blog" "blog"
 fi
 
 echo "PASS: smoke tests"

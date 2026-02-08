@@ -1,5 +1,5 @@
 # TASK LOG (append-only)
-Last updated: 2026-02-07
+Last updated: 2026-02-08
 
 > Purpose: immutable-ish history for AI context + audit trail.
 > Rule: NEVER rewrite old entries. Only append.
@@ -1332,3 +1332,21 @@ Last updated: 2026-02-07
 - NOTES (gotchas): internal flags moved to avoid static collision; /gg-flags.json must be served by worker
 - RISKS: low; header/asset path changes
 - NEXT: purge Cloudflare cache for /gg-flags.json after deploy
+
+---
+
+## 2026-02-08 — TASK-0008F.0 — UI wiring map + DOM contract smoke
+- DATE: 2026-02-08
+- TASK_ID: TASK-0008F.0
+- TITLE: UI feature wiring audit + DOM contract smoke checks
+- MODE (DEV/PROD impact): docs + tooling only
+- RELEASE_ID: n/a
+- SCOPE: audit + smoke guardrails
+- CHANGES (files touched): docs/ui/FEATURE_WIRING_MAP.md; tools/smoke.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): pending
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a (add SMOKE_LIVE_HTML checks for home + listing DOM hooks)
+- NOTES (gotchas): UI features are DOM-gated; no gg-flags for UI features were found
+- RISKS: low; smoke-only checks
+- NEXT: TBD

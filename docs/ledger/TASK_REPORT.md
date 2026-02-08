@@ -1,5 +1,32 @@
 TASK_REPORT
-Last updated: 2026-02-07
+Last updated: 2026-02-08
+
+TASK_ID: TASK-0008F.0
+TITLE: UI feature wiring audit (flags -> modules -> DOM hooks) + DOM-contract smoke
+
+TASK_SUMMARY
+- Document UI wiring map across core/listing/post/search/poster modules and DOM hooks.
+- Confirm gg-flags only gate service worker, not UI features.
+- Add LIVE_HTML DOM-contract smoke checks for home + listing.
+
+BEHAVIOR
+- FEATURE_WIRING_MAP captures feature wiring, required DOM hooks, and failure modes.
+- Smoke LIVE_HTML now asserts landing/listing surface markers and core DOM hooks (#gg-main, skiplink, #postcards).
+- Highlights missing wiring where modules or DOM hooks are absent (postcardKebab, palette host, footer accordion).
+
+CHANGES
+- docs/ui/FEATURE_WIRING_MAP.md
+- tools/smoke.sh
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run build`
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+
+RISKS / ROLLBACK
+- Risk: low; documentation and smoke-only changes.
+- Rollback: revert this commit.
 
 TASK_ID: TASK-0008C.1.2
 TITLE: Guarantee BlogPosting on post surface (data-gg-surface=post) + improve smoke debug

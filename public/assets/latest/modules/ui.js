@@ -85,5 +85,10 @@
         }
       });
     }
+
+    if (w.__GG_PENDING_SEARCH) {
+      w.__GG_PENDING_SEARCH = false;
+      openSearch();
+    }
   };
 })(window, document);
