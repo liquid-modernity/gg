@@ -262,6 +262,8 @@
       "path": "/assets/v/<REL>/modules/ui.bucket.poster.js",
       "modes": ["config", "live"],
       "status": 200,
+      "timeoutMs": 12000,
+      "retries": 3,
       "cacheControl": {
         "allOf": ["public", "immutable"],
         "minMaxAge": 31536000

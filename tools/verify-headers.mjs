@@ -213,15 +213,17 @@ if (mode === "config") {
 if (mode === "live") {
   const results = [];
   let failure = null;
-  const timeoutMs = 6000;
+  const defaultTimeoutMs = 6000;
 
   for (const rule of rules) {
     if (!rule.modes || !rule.modes.includes("live")) continue;
+    const timeoutMs = (Number.isFinite(rule.timeoutMs) ? rule.timeoutMs : defaultTimeoutMs);
+    const retries = (rule.retries ?? 2);
 
     if (rule.type === "redirect") {
       const url = rule.url;
       try {
-        const res = await fetchWithRetry(url, timeoutMs, 2);
+        const res = await fetchWithRetry(url, timeoutMs, retries);
         const okStatus = rule.statusAny && rule.statusAny.includes(res.status);
         const loc = res.headers.get("location") || "";
         const okLoc = rule.locationPrefix ? loc.startsWith(rule.locationPrefix) : true;
@@ -244,7 +246,7 @@ if (mode === "live") {
     const url = `${base}${pathResolved}`;
 
     try {
-      const res = await fetchWithRetry(url, timeoutMs, 2);
+      const res = await fetchWithRetry(url, timeoutMs, retries);
       const statusOk = rule.status ? res.status === rule.status : true;
       const cc = res.headers.get("cache-control") || "";
       const ct = res.headers.get("content-type") || "";
