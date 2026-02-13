@@ -1120,6 +1120,9 @@ GG.actions.register('jump', function(ctx){
       if (hasHost() && GG.boot && GG.boot.loadModule) {
         return GG.boot.loadModule('ui.bucket.poster.js').then(function(){
           var S = GG.modules && GG.modules.shareSheet;
+          if (S && typeof S.init === 'function') {
+            try { S.init(); } catch(_) {}
+          }
           if (S && S.open) {
             try { return Promise.resolve(S.open(meta)); } catch(e) { return nativeOrClipboard(meta); }
           }
@@ -4528,29 +4531,113 @@ function isSystemPath(pathname){
   GG.modules.Panels = (function () {
     var main, left, right, backdrop;
     var bound = false;
+    var lastFocus = null;
+    var pendingFocus = null;
 
     function getAttr(el, name){ return el ? el.getAttribute(name) : null; }
-
-    function setLeft(state){
+    function rememberFocus(el){
+      if (!el || el === document.body || el === document.documentElement) return;
+      if (!document.contains(el)) return;
+      lastFocus = el;
+    }
+    function restoreFocus(){
+      var el = lastFocus;
+      lastFocus = null;
+      if (el && document.contains(el) && typeof el.focus === 'function') {
+        try { el.focus({ preventScroll: true }); } catch(_) {
+          try { el.focus(); } catch(_) {}
+        }
+      }
+    }
+    function focusPanel(side){
+      var panel = side === 'left' ? left : right;
+      if (side === 'right' && main) {
+        var mode = getAttr(main, 'data-gg-right-mode') || '';
+        if (mode === 'comments') {
+          panel = qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) || right;
+        } else if (mode) {
+          panel = qs('[data-gg-panel="info"]', right) || qs('.gg-info-panel', right) || right;
+        }
+      }
+      if (!panel) return;
+      var focusable = panel.querySelector('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      if (!focusable) {
+        panel.setAttribute('tabindex', '-1');
+        focusable = panel;
+      }
+      if (focusable && typeof focusable.focus === 'function') {
+        try { focusable.focus({ preventScroll: true }); } catch(_) {
+          try { focusable.focus(); } catch(_) {}
+        }
+      }
+    }
+    function setMainInert(on){
       if (!main) return;
-      setAttr(main, 'data-gg-left-panel', state);
-      updateBackdrop();
+      if (on){
+        main.setAttribute('inert', '');
+        main.setAttribute('aria-hidden', 'true');
+      } else {
+        main.removeAttribute('inert');
+        main.removeAttribute('aria-hidden');
+      }
     }
 
-    function setRight(state){
+    function setLeft(state, opts){
       if (!main) return;
+      opts = opts || {};
+      var prev = getAttr(main, 'data-gg-left-panel') || 'closed';
+      if (state === 'open' && prev !== 'open') {
+        rememberFocus(opts.from || document.activeElement);
+        pendingFocus = 'left';
+        if (shouldMobile() && getAttr(main, 'data-gg-info-panel') === 'open') {
+          setAttr(main, 'data-gg-info-panel', 'closed');
+        }
+      }
+      setAttr(main, 'data-gg-left-panel', state);
+      if (!opts.skipUpdate) updateBackdrop();
+      if (state === 'closed' && prev === 'open' && opts.restoreFocus) restoreFocus();
+    }
+
+    function setRight(state, opts){
+      if (!main) return;
+      opts = opts || {};
+      var prev = getAttr(main, 'data-gg-info-panel') || 'closed';
+      if (state === 'open' && prev !== 'open') {
+        rememberFocus(opts.from || document.activeElement);
+        pendingFocus = 'right';
+        if (shouldMobile() && getAttr(main, 'data-gg-left-panel') === 'open') {
+          setAttr(main, 'data-gg-left-panel', 'closed');
+        }
+      }
+      if (state === 'closed' && prev === 'open' && opts.clearMode && main) {
+        main.removeAttribute('data-gg-right-mode');
+      }
       setAttr(main, 'data-gg-info-panel', state);
-      updateBackdrop();
+      if (!opts.skipUpdate) updateBackdrop();
+      if (state === 'closed' && prev === 'open' && opts.restoreFocus) restoreFocus();
     }
 
     function updateBackdrop(){
-      if (!backdrop) return;
       var mobile = shouldMobile();
       var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
       var rightOpen = getAttr(main, 'data-gg-info-panel') === 'open';
       var show = mobile && (leftOpen || rightOpen);
-      GG.core.state.toggle(backdrop, 'visible', show);
+      if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
+      setMainInert(show);
+      if (show && pendingFocus) {
+        focusPanel(pendingFocus);
+        pendingFocus = null;
+      }
+    }
+
+    function closeAll(opts){
+      opts = opts || {};
+      if (main) main.removeAttribute('data-gg-right-mode');
+      setLeft('closed', { skipUpdate: true });
+      setRight('closed', { skipUpdate: true });
+      updateBackdrop();
+      if (opts.restoreFocus) restoreFocus();
     }
 
 // GAGA TOGGLE SIDEBAR
@@ -4614,7 +4701,7 @@ function isSystemPath(pathname){
 
       if (closest(t, '[data-gg-action="left-toggle"]')){
         var isOpen = main && main.getAttribute('data-gg-left-panel') === 'open';
-        setLeft(isOpen ? 'closed' : 'open'); evt.preventDefault(); return;
+        setLeft(isOpen ? 'closed' : 'open', { restoreFocus: isOpen }); evt.preventDefault(); return;
       }
 
       var treeBtn = closest(t, '[data-gg-action="tree-toggle"]');
@@ -4630,29 +4717,33 @@ function isSystemPath(pathname){
       }
 
       if (backdrop && t === backdrop){
-        if (main) main.removeAttribute('data-gg-right-mode');
-        setLeft('closed');
-        setRight('closed');
+        closeAll({ restoreFocus: true });
         evt.preventDefault();
         return;
       }
 
       if (closest(t, '[data-gg-action="info-close"]')){
-        setRight('closed'); evt.preventDefault(); return;
+        setRight('closed', { restoreFocus: true, clearMode: true }); evt.preventDefault(); return;
       }
     }
 
     function handleKey(evt){
       if (evt.key !== 'Escape') return;
-      if (main && main.getAttribute('data-gg-info-panel') === 'open'){ if (main) main.removeAttribute('data-gg-right-mode'); setRight('closed'); return; }
-      if (main && main.getAttribute('data-gg-left-panel') === 'open'){ setLeft('closed'); }
+      var leftOpen = main && getAttr(main, 'data-gg-left-panel') === 'open';
+      var rightOpen = main && getAttr(main, 'data-gg-info-panel') === 'open';
+      if (!leftOpen && !rightOpen) return;
+      if (rightOpen) setRight('closed', { skipUpdate: true, clearMode: true });
+      if (shouldMobile() && leftOpen) setLeft('closed', { skipUpdate: true });
+      updateBackdrop();
+      restoreFocus();
+      evt.preventDefault();
     }
 
     function bindEvents(){
       if (bound) return;
       bound = true;
       document.addEventListener('click', handleClick, true);
-      document.addEventListener('keydown', handleKey);
+      document.addEventListener('keydown', handleKey, true);
       window.addEventListener('resize', updateBackdrop);
     }
 
@@ -4662,23 +4753,27 @@ function isSystemPath(pathname){
       var surface = main.getAttribute('data-gg-surface') || '';
       var isPostSurface = surface === 'post';
       var isDesktopPost = isPostSurface && !shouldMobile();
+      var surfaceChanged = main.__ggPanelsSurface !== surface;
+      if (surfaceChanged) main.__ggPanelsSurface = surface;
 
       left  = qs('.gg-blog-sidebar--left', main);
       right = qs('.gg-blog-sidebar--right', main);
 
       if (isDesktopPost){
-        if (!main.hasAttribute('data-gg-left-panel')){
+        if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
           setAttr(main, 'data-gg-left-panel', 'open');
         }
-        if (!main.hasAttribute('data-gg-info-panel')){
+        if (surfaceChanged || !main.hasAttribute('data-gg-info-panel')){
           setAttr(main, 'data-gg-info-panel', 'open');
         }
-        setAttr(main, 'data-gg-right-mode', 'comments');
+        if (surfaceChanged || !main.hasAttribute('data-gg-right-mode')){
+          setAttr(main, 'data-gg-right-mode', 'comments');
+        }
       } else {
-        if (!main.hasAttribute('data-gg-left-panel')){
+        if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
           setAttr(main, 'data-gg-left-panel', shouldMobile() ? 'closed' : 'open');
         }
-        if (!main.hasAttribute('data-gg-info-panel')){
+        if (surfaceChanged || !main.hasAttribute('data-gg-info-panel')){
           setAttr(main, 'data-gg-info-panel', 'closed');
         }
         if (!isPostSurface && main.hasAttribute('data-gg-right-mode')){

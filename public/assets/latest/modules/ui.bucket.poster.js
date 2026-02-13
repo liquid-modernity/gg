@@ -732,6 +732,8 @@
   }
 
   function boot() {
+    if (shareModule.__ggInited) return;
+    shareModule.__ggInited = 1;
     initShareSheet();
     initShareButtons(d);
   }
