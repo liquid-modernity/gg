@@ -22,7 +22,7 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/a8fe933/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <link as='style' href='/assets/v/a8fe933/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"' rel='preload'/>
     <noscript><link href='/assets/v/a8fe933/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
