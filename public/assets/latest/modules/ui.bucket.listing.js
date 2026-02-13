@@ -36,7 +36,7 @@
       var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
       var maxPosts = parseInt(cfg.maxPosts || (root && root.getAttribute('data-max-posts')) || '10', 10);
       if (!isFinite(maxPosts) || maxPosts <= 0) maxPosts = 10;
-      var filter = Array.isArray(cfg.searchLabels) ? cfg.searchLabels.filter(Boolean) : null;
+      var filter = Array.isArray(cfg.labelTreeLabels) ? cfg.labelTreeLabels.filter(Boolean) : null;
       return { maxPosts: maxPosts, filter: filter };
     }
 
