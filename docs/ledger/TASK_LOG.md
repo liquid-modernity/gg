@@ -1368,3 +1368,21 @@ Last updated: 2026-02-13
 - NOTES (gotchas): handoff script captures live smoke/headers best-effort; curl failures do not hard-fail
 - RISKS: low; docs/tooling only
 - NEXT: TBD
+
+---
+
+## 2026-02-13 — TASK-0008F.1 — Make Search Trigger Explicit + Add Hard Fallback
+- DATE: 2026-02-13
+- TASK_ID: TASK-0008F.1
+- TITLE: Make search trigger explicit + add hard fallback
+- MODE (DEV/PROD impact): HTML + UI module behavior
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: narrow search triggers; fallback to dock inline search if palette fails
+- CHANGES (files touched): public/assets/latest/modules/ui.js; public/assets/latest/modules/ui.bucket.search.js; index.prod.xml; index.dev.xml
+- COMMANDS RUN (local): n/a
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (manual): grep/rg selectors + dock button data-gg-search in XML
+- NOTES (gotchas): prevents aria-label/data-gg-action search from hijacking unrelated UI; fallback routes to dock search or /search
+- RISKS: low; selector + fallback behavior change
+- NEXT: TBD

@@ -54,7 +54,7 @@
     loadIf('listing', shouldLoadListing());
     loadIf('post', shouldLoadPost());
 
-    var searchSelector = '[data-gg-search],[data-gg-action="search"],.gg-dock__item--search,.gg-search-trigger,button[aria-label="Search"],a[aria-label="Search"]';
+    var searchSelector = '[data-gg-search],.gg-search-trigger';
 
     function openSearch(){
       return corePromise.then(function(){
@@ -67,6 +67,20 @@
       });
     }
 
+    function fallbackSearch(trigger){
+      var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"]');
+      var inDock = !!(trigger && trigger.closest && trigger.closest('nav.gg-dock'));
+      if (inDock && dock && GG && GG.core && GG.core.state) {
+        GG.core.state.add(dock, 'search');
+        var input = dock.querySelector('.gg-dock__search input');
+        if (input) {
+          try { input.focus(); } catch(e) {}
+        }
+        return;
+      }
+      try { w.location.href = '/search'; } catch(_) {}
+    }
+
     if (!GG.modules.ui._searchBound) {
       GG.modules.ui._searchBound = true;
       d.addEventListener('click', function(e){
@@ -74,7 +88,10 @@
         if (!target) return;
         e.preventDefault();
         e.stopPropagation();
-        openSearch();
+        openSearch().catch(function(err){
+          if (w.GG_DEBUG) console.warn('[ui] search open failed', err);
+          fallbackSearch(target);
+        });
       }, true);
       d.addEventListener('keydown', function(e){
         if (!e) return;

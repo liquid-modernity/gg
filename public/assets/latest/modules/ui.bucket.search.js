@@ -315,7 +315,7 @@
     function onClick(e){
       var target = e && e.target ? e.target : null;
       if (!target || !target.closest) return;
-      var trigger = target.closest('[data-gg-search],[data-gg-action="search"],.gg-dock__item--search,.gg-search-trigger,button[aria-label="Search"],a[aria-label="Search"]');
+      var trigger = target.closest('[data-gg-search],.gg-search-trigger');
       if (!trigger) return;
       e.preventDefault();
       e.stopPropagation();

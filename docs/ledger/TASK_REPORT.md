@@ -242,3 +242,27 @@ CHANGES
 RISKS / ROLLBACK
 - Risk: low; docs/tooling only.
 - Rollback: revert this commit.
+
+---
+
+TASK_ID: TASK-0008F.1
+TITLE: Make Search Trigger Explicit + Add Hard Fallback (no dead clicks)
+
+TASK_SUMMARY
+- Narrow search triggers to explicit selectors only.
+- Add fallback when palette fails: dock inline search or /search.
+
+CHANGES
+- public/assets/latest/modules/ui.js
+- public/assets/latest/modules/ui.bucket.search.js
+- index.prod.xml
+- index.dev.xml
+
+VERIFICATION COMMANDS (manual)
+- `rg -n "searchSelector" public/assets/latest/modules/ui.js`
+- `rg -n "closest\\('\\[data-gg-search\\]" public/assets/latest/modules/ui.bucket.search.js`
+- `rg -n "gg-dock__item--search" index.prod.xml index.dev.xml`
+
+RISKS / ROLLBACK
+- Risk: low; selector narrowing + fallback path.
+- Rollback: revert this commit.
