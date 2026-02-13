@@ -509,7 +509,6 @@ GG.store.set({
   inputMode: 'touch', // or 'kbd'
   dockOpen: false,
   rightPanelOpen: false,
-  paletteOpen: false,
   reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
 });
 GG.ui = GG.ui || {};
@@ -517,7 +516,6 @@ GG.ui.applyRootState = GG.ui.applyRootState || function(root, s){
   root.dataset.ggLang = s.lang;
   root.dataset.ggInput = s.inputMode;
   root.dataset.ggDock = s.dockOpen ? '1' : '0';
-  root.dataset.ggPalette = s.paletteOpen ? '1' : '0';
   GG.core.state.toggle(root, 'reduced-motion', !!s.reducedMotion);
 };
 GG.view = GG.view || {};
@@ -618,9 +616,6 @@ GG.view.applyRootState = GG.ui.applyRootState;
   ui.dialog = ui.dialog || {};
   ui.dialog.open = ui.dialog.open || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', true); };
   ui.dialog.close = ui.dialog.close || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', false); };
-  ui.palette = ui.palette || {};
-  ui.palette.open = ui.palette.open || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', true); };
-  ui.palette.close = ui.palette.close || function(){ return toggleHost('.gg-palette-host,[data-gg-ui="palette"]', false); };
   ui.overlay = ui.overlay || {};
   ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); };
   ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
@@ -4898,9 +4893,6 @@ function isSystemPath(pathname){
     }
     if (mods.library && typeof mods.library.init === 'function') {
       mods.library.init(scope);
-    }
-    if (mods.postcardKebab && typeof mods.postcardKebab.init === 'function') {
-      mods.postcardKebab.init(scope);
     }
     if (mods.shareSheet && typeof mods.shareSheet.initShareButtons === 'function') {
       mods.shareSheet.initShareButtons(scope);

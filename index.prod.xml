@@ -2677,13 +2677,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <svg height='18' width='18'><use href='#gg-ic-mail-line'/></svg>
           </a>
         </div>
-        <div class='gg-footer__social'>
         <div class='gg-footer__social-links'>
-                    <button class='gg-install' id='install' type='button'>
-                      <span class='gg-install__label'>Add to your Devices</span>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>                      
-                    </button>
-          </div>
+          <button class='gg-install' id='install' type='button'>
+            <span class='gg-install__label'>Add to your Devices</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>
+          </button>
         </div>
       </div>
 
@@ -2913,7 +2911,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </div>
 <div aria-hidden='true' aria-modal='true' class='gg-dialog gg-dialog-host' data-gg-state='hidden' data-gg-ui='dialog' hidden='' id='gg-dialog'/>
 <div aria-hidden='true' class='gg-overlay' data-gg-state='hidden' id='gg-overlay'/>
-<div class='gg-palette-host' data-gg-ui='palette' hidden=''/>
 <div aria-hidden='true' class='gg-share-sheet' id='gg-share-sheet'>
   <div aria-hidden='true' class='gg-share-sheet__overlay'/>
   <div aria-labelledby='ggShareTitle' aria-modal='true' class='gg-share-sheet__panel' role='dialog' tabindex='-1'>
