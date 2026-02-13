@@ -18,12 +18,12 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
 :root{--gg-bg:#f6f7f9;--gg-ink:#0f172a;}
 *{box-sizing:border-box;}
 html,body{height:100%;}
-body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-serif,system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,Arial,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;;}
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link rel='preload' as='style' href='/assets/v/468fc80/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"'/>
-    <noscript><link rel='stylesheet' href='/assets/v/468fc80/main.css?v=20260203160035'/></noscript>
+    <link as='style' href='/assets/v/468fc80/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/468fc80/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -145,8 +145,8 @@ img{max-width:100%;height:auto;}
 <!-- GAGA HOME OF CSS -->
         <link href='https://fonts.googleapis.com' rel='preconnect'/>
 <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-<link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' onload='this.onload=null;this.rel="stylesheet"'/>
-<noscript><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap'/></noscript>
+<link as='style' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+<noscript><link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' rel='stylesheet'/></noscript>
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */
@@ -217,7 +217,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <b:include data='blog' name='google-analytics'/>
 </head>
 
-  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))'>
+  <body expr:class='&quot;loading&quot;' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
@@ -259,7 +259,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )'>
+  <main class='gg-main' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' id='gg-main' tabindex='-1'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     
@@ -502,7 +502,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <!-- Versi HOME/LIST -->
       <b:if cond='data:view.isMultipleItems'>
         <b:section class='gg-blog-sidebar__section' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
-          <b:widget id='PageList2' locked='false' title='' type='PageList' version='2' visible='true'>
+          <b:widget id='PageList2' locked='false' title='Pages' type='PageList' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='pageListJson'><![CDATA[{"4705629008715995659":{"href":"https://www.pakrpp.com/p/authors.html","position":6,"title":"Authors"},"726113257362069250":{"href":"https://www.pakrpp.com/p/support.html","position":2,"title":"Support"},"2019187567024867715":{"href":"https://www.pakrpp.com/p/faq.html","position":4,"title":"FAQ"},"4011106118937489318":{"href":"https://www.pakrpp.com/p/tags.html","position":9,"title":"Tags"},"1372170442682668249":{"href":"https://www.pakrpp.com/p/pak-rpp.html","position":0,"title":"Pak RPP"},"6528254867464092336":{"href":"https://www.pakrpp.com/p/sitemap.html","position":8,"title":"Sitemap"},"5485604862011607605":{"href":"https://www.pakrpp.com/p/library.html","position":1,"title":"Library"},"6481347832197765163":{"href":"https://www.pakrpp.com/p/about.html","position":5,"title":"About"},"7872828219384934892":{"href":"https://www.pakrpp.com/p/contact.html","position":3,"title":"Contact"},"8849782320772234696":{"href":"https://www.pakrpp.com/p/feeds.html","position":7,"title":"Feeds"}}]]></b:widget-setting>
               <b:widget-setting name='homeTitle'>Home</b:widget-setting>
@@ -1113,28 +1113,29 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:section class='gg-home-blog__body' id='blog' name='gg-page-body' showaddelement='true'>
             <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
               <b:widget-settings>
-                <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='commentLabel'>Comments</b:widget-setting>
-                <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showShareButtons'>false</b:widget-setting>
                 <b:widget-setting name='authorLabel'>Penned by</b:widget-setting>
+                <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+                <b:widget-setting name='timestampLabel'/>
+                <b:widget-setting name='reactionsLabel'/>
+                <b:widget-setting name='showAuthorProfile'>true</b:widget-setting>
+                <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+                <b:widget-setting name='showLocation'>false</b:widget-setting>
+                <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+                <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+                <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
+                <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+                <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showCommentLink'>true</b:widget-setting>
                 <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='postLocationLabel'>Thought from</b:widget-setting>
                 <b:widget-setting name='showAuthor'>true</b:widget-setting>
                 <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
-                <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
                 <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
-                <b:widget-setting name='reactionsLabel'/>
-                <b:widget-setting name='showAuthorProfile'>true</b:widget-setting>
-                <b:widget-setting name='style.layout'>1x1</b:widget-setting>
                 <b:widget-setting name='showLabels'>true</b:widget-setting>
-                <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='postLabelsLabel'>The</b:widget-setting>
-                <b:widget-setting name='showTimestamp'>true</b:widget-setting>
-                <b:widget-setting name='postsPerAd'>1</b:widget-setting>
                 <b:widget-setting name='showBacklinks'>false</b:widget-setting>
-                <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showInlineAds'>false</b:widget-setting>
                 <b:widget-setting name='showReactions'>false</b:widget-setting>
               </b:widget-settings>
@@ -1230,7 +1231,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
     <data:post.cmtfpIframe/>
     <script type='text/javascript'>
-      BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
     </script>
   </div>
 </b:includable>
@@ -1342,7 +1343,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
                         <b:include data='post' name='commentFormIframeSrc'/>
                         <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
                         <data:post.cmtfpIframe/>
-                        <script type='text/javascript'>BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');</script>
+                        <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
                       <b:elseif cond='data:post.allowComments'/>
                         <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'><b:message name='messages.postAComment'/></a>
                       </b:if>
@@ -1814,21 +1815,21 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
         <!-- GAGA FEEDS PAGE (PAGE: /p/feeds.html) -->
         <b:if cond='data:view.isPage and data:post.url contains &quot;feeds.html&quot;'>
-          <section id='gg-feed' data-api='/feeds/posts/default?alt=json'>
+          <section data-api='/feeds/posts/default?alt=json' id='gg-feed'>
             <div class='bar'>
               <input aria-label='Search feeds' class='q' placeholder='Cari konten...' type='search'/>
               <button class='active' data-type='all' type='button'>All</button>
               <button data-type='youtube' type='button'>YouTube</button>
               <button data-type='image' type='button'>Image</button>
             </div>
-            <div class='grid'></div>
+            <div class='grid'/>
             <div class='loader'>Loading...</div>
           </section>
         </b:if>
 
         <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
         <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
-          <section id='gg-sitemap' data-api='/feeds/posts/summary?alt=json&amp;max-results=500'>
+          <section data-api='/feeds/posts/summary?alt=json&amp;max-results=500' id='gg-sitemap'>
             <div class='gg-head'>
               <div class='gg-title'>
                 <h2>Sitemap</h2>
@@ -1864,12 +1865,12 @@ body:not([data-gg-surface="landing"]) .hero-section {
                   </select>
                 </div>
                 <div class='gg-row'>
-                  <div class='gg-stats' id='gg-stats'></div>
-                  <div class='gg-meta' id='gg-meta'></div>
+                  <div class='gg-stats' id='gg-stats'/>
+                  <div class='gg-meta' id='gg-meta'/>
                 </div>
               </div>
             </div>
-            <div id='gg-groups'></div>
+            <div id='gg-groups'/>
             <div class='gg-foot'>
               <button class='gg-more' type='button'>Load more</button>
               <div class='gg-loader' id='gg-loader'>Loading...</div>
@@ -2117,7 +2118,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
 
     <data:post.cmtfpIframe/>
-    <script type='text/javascript'>BLOG_CMT_createIframe('<data:post.appRpcRelayPath/>');</script>
+    <script type='text/javascript'>BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);</script>
   </div>
 </b:includable>
               <b:includable id='threadedCommentJs' var='post'>
@@ -2593,7 +2594,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp.com</a></li>
           </ul>
 
-          <h3 class='gg-footer__heading gg-footer__subheading'>Entertainment</h3>
+          <h3 class='gg-footer__heading'>Entertainment</h3>
           <ul class='gg-footer__list'>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp TV+</a></li>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Music</a></li>
@@ -2624,7 +2625,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>IT Deployment</a></li>
           </ul>
 
-          <h3 class='gg-footer__heading gg-footer__subheading'>For Education</h3>
+          <h3 class='gg-footer__heading'>For Education</h3>
           <ul class='gg-footer__list'>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp and Education</a></li>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Shop for K-12</a></li>
@@ -2838,7 +2839,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </div>
 <div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'/>
 <!-- /GAGA UI PRIMITIVE  -->
-<div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "searchCacheTTL": 60, "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
+<div data-json='{&quot;commentsEnabled&quot;: true, &quot;maxPosts&quot;: 5, &quot;searchLabels&quot;: [&quot;Feature&quot;, &quot;Blog&quot;], &quot;searchCacheTTL&quot;: 60, &quot;feedBase&quot;: &quot;/feeds/posts/default&quot;, &quot;feedSummaryBase&quot;: &quot;/feeds/posts/summary&quot;}' id='gg-config' style='display:none'/>
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
