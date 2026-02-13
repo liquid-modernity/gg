@@ -904,9 +904,12 @@ GG.actions.register('share', function(ctx){
   var meta = (GG.util && typeof GG.util.getMetaFromElement === 'function')
     ? GG.util.getMetaFromElement(element)
     : null;
-  if (!meta) return;
   if (event && event.preventDefault) event.preventDefault();
-  ggRequestPosterBucket(meta);
+  if (GG.services && GG.services.share && GG.services.share.open) {
+    GG.services.share.open(meta);
+    return;
+  }
+  ggFallbackShare(meta);
 });
 GG.actions.register('jump', function(ctx){
   var event = ctx && ctx.event;
@@ -1078,6 +1081,57 @@ GG.actions.register('jump', function(ctx){
     }
 
     return { mountWithRetry: mountWithRetry };
+  })();
+
+  services.share = services.share || (function(){
+    function hasHost(){
+      return !!document.querySelector('#gg-share-sheet,#pc-poster-sheet');
+    }
+    function getMeta(meta){
+      meta = meta || {};
+      return {
+        url: meta.url || meta.href || location.href,
+        title: meta.title || document.title,
+        text: meta.text || ''
+      };
+    }
+    function clipboardFallback(meta){
+      meta = getMeta(meta);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(meta.url).then(function(){
+          try{ if (GG.ui && typeof GG.ui.ggToast === 'function') GG.ui.ggToast('Link copied'); }catch(_){}
+        }).catch(function(){
+          try{ window.prompt('Copy link:', meta.url); }catch(_){}
+        });
+      }
+      try{ window.prompt('Copy link:', meta.url); }catch(_){}
+      return Promise.resolve();
+    }
+    function nativeOrClipboard(meta){
+      meta = getMeta(meta);
+      if (navigator.share) {
+        return navigator.share({ title: meta.title, text: meta.text, url: meta.url })
+          .catch(function(){ return clipboardFallback(meta); });
+      }
+      return clipboardFallback(meta);
+    }
+    function open(meta){
+      meta = getMeta(meta);
+      if (hasHost() && GG.boot && GG.boot.loadModule) {
+        return GG.boot.loadModule('ui.bucket.poster.js').then(function(){
+          var S = GG.modules && GG.modules.shareSheet;
+          if (S && S.open) {
+            try { return Promise.resolve(S.open(meta)); } catch(e) { return nativeOrClipboard(meta); }
+          }
+          return nativeOrClipboard(meta);
+        }).catch(function(){
+          return nativeOrClipboard(meta);
+        });
+      }
+      return nativeOrClipboard(meta);
+    }
+
+    return { open: open };
   })();
 
   GG.boot.onReady = GG.boot.onReady || function(fn){
@@ -1755,14 +1809,30 @@ GG.modules.Dock = (function () {
       var meta = (GG.util && typeof GG.util.getMetaFromElement === 'function')
         ? GG.util.getMetaFromElement(article)
         : null;
+      if (GG.services && GG.services.share && GG.services.share.open) {
+        GG.services.share.open(meta || { title: title, url: url });
+        return;
+      }
       var fallback = function(){
         if (navigator.share) {
-          navigator.share({ title: title, url: url }).catch(function(){});
+          navigator.share({ title: title, url: url }).catch(function(){
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); }).catch(function(){
+                try{ window.prompt('Copy link:', url); }catch(_){}
+              });
+              return;
+            }
+            try{ window.prompt('Copy link:', url); }catch(_){}
+          });
           return;
         }
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); });
+          navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); }).catch(function(){
+            try{ window.prompt('Copy link:', url); }catch(_){}
+          });
+          return;
         }
+        try{ window.prompt('Copy link:', url); }catch(_){}
       };
       if (meta) {
         requestPosterShare(meta, fallback);
