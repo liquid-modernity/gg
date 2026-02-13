@@ -339,7 +339,10 @@
       if (state._init) return;
       state._init = true;
       state.ttlMin = getTTL();
-      bindTriggers();
+      // If ui.js already bound triggers, do not double-bind here.
+      if (!(GG.modules && GG.modules.ui && GG.modules.ui._searchBound)) {
+        bindTriggers();
+      }
       warmIndex();
     }
 

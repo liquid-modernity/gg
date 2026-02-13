@@ -98,7 +98,9 @@
         var key = (e.key || '').toLowerCase();
         if ((e.ctrlKey || e.metaKey) && key === 'k') {
           e.preventDefault();
-          openSearch();
+          openSearch().catch(function(){
+            try { w.location.href = '/search'; } catch(_) {}
+          });
         }
       });
     }
