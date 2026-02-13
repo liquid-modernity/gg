@@ -2958,10 +2958,94 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </div>
 <div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'/>
 <!-- /GAGA UI PRIMITIVE  -->
+    
+    
+    
+    
+    
 <div data-json='{&quot;commentsEnabled&quot;: true, &quot;maxPosts&quot;: 5, &quot;searchLabels&quot;: [&quot;Feature&quot;, &quot;Blog&quot;], &quot;searchCacheTTL&quot;: 60, &quot;feedBase&quot;: &quot;/feeds/posts/default&quot;, &quot;feedSummaryBase&quot;: &quot;/feeds/posts/summary&quot;}' id='gg-config' style='display:none'/>
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
+    
+    
+    
+    <!-- GAGA INFO PANEL HOME BLOG TEMPLATE -->
+<template id='gg-info-panel'>
+  <div class='gg-info-panel__card' hidden=''>
+    <div class='gg-info-panel__thumb gg-info-panel__hero'>
+      <img alt='' class='gg-info-panel__thumb-img'/>
+      <div aria-hidden='true' class='gg-info-panel__scrim'/>
+
+      <div class='gg-info-panel__herohead'>
+        <div class='gg-info-panel__herohead-left'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+          <span class='gg-info-panel__herotitle-sm'>Information</span>
+        </div>
+        <button aria-label='Close' class='gg-info-panel__close' data-gg-action='info-close' type='button'>&#215;</button>
+      </div>
+
+      <div class='gg-info-panel__hero-title'/>
+
+      <a class='gg-info-panel__hero-cta' href='#'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>visibility</span>
+        <span>Read this post</span>
+      </a>
+    </div>
+
+    <div class='gg-info-panel__details'>
+      <div class='gg-info-panel__sec' data-gg-sec='author'>
+        <div class='gg-info-panel__sechead'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>person</span>
+          <div class='gg-info-panel__kicker'>Written by</div>
+        </div>
+        <div class='gg-info-panel__people' data-gg-slot='author'/>
+      </div>
+
+      <div class='gg-info-panel__sec' data-gg-sec='contributors' hidden=''>
+        <div class='gg-info-panel__sechead'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>groups</span>
+          <div class='gg-info-panel__kicker'>Contributors</div>
+        </div>
+        <div class='gg-info-panel__people' data-gg-slot='contributors'/>
+      </div>
+
+      <div class='gg-info-panel__row gg-info-panel__row--labels' hidden=''>
+        <span aria-hidden='true' class='gg-icon'>label</span>
+        <div class='gg-chip-row' data-gg-slot='labels'/>
+      </div>
+
+      <div class='gg-info-panel__row gg-info-panel__row--tags' hidden=''>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>sell</span>
+        <div class='gg-chip-row' data-gg-slot='tags'/>
+      </div>
+
+      <div class='gg-info-panel__meta gg-info-panel__meta--icons'>
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>calendar_today</span>
+          <span class='gg-info-panel__date'/>
+        </span>
+
+        <span class='gg-meta-sep'>&#8226;</span>
+
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>comment</span>
+          <span class='gg-info-panel__comments'/>
+        </span>
+
+        <span class='gg-meta-sep'>&#8226;</span>
+
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>schedule</span>
+          <span class='gg-info-panel__readtime'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- /GAGA INFO PANEL HOME BLOG TEMPLATE -->
+
+    
 
 <!-- GAGA HOME OF JS -->
 <script defer='defer' src='/assets/v/721946f/boot.js?v=20260203160035'/>
