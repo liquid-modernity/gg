@@ -30,14 +30,15 @@
   if (!GG) return;
   GG.modules = GG.modules || {};
   GG.modules.labelTree = GG.modules.labelTree || (function(){
-    var shared = { loaded:false, loading:false, map:null, promise:null };
+    var shared = { loaded:false, loading:false, map:null, promise:null, cacheChecked:false, fromCache:false, refreshing:false, maxPosts:10 };
 
     function getCfg(root){
       var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
       var maxPosts = parseInt(cfg.maxPosts || (root && root.getAttribute('data-max-posts')) || '10', 10);
       if (!isFinite(maxPosts) || maxPosts <= 0) maxPosts = 10;
       var filter = Array.isArray(cfg.labelTreeLabels) ? cfg.labelTreeLabels.filter(Boolean) : null;
-      return { maxPosts: maxPosts, filter: filter };
+      var exclude = Array.isArray(cfg.labelTreeExclude) ? cfg.labelTreeExclude.filter(Boolean) : null;
+      return { maxPosts: maxPosts, filter: filter, exclude: exclude };
     }
 
     function pickAltLink(entry){
@@ -48,8 +49,17 @@
       return '';
     }
 
-    function buildMap(entries){
-      var map = Object.create(null);
+    function isBadLabel(term){
+      var t = String(term || '').trim();
+      if (!t) return true;
+      var low = t.toLowerCase();
+      if (low.indexOf('schemas.google.com/blogger') !== -1) return true;
+      if (low.indexOf('http') === 0) return true;
+      return false;
+    }
+
+    function buildMap(entries, map, maxPosts){
+      var out = map || Object.create(null);
       (entries || []).forEach(function(entry){
         var cats = entry && entry.category ? entry.category : [];
         if (!cats || !cats.length) return;
@@ -58,22 +68,23 @@
         if (!url) return;
         for (var i = 0; i < cats.length; i++) {
           var term = cats[i] && cats[i].term ? cats[i].term : '';
-          if (!term) continue;
-          if (!map[term]) map[term] = [];
-          map[term].push({ title: title, url: url });
+          if (isBadLabel(term)) continue;
+          if (!out[term]) out[term] = [];
+          if (out[term].length < maxPosts) out[term].push({ title: title, url: url });
         }
       });
-      var keys = Object.keys(map);
+      var keys = Object.keys(out);
       keys.forEach(function(label){
         var seen = Object.create(null);
-        map[label] = map[label].filter(function(p){
+        out[label] = out[label].filter(function(p){
           var key = (p && p.url) ? p.url : '';
           if (!key || seen[key]) return false;
           seen[key] = 1;
           return true;
         });
+        if (out[label].length > maxPosts) out[label] = out[label].slice(0, maxPosts);
       });
-      return map;
+      return out;
     }
 
     function sortLabels(list){
@@ -100,6 +111,11 @@
       if (!shared.map) return [];
       var labels = Object.keys(shared.map).filter(Boolean);
       labels = sortLabels(labels);
+      if (state.exclude && state.exclude.length) {
+        var excludeMap = {};
+        state.exclude.forEach(function(l){ excludeMap[String(l).toLowerCase()] = 1; });
+        labels = labels.filter(function(l){ return !excludeMap[String(l).toLowerCase()]; });
+      }
       if (state.filter && state.filter.length) {
         var labelMap = {};
         labels.forEach(function(l){ labelMap[String(l).toLowerCase()] = l; });
@@ -111,6 +127,40 @@
         if (filtered.length) labels = filtered;
       }
       return labels;
+    }
+
+    function getCacheTTLMin(){
+      var cfg = (GG.store && GG.store.config) ? GG.store.config : {};
+      var ttl = parseInt(cfg.labelTreeCacheTTLMin, 10);
+      if (!isFinite(ttl) || ttl <= 0) ttl = 360;
+      return ttl;
+    }
+
+    function readCache(){
+      try {
+        var ls = w.localStorage;
+        if (!ls) return null;
+        var raw = ls.getItem('gg_labeltree_v1');
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        if (!data || !data.map || typeof data.map !== 'object') return null;
+        var ts = parseInt(data.ts, 10);
+        if (!isFinite(ts) || ts <= 0) return null;
+        var ttlMs = getCacheTTLMin() * 60 * 1000;
+        if ((Date.now() - ts) > ttlMs) return null;
+        return data.map;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function writeCache(map){
+      try {
+        var ls = w.localStorage;
+        if (!ls) return;
+        var payload = { ts: Date.now(), map: map };
+        ls.setItem('gg_labeltree_v1', JSON.stringify(payload));
+      } catch (_) {}
     }
 
     function getActiveLabel(){
@@ -289,20 +339,59 @@
       });
     }
 
-    function loadData(maxResults){
-      if (shared.promise) return shared.promise;
+    function loadData(opts){
+      opts = opts || {};
+      if (shared.loading && shared.promise) return shared.promise;
+      if (shared.promise && !opts.force) return shared.promise;
       shared.loading = true;
-      var params = { summary: true, 'max-results': maxResults || 500 };
-      shared.promise = GG.services.api.getFeed(params).then(function(json){
-        var entries = (json && json.feed && json.feed.entry) ? json.feed.entry : [];
-        shared.map = buildMap(entries);
+      shared.refreshing = !!opts.background;
+      var maxPosts = parseInt(opts.maxPosts || shared.maxPosts || 10, 10);
+      if (!isFinite(maxPosts) || maxPosts <= 0) maxPosts = 10;
+      var pageSize = 150;
+      var maxPages = 6;
+      var startIndex = 1;
+      var pages = 0;
+      var totalResults = 0;
+      var map = Object.create(null);
+
+      function fetchPage(){
+        pages++;
+        var params = { summary: true, 'max-results': pageSize, 'start-index': startIndex };
+        return GG.services.api.getFeed(params).then(function(json){
+          var feed = json && json.feed ? json.feed : null;
+          var entries = (feed && feed.entry) ? feed.entry : [];
+          var before = Object.keys(map).length;
+          map = buildMap(entries, map, maxPosts);
+          var after = Object.keys(map).length;
+          var delta = after - before;
+          var total = feed && feed['openSearch$totalResults'] ? parseInt(feed['openSearch$totalResults'].$t, 10) : 0;
+          if (isFinite(total) && total > 0) totalResults = total;
+          var nextStart = startIndex + pageSize;
+          var hasMore = true;
+          if (!entries || !entries.length) hasMore = false;
+          if (delta <= 0) hasMore = false;
+          if (pages >= maxPages) hasMore = false;
+          if (totalResults && nextStart > totalResults) hasMore = false;
+          if (!hasMore) return map;
+          startIndex = nextStart;
+          return fetchPage();
+        });
+      }
+
+      shared.promise = fetchPage().then(function(result){
+        shared.map = result;
         shared.loaded = true;
         shared.loading = false;
+        shared.refreshing = false;
+        shared.fromCache = false;
+        shared.promise = null;
+        writeCache(result);
         return shared;
       }).catch(function(err){
         shared.loading = false;
-        shared.map = null;
+        shared.refreshing = false;
         shared.promise = null;
+        if (!shared.map) shared.loaded = false;
         throw err;
       });
       return shared.promise;
@@ -341,6 +430,16 @@
         window.__GG_LABELTREE_INIT_LOGGED = true;
         try { console.info('[labelTree] init called'); } catch (_) {}
       }
+      if (!shared.cacheChecked) {
+        shared.cacheChecked = true;
+        var cached = readCache();
+        if (cached) {
+          shared.map = cached;
+          shared.loaded = true;
+          shared.fromCache = true;
+        }
+      }
+
       roots.forEach(function(el){
         if (!el) return;
         var treeEl = el.querySelector('.gg-lt__tree');
@@ -357,6 +456,8 @@
         var cfg = getCfg(el);
         state.maxPosts = cfg.maxPosts;
         state.filter = cfg.filter;
+        state.exclude = cfg.exclude;
+        shared.maxPosts = Math.max(shared.maxPosts || 10, state.maxPosts || 10);
 
         bindEvents(state);
         setPanel(state, state.panelOpen);
@@ -365,6 +466,17 @@
           renderLabels(el, state);
           applyActive(el, state);
           clearDebug(state);
+          if (shared.fromCache && !shared.refreshing) {
+            loadData({ maxPosts: shared.maxPosts, force: true, background: true }).then(function(){
+              renderLabels(el, state);
+              applyActive(el, state);
+              clearDebug(state);
+            }).catch(function(err){
+              if (window.GG_DEBUG) {
+                try { console.warn('[labelTree] feed failed', err); } catch (_) {}
+              }
+            });
+          }
           return;
         }
 
@@ -375,7 +487,7 @@
             if (!shared.loaded) addDebug(state, 'LabelTree: waiting for feed...');
           }, 2000);
         }
-        loadData(500).then(function(){
+        loadData({ maxPosts: shared.maxPosts }).then(function(){
           renderLabels(el, state);
           applyActive(el, state);
           clearDebug(state);
