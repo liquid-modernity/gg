@@ -1143,6 +1143,24 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   font-size: 15px;
   margin: 0 0 6px;
 }
+.gg-footer__acc-btn{
+  all: unset;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.gg-footer__acc-btn::after{
+  content: 'expand_more';
+  font-family: 'Material Symbols Rounded';
+  font-size: 20px;
+  line-height: 1;
+  opacity: .8;
+}
+.gg-footer__acc-btn[aria-expanded="true"]::after{
+  content: 'expand_less';
+}
 .gg-footer__list{
   list-style: none;
   padding: 0;
@@ -1171,6 +1189,10 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   flex-wrap: wrap;
 }
 .gg-footer__legal-nav a{ color: #cbd5e1; }
+
+@media (min-width: 961px){
+  .gg-footer__acc-btn{ cursor: default; }
+}
 
 /* =========================
    POPULAR POSTS CAROUSEL

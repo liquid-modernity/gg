@@ -2055,6 +2055,106 @@ return { init: init };
     return { init: init };
   })();
 
+  GG.modules.FooterAccordion = (function(){
+    var bound = false;
+    var mq;
+
+    function qs(sel, root){ return (root || document).querySelector(sel); }
+    function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+    function closest(el, sel){
+      if (!el) return null;
+      if (el.closest) return el.closest(sel);
+      while (el && el.nodeType === 1){
+        if (el.matches && el.matches(sel)) return el;
+        el = el.parentElement;
+      }
+      return null;
+    }
+
+    function enhanceSection(sec){
+      if (!sec || sec.__ggAcc) return;
+      var h = qs('.gg-footer__heading', sec);
+      var ul = qs('.gg-footer__list', sec);
+      if (!h || !ul) return;
+
+      // Wrap heading text into a button (keeps existing H3 styling)
+      var txt = (h.textContent || '').trim();
+      h.textContent = '';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gg-footer__acc-btn';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.textContent = txt;
+
+      h.appendChild(btn);
+
+      // mark
+      sec.__ggAcc = true;
+    }
+
+    function setSectionOpen(sec, open){
+      var btn = qs('.gg-footer__acc-btn', sec);
+      var ul = qs('.gg-footer__list', sec);
+      if (!btn || !ul) return;
+
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      ul.hidden = !open;
+      if (!open) ul.setAttribute('inert','');
+      else ul.removeAttribute('inert');
+    }
+
+    function applyMobile(enabled){
+      var grids = qsa('.gg-footer__grid', document);
+      grids.forEach(function(grid){
+        var secs = qsa(':scope > div', grid);
+        secs.forEach(function(sec){
+          enhanceSection(sec);
+        });
+
+        // Desktop: force open all, remove inert/hidden
+        if (!enabled){
+          secs.forEach(function(sec){ setSectionOpen(sec, true); });
+          return;
+        }
+
+        // Mobile: default collapse all, open first only
+        secs.forEach(function(sec, i){ setSectionOpen(sec, i === 0); });
+      });
+    }
+
+    function onClick(e){
+      var btn = closest(e.target, '.gg-footer__acc-btn');
+      if (!btn) return;
+      // Only active in mobile mode
+      if (!(mq && mq.matches)) return;
+
+      var sec = closest(btn, '.gg-footer__grid > div');
+      if (!sec) return;
+
+      var isOpen = btn.getAttribute('aria-expanded') === 'true';
+      setSectionOpen(sec, !isOpen);
+      e.preventDefault();
+    }
+
+    function init(){
+      if (bound) return;
+      bound = true;
+
+      mq = window.matchMedia ? window.matchMedia('(max-width: 960px)') : null;
+      applyMobile(!!(mq && mq.matches));
+
+      document.addEventListener('click', onClick);
+
+      if (mq){
+        var handler = function(){ applyMobile(mq.matches); };
+        if (mq.addEventListener) mq.addEventListener('change', handler);
+        else if (mq.addListener) mq.addListener(handler);
+      }
+    }
+
+    return { init: init };
+  })();
+
   GG.modules.LoadMore = (function(){
     function init(){
       var wrap = document.querySelector('[data-gg-module="loadmore"]');
@@ -3752,6 +3852,7 @@ GG.app.plan = [
   { name: 'Dock.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.Dock) GG.modules.Dock.init(dock, main); } },
   { name: 'ReadingProgress.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.ReadingProgress) GG.modules.ReadingProgress.init(dock, main); } },
   { name: 'DockPerimeter.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); if (dock && GG.modules.DockPerimeter) GG.modules.DockPerimeter.init(dock); } },
+  { name: 'FooterAccordion.init', selector: '.gg-footer__grid', init: function(){ if (GG.modules.FooterAccordion) GG.modules.FooterAccordion.init(); }, optional: true },
   { name: 'BackToTop.init', selector: '.gg-backtotop', init: function(){ if (GG.modules.BackToTop) GG.modules.BackToTop.init(); } },
   { name: 'LoadMore.init', selector: '[data-gg-module="loadmore"]', init: function(){ if (GG.modules.LoadMore) GG.modules.LoadMore.init(); } },
   { name: 'PopularCarousel.init', selector: '#gg-popularpost1 .widget-content [role="feed"]', init: function(){ if (GG.modules.PopularCarousel) GG.modules.PopularCarousel.init(); } },
