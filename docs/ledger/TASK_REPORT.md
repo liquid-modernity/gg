@@ -1,5 +1,5 @@
 TASK_REPORT
-Last updated: 2026-02-08
+Last updated: 2026-02-13
 
 TASK_ID: TASK-0008F.0
 TITLE: UI feature wiring audit (flags -> modules -> DOM hooks) + DOM-contract smoke
@@ -220,3 +220,25 @@ OPERATOR NOTE
 RISKS / ROLLBACK
 - Risk: low; flags path update and header checks only.
 - Rollback: revert this commit and restore the previous flags file location.
+
+---
+
+TASK_ID: TASK-0008Z.0
+TITLE: New room handoff generator (one-command)
+
+TASK_SUMMARY
+- Generate docs/ledger/NEW_ROOM_HANDOFF.md with git snapshot + smoke output + gg-flags proof.
+- One-command handoff regeneration script.
+
+HOW TO RUN
+- `tools/handoff-new-room.sh && cat docs/ledger/NEW_ROOM_HANDOFF.md`
+
+CHANGES
+- tools/handoff-new-room.sh
+- docs/ledger/NEW_ROOM_HANDOFF.md
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+RISKS / ROLLBACK
+- Risk: low; docs/tooling only.
+- Rollback: revert this commit.

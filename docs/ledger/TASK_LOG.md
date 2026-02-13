@@ -1,5 +1,5 @@
 # TASK LOG (append-only)
-Last updated: 2026-02-08
+Last updated: 2026-02-13
 
 > Purpose: immutable-ish history for AI context + audit trail.
 > Rule: NEVER rewrite old entries. Only append.
@@ -1349,4 +1349,22 @@ Last updated: 2026-02-08
 - VERIFY (URLs + expected): n/a (add SMOKE_LIVE_HTML checks for home + listing DOM hooks)
 - NOTES (gotchas): UI features are DOM-gated; no gg-flags for UI features were found
 - RISKS: low; smoke-only checks
+- NEXT: TBD
+
+---
+
+## 2026-02-13 — TASK-0008Z.0 — New room handoff generator (one-command)
+- DATE: 2026-02-13
+- TASK_ID: TASK-0008Z.0
+- TITLE: New room handoff generator (one-command)
+- MODE (DEV/PROD impact): docs + tooling only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: handoff generator script + ledger handoff snapshot
+- CHANGES (files touched): tools/handoff-new-room.sh; docs/ledger/NEW_ROOM_HANDOFF.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): tools/handoff-new-room.sh
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a (best-effort smoke + gg-flags capture in handoff)
+- NOTES (gotchas): handoff script captures live smoke/headers best-effort; curl failures do not hard-fail
+- RISKS: low; docs/tooling only
 - NEXT: TBD

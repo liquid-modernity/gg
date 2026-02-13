@@ -2683,7 +2683,6 @@ body:not([data-gg-surface="landing"]) .hero-section {
             </button>
           </div>
         </div>
-        <span class='gg-footer__locale'>United States</span>
       </div>
     </div>
   </footer>
