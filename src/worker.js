@@ -107,17 +107,17 @@ const shouldLogCspCount = (count) => {
 };
 
 const CSP_REPORT_ONLY = [
-  "default-src 'self' https:",
+  "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'self'",
-  "img-src 'self' data: https:",
-  "style-src 'self' 'unsafe-inline' https:",
-  "script-src 'self' 'unsafe-inline' https:",
-  "connect-src 'self' https:",
-  "font-src 'self' data: https:",
-  "frame-src https:",
-  "form-action 'self' https:",
+  "img-src 'self' data: https://*.bp.blogspot.com https://*.googleusercontent.com https://*.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.blogger.com https://www.gstatic.com",
+  "connect-src 'self'",
+  "frame-src 'self' https://www.blogger.com https://accounts.google.com https://www.google.com",
+  "form-action 'self' https://www.blogger.com",
   "upgrade-insecure-requests",
   "report-uri /api/csp-report",
 ].join("; ");
