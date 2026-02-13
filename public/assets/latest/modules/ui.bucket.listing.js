@@ -308,9 +308,39 @@
       return shared.promise;
     }
 
+    function addDebug(state, msg){
+      if (!window.GG_DEBUG) return;
+      if (!state || !state.tree) return;
+      var el = state.debugEl;
+      if (!el) {
+        el = document.createElement('li');
+        el.className = 'gg-lt__debug';
+        el.setAttribute('role', 'presentation');
+        state.debugEl = el;
+        state.tree.appendChild(el);
+      }
+      el.textContent = msg;
+    }
+
+    function clearDebug(state){
+      if (!state) return;
+      if (state.debugTimer) {
+        clearTimeout(state.debugTimer);
+        state.debugTimer = null;
+      }
+      if (state.debugEl && state.debugEl.parentNode) {
+        state.debugEl.parentNode.removeChild(state.debugEl);
+      }
+      state.debugEl = null;
+    }
+
     function init(root){
       var roots = root ? [root] : Array.prototype.slice.call(d.querySelectorAll('.gg-labeltree[data-gg-module="labeltree"]'));
       if (!roots.length) return;
+      if (window.GG_DEBUG && !window.__GG_LABELTREE_INIT_LOGGED) {
+        window.__GG_LABELTREE_INIT_LOGGED = true;
+        try { console.info('[labelTree] init called'); } catch (_) {}
+      }
       roots.forEach(function(el){
         if (!el) return;
         var treeEl = el.querySelector('.gg-lt__tree');
@@ -334,15 +364,28 @@
         if (shared.loaded && shared.map) {
           renderLabels(el, state);
           applyActive(el, state);
+          clearDebug(state);
           return;
         }
 
         treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels...</li>';
+        if (window.GG_DEBUG) {
+          if (state.debugTimer) clearTimeout(state.debugTimer);
+          state.debugTimer = setTimeout(function(){
+            if (!shared.loaded) addDebug(state, 'LabelTree: waiting for feed...');
+          }, 2000);
+        }
         loadData(500).then(function(){
           renderLabels(el, state);
           applyActive(el, state);
-        }).catch(function(){
+          clearDebug(state);
+        }).catch(function(err){
           treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+          if (window.GG_DEBUG) {
+            try { console.warn('[labelTree] feed failed', err); } catch (_) {}
+            clearDebug(state);
+            addDebug(state, 'LabelTree: feed failed');
+          }
         });
       });
     }
