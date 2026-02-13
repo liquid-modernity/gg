@@ -1442,6 +1442,11 @@ main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right .gg-post__co
   box-shadow: none;
   padding: 0;
 }
+.gg-comments-loading{
+  padding: 12px 14px;
+  font-size: 14px;
+  opacity: .85;
+}
 
 /* left panel closed (desktop) — independen */
 main.gg-main[data-gg-left-panel="closed"] .gg-blog-sidebar--left{

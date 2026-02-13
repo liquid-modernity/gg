@@ -997,6 +997,89 @@ GG.actions.register('jump', function(ctx){
     return services.api.fetch(url, 'text');
   };
 
+  services.comments = services.comments || (function(){
+    var moved = false;
+    function qs(sel, root){ return (root || document).querySelector(sel); }
+    function findBloggerCommentsRoot(){
+      // Try common Blogger comment containers (keep order)
+      return qs('.gg-post__comments') ||
+             qs('#comments') ||
+             qs('#comment-holder') ||
+             qs('.comments') ||
+             qs('.comment-thread') ||
+             qs('div[id*="comments"]');
+    }
+    function ensureSlot(){
+      return qs('.gg-comments-panel[data-gg-panel="comments"] [data-gg-slot="comments"]');
+    }
+    function setLoading(slot, on){
+      if (!slot) return;
+      if (on){
+        if (slot.__ggLoading) return;
+        slot.__ggLoading = true;
+        slot.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Loading comments...</div>";
+      } else {
+        slot.__ggLoading = false;
+        var el = slot.querySelector('.gg-comments-loading');
+        if (el) el.remove();
+      }
+    }
+
+    function mount(){
+      var slot = ensureSlot();
+      if (!slot) return false;
+
+      var src = findBloggerCommentsRoot();
+      if (!src) return false;
+
+      if (src.parentNode !== slot){
+        setLoading(slot, false);
+        slot.innerHTML = '';
+        slot.appendChild(src);
+      } else {
+        setLoading(slot, false);
+      }
+      moved = true;
+      return true;
+    }
+
+    function mountWithRetry(){
+      var tries = 0;
+      var max = 10;          // ~5s total
+      var delay = 500;
+
+      var slot = ensureSlot();
+      if (!slot) return;
+
+      if (mount()){
+        setLoading(ensureSlot(), false);
+        return;
+      }
+
+      setLoading(slot, true);
+
+      function tick(){
+        tries++;
+        if (mount()){
+          setLoading(ensureSlot(), false);
+          return;
+        }
+        if (tries >= max) {
+          // Give up gracefully but keep panel usable
+          var s = ensureSlot();
+          if (s){
+            s.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Comments are not available right now.</div>";
+          }
+          return;
+        }
+        setTimeout(tick, delay);
+      }
+      tick();
+    }
+
+    return { mountWithRetry: mountWithRetry };
+  })();
+
   GG.boot.onReady = GG.boot.onReady || function(fn){
     if (typeof fn !== 'function') return;
     GG.boot._readyQueue = GG.boot._readyQueue || [];
@@ -1843,6 +1926,9 @@ function init(){
     setRightMode(useMode);
     setRightState('open');
     applyFromAttrs();
+    if (useMode === 'comments' && GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
+      GG.services.comments.mountWithRetry();
+    }
   }
 
   function hideRightPanel(focusBackBtn){

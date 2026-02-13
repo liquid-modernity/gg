@@ -22,7 +22,7 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/fb418d4/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"' rel='preload'/>
+    <link as='style' href='/assets/v/fb418d4/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
     <noscript><link href='/assets/v/fb418d4/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
@@ -2593,7 +2593,9 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Store Account</a></li>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp.com</a></li>
           </ul>
+</div>
 
+        <div>
           <h3 class='gg-footer__heading'>Entertainment</h3>
           <ul class='gg-footer__list'>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp TV+</a></li>
@@ -2624,7 +2626,9 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Shop for Business</a></li>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>IT Deployment</a></li>
           </ul>
+</div>
 
+        <div>
           <h3 class='gg-footer__heading'>For Education</h3>
           <ul class='gg-footer__list'>
             <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp and Education</a></li>

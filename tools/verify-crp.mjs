@@ -17,6 +17,15 @@ function stripNoscript(src) {
   return src.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
 }
 
+function decodeEntities(src) {
+  return src
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function hasMainJs(src) {
   return /\/assets\/[^"']+\/main\.js/.test(src);
 }
@@ -30,7 +39,7 @@ function hasMainCssPreload(src) {
 }
 
 function getAttr(tag, name) {
-  const re = new RegExp(`${name}\\s*=\\s*(['"])(.*?)\\1`, "i");
+  const re = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(['"])(.*?)\\1`, "i");
   const m = tag.match(re);
   return m ? m[2] : "";
 }
@@ -69,7 +78,7 @@ let failed = false;
 console.log("VERIFY_CRP");
 
 for (const f of files) {
-  const src = readFile(f.path);
+  const src = decodeEntities(stripNoscript(readFile(f.path)));
   const checks = runChecks(f.name, src);
   checks.forEach((c) => {
     const status = c.ok ? "OK" : "FAIL";
