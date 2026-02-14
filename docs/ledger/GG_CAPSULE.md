@@ -38,7 +38,7 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TBD
+- P0-03 Telemetry redaction/allowlist (strip query/fragment, allowlist keys).
 
 LAST_PATCH:
 - 2026-02-14 TASK-0009D worker detection LKG + backoff

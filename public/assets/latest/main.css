@@ -36,6 +36,8 @@
   --gg-font-lg: 1.125rem;
   --gg-font-xl: 1.25rem;
   --gg-font-2xl: 1.5rem;
+  --gg-font-h2: clamp(22px, 3.2vw, 36px);
+  --gg-font-h3: var(--gg-font-base);
 
   --gg-space-2: clamp(8px, 1.2vw, 12px);
   --gg-space-3: clamp(12px, 1.6vw, 16px);
@@ -45,6 +47,7 @@
   --gg-space-16: 16px;
   --gg-space-24: 24px;
   --gg-space-32: 32px;
+  --gg-tap-min: 44px;
 
   --gg-shadow-sm: 0 1px 2px rgba(11,13,16,.08);
   --gg-shadow-md: 0 8px 24px rgba(11,13,16,.10);
@@ -52,6 +55,8 @@
 
   --gg-state-hover: rgba(15,23,42,.05);
   --gg-state-active: rgba(15,23,42,.08);
+  --gg-control-hover: var(--gg-state-hover);
+  --gg-control-active: var(--gg-state-active);
 
   --gg-dur-1: var(--gg-dur-fast);
   --gg-dur-2: .22s;
@@ -221,24 +226,35 @@ vertical-align:middle;}
 }
 
 .gg-icon-btn{
-  width: 36px;
-  height: 36px;
+  width: var(--gg-tap-min);
+  height: var(--gg-tap-min);
+  min-width: var(--gg-tap-min);
+  min-height: var(--gg-tap-min);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
   border: 1px solid var(--gg-border);
-  background: #fff;
+  background: var(--gg-surface);
   color: var(--gg-color-text-main);
   transition: background-color var(--gg-dur-fast) ease, border-color var(--gg-dur-fast) ease, opacity var(--gg-dur-fast) ease;
 }
 
 .gg-icon-btn:hover{
-  background: #f1f2f5;
+  background: var(--gg-control-hover);
   border-color: var(--gg-color-border-subtle);
 }
 
-.gg-icon-btn:active{ opacity: .9; }
+.gg-icon-btn:active{
+  background: var(--gg-control-active);
+  opacity: 1;
+}
+
+.gg-icon-btn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .gg-icon-btn:focus-visible{
   outline: 2px solid var(--gg-color-text-main);
@@ -276,6 +292,7 @@ nav.gg-dock[data-gg-module="dock"]{
   --gg-dock-gap: 8px;
   --gg-dock-pad: 10px;
 
+  font-size: var(--gg-font-sm);
   position: fixed;
   left: 50%;
   bottom: 10px;
@@ -319,6 +336,8 @@ nav.gg-dock .gg-dock__icon svg{ fill: currentColor; stroke: currentColor; }
 nav.gg-dock :where(.gg-dock__item, .gg-panel-x){
   width: var(--gg-dock-slot);
   height: var(--gg-dock-slot);
+  min-width: var(--gg-tap-min);
+  min-height: var(--gg-tap-min);
   border-radius: 999px;
 
   display: inline-flex;
@@ -2130,7 +2149,7 @@ main.gg-main[data-gg-surface="post"] .gg-leftnav__profile{ display:none !importa
   }
   .gg-h2{
     margin: 0 0 10px;
-    font: 900 clamp(22px, 3.2vw, 36px)/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font: 900 var(--gg-font-h2)/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
     color: rgba(15,23,42,.92);
   }
   .gg-h2--light{ color: rgba(255,255,255,.92); }
@@ -2150,7 +2169,7 @@ main.gg-main[data-gg-surface="post"] .gg-leftnav__profile{ display:none !importa
   }
   .gg-h3{
     margin: 0 0 8px;
-    font: 850 16px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font: 850 var(--gg-font-h3)/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial;
     color: rgba(15,23,42,.92);
   }
   .gg-h3--light{ color: rgba(255,255,255,.92); }
@@ -2170,15 +2189,21 @@ main.gg-main[data-gg-surface="post"] .gg-leftnav__profile{ display:none !importa
   .gg-btn{
     display:inline-flex; align-items:center; justify-content:center; gap:10px;
     padding: 12px 14px;
+    min-height: var(--gg-tap-min);
     border-radius: var(--gg-radius-sm, 12px);
     border: 1px solid rgba(255,255,255,.18);
     background: rgba(255,255,255,.08);
     color: rgba(255,255,255,.92);
-    font: 800 13px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font: 800 var(--gg-font-sm)/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
     transition: transform var(--gg-dur-fast, .16s) ease, background var(--gg-dur-fast, .16s) ease;
     will-change: transform;
   }
   .gg-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); }
+  .gg-btn:disabled{
+    opacity: .55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
   .gg-btn--ghost{
     background: rgba(15,23,42,.06);
     color: rgba(15,23,42,.86);
@@ -6125,7 +6150,20 @@ a, button{
 /* /GAGA MODULE: CORE (CSS) */
 
 .gg-dialog {
+  font-size: var(--gg-font-base);
+}
 
+.gg-search__close,
+.gg-search__result{
+  min-height: var(--gg-tap-min);
+  font-size: var(--gg-font-sm);
+}
+
+.gg-search__close:disabled,
+.gg-search__result:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .gg-overlay .gg-scrim {

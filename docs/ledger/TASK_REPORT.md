@@ -1,6 +1,32 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
+TASK_ID: GG-UX-P0-P1
+TITLE: Motion safety + SPA focus + search dialog a11y + UI contract
+
+TASK_SUMMARY
+- Gate view transitions on reduced motion and gate autoplay (hero + lite embeds) on reduced motion/saveData/slow network.
+- After SPA navigation, focus #gg-main and announce route changes via aria-live.
+- Harden search dialog semantics: aria-modal/label, focus trap, inert background, ESC close, focus restore.
+- Enforce tap target minimums and typography tokens on dock/buttons/dialog + heading tokenization.
+
+CHANGES
+- public/assets/latest/core.js
+- public/assets/latest/modules/ui.bucket.core.js
+- public/assets/latest/modules/ui.bucket.search.js
+- public/assets/latest/main.css
+- docs/ledger/GG_CAPSULE.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `npm run ship`
+
+RISKS / ROLLBACK
+- Risk: low/med; focus trapping and autoplay gating could affect legacy behavior on custom embeds.
+- Rollback: revert commit and re-run release to restore prior assets.
+
+---
+
 TASK_ID: TASK-0009D
 TITLE: Worker detection LKG + backoff
 

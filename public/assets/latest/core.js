@@ -238,6 +238,46 @@
       var s=findTarget(doc),t=findTarget(d);
       if(!s||!t)throw fail('target',{url:url});
       var m=extractMeta(doc);
+      function shouldReduceMotion(){
+        try{
+          if(GG.store&&GG.store.get){
+            var st=GG.store.get();
+            if(st&&typeof st.reducedMotion==='boolean') return st.reducedMotion;
+          }
+        }catch(e){}
+        try{
+          if(GG.services&&GG.services.a11y&&GG.services.a11y.reducedMotion){
+            return !!GG.services.a11y.reducedMotion.get();
+          }
+        }catch(e){}
+        return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
+      function announceRoute(){
+        var main=d.getElementById('gg-main')||d.querySelector('main.gg-main');
+        if(main){
+          if(!main.hasAttribute('tabindex')) main.setAttribute('tabindex','-1');
+          try{ main.focus({ preventScroll: true }); }catch(e){ try{ main.focus(); }catch(_){} }
+        }
+        var title=(m&&m.title)|| (doc&&doc.title) || d.title || 'Page loaded';
+        if(GG.services&&GG.services.a11y&&GG.services.a11y.announce){
+          GG.services.a11y.announce(title,{politeness:'polite'});
+          return;
+        }
+        try{
+          var live=d.querySelector('.gg-sr-announcer,[data-gg-announcer]');
+          if(!live&&d.body){
+            live=d.createElement('div');
+            live.className='gg-sr-announcer gg-visually-hidden';
+            live.setAttribute('aria-live','polite');
+            live.setAttribute('aria-atomic','true');
+            d.body.appendChild(live);
+          }
+          if(live){
+            live.textContent='';
+            w.setTimeout(function(){ live.textContent=String(title||'Page loaded'); },10);
+          }
+        }catch(e){}
+      }
       var doSwap=function(){
         t.innerHTML=s.innerHTML;
         ['aside.gg-blog-sidebar--left','aside.gg-blog-sidebar--right'].forEach(function(sel){
@@ -260,8 +300,9 @@
         if(GG.app&&typeof GG.app.rehydrate==='function')try{GG.app.rehydrate({doc:doc,url:url});}catch(_){}
         GG.core.render._lastUrl=url||'';
         GG.core.render._lastAt=Date.now();
+        announceRoute();
       };
-      if(d&&d.startViewTransition){try{d.startViewTransition(function(){doSwap();});}catch(e){doSwap();}}else{doSwap();}
+      if(d&&d.startViewTransition&&!shouldReduceMotion()){try{d.startViewTransition(function(){doSwap();});}catch(e){doSwap();}}else{doSwap();}
       return true;
     }
     return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };

@@ -21,7 +21,12 @@
       ui: null,
       _init: false,
       _indexPromise: null,
-      _libs: null
+      _libs: null,
+      _dialogOpen: false,
+      _trapCleanup: null,
+      _lastFocus: null,
+      _inertActive: false,
+      _dialogBound: false
     };
     var KEY = 'gg_search_index_v1';
 
@@ -168,7 +173,11 @@
       var host = d.getElementById('gg-dialog') || d.querySelector('.gg-dialog-host,[data-gg-ui="dialog"]');
       if (!host) return null;
       host.setAttribute('role', 'dialog');
-      host.setAttribute('aria-label', 'Search');
+      host.setAttribute('aria-modal', 'true');
+      if (!host.getAttribute('aria-label') && !host.getAttribute('aria-labelledby')) {
+        host.setAttribute('aria-label', 'Search');
+      }
+      if (!host.hasAttribute('tabindex')) host.setAttribute('tabindex', '-1');
       host.innerHTML = '' +
         '<div class="gg-search" data-gg-search-root>' +
           '<div class="gg-search__header">' +
@@ -214,6 +223,16 @@
       if (closeBtn) {
         closeBtn.addEventListener('click', function(){
           close();
+        });
+      }
+      if (!state._dialogBound) {
+        state._dialogBound = true;
+        host.addEventListener('keydown', function(e){
+          if (!e) return;
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            close();
+          }
         });
       }
       return state.ui;
@@ -275,8 +294,25 @@
     function open(){
       var ui = ensureUI();
       if (!ui) return;
+      if (state._dialogOpen) {
+        try { if (ui.input) ui.input.focus(); } catch (e) {}
+        return;
+      }
+      state._dialogOpen = true;
+      state._lastFocus = d.activeElement;
       if (GG.ui && GG.ui.dialog && GG.ui.dialog.open) GG.ui.dialog.open();
       if (GG.ui && GG.ui.overlay && GG.ui.overlay.open) GG.ui.overlay.open();
+      if (GG.services && GG.services.a11y && GG.services.a11y.inertManager) {
+        GG.services.a11y.inertManager.push(d.body, ui.root);
+        state._inertActive = true;
+      }
+      if (state._trapCleanup) {
+        try { state._trapCleanup(); } catch (e) {}
+        state._trapCleanup = null;
+      }
+      if (GG.services && GG.services.a11y && GG.services.a11y.focusTrap) {
+        state._trapCleanup = GG.services.a11y.focusTrap(ui.root, { autofocus: false });
+      }
       setStatus(state.ready ? '' : 'Loading search index…');
       ensureIndex().then(function(){
         setStatus('');
@@ -290,6 +326,20 @@
     function close(){
       if (GG.ui && GG.ui.dialog && GG.ui.dialog.close) GG.ui.dialog.close();
       if (GG.ui && GG.ui.overlay && GG.ui.overlay.close) GG.ui.overlay.close();
+      if (state._trapCleanup) {
+        try { state._trapCleanup(); } catch (e) {}
+        state._trapCleanup = null;
+      }
+      if (state._inertActive && GG.services && GG.services.a11y && GG.services.a11y.inertManager) {
+        GG.services.a11y.inertManager.pop();
+      }
+      state._inertActive = false;
+      state._dialogOpen = false;
+      var last = state._lastFocus;
+      state._lastFocus = null;
+      if (last && last.focus) {
+        try { last.focus(); } catch (e) {}
+      }
     }
 
     function navigate(url){

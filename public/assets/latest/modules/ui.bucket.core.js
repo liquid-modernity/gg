@@ -240,6 +240,46 @@
       var target = findTarget(w.document);
       if (!source || !target) throw fail('target', { url: url });
       var meta = extractMeta(doc);
+      function shouldReduceMotion(){
+        try{
+          if(GG.store&&GG.store.get){
+            var st=GG.store.get();
+            if(st&&typeof st.reducedMotion==='boolean') return st.reducedMotion;
+          }
+        }catch(e){}
+        try{
+          if(GG.services&&GG.services.a11y&&GG.services.a11y.reducedMotion){
+            return !!GG.services.a11y.reducedMotion.get();
+          }
+        }catch(e){}
+        return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
+      function announceRoute(){
+        var main=w.document.getElementById('gg-main')||w.document.querySelector('main.gg-main');
+        if(main){
+          if(!main.hasAttribute('tabindex')) main.setAttribute('tabindex','-1');
+          try{ main.focus({ preventScroll: true }); }catch(e){ try{ main.focus(); }catch(_){} }
+        }
+        var title=(meta&&meta.title)||(doc&&doc.title)||w.document.title||'Page loaded';
+        if(GG.services&&GG.services.a11y&&GG.services.a11y.announce){
+          GG.services.a11y.announce(title,{politeness:'polite'});
+          return;
+        }
+        try{
+          var live=w.document.querySelector('.gg-sr-announcer,[data-gg-announcer]');
+          if(!live&&w.document.body){
+            live=w.document.createElement('div');
+            live.className='gg-sr-announcer gg-visually-hidden';
+            live.setAttribute('aria-live','polite');
+            live.setAttribute('aria-atomic','true');
+            w.document.body.appendChild(live);
+          }
+          if(live){
+            live.textContent='';
+            w.setTimeout(function(){ live.textContent=String(title||'Page loaded'); },10);
+          }
+        }catch(e){}
+      }
       var doSwap = function(){
         target.innerHTML = source.innerHTML;
         if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
@@ -262,9 +302,10 @@
         }
         GG.core.render._lastUrl = url || '';
         GG.core.render._lastAt = Date.now();
+        announceRoute();
       };
       var docRef = w.document;
-      if (docRef && docRef.startViewTransition) {
+      if (docRef && docRef.startViewTransition && !shouldReduceMotion()) {
         try { docRef.startViewTransition(function(){ doSwap(); }); }
         catch (e) { doSwap(); }
       } else {
@@ -1296,6 +1337,32 @@ GG.actions.register('jump', function(ctx){
     const v = document.getElementById("ggHeroVideo");
     const hero = document.getElementById("gg-landing-hero");
     if (!v || !hero || !("IntersectionObserver" in window)) return;
+    var reduced = false;
+    try{
+      if (window.GG && GG.store && GG.store.get) {
+        var st = GG.store.get();
+        if (st && typeof st.reducedMotion === 'boolean') reduced = st.reducedMotion;
+      }
+    }catch(e){}
+    if (!reduced) {
+      try{
+        if (window.GG && GG.services && GG.services.a11y && GG.services.a11y.reducedMotion) {
+          reduced = !!GG.services.a11y.reducedMotion.get();
+        }
+      }catch(e){}
+    }
+    if (!reduced && window.matchMedia) {
+      try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+    }
+    var nav = navigator || {};
+    var conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+    var slowNet = !!(conn && (conn.saveData || (typeof conn.effectiveType === 'string' && /2g|slow-2g/i.test(conn.effectiveType)) || (typeof conn.downlink === 'number' && conn.downlink < 1.0)));
+    if (reduced || slowNet) {
+      try { v.pause(); } catch (_) {}
+      try { v.autoplay = false; v.removeAttribute('autoplay'); } catch (_) {}
+      try { v.controls = true; } catch (_) {}
+      return;
+    }
 
     v.play().catch(()=>{});
     const io = new IntersectionObserver((entries)=>{
@@ -4315,6 +4382,33 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
 
 
 
+  function shouldAutoPlayMedia(){
+    var reduced = false;
+    try{
+      if (GG.store && GG.store.get) {
+        var st = GG.store.get();
+        if (st && typeof st.reducedMotion === 'boolean') reduced = st.reducedMotion;
+      }
+    }catch(e){}
+    if (!reduced) {
+      try{
+        if (GG.services && GG.services.a11y && GG.services.a11y.reducedMotion) {
+          reduced = !!GG.services.a11y.reducedMotion.get();
+        }
+      }catch(e){}
+    }
+    if (!reduced && window.matchMedia) {
+      try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+    }
+    if (reduced) return false;
+    var nav = window.navigator || {};
+    var conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+    if (conn && conn.saveData) return false;
+    if (conn && typeof conn.effectiveType === 'string' && /2g|slow-2g/i.test(conn.effectiveType)) return false;
+    if (conn && typeof conn.downlink === 'number' && conn.downlink < 1.0) return false;
+    return true;
+  }
+
   function hydrateLiteEmbeds(root=document){
     root.querySelectorAll('.gg-yt-lite').forEach(box => {
       if (box.dataset.ggHydrated === '1') return;
@@ -4330,11 +4424,16 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
 
 
       const load = () => {
+        const allowAuto = shouldAutoPlayMedia();
+        const autoplay = allowAuto ? '1' : '0';
+        const allowAttr = allowAuto
+          ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+          : 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
         box.innerHTML = `
           <iframe
-            src="https://www.youtube.com/embed/${id}?autoplay=1"
+            src="https://www.youtube.com/embed/${id}?autoplay=${autoplay}"
             style="width:100%;height:100%;border:0;"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="${allowAttr}"
             allowfullscreen></iframe>`;
       };
 
