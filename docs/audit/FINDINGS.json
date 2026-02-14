@@ -1,0 +1,970 @@
+[
+  {
+    "id": "F-001",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Main JS load is delayed until idle/interaction (up to 5s) on cold load",
+    "evidence": [
+      {
+        "file": "public/assets/latest/boot.js",
+        "lines": "L88-L149",
+        "note": "main.js requested only after interaction or load+idle"
+      }
+    ],
+    "impact": {
+      "perf": "slower first interaction and TTI on cold loads",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "perceived sluggishness on fast networks"
+    },
+    "recommendation": "Add optional preload for main.js/boot.js or shorten idle delay for first visit while keeping long tasks in check.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-002",
+    "area": "perf",
+    "severity": "P3",
+    "title": "No explicit preload for main.js; only CSS is preloaded",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L25-L26",
+        "note": "CSS preload present"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L2833-L2833",
+        "note": "boot.js deferred; no main.js preload"
+      }
+    ],
+    "impact": {
+      "perf": "main.js fetch starts later than necessary",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "slower JS boot on fast networks"
+    },
+    "recommendation": "Consider preloading boot.js or main.js with proper priority guards.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-003",
+    "area": "perf",
+    "severity": "P3",
+    "title": "Third-party instant.page adds extra request and JS cost",
+    "evidence": [
+      {
+        "file": "public/assets/latest/boot.js",
+        "lines": "L77-L85",
+        "note": "loads https://instant.page/5.2.0"
+      }
+    ],
+    "impact": {
+      "perf": "extra DNS/TLS/JS parse on non-dev",
+      "seo": "n/a",
+      "security": "supply-chain surface",
+      "ux": "minor CPU/battery cost"
+    },
+    "recommendation": "Self-host instant.page or gate by device/network conditions.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-004",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Search module depends on external CDNs for Fuse.js and idb-keyval",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L45-L54",
+        "note": "dynamic import from jsdelivr/unpkg"
+      }
+    ],
+    "impact": {
+      "perf": "extra network hops and latency",
+      "seo": "n/a",
+      "security": "third-party JS risk",
+      "ux": "search may stall on blocked CDN"
+    },
+    "recommendation": "Vendor these libs into /assets/latest and load same-origin.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-005",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Search index fetches up to 500 posts, heavy on large blogs",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L150-L151",
+        "note": "max-results=500"
+      },
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L551-L565",
+        "note": "feeds API fetches JSON"
+      }
+    ],
+    "impact": {
+      "perf": "large JSON payload + parsing cost",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "slow search open on low-end devices"
+    },
+    "recommendation": "Lower max-results or paginate + incremental index build.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-006",
+    "area": "perf",
+    "severity": "P2",
+    "title": "SPA navigation always fetches full HTML; SW does not cache HTML",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L688-L721",
+        "note": "router fetches HTML on every navigation"
+      },
+      {
+        "file": "public/sw.js",
+        "lines": "L197-L209",
+        "note": "SW caches assets only, not HTML"
+      }
+    ],
+    "impact": {
+      "perf": "repeat navigations pay full TTFB",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "slower intra-site navigation"
+    },
+    "recommendation": "Add HTML cache strategy (stale-while-revalidate) with size limits.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-007",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Router hard timeout (3000ms) triggers hard reload on slow networks",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L707-L721",
+        "note": "hard timeout fallback"
+      }
+    ],
+    "impact": {
+      "perf": "double fetch + jank on slow networks",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "flash/reload on navigation"
+    },
+    "recommendation": "Increase timeout or show skeleton with retry before hard reload.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-008",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Hero video autoplay can consume CPU/GPU on low-end devices",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.listing.js",
+        "lines": "L10-L19",
+        "note": "auto-play + IntersectionObserver"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L320-L325",
+        "note": "hero video element in template"
+      }
+    ],
+    "impact": {
+      "perf": "high CPU/GPU usage and battery drain",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "stutter on low-end devices"
+    },
+    "recommendation": "Disable autoplay on low-end or prefers-reduced-motion; load on user intent.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-009",
+    "area": "perf",
+    "severity": "P3",
+    "title": "Large inline critical CSS and SVG increase HTML payload",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L17-L213",
+        "note": "critical CSS inline"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L221-L248",
+        "note": "large inline SVG symbols"
+      }
+    ],
+    "impact": {
+      "perf": "larger HTML download and parse",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "slower first paint on slow network"
+    },
+    "recommendation": "Audit inline size; keep only critical CSS; move heavy SVG to external sprite.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-010",
+    "area": "perf",
+    "severity": "P3",
+    "title": "External Google Fonts are not cached by SW; add latency and dependency",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L146-L149",
+        "note": "fonts.googleapis.com + fonts.gstatic.com"
+      },
+      {
+        "file": "public/sw.js",
+        "lines": "L176-L183",
+        "note": "SW only handles same-origin"
+      }
+    ],
+    "impact": {
+      "perf": "extra DNS/TLS and render-blocking CSS",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "FOIT/flash risk on slow network"
+    },
+    "recommendation": "Self-host fonts or reduce font usage; keep display=swap.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-011",
+    "area": "security",
+    "severity": "P1",
+    "title": "CSP is report-only; no enforced CSP",
+    "evidence": [
+      {
+        "file": "src/worker.js",
+        "lines": "L109-L146",
+        "note": "Content-Security-Policy-Report-Only"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "XSS not actively blocked",
+      "ux": "n/a"
+    },
+    "recommendation": "Plan CSP enforcement with nonce/hash or reduced inline JS.",
+    "effort": "L",
+    "risk": "high"
+  },
+  {
+    "id": "F-012",
+    "area": "security",
+    "severity": "P2",
+    "title": "CSP allows 'unsafe-inline' for scripts/styles",
+    "evidence": [
+      {
+        "file": "src/worker.js",
+        "lines": "L109-L118",
+        "note": "unsafe-inline present"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "increases XSS impact surface",
+      "ux": "n/a"
+    },
+    "recommendation": "Reduce inline scripts/styles or move to hashed blocks.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-013",
+    "area": "security",
+    "severity": "P2",
+    "title": "External JS loaded from jsdelivr/unpkg without SRI",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L45-L54",
+        "note": "dynamic imports from CDN"
+      },
+      {
+        "file": "src/worker.js",
+        "lines": "L109-L118",
+        "note": "CSP allowlist includes these domains"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "supply-chain risk if CDN compromised",
+      "ux": "search may break on blocked CDN"
+    },
+    "recommendation": "Self-host dependencies or use integrity + pinning.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-014",
+    "area": "security",
+    "severity": "P2",
+    "title": "No HSTS header set by Worker",
+    "evidence": [
+      {
+        "file": "src/worker.js",
+        "lines": "L125-L133",
+        "note": "security headers list without Strict-Transport-Security"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "HTTPS downgrade possible",
+      "ux": "n/a"
+    },
+    "recommendation": "Add `Strict-Transport-Security` with preload-safe value.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-015",
+    "area": "security",
+    "severity": "P3",
+    "title": "Telemetry endpoint logs arbitrary payload without rate limiting",
+    "evidence": [
+      {
+        "file": "src/worker.js",
+        "lines": "L214-L228",
+        "note": "GG_TELEMETRY logs payload"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "log spam / PII risk",
+      "ux": "n/a"
+    },
+    "recommendation": "Add sampling, payload size limits, or auth gating.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-016",
+    "area": "seo",
+    "severity": "P1",
+    "title": "Canonicalization for /blog relies on Worker; duplicate content if Worker bypassed",
+    "evidence": [
+      {
+        "file": "src/worker.js",
+        "lines": "L409-L477",
+        "note": "/blog canonical + og:url injection"
+      },
+      {
+        "file": "wrangler.jsonc",
+        "lines": "L14-L24",
+        "note": "routes only for www"
+      },
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L327-L353",
+        "note": "worker detection gates /blog normalization"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "duplicate URLs and canonical drift",
+      "security": "n/a",
+      "ux": "/blog alias may flip"
+    },
+    "recommendation": "Ensure Worker routes for all hostnames and add detection banner if worker inactive.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-017",
+    "area": "seo",
+    "severity": "P2",
+    "title": "Schema duplication risk: template JSON-LD plus Worker-injected graph",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L27-L116",
+        "note": "WebSite/Organization/BlogPosting JSON-LD in template"
+      },
+      {
+        "file": "src/worker.js",
+        "lines": "L497-L650",
+        "note": "Worker injects JSON-LD graph"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "potential schema redundancy/inconsistency",
+      "security": "n/a",
+      "ux": "n/a"
+    },
+    "recommendation": "Consolidate schema sources or ensure Worker-only schema when active.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-018",
+    "area": "seo",
+    "severity": "P3",
+    "title": "No hreflang tags detected in templates",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "n/a",
+        "note": "rg -n \"hreflang\" returned no matches (see Appendix)"
+      },
+      {
+        "file": "index.dev.xml",
+        "lines": "n/a",
+        "note": "rg -n \"hreflang\" returned no matches (see Appendix)"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "weaker geo/language targeting",
+      "security": "n/a",
+      "ux": "n/a"
+    },
+    "recommendation": "Add hreflang if multi-language or multi-region targeting is required.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-019",
+    "area": "seo",
+    "severity": "P3",
+    "title": "Sitemap is an HTML page; XML sitemap depends on Blogger defaults",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L1948-L1953",
+        "note": "/p/sitemap.html visual sitemap"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "XML sitemap reliance not verifiable from repo",
+      "security": "n/a",
+      "ux": "n/a"
+    },
+    "recommendation": "Add smoke verification for /sitemap.xml and /robots.txt in CI.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-020",
+    "area": "seo",
+    "severity": "P0",
+    "title": "DEV template uses noindex,nofollow; accidental prod paste deindexes site",
+    "evidence": [
+      {
+        "file": "index.dev.xml",
+        "lines": "L16-L172",
+        "note": "gg:mode=dev + meta robots noindex"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "site can be deindexed",
+      "security": "n/a",
+      "ux": "n/a"
+    },
+    "recommendation": "Add runtime banner and smoke check to block dev template on prod.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-021",
+    "area": "pwa",
+    "severity": "P1",
+    "title": "PWA registration gated by Worker ping with 1200ms timeout",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L327-L353",
+        "note": "ensureWorker timeout 1200ms"
+      },
+      {
+        "file": "public/assets/latest/modules/pwa.js",
+        "lines": "L76-L95",
+        "note": "SW init requires env.worker=true"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "PWA disabled on slow networks"
+    },
+    "recommendation": "Add retries/backoff or cache last-known worker status.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-022",
+    "area": "pwa",
+    "severity": "P2",
+    "title": "SW update UX relies on blocking confirm dialog",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/pwa.js",
+        "lines": "L163-L169",
+        "note": "confirm() gating update"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "updates may be ignored; stale shell"
+    },
+    "recommendation": "Use non-blocking in-app update banner with optional auto-update.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-023",
+    "area": "pwa",
+    "severity": "P2",
+    "title": "Offline support limited to static fallback; no HTML cache",
+    "evidence": [
+      {
+        "file": "public/sw.js",
+        "lines": "L197-L220",
+        "note": "network-first navigation + offline fallback only"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "offline reading not possible"
+    },
+    "recommendation": "Cache last-N HTML pages with size cap for offline reading.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-024",
+    "area": "pwa",
+    "severity": "P1",
+    "title": "SW VERSION depends on release script; missing release keeps stale caches",
+    "evidence": [
+      {
+        "file": "public/sw.js",
+        "lines": "L1-L4",
+        "note": "VERSION constant"
+      },
+      {
+        "file": "tools/release.js",
+        "lines": "L160-L185",
+        "note": "release script updates sw.js version"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "users stuck on old assets"
+    },
+    "recommendation": "Gate deploy on release alignment and add runtime version mismatch alert.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-025",
+    "area": "pwa",
+    "severity": "P3",
+    "title": "Manifest missing scope/id fields",
+    "evidence": [
+      {
+        "file": "public/manifest.webmanifest",
+        "lines": "L1-L19",
+        "note": "name/short_name/start_url/display only"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "install identity inconsistencies"
+    },
+    "recommendation": "Add `scope` and `id` to manifest for stable install identity.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-026",
+    "area": "orchestration",
+    "severity": "P2",
+    "title": "Deploy relies on GitHub API dispatch; failures block deploy without retry",
+    "evidence": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "lines": "L106-L126",
+        "note": "dispatch deploy.yml via API"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "delayed releases"
+    },
+    "recommendation": "Add retry or fallback manual trigger instructions on failure.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-027",
+    "area": "orchestration",
+    "severity": "P1",
+    "title": "Blogger template paste remains manual release gate",
+    "evidence": [
+      {
+        "file": ".github/workflows/deploy.yml",
+        "lines": "L370-L373",
+        "note": "explicit manual paste instruction"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L2833-L2833",
+        "note": "boot.js pinned in template"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "risk of prod mismatch",
+      "security": "n/a",
+      "ux": "broken assets if wrong XML"
+    },
+    "recommendation": "Add runtime mismatch detector + CI check to alert paste issues.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-028",
+    "area": "orchestration",
+    "severity": "P3",
+    "title": "Local Node version differs from CI Node 20",
+    "evidence": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "lines": "L18-L22",
+        "note": "CI uses Node 20"
+      },
+      {
+        "file": "docs/audit/AUDIT_REPORT.md",
+        "lines": "n/a",
+        "note": "Appendix: node -v shows v22.19.0"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "possible build drift"
+    },
+    "recommendation": "Align local tooling to Node 20 or update CI to match.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-029",
+    "area": "orchestration",
+    "severity": "P3",
+    "title": "Release script requires clean git tree; emergency patch path unclear",
+    "evidence": [
+      {
+        "file": "tools/release.js",
+        "lines": "L11-L19",
+        "note": "ensureCleanTree guard"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "slower emergency fixes"
+    },
+    "recommendation": "Document emergency override flow and validation.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-030",
+    "area": "orchestration",
+    "severity": "P2",
+    "title": "No dependency audit step in CI; external CDN deps bypass lockfile",
+    "evidence": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "lines": "L45-L81",
+        "note": "no npm audit step"
+      },
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L45-L54",
+        "note": "external CDN deps"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "supply-chain blind spot",
+      "ux": "n/a"
+    },
+    "recommendation": "Add audit step or vendor CDN deps into repo.",
+    "effort": "M",
+    "risk": "med"
+  },
+  {
+    "id": "F-031",
+    "area": "a11y",
+    "severity": "P2",
+    "title": "SPA navigation does not move focus to main content",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L232-L265",
+        "note": "render swap without focus management"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L221-L263",
+        "note": "skiplink + main container exists"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "keyboard users lose context"
+    },
+    "recommendation": "Set focus to `#gg-main` after SPA navigation.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-032",
+    "area": "perf",
+    "severity": "P2",
+    "title": "Slow-network navigation causes double-load (SPA timeout -> hard reload)",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L707-L721",
+        "note": "timeout and fallback"
+      }
+    ],
+    "impact": {
+      "perf": "double fetch + wasted CPU",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "perceived instability"
+    },
+    "recommendation": "Show retry UI before hard reload; extend timeout on slow networks.",
+    "effort": "M",
+    "risk": "low"
+  },
+  {
+    "id": "F-033",
+    "area": "a11y",
+    "severity": "P2",
+    "title": "Hero video ignores prefers-reduced-motion for autoplay",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.listing.js",
+        "lines": "L10-L19",
+        "note": "autoplay without motion check"
+      },
+      {
+        "file": "index.prod.xml",
+        "lines": "L195-L197",
+        "note": "reduced-motion only sets scroll behavior"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "motion sensitivity risk"
+    },
+    "recommendation": "Gate autoplay when prefers-reduced-motion is enabled.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-034",
+    "area": "pwa",
+    "severity": "P2",
+    "title": "Offline fallback is static and lacks retry/context",
+    "evidence": [
+      {
+        "file": "public/offline.html",
+        "lines": "L1-L18",
+        "note": "static offline page only"
+      },
+      {
+        "file": "public/sw.js",
+        "lines": "L210-L220",
+        "note": "offline fallback"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "higher bounce on flaky networks"
+    },
+    "recommendation": "Add retry action and last-known content hints.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-035",
+    "area": "dx",
+    "severity": "P2",
+    "title": "Search UI depends on #gg-dialog; missing host breaks search silently",
+    "evidence": [
+      {
+        "file": "index.prod.xml",
+        "lines": "L2772-L2772",
+        "note": "dialog host element"
+      },
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L166-L170",
+        "note": "search init requires dialog host"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "search fails if DOM hook removed"
+    },
+    "recommendation": "Add CI DOM-contract check for dialog host and show fallback UI.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-036",
+    "area": "a11y",
+    "severity": "P2",
+    "title": "Search dialog lacks aria-modal and focus trap",
+    "evidence": [
+      {
+        "file": "public/assets/latest/modules/ui.bucket.search.js",
+        "lines": "L166-L180",
+        "note": "dialog host set role/aria-label + innerHTML, no modal/focus trap"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "keyboard focus can escape dialog; reduced native feel"
+    },
+    "recommendation": "Apply focus trap and set aria-modal when opening search dialog.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-037",
+    "area": "a11y",
+    "severity": "P2",
+    "title": "SPA loading state not announced to assistive tech",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L675-L685",
+        "note": "loading state toggles class/data-gg-state only"
+      },
+      {
+        "file": "public/assets/latest/modules/ui.bucket.core.js",
+        "lines": "L5430-L5436",
+        "note": "announcer exists but no usage in router"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "screen readers lack navigation feedback"
+    },
+    "recommendation": "Set aria-busy on main and announce navigation start/complete via a11y announcer.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-038",
+    "area": "ux",
+    "severity": "P2",
+    "title": "Offline page provides no retry or navigation options",
+    "evidence": [
+      {
+        "file": "public/offline.html",
+        "lines": "L1-L18",
+        "note": "static offline message only"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "higher bounce during flaky connectivity"
+    },
+    "recommendation": "Add retry button and link back to home/listing when back online.",
+    "effort": "S",
+    "risk": "low"
+  },
+  {
+    "id": "F-039",
+    "area": "a11y",
+    "severity": "P2",
+    "title": "View transitions ignore prefers-reduced-motion",
+    "evidence": [
+      {
+        "file": "public/assets/latest/core.js",
+        "lines": "L264-L265",
+        "note": "startViewTransition used without reduced-motion guard"
+      },
+      {
+        "file": "public/assets/latest/modules/ui.bucket.core.js",
+        "lines": "L5427-L5435",
+        "note": "reduced-motion utilities exist"
+      }
+    ],
+    "impact": {
+      "perf": "n/a",
+      "seo": "n/a",
+      "security": "n/a",
+      "ux": "motion-sensitive users may experience unwanted animation"
+    },
+    "recommendation": "Gate view transitions on reduced-motion preference.",
+    "effort": "S",
+    "risk": "low"
+  }
+]

@@ -1,8 +1,8 @@
 # GG_CAPSULE (current session)
-Last updated: 2026-02-06
+Last updated: 2026-02-14
 
 NOW:
-- Repo truthfulness + lockfile policy alignment (TASK-0007A.3). UI prefetch is idle-only (no timeout) with heuristics and auto-inits on load (TASK-0006I).
+- Audit repo TASK-0009A: full audit deliverables (AUDIT_REPORT + findings + next tasks + reductions + arch map).
 
 CONSTRAINTS:
 - main-only
@@ -34,10 +34,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TBD (post-0007A.3)
+- TBD
 
 LAST_PATCH:
-- 2026-02-06 TASK-0007A.3 repo truthfulness + lockfile policy alignment
+- 2026-02-14 TASK-0009A full audit deliverables
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
