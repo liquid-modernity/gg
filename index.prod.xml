@@ -2734,7 +2734,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </button></a>
 
   <!-- SEARCH: muncul di semua mode -->
-  <button aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-search='1' type='button'>
+  <button aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
     </span>
