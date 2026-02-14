@@ -1,13 +1,13 @@
 # ARCH_MAP — BLOG GAGA-ish (pakrpp.com)
 Last updated: 2026-02-14
-Release ID: 697775d
+Release ID: see docs/ledger/GG_CAPSULE.md AUTOGEN
 
 **Repo Summary**
 - Top-level: docs, index.dev.xml, index.prod.xml, package.json, public, scripts, src, tools, wrangler.jsonc. (Command: `ls -1`)
 - Worker entrypoint: `src/worker.js` (Cloudflare Worker fetch handler). (Evidence: src/worker.js:L149-L763)
 - Blogger templates: `index.dev.xml` and `index.prod.xml`. (Evidence: index.dev.xml:L1-L120, index.prod.xml:L1-L220)
 - Service Worker: `public/sw.js`. (Evidence: public/sw.js:L1-L220)
-- Assets: `public/assets/latest/*` for DEV and `public/assets/v/697775d/*` for PROD. (Evidence: index.dev.xml:L75-L76, index.prod.xml:L25-L26, tools/release.js:L111-L186)
+- Assets: `public/assets/latest/*` for DEV and `public/assets/v/<RELEASE_ID>/*` for PROD. (Evidence: index.dev.xml:L75-L76, index.prod.xml:L25-L26, tools/release.js:L111-L186)
 - CI/CD: `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`. (Evidence: .github/workflows/ci.yml:L1-L126, .github/workflows/deploy.yml:L1-L377)
 - Worker config/routes: `wrangler.jsonc`. (Evidence: wrangler.jsonc:L1-L25)
 

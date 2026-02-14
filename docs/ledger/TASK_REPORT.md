@@ -1,48 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
-TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN
-TITLE: Audit drift lockdown + manifest correctness + repo hygiene
+TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN.1
+TITLE: Audit doc drift guard + CI verifier
 
 TASK_SUMMARY
-- Remove static Release ID from audit report and add doc drift policy referencing GG_CAPSULE AUTOGEN.
-- Delete dated audit reports to prevent drift; keep only docs/audit/AUDIT_REPORT.md.
-- Fix manifest `name`, `id`, `scope`, and maskable icon purposes; remove .DS_Store junk.
-- Re-prioritize audit backlog P0s and add scope/acceptance/test to every task.
-- Run release + full verifier suite (ALLOW_DIRTY_RELEASE=1), new release id c63b7f1.
+- Remove static release id from ARCH_MAP and replace pinned asset paths with `<RELEASE_ID>` placeholder.
+- Add `tools/verify-audit-docs.mjs` to fail CI when audit docs contain static release ids or `/assets/v/<hash>/`.
+- Wire the new verifier into CI and bump release artifacts (new release id 7b02258).
 
 CHANGES
-- docs/audit/AUDIT_REPORT.md
-- docs/audit/AUDIT_REPORT_2026-02-05.md (deleted)
-- docs/audit/AUDIT_REPORT_2026-02-14.md (deleted)
-- docs/audit/NEXT_TASKS.md
-- public/manifest.webmanifest
+- docs/audit/ARCH_MAP.md
+- tools/verify-audit-docs.mjs
+- .github/workflows/ci.yml
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/c63b7f1/* (added)
-- public/assets/v/697775d/* (removed)
+- public/assets/v/7b02258/* (added)
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
-- `npm ci`
 - `ALLOW_DIRTY_RELEASE=1 npm run build`
+- `node tools/verify-audit-docs.mjs`
 - `npm run verify:release`
-- `npm run verify:assets`
-- `npm run verify:xml`
 - `node tools/verify-ledger.mjs`
-- `node tools/verify-router-contract.mjs`
-- `node tools/verify-template-contract.mjs`
-- `node tools/verify-headers.mjs --mode=config`
-- `node tools/verify-budgets.mjs`
-- `node tools/verify-inline-css.mjs`
-- `node tools/verify-crp.mjs`
 
 RISKS / ROLLBACK
-- Risk: low/med; release id bump + removal of legacy asset dir could break if old HTML still points at 697775d.
-- Rollback: restore legacy assets from git history and revert to previous release id.
+- Risk: low; new release id requires prod template update; CI now enforces audit doc placeholder policy.
+- Rollback: revert commit and restore previous release id in assets + index.prod.xml + sw.js + worker.js.
 
 ---
 

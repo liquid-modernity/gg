@@ -1458,3 +1458,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes; removed untracked .DS_Store files
 - RISKS: low/med; new release id + legacy asset removal could break if old HTML still points at 697775d
 - NEXT: TBD
+
+---
+
+## 2026-02-14 — GG-AUDIT-DRIFT-LOCKDOWN.1 — Audit doc drift guard + CI verifier
+- DATE: 2026-02-14
+- TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN.1
+- TITLE: Audit doc drift guard + CI verifier
+- MODE (DEV/PROD impact): docs + CI + release id/assets
+- RELEASE_REF: GG_CAPSULE AUTOGEN (7b02258)
+- SCOPE: remove static release refs in ARCH_MAP, add audit-docs verifier, wire CI
+- CHANGES (files touched): docs/audit/ARCH_MAP.md; tools/verify-audit-docs.mjs; .github/workflows/ci.yml; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/7b02258/*; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): ALLOW_DIRTY_RELEASE=1 npm run build; node tools/verify-audit-docs.mjs; npm run verify:release; node tools/verify-ledger.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
+- RISKS: low; release id bump requires prod template update; CI now enforces audit doc placeholder policy
+- NEXT: TBD
