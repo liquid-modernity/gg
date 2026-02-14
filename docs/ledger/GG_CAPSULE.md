@@ -2,7 +2,7 @@
 Last updated: 2026-02-14
 
 NOW:
-- Task-0009B: commit remaining changes (roadmap update + cleanup old assets).
+- GG-AUDIT-DRIFT-LOCKDOWN: audit/doc drift hardening + manifest fix + repo hygiene.
 
 CONSTRAINTS:
 - main-only
@@ -14,10 +14,10 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 22b337a
-PROD_PINNED_JS: /assets/v/22b337a/main.js
-PROD_PINNED_APP: /assets/v/22b337a/app.js
-PROD_PINNED_CSS: /assets/v/22b337a/main.css
+RELEASE_ID: c63b7f1
+PROD_PINNED_JS: /assets/v/c63b7f1/main.js
+PROD_PINNED_APP: /assets/v/c63b7f1/app.js
+PROD_PINNED_CSS: /assets/v/c63b7f1/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,7 +37,7 @@ NEXT_TASK:
 - TBD
 
 LAST_PATCH:
-- 2026-02-14 TASK-0009B commit remaining changes
+- 2026-02-14 GG-AUDIT-DRIFT-LOCKDOWN audit/doc drift hardening
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

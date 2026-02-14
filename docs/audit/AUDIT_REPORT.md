@@ -1,6 +1,6 @@
 # AUDIT_REPORT — BLOG GAGA-ish (pakrpp.com)
 Last updated: 2026-02-14
-Release ID: 697775d
+Release ID: see `docs/ledger/GG_CAPSULE.md` AUTOGEN block (source of truth).
 
 **Executive Summary**
 - Target “100/0ms” for post + native Blogger comments is **not realistic** because comments are third-party, network-bound, and outside Worker/SW control. Best-effort is possible with defers and caching, but hard zero is unrealistic. (Evidence: index.prod.xml:L221-L2834, public/assets/latest/core.js:L211-L259)
@@ -9,6 +9,10 @@ Release ID: 697775d
 - Security posture is **report-only CSP** with `unsafe-inline`; this is visibility, not protection. (Evidence: src/worker.js:L109-L146)
 - Performance risks are centered around **external dependencies**, **search index size**, **HTML fetch on every SPA navigation**, and **hero video autoplay**. (Evidence: public/assets/latest/modules/ui.bucket.search.js:L45-L151, public/assets/latest/core.js:L688-L721, public/assets/latest/modules/ui.bucket.listing.js:L10-L19, index.prod.xml:L320-L325)
 - Page-type realism: **home/listing** can approach fast-first-interaction with defers; **post without comments** is best-effort; **post with native comments** cannot reach 100/0ms due to third-party scripts. (Evidence: index.prod.xml:L221-L2834, public/assets/latest/core.js:L211-L259)
+
+**Doc Drift Policy**
+- Audit docs must never include a static Release ID; refer to `docs/ledger/GG_CAPSULE.md` AUTOGEN instead.
+- If release/version changes, update GG_CAPSULE via the release process; do not hand-edit audit text.
 
 **Architecture**
 - Runtime flow: Browser -> Cloudflare Worker -> Blogger HTML/XML -> Client JS (boot/main/core/modules) -> Service Worker -> Assets. (Evidence: src/worker.js:L149-L763, index.prod.xml:L25-L2834, public/assets/latest/boot.js:L1-L155, public/sw.js:L1-L220)

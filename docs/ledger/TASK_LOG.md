@@ -1440,3 +1440,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): legacy assets removed as requested; ensure prod pinned release remains present
 - RISKS: medium; removing old assets can break deep links if any live HTML still references old versions
 - NEXT: TBD
+
+---
+
+## 2026-02-14 — GG-AUDIT-DRIFT-LOCKDOWN — Audit drift lockdown + manifest correctness + repo hygiene
+- DATE: 2026-02-14
+- TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN
+- TITLE: Audit drift lockdown + manifest correctness + repo hygiene
+- MODE (DEV/PROD impact): docs + manifest + release id/assets
+- RELEASE_REF: GG_CAPSULE AUTOGEN (c63b7f1)
+- SCOPE: remove static release id from audit report, delete dated audit reports, update NEXT_TASKS priorities, fix manifest id/scope/maskable, repo hygiene
+- CHANGES (files touched): docs/audit/AUDIT_REPORT.md; docs/audit/AUDIT_REPORT_2026-02-05.md (deleted); docs/audit/AUDIT_REPORT_2026-02-14.md (deleted); docs/audit/NEXT_TASKS.md; public/manifest.webmanifest; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/c63b7f1/*; public/assets/v/697775d/* (removed); docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm ci; ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:release; npm run verify:assets; npm run verify:xml; node tools/verify-ledger.mjs; node tools/verify-router-contract.mjs; node tools/verify-template-contract.mjs; node tools/verify-headers.mjs --mode=config; node tools/verify-budgets.mjs; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a (local verifiers only)
+- NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes; removed untracked .DS_Store files
+- RISKS: low/med; new release id + legacy asset removal could break if old HTML still points at 697775d
+- NEXT: TBD
