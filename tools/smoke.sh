@@ -521,15 +521,16 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     local url="$1"
     local label="$2"
     local ts html
+    local gg_main_re="id=['\"]gg-main['\"]"
     ts="$(date +%s)"
     html="$(live_fetch_stream "${url}?x=${ts}")"
     if [[ "${label}" == "home" ]]; then
       live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
-      live_dom_expect "${html}" "${label}" "id=[\"']gg-main[\"']" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
       live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
     else
       live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
-      live_dom_expect "${html}" "${label}" "id=[\"']gg-main[\"']" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
       live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
     fi
     echo "PASS: LIVE_HTML ${label} DOM contract"
@@ -537,6 +538,10 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
 
   live_dom_check_page "${BASE}/" "home"
   live_dom_check_page "${BASE}/blog" "blog"
+
+  if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
+    die "verify-multizone failed"
+  fi
 fi
 
 echo "PASS: smoke tests"
