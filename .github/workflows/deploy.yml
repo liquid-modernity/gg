@@ -224,6 +224,9 @@ jobs:
           PY
 
       
+      - name: Preflight headers contract (live release)
+        run: node tools/verify-headers.mjs --mode=live --release-source=live --base=https://www.pakrpp.com
+
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:

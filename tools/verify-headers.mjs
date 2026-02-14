@@ -13,7 +13,9 @@ const getArg = (name) => {
 
 const mode = getArg("--mode");
 if (!mode || !["config", "live"].includes(mode)) {
-  console.error("Usage: node tools/verify-headers.mjs --mode=config|live [--base=https://www.pakrpp.com]");
+  console.error(
+    "Usage: node tools/verify-headers.mjs --mode=config|live [--base=https://www.pakrpp.com] [--release-id=<id>] [--release-source=local|live]"
+  );
   process.exit(1);
 }
 
@@ -26,6 +28,12 @@ if (!fs.existsSync(contractPath)) {
 
 const contract = JSON.parse(fs.readFileSync(contractPath, "utf8"));
 const base = getArg("--base") || contract.base || "https://www.pakrpp.com";
+const releaseSource = (getArg("--release-source") || "local").toLowerCase();
+const releaseOverride = getArg("--release-id");
+if (!["local", "live"].includes(releaseSource)) {
+  console.error("ERROR: --release-source must be local or live");
+  process.exit(1);
+}
 
 function readFile(rel) {
   const p = path.join(root, rel);
@@ -38,15 +46,8 @@ function extractReleaseId(xml) {
   return m ? m[1] : null;
 }
 
-const indexXml = readFile("index.prod.xml");
-const releaseId = extractReleaseId(indexXml);
-if (!releaseId) {
-  console.error("ERROR: unable to extract release id from index.prod.xml");
-  process.exit(1);
-}
-
-function resolvePath(p) {
-  return p.replace(/<REL>|<RELEASE_ID>/g, releaseId);
+function resolvePath(p, rel) {
+  return p.replace(/<REL>|<RELEASE_ID>/g, rel);
 }
 
 function parseCacheControl(cc) {
@@ -138,26 +139,70 @@ function workerCacheForPath(pathname, workerSrc) {
   return null;
 }
 
-async function fetchWithTimeout(url, timeoutMs) {
+async function fetchWithTimeout(url, timeoutMs, options = {}) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { method: "HEAD", redirect: "manual", signal: controller.signal });
+    const opts = {
+      method: "HEAD",
+      redirect: "manual",
+      ...options,
+      signal: controller.signal,
+    };
+    return await fetch(url, opts);
   } finally {
     clearTimeout(t);
   }
 }
 
-async function fetchWithRetry(url, timeoutMs, retries) {
+async function fetchWithRetry(url, timeoutMs, retries, options = {}) {
   let lastErr = null;
   for (let i = 0; i < retries; i += 1) {
     try {
-      return await fetchWithTimeout(url, timeoutMs);
+      return await fetchWithTimeout(url, timeoutMs, options);
     } catch (e) {
       lastErr = e;
     }
   }
   throw lastErr;
+}
+
+function extractLocalReleaseId() {
+  const indexXml = readFile("index.prod.xml");
+  const releaseId = extractReleaseId(indexXml);
+  if (!releaseId) {
+    console.error("ERROR: unable to extract release id from index.prod.xml");
+    process.exit(1);
+  }
+  return releaseId;
+}
+
+async function resolveLiveReleaseId(timeoutMs, retries) {
+  const flagsUrl = `${base}/gg-flags.json`;
+  try {
+    const res = await fetchWithRetry(flagsUrl, timeoutMs, retries, {
+      method: "GET",
+      redirect: "follow",
+      headers: { Accept: "application/json" },
+    });
+    if (res && res.ok) {
+      const data = await res.json();
+      const rel = data && typeof data.release === "string" ? data.release.trim() : "";
+      if (rel) return rel;
+    }
+  } catch (e) {
+    // fall through to ping fallback
+  }
+
+  const pingUrl = `${base}/__gg_worker_ping`;
+  try {
+    const res = await fetchWithRetry(pingUrl, timeoutMs, retries, { method: "HEAD" });
+    const rel = (res.headers.get("x-gg-worker-version") || "").trim();
+    if (rel) return rel;
+  } catch (e) {
+    // fall through
+  }
+  return null;
 }
 
 function printSummary(results) {
@@ -170,6 +215,7 @@ function printSummary(results) {
 const rules = Array.isArray(contract.rules) ? contract.rules : [];
 
 if (mode === "config") {
+  const releaseId = releaseOverride || extractLocalReleaseId();
   const workerSrc = readFile("src/worker.js");
   if (!workerSrc) {
     console.error("ERROR: src/worker.js missing");
@@ -183,7 +229,7 @@ if (mode === "config") {
     if (!rule.modes || !rule.modes.includes("config")) continue;
     if (!rule.path) continue;
 
-    const pathResolved = resolvePath(rule.path);
+    const pathResolved = resolvePath(rule.path, releaseId);
     const cc = workerCacheForPath(pathResolved, workerSrc);
     if (!cc) {
       const msg = `worker cache rule not found for ${pathResolved}`;
@@ -211,14 +257,27 @@ if (mode === "config") {
 }
 
 if (mode === "live") {
+  const defaultTimeoutMs = 6000;
+  const defaultRetries = 2;
+  let releaseId = null;
+  if (releaseOverride) {
+    releaseId = releaseOverride;
+  } else if (releaseSource === "live") {
+    releaseId = await resolveLiveReleaseId(defaultTimeoutMs, defaultRetries);
+  } else {
+    releaseId = extractLocalReleaseId();
+  }
+  if (!releaseId) {
+    console.error("ERROR: unable to determine release id for live verification");
+    process.exit(1);
+  }
   const results = [];
   let failure = null;
-  const defaultTimeoutMs = 6000;
 
   for (const rule of rules) {
     if (!rule.modes || !rule.modes.includes("live")) continue;
     const timeoutMs = (Number.isFinite(rule.timeoutMs) ? rule.timeoutMs : defaultTimeoutMs);
-    const retries = (rule.retries ?? 2);
+    const retries = (rule.retries ?? defaultRetries);
 
     if (rule.type === "redirect") {
       const url = rule.url;
@@ -242,7 +301,7 @@ if (mode === "live") {
     }
 
     if (!rule.path) continue;
-    const pathResolved = resolvePath(rule.path);
+    const pathResolved = resolvePath(rule.path, releaseId);
     const url = `${base}${pathResolved}`;
 
     try {
