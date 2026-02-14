@@ -105,6 +105,35 @@ const isTemplateMismatch = (fp, expectedEnv, expectedRelease) => {
   return false;
 };
 
+const isSameOriginUrl = (value, origin) => {
+  if (!value) return false;
+  try {
+    const u = new URL(value, origin);
+    return u.origin === origin;
+  } catch (e) {
+    return false;
+  }
+};
+
+const isBootScriptUrl = (value, origin) => {
+  if (!value) return false;
+  const src = value.trim();
+  if (!src) return false;
+  const lower = src.toLowerCase();
+  if (!/\/boot\.js(?:[?#]|$)/.test(lower)) return false;
+  if (lower.includes("/assets/v/") || lower.includes("/assets/latest/")) return true;
+  return isSameOriginUrl(src, origin);
+};
+
+const isAppJsAsset = (value) => {
+  if (!value) return false;
+  const href = value.trim();
+  if (!href) return false;
+  const lower = href.toLowerCase();
+  if (!/\.js(?:[?#]|$)/.test(lower)) return false;
+  return lower.includes("/assets/");
+};
+
 const CSP_REPORT_BUCKET = new Map();
 const CSP_REPORT_MAX = 500;
 const CSP_REPORT_TRIM = 100;
@@ -187,7 +216,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "4afa689";
+    const WORKER_VERSION = "8899963";
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -709,7 +738,20 @@ export default {
           rewritten.on("script[src]", {
             element(el) {
               const src = (el.getAttribute("src") || "").trim();
-              if (src.includes("/assets/") && src.includes("/boot.js")) {
+              if (isBootScriptUrl(src, url.origin)) {
+                el.remove();
+              }
+            },
+          });
+          rewritten.on("link[rel]", {
+            element(el) {
+              const rel = (el.getAttribute("rel") || "").trim().toLowerCase();
+              if (!rel) return;
+              const as = (el.getAttribute("as") || "").trim().toLowerCase();
+              if (rel === "preload" && as && as !== "script") return;
+              if (rel !== "preload" && rel !== "modulepreload") return;
+              const href = (el.getAttribute("href") || "").trim();
+              if (isAppJsAsset(href)) {
                 el.remove();
               }
             },
@@ -769,6 +811,12 @@ export default {
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");
+          // Prefer 503 to fail-closed and avoid caches treating the HTML as valid.
+          return new Response(out.body, {
+            status: 503,
+            statusText: "Service Unavailable",
+            headers: out.headers,
+          });
         }
         return out;
       }

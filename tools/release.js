@@ -102,11 +102,45 @@ function updateCapsuleAutogen(releaseId) {
   if (out !== src) fs.writeFileSync(capsulePath, out, "utf8");
 }
 
+function readCapsuleReleaseId() {
+  const capsulePath = path.join("docs", "ledger", "GG_CAPSULE.md");
+  if (!fs.existsSync(capsulePath)) return "";
+  const src = fs.readFileSync(capsulePath, "utf8");
+  const match = src.match(/RELEASE_ID:\s*([0-9a-f]+)/i);
+  return match ? match[1] : "";
+}
+
+function pruneAssetReleases({ releaseId, prevReleaseId, keepReleases }) {
+  const vRoot = path.join("public", "assets", "v");
+  if (!fs.existsSync(vRoot)) return;
+  let keepCount = Number.isFinite(keepReleases) ? keepReleases : 2;
+  if (keepCount < 1) keepCount = 1;
+  // Keep list history isn't available yet; only support current + previous for now.
+  if (keepCount > 2) {
+    keepCount = 2;
+    console.warn("KEEP_RELEASES>2 not supported yet; keeping current + previous only.");
+  }
+  const keep = new Set([releaseId]);
+  if (keepCount > 1 && prevReleaseId && prevReleaseId !== releaseId) {
+    keep.add(prevReleaseId);
+  }
+  const entries = fs.readdirSync(vRoot, { withFileTypes: true });
+  entries.forEach((entry) => {
+    if (!entry.isDirectory()) return;
+    const name = entry.name;
+    if (!name || name.startsWith(".")) return;
+    if (keep.has(name)) return;
+    fs.rmSync(path.join(vRoot, name), { recursive: true, force: true });
+  });
+}
+
 ensureCleanTree();
 
+const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "2");
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
+const prevReleaseId = readCapsuleReleaseId();
 
 const destDir = path.join("public", "assets", "v", releaseId);
 const latestDir = path.join("public", "assets", "latest");
@@ -200,6 +234,7 @@ replaceAllOrThrow(
 );
 
 updateCapsuleAutogen(releaseId);
+pruneAssetReleases({ releaseId, prevReleaseId, keepReleases: KEEP_RELEASES });
 
 console.log(`RELEASE_ID ${releaseId}`);
 console.log(`FULL_HASH ${fullHash}`);

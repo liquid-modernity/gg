@@ -335,33 +335,73 @@
     GG.core._workerPromise = new Promise(function(resolve){
       var env = GG.env = GG.env || {};
       if (typeof env.worker === 'boolean') { resolve(env.worker); return; }
-      if (!w.fetch) { env.worker = false; resolve(false); return; }
+      if (!w.fetch) { env.worker = false; env.workerDegraded = false; resolve(false); return; }
+      var key = 'gg_worker_ok';
+      var ttl = 6048e5;
+      var tries = 0;
       var done = false;
-      var timer = null;
-      var controller = w.AbortController ? new AbortController() : null;
-      function finish(ok){
+      function finish(ok, degraded, reason, ageDays){
         if (done) return;
         done = true;
-        if (timer) clearTimeout(timer);
         env.worker = ok === true;
+        env.workerDegraded = degraded === true;
+        if (reason && GG.core && GG.core.telemetry) {
+          var p = { type: 'worker_detect', result: reason, attempts: tries };
+          if (degraded) p.degraded = 1;
+          if (typeof ageDays === 'number') p.lkg_days = ageDays;
+          GG.core.telemetry(p);
+        }
         resolve(env.worker);
       }
-      timer = setTimeout(function(){
-        try { if (controller) controller.abort(); } catch (e) {}
-        finish(false);
-      }, 1200);
-      try {
-        var opts = { method: 'GET', cache: 'no-store', credentials: 'same-origin' };
-        if (controller) opts.signal = controller.signal;
-        w.fetch('/__gg_worker_ping?x=1', opts)
-          .then(function(res){
-            var ver = res && res.headers ? res.headers.get('X-GG-Worker-Version') : '';
-            finish(!!ver);
-          })
-          .catch(function(){ finish(false); });
-      } catch (e) {
-        finish(false);
+      function readLkg(){
+        try {
+          var v = w.localStorage ? w.localStorage.getItem(key) : '';
+          var n = parseInt(v, 10);
+          return isNaN(n) ? 0 : n;
+        } catch (_) { return 0; }
       }
+      function writeLkg(ts){
+        try { if (w.localStorage) w.localStorage.setItem(key, String(ts)); } catch (_) {}
+      }
+      function attempt(){
+        tries++;
+        var timer = null;
+        var doneAttempt = false;
+        function end(ok){
+          if (done || doneAttempt) return;
+          doneAttempt = true;
+          if (timer) clearTimeout(timer);
+          if (ok) {
+            writeLkg(Date.now());
+            finish(true, false, 'ok');
+            return;
+          }
+          if (tries < 3) {
+            var delays = [300, 800, 1500];
+            w.setTimeout(attempt, delays[tries - 1] || 800);
+            return;
+          }
+          var ts = readLkg();
+          var age = Date.now() - ts;
+          if (ts && age < ttl) {
+            finish(true, true, 'lkg', Math.round(age / 86400000));
+            return;
+          }
+          finish(false, false, 'fail');
+        }
+        timer = setTimeout(function(){ end(false); }, 1200);
+        try {
+          w.fetch('/__gg_worker_ping?x=1', { method: 'GET', cache: 'no-store', credentials: 'same-origin' })
+            .then(function(res){
+              var ver = res && res.headers ? res.headers.get('X-GG-Worker-Version') : '';
+              end(!!ver);
+            })
+            .catch(function(){ end(false); });
+        } catch (e) {
+          end(false);
+        }
+      }
+      attempt();
     }).then(function(ok){
       try { if (GG.core && GG.core.normalizeBlogAlias) GG.core.normalizeBlogAlias(); } catch (_) {}
       return ok;
@@ -4073,6 +4113,134 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
     GG.boot.safeInit(tasks[i].name, tasks[i].fn);
   }
 };
+
+(function(){
+  var w = window;
+  var d = document;
+  var GG = w.GG = w.GG || {};
+  GG.core = GG.core || {};
+
+  GG.core.commentsGate = GG.core.commentsGate || (function(){
+    function isSlowDevice(){
+      var nav = w.navigator || {};
+      var conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+      if (conn && conn.saveData) return true;
+      if (conn && typeof conn.effectiveType === 'string' && /2g/i.test(conn.effectiveType)) return true;
+      if (typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 2) return true;
+      return false;
+    }
+    function idle(fn){
+      if (GG.boot && typeof GG.boot.defer === 'function') {
+        GG.boot.defer(fn);
+        return;
+      }
+      if (w.requestIdleCallback) w.requestIdleCallback(function(){ fn(); }, { timeout: 1200 });
+      else w.setTimeout(fn, 1);
+    }
+    function load(host, reason){
+      if (!host || host.__ggCommentsLoaded) return;
+      host.__ggCommentsLoaded = true;
+      var gate = host.querySelector('[data-gg-comments-gate="ui"]');
+      var btn = host.querySelector('[data-gg-comments-load]');
+      var tpl = host.querySelector('template#gg-comments-template');
+      if (btn) {
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
+      }
+      var frag = null;
+      if (tpl && tpl.content) {
+        frag = tpl.content.cloneNode(true);
+      } else if (tpl) {
+        var tmp = d.createElement('div');
+        tmp.innerHTML = tpl.innerHTML || '';
+        frag = d.createDocumentFragment();
+        while (tmp.firstChild) frag.appendChild(tmp.firstChild);
+      }
+      if (tpl && tpl.parentNode) tpl.parentNode.removeChild(tpl);
+      if (gate && gate.parentNode) gate.parentNode.removeChild(gate);
+      if (frag) host.appendChild(frag);
+
+      if (GG.core && GG.core.render && typeof GG.core.render.rehydrateComments === 'function') {
+        GG.core.render.rehydrateComments(host);
+      }
+      if (GG.services && GG.services.comments && typeof GG.services.comments.mountWithRetry === 'function') {
+        GG.services.comments.mountWithRetry();
+      }
+      if (reason && GG.core && GG.core.telemetry) {
+        GG.core.telemetry({ type: 'comments_gate', action: 'load', reason: reason });
+      }
+    }
+    function initHost(host){
+      if (!host || host.__ggCommentsGateInit) return;
+      host.__ggCommentsGateInit = true;
+      var btn = host.querySelector('[data-gg-comments-load]');
+      if (btn) {
+        btn.addEventListener('click', function(){ load(host, 'click'); }, { once: true });
+      }
+      var hash = w.location && w.location.hash ? w.location.hash : '';
+      if (hash === '#comments' || /^#c\d+/.test(hash)) {
+        load(host, 'hash');
+        return;
+      }
+      if (isSlowDevice()) return;
+      var sentinel = host.querySelector('[data-gg-comments-sentinel]') || host;
+      if (w.IntersectionObserver && sentinel) {
+        var io = new IntersectionObserver(function(entries){
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              io.disconnect();
+              idle(function(){ load(host, 'scroll'); });
+              return;
+            }
+          }
+        }, { rootMargin: '200px 0px' });
+        io.observe(sentinel);
+      } else {
+        idle(function(){ load(host, 'idle'); });
+      }
+    }
+    function init(){
+      var host = d.querySelector('.gg-post__comments[data-gg-comments-gate="1"]');
+      if (!host) return;
+      initHost(host);
+    }
+    return { init: init, load: load };
+  })();
+
+  function hookCommentsGate(){
+    if (!GG.core || !GG.core.commentsGate) return false;
+    if (GG.app && typeof GG.app.rehydrate === 'function') {
+      if (!GG.app.__ggCommentsGateWrapped) {
+        var prev = GG.app.rehydrate;
+        GG.app.rehydrate = function(ctx){
+          try { return prev ? prev.apply(this, arguments) : undefined; }
+          finally { try { GG.core.commentsGate.init(); } catch (_) {} }
+        };
+        GG.app.__ggCommentsGateWrapped = true;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function boot(){
+    if (GG.core && GG.core.commentsGate) GG.core.commentsGate.init();
+    if (hookCommentsGate()) return;
+    var tries = 0;
+    var t = w.setInterval(function(){
+      tries++;
+      if (hookCommentsGate() || tries >= 20) {
+        w.clearInterval(t);
+      }
+    }, 500);
+  }
+
+  if (d.readyState === 'loading') {
+    d.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
 
 (function(){
   var GG = window.GG = window.GG || {};

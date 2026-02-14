@@ -45,8 +45,18 @@ if (!fs.existsSync(latestModulesDir)) {
   failures.push("latest modules dir missing: public/assets/latest/modules");
 }
 
+const vRoot = path.join(root, "public", "assets", "v");
+if (fs.existsSync(vRoot)) {
+  const releaseDirs = fs
+    .readdirSync(vRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name && !entry.name.startsWith("."));
+  if (releaseDirs.length > 2) {
+    failures.push(`public/assets/v has ${releaseDirs.length} release dirs (max 2)`);
+  }
+}
+
 if (releaseId) {
-  const vDir = path.join(root, "public", "assets", "v", releaseId);
+  const vDir = path.join(vRoot, releaseId);
   ensureFile(path.join(vDir, "main.js"), `v/${releaseId} main.js`);
   ensureFile(path.join(vDir, "main.css"), `v/${releaseId} main.css`);
   ensureFile(path.join(vDir, "boot.js"), `v/${releaseId} boot.js`);

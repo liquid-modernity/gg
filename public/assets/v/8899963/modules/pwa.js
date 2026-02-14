@@ -76,7 +76,7 @@
   services.sw.init = services.sw.init || function () {
     if (services.sw._init) return;
     var env = (w.GG && GG.env) ? GG.env : {};
-    if (env.worker !== true) return;
+    if (env.worker !== true || env.workerDegraded === true) return;
     services.sw._init = true;
   
     if (!w.navigator || !("serviceWorker" in w.navigator)) return;

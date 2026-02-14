@@ -329,33 +329,59 @@
     GG.core._workerPromise = new Promise(function(resolve){
       var env = GG.env = GG.env || {};
       if (typeof env.worker === 'boolean') { resolve(env.worker); return; }
-      if (!w.fetch) { env.worker = false; resolve(false); return; }
-      var done = false;
-      var timer = null;
-      var controller = w.AbortController ? new AbortController() : null;
-      function finish(ok){
+      if (!w.fetch) { env.worker = false; env.workerDegraded = false; resolve(false); return; }
+      var key = 'gg_worker_ok', ttl = 6048e5, tries = 0, done = false;
+      function finish(ok, degraded, reason){
         if (done) return;
         done = true;
-        if (timer) clearTimeout(timer);
         env.worker = ok === true;
+        env.workerDegraded = degraded === true;
+        if (reason && GG.core && GG.core.telemetry) {
+          var p = { type: 'worker_detect', result: reason };
+          if (degraded) p.degraded = 1;
+          if (tries > 1) p.attempts = tries;
+          GG.core.telemetry(p);
+        }
         resolve(env.worker);
       }
-      timer = setTimeout(function(){
-        try { if (controller) controller.abort(); } catch (e) {}
-        finish(false);
-      }, 1200);
-      try {
-        var opts = { method: 'GET', cache: 'no-store', credentials: 'same-origin' };
-        if (controller) opts.signal = controller.signal;
-        w.fetch('/__gg_worker_ping?x=1', opts)
-          .then(function(res){
-            var ver = res && res.headers ? res.headers.get('X-GG-Worker-Version') : '';
-            finish(!!ver);
-          })
-          .catch(function(){ finish(false); });
-      } catch (e) {
-        finish(false);
+      function attempt(){
+        tries++;
+        var ended = false;
+        var timer = setTimeout(function(){ end(false); }, 1200);
+        function end(ok){
+          if (done || ended) return;
+          ended = true;
+          clearTimeout(timer);
+          if (ok) {
+            try { if (w.localStorage) w.localStorage.setItem(key, String(Date.now())); } catch (_) {}
+            finish(true, false, 'ok');
+            return;
+          }
+          if (tries < 3) {
+            var delays = [300, 800, 1500];
+            setTimeout(attempt, delays[tries - 1] || 800);
+            return;
+          }
+          var ts = 0;
+          try { ts = parseInt(w.localStorage && w.localStorage.getItem(key), 10) || 0; } catch (_) {}
+          if (ts && Date.now() - ts < ttl) {
+            finish(true, true, 'lkg');
+            return;
+          }
+          finish(false, false, 'fail');
+        }
+        try {
+          w.fetch('/__gg_worker_ping?x=1', { method: 'GET', cache: 'no-store', credentials: 'same-origin' })
+            .then(function(res){
+              var ver = res && res.headers ? res.headers.get('X-GG-Worker-Version') : '';
+              end(!!ver);
+            })
+            .catch(function(){ end(false); });
+        } catch (e) {
+          end(false);
+        }
       }
+      attempt();
     }).then(function(ok){
       try { if (GG.core && GG.core.normalizeBlogAlias) GG.core.normalizeBlogAlias(); } catch (_) {}
       return ok;
@@ -460,7 +486,6 @@
     })();
   }
   w.GG_BUILD = w.GG_BUILD || "dev";
-  if (w.GG_DEBUG && w.console && console.log) console.log("[GG_BUILD]", w.GG_BUILD);
 
   // Minimal GG.store (get/set/subscribe) if missing
   if(!GG.store || !GG.store.get){
@@ -746,11 +771,9 @@
       evt.preventDefault();
       var canRoute = !!(router && typeof router.navigate === 'function' && router._supports && router._supports());
       if (!canRoute) {
-        if (isDev() && w.console && console.warn) console.warn('[GG] intercept fallback: router unavailable -> hard nav');
         try { w.location.href = url.href; } catch (_) {}
         return;
       }
-      if (isDev() && w.console && console.info) console.info('[GG] intercept click: routed without UI');
       router.navigate(url.href);
     } catch (e) {
       router.fallback((evt && evt.target && evt.target.href) ? evt.target.href : w.location.href);
@@ -766,7 +789,6 @@
       if (url === from) return;
       w.history.pushState(router._stateFor(url), '', url);
       router._applySurface(url);
-      if ((isDev() || w.GG_DEBUG) && w.console && console.log) console.log('[GG.router] Navigating to', url);
       router._load(url, { pop: false });
     } catch (e) {
       router.fallback(url);
@@ -777,7 +799,6 @@
     try {
       var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
       var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
-      if ((isDev() || w.GG_DEBUG) && w.console && console.log) console.log('[GG.router] Popstate', w.location.href);
       router._applySurface(w.location.href);
       router._load(w.location.href, { pop: true, scrollY: y });
     } catch (e) {
@@ -932,8 +953,6 @@
       if (GG.modules && GG.modules.pwa && typeof GG.modules.pwa.init === 'function') {
         GG.modules.pwa.init();
       }
-    }).catch(function(err){
-      if (isDev() && w.console && console.warn) console.warn('GG core: pwa module failed', err && err.message ? err.message : err);
     });
   }
 
@@ -948,7 +967,6 @@
       return true;
     }).catch(function(err){
       GG.boot._uiPromise = null;
-      if (isDev() && w.console && console.warn) console.warn('GG core: ui module failed', err && err.message ? err.message : err);
       throw err;
     });
     return GG.boot._uiPromise;
@@ -956,10 +974,6 @@
 
   GG.boot.requestUi = GG.boot.requestUi || function(reason){
     if (GG.boot._uiReady) return Promise.resolve(true);
-    if (reason === 'click' && isDev() && !GG.boot._uiClickLogged) {
-      GG.boot._uiClickLogged = true;
-      try { if (w.console && console.info) console.info('UI module requested by internal click'); } catch (_) {}
-    }
     setBootStage(3);
     return loadUi();
   };
@@ -1046,18 +1060,12 @@
   function scheduleUiPrefetch(mode){
     var reason = uiPrefetchSkipReason(false);
     if (reason) {
-      if (isDev() && w.console && console.info) console.info('UI prefetch skipped: ' + reason);
       return;
     }
     GG.boot._uiPrefetchScheduled = true;
-    if (isDev() && w.console && console.info) {
-      var label = mode === 'early' ? 'early idle' : 'idle';
-      console.info('UI prefetch scheduled (' + label + ')');
-    }
     var run = function(){
       var r = uiPrefetchSkipReason(true);
       if (r) {
-        if (isDev() && w.console && console.info) console.info('UI prefetch skipped: ' + r);
         return;
       }
       if (GG.boot && typeof GG.boot.requestUi === 'function') {
