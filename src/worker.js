@@ -837,6 +837,30 @@ export default {
 
     // Jangan cache response error
     if (!assetRes.ok) {
+      const isVersionedAsset = pathname.startsWith("/assets/v/");
+      const isMissingAsset = assetRes.status === 404;
+      const lowerPath = pathname.toLowerCase();
+      const isRescuable =
+        lowerPath.endsWith(".js") || lowerPath.endsWith(".css") || lowerPath.endsWith(".map");
+      if (isVersionedAsset && isMissingAsset && isRescuable) {
+        const rescuePath = pathname.replace(/^\/assets\/v\/[^/]+\//, "/assets/latest/");
+        try {
+          const rescueUrl = new URL(rescuePath, request.url);
+          const rescueReq = new Request(rescueUrl.toString(), request);
+          const rescueRes = await env.ASSETS.fetch(rescueReq);
+          if (rescueRes && rescueRes.ok) {
+            const rescueOut = new Response(rescueRes.body, rescueRes);
+            rescueOut.headers.set("Cache-Control", "no-store, max-age=0");
+            rescueOut.headers.set("Pragma", "no-cache");
+            rescueOut.headers.set("X-GG-Asset-Rescue", "1");
+            rescueOut.headers.set("X-GG-Asset-Rescue-From", pathname);
+            return stamp(rescueOut);
+          }
+        } catch (e) {
+          // Fall through to standard error handling if rescue fails.
+        }
+      }
+
       if (pathname === "/sw.js") {
         const r = new Response("sw.js missing in ASSETS", { status: 404 });
         r.headers.set("Cache-Control", "no-store");
