@@ -238,46 +238,8 @@
       var s=findTarget(doc),t=findTarget(d);
       if(!s||!t)throw fail('target',{url:url});
       var m=extractMeta(doc);
-      function shouldReduceMotion(){
-        try{
-          if(GG.store&&GG.store.get){
-            var st=GG.store.get();
-            if(st&&typeof st.reducedMotion==='boolean') return st.reducedMotion;
-          }
-        }catch(e){}
-        try{
-          if(GG.services&&GG.services.a11y&&GG.services.a11y.reducedMotion){
-            return !!GG.services.a11y.reducedMotion.get();
-          }
-        }catch(e){}
-        return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      }
-      function announceRoute(){
-        var main=d.getElementById('gg-main')||d.querySelector('main.gg-main');
-        if(main){
-          if(!main.hasAttribute('tabindex')) main.setAttribute('tabindex','-1');
-          try{ main.focus({ preventScroll: true }); }catch(e){ try{ main.focus(); }catch(_){} }
-        }
-        var title=(m&&m.title)|| (doc&&doc.title) || d.title || 'Page loaded';
-        if(GG.services&&GG.services.a11y&&GG.services.a11y.announce){
-          GG.services.a11y.announce(title,{politeness:'polite'});
-          return;
-        }
-        try{
-          var live=d.querySelector('.gg-sr-announcer,[data-gg-announcer]');
-          if(!live&&d.body){
-            live=d.createElement('div');
-            live.className='gg-sr-announcer gg-visually-hidden';
-            live.setAttribute('aria-live','polite');
-            live.setAttribute('aria-atomic','true');
-            d.body.appendChild(live);
-          }
-          if(live){
-            live.textContent='';
-            w.setTimeout(function(){ live.textContent=String(title||'Page loaded'); },10);
-          }
-        }catch(e){}
-      }
+      function shouldReduceMotion(){var st=GG.store&&GG.store.get&&GG.store.get();return st&&st.reducedMotion!==undefined?!!st.reducedMotion:!!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);}
+      function announceRoute(){var el=d.getElementById('gg-main');if(el){el.tabIndex=-1;try{el.focus({preventScroll:true});}catch(e){el.focus();}}var t=doc.title||'Page loaded',a=GG.services&&GG.services.a11y&&GG.services.a11y.announce;if(a)a(t,{politeness:'polite'});}
       var doSwap=function(){
         t.innerHTML=s.innerHTML;
         ['aside.gg-blog-sidebar--left','aside.gg-blog-sidebar--right'].forEach(function(sel){

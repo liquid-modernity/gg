@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta name='gg-env' content='prod'/>
-    <meta name='gg-release' content='3cee7e9'/>
+    <meta name='gg-release' content='6bf49ee'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/3cee7e9/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/3cee7e9/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/6bf49ee/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/6bf49ee/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -209,7 +209,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='3cee7e9' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='6bf49ee' hidden='hidden' id='gg-fingerprint'/>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->
@@ -2673,7 +2673,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <!-- /GAGA FOOTER -->
   
       
-<nav aria-label='Primary' class='gg-dock' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl'>
+<nav aria-label='Primary' class='gg-dock' data-gg-module='dock' data-gg-dock='1' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
   <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
   <button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-toggle='left-panel' data-gg-when='blog' type='button'>
   <span aria-hidden='true' class='gg-dock__icon'>
@@ -2751,7 +2751,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='gg-dock__label'>Jump</span>
   </button>
 
-  <div class='gg-dock__search'>
+  <div aria-hidden='false' class='gg-dock__search' data-gg-searchbar='1'>
     <form expr:action='data:blog.searchUrl' method='get' role='search'>
       <input aria-label='Search input' name='q' placeholder='Search articles...' type='search'/>
       <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
@@ -2834,7 +2834,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/3cee7e9/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/6bf49ee/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>

@@ -387,6 +387,10 @@ nav.gg-dock .gg-dock__search form{
   padding: 6px 10px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
 }
+html.gg-search-open #gg-dock [data-gg-searchbar]{
+  opacity: 0;
+  pointer-events: none;
+}
 nav.gg-dock .gg-dock__search input{
   flex:1;
   height: 34px;
@@ -6177,6 +6181,9 @@ a, button{
 .gg-search__result{
   min-height: var(--gg-tap-min);
   font-size: var(--gg-font-sm);
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .gg-search__close:disabled,
@@ -6186,9 +6193,14 @@ a, button{
   pointer-events: none;
 }
 
-.gg-overlay .gg-scrim {
-
-} 
+.gg-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(11,13,16,.42);
+  z-index: var(--z-overlay);
+}
+.gg-overlay[hidden],
+.gg-overlay[data-gg-state~="hidden"]{ display:none !important; }
 
 .gg-palette {}
 

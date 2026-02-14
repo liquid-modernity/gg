@@ -2754,7 +2754,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <!-- /GAGA FOOTER -->
   
       
-<nav aria-label='Primary' class='gg-dock' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl'>
+<nav aria-label='Primary' class='gg-dock' data-gg-module='dock' data-gg-dock='1' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
   <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
 <button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-when='blog' type='button'>
   <span aria-hidden='true' class='gg-dock__icon'>
@@ -2832,7 +2832,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <span class='gg-dock__label'>Jump</span>
   </button>
 
-  <div class='gg-dock__search'>
+  <div aria-hidden='false' class='gg-dock__search' data-gg-searchbar='1'>
     <form expr:action='data:blog.searchUrl' method='get' role='search'>
       <input aria-label='Search input' name='q' placeholder='Search articles...' type='search'/>
       <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
