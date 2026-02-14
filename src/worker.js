@@ -68,6 +68,43 @@ const loadFlags = async (env) => {
   return { ...flags };
 };
 
+const extractAttrValue = (tag, attr) => {
+  if (!tag) return "";
+  const re = new RegExp(`${attr}\\s*=\\s*(['"])([^'"]*)\\1`, "i");
+  const match = tag.match(re);
+  return match ? match[2] : "";
+};
+
+const findMetaContent = (html, name) => {
+  if (!html) return "";
+  const re = new RegExp(`<meta[^>]+name=['"]${name}['"][^>]*>`, "i");
+  const match = html.match(re);
+  if (!match) return "";
+  return extractAttrValue(match[0], "content");
+};
+
+const parseTemplateFingerprint = (html) => {
+  const envMeta = findMetaContent(html, "gg-env");
+  const relMeta = findMetaContent(html, "gg-release");
+  const divMatch = html.match(/<div[^>]+id=['"]gg-fingerprint['"][^>]*>/i);
+  const divTag = divMatch ? divMatch[0] : "";
+  const envDiv = extractAttrValue(divTag, "data-env");
+  const relDiv = extractAttrValue(divTag, "data-release");
+  return { envMeta, relMeta, envDiv, relDiv };
+};
+
+const isTemplateMismatch = (fp, expectedEnv, expectedRelease) => {
+  if (!fp) return true;
+  const envMeta = (fp.envMeta || "").trim().toLowerCase();
+  const envDiv = (fp.envDiv || "").trim().toLowerCase();
+  const relMeta = (fp.relMeta || "").trim();
+  const relDiv = (fp.relDiv || "").trim();
+  if (!envMeta || !envDiv || !relMeta || !relDiv) return true;
+  if (envMeta !== expectedEnv || envDiv !== expectedEnv) return true;
+  if (relMeta !== expectedRelease || relDiv !== expectedRelease) return true;
+  return false;
+};
+
 const CSP_REPORT_BUCKET = new Map();
 const CSP_REPORT_MAX = 500;
 const CSP_REPORT_TRIM = 100;
@@ -150,7 +187,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "7b02258";
+    const WORKER_VERSION = "82ea71b";
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -455,6 +492,15 @@ export default {
       if (contentType.indexOf("text/html") !== -1) {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
+        const expectedEnv = "prod";
+        let templateMismatch = false;
+        try {
+          const html = await originRes.clone().text();
+          const fp = parseTemplateFingerprint(html);
+          templateMismatch = isTemplateMismatch(fp, expectedEnv, WORKER_VERSION);
+        } catch (e) {
+          templateMismatch = true;
+        }
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
         publicUrl.searchParams.delete("view");
@@ -577,6 +623,10 @@ export default {
           }
           return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
         };
+        const mismatchBanner =
+          '<div id="gg-template-mismatch" style="position:sticky;top:0;z-index:2147483647;background:#b91c1c;color:#fff;padding:8px 12px;font:14px/1.4 system-ui;text-align:center;">' +
+          "Template mismatch detected. Enhancements disabled." +
+          "</div>";
         const rewritten = new HTMLRewriter()
           .on("meta[property=\"og:type\"]", {
             element(el) {
@@ -649,8 +699,22 @@ export default {
                 `<script id="gg-schema" type="application/ld+json">${schemaJson}</script>`,
                 { html: true }
               );
+              if (templateMismatch) {
+                el.prepend(mismatchBanner, { html: true });
+              }
             },
           });
+
+        if (templateMismatch) {
+          rewritten.on("script[src]", {
+            element(el) {
+              const src = (el.getAttribute("src") || "").trim();
+              if (src.includes("/assets/") && src.includes("/boot.js")) {
+                el.remove();
+              }
+            },
+          });
+        }
 
         if (forceListing) {
           rewritten
@@ -699,7 +763,14 @@ export default {
             });
         }
         const transformed = rewritten.transform(originRes);
-        return stamp(transformed, { cspReportEnabled });
+        const out = stamp(transformed, { cspReportEnabled });
+        if (templateMismatch) {
+          out.headers.set("x-gg-template-mismatch", "1");
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("Pragma", "no-cache");
+          out.headers.set("Expires", "0");
+        }
+        return out;
       }
 
       return stamp(originRes);

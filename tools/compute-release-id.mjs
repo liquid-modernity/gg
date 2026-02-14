@@ -37,7 +37,16 @@ function listFiles(dir) {
 }
 
 function normalizeIndex(xml) {
-  return xml.replace(/\/assets\/v\/[^/]+\//g, "/assets/v/__REL__/");
+  let out = xml.replace(/\/assets\/v\/[^/]+\//g, "/assets/v/__REL__/");
+  out = out.replace(
+    /(<meta[^>]+name=['"]gg-release['"][^>]*content=)(['"])[^'"]*\2/gi,
+    "$1$2__REL__$2"
+  );
+  out = out.replace(
+    /(<div(?=[^>]*id=['"]gg-fingerprint['"])[^>]*data-release=)(['"])[^'"]*\2/gi,
+    "$1$2__REL__$2"
+  );
+  return out;
 }
 
 function normalizeSw(sw) {

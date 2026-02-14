@@ -1,35 +1,41 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
-TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN.1
-TITLE: Audit doc drift guard + CI verifier
+TASK_ID: TASK-0009B
+TITLE: Wrong-paste guard (template fingerprint)
 
 TASK_SUMMARY
-- Remove static release id from ARCH_MAP and replace pinned asset paths with `<RELEASE_ID>` placeholder.
-- Add `tools/verify-audit-docs.mjs` to fail CI when audit docs contain static release ids or `/assets/v/<hash>/`.
-- Wire the new verifier into CI and bump release artifacts (new release id 7b02258).
+- Add template fingerprint markers (gg-env/gg-release + gg-fingerprint) and enforce mismatch handling in the Worker.
+- Fail-closed on mismatch: inject banner, disable boot script, no-store headers, and emit x-gg-template-mismatch.
+- Add verifier + CI wiring for fingerprint contract and extend smoke to assert no mismatch on live HTML.
+- Bump release artifacts (new release id 82ea71b).
 
 CHANGES
-- docs/audit/ARCH_MAP.md
-- tools/verify-audit-docs.mjs
-- .github/workflows/ci.yml
+- index.dev.xml
 - index.prod.xml
-- public/sw.js
 - src/worker.js
-- public/assets/v/7b02258/* (added)
+- tools/verify-template-fingerprint.mjs
+- tools/compute-release-id.mjs
+- tools/release.js
+- tools/smoke.sh
+- package.json
+- .github/workflows/ci.yml
+- public/sw.js
+- public/assets/v/82ea71b/* (added)
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
 - `ALLOW_DIRTY_RELEASE=1 npm run build`
+- `node tools/verify-template-fingerprint.mjs`
 - `node tools/verify-audit-docs.mjs`
 - `npm run verify:release`
 - `node tools/verify-ledger.mjs`
 
 RISKS / ROLLBACK
-- Risk: low; new release id requires prod template update; CI now enforces audit doc placeholder policy.
-- Rollback: revert commit and restore previous release id in assets + index.prod.xml + sw.js + worker.js.
+- Risk: medium; mismatch guard disables SPA if template markers drift; requires updating Blogger prod template after release id changes.
+- Rollback: revert commit and restore prior release id assets + templates.
 
 ---
 

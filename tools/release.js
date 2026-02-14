@@ -185,6 +185,20 @@ replaceAllOrThrow(
   "prod boot"
 );
 
+replaceAllOrThrow(
+  "index.prod.xml",
+  /(<meta[^>]+name=['"]gg-release['"][^>]*content=)(['"])[^'"]*\2/gi,
+  `$1$2${releaseId}$2`,
+  "prod gg-release meta"
+);
+
+replaceAllOrThrow(
+  "index.prod.xml",
+  /(<div(?=[^>]*id=['"]gg-fingerprint['"])[^>]*data-release=)(['"])[^'"]*\2/gi,
+  `$1$2${releaseId}$2`,
+  "prod gg-fingerprint data-release"
+);
+
 updateCapsuleAutogen(releaseId);
 
 console.log(`RELEASE_ID ${releaseId}`);

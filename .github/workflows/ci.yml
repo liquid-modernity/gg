@@ -71,6 +71,9 @@ jobs:
       - name: Verify template contract
         run: node tools/verify-template-contract.mjs
 
+      - name: Verify template fingerprint
+        run: node tools/verify-template-fingerprint.mjs
+
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
 

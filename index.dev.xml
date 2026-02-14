@@ -14,6 +14,8 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta name='gg:mode' content='dev'/>
+    <meta name='gg-env' content='dev'/>
+    <meta name='gg-release' content='dev'/>
     <script>
     (function(){
       try{
@@ -269,6 +271,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
   <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
+    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'/>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->

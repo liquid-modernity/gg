@@ -2,7 +2,7 @@
 Last updated: 2026-02-14
 
 NOW:
-- GG-AUDIT-DRIFT-LOCKDOWN.1: audit doc drift guard + verifier.
+- TASK-0009B: Wrong-paste guard (template fingerprint).
 
 CONSTRAINTS:
 - main-only
@@ -14,10 +14,10 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 7b02258
-PROD_PINNED_JS: /assets/v/7b02258/main.js
-PROD_PINNED_APP: /assets/v/7b02258/app.js
-PROD_PINNED_CSS: /assets/v/7b02258/main.css
+RELEASE_ID: 82ea71b
+PROD_PINNED_JS: /assets/v/82ea71b/main.js
+PROD_PINNED_APP: /assets/v/82ea71b/app.js
+PROD_PINNED_CSS: /assets/v/82ea71b/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,7 +37,7 @@ NEXT_TASK:
 - TBD
 
 LAST_PATCH:
-- 2026-02-14 GG-AUDIT-DRIFT-LOCKDOWN.1 audit doc drift guard + verifier
+- 2026-02-14 TASK-0009B wrong-paste guard (template fingerprint)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

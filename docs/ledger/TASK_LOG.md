@@ -1466,7 +1466,7 @@ Last updated: 2026-02-14
 - TASK_ID: GG-AUDIT-DRIFT-LOCKDOWN.1
 - TITLE: Audit doc drift guard + CI verifier
 - MODE (DEV/PROD impact): docs + CI + release id/assets
-- RELEASE_REF: GG_CAPSULE AUTOGEN (7b02258)
+- RELEASE_REF: GG_CAPSULE AUTOGEN (82ea71b)
 - SCOPE: remove static release refs in ARCH_MAP, add audit-docs verifier, wire CI
 - CHANGES (files touched): docs/audit/ARCH_MAP.md; tools/verify-audit-docs.mjs; .github/workflows/ci.yml; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/7b02258/*; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
 - COMMANDS RUN (local): ALLOW_DIRTY_RELEASE=1 npm run build; node tools/verify-audit-docs.mjs; npm run verify:release; node tools/verify-ledger.mjs
@@ -1475,4 +1475,22 @@ Last updated: 2026-02-14
 - VERIFY (URLs + expected): n/a
 - NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
 - RISKS: low; release id bump requires prod template update; CI now enforces audit doc placeholder policy
+- NEXT: TBD
+
+---
+
+## 2026-02-14 — TASK-0009B — Wrong-paste guard (template fingerprint)
+- DATE: 2026-02-14
+- TASK_ID: TASK-0009B
+- TITLE: Wrong-paste guard (template fingerprint)
+- MODE (DEV/PROD impact): templates + worker + CI + release id/assets
+- RELEASE_REF: GG_CAPSULE AUTOGEN (7b02258)
+- SCOPE: add gg-env/gg-release markers, enforce mismatch handling, add verifier + CI wiring, extend smoke
+- CHANGES (files touched): index.dev.xml; index.prod.xml; src/worker.js; tools/verify-template-fingerprint.mjs; tools/compute-release-id.mjs; tools/release.js; tools/smoke.sh; package.json; .github/workflows/ci.yml; public/sw.js; public/assets/v/82ea71b/*; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): ALLOW_DIRTY_RELEASE=1 npm run build; node tools/verify-template-fingerprint.mjs; node tools/verify-audit-docs.mjs; npm run verify:release; node tools/verify-ledger.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
+- RISKS: medium; mismatch guard disables SPA if template markers drift; prod template must be updated when release id changes
 - NEXT: TBD

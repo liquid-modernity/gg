@@ -375,6 +375,30 @@ echo "PASS: gg-flags.json served by worker"
 security_headers_check "${BASE}/?x=1" "home"
 security_headers_check "${BASE}/blog?x=1" "blog"
 
+template_mismatch_check() {
+  local url="$1"
+  local label="$2"
+  local headers html
+  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} mismatch headers fetch failed"
+  fi
+  if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} unexpected x-gg-template-mismatch header"
+  fi
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} mismatch html fetch failed"
+  fi
+  if echo "${html}" | grep -qi 'gg-template-mismatch'; then
+    die "${label} mismatch banner detected"
+  fi
+  echo "PASS: ${label} template fingerprint"
+}
+
+template_mismatch_check "${BASE}/?x=1" "home"
+template_mismatch_check "${BASE}/blog?x=1" "blog"
+
 flags_json="$(curl -fsSL "${BASE}/gg-flags.json?x=1" | tr -d '\r' || true)"
 if [[ -z "${flags_json}" ]]; then
   die "gg-flags.json fetch failed"
