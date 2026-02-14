@@ -22,8 +22,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/2d9193c/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/2d9193c/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/5aa9eaa/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/5aa9eaa/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -3048,7 +3048,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/2d9193c/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/5aa9eaa/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
 </html>
