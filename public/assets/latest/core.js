@@ -704,7 +704,10 @@
       router._setLoading(false);
     }
     router._setLoading(true);
-    return GG.services.api.getHtml(url).then(function(html){
+    var hard=(options&&typeof options.timeoutMs==='number')?options.timeoutMs:((GG.store&&GG.store.config&&GG.store.config.routerHardTimeoutMs)||3000);
+    var p=GG.services.api.getHtml(url);
+    if(hard>0)p=Promise.race([p,new Promise(function(_,rej){w.setTimeout(function(){rej({code:'timeout'});},hard);})]);
+    return p.then(function(html){
       if (!GG.core || !GG.core.render || !GG.core.render.apply) throw new Error('render-missing');
       var ok = GG.core.render.apply(html, url);
       if (!ok) throw new Error('render-failed');
