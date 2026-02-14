@@ -1,6 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
+TASK_ID: TASK-UX-P0-SEARCH-DOCK-ANCHOR
+TITLE: Search dialog dock anchor + budget fix
+
+TASK_SUMMARY
+- Anchor search dialog to dock when visible; fallback to centered modal; recompute on resize/visualViewport.
+- Keep reduced-motion behavior and focus trap/ESC close/restore focus intact.
+- Trim ui.bucket.search.js formatting to stay under perf budgets.
+
+CHANGES
+- public/assets/latest/modules/ui.bucket.search.js
+- public/assets/latest/main.css
+- tools/verify-search-anchor.mjs
+- index.prod.xml
+- public/sw.js
+- src/worker.js
+- public/assets/v/3cee7e9/*
+- docs/ledger/GG_CAPSULE.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `ALLOW_DIRTY_RELEASE=1 npm run build`
+- `node tools/verify-budgets.mjs`
+
+RISKS / ROLLBACK
+- Risk: low/med; dock visibility detection may fall back to center on edge cases.
+- Rollback: revert commit and rebuild release assets.
+
+---
+
 TASK_ID: GG-UX-P0-P1
 TITLE: Motion safety + SPA focus + search dialog a11y + UI contract
 
