@@ -2,7 +2,7 @@
 Last updated: 2026-02-14
 
 NOW:
-- TASK-0009C: Comment intent gate (delay native comments).
+- TASK-0009D: Worker detection LKG + backoff.
 
 CONSTRAINTS:
 - main-only
@@ -14,10 +14,10 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 495692a
-PROD_PINNED_JS: /assets/v/495692a/main.js
-PROD_PINNED_APP: /assets/v/495692a/app.js
-PROD_PINNED_CSS: /assets/v/495692a/main.css
+RELEASE_ID: 4afa689
+PROD_PINNED_JS: /assets/v/4afa689/main.js
+PROD_PINNED_APP: /assets/v/4afa689/app.js
+PROD_PINNED_CSS: /assets/v/4afa689/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,7 +37,7 @@ NEXT_TASK:
 - TBD
 
 LAST_PATCH:
-- 2026-02-14 TASK-0009C comment intent gate (native comments delayed)
+- 2026-02-14 TASK-0009D worker detection LKG + backoff
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

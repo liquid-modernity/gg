@@ -1512,3 +1512,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
 - RISKS: medium; comments now load on intent and may remain hidden if JS fails; prod template must be updated to new release id
 - NEXT: TBD
+
+---
+
+## 2026-02-14 — TASK-0009D — Worker detection LKG + backoff
+- DATE: 2026-02-14
+- TASK_ID: TASK-0009D
+- TITLE: Worker detection LKG + backoff
+- MODE (DEV/PROD impact): core JS + UI module + release id/assets
+- RELEASE_REF: GG_CAPSULE AUTOGEN (4afa689)
+- SCOPE: add LKG + retry backoff, degrade mode on recent LKG, skip SW when degraded
+- CHANGES (files touched): public/assets/latest/core.js; public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/pwa.js; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/4afa689/*; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:assets; node tools/verify-budgets.mjs; npm run verify:release; node tools/verify-ledger.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
+- RISKS: low/med; degraded mode uses localStorage and may be blocked; PWA stays disabled when degraded
+- NEXT: TBD

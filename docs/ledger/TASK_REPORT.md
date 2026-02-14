@@ -1,37 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
-TASK_ID: TASK-0009C
-TITLE: Comment intent gate (native comments delayed)
+TASK_ID: TASK-0009D
+TITLE: Worker detection LKG + backoff
 
 TASK_SUMMARY
-- Gate native comments behind intent: button click or idle-on-scroll (slow devices require click).
-- Move comment payload into a template and load on demand; rehydrate Blogger comment JS after injection.
-- Bump release artifacts (new release id 495692a).
+- Add last-known-good worker detection (localStorage) with retry backoff; fallback to degraded mode when recent LKG exists.
+- Emit lightweight client marker for detection outcome (no PII) and skip PWA registration when degraded.
+- Remove dev-only console logs to keep core.js within budget; bump release artifacts (new release id 4afa689).
 
 CHANGES
-- index.dev.xml
-- index.prod.xml
+- public/assets/latest/core.js
 - public/assets/latest/modules/ui.bucket.core.js
+- public/assets/latest/modules/pwa.js
+- index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/495692a/* (added)
+- public/assets/v/4afa689/* (added)
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
 - `ALLOW_DIRTY_RELEASE=1 npm run build`
-- `npm run verify:xml`
-- `node tools/verify-template-contract.mjs`
-- `node tools/verify-template-fingerprint.mjs`
 - `npm run verify:assets`
 - `node tools/verify-budgets.mjs`
 - `npm run verify:release`
 - `node tools/verify-ledger.mjs`
 
 RISKS / ROLLBACK
-- Risk: medium; JS failure or blocked idle callbacks may keep comments hidden until click; prod template must be updated to new release id.
+- Risk: low/med; degraded mode may keep SPA on while SW stays disabled; LKG uses localStorage and may be blocked by privacy settings.
 - Rollback: revert commit and restore prior release id assets + templates.
 
 ---
