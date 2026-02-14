@@ -9,6 +9,8 @@ const AUTOGEN_END = "<!-- GG:AUTOGEN:END -->";
 const AUTOGEN_BLOCK =
   `${AUTOGEN_BEGIN}\n` +
   `RELEASE_ID: __REL__\n` +
+  `RELEASE_HISTORY:\n` +
+  `- __REL__\n` +
   `PROD_PINNED_JS: /assets/v/__REL__/main.js\n` +
   `PROD_PINNED_APP: /assets/v/__REL__/app.js\n` +
   `PROD_PINNED_CSS: /assets/v/__REL__/main.css\n` +

@@ -15,6 +15,8 @@ CONSTRAINTS:
 
 <!-- GG:AUTOGEN:BEGIN -->
 RELEASE_ID: bd5179b
+RELEASE_HISTORY:
+- bd5179b
 PROD_PINNED_JS: /assets/v/bd5179b/main.js
 PROD_PINNED_APP: /assets/v/bd5179b/app.js
 PROD_PINNED_CSS: /assets/v/bd5179b/main.css

@@ -74,16 +74,21 @@ function replaceAllOrThrow(file, pattern, replacement, label) {
   if (out !== src) fs.writeFileSync(file, out, "utf8");
 }
 
-function updateCapsuleAutogen(releaseId) {
+function updateCapsuleAutogen({ releaseId, releaseHistory }) {
   const capsulePath = path.join("docs", "ledger", "GG_CAPSULE.md");
   if (!fs.existsSync(capsulePath)) {
     throw new Error("GG_CAPSULE missing: docs/ledger/GG_CAPSULE.md");
   }
   const begin = "<!-- GG:AUTOGEN:BEGIN -->";
   const end = "<!-- GG:AUTOGEN:END -->";
+  const history = Array.isArray(releaseHistory) ? releaseHistory.filter(Boolean) : [];
+  if (!history.length && releaseId) history.push(releaseId);
+  const historyLines = history.map((id) => `- ${id}`).join("\n");
   const block =
     `${begin}\n` +
     `RELEASE_ID: ${releaseId}\n` +
+    `RELEASE_HISTORY:\n` +
+    `${historyLines}\n` +
     `PROD_PINNED_JS: /assets/v/${releaseId}/main.js\n` +
     `PROD_PINNED_APP: /assets/v/${releaseId}/app.js\n` +
     `PROD_PINNED_CSS: /assets/v/${releaseId}/main.css\n` +
@@ -102,28 +107,53 @@ function updateCapsuleAutogen(releaseId) {
   if (out !== src) fs.writeFileSync(capsulePath, out, "utf8");
 }
 
-function readCapsuleReleaseId() {
+function readCapsuleReleaseHistory() {
   const capsulePath = path.join("docs", "ledger", "GG_CAPSULE.md");
-  if (!fs.existsSync(capsulePath)) return "";
+  if (!fs.existsSync(capsulePath)) return [];
   const src = fs.readFileSync(capsulePath, "utf8");
-  const match = src.match(/RELEASE_ID:\s*([0-9a-f]+)/i);
-  return match ? match[1] : "";
+  const begin = "<!-- GG:AUTOGEN:BEGIN -->";
+  const end = "<!-- GG:AUTOGEN:END -->";
+  const blockMatch = src.match(new RegExp(`${begin}[\\s\\S]*?${end}`, "m"));
+  const block = blockMatch ? blockMatch[0] : src;
+  const lines = block.split(/\r?\n/);
+  const history = [];
+  let inHistory = false;
+  for (const line of lines) {
+    if (line.trim().startsWith("RELEASE_HISTORY:")) {
+      inHistory = true;
+      continue;
+    }
+    if (inHistory) {
+      const match = line.match(/^\s*-\s*([0-9a-f]+)\s*$/i);
+      if (match) {
+        history.push(match[1]);
+        continue;
+      }
+      break;
+    }
+  }
+  if (history.length) return history;
+  const match = block.match(/RELEASE_ID:\s*([0-9a-f]+)/i);
+  return match ? [match[1]] : [];
 }
 
-function pruneAssetReleases({ releaseId, prevReleaseId, keepReleases }) {
+function buildReleaseHistory(releaseId, priorHistory, keepCount) {
+  const out = [];
+  const seen = new Set();
+  const input = [releaseId, ...(Array.isArray(priorHistory) ? priorHistory : [])];
+  input.forEach((id) => {
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    out.push(id);
+  });
+  return out.slice(0, keepCount);
+}
+
+function pruneAssetReleases({ keepReleaseIds }) {
   const vRoot = path.join("public", "assets", "v");
   if (!fs.existsSync(vRoot)) return;
-  let keepCount = Number.isFinite(keepReleases) ? keepReleases : 2;
-  if (keepCount < 1) keepCount = 1;
-  // Keep list history isn't available yet; only support current + previous for now.
-  if (keepCount > 2) {
-    keepCount = 2;
-    console.warn("KEEP_RELEASES>2 not supported yet; keeping current + previous only.");
-  }
-  const keep = new Set([releaseId]);
-  if (keepCount > 1 && prevReleaseId && prevReleaseId !== releaseId) {
-    keep.add(prevReleaseId);
-  }
+  const keep = new Set((keepReleaseIds || []).filter(Boolean));
+  if (!keep.size) return;
   const entries = fs.readdirSync(vRoot, { withFileTypes: true });
   entries.forEach((entry) => {
     if (!entry.isDirectory()) return;
@@ -136,11 +166,15 @@ function pruneAssetReleases({ releaseId, prevReleaseId, keepReleases }) {
 
 ensureCleanTree();
 
-const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "2");
+const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "5");
+const keepCount = Number.isFinite(KEEP_RELEASES)
+  ? Math.min(Math.max(KEEP_RELEASES, 1), 5)
+  : 5;
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
-const prevReleaseId = readCapsuleReleaseId();
+const priorHistory = readCapsuleReleaseHistory();
+const releaseHistory = buildReleaseHistory(releaseId, priorHistory, keepCount);
 
 const destDir = path.join("public", "assets", "v", releaseId);
 const latestDir = path.join("public", "assets", "latest");
@@ -233,8 +267,8 @@ replaceAllOrThrow(
   "prod gg-fingerprint data-release"
 );
 
-updateCapsuleAutogen(releaseId);
-pruneAssetReleases({ releaseId, prevReleaseId, keepReleases: KEEP_RELEASES });
+updateCapsuleAutogen({ releaseId, releaseHistory });
+pruneAssetReleases({ keepReleaseIds: releaseHistory });
 
 console.log(`RELEASE_ID ${releaseId}`);
 console.log(`FULL_HASH ${fullHash}`);

@@ -46,14 +46,14 @@ if (!fs.existsSync(latestModulesDir)) {
 }
 
 const vRoot = path.join(root, "public", "assets", "v");
-if (fs.existsSync(vRoot)) {
-  const releaseDirs = fs
-    .readdirSync(vRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name && !entry.name.startsWith("."));
-  if (releaseDirs.length > 2) {
-    failures.push(`public/assets/v has ${releaseDirs.length} release dirs (max 2)`);
+  if (fs.existsSync(vRoot)) {
+    const releaseDirs = fs
+      .readdirSync(vRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name && !entry.name.startsWith("."));
+    if (releaseDirs.length > 5) {
+      failures.push(`public/assets/v has ${releaseDirs.length} release dirs (max 5)`);
+    }
   }
-}
 
 if (releaseId) {
   const vDir = path.join(vRoot, releaseId);

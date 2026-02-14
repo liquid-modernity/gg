@@ -14,17 +14,31 @@ if [[ -f "$capsule" ]]; then
   current_id="$(grep -m1 '^RELEASE_ID:' "$capsule" | awk '{print $2}')"
 fi
 
-v_root="$ROOT/public/assets/v"
-prev_id=""
-if [[ -n "$current_id" && -d "$v_root" ]]; then
-  for d in "$v_root"/*; do
-    [[ -d "$d" ]] || continue
-    base="$(basename "$d")"
-    [[ "$base" == "$current_id" ]] && continue
-    prev_id="$base"
-    break
-  done
+history=()
+if [[ -f "$capsule" ]]; then
+  in_history=0
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^RELEASE_HISTORY: ]]; then
+      in_history=1
+      continue
+    fi
+    if [[ "$in_history" == "1" ]]; then
+      if [[ "$line" =~ ^-[[:space:]]*([0-9a-f]+) ]]; then
+        history+=("${BASH_REMATCH[1]}")
+        continue
+      fi
+      break
+    fi
+  done < "$capsule"
 fi
+
+if [[ ${#history[@]} -eq 0 && -n "$current_id" ]]; then
+  history=("$current_id")
+fi
+
+current_id="${history[0]:-$current_id}"
+prev_id="${history[1]:-}"
+v_root="$ROOT/public/assets/v"
 
 include=(
   "src"
@@ -35,6 +49,7 @@ include=(
   "wrangler.jsonc"
   "package.json"
   "package-lock.json"
+  ".github/workflows"
   "docs/ledger/GG_CAPSULE.md"
   "public/assets/latest"
   "public/sw.js"
