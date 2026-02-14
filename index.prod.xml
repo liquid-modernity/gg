@@ -217,7 +217,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <b:include data='blog' name='google-analytics'/>
 </head>
 
-  <body expr:class='&quot;loading&quot;' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))'>
+  <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
@@ -259,7 +259,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' id='gg-main' tabindex='-1'>
+  <main class='gg-main' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' id='gg-main' tabindex='-1'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     
@@ -502,56 +502,6 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <!-- Versi HOME/LIST -->
       <b:if cond='data:view.isMultipleItems'>
         <b:section class='gg-blog-sidebar__section' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
-          <b:widget id='PageList2' locked='false' title='Pages' type='PageList' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='pageListJson'><![CDATA[{"4705629008715995659":{"href":"https://www.pakrpp.com/p/authors.html","position":6,"title":"Authors"},"726113257362069250":{"href":"https://www.pakrpp.com/p/support.html","position":2,"title":"Support"},"2019187567024867715":{"href":"https://www.pakrpp.com/p/faq.html","position":4,"title":"FAQ"},"4011106118937489318":{"href":"https://www.pakrpp.com/p/tags.html","position":9,"title":"Tags"},"1372170442682668249":{"href":"https://www.pakrpp.com/p/pak-rpp.html","position":0,"title":"Pak RPP"},"6528254867464092336":{"href":"https://www.pakrpp.com/p/sitemap.html","position":8,"title":"Sitemap"},"5485604862011607605":{"href":"https://www.pakrpp.com/p/library.html","position":1,"title":"Library"},"6481347832197765163":{"href":"https://www.pakrpp.com/p/about.html","position":5,"title":"About"},"7872828219384934892":{"href":"https://www.pakrpp.com/p/contact.html","position":3,"title":"Contact"},"8849782320772234696":{"href":"https://www.pakrpp.com/p/feeds.html","position":7,"title":"Feeds"}}]]></b:widget-setting>
-              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <b:include name='content'/>
-</b:includable>
-            <b:includable id='content'>
-  <div class='widget-content'>
-    <b:include name='pageList'/>
-  </div>
-</b:includable>
-            <b:includable id='overflowButton'>
-  <b:include name='verticalMoreIcon'/>
-</b:includable>
-            <b:includable id='overflowablePageList'>
-  <div class='overflowable-container'>
-    <div class='overflowable-contents'>
-      <div class='container'>
-        <b:with value='true' var='overflow'>
-        <b:with value='&quot;tabs&quot;' var='pageListClass'>
-          <b:include name='pageList'/>
-        </b:with>
-        </b:with>
-      </div>
-    </div>
-    <div class='overflow-button' data-gg-state='hidden'>
-      <b:include name='overflowButton'/>
-    </div>
-  </div>
-</b:includable>
-            <b:includable id='pageLink'>
-  <li>
-    <b:class cond='data:overflow' name='overflowable-item'/>
-    <b:class cond='data:link.isCurrentPage' name='selected'/>
-
-    <a expr:href='data:link.href'><data:link.title/></a>
-  </li>
-</b:includable>
-            <b:includable id='pageList'>
-  <ul>
-    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
-    <b:loop values='data:links' var='link'>
-      <b:include name='pageLink'/>
-    </b:loop>
-  </ul>
-</b:includable>
-          </b:widget>
           <b:widget id='HTML1' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA LABEL TREE VERSI HOME/LIST -->
@@ -577,104 +527,91 @@ body:not([data-gg-surface="landing"]) .hero-section {
     </div>
   </b:includable>
           </b:widget>
-          <b:widget id='PageList1' locked='false' title='Page 1' type='PageList' version='2' visible='true'>
+          <b:widget id='HTML17' locked='false' title='Page 1 Custom: Governance &amp;amp; Trust' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='pageListJson'>{}</b:widget-setting>
-              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[About & Philosophy: https://www.pakrpp.com/p/about.html
+
+Board of Authors: https://www.pakrpp.com/p/authors.html
+
+Editorial Policy: https://www.pakrpp.com/p/editorial-policy.html
+
+Transparency & Disclosure: https://www.pakrpp.com/p/transparency.html]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
-  <b:include name='content'/>
-</b:includable>
-            <b:includable id='content'>
   <div class='widget-content'>
-    <b:include name='pageList'/>
+    <data:content/>
   </div>
-</b:includable>
-            <b:includable id='overflowButton'>
-  <b:include name='verticalMoreIcon'/>
-</b:includable>
-            <b:includable id='overflowablePageList'>
-  <div class='overflowable-container'>
-    <div class='overflowable-contents'>
-      <div class='container'>
-        <b:with value='true' var='overflow'>
-        <b:with value='&quot;tabs&quot;' var='pageListClass'>
-          <b:include name='pageList'/>
-        </b:with>
-        </b:with>
-      </div>
-    </div>
-    <div class='overflow-button' data-gg-state='hidden'>
-      <b:include name='overflowButton'/>
-    </div>
-  </div>
-</b:includable>
-            <b:includable id='pageLink'>
-  <li>
-    <b:class cond='data:overflow' name='overflowable-item'/>
-    <b:class cond='data:link.isCurrentPage' name='selected'/>
-
-    <a expr:href='data:link.href'><data:link.title/></a>
-  </li>
-</b:includable>
-            <b:includable id='pageList'>
-  <ul>
-    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
-    <b:loop values='data:links' var='link'>
-      <b:include name='pageLink'/>
-    </b:loop>
-  </ul>
 </b:includable>
           </b:widget>
-          <b:widget id='PageList3' locked='false' title='Page 2' type='PageList' version='2' visible='true'>
+          <b:widget id='HTML18' locked='false' title='Page 2 Custom: Knowledge Hub' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='pageListJson'>{}</b:widget-setting>
-              <b:widget-setting name='homeTitle'>Home</b:widget-setting>
+              <b:widget-setting name='content'>Topic Index: https://www.pakrpp.com/p/tags.html
+
+Visual Sitemap: https://www.pakrpp.com/p/sitemap.html
+
+Digital Library: https://www.pakrpp.com/p/library.html
+
+Industry Glossary: https://www.pakrpp.com/p/glossary.html</b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
-  <b:include name='content'/>
-</b:includable>
-            <b:includable id='content'>
   <div class='widget-content'>
-    <b:include name='pageList'/>
+    <data:content/>
   </div>
 </b:includable>
-            <b:includable id='overflowButton'>
-  <b:include name='verticalMoreIcon'/>
-</b:includable>
-            <b:includable id='overflowablePageList'>
-  <div class='overflowable-container'>
-    <div class='overflowable-contents'>
-      <div class='container'>
-        <b:with value='true' var='overflow'>
-        <b:with value='&quot;tabs&quot;' var='pageListClass'>
-          <b:include name='pageList'/>
-        </b:with>
-        </b:with>
-      </div>
-    </div>
-    <div class='overflow-button' data-gg-state='hidden'>
-      <b:include name='overflowButton'/>
-    </div>
-  </div>
-</b:includable>
-            <b:includable id='pageLink'>
-  <li>
-    <b:class cond='data:overflow' name='overflowable-item'/>
-    <b:class cond='data:link.isCurrentPage' name='selected'/>
+          </b:widget>
+          <b:widget id='HTML19' locked='false' title='Page 3 Custom: Services &amp;amp; Connect' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[Help Center: https://www.pakrpp.com/p/support.html
 
-    <a expr:href='data:link.href'><data:link.title/></a>
-  </li>
+Knowledge Base (FAQ): https://www.pakrpp.com/p/faq.html
+
+Contact Us: https://www.pakrpp.com/p/contact.html
+
+Partnership & Career: https://www.pakrpp.com/p/career.html
+
+Press & Media Kit: https://www.pakrpp.com/p/media-kit.html]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
 </b:includable>
-            <b:includable id='pageList'>
-  <ul>
-    <b:class cond='data:pageListClass' expr:name='data:pageListClass'/>
-    <b:loop values='data:links' var='link'>
-      <b:include name='pageLink'/>
-    </b:loop>
-  </ul>
+          </b:widget>
+          <b:widget id='HTML20' locked='false' title='Page 4 Custom: Legal &amp;amp; Compliance' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Privacy Policy: https://www.pakrpp.com/p/privacy-policy.html
+
+Terms of Service: https://www.pakrpp.com/p/terms-of-service.html
+
+Disclaimer: https://www.pakrpp.com/p/disclaimer.html
+
+Accessibility Statement: https://www.pakrpp.com/p/accessibility.html</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML21' locked='false' title='Non HTML' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[https://www.pakrpp.com/llms.txt
+
+Fungsi: Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude). Memberitahu mereka: "Boleh baca, tapi wajib cantumkan kredit ke pakrpp.com".
+
+https://www.pakrpp.com/ads.txt
+
+Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
 </b:includable>
           </b:widget>
         </b:section>
@@ -807,6 +744,93 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <data:content/>
     </div>
   </b:includable>
+          </b:widget>
+          <b:widget id='HTML22' locked='false' title='Page 1 Custom: Governance &amp;amp; Trust' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[About & Philosophy: https://www.pakrpp.com/p/about.html
+
+Board of Authors: https://www.pakrpp.com/p/authors.html
+
+Editorial Policy: https://www.pakrpp.com/p/editorial-policy.html
+
+Transparency & Disclosure: https://www.pakrpp.com/p/transparency.html]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML23' locked='false' title='Page 2 Custom: Knowledge Hub' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Topic Index: https://www.pakrpp.com/p/tags.html
+
+Visual Sitemap: https://www.pakrpp.com/p/sitemap.html
+
+Digital Library: https://www.pakrpp.com/p/library.html
+
+Industry Glossary: https://www.pakrpp.com/p/glossary.html</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML24' locked='false' title='Page 3 Custom: Services &amp;amp; Connect' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[Help Center: https://www.pakrpp.com/p/support.html
+
+Knowledge Base (FAQ): https://www.pakrpp.com/p/faq.html
+
+Contact Us: https://www.pakrpp.com/p/contact.html
+
+Partnership & Career: https://www.pakrpp.com/p/career.html
+
+Press & Media Kit: https://www.pakrpp.com/p/media-kit.html]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML25' locked='false' title='Page 4 Custom: Legal &amp;amp; Compliance' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'>Privacy Policy: https://www.pakrpp.com/p/privacy-policy.html
+
+Terms of Service: https://www.pakrpp.com/p/terms-of-service.html
+
+Disclaimer: https://www.pakrpp.com/p/disclaimer.html
+
+Accessibility Statement: https://www.pakrpp.com/p/accessibility.html</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML26' locked='false' title='Non HTML' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[https://www.pakrpp.com/llms.txt
+
+Fungsi: Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude). Memberitahu mereka: "Boleh baca, tapi wajib cantumkan kredit ke pakrpp.com".
+
+https://www.pakrpp.com/ads.txt
+
+Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
           </b:widget>
         </b:section>
       </b:if>
@@ -1189,30 +1213,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
       </b:widget>
       <b:widget id='HTML8' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 3' type='HTML' visible='true'>
-        <b:widget-settings>
-          <b:widget-setting name='content'>(Complex Card, 3 item)
-
-memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-        </b:widget-settings>
-        <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-      </b:widget>
-      <b:widget id='HTML14' locked='false' title='THE MIXED-MEDIA LAYOUT: PINTERESTISH' type='HTML' visible='true'>
-        <b:widget-settings>
-          <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-        </b:widget-settings>
-        <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-      </b:widget>
-      <b:widget id='HTML9' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 4' type='HTML' visible='true'>
         <b:widget-settings>
           <b:widget-setting name='content'>(Complex Card, 3 item)
 
@@ -2383,7 +2383,92 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
 
   <b:if cond='data:view.isMultipleItems'>
-    <b:section class='gg-blog-sidebar__section' id='gg-right-sidebar-list' name='Right Sidebar (List)' showaddelement='true'/>
+    <b:section class='gg-blog-sidebar__section' id='gg-right-sidebar-list' name='Right Sidebar (List)' showaddelement='true'>
+      <b:widget id='HTML16' locked='false' title='Info Panel 666' type='HTML' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='content'><![CDATA[<!-- GAGA INFO PANEL HOME BLOG TEMPLATE -->
+<template id='gg-info-panel'>
+  <div class='gg-info-panel__card' hidden=''>
+    <div class='gg-info-panel__thumb gg-info-panel__hero'>
+      <img alt='' class='gg-info-panel__thumb-img'/>
+      <div aria-hidden='true' class='gg-info-panel__scrim'/>
+
+      <div class='gg-info-panel__herohead'>
+        <div class='gg-info-panel__herohead-left'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+          <span class='gg-info-panel__herotitle-sm'>Information</span>
+        </div>
+        <button aria-label='Close' class='gg-info-panel__close' data-gg-action='info-close' type='button'>&#215;</button>
+      </div>
+
+      <div class='gg-info-panel__hero-title'/>
+
+      <a class='gg-info-panel__hero-cta' href='#'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>visibility</span>
+        <span>Read this post</span>
+      </a>
+    </div>
+
+    <div class='gg-info-panel__details'>
+      <div class='gg-info-panel__sec' data-gg-sec='author'>
+        <div class='gg-info-panel__sechead'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>person</span>
+          <div class='gg-info-panel__kicker'>Written by</div>
+        </div>
+        <div class='gg-info-panel__people' data-gg-slot='author'/>
+      </div>
+
+      <div class='gg-info-panel__sec' data-gg-sec='contributors' hidden=''>
+        <div class='gg-info-panel__sechead'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>groups</span>
+          <div class='gg-info-panel__kicker'>Contributors</div>
+        </div>
+        <div class='gg-info-panel__people' data-gg-slot='contributors'/>
+      </div>
+
+      <div class='gg-info-panel__row gg-info-panel__row--labels' hidden=''>
+        <span aria-hidden='true' class='gg-icon'>label</span>
+        <div class='gg-chip-row' data-gg-slot='labels'/>
+      </div>
+
+      <div class='gg-info-panel__row gg-info-panel__row--tags' hidden=''>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>sell</span>
+        <div class='gg-chip-row' data-gg-slot='tags'/>
+      </div>
+
+      <div class='gg-info-panel__meta gg-info-panel__meta--icons'>
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>calendar_today</span>
+          <span class='gg-info-panel__date'/>
+        </span>
+
+        <span class='gg-meta-sep'>&#8226;</span>
+
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>comment</span>
+          <span class='gg-info-panel__comments'/>
+        </span>
+
+        <span class='gg-meta-sep'>&#8226;</span>
+
+        <span class='gg-info-panel__metaitem'>
+          <span aria-hidden='true' class='gg-icon'>schedule</span>
+          <span class='gg-info-panel__readtime'/>
+        </span>
+      </span></span></span></div>
+    </div>
+  </div>
+</div></div></div></div></div></div></template>
+<!-- /GAGA INFO PANEL HOME BLOG TEMPLATE -->]]></b:widget-setting>
+        </b:widget-settings>
+        <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+      </b:widget>
+    </b:section>
   </b:if>
 
   <b:if cond='data:view.isSingleItem and data:view.isPost'>
@@ -2404,263 +2489,38 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </b:if>
     
       <b:section class='gg-popularpost1' id='gg-popularpost1' name='gg-popularpost1' showaddelement='true'>
-        <b:widget id='PopularPosts1' locked='false' title='' type='PopularPosts' version='2' visible='true'>
+        <b:widget id='HTML15' locked='false' title='THE MIXED-MEDIA LAYOUT: POPULAR POST' type='HTML' visible='true'>
           <b:widget-settings>
-            <b:widget-setting name='numItemsToShow'>10</b:widget-setting>
-            <b:widget-setting name='showThumbnails'>true</b:widget-setting>
-            <b:widget-setting name='showSnippets'>false</b:widget-setting>
-            <b:widget-setting name='timeRange'>ALL_TIME</b:widget-setting>
+            <b:widget-setting name='content'>(Ratio 1:1.48, 16 item). memanggil API Blogger (/feeds/posts/summary?orderby=published) based on spesific label Show image thumbnail</b:widget-setting>
           </b:widget-settings>
-          <b:includable id='main' var='this'>
+          <b:includable id='main'>
   <b:include name='widget-title'/>
   <div class='widget-content'>
-    <b:include name='snippetedPosts'/>
+    <data:content/>
   </div>
 </b:includable>
-          <b:includable id='blogThisShare'>
-  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-          <b:includable id='bylineByName' var='byline'>
-  <b:switch var='data:byline.name'>
-  <b:case value='share'/>
-    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
-  <b:case value='comments'/>
-    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
-  <b:case value='location'/>
-    <b:include cond='data:post.location' name='postLocation'/>
-  <b:case value='timestamp'/>
-    <b:include cond='not data:view.isPage' name='postTimestamp'/>
-  <b:case value='author'/>
-    <b:include name='postAuthor'/>
-  <b:case value='labels'/>
-    <b:include cond='data:post.labels' name='postLabels'/>
-  <b:case value='icons'/>
-    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
-  </b:switch>
-</b:includable>
-          <b:includable id='bylineRegion' var='regionItems'>
-  <b:loop values='data:regionItems' var='byline'>
-    <b:include data='byline' name='bylineByName'/>
-  </b:loop>
-</b:includable>
-          <b:includable id='commentsLink'>
-  <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
-    <b:if cond='data:post.numberOfComments &gt; 0'>
-      <b:message name='messages.numberOfComments'>
-        <b:param expr:value='data:post.numberOfComments' name='numComments'/>
-      </b:message>
-    <b:else/>
-      <data:messages.postAComment/>
-    </b:if>
-  </a>
-</b:includable>
-          <b:includable id='commentsLinkIframe'>
-  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
-</b:includable>
-          <b:includable id='emailPostIcon'>
-  <span class='byline post-icons'>
-    <!-- email post links -->
-    <span class='item-action'>
-      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
-        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
-      </a>
-    </span>
-  </span>
-</b:includable>
-          <b:includable id='facebookShare'>
-  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-          <b:includable id='footerBylines'>
-  <b:if cond='data:widgets.Blog.first.footerBylines'>
-    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
-      <b:if cond='not data:region.items.empty'>
-        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
-          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
-            <b:include data='region.items' name='bylineRegion'/>
-          </b:with>
-        </div>
-      </b:if>
-    </b:loop>
-  </b:if>
-</b:includable>
-          <b:includable id='googlePlusShare'>
-</b:includable>
-          <b:includable id='headerByline'>
-  <b:if cond='data:widgets.Blog.first.headerByline'>
-    <div class='post-header'>
-      <div class='post-header-line-1'>
-        <b:with value='&quot;header-1&quot;' var='regionName'>
-          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
-        </b:with>
-      </div>
-    </div>
-  </b:if>
-</b:includable>
-          <b:includable id='linkShare'>
-  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-          <b:includable id='otherSharingButton'>
-  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
-    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
-      <b:include name='sharingPlatformIcon'/>
-    </b:with>
-    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
-  </span>
-</b:includable>
-          <b:includable id='platformShare'>
-  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
-    <span class='share-button-link-text'>
-      <data:platform.shareMessage/>
-    </span>
-  </a>
-</b:includable>
-          <b:includable id='postAuthor'>
-  <span class='byline post-author vcard'>
-    <span class='post-author-label'>
-      <data:byline.label/>
-    </span>
-    <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
-          <span><data:post.author.name/></span>
-        </a>
-      <b:else/>
-        <span><data:post.author.name/></span>
-      </b:if>
-    </span>
-  </span>
-</b:includable>
-          <b:includable id='postCommentsLink'>
-  <span class='byline post-comment-link container'>
-    <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
-  </span>
-</b:includable>
-          <b:includable id='postJumpLink' var='post'>
-  <div class='jump-link flat-button'>
-    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
-      <b:eval expr='data:blog.jumpLinkMessage'/>
-    </a>
+        </b:widget>
+        <b:widget id='HTML9' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 4' type='HTML' visible='true'>
+          <b:widget-settings>
+            <b:widget-setting name='content'>(Complex Card, 3 item)
+
+memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+          </b:widget-settings>
+          <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
   </div>
 </b:includable>
-          <b:includable id='postLabels'>
-  <span class='byline post-labels'>
-    <span class='byline-label'><data:byline.label/></span>
-    <b:loop index='i' values='data:post.labels' var='label'>
-      <a expr:href='data:label.url' rel='tag'>
-        <data:label.name/>
-      </a>
-    </b:loop>
-  </span>
-</b:includable>
-          <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
-</b:includable>
-          <b:includable id='postReactions'>
-  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
-</b:includable>
-          <b:includable id='postShareButtons'>
-  <div class='byline post-share-buttons goog-inline-block'>
-    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
-      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
-      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
-    </b:with>
-  </div>
-</b:includable>
-          <b:includable id='postTimestamp'>
-  <span class='byline post-timestamp'>
-    <data:byline.label/>
-    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
-        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
-          <data:post.date/>
-        </time>
-      </a>
-    </b:if>
-  </span>
-</b:includable>
-          <b:includable id='sharingButton'>
-  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
-    <b:include name='sharingPlatformIcon'/>
-    <span class='platform-sharing-text'><data:platform.name/></span>
-  </span>
-</b:includable>
-          <b:includable id='sharingButtonContent'>
-  <div class='flat-icon-button ripple'>
-    <b:include name='shareIcon'/>
-  </div>
-</b:includable>
-          <b:includable id='sharingButtons'>
-  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
-    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
-      <b:include name='sharingButtonContent'/>
-    </button>
-    <b:include name='sharingButtonsMenu'/>
-  </div>
-</b:includable>
-          <b:includable id='sharingButtonsMenu'>
-  <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
-      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
-        <li>
-          <b:include name='sharingButton'/>
-        </li>
-      </b:loop>
-      <li aria-hidden='true' data-gg-state='hidden'>
-        <b:include name='otherSharingButton'/>
-      </li>
-    </ul>
-  </div>
-</b:includable>
-          <b:includable id='sharingPlatformIcon'>
-  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
-</b:includable>
-          <b:includable id='snippetedPostByline'>
-  <b:with value='(data:widgets first (w =&gt; w.type == &quot;Blog&quot;)).allBylineItems' var='blogBylines'>
-    <div class='item-byline'>
-      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;author&quot;)' var='byline'>
-        <b:include cond='data:byline and data:this.postDisplay.showAuthor' data='post' name='postAuthor'/>
-      </b:with>
-      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;timestamp&quot;)' var='byline'>
-        <b:include cond='data:byline and data:this.postDisplay.showDate' data='post' name='postTimestamp'/>
-      </b:with>
-    </div>
-  </b:with>
-</b:includable>
-          <b:includable id='snippetedPostContent'>
-  <div class='post-content'>
-    <b:include cond='data:this.postDisplay.showTitle' name='snippetedPostTitle'/>
-    <b:include cond='data:this.postDisplay.showDate or data:this.postDisplay.showAuthor' name='snippetedPostByline'/>
-    <b:include cond='data:this.postDisplay.showSnippet' data='post' name='postSnippet'/>
-    <b:include cond='data:this.postDisplay.showFeaturedImage and data:post.featuredImage' name='snippetedPostThumbnail'/>
-  </div>
-</b:includable>
-          <b:includable id='snippetedPostThumbnail'>
-  <div class='item-thumbnail'>
-    <a expr:aria-label='data:post.title' expr:href='data:post.url' expr:title='data:post.title'>
-      <b:include data='{                         image: data:post.featuredImage,                         imageSizes: [72, 144],                         imageRatio: &quot;1:1&quot;,                         sourceSizes: &quot;72px&quot;                        }' name='responsiveImage'/>
-    </a>
-  </div>
-</b:includable>
-          <b:includable id='snippetedPostTitle'>
-  <b:if cond='data:post.title != &quot;&quot;'>
-    <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
-  </b:if>
-</b:includable>
-          <b:includable id='snippetedPosts'>
-  <div role='feed'>
-    <!-- Don't render the post that we're currently already looking at. -->
-    <b:loop values='data:posts filter (p =&gt; p.id != data:view.postId)' var='post'>
-      <article class='post' role='article'>
-        <b:include name='snippetedPostContent'/>
-      </article>
-    </b:loop>
+        </b:widget>
+        <b:widget id='HTML14' locked='false' title='THE MIXED-MEDIA LAYOUT: PINTERESTISH' type='HTML' visible='true'>
+          <b:widget-settings>
+            <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+          </b:widget-settings>
+          <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
   </div>
 </b:includable>
         </b:widget>
@@ -2967,85 +2827,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
-    
-    
-    
-    <!-- GAGA INFO PANEL HOME BLOG TEMPLATE -->
-<template id='gg-info-panel'>
-  <div class='gg-info-panel__card' hidden=''>
-    <div class='gg-info-panel__thumb gg-info-panel__hero'>
-      <img alt='' class='gg-info-panel__thumb-img'/>
-      <div aria-hidden='true' class='gg-info-panel__scrim'/>
-
-      <div class='gg-info-panel__herohead'>
-        <div class='gg-info-panel__herohead-left'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
-          <span class='gg-info-panel__herotitle-sm'>Information</span>
-        </div>
-        <button aria-label='Close' class='gg-info-panel__close' data-gg-action='info-close' type='button'>&#215;</button>
-      </div>
-
-      <div class='gg-info-panel__hero-title'/>
-
-      <a class='gg-info-panel__hero-cta' href='#'>
-        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>visibility</span>
-        <span>Read this post</span>
-      </a>
-    </div>
-
-    <div class='gg-info-panel__details'>
-      <div class='gg-info-panel__sec' data-gg-sec='author'>
-        <div class='gg-info-panel__sechead'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>person</span>
-          <div class='gg-info-panel__kicker'>Written by</div>
-        </div>
-        <div class='gg-info-panel__people' data-gg-slot='author'/>
-      </div>
-
-      <div class='gg-info-panel__sec' data-gg-sec='contributors' hidden=''>
-        <div class='gg-info-panel__sechead'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>groups</span>
-          <div class='gg-info-panel__kicker'>Contributors</div>
-        </div>
-        <div class='gg-info-panel__people' data-gg-slot='contributors'/>
-      </div>
-
-      <div class='gg-info-panel__row gg-info-panel__row--labels' hidden=''>
-        <span aria-hidden='true' class='gg-icon'>label</span>
-        <div class='gg-chip-row' data-gg-slot='labels'/>
-      </div>
-
-      <div class='gg-info-panel__row gg-info-panel__row--tags' hidden=''>
-        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>sell</span>
-        <div class='gg-chip-row' data-gg-slot='tags'/>
-      </div>
-
-      <div class='gg-info-panel__meta gg-info-panel__meta--icons'>
-        <span class='gg-info-panel__metaitem'>
-          <span aria-hidden='true' class='gg-icon'>calendar_today</span>
-          <span class='gg-info-panel__date'/>
-        </span>
-
-        <span class='gg-meta-sep'>&#8226;</span>
-
-        <span class='gg-info-panel__metaitem'>
-          <span aria-hidden='true' class='gg-icon'>comment</span>
-          <span class='gg-info-panel__comments'/>
-        </span>
-
-        <span class='gg-meta-sep'>&#8226;</span>
-
-        <span class='gg-info-panel__metaitem'>
-          <span aria-hidden='true' class='gg-icon'>schedule</span>
-          <span class='gg-info-panel__readtime'/>
-        </span>
-      </div>
-    </div>
-  </div>
-</template>
-<!-- /GAGA INFO PANEL HOME BLOG TEMPLATE -->
-
-    
+        
 
 <!-- GAGA HOME OF JS -->
 <script defer='defer' src='/assets/v/5aa9eaa/boot.js?v=20260203160035'/>
