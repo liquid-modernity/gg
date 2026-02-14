@@ -229,61 +229,39 @@
       }
       return count;
     }
-    function apply(html, url){
-      if (!html) throw fail('empty', { url: url });
-      if (!w.DOMParser) throw fail('parser', { url: url });
-      var parser = new w.DOMParser();
-      var doc = parser.parseFromString(html, 'text/html');
-      if (!doc) throw fail('parse', { url: url });
-      var source = findTarget(doc);
-      var target = findTarget(d);
-      if (!source || !target) throw fail('target', { url: url });
-      var meta = extractMeta(doc);
-      function swapZone(selector){
-        var s = doc.querySelector(selector);
-        var t = d.querySelector(selector);
-        if (!s || !t) return false;
-        t.innerHTML = s.innerHTML;
-        return true;
-      }
-      var doSwap = function(){
-        target.innerHTML = source.innerHTML;
-        swapZone('aside.gg-blog-sidebar--left');
-        swapZone('aside.gg-blog-sidebar--right');
-        var page = doc.body && (doc.body.getAttribute('data-gg-page') || (doc.body.dataset && doc.body.dataset.ggPage));
-        if (page && d.body) d.body.setAttribute('data-gg-page', page);
-        var sMain = doc.querySelector('main.gg-main');
-        var tMain = d.querySelector('main.gg-main');
-        if (sMain && tMain && sMain.hasAttribute('data-gg-page')) {
-          tMain.setAttribute('data-gg-page', sMain.getAttribute('data-gg-page'));
+    function apply(html,url){
+      if(!html)throw fail('empty',{url:url});
+      if(!w.DOMParser)throw fail('parser',{url:url});
+      var parser=new w.DOMParser();
+      var doc=parser.parseFromString(html,'text/html');
+      if(!doc)throw fail('parse',{url:url});
+      var s=findTarget(doc),t=findTarget(d);
+      if(!s||!t)throw fail('target',{url:url});
+      var m=extractMeta(doc);
+      var doSwap=function(){
+        t.innerHTML=s.innerHTML;
+        ['aside.gg-blog-sidebar--left','aside.gg-blog-sidebar--right'].forEach(function(sel){
+          var ss=doc.querySelector(sel),tt=d.querySelector(sel);
+          if(ss&&tt)tt.innerHTML=ss.innerHTML;
+        });
+        var pg=doc.body&&doc.body.getAttribute('data-gg-page');
+        if(pg&&d.body)d.body.setAttribute('data-gg-page',pg);
+        if(GG.ui&&GG.ui.layout&&typeof GG.ui.layout.sync==='function')try{GG.ui.layout.sync(doc,url);}catch(_){}
+        if(GG.core&&GG.core.surface&&typeof GG.core.surface.update==='function')try{GG.core.surface.update(url);}catch(_){}
+        if(GG.core&&GG.core.meta&&GG.core.meta.update){
+          var p={};
+          if(m.title)p.title=m.title;
+          if(m.description)p.description=m.description;
+          if(m.ogTitle)p.ogTitle=m.ogTitle;
+          if(p.title||p.description||p.ogTitle)GG.core.meta.update(p);
         }
-        if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
-          try { GG.ui.layout.sync(doc, url); } catch (_) {}
-        }
-        if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
-          try { GG.core.surface.update(url); } catch (_) {}
-        }
-        if (GG.core && GG.core.meta && GG.core.meta.update) {
-          var payload = {};
-          if (meta.title) payload.title = meta.title;
-          if (meta.description) payload.description = meta.description;
-          if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
-          if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
-        }
-        var rehydrated = rehydrateComments(target);
-        if (!rehydrated) rehydrateComments(doc);
-        if (GG.app && typeof GG.app.rehydrate === 'function') {
-          try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
-        }
-        GG.core.render._lastUrl = url || '';
-        GG.core.render._lastAt = Date.now();
+        var rh=rehydrateComments(t);
+        if(!rh)rehydrateComments(doc);
+        if(GG.app&&typeof GG.app.rehydrate==='function')try{GG.app.rehydrate({doc:doc,url:url});}catch(_){}
+        GG.core.render._lastUrl=url||'';
+        GG.core.render._lastAt=Date.now();
       };
-      if (d && d.startViewTransition) {
-        try { d.startViewTransition(function(){ doSwap(); }); }
-        catch (e) { doSwap(); }
-      } else {
-        doSwap();
-      }
+      if(d&&d.startViewTransition){try{d.startViewTransition(function(){doSwap();});}catch(e){doSwap();}}else{doSwap();}
       return true;
     }
     return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComments };
