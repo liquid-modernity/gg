@@ -2,7 +2,7 @@
 Last updated: 2026-02-14
 
 NOW:
-- Audit repo TASK-0009A: full audit deliverables (AUDIT_REPORT + findings + next tasks + reductions + arch map).
+- Task-0009B: commit remaining changes (roadmap update + cleanup old assets).
 
 CONSTRAINTS:
 - main-only
@@ -37,7 +37,7 @@ NEXT_TASK:
 - TBD
 
 LAST_PATCH:
-- 2026-02-14 TASK-0009A full audit deliverables
+- 2026-02-14 TASK-0009B commit remaining changes
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

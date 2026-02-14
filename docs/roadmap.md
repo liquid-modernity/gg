@@ -154,3 +154,114 @@ Kalau ini tidak ada, jangan pakai label enterprise:
 ## 📝 PART III: THE LIVING LEDGER (GG_CAPSULE.md)
 
 Single source of truth per session is `docs/ledger/GG_CAPSULE.md` (NOW/NEXT/LAST_PATCH). Do not embed capsule blocks in `main.js`.
+FASE 1: THE MIXED-MEDIA LAYOUT (Re-structure /blog)
+Mengubah halaman arsip menjadi etalase kurasi yang dinamis.
+
+1. Persiapan HTML (index.prod.xml)
+
+[ ] Buat Skeleton Container: Ganti grid postingan lama dengan struktur <div id="gg-curated-feed">.
+
+[ ] Definisikan 10 Section: Buat elemen <section> kosong dengan atribut data spesifik:
+
+[ ] data-type="bookish" (Ratio 1:1.48, 8 item).
+
+[ ] data-type="news" (Complex Card, 3 item) — Ulangi untuk Section 2, 5, 7, 9.
+
+[ ] data-type="youtube" (Landscape 16:9, Rail Horizontal).
+
+[ ] data-type="shorts" (Portrait 9:16, Rail Horizontal).
+
+[ ] data-type="podcast" (Square 1:1, Rail Horizontal).
+
+[ ] data-type="instagram" (Grid 4:6).
+
+[ ] data-type="pinterest" (Masonry/Waterfall).
+
+[ ] Label Mapping: Pastikan postingan di Blogger memiliki label sistem (misal: _Hero, _Book, _Video) agar bisa dipanggil ke section yang tepat.
+
+2. Logika "Lazy Rails" (ui.bucket.listing.js)
+
+[ ] Implementasi IntersectionObserver: Tulis fungsi yang hanya memanggil API Blogger (/feeds/posts/summary) ketika section tersebut masuk viewport.
+
+[ ] Render Function: Buat fungsi JS yang menerima JSON Blogger dan merender HTML Card yang berbeda-beda sesuai data-type section.
+
+[ ] CSS Snap Scroll: Terapkan scroll-snap-type: x mandatory pada container Rail agar gesernya mulus.
+
+FASE 2: "WHAT-IF" VOL 1 & 2 (Stability & Empathy)
+Membuat aplikasi terasa stabil, pemaaf, dan mengerti kondisi user.
+
+1. Interaksi Dasar (Vol 1)
+
+[ ] Scroll Restoration: Pastikan posisi scroll disimpan di history.state saat navigasi, dan dikembalikan saat user tekan Back.
+
+[ ] Loading State: Aktifkan Skeleton UI (kotak abu-abu) segera saat navigasi dimulai, jangan biarkan layar putih.
+
+[ ] Fat Finger Defense: Pasang event listener pada .gg-overlay (area gelap) untuk menutup modal/sidebar. Perluas area klik tombol kecil dengan CSS padding.
+
+2. Empati Visual & Data (Vol 2)
+
+[ ] Auto-Theme Listener: Pasang listener matchMedia untuk mendeteksi perubahan Dark Mode OS secara real-time dan sesuaikan tema blog.
+
+[ ] Broken Image Handler: Pasang script global onerror pada tag <img> untuk menyembunyikan atau mengganti gambar yang gagal loading agar layout tidak rusak.
+
+[ ] Draft Persistence (Opsional): Jika memungkinkan (atau via form custom), simpan ketikan komentar user ke localStorage untuk mencegah kehilangan data.
+
+FASE 3: "WHAT-IF" VOL 3 (Business & Conversion)
+Meningkatkan kecerdasan aplikasi dalam melayani user.
+
+1. Search Intelligence
+
+[ ] Two-Tier Search:
+
+[ ] Tier 1: Filter cepat di client-side (judul/snippet).
+
+[ ] Tier 2: Jika hasil 0 atau user tekan Enter, redirect ke Google Custom Search/Blogger Search (/search?q=...) untuk pencarian konten penuh.
+
+[ ] Zero-Result Handling: Tampilkan pesan yang membantu ("Coba cari di konten?") alih-alih layar kosong.
+
+2. Retention & Attribution
+
+[ ] Clipboard Injection: Tambahkan script yang menyisipkan "Sumber: pakrpp.com/..." saat user menyalin teks >140 karakter.
+
+[ ] Link Hygiene: Script otomatis yang mengubah link eksternal menjadi target="_blank" dan link internal menjadi target="_self" (SPA nav).
+
+[ ] Recirculation: Tampilkan "Next Article" atau "Related Post" saat user mencapai bagian footer artikel.
+
+FASE 4: THE "QUITE LUXURY" POLISH (Visual & Physics)
+Sentuhan akhir yang membedakan web app ini dari blog biasa.
+
+1. Atmosfer & Tekstur
+
+[ ] Grain/Noise Overlay: Tambahkan layer SVG Noise halus (opacity rendah) di atas seluruh website via CSS ::before pada body.
+
+[ ] Ambient Glow: Script JS yang mengambil warna dominan dari thumbnail (Book/Podcast) dan menjadikannya glow redup di background section tersebut.
+
+2. Fisika & Transisi
+
+[ ] View Transitions API: Aktifkan API ini agar saat thumbnail diklik, ia "berubah bentuk" (morph) menjadi Header di halaman detail.
+
+[ ] Magnetic Buttons: Tambahkan efek magnet pada tombol Dock/FAB saat kursor mendekat (Desktop only).
+
+[ ] Micro-Haptics: (Mobile only) Berikan getaran halus (navigator.vibrate) saat carousel "mengunci" (snap) di posisi kartu.
+
+[ ] The Eclipse: Gunakan transisi melingkar (clip-path) yang dramatis saat mengganti tema gelap/terang.
+
+FASE 5: AUTOMATION (Ecosystem)
+Membiarkan mesin bekerja menjaga kesehatan blog.
+
+[ ] Performance Budget: (Sudah Solved via CI/CD). Pertahankan agar build gagal jika aset terlalu besar.
+
+[ ] Automated Smoke Test: (Sudah Solved). Pastikan script Python/Bash terus berjalan di GitHub Actions untuk memverifikasi deployment.
+
+Instruksi Eksekusi
+Anda sekarang bisa memberikan prompt spesifik ke Codex/ChatGPT untuk mengerjakan poin-poin di atas satu per satu (misal: "Kerjakan Fase 1 Poin 2 dulu").
+
+Saran Urutan Pengerjaan:
+
+Fase 1 (Agar tampilan berubah drastis dulu).
+
+Fase 3 (Search & Link Hygiene - fungsionalitas krusial).
+
+Fase 2 (Perbaikan detail UX).
+
+Fase 4 (Kosmetik/Polish terakhir).

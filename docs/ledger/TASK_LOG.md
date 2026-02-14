@@ -1422,3 +1422,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): none
 - RISKS: low; documentation only
 - NEXT: TBD
+
+---
+
+## 2026-02-14 — TASK-0009B — Commit remaining changes (roadmap + asset cleanup)
+- DATE: 2026-02-14
+- TASK_ID: TASK-0009B
+- TITLE: Commit remaining changes (docs/roadmap + remove legacy assets)
+- MODE (DEV/PROD impact): docs + assets cleanup
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: commit user-changed roadmap and remove legacy public/assets/v/* directories
+- CHANGES (files touched): docs/roadmap.md; public/assets/v/* (legacy release directories); docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-assets.mjs; node tools/verify-ledger.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): legacy assets removed as requested; ensure prod pinned release remains present
+- RISKS: medium; removing old assets can break deep links if any live HTML still references old versions
+- NEXT: TBD

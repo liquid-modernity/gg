@@ -1,6 +1,30 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
+TASK_ID: TASK-0009B
+TITLE: Commit remaining changes (roadmap + asset cleanup)
+
+TASK_SUMMARY
+- Commit perubahan sisa: `docs/roadmap.md` dan pembersihan legacy assets `public/assets/v/*`.
+- Update ledger untuk mencatat perubahan dan risiko.
+
+CHANGES
+- docs/roadmap.md
+- public/assets/v/* (legacy releases)
+- docs/ledger/GG_CAPSULE.md
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+
+VERIFICATION COMMANDS (manual)
+- `node tools/verify-assets.mjs`
+- `node tools/verify-ledger.mjs`
+
+RISKS / ROLLBACK
+- Risk: medium; legacy assets removal may break if any HTML still references old release ids.
+- Rollback: restore removed assets from git history.
+
+---
+
 TASK_ID: TASK-0009A
 TITLE: Full audit deliverables (report + findings + next tasks + reductions + arch map)
 
