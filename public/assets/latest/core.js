@@ -239,8 +239,24 @@
       var target = findTarget(d);
       if (!source || !target) throw fail('target', { url: url });
       var meta = extractMeta(doc);
+      function swapZone(selector){
+        var s = doc.querySelector(selector);
+        var t = d.querySelector(selector);
+        if (!s || !t) return false;
+        t.innerHTML = s.innerHTML;
+        return true;
+      }
       var doSwap = function(){
         target.innerHTML = source.innerHTML;
+        swapZone('aside.gg-blog-sidebar--left');
+        swapZone('aside.gg-blog-sidebar--right');
+        var page = doc.body && (doc.body.getAttribute('data-gg-page') || (doc.body.dataset && doc.body.dataset.ggPage));
+        if (page && d.body) d.body.setAttribute('data-gg-page', page);
+        var sMain = doc.querySelector('main.gg-main');
+        var tMain = d.querySelector('main.gg-main');
+        if (sMain && tMain && sMain.hasAttribute('data-gg-page')) {
+          tMain.setAttribute('data-gg-page', sMain.getAttribute('data-gg-page'));
+        }
         if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
           try { GG.ui.layout.sync(doc, url); } catch (_) {}
         }
