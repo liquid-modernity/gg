@@ -1,40 +1,37 @@
 TASK_REPORT
 Last updated: 2026-02-14
 
-TASK_ID: TASK-0009B
-TITLE: Wrong-paste guard (template fingerprint)
+TASK_ID: TASK-0009C
+TITLE: Comment intent gate (native comments delayed)
 
 TASK_SUMMARY
-- Add template fingerprint markers (gg-env/gg-release + gg-fingerprint) and enforce mismatch handling in the Worker.
-- Fail-closed on mismatch: inject banner, disable boot script, no-store headers, and emit x-gg-template-mismatch.
-- Add verifier + CI wiring for fingerprint contract and extend smoke to assert no mismatch on live HTML.
-- Bump release artifacts (new release id 82ea71b).
+- Gate native comments behind intent: button click or idle-on-scroll (slow devices require click).
+- Move comment payload into a template and load on demand; rehydrate Blogger comment JS after injection.
+- Bump release artifacts (new release id 495692a).
 
 CHANGES
 - index.dev.xml
 - index.prod.xml
-- src/worker.js
-- tools/verify-template-fingerprint.mjs
-- tools/compute-release-id.mjs
-- tools/release.js
-- tools/smoke.sh
-- package.json
-- .github/workflows/ci.yml
+- public/assets/latest/modules/ui.bucket.core.js
 - public/sw.js
-- public/assets/v/82ea71b/* (added)
+- src/worker.js
+- public/assets/v/495692a/* (added)
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 
 VERIFICATION COMMANDS (manual)
 - `ALLOW_DIRTY_RELEASE=1 npm run build`
+- `npm run verify:xml`
+- `node tools/verify-template-contract.mjs`
 - `node tools/verify-template-fingerprint.mjs`
-- `node tools/verify-audit-docs.mjs`
+- `npm run verify:assets`
+- `node tools/verify-budgets.mjs`
 - `npm run verify:release`
 - `node tools/verify-ledger.mjs`
 
 RISKS / ROLLBACK
-- Risk: medium; mismatch guard disables SPA if template markers drift; requires updating Blogger prod template after release id changes.
+- Risk: medium; JS failure or blocked idle callbacks may keep comments hidden until click; prod template must be updated to new release id.
 - Rollback: revert commit and restore prior release id assets + templates.
 
 ---

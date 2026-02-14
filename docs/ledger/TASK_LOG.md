@@ -1494,3 +1494,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
 - RISKS: medium; mismatch guard disables SPA if template markers drift; prod template must be updated when release id changes
 - NEXT: TBD
+
+---
+
+## 2026-02-14 — TASK-0009C — Comment intent gate (native comments delayed)
+- DATE: 2026-02-14
+- TASK_ID: TASK-0009C
+- TITLE: Comment intent gate (native comments delayed)
+- MODE (DEV/PROD impact): templates + UI module + release id/assets
+- RELEASE_REF: GG_CAPSULE AUTOGEN (495692a)
+- SCOPE: gate comments behind intent, add load button + deferred template, rehydrate on demand
+- CHANGES (files touched): index.dev.xml; index.prod.xml; public/assets/latest/modules/ui.bucket.core.js; public/sw.js; src/worker.js; public/assets/v/495692a/*; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:xml; node tools/verify-template-contract.mjs; node tools/verify-template-fingerprint.mjs; npm run verify:assets; node tools/verify-budgets.mjs; npm run verify:release; node tools/verify-ledger.mjs
+- CI STATUS: n/a
+- DEPLOY STATUS: n/a
+- VERIFY (URLs + expected): n/a
+- NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
+- RISKS: medium; comments now load on intent and may remain hidden if JS fails; prod template must be updated to new release id
+- NEXT: TBD

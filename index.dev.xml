@@ -1994,8 +1994,20 @@ body:not([data-gg-surface="landing"]) .hero-section {
       </div>
 
       <!-- COMMENTS (forced threaded) -->
-      <div class='gg-post__comments' data-gg-module='comments'>
-        <b:include data='post' name='threadedComments'/>
+      <div class='gg-post__comments' data-gg-comments-gate='1' data-gg-module='comments' expr:data-gg-comments='data:post.numberOfComments'>
+        <div class='gg-comments__gate' data-gg-comments-gate='ui'>
+          <button class='gg-comments__load' data-gg-comments-load='1' type='button'>Load comments</button>
+          <span class='gg-comments__meta'>
+            <b:if cond='data:post.numberOfComments == 0'>
+              No comments yet.
+            <b:else/>
+              <data:post.numberOfComments/> Comments
+            </b:if>
+          </span>
+        </div>
+        <template id='gg-comments-template'>
+          <b:include data='post' name='threadedComments'/>
+        </template>
       </div>
 
     </div>
