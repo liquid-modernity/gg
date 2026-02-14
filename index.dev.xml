@@ -267,7 +267,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <b:include data='blog' name='google-analytics'/>
 </head>
 
-  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))'>
+  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
@@ -309,7 +309,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )'>
+  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     
