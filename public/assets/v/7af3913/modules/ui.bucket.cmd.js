@@ -17,6 +17,12 @@
       if(GG.services&&GG.services.a11y&&typeof GG.services.a11y.announce==='function')GG.services.a11y.announce(msg,{politeness:'polite'});
     }
     function closePanel(){if(M.search&&typeof M.search.close==='function')M.search.close();}
+    function fail(a,e){
+      var sr=M.searchRank;
+      if(sr&&typeof sr.e==='function'){sr.e(w,d,null,'m'+a,'',e);return;}
+      try{var q=w.__gg_err=w.__gg_err||[];q.push({t:Date.now(),where:'palette',action:'m'+a,msg:String(e&&e.message||e)});if(q.length>20)q.splice(0,q.length-20);}catch(_){}
+      try{closePanel();}catch(_){}
+    }
     function nav(url){
       if(!url)return;
       try{
@@ -87,48 +93,56 @@
       it.run();
     }
     function render(){
-      var u=ui();if(!u)return;
-      if(!isCmd(u.input.value))return;
-      S.items=cmdList(u.input.value);
-      var html='<div class="gg-search__section">Commands</div>';
-      if(!S.items.length)html+='<div class="gg-search__hint">No command</div>';
-      for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="c'+i+'" role="option" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
-      html+='<div class="gg-search__hint">Enter run · Esc close</div>';
-      u.panel.innerHTML=html;
-      S.a=-1;
-      if(S.items.length)pick(0);
+      try{
+        var u=ui();if(!u)return;
+        if(!isCmd(u.input.value))return;
+        S.items=cmdList(u.input.value);
+        var html='<div class="gg-search__section">Commands</div>';
+        if(!S.items.length)html+='<div class="gg-search__hint">No command</div>';
+        for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="c'+i+'" role="option" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
+        html+='<div class="gg-search__hint">Enter run · Esc close</div>';
+        u.panel.innerHTML=html;
+        S.a=-1;
+        if(S.items.length)pick(0);
+      }catch(e){fail('r',e);}
     }
     function ensureOpen(){try{w.dispatchEvent(new CustomEvent('gg:search-open',{detail:{source:'cmd'}}));}catch(_){}}
     function onInput(e){
-      var u=ui(),t=e&&e.target;
-      if(!u||t!==u.input)return;
-      if(!isCmd(u.input.value))return;
-      ensureOpen();
-      render();
-      w.setTimeout(render,120);
+      try{
+        var u=ui(),t=e&&e.target;
+        if(!u||t!==u.input)return;
+        if(!isCmd(u.input.value))return;
+        ensureOpen();
+        render();
+        w.setTimeout(render,120);
+      }catch(x){fail('i',x);}
     }
     function onKey(e){
-      var u=ui();
-      if(!u||e.target!==u.input||!isCmd(u.input.value))return;
-      var k=e.key||'';
-      if(k==='ArrowDown'||k==='ArrowUp'||k==='Enter'||k==='Escape'){
+      try{
+        var u=ui();
+        if(!u||e.target!==u.input||!isCmd(u.input.value))return;
+        var k=e.key||'';
+        if(k==='ArrowDown'||k==='ArrowUp'||k==='Enter'||k==='Escape'){
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation&&e.stopImmediatePropagation();
+        }
+        if(k==='ArrowDown')move(1);
+        else if(k==='ArrowUp')move(-1);
+        else if(k==='Enter')run(S.a<0?0:S.a);
+        else if(k==='Escape')closePanel();
+      }catch(x){fail('k',x);}
+    }
+    function onClick(e){
+      try{
+        var a=e.target&&e.target.closest?e.target.closest('a.gg-search-cmd'):null;
+        if(!a)return;
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation&&e.stopImmediatePropagation();
-      }
-      if(k==='ArrowDown')move(1);
-      else if(k==='ArrowUp')move(-1);
-      else if(k==='Enter')run(S.a<0?0:S.a);
-      else if(k==='Escape')closePanel();
-    }
-    function onClick(e){
-      var a=e.target&&e.target.closest?e.target.closest('a.gg-search-cmd'):null;
-      if(!a)return;
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation&&e.stopImmediatePropagation();
-      var n=parseInt((a.id||'').replace('c',''),10);
-      run(isNaN(n)?-1:n);
+        var n=parseInt((a.id||'').replace('c',''),10);
+        run(isNaN(n)?-1:n);
+      }catch(x){fail('c',x);}
     }
     function init(){
       if(S.initd)return;

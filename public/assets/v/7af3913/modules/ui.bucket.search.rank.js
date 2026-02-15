@@ -86,10 +86,7 @@ if(k){s=(' '+s+' ').replace(' search ',' ').replace(' command ',' ').trim();s?k.
 b=u&&u.input;
 if(b&&b.focus){try{b.focus({preventScroll:true});}catch(_){try{b.focus();}catch(__){}}}
 else if(d&&d.body){if(!d.body.hasAttribute('tabindex'))d.body.setAttribute('tabindex','-1');try{d.body.focus({preventScroll:true});}catch(_){try{d.body.focus();}catch(__){}}}
-if((a==='f'||a==='F')&&q){
-var v=parse(q),n=v&&v.s?(v.r||v.f||''):q;
-if(n)w.location.assign('/search?q='+encodeURIComponent(n));
-}
+if((a==='f'||a==='F')&&q)w.location.assign('/search?q='+encodeURIComponent(q));
 }
 function run(items,query,limit){
 var p=parse(query),f=p.f,q=f?p.r:query,n=toks(q),qq=n.q,tk=n.t,out=[],i,k,it,t,s,l,u,tw,lw,sc,base,z,r,ft=tk[0]||qq,work=items,tmp=[],ok=1,h='';

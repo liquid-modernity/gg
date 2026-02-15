@@ -6400,8 +6400,9 @@ a, button{
 }
 
 #gg-search-panel .gg-search__section{
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  text-transform: none;
+  letter-spacing: .02em;
+  font-weight: 520;
 }
 
 #gg-search-panel .gg-search__hint{

@@ -65,6 +65,19 @@ m.textContent=text.slice(i,i+q.length);
 el.appendChild(m);
 if(i+q.length<text.length)el.appendChild(d.createTextNode(text.slice(i+q.length)));
 }
+function e(w,d,S,q,x){
+try{(w.__gg_err=w.__gg_err||[]).push({t:Date.now(),where:'palette',msg:String(x&&x.message||x)});}catch(_){}
+var u=S&&S.u,p,n,i,k,s;
+if(!u){k=d.querySelector('[data-gg-dock-search],#gg-dock .gg-dock__search');u={dock:k,input:k&&k.querySelector('input[type="search"]'),close:k&&k.querySelector('[data-gg-dock-close]'),panel:d.getElementById('gg-search-panel')};if(S)S.u=u;}
+p=u&&u.panel;
+if(p){p.hidden=true;p.setAttribute('aria-hidden','true');n=p.querySelectorAll('[aria-selected="true"]');for(i=0;i<n.length;i++)n[i].removeAttribute('aria-selected');}
+if(u&&u.input){u.input.removeAttribute('aria-activedescendant');u.input.removeAttribute('aria-expanded');}
+if(u&&u.close)u.close.setAttribute('aria-expanded','false');
+if(S){S.o=0;S.a=-1;}
+k=u&&u.dock;s=k&&k.getAttribute('data-gg-state')||'';
+if(k&&s.indexOf('search')>-1){s=(' '+s+' ').replace(' search ',' ').trim();s?k.setAttribute('data-gg-state',s):k.removeAttribute('data-gg-state');}
+if(q)w.location.assign('/search?q='+encodeURIComponent(q));
+}
 function run(items,query,limit){
 var p=parse(query),f=p.f,q=f?p.r:query,n=toks(q),qq=n.q,tk=n.t,out=[],i,k,it,t,s,l,u,tw,lw,sc,base,z,r,ft=tk[0]||qq,work=items,tmp=[],ok=1,h='';
 if(!items||!items.length){setLast(f,q,1,p.s,'');return [];}
@@ -120,5 +133,5 @@ for(i=0;i<out.length&&i<limit;i++)out[i]=out[i].i;
 out.length=Math.min(out.length,limit);
 return out;
 }
-M.searchRank={run:run,toks:toks,parse:parse,last:LAST,h:h};
+M.searchRank={run:run,toks:toks,parse:parse,last:LAST,h:h,e:e};
 })(window);
