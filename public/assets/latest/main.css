@@ -6426,7 +6426,7 @@ a, button{
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-radius: var(--gg-radius-sm);
   text-decoration: none;
   color: inherit;
@@ -6441,30 +6441,34 @@ a, button{
 
 #gg-search-panel .gg-search__meta{
   font-size: calc(var(--gg-font-xs) - .05rem);
-  opacity: .52;
+  opacity: .48;
+  letter-spacing: .01em;
+  font-weight: 460;
 }
 
 #gg-search-panel .gg-search__title .hl{
-  background: rgba(11,13,16,.12);
-  color: inherit;
-  border-radius: 6px;
-  padding: 0 .22em;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  color: rgba(11,13,16,.94);
+  font-weight: 620;
 }
 
 #gg-search-panel .gg-search__result[aria-selected="true"],
 #gg-search-panel .gg-search__result:hover{
-  background: rgba(11,13,16,.045);
+  background: rgba(11,13,16,.028);
 }
 
-#gg-search-panel .gg-search__result[aria-selected="true"]::before{
+#gg-search-panel .gg-search__result[aria-selected="true"]::before,
+#gg-search-panel .gg-search__result:hover::before{
   content: "";
   position: absolute;
   left: 6px;
   top: 10px;
   bottom: 10px;
-  width: 1px;
+  width: 2px;
   border-radius: 2px;
-  background: rgba(11,13,16,.24);
+  background: rgba(11,13,16,.2);
 }
 
 .gg-overlay{
