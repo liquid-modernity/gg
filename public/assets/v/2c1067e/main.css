@@ -375,9 +375,10 @@ nav.gg-dock[data-gg-state~="search"]{
   gap: 6px;
 }
 nav.gg-dock .gg-dock__search{ display:none; align-items:center; width:100%; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__item{ display:none; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__item--search{ display:none; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__search{ display:flex; }
+nav.gg-dock[data-gg-state~="search"] :where(button,a,[role="button"]){ display:none !important; }
+nav.gg-dock[data-gg-state~="search"] :where([data-gg-dock-search],[data-gg-dock-close]){ display:flex !important; }
+nav.gg-dock[data-gg-state~="search"] [data-gg-dock-search] input[type="search"]{ display:block !important; }
+nav.gg-dock[data-gg-state~="search"] [data-gg-dock-search] .gg-icon-btn{ display:inline-flex !important; }
 
 nav.gg-dock .gg-dock__search form{
   display:flex; align-items:center; gap:8px; width:100%;
@@ -387,11 +388,6 @@ nav.gg-dock .gg-dock__search form{
   padding: 6px 10px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
 }
-html.gg-search-open #gg-dock [data-gg-searchbar]{
-  opacity: 0;
-  pointer-events: none;
-}
-
 html.gg-search-focus #gg-dock [data-gg-dock-action]{
   display: none;
 }
