@@ -1582,14 +1582,12 @@ main.gg-main[data-gg-right-panel="open"] .gg-blog-sidebar--right{
 }
 
 .gg-blog-layout--list .gg-info-panel{
-  background: var(--gg-surface);
-  border: 1px solid var(--gg-border);
-  border-radius: var(--gg-radius-lg);
-  padding: 12px;
-  box-shadow: var(--gg-shadow);
+  
+  padding: 10px;
+  
 }
 main.gg-main[data-gg-surface="home"] .gg-blog-layout--list .gg-info-panel__card{
-  background: var(--gg-surface);
+  
 }
 main.gg-main[data-gg-surface="home"] .gg-blog-layout--list .gg-info-panel__thumb.gg-info-panel__hero{
   aspect-ratio: 1 / var(--gg-card-ratio);

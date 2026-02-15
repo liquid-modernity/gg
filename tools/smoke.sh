@@ -607,7 +607,7 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   if [[ "${template_mismatch_seen}" == "1" ]]; then
     palette_args+=(--allow-mismatch=1)
   fi
-  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" "${palette_args[@]}"; then
+  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=live "${palette_args[@]}"; then
     die "verify-palette-a11y failed"
   fi
 fi
