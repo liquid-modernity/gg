@@ -41,7 +41,7 @@ function listFiles(dir) {
 function normalizeIndex(xml) {
   let out = xml.replace(/\/assets\/v\/[^/]+\//g, "/assets/v/__REL__/");
   out = out.replace(
-    /(<meta[^>]+name=['"]gg-release['"][^>]*content=)(['"])[^'"]*\2/gi,
+    /(<meta(?=[^>]*name=['"]gg-release['"])[^>]*\bcontent=)(['"])[^'"]*\2/gi,
     "$1$2__REL__$2"
   );
   out = out.replace(

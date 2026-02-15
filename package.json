@@ -13,6 +13,7 @@
     "prep:release": "npm ci && npm run build && npm run verify:release",
     "install:hooks": "node tools/install-hooks.mjs",
     "ship": "node tools/ship.mjs",
+    "gate:prod": "bash tools/gate-prod.sh",
     "zip:audit": "bash tools/zip-audit.sh",
     "ship:1": "npm run ship && npm run zip:audit"
   }

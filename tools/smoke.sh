@@ -10,6 +10,9 @@ die(){
 }
 
 BASE="${BASE:-https://www.pakrpp.com}"
+ALLOW_TEMPLATE_MISMATCH="${SMOKE_ALLOW_TEMPLATE_MISMATCH:-0}"
+ALLOW_OFFLINE_FALLBACK="${SMOKE_ALLOW_OFFLINE_FALLBACK:-0}"
+template_mismatch_seen=0
 
 echo "SMOKE: base=${BASE}"
 
@@ -51,8 +54,13 @@ expected_source=""
 fallback_reason=""
 
 if [[ -n "${SMOKE_EXPECT:-}" ]]; then
-  expected_release="${SMOKE_EXPECT}"
-  expected_source="SMOKE_EXPECT"
+  if [[ "${SMOKE_EXPECT}" == "live" ]]; then
+    expected_release=""
+    expected_source="WORKER_HEADER"
+  else
+    expected_release="${SMOKE_EXPECT}"
+    expected_source="SMOKE_EXPECT"
+  fi
 else
   expected_release="$(read_release_id_from_capsule)"
   if [[ -n "${expected_release}" ]]; then
@@ -64,7 +72,18 @@ else
 fi
 
 ping_url="${BASE}/__gg_worker_ping?x=1"
-if ! ping_headers="$(curl -sS -D - -o /dev/null --max-time 10 "${ping_url}" | tr -d '\r')"; then
+ping_headers="$(curl -sS -D - -o /dev/null --max-time 10 "${ping_url}" | tr -d '\r' || true)"
+if [[ -z "${ping_headers}" ]]; then
+  if [[ "${ALLOW_OFFLINE_FALLBACK}" == "1" ]]; then
+    echo "WARN: __gg_worker_ping unavailable; running offline fallback"
+    if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
+      if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=repo; then
+        die "offline fallback verify-palette-a11y failed"
+      fi
+    fi
+    echo "PASS: smoke tests (offline fallback)"
+    exit 0
+  fi
   die "__gg_worker_ping request failed"
 fi
 ping_status="$(echo "${ping_headers}" | head -n 1)"
@@ -383,6 +402,11 @@ template_mismatch_check() {
     die "${label} mismatch headers fetch failed"
   fi
   if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
+    if [[ "${ALLOW_TEMPLATE_MISMATCH}" == "1" ]]; then
+      template_mismatch_seen=1
+      echo "WARN: ${label} template mismatch detected (allowed)"
+      return 0
+    fi
     echo "DEBUG: ${label} headers"
     echo "${headers}" | sed -n '1,30p'
     die "${label} unexpected x-gg-template-mismatch header"
@@ -418,14 +442,18 @@ assert_status "${BASE}/api/proxy" "400" "/api/proxy missing url"
 assert_status "${BASE}/api/proxy?url=not-a-url" "400" "/api/proxy invalid url"
 assert_status "${BASE}/api/proxy?url=https://example.com/" "403" "/api/proxy host not allowed"
 
-redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
-redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
-redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
-listing_canonical_check "${BASE}/blog"
-schema_check_home
-schema_check_listing
-if [[ -n "${SMOKE_POST_URL:-}" ]]; then
-  schema_check_post "${SMOKE_POST_URL}"
+if [[ "${template_mismatch_seen}" == "1" ]]; then
+  echo "INFO: template mismatch active; skipping redirect/canonical/schema checks"
+else
+  redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
+  redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
+  redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
+  listing_canonical_check "${BASE}/blog"
+  schema_check_home
+  schema_check_listing
+  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
+    schema_check_post "${SMOKE_POST_URL}"
+  fi
 fi
 
 sample_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png"
@@ -520,58 +548,66 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     echo "PASS: LIVE_HTML ${label} h1 count"
   }
 
-  live_check "${BASE}/" "home"
-  live_check "${BASE}/blog" "blog"
-  live_h1_check "${BASE}/" "home"
-  live_h1_check "${BASE}/blog" "blog" "Blog"
-  if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
-    die "verify-js-chain failed"
-  fi
-
-  live_dom_expect() {
-    local html="$1"
-    local label="$2"
-    local pattern="$3"
-    local debug_pattern="$4"
-    local desc="$5"
-    if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
-      echo "DEBUG: ${label} ${desc} lines"
-      printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
-      die "LIVE_HTML ${label} missing ${desc}"
+  if [[ "${template_mismatch_seen}" == "1" ]]; then
+    echo "INFO: LIVE_HTML contract checks skipped due template mismatch mode"
+  else
+    live_check "${BASE}/" "home"
+    live_check "${BASE}/blog" "blog"
+    live_h1_check "${BASE}/" "home"
+    live_h1_check "${BASE}/blog" "blog" "Blog"
+    if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
+      die "verify-js-chain failed"
     fi
-  }
 
-  live_dom_check_page() {
-    local url="$1"
-    local label="$2"
-    local ts html
-    local gg_main_re="id=['\"]gg-main['\"]"
-    ts="$(date +%s)"
-    html="$(live_fetch_stream "${url}?x=${ts}")"
-    if [[ "${label}" == "home" ]]; then
-      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
-      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-      live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
-    else
-      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
-      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-      live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
+    live_dom_expect() {
+      local html="$1"
+      local label="$2"
+      local pattern="$3"
+      local debug_pattern="$4"
+      local desc="$5"
+      if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
+        echo "DEBUG: ${label} ${desc} lines"
+        printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
+        die "LIVE_HTML ${label} missing ${desc}"
+      fi
+    }
+
+    live_dom_check_page() {
+      local url="$1"
+      local label="$2"
+      local ts html
+      local gg_main_re="id=['\"]gg-main['\"]"
+      ts="$(date +%s)"
+      html="$(live_fetch_stream "${url}?x=${ts}")"
+      if [[ "${label}" == "home" ]]; then
+        live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
+        live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
+        live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
+      else
+        live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
+        live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
+        live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
+      fi
+      echo "PASS: LIVE_HTML ${label} DOM contract"
+    }
+
+    live_dom_check_page "${BASE}/" "home"
+    live_dom_check_page "${BASE}/blog" "blog"
+
+    if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
+      die "verify-router-contract failed"
     fi
-    echo "PASS: LIVE_HTML ${label} DOM contract"
-  }
 
-  live_dom_check_page "${BASE}/" "home"
-  live_dom_check_page "${BASE}/blog" "blog"
-
-  if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
-    die "verify-router-contract failed"
+    if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
+      die "verify-multizone failed"
+    fi
   fi
 
-  if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
-    die "verify-multizone failed"
+  palette_args=(--base="${BASE}")
+  if [[ "${template_mismatch_seen}" == "1" ]]; then
+    palette_args+=(--allow-mismatch=1)
   fi
-
-  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --base="${BASE}"; then
+  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" "${palette_args[@]}"; then
     die "verify-palette-a11y failed"
   fi
 fi

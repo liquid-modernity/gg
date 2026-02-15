@@ -255,7 +255,7 @@ replaceAllOrThrow(
 
 replaceAllOrThrow(
   "index.prod.xml",
-  /(<meta[^>]+name=['"]gg-release['"][^>]*content=)(['"])[^'"]*\2/gi,
+  /(<meta(?=[^>]*name=['"]gg-release['"])[^>]*\bcontent=)(['"])[^'"]*\2/gi,
   `$1$2${releaseId}$2`,
   "prod gg-release meta"
 );
