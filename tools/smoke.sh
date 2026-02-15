@@ -563,8 +563,16 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   live_dom_check_page "${BASE}/" "home"
   live_dom_check_page "${BASE}/blog" "blog"
 
+  if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
+    die "verify-router-contract failed"
+  fi
+
   if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
     die "verify-multizone failed"
+  fi
+
+  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --base="${BASE}"; then
+    die "verify-palette-a11y failed"
   fi
 fi
 
