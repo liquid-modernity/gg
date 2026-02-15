@@ -832,7 +832,7 @@ try {
 if(!url) return;
 var from = w.location.href;
 var u = new URL(url, w.location.href);
-if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
+if((u.pathname||'').indexOf('/search')===0){w.location.assign(u.href);return;}
 router.saveScroll(from);
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);

@@ -652,6 +652,7 @@ return services.api.fetch(url, 'text');
 GG.core = GG.core || {};
 GG.core.router = GG.core.router || {};
 var router = GG.core.router;
+router.lastUrl = router.lastUrl || '';
 
 function getScrollY(){
 return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
@@ -832,7 +833,10 @@ try {
 if(!url) return;
 var from = w.location.href;
 var u = new URL(url, w.location.href);
-if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
+if (((u.pathname || '').toLowerCase()).indexOf('/search') === 0) {
+w.location.assign(u.href);
+return false;
+}
 router.saveScroll(from);
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
@@ -840,7 +844,7 @@ router._applySurface(url);
 var p = router._load(url, { pop: false });
 if (p && typeof p.then === 'function') {
 return p.then(function(){
-var bodySurface = d.body ? (d.body.getAttribute('data-gg-surface') || '') : '';
+var bodySurface = (d.body && (d.body.getAttribute('data-gg-surface') || '')).toLowerCase();
 var canonicalEl = d.querySelector('link[rel="canonical"]');
 if (bodySurface !== router._inferSurface(url) || !canonicalEl || canonicalEl.href !== u.href) {
 w.location.assign(url);

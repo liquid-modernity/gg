@@ -652,6 +652,7 @@ return services.api.fetch(url, 'text');
 GG.core = GG.core || {};
 GG.core.router = GG.core.router || {};
 var router = GG.core.router;
+router.lastUrl = router.lastUrl || '';
 
 function getScrollY(){
 return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
@@ -832,7 +833,7 @@ try {
 if(!url) return;
 var from = w.location.href;
 var u = new URL(url, w.location.href);
-if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
+if((u.pathname||'').indexOf('/search')===0){w.location.assign(u.href);return;}
 router.saveScroll(from);
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
