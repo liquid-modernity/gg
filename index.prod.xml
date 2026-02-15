@@ -2752,15 +2752,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </button>
 
   <div aria-hidden='false' class='gg-dock__search' data-gg-dock-search='1' data-gg-searchbar='1'>
-    <form expr:action='data:blog.searchUrl' method='get' role='search'>
-      <input aria-label='Search input' data-gg-dock-search-input='1' name='q' placeholder='Search articles...' type='search'/>
-      <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
-        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
+    <form action="https://www.pakrpp.com/search" method="get" role="search">
+      <span aria-hidden="true" class="gg-icon material-symbols-rounded">search</span>
+      <input aria-label="Search input" data-gg-dock-search-input="1" name="q" placeholder="Search articles..." type="search"/>
+          <button aria-label="Submit search" class="gg-icon-btn gg-touch" type="submit">
+      <span aria-hidden="true" class="gg-icon material-symbols-rounded">send</span>
+      </button><button aria-label="Close search" class="gg-icon-btn gg-touch" data-gg-action="search-exit" data-gg-dock-close="1" type="button">
+      <span aria-hidden="true" class="gg-icon material-symbols-rounded">close</span>
       </button>
-      <button aria-label='Close search' class='gg-icon-btn' data-gg-action='search-exit' data-gg-dock-close='1' type='button'>
-        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
-      </button>
-    </form>
+      </form>
   </div>
 </nav>
 
