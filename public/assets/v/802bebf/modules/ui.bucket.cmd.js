@@ -49,7 +49,16 @@
         run:function(){
           var can=d.querySelector('link[rel="canonical"]'),txt=(can&&can.href)||w.location.href;
           var done=function(){toast('Link copied');};
-          if(w.navigator&&navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done).catch(function(){});
+          if(w.navigator&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(function(){});return;}
+          var ta=d.createElement('textarea');
+          ta.value=txt;
+          ta.setAttribute('readonly','');
+          ta.style.position='fixed';
+          ta.style.opacity='0';
+          (d.body||d.documentElement).appendChild(ta);
+          ta.select();
+          try{d.execCommand&&d.execCommand('copy');done();}catch(_){}
+          if(ta.parentNode)ta.parentNode.removeChild(ta);
         }
       }];
       if(!q)return all;

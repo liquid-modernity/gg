@@ -482,6 +482,7 @@ if (/^https?:\/\//i.test(path)) return path;
 if (path.charAt(0) !== "/") path = "/" + path;
 return ASSET_BASE + path;
 };
+w.GG_BUILD = w.GG_BUILD || "dev";
 
 // Minimal GG.store (get/set/subscribe) if missing
 if(!GG.store || !GG.store.get){
