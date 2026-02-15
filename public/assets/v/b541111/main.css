@@ -375,12 +375,10 @@ nav.gg-dock[data-gg-state~="search"]{
   gap: 6px;
 }
 nav.gg-dock .gg-dock__search{ display:none; align-items:center; width:100%; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__item{ display:none !important; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__search,
-nav.gg-dock[data-gg-state~="search"] .gg-dock__item--close{ display:flex !important; }
-nav.gg-dock[data-gg-state~="search"] input[type="search"]{ display:block !important; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__search .gg-icon-btn{ display:none !important; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__search [data-gg-dock-close]{ display:inline-flex !important; }
+nav.gg-dock[data-gg-state~="search"] :where(button,a,[role="button"]){ display:none !important; }
+nav.gg-dock[data-gg-state~="search"] :where([data-gg-dock-search],[data-gg-dock-close]){ display:flex !important; }
+nav.gg-dock[data-gg-state~="search"] [data-gg-dock-search] input[type="search"]{ display:block !important; }
+nav.gg-dock[data-gg-state~="search"] [data-gg-dock-search] .gg-icon-btn{ display:inline-flex !important; }
 
 nav.gg-dock .gg-dock__search form{
   display:flex; align-items:center; gap:8px; width:100%;
@@ -390,11 +388,6 @@ nav.gg-dock .gg-dock__search form{
   padding: 6px 10px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
 }
-html.gg-search-open #gg-dock [data-gg-searchbar]{
-  opacity: 0;
-  pointer-events: none;
-}
-
 html.gg-search-focus #gg-dock [data-gg-dock-action]{
   display: none;
 }
@@ -6189,38 +6182,97 @@ a, button{
   transform: translateX(-50%);
 }
 
-.gg-search__close,
-.gg-search__result{
-  min-height: var(--gg-tap-min);
-  font-size: var(--gg-font-sm);
-  display: block;
-  text-decoration: none;
-  color: inherit;
+#gg-search-panel{
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100vh - var(--gg-anchor-y, 100vh) + 12px);
+  width: min(var(--gg-panel-w, 480px), calc(100vw - 24px));
+  max-width: 720px;
+  max-height: min(48vh, 420px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--gg-space-2);
+  border-radius: var(--gg-radius);
+  border: 1px solid rgba(11,13,16,.10);
+  background: rgba(251,251,250,.92);
+  box-shadow: var(--gg-shadow-soft);
+  z-index: var(--z-overlay-2);
 }
 
-.gg-search__result[aria-selected="true"],
-.gg-search__result:hover{
-  background: rgba(11,13,16,.06);
-  border-radius: var(--gg-radius-sm);
+#gg-search-panel[data-mode="dock"]{
+  right: auto;
+  left: clamp(12px, var(--gg-anchor-x), calc(100vw - 12px - var(--gg-panel-w, 480px)));
+  transform: none;
+  top: auto;
 }
 
-.gg-search__hint,
-.gg-search__section{
+#gg-search-panel[data-mode="center"]{
+  top: 50%;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+}
+
+#gg-search-panel[hidden]{ display: none !important; }
+
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))){
+  #gg-search-panel{
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+#gg-search-panel .gg-search__section,
+#gg-search-panel .gg-search__hint{
   font-size: var(--gg-font-xs);
   opacity: .7;
-  padding-top: var(--gg-space-2);
+  padding: 6px 10px;
 }
 
-.gg-search__section{
+#gg-search-panel .gg-search__section{
   text-transform: uppercase;
   letter-spacing: .08em;
 }
 
-.gg-search__close:disabled,
-.gg-search__result:disabled{
-  opacity: .55;
-  cursor: not-allowed;
-  pointer-events: none;
+#gg-search-panel .gg-search__result{
+  min-height: var(--gg-tap-min);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--gg-radius-sm);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+#gg-search-panel .gg-search__title{
+  font-size: var(--gg-font-sm);
+  line-height: 1.35;
+}
+
+#gg-search-panel .gg-search__meta{
+  font-size: var(--gg-font-xs);
+  opacity: .62;
+}
+
+#gg-search-panel .gg-search__result[aria-selected="true"],
+#gg-search-panel .gg-search__result:hover{
+  background: rgba(11,13,16,.06);
+}
+
+#gg-search-panel .gg-search__result[aria-selected="true"]::before{
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(11,13,16,.32);
 }
 
 .gg-overlay{
