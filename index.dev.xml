@@ -202,7 +202,7 @@ img{max-width:100%;height:auto;}
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */
-:root{ --gg-main-max: 1111px; }
+:root{ --gg-main-max: 1285px; }
 html{ box-sizing:border-box; }
 *,*::before,*::after{ box-sizing:inherit; }
 body{
@@ -215,7 +215,7 @@ body{
 }
 a{ color:inherit; text-decoration:underline; text-underline-offset:0.12em; }
 .gg-page-shell{ min-height:100%; }
-.gg-wrap{ width:min(var(--gg-main-max, 1111px), calc(100% - 32px)); margin-inline:auto; }
+.gg-wrap{ width:min(var(--gg-main-max, 1285px), calc(100% - 32px)); margin-inline:auto; }
 .gg-header{ min-height:56px; }
 
 body[data-gg-surface="listing"] .gg-home-landing,
