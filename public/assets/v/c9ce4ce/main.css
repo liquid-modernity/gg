@@ -6354,9 +6354,10 @@ a, button{
   width: min(var(--gg-panel-w, 480px), calc(100vw - 24px));
   max-width: 720px;
   max-height: min(48vh, 420px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--gg-space-2);
+  padding: var(--gg-space-2) var(--gg-space-2) calc(var(--gg-space-2) + 10px);
   border-radius: var(--gg-radius);
   border: 1px solid rgba(11,13,16,.10);
   background: rgba(251,251,250,.92);
@@ -6393,11 +6394,29 @@ a, button{
   font-size: var(--gg-font-xs);
   opacity: .7;
   padding: 6px 10px;
+  line-height: 1.4;
+  overflow: visible;
+  white-space: normal;
 }
 
 #gg-search-panel .gg-search__section{
   text-transform: uppercase;
   letter-spacing: .08em;
+}
+
+#gg-search-panel .gg-search__hint{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  min-height: 0;
+  line-height: 1.45;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+#gg-search-panel .gg-search__hint > *{
+  min-width: 0;
 }
 
 #gg-search-panel .gg-search__result{
@@ -6421,6 +6440,13 @@ a, button{
 #gg-search-panel .gg-search__meta{
   font-size: var(--gg-font-xs);
   opacity: .62;
+}
+
+#gg-search-panel .gg-search__title .hl{
+  background: rgba(11,13,16,.12);
+  color: inherit;
+  border-radius: 6px;
+  padding: 0 .22em;
 }
 
 #gg-search-panel .gg-search__result[aria-selected="true"],

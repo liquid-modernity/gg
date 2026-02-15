@@ -6442,8 +6442,7 @@ a, button{
   opacity: .62;
 }
 
-#gg-search-panel .gg-search__title mark,
-#gg-search-panel .gg-search__meta mark{
+#gg-search-panel .gg-search__title .hl{
   background: rgba(11,13,16,.12);
   color: inherit;
   border-radius: 6px;
