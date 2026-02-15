@@ -376,7 +376,7 @@ nav.gg-dock[data-gg-state~="search"]{
 }
 nav.gg-dock .gg-dock__search{ display:none; align-items:center; width:100%; }
 nav.gg-dock[data-gg-state~="search"] .gg-dock__item{ display:none; }
-nav.gg-dock[data-gg-state~="search"] .gg-dock__item--search{ display:inline-flex; }
+nav.gg-dock[data-gg-state~="search"] .gg-dock__item--search{ display:none; }
 nav.gg-dock[data-gg-state~="search"] .gg-dock__search{ display:flex; }
 
 nav.gg-dock .gg-dock__search form{
@@ -393,16 +393,12 @@ html.gg-search-open #gg-dock [data-gg-searchbar]{
 }
 
 html.gg-search-focus #gg-dock [data-gg-dock-action]{
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
+  display: none;
 }
 
 html.gg-search-focus #gg-dock [data-gg-dock-search],
 html.gg-search-focus #gg-dock [data-gg-dock-close]{
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
+  display: flex;
 }
 nav.gg-dock .gg-dock__search input{
   flex:1;
@@ -6199,7 +6195,8 @@ a, button{
   color: inherit;
 }
 
-.gg-search__result.is-active{
+.gg-search__result[aria-selected="true"],
+.gg-search__result:hover{
   background: rgba(11,13,16,.06);
   border-radius: var(--gg-radius-sm);
 }
