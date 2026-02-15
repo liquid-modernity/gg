@@ -6400,8 +6400,9 @@ a, button{
 }
 
 #gg-search-panel .gg-search__section{
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  text-transform: none;
+  letter-spacing: .02em;
+  font-weight: 520;
 }
 
 #gg-search-panel .gg-search__hint{
@@ -6441,7 +6442,7 @@ a, button{
 
 #gg-search-panel .gg-search__meta{
   font-size: calc(var(--gg-font-xs) - .05rem);
-  opacity: .48;
+  opacity: .58;
   letter-spacing: .01em;
   font-weight: 460;
 }
@@ -6456,7 +6457,11 @@ a, button{
 
 #gg-search-panel .gg-search__result[aria-selected="true"],
 #gg-search-panel .gg-search__result:hover{
-  background: rgba(11,13,16,.028);
+  background: rgba(11,13,16,.018);
+}
+
+#gg-search-panel .gg-search__result[aria-selected="true"]{
+  box-shadow: inset 0 0 0 1px rgba(11,13,16,.08);
 }
 
 #gg-search-panel .gg-search__result[aria-selected="true"]::before,
@@ -6469,6 +6474,12 @@ a, button{
   width: 2px;
   border-radius: 2px;
   background: rgba(11,13,16,.2);
+}
+
+#gg-search-panel > .gg-search__hint:last-child{
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(11,13,16,.08);
 }
 
 .gg-overlay{
