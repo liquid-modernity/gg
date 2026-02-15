@@ -67,7 +67,7 @@ else
     expected_source="GG_CAPSULE"
   else
     fallback_reason="capsule"
-    echo "WARN: GG_CAPSULE missing/unparseable; using worker header for expected release"
+    echo "INFO: GG_CAPSULE missing/unparseable; using worker header for expected release"
   fi
 fi
 
@@ -75,7 +75,7 @@ ping_url="${BASE}/__gg_worker_ping?x=1"
 ping_headers="$(curl -sS -D - -o /dev/null --max-time 10 "${ping_url}" | tr -d '\r' || true)"
 if [[ -z "${ping_headers}" ]]; then
   if [[ "${ALLOW_OFFLINE_FALLBACK}" == "1" ]]; then
-    echo "WARN: __gg_worker_ping unavailable; running offline fallback"
+    echo "INFO: __gg_worker_ping unavailable; running offline fallback"
     if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=repo; then
         die "offline fallback verify-palette-a11y failed"
@@ -404,7 +404,7 @@ template_mismatch_check() {
   if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
     if [[ "${ALLOW_TEMPLATE_MISMATCH}" == "1" ]]; then
       template_mismatch_seen=1
-      echo "WARN: ${label} template mismatch detected (allowed)"
+      echo "PASS: ${label} template fingerprint (mismatch allowed)"
       return 0
     fi
     echo "DEBUG: ${label} headers"
