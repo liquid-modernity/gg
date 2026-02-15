@@ -2756,7 +2756,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       
 <nav aria-label='Primary' class='gg-dock' data-gg-module='dock' data-gg-dock='1' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
   <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
-<button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-when='blog' type='button'>
+<button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-dock-action='1' data-gg-when='blog' type='button'>
   <span aria-hidden='true' class='gg-dock__icon'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>left_panel_open</span>
   </span>
@@ -2764,7 +2764,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </button>
     
   <!-- HOME: muncul di Landing & Blog/Post -->
-  <button aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero' type='button'>
+  <button aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero' data-gg-dock-action='1' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
      <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'>
   <use href='#gg-logo-white'/>
@@ -2774,28 +2774,28 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </button>
 
   <!-- SECTION 2&#8211;5: HANYA di Landing -->
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars' data-gg-when='landing' type='button'>
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars' data-gg-dock-action='1' data-gg-when='landing' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>interests</span>
     </span>
     <span class='gg-dock__label'>Our services</span>
   </button>
 
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero-3' data-gg-when='landing' type='button'>
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero-3' data-gg-dock-action='1' data-gg-when='landing' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>handyman</span>
     </span>
     <span class='gg-dock__label'>What we do</span>
   </button>
 
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars-4' data-gg-when='landing' type='button'>
+  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars-4' data-gg-dock-action='1' data-gg-when='landing' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>assignment</span>
     </span>
     <span class='gg-dock__label'>Assignment</span>
   </button>
 
-  <button aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' type='button'>
+  <button aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' data-gg-dock-action='1' type='button'>
      <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
     </span>
@@ -2803,14 +2803,14 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </button>
 
   <!-- BLOG: muncul di semua mode -->
-  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' type='button'>
+  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' data-gg-dock-action='1' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
     <span class='gg-dock__label'>Home (Blog Page)</span>
   </button>
   
-  <a href='https://pakrpp.com/p/shop.html'> <button aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' type='button'>
+  <a href='https://pakrpp.com/p/shop.html'> <button aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-dock-action='1' type='button'>
   <span aria-hidden='true' class='gg-dock__icon'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>local_mall</span>
   </span>
@@ -2825,20 +2825,20 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
   </button>
 
-  <button aria-label='Go to bottom' class='gg-dock__item gg-backtotop' data-gg-action='jump' hidden='hidden' type='button'>
+  <button aria-label='Go to bottom' class='gg-dock__item gg-backtotop' data-gg-action='jump' data-gg-dock-action='1' hidden='hidden' type='button'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>keyboard_double_arrow_down</span>
     </span>
     <span class='gg-dock__label'>Jump</span>
   </button>
 
-  <div aria-hidden='false' class='gg-dock__search' data-gg-searchbar='1'>
+  <div aria-hidden='false' class='gg-dock__search' data-gg-dock-search='1' data-gg-searchbar='1'>
     <form expr:action='data:blog.searchUrl' method='get' role='search'>
       <input aria-label='Search input' name='q' placeholder='Search articles...' type='search'/>
       <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
         <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
       </button>
-      <button aria-label='Close search' class='gg-icon-btn' data-gg-action='search-exit' type='button'>
+      <button aria-label='Close search' class='gg-icon-btn' data-gg-action='search-exit' data-gg-dock-close='1' type='button'>
         <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
       </button>
     </form>

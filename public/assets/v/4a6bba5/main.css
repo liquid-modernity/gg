@@ -391,6 +391,19 @@ html.gg-search-open #gg-dock [data-gg-searchbar]{
   opacity: 0;
   pointer-events: none;
 }
+
+html.gg-search-focus #gg-dock [data-gg-dock-action]{
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+html.gg-search-focus #gg-dock [data-gg-dock-search],
+html.gg-search-focus #gg-dock [data-gg-dock-close]{
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
 nav.gg-dock .gg-dock__search input{
   flex:1;
   height: 34px;
@@ -6184,6 +6197,23 @@ a, button{
   display: block;
   text-decoration: none;
   color: inherit;
+}
+
+.gg-search__result.is-active{
+  background: rgba(11,13,16,.06);
+  border-radius: var(--gg-radius-sm);
+}
+
+.gg-search__hint,
+.gg-search__section{
+  font-size: var(--gg-font-xs);
+  opacity: .7;
+  padding-top: var(--gg-space-2);
+}
+
+.gg-search__section{
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 .gg-search__close:disabled,
