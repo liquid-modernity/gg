@@ -6442,6 +6442,14 @@ a, button{
   opacity: .62;
 }
 
+#gg-search-panel .gg-search__title mark,
+#gg-search-panel .gg-search__meta mark{
+  background: rgba(11,13,16,.12);
+  color: inherit;
+  border-radius: 6px;
+  padding: 0 .22em;
+}
+
 #gg-search-panel .gg-search__result[aria-selected="true"],
 #gg-search-panel .gg-search__result:hover{
   background: rgba(11,13,16,.06);
