@@ -976,6 +976,83 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   align-items: start;
 }
 
+#gg-search-assist.gg-search-assist{
+  margin: 0 0 14px;
+  padding: 10px;
+  border: 1px solid var(--gg-border);
+  border-radius: var(--gg-radius-sm);
+  background: color-mix(in srgb, var(--gg-surface) 94%, #fff);
+  min-height: 56px;
+}
+
+#gg-search-assist .h{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#gg-search-assist .h b{
+  font-size: var(--gg-font-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gg-muted);
+  font-weight: 600;
+}
+
+#gg-search-assist .h small,
+#gg-search-assist .f{
+  font-size: var(--gg-font-xs);
+  color: var(--gg-muted);
+}
+
+#gg-search-assist .l{
+  display: grid;
+  gap: 4px;
+}
+
+a.gg-search-assist__item{
+  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--gg-radius-sm);
+  font-size: var(--gg-font-sm);
+  line-height: 1.35;
+  text-decoration: none;
+  color: var(--gg-ink);
+}
+
+a.gg-search-assist__item:hover{
+  background: rgba(11,13,16,.06);
+}
+
+a.gg-search-assist__item > span{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.gg-search-assist__item > small{
+  font-size: var(--gg-font-xs);
+  color: var(--gg-muted);
+  white-space: nowrap;
+}
+
+#gg-search-assist .e{
+  margin: 0;
+  font-size: var(--gg-font-sm);
+  color: var(--gg-muted);
+}
+
+#gg-search-assist .f{
+  margin: 8px 0 0;
+}
+
 .gg-loadmore-wrap{
   display: flex;
   justify-content: center;

@@ -652,14 +652,7 @@ return services.api.fetch(url, 'text');
 GG.core = GG.core || {};
 GG.core.router = GG.core.router || {};
 var router = GG.core.router;
-
-function isDev(){
-try {
-if (GG.env && GG.env.mode) return GG.env.mode === 'dev';
-var m = d.querySelector('meta[name="gg:mode"]');
-return !!(m && (m.getAttribute('content') || '') === 'dev');
-} catch (_) { return false; }
-}
+router.lastUrl = router.lastUrl || '';
 
 function getScrollY(){
 return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
@@ -839,6 +832,7 @@ if(!router._supports()) return router.fallback(url);
 try {
 if(!url) return;
 var from = w.location.href;
+var u = new URL(url, w.location.href);
 router.saveScroll(from);
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
@@ -846,9 +840,14 @@ router._applySurface(url);
 var p = router._load(url, { pop: false });
 if (p && typeof p.then === 'function') {
 return p.then(function(){
-if (!GG.core || !GG.core.render || GG.core.render._lastUrl === url) return true;
-try { w.location.href = url; } catch (_) {}
+var bodySurface = (d.body && (d.body.getAttribute('data-gg-surface') || '')).toLowerCase();
+var canonicalEl = d.querySelector('link[rel="canonical"]');
+if (bodySurface !== router._inferSurface(url) || !canonicalEl || canonicalEl.href !== u.href) {
+w.location.assign(url);
 return false;
+}
+router.lastUrl = u.pathname + u.search + u.hash;
+return true;
 });
 }
 return p;
@@ -882,18 +881,13 @@ d.addEventListener('click', router.handleClick);
 }
 w.addEventListener('popstate', router._onPopState);
 };
-router.onNavigate = router.onNavigate || function(url){
+function syncMeta(url){
 if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
-if (GG.core.render && GG.core.render._lastUrl === url) return;
 var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : d.title;
 GG.core.meta.update({ title: title, description: title, ogTitle: title });
-};
-router.onPopState = router.onPopState || function(url){
-if(!GG.core || !GG.core.meta || !GG.core.meta.update) return;
-if (GG.core.render && GG.core.render._lastUrl === url) return;
-var title = (GG.core.meta.titleFromUrl) ? GG.core.meta.titleFromUrl(url) : d.title;
-GG.core.meta.update({ title: title, description: title, ogTitle: title });
-};
+}
+router.onNavigate = router.onNavigate || syncMeta;
+router.onPopState = router.onPopState || syncMeta;
 })(window.GG = window.GG || {}, window, document);
 
 (function(GG, w, d){
@@ -943,14 +937,6 @@ s.onerror = function(){ reject(new Error('script-load-failed')); };
 });
 return GG.boot._scriptPromises[url];
 };
-
-function isDev(){
-try {
-if (GG.env && GG.env.mode) return GG.env.mode === 'dev';
-var m = d.querySelector('meta[name="gg:mode"]');
-return !!(m && (m.getAttribute('content') || '') === 'dev');
-} catch (_) { return false; }
-}
 
 function getCoreSrc(){
 var s = d.currentScript;

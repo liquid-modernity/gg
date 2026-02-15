@@ -652,7 +652,6 @@ return services.api.fetch(url, 'text');
 GG.core = GG.core || {};
 GG.core.router = GG.core.router || {};
 var router = GG.core.router;
-router.lastUrl = router.lastUrl || '';
 
 function getScrollY(){
 return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;

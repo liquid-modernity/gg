@@ -3542,7 +3542,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
     function renderWidgetEntries(widget){
       var content = qs('.widget-content', widget);
-      if (!content || widget.getAttribute('data-gg-links-ready') === '1') return;
+      if (!content || qs('.gg-leftnav__group', content)) return;
       var entries = parseWidgetEntries(content.textContent || '');
       if (!entries.length) return;
 
@@ -3569,7 +3569,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
       content.innerHTML = '';
       content.appendChild(ul);
-      widget.setAttribute('data-gg-links-ready', '1');
     }
 
     function setAccordionState(widget, open){
@@ -3604,9 +3603,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       if (ico) ico.textContent = pickGroupIcon(widget.id || '', titleText);
 
       widget.classList.add('gg-leftnav-acc');
-      if (!widget.hasAttribute('data-gg-acc-ready')) {
+      if (!GG.core.state.has(widget, 'open') && !GG.core.state.has(widget, 'collapsed')) {
         setAccordionState(widget, index === 0);
-        widget.setAttribute('data-gg-acc-ready', '1');
       }
     }
 

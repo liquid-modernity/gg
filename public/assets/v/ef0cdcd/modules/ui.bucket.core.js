@@ -3444,35 +3444,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       'contact': 'mail',
       'support': 'volunteer_activism'
     };
-    var GROUP_ICON_MAP = {
-      'HTML17': 'verified_user',
-      'HTML18': 'hub',
-      'HTML19': 'support_agent',
-      'HTML20': 'gavel',
-      'HTML21': 'article'
-    };
-    var LINK_ICON_RULES = [
-      ['about', 'info'],
-      ['philosophy', 'psychology'],
-      ['author', 'groups'],
-      ['editorial', 'fact_check'],
-      ['transparency', 'visibility'],
-      ['topic', 'sell'],
-      ['sitemap', 'account_tree'],
-      ['library', 'menu_book'],
-      ['glossary', 'menu_book'],
-      ['support', 'support_agent'],
-      ['faq', 'quiz'],
-      ['contact', 'mail'],
-      ['career', 'work'],
-      ['media', 'campaign'],
-      ['privacy', 'privacy_tip'],
-      ['term', 'gavel'],
-      ['disclaimer', 'warning'],
-      ['accessibility', 'accessibility_new'],
-      ['llms', 'smart_toy'],
-      ['ads', 'ads_click']
-    ];
 
     function pickIcon(text){
       var key = (text || '').toLowerCase();
@@ -3482,14 +3453,22 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
     function pickLinkIcon(text, url){
       var key = ((text || '') + ' ' + (url || '')).toLowerCase();
-      for (var i = 0; i < LINK_ICON_RULES.length; i++) {
-        if (key.indexOf(LINK_ICON_RULES[i][0]) !== -1) return LINK_ICON_RULES[i][1];
-      }
+      if (/privacy|term|disclaimer|gdpr|policy/.test(key)) return 'gavel';
+      if (/accessibility/.test(key)) return 'accessibility_new';
+      if (/llms|chatgpt|gemini|claude|ai/.test(key)) return 'smart_toy';
+      if (/ads/.test(key)) return 'ads_click';
+      if (/sitemap|index|topic|glossary|library/.test(key)) return 'menu_book';
+      if (/support|help|contact|faq|career|media/.test(key)) return 'support_agent';
+      if (/about|author|editorial|transparency/.test(key)) return 'info';
       return pickIcon(text || url || '');
     }
 
     function pickGroupIcon(id, title){
-      if (GROUP_ICON_MAP[id]) return GROUP_ICON_MAP[id];
+      if (id === 'HTML17') return 'verified_user';
+      if (id === 'HTML18') return 'hub';
+      if (id === 'HTML19') return 'support_agent';
+      if (id === 'HTML20') return 'gavel';
+      if (id === 'HTML21') return 'article';
       return pickLinkIcon(title || id || '', '');
     }
 
@@ -3563,7 +3542,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
     function renderWidgetEntries(widget){
       var content = qs('.widget-content', widget);
-      if (!content || widget.getAttribute('data-gg-links-ready') === '1') return;
+      if (!content || qs('.gg-leftnav__group', content)) return;
       var entries = parseWidgetEntries(content.textContent || '');
       if (!entries.length) return;
 
@@ -3590,7 +3569,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
       content.innerHTML = '';
       content.appendChild(ul);
-      widget.setAttribute('data-gg-links-ready', '1');
     }
 
     function setAccordionState(widget, open){
@@ -3625,9 +3603,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       if (ico) ico.textContent = pickGroupIcon(widget.id || '', titleText);
 
       widget.classList.add('gg-leftnav-acc');
-      if (!widget.hasAttribute('data-gg-acc-ready')) {
+      if (!GG.core.state.has(widget, 'open') && !GG.core.state.has(widget, 'collapsed')) {
         setAccordionState(widget, index === 0);
-        widget.setAttribute('data-gg-acc-ready', '1');
       }
     }
 
@@ -3742,11 +3719,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       setWidgetIcon('Label1', 'inventory_2');
       setWidgetIcon('Label2', 'inventory_2');
       setWidgetIcon('PageList1', 'list_alt');
-      setWidgetIcon('HTML17', 'verified_user');
-      setWidgetIcon('HTML18', 'hub');
-      setWidgetIcon('HTML19', 'support_agent');
-      setWidgetIcon('HTML20', 'gavel');
-      setWidgetIcon('HTML21', 'article');
 
       decorateLinks(left);
       seedLabelTree(left);
