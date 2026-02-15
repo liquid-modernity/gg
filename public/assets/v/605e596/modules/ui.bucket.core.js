@@ -3433,6 +3433,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 // /GAGA PANEL KANAN
 
   GG.modules.LeftNav = (function () {
+    var CUSTOM_WIDGET_IDS = ['HTML17', 'HTML18', 'HTML19', 'HTML20', 'HTML21'];
     var ICON_MAP = {
       'community': 'forum',
       'portfolio': 'work',
@@ -3450,10 +3451,198 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       return found ? ICON_MAP[found] : 'description';
     }
 
+    function pickLinkIcon(text, url){
+      var key = ((text || '') + ' ' + (url || '')).toLowerCase();
+      if (/privacy|term|disclaimer|gdpr|policy/.test(key)) return 'gavel';
+      if (/accessibility/.test(key)) return 'accessibility_new';
+      if (/llms|chatgpt|gemini|claude|ai/.test(key)) return 'smart_toy';
+      if (/ads/.test(key)) return 'ads_click';
+      if (/sitemap|index|topic|glossary|library/.test(key)) return 'menu_book';
+      if (/support|help|contact|faq|career|media/.test(key)) return 'support_agent';
+      if (/about|author|editorial|transparency/.test(key)) return 'info';
+      return pickIcon(text || url || '');
+    }
+
+    function pickGroupIcon(id, title){
+      if (id === 'HTML17') return 'verified_user';
+      if (id === 'HTML18') return 'hub';
+      if (id === 'HTML19') return 'support_agent';
+      if (id === 'HTML20') return 'gavel';
+      if (id === 'HTML21') return 'article';
+      return pickLinkIcon(title || id || '', '');
+    }
+
     function setWidgetIcon(id, icon){
       var el = document.getElementById(id);
       if (!el) return;
       el.setAttribute('data-gg-icon', icon);
+    }
+
+    function cleanUrl(raw){
+      return (raw || '').replace(/[)\],.;]+$/g, '');
+    }
+
+    function guessLabelFromUrl(url){
+      try {
+        var u = new URL(url, window.location.href);
+        var p = (u.pathname || '').split('/').filter(Boolean).pop() || u.hostname || url;
+        p = p.replace(/[-_]+/g, ' ');
+        return p;
+      } catch (_) {
+        return (url || '').replace(/^https?:\/\//i, '');
+      }
+    }
+
+    function parseWidgetEntries(raw){
+      var lines = (raw || '')
+        .split(/\r?\n/)
+        .map(function(line){ return line.trim(); })
+        .filter(Boolean);
+      var out = [];
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var pair = line.match(/^([^:]+):\s*(https?:\/\/\S+)$/i);
+        if (pair) {
+          var note = '';
+          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
+            note = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
+            i++;
+          }
+          out.push({
+            label: (pair[1] || '').trim(),
+            url: cleanUrl(pair[2]),
+            note: note
+          });
+          continue;
+        }
+
+        var direct = line.match(/^(https?:\/\/\S+)$/i);
+        if (direct) {
+          var dUrl = cleanUrl(direct[1]);
+          var dNote = '';
+          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
+            dNote = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
+            i++;
+          }
+          out.push({
+            label: guessLabelFromUrl(dUrl),
+            url: dUrl,
+            note: dNote
+          });
+          continue;
+        }
+
+        if (/^fungsi\s*:/i.test(line) && out.length) {
+          var last = out[out.length - 1];
+          if (!last.note) last.note = line.replace(/^fungsi\s*:\s*/i, '').trim();
+        }
+      }
+      return out;
+    }
+
+    function renderWidgetEntries(widget){
+      var content = qs('.widget-content', widget);
+      if (!content || widget.getAttribute('data-gg-links-ready') === '1') return;
+      var entries = parseWidgetEntries(content.textContent || '');
+      if (!entries.length) return;
+
+      var ul = document.createElement('ul');
+      ul.className = 'gg-leftnav__group';
+
+      entries.forEach(function(item){
+        if (!item.url) return;
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.className = 'gg-leftnav__link gg-leftnav__link--page';
+        a.href = item.url;
+        a.textContent = item.label || guessLabelFromUrl(item.url);
+        a.setAttribute('data-gg-icon', pickLinkIcon(a.textContent, item.url));
+        li.appendChild(a);
+        if (item.note) {
+          var note = document.createElement('p');
+          note.className = 'gg-leftnav__note';
+          note.textContent = item.note;
+          li.appendChild(note);
+        }
+        ul.appendChild(li);
+      });
+
+      content.innerHTML = '';
+      content.appendChild(ul);
+      widget.setAttribute('data-gg-links-ready', '1');
+    }
+
+    function setAccordionState(widget, open){
+      var btn = qs('.gg-leftnav-acc__btn', widget);
+      GG.core.state.toggle(widget, 'open', !!open);
+      GG.core.state.toggle(widget, 'collapsed', !open);
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function prepareAccordionWidget(widget, index){
+      if (!widget) return;
+      var titleEl = qs('.widget-title,.title', widget);
+      if (!titleEl) return;
+      var titleText = getText(titleEl) || widget.getAttribute('title') || 'Pages';
+      var btn = qs('.gg-leftnav-acc__btn', titleEl);
+      if (!btn) {
+        titleEl.innerHTML = '';
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'gg-leftnav-acc__btn';
+        btn.setAttribute('data-gg-action', 'leftnav-acc-toggle');
+        btn.innerHTML =
+          '<span class="material-symbols-rounded gg-leftnav-acc__ico" aria-hidden="true"></span>' +
+          '<span class="gg-leftnav-acc__txt"></span>' +
+          '<span class="material-symbols-rounded gg-leftnav-acc__chev" aria-hidden="true">expand_more</span>';
+        titleEl.appendChild(btn);
+      }
+
+      var txt = qs('.gg-leftnav-acc__txt', btn);
+      var ico = qs('.gg-leftnav-acc__ico', btn);
+      if (txt) txt.textContent = titleText;
+      if (ico) ico.textContent = pickGroupIcon(widget.id || '', titleText);
+
+      widget.classList.add('gg-leftnav-acc');
+      if (!widget.hasAttribute('data-gg-acc-ready')) {
+        setAccordionState(widget, index === 0);
+        widget.setAttribute('data-gg-acc-ready', '1');
+      }
+    }
+
+    function bindCustomAccordion(root){
+      if (!root || root.__ggLeftNavAccBound) return;
+      root.__ggLeftNavAccBound = true;
+      root.addEventListener('click', function(evt){
+        var btn = evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="leftnav-acc-toggle"]') : null;
+        if (!btn || !root.contains(btn)) return;
+        var widget = btn.closest('.widget.gg-leftnav-acc');
+        if (!widget) return;
+
+        var isOpen = GG.core.state.has(widget, 'open');
+        if (isOpen) {
+          setAccordionState(widget, false);
+        } else {
+          qsa('.widget.gg-leftnav-acc', root).forEach(function(el){
+            setAccordionState(el, el === widget);
+          });
+        }
+        evt.preventDefault();
+      }, true);
+    }
+
+    function enhanceCustomPages(root){
+      var widgets = [];
+      CUSTOM_WIDGET_IDS.forEach(function(id){
+        var el = document.getElementById(id);
+        if (el && root.contains(el)) widgets.push(el);
+      });
+      if (!widgets.length) return;
+      widgets.forEach(function(widget, index){
+        renderWidgetEntries(widget);
+        prepareAccordionWidget(widget, index);
+      });
+      bindCustomAccordion(root);
     }
 
     function decorateLinks(root){
@@ -3535,6 +3724,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
       decorateLinks(left);
       seedLabelTree(left);
+      enhanceCustomPages(left);
     }
 
     return { init: init };

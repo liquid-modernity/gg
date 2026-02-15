@@ -150,6 +150,18 @@
     function findMeta(selector){
       return d ? d.querySelector(selector) : null;
     }
+    function ensureTag(selector, tag, attrs){
+      var el = findMeta(selector);
+      if (el || !d || !d.head || !d.createElement) return el;
+      el = d.createElement(tag);
+      if (attrs) {
+        for (var k in attrs) {
+          if (Object.prototype.hasOwnProperty.call(attrs, k)) el.setAttribute(k, attrs[k]);
+        }
+      }
+      d.head.appendChild(el);
+      return el;
+    }
     function update(data){
       if(!data || !d) return;
       if(typeof data.title === 'string'){
@@ -163,6 +175,14 @@
       if(ogTitle !== null){
         var og = findMeta('meta[property="og:title"]');
         if(og) og.setAttribute('content', ogTitle);
+      }
+      var canonical = (typeof data.canonical === 'string' && data.canonical) ? data.canonical : (w.location ? w.location.href : '');
+      if (canonical) {
+        var canEl = ensureTag('link[rel="canonical"]', 'link', { rel: 'canonical' });
+        if (canEl) canEl.setAttribute('href', canonical);
+        var ogUrl = (typeof data.ogUrl === 'string' && data.ogUrl) ? data.ogUrl : canonical;
+        var ogUrlEl = ensureTag('meta[property="og:url"]', 'meta', { property: 'og:url' });
+        if (ogUrlEl) ogUrlEl.setAttribute('content', ogUrl);
       }
     }
     function titleFromUrl(url){
@@ -190,7 +210,12 @@
       return err;
     }
     function findTarget(doc){
-      if (!doc || !doc.querySelector) return null;
+      if (!doc) return null;
+      if (doc.getElementById) {
+        var main = doc.getElementById('gg-main');
+        if (main) return main;
+      }
+      if (!doc.querySelector) return null;
       var selectors = ['.gg-blog-main', '.blog-posts', '#main', 'main.gg-main', 'main'];
       for (var i = 0; i < selectors.length; i++) {
         var el = doc.querySelector(selectors[i]);
@@ -199,13 +224,17 @@
       return null;
     }
     function extractMeta(doc){
-      var out = { title: '', description: '', ogTitle: '' };
+      var out = { title: '', description: '', ogTitle: '', canonical: '', ogUrl: '' };
       if (!doc) return out;
       out.title = doc.title || '';
       var desc = doc.querySelector && doc.querySelector('meta[name="description"]');
       if (desc) out.description = desc.getAttribute('content') || '';
       var og = doc.querySelector && doc.querySelector('meta[property="og:title"]');
       if (og) out.ogTitle = og.getAttribute('content') || '';
+      var can = doc.querySelector && doc.querySelector('link[rel="canonical"]');
+      if (can) out.canonical = can.getAttribute('href') || '';
+      var ogu = doc.querySelector && doc.querySelector('meta[property="og:url"]');
+      if (ogu) out.ogUrl = ogu.getAttribute('content') || '';
       return out;
     }
     function rehydrateComments(root){
@@ -235,9 +264,21 @@
       var parser=new w.DOMParser();
       var doc=parser.parseFromString(html,'text/html');
       if(!doc)throw fail('parse',{url:url});
-      var s=findTarget(doc),t=findTarget(d);
+      var s=findTarget(doc),t=findTarget(d),sm=doc.getElementById&&doc.getElementById('gg-main'),tm=d.getElementById&&d.getElementById('gg-main');
       if(!s||!t)throw fail('target',{url:url});
       var m=extractMeta(doc);
+      function syncMainAttrs(){
+        var names=['data-gg-surface','data-gg-page','data-gg-home-state','data-gg-home-root'];
+        var out={};
+        if(sm&&tm){
+          for(var i=0;i<names.length;i++){
+            var n=names[i],v=sm.getAttribute(n);
+            if(v===null||v===''){tm.removeAttribute(n);out[n]='';}
+            else{tm.setAttribute(n,v);out[n]=v;}
+          }
+        }
+        return out;
+      }
       function shouldReduceMotion(){var st=GG.store&&GG.store.get&&GG.store.get();return st&&st.reducedMotion!==undefined?!!st.reducedMotion:!!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);}
       function announceRoute(){var el=d.getElementById('gg-main');if(el){el.tabIndex=-1;try{el.focus({preventScroll:true});}catch(e){el.focus();}}var t=doc.title||'Page loaded',a=GG.services&&GG.services.a11y&&GG.services.a11y.announce;if(a)a(t,{politeness:'polite'});}
       var doSwap=function(){
@@ -246,16 +287,26 @@
           var ss=doc.querySelector(sel),tt=d.querySelector(sel);
           if(ss&&tt)tt.innerHTML=ss.innerHTML;
         });
-        var pg=doc.body&&doc.body.getAttribute('data-gg-page');
-        if(pg&&d.body)d.body.setAttribute('data-gg-page',pg);
+        var attrs=syncMainAttrs();
+        var sf=attrs['data-gg-surface']||'',pg=attrs['data-gg-page']||'';
+        if(d.body){
+          if(!sf&&doc.body)sf=doc.body.getAttribute('data-gg-surface')||'';
+          if(!pg&&doc.body)pg=doc.body.getAttribute('data-gg-page')||'';
+          sf?d.body.setAttribute('data-gg-surface',sf):d.body.removeAttribute('data-gg-surface');
+          pg?d.body.setAttribute('data-gg-page',pg):d.body.removeAttribute('data-gg-page');
+          if(sf==='landing'){d.body.classList&&d.body.classList.add('gg-is-landing');}
+          else{d.body.classList&&d.body.classList.remove('gg-is-landing');}
+        }
         if(GG.ui&&GG.ui.layout&&typeof GG.ui.layout.sync==='function')try{GG.ui.layout.sync(doc,url);}catch(_){}
-        if(GG.core&&GG.core.surface&&typeof GG.core.surface.update==='function')try{GG.core.surface.update(url);}catch(_){}
+        if(GG.ui&&GG.ui.layout&&typeof GG.ui.layout.applySurface==='function')try{GG.ui.layout.applySurface(sf||'post',null,url);}catch(_){}
         if(GG.core&&GG.core.meta&&GG.core.meta.update){
           var p={};
           if(m.title)p.title=m.title;
           if(m.description)p.description=m.description;
           if(m.ogTitle)p.ogTitle=m.ogTitle;
-          if(p.title||p.description||p.ogTitle)GG.core.meta.update(p);
+          if(m.canonical)p.canonical=m.canonical;
+          if(m.ogUrl)p.ogUrl=m.ogUrl;
+          if(p.title||p.description||p.ogTitle||p.canonical||p.ogUrl)GG.core.meta.update(p);
         }
         var rh=rehydrateComments(t);
         if(!rh)rehydrateComments(doc);
@@ -789,10 +840,18 @@
       if(!url) return;
       var from = w.location.href;
       router.saveScroll(from);
-      if (url === from) return;
+      if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
       w.history.pushState(router._stateFor(url), '', url);
       router._applySurface(url);
-      router._load(url, { pop: false });
+      var p = router._load(url, { pop: false });
+      if (p && typeof p.then === 'function') {
+        return p.then(function(){
+          if (!GG.core || !GG.core.render || GG.core.render._lastUrl === url) return true;
+          try { w.location.href = url; } catch (_) {}
+          return false;
+        });
+      }
+      return p;
     } catch (e) {
       router.fallback(url);
     }
@@ -996,24 +1055,7 @@
     try { d.addEventListener('keydown', onKey, { capture: true, once: true }); } catch (_) {}
   }
 
-  function bindPendingCmdK(){
-    if (GG.boot._pendingCmdkBound) return;
-    GG.boot._pendingCmdkBound = true;
-    d.addEventListener('keydown', function(e){
-      if (!e) return;
-      var key = (e.key || '').toLowerCase();
-      if (!(e.ctrlKey || e.metaKey) || key !== 'k') return;
-      if (GG.boot && GG.boot._uiReady) return;
-      try { e.preventDefault(); } catch (_) {}
-      w.__GG_PENDING_SEARCH = true;
-      if (GG.boot && typeof GG.boot.requestUi === 'function') {
-        GG.boot.requestUi('cmdk');
-      }
-    }, true);
-  }
-
   bindUiInteractRequest();
-  bindPendingCmdK();
 
   // Router binding for native feel
   if (GG.boot.onReady) {

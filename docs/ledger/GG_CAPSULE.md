@@ -14,16 +14,16 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 617d061
+RELEASE_ID: eea82df
 RELEASE_HISTORY:
-- 617d061
-- b541111
-- 3418575
-- 2c1067e
-- 9052229
-PROD_PINNED_JS: /assets/v/617d061/main.js
-PROD_PINNED_APP: /assets/v/617d061/app.js
-PROD_PINNED_CSS: /assets/v/617d061/main.css
+- eea82df
+- e73c5e0
+- ca91013
+- 605e596
+- 628d9ae
+PROD_PINNED_JS: /assets/v/eea82df/main.js
+PROD_PINNED_APP: /assets/v/eea82df/app.js
+PROD_PINNED_CSS: /assets/v/eea82df/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
