@@ -20,6 +20,21 @@ var ym=(+m[1])*12+(+m[2]),d=NOW-ym,r=10-Math.floor((d<0?0:d)/6);
 if(r<0)return 0;
 return r>10?10:r;
 }
+function h(el,text,q,d){
+if(!el)return;
+text=String(text||'');
+q=String(q||'');
+if(!q||q.length<2){el.textContent=text;return;}
+var i=text.toLowerCase().indexOf(q);
+if(i<0){el.textContent=text;return;}
+el.textContent='';
+if(i>0)el.appendChild(d.createTextNode(text.slice(0,i)));
+var m=d.createElement('span');
+m.className='hl';
+m.textContent=text.slice(i,i+q.length);
+el.appendChild(m);
+if(i+q.length<text.length)el.appendChild(d.createTextNode(text.slice(i+q.length)));
+}
 function run(items,query,limit){
 var n=toks(query),q=n.q,tk=n.t,out=[],i,k,it,t,s,l,u,tw,lw,sc,base,z,r,ft=tk[0]||q;
 if(!q||!items||!items.length)return [];
@@ -45,5 +60,5 @@ for(i=0;i<out.length&&i<limit;i++)out[i]=out[i].i;
 out.length=Math.min(out.length,limit);
 return out;
 }
-M.searchRank={run:run,toks:toks};
+M.searchRank={run:run,toks:toks,h:h};
 })(window);

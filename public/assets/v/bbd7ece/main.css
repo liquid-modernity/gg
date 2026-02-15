@@ -6357,11 +6357,11 @@ a, button{
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--gg-space-2) var(--gg-space-2) calc(var(--gg-space-2) + 10px);
+  padding: 8px 8px 12px;
   border-radius: var(--gg-radius);
-  border: 1px solid rgba(11,13,16,.10);
-  background: rgba(251,251,250,.92);
-  box-shadow: var(--gg-shadow-soft);
+  border: 1px solid rgba(11,13,16,.12);
+  background: rgba(250,250,249,.88);
+  box-shadow: 0 18px 36px rgba(11,13,16,.12);
   z-index: var(--z-overlay-2);
 }
 
@@ -6392,7 +6392,7 @@ a, button{
 #gg-search-panel .gg-search__section,
 #gg-search-panel .gg-search__hint{
   font-size: var(--gg-font-xs);
-  opacity: .7;
+  opacity: .62;
   padding: 6px 10px;
   line-height: 1.4;
   overflow: visible;
@@ -6413,6 +6413,7 @@ a, button{
   line-height: 1.45;
   text-overflow: clip;
   overflow-wrap: anywhere;
+  font-size: calc(var(--gg-font-xs) - .03rem);
 }
 
 #gg-search-panel .gg-search__hint > *{
@@ -6425,7 +6426,7 @@ a, button{
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border-radius: var(--gg-radius-sm);
   text-decoration: none;
   color: inherit;
@@ -6435,34 +6436,49 @@ a, button{
 #gg-search-panel .gg-search__title{
   font-size: var(--gg-font-sm);
   line-height: 1.35;
+  font-weight: 560;
 }
 
 #gg-search-panel .gg-search__meta{
-  font-size: var(--gg-font-xs);
-  opacity: .62;
+  font-size: calc(var(--gg-font-xs) - .05rem);
+  opacity: .58;
+  letter-spacing: .01em;
+  font-weight: 460;
 }
 
 #gg-search-panel .gg-search__title .hl{
-  background: rgba(11,13,16,.12);
-  color: inherit;
-  border-radius: 6px;
-  padding: 0 .22em;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  color: rgba(11,13,16,.94);
+  font-weight: 620;
 }
 
 #gg-search-panel .gg-search__result[aria-selected="true"],
 #gg-search-panel .gg-search__result:hover{
-  background: rgba(11,13,16,.06);
+  background: rgba(11,13,16,.018);
 }
 
-#gg-search-panel .gg-search__result[aria-selected="true"]::before{
+#gg-search-panel .gg-search__result[aria-selected="true"]{
+  box-shadow: inset 0 0 0 1px rgba(11,13,16,.08);
+}
+
+#gg-search-panel .gg-search__result[aria-selected="true"]::before,
+#gg-search-panel .gg-search__result:hover::before{
   content: "";
   position: absolute;
-  left: 4px;
-  top: 8px;
-  bottom: 8px;
+  left: 6px;
+  top: 10px;
+  bottom: 10px;
   width: 2px;
   border-radius: 2px;
-  background: rgba(11,13,16,.32);
+  background: rgba(11,13,16,.2);
+}
+
+#gg-search-panel > .gg-search__hint:last-child{
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(11,13,16,.08);
 }
 
 .gg-overlay{
