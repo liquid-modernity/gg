@@ -2,6 +2,7 @@
 Last updated: 2026-02-13
 
 Scope: wiring map for UI features in `public/assets/latest`.
+Closure status source: `docs/ui/UX_CLOSURE.md`.
 
 **Wiring Flow**
 - `boot.js` waits for first interaction or idle and loads `main.js`.
