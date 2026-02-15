@@ -6356,7 +6356,7 @@ a, button{
   max-height: min(48vh, 420px);
   overflow: auto;
   overscroll-behavior: contain;
-  padding: var(--gg-space-2);
+  padding: var(--gg-space-2) var(--gg-space-2) calc(var(--gg-space-2) + 4px);
   border-radius: var(--gg-radius);
   border: 1px solid rgba(11,13,16,.10);
   background: rgba(251,251,250,.92);
@@ -6393,11 +6393,21 @@ a, button{
   font-size: var(--gg-font-xs);
   opacity: .7;
   padding: 6px 10px;
+  line-height: 1.4;
+  overflow: visible;
+  white-space: normal;
 }
 
 #gg-search-panel .gg-search__section{
   text-transform: uppercase;
   letter-spacing: .08em;
+}
+
+#gg-search-panel .gg-search__hint{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 #gg-search-panel .gg-search__result{
