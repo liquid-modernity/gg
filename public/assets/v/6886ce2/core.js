@@ -483,64 +483,6 @@ if (path.charAt(0) !== "/") path = "/" + path;
 return ASSET_BASE + path;
 };
 
-w.GG_DIAG = w.GG_DIAG || { modules: {}, errors: [] };
-if (!w.GG_DIAG._init) {
-w.GG_DIAG._init = true;
-w.addEventListener('error', function(e){
-try {
-w.GG_DIAG.errors.push({
-type: 'error',
-message: (e && e.message) ? e.message : 'error',
-source: (e && e.filename) ? e.filename : '',
-line: (e && e.lineno) ? e.lineno : 0,
-col: (e && e.colno) ? e.colno : 0,
-stack: (e && e.error && e.error.stack) ? e.error.stack : '',
-at: Date.now()
-});
-if (w.GG_DIAG_RENDER) w.GG_DIAG_RENDER();
-} catch(_) {}
-});
-w.addEventListener('unhandledrejection', function(e){
-try {
-var reason = e && e.reason ? e.reason : null;
-w.GG_DIAG.errors.push({
-type: 'rejection',
-message: (reason && reason.message) ? reason.message : String(reason || 'rejection'),
-stack: (reason && reason.stack) ? reason.stack : '',
-at: Date.now()
-});
-if (w.GG_DIAG_RENDER) w.GG_DIAG_RENDER();
-} catch(_) {}
-});
-}
-if(!w.GG_TELEM){
-w.GG_TELEM=1;(function(){
-var ep='/api/telemetry',b=0;
-function s(p){
-if(b) return; b=1;
-try{
-var d2=JSON.stringify(p||{});
-if(w.navigator&&w.navigator.sendBeacon){
-try{w.navigator.sendBeacon(ep,w.Blob?new Blob([d2],{type:'application/json'}):d2);}catch(e){}
-}else if(w.fetch){
-w.fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:d2,keepalive:true}).catch(function(){});
-}
-}catch(e){}
-b=0;
-}
-w.onerror=function(m,f,l,c,e){
-s({m:m?''+m:'error',f:f||'',l:l||0,c:c||0,st:e&&e.stack?e.stack:''});
-return false;
-};
-w.onunhandledrejection=function(e){
-var r=e&&e.reason;
-s({m:r&&r.message?r.message:''+(r||'rejection'),f:'',l:0,c:0,st:r&&r.stack?r.stack:''});
-return false;
-};
-})();
-}
-w.GG_BUILD = w.GG_BUILD || "dev";
-
 // Minimal GG.store (get/set/subscribe) if missing
 if(!GG.store || !GG.store.get){
 (function(){
@@ -652,7 +594,6 @@ return services.api.fetch(url, 'text');
 GG.core = GG.core || {};
 GG.core.router = GG.core.router || {};
 var router = GG.core.router;
-router.lastUrl = router.lastUrl || '';
 
 function getScrollY(){
 return w.pageYOffset || (d.documentElement && d.documentElement.scrollTop) || 0;
@@ -833,7 +774,7 @@ try {
 if(!url) return;
 var from = w.location.href;
 var u = new URL(url, w.location.href);
-if((u.pathname||'').indexOf('/search')===0){w.location.assign(u.href);return;}
+if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
 router.saveScroll(from);
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
