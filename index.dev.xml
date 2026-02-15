@@ -2834,7 +2834,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
   <div aria-hidden='false' class='gg-dock__search' data-gg-dock-search='1' data-gg-searchbar='1'>
     <form expr:action='data:blog.searchUrl' method='get' role='search'>
-      <input aria-label='Search input' data-gg-dock-search-input='1' name='q' placeholder='Search articles...' type='search'/>
+      <input aria-activedescendant='' aria-autocomplete='list' aria-controls='gg-palette-list' aria-expanded='false' aria-label='Search input' data-gg-dock-search-input='1' name='q' placeholder='Search articles...' role='combobox' type='search'/>
       <button aria-label='Submit search' class='gg-icon-btn' type='submit'>
         <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
       </button>

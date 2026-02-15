@@ -68,12 +68,12 @@ if(i+q.length<text.length)el.appendChild(d.createTextNode(text.slice(i+q.length)
 function resetDockUI(w,d,S,r){
 try{if(w.GG&&w.GG.ui&&w.GG.ui.dock&&typeof w.GG.ui.dock.closeSearch==='function')w.GG.ui.dock.closeSearch();}catch(_){}
 var u=S&&S.u,p,n,i,k,b;
-if(!u){k=d.querySelector('[data-gg-dock-search],#gg-dock .gg-dock__search');u={dock:k,input:k&&k.querySelector('input[type="search"]'),close:k&&k.querySelector('[data-gg-dock-close]'),panel:d.getElementById('gg-search-panel')};if(S)S.u=u;}
+if(!u){k=d.querySelector('[data-gg-dock-search],#gg-dock .gg-dock__search');u={dock:k,input:k&&k.querySelector('input[type="search"]'),close:k&&k.querySelector('[data-gg-dock-close]'),panel:d.getElementById('gg-palette-list')};if(S)S.u=u;}
 p=d.getElementById('gg-cmdp');
 if(p&&p.parentNode)p.parentNode.removeChild(p);
 p=u&&u.panel;
 if(p){p.hidden=true;p.setAttribute('aria-hidden','true');n=p.querySelectorAll('[aria-selected="true"],[data-active],[data-selected]');for(i=0;i<n.length;i++){n[i].removeAttribute('aria-selected');n[i].removeAttribute('data-active');n[i].removeAttribute('data-selected');}}
-if(u&&u.input){u.input.removeAttribute('aria-activedescendant');u.input.removeAttribute('aria-expanded');}
+if(u&&u.input){u.input.removeAttribute('aria-activedescendant');u.input.setAttribute('aria-expanded','false');}
 if(u&&u.close)u.close.setAttribute('aria-expanded','false');
 if(u&&u.dock){n=u.dock.querySelectorAll('[aria-expanded="true"]');for(i=0;i<n.length;i++)n[i].setAttribute('aria-expanded','false');}
 if(S){S.o=0;S.a=-1;}

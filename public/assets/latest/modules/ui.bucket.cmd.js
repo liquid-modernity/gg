@@ -6,7 +6,7 @@
     function qsa(sel,root){return Array.prototype.slice.call((root||d).querySelectorAll(sel));}
     function ui(){
       var input=d.querySelector('nav.gg-dock input[type="search"],nav.gg-dock [data-gg-dock-search-input]');
-      var panel=d.getElementById('gg-search-panel');
+      var panel=d.getElementById('gg-palette-list');
       if(!input||!panel)return null;
       return {input:input,panel:panel};
     }
@@ -75,7 +75,7 @@
       var n=qsa('.gg-search-cmd',u.panel);
       if(!n.length){S.a=-1;return;}
       if(i<0)i=0;if(i>=n.length)i=n.length-1;
-      if(S.a>-1&&n[S.a])n[S.a].removeAttribute('aria-selected');
+      if(S.a>-1&&n[S.a])n[S.a].setAttribute('aria-selected','false');
       S.a=i;
       n[i].setAttribute('aria-selected','true');
       u.input.setAttribute('aria-activedescendant',n[i].id||'');
@@ -99,7 +99,7 @@
         S.items=cmdList(u.input.value);
         var html='<div class="gg-search__section">Commands</div>';
         if(!S.items.length)html+='<div class="gg-search__hint">No command</div>';
-        for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="c'+i+'" role="option" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
+        for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="gg-opt-'+i+'" role="option" aria-selected="false" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
         html+='<div class="gg-search__hint">Enter run · Esc close</div>';
         u.panel.innerHTML=html;
         S.a=-1;
@@ -130,7 +130,7 @@
         if(k==='ArrowDown')move(1);
         else if(k==='ArrowUp')move(-1);
         else if(k==='Enter')run(S.a<0?0:S.a);
-        else if(k==='Escape')closePanel();
+        else if(k==='Escape'){closePanel();try{u.input.focus({preventScroll:true});}catch(_){try{u.input.focus();}catch(__){}}}
       }catch(x){fail('k',x);}
     }
     function onClick(e){
@@ -140,7 +140,7 @@
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation&&e.stopImmediatePropagation();
-        var n=parseInt((a.id||'').replace('c',''),10);
+        var n=parseInt((a.id||'').replace('gg-opt-',''),10);
         run(isNaN(n)?-1:n);
       }catch(x){fail('c',x);}
     }
