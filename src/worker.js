@@ -188,6 +188,203 @@ const isAppJsAsset = (value) => {
   return lower.includes("/assets/");
 };
 
+const BLOG_LISTING_MIN_POSTCARDS = 8;
+const BLOG_LISTING_BACKFILL_HOPS = 3;
+
+const responseFromHtml = (response, html) => {
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  return new Response(html, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+};
+
+const findElementByIdRange = (html, tagName, id) => {
+  const source = String(html || "");
+  if (!source) return null;
+  const name = String(tagName || "").trim();
+  const wantedId = String(id || "").trim();
+  if (!name || !wantedId) return null;
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedId = wantedId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const openRe = new RegExp(
+    `<${escapedName}\\b[^>]*\\bid\\s*=\\s*(['"])${escapedId}\\1[^>]*>`,
+    "i"
+  );
+  const openMatch = openRe.exec(source);
+  if (!openMatch) return null;
+
+  const openStart = openMatch.index;
+  const openEnd = openStart + openMatch[0].length;
+  const tokenRe = new RegExp(`<\\/?${escapedName}\\b[^>]*>`, "gi");
+  tokenRe.lastIndex = openEnd;
+  let depth = 1;
+  let closeStart = -1;
+  let closeEnd = -1;
+  let token;
+
+  while ((token = tokenRe.exec(source))) {
+    const tag = token[0];
+    const isClose = /^<\//.test(tag);
+    const selfClose = /\/>\s*$/.test(tag);
+    if (isClose) depth -= 1;
+    else if (!selfClose) depth += 1;
+    if (depth === 0) {
+      closeStart = token.index;
+      closeEnd = tokenRe.lastIndex;
+      break;
+    }
+  }
+
+  if (closeStart < 0 || closeEnd < 0) return null;
+  return {
+    openStart,
+    openEnd,
+    closeStart,
+    closeEnd,
+    innerStart: openEnd,
+    innerEnd: closeStart,
+    openTag: openMatch[0],
+    innerHtml: source.slice(openEnd, closeStart),
+  };
+};
+
+const normalizeCardKey = (cardHtml, fallback) => {
+  const id = extractAttrValue(cardHtml, "data-id");
+  if (id) return `id:${id}`;
+  const dataUrl = extractAttrValue(cardHtml, "data-url");
+  if (dataUrl) return `data-url:${dataUrl}`;
+  const hrefMatch = String(cardHtml || "").match(/<a\b[^>]*\bhref\s*=\s*(['"])([^'"]+)\1/i);
+  if (hrefMatch && hrefMatch[2]) return `href:${hrefMatch[2]}`;
+  return `idx:${fallback}`;
+};
+
+const extractPostCards = (fragment) => {
+  const out = [];
+  const re =
+    /<article\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-post-card\b[^'"]*\1[^>]*>[\s\S]*?<\/article>/gi;
+  let match;
+  while ((match = re.exec(String(fragment || "")))) {
+    const cardHtml = match[0];
+    out.push({
+      key: normalizeCardKey(cardHtml, match.index),
+      html: cardHtml,
+    });
+  }
+  return out;
+};
+
+const extractLoadMoreUrl = (html, baseUrl) => {
+  const buttonRe = /<button\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-loadmore\b[^'"]*\1[^>]*>/gi;
+  let match;
+  while ((match = buttonRe.exec(String(html || "")))) {
+    const tag = match[0];
+    const dataNext = extractAttrValue(tag, "data-next");
+    if (!dataNext) continue;
+    try {
+      return new URL(dataNext, baseUrl).toString();
+    } catch (e) {
+      return "";
+    }
+  }
+  return "";
+};
+
+const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount) => {
+  const out = [];
+  const seen = seenKeys || new Set();
+  const visited = new Set();
+  let hops = 0;
+  let nextUrl = extractLoadMoreUrl(seedHtml, seedUrl);
+
+  while (nextUrl && out.length < neededCount && hops < BLOG_LISTING_BACKFILL_HOPS) {
+    if (visited.has(nextUrl)) break;
+    visited.add(nextUrl);
+
+    let nextRes;
+    try {
+      nextRes = await fetch(nextUrl, {
+        headers: {
+          Accept: "text/html",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+    } catch (e) {
+      break;
+    }
+    if (!nextRes || !nextRes.ok) break;
+
+    const contentType = (nextRes.headers.get("content-type") || "").toLowerCase();
+    if (contentType && !contentType.includes("text/html")) break;
+
+    let nextHtml = "";
+    try {
+      nextHtml = await nextRes.text();
+    } catch (e) {
+      break;
+    }
+
+    const range = findElementByIdRange(nextHtml, "div", "postcards");
+    if (range) {
+      const cards = extractPostCards(range.innerHtml);
+      for (const card of cards) {
+        if (!card || !card.html) continue;
+        if (seen.has(card.key)) continue;
+        seen.add(card.key);
+        out.push(card);
+        if (out.length >= neededCount) break;
+      }
+    }
+
+    nextUrl = extractLoadMoreUrl(nextHtml, nextUrl);
+    hops += 1;
+  }
+
+  return out;
+};
+
+const ensureBlogListingPostcards = async (response, requestUrl) => {
+  let html = "";
+  try {
+    html = await response.text();
+  } catch (e) {
+    return response;
+  }
+  if (!html) {
+    return responseFromHtml(response, html);
+  }
+
+  const range = findElementByIdRange(html, "div", "postcards");
+  if (!range) {
+    return responseFromHtml(response, html);
+  }
+
+  const existing = extractPostCards(range.innerHtml);
+  if (existing.length >= BLOG_LISTING_MIN_POSTCARDS) {
+    const out = responseFromHtml(response, html);
+    out.headers.set("x-gg-ssr-postcards", String(existing.length));
+    return out;
+  }
+
+  const needed = BLOG_LISTING_MIN_POSTCARDS - existing.length;
+  const seen = new Set(existing.map((card) => card.key));
+  const extras = await collectBackfillPostCards(html, requestUrl, seen, needed);
+  if (extras.length > 0) {
+    const extraHtml = extras.map((card) => card.html).join("");
+    html = `${html.slice(0, range.innerEnd)}${extraHtml}${html.slice(range.innerEnd)}`;
+  }
+
+  const out = responseFromHtml(response, html);
+  out.headers.set("x-gg-ssr-postcards", String(existing.length + extras.length));
+  if (extras.length > 0) {
+    out.headers.set("x-gg-ssr-backfill", String(extras.length));
+  }
+  return out;
+};
+
 const CSP_REPORT_BUCKET = new Map();
 const CSP_REPORT_MAX = 500;
 const CSP_REPORT_TRIM = 100;
@@ -270,8 +467,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "cfff8f7";
-    const TEMPLATE_ALLOWED_RELEASES = ["cfff8f7","63a392f"];
+    const WORKER_VERSION = "a13bd9f";
+    const TEMPLATE_ALLOWED_RELEASES = ["a13bd9f","cfff8f7"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -894,7 +1091,11 @@ export default {
             });
         }
         const transformed = rewritten.transform(originRes);
-        let out = stamp(transformed, { cspReportEnabled });
+        let htmlResponse = transformed;
+        if (forceListing && request.method !== "HEAD") {
+          htmlResponse = await ensureBlogListingPostcards(transformed, request.url);
+        }
+        let out = stamp(htmlResponse, { cspReportEnabled });
         if (templateMismatch) {
           if (out.status !== 200) {
             out = new Response(out.body, {

@@ -589,7 +589,27 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
         echo "DEBUG: #postcards tag: ${postcards_tag}"
         die "LIVE_HTML /blog hard refresh #${i} #postcards appears hidden"
       fi
-      postcards_count="$(grep -Eoi '<article[^>]+class=["'"'"'][^"'"'"']*gg-post-card[^"'"'"']*["'"'"']' <<<"${html}" | wc -l | tr -d '[:space:]')"
+      postcards_count="$(printf '%s' "${html}" | node -e '
+        const fs = require("fs");
+        const html = fs.readFileSync(0, "utf8");
+        const open = html.match(/<div\b[^>]*\bid=(["\x27])postcards\1[^>]*>/i);
+        if (!open) { process.stdout.write("0"); process.exit(0); }
+        const start = open.index + open[0].length;
+        const re = /<\/?div\b[^>]*>/gi;
+        re.lastIndex = start;
+        let depth = 1;
+        let end = -1;
+        let m;
+        while ((m = re.exec(html))) {
+          if (/^<\//.test(m[0])) depth -= 1;
+          else if (!/\/\s*>$/.test(m[0])) depth += 1;
+          if (depth === 0) { end = m.index; break; }
+        }
+        if (end < 0) { process.stdout.write("0"); process.exit(0); }
+        const fragment = html.slice(start, end);
+        const cards = fragment.match(/<article\b[^>]*\bclass\s*=\s*(["\x27])[^"\x27]*\bgg-post-card\b[^"\x27]*\1/gi) || [];
+        process.stdout.write(String(cards.length));
+      ' | tr -d '[:space:]')"
       if [[ -z "${postcards_count}" ]] || (( postcards_count < 8 )); then
         die "LIVE_HTML /blog hard refresh #${i} expected >=8 SSR postcards (got ${postcards_count:-0})"
       fi
