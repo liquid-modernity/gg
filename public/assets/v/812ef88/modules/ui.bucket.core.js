@@ -2652,12 +2652,14 @@ GG.modules.InfoPanel = (function () {
   var lastTrigger = null;
   var closeObserver = null;
   var backdrop = null;
-  var lockedCardKey = '';
+  var selectedCardKey = '';
   var hoverCardKey = '';
+  var tocIntentTimer = 0;
+  var tocIntentKey = '';
   var TOC_CAP = 24;
   var TOC_TTL_MS = 6e5;
   var TOC_LRU_MAX = 24;
-  var TOC_HINT_LOCK = 'Lock this card to load headings.';
+  var TOC_HINT_LOCK = 'Hover, focus, or tap a card to preview headings.';
   var tocCache = Object.create(null);
   var tocPending = Object.create(null);
   var tocAborters = Object.create(null);
@@ -2720,13 +2722,9 @@ GG.modules.InfoPanel = (function () {
     if (qs('.gg-editorial-preview', panel)) return;
 
     panel.innerHTML =
-      '<div class="gg-info-panel__card gg-editorial-preview" data-gg-lock="off">' +
+      '<div class="gg-info-panel__card gg-editorial-preview">' +
         '<div class="gg-editorial-preview__head">' +
           '<span class="gg-editorial-preview__eyebrow">Editorial Preview</span>' +
-          '<div class="gg-editorial-preview__actions">' +
-            '<button class="gg-editorial-preview__lock" type="button" data-gg-action="info-lock" aria-pressed="false">Lock</button>' +
-            '<button class="gg-editorial-preview__close gg-info-panel__close" type="button" data-gg-action="info-close" aria-label="Close">Close</button>' +
-          '</div>' +
         '</div>' +
         '<div class="gg-editorial-preview__media">' +
           '<img class="gg-info-panel__thumb-img" alt=""/>' +
@@ -2931,7 +2929,7 @@ function extractThumbSrc(card){
 
   function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
 
-  function hydrateLockedToc(card, href){
+  function hydrateToc(card, href){
     if (!card) return Promise.resolve([]);
     var key = tocCacheKey(href);
     var abs = toAbsUrl(href);
@@ -2946,7 +2944,7 @@ function extractThumbSrc(card){
       return Promise.resolve(cached);
     }
 
-    abortToc(key);
+    abortToc('');
     if (!tocPending[key]) {
       var controller = window.AbortController ? new window.AbortController() : null;
       tocAborters[key] = controller;
@@ -2966,16 +2964,16 @@ function extractThumbSrc(card){
         });
     }
 
-    renderTocSkeleton(5, 'Loading headings...');
     return tocPending[key].then(function(items){
       if (!panel) return items || [];
       var active = panel.__ggPreviewCard || null;
       if (!active) return items || [];
-      if (cardKey(active) !== cardKey(card) || cardKey(card) !== lockedCardKey) return items || [];
+      if (cardKey(active) !== cardKey(card)) return items || [];
       renderTocItems(items || []);
       return items || [];
     }).catch(function(){
-      if (cardKey(card) === lockedCardKey) {
+      var activeCard = panel ? panel.__ggPreviewCard : null;
+      if (activeCard && cardKey(activeCard) === cardKey(card)) {
         renderTocSkeleton(4, 'Unable to load headings.');
       }
       return [];
@@ -2983,17 +2981,46 @@ function extractThumbSrc(card){
   }
 
   function updateTocForCard(card, href){
+    if (tocIntentTimer) {
+      clearTimeout(tocIntentTimer);
+      tocIntentTimer = 0;
+    }
+
     if (!card || !href) {
+      tocIntentKey = '';
       abortToc('');
       renderTocSkeleton(4, TOC_HINT_LOCK);
       return;
     }
-    if (!lockedCardKey || cardKey(card) !== lockedCardKey) {
+
+    var key = tocCacheKey(href);
+    if (!key) {
+      tocIntentKey = '';
       abortToc('');
-      renderTocSkeleton(4, TOC_HINT_LOCK);
+      renderTocSkeleton(4, 'Unable to resolve article URL.');
       return;
     }
-    hydrateLockedToc(card, href);
+
+    var cached = readToc(key);
+    if (Array.isArray(cached)) {
+      tocIntentKey = '';
+      renderTocItems(cached);
+      return;
+    }
+
+    var activeKey = cardKey(card);
+    tocIntentKey = key + '|' + activeKey;
+    abortToc('');
+    renderTocSkeleton(5, 'Loading headings...');
+
+    tocIntentTimer = w.setTimeout(function(){
+      tocIntentTimer = 0;
+      if (!panel) return;
+      var activeCard = panel.__ggPreviewCard || null;
+      if (!activeCard) return;
+      if (cardKey(activeCard) !== activeKey) return;
+      hydrateToc(activeCard, href);
+    }, 200);
   }
 
 function fillChipsToSlot(slot, items, max){
@@ -3049,20 +3076,29 @@ function fillChipsToSlot(slot, items, max){
     return String(card.getAttribute('data-id') || card.getAttribute('data-url') || '').trim();
   }
 
-  function setLockState(card){
-    lockedCardKey = cardKey(card);
-    if (!panel) return;
-    var preview = qs('.gg-editorial-preview', panel);
-    if (preview) preview.setAttribute('data-gg-lock', lockedCardKey ? 'on' : 'off');
-    var lockBtn = qs('[data-gg-action="info-lock"]', panel);
-    if (!lockBtn) return;
-    lockBtn.setAttribute('aria-pressed', lockedCardKey ? 'true' : 'false');
-    lockBtn.textContent = lockedCardKey ? 'Locked' : 'Lock';
+  function normalizeReadTimeText(raw){
+    var txt = String(raw || '').replace(/\s+/g, ' ').trim();
+    if (!txt) return '';
+    var m = txt.match(/(\d+)/);
+    if (!m) return txt;
+    var mins = Math.max(1, parseInt(m[1], 10) || 1);
+    return mins + ' min read';
   }
 
-  function isLockedToOtherCard(card){
-    var key = cardKey(card);
-    return !!(lockedCardKey && key && lockedCardKey !== key);
+  function estimateReadTime(card){
+    if (!card) return '1 min read';
+    var inline = qs('[data-slot="readtime"]', card);
+    var inlineText = normalizeReadTimeText(inline ? inline.textContent : '');
+    if (inlineText) return inlineText;
+    var snippet = qs('.gg-post-card__excerpt', card);
+    var title = qs('.gg-post-card__title-link', card);
+    var text = ((title ? title.textContent : '') + ' ' + (snippet ? snippet.textContent : ''))
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) return '1 min read';
+    var words = text.split(' ').filter(Boolean).length;
+    var mins = Math.max(1, Math.round(words / WPM));
+    return mins + ' min read';
   }
 
   function canHoverPreview(){
@@ -3107,7 +3143,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setHref('.gg-info-panel__hero-cta', href);
     setText('.gg-info-panel__date', dateText);
     setText('.gg-info-panel__comments', commentsText);
-    setText('.gg-info-panel__readtime', '—');
+    setText('.gg-info-panel__readtime', estimateReadTime(card));
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
     // labels row
@@ -3137,18 +3173,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (main) {
       main.setAttribute('data-gg-info-panel', 'open');
     }
-    if (opts.lock === true) {
-      setLockState(card);
-    } else if (opts.lock === false) {
-      setLockState(null);
-    }
+    if (opts.select) selectedCardKey = cardKey(card);
     updateTocForCard(card, href);
 
     if (opts.focusPanel !== false) {
-      var closeBtn = qs('.gg-info-panel__close', panel);
-      if (closeBtn && closeBtn.focus) {
-        try { closeBtn.focus({ preventScroll: true }); } catch(_) {}
-      } else if (panel && panel.focus) {
+      if (panel && panel.focus) {
         panel.setAttribute('tabindex', '-1');
         try { panel.focus({ preventScroll: true }); } catch(_) {}
       }
@@ -3165,8 +3194,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       panel.hidden = true;
       panel.__ggPreviewCard = null;
     }
-    setLockState(null);
+    selectedCardKey = '';
     hoverCardKey = '';
+    tocIntentKey = '';
+    if (tocIntentTimer) {
+      clearTimeout(tocIntentTimer);
+      tocIntentTimer = 0;
+    }
     setBackdropVisible(false);
     abortToc('');
     renderTocSkeleton(4, TOC_HINT_LOCK);
@@ -3180,7 +3214,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
     var card = closest(evt.target, '.gg-post-card');
     if (!card) return;
-    if (isLockedToOtherCard(card)) return;
     var key = cardKey(card);
     if (!key || key === hoverCardKey) return;
     hoverCardKey = key;
@@ -3188,9 +3221,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
   }
 
   function handlePreviewFocus(evt){
+    if (!canHoverPreview()) return;
     var card = closest(evt.target, '.gg-post-card');
     if (!card) return;
-    if (isLockedToOtherCard(card)) return;
     var key = cardKey(card);
     if (!key || key === hoverCardKey) return;
     hoverCardKey = key;
@@ -3203,11 +3236,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(infoBtn, '.gg-post-card');
     if (!card) return;
     evt.preventDefault();
-    if (cardKey(card) && cardKey(card) === lockedCardKey) {
-      openWithCard(card, infoBtn, { lock: false, focusPanel: true });
-      return;
-    }
-    openWithCard(card, infoBtn, { lock: true, focusPanel: true });
+    hoverCardKey = cardKey(card);
+    openWithCard(card, infoBtn, { focusPanel: true, select: true });
   }
 
   function init(mainEl){
@@ -3234,18 +3264,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         if (closest(e.target, '[data-gg-action="info-close"]')) {
           e.preventDefault();
           handleClose();
-          return;
-        }
-        if (closest(e.target, '[data-gg-action="info-lock"]')) {
-          e.preventDefault();
-          var activeCard = panel.__ggPreviewCard || null;
-          if (!activeCard) return;
-          if (cardKey(activeCard) === lockedCardKey) {
-            setLockState(null);
-          } else {
-            setLockState(activeCard);
-          }
-          updateTocForCard(activeCard, cardHref(activeCard));
         }
       }, true);
     }
@@ -3255,8 +3273,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
           if (muts[i].attributeName === 'data-gg-info-panel') {
             if (main.getAttribute('data-gg-info-panel') === 'closed') {
               if (panel) panel.hidden = true;
-              setLockState(null);
+              selectedCardKey = '';
               hoverCardKey = '';
+              tocIntentKey = '';
+              if (tocIntentTimer) {
+                clearTimeout(tocIntentTimer);
+                tocIntentTimer = 0;
+              }
               setBackdropVisible(false);
               abortToc('');
               renderTocSkeleton(4, TOC_HINT_LOCK);

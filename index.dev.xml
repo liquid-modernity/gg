@@ -279,16 +279,16 @@ body:not([data-gg-surface="landing"]) .hero-section {
     "order": "published"
   },
   "sections": [
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":8,"kicker":"BOOKISH"},
     {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"kicker":"YOUTUBE"},
     {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"kicker":"SHORTS"},
-    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":3,"kicker":"NEWSDECK"},
     {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"kicker":"PODCAST"},
-    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":4,"kicker":"INSTAGRAM"},
-    {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-popular","type":"bookish","label":"blog","max":16,"kicker":"POPULAR"},
-    {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":8,"kicker":"INSTAGRAM"},
+    {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","labels":["news","instagram","pinterest"],"cols":3,"max":3,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-popular","type":"popular","label":"blog","max":10,"kicker":"POPULAR"},
+    {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","labels":["news","blog","bookish"],"cols":3,"max":3,"kicker":"NEWSDECK"},
     {"id":"gg-mixed-pinterestish","type":"instagram","label":"pinterest","max":8,"kicker":"PINTEREST"}
   ]
 }
@@ -333,7 +333,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))'>
+  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;))))' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     
@@ -1198,7 +1198,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
                 <b:widget-setting name='postsPerAd'>1</b:widget-setting>
-                <b:widget-setting name='numPosts'>12</b:widget-setting>
+                <b:widget-setting name='numPosts'>9</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
@@ -1217,7 +1217,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
               <b:includable id='main'>
                 <div class='gg-stack' id='postcards'>
                   <b:loop index='i' values='data:posts' var='post'>
-                    <b:if cond='data:view.isSingleItem or data:i &lt; 9'>
+                    <b:if cond='data:view.isSingleItem or data:i &lt; 8'>
                       <b:if cond='data:view.isSingleItem'>
                         <b:include data='post' name='postDetail'/>
                       <b:else/>
@@ -2345,6 +2345,10 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <!-- GAGA SIDEBAR RIGHT -->
 <aside class='gg-blog-sidebar gg-blog-sidebar--right'>
   <div class='gg-info-panel' data-gg-panel='info'/>
+  <div aria-hidden='true' class='gg-visually-hidden' data-gg-preview-contract='toc'>
+    <ol data-gg-slot='toc'></ol>
+    <p data-gg-slot='toc-hint'></p>
+  </div>
 
   <!-- GAGA COMMENTS PANEL (POST DETAIL) -->
   <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>

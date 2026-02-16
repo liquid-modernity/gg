@@ -270,8 +270,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "9af7b2a";
-    const TEMPLATE_ALLOWED_RELEASES = ["9af7b2a","cd5c135"];
+    const WORKER_VERSION = "63e162d";
+    const TEMPLATE_ALLOWED_RELEASES = ["63e162d","812ef88"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -862,6 +862,14 @@ export default {
             .on("main#gg-main", {
               element(el) {
                 el.prepend(listingH1, { html: true });
+              },
+            })
+            .on(".gg-info-panel", {
+              element(el) {
+                el.append(
+                  '<div data-gg-worker-toc-fallback="1" hidden><ol data-gg-slot="toc"></ol><p data-gg-slot="toc-hint"></p></div>',
+                  { html: true }
+                );
               },
             })
           .on("link[rel=\"canonical\"]", {

@@ -96,9 +96,9 @@ function verifyIndexContracts(indexXml) {
     failures.push(`index.prod.xml: legacy "Page X Custom" title still present`);
   }
   const ssrCap =
-    /id=['"]postcards['"][\s\S]*?data:view\.isSingleItem\s+or\s+data:i\s*&lt;\s*(9|12)/i;
+    /id=['"]postcards['"][\s\S]*?data:view\.isSingleItem\s+or\s+data:i\s*&lt;\s*(8|9|12)/i;
   if (!ssrCap.test(indexXml)) {
-    failures.push(`index.prod.xml: SSR postcards cap missing (expected data:i &lt; 9|12 in Blog1 loop)`);
+    failures.push(`index.prod.xml: SSR postcards cap missing (expected data:i &lt; 8|9|12 in Blog1 loop)`);
   }
 }
 
