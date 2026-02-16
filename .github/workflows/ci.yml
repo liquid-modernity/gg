@@ -68,6 +68,9 @@ jobs:
       - name: Verify router contract
         run: node tools/verify-router-contract.mjs
 
+      - name: Verify InfoPanel TOC contract
+        run: node tools/verify-infopanel-toc-contract.mjs
+
       - name: Verify UI guardrails
         run: node tools/verify-ui-guardrails.mjs
 

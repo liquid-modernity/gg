@@ -22,6 +22,10 @@ if ! node "${ROOT}/tools/verify-ui-guardrails.mjs"; then
   die "verify-ui-guardrails failed"
 fi
 
+if ! node "${ROOT}/tools/verify-infopanel-toc-contract.mjs"; then
+  die "verify-infopanel-toc-contract failed"
+fi
+
 read_release_id_from_capsule() {
   local file="${ROOT}/docs/ledger/GG_CAPSULE.md"
   if [[ ! -f "${file}" ]]; then
@@ -683,6 +687,8 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
       live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
       live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
+      live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc[\"']" 'data-gg-slot="toc"' 'TOC slot'
+      live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc-hint[\"']" 'data-gg-slot="toc-hint"' 'TOC hint slot'
     fi
     echo "PASS: LIVE_HTML ${label} DOM contract"
   }

@@ -61,6 +61,47 @@ function verifyPostcardsSkeletonCss(css, label) {
   }
 }
 
+function verifyMixedRatioContract(css, label) {
+  if (!/--gg-mixed-ratio\s*:\s*[^;]+;/.test(css)) {
+    failures.push(`${label}: missing --gg-mixed-ratio token`);
+  }
+  const usage = [...css.matchAll(/aspect-ratio\s*:\s*var\(--gg-mixed-ratio\)/g)];
+  if (usage.length !== 1) {
+    failures.push(
+      `${label}: mixed ratio must be applied in exactly one selector (found ${usage.length})`
+    );
+  }
+  if (/\.gg-mixed__thumb\s*\{[^}]*aspect-ratio\s*:/.test(css)) {
+    failures.push(`${label}: .gg-mixed__thumb must not hard-code aspect-ratio`);
+  }
+  if (/\.gg-newsdeck__thumb\s*\{[^}]*aspect-ratio\s*:/.test(css)) {
+    failures.push(`${label}: .gg-newsdeck__thumb must not hard-code aspect-ratio`);
+  }
+}
+
+function verifyFeaturedDensity(css, label) {
+  if (
+    !/#gg-featuredpost1\s*\[role=["']feed["']\]\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/.test(
+      css
+    )
+  ) {
+    failures.push(
+      `${label}: featured feed must use 2-column density contract (avoid full-width monster card)`
+    );
+  }
+}
+
+function verifyIndexContracts(indexXml) {
+  if (/Page\s+\d+\s+Custom/i.test(indexXml)) {
+    failures.push(`index.prod.xml: legacy "Page X Custom" title still present`);
+  }
+  const ssrCap =
+    /id=['"]postcards['"][\s\S]*?data:view\.isSingleItem\s+or\s+data:i\s*&lt;\s*(9|12)/i;
+  if (!ssrCap.test(indexXml)) {
+    failures.push(`index.prod.xml: SSR postcards cap missing (expected data:i &lt; 9|12 in Blog1 loop)`);
+  }
+}
+
 function isSidebarRootSelector(selector) {
   const normalized = String(selector || "").trim();
   if (!normalized) return false;
@@ -127,12 +168,17 @@ function verifyCssFile(relPath, label) {
   verifyDockSurfaceOverrides(css, label);
   verifyPostcardsSkeletonCss(css, label);
   verifySidebarWidthTokens(css, label);
+  verifyMixedRatioContract(css, label);
+  verifyFeaturedDensity(css, label);
 }
 
 const indexXml = readFile("index.prod.xml");
 const rel = extractReleaseId(indexXml);
 if (!rel) {
   failures.push("unable to extract release id from index.prod.xml");
+}
+if (indexXml) {
+  verifyIndexContracts(indexXml);
 }
 
 verifyCssFile("public/assets/latest/main.css", "latest main.css");

@@ -2654,8 +2654,13 @@ GG.modules.InfoPanel = (function () {
   var backdrop = null;
   var lockedCardKey = '';
   var hoverCardKey = '';
+  var TOC_CAP = 24;
+  var TOC_TTL_MS = 6e5;
+  var TOC_LRU_MAX = 24;
+  var TOC_HINT_LOCK = 'Lock this card to load headings.';
   var tocCache = Object.create(null);
   var tocPending = Object.create(null);
+  var tocAborters = Object.create(null);
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -2766,7 +2771,7 @@ GG.modules.InfoPanel = (function () {
           '</div>' +
         '</div>' +
       '</div>';
-    renderTocSkeleton(4, 'Lock this card to load headings.');
+    renderTocSkeleton(4, TOC_HINT_LOCK);
   }
 
 function extractThumbSrc(card){
@@ -2917,45 +2922,14 @@ function extractThumbSrc(card){
     }
   }
 
-  function parseHeadingItems(html, sourceUrl){
-    if (!html || !window.DOMParser) return [];
-    var doc = new DOMParser().parseFromString(html, 'text/html');
-    if (!doc) return [];
-    var root = doc.querySelector('.post-body, .post-body.entry-content, article .post-body, .entry-content, .blog-post, .post, main') || doc.body;
-    if (!root) return [];
-    var headings = root.querySelectorAll('h2, h3, h4');
-    var out = [];
-    var max = Math.min(headings.length, 24);
-    for (var i = 0; i < max; i++) {
-      var node = headings[i];
-      var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
-      if (!text) continue;
-      var level = 2;
-      var tag = String(node.tagName || '').toLowerCase();
-      if (tag === 'h3') level = 3;
-      else if (tag === 'h4') level = 4;
-      var headingId = (node.getAttribute('id') || '').trim();
-      var href = sourceUrl || '#';
-      if (headingId) {
-        href += '#' + encodeURIComponent(headingId);
-      }
-      out.push({ text: text, level: level, href: href });
-    }
-    return out;
-  }
+  function pruneToc(now){ var keys=Object.keys(tocCache),i=0,key='',rows=null,ts=0; for(;i<keys.length;i++){ key=keys[i]; rows=tocCache[key]; ts=rows&&rows._t?rows._t:0; if(!rows||!Array.isArray(rows)||(TOC_TTL_MS>0&&ts&&now-ts>TOC_TTL_MS)) delete tocCache[key]; } keys=Object.keys(tocCache); while(keys.length>TOC_LRU_MAX) delete tocCache[keys.shift()]; }
+  function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.isArray(rows)) return null; if(TOC_TTL_MS>0&&rows._t&&now-rows._t>TOC_TTL_MS){ delete tocCache[key]; return null; } rows._t=now; delete tocCache[key]; tocCache[key]=rows; return rows; }
+  function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[]; out._t=Date.now(); tocCache[key]=out; pruneToc(out._t); }
+  function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
-  function fetchPostHtml(url){
-    var abs = toAbsUrl(url);
-    if (!abs) return Promise.reject(new Error('invalid-url'));
-    if (GG.services && GG.services.api && typeof GG.services.api.getHtml === 'function') {
-      return GG.services.api.getHtml(abs);
-    }
-    if (!window.fetch) return Promise.reject(new Error('fetch-unavailable'));
-    return window.fetch(abs, { method: 'GET', cache: 'no-store', credentials: 'same-origin' }).then(function(res){
-      if (!res || !res.ok) throw new Error('fetch-failed');
-      return res.text();
-    });
-  }
+  function parseHeadingItems(html,sourceUrl){ if(!html||!window.DOMParser) return []; var doc=new DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'); if(!root) return []; var headings=root.querySelectorAll('h2, h3, h4'),out=[],max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
+
+  function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
 
   function hydrateLockedToc(card, href){
     if (!card) return Promise.resolve([]);
@@ -2966,20 +2940,29 @@ function extractThumbSrc(card){
       return Promise.resolve([]);
     }
 
-    if (Array.isArray(tocCache[key])) {
-      renderTocItems(tocCache[key]);
-      return Promise.resolve(tocCache[key]);
+    var cached = readToc(key);
+    if (Array.isArray(cached)) {
+      renderTocItems(cached);
+      return Promise.resolve(cached);
     }
 
+    abortToc(key);
     if (!tocPending[key]) {
-      tocPending[key] = fetchPostHtml(abs)
+      var controller = window.AbortController ? new window.AbortController() : null;
+      tocAborters[key] = controller;
+      tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null)
         .then(function(html){
           var items = parseHeadingItems(html, abs);
-          tocCache[key] = items;
+          writeToc(key, items);
           return items;
+        })
+        .catch(function(err){
+          if (controller && controller.signal && controller.signal.aborted) return [];
+          throw err;
         })
         .finally(function(){
           delete tocPending[key];
+          delete tocAborters[key];
         });
     }
 
@@ -3001,11 +2984,13 @@ function extractThumbSrc(card){
 
   function updateTocForCard(card, href){
     if (!card || !href) {
-      renderTocSkeleton(4, 'Lock this card to load headings.');
+      abortToc('');
+      renderTocSkeleton(4, TOC_HINT_LOCK);
       return;
     }
     if (!lockedCardKey || cardKey(card) !== lockedCardKey) {
-      renderTocSkeleton(4, 'Lock this card to load headings.');
+      abortToc('');
+      renderTocSkeleton(4, TOC_HINT_LOCK);
       return;
     }
     hydrateLockedToc(card, href);
@@ -3183,7 +3168,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setLockState(null);
     hoverCardKey = '';
     setBackdropVisible(false);
-    renderTocSkeleton(4, 'Lock this card to load headings.');
+    abortToc('');
+    renderTocSkeleton(4, TOC_HINT_LOCK);
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
       try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
     }
@@ -3272,7 +3258,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
               setLockState(null);
               hoverCardKey = '';
               setBackdropVisible(false);
-              renderTocSkeleton(4, 'Lock this card to load headings.');
+              abortToc('');
+              renderTocSkeleton(4, TOC_HINT_LOCK);
               if (lastTrigger && typeof lastTrigger.focus === 'function') {
                 try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
               }

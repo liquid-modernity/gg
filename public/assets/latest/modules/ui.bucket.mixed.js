@@ -291,30 +291,24 @@
 
   function skeletonCountFor(section) {
     var type = inferType(section && section.type);
-    var kind = normalizeLabel(section && section.kind);
-    var label = normalizeLabel(section && section.label);
-    var kicker = normalizeLabel(section && section.kicker);
-    var id = normalizeLabel(section && section.id);
-
-    if (kind === 'popular' || label === 'blog' || kicker === 'popular' || id.indexOf('popular') !== -1) {
-      return 16;
+    var max = parseInt(section && section.max, 10);
+    if (isFinite(max) && max > 0) {
+      if (max > 24) return 24;
+      return max;
     }
-    if (type === 'youtube') return 3;
-    if (type === 'shorts') return 5;
     if (type === 'newsdeck') return 6;
+    if (type === 'shorts') return 5;
     if (type === 'podcast') return 4;
-    if (type === 'instagram') return 4;
-    return 4;
+    return 8;
   }
 
   function skeletonCardHtml(section) {
-    var kicker = section.kicker || titleCaseLabel(section.label || section.type).toUpperCase();
     return (
       '<article class="gg-mixed__card gg-mixed__card--placeholder" aria-hidden="true">' +
         '<span class="gg-mixed__thumb"></span>' +
         '<span class="gg-mixed__body">' +
-          '<span class="gg-mixed__kicker">' + esc(kicker) + '</span>' +
-          '<span class="gg-mixed__headline">Curated stories are loading.</span>' +
+          '<span class="gg-mixed__kicker"></span>' +
+          '<span class="gg-mixed__headline"></span>' +
         '</span>' +
       '</article>'
     );
@@ -322,13 +316,12 @@
 
   function newsDeckSkeletonHtml(section, count) {
     var cols = [[], [], []];
-    var kicker = section.kicker || titleCaseLabel(section.label || 'news').toUpperCase();
     for (var i = 0; i < count; i++) {
       cols[i % cols.length].push(
         '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
           '<span class="gg-newsdeck__body">' +
-            '<span class="gg-newsdeck__kicker">' + esc(kicker) + '</span>' +
-            '<span class="gg-newsdeck__title">Curated stories are loading.</span>' +
+            '<span class="gg-newsdeck__kicker"></span>' +
+            '<span class="gg-newsdeck__title"></span>' +
           '</span>' +
           '<span class="gg-newsdeck__thumb"></span>' +
         '</article>'
