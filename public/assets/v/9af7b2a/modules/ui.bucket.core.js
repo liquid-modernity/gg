@@ -2929,7 +2929,7 @@ function extractThumbSrc(card){
 
   function parseHeadingItems(html,sourceUrl){ if(!html||!window.DOMParser) return []; var doc=new DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'); if(!root) return []; var headings=root.querySelectorAll('h2, h3, h4'),out=[],max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
 
-  function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('invalid-url')); if(!window.fetch) return Promise.reject(new Error('fetch-unavailable')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('fetch-failed'); return res.text(); }); }
+  function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
 
   function hydrateLockedToc(card, href){
     if (!card) return Promise.resolve([]);

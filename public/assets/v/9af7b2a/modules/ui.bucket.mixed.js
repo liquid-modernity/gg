@@ -203,7 +203,7 @@
           id: id,
           type: inferType(s.type),
           label: String(s.label || '').trim(),
-          max: clampInt(s.max, 8, 1, 40),
+          max: clampInt(s.max, 8, 1, 16),
           order: String(s.order || cfg.fetch.order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
           kicker: String(s.kicker || '').trim(),
           title: String(s.title || '').trim(),
@@ -232,7 +232,7 @@
       type: type,
       kind: normalizeLabel(kindRaw || type),
       label: String(label || '').trim(),
-      max: clampInt(maxRaw, 8, 1, 40),
+      max: clampInt(maxRaw, 8, 1, 16),
       order: String(order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
       kicker: (fromJson && fromJson.kicker) ? String(fromJson.kicker).trim() : '',
       title: (fromJson && fromJson.title) ? String(fromJson.title).trim() : '',
@@ -253,6 +253,7 @@
   function applySectionUi(slot, section) {
     slot.setAttribute('data-type', section.type);
     slot.setAttribute('data-label', section.label);
+    slot.setAttribute('data-gg-max', String(section.max));
     slot.setAttribute('data-max', String(section.max));
     slot.setAttribute('data-order', section.order);
 
@@ -290,16 +291,9 @@
   }
 
   function skeletonCountFor(section) {
-    var type = inferType(section && section.type);
-    var max = parseInt(section && section.max, 10);
-    if (isFinite(max) && max > 0) {
-      if (max > 24) return 24;
-      return max;
-    }
-    if (type === 'newsdeck') return 6;
-    if (type === 'shorts') return 5;
-    if (type === 'podcast') return 4;
-    return 8;
+    var count = clampInt(section && section.max, 8, 1, 16);
+    if (inferType(section && section.type) === 'newsdeck') return count;
+    return count;
   }
 
   function skeletonCardHtml(section) {
