@@ -851,7 +851,7 @@
     if(!u) return;
     try{
       var x=new URL(u,w.location.href),h=x.origin===w.location.origin?(x.pathname+x.search+x.hash):x.toString();
-      if(x.origin===w.location.origin&&G.core&&G.core.router&&typeof G.core.router.navigate==='function') G.core.router.navigate(h);
+      if(x.origin===w.location.origin&&x.pathname.indexOf('/search')!==0&&G.core&&G.core.router&&typeof G.core.router.navigate==='function') G.core.router.navigate(h);
       else w.location.assign(h);
     }catch(_){ w.location.assign(u); }
   };
