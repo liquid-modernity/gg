@@ -578,28 +578,31 @@ export default {
         const cspReportEnabled = flags.csp_report_enabled !== false;
         const expectedEnv = "prod";
         const expectedRelease = WORKER_VERSION;
+        const shouldEvaluateTemplate = request.method !== "HEAD";
         let templateMismatch = false;
         let templateMismatchReason = "";
         let templateContract = false;
         let templateContractReason = "";
-        try {
-          const html = await originRes.clone().text();
-          const fp = parseTemplateFingerprint(html);
-          const mismatchReasons = getTemplateMismatchReasons(
-            fp,
-            expectedEnv,
-            expectedRelease
-          );
-          const contractReasons = getTemplateContractReasons(html);
-          templateMismatch = mismatchReasons.length > 0;
-          templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
-          templateContract = contractReasons.length > 0;
-          templateContractReason = contractReasons.length ? contractReasons.join(",") : "";
-        } catch (e) {
-          templateMismatch = true;
-          templateMismatchReason = "unknown";
-          templateContract = true;
-          templateContractReason = "unknown";
+        if (shouldEvaluateTemplate) {
+          try {
+            const html = await originRes.clone().text();
+            const fp = parseTemplateFingerprint(html);
+            const mismatchReasons = getTemplateMismatchReasons(
+              fp,
+              expectedEnv,
+              expectedRelease
+            );
+            const contractReasons = getTemplateContractReasons(html);
+            templateMismatch = mismatchReasons.length > 0;
+            templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
+            templateContract = contractReasons.length > 0;
+            templateContractReason = contractReasons.length ? contractReasons.join(",") : "";
+          } catch (e) {
+            templateMismatch = true;
+            templateMismatchReason = "unknown";
+            templateContract = true;
+            templateContractReason = "unknown";
+          }
         }
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
