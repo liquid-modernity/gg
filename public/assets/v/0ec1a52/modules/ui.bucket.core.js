@@ -49,7 +49,6 @@
     if (path === '/' && view === 'blog') return true;
     return false;
   };
-  // Normalize blog home alias once worker state is known.
   GG.core.normalizeBlogAlias = GG.core.normalizeBlogAlias || function(){
     try {
       var loc = w.location;
@@ -545,7 +544,6 @@
   }
   window.GG_BUILD = "dev";
   if (window.GG_DEBUG) console.log("[GG_BUILD]", window.GG_BUILD);
-  // Minimal GG.store (get/set/subscribe) if missing
   if(!GG.store || !GG.store.get){
     (function(){
       var state = {};
@@ -601,16 +599,12 @@ GG.ui.applyRootState = GG.ui.applyRootState || function(root, s){
 };
 GG.view = GG.view || {};
 GG.view.applyRootState = GG.ui.applyRootState;
-
-// Keep <html> dataset/class in sync with GG.store
 (function(){
   function run(){
     try{
       var root = document.documentElement;
       if(!root || !window.GG || !GG.store || !GG.store.get || !GG.store.subscribe || !GG.ui || !GG.ui.applyRootState) return;
-      // initial
       GG.ui.applyRootState(root, GG.store.get());
-      // on updates
       GG.store.subscribe(function(s){
         try{ GG.ui.applyRootState(root, s); }catch(e){}
       });
@@ -923,7 +917,6 @@ GG.actions.register('comments-help-close', function(){
 GG.actions.register('like', function(){
   GG.ui.ggToast('Coming soon');
 });
-// X-018A ACTION BRIDGE
 GG.actions.register('bookmark', function(ctx){
   var event = ctx && ctx.event;
   var element = ctx && ctx.element;
@@ -1080,7 +1073,6 @@ GG.actions.register('jump', function(ctx){
     var moved = false;
     function qs(sel, root){ return (root || document).querySelector(sel); }
     function findBloggerCommentsRoot(){
-      // Try common Blogger comment containers (keep order)
       return qs('.gg-post__comments') ||
              qs('#comments') ||
              qs('#comment-holder') ||
@@ -1144,7 +1136,6 @@ GG.actions.register('jump', function(ctx){
           return;
         }
         if (tries >= max) {
-          // Give up gracefully but keep panel usable
           var s = ensureSlot();
           if (s){
             s.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Comments are not available right now.</div>";
@@ -1376,9 +1367,6 @@ GG.actions.register('jump', function(ctx){
 })();
 
 
-// [END LABELTREE MODULE]
-
-
 
 
 window.GG = window.GG || {};
@@ -1594,6 +1582,10 @@ GG.modules.Dock = (function () {
   var searchInput = null;
   var sizeRaf = null;
   var homeObs = null;
+  var autoHideRaf = 0;
+  var lastScrollY = 0;
+  var dockHidden = false;
+  var autoHideBound = false;
 
   function scrollToAnchor(sel) {
     if (!sel) return;
@@ -1618,6 +1610,7 @@ GG.modules.Dock = (function () {
     if (isSearchMode) return;
     isSearchMode = true;
     GG.core.state.add(dockEl, 'search');
+    revealDock();
     if (searchInput){
       try { searchInput.focus(); } catch(e){}
     }
@@ -1628,6 +1621,7 @@ GG.modules.Dock = (function () {
     if (!isSearchMode) return;
     isSearchMode = false;
     GG.core.state.remove(dockEl, 'search');
+    revealDock();
     scheduleWidthUpdate();
   }
 
@@ -1640,8 +1634,6 @@ GG.modules.Dock = (function () {
   function isHomeCapable(){
     return !!(mainEl && GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
   }
-
-  // Untuk dock: semua NON-home dianggap "blog mode"
   function effectiveDockState() {
     if (isHomeCapable()) return currentHomeState();
     return 'blog';
@@ -1667,6 +1659,44 @@ GG.modules.Dock = (function () {
     sizeRaf = requestAnimationFrame(updateDockWidth);
   }
 
+  function setDockHidden(hidden){
+    if (!dockEl) return;
+    var next = !!hidden && !isSearchMode;
+    if (next === dockHidden) return;
+    dockHidden = next;
+    GG.core.state.toggle(dockEl, 'autohide-hidden', next);
+  }
+
+  function revealDock(){
+    setDockHidden(false);
+  }
+
+  function runAutoHide(){
+    autoHideRaf = 0;
+    if (!dockEl) return;
+    if (dockEl.contains(document.activeElement)) {
+      setDockHidden(false);
+      return;
+    }
+    var y = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+    var delta = y - lastScrollY;
+    var absDelta = Math.abs(delta);
+    lastScrollY = y;
+    if (isSearchMode || y < 72 || absDelta < 6) {
+      setDockHidden(false);
+      return;
+    }
+    if (delta > 0) setDockHidden(true);
+    else setDockHidden(false);
+  }
+
+  function handleScrollAutoHide(){
+    if (autoHideRaf) return;
+    autoHideRaf = requestAnimationFrame(runAutoHide);
+  }
+
+  function handleGlobalPointer(){ revealDock(); }
+
   function updateActive() {
     var state = effectiveDockState();
 
@@ -1690,8 +1720,6 @@ GG.modules.Dock = (function () {
     var action = btn.getAttribute('data-gg-action');
     var anchor = btn.getAttribute('data-gg-anchor');
     if (window.GG_DEBUG) console.log('[dock]', action, anchor || '');
-
-    // HOME &#8594; landing hero
     if (action === 'home-landing') {
       if (isHomeCapable()  && GG.modules.homeState) {
         GG.modules.homeState.setState('landing');
@@ -1707,8 +1735,6 @@ GG.modules.Dock = (function () {
       }
       return;
     }
-
-    // BLOG &#8594; blog sheet
     if (action === 'home-blog') {
       evt.preventDefault();
       var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
@@ -1719,8 +1745,6 @@ GG.modules.Dock = (function () {
       }
       return;
     }
-
-    // SEARCH &#8594; pakai search bawaan Blogger
     if (action === 'search') {
       evt.preventDefault();
       if (!isSearchMode){
@@ -1734,8 +1758,6 @@ GG.modules.Dock = (function () {
       exitSearch();
       return;
     }
-
-    // CONTACT: selalu tampil; di landing -> pindah ke landing lalu scroll; di luar home -> balik ke homepage + anchor
     if (action === 'contact') {
       if (isHomeCapable()  && GG.modules.homeState) {
         GG.modules.homeState.setState('landing');
@@ -1749,8 +1771,6 @@ GG.modules.Dock = (function () {
       }
       return;
     }
-
-    // fallback: cuma scroll ke anchor
     if (anchor) {
       scrollToAnchor(anchor);
     }
@@ -1784,6 +1804,19 @@ GG.modules.Dock = (function () {
 
     updateActive();
     updateDockWidth();
+    lastScrollY = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0);
+    revealDock();
+    if (dockEl && !dockEl.__ggDockAutoHideBound){
+      dockEl.__ggDockAutoHideBound = true;
+      dockEl.addEventListener('pointerenter', revealDock, true);
+      dockEl.addEventListener('pointerdown', revealDock, true);
+      dockEl.addEventListener('focusin', revealDock, true);
+    }
+    if (!autoHideBound){
+      autoHideBound = true;
+      window.addEventListener('scroll', handleScrollAutoHide, { passive: true });
+      document.addEventListener('pointerdown', handleGlobalPointer, true);
+    }
     window.addEventListener('resize', scheduleWidthUpdate);
     window.addEventListener('popstate', updateActive, true);
     if (mainEl && window.MutationObserver){
@@ -1975,8 +2008,6 @@ function init(){
   var main = qs('main.gg-main[data-gg-surface]');
   var bar  = qs('[data-gg-module="post-toolbar"]', article);
   if(!main || !bar) return;
-
-  // bind once (kalau init kepanggil 2x, toggle jadi “batal” dan terasa nggak bisa nutup)
   if(bar.__ggBound) return;
   bar.__ggBound = true;
 
@@ -1984,16 +2015,12 @@ function init(){
   var rightSidebar   = qs('.gg-blog-sidebar--right', main);
   var commentsPanel  = rightSidebar ? qs('[data-gg-panel="comments"]', rightSidebar) : null;
   var infoPanelRight = rightSidebar ? qs('[data-gg-panel="info"]', rightSidebar) : null;
-
-  // move comments into right sidebar panel (once)
   var comments     = qs('.gg-post__comments', article);
   var commentsSlot = rightSidebar ? qs('[data-gg-panel="comments"] [data-gg-slot="comments"]', rightSidebar) : null;
   if(comments && commentsSlot && !comments.__ggMoved){
     commentsSlot.appendChild(comments);
     comments.__ggMoved = true;
   }
-
-  // -------- toolbar helpers --------
   function btnByAct(act){
     return bar.querySelector('[data-gg-postbar="'+act+'"]');
   }
@@ -2030,8 +2057,6 @@ function init(){
     GG.core.state.toggle(b, 'active', !!on);           // filled via CSS [data-gg-state~="active"]
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
-
-  // -------- SINGLE SOURCE OF TRUTH (attributes) --------
   function leftState(){ return main.getAttribute('data-gg-left-panel') || 'closed'; }
   function rightState(){
     return main.getAttribute('data-gg-right-panel') || main.getAttribute('data-gg-info-panel') || 'closed';
@@ -2095,12 +2120,9 @@ function init(){
   function clearCommentsHashIfAny(){
     var h = location.hash || '';
     if(h === '#comments' || /^#c\d+/.test(h)){
-      // hilangkan hash tanpa bikin scroll jump
       history.replaceState(null, document.title, location.pathname + location.search);
     }
   }
-
-  // -------- left panel (info) --------
   function setLeft(open, triggerBtn){
     setLeftState(open ? 'open' : 'closed');
     applyFromAttrs();
@@ -2108,8 +2130,6 @@ function init(){
       try { triggerBtn.focus({ preventScroll: true }); } catch(_) {}
     }
   }
-
-  // -------- right panel (comments) --------
   function showRightPanel(mode){
     var useMode = mode || 'comments';
     setRightMode(useMode);
@@ -2137,8 +2157,6 @@ function init(){
     if(isCommentsOpen()) hideRightPanel(triggerBtn);
     else showRightPanel('comments');
   }
-
-  // -------- focus mode (native restore) --------
   var prevLeft, prevRight, prevMode;
   function rememberPanels(){
     prevLeft = leftState();
@@ -2170,10 +2188,7 @@ function init(){
       restorePanels();
     }
   }
-
-  // -------- initial deep link: open comments if hash points to comments/comment id --------
   (function(){
-    // default close
     hideRightPanel();
     setLeft(leftState() === 'open');
     ensurePosterButton();
@@ -2183,8 +2198,6 @@ function init(){
       showRightPanel('comments');
     }
   })();
-
-  // -------- events (capture + stopImmediatePropagation => ngalahin handler lain yang mungkin masih nyangkut) --------
   bar.addEventListener('click', function(e){
     var btn = e.target.closest('[data-gg-postbar]');
     if(!btn) return;
@@ -2351,8 +2364,6 @@ return { init: init };
       var h = qs('.gg-footer__heading', sec);
       var ul = qs('.gg-footer__list', sec);
       if (!h || !ul) return;
-
-      // Wrap heading text into a button (keeps existing H3 styling)
       var txt = (h.textContent || '').trim();
       h.textContent = '';
       var btn = document.createElement('button');
@@ -2362,8 +2373,6 @@ return { init: init };
       btn.textContent = txt;
 
       h.appendChild(btn);
-
-      // mark
       sec.__ggAcc = true;
     }
 
@@ -2385,14 +2394,10 @@ return { init: init };
         secs.forEach(function(sec){
           enhanceSection(sec);
         });
-
-        // Desktop: force open all, remove inert/hidden
         if (!enabled){
           secs.forEach(function(sec){ setSectionOpen(sec, true); });
           return;
         }
-
-        // Mobile: default collapse all, open first only
         secs.forEach(function(sec, i){ setSectionOpen(sec, i === 0); });
       });
     }
@@ -2400,7 +2405,6 @@ return { init: init };
     function onClick(e){
       var btn = closest(e.target, '.gg-footer__acc-btn');
       if (!btn) return;
-      // Only active in mobile mode
       if (!(mq && mq.matches)) return;
 
       var sec = closest(btn, '.gg-footer__grid > div');
@@ -2784,8 +2788,6 @@ function extractThumbSrc(card){
       ''
     ).trim();
   }
-
-  // fallback: background-image on wrapper
   var thumb = qs('.gg-post-card__thumb', card);
   if (thumb) {
     var bg = (thumb.style.backgroundImage || getComputedStyle(thumb).backgroundImage || '');
@@ -2867,7 +2869,7 @@ function extractThumbSrc(card){
 
     var rows = Array.isArray(items) ? items : [];
     if (!rows.length) {
-      setTocHint('No headings found in this post.');
+      setTocHint('This article flows as one story. Open it to explore the full read.');
       return;
     }
 
@@ -2973,7 +2975,7 @@ function extractThumbSrc(card){
     }).catch(function(){
       var activeCard = panel ? panel.__ggPreviewCard : null;
       if (activeCard && cardKey(activeCard) === cardKey(card)) {
-        renderTocSkeleton(6, 'Unable to load headings.');
+        renderTocSkeleton(6, 'Headings are taking longer than usual. You can open the article directly.');
       }
       return [];
     });
@@ -3028,8 +3030,6 @@ function fillChipsToSlot(slot, items, max){
     var a = document.createElement('a');
     a.className = 'gg-chip';
     a.href = x.href || '#';
-
-    // folder icon INSIDE chip for labels
     if (slot === 'labels') {
       var ic = document.createElement('span');
       ic.className = 'gg-icon gg-chip__icon';
@@ -3048,13 +3048,10 @@ function fillChipsToSlot(slot, items, max){
 }
 
   function extractLabels(card){
-    // prefer hidden anchors rel=tag (kalau kamu sudah tanam di card)
     var tags = qsa('a[rel="tag"]', card).map(function (a) {
       return { text: (a.textContent||'').trim(), href: a.getAttribute('href') || '#' };
     }).filter(function (x) { return x.text; });
     if (tags.length) return tags;
-
-    // fallback: label span
     var lab = qs('.gg-post-card__label', card);
     var t = lab ? (lab.textContent||'').trim() : '';
     return t ? [{ text: t, href: '#' }] : [];
@@ -3141,16 +3138,12 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setText('.gg-info-panel__readtime', estimateReadTime(card));
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
-    // labels row
     if(labels && labels.length){
       fillChipsToSlot('labels', labels, 10);
       setRowVisible('.gg-info-panel__row--labels', true);
     }else{
       setRowVisible('.gg-info-panel__row--labels', false);
     }
-
-
-    // snippet: quick from card (if any)
     var excerptEl = qs('.gg-post-card__excerpt', card);
     var quickSnippet = (excerptEl ? (excerptEl.textContent || '') : '').replace(/\s+/g,' ').trim();
     if(quickSnippet){
@@ -3282,8 +3275,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
   return { init: init };
 })();
-
-// /GAGA PANEL KANAN
 
   GG.modules.LeftNav = (function () {
     var CUSTOM_WIDGET_IDS=[];for(var i=17;i<=26;i++)CUSTOM_WIDGET_IDS.push('HTML'+i);
@@ -4429,30 +4420,18 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
   var GG = window.GG = window.GG || {};
   GG.modules = GG.modules || {};
   var Lite = GG.modules.shortcodesLite = GG.modules.shortcodesLite || {};
-
-  // match: [youtube]...[/youtube]
   const SHORT_RE = /\[youtube\]([\s\S]*?)\[\/youtube\]/gi;
 
   function extractYouTubeId(input){
     if(!input) return null;
     const s = String(input).trim();
-
-    // Jika user cuma kasih ID 11 char
     if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
-
-    // youtu.be/ID
     let m = s.match(/youtu\.be\/([A-Za-z0-9_-]{11})/i);
     if (m) return m[1];
-
-    // youtube.com/watch?v=ID
     m = s.match(/[?&]v=([A-Za-z0-9_-]{11})/i);
     if (m) return m[1];
-
-    // youtube.com/embed/ID
     m = s.match(/\/embed\/([A-Za-z0-9_-]{11})/i);
     if (m) return m[1];
-
-    // shorts
     m = s.match(/\/shorts\/([A-Za-z0-9_-]{11})/i);
     if (m) return m[1];
 
@@ -4467,7 +4446,6 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
       el.innerHTML = el.innerHTML.replace(SHORT_RE, (_, raw) => {
         const id = extractYouTubeId(raw);
         if (!id) {
-          // kalau URL invalid, jangan diapa-apain biar kamu sadar ada typo
           return `[youtube]${raw}[/youtube]`;
         }
         return `
@@ -4575,14 +4553,10 @@ GG.app.rehydrate = GG.app.rehydrate || function(context){
 
 (function(){
   'use strict';
-
-  // ====== KONFIG ======
   var HOME_ANCHOR = '#gg-home-blog-anchor'; // target "mentok" utama
   var HOME_FALLBACK = '#gg-landing-hero';   // fallback kalau anchor utama gak ada
   var HOME_LANDING_PATH = '/';
   var HOME_BLOG_PATH = '/blog';
-
-  // ====== UTIL ======
   function homeRoot(){
     var raw = (window.homeUrl || '/');
     var path = '/';
@@ -4613,15 +4587,12 @@ function isSystemPath(pathname){
     pathname === '/favicon.ico' ||
     pathname.startsWith('/feeds/')
   ) return true;
-
-  // safety net
   if (pathname.endsWith('.xml') || pathname.endsWith('.txt') || pathname.endsWith('.ico')) return true;
   return false;
 }
 
 
   function pageGroup(){
-    // Blogger body class yang umum: item, static_page, index, archive, label, search
     var b = document.body;
     if(!b) return 'listing';
     if (b.classList.contains('item') || b.classList.contains('static_page')) return 'content';
@@ -4631,13 +4602,6 @@ function isSystemPath(pathname){
   function currentMobileMode(){
     try { return new URLSearchParams(location.search).get('m'); } catch(e){ return null; }
   }
-
-  // Buat "key" stack yang stabil:
-  // - buang m=1 dari identitas (biar gak pecah)
-  // - keep query penting untuk search filtering: q, updated-min/max
-  // - keep hash cuma untuk home anchor yang kita peduli
-// abaikan pagination params biar gak pecah jadi banyak halaman listing
-// (jangan di-keep)
 
   function canonicalKey(urlStr){
     var u = new URL(urlStr, location.origin);
@@ -4686,20 +4650,13 @@ function isSystemPath(pathname){
     if(path === landingPath){
       return landingPath + u.search;
     }
-
-    // hash: hanya simpan 2 state home; lainnya dibuang
     if(u.hash !== HOME_ANCHOR && u.hash !== HOME_FALLBACK) u.hash = '';
-
-    // return sebagai path+query+hash biar ringkas
     return path + u.search + u.hash;
   }
-
-  // Saat navigasi, kalau user sedang di m=1, paksa tujuan juga m=1
   function applyMobile(dest){
     var m = currentMobileMode();
     if(m !== '1') return dest;
     var u = new URL(dest, location.origin);
-    // jangan inject m ke path sistem (seharusnya gak kejadian)
     if(isSystemPath(u.pathname)) return dest;
     u.searchParams.set('m','1');
     return u.pathname + '?' + u.searchParams.toString() + (u.hash || '');
@@ -4725,7 +4682,6 @@ function isSystemPath(pathname){
     var ref = document.referrer;
     if(!ref) return;
     try{
-      // hanya simpan referrer luar domain
       if(new URL(ref).origin !== location.origin){
         sessionStorage.setItem('gg_entry_ref', ref);
       }
@@ -4733,25 +4689,18 @@ function isSystemPath(pathname){
   }
 
   function homeLanding(){
-    // prioritas route /blog sebagai mentok listing utama
     var blogPath = homeBlogPath();
     if(blogPath) return blogPath;
     var base = homeRoot();
     return base + HOME_FALLBACK;
   }
-
-  // ====== TRACKING (jalan tiap page load) ======
   function track(){
     setEntryRefOnce();
 
     var group = pageGroup();
-
-    // set first_group sekali per tab-session
     if(!sessionStorage.getItem('gg_first_group')){
       sessionStorage.setItem('gg_first_group', group);
     }
-
-    // update last_listing:
     if (group === 'listing') {
       sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
     } else {
@@ -4759,15 +4708,10 @@ function isSystemPath(pathname){
         sessionStorage.setItem('gg_last_listing', canonicalKey(homeLanding()));
       }
     }
-
-
-    // kalau ini navigasi yang dipicu tombol back kita, jangan push ulang
     if(sessionStorage.getItem('gg_nav_action') === 'back'){
       sessionStorage.removeItem('gg_nav_action');
       return;
     }
-
-    // kalau user browser back/forward, jangan push
     if(navType() === 'back_forward') return;
 
     var cur = canonicalKey(location.href);
@@ -4779,8 +4723,6 @@ function isSystemPath(pathname){
       writeStack(st);
     }
   }
-
-  // hashchange untuk home (biar hero/anchor update last_listing tanpa reload)
   function bindHashChange(){
     if(pageGroup() !== 'listing') return;
     window.addEventListener('hashchange', function(){
@@ -4790,18 +4732,12 @@ function isSystemPath(pathname){
       }
     });
   }
-
-  // ====== BACK POLICY ======
   function goBack(){
     var cur = canonicalKey(location.href);
     var st = readStack();
-
-    // sync kalau stack kosong/beda
     if(cur && (st.length === 0 || st[st.length-1] !== cur)){
       st.push(cur);
     }
-
-    // 1) kalau ada history internal → mundur 1 langkah internal
     if(st.length > 1){
       st.pop();
       var dest = st[st.length-1];
@@ -4810,34 +4746,24 @@ function isSystemPath(pathname){
       location.href = applyMobile(dest);
       return;
     }
-
-    // 2) tidak ada history internal → jatuh ke last listing (mentok di anchor)
     var lastListing = sessionStorage.getItem('gg_last_listing') || homeBlogPath();
     var group = pageGroup();
 
     if(group === 'content'){
-      // content -> listing
       writeStack([lastListing]);
       sessionStorage.setItem('gg_nav_action','back');
       location.href = applyMobile(lastListing);
       return;
     }
-
-    // 3) sudah listing:
-    //    kalau sesi dimulai dari listing, boleh balik ke asal visitor (referrer luar domain)
-    //    kalau sesi dimulai dari content, mentok di homeLanding
     var first = sessionStorage.getItem('gg_first_group'); // 'listing' / 'content'
     var entry = sessionStorage.getItem('gg_entry_ref');
 
     if(first === 'listing' && entry){
-      // keluar sekali saja
       sessionStorage.removeItem('gg_entry_ref');
       sessionStorage.removeItem('gg_stack');
       location.href = entry;
       return;
     }
-
-    // mentok
     var homeKey = canonicalKey(homeLanding());
     if(cur !== homeKey){
       writeStack([homeKey]);
@@ -4845,11 +4771,7 @@ function isSystemPath(pathname){
       location.href = applyMobile(homeKey);
       return;
     }
-
-    // sudah mentok: do nothing
   }
-
-  // expose
   window.GGBack = { go: goBack };
 
   function init(){
@@ -5027,8 +4949,6 @@ function isSystemPath(pathname){
       updateBackdrop();
       if (opts.restoreFocus) restoreFocus();
     }
-
-// GAGA TOGGLE SIDEBAR
     function injectLeftHeader(){
       if (!left) return;
       if (qs('.gg-left-panel__head', left)) return;
@@ -5044,7 +4964,6 @@ function isSystemPath(pathname){
       var wrap = qs('.gg-blog-sidebar__section', left) || left;
       wrap.insertBefore(head, wrap.firstChild);
     }
-// /GAGA TOGGLE SIDEBAR
 
     function injectLeftFab(){
       if (qs('.gg-left-fab')) return;
@@ -5060,7 +4979,6 @@ function isSystemPath(pathname){
       if (!left) return;
       var roots = qsa('.LinkList ul, .PageList ul, .Label ul, .widget ul', left)
         .filter(function (ul) {
-          // Hindari custom Label Tree (gg-lt) supaya markup-nya tidak diubah
           return !ul.closest('.gg-lt');
         });
 
@@ -5199,8 +5117,6 @@ function isSystemPath(pathname){
   GG.data.tagFeedCache = GG.data.tagFeedCache || {};
 
   var TagUtils = GG.modules.tagUtils = GG.modules.tagUtils || {};
-
-  // GAGA TAG UTILS
   function getBasePath() {
     if (TagUtils._basePath) return TagUtils._basePath;
     var base = '';
@@ -5302,8 +5218,6 @@ function isSystemPath(pathname){
   }
   GG.util.initInteractiveModules = initInteractive;
 })(window.GG, document);
-
-// SUPER LIBRARY – Add to Library (bookmark) + Library page
 (function (GG, w, d) {
   'use strict';
   GG.modules = GG.modules || {};
@@ -5510,8 +5424,6 @@ function isSystemPath(pathname){
       showToast(msg.saved, { icon: '#gg-ic-bookmark-added-line' });
     }
   }
-
-  // X-018A ACTION BRIDGE
   Library.toggleFromAction = function(btn){
     toggleBookmark(btn);
   };
@@ -5647,8 +5559,6 @@ function isSystemPath(pathname){
     var currentSpan = root.querySelector('[data-gg-lang-current]');
 
     if (!toggleBtn || !menu || !options.length) return;
-
-    // 1) Tentukan bahasa awal
     var savedLang   = null;
     try {
       savedLang = window.localStorage ? localStorage.getItem(STORAGE_KEY) : null;
@@ -5659,8 +5569,6 @@ function isSystemPath(pathname){
 
     GG.config.lang = initialLang;
     updateUI(initialLang);
-
-    // 2) Event: buka/tutup dropdown
     toggleBtn.addEventListener('click', function () {
       var expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
       if (expanded) {
@@ -5669,8 +5577,6 @@ function isSystemPath(pathname){
         openMenu();
       }
     });
-
-    // 3) Event: pilih bahasa
     options.forEach(function (opt) {
       opt.addEventListener('click', function () {
         var code = opt.getAttribute('data-lang-code');
@@ -5686,21 +5592,13 @@ function isSystemPath(pathname){
 
         updateUI(code);
         closeMenu();
-
-        // OPSIONAL: reload penuh supaya semua teks yang
-        // dirender server/templating ikut bahasa baru
-        // location.reload();
       });
     });
-
-    // 4) Tutup kalau klik di luar
     doc.addEventListener('click', function (evt) {
       if (!root.contains(evt.target)) {
         closeMenu();
       }
     });
-
-    // 5) Escape key
     root.addEventListener('keydown', function (evt) {
       if (evt.key === 'Escape' || evt.key === 'Esc') {
         if (toggleBtn.getAttribute('aria-expanded') === 'true') {
@@ -5709,8 +5607,6 @@ function isSystemPath(pathname){
         }
       }
     });
-
-    // --- helpers internal ---
 
     function openMenu() {
       toggleBtn.setAttribute('aria-expanded', 'true');
@@ -5845,8 +5741,6 @@ function isSystemPath(pathname){
   'use strict';
 
   GG.lang = GG.lang || {};
-
-  // Bahasa Indonesia (default)
   GG.lang.id = GG.lang.id || {
     actions: {
       comments: 'Komentar',
@@ -5892,8 +5786,6 @@ function isSystemPath(pathname){
       error_generic: 'Terjadi kesalahan. Coba lagi nanti.'
     }
   };
-
-  // English – British
   GG.lang.en = GG.lang.en || {
     actions: {
       comments: 'Comments',
@@ -5952,8 +5844,6 @@ function isSystemPath(pathname){
   GG.data = GG.data || {};
   GG.a11y = GG.a11y || {};
   GG.lang = GG.lang || {};
-
-  // Default language: from config, <html lang>, or fallback id
   var doc = w.document;
   var htmlLang = (doc && doc.documentElement && doc.documentElement.getAttribute('lang')) || 'id';
   GG.config.lang = (GG.config.lang || htmlLang || 'id').toLowerCase();
@@ -6016,8 +5906,6 @@ function isSystemPath(pathname){
     for(var i=0;i<links.length;i++){
       var a = links[i];
       if(hasDiscernibleName(a)) continue;
-
-      // Prefer label from linked image alt if present (even empty alt means decorative; keep searching)
       var lbl = getLabel(a);
       if(lbl){
         a.removeAttribute('aria-labelledby');
@@ -6056,13 +5944,9 @@ function isSystemPath(pathname){
       labels.forEach(function(l){ uniq[l] = true; });
       var keys = Object.keys(uniq);
       if(keys.length <= 1) return;
-
-      // Choose the most informative label (prefer non-generic, longest)
       var best = labels
         .filter(function(l){ return l && l !== 'Link' && l.length >= 2; })
         .sort(function(a,b){ return b.length - a.length; })[0] || labels[0] || 'Link';
-
-      // Pick a primary link to keep in the accessibility tree
       var primary = null;
       for(var j=0;j<g.length;j++){
         var a0 = g[j];
@@ -6072,14 +5956,11 @@ function isSystemPath(pathname){
         }
       }
       if(!primary){
-        // Prefer a non-icon link as primary
         for(var k=0;k<g.length;k++){
           if(!isIconLike(g[k])){ primary = g[k]; break; }
         }
       }
       primary = primary || g[0];
-
-      // Normalize names or hide redundant icon/image duplicates in chrome
       g.forEach(function(a){
         if(a === primary){
           a.removeAttribute('aria-labelledby');
@@ -6119,7 +6000,6 @@ function isSystemPath(pathname){
     for(var i=0;i<els.length;i++){
       var el = els[i];
       if(!el.closest || !el.closest(chromeSel)) continue;
-      // Do not skip fixed-position elements (offsetParent can be null)
       if(el.getClientRects && el.getClientRects().length===0) continue;
       var cs = window.getComputedStyle ? getComputedStyle(el) : null;
       if(cs && (cs.display==='none' || cs.visibility==='hidden')) continue;

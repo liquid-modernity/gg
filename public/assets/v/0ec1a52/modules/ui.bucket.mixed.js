@@ -82,6 +82,14 @@
       .join(' ');
   }
 
+  function headingKey(v) {
+    return String(v || '')
+      .toLowerCase()
+      .replace(/&amp;/g, '&')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  }
+
   function getFeedBase() {
     var cfg = (G.store && G.store.config) ? G.store.config : {};
     var base = String(cfg.feedSummaryBase || '/feeds/posts/summary');
@@ -310,12 +318,26 @@
     slot.setAttribute('data-gg-max-total', String(section.maxTotal || section.max));
     slot.setAttribute('data-order', section.order);
 
+    var kickerText = String(section.kicker || titleCaseLabel(section.label || section.type || 'Mixed').toUpperCase()).trim();
     var kickerEl = slot.querySelector('[data-role="kicker"]');
-    if (kickerEl && section.kicker) kickerEl.textContent = section.kicker;
+    if (kickerEl && kickerText) kickerEl.textContent = kickerText;
 
     var titleEl = slot.querySelector('.gg-mixed__title');
-    if (titleEl && section.title && !String(titleEl.textContent || '').trim()) {
-      titleEl.textContent = section.title;
+    if (titleEl) {
+      var fallbackTitle = String(titleEl.textContent || '').trim();
+      var nextTitle = String(section.title || fallbackTitle).trim();
+      if (headingKey(nextTitle) && headingKey(nextTitle) === headingKey(kickerText)) {
+        nextTitle = '';
+      }
+      if (nextTitle) {
+        titleEl.textContent = nextTitle;
+        titleEl.removeAttribute('hidden');
+        slot.removeAttribute('data-gg-title-empty');
+      } else {
+        titleEl.textContent = '';
+        titleEl.setAttribute('hidden', 'hidden');
+        slot.setAttribute('data-gg-title-empty', '1');
+      }
     }
 
     var moreEl = slot.querySelector('[data-role="more"]') || slot.querySelector('.gg-mixed__more');
