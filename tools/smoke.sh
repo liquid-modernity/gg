@@ -623,12 +623,13 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     local label="$2"
     local ts html
     local gg_main_re="id=['\"]gg-main['\"]"
+    local gg_skiplink_re="<a[^>]*class=['\"][^'\"]*gg-skiplink[^'\"]*['\"][^>]*href=['\"]#gg-main['\"][^>]*>|<a[^>]*href=['\"]#gg-main['\"][^>]*class=['\"][^'\"]*gg-skiplink[^'\"]*['\"][^>]*>"
     ts="$(date +%s)"
     html="$(live_fetch_stream "${url}?x=${ts}")"
     if [[ "${label}" == "home" ]]; then
       live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
       live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-      live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
+      live_dom_expect "${html}" "${label}" "${gg_skiplink_re}" "gg-skiplink|#gg-main" "skiplink a.gg-skiplink[href='#gg-main']"
     else
       live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
       live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
