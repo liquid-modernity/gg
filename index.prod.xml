@@ -225,7 +225,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
     {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":8,"kicker":"INSTAGRAM"},
     {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-popular","type":"bookish","label":"blog","max":12,"kicker":"POPULAR"},
+    {"id":"gg-mixed-popular","type":"bookish","label":"blog","max":16,"kicker":"POPULAR"},
     {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
     {"id":"gg-mixed-pinterestish","type":"instagram","label":"pinterest","max":8,"kicker":"PINTEREST"}
   ]
@@ -1464,11 +1464,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               </b:widget-settings>
               <b:includable id='main'>
                 <div class='gg-stack' id='postcards'>
-                  <b:loop values='data:posts' var='post'>
-                    <b:if cond='data:view.isSingleItem'>
-                      <b:include data='post' name='postDetail'/>
-                    <b:else/>
-                      <b:include data='post' name='postCard'/>
+                  <b:loop index='i' values='data:posts' var='post'>
+                    <b:if cond='data:view.isSingleItem or data:i &lt; 9'>
+                      <b:if cond='data:view.isSingleItem'>
+                        <b:include data='post' name='postDetail'/>
+                      <b:else/>
+                        <b:include data='post' name='postCard'/>
+                      </b:if>
                     </b:if>
                   </b:loop>
                 </div>
@@ -2588,7 +2590,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='content'>(Ratio 1:1.48, 16 item). memanggil API Blogger (/feeds/posts/summary?orderby=published) based on spesific label Show image thumbnail</b:widget-setting>
               </b:widget-settings>
               <b:includable id='main'>
-    <section class='gg-mixed' data-gg-mixed='1' data-type='bookish' data-gg-kind='popular' data-label='blog' data-gg-label='blog' data-max='12' data-gg-max='12' data-order='published' data-gg-module='mixed-media' id='gg-mixed-popular'>
+    <section class='gg-mixed' data-gg-mixed='1' data-type='bookish' data-gg-kind='popular' data-label='blog' data-gg-label='blog' data-max='16' data-gg-max='16' data-order='published' data-gg-module='mixed-media' id='gg-mixed-popular'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>POPULAR</p>
         <h2 class='gg-mixed__title'><data:title/></h2>

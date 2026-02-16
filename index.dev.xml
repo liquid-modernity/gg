@@ -1195,11 +1195,13 @@ body:not([data-gg-surface="landing"]) .hero-section {
               </b:widget-settings>
               <b:includable id='main'>
                 <div class='gg-stack' id='postcards'>
-                  <b:loop values='data:posts' var='post'>
-                    <b:if cond='data:view.isSingleItem'>
-                      <b:include data='post' name='postDetail'/>
-                    <b:else/>
-                      <b:include data='post' name='postCard'/>
+                  <b:loop index='i' values='data:posts' var='post'>
+                    <b:if cond='data:view.isSingleItem or data:i &lt; 9'>
+                      <b:if cond='data:view.isSingleItem'>
+                        <b:include data='post' name='postDetail'/>
+                      <b:else/>
+                        <b:include data='post' name='postCard'/>
+                      </b:if>
                     </b:if>
                   </b:loop>
                 </div>

@@ -222,6 +222,7 @@
 
     var typeRaw = (fromJson && fromJson.type) || slot.getAttribute('data-type') || slot.getAttribute('data-gg-kind') || 'bookish';
     var type = inferType(typeRaw);
+    var kindRaw = slot.getAttribute('data-gg-kind') || (fromJson && fromJson.type) || typeRaw || type;
     var label = (fromJson && fromJson.label) || slot.getAttribute('data-label') || slot.getAttribute('data-gg-label') || 'blog';
     var maxRaw = (fromJson && fromJson.max) || slot.getAttribute('data-max') || slot.getAttribute('data-gg-max') || '8';
     var order = (fromJson && fromJson.order) || slot.getAttribute('data-order') || cfg.fetch.order || DEFAULT_ORDER;
@@ -229,6 +230,7 @@
     var section = {
       id: id,
       type: type,
+      kind: normalizeLabel(kindRaw || type),
       label: String(label || '').trim(),
       max: clampInt(maxRaw, 8, 1, 40),
       order: String(order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
@@ -285,6 +287,97 @@
     var el = slot.querySelector('[data-role="error"]');
     if (!el) return;
     el.setAttribute('hidden', 'hidden');
+  }
+
+  function skeletonCountFor(section) {
+    var type = inferType(section && section.type);
+    var kind = normalizeLabel(section && section.kind);
+    var label = normalizeLabel(section && section.label);
+    var kicker = normalizeLabel(section && section.kicker);
+    var id = normalizeLabel(section && section.id);
+
+    if (kind === 'popular' || label === 'blog' || kicker === 'popular' || id.indexOf('popular') !== -1) {
+      return 16;
+    }
+    if (type === 'youtube') return 3;
+    if (type === 'shorts') return 5;
+    if (type === 'newsdeck') return 6;
+    if (type === 'podcast') return 4;
+    if (type === 'instagram') return 4;
+    return 4;
+  }
+
+  function skeletonCardHtml(section) {
+    var kicker = section.kicker || titleCaseLabel(section.label || section.type).toUpperCase();
+    return (
+      '<article class="gg-mixed__card gg-mixed__card--placeholder" aria-hidden="true">' +
+        '<span class="gg-mixed__thumb"></span>' +
+        '<span class="gg-mixed__body">' +
+          '<span class="gg-mixed__kicker">' + esc(kicker) + '</span>' +
+          '<span class="gg-mixed__headline">Curated stories are loading.</span>' +
+        '</span>' +
+      '</article>'
+    );
+  }
+
+  function newsDeckSkeletonHtml(section, count) {
+    var cols = [[], [], []];
+    var kicker = section.kicker || titleCaseLabel(section.label || 'news').toUpperCase();
+    for (var i = 0; i < count; i++) {
+      cols[i % cols.length].push(
+        '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
+          '<span class="gg-newsdeck__body">' +
+            '<span class="gg-newsdeck__kicker">' + esc(kicker) + '</span>' +
+            '<span class="gg-newsdeck__title">Curated stories are loading.</span>' +
+          '</span>' +
+          '<span class="gg-newsdeck__thumb"></span>' +
+        '</article>'
+      );
+    }
+
+    var out = [];
+    for (var c = 0; c < cols.length; c++) {
+      if (!cols[c].length) continue;
+      out.push('<div class="gg-newsdeck__col">' + cols[c].join('') + '</div>');
+    }
+    return '<div class="gg-newsdeck">' + out.join('') + '</div>';
+  }
+
+  function renderSkeleton(slot, section) {
+    if (!slot) return;
+    var grid = slot.querySelector('[data-role="grid"]');
+    var rail = slot.querySelector('[data-role="rail"]');
+    var count = skeletonCountFor(section);
+    var cards = [];
+
+    slot.setAttribute('data-gg-skeleton-count', String(count));
+    if (section.type === 'newsdeck') {
+      if (grid) {
+        grid.innerHTML = newsDeckSkeletonHtml(section, count);
+        grid.removeAttribute('hidden');
+      }
+      if (rail) rail.setAttribute('hidden', 'hidden');
+      return;
+    }
+
+    for (var i = 0; i < count; i++) {
+      cards.push(skeletonCardHtml(section));
+    }
+
+    if (isRailType(section.type)) {
+      if (rail) {
+        rail.innerHTML = cards.join('');
+        rail.removeAttribute('hidden');
+      }
+      if (grid) grid.setAttribute('hidden', 'hidden');
+      return;
+    }
+
+    if (grid) {
+      grid.innerHTML = cards.join('');
+      grid.removeAttribute('hidden');
+    }
+    if (rail) rail.setAttribute('hidden', 'hidden');
   }
 
   function ensureGlobal(cfg) {
@@ -452,6 +545,7 @@
     var section = slot.__ggMixedSection || resolveSectionConfig(slot, cfg);
     slot.__ggMixedSection = section;
     applySectionUi(slot, section);
+    renderSkeleton(slot, section);
 
     slot.__ggMixedLoading = true;
     setState(slot, 'loading');
@@ -493,6 +587,9 @@
     for (var i = 0; i < slots.length; i++) {
       slots[i].__ggMixedSection = resolveSectionConfig(slots[i], cfg);
       applySectionUi(slots[i], slots[i].__ggMixedSection);
+      if (slots[i].getAttribute('data-gg-loaded') !== '1') {
+        renderSkeleton(slots[i], slots[i].__ggMixedSection);
+      }
     }
 
     var eagerCount = Math.min(2, slots.length);
