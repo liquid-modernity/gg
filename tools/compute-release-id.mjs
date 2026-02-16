@@ -56,7 +56,12 @@ function normalizeSw(sw) {
 }
 
 function normalizeWorker(worker) {
-  return worker.replace(/const\s+WORKER_VERSION\s*=\s*"[^"]+"/, 'const WORKER_VERSION="__REL__"');
+  let out = worker.replace(/const\s+WORKER_VERSION\s*=\s*"[^"]+"/, 'const WORKER_VERSION="__REL__"');
+  out = out.replace(
+    /const\s+TEMPLATE_ALLOWED_RELEASES\s*=\s*\[[^\]]*\];/,
+    'const TEMPLATE_ALLOWED_RELEASES = ["__REL__", "__PREV__"];'
+  );
+  return out;
 }
 
 function normalizeCapsule(md) {
