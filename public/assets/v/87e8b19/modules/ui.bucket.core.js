@@ -790,6 +790,33 @@ GG.view.applyRootState = GG.ui.applyRootState;
     panel.appendChild(comments);
     comments.__ggDocked = true;
   };
+  ui.layout._normalizeListingFlow = ui.layout._normalizeListingFlow || function(){
+    var main = d.querySelector('main.gg-main[data-gg-surface="listing"] .gg-blog-main');
+    if (!main) return;
+    var blogSection = d.getElementById('blog');
+    var featuredSection = d.getElementById('gg-featuredpost1');
+    if (
+      blogSection &&
+      featuredSection &&
+      blogSection.parentNode === main &&
+      featuredSection.parentNode === main &&
+      blogSection.nextElementSibling !== featuredSection
+    ) {
+      main.insertBefore(blogSection, featuredSection);
+    }
+    var popularSection = d.getElementById('gg-popularpost1');
+    if (!popularSection) return;
+    if (popularSection.parentNode !== main) {
+      main.appendChild(popularSection);
+      return;
+    }
+    if (featuredSection && featuredSection.parentNode === main) {
+      var next = featuredSection.nextSibling;
+      if (next !== popularSection) {
+        main.insertBefore(popularSection, next);
+      }
+    }
+  };
   ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
     var next = surface || ui.layout.detectSurface(doc, url);
     ui.layout.setSurface(next);
@@ -811,7 +838,9 @@ GG.view.applyRootState = GG.ui.applyRootState;
 
     ui.layout._setHeroVisible(next === 'landing');
 
-    if (next === 'post') {
+    if (next === 'listing') {
+      ui.layout._normalizeListingFlow();
+    } else if (next === 'post') {
       ui.layout._clearLandingProfile();
       ui.layout._dockComments();
     } else {

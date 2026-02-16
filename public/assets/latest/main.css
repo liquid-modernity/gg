@@ -2012,62 +2012,41 @@ main.gg-main[data-gg-surface="listing"]{
   --gg-listing-gap: 16px;
 }
 main.gg-main[data-gg-surface="listing"] .gg-blog-main{
+  display: block;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-listing__title{
+  margin: 0 0 var(--gg-listing-gap);
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1{
+  display: block;
+  margin-top: var(--gg-listing-gap);
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > #FeaturedPost1{
+  display: none !important;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > .widget{
+  margin-top: var(--gg-listing-gap);
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > .widget:first-child{
+  margin-top: 0;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards{
   display: grid;
   grid-template-columns: repeat(var(--gg-listing-cols), minmax(0, 1fr));
   gap: var(--gg-listing-gap);
-  grid-auto-flow: row dense;
   align-items: start;
 }
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-listing__title{
-  grid-column: 1 / -1;
-  margin: 0;
-}
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1,
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #blog,
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 .widget,
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 .widget-content,
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 [role="feed"],
-main.gg-main[data-gg-surface="listing"] #blog > .widget,
-main.gg-main[data-gg-surface="listing"] #postcards{
-  display: contents;
-}
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 article.post:nth-child(n + 2){
-  display: none;
-}
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 article.post{
-  order: 10;
+main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards > .gg-post-card:first-child{
   grid-column: span 2;
   grid-row: span 2;
-  border-radius: var(--gg-radius-sm);
   max-height: clamp(280px, 32vw, 520px);
 }
-main.gg-main[data-gg-surface="listing"] #postcards > *{
-  order: 20;
-}
-main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 .post-title{
-  inset: auto 12px 12px 12px;
-  font-size: clamp(14px, 1.2vw, 19px);
+main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards > .gg-post-card:first-child .gg-post-card__title{
+  font-size: clamp(18px, 1.45vw, 24px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-loadmore-wrap{
-  order: 30;
-  grid-column: 1 / -1;
-  margin: 8px 0 24px;
+  margin: 16px 0 28px;
 }
-main.gg-main[data-gg-surface="listing"] .gg-blog-main .gg-mixed{
-  grid-column: 1 / -1;
-  justify-self: stretch;
-}
-main.gg-main[data-gg-surface="listing"] #gg-mixed-bookish{ order: 40; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-youtubeish{ order: 41; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-shortish{ order: 42; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-newsish-1{ order: 43; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-podcastish{ order: 44; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-newsish-2{ order: 45; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-instagramish{ order: 46; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-popular{ order: 47; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-newsish-4{ order: 48; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-newsish-3{ order: 49; }
-main.gg-main[data-gg-surface="listing"] #gg-mixed-pinterestish{ order: 50; }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="youtube"]{
   --gg-mixed-rail-col: clamp(196px, 18vw, 248px);
 }
@@ -2089,10 +2068,10 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="popular"]{
   main.gg-main[data-gg-surface="listing"]{
     --gg-listing-cols: 2;
   }
-  main.gg-main[data-gg-surface="listing"] #gg-featuredpost1 article.post{
+  main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards > .gg-post-card:first-child{
     grid-column: 1 / -1;
     grid-row: auto;
-    aspect-ratio: 16 / 9;
+    max-height: none;
   }
 }
 

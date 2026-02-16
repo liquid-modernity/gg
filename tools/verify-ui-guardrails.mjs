@@ -79,15 +79,37 @@ function verifyMixedRatioContract(css, label) {
   }
 }
 
-function verifyFeaturedDensity(css, label) {
-  if (
-    !/#gg-featuredpost1\s*\[role=["']feed["']\]\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/.test(
-      css
-    )
-  ) {
-    failures.push(
-      `${label}: featured feed must use 2-column density contract (avoid full-width monster card)`
-    );
+function verifyListingFlowContract(css, label) {
+  const listingAttr = String.raw`\[data-gg-surface\s*=\s*(?:["'])?listing(?:["'])?\]`;
+  const mainBlockRe = new RegExp(
+    String.raw`main\.gg-main${listingAttr}\s+\.gg-blog-main\s*\{([\s\S]*?)\}`,
+    "i"
+  );
+  const mainBlockMatch = css.match(mainBlockRe);
+  if (!mainBlockMatch) {
+    failures.push(`${label}: missing listing flow rule for .gg-blog-main`);
+  } else {
+    const mainBlock = String(mainBlockMatch[1] || "");
+    if (!/display\s*:\s*block\b/i.test(mainBlock)) {
+      failures.push(`${label}: listing .gg-blog-main must be display:block`);
+    }
+    if (/\bdisplay\s*:\s*(?:grid|inline-grid|flex|inline-flex)\b/i.test(mainBlock)) {
+      failures.push(`${label}: listing .gg-blog-main must not use grid/flex`);
+    }
+  }
+
+  const postcardsBlockRe = new RegExp(
+    String.raw`main\.gg-main${listingAttr}\s+\.gg-blog-main\s+#postcards\s*\{([\s\S]*?)\}`,
+    "i"
+  );
+  const postcardsBlockMatch = css.match(postcardsBlockRe);
+  if (!postcardsBlockMatch) {
+    failures.push(`${label}: missing listing grid rule for #postcards`);
+  } else {
+    const postcardsBlock = String(postcardsBlockMatch[1] || "");
+    if (!/\bdisplay\s*:\s*grid\b/i.test(postcardsBlock)) {
+      failures.push(`${label}: listing #postcards must be display:grid`);
+    }
   }
 }
 
@@ -437,7 +459,7 @@ function verifyCssFile(relPath, label) {
   verifyPostcardsSkeletonCss(css, label);
   verifySidebarWidthTokens(css, label);
   verifyMixedRatioContract(css, label);
-  verifyFeaturedDensity(css, label);
+  verifyListingFlowContract(css, label);
 }
 
 const indexXml = readFile("index.prod.xml");
