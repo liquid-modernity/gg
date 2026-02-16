@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='a13bd9f' name='gg-release'/>
+    <meta content='40dba43' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/a13bd9f/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/a13bd9f/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/40dba43/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/40dba43/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -209,7 +209,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='a13bd9f' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='40dba43' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -1210,8 +1210,50 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1245,8 +1287,16 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid' hidden='hidden'/>
+        <div class='gg-mixed__rail' data-role='rail'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>YOUTUBE</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1262,7 +1312,6 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
             </span>
           </article>
         </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
         <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
       </div>
@@ -1280,8 +1329,30 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid' hidden='hidden'/>
+        <div class='gg-mixed__rail' data-role='rail'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>SHORTS</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>SHORTS</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>SHORTS</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1297,7 +1368,6 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
             </span>
           </article>
         </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
         <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
       </div>
@@ -1317,22 +1387,91 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
+          <div class='gg-newsdeck'>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>News</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Bookish</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Podcast</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+          </div>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
@@ -1352,8 +1491,37 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid' hidden='hidden'/>
+        <div class='gg-mixed__rail' data-role='rail'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PODCAST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PODCAST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PODCAST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PODCAST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1369,7 +1537,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </span>
           </article>
         </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
         <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
       </div>
@@ -1389,22 +1556,91 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
+          <div class='gg-newsdeck'>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>News</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Youtube</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Shorts</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+          </div>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
@@ -1424,8 +1660,50 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>INSTAGRAM</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1461,22 +1739,91 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
+          <div class='gg-newsdeck'>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>News</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Instagram</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Pinterest</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+          </div>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
@@ -1521,7 +1868,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               <b:includable id='main'>
                 <div class='gg-stack' id='postcards'>
                   <b:loop index='i' values='data:posts' var='post'>
-                    <b:if cond='data:view.isSingleItem or data:i &lt; 8'>
+                    <b:if cond='data:view.isSingleItem or data:i &lt; 9'>
                       <b:if cond='data:view.isSingleItem'>
                         <b:include data='post' name='postDetail'/>
                       <b:else/>
@@ -2778,8 +3125,65 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid' hidden='hidden'/>
+        <div class='gg-mixed__rail' data-role='rail'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -2795,7 +3199,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </span>
           </article>
         </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
         <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
       </div>
@@ -2815,22 +3218,91 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>NEWSDECK</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
+          <div class='gg-newsdeck'>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>News</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Blog</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Bookish</p>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article class='gg-newsdeck__item gg-newsdeck__item--placeholder' aria-hidden='true'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+          </div>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
@@ -2850,8 +3322,50 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <h2 class='gg-mixed__title'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
-      <div class='gg-mixed__bd'>
+            <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+            </span>
+          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -3181,7 +3695,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/a13bd9f/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/40dba43/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

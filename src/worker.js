@@ -188,7 +188,7 @@ const isAppJsAsset = (value) => {
   return lower.includes("/assets/");
 };
 
-const BLOG_LISTING_MIN_POSTCARDS = 8;
+const BLOG_LISTING_MIN_POSTCARDS = 9;
 const BLOG_LISTING_BACKFILL_HOPS = 3;
 
 const responseFromHtml = (response, html) => {
@@ -467,8 +467,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "a13bd9f";
-    const TEMPLATE_ALLOWED_RELEASES = ["a13bd9f","cfff8f7"];
+    const WORKER_VERSION = "40dba43";
+    const TEMPLATE_ALLOWED_RELEASES = ["40dba43","a13bd9f"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");

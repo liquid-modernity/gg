@@ -610,8 +610,8 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
         const cards = fragment.match(/<article\b[^>]*\bclass\s*=\s*(["\x27])[^"\x27]*\bgg-post-card\b[^"\x27]*\1/gi) || [];
         process.stdout.write(String(cards.length));
       ' | tr -d '[:space:]')"
-      if [[ -z "${postcards_count}" ]] || (( postcards_count < 8 )); then
-        die "LIVE_HTML /blog hard refresh #${i} expected >=8 SSR postcards (got ${postcards_count:-0})"
+      if [[ -z "${postcards_count}" ]] || (( postcards_count < 9 )); then
+        die "LIVE_HTML /blog hard refresh #${i} expected >=9 SSR postcards (got ${postcards_count:-0})"
       fi
       if grep -Eqi '#postcards\s*\[\s*data-gg-skeleton\s*=\s*["'"'"']on["'"'"']\s*\]\s*\{[^}]*visibility\s*:\s*hidden' <<<"${html}"; then
         die "LIVE_HTML /blog hard refresh #${i} found hidden-SSR skeleton css"

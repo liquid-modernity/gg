@@ -109,8 +109,8 @@ function verifyIndexContracts(indexXml) {
     failures.push(`index.prod.xml: Blog1 SSR cap missing in postcards loop`);
   } else {
     const cap = parseInt(capMatch[1], 10);
-    if (!Number.isFinite(cap) || cap < 8) {
-      failures.push(`index.prod.xml: Blog1 SSR postcards cap must be >= 8 (found ${capMatch[1]})`);
+    if (!Number.isFinite(cap) || cap !== 9) {
+      failures.push(`index.prod.xml: Blog1 SSR postcards cap must be exactly 9 (found ${capMatch[1]})`);
     }
   }
   const numPostsMatch = blogScope.match(
@@ -123,6 +123,151 @@ function verifyIndexContracts(indexXml) {
     if (!Number.isFinite(numPosts) || numPosts < 9) {
       failures.push(`index.prod.xml: Blog1 numPosts must be >= 9 (found ${numPostsMatch[1]})`);
     }
+  }
+}
+
+function extractSectionBlock(indexXml, id) {
+  const re = new RegExp(
+    `<section\\b(?=[^>]*id=['"]${id}['"])[^>]*>[\\s\\S]*?<\\/section>`,
+    "i"
+  );
+  const m = indexXml.match(re);
+  return m ? m[0] : "";
+}
+
+function hasClass(tag, className) {
+  const m = String(tag || "").match(/\bclass\s*=\s*(['"])([^'"]*)\1/i);
+  if (!m || !m[2]) return false;
+  return String(m[2])
+    .split(/\s+/)
+    .filter(Boolean)
+    .includes(className);
+}
+
+function findDivByClass(source, className) {
+  const html = String(source || "");
+  const openRe = /<div\b[^>]*>/gi;
+  let open;
+  while ((open = openRe.exec(html))) {
+    const openTag = open[0];
+    if (!hasClass(openTag, className)) continue;
+    const openStart = open.index;
+    const openEnd = openRe.lastIndex;
+    const selfClosing = /\/\s*>$/.test(openTag);
+    if (selfClosing) {
+      return {
+        openTag,
+        innerHtml: "",
+        openStart,
+        openEnd,
+        closeStart: openEnd,
+        closeEnd: openEnd,
+      };
+    }
+    const tokenRe = /<\/?div\b[^>]*>/gi;
+    tokenRe.lastIndex = openEnd;
+    let depth = 1;
+    let token;
+    let closeStart = -1;
+    let closeEnd = -1;
+    while ((token = tokenRe.exec(html))) {
+      const tag = token[0];
+      const isClose = /^<\//.test(tag);
+      const isSelfClose = /\/\s*>$/.test(tag);
+      if (isClose) depth -= 1;
+      else if (!isSelfClose) depth += 1;
+      if (depth === 0) {
+        closeStart = token.index;
+        closeEnd = tokenRe.lastIndex;
+        break;
+      }
+    }
+    if (closeStart < 0 || closeEnd < 0) return null;
+    return {
+      openTag,
+      innerHtml: html.slice(openEnd, closeStart),
+      openStart,
+      openEnd,
+      closeStart,
+      closeEnd,
+    };
+  }
+  return null;
+}
+
+function countPlaceholders(fragment) {
+  return (
+    String(fragment || "").match(
+      /<article\b[^>]*\bclass\s*=\s*['"][^'"]*\bgg-mixed__card--placeholder\b[^'"]*['"]/gi
+    ) || []
+  ).length;
+}
+
+function verifyMixedSectionSkeleton(indexXml, section) {
+  const block = extractSectionBlock(indexXml, section.id);
+  if (!block) {
+    failures.push(`index.prod.xml: missing section block ${section.id}`);
+    return;
+  }
+  const grid = findDivByClass(block, "gg-mixed__grid");
+  const rail = findDivByClass(block, "gg-mixed__rail");
+  if (!grid) failures.push(`index.prod.xml: ${section.id} missing .gg-mixed__grid`);
+  if (!rail) failures.push(`index.prod.xml: ${section.id} missing .gg-mixed__rail`);
+
+  if (section.layout === "grid") {
+    const count = countPlaceholders(grid ? grid.innerHtml : "");
+    if (count !== section.max) {
+      failures.push(
+        `index.prod.xml: ${section.id} grid placeholder count must be ${section.max} (found ${count})`
+      );
+    }
+  } else if (section.layout === "rail") {
+    const railTag = String(rail && rail.openTag ? rail.openTag : "");
+    if (!railTag) {
+      failures.push(`index.prod.xml: ${section.id} missing rail tag`);
+    } else if (/\bhidden(?:\s*=\s*['"][^'"]*['"])?\b/i.test(railTag)) {
+      failures.push(`index.prod.xml: ${section.id} rail must not be hidden in SSR`);
+    }
+    const count = countPlaceholders(rail ? rail.innerHtml : "");
+    if (count !== section.max) {
+      failures.push(
+        `index.prod.xml: ${section.id} rail placeholder count must be ${section.max} (found ${count})`
+      );
+    }
+  }
+}
+
+function verifyNewsdeckSkeleton(indexXml, id) {
+  const block = extractSectionBlock(indexXml, id);
+  if (!block) {
+    failures.push(`index.prod.xml: missing NEWSISH block ${id}`);
+    return;
+  }
+  const grid = findDivByClass(block, "gg-mixed__grid");
+  if (!grid) {
+    failures.push(`index.prod.xml: ${id} missing .gg-mixed__grid`);
+    return;
+  }
+  const gridInner = String(grid.innerHtml || "");
+  const deckCount = (
+    gridInner.match(/<div\b[^>]*\bclass\s*=\s*['"][^'"]*\bgg-newsdeck\b[^'"]*['"]/gi) || []
+  ).length;
+  if (deckCount < 1) {
+    failures.push(`index.prod.xml: ${id} must render .gg-newsdeck SSR skeleton`);
+  }
+  const colCount = (
+    gridInner.match(/<div\b[^>]*\bclass\s*=\s*['"][^'"]*\bgg-newsdeck__col\b[^'"]*['"]/gi) || []
+  ).length;
+  if (colCount !== 3) {
+    failures.push(`index.prod.xml: ${id} NEWSDECK must have 3 SSR columns (found ${colCount})`);
+  }
+  const itemCount = (
+    gridInner.match(
+      /<article\b[^>]*\bclass\s*=\s*['"][^'"]*\bgg-newsdeck__item\b[^'"]*\bgg-newsdeck__item--placeholder\b[^'"]*['"]/gi
+    ) || []
+  ).length;
+  if (itemCount !== 9) {
+    failures.push(`index.prod.xml: ${id} NEWSDECK must have 9 SSR placeholder items (found ${itemCount})`);
   }
 }
 
@@ -154,14 +299,17 @@ function parseMixedConfig(indexXml) {
 
 function verifyMixedContracts(indexXml) {
   const fixedSections = [
-    { id: "gg-mixed-bookish", type: "bookish", max: 8 },
-    { id: "gg-mixed-instagramish", type: "instagram", max: 8 },
-    { id: "gg-mixed-popular", type: "popular", max: 10 },
-    { id: "gg-mixed-youtubeish", type: "youtube", max: 3 },
-    { id: "gg-mixed-shortish", type: "shorts", max: 5 },
-    { id: "gg-mixed-podcastish", type: "podcast", max: 6 },
+    { id: "gg-mixed-bookish", type: "bookish", max: 8, layout: "grid" },
+    { id: "gg-mixed-instagramish", type: "instagram", max: 8, layout: "grid" },
+    { id: "gg-mixed-popular", type: "popular", max: 10, layout: "rail" },
+    { id: "gg-mixed-youtubeish", type: "youtube", max: 3, layout: "rail" },
+    { id: "gg-mixed-shortish", type: "shorts", max: 5, layout: "rail" },
+    { id: "gg-mixed-podcastish", type: "podcast", max: 6, layout: "rail" },
   ];
-  fixedSections.forEach((section) => verifySectionTagContract(indexXml, section.id, section));
+  fixedSections.forEach((section) => {
+    verifySectionTagContract(indexXml, section.id, section);
+    verifyMixedSectionSkeleton(indexXml, section);
+  });
 
   const newsdeckTags = [
     ...indexXml.matchAll(/<section(?=[^>]*id=['"]gg-mixed-newsish-[^'"]+['"])[^>]*>/gi),
@@ -170,6 +318,8 @@ function verifyMixedContracts(indexXml) {
     failures.push(`index.prod.xml: missing NEWSISH sections (gg-mixed-newsish-*)`);
   }
   newsdeckTags.forEach((tag, idx) => {
+    const idMatch = tag.match(/\bid=['"]([^'"]+)['"]/i);
+    const sectionId = idMatch ? String(idMatch[1]) : `gg-mixed-newsish-${idx + 1}`;
     if (!/data-type=['"]newsdeck['"]/i.test(tag)) {
       failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-type="newsdeck"`);
     }
@@ -179,6 +329,7 @@ function verifyMixedContracts(indexXml) {
     if (!/data-gg-max=['"]3['"]/i.test(tag)) {
       failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-gg-max="3"`);
     }
+    verifyNewsdeckSkeleton(indexXml, sectionId);
   });
 
   const config = parseMixedConfig(indexXml);

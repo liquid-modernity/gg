@@ -534,21 +534,16 @@
         (function(colLabel){
           tasks.push(
             (function(){
-              var selected = pickFromGroup(globalData, colLabel, perCol);
-              if (selected.length >= perCol) {
-                return Promise.resolve({
-                  label: colLabel,
-                  items: selected.slice(0, perCol)
-                });
-              }
               return ensureLabelFeed(colLabel, perCol, section.order).then(function(labelEntries){
-                var merged = dedupe(selected.concat(labelEntries || []));
+                var selected = pickFromGroup(globalData, colLabel, perCol);
+                var merged = dedupe((labelEntries || []).concat(selected));
                 if (merged.length < perCol) {
                   merged = dedupe(merged.concat(globalData.entries || []));
                 }
+                var fallbackPool = dedupe((labelEntries || []).concat(selected).concat(globalData.entries || []));
                 return {
                   label: colLabel,
-                  items: fillToCount(merged, globalData.entries || [], perCol)
+                  items: fillToCount(merged, fallbackPool, perCol)
                 };
               });
             })()
