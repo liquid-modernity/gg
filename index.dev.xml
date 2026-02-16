@@ -1177,6 +1177,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
                 <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+                <b:widget-setting name='numPosts'>12</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>

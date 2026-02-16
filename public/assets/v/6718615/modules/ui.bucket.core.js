@@ -2652,10 +2652,8 @@ GG.modules.InfoPanel = (function () {
   var lastTrigger = null;
   var closeObserver = null;
   var backdrop = null;
-
-  // in-memory cache { url: { ts, tocItems, snippet, readtime } }
-  var cache = Object.create(null);
-  var inflight = null; // AbortController
+  var lockedCardKey = '';
+  var hoverCardKey = '';
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -2706,107 +2704,65 @@ GG.modules.InfoPanel = (function () {
   function setBackdropVisible(show){
     var bd = ensureBackdrop();
     if (!bd) return;
-    GG.core.state.toggle(bd, 'visible', !!show);
+    var surface = main ? (main.getAttribute('data-gg-surface') || '') : '';
+    GG.core.state.toggle(bd, 'visible', !!show && surface === 'post');
   }
 
   function ensurePanelSkeleton(){
     if (!panel) return;
-    if (qs('.gg-info-panel__head', panel)) return;
+    if (qs('.gg-editorial-preview', panel)) return;
 
     panel.innerHTML =
-  '<div class="gg-info-panel__card">' +
-
-    '<div class="gg-info-panel__thumb gg-info-panel__hero">' +
-      '<img class="gg-info-panel__thumb-img" alt=""/>' +
-      '<div class="gg-info-panel__scrim" aria-hidden="true"></div>' +
-
-      '<div class="gg-info-panel__herohead">' +
-        '<div class="gg-info-panel__herohead-left">' +
-          '<span aria-hidden="true" class="gg-icon material-symbols-rounded">info</span>' +
-          '<span class="gg-info-panel__herotitle-sm">Information</span>' +
+      '<div class="gg-info-panel__card gg-editorial-preview" data-gg-lock="off">' +
+        '<div class="gg-editorial-preview__head">' +
+          '<span class="gg-editorial-preview__eyebrow">Editorial Preview</span>' +
+          '<div class="gg-editorial-preview__actions">' +
+            '<button class="gg-editorial-preview__lock" type="button" data-gg-action="info-lock" aria-pressed="false">Lock</button>' +
+            '<button class="gg-editorial-preview__close gg-info-panel__close" type="button" data-gg-action="info-close" aria-label="Close">Close</button>' +
+          '</div>' +
         '</div>' +
-        '<button class="gg-info-panel__close" type="button" data-gg-action="info-close" aria-label="Close">×</button>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__hero-title"></div>' +
-
-      '<a class="gg-info-panel__hero-cta" href="#">' +
-        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span>' +
-        '<span>Read this post</span>' +
-      '</a>' +
-    '</div>' +
-
-    '<div class="gg-info-panel__details">' +
-      '<div class="gg-info-panel__sec" data-gg-sec="author">' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
-          '<div class="gg-info-panel__kicker">Written by</div>' +
+        '<div class="gg-editorial-preview__media">' +
+          '<img class="gg-info-panel__thumb-img" alt=""/>' +
+          '<p class="gg-info-panel__hero-title gg-editorial-preview__title"></p>' +
+          '<a class="gg-info-panel__hero-cta gg-editorial-preview__cta" href="#">' +
+            '<span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span>' +
+            '<span>Read this post</span>' +
+          '</a>' +
         '</div>' +
-        '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__sec" data-gg-sec="contributors" hidden>' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">groups</span>' +
-          '<div class="gg-info-panel__kicker">Contributors</div>' +
+        '<div class="gg-editorial-preview__body gg-info-panel__details">' +
+          '<div class="gg-info-panel__sec" data-gg-sec="author">' +
+            '<div class="gg-info-panel__sechead">' +
+              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
+              '<div class="gg-info-panel__kicker">Written by</div>' +
+            '</div>' +
+            '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
+          '</div>' +
+          '<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
+            '<span class="gg-icon" aria-hidden="true">label</span>' +
+            '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
+          '</div>' +
+          '<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
+            '<span class="gg-info-panel__metaitem">' +
+              '<span class="gg-icon" aria-hidden="true">calendar_today</span>' +
+              '<span class="gg-info-panel__date"></span>' +
+            '</span>' +
+            '<span class="gg-meta-sep">•</span>' +
+            '<span class="gg-info-panel__metaitem">' +
+              '<span class="gg-icon" aria-hidden="true">comment</span>' +
+              '<span class="gg-info-panel__comments"></span>' +
+            '</span>' +
+            '<span class="gg-meta-sep">•</span>' +
+            '<span class="gg-info-panel__metaitem">' +
+              '<span class="gg-icon" aria-hidden="true">schedule</span>' +
+              '<span class="gg-info-panel__readtime"></span>' +
+            '</span>' +
+          '</div>' +
+          '<div class="gg-info-panel__row gg-info-panel__row--snippet">' +
+            '<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
+            '<p class="gg-info-panel__snippet"></p>' +
+          '</div>' +
         '</div>' +
-        '<div class="gg-info-panel__people" data-gg-slot="contributors"></div>' +
-      '</div>' +
-
-'<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
-  '<span class="gg-icon" aria-hidden="true">label</span>' +
-  '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
-'</div>' +
-
-
-
-      '<div class="gg-info-panel__row gg-info-panel__row--tags" hidden>' +
-        '<span class="gg-icon material-symbols-rounded" aria-hidden="true">sell</span>' +
-        '<div class="gg-chip-row" data-gg-slot="tags"></div>' +
-      '</div>' +
-
-'<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">calendar_today</span>' +
-    '<span class="gg-info-panel__date"></span>' +
-  '</span>' +
-
-  '<span class="gg-meta-sep">•</span>' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">comment</span>' +
-    '<span class="gg-info-panel__comments"></span>' +
-  '</span>' +
-
-  '<span class="gg-meta-sep">•</span>' +
-
-  '<span class="gg-info-panel__metaitem">' +
-    '<span class="gg-icon" aria-hidden="true">schedule</span>' +
-    '<span class="gg-info-panel__readtime"></span>' +
-  '</span>' +
-
-'</div>' +
-
-
-
-
-      '<div class="gg-info-panel__row gg-info-panel__row--snippet">' +
-'<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
-        '<p class="gg-info-panel__snippet"></p>' +
-      '</div>' +
-
-      '<div class="gg-info-panel__sec gg-info-panel__sec--toc">' +
-        '<div class="gg-info-panel__sechead">' +
-          '<span class="gg-icon material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>' +
-          '<div class="gg-info-panel__kicker">Table of Contents</div>' +
-        '</div>' +
-        '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
-         '<div class="gg-info-panel__toc-empty" data-gg-slot="toc-empty" hidden></div>' +
-      '</div>' +
-    '</div>' +
-
-  '</div>';
+      '</div>';
   }
 
 function extractThumbSrc(card){
@@ -2848,7 +2804,7 @@ function extractThumbSrc(card){
   function setImg(src, alt){
       var img = qs('.gg-info-panel__thumb-img', panel);
       if(!img) return;
-      var wrap = closest(img, '.gg-info-panel__thumb') || img.parentElement;
+      var wrap = closest(img, '.gg-editorial-preview__media') || img.parentElement;
       if(!wrap) return;
       if(!src){
         img.removeAttribute('src');
@@ -2863,11 +2819,6 @@ function extractThumbSrc(card){
       img.src = src;
       img.alt = alt || '';
     }
-
-  function setSectionVisible(name, visible){
-    var sec = qs('[data-gg-sec="'+name+'"]', panel);
-    if (sec) sec.hidden = !visible;
-  }
 
   function setRowVisible(rowClass, visible){
     var row = qs(rowClass, panel);
@@ -2970,220 +2921,6 @@ function fillChipsToSlot(slot, items, max){
   });
 }
 
-
-
-
-  function slugify(s){
-    return String(s||'')
-      .toLowerCase()
-      .trim()
-      .replace(/[\u200B-\u200D\uFEFF]/g,'')
-      .replace(/[^\w\s\-]/g,'')
-      .replace(/\s+/g,'-')
-      .replace(/\-+/g,'-')
-      .replace(/^\-+|\-+$/g,'') || 'section';
-  }
-
-  function uniqueIds(items){
-    var seen = Object.create(null);
-    items.forEach(function(it){
-      var base = it.id;
-      var k = base;
-      var n = 2;
-      while(seen[k]){ k = base + '-' + (n++); }
-      seen[k] = true;
-      it.id = k;
-    });
-    return items;
-  }
-
-  function getLevel(h){
-    var t = (h.tagName || 'H2').toLowerCase();
-    return t === 'h2' ? 2 : (t === 'h3' ? 3 : 4);
-  }
-
-  function nextNumber(level, state){
-    if(level === 2){ state.c2++; state.c3 = 0; state.c4 = 0; return String(state.c2) + '.'; }
-    if(level === 3){ if(state.c2 === 0) state.c2 = 1; state.c3++; state.c4 = 0; return state.c2 + '.' + state.c3; }
-    if(state.c2 === 0) state.c2 = 1;
-    if(state.c3 === 0) state.c3 = 1;
-    state.c4++; return state.c2 + '.' + state.c3 + '.' + state.c4;
-  }
-
-  function renderToc(items, postUrl){  
-     var ol = qs('[data-gg-slot="toc"]', panel);
-if(!ol) return;
-var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
-
-    if(!ol || !empty) return;
-
-    ol.innerHTML = '';
-
-    if(!items || !items.length){
-      empty.textContent = 'No headings found.';
-      empty.hidden = false;
-      return;
-    }
-
-    empty.hidden = true;
-
-    items.forEach(function(it){
-      var li = document.createElement('li');
-      li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + it.level;
-
-      var a = document.createElement('a');
-      a.className = 'gg-info-panel__toclink';
-      a.href = postUrl + '#' + it.id;
-
-      var n = document.createElement('span');
-      n.className = 'gg-info-panel__tocnum';
-     n.textContent = (it.num || '').trim() + ' ';
-
-
-
-      var t = document.createElement('span');
-      t.className = 'gg-info-panel__toctxt';
-      t.textContent = it.text;
-
-      a.appendChild(n);
-      a.appendChild(t);
-      li.appendChild(a);
-      ol.appendChild(li);
-    });
-  }
-
-  function computeReadTimeFromText(text){
-    var raw = String(text || '').replace(/\s+/g,' ').trim();
-    if(!raw) return '—';
-    var words = raw.split(' ').filter(Boolean).length;
-    var mins = Math.max(1, Math.round(words / WPM));
-    return mins + ' minutes read';
-  }
-
-  function clipWords(text, maxWords){
-    var raw = String(text || '').replace(/\s+/g,' ').trim();
-    if(!raw) return '';
-    var w = raw.split(' ').filter(Boolean);
-    if(w.length <= maxWords) return raw;
-    return w.slice(0, maxWords).join(' ') + '…';
-  }
-
-  function findBody(doc){
-    return qs('.gg-post__content.post-body.entry-content', doc) ||
-           qs('.post-body.entry-content', doc) ||
-           qs('.post-body', doc) ||
-           qs('.entry-content', doc) ||
-           qs('[itemprop="articleBody"]', doc);
-  }
-
-  function extractHeadingsFromDoc(doc){
-    var body = findBody(doc);
-    if(!body) return [];
-    var hs = qsa('h2, h3, h4', body).filter(function(h){
-      return ((h.textContent||'').replace(/\s+/g,' ').trim()).length > 0;
-    });
-
-    var out = [];
-    var state = {c2:0, c3:0, c4:0};
-
-    hs.forEach(function(h){
-      var level = getLevel(h);
-      var text = (h.textContent||'').replace(/\s+/g,' ').trim();
-      var id = slugify(text);
-      var num = nextNumber(level, state);
-      out.push({ level: level, text: text, id: id, num: num });
-    });
-
-    return uniqueIds(out);
-  }
-
-  function extractTextFromDoc(doc, maxWords){
-    var body = findBody(doc);
-    if(!body) return '';
-    // best-effort cleanup
-    qsa('script,style,noscript', body).forEach(function(el){ el.remove(); });
-    var raw = (body.innerText || body.textContent || '').replace(/\s+/g,' ').trim();
-    return maxWords ? clipWords(raw, maxWords) : raw;
-  }
-
-  function extractSnippetFromDoc(doc, maxWords){
-    var body = findBody(doc);
-    if(!body) return '';
-
-    var pick = '';
-    var ps = qsa('p', body);
-    for(var i=0;i<ps.length;i++){
-      var t = (ps[i].textContent||'').replace(/\s+/g,' ').trim();
-      if(!t) continue;
-      if(t.length < 60) continue;
-      if(/^table of contents/i.test(t) || /^daftar isi/i.test(t)) continue;
-      pick = t; break;
-    }
-
-    if(!pick){
-      var lis = qsa('li', body);
-      for(var j=0;j<lis.length;j++){
-        var t2 = (lis[j].textContent||'').replace(/\s+/g,' ').trim();
-        if(!t2) continue;
-        if(t2.length < 60) continue;
-        pick = t2; break;
-      }
-    }
-
-    if(!pick){
-      pick = (body.innerText || body.textContent || '').replace(/\s+/g,' ').trim();
-    }
-
-    return maxWords ? clipWords(pick, maxWords) : pick;
-  }
-
-  function getBlogBaseFromUrl(postUrl){
-    try{
-      var u = new URL(postUrl, location.href);
-      return u.origin;
-    }catch(_){
-      return location.origin || '';
-    }
-  }
-
-  async function fetchViaHtml(url, signal){
-    var res = await fetch(url, { method: 'GET', credentials: 'same-origin', signal: signal });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    var html = await res.text();
-    return new DOMParser().parseFromString(html, 'text/html');
-  }
-
-  async function fetchViaFeed(postUrl, postId, signal){
-    if(!postId) throw new Error('No post id');
-    var base = getBlogBaseFromUrl(postUrl);
-    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
-      ? GG.services.api.getFeedBase(false)
-      : '/feeds/posts/default';
-    var feedUrl = base.replace(/\/$/,'') + feedBase + '/' + encodeURIComponent(postId) + '?alt=json';
-    var res = await fetch(feedUrl, { method: 'GET', credentials: 'same-origin', signal: signal });
-    if(!res.ok) throw new Error('Feed HTTP ' + res.status);
-    var json = await res.json();
-    var entry = json && json.entry;
-    var html = entry && entry.content && entry.content.$t ? entry.content.$t : '';
-    if(!html) throw new Error('No feed content');
-    // wrap as doc
-    return new DOMParser().parseFromString('<div class="post-body entry-content">' + html + '</div>', 'text/html');
-  }
-
-  async function loadPostDoc(postUrl, postId){
-    if(inflight && inflight.abort) inflight.abort();
-    inflight = new AbortController();
-    var signal = inflight.signal;
-
-    // 1) try HTML
-    try{
-      return await fetchViaHtml(postUrl, signal);
-    }catch(err){
-      // 2) fallback feed
-      return await fetchViaFeed(postUrl, postId, signal);
-    }
-  }
-
   function extractLabels(card){
     // prefer hidden anchors rel=tag (kalau kamu sudah tanam di card)
     var tags = qsa('a[rel="tag"]', card).map(function (a) {
@@ -3207,34 +2944,42 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
     return { name: 'Unknown', href: '', role: '', avatar: '' };
   }
 
-  function extractContributors(card){
-    var raw = card.getAttribute('data-contributors') || '';
-    if(!raw) return [];
-    return raw.split(',').map(function(x){ return x.trim(); }).filter(Boolean).map(function(item){
-      var parts = item.split('|');
-      return { name: (parts[0]||'').trim(), role: (parts[1]||'').trim(), href:'', avatar:'' };
-    }).filter(function(p){ return p.name; });
+  function cardKey(card){
+    if (!card) return '';
+    return String(card.getAttribute('data-id') || card.getAttribute('data-url') || '').trim();
   }
 
-  function extractTags(card){
-    var raw = card.getAttribute('data-tags') || '';
-    if(!raw) return [];
-    return raw.split(',').map(function(t){ return t.trim(); }).filter(Boolean).map(function(t){
-      return { text: t.startsWith('#') ? t : ('#'+t), href:'#' };
-    });
+  function setLockState(card){
+    lockedCardKey = cardKey(card);
+    if (!panel) return;
+    var preview = qs('.gg-editorial-preview', panel);
+    if (preview) preview.setAttribute('data-gg-lock', lockedCardKey ? 'on' : 'off');
+    var lockBtn = qs('[data-gg-action="info-lock"]', panel);
+    if (!lockBtn) return;
+    lockBtn.setAttribute('aria-pressed', lockedCardKey ? 'true' : 'false');
+    lockBtn.textContent = lockedCardKey ? 'Locked' : 'Lock';
   }
 
-  function setLoadingState(){
-    var empty = qs('[data-gg-slot="toc-empty"]', panel);
-    if(empty){ empty.textContent = 'Loading…'; empty.hidden = false; }
-    var ol = qs('[data-gg-slot="toc"]', panel);
-    if(ol) ol.innerHTML = '';
-    setText('.gg-info-panel__readtime', '…');
+  function isLockedToOtherCard(card){
+    var key = cardKey(card);
+    return !!(lockedCardKey && key && lockedCardKey !== key);
   }
 
-  function openWithCard(card, trigger){
+  function canHoverPreview(){
+    if (!main || !window.matchMedia) return false;
+    var surface = main.getAttribute('data-gg-surface') || '';
+    if (surface !== 'home' && surface !== 'feed' && surface !== 'listing') return false;
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  }
+
+  function openWithCard(card, trigger, opts){
+    if (!card) return;
+    opts = opts || {};
     ensurePanelSkeleton();
     if (trigger) lastTrigger = trigger;
+    if (panel) {
+      panel.__ggPreviewCard = card;
+    }
 
     var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
     var title = titleLink ? (titleLink.textContent||'').trim() : '';
@@ -3258,13 +3003,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
   });
 })();
 
-    var primaryLabel = labels[0] ? labels[0].text : '';
-
     setText('.gg-info-panel__hero-title', title);
     setHref('.gg-info-panel__hero-cta', href);
     setText('.gg-info-panel__date', dateText);
     setText('.gg-info-panel__comments', commentsText);
-    setText('.gg-info-panel__readtime', '…');
+    setText('.gg-info-panel__readtime', '—');
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
 
@@ -3274,11 +3017,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     // author & placeholder blocks
     var author = extractAuthor(card);
     renderPeople('author', [author]);
-    setSectionVisible('author', true);
-
-    var contrib = extractContributors(card);
-    renderPeople('contributors', contrib);
-    setSectionVisible('contributors', contrib.length > 0);
 
     // labels row
     if(labels && labels.length){
@@ -3287,11 +3025,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }else{
       setRowVisible('.gg-info-panel__row--labels', false);
     }
-
-    // tags section
-    var tags = extractTags(card);
-    fillChipsToSlot('tags', tags, 12);
-    setRowVisible('.gg-info-panel__row--tags', tags.length > 0);
 
 
     // snippet: quick from card (if any)
@@ -3305,10 +3038,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       setRowVisible('.gg-info-panel__row--snippet', false);
     }
 
-    // TOC async load
-    setLoadingState();
-    hydrateFromPost(href, card.getAttribute('data-id') || '');
-
     if (panel) panel.hidden = false;
     setBackdropVisible(true);
     if (GG.modules.Panels && GG.modules.Panels.setRight) {
@@ -3316,12 +3045,20 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (main) {
       main.setAttribute('data-gg-info-panel', 'open');
     }
-    var closeBtn = qs('.gg-info-panel__close', panel);
-    if (closeBtn && closeBtn.focus) {
-      try { closeBtn.focus({ preventScroll: true }); } catch(_) {}
-    } else if (panel && panel.focus) {
-      panel.setAttribute('tabindex', '-1');
-      try { panel.focus({ preventScroll: true }); } catch(_) {}
+    if (opts.lock === true) {
+      setLockState(card);
+    } else if (opts.lock === false) {
+      setLockState(null);
+    }
+
+    if (opts.focusPanel !== false) {
+      var closeBtn = qs('.gg-info-panel__close', panel);
+      if (closeBtn && closeBtn.focus) {
+        try { closeBtn.focus({ preventScroll: true }); } catch(_) {}
+      } else if (panel && panel.focus) {
+        panel.setAttribute('tabindex', '-1');
+        try { panel.focus({ preventScroll: true }); } catch(_) {}
+      }
     }
   }
 
@@ -3331,47 +3068,38 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (main) {
       main.setAttribute('data-gg-info-panel', 'closed');
     }
-    if (panel) panel.hidden = true;
+    if (panel) {
+      panel.hidden = true;
+      panel.__ggPreviewCard = null;
+    }
+    setLockState(null);
+    hoverCardKey = '';
     setBackdropVisible(false);
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
       try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
     }
   }
 
-  async function hydrateFromPost(postUrl, postId){
-    // cache hit
-    var c = cache[postUrl];
-    if(c && (Date.now() - c.ts) < 1000 * 60 * 60 * 12){
-      if(c.readtime) setText('.gg-info-panel__readtime', c.readtime);
-      if(c.snippet){
-        setText('.gg-info-panel__snippet', c.snippet);
-        setRowVisible('.gg-info-panel__row--snippet', true);
-      }
-      renderToc(c.tocItems || [], postUrl);
-      return;
-    }
+  function handlePreviewHover(evt){
+    if (!canHoverPreview()) return;
+    if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
+    var card = closest(evt.target, '.gg-post-card');
+    if (!card) return;
+    if (isLockedToOtherCard(card)) return;
+    var key = cardKey(card);
+    if (!key || key === hoverCardKey) return;
+    hoverCardKey = key;
+    openWithCard(card, null, { focusPanel: false });
+  }
 
-    try{
-      var doc = await loadPostDoc(postUrl, postId);
-      var bodyText = extractTextFromDoc(doc);
-      var tocItems = extractHeadingsFromDoc(doc);
-      var readtime = computeReadTimeFromText(bodyText);
-      var snippet = extractSnippetFromDoc(doc, 45);
-
-      cache[postUrl] = { ts: Date.now(), tocItems: tocItems, snippet: snippet, readtime: readtime };
-
-      setText('.gg-info-panel__readtime', readtime);
-      if(snippet){
-        setText('.gg-info-panel__snippet', snippet);
-        setRowVisible('.gg-info-panel__row--snippet', true);
-      }
-      renderToc(tocItems, postUrl);
-
-    }catch(err){
-      var empty = qs('[data-gg-slot="toc-empty"]', panel);
-      if(empty){ empty.textContent = 'Failed to load TOC.'; empty.hidden = false; }
-      setText('.gg-info-panel__readtime', '—');
-    }
+  function handlePreviewFocus(evt){
+    var card = closest(evt.target, '.gg-post-card');
+    if (!card) return;
+    if (isLockedToOtherCard(card)) return;
+    var key = cardKey(card);
+    if (!key || key === hoverCardKey) return;
+    hoverCardKey = key;
+    openWithCard(card, null, { focusPanel: false });
   }
 
   function handleClick(evt){
@@ -3380,7 +3108,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(infoBtn, '.gg-post-card');
     if (!card) return;
     evt.preventDefault();
-    openWithCard(card, infoBtn);
+    if (cardKey(card) && cardKey(card) === lockedCardKey) {
+      openWithCard(card, infoBtn, { lock: false, focusPanel: true });
+      return;
+    }
+    openWithCard(card, infoBtn, { lock: true, focusPanel: true });
   }
 
   function init(mainEl){
@@ -3398,6 +3130,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!main.__ggInfoPanelBound){
       main.__ggInfoPanelBound = true;
       main.addEventListener('click', handleClick, true);
+      main.addEventListener('pointerover', handlePreviewHover, true);
+      main.addEventListener('focusin', handlePreviewFocus, true);
     }
     if (!panel.__ggInfoPanelBound){
       panel.__ggInfoPanelBound = true;
@@ -3405,6 +3139,17 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         if (closest(e.target, '[data-gg-action="info-close"]')) {
           e.preventDefault();
           handleClose();
+          return;
+        }
+        if (closest(e.target, '[data-gg-action="info-lock"]')) {
+          e.preventDefault();
+          var activeCard = panel.__ggPreviewCard || null;
+          if (!activeCard) return;
+          if (cardKey(activeCard) === lockedCardKey) {
+            setLockState(null);
+          } else {
+            setLockState(activeCard);
+          }
         }
       }, true);
     }
@@ -3412,10 +3157,12 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       closeObserver = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
           if (muts[i].attributeName === 'data-gg-info-panel') {
-            if (main.getAttribute('data-gg-info-panel') === 'closed' && lastTrigger) {
+            if (main.getAttribute('data-gg-info-panel') === 'closed') {
               if (panel) panel.hidden = true;
+              setLockState(null);
+              hoverCardKey = '';
               setBackdropVisible(false);
-              if (typeof lastTrigger.focus === 'function') {
+              if (lastTrigger && typeof lastTrigger.focus === 'function') {
                 try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
               }
             }
