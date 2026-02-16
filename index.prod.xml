@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='2187a05' name='gg-release'/>
+    <meta content='a36479b' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/2187a05/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/2187a05/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/a36479b/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/a36479b/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -209,7 +209,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='2187a05' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='a36479b' hidden='hidden' id='gg-fingerprint'/>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->
@@ -1127,10 +1127,28 @@ Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:w
           <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-bookish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Bookish</span>
+          <span class='gg-mixed__headline'>Curated stories are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Bookish</span>
+          <span class='gg-mixed__headline'>Curated stories are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML10' locked='false' title='THE MIXED-MEDIA LAYOUT: YOUTUBEISH' type='HTML' visible='true'>
@@ -1138,10 +1156,28 @@ Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:w
           <b:widget-setting name='content'>(Landscape 16:9, Rail Horizontal) memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-youtubeish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>YouTubeish</span>
+          <span class='gg-mixed__headline'>Video rail will render on view.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>YouTubeish</span>
+          <span class='gg-mixed__headline'>Video rail will render on view.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML11' locked='false' title='THE MIXED-MEDIA LAYOUT: YOUTUBE SHORTISH' type='HTML' visible='true'>
@@ -1149,10 +1185,28 @@ Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:w
           <b:widget-setting name='content'>(Portrait 9:16, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-shortish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Shortish</span>
+          <span class='gg-mixed__headline'>Short-form highlights are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Shortish</span>
+          <span class='gg-mixed__headline'>Short-form highlights are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML6' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 1' type='HTML' visible='true'>
@@ -1162,10 +1216,28 @@ Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:w
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-max='6' data-gg-module='mixed-media' id='gg-mixed-newsish-1'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML12' locked='false' title='THE MIXED-MEDIA LAYOUT: PODCASTISH' type='HTML' visible='true'>
@@ -1173,10 +1245,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Square 1:1, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-podcastish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Podcastish</span>
+          <span class='gg-mixed__headline'>Audio picks are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Podcastish</span>
+          <span class='gg-mixed__headline'>Audio picks are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML7' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 2' type='HTML' visible='true'>
@@ -1186,10 +1276,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-max='6' data-gg-module='mixed-media' id='gg-mixed-newsish-2'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML13' locked='false' title='THE MIXED-MEDIA LAYOUT: INSTAGRAMISH' type='HTML' visible='true'>
@@ -1197,10 +1305,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Grid 4:6). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-instagramish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Instagramish</span>
+          <span class='gg-mixed__headline'>Visual grid is loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Instagramish</span>
+          <span class='gg-mixed__headline'>Visual grid is loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
       <b:widget id='HTML8' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 3' type='HTML' visible='true'>
@@ -1210,10 +1336,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-max='6' data-gg-module='mixed-media' id='gg-mixed-newsish-3'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
       </b:widget>
     </b:section>
@@ -2374,10 +2518,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='content'>(Ratio 1:1.48, 16 item). memanggil API Blogger (/feeds/posts/summary?orderby=published) based on spesific label Show image thumbnail</b:widget-setting>
               </b:widget-settings>
               <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='popular' data-gg-label='blog' data-gg-max='12' data-gg-module='mixed-media' id='gg-mixed-popular'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Popular</span>
+          <span class='gg-mixed__headline'>Popular stories are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Popular</span>
+          <span class='gg-mixed__headline'>Popular stories are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
             </b:widget>
             <b:widget id='HTML9' locked='false' title='THE MIXED-MEDIA LAYOUT: NEWSISH 4' type='HTML' visible='true'>
@@ -2387,10 +2549,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
               </b:widget-settings>
               <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-max='6' data-gg-module='mixed-media' id='gg-mixed-newsish-4'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Newsish</span>
+          <span class='gg-mixed__headline'>Headline cards are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
             </b:widget>
             <b:widget id='HTML14' locked='false' title='THE MIXED-MEDIA LAYOUT: PINTERESTISH' type='HTML' visible='true'>
@@ -2398,10 +2578,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
               </b:widget-settings>
               <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <section class='gg-mixed' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-module='mixed-media' id='gg-mixed-pinterestish'>
+    <div class='gg-mixed__head'>
+      <h3 class='gg-mixed__title'><data:title/></h3>
+      <p class='gg-mixed__status' data-gg-mixed-status='1'>Preparing feed…</p>
+    </div>
+    <div class='gg-mixed__grid' data-gg-mixed-grid='1'>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Pinterestish</span>
+          <span class='gg-mixed__headline'>Masonry cards are loading.</span>
+        </span>
+      </article>
+      <article class='gg-mixed__card gg-mixed__card--placeholder'>
+        <span class='gg-mixed__thumb'/>
+        <span class='gg-mixed__body'>
+          <span class='gg-mixed__kicker'>Pinterestish</span>
+          <span class='gg-mixed__headline'>Masonry cards are loading.</span>
+        </span>
+      </article>
+    </div>
+  </section>
 </b:includable>
             </b:widget>
           </b:section>
@@ -2833,7 +3031,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/2187a05/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/a36479b/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

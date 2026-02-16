@@ -18,6 +18,10 @@ if ! "${ROOT}/tools/check-links.sh"; then
   die "check-links failed"
 fi
 
+if ! node "${ROOT}/tools/verify-ui-guardrails.mjs"; then
+  die "verify-ui-guardrails failed"
+fi
+
 read_release_id_from_capsule() {
   local file="${ROOT}/docs/ledger/GG_CAPSULE.md"
   if [[ ! -f "${file}" ]]; then
@@ -543,6 +547,51 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r'
   }
 
+  live_blog_hard_refresh_check() {
+    local rounds="${1:-5}"
+    local i
+    for (( i=1; i<=rounds; i++ )); do
+      local ts hdr body status html postcards_tag cache_control
+      ts="$(date +%s)"
+      hdr="$(mktemp)"
+      body="$(mktemp)"
+      if ! curl -sS -D "${hdr}" -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${BASE}/blog?x=${ts}${i}" -o "${body}"; then
+        rm -f "${hdr}" "${body}"
+        die "LIVE_HTML /blog hard refresh #${i} request failed"
+      fi
+      status="$(awk 'NR==1 {print $2}' "${hdr}")"
+      cache_control="$(awk -F': *' 'tolower($1)=="cache-control"{print tolower($2); exit}' "${hdr}" | tr -d '\r')"
+      html="$(tr -d '\r' < "${body}")"
+      rm -f "${hdr}" "${body}"
+
+      if [[ "${status}" != "200" ]]; then
+        die "LIVE_HTML /blog hard refresh #${i} status (got ${status}, want 200)"
+      fi
+      if [[ -z "${cache_control}" ]] || ! grep -Eqi '(^|,)[[:space:]]*no-store([[:space:]]*,|$)' <<<"${cache_control}"; then
+        die "LIVE_HTML /blog hard refresh #${i} cache-control must include no-store (got: ${cache_control:-missing})"
+      fi
+      if ! grep -Eqi 'data-gg-prehome=["'"'"']blog["'"'"']' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-prehome=\"blog\""
+      fi
+      if ! grep -Eqi 'data-gg-surface=["'"'"']listing["'"'"']' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
+      fi
+
+      postcards_tag="$(grep -Eoi '<[^>]*id=["'"'"']postcards["'"'"'][^>]*>' <<<"${html}" | head -n 1 || true)"
+      if [[ -z "${postcards_tag}" ]]; then
+        die "LIVE_HTML /blog hard refresh #${i} missing #postcards"
+      fi
+      if grep -Eqi '\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0([;\s>]|$)' <<<"${postcards_tag}"; then
+        echo "DEBUG: #postcards tag: ${postcards_tag}"
+        die "LIVE_HTML /blog hard refresh #${i} #postcards appears hidden"
+      fi
+      if grep -Eqi '#postcards\s*\[\s*data-gg-skeleton\s*=\s*["'"'"']on["'"'"']\s*\]\s*\{[^}]*visibility\s*:\s*hidden' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} found hidden-SSR skeleton css"
+      fi
+    done
+    echo "PASS: LIVE_HTML /blog hard refresh contract (${rounds}x)"
+  }
+
   live_has_token() {
     local url="$1"
     local token="$2"
@@ -640,6 +689,7 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
 
   live_dom_check_page "${BASE}/" "home"
   live_dom_check_page "${BASE}/blog" "blog"
+  live_blog_hard_refresh_check 5
 
   if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
     die "verify-router-contract failed"

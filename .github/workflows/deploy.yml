@@ -87,6 +87,9 @@ jobs:
       - name: Verify router contract
         run: node tools/verify-router-contract.mjs
 
+      - name: Verify UI guardrails
+        run: node tools/verify-ui-guardrails.mjs
+
       - name: Verify performance budgets
         run: node tools/verify-budgets.mjs
 

@@ -3845,7 +3845,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       list.dataset.ggSkeletonInit = '1';
 
       var skeleton = document.createElement('div');
-      skeleton.className = 'gg-skeleton-grid';
+      skeleton.className = 'gg-skeleton-grid gg-skeleton-grid--overlay';
 
       var count = Math.min(8, Math.max(4, list.children.length || 6));
       for(var i=0;i<count;i++){
@@ -3853,7 +3853,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       }
 
       list.setAttribute('data-gg-skeleton', 'on');
-      list.parentNode.insertBefore(skeleton, list);
+      list.appendChild(skeleton);
 
       var revealed = false;
       function reveal(){

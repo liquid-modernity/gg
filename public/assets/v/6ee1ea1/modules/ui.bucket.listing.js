@@ -2121,5 +2121,7 @@
   GG.modules.prefetch.init = GG.modules.prefetch.init || init;
 })();
 
+(function(G,w,d){'use strict';if(!G||!d.querySelector('[data-gg-module="mixed-media"]'))return;function i(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init){G.modules.mixedMedia.init();return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.mixed.js').then(function(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init)G.modules.mixedMedia.init();}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);
+
 
 })(window);

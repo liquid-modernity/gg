@@ -51,6 +51,35 @@ function validateCore(core, label) {
     if (!/location\.assign/.test(navigateBlock)) {
       failures.push(`${label}: router.navigate must call location.assign for /search`);
     }
+    const preSurfaceIdx = navigateBlock.indexOf("router._applySurface(url)");
+    const loadIdx = navigateBlock.indexOf("router._load(url");
+    if (preSurfaceIdx === -1) {
+      failures.push(`${label}: router.navigate must pre-apply router._applySurface(url) before load`);
+    }
+    if (preSurfaceIdx !== -1 && loadIdx !== -1 && preSurfaceIdx > loadIdx) {
+      failures.push(`${label}: router.navigate applies surface after router._load (causes FOUC risk)`);
+    }
+  }
+
+  const loadBlock = sliceBetween(core, "router._load", "router.handleClick");
+  if (!loadBlock) {
+    failures.push(`${label}: router._load block not found`);
+  } else {
+    const renderIdx = loadBlock.indexOf("GG.core.render.apply(html, url)");
+    const surfaceIdx = loadBlock.indexOf("router._applySurface(url)");
+    const postRenderScrollIdx = loadBlock.indexOf("if (typeof scrollY === 'number') w.scrollTo");
+    if (renderIdx === -1) {
+      failures.push(`${label}: router._load must call GG.core.render.apply(html, url)`);
+    }
+    if (surfaceIdx === -1) {
+      failures.push(`${label}: router._load must re-apply router._applySurface(url) after render`);
+    }
+    if (renderIdx !== -1 && surfaceIdx !== -1 && surfaceIdx < renderIdx) {
+      failures.push(`${label}: router._applySurface(url) must run after render.apply`);
+    }
+    if (surfaceIdx !== -1 && postRenderScrollIdx !== -1 && surfaceIdx > postRenderScrollIdx) {
+      failures.push(`${label}: router._applySurface(url) must run before scroll/route finalization`);
+    }
   }
 
   const shouldMatch = core.match(/router\._shouldIntercept[\s\S]*?};/);
