@@ -217,13 +217,13 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     "order": "published"
   },
   "sections": [
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":8,"kicker":"BOOKISH"},
-    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":8,"kicker":"YOUTUBE"},
-    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":8,"kicker":"SHORTS"},
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"kicker":"YOUTUBE"},
+    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"kicker":"SHORTS"},
     {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":8,"kicker":"PODCAST"},
+    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"kicker":"PODCAST"},
     {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":8,"kicker":"INSTAGRAM"},
+    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":4,"kicker":"INSTAGRAM"},
     {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
     {"id":"gg-mixed-popular","type":"bookish","label":"blog","max":16,"kicker":"POPULAR"},
     {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
@@ -539,7 +539,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     </div>
   </b:includable>
           </b:widget>
-          <b:widget id='HTML17' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML17' locked='false' title='Governance &amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html">About & Philosophy</a></li>
@@ -583,7 +583,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML19' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML19' locked='false' title='Services &amp; Connect' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html">Help Center</a></li>
@@ -606,7 +606,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML20' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML20' locked='false' title='Legal &amp; Compliance' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html">Privacy Policy</a></li>
@@ -628,7 +628,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML21' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML21' locked='false' title='AI &amp; Ads Files' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item">
@@ -785,7 +785,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     </div>
   </b:includable>
           </b:widget>
-          <b:widget id='HTML22' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML22' locked='false' title='Governance &amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html">About & Philosophy</a></li>
@@ -829,7 +829,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML24' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML24' locked='false' title='Services &amp; Connect' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html">Help Center</a></li>
@@ -852,7 +852,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML25' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML25' locked='false' title='Legal &amp; Compliance' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html">Privacy Policy</a></li>
@@ -874,7 +874,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML26' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML26' locked='false' title='AI &amp; Ads Files' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item">
@@ -1204,7 +1204,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='8' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
+    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
         <h2 class='gg-mixed__title'><data:title/></h2>
@@ -1239,7 +1239,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Landscape 16:9, Rail Horizontal) memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='youtube' data-max='8' data-order='published' data-type='youtube' id='gg-mixed-youtubeish'>
+    <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='youtube' data-max='3' data-order='published' data-type='youtube' id='gg-mixed-youtubeish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>YOUTUBE</p>
         <h2 class='gg-mixed__title'><data:title/></h2>
@@ -1274,7 +1274,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Portrait 9:16, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='shorts' data-max='8' data-order='published' data-type='shorts' id='gg-mixed-shortish'>
+    <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='shorts' data-max='5' data-order='published' data-type='shorts' id='gg-mixed-shortish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>SHORTS</p>
         <h2 class='gg-mixed__title'><data:title/></h2>
@@ -1346,7 +1346,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Square 1:1, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='podcast' data-max='8' data-order='published' data-type='podcast' id='gg-mixed-podcastish'>
+    <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='6' data-gg-mixed='1' data-gg-module='mixed-media' data-label='podcast' data-max='6' data-order='published' data-type='podcast' id='gg-mixed-podcastish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>PODCAST</p>
         <h2 class='gg-mixed__title'><data:title/></h2>
@@ -1418,7 +1418,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Grid 4:6). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='instagram' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-instagramish'>
+    <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='instagram' data-max='4' data-order='published' data-type='instagram' id='gg-mixed-instagramish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>INSTAGRAM</p>
         <h2 class='gg-mixed__title'><data:title/></h2>

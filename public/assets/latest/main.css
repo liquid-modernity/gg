@@ -1776,8 +1776,7 @@ a.gg-search-assist__item > small{
 }
 .gg-mixed[data-type="bookish"],
 .gg-mixed[data-gg-kind="bookish"],
-.gg-mixed[data-gg-kind="popular"],
-.gg-mixed[data-label="blog"]{
+.gg-mixed[data-gg-kind="popular"]{
   --gg-mixed-ratio: 1 / 1.48;
 }
 .gg-mixed[data-type="instagram"],

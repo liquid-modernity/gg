@@ -272,6 +272,27 @@ body:not([data-gg-surface="landing"]) .hero-section {
   <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))'>
     <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'/>
+    <script id='gg-mixed-config' type='application/json'><![CDATA[
+{
+  "fetch": {
+    "max_results": 84,
+    "order": "published"
+  },
+  "sections": [
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"kicker":"YOUTUBE"},
+    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"kicker":"SHORTS"},
+    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"kicker":"PODCAST"},
+    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":4,"kicker":"INSTAGRAM"},
+    {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-popular","type":"bookish","label":"blog","max":16,"kicker":"POPULAR"},
+    {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","max":6,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-pinterestish","type":"instagram","label":"pinterest","max":8,"kicker":"PINTEREST"}
+  ]
+}
+]]></script>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->
