@@ -3303,6 +3303,10 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       'support': 'volunteer_activism'
     };
 
+    function textOf(el){
+      return el ? String(el.textContent || '').trim() : '';
+    }
+
     function pickIcon(text){
       var key = (text || '').toLowerCase();
       var found = Object.keys(ICON_MAP).find(function(k){ return key.indexOf(k) !== -1; });
@@ -3322,11 +3326,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
 
     function pickGroupIcon(id, title){
-      if (id === 'HTML17') return 'verified_user';
-      if (id === 'HTML18') return 'hub';
-      if (id === 'HTML19') return 'support_agent';
-      if (id === 'HTML20') return 'gavel';
-      if (id === 'HTML21') return 'article';
+      if (id === 'HTML17' || id === 'HTML22') return 'verified_user';
+      if (id === 'HTML18' || id === 'HTML23') return 'hub';
+      if (id === 'HTML19' || id === 'HTML24') return 'support_agent';
+      if (id === 'HTML20' || id === 'HTML25') return 'gavel';
+      if (id === 'HTML21' || id === 'HTML26') return 'article';
       return pickLinkIcon(title || id || '', '');
     }
 
@@ -3340,15 +3344,27 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       return (raw || '').replace(/[)\],.;]+$/g, '');
     }
 
+    function normalizeTitle(raw){
+      var title = String(raw || '').trim();
+      title = title.replace(/^page\s*\d+\s*custom\s*:\s*/i, '');
+      return title || 'Pages';
+    }
+
     function guessLabelFromUrl(url){
       try {
         var u = new URL(url, window.location.href);
         var p = (u.pathname || '').split('/').filter(Boolean).pop() || u.hostname || url;
-        p = p.replace(/[-_]+/g, ' ');
-        return p;
+        p = p.replace(/\.[a-z0-9]+$/i, '');
+        p = p.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+        return p.replace(/\b\w/g, function(m){ return m.toUpperCase(); });
       } catch (_) {
         return (url || '').replace(/^https?:\/\//i, '');
       }
+    }
+
+    function looksLikeUrlText(text){
+      var v = String(text || '').trim();
+      return /^https?:\/\//i.test(v) || /^www\./i.test(v) || /^[-a-z0-9]+\.[a-z]{2,}(\/|$)/i.test(v);
     }
 
     function parseWidgetEntries(raw){
@@ -3361,31 +3377,20 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         var line = lines[i];
         var pair = line.match(/^([^:]+):\s*(https?:\/\/\S+)$/i);
         if (pair) {
-          var note = '';
-          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
-            note = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
-            i++;
-          }
           out.push({
             label: (pair[1] || '').trim(),
             url: cleanUrl(pair[2]),
-            note: note
+            note: ''
           });
           continue;
         }
 
         var direct = line.match(/^(https?:\/\/\S+)$/i);
         if (direct) {
-          var dUrl = cleanUrl(direct[1]);
-          var dNote = '';
-          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
-            dNote = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
-            i++;
-          }
           out.push({
-            label: guessLabelFromUrl(dUrl),
-            url: dUrl,
-            note: dNote
+            label: guessLabelFromUrl(cleanUrl(direct[1])),
+            url: cleanUrl(direct[1]),
+            note: ''
           });
           continue;
         }
@@ -3398,93 +3403,151 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       return out;
     }
 
-    function renderWidgetEntries(widget){
-      var content = qs('.widget-content', widget);
-      if (!content || qs('.gg-leftnav__group', content)) return;
-      var entries = parseWidgetEntries(content.textContent || '');
-      if (!entries.length) return;
-
+    function renderEntriesAsList(itemsRoot, entries){
+      if (!itemsRoot || !entries || !entries.length) return;
       var ul = document.createElement('ul');
-      ul.className = 'gg-leftnav__group';
+      ul.className = 'gg-navtree__list';
 
       entries.forEach(function(item){
         if (!item.url) return;
         var li = document.createElement('li');
+        li.className = 'gg-navtree__item';
+
         var a = document.createElement('a');
-        a.className = 'gg-leftnav__link gg-leftnav__link--page';
+        a.className = 'gg-leftnav__link gg-leftnav__link--page gg-navtree__link';
         a.href = item.url;
         a.textContent = item.label || guessLabelFromUrl(item.url);
         a.setAttribute('data-gg-icon', pickLinkIcon(a.textContent, item.url));
         li.appendChild(a);
+
         if (item.note) {
-          var note = document.createElement('p');
-          note.className = 'gg-leftnav__note';
+          var note = document.createElement('small');
+          note.className = 'gg-navtree__note';
           note.textContent = item.note;
           li.appendChild(note);
         }
         ul.appendChild(li);
       });
 
-      content.innerHTML = '';
-      content.appendChild(ul);
+      itemsRoot.innerHTML = '';
+      itemsRoot.appendChild(ul);
     }
 
-    function setAccordionState(widget, open){
-      var btn = qs('.gg-leftnav-acc__btn', widget);
-      GG.core.state.toggle(widget, 'open', !!open);
-      GG.core.state.toggle(widget, 'collapsed', !open);
-      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
+    function normalizeItems(itemsRoot){
+      if (!itemsRoot) return;
+      itemsRoot.classList.add('gg-navtree__items');
 
-    function prepareAccordionWidget(widget, index){
-      if (!widget) return;
-      var titleEl = qs('.widget-title,.title', widget);
-      if (!titleEl) return;
-      var titleText = getText(titleEl) || widget.getAttribute('title') || 'Pages';
-      var btn = qs('.gg-leftnav-acc__btn', titleEl);
-      if (!btn) {
-        titleEl.innerHTML = '';
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'gg-leftnav-acc__btn';
-        btn.setAttribute('data-gg-action', 'leftnav-acc-toggle');
-        btn.innerHTML =
-          '<span class="material-symbols-rounded gg-leftnav-acc__ico" aria-hidden="true"></span>' +
-          '<span class="gg-leftnav-acc__txt"></span>' +
-          '<span class="material-symbols-rounded gg-leftnav-acc__chev" aria-hidden="true">expand_more</span>';
-        titleEl.appendChild(btn);
-      }
-
-      var txt = qs('.gg-leftnav-acc__txt', btn);
-      var ico = qs('.gg-leftnav-acc__ico', btn);
-      if (txt) txt.textContent = titleText;
-      if (ico) ico.textContent = pickGroupIcon(widget.id || '', titleText);
-
-      widget.classList.add('gg-leftnav-acc');
-      if (!GG.core.state.has(widget, 'open') && !GG.core.state.has(widget, 'collapsed')) {
-        setAccordionState(widget, index === 0);
-      }
-    }
-
-    function bindCustomAccordion(root){
-      if (!root || root.__ggLeftNavAccBound) return;
-      root.__ggLeftNavAccBound = true;
-      root.addEventListener('click', function(evt){
-        var btn = evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="leftnav-acc-toggle"]') : null;
-        if (!btn || !root.contains(btn)) return;
-        var widget = btn.closest('.widget.gg-leftnav-acc');
-        if (!widget) return;
-
-        var isOpen = GG.core.state.has(widget, 'open');
-        if (isOpen) {
-          setAccordionState(widget, false);
-        } else {
-          qsa('.widget.gg-leftnav-acc', root).forEach(function(el){
-            setAccordionState(el, el === widget);
-          });
+      var hasAnchors = qsa('a[href]', itemsRoot).length > 0;
+      if (!hasAnchors) {
+        var parsed = parseWidgetEntries(itemsRoot.textContent || '');
+        if (parsed.length) {
+          renderEntriesAsList(itemsRoot, parsed);
+          hasAnchors = true;
         }
-        evt.preventDefault();
-      }, true);
+      }
+
+      var list = qs('.gg-navtree__list', itemsRoot) || qs('ul,ol', itemsRoot);
+      if (list && !list.classList.contains('gg-navtree__list')) {
+        list.classList.add('gg-navtree__list');
+      }
+
+      if (!list && hasAnchors) {
+        list = document.createElement('ul');
+        list.className = 'gg-navtree__list';
+        var anchors = qsa('a[href]', itemsRoot);
+        anchors.forEach(function(a){
+          var li = document.createElement('li');
+          li.className = 'gg-navtree__item';
+          li.appendChild(a);
+          list.appendChild(li);
+        });
+        itemsRoot.innerHTML = '';
+        itemsRoot.appendChild(list);
+      }
+
+      if (!list) return;
+
+      Array.prototype.slice.call(list.children || []).forEach(function(li){
+        if (!li || li.nodeType !== 1) return;
+        li.classList.add('gg-navtree__item');
+        qsa('small,p', li).forEach(function(note){
+          note.classList.add('gg-navtree__note');
+          note.textContent = textOf(note).replace(/^fungsi\s*:\s*/i, '');
+        });
+      });
+
+      qsa('a[href]', list).forEach(function(a){
+        var href = a.getAttribute('href') || '';
+        var txt = textOf(a);
+        a.classList.add('gg-leftnav__link', 'gg-leftnav__link--page', 'gg-navtree__link');
+        if (!txt || looksLikeUrlText(txt) || txt === href) {
+          a.textContent = guessLabelFromUrl(href || txt);
+        }
+        if (!a.getAttribute('data-gg-icon')) {
+          a.setAttribute('data-gg-icon', pickLinkIcon(textOf(a), href));
+        }
+      });
+    }
+
+    function ensureSummary(details, title, icon){
+      if (!details) return;
+      var summary = qs('.gg-navtree__summary', details);
+      if (!summary) {
+        summary = document.createElement('summary');
+        summary.className = 'gg-navtree__summary';
+        summary.innerHTML =
+          '<span class="gg-navtree__summary-icon material-symbols-rounded" aria-hidden="true"></span>' +
+          '<span class="gg-navtree__summary-text"></span>' +
+          '<span class="gg-navtree__summary-chev material-symbols-rounded" aria-hidden="true">expand_more</span>';
+        details.insertBefore(summary, details.firstChild);
+      }
+
+      var ico = qs('.gg-navtree__summary-icon', summary);
+      var txt = qs('.gg-navtree__summary-text', summary);
+      var chev = qs('.gg-navtree__summary-chev', summary);
+      if (ico) ico.textContent = icon || 'folder';
+      if (txt && !textOf(txt)) txt.textContent = title;
+      if (txt && textOf(txt)) txt.textContent = normalizeTitle(textOf(txt));
+      if (chev && !textOf(chev)) chev.textContent = 'expand_more';
+    }
+
+    function ensureNavTreeWidget(widget){
+      if (!widget) return;
+      var titleText = normalizeTitle(widget.getAttribute('title') || textOf(qs('.widget-title,.title', widget)));
+      var icon = pickGroupIcon(widget.id || '', titleText);
+
+      var details = qs('details.gg-navtree', widget) || qs('details', widget);
+      if (!details) {
+        var content = qs('.widget-content', widget);
+        if (!content) return;
+        details = document.createElement('details');
+        details.className = 'gg-navtree';
+        details.setAttribute('data-gg-default', 'closed');
+        widget.insertBefore(details, widget.firstChild);
+        details.appendChild(content);
+      }
+
+      details.classList.add('gg-navtree');
+      details.setAttribute('data-gg-icon', icon);
+
+      ensureSummary(details, titleText, icon);
+
+      var items = qs('.gg-navtree__items', details) || qs('.widget-content', details);
+      if (!items) {
+        items = document.createElement('div');
+        items.className = 'widget-content gg-navtree__items';
+        details.appendChild(items);
+      } else {
+        items.classList.add('widget-content', 'gg-navtree__items');
+      }
+      normalizeItems(items);
+
+      if (!details.hasAttribute('data-gg-default')) {
+        details.setAttribute('data-gg-default', 'closed');
+      }
+      if ((details.getAttribute('data-gg-default') || '').toLowerCase() !== 'open') {
+        details.removeAttribute('open');
+      }
     }
 
     function enhanceCustomPages(root){
@@ -3494,17 +3557,15 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         if (el && root.contains(el)) widgets.push(el);
       });
       if (!widgets.length) return;
-      widgets.forEach(function(widget, index){
-        renderWidgetEntries(widget);
-        prepareAccordionWidget(widget, index);
+      widgets.forEach(function(widget){
+        ensureNavTreeWidget(widget);
       });
-      bindCustomAccordion(root);
     }
 
     function decorateLinks(root){
       qsa('.PageList ul li a, .LinkList ul li a', root).forEach(function (a) {
         a.classList.add('gg-leftnav__link');
-        a.setAttribute('data-gg-icon', pickIcon(getText(a)));
+        a.setAttribute('data-gg-icon', pickIcon(textOf(a)));
       });
 
       qsa('.Label ul > li > a', root).forEach(function (a) {
@@ -3545,11 +3606,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
             toggle.setAttribute('aria-expanded', 'true');
           }
 
-          var name = getText(link);
+          var name = textOf(link);
           if (name === 'Label 1' || name === 'Label 6') {
             if (!qs(':scope > ul', li)) {
               var childUl = document.createElement('ul');
-              ['Post 1 of ' + name, 'Post 2 of ' + name].forEach(function (title, idx) {
+              ['Post 1 of ' + name, 'Post 2 of ' + name].forEach(function (title) {
                 var childLi = document.createElement('li');
                 var a = document.createElement('a');
                 a.className = 'gg-leftnav__link';
