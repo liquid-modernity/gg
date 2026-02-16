@@ -68,70 +68,53 @@ const loadFlags = async (env) => {
   return { ...flags };
 };
 
-const parseTagAttrs = (tag) => {
-  const attrs = {};
-  if (!tag) return attrs;
-  const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
-  let match;
-  while ((match = re.exec(tag))) {
-    const key = String(match[1] || "").trim().toLowerCase();
-    if (!key) continue;
-    const value = match[2] ?? match[3] ?? match[4] ?? "";
-    attrs[key] = value;
-  }
-  return attrs;
+const extractAttrValue = (tag, attr) => {
+  if (!tag) return "";
+  const re = new RegExp(`${attr}\\s*=\\s*(?:(['"])([^'"]*)\\1|([^\\s"'=<>\\\`]+))`, "i");
+  const match = tag.match(re);
+  return match ? String(match[2] || match[3] || "") : "";
 };
 
-const findElementById = (html, id) => {
-  if (!html || !id) return null;
-  const target = String(id).trim().toLowerCase();
-  if (!target) return null;
-  const re = /<[a-zA-Z][a-zA-Z0-9:-]*\b[^>]*>/gi;
-  let match;
-  while ((match = re.exec(html))) {
-    const tag = match[0];
-    const attrs = parseTagAttrs(tag);
-    if (String(attrs.id || "").trim().toLowerCase() === target) {
-      return { tag, attrs };
-    }
-  }
-  return null;
+const findFirstTag = (html, tagName) => {
+  if (!html) return [];
+  const re = new RegExp(`<${tagName}\\b[^>]*>`, "ig");
+  return html.match(re) || [];
 };
 
-const findMetaContent = (html, name) => {
-  if (!html) return "";
+const findMetaContentRobust = (html, name) => {
+  const tags = findFirstTag(html, "meta");
   const wanted = String(name || "").trim().toLowerCase();
-  if (!wanted) return "";
-  const re = /<meta\b[^>]*>/gi;
-  let match;
-  while ((match = re.exec(html))) {
-    const attrs = parseTagAttrs(match[0]);
-    const metaName = String(attrs.name || "").trim().toLowerCase();
+  for (const t of tags) {
+    const metaName = String(extractAttrValue(t, "name") || "").trim().toLowerCase();
     if (metaName === wanted) {
-      return String(attrs.content || "");
+      return extractAttrValue(t, "content");
     }
   }
   return "";
 };
 
+const findDivTagById = (html, id) => {
+  const tags = findFirstTag(html, "div");
+  const wanted = String(id || "").trim().toLowerCase();
+  for (const t of tags) {
+    const divId = String(extractAttrValue(t, "id") || "").trim().toLowerCase();
+    if (divId === wanted) return t;
+  }
+  return "";
+};
+
 const parseTemplateFingerprint = (html) => {
-  const envMeta = findMetaContent(html, "gg-env");
-  const relMeta = findMetaContent(html, "gg-release");
-  const fpEl = findElementById(html, "gg-fingerprint");
-  const envDiv = fpEl ? String(fpEl.attrs["data-env"] || "") : "";
-  const relDiv = fpEl ? String(fpEl.attrs["data-release"] || "") : "";
-  const hasMain = !!findElementById(html, "gg-main");
-  const hasBootMarker = /<script[^>]+src=['"][^'"]*boot\.js[^'"]*['"][^>]*>/i.test(
-    String(html || "")
-  );
+  const envMeta = findMetaContentRobust(html, "gg-env");
+  const relMeta = findMetaContentRobust(html, "gg-release");
+  const divTag = findDivTagById(html, "gg-fingerprint");
+  const envDiv = extractAttrValue(divTag, "data-env");
+  const relDiv = extractAttrValue(divTag, "data-release");
   return {
     envMeta,
     relMeta,
     envDiv,
     relDiv,
-    hasFingerprintDiv: !!fpEl,
-    hasMain,
-    hasBootMarker,
+    hasFingerprintDiv: !!divTag,
   };
 };
 
@@ -166,10 +149,11 @@ const getTemplateMismatchReasons = (fp, expectedEnv, expectedRelease) => {
   return reasons;
 };
 
-const getTemplateContractReasons = (fp) => {
+const getTemplateContractReasons = (html) => {
   const reasons = [];
-  const hasMain = !!(fp && fp.hasMain);
-  const hasBootMarker = !!(fp && fp.hasBootMarker);
+  const source = String(html || "");
+  const hasMain = /\bid\s*=\s*['"]gg-main['"]/i.test(source);
+  const hasBootMarker = /<script[^>]+src=['"][^'"]*boot\.js[^'"]*['"][^>]*>/i.test(source);
   if (!hasMain) pushReason(reasons, "missing_main");
   if (!hasBootMarker) pushReason(reasons, "missing_boot_marker");
   return reasons;
@@ -606,7 +590,7 @@ export default {
             expectedEnv,
             expectedRelease
           );
-          const contractReasons = getTemplateContractReasons(fp);
+          const contractReasons = getTemplateContractReasons(html);
           templateMismatch = mismatchReasons.length > 0;
           templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
           templateContract = contractReasons.length > 0;
@@ -906,7 +890,6 @@ export default {
           }
           out.headers.set("x-gg-template-mismatch", "1");
           out.headers.set("x-gg-template-mismatch-reason", templateMismatchReason);
-          out.headers.set("x-robots-tag", "noindex");
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");

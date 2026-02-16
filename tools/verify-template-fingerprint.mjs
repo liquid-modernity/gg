@@ -233,8 +233,8 @@ const runMismatchTest = async () => {
       failures.push("mismatch test: Cache-Control missing no-store");
     }
     const robots = (res.headers.get("x-robots-tag") || "").trim().toLowerCase();
-    if (robots !== "noindex") {
-      failures.push(`mismatch test: x-robots-tag must be noindex (got ${robots || "(missing)"})`);
+    if (robots) {
+      failures.push(`mismatch test: x-robots-tag must be absent (got ${robots})`);
     }
     const contractHeader = (res.headers.get("x-gg-template-contract") || "").trim();
     const contractReason = (res.headers.get("x-gg-template-contract-reason") || "").trim();
