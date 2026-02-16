@@ -93,15 +93,34 @@ const parseTemplateFingerprint = (html) => {
   return { envMeta, relMeta, envDiv, relDiv };
 };
 
-const isTemplateMismatch = (fp, expectedEnv, expectedRelease) => {
+const normalizeReleaseToken = (value) => String(value || "").trim().toLowerCase();
+
+const toAllowedReleaseSet = (expectedReleases) => {
+  const out = new Set();
+  if (expectedReleases && typeof expectedReleases[Symbol.iterator] === "function") {
+    for (const value of expectedReleases) {
+      const rel = normalizeReleaseToken(value);
+      if (rel) out.add(rel);
+    }
+    return out;
+  }
+  const rel = normalizeReleaseToken(expectedReleases);
+  if (rel) out.add(rel);
+  return out;
+};
+
+const isTemplateMismatch = (fp, expectedEnv, expectedReleases) => {
   if (!fp) return true;
   const envMeta = (fp.envMeta || "").trim().toLowerCase();
   const envDiv = (fp.envDiv || "").trim().toLowerCase();
-  const relMeta = (fp.relMeta || "").trim();
-  const relDiv = (fp.relDiv || "").trim();
+  const relMeta = normalizeReleaseToken(fp.relMeta);
+  const relDiv = normalizeReleaseToken(fp.relDiv);
+  const allowedReleases = toAllowedReleaseSet(expectedReleases);
+  if (!allowedReleases.size) return true;
   if (!envMeta || !envDiv || !relMeta || !relDiv) return true;
   if (envMeta !== expectedEnv || envDiv !== expectedEnv) return true;
-  if (relMeta !== expectedRelease || relDiv !== expectedRelease) return true;
+  if (relMeta !== relDiv) return true;
+  if (!allowedReleases.has(relMeta)) return true;
   return false;
 };
 
@@ -217,6 +236,7 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const WORKER_VERSION = "60c59c4";
+    const TEMPLATE_ALLOWED_RELEASES = ["60c59c4", "c71c607"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -522,11 +542,12 @@ export default {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
         const expectedEnv = "prod";
+        const allowedTemplateReleases = new Set([WORKER_VERSION, ...TEMPLATE_ALLOWED_RELEASES]);
         let templateMismatch = false;
         try {
           const html = await originRes.clone().text();
           const fp = parseTemplateFingerprint(html);
-          templateMismatch = isTemplateMismatch(fp, expectedEnv, WORKER_VERSION);
+          templateMismatch = isTemplateMismatch(fp, expectedEnv, allowedTemplateReleases);
         } catch (e) {
           templateMismatch = true;
         }
@@ -811,12 +832,6 @@ export default {
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");
-          // Prefer 503 to fail-closed and avoid caches treating the HTML as valid.
-          return new Response(out.body, {
-            status: 503,
-            statusText: "Service Unavailable",
-            headers: out.headers,
-          });
         }
         return out;
       }

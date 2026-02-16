@@ -166,7 +166,7 @@ function pruneAssetReleases({ keepReleaseIds }) {
 
 ensureCleanTree();
 
-const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "5");
+const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "2");
 const keepCount = Number.isFinite(KEEP_RELEASES)
   ? Math.min(Math.max(KEEP_RELEASES, 1), 5)
   : 5;
@@ -175,6 +175,7 @@ const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
 const priorHistory = readCapsuleReleaseHistory();
 const releaseHistory = buildReleaseHistory(releaseId, priorHistory, keepCount);
+const templateAllowlist = releaseHistory.slice(0, 2);
 
 const destDir = path.join("public", "assets", "v", releaseId);
 const latestDir = path.join("public", "assets", "latest");
@@ -237,6 +238,13 @@ replaceAllOrThrow(
   /const WORKER_VERSION = \"[^\"]+\";/,
   `const WORKER_VERSION = \"${releaseId}\";`,
   "worker version"
+);
+
+replaceAllOrThrow(
+  "src/worker.js",
+  /const TEMPLATE_ALLOWED_RELEASES = \[[^\]]*\];/,
+  `const TEMPLATE_ALLOWED_RELEASES = ${JSON.stringify(templateAllowlist)};`,
+  "worker template allowlist"
 );
 
 replaceAllOrThrow(

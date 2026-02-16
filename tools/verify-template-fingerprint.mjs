@@ -218,8 +218,8 @@ const runMismatchTest = async () => {
     if (!cacheControl.includes("no-store")) {
       failures.push("mismatch test: Cache-Control missing no-store");
     }
-    if (res.status !== 503) {
-      failures.push("mismatch test: expected 503 status for mismatch HTML");
+    if (res.status !== 200) {
+      failures.push(`mismatch test: expected 200 status for mismatch HTML (got ${res.status})`);
     }
   } catch (err) {
     failures.push(`mismatch test: ${err && err.message ? err.message : String(err)}`);

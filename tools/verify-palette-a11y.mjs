@@ -200,11 +200,11 @@ async function main() {
     const url = `${base}${page.path}?x=${Date.now()}`;
     const res = fetchPage(url, `LIVE_HTML ${page.label}`);
     const mismatch = String(res.headers["x-gg-template-mismatch"] || "").trim() === "1";
+    if (allowMismatch && mismatch) {
+      mismatchPages.push(page.label);
+      continue;
+    }
     if (res.status !== 200) {
-      if (allowMismatch && mismatch && res.status === 503) {
-        mismatchPages.push(page.label);
-        continue;
-      }
       fail(`LIVE_HTML ${page.label} status ${res.status} (${url})`);
     }
 
