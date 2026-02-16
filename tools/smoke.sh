@@ -611,9 +611,9 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     local pattern="$3"
     local debug_pattern="$4"
     local desc="$5"
-    if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
+    if ! grep -Eqi "${pattern}" <<<"${html}"; then
       echo "DEBUG: ${label} ${desc} lines"
-      printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
+      grep -Ein "${debug_pattern}" <<<"${html}" | head -n 20 || true
       die "LIVE_HTML ${label} missing ${desc}"
     fi
   }
