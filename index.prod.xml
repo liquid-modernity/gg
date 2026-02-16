@@ -1207,7 +1207,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='8' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1284,7 +1284,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='youtube' data-max='3' data-order='published' data-type='youtube' id='gg-mixed-youtubeish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>YOUTUBE</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1326,7 +1326,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='shorts' data-max='5' data-order='published' data-type='shorts' id='gg-mixed-shortish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>SHORTS</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1384,7 +1384,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,bookish,podcast' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,bookish,podcast' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-1'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1488,7 +1488,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='6' data-gg-mixed='1' data-gg-module='mixed-media' data-label='podcast' data-max='6' data-order='published' data-type='podcast' id='gg-mixed-podcastish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>PODCAST</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1553,7 +1553,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,youtube,shorts' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,youtube,shorts' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-2'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1657,7 +1657,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='instagram' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-instagramish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>INSTAGRAM</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -1736,7 +1736,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,instagram,pinterest' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,instagram,pinterest' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-3'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -3122,7 +3122,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='popular' data-gg-label='blog' data-gg-max='10' data-gg-mixed='1' data-gg-module='mixed-media' data-label='blog' data-max='10' data-order='published' data-type='popular' id='gg-mixed-popular'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>POPULAR</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -3215,7 +3215,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,blog,bookish' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,blog,bookish' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-4'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
@@ -3319,7 +3319,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <section class='gg-mixed' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='pinterest' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-pinterestish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>PINTEREST</p>
-        <h2 class='gg-mixed__title'><data:title/></h2>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
             <div class='gg-mixed__bd'>
