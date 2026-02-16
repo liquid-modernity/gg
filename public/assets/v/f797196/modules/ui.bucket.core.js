@@ -2654,6 +2654,8 @@ GG.modules.InfoPanel = (function () {
   var backdrop = null;
   var lockedCardKey = '';
   var hoverCardKey = '';
+  var tocCache = Object.create(null);
+  var tocPending = Object.create(null);
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -2730,13 +2732,6 @@ GG.modules.InfoPanel = (function () {
           '</a>' +
         '</div>' +
         '<div class="gg-editorial-preview__body gg-info-panel__details">' +
-          '<div class="gg-info-panel__sec" data-gg-sec="author">' +
-            '<div class="gg-info-panel__sechead">' +
-              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
-              '<div class="gg-info-panel__kicker">Written by</div>' +
-            '</div>' +
-            '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
-          '</div>' +
           '<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
             '<span class="gg-icon" aria-hidden="true">label</span>' +
             '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
@@ -2761,8 +2756,17 @@ GG.modules.InfoPanel = (function () {
             '<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
             '<p class="gg-info-panel__snippet"></p>' +
           '</div>' +
+          '<div class="gg-info-panel__sec gg-info-panel__sec--toc" data-gg-sec="toc">' +
+            '<div class="gg-info-panel__sechead">' +
+              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">toc</span>' +
+              '<div class="gg-info-panel__kicker">Table of contents</div>' +
+            '</div>' +
+            '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
+            '<p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p>' +
+          '</div>' +
         '</div>' +
       '</div>';
+    renderTocSkeleton(4, 'Lock this card to load headings.');
   }
 
 function extractThumbSrc(card){
@@ -2825,71 +2829,186 @@ function extractThumbSrc(card){
     if (row) row.hidden = !visible;
   }
 
-  function initials(name){
-    name = (name||'').trim();
-    if(!name) return '?';
-    var parts = name.split(/\s+/).filter(Boolean);
-    var a = parts[0] ? parts[0][0] : '';
-    var b = parts.length > 1 ? parts[parts.length-1][0] : '';
-    return (a + b).toUpperCase() || '?';
+  function setTocHint(message){
+    var hint = qs('[data-gg-slot="toc-hint"]', panel);
+    if (!hint) return;
+    var text = String(message || '').trim();
+    hint.textContent = text;
+    hint.hidden = !text;
   }
 
-  function renderPeople(slot, people){
-    var wrap = qs('[data-gg-slot="'+slot+'"]', panel);
-    if(!wrap) return;
-    wrap.innerHTML = '';
-
-    (people || []).forEach(function(p){
-      var row = document.createElement('div');
-      row.className = 'gg-info-person';
-
-      var av = document.createElement('div');
-      av.className = 'gg-info-person__avatar';
-
-      if(p.avatar){
-        av.style.backgroundImage = 'url(' + p.avatar + ')';
-        av.style.backgroundSize = 'cover';
-        av.style.backgroundPosition = 'center';
-        av.textContent = '';
-      }else{
-        av.textContent = initials(p.name);
-      }
-
-      var meta = document.createElement('div');
-      meta.className = 'gg-info-person__meta';
-
-      var nm = document.createElement('div');
-      nm.className = 'gg-info-person__name';
-      nm.textContent = p.name || 'Unknown';
-
-      var rl = document.createElement('div');
-      rl.className = 'gg-info-person__role';
-      rl.textContent = p.role || '';
-      rl.style.display = p.role ? '' : 'none';
-
-      meta.appendChild(nm);
-      meta.appendChild(rl);
-
-      row.appendChild(av);
-      row.appendChild(meta);
-
-      if(p.href){
-        var a = document.createElement('a');
-        a.href = p.href;
-        a.appendChild(row);
-        wrap.appendChild(a);
-      }else{
-        wrap.appendChild(row);
-      }
-    });
-
-    if(!people || !people.length){
-      wrap.innerHTML =
-        '<div class="gg-info-person">' +
-          '<div class="gg-info-person__avatar">?</div>' +
-          '<div class="gg-info-person__meta"><div class="gg-info-person__name">Unknown</div></div>' +
-        '</div>';
+  function renderTocSkeleton(count, hint){
+    var list = qs('[data-gg-slot="toc"]', panel);
+    if (!list) return;
+    var n = parseInt(count, 10);
+    if (!isFinite(n) || n < 1) n = 4;
+    if (n > 8) n = 8;
+    list.innerHTML = '';
+    for (var i = 0; i < n; i++) {
+      var li = document.createElement('li');
+      li.className = 'gg-info-panel__tocitem gg-info-panel__tocitem--skeleton';
+      var row = document.createElement('span');
+      row.className = 'gg-info-panel__toclink';
+      var line = document.createElement('span');
+      line.className = 'gg-info-panel__tocline';
+      row.appendChild(line);
+      li.appendChild(row);
+      list.appendChild(li);
     }
+    setTocHint(hint || '');
+  }
+
+  function renderTocItems(items){
+    var list = qs('[data-gg-slot="toc"]', panel);
+    if (!list) return;
+    list.innerHTML = '';
+
+    var rows = Array.isArray(items) ? items : [];
+    if (!rows.length) {
+      setTocHint('No headings found in this post.');
+      return;
+    }
+
+    for (var i = 0; i < rows.length; i++) {
+      var item = rows[i] || {};
+      var li = document.createElement('li');
+      var level = parseInt(item.level, 10);
+      if (!isFinite(level) || level < 2) level = 2;
+      if (level > 4) level = 4;
+      li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + level;
+
+      var link = document.createElement('a');
+      link.className = 'gg-info-panel__toclink';
+      link.href = item.href || '#';
+
+      var num = document.createElement('span');
+      num.className = 'gg-info-panel__tocnum';
+      num.textContent = String(i + 1).padStart(2, '0');
+
+      var text = document.createElement('span');
+      text.className = 'gg-info-panel__toctext';
+      text.textContent = item.text || 'Section';
+
+      link.appendChild(num);
+      link.appendChild(text);
+      li.appendChild(link);
+      list.appendChild(li);
+    }
+
+    setTocHint('');
+  }
+
+  function toAbsUrl(raw){
+    try {
+      return new URL(String(raw || ''), window.location.href).toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function tocCacheKey(url){
+    var abs = toAbsUrl(url);
+    if (!abs) return '';
+    try {
+      var parsed = new URL(abs);
+      return parsed.origin + parsed.pathname + parsed.search;
+    } catch (_) {
+      return abs;
+    }
+  }
+
+  function parseHeadingItems(html, sourceUrl){
+    if (!html || !window.DOMParser) return [];
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    if (!doc) return [];
+    var root = doc.querySelector('.post-body, .post-body.entry-content, article .post-body, .entry-content, .blog-post, .post, main') || doc.body;
+    if (!root) return [];
+    var headings = root.querySelectorAll('h2, h3, h4');
+    var out = [];
+    var max = Math.min(headings.length, 24);
+    for (var i = 0; i < max; i++) {
+      var node = headings[i];
+      var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      var level = 2;
+      var tag = String(node.tagName || '').toLowerCase();
+      if (tag === 'h3') level = 3;
+      else if (tag === 'h4') level = 4;
+      var headingId = (node.getAttribute('id') || '').trim();
+      var href = sourceUrl || '#';
+      if (headingId) {
+        href += '#' + encodeURIComponent(headingId);
+      }
+      out.push({ text: text, level: level, href: href });
+    }
+    return out;
+  }
+
+  function fetchPostHtml(url){
+    var abs = toAbsUrl(url);
+    if (!abs) return Promise.reject(new Error('invalid-url'));
+    if (GG.services && GG.services.api && typeof GG.services.api.getHtml === 'function') {
+      return GG.services.api.getHtml(abs);
+    }
+    if (!window.fetch) return Promise.reject(new Error('fetch-unavailable'));
+    return window.fetch(abs, { method: 'GET', cache: 'no-store', credentials: 'same-origin' }).then(function(res){
+      if (!res || !res.ok) throw new Error('fetch-failed');
+      return res.text();
+    });
+  }
+
+  function hydrateLockedToc(card, href){
+    if (!card) return Promise.resolve([]);
+    var key = tocCacheKey(href);
+    var abs = toAbsUrl(href);
+    if (!key || !abs) {
+      renderTocSkeleton(4, 'Unable to resolve article URL.');
+      return Promise.resolve([]);
+    }
+
+    if (Array.isArray(tocCache[key])) {
+      renderTocItems(tocCache[key]);
+      return Promise.resolve(tocCache[key]);
+    }
+
+    if (!tocPending[key]) {
+      tocPending[key] = fetchPostHtml(abs)
+        .then(function(html){
+          var items = parseHeadingItems(html, abs);
+          tocCache[key] = items;
+          return items;
+        })
+        .finally(function(){
+          delete tocPending[key];
+        });
+    }
+
+    renderTocSkeleton(5, 'Loading headings...');
+    return tocPending[key].then(function(items){
+      if (!panel) return items || [];
+      var active = panel.__ggPreviewCard || null;
+      if (!active) return items || [];
+      if (cardKey(active) !== cardKey(card) || cardKey(card) !== lockedCardKey) return items || [];
+      renderTocItems(items || []);
+      return items || [];
+    }).catch(function(){
+      if (cardKey(card) === lockedCardKey) {
+        renderTocSkeleton(4, 'Unable to load headings.');
+      }
+      return [];
+    });
+  }
+
+  function updateTocForCard(card, href){
+    if (!card || !href) {
+      renderTocSkeleton(4, 'Lock this card to load headings.');
+      return;
+    }
+    if (!lockedCardKey || cardKey(card) !== lockedCardKey) {
+      renderTocSkeleton(4, 'Lock this card to load headings.');
+      return;
+    }
+    hydrateLockedToc(card, href);
   }
 
 function fillChipsToSlot(slot, items, max){
@@ -2934,14 +3053,10 @@ function fillChipsToSlot(slot, items, max){
     return t ? [{ text: t, href: '#' }] : [];
   }
 
-  function extractAuthor(card){
-    var name = (card.getAttribute('data-author-name') || '').trim();
-    var href = (card.getAttribute('data-author-url') || '').trim();
-    var avatar = (card.getAttribute('data-author-avatar') || '').trim();
-    if(name) return { name: name, href: href, role: '', avatar: avatar };
-
-    // hard fallback
-    return { name: 'Unknown', href: '', role: '', avatar: '' };
+  function cardHref(card){
+    if (!card) return '#';
+    var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
+    return titleLink ? (titleLink.getAttribute('href') || '#') : '#';
   }
 
   function cardKey(card){
@@ -2983,7 +3098,7 @@ function fillChipsToSlot(slot, items, max){
 
     var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
     var title = titleLink ? (titleLink.textContent||'').trim() : '';
-    var href  = titleLink ? (titleLink.getAttribute('href') || '#') : '#';
+    var href  = cardHref(card);
 
     var imgSrc = extractThumbSrc(card);
 
@@ -3010,14 +3125,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setText('.gg-info-panel__readtime', '—');
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
-
-
-
-
-    // author & placeholder blocks
-    var author = extractAuthor(card);
-    renderPeople('author', [author]);
-
     // labels row
     if(labels && labels.length){
       fillChipsToSlot('labels', labels, 10);
@@ -3050,6 +3157,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (opts.lock === false) {
       setLockState(null);
     }
+    updateTocForCard(card, href);
 
     if (opts.focusPanel !== false) {
       var closeBtn = qs('.gg-info-panel__close', panel);
@@ -3075,6 +3183,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setLockState(null);
     hoverCardKey = '';
     setBackdropVisible(false);
+    renderTocSkeleton(4, 'Lock this card to load headings.');
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
       try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
     }
@@ -3150,6 +3259,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
           } else {
             setLockState(activeCard);
           }
+          updateTocForCard(activeCard, cardHref(activeCard));
         }
       }, true);
     }
@@ -3162,6 +3272,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
               setLockState(null);
               hoverCardKey = '';
               setBackdropVisible(false);
+              renderTocSkeleton(4, 'Lock this card to load headings.');
               if (lastTrigger && typeof lastTrigger.focus === 'function') {
                 try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
               }
@@ -3192,6 +3303,10 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       'support': 'volunteer_activism'
     };
 
+    function textOf(el){
+      return el ? String(el.textContent || '').trim() : '';
+    }
+
     function pickIcon(text){
       var key = (text || '').toLowerCase();
       var found = Object.keys(ICON_MAP).find(function(k){ return key.indexOf(k) !== -1; });
@@ -3211,11 +3326,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
 
     function pickGroupIcon(id, title){
-      if (id === 'HTML17') return 'verified_user';
-      if (id === 'HTML18') return 'hub';
-      if (id === 'HTML19') return 'support_agent';
-      if (id === 'HTML20') return 'gavel';
-      if (id === 'HTML21') return 'article';
+      if (id === 'HTML17' || id === 'HTML22') return 'verified_user';
+      if (id === 'HTML18' || id === 'HTML23') return 'hub';
+      if (id === 'HTML19' || id === 'HTML24') return 'support_agent';
+      if (id === 'HTML20' || id === 'HTML25') return 'gavel';
+      if (id === 'HTML21' || id === 'HTML26') return 'article';
       return pickLinkIcon(title || id || '', '');
     }
 
@@ -3229,15 +3344,27 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       return (raw || '').replace(/[)\],.;]+$/g, '');
     }
 
+    function normalizeTitle(raw){
+      var title = String(raw || '').trim();
+      title = title.replace(/^page\s*\d+\s*custom\s*:\s*/i, '');
+      return title || 'Pages';
+    }
+
     function guessLabelFromUrl(url){
       try {
         var u = new URL(url, window.location.href);
         var p = (u.pathname || '').split('/').filter(Boolean).pop() || u.hostname || url;
-        p = p.replace(/[-_]+/g, ' ');
-        return p;
+        p = p.replace(/\.[a-z0-9]+$/i, '');
+        p = p.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+        return p.replace(/\b\w/g, function(m){ return m.toUpperCase(); });
       } catch (_) {
         return (url || '').replace(/^https?:\/\//i, '');
       }
+    }
+
+    function looksLikeUrlText(text){
+      var v = String(text || '').trim();
+      return /^https?:\/\//i.test(v) || /^www\./i.test(v) || /^[-a-z0-9]+\.[a-z]{2,}(\/|$)/i.test(v);
     }
 
     function parseWidgetEntries(raw){
@@ -3250,31 +3377,20 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         var line = lines[i];
         var pair = line.match(/^([^:]+):\s*(https?:\/\/\S+)$/i);
         if (pair) {
-          var note = '';
-          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
-            note = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
-            i++;
-          }
           out.push({
             label: (pair[1] || '').trim(),
             url: cleanUrl(pair[2]),
-            note: note
+            note: ''
           });
           continue;
         }
 
         var direct = line.match(/^(https?:\/\/\S+)$/i);
         if (direct) {
-          var dUrl = cleanUrl(direct[1]);
-          var dNote = '';
-          if (lines[i + 1] && /^fungsi\s*:/i.test(lines[i + 1])) {
-            dNote = lines[i + 1].replace(/^fungsi\s*:\s*/i, '').trim();
-            i++;
-          }
           out.push({
-            label: guessLabelFromUrl(dUrl),
-            url: dUrl,
-            note: dNote
+            label: guessLabelFromUrl(cleanUrl(direct[1])),
+            url: cleanUrl(direct[1]),
+            note: ''
           });
           continue;
         }
@@ -3287,93 +3403,151 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       return out;
     }
 
-    function renderWidgetEntries(widget){
-      var content = qs('.widget-content', widget);
-      if (!content || qs('.gg-leftnav__group', content)) return;
-      var entries = parseWidgetEntries(content.textContent || '');
-      if (!entries.length) return;
-
+    function renderEntriesAsList(itemsRoot, entries){
+      if (!itemsRoot || !entries || !entries.length) return;
       var ul = document.createElement('ul');
-      ul.className = 'gg-leftnav__group';
+      ul.className = 'gg-navtree__list';
 
       entries.forEach(function(item){
         if (!item.url) return;
         var li = document.createElement('li');
+        li.className = 'gg-navtree__item';
+
         var a = document.createElement('a');
-        a.className = 'gg-leftnav__link gg-leftnav__link--page';
+        a.className = 'gg-leftnav__link gg-leftnav__link--page gg-navtree__link';
         a.href = item.url;
         a.textContent = item.label || guessLabelFromUrl(item.url);
         a.setAttribute('data-gg-icon', pickLinkIcon(a.textContent, item.url));
         li.appendChild(a);
+
         if (item.note) {
-          var note = document.createElement('p');
-          note.className = 'gg-leftnav__note';
+          var note = document.createElement('small');
+          note.className = 'gg-navtree__note';
           note.textContent = item.note;
           li.appendChild(note);
         }
         ul.appendChild(li);
       });
 
-      content.innerHTML = '';
-      content.appendChild(ul);
+      itemsRoot.innerHTML = '';
+      itemsRoot.appendChild(ul);
     }
 
-    function setAccordionState(widget, open){
-      var btn = qs('.gg-leftnav-acc__btn', widget);
-      GG.core.state.toggle(widget, 'open', !!open);
-      GG.core.state.toggle(widget, 'collapsed', !open);
-      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
+    function normalizeItems(itemsRoot){
+      if (!itemsRoot) return;
+      itemsRoot.classList.add('gg-navtree__items');
 
-    function prepareAccordionWidget(widget, index){
-      if (!widget) return;
-      var titleEl = qs('.widget-title,.title', widget);
-      if (!titleEl) return;
-      var titleText = getText(titleEl) || widget.getAttribute('title') || 'Pages';
-      var btn = qs('.gg-leftnav-acc__btn', titleEl);
-      if (!btn) {
-        titleEl.innerHTML = '';
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'gg-leftnav-acc__btn';
-        btn.setAttribute('data-gg-action', 'leftnav-acc-toggle');
-        btn.innerHTML =
-          '<span class="material-symbols-rounded gg-leftnav-acc__ico" aria-hidden="true"></span>' +
-          '<span class="gg-leftnav-acc__txt"></span>' +
-          '<span class="material-symbols-rounded gg-leftnav-acc__chev" aria-hidden="true">expand_more</span>';
-        titleEl.appendChild(btn);
-      }
-
-      var txt = qs('.gg-leftnav-acc__txt', btn);
-      var ico = qs('.gg-leftnav-acc__ico', btn);
-      if (txt) txt.textContent = titleText;
-      if (ico) ico.textContent = pickGroupIcon(widget.id || '', titleText);
-
-      widget.classList.add('gg-leftnav-acc');
-      if (!GG.core.state.has(widget, 'open') && !GG.core.state.has(widget, 'collapsed')) {
-        setAccordionState(widget, index === 0);
-      }
-    }
-
-    function bindCustomAccordion(root){
-      if (!root || root.__ggLeftNavAccBound) return;
-      root.__ggLeftNavAccBound = true;
-      root.addEventListener('click', function(evt){
-        var btn = evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="leftnav-acc-toggle"]') : null;
-        if (!btn || !root.contains(btn)) return;
-        var widget = btn.closest('.widget.gg-leftnav-acc');
-        if (!widget) return;
-
-        var isOpen = GG.core.state.has(widget, 'open');
-        if (isOpen) {
-          setAccordionState(widget, false);
-        } else {
-          qsa('.widget.gg-leftnav-acc', root).forEach(function(el){
-            setAccordionState(el, el === widget);
-          });
+      var hasAnchors = qsa('a[href]', itemsRoot).length > 0;
+      if (!hasAnchors) {
+        var parsed = parseWidgetEntries(itemsRoot.textContent || '');
+        if (parsed.length) {
+          renderEntriesAsList(itemsRoot, parsed);
+          hasAnchors = true;
         }
-        evt.preventDefault();
-      }, true);
+      }
+
+      var list = qs('.gg-navtree__list', itemsRoot) || qs('ul,ol', itemsRoot);
+      if (list && !list.classList.contains('gg-navtree__list')) {
+        list.classList.add('gg-navtree__list');
+      }
+
+      if (!list && hasAnchors) {
+        list = document.createElement('ul');
+        list.className = 'gg-navtree__list';
+        var anchors = qsa('a[href]', itemsRoot);
+        anchors.forEach(function(a){
+          var li = document.createElement('li');
+          li.className = 'gg-navtree__item';
+          li.appendChild(a);
+          list.appendChild(li);
+        });
+        itemsRoot.innerHTML = '';
+        itemsRoot.appendChild(list);
+      }
+
+      if (!list) return;
+
+      Array.prototype.slice.call(list.children || []).forEach(function(li){
+        if (!li || li.nodeType !== 1) return;
+        li.classList.add('gg-navtree__item');
+        qsa('small,p', li).forEach(function(note){
+          note.classList.add('gg-navtree__note');
+          note.textContent = textOf(note).replace(/^fungsi\s*:\s*/i, '');
+        });
+      });
+
+      qsa('a[href]', list).forEach(function(a){
+        var href = a.getAttribute('href') || '';
+        var txt = textOf(a);
+        a.classList.add('gg-leftnav__link', 'gg-leftnav__link--page', 'gg-navtree__link');
+        if (!txt || looksLikeUrlText(txt) || txt === href) {
+          a.textContent = guessLabelFromUrl(href || txt);
+        }
+        if (!a.getAttribute('data-gg-icon')) {
+          a.setAttribute('data-gg-icon', pickLinkIcon(textOf(a), href));
+        }
+      });
+    }
+
+    function ensureSummary(details, title, icon){
+      if (!details) return;
+      var summary = qs('.gg-navtree__summary', details);
+      if (!summary) {
+        summary = document.createElement('summary');
+        summary.className = 'gg-navtree__summary';
+        summary.innerHTML =
+          '<span class="gg-navtree__summary-icon material-symbols-rounded" aria-hidden="true"></span>' +
+          '<span class="gg-navtree__summary-text"></span>' +
+          '<span class="gg-navtree__summary-chev material-symbols-rounded" aria-hidden="true">expand_more</span>';
+        details.insertBefore(summary, details.firstChild);
+      }
+
+      var ico = qs('.gg-navtree__summary-icon', summary);
+      var txt = qs('.gg-navtree__summary-text', summary);
+      var chev = qs('.gg-navtree__summary-chev', summary);
+      if (ico) ico.textContent = icon || 'folder';
+      if (txt && !textOf(txt)) txt.textContent = title;
+      if (txt && textOf(txt)) txt.textContent = normalizeTitle(textOf(txt));
+      if (chev && !textOf(chev)) chev.textContent = 'expand_more';
+    }
+
+    function ensureNavTreeWidget(widget){
+      if (!widget) return;
+      var titleText = normalizeTitle(widget.getAttribute('title') || textOf(qs('.widget-title,.title', widget)));
+      var icon = pickGroupIcon(widget.id || '', titleText);
+
+      var details = qs('details.gg-navtree', widget) || qs('details', widget);
+      if (!details) {
+        var content = qs('.widget-content', widget);
+        if (!content) return;
+        details = document.createElement('details');
+        details.className = 'gg-navtree';
+        details.setAttribute('data-gg-default', 'closed');
+        widget.insertBefore(details, widget.firstChild);
+        details.appendChild(content);
+      }
+
+      details.classList.add('gg-navtree');
+      details.setAttribute('data-gg-icon', icon);
+
+      ensureSummary(details, titleText, icon);
+
+      var items = qs('.gg-navtree__items', details) || qs('.widget-content', details);
+      if (!items) {
+        items = document.createElement('div');
+        items.className = 'widget-content gg-navtree__items';
+        details.appendChild(items);
+      } else {
+        items.classList.add('widget-content', 'gg-navtree__items');
+      }
+      normalizeItems(items);
+
+      if (!details.hasAttribute('data-gg-default')) {
+        details.setAttribute('data-gg-default', 'closed');
+      }
+      if ((details.getAttribute('data-gg-default') || '').toLowerCase() !== 'open') {
+        details.removeAttribute('open');
+      }
     }
 
     function enhanceCustomPages(root){
@@ -3383,17 +3557,15 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
         if (el && root.contains(el)) widgets.push(el);
       });
       if (!widgets.length) return;
-      widgets.forEach(function(widget, index){
-        renderWidgetEntries(widget);
-        prepareAccordionWidget(widget, index);
+      widgets.forEach(function(widget){
+        ensureNavTreeWidget(widget);
       });
-      bindCustomAccordion(root);
     }
 
     function decorateLinks(root){
       qsa('.PageList ul li a, .LinkList ul li a', root).forEach(function (a) {
         a.classList.add('gg-leftnav__link');
-        a.setAttribute('data-gg-icon', pickIcon(getText(a)));
+        a.setAttribute('data-gg-icon', pickIcon(textOf(a)));
       });
 
       qsa('.Label ul > li > a', root).forEach(function (a) {
@@ -3434,11 +3606,11 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
             toggle.setAttribute('aria-expanded', 'true');
           }
 
-          var name = getText(link);
+          var name = textOf(link);
           if (name === 'Label 1' || name === 'Label 6') {
             if (!qs(':scope > ul', li)) {
               var childUl = document.createElement('ul');
-              ['Post 1 of ' + name, 'Post 2 of ' + name].forEach(function (title, idx) {
+              ['Post 1 of ' + name, 'Post 2 of ' + name].forEach(function (title) {
                 var childLi = document.createElement('li');
                 var a = document.createElement('a');
                 a.className = 'gg-leftnav__link';
