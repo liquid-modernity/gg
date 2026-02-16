@@ -1234,21 +1234,13 @@ a.gg-search-assist__item > small{
 /* toolbar */
 .gg-post-card__toolbar{
   position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
-  z-index: var(--z-raise-1);
-
-  background: rgba(255,255,255,.14);
-  border: 0px solid rgba(255,255,255,.25);
-  border-radius: 999px;
-  backdrop-filter: blur(10px);
-
-  display: flex;
-  align-items: center;
-  gap: 0px;
-  padding-left: 5px;
-  padding-right: 5px;
+    z-index: var(--z-raise-1);
+    background: rgba(255, 255, 255, .14);
+    border: 0px solid rgba(255, 255, 255, .25);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 /* tool buttons */
