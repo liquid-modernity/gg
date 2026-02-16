@@ -90,7 +90,13 @@ const parseTemplateFingerprint = (html) => {
   const divTag = divMatch ? divMatch[0] : "";
   const envDiv = extractAttrValue(divTag, "data-env");
   const relDiv = extractAttrValue(divTag, "data-release");
-  return { envMeta, relMeta, envDiv, relDiv };
+  return {
+    envMeta,
+    relMeta,
+    envDiv,
+    relDiv,
+    hasFingerprintDiv: !!divTag,
+  };
 };
 
 const normalizeReleaseToken = (value) => String(value || "").trim().toLowerCase();
@@ -109,19 +115,53 @@ const toAllowedReleaseSet = (expectedReleases) => {
   return out;
 };
 
-const isTemplateMismatch = (fp, expectedEnv, expectedReleases) => {
-  if (!fp) return true;
-  const envMeta = (fp.envMeta || "").trim().toLowerCase();
-  const envDiv = (fp.envDiv || "").trim().toLowerCase();
-  const relMeta = normalizeReleaseToken(fp.relMeta);
-  const relDiv = normalizeReleaseToken(fp.relDiv);
+const hasMainCssMarker = (html) => {
+  if (!html) return false;
+  return /<link\b[^>]*\bhref\s*=\s*(['"])[^'"]*\/assets\/(?:v\/[^/'"]+|latest)\/main\.css(?:[?#][^'"]*)?\1[^>]*>/i.test(
+    html
+  );
+};
+
+const hasBootMarker = (html) => {
+  if (!html) return false;
+  return /<script\b[^>]*\bsrc\s*=\s*(['"])[^'"]*\/assets\/(?:v\/[^/'"]+|latest)\/boot\.js(?:[?#][^'"]*)?\1[^>]*>/i.test(
+    html
+  );
+};
+
+const pushReason = (reasons, code) => {
+  if (!code) return;
+  if (reasons.includes(code)) return;
+  reasons.push(code);
+};
+
+const getTemplateMismatchReasons = (fp, html, expectedEnv, expectedReleases) => {
+  const reasons = [];
+  const envMeta = (fp && fp.envMeta ? fp.envMeta : "").trim().toLowerCase();
+  const envDiv = (fp && fp.envDiv ? fp.envDiv : "").trim().toLowerCase();
+  const relMeta = normalizeReleaseToken(fp && fp.relMeta ? fp.relMeta : "");
+  const relDiv = normalizeReleaseToken(fp && fp.relDiv ? fp.relDiv : "");
+  const hasFpDiv = !!(fp && fp.hasFingerprintDiv);
   const allowedReleases = toAllowedReleaseSet(expectedReleases);
-  if (!allowedReleases.size) return true;
-  if (!envMeta || !envDiv || !relMeta || !relDiv) return true;
-  if (envMeta !== expectedEnv || envDiv !== expectedEnv) return true;
-  if (relMeta !== relDiv) return true;
-  if (!allowedReleases.has(relMeta)) return true;
-  return false;
+  const normalizedExpectedEnv = String(expectedEnv || "").trim().toLowerCase();
+
+  if (!envMeta) pushReason(reasons, "missing_meta_env");
+  if (!relMeta) pushReason(reasons, "missing_meta_release");
+  if (!hasFpDiv) pushReason(reasons, "missing_fp_div");
+  if (!hasMainCssMarker(html)) pushReason(reasons, "missing_main");
+  if (!hasBootMarker(html)) pushReason(reasons, "missing_boot_marker");
+
+  if (!normalizedExpectedEnv || envMeta !== normalizedExpectedEnv || envDiv !== normalizedExpectedEnv) {
+    pushReason(reasons, "env_mismatch");
+  }
+
+  if (!relMeta || !relDiv || relMeta !== relDiv) {
+    pushReason(reasons, "release_mismatch");
+  } else if (!allowedReleases.size || !allowedReleases.has(relMeta)) {
+    pushReason(reasons, "release_mismatch");
+  }
+
+  return reasons;
 };
 
 const isSameOriginUrl = (value, origin) => {
@@ -544,12 +584,21 @@ export default {
         const expectedEnv = "prod";
         const allowedTemplateReleases = new Set([WORKER_VERSION, ...TEMPLATE_ALLOWED_RELEASES]);
         let templateMismatch = false;
+        let templateMismatchReason = "";
         try {
           const html = await originRes.clone().text();
           const fp = parseTemplateFingerprint(html);
-          templateMismatch = isTemplateMismatch(fp, expectedEnv, allowedTemplateReleases);
+          const reasons = getTemplateMismatchReasons(
+            fp,
+            html,
+            expectedEnv,
+            allowedTemplateReleases
+          );
+          templateMismatch = reasons.length > 0;
+          templateMismatchReason = reasons.length ? reasons.join(",") : "";
         } catch (e) {
           templateMismatch = true;
+          templateMismatchReason = "unknown";
         }
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
@@ -828,7 +877,11 @@ export default {
         const transformed = rewritten.transform(originRes);
         const out = stamp(transformed, { cspReportEnabled });
         if (templateMismatch) {
+          if (!templateMismatchReason) {
+            templateMismatchReason = "unknown";
+          }
           out.headers.set("x-gg-template-mismatch", "1");
+          out.headers.set("x-gg-template-mismatch-reason", templateMismatchReason);
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");

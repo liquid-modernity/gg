@@ -214,6 +214,20 @@ const runMismatchTest = async () => {
     if (mismatchHeader !== "1") {
       failures.push("mismatch test: x-gg-template-mismatch header missing");
     }
+    const mismatchReason = (res.headers.get("x-gg-template-mismatch-reason") || "").trim();
+    if (!mismatchReason) {
+      failures.push("mismatch test: x-gg-template-mismatch-reason header missing");
+    } else {
+      const reasonSet = new Set(
+        mismatchReason
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean)
+      );
+      if (!reasonSet.has("release_mismatch")) {
+        failures.push(`mismatch test: reason must include release_mismatch (got ${mismatchReason})`);
+      }
+    }
     const cacheControl = (res.headers.get("cache-control") || "").toLowerCase();
     if (!cacheControl.includes("no-store")) {
       failures.push("mismatch test: Cache-Control missing no-store");
@@ -229,7 +243,61 @@ const runMismatchTest = async () => {
   }
 };
 
+const runMatchTest = async () => {
+  const originalFetch = globalThis.fetch;
+  const originalRewriter = globalThis.HTMLRewriter;
+  const versionMatch = worker.match(/const WORKER_VERSION = "([^"]+)";/);
+  const version = versionMatch ? versionMatch[1] : "";
+  if (!version) {
+    failures.push("match test: unable to parse WORKER_VERSION from src/worker.js");
+    return;
+  }
+  const testHtml = [
+    "<!doctype html>",
+    "<html>",
+    "<head>",
+    `<meta content="prod" name="gg-env">`,
+    `<meta content="${version}" name="gg-release">`,
+    `<link rel="stylesheet" href="/assets/v/${version}/main.css">`,
+    `<script src="/assets/v/${version}/boot.js"></script>`,
+    "</head>",
+    "<body>",
+    `<div data-env="prod" data-release="${version}" id="gg-fingerprint"></div>`,
+    "<main>Test</main>",
+    "</body>",
+    "</html>",
+  ].join("");
+
+  globalThis.fetch = async () =>
+    new Response(testHtml, {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  globalThis.HTMLRewriter = buildTestHtmlRewriter();
+
+  try {
+    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
+    const workerMod = await import(`${workerUrl}?match=${Date.now()}`);
+    const workerImpl = workerMod.default || workerMod;
+    const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
+    const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();
+    const mismatchReason = (res.headers.get("x-gg-template-mismatch-reason") || "").trim();
+    if (mismatchHeader) {
+      failures.push(`match test: mismatch header must be absent (got ${mismatchHeader})`);
+    }
+    if (mismatchReason) {
+      failures.push(`match test: mismatch reason header must be absent (got ${mismatchReason})`);
+    }
+  } catch (err) {
+    failures.push(`match test: ${err && err.message ? err.message : String(err)}`);
+  } finally {
+    globalThis.fetch = originalFetch;
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+};
+
 await runMismatchTest();
+await runMatchTest();
 
 if (failures.length) {
   console.error("VERIFY_TEMPLATE_FINGERPRINT: FAIL");
