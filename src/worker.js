@@ -126,13 +126,18 @@ const pushReason = (reasons, code) => {
   reasons.push(code);
 };
 
-const getTemplateMismatchReasons = (fp, expectedEnv, expectedRelease) => {
+const getTemplateMismatchReasons = (fp, expectedEnv, expectedRelease, allowedReleases = []) => {
   const reasons = [];
   const envMeta = (fp && fp.envMeta ? fp.envMeta : "").trim().toLowerCase();
   const relMeta = normalizeReleaseToken(fp && fp.relMeta ? fp.relMeta : "");
   const hasFpDiv = !!(fp && fp.hasFingerprintDiv);
   const normalizedExpectedEnv = String(expectedEnv || "").trim().toLowerCase();
   const normalizedExpectedRelease = normalizeReleaseToken(expectedRelease);
+  const normalizedAllowed = new Set(
+    [normalizedExpectedRelease]
+      .concat(Array.isArray(allowedReleases) ? allowedReleases.map(normalizeReleaseToken) : [])
+      .filter(Boolean)
+  );
 
   if (!envMeta) pushReason(reasons, "missing_meta_env");
   else if (!normalizedExpectedEnv || envMeta !== normalizedExpectedEnv) {
@@ -140,7 +145,7 @@ const getTemplateMismatchReasons = (fp, expectedEnv, expectedRelease) => {
   }
 
   if (!relMeta) pushReason(reasons, "missing_meta_release");
-  else if (!normalizedExpectedRelease || relMeta !== normalizedExpectedRelease) {
+  else if (!normalizedAllowed.has(relMeta)) {
     pushReason(reasons, "release_mismatch");
   }
 
@@ -467,8 +472,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "40dba43";
-    const TEMPLATE_ALLOWED_RELEASES = ["40dba43","a13bd9f"];
+    const WORKER_VERSION = "67d5b3c";
+    const TEMPLATE_ALLOWED_RELEASES = ["67d5b3c","40dba43"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -787,7 +792,8 @@ export default {
             const mismatchReasons = getTemplateMismatchReasons(
               fp,
               expectedEnv,
-              expectedRelease
+              expectedRelease,
+              TEMPLATE_ALLOWED_RELEASES
             );
             const contractReasons = getTemplateContractReasons(html);
             templateMismatch = mismatchReasons.length > 0;
