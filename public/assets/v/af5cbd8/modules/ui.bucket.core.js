@@ -2654,10 +2654,8 @@ GG.modules.InfoPanel = (function () {
   var backdrop = null;
   var lockedCardKey = '';
   var hoverCardKey = '';
-
-  // in-memory cache { url: { ts, tocItems, snippet, readtime } }
-  var cache = Object.create(null);
-  var inflight = null; // AbortController
+  var tocCache = Object.create(null);
+  var tocPending = Object.create(null);
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -2734,27 +2732,9 @@ GG.modules.InfoPanel = (function () {
           '</a>' +
         '</div>' +
         '<div class="gg-editorial-preview__body gg-info-panel__details">' +
-          '<div class="gg-info-panel__sec" data-gg-sec="author">' +
-            '<div class="gg-info-panel__sechead">' +
-              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">person</span>' +
-              '<div class="gg-info-panel__kicker">Written by</div>' +
-            '</div>' +
-            '<div class="gg-info-panel__people" data-gg-slot="author"></div>' +
-          '</div>' +
-          '<div class="gg-info-panel__sec" data-gg-sec="contributors" hidden>' +
-            '<div class="gg-info-panel__sechead">' +
-              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">groups</span>' +
-              '<div class="gg-info-panel__kicker">Contributors</div>' +
-            '</div>' +
-            '<div class="gg-info-panel__people" data-gg-slot="contributors"></div>' +
-          '</div>' +
           '<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
             '<span class="gg-icon" aria-hidden="true">label</span>' +
             '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
-          '</div>' +
-          '<div class="gg-info-panel__row gg-info-panel__row--tags" hidden>' +
-            '<span class="gg-icon material-symbols-rounded" aria-hidden="true">sell</span>' +
-            '<div class="gg-chip-row" data-gg-slot="tags"></div>' +
           '</div>' +
           '<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
             '<span class="gg-info-panel__metaitem">' +
@@ -2776,16 +2756,17 @@ GG.modules.InfoPanel = (function () {
             '<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
             '<p class="gg-info-panel__snippet"></p>' +
           '</div>' +
-          '<div class="gg-info-panel__sec gg-info-panel__sec--toc">' +
+          '<div class="gg-info-panel__sec gg-info-panel__sec--toc" data-gg-sec="toc">' +
             '<div class="gg-info-panel__sechead">' +
-              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>' +
-              '<div class="gg-info-panel__kicker">Table of Contents</div>' +
+              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">toc</span>' +
+              '<div class="gg-info-panel__kicker">Table of contents</div>' +
             '</div>' +
             '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
-            '<div class="gg-info-panel__toc-empty" data-gg-slot="toc-empty" hidden></div>' +
+            '<p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p>' +
           '</div>' +
         '</div>' +
       '</div>';
+    renderTocSkeleton(4, 'Lock this card to load headings.');
   }
 
 function extractThumbSrc(card){
@@ -2843,81 +2824,191 @@ function extractThumbSrc(card){
       img.alt = alt || '';
     }
 
-  function setSectionVisible(name, visible){
-    var sec = qs('[data-gg-sec="'+name+'"]', panel);
-    if (sec) sec.hidden = !visible;
-  }
-
   function setRowVisible(rowClass, visible){
     var row = qs(rowClass, panel);
     if (row) row.hidden = !visible;
   }
 
-  function initials(name){
-    name = (name||'').trim();
-    if(!name) return '?';
-    var parts = name.split(/\s+/).filter(Boolean);
-    var a = parts[0] ? parts[0][0] : '';
-    var b = parts.length > 1 ? parts[parts.length-1][0] : '';
-    return (a + b).toUpperCase() || '?';
+  function setTocHint(message){
+    var hint = qs('[data-gg-slot="toc-hint"]', panel);
+    if (!hint) return;
+    var text = String(message || '').trim();
+    hint.textContent = text;
+    hint.hidden = !text;
   }
 
-  function renderPeople(slot, people){
-    var wrap = qs('[data-gg-slot="'+slot+'"]', panel);
-    if(!wrap) return;
-    wrap.innerHTML = '';
-
-    (people || []).forEach(function(p){
-      var row = document.createElement('div');
-      row.className = 'gg-info-person';
-
-      var av = document.createElement('div');
-      av.className = 'gg-info-person__avatar';
-
-      if(p.avatar){
-        av.style.backgroundImage = 'url(' + p.avatar + ')';
-        av.style.backgroundSize = 'cover';
-        av.style.backgroundPosition = 'center';
-        av.textContent = '';
-      }else{
-        av.textContent = initials(p.name);
-      }
-
-      var meta = document.createElement('div');
-      meta.className = 'gg-info-person__meta';
-
-      var nm = document.createElement('div');
-      nm.className = 'gg-info-person__name';
-      nm.textContent = p.name || 'Unknown';
-
-      var rl = document.createElement('div');
-      rl.className = 'gg-info-person__role';
-      rl.textContent = p.role || '';
-      rl.style.display = p.role ? '' : 'none';
-
-      meta.appendChild(nm);
-      meta.appendChild(rl);
-
-      row.appendChild(av);
-      row.appendChild(meta);
-
-      if(p.href){
-        var a = document.createElement('a');
-        a.href = p.href;
-        a.appendChild(row);
-        wrap.appendChild(a);
-      }else{
-        wrap.appendChild(row);
-      }
-    });
-
-    if(!people || !people.length){
-      wrap.innerHTML =
-        '<div class="gg-info-person">' +
-          '<div class="gg-info-person__avatar">?</div>' +
-          '<div class="gg-info-person__meta"><div class="gg-info-person__name">Unknown</div></div>' +
-        '</div>';
+  function renderTocSkeleton(count, hint){
+    var list = qs('[data-gg-slot="toc"]', panel);
+    if (!list) return;
+    var n = parseInt(count, 10);
+    if (!isFinite(n) || n < 1) n = 4;
+    if (n > 8) n = 8;
+    list.innerHTML = '';
+    for (var i = 0; i < n; i++) {
+      var li = document.createElement('li');
+      li.className = 'gg-info-panel__tocitem gg-info-panel__tocitem--skeleton';
+      var row = document.createElement('span');
+      row.className = 'gg-info-panel__toclink';
+      var line = document.createElement('span');
+      line.className = 'gg-info-panel__tocline';
+      row.appendChild(line);
+      li.appendChild(row);
+      list.appendChild(li);
     }
+    setTocHint(hint || '');
+  }
+
+  function renderTocItems(items){
+    var list = qs('[data-gg-slot="toc"]', panel);
+    if (!list) return;
+    list.innerHTML = '';
+
+    var rows = Array.isArray(items) ? items : [];
+    if (!rows.length) {
+      setTocHint('No headings found in this post.');
+      return;
+    }
+
+    for (var i = 0; i < rows.length; i++) {
+      var item = rows[i] || {};
+      var li = document.createElement('li');
+      var level = parseInt(item.level, 10);
+      if (!isFinite(level) || level < 2) level = 2;
+      if (level > 4) level = 4;
+      li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + level;
+
+      var link = document.createElement('a');
+      link.className = 'gg-info-panel__toclink';
+      link.href = item.href || '#';
+
+      var num = document.createElement('span');
+      num.className = 'gg-info-panel__tocnum';
+      num.textContent = String(i + 1).padStart(2, '0');
+
+      var text = document.createElement('span');
+      text.className = 'gg-info-panel__toctext';
+      text.textContent = item.text || 'Section';
+
+      link.appendChild(num);
+      link.appendChild(text);
+      li.appendChild(link);
+      list.appendChild(li);
+    }
+
+    setTocHint('');
+  }
+
+  function toAbsUrl(raw){
+    try {
+      return new URL(String(raw || ''), window.location.href).toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function tocCacheKey(url){
+    var abs = toAbsUrl(url);
+    if (!abs) return '';
+    try {
+      var parsed = new URL(abs);
+      return parsed.origin + parsed.pathname + parsed.search;
+    } catch (_) {
+      return abs;
+    }
+  }
+
+  function parseHeadingItems(html, sourceUrl){
+    if (!html || !window.DOMParser) return [];
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    if (!doc) return [];
+    var root = doc.querySelector('.post-body, .post-body.entry-content, article .post-body, .entry-content, .blog-post, .post, main') || doc.body;
+    if (!root) return [];
+    var headings = root.querySelectorAll('h2, h3, h4');
+    var out = [];
+    var max = Math.min(headings.length, 24);
+    for (var i = 0; i < max; i++) {
+      var node = headings[i];
+      var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      var level = 2;
+      var tag = String(node.tagName || '').toLowerCase();
+      if (tag === 'h3') level = 3;
+      else if (tag === 'h4') level = 4;
+      var headingId = (node.getAttribute('id') || '').trim();
+      var href = sourceUrl || '#';
+      if (headingId) {
+        href += '#' + encodeURIComponent(headingId);
+      }
+      out.push({ text: text, level: level, href: href });
+    }
+    return out;
+  }
+
+  function fetchPostHtml(url){
+    var abs = toAbsUrl(url);
+    if (!abs) return Promise.reject(new Error('invalid-url'));
+    if (GG.services && GG.services.api && typeof GG.services.api.getHtml === 'function') {
+      return GG.services.api.getHtml(abs);
+    }
+    if (!window.fetch) return Promise.reject(new Error('fetch-unavailable'));
+    return window.fetch(abs, { method: 'GET', cache: 'no-store', credentials: 'same-origin' }).then(function(res){
+      if (!res || !res.ok) throw new Error('fetch-failed');
+      return res.text();
+    });
+  }
+
+  function hydrateLockedToc(card, href){
+    if (!card) return Promise.resolve([]);
+    var key = tocCacheKey(href);
+    var abs = toAbsUrl(href);
+    if (!key || !abs) {
+      renderTocSkeleton(4, 'Unable to resolve article URL.');
+      return Promise.resolve([]);
+    }
+
+    if (Array.isArray(tocCache[key])) {
+      renderTocItems(tocCache[key]);
+      return Promise.resolve(tocCache[key]);
+    }
+
+    if (!tocPending[key]) {
+      tocPending[key] = fetchPostHtml(abs)
+        .then(function(html){
+          var items = parseHeadingItems(html, abs);
+          tocCache[key] = items;
+          return items;
+        })
+        .finally(function(){
+          delete tocPending[key];
+        });
+    }
+
+    renderTocSkeleton(5, 'Loading headings...');
+    return tocPending[key].then(function(items){
+      if (!panel) return items || [];
+      var active = panel.__ggPreviewCard || null;
+      if (!active) return items || [];
+      if (cardKey(active) !== cardKey(card) || cardKey(card) !== lockedCardKey) return items || [];
+      renderTocItems(items || []);
+      return items || [];
+    }).catch(function(){
+      if (cardKey(card) === lockedCardKey) {
+        renderTocSkeleton(4, 'Unable to load headings.');
+      }
+      return [];
+    });
+  }
+
+  function updateTocForCard(card, href){
+    if (!card || !href) {
+      renderTocSkeleton(4, 'Lock this card to load headings.');
+      return;
+    }
+    if (!lockedCardKey || cardKey(card) !== lockedCardKey) {
+      renderTocSkeleton(4, 'Lock this card to load headings.');
+      return;
+    }
+    hydrateLockedToc(card, href);
   }
 
 function fillChipsToSlot(slot, items, max){
@@ -2949,220 +3040,6 @@ function fillChipsToSlot(slot, items, max){
   });
 }
 
-
-
-
-  function slugify(s){
-    return String(s||'')
-      .toLowerCase()
-      .trim()
-      .replace(/[\u200B-\u200D\uFEFF]/g,'')
-      .replace(/[^\w\s\-]/g,'')
-      .replace(/\s+/g,'-')
-      .replace(/\-+/g,'-')
-      .replace(/^\-+|\-+$/g,'') || 'section';
-  }
-
-  function uniqueIds(items){
-    var seen = Object.create(null);
-    items.forEach(function(it){
-      var base = it.id;
-      var k = base;
-      var n = 2;
-      while(seen[k]){ k = base + '-' + (n++); }
-      seen[k] = true;
-      it.id = k;
-    });
-    return items;
-  }
-
-  function getLevel(h){
-    var t = (h.tagName || 'H2').toLowerCase();
-    return t === 'h2' ? 2 : (t === 'h3' ? 3 : 4);
-  }
-
-  function nextNumber(level, state){
-    if(level === 2){ state.c2++; state.c3 = 0; state.c4 = 0; return String(state.c2) + '.'; }
-    if(level === 3){ if(state.c2 === 0) state.c2 = 1; state.c3++; state.c4 = 0; return state.c2 + '.' + state.c3; }
-    if(state.c2 === 0) state.c2 = 1;
-    if(state.c3 === 0) state.c3 = 1;
-    state.c4++; return state.c2 + '.' + state.c3 + '.' + state.c4;
-  }
-
-  function renderToc(items, postUrl){  
-     var ol = qs('[data-gg-slot="toc"]', panel);
-if(!ol) return;
-var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
-
-    if(!ol || !empty) return;
-
-    ol.innerHTML = '';
-
-    if(!items || !items.length){
-      empty.textContent = 'No headings found.';
-      empty.hidden = false;
-      return;
-    }
-
-    empty.hidden = true;
-
-    items.forEach(function(it){
-      var li = document.createElement('li');
-      li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + it.level;
-
-      var a = document.createElement('a');
-      a.className = 'gg-info-panel__toclink';
-      a.href = postUrl + '#' + it.id;
-
-      var n = document.createElement('span');
-      n.className = 'gg-info-panel__tocnum';
-     n.textContent = (it.num || '').trim() + ' ';
-
-
-
-      var t = document.createElement('span');
-      t.className = 'gg-info-panel__toctxt';
-      t.textContent = it.text;
-
-      a.appendChild(n);
-      a.appendChild(t);
-      li.appendChild(a);
-      ol.appendChild(li);
-    });
-  }
-
-  function computeReadTimeFromText(text){
-    var raw = String(text || '').replace(/\s+/g,' ').trim();
-    if(!raw) return '—';
-    var words = raw.split(' ').filter(Boolean).length;
-    var mins = Math.max(1, Math.round(words / WPM));
-    return mins + ' minutes read';
-  }
-
-  function clipWords(text, maxWords){
-    var raw = String(text || '').replace(/\s+/g,' ').trim();
-    if(!raw) return '';
-    var w = raw.split(' ').filter(Boolean);
-    if(w.length <= maxWords) return raw;
-    return w.slice(0, maxWords).join(' ') + '…';
-  }
-
-  function findBody(doc){
-    return qs('.gg-post__content.post-body.entry-content', doc) ||
-           qs('.post-body.entry-content', doc) ||
-           qs('.post-body', doc) ||
-           qs('.entry-content', doc) ||
-           qs('[itemprop="articleBody"]', doc);
-  }
-
-  function extractHeadingsFromDoc(doc){
-    var body = findBody(doc);
-    if(!body) return [];
-    var hs = qsa('h2, h3, h4', body).filter(function(h){
-      return ((h.textContent||'').replace(/\s+/g,' ').trim()).length > 0;
-    });
-
-    var out = [];
-    var state = {c2:0, c3:0, c4:0};
-
-    hs.forEach(function(h){
-      var level = getLevel(h);
-      var text = (h.textContent||'').replace(/\s+/g,' ').trim();
-      var id = slugify(text);
-      var num = nextNumber(level, state);
-      out.push({ level: level, text: text, id: id, num: num });
-    });
-
-    return uniqueIds(out);
-  }
-
-  function extractTextFromDoc(doc, maxWords){
-    var body = findBody(doc);
-    if(!body) return '';
-    // best-effort cleanup
-    qsa('script,style,noscript', body).forEach(function(el){ el.remove(); });
-    var raw = (body.innerText || body.textContent || '').replace(/\s+/g,' ').trim();
-    return maxWords ? clipWords(raw, maxWords) : raw;
-  }
-
-  function extractSnippetFromDoc(doc, maxWords){
-    var body = findBody(doc);
-    if(!body) return '';
-
-    var pick = '';
-    var ps = qsa('p', body);
-    for(var i=0;i<ps.length;i++){
-      var t = (ps[i].textContent||'').replace(/\s+/g,' ').trim();
-      if(!t) continue;
-      if(t.length < 60) continue;
-      if(/^table of contents/i.test(t) || /^daftar isi/i.test(t)) continue;
-      pick = t; break;
-    }
-
-    if(!pick){
-      var lis = qsa('li', body);
-      for(var j=0;j<lis.length;j++){
-        var t2 = (lis[j].textContent||'').replace(/\s+/g,' ').trim();
-        if(!t2) continue;
-        if(t2.length < 60) continue;
-        pick = t2; break;
-      }
-    }
-
-    if(!pick){
-      pick = (body.innerText || body.textContent || '').replace(/\s+/g,' ').trim();
-    }
-
-    return maxWords ? clipWords(pick, maxWords) : pick;
-  }
-
-  function getBlogBaseFromUrl(postUrl){
-    try{
-      var u = new URL(postUrl, location.href);
-      return u.origin;
-    }catch(_){
-      return location.origin || '';
-    }
-  }
-
-  async function fetchViaHtml(url, signal){
-    var res = await fetch(url, { method: 'GET', credentials: 'same-origin', signal: signal });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    var html = await res.text();
-    return new DOMParser().parseFromString(html, 'text/html');
-  }
-
-  async function fetchViaFeed(postUrl, postId, signal){
-    if(!postId) throw new Error('No post id');
-    var base = getBlogBaseFromUrl(postUrl);
-    var feedBase = (GG.services && GG.services.api && GG.services.api.getFeedBase)
-      ? GG.services.api.getFeedBase(false)
-      : '/feeds/posts/default';
-    var feedUrl = base.replace(/\/$/,'') + feedBase + '/' + encodeURIComponent(postId) + '?alt=json';
-    var res = await fetch(feedUrl, { method: 'GET', credentials: 'same-origin', signal: signal });
-    if(!res.ok) throw new Error('Feed HTTP ' + res.status);
-    var json = await res.json();
-    var entry = json && json.entry;
-    var html = entry && entry.content && entry.content.$t ? entry.content.$t : '';
-    if(!html) throw new Error('No feed content');
-    // wrap as doc
-    return new DOMParser().parseFromString('<div class="post-body entry-content">' + html + '</div>', 'text/html');
-  }
-
-  async function loadPostDoc(postUrl, postId){
-    if(inflight && inflight.abort) inflight.abort();
-    inflight = new AbortController();
-    var signal = inflight.signal;
-
-    // 1) try HTML
-    try{
-      return await fetchViaHtml(postUrl, signal);
-    }catch(err){
-      // 2) fallback feed
-      return await fetchViaFeed(postUrl, postId, signal);
-    }
-  }
-
   function extractLabels(card){
     // prefer hidden anchors rel=tag (kalau kamu sudah tanam di card)
     var tags = qsa('a[rel="tag"]', card).map(function (a) {
@@ -3176,39 +3053,10 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
     return t ? [{ text: t, href: '#' }] : [];
   }
 
-  function extractAuthor(card){
-    var name = (card.getAttribute('data-author-name') || '').trim();
-    var href = (card.getAttribute('data-author-url') || '').trim();
-    var avatar = (card.getAttribute('data-author-avatar') || '').trim();
-    if(name) return { name: name, href: href, role: '', avatar: avatar };
-
-    // hard fallback
-    return { name: 'Unknown', href: '', role: '', avatar: '' };
-  }
-
-  function extractContributors(card){
-    var raw = card.getAttribute('data-contributors') || '';
-    if(!raw) return [];
-    return raw.split(',').map(function(x){ return x.trim(); }).filter(Boolean).map(function(item){
-      var parts = item.split('|');
-      return { name: (parts[0]||'').trim(), role: (parts[1]||'').trim(), href:'', avatar:'' };
-    }).filter(function(p){ return p.name; });
-  }
-
-  function extractTags(card){
-    var raw = card.getAttribute('data-tags') || '';
-    if(!raw) return [];
-    return raw.split(',').map(function(t){ return t.trim(); }).filter(Boolean).map(function(t){
-      return { text: t.startsWith('#') ? t : ('#'+t), href:'#' };
-    });
-  }
-
-  function setLoadingState(){
-    var empty = qs('[data-gg-slot="toc-empty"]', panel);
-    if(empty){ empty.textContent = 'Loading…'; empty.hidden = false; }
-    var ol = qs('[data-gg-slot="toc"]', panel);
-    if(ol) ol.innerHTML = '';
-    setText('.gg-info-panel__readtime', '…');
+  function cardHref(card){
+    if (!card) return '#';
+    var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
+    return titleLink ? (titleLink.getAttribute('href') || '#') : '#';
   }
 
   function cardKey(card){
@@ -3250,8 +3098,7 @@ var empty = qs('[data-gg-slot="toc-empty"]', panel); // optional
 
     var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
     var title = titleLink ? (titleLink.textContent||'').trim() : '';
-    var href  = titleLink ? (titleLink.getAttribute('href') || '#') : '#';
-    var key = cardKey(card) || href;
+    var href  = cardHref(card);
 
     var imgSrc = extractThumbSrc(card);
 
@@ -3275,22 +3122,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setHref('.gg-info-panel__hero-cta', href);
     setText('.gg-info-panel__date', dateText);
     setText('.gg-info-panel__comments', commentsText);
-    setText('.gg-info-panel__readtime', '…');
+    setText('.gg-info-panel__readtime', '—');
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
-
-
-
-
-    // author & placeholder blocks
-    var author = extractAuthor(card);
-    renderPeople('author', [author]);
-    setSectionVisible('author', true);
-
-    var contrib = extractContributors(card);
-    renderPeople('contributors', contrib);
-    setSectionVisible('contributors', contrib.length > 0);
-
     // labels row
     if(labels && labels.length){
       fillChipsToSlot('labels', labels, 10);
@@ -3298,11 +3132,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }else{
       setRowVisible('.gg-info-panel__row--labels', false);
     }
-
-    // tags section
-    var tags = extractTags(card);
-    fillChipsToSlot('tags', tags, 12);
-    setRowVisible('.gg-info-panel__row--tags', tags.length > 0);
 
 
     // snippet: quick from card (if any)
@@ -3314,13 +3143,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }else{
       setText('.gg-info-panel__snippet', '');
       setRowVisible('.gg-info-panel__row--snippet', false);
-    }
-
-    // TOC async load
-    setLoadingState();
-    if (!panel || panel.__ggPreviewHydratedKey !== key) {
-      if (panel) panel.__ggPreviewHydratedKey = key;
-      hydrateFromPost(href, card.getAttribute('data-id') || '');
     }
 
     if (panel) panel.hidden = false;
@@ -3335,6 +3157,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (opts.lock === false) {
       setLockState(null);
     }
+    updateTocForCard(card, href);
 
     if (opts.focusPanel !== false) {
       var closeBtn = qs('.gg-info-panel__close', panel);
@@ -3356,49 +3179,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (panel) {
       panel.hidden = true;
       panel.__ggPreviewCard = null;
-      panel.__ggPreviewHydratedKey = '';
     }
     setLockState(null);
     hoverCardKey = '';
     setBackdropVisible(false);
+    renderTocSkeleton(4, 'Lock this card to load headings.');
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
       try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
-    }
-  }
-
-  async function hydrateFromPost(postUrl, postId){
-    // cache hit
-    var c = cache[postUrl];
-    if(c && (Date.now() - c.ts) < 1000 * 60 * 60 * 12){
-      if(c.readtime) setText('.gg-info-panel__readtime', c.readtime);
-      if(c.snippet){
-        setText('.gg-info-panel__snippet', c.snippet);
-        setRowVisible('.gg-info-panel__row--snippet', true);
-      }
-      renderToc(c.tocItems || [], postUrl);
-      return;
-    }
-
-    try{
-      var doc = await loadPostDoc(postUrl, postId);
-      var bodyText = extractTextFromDoc(doc);
-      var tocItems = extractHeadingsFromDoc(doc);
-      var readtime = computeReadTimeFromText(bodyText);
-      var snippet = extractSnippetFromDoc(doc, 45);
-
-      cache[postUrl] = { ts: Date.now(), tocItems: tocItems, snippet: snippet, readtime: readtime };
-
-      setText('.gg-info-panel__readtime', readtime);
-      if(snippet){
-        setText('.gg-info-panel__snippet', snippet);
-        setRowVisible('.gg-info-panel__row--snippet', true);
-      }
-      renderToc(tocItems, postUrl);
-
-    }catch(err){
-      var empty = qs('[data-gg-slot="toc-empty"]', panel);
-      if(empty){ empty.textContent = 'Failed to load TOC.'; empty.hidden = false; }
-      setText('.gg-info-panel__readtime', '—');
     }
   }
 
@@ -3472,6 +3259,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
           } else {
             setLockState(activeCard);
           }
+          updateTocForCard(activeCard, cardHref(activeCard));
         }
       }, true);
     }
@@ -3484,6 +3272,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
               setLockState(null);
               hoverCardKey = '';
               setBackdropVisible(false);
+              renderTocSkeleton(4, 'Lock this card to load headings.');
               if (lastTrigger && typeof lastTrigger.focus === 'function') {
                 try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
               }
