@@ -539,91 +539,119 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     </div>
   </b:includable>
           </b:widget>
-          <b:widget id='HTML17' locked='false' title='Page 1 Custom: Governance &amp;amp; Trust' type='HTML' visible='true'>
+          <b:widget id='HTML17' locked='false' title='Governance &amp; Trust' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[About & Philosophy: https://www.pakrpp.com/p/about.html
-
-Board of Authors: https://www.pakrpp.com/p/authors.html
-
-Editorial Policy: https://www.pakrpp.com/p/editorial-policy.html
-
-Transparency & Disclosure: https://www.pakrpp.com/p/transparency.html]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html">About & Philosophy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html">Board of Authors</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html">Editorial Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html">Transparency & Disclosure</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML18' locked='false' title='Page 2 Custom: Knowledge Hub' type='HTML' visible='true'>
+          <b:widget id='HTML18' locked='false' title='Knowledge Hub' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'>Topic Index: https://www.pakrpp.com/p/tags.html
-
-Visual Sitemap: https://www.pakrpp.com/p/sitemap.html
-
-Digital Library: https://www.pakrpp.com/p/library.html
-
-Industry Glossary: https://www.pakrpp.com/p/glossary.html</b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html">Topic Index</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html">Visual Sitemap</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html">Digital Library</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html">Industry Glossary</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML19' locked='false' title='Page 3 Custom: Services &amp;amp; Connect' type='HTML' visible='true'>
+          <b:widget id='HTML19' locked='false' title='Services &amp; Connect' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[Help Center: https://www.pakrpp.com/p/support.html
-
-Knowledge Base (FAQ): https://www.pakrpp.com/p/faq.html
-
-Contact Us: https://www.pakrpp.com/p/contact.html
-
-Partnership & Career: https://www.pakrpp.com/p/career.html
-
-Press & Media Kit: https://www.pakrpp.com/p/media-kit.html]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html">Help Center</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html">Knowledge Base (FAQ)</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html">Contact Us</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html">Partnership & Career</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html">Press & Media Kit</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML20' locked='false' title='Page 4 Custom: Legal &amp;amp; Compliance' type='HTML' visible='true'>
+          <b:widget id='HTML20' locked='false' title='Legal &amp; Compliance' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'>Privacy Policy: https://www.pakrpp.com/p/privacy-policy.html
-
-Terms of Service: https://www.pakrpp.com/p/terms-of-service.html
-
-Disclaimer: https://www.pakrpp.com/p/disclaimer.html
-
-Accessibility Statement: https://www.pakrpp.com/p/accessibility.html</b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html">Privacy Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html">Terms of Service</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html">Disclaimer</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html">Accessibility Statement</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML21' locked='false' title='Non HTML' type='HTML' visible='true'>
+          <b:widget id='HTML21' locked='false' title='AI &amp; Ads Files' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[https://www.pakrpp.com/llms.txt
-
-Fungsi: Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude). Memberitahu mereka: "Boleh baca, tapi wajib cantumkan kredit ke pakrpp.com".
-
-https://www.pakrpp.com/ads.txt
-
-Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item">
+    <a class="gg-navtree__link" href="https://www.pakrpp.com/llms.txt">llms.txt</a>
+    <small class="gg-navtree__note">Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude).</small>
+  </li>
+  <li class="gg-navtree__item">
+    <a class="gg-navtree__link" href="https://www.pakrpp.com/ads.txt">ads.txt</a>
+    <small class="gg-navtree__note">Standar transparansi iklan digital (Authorized Digital Sellers).</small>
+  </li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
         </b:section>
@@ -757,91 +785,119 @@ Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:w
     </div>
   </b:includable>
           </b:widget>
-          <b:widget id='HTML22' locked='false' title='Page 1 Custom: Governance &amp;amp; Trust' type='HTML' visible='true'>
+          <b:widget id='HTML22' locked='false' title='Governance &amp; Trust' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[About & Philosophy: https://www.pakrpp.com/p/about.html
-
-Board of Authors: https://www.pakrpp.com/p/authors.html
-
-Editorial Policy: https://www.pakrpp.com/p/editorial-policy.html
-
-Transparency & Disclosure: https://www.pakrpp.com/p/transparency.html]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html">About & Philosophy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html">Board of Authors</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html">Editorial Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html">Transparency & Disclosure</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML23' locked='false' title='Page 2 Custom: Knowledge Hub' type='HTML' visible='true'>
+          <b:widget id='HTML23' locked='false' title='Knowledge Hub' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'>Topic Index: https://www.pakrpp.com/p/tags.html
-
-Visual Sitemap: https://www.pakrpp.com/p/sitemap.html
-
-Digital Library: https://www.pakrpp.com/p/library.html
-
-Industry Glossary: https://www.pakrpp.com/p/glossary.html</b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html">Topic Index</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html">Visual Sitemap</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html">Digital Library</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html">Industry Glossary</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML24' locked='false' title='Page 3 Custom: Services &amp;amp; Connect' type='HTML' visible='true'>
+          <b:widget id='HTML24' locked='false' title='Services &amp; Connect' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[Help Center: https://www.pakrpp.com/p/support.html
-
-Knowledge Base (FAQ): https://www.pakrpp.com/p/faq.html
-
-Contact Us: https://www.pakrpp.com/p/contact.html
-
-Partnership & Career: https://www.pakrpp.com/p/career.html
-
-Press & Media Kit: https://www.pakrpp.com/p/media-kit.html]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html">Help Center</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html">Knowledge Base (FAQ)</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html">Contact Us</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html">Partnership & Career</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html">Press & Media Kit</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML25' locked='false' title='Page 4 Custom: Legal &amp;amp; Compliance' type='HTML' visible='true'>
+          <b:widget id='HTML25' locked='false' title='Legal &amp; Compliance' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'>Privacy Policy: https://www.pakrpp.com/p/privacy-policy.html
-
-Terms of Service: https://www.pakrpp.com/p/terms-of-service.html
-
-Disclaimer: https://www.pakrpp.com/p/disclaimer.html
-
-Accessibility Statement: https://www.pakrpp.com/p/accessibility.html</b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html">Privacy Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html">Terms of Service</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html">Disclaimer</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html">Accessibility Statement</a></li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML26' locked='false' title='Non HTML' type='HTML' visible='true'>
+          <b:widget id='HTML26' locked='false' title='AI &amp; Ads Files' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[https://www.pakrpp.com/llms.txt
-
-Fungsi: Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude). Memberitahu mereka: "Boleh baca, tapi wajib cantumkan kredit ke pakrpp.com".
-
-https://www.pakrpp.com/ads.txt
-
-Fungsi: Standar transparansi iklan digital (Authorized Digital Sellers).]]></b:widget-setting>
+              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
+  <li class="gg-navtree__item">
+    <a class="gg-navtree__link" href="https://www.pakrpp.com/llms.txt">llms.txt</a>
+    <small class="gg-navtree__note">Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude).</small>
+  </li>
+  <li class="gg-navtree__item">
+    <a class="gg-navtree__link" href="https://www.pakrpp.com/ads.txt">ads.txt</a>
+    <small class="gg-navtree__note">Standar transparansi iklan digital (Authorized Digital Sellers).</small>
+  </li>
+</ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
+  <details class='gg-navtree' data-gg-default='closed' data-gg-navtree='group'>
+    <summary class='gg-navtree__summary'>
+      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>folder</span>
+      <span class='gg-navtree__summary-text'><data:title/></span>
+      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
+    </summary>
+    <div class='widget-content gg-navtree__items'>
+      <data:content/>
+    </div>
+  </details>
 </b:includable>
           </b:widget>
         </b:section>
