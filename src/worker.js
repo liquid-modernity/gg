@@ -68,66 +68,74 @@ const loadFlags = async (env) => {
   return { ...flags };
 };
 
-const extractAttrValue = (tag, attr) => {
-  if (!tag) return "";
-  const re = new RegExp(`${attr}\\s*=\\s*(['"])([^'"]*)\\1`, "i");
-  const match = tag.match(re);
-  return match ? match[2] : "";
+const parseTagAttrs = (tag) => {
+  const attrs = {};
+  if (!tag) return attrs;
+  const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
+  let match;
+  while ((match = re.exec(tag))) {
+    const key = String(match[1] || "").trim().toLowerCase();
+    if (!key) continue;
+    const value = match[2] ?? match[3] ?? match[4] ?? "";
+    attrs[key] = value;
+  }
+  return attrs;
+};
+
+const findElementById = (html, id) => {
+  if (!html || !id) return null;
+  const target = String(id).trim().toLowerCase();
+  if (!target) return null;
+  const re = /<[a-zA-Z][a-zA-Z0-9:-]*\b[^>]*>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const tag = match[0];
+    const attrs = parseTagAttrs(tag);
+    if (String(attrs.id || "").trim().toLowerCase() === target) {
+      return { tag, attrs };
+    }
+  }
+  return null;
 };
 
 const findMetaContent = (html, name) => {
   if (!html) return "";
-  const re = new RegExp(`<meta[^>]+name=['"]${name}['"][^>]*>`, "i");
-  const match = html.match(re);
-  if (!match) return "";
-  return extractAttrValue(match[0], "content");
+  const wanted = String(name || "").trim().toLowerCase();
+  if (!wanted) return "";
+  const re = /<meta\b[^>]*>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const attrs = parseTagAttrs(match[0]);
+    const metaName = String(attrs.name || "").trim().toLowerCase();
+    if (metaName === wanted) {
+      return String(attrs.content || "");
+    }
+  }
+  return "";
 };
 
 const parseTemplateFingerprint = (html) => {
   const envMeta = findMetaContent(html, "gg-env");
   const relMeta = findMetaContent(html, "gg-release");
-  const divMatch = html.match(/<div[^>]+id=['"]gg-fingerprint['"][^>]*>/i);
-  const divTag = divMatch ? divMatch[0] : "";
-  const envDiv = extractAttrValue(divTag, "data-env");
-  const relDiv = extractAttrValue(divTag, "data-release");
+  const fpEl = findElementById(html, "gg-fingerprint");
+  const envDiv = fpEl ? String(fpEl.attrs["data-env"] || "") : "";
+  const relDiv = fpEl ? String(fpEl.attrs["data-release"] || "") : "";
+  const hasMain = !!findElementById(html, "gg-main");
+  const hasBootMarker = /<script[^>]+src=['"][^'"]*boot\.js[^'"]*['"][^>]*>/i.test(
+    String(html || "")
+  );
   return {
     envMeta,
     relMeta,
     envDiv,
     relDiv,
-    hasFingerprintDiv: !!divTag,
+    hasFingerprintDiv: !!fpEl,
+    hasMain,
+    hasBootMarker,
   };
 };
 
 const normalizeReleaseToken = (value) => String(value || "").trim().toLowerCase();
-
-const toAllowedReleaseSet = (expectedReleases) => {
-  const out = new Set();
-  if (expectedReleases && typeof expectedReleases[Symbol.iterator] === "function") {
-    for (const value of expectedReleases) {
-      const rel = normalizeReleaseToken(value);
-      if (rel) out.add(rel);
-    }
-    return out;
-  }
-  const rel = normalizeReleaseToken(expectedReleases);
-  if (rel) out.add(rel);
-  return out;
-};
-
-const hasMainCssMarker = (html) => {
-  if (!html) return false;
-  return /<link\b[^>]*\bhref\s*=\s*(['"])[^'"]*\/assets\/(?:v\/[^/'"]+|latest)\/main\.css(?:[?#][^'"]*)?\1[^>]*>/i.test(
-    html
-  );
-};
-
-const hasBootMarker = (html) => {
-  if (!html) return false;
-  return /<script\b[^>]*\bsrc\s*=\s*(['"])[^'"]*\/assets\/(?:v\/[^/'"]+|latest)\/boot\.js(?:[?#][^'"]*)?\1[^>]*>/i.test(
-    html
-  );
-};
 
 const pushReason = (reasons, code) => {
   if (!code) return;
@@ -135,32 +143,35 @@ const pushReason = (reasons, code) => {
   reasons.push(code);
 };
 
-const getTemplateMismatchReasons = (fp, html, expectedEnv, expectedReleases) => {
+const getTemplateMismatchReasons = (fp, expectedEnv, expectedRelease) => {
   const reasons = [];
   const envMeta = (fp && fp.envMeta ? fp.envMeta : "").trim().toLowerCase();
-  const envDiv = (fp && fp.envDiv ? fp.envDiv : "").trim().toLowerCase();
   const relMeta = normalizeReleaseToken(fp && fp.relMeta ? fp.relMeta : "");
-  const relDiv = normalizeReleaseToken(fp && fp.relDiv ? fp.relDiv : "");
   const hasFpDiv = !!(fp && fp.hasFingerprintDiv);
-  const allowedReleases = toAllowedReleaseSet(expectedReleases);
   const normalizedExpectedEnv = String(expectedEnv || "").trim().toLowerCase();
+  const normalizedExpectedRelease = normalizeReleaseToken(expectedRelease);
 
   if (!envMeta) pushReason(reasons, "missing_meta_env");
-  if (!relMeta) pushReason(reasons, "missing_meta_release");
-  if (!hasFpDiv) pushReason(reasons, "missing_fp_div");
-  if (!hasMainCssMarker(html)) pushReason(reasons, "missing_main");
-  if (!hasBootMarker(html)) pushReason(reasons, "missing_boot_marker");
-
-  if (!normalizedExpectedEnv || envMeta !== normalizedExpectedEnv || envDiv !== normalizedExpectedEnv) {
+  else if (!normalizedExpectedEnv || envMeta !== normalizedExpectedEnv) {
     pushReason(reasons, "env_mismatch");
   }
 
-  if (!relMeta || !relDiv || relMeta !== relDiv) {
-    pushReason(reasons, "release_mismatch");
-  } else if (!allowedReleases.size || !allowedReleases.has(relMeta)) {
+  if (!relMeta) pushReason(reasons, "missing_meta_release");
+  else if (!normalizedExpectedRelease || relMeta !== normalizedExpectedRelease) {
     pushReason(reasons, "release_mismatch");
   }
 
+  if (!hasFpDiv) pushReason(reasons, "missing_fp_div");
+
+  return reasons;
+};
+
+const getTemplateContractReasons = (fp) => {
+  const reasons = [];
+  const hasMain = !!(fp && fp.hasMain);
+  const hasBootMarker = !!(fp && fp.hasBootMarker);
+  if (!hasMain) pushReason(reasons, "missing_main");
+  if (!hasBootMarker) pushReason(reasons, "missing_boot_marker");
   return reasons;
 };
 
@@ -275,8 +286,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "801324e";
-    const TEMPLATE_ALLOWED_RELEASES = ["801324e","e55d6c5"];
+    const WORKER_VERSION = "095f1e2";
+    const TEMPLATE_ALLOWED_RELEASES = ["095f1e2","801324e"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -582,23 +593,29 @@ export default {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
         const expectedEnv = "prod";
-        const allowedTemplateReleases = new Set([WORKER_VERSION, ...TEMPLATE_ALLOWED_RELEASES]);
+        const expectedRelease = WORKER_VERSION;
         let templateMismatch = false;
         let templateMismatchReason = "";
+        let templateContract = false;
+        let templateContractReason = "";
         try {
           const html = await originRes.clone().text();
           const fp = parseTemplateFingerprint(html);
-          const reasons = getTemplateMismatchReasons(
+          const mismatchReasons = getTemplateMismatchReasons(
             fp,
-            html,
             expectedEnv,
-            allowedTemplateReleases
+            expectedRelease
           );
-          templateMismatch = reasons.length > 0;
-          templateMismatchReason = reasons.length ? reasons.join(",") : "";
+          const contractReasons = getTemplateContractReasons(fp);
+          templateMismatch = mismatchReasons.length > 0;
+          templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
+          templateContract = contractReasons.length > 0;
+          templateContractReason = contractReasons.length ? contractReasons.join(",") : "";
         } catch (e) {
           templateMismatch = true;
           templateMismatchReason = "unknown";
+          templateContract = true;
+          templateContractReason = "unknown";
         }
         const publicUrl = new URL(request.url);
         publicUrl.pathname = "/blog";
@@ -875,16 +892,31 @@ export default {
             });
         }
         const transformed = rewritten.transform(originRes);
-        const out = stamp(transformed, { cspReportEnabled });
+        let out = stamp(transformed, { cspReportEnabled });
         if (templateMismatch) {
+          if (out.status !== 200) {
+            out = new Response(out.body, {
+              status: 200,
+              statusText: "OK",
+              headers: out.headers,
+            });
+          }
           if (!templateMismatchReason) {
             templateMismatchReason = "unknown";
           }
           out.headers.set("x-gg-template-mismatch", "1");
           out.headers.set("x-gg-template-mismatch-reason", templateMismatchReason);
+          out.headers.set("x-robots-tag", "noindex");
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");
+        }
+        if (templateContract) {
+          if (!templateContractReason) {
+            templateContractReason = "unknown";
+          }
+          out.headers.set("x-gg-template-contract", "1");
+          out.headers.set("x-gg-template-contract-reason", templateContractReason);
         }
         return out;
       }

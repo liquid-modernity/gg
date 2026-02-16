@@ -182,10 +182,10 @@ const runMismatchTest = async () => {
     "<!doctype html>",
     "<html>",
     "<head>",
-    "<meta name=\"gg-env\" content=\"prod\">",
-    "<meta name=\"gg-release\" content=\"OLD\">",
+    "<meta content='prod' name='gg-env'>",
+    "<meta content='OLD' name='gg-release'>",
     "<link rel=\"modulepreload\" href=\"/assets/v/OLD/app.js\">",
-    "<script src=\"/assets/v/OLD/boot.js\"></script>",
+    "<script async src='/assets/v/OLD/boot.js?x=1'></script>",
     "</head>",
     "<body>",
     "<div id=\"gg-fingerprint\" data-env=\"prod\" data-release=\"OLD\"></div>",
@@ -232,6 +232,30 @@ const runMismatchTest = async () => {
     if (!cacheControl.includes("no-store")) {
       failures.push("mismatch test: Cache-Control missing no-store");
     }
+    const robots = (res.headers.get("x-robots-tag") || "").trim().toLowerCase();
+    if (robots !== "noindex") {
+      failures.push(`mismatch test: x-robots-tag must be noindex (got ${robots || "(missing)"})`);
+    }
+    const contractHeader = (res.headers.get("x-gg-template-contract") || "").trim();
+    const contractReason = (res.headers.get("x-gg-template-contract-reason") || "").trim();
+    if (contractHeader !== "1") {
+      failures.push("mismatch test: x-gg-template-contract header missing");
+    }
+    if (!contractReason) {
+      failures.push("mismatch test: x-gg-template-contract-reason header missing");
+    } else {
+      const reasonSet = new Set(
+        contractReason
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean)
+      );
+      if (!reasonSet.has("missing_main")) {
+        failures.push(
+          `mismatch test: contract reason must include missing_main (got ${contractReason})`
+        );
+      }
+    }
     if (res.status !== 200) {
       failures.push(`mismatch test: expected 200 status for mismatch HTML (got ${res.status})`);
     }
@@ -256,14 +280,14 @@ const runMatchTest = async () => {
     "<!doctype html>",
     "<html>",
     "<head>",
-    `<meta content="prod" name="gg-env">`,
-    `<meta content="${version}" name="gg-release">`,
+    `<meta content='prod' name='gg-env'>`,
+    `<meta content='${version}' name='gg-release'>`,
     `<link rel="stylesheet" href="/assets/v/${version}/main.css">`,
-    `<script src="/assets/v/${version}/boot.js"></script>`,
+    `<script async src='/assets/v/${version}/boot.js?x=1'></script>`,
     "</head>",
     "<body>",
-    `<div data-env="prod" data-release="${version}" id="gg-fingerprint"></div>`,
-    "<main>Test</main>",
+    `<div data-release='${version}' data-env='prod' id='gg-fingerprint'></div>`,
+    "<main id='gg-main'>Test</main>",
     "</body>",
     "</html>",
   ].join("");
@@ -282,11 +306,19 @@ const runMatchTest = async () => {
     const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
     const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();
     const mismatchReason = (res.headers.get("x-gg-template-mismatch-reason") || "").trim();
+    const contractHeader = (res.headers.get("x-gg-template-contract") || "").trim();
+    const contractReason = (res.headers.get("x-gg-template-contract-reason") || "").trim();
     if (mismatchHeader) {
       failures.push(`match test: mismatch header must be absent (got ${mismatchHeader})`);
     }
     if (mismatchReason) {
       failures.push(`match test: mismatch reason header must be absent (got ${mismatchReason})`);
+    }
+    if (contractHeader) {
+      failures.push(`match test: contract header must be absent (got ${contractHeader})`);
+    }
+    if (contractReason) {
+      failures.push(`match test: contract reason header must be absent (got ${contractReason})`);
     }
   } catch (err) {
     failures.push(`match test: ${err && err.message ? err.message : String(err)}`);
@@ -296,8 +328,85 @@ const runMatchTest = async () => {
   }
 };
 
+const runMinimalContractNoMarkerTest = async () => {
+  const originalFetch = globalThis.fetch;
+  const originalRewriter = globalThis.HTMLRewriter;
+  const versionMatch = worker.match(/const WORKER_VERSION = "([^"]+)";/);
+  const version = versionMatch ? versionMatch[1] : "";
+  if (!version) {
+    failures.push("minimal contract test: unable to parse WORKER_VERSION from src/worker.js");
+    return;
+  }
+  const testHtml = [
+    "<!doctype html>",
+    "<html>",
+    "<head>",
+    `<meta content='prod' name='gg-env'>`,
+    `<meta content='${version}' name='gg-release'>`,
+    "</head>",
+    "<body>",
+    `<div id='gg-fingerprint'></div>`,
+    "<main>Test</main>",
+    "</body>",
+    "</html>",
+  ].join("");
+
+  globalThis.fetch = async () =>
+    new Response(testHtml, {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  globalThis.HTMLRewriter = buildTestHtmlRewriter();
+
+  try {
+    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
+    const workerMod = await import(`${workerUrl}?minimal=${Date.now()}`);
+    const workerImpl = workerMod.default || workerMod;
+    const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
+    const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();
+    const mismatchReason = (res.headers.get("x-gg-template-mismatch-reason") || "").trim();
+    const contractHeader = (res.headers.get("x-gg-template-contract") || "").trim();
+    const contractReason = (res.headers.get("x-gg-template-contract-reason") || "").trim();
+    if (mismatchHeader) {
+      failures.push(`minimal contract test: mismatch header must be absent (got ${mismatchHeader})`);
+    }
+    if (mismatchReason) {
+      failures.push(`minimal contract test: mismatch reason header must be absent (got ${mismatchReason})`);
+    }
+    if (contractHeader !== "1") {
+      failures.push(`minimal contract test: contract header must be 1 (got ${contractHeader || "(missing)"})`);
+    }
+    if (!contractReason) {
+      failures.push("minimal contract test: contract reason header missing");
+    } else {
+      const reasonSet = new Set(
+        contractReason
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean)
+      );
+      if (!reasonSet.has("missing_main")) {
+        failures.push(
+          `minimal contract test: contract reason must include missing_main (got ${contractReason})`
+        );
+      }
+      if (!reasonSet.has("missing_boot_marker")) {
+        failures.push(
+          `minimal contract test: contract reason must include missing_boot_marker (got ${contractReason})`
+        );
+      }
+    }
+  } catch (err) {
+    failures.push(`minimal contract test: ${err && err.message ? err.message : String(err)}`);
+  } finally {
+    globalThis.fetch = originalFetch;
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+};
+
 await runMismatchTest();
 await runMatchTest();
+await runMinimalContractNoMarkerTest();
 
 if (failures.length) {
   console.error("VERIFY_TEMPLATE_FINGERPRINT: FAIL");

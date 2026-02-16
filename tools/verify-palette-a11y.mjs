@@ -194,8 +194,6 @@ async function main() {
   }
 
   const base = normalizeBase(getArg("--base"));
-  const allowMismatch =
-    String(getArg("--allow-mismatch") || process.env.ALLOW_TEMPLATE_MISMATCH || "").trim() === "1";
   const pages = [
     { label: "home", path: "/" },
     { label: "blog", path: "/blog" },
@@ -203,16 +201,12 @@ async function main() {
 
   const controls = new Set();
   const releases = new Set();
-  const mismatchPages = [];
 
   for (const page of pages) {
     const url = `${base}${page.path}?x=${Date.now()}`;
     const res = fetchPage(url, `LIVE_HTML ${page.label}`);
     const mismatch = String(res.headers["x-gg-template-mismatch"] || "").trim() === "1";
-    if (allowMismatch && mismatch) {
-      mismatchPages.push(page.label);
-      continue;
-    }
+    if (mismatch) fail(`LIVE_HTML ${page.label} returned x-gg-template-mismatch=1`);
     if (res.status !== 200) {
       fail(`LIVE_HTML ${page.label} status ${res.status} (${url})`);
     }
@@ -226,14 +220,12 @@ async function main() {
     releases.add(rel);
   }
 
-  if (controls.size) {
-    if (controls.size !== 1) fail(`LIVE_HTML aria-controls mismatch across pages: ${Array.from(controls).join(", ")}`);
-    const listboxId = Array.from(controls)[0];
-    if (listboxId !== "gg-palette-list") {
-      fail(`LIVE_HTML aria-controls must be gg-palette-list (got ${listboxId})`);
-    }
-  } else if (!allowMismatch) {
-    fail("LIVE_HTML controls not detected");
+  if (controls.size !== 1) {
+    fail(`LIVE_HTML aria-controls mismatch across pages: ${Array.from(controls).join(", ")}`);
+  }
+  const listboxId = Array.from(controls)[0];
+  if (listboxId !== "gg-palette-list") {
+    fail(`LIVE_HTML aria-controls must be gg-palette-list (got ${listboxId})`);
   }
 
   let rel = "";
@@ -259,8 +251,7 @@ async function main() {
 
   verifySourceContracts(searchJs, cmdJs);
 
-  const mismatchNote = mismatchPages.length ? ` mismatch=${mismatchPages.join(",")}` : "";
-  console.log(`PASS: palette a11y contract (base=${base}, release=${rel}${mismatchNote})`);
+  console.log(`PASS: palette a11y contract (base=${base}, release=${rel})`);
 }
 
 main().catch((err) => {
