@@ -731,6 +731,13 @@ export default {
           "Template mismatch detected. Enhancements disabled." +
           "</div>";
         const rewritten = new HTMLRewriter()
+          .on("html", {
+            element(el) {
+              if (forceListing) {
+                el.setAttribute("data-gg-prehome", "blog");
+              }
+            },
+          })
           .on("meta[property=\"og:type\"]", {
             element(el) {
               assignMeta("ogType", el.getAttribute("content"));
@@ -903,6 +910,11 @@ export default {
           }
           out.headers.set("x-gg-template-contract", "1");
           out.headers.set("x-gg-template-contract-reason", templateContractReason);
+        }
+        if (forceListing) {
+          out.headers.set("Cache-Control", "no-store, max-age=0");
+          out.headers.set("Pragma", "no-cache");
+          out.headers.set("Expires", "0");
         }
         return out;
       }

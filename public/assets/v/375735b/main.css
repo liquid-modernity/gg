@@ -74,7 +74,7 @@
 
   /* dock (kalau ada) */
   --gg-dock-safe: 86px;
- --gg-glass-blur: 14px;
+  --gg-glass-blur: 14px;
   --gg-glass-sat: 150%;
   --gg-glass-radius: 999px;
 
@@ -82,6 +82,9 @@
   --gg-glass-bg: linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.38));
   --gg-glass-border: rgba(255,255,255,.18);
   --gg-glass-ink: rgba(255,255,255,.92);
+  --gg-dock-bg: var(--gg-glass-bg);
+  --gg-dock-border: var(--gg-glass-border);
+  --gg-dock-ink: var(--gg-glass-ink);
 
   --gg-chip-bg: rgba(255,255,255,.08);
   --gg-chip-border: rgba(255,255,255,.20);
@@ -137,9 +140,7 @@
 
 /* LIGHT glass khusus POSTDETAIL + PAGE (sesuaikan dengan background terang) */
 main.gg-main[data-gg-surface="post"] .gg-post__toolbar,
-main.gg-main[data-gg-surface="page"] .gg-post__toolbar,
-main.gg-main[data-gg-surface="post"] ~ nav.gg-dock,
-main.gg-main[data-gg-surface="page"] ~ nav.gg-dock{
+main.gg-main[data-gg-surface="page"] .gg-post__toolbar{
   --gg-glass-bg: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.44));
   --gg-glass-border: rgba(0,0,0,.10);
   --gg-glass-ink: rgba(15,23,42,.92);
@@ -307,14 +308,14 @@ nav.gg-dock[data-gg-module="dock"]{
   );
   max-width: calc(100% - 28px);
 
- background: var(--gg-glass-bg);
-  border: 1px solid var(--gg-glass-border);
+  background: var(--gg-dock-bg);
+  border: 1px solid var(--gg-dock-border);
   border-radius: var(--gg-glass-radius);
 
   backdrop-filter: blur(var(--gg-glass-blur)) saturate(var(--gg-glass-sat));
   -webkit-backdrop-filter: blur(var(--gg-glass-blur)) saturate(var(--gg-glass-sat));
 
-  color: var(--gg-glass-ink);
+  color: var(--gg-dock-ink);
 
   display: inline-flex;
   align-items: center;
@@ -344,10 +345,7 @@ nav.gg-dock :where(.gg-dock__item, .gg-panel-x){
   align-items: center;
   justify-content: center;
 
-  border: 1px solid rgba(255,255,255,.20);
-  background: rgba(255,255,255,.08);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
 
   transition: transform .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, opacity .16s ease;
 }
@@ -355,7 +353,7 @@ nav.gg-dock :where(.gg-dock__item, .gg-panel-x){
 nav.gg-dock :where(.gg-dock__item, .gg-panel-x){
   border: 1px solid var(--gg-chip-border);
   background: var(--gg-chip-bg);
-  color: var(--gg-glass-ink);
+  color: var(--gg-dock-ink);
 }
 
 nav.gg-dock :where(.gg-dock__item, .gg-panel-x):hover{
@@ -1498,6 +1496,65 @@ a.gg-search-assist__item > small{
   flex-direction: column;
   gap: 6px;
 }
+
+/* Left sidebar wrappers contract (listing/page) */
+#gg-left-sidebar-list,
+#gg-left-sidebar-page{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--gg-border);
+  border-radius: var(--gg-radius-md);
+  background: var(--gg-surface);
+  box-shadow: var(--gg-shadow-sm);
+}
+#gg-left-sidebar-list .widget,
+#gg-left-sidebar-page .widget{
+  margin: 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--gg-border);
+}
+#gg-left-sidebar-list .widget:last-child,
+#gg-left-sidebar-page .widget:last-child{
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+#gg-left-sidebar-list .widget-content,
+#gg-left-sidebar-page .widget-content{
+  display: grid;
+  gap: 10px;
+}
+#gg-left-sidebar-list :where(.widget-title, .title),
+#gg-left-sidebar-page :where(.widget-title, .title){
+  margin: 0 0 8px;
+}
+
+/* Generic mixed-media layout contract */
+.gg-mixed{
+  --gg-mixed-gap: var(--gg-space-3);
+  --gg-mixed-min: 220px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--gg-mixed-min)), 1fr));
+  gap: var(--gg-mixed-gap);
+  align-items: start;
+}
+.gg-mixed > *{ min-width: 0; }
+.gg-mixed--rail{
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(var(--gg-mixed-min), 1fr);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 2px;
+}
+.gg-mixed--rail > *{ scroll-snap-align: start; }
+.gg-mixed--feature{
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+@media (max-width: 920px){
+  .gg-mixed--feature{ grid-template-columns: minmax(0, 1fr); }
+}
+
 .gg-blog-sidebar ul{ list-style: none; padding-left: 0; margin: 0; }
 .gg-blog-sidebar li{ display: flex; gap: 8px; color: var(--gg-ink); }
 .gg-blog-sidebar li a{ flex: 1; }

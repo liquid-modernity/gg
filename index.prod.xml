@@ -250,7 +250,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='     data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; :     (data:view.isPost ? &quot;post&quot; :       (data:view.isPage ? &quot;page&quot; :         (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;)       )     )' id='gg-main' tabindex='-1'>
+  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;))))' id='gg-main' tabindex='-1'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
 
     

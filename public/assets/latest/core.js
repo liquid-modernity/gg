@@ -725,6 +725,9 @@ return p.then(function(html){
 if (!GG.core || !GG.core.render || !GG.core.render.apply) throw new Error('render-missing');
 var ok = GG.core.render.apply(html, url);
 if (!ok) throw new Error('render-failed');
+if (router && typeof router._applySurface === 'function') {
+router._applySurface(url);
+}
 if (typeof scrollY === 'number') w.scrollTo(0, scrollY);
 else w.scrollTo(0, 0);
 if (options.pop && typeof router.onPopState === 'function') router.onPopState(url, w.history ? w.history.state : null);
