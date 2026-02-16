@@ -41,6 +41,18 @@ function validateCore(core, label) {
     failures.push(`${label}: router.handleClick must call router._shouldIntercept`);
   }
 
+  const navigateBlock = sliceBetween(core, "router.navigate", "router._onPopState");
+  if (!navigateBlock) {
+    failures.push(`${label}: router.navigate block not found`);
+  } else {
+    if (!/indexOf\('\/search'\)===0/.test(navigateBlock)) {
+      failures.push(`${label}: router.navigate must force hard-nav for /search`);
+    }
+    if (!/location\.assign/.test(navigateBlock)) {
+      failures.push(`${label}: router.navigate must call location.assign for /search`);
+    }
+  }
+
   const shouldMatch = core.match(/router\._shouldIntercept[\s\S]*?};/);
   if (!shouldMatch) {
     failures.push(`${label}: router._shouldIntercept missing`);

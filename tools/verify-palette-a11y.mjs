@@ -113,7 +113,7 @@ function readLocal(relPath) {
   return fs.readFileSync(p, "utf8");
 }
 
-function verifySourceContracts(searchJs, cmdJs) {
+function verifySourceContracts(searchJs, cmdJs, uiJs = "") {
   requirePattern(searchJs, /PID\s*=\s*['"]gg-palette-list['"]/, "search module", "PID=gg-palette-list");
   requirePattern(searchJs, /setAttribute\(\s*['"]role['"]\s*,\s*['"]listbox['"]\s*\)/, "search module", "listbox role");
   requirePattern(searchJs, /role=["']option["']/, "search module", "option role template");
@@ -129,6 +129,14 @@ function verifySourceContracts(searchJs, cmdJs) {
   requirePattern(cmdJs, /role=["']option["']/, "command module", "option role template");
   requirePattern(cmdJs, /aria-selected=["']false["']/, "command module", "default aria-selected=false");
   requirePattern(cmdJs, /setAttribute\(\s*['"]aria-selected['"]\s*,\s*['"]true['"]\s*\)/, "command module", "active option aria-selected=true");
+
+  if (uiJs) {
+    requirePattern(uiJs, /gg:search-open/, "ui module", "gg:search-open listener");
+    requirePattern(uiJs, /focusDockSearch/, "ui module", "dock search focus helper");
+    if (/lb\(\s*['"]cmd['"]\s*\)/.test(uiJs) || /ui\.bucket\.cmd\.js/.test(uiJs)) {
+      fail("ui module must not load command popup module");
+    }
+  }
 }
 
 function verifyHtmlContract(html, label) {
@@ -159,7 +167,8 @@ function runRepoMode() {
   if (!rel) fail("index.prod.xml missing /assets/v/<REL>/ pin");
   const searchJs = readLocal(`public/assets/v/${rel}/modules/ui.bucket.search.js`);
   const cmdJs = readLocal(`public/assets/v/${rel}/modules/ui.bucket.cmd.js`);
-  verifySourceContracts(searchJs, cmdJs);
+  const uiJs = readLocal(`public/assets/v/${rel}/modules/ui.js`);
+  verifySourceContracts(searchJs, cmdJs, uiJs);
   console.log(`PASS: palette a11y contract (mode=repo, release=${rel})`);
 }
 

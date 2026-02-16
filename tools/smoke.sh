@@ -10,9 +10,7 @@ die(){
 }
 
 BASE="${BASE:-https://www.pakrpp.com}"
-ALLOW_TEMPLATE_MISMATCH="${SMOKE_ALLOW_TEMPLATE_MISMATCH:-0}"
 ALLOW_OFFLINE_FALLBACK="${SMOKE_ALLOW_OFFLINE_FALLBACK:-0}"
-template_mismatch_seen=0
 
 echo "SMOKE: base=${BASE}"
 
@@ -394,6 +392,65 @@ echo "PASS: gg-flags.json served by worker"
 security_headers_check "${BASE}/?x=1" "home"
 security_headers_check "${BASE}/blog?x=1" "blog"
 
+template_fingerprint_assert() {
+  local html="$1"
+  local label="$2"
+  local expected_env="$3"
+  local expected_release="$4"
+  if ! printf '%s\n' "${html}" \
+    | EXPECTED_ENV="${expected_env}" EXPECTED_RELEASE="${expected_release}" node -e '
+      const fs = require("fs");
+      const html = fs.readFileSync(0, "utf8");
+      const expectedEnv = String(process.env.EXPECTED_ENV || "").trim().toLowerCase();
+      const expectedRelease = String(process.env.EXPECTED_RELEASE || "").trim();
+      function attr(tag, name) {
+        if (!tag) return "";
+        const re = new RegExp(`${name}\\s*=\\s*([\"\\047])([^\"\\047]*)\\1`, "i");
+        const m = tag.match(re);
+        return m ? m[2] : "";
+      }
+      function findMeta(name) {
+        const re = /<meta\b[^>]*>/gi;
+        let m;
+        while ((m = re.exec(html))) {
+          const tag = m[0];
+          const n = attr(tag, "name").trim().toLowerCase();
+          if (n === name) return attr(tag, "content").trim();
+        }
+        return "";
+      }
+      const fpTagMatch = html.match(/<div\b[^>]*\bid=(["\047])gg-fingerprint\1[^>]*>/i);
+      const fpTag = fpTagMatch ? fpTagMatch[0] : "";
+      const envMeta = findMeta("gg-env").toLowerCase();
+      const relMeta = findMeta("gg-release");
+      const envDiv = attr(fpTag, "data-env").trim().toLowerCase();
+      const relDiv = attr(fpTag, "data-release").trim();
+      const missing = [];
+      if (!envMeta) missing.push("meta gg-env");
+      if (!relMeta) missing.push("meta gg-release");
+      if (!envDiv) missing.push("div gg-fingerprint data-env");
+      if (!relDiv) missing.push("div gg-fingerprint data-release");
+      if (missing.length) {
+        console.error(`missing ${missing.join(", ")}`);
+        process.exit(1);
+      }
+      if (envMeta !== expectedEnv || envDiv !== expectedEnv) {
+        console.error(`env mismatch envMeta=${envMeta} envDiv=${envDiv} expected=${expectedEnv}`);
+        process.exit(1);
+      }
+      if (relMeta !== expectedRelease || relDiv !== expectedRelease) {
+        console.error(`release mismatch relMeta=${relMeta} relDiv=${relDiv} expected=${expectedRelease}`);
+        process.exit(1);
+      }
+      process.stdout.write(`env=${envMeta} release=${relMeta}`);
+    '; then
+    echo "DEBUG: ${label} fingerprint tags"
+    printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+(gg-env|gg-release)[^>]*>|<div[^>]+id=['\"]gg-fingerprint['\"][^>]*>" | head -n 20 || true
+    die "${label} template fingerprint mismatch"
+  fi
+  echo "PASS: ${label} template fingerprint env/release"
+}
+
 template_mismatch_check() {
   local url="$1"
   local label="$2"
@@ -402,14 +459,9 @@ template_mismatch_check() {
     die "${label} mismatch headers fetch failed"
   fi
   if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
-    if [[ "${ALLOW_TEMPLATE_MISMATCH}" == "1" ]]; then
-      template_mismatch_seen=1
-      echo "PASS: ${label} template fingerprint (mismatch allowed)"
-      return 0
-    fi
     echo "DEBUG: ${label} headers"
     echo "${headers}" | sed -n '1,30p'
-    die "${label} unexpected x-gg-template-mismatch header"
+    die "${label} returned x-gg-template-mismatch header"
   fi
   if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
     die "${label} mismatch html fetch failed"
@@ -417,7 +469,8 @@ template_mismatch_check() {
   if echo "${html}" | grep -qi 'gg-template-mismatch'; then
     die "${label} mismatch banner detected"
   fi
-  echo "PASS: ${label} template fingerprint"
+  template_fingerprint_assert "${html}" "${label}" "prod" "${REL}"
+  echo "PASS: ${label} template mismatch header absent"
 }
 
 template_mismatch_check "${BASE}/?x=1" "home"
@@ -442,18 +495,14 @@ assert_status "${BASE}/api/proxy" "400" "/api/proxy missing url"
 assert_status "${BASE}/api/proxy?url=not-a-url" "400" "/api/proxy invalid url"
 assert_status "${BASE}/api/proxy?url=https://example.com/" "403" "/api/proxy host not allowed"
 
-if [[ "${template_mismatch_seen}" == "1" ]]; then
-  echo "INFO: template mismatch active; skipping redirect/canonical/schema checks"
-else
-  redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
-  redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
-  redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
-  listing_canonical_check "${BASE}/blog"
-  schema_check_home
-  schema_check_listing
-  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
-    schema_check_post "${SMOKE_POST_URL}"
-  fi
+redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
+redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
+redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
+listing_canonical_check "${BASE}/blog"
+schema_check_home
+schema_check_listing
+if [[ -n "${SMOKE_POST_URL:-}" ]]; then
+  schema_check_post "${SMOKE_POST_URL}"
 fi
 
 sample_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png"
@@ -548,66 +597,58 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     echo "PASS: LIVE_HTML ${label} h1 count"
   }
 
-  if [[ "${template_mismatch_seen}" == "1" ]]; then
-    echo "INFO: LIVE_HTML contract checks skipped due template mismatch mode"
-  else
-    live_check "${BASE}/" "home"
-    live_check "${BASE}/blog" "blog"
-    live_h1_check "${BASE}/" "home"
-    live_h1_check "${BASE}/blog" "blog" "Blog"
-    if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
-      die "verify-js-chain failed"
-    fi
-
-    live_dom_expect() {
-      local html="$1"
-      local label="$2"
-      local pattern="$3"
-      local debug_pattern="$4"
-      local desc="$5"
-      if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
-        echo "DEBUG: ${label} ${desc} lines"
-        printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
-        die "LIVE_HTML ${label} missing ${desc}"
-      fi
-    }
-
-    live_dom_check_page() {
-      local url="$1"
-      local label="$2"
-      local ts html
-      local gg_main_re="id=['\"]gg-main['\"]"
-      ts="$(date +%s)"
-      html="$(live_fetch_stream "${url}?x=${ts}")"
-      if [[ "${label}" == "home" ]]; then
-        live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
-        live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-        live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
-      else
-        live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
-        live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-        live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
-      fi
-      echo "PASS: LIVE_HTML ${label} DOM contract"
-    }
-
-    live_dom_check_page "${BASE}/" "home"
-    live_dom_check_page "${BASE}/blog" "blog"
-
-    if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
-      die "verify-router-contract failed"
-    fi
-
-    if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
-      die "verify-multizone failed"
-    fi
+  live_check "${BASE}/" "home"
+  live_check "${BASE}/blog" "blog"
+  live_h1_check "${BASE}/" "home"
+  live_h1_check "${BASE}/blog" "blog" "Blog"
+  if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
+    die "verify-js-chain failed"
   fi
 
-  palette_args=(--base="${BASE}")
-  if [[ "${template_mismatch_seen}" == "1" ]]; then
-    palette_args+=(--allow-mismatch=1)
+  live_dom_expect() {
+    local html="$1"
+    local label="$2"
+    local pattern="$3"
+    local debug_pattern="$4"
+    local desc="$5"
+    if ! printf '%s\n' "${html}" | grep -Eqi "${pattern}"; then
+      echo "DEBUG: ${label} ${desc} lines"
+      printf '%s\n' "${html}" | grep -Ein "${debug_pattern}" | head -n 20 || true
+      die "LIVE_HTML ${label} missing ${desc}"
+    fi
+  }
+
+  live_dom_check_page() {
+    local url="$1"
+    local label="$2"
+    local ts html
+    local gg_main_re="id=['\"]gg-main['\"]"
+    ts="$(date +%s)"
+    html="$(live_fetch_stream "${url}?x=${ts}")"
+    if [[ "${label}" == "home" ]]; then
+      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
+      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" 'gg-skiplink' 'gg-skiplink|skiplink' 'skiplink'
+    else
+      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
+      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
+      live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
+    fi
+    echo "PASS: LIVE_HTML ${label} DOM contract"
+  }
+
+  live_dom_check_page "${BASE}/" "home"
+  live_dom_check_page "${BASE}/blog" "blog"
+
+  if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
+    die "verify-router-contract failed"
   fi
-  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=live "${palette_args[@]}"; then
+
+  if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
+    die "verify-multizone failed"
+  fi
+
+  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=live --base="${BASE}"; then
     die "verify-palette-a11y failed"
   fi
 fi
