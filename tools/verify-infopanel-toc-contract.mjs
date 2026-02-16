@@ -44,12 +44,12 @@ function verifyCore(core, label) {
   });
 
   const lockSkeletonHits = (
-    core.match(/renderTocSkeleton\(4,\s*(?:'Lock this card to load headings\.'|TOC_HINT_LOCK)\)/g) ||
+    core.match(/renderTocSkeleton\((?:5|6),\s*(?:'Lock this card to load headings\.'|TOC_HINT_LOCK)\)/g) ||
     []
   ).length;
   if (lockSkeletonHits < 3) {
     failures.push(
-      `${label}: expected at least 3 lock-state TOC skeleton calls (found ${lockSkeletonHits})`
+      `${label}: expected at least 3 lock-state TOC skeleton calls (5-6 rows, found ${lockSkeletonHits})`
     );
   }
 

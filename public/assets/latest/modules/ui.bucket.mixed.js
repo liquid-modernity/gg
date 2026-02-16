@@ -380,6 +380,7 @@
         rows.push(
           '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
             '<span class="gg-newsdeck__body">' +
+              '<span class="gg-newsdeck__kicker"></span>' +
               '<span class="gg-newsdeck__title"></span>' +
               '<span class="gg-newsdeck__time"></span>' +
             '</span>' +
@@ -400,6 +401,7 @@
         out.push(
         '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
           '<span class="gg-newsdeck__body">' +
+            '<span class="gg-newsdeck__kicker"></span>' +
             '<span class="gg-newsdeck__title"></span>' +
             '<span class="gg-newsdeck__time"></span>' +
           '</span>' +
@@ -629,13 +631,15 @@
         var img = item.image
           ? '<img alt="" decoding="async" loading="lazy" src="' + esc(item.image) + '"/>'
           : '';
+        var sourceName = titleCaseLabel((item.labels && item.labels[0]) || col.label || labelName || 'News');
         var ago = timeAgo(item.published || '');
         var dateIso = String(item.published || '');
         rows.push(
           '<a class="gg-newsdeck__item" href="' + esc(item.url || '#') + '">' +
             '<span class="gg-newsdeck__body">' +
+              '<span class="gg-newsdeck__kicker">' + esc(sourceName) + '</span>' +
               '<span class="gg-newsdeck__title">' + esc(item.title || '') + '</span>' +
-              '<time class="gg-newsdeck__time" datetime="' + esc(dateIso) + '">' + esc(ago || 'Just published') + '</time>' +
+              '<time class="gg-newsdeck__time" datetime="' + esc(dateIso) + '">' + esc(ago || 'Just published') + '<span aria-hidden="true" class="gg-icon gg-newsdeck__open">open_in_new</span></time>' +
             '</span>' +
             '<span class="gg-newsdeck__thumb">' + img + '</span>' +
           '</a>'

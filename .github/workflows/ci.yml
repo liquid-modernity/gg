@@ -48,6 +48,7 @@ jobs:
           npm run build
           npm run verify:assets
           npm run verify:xml
+          node tools/verify-ui-guardrails.mjs
           if [ -f tools/verify-theme-diff.mjs ]; then
             node tools/verify-theme-diff.mjs
           else

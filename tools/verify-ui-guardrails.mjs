@@ -95,11 +95,128 @@ function verifyIndexContracts(indexXml) {
   if (/Page\s+\d+\s+Custom/i.test(indexXml)) {
     failures.push(`index.prod.xml: legacy "Page X Custom" title still present`);
   }
-  const ssrCap =
-    /id=['"]postcards['"][\s\S]*?data:view\.isSingleItem\s+or\s+data:i\s*&lt;\s*(8|9|12)/i;
-  if (!ssrCap.test(indexXml)) {
-    failures.push(`index.prod.xml: SSR postcards cap missing (expected data:i &lt; 8|9|12 in Blog1 loop)`);
+  if (/THE MIXED-MEDIA LAYOUT/i.test(indexXml)) {
+    failures.push(`index.prod.xml: debug heading "THE MIXED-MEDIA LAYOUT" must not appear`);
   }
+
+  const blogWidget = indexXml.match(/<b:widget id=['"]Blog1['"][\s\S]*?<\/b:widget>/i);
+  const blogScope = blogWidget ? blogWidget[0] : indexXml;
+  if (!/id=['"]postcards['"]/i.test(blogScope)) {
+    failures.push(`index.prod.xml: Blog1 must render #postcards container`);
+  }
+  const capMatch = blogScope.match(/data:view\.isSingleItem\s+or\s+data:i\s*&lt;\s*(\d+)/i);
+  if (!capMatch) {
+    failures.push(`index.prod.xml: Blog1 SSR cap missing in postcards loop`);
+  } else {
+    const cap = parseInt(capMatch[1], 10);
+    if (!Number.isFinite(cap) || cap < 8) {
+      failures.push(`index.prod.xml: Blog1 SSR postcards cap must be >= 8 (found ${capMatch[1]})`);
+    }
+  }
+  const numPostsMatch = blogScope.match(
+    /<b:widget-setting name=['"]numPosts['"]>(\d+)<\/b:widget-setting>/i
+  );
+  if (!numPostsMatch) {
+    failures.push(`index.prod.xml: Blog1 numPosts setting missing`);
+  } else {
+    const numPosts = parseInt(numPostsMatch[1], 10);
+    if (!Number.isFinite(numPosts) || numPosts < 9) {
+      failures.push(`index.prod.xml: Blog1 numPosts must be >= 9 (found ${numPostsMatch[1]})`);
+    }
+  }
+}
+
+function verifySectionTagContract(indexXml, id, opts) {
+  const parts = [`(?=[^>]*id=['"]${id}['"])`];
+  if (opts.type) parts.push(`(?=[^>]*data-type=['"]${opts.type}['"])`);
+  if (opts.max != null) parts.push(`(?=[^>]*data-gg-max=['"]${opts.max}['"])`);
+  if (opts.cols != null) parts.push(`(?=[^>]*data-gg-cols=['"]${opts.cols}['"])`);
+  const re = new RegExp(`<section${parts.join("")}[^>]*>`, "i");
+  if (!re.test(indexXml)) {
+    failures.push(
+      `index.prod.xml: section ${id} contract mismatch` +
+        ` (expected type=${opts.type || "-"} max=${opts.max ?? "-"} cols=${opts.cols ?? "-"})`
+    );
+  }
+}
+
+function parseMixedConfig(indexXml) {
+  const m = indexXml.match(
+    /<script[^>]*id=['"]gg-mixed-config['"][^>]*>\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*<\/script>/i
+  );
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch (_) {
+    return null;
+  }
+}
+
+function verifyMixedContracts(indexXml) {
+  const fixedSections = [
+    { id: "gg-mixed-bookish", type: "bookish", max: 8 },
+    { id: "gg-mixed-instagramish", type: "instagram", max: 8 },
+    { id: "gg-mixed-popular", type: "popular", max: 10 },
+    { id: "gg-mixed-youtubeish", type: "youtube", max: 3 },
+    { id: "gg-mixed-shortish", type: "shorts", max: 5 },
+    { id: "gg-mixed-podcastish", type: "podcast", max: 6 },
+  ];
+  fixedSections.forEach((section) => verifySectionTagContract(indexXml, section.id, section));
+
+  const newsdeckTags = [
+    ...indexXml.matchAll(/<section(?=[^>]*id=['"]gg-mixed-newsish-[^'"]+['"])[^>]*>/gi),
+  ].map((m) => m[0]);
+  if (!newsdeckTags.length) {
+    failures.push(`index.prod.xml: missing NEWSISH sections (gg-mixed-newsish-*)`);
+  }
+  newsdeckTags.forEach((tag, idx) => {
+    if (!/data-type=['"]newsdeck['"]/i.test(tag)) {
+      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-type="newsdeck"`);
+    }
+    if (!/data-gg-cols=['"]3['"]/i.test(tag)) {
+      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-gg-cols="3"`);
+    }
+    if (!/data-gg-max=['"]3['"]/i.test(tag)) {
+      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-gg-max="3"`);
+    }
+  });
+
+  const config = parseMixedConfig(indexXml);
+  if (!config || !Array.isArray(config.sections)) {
+    failures.push(`index.prod.xml: gg-mixed-config missing/invalid JSON`);
+    return;
+  }
+  const sectionsById = new Map(
+    config.sections
+      .filter((s) => s && s.id)
+      .map((s) => [String(s.id), s])
+  );
+
+  fixedSections.forEach((section) => {
+    const cfg = sectionsById.get(section.id);
+    if (!cfg) {
+      failures.push(`index.prod.xml: gg-mixed-config missing section ${section.id}`);
+      return;
+    }
+    if (parseInt(cfg.max, 10) !== section.max) {
+      failures.push(
+        `index.prod.xml: gg-mixed-config ${section.id} max must be ${section.max} (found ${cfg.max})`
+      );
+    }
+  });
+
+  const newsCfg = config.sections.filter((s) => s && /^gg-mixed-newsish-/.test(String(s.id || "")));
+  if (!newsCfg.length) {
+    failures.push(`index.prod.xml: gg-mixed-config missing NEWSISH entries`);
+  }
+  newsCfg.forEach((section) => {
+    if (parseInt(section.max, 10) !== 3) {
+      failures.push(`index.prod.xml: ${section.id} max must be 3 in gg-mixed-config`);
+    }
+    if (parseInt(section.cols, 10) !== 3) {
+      failures.push(`index.prod.xml: ${section.id} cols must be 3 in gg-mixed-config`);
+    }
+  });
 }
 
 function isSidebarRootSelector(selector) {
@@ -179,6 +296,7 @@ if (!rel) {
 }
 if (indexXml) {
   verifyIndexContracts(indexXml);
+  verifyMixedContracts(indexXml);
 }
 
 verifyCssFile("public/assets/latest/main.css", "latest main.css");

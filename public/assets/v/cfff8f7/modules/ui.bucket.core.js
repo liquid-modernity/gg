@@ -2655,7 +2655,6 @@ GG.modules.InfoPanel = (function () {
   var selectedCardKey = '';
   var hoverCardKey = '';
   var tocIntentTimer = 0;
-  var tocIntentKey = '';
   var TOC_CAP = 24;
   var TOC_TTL_MS = 6e5;
   var TOC_LRU_MAX = 24;
@@ -2769,7 +2768,7 @@ GG.modules.InfoPanel = (function () {
           '</div>' +
         '</div>' +
       '</div>';
-    renderTocSkeleton(4, TOC_HINT_LOCK);
+    renderTocSkeleton(6, TOC_HINT_LOCK);
   }
 
 function extractThumbSrc(card){
@@ -2844,7 +2843,7 @@ function extractThumbSrc(card){
     var list = qs('[data-gg-slot="toc"]', panel);
     if (!list) return;
     var n = parseInt(count, 10);
-    if (!isFinite(n) || n < 1) n = 4;
+    if (!isFinite(n) || n < 1) n = 6;
     if (n > 8) n = 8;
     list.innerHTML = '';
     for (var i = 0; i < n; i++) {
@@ -2934,7 +2933,7 @@ function extractThumbSrc(card){
     var key = tocCacheKey(href);
     var abs = toAbsUrl(href);
     if (!key || !abs) {
-      renderTocSkeleton(4, 'Unable to resolve article URL.');
+      renderTocSkeleton(6, 'Unable to resolve article URL.');
       return Promise.resolve([]);
     }
 
@@ -2974,7 +2973,7 @@ function extractThumbSrc(card){
     }).catch(function(){
       var activeCard = panel ? panel.__ggPreviewCard : null;
       if (activeCard && cardKey(activeCard) === cardKey(card)) {
-        renderTocSkeleton(4, 'Unable to load headings.');
+        renderTocSkeleton(6, 'Unable to load headings.');
       }
       return [];
     });
@@ -2987,31 +2986,27 @@ function extractThumbSrc(card){
     }
 
     if (!card || !href) {
-      tocIntentKey = '';
       abortToc('');
-      renderTocSkeleton(4, TOC_HINT_LOCK);
+      renderTocSkeleton(6, TOC_HINT_LOCK);
       return;
     }
 
     var key = tocCacheKey(href);
     if (!key) {
-      tocIntentKey = '';
       abortToc('');
-      renderTocSkeleton(4, 'Unable to resolve article URL.');
+      renderTocSkeleton(6, 'Unable to resolve article URL.');
       return;
     }
 
     var cached = readToc(key);
     if (Array.isArray(cached)) {
-      tocIntentKey = '';
       renderTocItems(cached);
       return;
     }
 
     var activeKey = cardKey(card);
-    tocIntentKey = key + '|' + activeKey;
     abortToc('');
-    renderTocSkeleton(5, 'Loading headings...');
+    renderTocSkeleton(6, 'Loading headings...');
 
     tocIntentTimer = w.setTimeout(function(){
       tocIntentTimer = 0;
@@ -3196,14 +3191,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
     selectedCardKey = '';
     hoverCardKey = '';
-    tocIntentKey = '';
     if (tocIntentTimer) {
       clearTimeout(tocIntentTimer);
       tocIntentTimer = 0;
     }
     setBackdropVisible(false);
     abortToc('');
-    renderTocSkeleton(4, TOC_HINT_LOCK);
+    renderTocSkeleton(6, TOC_HINT_LOCK);
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
       try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
     }
@@ -3258,15 +3252,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       main.addEventListener('pointerover', handlePreviewHover, true);
       main.addEventListener('focusin', handlePreviewFocus, true);
     }
-    if (!panel.__ggInfoPanelBound){
-      panel.__ggInfoPanelBound = true;
-      panel.addEventListener('click', function(e){
-        if (closest(e.target, '[data-gg-action="info-close"]')) {
-          e.preventDefault();
-          handleClose();
-        }
-      }, true);
-    }
+    if (!panel.__ggInfoPanelBound) panel.__ggInfoPanelBound = true;
     if (!closeObserver && main && window.MutationObserver) {
       closeObserver = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
@@ -3275,14 +3261,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
               if (panel) panel.hidden = true;
               selectedCardKey = '';
               hoverCardKey = '';
-              tocIntentKey = '';
               if (tocIntentTimer) {
                 clearTimeout(tocIntentTimer);
                 tocIntentTimer = 0;
               }
               setBackdropVisible(false);
               abortToc('');
-              renderTocSkeleton(4, TOC_HINT_LOCK);
+              renderTocSkeleton(6, TOC_HINT_LOCK);
               if (lastTrigger && typeof lastTrigger.focus === 'function') {
                 try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
               }
