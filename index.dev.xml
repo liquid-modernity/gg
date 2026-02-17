@@ -279,17 +279,13 @@ body:not([data-gg-surface="landing"]) .hero-section {
     "order": "published"
   },
   "sections": [
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":8,"kicker":"BOOKISH"},
-    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"kicker":"YOUTUBE"},
-    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"kicker":"SHORTS"},
+    {"id":"gg-mixed-featuredstrip","type":"rail","kind":"featured","label":"blog","max":5,"kicker":"FEATURED"},
     {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"kicker":"PODCAST"},
-    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":8,"kicker":"INSTAGRAM"},
-    {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","labels":["news","instagram","pinterest"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-popular","type":"popular","label":"blog","max":10,"kicker":"POPULAR"},
-    {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","labels":["news","blog","bookish"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-pinterestish","type":"instagram","label":"pinterest","max":8,"kicker":"PINTEREST"}
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"defer":1,"kicker":"YOUTUBE"},
+    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"defer":1,"kicker":"SHORTS"},
+    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"defer":1,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"defer":1,"kicker":"PODCAST"}
   ]
 }
 ]]></script>

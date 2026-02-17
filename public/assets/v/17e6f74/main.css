@@ -1815,6 +1815,11 @@ a.gg-search-assist__item > small{
 .gg-mixed[data-gg-kind="bookish"]{
   --gg-mixed-ratio: 1 / 1.48;
 }
+.gg-mixed[data-type="rail"],
+.gg-mixed[data-gg-kind="featured"]{
+  --gg-mixed-ratio: 1 / 1.48;
+  --gg-mixed-rail-col: clamp(208px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.28), 332px);
+}
 .gg-mixed[data-type="instagram"],
 .gg-mixed[data-gg-kind="instagramish"],
 .gg-mixed[data-gg-kind="pinterestish"]{
@@ -1830,13 +1835,15 @@ a.gg-search-assist__item > small{
 .gg-mixed[data-type="youtube"] .gg-mixed__grid,
 .gg-mixed[data-type="shorts"] .gg-mixed__grid,
 .gg-mixed[data-type="podcast"] .gg-mixed__grid,
-.gg-mixed[data-type="popular"] .gg-mixed__grid{
+.gg-mixed[data-type="popular"] .gg-mixed__grid,
+.gg-mixed[data-type="rail"] .gg-mixed__grid{
   display: none;
 }
 .gg-mixed[data-type="youtube"] .gg-mixed__rail,
 .gg-mixed[data-type="shorts"] .gg-mixed__rail,
 .gg-mixed[data-type="podcast"] .gg-mixed__rail,
-.gg-mixed[data-type="popular"] .gg-mixed__rail{
+.gg-mixed[data-type="popular"] .gg-mixed__rail,
+.gg-mixed[data-type="rail"] .gg-mixed__rail{
   display: grid;
 }
 .gg-mixed[data-type="youtube"],
@@ -1861,7 +1868,7 @@ a.gg-search-assist__item > small{
 }
 .gg-mixed[data-type="newsdeck"],
 .gg-mixed[data-gg-kind="newsish"]{
-  --gg-mixed-ratio: 16 / 9;
+  --gg-mixed-ratio: 1 / 1;
 }
 .gg-newsdeck{
   display: grid;
@@ -2017,18 +2024,25 @@ main.gg-main[data-gg-surface="listing"] .gg-blog-main{
 main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-listing__title{
   margin: 0 0 var(--gg-listing-gap);
 }
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1{
-  display: block;
-  margin-top: var(--gg-listing-gap);
-}
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > #FeaturedPost1{
+main.gg-main[data-gg-surface="listing"] #FeaturedPost1{
   display: none !important;
 }
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > .widget{
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-mixed-widget--flow{
   margin-top: var(--gg-listing-gap);
 }
-main.gg-main[data-gg-surface="listing"] .gg-blog-main > #gg-featuredpost1 > .widget:first-child{
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-mixed-widget--flow .widget-title,
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-mixed-widget--flow .title{
+  display: none !important;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main > .gg-mixed-widget--flow:first-of-type{
   margin-top: 0;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main #gg-featuredpost1[data-gg-relocated='1'],
+main.gg-main[data-gg-surface="listing"] .gg-blog-main #gg-popularpost1[data-gg-relocated='1']{
+  display: none !important;
+}
+main.gg-main[data-gg-surface="listing"] .gg-blog-main .gg-mixed[data-gg-disabled='1']{
+  display: none !important;
 }
 main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards{
   display: grid;
@@ -2046,6 +2060,9 @@ main.gg-main[data-gg-surface="listing"] .gg-blog-main #postcards > .gg-post-card
 }
 main.gg-main[data-gg-surface="listing"] .gg-loadmore-wrap{
   margin: 16px 0 28px;
+}
+main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
+  --gg-mixed-rail-col: clamp(206px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.28), 332px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="youtube"]{
   --gg-mixed-rail-col: clamp(196px, 18vw, 248px);

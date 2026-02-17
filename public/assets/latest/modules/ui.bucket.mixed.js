@@ -55,8 +55,17 @@
     return deduped;
   }
 
-  function inferType(raw) {
+  function inferType(raw, kindRaw) {
     var v = normalizeLabel(raw);
+    var kind = normalizeLabel(kindRaw);
+    if (v === 'rail') {
+      if (kind === 'youtubeish' || kind === 'youtube') return 'youtube';
+      if (kind === 'shortish' || kind === 'shorts' || kind === 'short') return 'shorts';
+      if (kind === 'podcastish' || kind === 'podcast') return 'podcast';
+      if (kind === 'popular') return 'popular';
+      return 'rail';
+    }
+    if (v === 'featured' || v === 'featuredish') return 'rail';
     if (v === 'youtubeish' || v === 'youtube') return 'youtube';
     if (v === 'shortish' || v === 'shorts' || v === 'short') return 'shorts';
     if (v === 'podcastish' || v === 'podcast') return 'podcast';
@@ -69,7 +78,7 @@
   }
 
   function isRailType(type) {
-    return type === 'youtube' || type === 'shorts' || type === 'podcast' || type === 'popular';
+    return type === 'rail' || type === 'youtube' || type === 'shorts' || type === 'podcast' || type === 'popular';
   }
 
   function titleCaseLabel(label) {
@@ -235,12 +244,14 @@
         if (!id) continue;
         cfg.sectionsById[id] = {
           id: id,
-          type: inferType(s.type),
+          type: inferType(s.type, s.kind || s.type),
+          kind: normalizeLabel(s.kind || s.type || ''),
           label: String(s.label || '').trim(),
           labels: toLabelList(s.labels || ''),
           cols: clampInt(s.cols, 3, 1, 3),
           max: clampInt(s.max, 8, 1, 16),
           order: String(s.order || cfg.fetch.order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
+          defer: s.defer === true || String(s.defer || '') === '1',
           kicker: String(s.kicker || '').trim(),
           title: String(s.title || '').trim(),
         };
@@ -256,14 +267,18 @@
     var id = String(slot.id || '').trim();
     var fromJson = (id && cfg.sectionsById[id]) ? cfg.sectionsById[id] : null;
 
-    var typeRaw = (fromJson && fromJson.type) || slot.getAttribute('data-type') || slot.getAttribute('data-gg-kind') || 'bookish';
-    var type = inferType(typeRaw);
-    var kindRaw = slot.getAttribute('data-gg-kind') || (fromJson && fromJson.type) || typeRaw || type;
+    var kindRaw = slot.getAttribute('data-gg-kind') || (fromJson && (fromJson.kind || fromJson.type)) || slot.getAttribute('data-type') || 'bookish';
+    var typeRaw = (fromJson && fromJson.type) || slot.getAttribute('data-type') || kindRaw || 'bookish';
+    var type = inferType(typeRaw, kindRaw);
     var label = (fromJson && fromJson.label) || slot.getAttribute('data-label') || slot.getAttribute('data-gg-label') || 'blog';
     var labels = toLabelList((fromJson && fromJson.labels) || slot.getAttribute('data-labels') || slot.getAttribute('data-gg-labels') || '');
     var colsRaw = (fromJson && fromJson.cols) || slot.getAttribute('data-cols') || slot.getAttribute('data-gg-cols') || '3';
     var maxRaw = (fromJson && fromJson.max) || slot.getAttribute('data-max') || slot.getAttribute('data-gg-max') || '8';
     var order = (fromJson && fromJson.order) || slot.getAttribute('data-order') || cfg.fetch.order || DEFAULT_ORDER;
+    var deferRaw =
+      (fromJson && (fromJson.defer === true || String(fromJson.defer || '') === '1')) ||
+      slot.getAttribute('data-gg-defer') === '1' ||
+      slot.getAttribute('data-defer') === '1';
 
     var section = {
       id: id,
@@ -274,6 +289,7 @@
       cols: clampInt(colsRaw, 3, 1, 3),
       max: clampInt(maxRaw, 8, 1, 16),
       order: String(order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
+      defer: !!deferRaw,
       kicker: (fromJson && fromJson.kicker) ? String(fromJson.kicker).trim() : '',
       title: (fromJson && fromJson.title) ? String(fromJson.title).trim() : '',
     };
@@ -317,6 +333,8 @@
     slot.setAttribute('data-max', String(section.max));
     slot.setAttribute('data-gg-max-total', String(section.maxTotal || section.max));
     slot.setAttribute('data-order', section.order);
+    if (section.defer) slot.setAttribute('data-gg-defer', '1');
+    else slot.removeAttribute('data-gg-defer');
 
     var kickerText = String(section.kicker || titleCaseLabel(section.label || section.type || 'Mixed').toUpperCase()).trim();
     var kickerEl = slot.querySelector('[data-role="kicker"]');
@@ -756,10 +774,17 @@
     if (root && root.nodeType === 1 && root.matches && root.matches('[data-gg-module="mixed-media"]')) {
       list.unshift(root);
     }
-    return list;
+    return list.filter(function(slot){
+      if (!slot || slot.getAttribute('data-gg-disabled') === '1') return false;
+      if (slot.closest && slot.closest('[data-gg-disabled="1"]')) return false;
+      return true;
+    });
   }
 
   function init(root) {
+    if (G.ui && G.ui.layout && typeof G.ui.layout._normalizeListingFlow === 'function') {
+      try { G.ui.layout._normalizeListingFlow(); } catch (_) {}
+    }
     var cfg = parseConfig();
     var slots = collectSlots(root);
     if (!slots.length) return;
@@ -772,30 +797,37 @@
       }
     }
 
-    var eagerCount = Math.min(2, slots.length);
-    for (var j = 0; j < eagerCount; j++) {
-      loadSlot(slots[j], cfg);
+    var eagerSlots = [];
+    var deferredSlots = [];
+    for (var j = 0; j < slots.length; j++) {
+      var section = slots[j].__ggMixedSection || resolveSectionConfig(slots[j], cfg);
+      if (section.defer) deferredSlots.push(slots[j]);
+      else eagerSlots.push(slots[j]);
+    }
+
+    for (var k = 0; k < eagerSlots.length; k++) {
+      loadSlot(eagerSlots[k], cfg);
     }
 
     if (!('IntersectionObserver' in w)) {
-      for (var k = eagerCount; k < slots.length; k++) {
-        loadSlot(slots[k], cfg);
+      for (var z = 0; z < deferredSlots.length; z++) {
+        loadSlot(deferredSlots[z], cfg);
       }
       return;
     }
 
     var io = new IntersectionObserver(function(entries){
-      for (var z = 0; z < entries.length; z++) {
-        var entry = entries[z];
+      for (var x = 0; x < entries.length; x++) {
+        var entry = entries[x];
         if (!entry.isIntersecting) continue;
         io.unobserve(entry.target);
         loadSlot(entry.target, cfg);
       }
-    }, { rootMargin: '800px 0px' });
+    }, { rootMargin: '900px 0px' });
 
-    for (var m = eagerCount; m < slots.length; m++) {
-      if (slots[m].getAttribute('data-gg-loaded') === '1') continue;
-      io.observe(slots[m]);
+    for (var m = 0; m < deferredSlots.length; m++) {
+      if (deferredSlots[m].getAttribute('data-gg-loaded') === '1') continue;
+      io.observe(deferredSlots[m]);
     }
   }
 

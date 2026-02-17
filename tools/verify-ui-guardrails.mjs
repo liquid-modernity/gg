@@ -295,14 +295,17 @@ function verifyNewsdeckSkeleton(indexXml, id) {
 
 function verifySectionTagContract(indexXml, id, opts) {
   const parts = [`(?=[^>]*id=['"]${id}['"])`];
+  if (opts.kind) parts.push(`(?=[^>]*data-gg-kind=['"]${opts.kind}['"])`);
   if (opts.type) parts.push(`(?=[^>]*data-type=['"]${opts.type}['"])`);
   if (opts.max != null) parts.push(`(?=[^>]*data-gg-max=['"]${opts.max}['"])`);
   if (opts.cols != null) parts.push(`(?=[^>]*data-gg-cols=['"]${opts.cols}['"])`);
+  if (opts.defer === true) parts.push(`(?=[^>]*data-gg-defer=['"]1['"])`);
+  if (opts.disabled === true) parts.push(`(?=[^>]*data-gg-disabled=['"]1['"])`);
   const re = new RegExp(`<section${parts.join("")}[^>]*>`, "i");
   if (!re.test(indexXml)) {
     failures.push(
       `index.prod.xml: section ${id} contract mismatch` +
-        ` (expected type=${opts.type || "-"} max=${opts.max ?? "-"} cols=${opts.cols ?? "-"})`
+        ` (expected kind=${opts.kind || "-"} type=${opts.type || "-"} max=${opts.max ?? "-"} cols=${opts.cols ?? "-"} defer=${opts.defer ? "1" : "-"} disabled=${opts.disabled ? "1" : "-"})`
     );
   }
 }
@@ -320,38 +323,32 @@ function parseMixedConfig(indexXml) {
 }
 
 function verifyMixedContracts(indexXml) {
-  const fixedSections = [
-    { id: "gg-mixed-bookish", type: "bookish", max: 8, layout: "grid" },
-    { id: "gg-mixed-instagramish", type: "instagram", max: 8, layout: "grid" },
-    { id: "gg-mixed-popular", type: "popular", max: 10, layout: "rail" },
-    { id: "gg-mixed-youtubeish", type: "youtube", max: 3, layout: "rail" },
-    { id: "gg-mixed-shortish", type: "shorts", max: 5, layout: "rail" },
-    { id: "gg-mixed-podcastish", type: "podcast", max: 6, layout: "rail" },
+  const required = [
+    { id: "gg-mixed-featuredstrip", kind: "featured", type: "rail", max: 5, layout: "rail" },
+    { id: "gg-mixed-newsish-1", kind: "newsish", type: "newsdeck", cols: 3, max: 3, layout: "newsdeck" },
+    { id: "gg-mixed-bookish", kind: "bookish", type: "bookish", max: 4, layout: "grid" },
+    { id: "gg-mixed-youtubeish", kind: "youtubeish", type: "youtube", max: 3, layout: "rail", defer: true },
+    { id: "gg-mixed-shortish", kind: "shortish", type: "shorts", max: 5, layout: "rail", defer: true },
+    { id: "gg-mixed-newsish-2", kind: "newsish", type: "newsdeck", cols: 3, max: 3, layout: "newsdeck", defer: true },
+    { id: "gg-mixed-podcastish", kind: "podcastish", type: "podcast", max: 6, layout: "rail", defer: true },
   ];
-  fixedSections.forEach((section) => {
+
+  required.forEach((section) => {
     verifySectionTagContract(indexXml, section.id, section);
-    verifyMixedSectionSkeleton(indexXml, section);
+    if (section.layout === "newsdeck") verifyNewsdeckSkeleton(indexXml, section.id);
+    else verifyMixedSectionSkeleton(indexXml, section);
   });
 
-  const newsdeckTags = [
-    ...indexXml.matchAll(/<section(?=[^>]*id=['"]gg-mixed-newsish-[^'"]+['"])[^>]*>/gi),
-  ].map((m) => m[0]);
-  if (!newsdeckTags.length) {
-    failures.push(`index.prod.xml: missing NEWSISH sections (gg-mixed-newsish-*)`);
-  }
-  newsdeckTags.forEach((tag, idx) => {
-    const idMatch = tag.match(/\bid=['"]([^'"]+)['"]/i);
-    const sectionId = idMatch ? String(idMatch[1]) : `gg-mixed-newsish-${idx + 1}`;
-    if (!/data-type=['"]newsdeck['"]/i.test(tag)) {
-      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-type="newsdeck"`);
+  const disabledLegacy = [
+    "gg-mixed-instagramish",
+    "gg-mixed-newsish-3",
+    "gg-mixed-newsish-4",
+    "gg-mixed-pinterestish",
+  ];
+  disabledLegacy.forEach((id) => {
+    if (new RegExp(`<section\\b(?=[^>]*id=['"]${id}['"])`, "i").test(indexXml)) {
+      verifySectionTagContract(indexXml, id, { disabled: true });
     }
-    if (!/data-gg-cols=['"]3['"]/i.test(tag)) {
-      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-gg-cols="3"`);
-    }
-    if (!/data-gg-max=['"]3['"]/i.test(tag)) {
-      failures.push(`index.prod.xml: NEWSISH section #${idx + 1} must use data-gg-max="3"`);
-    }
-    verifyNewsdeckSkeleton(indexXml, sectionId);
   });
 
   const config = parseMixedConfig(indexXml);
@@ -365,7 +362,31 @@ function verifyMixedContracts(indexXml) {
       .map((s) => [String(s.id), s])
   );
 
-  fixedSections.forEach((section) => {
+  const sectionOrder = config.sections
+    .map((s) => (s && s.id ? String(s.id) : ""))
+    .filter(Boolean);
+  const expectedOrder = [
+    "gg-mixed-featuredstrip",
+    "gg-mixed-newsish-1",
+    "gg-mixed-bookish",
+    "gg-mixed-youtubeish",
+    "gg-mixed-shortish",
+    "gg-mixed-newsish-2",
+    "gg-mixed-podcastish",
+  ];
+  if (sectionOrder.length < expectedOrder.length) {
+    failures.push(`index.prod.xml: gg-mixed-config section order missing required entries`);
+  } else {
+    for (let i = 0; i < expectedOrder.length; i += 1) {
+      if (sectionOrder[i] !== expectedOrder[i]) {
+        failures.push(
+          `index.prod.xml: gg-mixed-config order mismatch at index ${i + 1} (expected ${expectedOrder[i]}, found ${sectionOrder[i] || "-"})`
+        );
+      }
+    }
+  }
+
+  required.forEach((section) => {
     const cfg = sectionsById.get(section.id);
     if (!cfg) {
       failures.push(`index.prod.xml: gg-mixed-config missing section ${section.id}`);
@@ -376,18 +397,16 @@ function verifyMixedContracts(indexXml) {
         `index.prod.xml: gg-mixed-config ${section.id} max must be ${section.max} (found ${cfg.max})`
       );
     }
-  });
-
-  const newsCfg = config.sections.filter((s) => s && /^gg-mixed-newsish-/.test(String(s.id || "")));
-  if (!newsCfg.length) {
-    failures.push(`index.prod.xml: gg-mixed-config missing NEWSISH entries`);
-  }
-  newsCfg.forEach((section) => {
-    if (parseInt(section.max, 10) !== 3) {
-      failures.push(`index.prod.xml: ${section.id} max must be 3 in gg-mixed-config`);
+    if (section.type && String(cfg.type || "").toLowerCase() !== String(section.type).toLowerCase()) {
+      failures.push(
+        `index.prod.xml: gg-mixed-config ${section.id} type must be ${section.type} (found ${cfg.type})`
+      );
     }
-    if (parseInt(section.cols, 10) !== 3) {
-      failures.push(`index.prod.xml: ${section.id} cols must be 3 in gg-mixed-config`);
+    if (section.defer) {
+      const defer = cfg.defer === true || String(cfg.defer || "") === "1";
+      if (!defer) {
+        failures.push(`index.prod.xml: gg-mixed-config ${section.id} must set defer=1`);
+      }
     }
   });
 }
@@ -427,6 +446,40 @@ function verifySidebarWidthTokens(css, label) {
         `${label}:${line} width for sidebar root selector must be tokenized (found: ${value})`
       );
     }
+  }
+}
+
+function verifyRuntimeContracts(coreJsRel, mixedJsRel, label) {
+  const coreJs = readFile(coreJsRel);
+  const mixedJs = readFile(mixedJsRel);
+  if (!coreJs || !mixedJs) return;
+
+  if (
+    !/top:\s*\[\s*['"]gg-mixed-featuredstrip['"]\s*,\s*['"]gg-mixed-newsish-1['"]\s*,\s*['"]gg-mixed-bookish['"]\s*\]/.test(
+      coreJs
+    )
+  ) {
+    failures.push(`${label}: listing top order contract missing in ui.bucket.core.js`);
+  }
+  if (
+    !/deferred:\s*\[\s*['"]gg-mixed-youtubeish['"]\s*,\s*['"]gg-mixed-shortish['"]\s*,\s*['"]gg-mixed-newsish-2['"]\s*,\s*['"]gg-mixed-podcastish['"]\s*\]/.test(
+      coreJs
+    )
+  ) {
+    failures.push(`${label}: listing deferred order contract missing in ui.bucket.core.js`);
+  }
+  if (!/data-gg-listing-flow['"],\s*'reading-first'/.test(coreJs)) {
+    failures.push(`${label}: listing flow marker reading-first missing in ui.bucket.core.js`);
+  }
+
+  if (!/rootMargin:\s*['"]900px 0px['"]/.test(mixedJs)) {
+    failures.push(`${label}: mixed defer observer rootMargin must be 900px 0px`);
+  }
+  if (!/data-gg-defer/.test(mixedJs)) {
+    failures.push(`${label}: mixed module must read data-gg-defer contract`);
+  }
+  if (!/data-gg-disabled/.test(mixedJs)) {
+    failures.push(`${label}: mixed module must skip data-gg-disabled sections`);
   }
 }
 
@@ -473,8 +526,18 @@ if (indexXml) {
 }
 
 verifyCssFile("public/assets/latest/main.css", "latest main.css");
+verifyRuntimeContracts(
+  "public/assets/latest/modules/ui.bucket.core.js",
+  "public/assets/latest/modules/ui.bucket.mixed.js",
+  "latest runtime"
+);
 if (rel) {
   verifyCssFile(`public/assets/v/${rel}/main.css`, `pinned main.css (v/${rel})`);
+  verifyRuntimeContracts(
+    `public/assets/v/${rel}/modules/ui.bucket.core.js`,
+    `public/assets/v/${rel}/modules/ui.bucket.mixed.js`,
+    `pinned runtime (v/${rel})`
+  );
 }
 
 if (failures.length) {

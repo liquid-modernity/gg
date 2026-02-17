@@ -217,17 +217,13 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
     "order": "published"
   },
   "sections": [
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":8,"kicker":"BOOKISH"},
-    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"kicker":"YOUTUBE"},
-    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"kicker":"SHORTS"},
+    {"id":"gg-mixed-featuredstrip","type":"rail","kind":"featured","label":"blog","max":5,"kicker":"FEATURED"},
     {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"kicker":"PODCAST"},
-    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-instagramish","type":"instagram","label":"instagram","max":8,"kicker":"INSTAGRAM"},
-    {"id":"gg-mixed-newsish-3","type":"newsdeck","label":"news","labels":["news","instagram","pinterest"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-popular","type":"popular","label":"blog","max":10,"kicker":"POPULAR"},
-    {"id":"gg-mixed-newsish-4","type":"newsdeck","label":"news","labels":["news","blog","bookish"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-pinterestish","type":"instagram","label":"pinterest","max":8,"kicker":"PINTEREST"}
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"defer":1,"kicker":"YOUTUBE"},
+    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"defer":1,"kicker":"SHORTS"},
+    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"defer":1,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"defer":1,"kicker":"PODCAST"}
   ]
 }
 ]]></script>
@@ -1204,7 +1200,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='8' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
+    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1212,34 +1208,6 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
       </header>
             <div class='gg-mixed__bd'>
         <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
@@ -1281,7 +1249,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Landscape 16:9, Rail Horizontal) memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='youtube' data-max='3' data-order='published' data-type='youtube' id='gg-mixed-youtubeish'>
+    <section class='gg-mixed' data-gg-kind='youtubeish' data-gg-label='youtube' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='youtube' data-max='3' data-order='published' data-type='youtube' data-gg-defer='1' id='gg-mixed-youtubeish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>YOUTUBE</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1323,7 +1291,7 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
           <b:widget-setting name='content'>(Portrait 9:16, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='shorts' data-max='5' data-order='published' data-type='shorts' id='gg-mixed-shortish'>
+    <section class='gg-mixed' data-gg-kind='shortish' data-gg-label='shorts' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='shorts' data-max='5' data-order='published' data-type='shorts' data-gg-defer='1' id='gg-mixed-shortish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>SHORTS</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1485,7 +1453,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Square 1:1, Rail Horizontal). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='6' data-gg-mixed='1' data-gg-module='mixed-media' data-label='podcast' data-max='6' data-order='published' data-type='podcast' id='gg-mixed-podcastish'>
+    <section class='gg-mixed' data-gg-kind='podcastish' data-gg-label='podcast' data-gg-max='6' data-gg-mixed='1' data-gg-module='mixed-media' data-label='podcast' data-max='6' data-order='published' data-type='podcast' data-gg-defer='1' id='gg-mixed-podcastish'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>PODCAST</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1550,7 +1518,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,youtube,shorts' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,youtube,shorts' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-2'>
+    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,youtube,shorts' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,youtube,shorts' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' data-gg-defer='1' id='gg-mixed-newsish-2'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1654,7 +1622,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <b:widget-setting name='content'>(Grid 4:6). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='instagram' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-instagramish'>
+    <section class='gg-mixed' data-gg-kind='instagramish' data-gg-label='instagram' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='instagram' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-instagramish' data-gg-disabled='1'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>INSTAGRAM</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -1733,7 +1701,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
         <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,instagram,pinterest' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,instagram,pinterest' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-3'>
+    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,instagram,pinterest' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,instagram,pinterest' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-3' data-gg-disabled='1'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -3119,9 +3087,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <b:widget-setting name='content'>(Ratio 1:1.48, 16 item). memanggil API Blogger (/feeds/posts/summary?orderby=published) based on spesific label Show image thumbnail</b:widget-setting>
           </b:widget-settings>
           <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='popular' data-gg-label='blog' data-gg-max='10' data-gg-mixed='1' data-gg-module='mixed-media' data-label='blog' data-max='10' data-order='published' data-type='popular' id='gg-mixed-popular'>
+    <section class='gg-mixed' data-gg-kind='featured' data-gg-label='blog' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='blog' data-max='5' data-order='published' data-type='rail' id='gg-mixed-featuredstrip'>
       <header class='gg-mixed__hd'>
-        <p class='gg-mixed__kicker' data-role='kicker'>POPULAR</p>
+        <p class='gg-mixed__kicker' data-role='kicker'>FEATURED</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
         <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
       </header>
@@ -3131,70 +3099,35 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__kicker'>FEATURED</span>
               <span class='gg-mixed__headline'>Curated stories are loading.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__kicker'>FEATURED</span>
               <span class='gg-mixed__headline'>Curated stories are loading.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__kicker'>FEATURED</span>
               <span class='gg-mixed__headline'>Curated stories are loading.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__kicker'>FEATURED</span>
               <span class='gg-mixed__headline'>Curated stories are loading.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'/>
             <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>POPULAR</span>
+              <span class='gg-mixed__kicker'>FEATURED</span>
               <span class='gg-mixed__headline'>Curated stories are loading.</span>
             </span>
           </article>
@@ -3212,7 +3145,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
           </b:widget-settings>
           <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,blog,bookish' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,blog,bookish' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-4'>
+    <section class='gg-mixed' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,blog,bookish' data-gg-cols='3' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,blog,bookish' data-cols='3' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-4' data-gg-disabled='1'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
@@ -3316,7 +3249,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
           </b:widget-settings>
           <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='pinterest' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-pinterestish'>
+    <section class='gg-mixed' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='pinterest' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-pinterestish' data-gg-disabled='1'>
       <header class='gg-mixed__hd'>
         <p class='gg-mixed__kicker' data-role='kicker'>PINTEREST</p>
         <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>

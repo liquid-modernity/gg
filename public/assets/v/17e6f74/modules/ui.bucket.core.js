@@ -790,32 +790,84 @@ GG.view.applyRootState = GG.ui.applyRootState;
     panel.appendChild(comments);
     comments.__ggDocked = true;
   };
+  ui.layout._listingFlowOrder = ui.layout._listingFlowOrder || {
+    top: ['gg-mixed-featuredstrip', 'gg-mixed-newsish-1', 'gg-mixed-bookish'],
+    deferred: ['gg-mixed-youtubeish', 'gg-mixed-shortish', 'gg-mixed-newsish-2', 'gg-mixed-podcastish'],
+    disabled: ['gg-mixed-instagramish', 'gg-mixed-newsish-3', 'gg-mixed-newsish-4', 'gg-mixed-pinterestish']
+  };
   ui.layout._normalizeListingFlow = ui.layout._normalizeListingFlow || function(){
     var main = d.querySelector('main.gg-main[data-gg-surface="listing"] .gg-blog-main');
     if (!main) return;
-    var blogSection = d.getElementById('blog');
-    var featuredSection = d.getElementById('gg-featuredpost1');
-    if (
-      blogSection &&
-      featuredSection &&
-      blogSection.parentNode === main &&
-      featuredSection.parentNode === main &&
-      blogSection.nextElementSibling !== featuredSection
-    ) {
-      main.insertBefore(blogSection, featuredSection);
+
+    function mixedWidgetById(id){
+      var section = id ? d.getElementById(id) : null;
+      if (!section) return null;
+      return section.closest('.widget') || section;
     }
-    var popularSection = d.getElementById('gg-popularpost1');
-    if (!popularSection) return;
-    if (popularSection.parentNode !== main) {
-      main.appendChild(popularSection);
-      return;
-    }
-    if (featuredSection && featuredSection.parentNode === main) {
-      var next = featuredSection.nextSibling;
-      if (next !== popularSection) {
-        main.insertBefore(popularSection, next);
+    function moveWidget(widget, anchor){
+      if (!widget || !main || !anchor) return;
+      widget.classList.add('gg-mixed-widget--flow');
+      if (widget.parentNode !== main || widget.nextSibling !== anchor) {
+        main.insertBefore(widget, anchor);
       }
     }
+    function hideSectionById(id){
+      var section = id ? d.getElementById(id) : null;
+      if (!section) return;
+      section.setAttribute('data-gg-disabled', '1');
+      var widget = section.closest('.widget');
+      if (widget) {
+        widget.hidden = true;
+        widget.setAttribute('data-gg-disabled', '1');
+      }
+    }
+
+    var blogSection = d.getElementById('blog');
+    if (!blogSection || blogSection.parentNode !== main) return;
+
+    var order = ui.layout._listingFlowOrder || {};
+    var top = Array.isArray(order.top) ? order.top : [];
+    var deferred = Array.isArray(order.deferred) ? order.deferred : [];
+    var disabled = Array.isArray(order.disabled) ? order.disabled : [];
+
+    for (var i = 0; i < top.length; i++) {
+      var topWidget = mixedWidgetById(top[i]);
+      if (!topWidget) continue;
+      topWidget.setAttribute('data-gg-flow-order', String(i + 1));
+      moveWidget(topWidget, blogSection);
+    }
+
+    var cursor = blogSection;
+    for (var j = 0; j < deferred.length; j++) {
+      var deferredWidget = mixedWidgetById(deferred[j]);
+      if (!deferredWidget) continue;
+      deferredWidget.setAttribute('data-gg-flow-order', String(top.length + j + 1));
+      deferredWidget.classList.add('gg-mixed-widget--deferred');
+      if (deferredWidget.parentNode !== main || deferredWidget.previousSibling !== cursor) {
+        main.insertBefore(deferredWidget, cursor.nextSibling);
+      }
+      cursor = deferredWidget;
+    }
+
+    for (var k = 0; k < disabled.length; k++) {
+      hideSectionById(disabled[k]);
+    }
+
+    var featuredWidget = d.getElementById('FeaturedPost1');
+    if (featuredWidget) featuredWidget.hidden = true;
+
+    var featuredSection = d.getElementById('gg-featuredpost1');
+    if (featuredSection) {
+      featuredSection.hidden = true;
+      featuredSection.setAttribute('data-gg-relocated', '1');
+    }
+    var popularSection = d.getElementById('gg-popularpost1');
+    if (popularSection) {
+      popularSection.hidden = true;
+      popularSection.setAttribute('data-gg-relocated', '1');
+    }
+
+    main.setAttribute('data-gg-listing-flow', 'reading-first');
   };
   ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
     var next = surface || ui.layout.detectSurface(doc, url);
