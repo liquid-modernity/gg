@@ -483,6 +483,41 @@ function verifyRuntimeContracts(coreJsRel, mixedJsRel, label) {
   }
 }
 
+function verifyLabelChannelContracts(listingJsRel, channelJsRel, label) {
+  const listingJs = readFile(listingJsRel);
+  const channelJs = readFile(channelJsRel);
+  if (!listingJs || !channelJs) return;
+
+  if (!/ui\.bucket\.channel\.js/.test(listingJs)) {
+    failures.push(`${label}: listing module must lazy-load ui.bucket.channel.js`);
+  }
+  if (!/\/search\/label\/\[\^\/\?\#\]\+/.test(listingJs) && !/\/search\/label\//.test(listingJs)) {
+    failures.push(`${label}: listing module must detect /search/label/* pages`);
+  }
+
+  if (!/CHANNEL_MODE_MAP/.test(channelJs)) {
+    failures.push(`${label}: channel module missing editable CHANNEL_MODE_MAP`);
+  }
+  if (!/podcast['"]?\s*:\s*['"]podcast['"]/.test(channelJs)) {
+    failures.push(`${label}: channel module missing podcast mode map`);
+  }
+  if (!/videos['"]?\s*:\s*['"]videos['"]/.test(channelJs)) {
+    failures.push(`${label}: channel module missing videos mode map`);
+  }
+  if (!/photography['"]?\s*:\s*['"]photography['"]/.test(channelJs)) {
+    failures.push(`${label}: channel module missing photography mode map`);
+  }
+  if (!/CHANNEL_COUNTS\s*=\s*\{\s*podcast:\s*6,\s*youtube:\s*3,\s*shorts:\s*5,\s*photography:\s*12\s*\}/.test(channelJs)) {
+    failures.push(`${label}: channel module counts must be podcast=6 youtube=3 shorts=5 photography=12`);
+  }
+  if (!/renderSkeleton/.test(channelJs)) {
+    failures.push(`${label}: channel module must render skeletons before fetch`);
+  }
+  if (!/gg-label-channel/.test(channelJs)) {
+    failures.push(`${label}: channel module must render gg-label-channel container`);
+  }
+}
+
 function verifyCssFile(relPath, label) {
   const css = readFile(relPath);
   if (!css) return;
@@ -531,12 +566,22 @@ verifyRuntimeContracts(
   "public/assets/latest/modules/ui.bucket.mixed.js",
   "latest runtime"
 );
+verifyLabelChannelContracts(
+  "public/assets/latest/modules/ui.bucket.listing.js",
+  "public/assets/latest/modules/ui.bucket.channel.js",
+  "latest label runtime"
+);
 if (rel) {
   verifyCssFile(`public/assets/v/${rel}/main.css`, `pinned main.css (v/${rel})`);
   verifyRuntimeContracts(
     `public/assets/v/${rel}/modules/ui.bucket.core.js`,
     `public/assets/v/${rel}/modules/ui.bucket.mixed.js`,
     `pinned runtime (v/${rel})`
+  );
+  verifyLabelChannelContracts(
+    `public/assets/v/${rel}/modules/ui.bucket.listing.js`,
+    `public/assets/v/${rel}/modules/ui.bucket.channel.js`,
+    `pinned label runtime (v/${rel})`
   );
 }
 

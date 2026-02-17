@@ -5,7 +5,7 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 
 **Triggers**
 - CI workflow name: `CI` (runs on `push` to `main` and `pull_request`).
-- Deploy workflow triggers automatically on `workflow_run` when `CI` completes successfully on `main`.
+- Deploy workflow triggers from `CI` via GitHub API dispatch (`deploy.yml`) after `CI` succeeds on `main`.
 - Manual deploy uses `workflow_dispatch`, but it still runs the full preflight gate and asserts the dispatch branch is `main` (no bypass).
 
 **CI Gate (Primary)**
@@ -40,8 +40,8 @@ This repo is main-only. CI is the **primary gate**. Deployments are on `main` on
 
 **Wrangler Policy**
 - Wrangler is CI-only; local deploy is unsupported.
-- Deploy uses `cloudflare/wrangler-action` with a pinned version.
-- Pinned version is defined in `.github/workflows/deploy.yml` (`wranglerVersion`).
+- Deploy installs pinned Wrangler CLI via `npm install --no-save wrangler@4.61.1`.
+- Deploy runs `./node_modules/.bin/wrangler deploy --config wrangler.jsonc`.
 
 **Preflight Gate (Deploy Workflow)**
 Manual dispatch does not bypass gates. It runs the same preflight verifiers.
@@ -60,7 +60,7 @@ Manual dispatch does not bypass gates. It runs the same preflight verifiers.
 - `node tools/verify-headers.mjs --mode=config`
 
 **Deploy**
-- Uses `cloudflare/wrangler-action` with `wrangler.jsonc`.
+- Uses pinned local Wrangler CLI from `node_modules` with `wrangler.jsonc`.
 - Worker name: `gg`.
 - After deploy, the workflow runs: `node tools/verify-headers.mjs --mode=live --base=https://www.pakrpp.com`.
 

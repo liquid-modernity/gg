@@ -713,13 +713,14 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
       live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc[\"']" 'data-gg-slot="toc"' 'TOC slot'
       live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc-hint[\"']" 'data-gg-slot="toc-hint"' 'TOC hint slot'
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-bookish[\"'][^>]*data-gg-max=[\"']8[\"'])|(<section[^>]*data-gg-max=[\"']8[\"'][^>]*id=[\"']gg-mixed-bookish[\"'])" "gg-mixed-bookish|data-gg-max" "bookish max=8"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-instagramish[\"'][^>]*data-gg-max=[\"']8[\"'])|(<section[^>]*data-gg-max=[\"']8[\"'][^>]*id=[\"']gg-mixed-instagramish[\"'])" "gg-mixed-instagramish|data-gg-max" "instagram max=8"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-popular[\"'][^>]*data-gg-max=[\"']10[\"'])|(<section[^>]*data-gg-max=[\"']10[\"'][^>]*id=[\"']gg-mixed-popular[\"'])" "gg-mixed-popular|data-gg-max" "popular max=10"
+      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-featuredstrip[\"'][^>]*data-gg-max=[\"']5[\"'])|(<section[^>]*data-gg-max=[\"']5[\"'][^>]*id=[\"']gg-mixed-featuredstrip[\"'])" "gg-mixed-featuredstrip|data-gg-max" "featured max=5"
+      live_dom_expect "${html}" "${label}" "id=[\"']gg-mixed-newsish-1[\"']" "gg-mixed-newsish-1" "NEWSISH-1 section"
+      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-bookish[\"'][^>]*data-gg-max=[\"']4[\"'])|(<section[^>]*data-gg-max=[\"']4[\"'][^>]*id=[\"']gg-mixed-bookish[\"'])" "gg-mixed-bookish|data-gg-max" "bookish max=4"
       live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-youtubeish[\"'][^>]*data-gg-max=[\"']3[\"'])|(<section[^>]*data-gg-max=[\"']3[\"'][^>]*id=[\"']gg-mixed-youtubeish[\"'])" "gg-mixed-youtubeish|data-gg-max" "youtube max=3"
       live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-shortish[\"'][^>]*data-gg-max=[\"']5[\"'])|(<section[^>]*data-gg-max=[\"']5[\"'][^>]*id=[\"']gg-mixed-shortish[\"'])" "gg-mixed-shortish|data-gg-max" "shorts max=5"
+      live_dom_expect "${html}" "${label}" "id=[\"']gg-mixed-newsish-2[\"']" "gg-mixed-newsish-2" "NEWSISH-2 section"
+      live_dom_expect "${html}" "${label}" "<section[^>]*data-gg-cols=[\"']3[\"'][^>]*data-gg-max=[\"']3[\"'][^>]*data-type=[\"']newsdeck[\"'][^>]*id=[\"']gg-mixed-newsish-[^\"']+[\"']|<section[^>]*id=[\"']gg-mixed-newsish-[^\"']+[\"'][^>]*data-gg-cols=[\"']3[\"'][^>]*data-gg-max=[\"']3[\"'][^>]*data-type=[\"']newsdeck[\"']" "gg-mixed-newsish|data-gg-cols|data-gg-max|data-type" "NEWSISH 3x3 contract"
       live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-podcastish[\"'][^>]*data-gg-max=[\"']6[\"'])|(<section[^>]*data-gg-max=[\"']6[\"'][^>]*id=[\"']gg-mixed-podcastish[\"'])" "gg-mixed-podcastish|data-gg-max" "podcast max=6"
-      live_dom_expect "${html}" "${label}" "<section[^>]*data-gg-cols=[\"']3[\"'][^>]*data-gg-max=[\"']3[\"'][^>]*data-type=[\"']newsdeck[\"'][^>]*id=[\"']gg-mixed-newsish-[^\"']+[\"']" "gg-mixed-newsish|data-gg-cols|data-gg-max" "NEWSISH 3x3 contract"
       if grep -Fqi "THE MIXED-MEDIA LAYOUT" <<<"${html}"; then
         die "LIVE_HTML ${label} contains debug text THE MIXED-MEDIA LAYOUT"
       fi
