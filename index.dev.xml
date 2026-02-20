@@ -2545,9 +2545,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
             </b:widget>
           </b:section>
-    </div>
-    
-
     <b:section class='gg-home-blog__body' id='gg-mixed-deferred' name='gg-mixed-deferred' showaddelement='true'>
 
       <b:widget id='HTML10' locked='false' title='Youtube' type='HTML' version='2' visible='true'>
@@ -2821,6 +2818,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
       </b:widget>
     </b:section>
+    </div>
 
     <!-- GAGA SIDEBAR RIGHT -->
 <aside class='gg-blog-sidebar gg-blog-sidebar--right'>
