@@ -2748,7 +2748,7 @@ GG.modules.InfoPanel = (function () {
   var lastTrigger = null;
   var closeObserver = null;
   var backdrop = null;
-  var selectedCardKey = '';
+  var selectedCardKey = null;
   var hoverCardKey = '';
   var hoverIntentCardKey = '';
   var hoverIntentTimer = 0;
@@ -2764,6 +2764,13 @@ GG.modules.InfoPanel = (function () {
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function syncSlotInfoSelected(value){
+    try {
+      var st = (typeof slotInfoState !== 'undefined' && slotInfoState) ? slotInfoState : (window && window.slotInfoState);
+      if (!st || typeof st.set !== 'function') return;
+      st.set({ selected: value || null });
+    } catch (_) {}
+  }
   function closest(el, sel){
     if (!el) return null;
     if (el.closest) return el.closest(sel);
@@ -3267,7 +3274,10 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     } else if (main) {
       main.setAttribute('data-gg-info-panel', 'open');
     }
-    if (opts.select) selectedCardKey = cardKey(card);
+    if (opts.select) {
+      selectedCardKey = cardKey(card) || null;
+      syncSlotInfoSelected(selectedCardKey);
+    }
     updateTocForCard(card, href);
 
     if (opts.focusPanel !== false) {
@@ -3288,7 +3298,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       panel.hidden = true;
       panel.__ggPreviewCard = null;
     }
-    selectedCardKey = '';
+    selectedCardKey = null;
+    syncSlotInfoSelected(null);
     hoverCardKey = '';
     clearHoverIntent();
     if (tocIntentTimer) {
@@ -3309,8 +3320,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(evt.target, '.gg-post-card');
     if (!card) return;
     var key = cardKey(card);
-    if (!key || key === hoverCardKey) return;
-    if (selectedCardKey && key !== selectedCardKey) return;
+    if (!key) return;
+    if (selectedCardKey && selectedCardKey !== key) return;
+    if (key === hoverCardKey) return;
     if (hoverIntentTimer && key === hoverIntentCardKey) return;
     clearHoverIntent();
     hoverIntentCardKey = key;
@@ -3341,8 +3353,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(evt.target, '.gg-post-card');
     if (!card) return;
     var key = cardKey(card);
-    if (!key || key === hoverCardKey) return;
-    if (selectedCardKey && key !== selectedCardKey) return;
+    if (!key) return;
+    if (selectedCardKey && selectedCardKey !== key) return;
+    if (key === hoverCardKey) return;
     clearHoverIntent();
     prefetchToc(cardHref(card));
     hoverCardKey = key;
@@ -3356,11 +3369,13 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!card) return;
     evt.preventDefault();
     var key = cardKey(card);
-    var isOpen = main && main.getAttribute('data-gg-info-panel') === 'open';
-    if (isOpen && selectedCardKey && key === selectedCardKey) {
-      handleClose();
+    if (selectedCardKey && selectedCardKey === key) {
+      selectedCardKey = null;
+      syncSlotInfoSelected(null);
       return;
     }
+    selectedCardKey = key || null;
+    syncSlotInfoSelected(selectedCardKey);
     clearHoverIntent();
     hoverCardKey = key;
     openWithCard(card, infoBtn, { focusPanel: true, select: true });
@@ -3392,7 +3407,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
           if (muts[i].attributeName === 'data-gg-info-panel') {
             if (main.getAttribute('data-gg-info-panel') === 'closed') {
               if (panel) panel.hidden = true;
-              selectedCardKey = '';
+              selectedCardKey = null;
+              syncSlotInfoSelected(null);
               hoverCardKey = '';
               clearHoverIntent();
               if (tocIntentTimer) {

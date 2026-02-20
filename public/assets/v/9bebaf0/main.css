@@ -1924,6 +1924,7 @@ a.gg-search-assist__item > small{
   order: 2;
   flex: 0 0 72px;
   width: 72px;
+  height: 72px;
   border-radius: 8px;
   overflow: hidden;
   background: var(--gg-mixed-thumb-bg);
@@ -2066,14 +2067,8 @@ main.gg-main[data-gg-surface="listing"] .gg-loadmore-wrap{
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
   --gg-mixed-rail-col: clamp(206px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.28), 332px);
 }
-main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="youtube"]{
-  --gg-mixed-rail-col: clamp(196px, 18vw, 248px);
-}
-main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="shorts"]{
-  --gg-mixed-rail-col: clamp(116px, 10.5vw, 152px);
-}
-main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="podcast"]{
-  --gg-mixed-rail-col: clamp(136px, 12.5vw, 184px);
+main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="youtubeish"]{
+  --gg-mixed-rail-col: clamp(320px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.15), 460px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="popular"]{
   --gg-mixed-rail-col: clamp(142px, 11.8vw, 186px);
