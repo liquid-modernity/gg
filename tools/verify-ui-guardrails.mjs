@@ -113,6 +113,49 @@ function verifyListingFlowContract(css, label) {
   }
 }
 
+function verifyClampBoundsPx(css, label) {
+  const clampRe = /clamp\(\s*([+-]?\d*\.?\d+)px\s*,[\s\S]*?,\s*([+-]?\d*\.?\d+)px\s*\)/gi;
+  let m;
+  while ((m = clampRe.exec(css))) {
+    const min = Number.parseFloat(m[1]);
+    const max = Number.parseFloat(m[2]);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) continue;
+    if (min > max) {
+      const line = lineForIndex(css, m.index);
+      const expr = String(m[0] || "").replace(/\s+/g, " ").trim();
+      failures.push(
+        `${label}:${line} clamp min>max is invalid (${min}px > ${max}px): ${expr}`
+      );
+    }
+  }
+}
+
+function verifyRailLayoutContract(css, label) {
+  const baseMatch = css.match(/\.gg-mixed__rail\s*\{([\s\S]*?)\}/i);
+  if (!baseMatch) {
+    failures.push(`${label}: missing .gg-mixed__rail base rule`);
+    return;
+  }
+  const baseBody = String(baseMatch[1] || "");
+  if (!/\bgrid-auto-flow\s*:\s*column\b/i.test(baseBody)) {
+    failures.push(`${label}: .gg-mixed__rail must set grid-auto-flow: column`);
+  }
+  if (!/\boverflow-x\s*:\s*auto\b/i.test(baseBody)) {
+    failures.push(`${label}: .gg-mixed__rail must set overflow-x: auto`);
+  }
+
+  const railKinds = ["youtube", "shorts", "podcast", "popular", "rail"];
+  railKinds.forEach((kind) => {
+    const kindRe = new RegExp(
+      `\\.gg-mixed\\[data-type=['"]${kind}['"]\\]\\s+\\.gg-mixed__rail\\s*(?:,|\\{)`,
+      "i"
+    );
+    if (!kindRe.test(css)) {
+      failures.push(`${label}: missing rail selector for data-type="${kind}"`);
+    }
+  });
+}
+
 function verifyIndexContracts(indexXml) {
   if (/Page\s+\d+\s+Custom/i.test(indexXml)) {
     failures.push(`index.prod.xml: legacy "Page X Custom" title still present`);
@@ -548,6 +591,8 @@ function verifyCssFile(relPath, label) {
   verifySidebarWidthTokens(css, label);
   verifyMixedRatioContract(css, label);
   verifyListingFlowContract(css, label);
+  verifyClampBoundsPx(css, label);
+  verifyRailLayoutContract(css, label);
 }
 
 const indexXml = readFile("index.prod.xml");
