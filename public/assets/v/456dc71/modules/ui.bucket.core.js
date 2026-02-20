@@ -811,6 +811,13 @@ GG.view.applyRootState = GG.ui.applyRootState;
         main.insertBefore(widget, anchor);
       }
     }
+    function markWidget(widget, orderIdx, isDeferred){
+      if (!widget) return;
+      widget.classList.add('gg-mixed-widget--flow');
+      widget.setAttribute('data-gg-flow-order', String(orderIdx));
+      if (isDeferred) widget.classList.add('gg-mixed-widget--deferred');
+      else widget.classList.remove('gg-mixed-widget--deferred');
+    }
     function hideSectionById(id){
       var section = id ? d.getElementById(id) : null;
       if (!section) return;
@@ -829,24 +836,36 @@ GG.view.applyRootState = GG.ui.applyRootState;
     var top = Array.isArray(order.top) ? order.top : [];
     var deferred = Array.isArray(order.deferred) ? order.deferred : [];
     var disabled = Array.isArray(order.disabled) ? order.disabled : [];
+    var ssrReady = main.getAttribute('data-gg-listing-flow-ssr') === '1';
+    var topWidgets = [];
+    var deferredWidgets = [];
 
     for (var i = 0; i < top.length; i++) {
       var topWidget = mixedWidgetById(top[i]);
       if (!topWidget) continue;
-      topWidget.setAttribute('data-gg-flow-order', String(i + 1));
-      moveWidget(topWidget, blogSection);
+      markWidget(topWidget, i + 1, false);
+      topWidgets.push(topWidget);
     }
 
-    var cursor = blogSection;
     for (var j = 0; j < deferred.length; j++) {
       var deferredWidget = mixedWidgetById(deferred[j]);
       if (!deferredWidget) continue;
-      deferredWidget.setAttribute('data-gg-flow-order', String(top.length + j + 1));
-      deferredWidget.classList.add('gg-mixed-widget--deferred');
-      if (deferredWidget.parentNode !== main || deferredWidget.previousSibling !== cursor) {
-        main.insertBefore(deferredWidget, cursor.nextSibling);
+      markWidget(deferredWidget, top.length + j + 1, true);
+      deferredWidgets.push(deferredWidget);
+    }
+
+    if (!ssrReady) {
+      for (var m = 0; m < topWidgets.length; m++) {
+        moveWidget(topWidgets[m], blogSection);
       }
-      cursor = deferredWidget;
+      var cursor = blogSection;
+      for (var n = 0; n < deferredWidgets.length; n++) {
+        var widget = deferredWidgets[n];
+        if (widget.parentNode !== main || widget.previousSibling !== cursor) {
+          main.insertBefore(widget, cursor.nextSibling);
+        }
+        cursor = widget;
+      }
     }
 
     for (var k = 0; k < disabled.length; k++) {
@@ -854,17 +873,9 @@ GG.view.applyRootState = GG.ui.applyRootState;
     }
 
     var featuredWidget = d.getElementById('FeaturedPost1');
-    if (featuredWidget) featuredWidget.hidden = true;
-
-    var featuredSection = d.getElementById('gg-featuredpost1');
-    if (featuredSection) {
-      featuredSection.hidden = true;
-      featuredSection.setAttribute('data-gg-relocated', '1');
-    }
-    var popularSection = d.getElementById('gg-popularpost1');
-    if (popularSection) {
-      popularSection.hidden = true;
-      popularSection.setAttribute('data-gg-relocated', '1');
+    if (featuredWidget) {
+      featuredWidget.hidden = true;
+      featuredWidget.setAttribute('data-gg-relocated', '1');
     }
 
     main.setAttribute('data-gg-listing-flow', 'reading-first');
@@ -2739,11 +2750,14 @@ GG.modules.InfoPanel = (function () {
   var backdrop = null;
   var selectedCardKey = '';
   var hoverCardKey = '';
+  var hoverIntentCardKey = '';
+  var hoverIntentTimer = 0;
+  var HOVER_INTENT_MS = 160;
   var tocIntentTimer = 0;
   var TOC_CAP = 24;
   var TOC_TTL_MS = 6e5;
   var TOC_LRU_MAX = 24;
-  var TOC_HINT_LOCK = 'Hover, focus, or tap a card to preview headings.';
+  var TOC_HINT_LOCK = 'Hover to preview. Click or tap to lock this card.';
   var tocCache = Object.create(null);
   var tocPending = Object.create(null);
   var tocAborters = Object.create(null);
@@ -3010,23 +3024,21 @@ function extractThumbSrc(card){
   function parseHeadingItems(html,sourceUrl){ if(!html||!window.DOMParser) return []; var doc=new DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'); if(!root) return []; var headings=root.querySelectorAll('h2, h3, h4'),out=[],max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
 
   function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
+  function clearHoverIntent(){ if(hoverIntentTimer){ clearTimeout(hoverIntentTimer); hoverIntentTimer = 0; } hoverIntentCardKey = ''; }
 
-  function hydrateToc(card, href){
-    if (!card) return Promise.resolve([]);
+  function resolveTocItems(href, opts){
+    opts = opts || {};
     var key = tocCacheKey(href);
     var abs = toAbsUrl(href);
-    if (!key || !abs) {
-      renderTocSkeleton(6, 'Unable to resolve article URL.');
-      return Promise.resolve([]);
-    }
+    if (!key || !abs) return Promise.resolve([]);
 
     var cached = readToc(key);
-    if (Array.isArray(cached)) {
-      renderTocItems(cached);
-      return Promise.resolve(cached);
+    if (Array.isArray(cached)) return Promise.resolve(cached);
+
+    if (opts.abortOthers) {
+      abortToc(key);
     }
 
-    abortToc('');
     if (!tocPending[key]) {
       var controller = window.AbortController ? new window.AbortController() : null;
       tocAborters[key] = controller;
@@ -3046,7 +3058,29 @@ function extractThumbSrc(card){
         });
     }
 
-    return tocPending[key].then(function(items){
+    return tocPending[key];
+  }
+
+  function prefetchToc(href){
+    return resolveTocItems(href, { abortOthers: true }).catch(function(){ return []; });
+  }
+
+  function hydrateToc(card, href){
+    if (!card) return Promise.resolve([]);
+    var key = tocCacheKey(href);
+    var abs = toAbsUrl(href);
+    if (!key || !abs) {
+      renderTocSkeleton(6, 'Unable to resolve article URL.');
+      return Promise.resolve([]);
+    }
+
+    var cached = readToc(key);
+    if (Array.isArray(cached)) {
+      renderTocItems(cached);
+      return Promise.resolve(cached);
+    }
+
+    return resolveTocItems(abs, { abortOthers: true }).then(function(items){
       if (!panel) return items || [];
       var active = panel.__ggPreviewCard || null;
       if (!active) return items || [];
@@ -3087,18 +3121,9 @@ function extractThumbSrc(card){
       return;
     }
 
-    var activeKey = cardKey(card);
-    abortToc('');
+    abortToc(key);
     renderTocSkeleton(6, 'Loading headings...');
-
-    tocIntentTimer = w.setTimeout(function(){
-      tocIntentTimer = 0;
-      if (!panel) return;
-      var activeCard = panel.__ggPreviewCard || null;
-      if (!activeCard) return;
-      if (cardKey(activeCard) !== activeKey) return;
-      hydrateToc(activeCard, href);
-    }, 200);
+    hydrateToc(card, href);
   }
 
 function fillChipsToSlot(slot, items, max){
@@ -3265,6 +3290,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
     selectedCardKey = '';
     hoverCardKey = '';
+    clearHoverIntent();
     if (tocIntentTimer) {
       clearTimeout(tocIntentTimer);
       tocIntentTimer = 0;
@@ -3284,8 +3310,30 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!card) return;
     var key = cardKey(card);
     if (!key || key === hoverCardKey) return;
-    hoverCardKey = key;
-    openWithCard(card, null, { focusPanel: false });
+    if (selectedCardKey && key !== selectedCardKey) return;
+    if (hoverIntentTimer && key === hoverIntentCardKey) return;
+    clearHoverIntent();
+    hoverIntentCardKey = key;
+    var href = cardHref(card);
+    hoverIntentTimer = w.setTimeout(function(){
+      hoverIntentTimer = 0;
+      if (!card) return;
+      if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
+      if (selectedCardKey && key !== selectedCardKey) return;
+      prefetchToc(href);
+      hoverCardKey = key;
+      openWithCard(card, null, { focusPanel: false });
+    }, HOVER_INTENT_MS);
+  }
+
+  function handlePreviewOut(evt){
+    if (!canHoverPreview()) return;
+    var card = closest(evt.target, '.gg-post-card');
+    if (!card) return;
+    var nextCard = closest(evt.relatedTarget, '.gg-post-card');
+    if (nextCard && cardKey(nextCard) === cardKey(card)) return;
+    if (selectedCardKey) return;
+    clearHoverIntent();
   }
 
   function handlePreviewFocus(evt){
@@ -3294,6 +3342,9 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!card) return;
     var key = cardKey(card);
     if (!key || key === hoverCardKey) return;
+    if (selectedCardKey && key !== selectedCardKey) return;
+    clearHoverIntent();
+    prefetchToc(cardHref(card));
     hoverCardKey = key;
     openWithCard(card, null, { focusPanel: false });
   }
@@ -3304,7 +3355,14 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     var card = closest(infoBtn, '.gg-post-card');
     if (!card) return;
     evt.preventDefault();
-    hoverCardKey = cardKey(card);
+    var key = cardKey(card);
+    var isOpen = main && main.getAttribute('data-gg-info-panel') === 'open';
+    if (isOpen && selectedCardKey && key === selectedCardKey) {
+      handleClose();
+      return;
+    }
+    clearHoverIntent();
+    hoverCardKey = key;
     openWithCard(card, infoBtn, { focusPanel: true, select: true });
   }
 
@@ -3324,6 +3382,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
       main.__ggInfoPanelBound = true;
       main.addEventListener('click', handleClick, true);
       main.addEventListener('pointerover', handlePreviewHover, true);
+      main.addEventListener('pointerout', handlePreviewOut, true);
       main.addEventListener('focusin', handlePreviewFocus, true);
     }
     if (!panel.__ggInfoPanelBound) panel.__ggInfoPanelBound = true;
@@ -3335,6 +3394,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
               if (panel) panel.hidden = true;
               selectedCardKey = '';
               hoverCardKey = '';
+              clearHoverIntent();
               if (tocIntentTimer) {
                 clearTimeout(tocIntentTimer);
                 tocIntentTimer = 0;

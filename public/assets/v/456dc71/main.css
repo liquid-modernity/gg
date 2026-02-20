@@ -1821,7 +1821,9 @@ a.gg-search-assist__item > small{
   --gg-mixed-rail-col: clamp(208px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.28), 332px);
 }
 .gg-mixed[data-type="instagram"],
-.gg-mixed[data-gg-kind="instagramish"],
+.gg-mixed[data-gg-kind="instagramish"]{
+  --gg-mixed-ratio: 4 / 6;
+}
 .gg-mixed[data-gg-kind="pinterestish"]{
   --gg-mixed-ratio: 1 / 1.48;
 }
@@ -2065,13 +2067,13 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
   --gg-mixed-rail-col: clamp(206px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.28), 332px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="youtube"]{
-  --gg-mixed-rail-col: clamp(500px, 18vw, 248px);
+  --gg-mixed-rail-col: clamp(196px, 18vw, 248px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="shorts"]{
-  --gg-mixed-rail-col: clamp(300px, 10.5vw, 152px);
+  --gg-mixed-rail-col: clamp(116px, 10.5vw, 152px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="podcast"]{
-  --gg-mixed-rail-col: clamp(250px, 12.5vw, 184px);
+  --gg-mixed-rail-col: clamp(136px, 12.5vw, 184px);
 }
 main.gg-main[data-gg-surface="listing"] .gg-mixed[data-type="popular"]{
   --gg-mixed-rail-col: clamp(142px, 11.8vw, 186px);
