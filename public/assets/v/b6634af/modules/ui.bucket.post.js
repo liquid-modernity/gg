@@ -432,5 +432,22 @@
   GG.modules.postTagsInline.autoInit = autoInitPostTags;
 })(window.GG, document);
 
+(function (GG, w, d) {
+  'use strict';
+  if (!GG || !GG.boot || typeof GG.boot.loadModule !== 'function') return;
+  function init(){
+    GG.boot.loadModule('ui.bucket.authors.js').then(function(){
+      if (GG.modules && GG.modules.postInfoAuthors && typeof GG.modules.postInfoAuthors.init === 'function') {
+        GG.modules.postInfoAuthors.init(d);
+      }
+      if (GG.modules && GG.modules.postInfoTags && typeof GG.modules.postInfoTags.init === 'function') {
+        GG.modules.postInfoTags.init(d);
+      }
+    }).catch(function(){});
+  }
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+})(window.GG = window.GG || {}, window, document);
+
 
 })(window);

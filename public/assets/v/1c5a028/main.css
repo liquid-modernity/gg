@@ -1721,6 +1721,7 @@ a.gg-search-assist__item > small{
 .gg-main__col{
   min-width: 0;
 }
+/* Supported postmeta hook: <div class="gg-postmeta" data-author="pakrpp" data-tags="a,b" data-contributors="masrpp;kangrpp" data-updated="YYYY-MM-DD"></div> */
 .gg-postmeta{
   display:none !important;
 }

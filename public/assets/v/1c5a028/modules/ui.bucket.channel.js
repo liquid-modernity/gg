@@ -6,7 +6,7 @@
   if (M.__defined) return;
   M.__defined = true;
 
-  var CHANNEL_MODE_MAP = M.MODE_BY_LABEL || {
+  var DEFAULT_MODE_BY_LABEL = {
     podcast: 'podcast',
     podcasts: 'podcast',
     video: 'videos',
@@ -15,7 +15,21 @@
     photo: 'photography',
     photos: 'photography'
   };
-  var CHANNEL_COUNTS = { podcast: 6, youtube: 3, shorts: 5, photography: 12 };
+  var DEFAULT_COUNTS = {
+    podcast: 6,
+    youtube: 3,
+    shorts: 5,
+    photography: 12
+  };
+  var CHANNEL_CONFIG = M.CONFIG || {};
+  var CHANNEL_MODE_MAP = CHANNEL_CONFIG.modeByLabel || M.MODE_BY_LABEL || DEFAULT_MODE_BY_LABEL;
+  var countConfig = CHANNEL_CONFIG.counts || {};
+  var CHANNEL_COUNTS = {
+    podcast: parseInt(countConfig.podcast, 10) || DEFAULT_COUNTS.podcast,
+    youtube: parseInt(countConfig.youtube, 10) || DEFAULT_COUNTS.youtube,
+    shorts: parseInt(countConfig.shorts, 10) || DEFAULT_COUNTS.shorts,
+    photography: parseInt(countConfig.photography, 10) || DEFAULT_COUNTS.photography
+  };
   var activeReq = 0;
 
   function esc(s){
@@ -283,17 +297,29 @@
       '<div class="gg-label-channel__body" data-role="body"></div>' +
       '<p class="gg-label-channel__error" data-role="error" hidden>Channel feed is unavailable.</p>';
     if (main) {
+      main.setAttribute('data-gg-label-mode', mode);
+      main.setAttribute('data-gg-label-key', norm(label));
+      main.removeAttribute('data-gg-label-mode-active');
+      main.setAttribute('data-gg-label-mode-pending', '1');
+    }
+    if (root) root.removeAttribute('hidden');
+    return host;
+  }
+
+  function activateMode(main, root, mode, label){
+    if (main) {
       main.setAttribute('data-gg-label-mode-active', '1');
       main.setAttribute('data-gg-label-mode', mode);
       main.setAttribute('data-gg-label-key', norm(label));
+      main.removeAttribute('data-gg-label-mode-pending');
     }
     if (root) root.setAttribute('hidden', 'hidden');
-    return host;
   }
 
   function restoreDefault(main, root){
     if (main) {
       main.removeAttribute('data-gg-label-mode-active');
+      main.removeAttribute('data-gg-label-mode-pending');
       main.removeAttribute('data-gg-label-mode');
       main.removeAttribute('data-gg-label-key');
     }
@@ -330,6 +356,7 @@
         restoreDefault(main, root);
         return;
       }
+      activateMode(main, root, mode, label);
       host.setAttribute('data-gg-state', 'loaded');
       host.setAttribute('data-gg-render-count', String(count));
     }).catch(function(){
