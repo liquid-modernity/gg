@@ -2753,7 +2753,6 @@ GG.modules.InfoPanel = (function () {
   var hoverIntentCardKey = '';
   var hoverIntentTimer = 0;
   var HOVER_INTENT_MS = 160;
-  var tocIntentTimer = 0;
   var TOC_CAP = 24;
   var TOC_TTL_MS = 6e5;
   var TOC_LRU_MAX = 24;
@@ -2781,36 +2780,27 @@ GG.modules.InfoPanel = (function () {
     return null;
   }
 
+  function onBackdropClick(e){
+    var surface = main ? main.getAttribute('data-gg-surface') : '';
+    if (surface !== 'home' && surface !== 'feed') return;
+    if (!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
+    e.preventDefault();
+    handleClose();
+  }
+
   function ensureBackdrop(){
     if (backdrop) return backdrop;
     backdrop = document.querySelector('.gg-infopanel-backdrop');
-    if (backdrop){
-      if (!backdrop.__ggInfoBound){
-        backdrop.__ggInfoBound = true;
-        backdrop.addEventListener('click', function(e){
-          var surface = main ? main.getAttribute('data-gg-surface') : '';
-          if(surface !== 'home' && surface !== 'feed') return;
-          if(!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
-          e.preventDefault();
-          handleClose();
-        });
-      }
-      return backdrop;
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'gg-infopanel-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);';
+      document.body.appendChild(backdrop);
     }
-    backdrop = document.createElement('div');
-    backdrop.className = 'gg-infopanel-backdrop';
-    backdrop.setAttribute('aria-hidden', 'true');
-    backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);';
-    document.body.appendChild(backdrop);
-    if (!backdrop.__ggInfoBound){
+    if (!backdrop.__ggInfoBound) {
       backdrop.__ggInfoBound = true;
-      backdrop.addEventListener('click', function(e){
-        var surface = main ? main.getAttribute('data-gg-surface') : '';
-        if(surface !== 'home' && surface !== 'feed') return;
-        if(!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
-        e.preventDefault();
-        handleClose();
-      });
+      backdrop.addEventListener('click', onBackdropClick);
     }
     return backdrop;
   }
@@ -2825,137 +2815,62 @@ GG.modules.InfoPanel = (function () {
   function ensurePanelSkeleton(){
     if (!panel) return;
     if (qs('.gg-editorial-preview', panel)) return;
-
-    panel.innerHTML =
-      '<div class="gg-info-panel__card gg-editorial-preview">' +
-        '<div class="gg-editorial-preview__head">' +
-          '<span class="gg-editorial-preview__eyebrow">Editorial Preview</span>' +
-        '</div>' +
-        '<div class="gg-editorial-preview__media">' +
-          '<img class="gg-info-panel__thumb-img" alt=""/>' +
-          '<p class="gg-info-panel__hero-title gg-editorial-preview__title"></p>' +
-          '<a class="gg-info-panel__hero-cta gg-editorial-preview__cta" href="#">' +
-            '<span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span>' +
-            '<span>Read this post</span>' +
-          '</a>' +
-        '</div>' +
-        '<div class="gg-editorial-preview__body gg-info-panel__details">' +
-          '<div class="gg-info-panel__row gg-info-panel__row--labels" hidden>' +
-            '<span class="gg-icon" aria-hidden="true">label</span>' +
-            '<div class="gg-chip-row" data-gg-slot="labels"></div>' +
-          '</div>' +
-          '<div class="gg-info-panel__meta gg-info-panel__meta--icons">' +
-            '<span class="gg-info-panel__metaitem">' +
-              '<span class="gg-icon" aria-hidden="true">calendar_today</span>' +
-              '<span class="gg-info-panel__date"></span>' +
-            '</span>' +
-            '<span class="gg-meta-sep">•</span>' +
-            '<span class="gg-info-panel__metaitem">' +
-              '<span class="gg-icon" aria-hidden="true">comment</span>' +
-              '<span class="gg-info-panel__comments"></span>' +
-            '</span>' +
-            '<span class="gg-meta-sep">•</span>' +
-            '<span class="gg-info-panel__metaitem">' +
-              '<span class="gg-icon" aria-hidden="true">schedule</span>' +
-              '<span class="gg-info-panel__readtime"></span>' +
-            '</span>' +
-          '</div>' +
-          '<div class="gg-info-panel__row gg-info-panel__row--snippet">' +
-            '<span class="gg-icon" aria-hidden="true">text_snippet</span>' +
-            '<p class="gg-info-panel__snippet"></p>' +
-          '</div>' +
-          '<div class="gg-info-panel__sec gg-info-panel__sec--toc" data-gg-sec="toc">' +
-            '<div class="gg-info-panel__sechead">' +
-              '<span class="gg-icon material-symbols-rounded" aria-hidden="true">toc</span>' +
-              '<div class="gg-info-panel__kicker">Table of contents</div>' +
-            '</div>' +
-            '<ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol>' +
-            '<p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
+    panel.innerHTML = '<div class="gg-info-panel__card gg-editorial-preview"><div class="gg-editorial-preview__head"><span class="gg-editorial-preview__eyebrow">Editorial Preview</span></div><div class="gg-editorial-preview__media"><img class="gg-info-panel__thumb-img" alt=""/><p class="gg-info-panel__hero-title gg-editorial-preview__title"></p><a class="gg-info-panel__hero-cta gg-editorial-preview__cta" href="#"><span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span><span>Read this post</span></a></div><div class="gg-editorial-preview__body gg-info-panel__details"><div class="gg-info-panel__row gg-info-panel__row--labels" hidden><span class="gg-icon" aria-hidden="true">label</span><div class="gg-chip-row" data-gg-slot="labels"></div></div><div class="gg-info-panel__meta gg-info-panel__meta--icons"><span class="gg-info-panel__metaitem"><span class="gg-icon" aria-hidden="true">calendar_today</span><span class="gg-info-panel__date"></span></span><span class="gg-meta-sep">•</span><span class="gg-info-panel__metaitem"><span class="gg-icon" aria-hidden="true">comment</span><span class="gg-info-panel__comments"></span></span><span class="gg-meta-sep">•</span><span class="gg-info-panel__metaitem"><span class="gg-icon" aria-hidden="true">schedule</span><span class="gg-info-panel__readtime"></span></span></div><div class="gg-info-panel__row gg-info-panel__row--snippet"><span class="gg-icon" aria-hidden="true">text_snippet</span><p class="gg-info-panel__snippet"></p></div><div class="gg-info-panel__sec gg-info-panel__sec--toc" data-gg-sec="toc"><div class="gg-info-panel__sechead"><span class="gg-icon material-symbols-rounded" aria-hidden="true">toc</span><div class="gg-info-panel__kicker">Table of contents</div></div><ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol><p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p></div></div></div>';
     renderTocSkeleton(6, TOC_HINT_LOCK);
   }
 
 function extractThumbSrc(card){
   var img = qs('.gg-post-card__thumb-img', card);
-  if (img) {
-    return (
-      img.currentSrc ||
-      img.src ||
-      img.getAttribute('src') ||
-      img.getAttribute('data-src') ||
-      img.getAttribute('data-lazy-src') ||
-      img.getAttribute('data-original') ||
-      ''
-    ).trim();
-  }
+  if (img) return (img.currentSrc || img.src || img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || img.getAttribute('data-original') || '').trim();
   var thumb = qs('.gg-post-card__thumb', card);
   if (thumb) {
-    var bg = (thumb.style.backgroundImage || getComputedStyle(thumb).backgroundImage || '');
-    var m = bg.match(/url\((['"]?)(.*?)\1\)/);
+    var bg = (thumb.style.backgroundImage || getComputedStyle(thumb).backgroundImage || ''), m = bg.match(/url\((['"]?)(.*?)\1\)/);
     if (m && m[2]) return m[2];
   }
-
   return '';
 }
 
-
-  function setText(sel, val){
-    var el = qs(sel, panel);
-    if (el) el.textContent = val || '';
-  }
-
-  function setHref(sel, val){
-    var el = qs(sel, panel);
-    if (el) el.setAttribute('href', val || '#');
-  }
-
+  function setText(sel, val){ var el = qs(sel, panel); if (el) el.textContent = val || ''; }
+  function setHref(sel, val){ var el = qs(sel, panel); if (el) el.setAttribute('href', val || '#'); }
   function setImg(src, alt){
-      var img = qs('.gg-info-panel__thumb-img', panel);
-      if(!img) return;
-      var wrap = closest(img, '.gg-editorial-preview__media') || img.parentElement;
-      if(!wrap) return;
-      if(!src){
-        img.removeAttribute('src');
-        img.style.display = 'none';
-        GG.core.state.add(wrap, 'noimg');
-        wrap.style.display = '';
-        return;
-      }
-      GG.core.state.remove(wrap, 'noimg');
+    var img = qs('.gg-info-panel__thumb-img', panel);
+    if (!img) return;
+    var wrap = closest(img, '.gg-editorial-preview__media') || img.parentElement;
+    if (!wrap) return;
+    if (!src) {
+      img.removeAttribute('src');
+      img.style.display = 'none';
+      GG.core.state.add(wrap, 'noimg');
       wrap.style.display = '';
-      img.style.display = '';
-      img.src = src;
-      img.alt = alt || '';
+      return;
     }
-
-  function setRowVisible(rowClass, visible){
-    var row = qs(rowClass, panel);
-    if (row) row.hidden = !visible;
+    GG.core.state.remove(wrap, 'noimg');
+    wrap.style.display = '';
+    img.style.display = '';
+    img.src = src;
+    img.alt = alt || '';
   }
 
+  function setRowVisible(rowClass, visible){ var row = qs(rowClass, panel); if (row) row.hidden = !visible; }
   function setTocHint(message){
-    var hint = qs('[data-gg-slot="toc-hint"]', panel);
+    var hint = qs('[data-gg-slot="toc-hint"]', panel), text = String(message || '').trim();
     if (!hint) return;
-    var text = String(message || '').trim();
     hint.textContent = text;
     hint.hidden = !text;
   }
 
   function renderTocSkeleton(count, hint){
-    var list = qs('[data-gg-slot="toc"]', panel);
+    var list = qs('[data-gg-slot="toc"]', panel), n = parseInt(count, 10), i = 0, li, row, line;
     if (!list) return;
-    var n = parseInt(count, 10);
     if (!isFinite(n) || n < 1) n = 6;
     if (n > 8) n = 8;
     list.innerHTML = '';
-    for (var i = 0; i < n; i++) {
-      var li = document.createElement('li');
+    for (; i < n; i++) {
+      li = document.createElement('li');
       li.className = 'gg-info-panel__tocitem gg-info-panel__tocitem--skeleton';
-      var row = document.createElement('span');
+      row = document.createElement('span');
       row.className = 'gg-info-panel__toclink';
-      var line = document.createElement('span');
+      line = document.createElement('span');
       line.className = 'gg-info-panel__tocline';
       row.appendChild(line);
       li.appendChild(row);
@@ -2965,63 +2880,39 @@ function extractThumbSrc(card){
   }
 
   function renderTocItems(items){
-    var list = qs('[data-gg-slot="toc"]', panel);
+    var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? items : [], i = 0, item, li, level, link, num, text;
     if (!list) return;
     list.innerHTML = '';
-
-    var rows = Array.isArray(items) ? items : [];
     if (!rows.length) {
       setTocHint('This article flows as one story. Open it to explore the full read.');
       return;
     }
-
-    for (var i = 0; i < rows.length; i++) {
-      var item = rows[i] || {};
-      var li = document.createElement('li');
-      var level = parseInt(item.level, 10);
+    for (; i < rows.length; i++) {
+      item = rows[i] || {};
+      li = document.createElement('li');
+      level = parseInt(item.level, 10);
       if (!isFinite(level) || level < 2) level = 2;
       if (level > 4) level = 4;
       li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + level;
-
-      var link = document.createElement('a');
+      link = document.createElement('a');
       link.className = 'gg-info-panel__toclink';
       link.href = item.href || '#';
-
-      var num = document.createElement('span');
+      num = document.createElement('span');
       num.className = 'gg-info-panel__tocnum';
       num.textContent = String(i + 1).padStart(2, '0');
-
-      var text = document.createElement('span');
+      text = document.createElement('span');
       text.className = 'gg-info-panel__toctext';
       text.textContent = item.text || 'Section';
-
       link.appendChild(num);
       link.appendChild(text);
       li.appendChild(link);
       list.appendChild(li);
     }
-
     setTocHint('');
   }
 
-  function toAbsUrl(raw){
-    try {
-      return new URL(String(raw || ''), window.location.href).toString();
-    } catch (_) {
-      return '';
-    }
-  }
-
-  function tocCacheKey(url){
-    var abs = toAbsUrl(url);
-    if (!abs) return '';
-    try {
-      var parsed = new URL(abs);
-      return parsed.origin + parsed.pathname + parsed.search;
-    } catch (_) {
-      return abs;
-    }
-  }
+  function toAbsUrl(raw){ try { return new URL(String(raw || ''), window.location.href).toString(); } catch (_) { return ''; } }
+  function tocCacheKey(url){ var abs = toAbsUrl(url), parsed; if (!abs) return ''; try { parsed = new URL(abs); return parsed.origin + parsed.pathname + parsed.search; } catch (_) { return abs; } }
 
   function pruneToc(now){ var keys=Object.keys(tocCache),i=0,key='',rows=null,ts=0; for(;i<keys.length;i++){ key=keys[i]; rows=tocCache[key]; ts=rows&&rows._t?rows._t:0; if(!rows||!Array.isArray(rows)||(TOC_TTL_MS>0&&ts&&now-ts>TOC_TTL_MS)) delete tocCache[key]; } keys=Object.keys(tocCache); while(keys.length>TOC_LRU_MAX) delete tocCache[keys.shift()]; }
   function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.isArray(rows)) return null; if(TOC_TTL_MS>0&&rows._t&&now-rows._t>TOC_TTL_MS){ delete tocCache[key]; return null; } rows._t=now; delete tocCache[key]; tocCache[key]=rows; return rows; }
@@ -3035,68 +2926,41 @@ function extractThumbSrc(card){
 
   function resolveTocItems(href, opts){
     opts = opts || {};
-    var key = tocCacheKey(href);
-    var abs = toAbsUrl(href);
+    var key = tocCacheKey(href), abs = toAbsUrl(href), cached;
     if (!key || !abs) return Promise.resolve([]);
-
-    var cached = readToc(key);
+    cached = readToc(key);
     if (Array.isArray(cached)) return Promise.resolve(cached);
-
-    if (opts.abortOthers) {
-      abortToc(key);
-    }
-
+    if (opts.abortOthers) abortToc(key);
     if (!tocPending[key]) {
       var controller = window.AbortController ? new window.AbortController() : null;
       tocAborters[key] = controller;
-      tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null)
-        .then(function(html){
-          var items = parseHeadingItems(html, abs);
-          writeToc(key, items);
-          return items;
-        })
-        .catch(function(err){
-          if (controller && controller.signal && controller.signal.aborted) return [];
-          throw err;
-        })
-        .finally(function(){
-          delete tocPending[key];
-          delete tocAborters[key];
-        });
+      tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
+        var items = parseHeadingItems(html, abs);
+        writeToc(key, items);
+        return items;
+      }).catch(function(err){
+        if (controller && controller.signal && controller.signal.aborted) return [];
+        throw err;
+      }).finally(function(){ delete tocPending[key]; delete tocAborters[key]; });
     }
-
     return tocPending[key];
   }
 
-  function prefetchToc(href){
-    return resolveTocItems(href, { abortOthers: true }).catch(function(){ return []; });
-  }
+  function prefetchToc(href){ return resolveTocItems(href, { abortOthers: true }).catch(function(){ return []; }); }
 
   function hydrateToc(card, href){
     if (!card) return Promise.resolve([]);
-    var key = tocCacheKey(href);
-    var abs = toAbsUrl(href);
-    if (!key || !abs) {
-      renderTocSkeleton(6, 'Unable to resolve article URL.');
-      return Promise.resolve([]);
-    }
-
-    var cached = readToc(key);
-    if (Array.isArray(cached)) {
-      renderTocItems(cached);
-      return Promise.resolve(cached);
-    }
-
+    var key = tocCacheKey(href), abs = toAbsUrl(href), cached;
+    if (!key || !abs) { renderTocSkeleton(6, 'Unable to resolve article URL.'); return Promise.resolve([]); }
+    cached = readToc(key);
+    if (Array.isArray(cached)) { renderTocItems(cached); return Promise.resolve(cached); }
     return resolveTocItems(abs, { abortOthers: true }).then(function(items){
-      if (!panel) return items || [];
-      var active = panel.__ggPreviewCard || null;
-      if (!active) return items || [];
-      if (cardKey(active) !== cardKey(card)) return items || [];
-      renderTocItems(items || []);
+      var active = panel && panel.__ggPreviewCard ? panel.__ggPreviewCard : null;
+      if (active && cardKey(active) === cardKey(card)) renderTocItems(items || []);
       return items || [];
     }).catch(function(){
-      var activeCard = panel ? panel.__ggPreviewCard : null;
-      if (activeCard && cardKey(activeCard) === cardKey(card)) {
+      var active = panel && panel.__ggPreviewCard ? panel.__ggPreviewCard : null;
+      if (active && cardKey(active) === cardKey(card)) {
         renderTocSkeleton(6, 'Headings are taking longer than usual. You can open the article directly.');
       }
       return [];
@@ -3104,113 +2968,78 @@ function extractThumbSrc(card){
   }
 
   function updateTocForCard(card, href){
-    if (tocIntentTimer) {
-      clearTimeout(tocIntentTimer);
-      tocIntentTimer = 0;
-    }
-
-    if (!card || !href) {
-      abortToc('');
-      renderTocSkeleton(6, TOC_HINT_LOCK);
-      return;
-    }
-
-    var key = tocCacheKey(href);
-    if (!key) {
-      abortToc('');
-      renderTocSkeleton(6, 'Unable to resolve article URL.');
-      return;
-    }
-
-    var cached = readToc(key);
-    if (Array.isArray(cached)) {
-      renderTocItems(cached);
-      return;
-    }
-
+    if (!card || !href) { abortToc(''); renderTocSkeleton(6, TOC_HINT_LOCK); return; }
+    var key = tocCacheKey(href), cached;
+    if (!key) { abortToc(''); renderTocSkeleton(6, 'Unable to resolve article URL.'); return; }
+    cached = readToc(key);
+    if (Array.isArray(cached)) { renderTocItems(cached); return; }
     abortToc(key);
     renderTocSkeleton(6, 'Loading headings...');
     hydrateToc(card, href);
   }
 
-function fillChipsToSlot(slot, items, max){
-  var chipRow = qs('[data-gg-slot="'+slot+'"]', panel);
-  if (!chipRow) return;
-
-  chipRow.innerHTML = '';
-
-  (items || []).slice(0, max || 12).forEach(function (x) {
-    var a = document.createElement('a');
-    a.className = 'gg-chip';
-    a.href = x.href || '#';
-    if (slot === 'labels') {
-      var ic = document.createElement('span');
-      ic.className = 'gg-icon gg-chip__icon';
-      ic.setAttribute('aria-hidden','true');
-      ic.textContent = 'folder_open';
-      a.appendChild(ic);
-    }
-
-    var tx = document.createElement('span');
-    tx.className = 'gg-chip__text';
-    tx.textContent = x.text || '';
-    a.appendChild(tx);
-
-    chipRow.appendChild(a);
-  });
-}
+  function fillChipsToSlot(slot, items, max){
+    var chipRow = qs('[data-gg-slot="'+slot+'"]', panel), list = items || [];
+    if (!chipRow) return;
+    chipRow.innerHTML = '';
+    list.slice(0, max || 12).forEach(function(x){
+      var a = document.createElement('a');
+      a.className = 'gg-chip';
+      a.href = x.href || '#';
+      if (slot === 'labels') {
+        var ic = document.createElement('span');
+        ic.className = 'gg-icon gg-chip__icon';
+        ic.setAttribute('aria-hidden', 'true');
+        ic.textContent = 'folder_open';
+        a.appendChild(ic);
+      }
+      var tx = document.createElement('span');
+      tx.className = 'gg-chip__text';
+      tx.textContent = x.text || '';
+      a.appendChild(tx);
+      chipRow.appendChild(a);
+    });
+  }
 
   function extractLabels(card){
-    var tags = qsa('a[rel="tag"]', card).map(function (a) {
-      return { text: (a.textContent||'').trim(), href: a.getAttribute('href') || '#' };
-    }).filter(function (x) { return x.text; });
+    var tags = qsa('a[rel="tag"]', card).map(function(a){
+      return { text: (a.textContent || '').trim(), href: a.getAttribute('href') || '#' };
+    }).filter(function(x){ return x.text; });
     if (tags.length) return tags;
-    var lab = qs('.gg-post-card__label', card);
-    var t = lab ? (lab.textContent||'').trim() : '';
+    var lab = qs('.gg-post-card__label', card), t = lab ? (lab.textContent || '').trim() : '';
     return t ? [{ text: t, href: '#' }] : [];
   }
 
   function cardHref(card){
-    if (!card) return '#';
-    var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
+    var titleLink = !card ? null : (qs('.gg-post-card__title-link', card) || qs('a[href]', card));
     return titleLink ? (titleLink.getAttribute('href') || '#') : '#';
   }
 
-  function cardKey(card){
-    if (!card) return '';
-    return String(card.getAttribute('data-id') || card.getAttribute('data-url') || '').trim();
-  }
+  function cardKey(card){ return card ? String(card.getAttribute('data-id') || card.getAttribute('data-url') || '').trim() : ''; }
 
   function normalizeReadTimeText(raw){
-    var txt = String(raw || '').replace(/\s+/g, ' ').trim();
+    var txt = String(raw || '').replace(/\s+/g, ' ').trim(), m, mins;
     if (!txt) return '';
-    var m = txt.match(/(\d+)/);
+    m = txt.match(/(\d+)/);
     if (!m) return txt;
-    var mins = Math.max(1, parseInt(m[1], 10) || 1);
+    mins = Math.max(1, parseInt(m[1], 10) || 1);
     return mins + ' min read';
   }
 
   function estimateReadTime(card){
     if (!card) return '1 min read';
-    var inline = qs('[data-slot="readtime"]', card);
-    var inlineText = normalizeReadTimeText(inline ? inline.textContent : '');
+    var inline = qs('[data-slot="readtime"]', card), inlineText = normalizeReadTimeText(inline ? inline.textContent : '');
     if (inlineText) return inlineText;
-    var snippet = qs('.gg-post-card__excerpt', card);
-    var title = qs('.gg-post-card__title-link', card);
-    var text = ((title ? title.textContent : '') + ' ' + (snippet ? snippet.textContent : ''))
-      .replace(/\s+/g, ' ')
-      .trim();
+    var snippet = qs('.gg-post-card__excerpt', card), title = qs('.gg-post-card__title-link', card);
+    var text = ((title ? title.textContent : '') + ' ' + (snippet ? snippet.textContent : '')).replace(/\s+/g, ' ').trim();
     if (!text) return '1 min read';
-    var words = text.split(' ').filter(Boolean).length;
-    var mins = Math.max(1, Math.round(words / WPM));
-    return mins + ' min read';
+    return Math.max(1, Math.round(text.split(' ').filter(Boolean).length / WPM)) + ' min read';
   }
 
   function canHoverPreview(){
     if (!main || !window.matchMedia) return false;
     var surface = main.getAttribute('data-gg-surface') || '';
-    if (surface !== 'home' && surface !== 'feed' && surface !== 'listing') return false;
-    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    return (surface === 'home' || surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   }
 
   function openWithCard(card, trigger, opts){
@@ -3218,31 +3047,23 @@ function fillChipsToSlot(slot, items, max){
     opts = opts || {};
     ensurePanelSkeleton();
     if (trigger) lastTrigger = trigger;
-    if (panel) {
-      panel.__ggPreviewCard = card;
-    }
-
+    if (panel) panel.__ggPreviewCard = card;
     var titleLink = qs('.gg-post-card__title-link', card) || qs('a[href]', card);
-    var title = titleLink ? (titleLink.textContent||'').trim() : '';
-    var href  = cardHref(card);
-
-    var imgSrc = extractThumbSrc(card);
-
-
-    var dateText = (qs('.gg-post-card__date', card)?.textContent || '').trim();
-    var commentsText = (qs('.gg-post-card__meta-item--comments', card)?.textContent || '').trim();
-
-    var labels = extractLabels(card);
-labels = (labels || []).filter(function(x){ return x && x.text; });
-(function(){
-  var seen = Object.create(null);
-  labels = labels.filter(function(x){
-    var k = String(x.text).toLowerCase();
-    if(seen[k]) return false;
-    seen[k] = 1;
-    return true;
-  });
-})();
+    var title = titleLink ? (titleLink.textContent || '').trim() : '';
+    var href = cardHref(card), imgSrc = extractThumbSrc(card);
+    var dateNode = qs('.gg-post-card__date', card), commentsNode = qs('.gg-post-card__meta-item--comments', card);
+    var dateText = (dateNode && dateNode.textContent ? dateNode.textContent : '').trim();
+    var commentsText = (commentsNode && commentsNode.textContent ? commentsNode.textContent : '').trim();
+    var labels = extractLabels(card), seen = Object.create(null), dedup = [], i = 0, item, k = '';
+    for (i = 0; i < labels.length; i++) {
+      item = labels[i];
+      if (!item || !item.text) continue;
+      k = String(item.text).toLowerCase();
+      if (seen[k]) continue;
+      seen[k] = 1;
+      dedup.push(item);
+    }
+    labels = dedup;
 
     setText('.gg-info-panel__hero-title', title);
     setHref('.gg-info-panel__hero-cta', href);
@@ -3251,49 +3072,30 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     setText('.gg-info-panel__readtime', estimateReadTime(card));
     setHref('.gg-info-panel__link', href);
     setImg(imgSrc, title);
-    if(labels && labels.length){
-      fillChipsToSlot('labels', labels, 10);
-      setRowVisible('.gg-info-panel__row--labels', true);
-    }else{
-      setRowVisible('.gg-info-panel__row--labels', false);
-    }
+    setRowVisible('.gg-info-panel__row--labels', !!(labels && labels.length));
+    if (labels && labels.length) fillChipsToSlot('labels', labels, 10);
+
     var excerptEl = qs('.gg-post-card__excerpt', card);
-    var quickSnippet = (excerptEl ? (excerptEl.textContent || '') : '').replace(/\s+/g,' ').trim();
-    if(quickSnippet){
-      setText('.gg-info-panel__snippet', quickSnippet);
-      setRowVisible('.gg-info-panel__row--snippet', true);
-    }else{
-      setText('.gg-info-panel__snippet', '');
-      setRowVisible('.gg-info-panel__row--snippet', false);
-    }
+    var quickSnippet = (excerptEl ? (excerptEl.textContent || '') : '').replace(/\s+/g, ' ').trim();
+    setText('.gg-info-panel__snippet', quickSnippet);
+    setRowVisible('.gg-info-panel__row--snippet', !!quickSnippet);
 
     if (panel) panel.hidden = false;
     setBackdropVisible(true);
-    if (GG.modules.Panels && GG.modules.Panels.setRight) {
-      GG.modules.Panels.setRight('open');
-    } else if (main) {
-      main.setAttribute('data-gg-info-panel', 'open');
-    }
+    if (GG.modules.Panels && GG.modules.Panels.setRight) GG.modules.Panels.setRight('open');
+    else if (main) main.setAttribute('data-gg-info-panel', 'open');
     if (opts.select) {
       selectedCardKey = cardKey(card) || null;
       syncSlotInfoSelected(selectedCardKey);
     }
     updateTocForCard(card, href);
-
-    if (opts.focusPanel !== false) {
-      if (panel && panel.focus) {
-        panel.setAttribute('tabindex', '-1');
-        try { panel.focus({ preventScroll: true }); } catch(_) {}
-      }
+    if (opts.focusPanel !== false && panel && panel.focus) {
+      panel.setAttribute('tabindex', '-1');
+      try { panel.focus({ preventScroll: true }); } catch(_) {}
     }
   }
 
-  function handleClose(){
-    if (GG.modules.Panels && GG.modules.Panels.setRight) {
-      GG.modules.Panels.setRight('closed');
-    } else if (main) {
-      main.setAttribute('data-gg-info-panel', 'closed');
-    }
+  function resetPanelState(){
     if (panel) {
       panel.hidden = true;
       panel.__ggPreviewCard = null;
@@ -3302,10 +3104,6 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     syncSlotInfoSelected(null);
     hoverCardKey = '';
     clearHoverIntent();
-    if (tocIntentTimer) {
-      clearTimeout(tocIntentTimer);
-      tocIntentTimer = 0;
-    }
     setBackdropVisible(false);
     abortToc('');
     renderTocSkeleton(6, TOC_HINT_LOCK);
@@ -3314,16 +3112,19 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     }
   }
 
+  function handleClose(){
+    if (GG.modules.Panels && GG.modules.Panels.setRight) GG.modules.Panels.setRight('closed');
+    else if (main) main.setAttribute('data-gg-info-panel', 'closed');
+    resetPanelState();
+  }
+
   function handlePreviewHover(evt){
     if (!canHoverPreview()) return;
     if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
-    var card = closest(evt.target, '.gg-post-card');
-    if (!card) return;
-    var key = cardKey(card);
-    if (!key) return;
+    var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
+    if (!card || !key) return;
     if (selectedCardKey && selectedCardKey !== key) return;
-    if (key === hoverCardKey) return;
-    if (hoverIntentTimer && key === hoverIntentCardKey) return;
+    if (key === hoverCardKey || (hoverIntentTimer && key === hoverIntentCardKey)) return;
     clearHoverIntent();
     hoverIntentCardKey = key;
     var href = cardHref(card);
@@ -3350,10 +3151,8 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
 
   function handlePreviewFocus(evt){
     if (!canHoverPreview()) return;
-    var card = closest(evt.target, '.gg-post-card');
-    if (!card) return;
-    var key = cardKey(card);
-    if (!key) return;
+    var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
+    if (!card || !key) return;
     if (selectedCardKey && selectedCardKey !== key) return;
     if (key === hoverCardKey) return;
     clearHoverIntent();
@@ -3404,25 +3203,7 @@ labels = (labels || []).filter(function(x){ return x && x.text; });
     if (!closeObserver && main && window.MutationObserver) {
       closeObserver = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
-          if (muts[i].attributeName === 'data-gg-info-panel') {
-            if (main.getAttribute('data-gg-info-panel') === 'closed') {
-              if (panel) panel.hidden = true;
-              selectedCardKey = null;
-              syncSlotInfoSelected(null);
-              hoverCardKey = '';
-              clearHoverIntent();
-              if (tocIntentTimer) {
-                clearTimeout(tocIntentTimer);
-                tocIntentTimer = 0;
-              }
-              setBackdropVisible(false);
-              abortToc('');
-              renderTocSkeleton(6, TOC_HINT_LOCK);
-              if (lastTrigger && typeof lastTrigger.focus === 'function') {
-                try { lastTrigger.focus({ preventScroll: true }); } catch(_) {}
-              }
-            }
-          }
+          if (muts[i].attributeName === 'data-gg-info-panel' && main.getAttribute('data-gg-info-panel') === 'closed') resetPanelState();
         }
       });
       closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-panel'] });
