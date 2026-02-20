@@ -472,8 +472,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "b483f5a";
-    const TEMPLATE_ALLOWED_RELEASES = ["b483f5a","17db74e"];
+    const WORKER_VERSION = "292a6a7";
+    const TEMPLATE_ALLOWED_RELEASES = ["292a6a7","b483f5a"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
