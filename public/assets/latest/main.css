@@ -1925,7 +1925,6 @@ a.gg-search-assist__item > small{
   flex: 0 0 72px;
   width: 72px;
   height: 72px;
-  aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
   background: var(--gg-mixed-thumb-bg);
