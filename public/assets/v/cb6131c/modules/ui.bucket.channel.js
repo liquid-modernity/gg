@@ -164,67 +164,94 @@
       .then(parseFeedEntries);
   }
 
-  function cardHtml(item, ratioClass, extraClass){
-    var klass = 'gg-label-channel__card ' + (extraClass || '');
-    var thumbClass = 'gg-label-channel__thumb ' + ratioClass;
-    var img = item.thumb ? '<img alt="" decoding="async" loading="lazy" src="' + esc(item.thumb) + '"/>' : '';
-    var ago = asTimeLabel(item.published || '');
-    return (
-      '<a class="' + esc(klass.trim()) + '" href="' + esc(item.url) + '">' +
-        '<span class="' + esc(thumbClass.trim()) + '">' + img + '</span>' +
-        '<span class="gg-label-channel__meta">' +
-          '<span class="gg-label-channel__titleline">' + esc(item.title || '') + '</span>' +
-          '<span class="gg-label-channel__time">' + esc(ago || 'recently') + '</span>' +
-        '</span>' +
-      '</a>'
-    );
+  function clearNode(el){
+    if (!el) return;
+    el.textContent = '';
   }
-  function skeletonCard(ratioClass, extraClass){
-    var klass = 'gg-label-channel__card gg-label-channel__card--skeleton ' + (extraClass || '');
-    return (
-      '<article class="' + esc(klass.trim()) + '" aria-hidden="true">' +
-        '<span class="gg-label-channel__thumb ' + esc(ratioClass) + '"></span>' +
-        '<span class="gg-label-channel__meta">' +
-          '<span class="gg-label-channel__titleline"></span>' +
-          '<span class="gg-label-channel__time"></span>' +
-        '</span>' +
-      '</article>'
-    );
+  function make(tag, className, text){
+    var el = d.createElement(tag);
+    if (className) el.className = className;
+    if (typeof text === 'string') el.textContent = text;
+    return el;
+  }
+  function makeCardNode(item, ratioClass, extraClass){
+    var card = make('a', ('gg-label-channel__card ' + (extraClass || '')).trim());
+    var thumb = make('span', ('gg-label-channel__thumb ' + ratioClass).trim());
+    var meta = make('span', 'gg-label-channel__meta');
+    var title = make('span', 'gg-label-channel__titleline', String((item && item.title) || ''));
+    var time = make('span', 'gg-label-channel__time', asTimeLabel(item && item.published || '') || 'recently');
+    var img;
+    card.href = String((item && item.url) || '#');
+    if (item && item.thumb) {
+      img = d.createElement('img');
+      img.alt = '';
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.src = String(item.thumb);
+      thumb.appendChild(img);
+    }
+    meta.appendChild(title);
+    meta.appendChild(time);
+    card.appendChild(thumb);
+    card.appendChild(meta);
+    return card;
+  }
+  function makeSkeletonNode(ratioClass, extraClass){
+    var card = make('article', ('gg-label-channel__card gg-label-channel__card--skeleton ' + (extraClass || '')).trim());
+    var thumb = make('span', 'gg-label-channel__thumb ' + ratioClass);
+    var meta = make('span', 'gg-label-channel__meta');
+    card.setAttribute('aria-hidden', 'true');
+    meta.appendChild(make('span', 'gg-label-channel__titleline'));
+    meta.appendChild(make('span', 'gg-label-channel__time'));
+    card.appendChild(thumb);
+    card.appendChild(meta);
+    return card;
+  }
+  function makeSection(title){
+    var section = make('div', 'gg-label-channel__section');
+    if (title) section.appendChild(make('p', 'gg-label-channel__subhead', title));
+    return section;
   }
 
   function renderSkeleton(body, mode){
+    var section;
+    var rail;
+    var masonry;
+    var i;
+    var y;
+    var s;
+    var k;
+    var mod;
     if (!body) return;
+    clearNode(body);
     if (mode === 'podcast') {
-      var p = [];
-      for (var i = 0; i < CHANNEL_COUNTS.podcast; i++) p.push(skeletonCard('gg-label-channel__thumb--sq'));
-// @gg-allow-html-in-js LEGACY:LEGACY-0005
-      body.innerHTML = '<div class="gg-label-channel__section"><div class="gg-label-channel__rail">' + p.join('') + '</div></div>';
+      section = makeSection('');
+      rail = make('div', 'gg-label-channel__rail');
+      for (i = 0; i < CHANNEL_COUNTS.podcast; i++) rail.appendChild(makeSkeletonNode('gg-label-channel__thumb--sq'));
+      section.appendChild(rail);
+      body.appendChild(section);
       return;
     }
     if (mode === 'videos') {
-      var yt = [];
-      var sh = [];
-      for (var y = 0; y < CHANNEL_COUNTS.youtube; y++) yt.push(skeletonCard('gg-label-channel__thumb--yt'));
-      for (var s = 0; s < CHANNEL_COUNTS.shorts; s++) sh.push(skeletonCard('gg-label-channel__thumb--short'));
-// @gg-allow-html-in-js LEGACY:LEGACY-0006
-      body.innerHTML =
-        '<div class="gg-label-channel__section">' +
-          '<p class="gg-label-channel__subhead">YOUTUBEISH</p>' +
-          '<div class="gg-label-channel__rail">' + yt.join('') + '</div>' +
-        '</div>' +
-        '<div class="gg-label-channel__section">' +
-          '<p class="gg-label-channel__subhead">SHORTISH</p>' +
-          '<div class="gg-label-channel__rail">' + sh.join('') + '</div>' +
-        '</div>';
+      section = makeSection('YOUTUBEISH');
+      rail = make('div', 'gg-label-channel__rail');
+      for (y = 0; y < CHANNEL_COUNTS.youtube; y++) rail.appendChild(makeSkeletonNode('gg-label-channel__thumb--yt'));
+      section.appendChild(rail);
+      body.appendChild(section);
+
+      section = makeSection('SHORTISH');
+      rail = make('div', 'gg-label-channel__rail');
+      for (s = 0; s < CHANNEL_COUNTS.shorts; s++) rail.appendChild(makeSkeletonNode('gg-label-channel__thumb--short'));
+      section.appendChild(rail);
+      body.appendChild(section);
       return;
     }
-    var m = [];
-    for (var k = 0; k < CHANNEL_COUNTS.photography; k++) {
-      var mod = (k % 5 === 0) ? 'gg-label-channel__card--tall' : '';
-      m.push(skeletonCard('gg-label-channel__thumb--photo', mod));
+    masonry = make('div', 'gg-label-channel__masonry');
+    for (k = 0; k < CHANNEL_COUNTS.photography; k++) {
+      mod = (k % 5 === 0) ? 'gg-label-channel__card--tall' : '';
+      masonry.appendChild(makeSkeletonNode('gg-label-channel__thumb--photo', mod));
     }
-// @gg-allow-html-in-js LEGACY:LEGACY-0007
-    body.innerHTML = '<div class="gg-label-channel__masonry">' + m.join('') + '</div>';
+    body.appendChild(masonry);
   }
 
   function resolveVideos(items){
@@ -237,51 +264,63 @@
   }
 
   function renderMode(body, mode, items){
+    var podcast;
+    var split;
+    var photos;
+    var section;
+    var rail;
+    var masonry;
+    var idx;
+    var mod;
     if (!body) return 0;
+    clearNode(body);
     if (mode === 'podcast') {
-      var podcast = cap(items, CHANNEL_COUNTS.podcast);
-// @gg-allow-html-in-js LEGACY:LEGACY-0008
-      body.innerHTML =
-        '<div class="gg-label-channel__section">' +
-          '<div class="gg-label-channel__rail">' +
-            podcast.map(function(it){ return cardHtml(it, 'gg-label-channel__thumb--sq'); }).join('') +
-          '</div>' +
-        '</div>';
+      podcast = cap(items, CHANNEL_COUNTS.podcast);
+      section = makeSection('');
+      rail = make('div', 'gg-label-channel__rail');
+      for (idx = 0; idx < podcast.length; idx++) {
+        rail.appendChild(makeCardNode(podcast[idx], 'gg-label-channel__thumb--sq'));
+      }
+      section.appendChild(rail);
+      body.appendChild(section);
       return podcast.length;
     }
     if (mode === 'videos') {
-      var split = resolveVideos(items);
-// @gg-allow-html-in-js LEGACY:LEGACY-0009
-      body.innerHTML =
-        '<div class="gg-label-channel__section">' +
-          '<p class="gg-label-channel__subhead">YOUTUBEISH</p>' +
-          '<div class="gg-label-channel__rail">' +
-            split.youtube.map(function(it){ return cardHtml(it, 'gg-label-channel__thumb--yt'); }).join('') +
-          '</div>' +
-        '</div>' +
-        '<div class="gg-label-channel__section">' +
-          '<p class="gg-label-channel__subhead">SHORTISH</p>' +
-          '<div class="gg-label-channel__rail">' +
-            split.shorts.map(function(it){ return cardHtml(it, 'gg-label-channel__thumb--short'); }).join('') +
-          '</div>' +
-        '</div>';
+      split = resolveVideos(items);
+      section = makeSection('YOUTUBEISH');
+      rail = make('div', 'gg-label-channel__rail');
+      for (idx = 0; idx < split.youtube.length; idx++) {
+        rail.appendChild(makeCardNode(split.youtube[idx], 'gg-label-channel__thumb--yt'));
+      }
+      section.appendChild(rail);
+      body.appendChild(section);
+
+      section = makeSection('SHORTISH');
+      rail = make('div', 'gg-label-channel__rail');
+      for (idx = 0; idx < split.shorts.length; idx++) {
+        rail.appendChild(makeCardNode(split.shorts[idx], 'gg-label-channel__thumb--short'));
+      }
+      section.appendChild(rail);
+      body.appendChild(section);
       return split.youtube.length + split.shorts.length;
     }
-    var photos = cap((items || []).filter(function(it){ return !it.isVideo; }), CHANNEL_COUNTS.photography);
+    photos = cap((items || []).filter(function(it){ return !it.isVideo; }), CHANNEL_COUNTS.photography);
     if (!photos.length) photos = cap(items, CHANNEL_COUNTS.photography);
-// @gg-allow-html-in-js LEGACY:LEGACY-0010
-    body.innerHTML =
-      '<div class="gg-label-channel__masonry">' +
-        photos.map(function(it, idx){
-          var mod = (idx % 5 === 0) ? 'gg-label-channel__card--tall' : '';
-          return cardHtml(it, 'gg-label-channel__thumb--photo', mod);
-        }).join('') +
-      '</div>';
+    masonry = make('div', 'gg-label-channel__masonry');
+    for (idx = 0; idx < photos.length; idx++) {
+      mod = (idx % 5 === 0) ? 'gg-label-channel__card--tall' : '';
+      masonry.appendChild(makeCardNode(photos[idx], 'gg-label-channel__thumb--photo', mod));
+    }
+    body.appendChild(masonry);
     return photos.length;
   }
 
   function ensureHost(main, root, mode, label){
     var host = d.getElementById('gg-label-channel');
+    var header;
+    var title;
+    var body;
+    var error;
     if (!host) {
       host = d.createElement('section');
       host.id = 'gg-label-channel';
@@ -290,14 +329,19 @@
     }
     host.setAttribute('data-gg-mode', mode);
     host.setAttribute('data-gg-label', label);
-// @gg-allow-html-in-js LEGACY:LEGACY-0011
-    host.innerHTML =
-      '<header class="gg-label-channel__hd">' +
-        '<p class="gg-label-channel__kicker">CHANNEL</p>' +
-        '<h2 class="gg-label-channel__title">' + esc(label) + '</h2>' +
-      '</header>' +
-      '<div class="gg-label-channel__body" data-role="body"></div>' +
-      '<p class="gg-label-channel__error" data-role="error" hidden>Channel feed is unavailable.</p>';
+    clearNode(host);
+    header = make('header', 'gg-label-channel__hd');
+    header.appendChild(make('p', 'gg-label-channel__kicker', 'CHANNEL'));
+    title = make('h2', 'gg-label-channel__title', String(label || ''));
+    header.appendChild(title);
+    body = make('div', 'gg-label-channel__body');
+    body.setAttribute('data-role', 'body');
+    error = make('p', 'gg-label-channel__error', 'Channel feed is unavailable.');
+    error.setAttribute('data-role', 'error');
+    error.setAttribute('hidden', 'hidden');
+    host.appendChild(header);
+    host.appendChild(body);
+    host.appendChild(error);
     if (main) {
       main.setAttribute('data-gg-label-mode', mode);
       main.setAttribute('data-gg-label-key', norm(label));
@@ -371,4 +415,3 @@
 
   M.init = M.init || init;
 })(window.GG = window.GG || {}, window, document);
-

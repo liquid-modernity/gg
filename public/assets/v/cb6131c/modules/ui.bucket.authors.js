@@ -65,8 +65,7 @@ function splitSlugs(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,s=''; i
 function renderPeople(slot,rows,role){
 var list=rows||[],i=0,row=null,name='',href='',a=null,av=null,meta=null,pn=null,pr=null;
 if(!slot) return;
-// @gg-allow-html-in-js LEGACY:LEGACY-0003
-slot.innerHTML='';
+slot.textContent='';
 for(i=0;i<list.length;i++){
 row=list[i]||{};
 name=clean(row.name||'');
@@ -112,8 +111,7 @@ if(contribSec) contribSec.hidden=contribRows.length===0;
 
 GG.modules.postInfoTags = GG.modules.postInfoTags || {};
 function parseTags(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,key='',text=''; if(!src) return out; parts=src.split(/\s*,\s*/); for(i=0;i<parts.length;i++){ text=clean(parts[i]); key=tagSlugify(text); if(!key||seen[key]) continue; seen[key]=1; out.push({ key:key, text:text||key, href:tagHref(key) }); } return out; }
-// @gg-allow-html-in-js LEGACY:LEGACY-0004
-function renderTags(slot,rows){ var list=rows||[],i=0,row=null,name='',href='',a=null; if(!slot) return; slot.innerHTML=''; for(i=0;i<list.length;i++){ row=list[i]||{}; name=clean(row.text||row.name||''); href=clean(row.href||''); if(!name) continue; a=d.createElement('a'); a.className='gg-pi__chip'; a.href=href||'#'; a.textContent=name; slot.appendChild(a); } }
+function renderTags(slot,rows){ var list=rows||[],i=0,row=null,name='',href='',a=null; if(!slot) return; slot.textContent=''; for(i=0;i<list.length;i++){ row=list[i]||{}; name=clean(row.text||row.name||''); href=clean(row.href||''); if(!name) continue; a=d.createElement('a'); a.className='gg-pi__chip'; a.href=href||'#'; a.textContent=name; slot.appendChild(a); } }
 GG.modules.postInfoTags.init = function(root){
 var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,metaNode=null,slot=null,sec=null,svc=GG.services&&GG.services.tagsDir?GG.services.tagsDir:null;
 var tags=[],raw='',m=[],i=0,token=0;
@@ -135,4 +133,3 @@ svc.resolveMany(tags).then(function(rows){ if(!info||info.__ggTagsToken!==token)
 };
 })(window.GG=window.GG||{},window,document);
 })(window);
-
