@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-A11Y-TAP-TARGETS-20260221: Enforce 44px minimum tap targets and add regression guardrail verifier.
+- TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221: Reduce legacy HTML-in-JS debt in channel/mixed/authors and tighten allowlist ratchet to <=30.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 6b2bad6
+RELEASE_ID: 3b01c55
 RELEASE_HISTORY:
+- 3b01c55
 - 6b2bad6
-- 994c185
-PROD_PINNED_JS: /assets/v/6b2bad6/main.js
-PROD_PINNED_APP: /assets/v/6b2bad6/app.js
-PROD_PINNED_CSS: /assets/v/6b2bad6/main.css
+PROD_PINNED_JS: /assets/v/3b01c55/main.js
+PROD_PINNED_APP: /assets/v/3b01c55/app.js
+PROD_PINNED_CSS: /assets/v/3b01c55/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
+- TASK-A11Y-HITAREA-VERIFY-AND-SWEEP-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-A11Y-TAP-TARGETS-20260221 updated critical interactive controls to `--gg-tap-min` (44px), added tap-target verifier, and wired it into `gate:prod`.
+- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221 migrated channel/authors low-hanging HTML-in-JS to DOM APIs, removed 9 legacy IDs, and tightened max_allow to 28.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

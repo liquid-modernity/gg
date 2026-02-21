@@ -1872,3 +1872,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate realigned release artifacts to new RELEASE_ID after CSS and gate wiring updates
 - RISKS: low/med; strict live smoke remains network-dependent in sandbox
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
+
+---
+
+## 2026-02-21 — TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221 — Channel/Mixed/Authors low-hanging migration
+- DATE: 2026-02-21
+- TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
+- TITLE: Phase4 reduce HTML-in-JS debt (channel/mixed/authors) + tighten ratchet
+- MODE (DEV/PROD impact): JS refactor + guardrail verifier + allowlist/ratchet tightening + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: migrate low-hanging `innerHTML` usage in channel/authors to DOM APIs, keep mixed complex callsites allowlisted for phase5, add trivial-pattern phase4 verifier, wire gate, reduce allowlist to <=30
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.channel.js; public/assets/latest/modules/ui.bucket.authors.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-phase4-no-trivial-htmljs.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-phase4-no-trivial-htmljs.mjs; node tools/verify-no-new-html-in-js.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): phase4 trivial verifier PASS; no-new-html-in-js PASS; legacy ratchet PASS; gate:prod PASS (offline smoke fallback in sandbox); gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): allowlist dropped from 37 to 28 by removing LEGACY-0003..0011; mixed module complex rendering left for next phase
+- RISKS: low/med; manual 5-minute listing/authors/panel sanity still required in real browser
+- NEXT: TASK-A11Y-HITAREA-VERIFY-AND-SWEEP-20260221

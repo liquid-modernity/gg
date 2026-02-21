@@ -29,69 +29,6 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0003",
-      "file": "public/assets/latest/modules/ui.bucket.authors.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0004",
-      "file": "public/assets/latest/modules/ui.bucket.authors.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0005",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0006",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0007",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0008",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0009",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0010",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0011",
-      "file": "public/assets/latest/modules/ui.bucket.channel.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0012",
       "file": "public/assets/latest/modules/ui.bucket.cmd.js",
       "pattern": "innerHTML\\s*=",
@@ -274,5 +211,5 @@
       "introduced_by": "baseline"
     }
   ],
-  "max_allow": 37
+  "max_allow": 28
 }

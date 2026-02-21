@@ -1,31 +1,45 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-A11Y-TAP-TARGETS-20260221
-TITLE: Enforce 44px tap targets for interactive controls
+TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
+TITLE: Phase4 reduce HTML-in-JS debt (channel/mixed/authors) + tighten ratchet
 
 SUMMARY
-- Enforced `--gg-tap-min` (44px) as minimum interactive hit target on known undersized controls in `public/assets/latest/main.css`.
-- Added static guardrail `tools/verify-tap-targets.mjs` to prevent regressions.
-- Wired tap-target verifier into `tools/gate-prod.sh` after icon-control verifier.
-- Added manual QA checklist document `docs/a11y/TAP_TARGETS_SWEEP.md`.
+- Migrated low-hanging HTML-in-JS in `ui.bucket.channel.js` and `ui.bucket.authors.js` to DOM API rendering (`createElement`, `textContent`, `appendChild`) and removed corresponding legacy annotations.
+- Kept complex `ui.bucket.mixed.js` rendering callsites for next phase (still allowlisted) to avoid broad behavior risk in this task.
+- Added phase4 guardrail verifier `tools/verify-phase4-no-trivial-htmljs.mjs` and wired it into `tools/gate-prod.sh`.
+- Tightened allowlist ratchet to `max_allow=28`.
 
-SELECTORS FIXED
-- `.gg-tree-toggle`
-- `.gg-post-card__tool`
-- `.gg-post__tool`
-- `.gg-lt__collapse`
-- `.gg-lt__panelbtn`
-- `.gg-pi__toggle`
-- `.gg-toc__toggle`
-- `.gg-share-sheet__close-btn`
-- `nav.gg-dock .gg-dock__search input`
+TARGET IDS (BEFORE CHANGES)
+- `public/assets/latest/modules/ui.bucket.authors.js`
+  - LEGACY-0001, LEGACY-0002, LEGACY-0003, LEGACY-0004
+- `public/assets/latest/modules/ui.bucket.channel.js`
+  - LEGACY-0005, LEGACY-0006, LEGACY-0007, LEGACY-0008, LEGACY-0009, LEGACY-0010, LEGACY-0011
+- `public/assets/latest/modules/ui.bucket.mixed.js`
+  - LEGACY-0065, LEGACY-0066, LEGACY-0067, LEGACY-0068, LEGACY-0069, LEGACY-0070
+
+ALLOWLIST COUNT
+- Before: `37`
+- After: `28`
+- `max_allow`: `28`
+
+IDS REMOVED
+- LEGACY-0003
+- LEGACY-0004
+- LEGACY-0005
+- LEGACY-0006
+- LEGACY-0007
+- LEGACY-0008
+- LEGACY-0009
+- LEGACY-0010
+- LEGACY-0011
 
 FILES CHANGED
-- public/assets/latest/main.css
-- tools/verify-tap-targets.mjs
+- public/assets/latest/modules/ui.bucket.channel.js
+- public/assets/latest/modules/ui.bucket.authors.js
+- docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
+- tools/verify-phase4-no-trivial-htmljs.mjs
 - tools/gate-prod.sh
-- docs/a11y/TAP_TARGETS_SWEEP.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
@@ -35,39 +49,35 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-tap-targets.mjs`
+- `node tools/verify-phase4-no-trivial-htmljs.mjs`
 ```text
-PASS: tap targets contract (44px)
+PASS: phase4 trivial htmljs blocked
+```
+
+- `node tools/verify-no-new-html-in-js.mjs`
+```text
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
+```
+
+- `node tools/verify-legacy-allowlist-ratchet.mjs`
+```text
+VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
 VERIFY_ROUTE_A11Y_CONTRACT: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=37 allowlisted_matches=37 violations=0
-VERIFY_SEARCH_NO_INNERHTML: PASS
-VERIFY_SKIP_LINK_CONTRACT: PASS
-VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=68 labeled=68 unlabeledSuspects=0
-PASS: tap targets contract (44px)
-VERIFY_PALETTE_NOT_MODAL: PASS
-VERIFY_MODAL_OPEN_CLOSE_PARITY: PASS modalOpen=3 modalClose=6
-VERIFY_OVERLAY_MODAL_CONTRACT: PASS
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
+PASS: phase4 trivial htmljs blocked
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
-VERIFY_NO_INNERHTML_CLEAR: PASS
-PASS: verify-panels-inert-safety
-PASS: verify-smooth-scroll-policy
-VERIFY_AUTHORS_DIR_CONTRACT: PASS
-VERIFY_SITEMAP_PAGE_CONTRACT: PASS
-VERIFY_TAGS_DIR_CONTRACT: PASS
-VERIFY_ROUTER_CONTRACT: PASS
-VERIFY_UI_GUARDRAILS: PASS
 VERIFY_TEMPLATE_NO_NESTED_INTERACTIVES: PASS
 VERIFY_TEMPLATE_CONTRACT: PASS
 VERIFY_TEMPLATE_FINGERPRINT: PASS
 VERIFY_BUDGETS: PASS
 VERIFY_INLINE_CSS: PASS
 VERIFY_CRP: PASS
-PASS: palette a11y contract (mode=repo, release=6b2bad6)
+PASS: palette a11y contract (mode=repo, release=3b01c55)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
@@ -75,12 +85,14 @@ PASS: gate:prod
 ADDITIONAL VERIFY
 - `bash tools/gate-release.sh`
 ```text
-PASS: tap targets contract (44px)
+PASS: phase4 trivial htmljs blocked
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
+VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
 NOTES
-- `gate:prod` aligned artifacts to `RELEASE_ID=6b2bad6`.
-- `gate-release` strict live smoke failed due DNS/network resolution in sandbox environment.
+- `gate:prod` realigned release artifacts to `RELEASE_ID=3b01c55` after task changes.
+- `gate-release` strict live smoke fails in this sandbox due DNS/network resolution, while local contract verifiers pass.
