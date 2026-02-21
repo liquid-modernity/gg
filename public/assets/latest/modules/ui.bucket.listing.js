@@ -714,6 +714,7 @@
 
     function addTile(item){
       ensureCols();
+      var k = state.queue.length;
 
       var yt = (item.type === "youtube") || isYT(item);
       var isShort = yt && String(item.media || "").indexOf("/shorts/") !== -1;
@@ -742,7 +743,21 @@
       var shade = mk("div", "shade");
       var thumbWrap = mk("div", "thumb");
       var img = mk("img");
-      img.loading = "lazy";
+      img.decoding = "async";
+      img.setAttribute("sizes", "(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw");
+      if (k === 0) {
+        img.loading = "eager";
+        img.setAttribute("fetchpriority", "high");
+        if ("fetchPriority" in img) img.fetchPriority = "high";
+      } else if (k === 1) {
+        img.loading = "eager";
+        img.setAttribute("fetchpriority", "auto");
+        if ("fetchPriority" in img) img.fetchPriority = "auto";
+      } else {
+        img.loading = "lazy";
+        img.setAttribute("fetchpriority", "auto");
+        if ("fetchPriority" in img) img.fetchPriority = "auto";
+      }
       img.alt = title;
       img.src = thumb;
       thumbWrap.appendChild(img);

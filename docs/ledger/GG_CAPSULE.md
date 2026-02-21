@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-SHORTCODES-A11Y-POLISH-20260221: Polish ShortcodesV2 outputs for keyboard + screen reader semantics (yt-lite labels/keyboard + accordion aria-controls/hidden sync) with guardrail verifier.
+- TASK-PERF-IMAGE-LCP-POLICY-20260221: Prioritize listing LCP candidate image loading and enforce deterministic image performance policy via guardrail verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: f109652
+RELEASE_ID: e95d010
 RELEASE_HISTORY:
-- f109652
-- 7c99ea3
-PROD_PINNED_JS: /assets/v/f109652/main.js
-PROD_PINNED_APP: /assets/v/f109652/app.js
-PROD_PINNED_CSS: /assets/v/f109652/main.css
+- e95d010
+- c73cd7a
+PROD_PINNED_JS: /assets/v/e95d010/main.js
+PROD_PINNED_APP: /assets/v/e95d010/app.js
+PROD_PINNED_CSS: /assets/v/e95d010/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-IMAGE-LQIP-STRATEGY-20260222
+- TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-SHORTCODES-A11Y-POLISH-20260221 updated shortcode templates + ShortcodesV2 binder to enforce yt-lite keyboard activation/accessible labels and accordion aria-controls+hidden sync, then added `verify-shortcodes-a11y-contract` to gate.
+- 2026-02-21 TASK-PERF-IMAGE-LCP-POLICY-20260221 applied image LCP loading/fetchpriority policy in listing and mixed modules, added `verify-image-perf-policy`, wired gate, and documented `docs/perf/IMAGE_POLICY.md`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

@@ -2094,3 +2094,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): first pass failed budgets; trimmed ShortcodesV2 binder implementation to stay under `ui.bucket.core.js` raw/gzip limits while preserving required a11y behavior
 - RISKS: low/med; manual 5-minute keyboard/SR sanity still required on real browser for yt-lite activation and accordion expanded/collapsed announcement
 - NEXT: TASK-PERF-IMAGE-LQIP-STRATEGY-20260222
+
+## 2026-02-21 — TASK-PERF-IMAGE-LCP-POLICY-20260221 — Image LCP loading policy + guardrails
+- DATE: 2026-02-21
+- TASK_ID: TASK-PERF-IMAGE-LCP-POLICY-20260221
+- TITLE: Prioritize LCP candidate image (eager + fetchpriority) + deterministic verifier
+- MODE (DEV/PROD impact): listing/mixed image attribute policy + verifier + gate wiring + perf policy docs
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: enforce first-tile eager/high policy in listing, apply conservative mixed first-thumb eager policy, add image perf verifier, wire into `gate:prod`, and document contract
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/modules/ui.bucket.mixed.js; tools/verify-image-perf-policy.mjs; tools/gate-prod.sh; docs/perf/IMAGE_POLICY.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-image-perf-policy.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): image-perf-policy PASS; gate:prod PASS (offline smoke fallback in sandbox); budgets PASS with updated listing payload size under limits
+- NOTES (gotchas): gate realigned release artifacts to `e95d010` during verification before final commit
+- RISKS: low/med; manual Lighthouse before/after and tap-through sanity still needed for real LCP impact validation
+- NEXT: TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260222

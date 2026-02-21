@@ -38,6 +38,7 @@ run node tools/verify-search-no-innerhtml.mjs
 run node tools/verify-skip-link-contract.mjs
 run node tools/verify-icon-controls-a11y.mjs
 run node tools/verify-tap-targets.mjs
+run node tools/verify-image-perf-policy.mjs
 run node tools/verify-palette-not-modal.mjs
 run node tools/verify-modal-open-close-parity.mjs
 run node tools/verify-overlay-modal-contract.mjs

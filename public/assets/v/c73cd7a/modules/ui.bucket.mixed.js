@@ -11,6 +11,7 @@
   var globalPayload = null;
   var globalFetchPromise = null;
   var labelFetchPromises = Object.create(null);
+  var mixedThumbLeadUsed = false;
 
   function esc(v) {
     return String(v || '').replace(/[&<>"']/g, function(ch){
@@ -646,7 +647,14 @@
     var img = createEl('img');
     img.setAttribute('alt', '');
     img.setAttribute('decoding', 'async');
-    img.setAttribute('loading', 'lazy');
+    if (!mixedThumbLeadUsed) {
+      img.setAttribute('loading', 'eager');
+      img.setAttribute('fetchpriority', 'auto');
+      mixedThumbLeadUsed = true;
+    } else {
+      img.setAttribute('loading', 'lazy');
+      img.setAttribute('fetchpriority', 'auto');
+    }
     img.setAttribute('src', src);
     thumb.appendChild(img);
   }
