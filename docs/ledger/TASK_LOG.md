@@ -1566,3 +1566,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): verify:release may require build realignment when GG_CAPSULE text changes
 - RISKS: low/med; smoke can fail on live release mismatch until deployment catches up
 - NEXT: run deploy pipeline to publish aligned release and recheck strict live smoke
+
+---
+
+## 2026-02-21 — TASK-AUTHORS-DIR-20260221 — Authors directory datasource contract
+- DATE: 2026-02-21
+- TASK_ID: TASK-AUTHORS-DIR-20260221
+- TITLE: Add /p/author.html datasource contract + verifier
+- MODE (DEV/PROD impact): docs + verifiers + CI/deploy gate + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN (cd8a289)
+- SCOPE: source template for authors dir, verifier implementation, suite wiring, ledger updates
+- CHANGES (files touched): docs/pages/p-author.html; tools/verify-authors-dir-contract.mjs; package.json; .github/workflows/ci.yml; .github/workflows/deploy.yml; tools/gate-prod.sh; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): node tools/verify-authors-dir-contract.mjs; npm run verify:release; ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:release; npm run verify:assets; node tools/verify-template-contract.mjs; node tools/verify-router-contract.mjs; node tools/verify-budgets.mjs; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs; SMOKE_LIVE_HTML=1 tools/smoke.sh; SMOKE_EXPECT=live SMOKE_LIVE_HTML=1 tools/smoke.sh; SMOKE_ALLOW_OFFLINE_FALLBACK=1 SMOKE_LIVE_HTML=1 tools/smoke.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify suite passed except strict live smoke (release mismatch before deploy and intermittent DNS in sandbox); offline fallback smoke passed
+- NOTES (gotchas): verify:release initially failed due release alignment drift and required build realignment
+- RISKS: low/med; live smoke in sandbox is not stable due DNS/network and undeployed release mismatch
+- NEXT: deploy release cd8a289, then rerun strict smoke in network-enabled environment

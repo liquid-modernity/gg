@@ -1,30 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-DIST-AUDIT-20260221
-TITLE: Enforce gg-audit distribution contract
+TASK_ID: TASK-AUTHORS-DIR-20260221
+TITLE: Authors dir datasource contract + verifier
 
 TASK_SUMMARY
-- Tetapkan kontrak distribusi resmi bahwa handoff/share hanya boleh lewat `dist/gg-audit.zip` hasil `npm run zip:audit`.
-- Tambah dokumentasi kontrak distribusi yang singkat dan tegas.
-- Perbarui handoff ledger agar instruksi distribusi tidak ambigu.
-- Tambah guardrail CI pada workflow deploy: build + upload artifact `dist/gg-audit.zip`.
-- Konfirmasi script `zip:audit` sudah ada di `package.json` dan tetap dipakai sebagai jalur tunggal.
+- Tambah source template `docs/pages/p-author.html` untuk kontrak datasource `/p/author.html`.
+- Pastikan template memuat `#gg-authors-dir` (JSON datasource) dan fallback `<ul>` crawlable.
+- Minimal mandatory data dipenuhi: `pakrpp -> /p/pak-rpp.html`.
+- Tambah verifier `tools/verify-authors-dir-contract.mjs` untuk validasi JSON + key wajib + kontrak href.
+- Wire verifier ke suite verify (`package.json`, CI, deploy workflow, gate-prod script).
+- Update ledger (`GG_CAPSULE`, `TASK_LOG`, `TASK_REPORT`).
 
 CHANGES
-- docs/release/DISTRIBUTION.md
-- docs/ledger/NEW_ROOM_HANDOFF.md
+- docs/pages/p-author.html
+- tools/verify-authors-dir-contract.mjs
+- package.json
+- .github/workflows/ci.yml
 - .github/workflows/deploy.yml
+- tools/gate-prod.sh
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/* (release bumped by build for verify:release alignment)
+- public/assets/v/* (release alignment from build)
 
 VERIFICATION EVIDENCE (manual)
-- `npm run verify:release` -> FAIL (expected release changed after GG_CAPSULE update) -> fixed by `ALLOW_DIRTY_RELEASE=1 npm run build`
+- `node tools/verify-authors-dir-contract.mjs` -> PASS
+- `npm run verify:release` -> FAIL (release drift after metadata updates) -> fixed by `ALLOW_DIRTY_RELEASE=1 npm run build`
 - `npm run verify:release` -> PASS
 - `npm run verify:assets` -> PASS
 - `node tools/verify-template-contract.mjs` -> PASS
@@ -32,10 +37,10 @@ VERIFICATION EVIDENCE (manual)
 - `node tools/verify-budgets.mjs` -> PASS
 - `node tools/verify-inline-css.mjs` -> PASS
 - `node tools/verify-crp.mjs` -> PASS
-- `SMOKE_LIVE_HTML=1 tools/smoke.sh` -> FAIL (sandbox DNS: `Could not resolve host: www.pakrpp.com`)
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh` -> FAIL (strict expected release `cd8a289`, live worker still `3f9a7f9`)
+- `SMOKE_EXPECT=live SMOKE_LIVE_HTML=1 tools/smoke.sh` -> FAIL (sandbox DNS: `Could not resolve host: www.pakrpp.com`)
 - `SMOKE_ALLOW_OFFLINE_FALLBACK=1 SMOKE_LIVE_HTML=1 tools/smoke.sh` -> PASS (offline fallback)
-- `npm run zip:audit` -> FAIL before commit by design (clean-tree guardrail); rerun on clean tree after commit for distribution output
 
 RISKS / ROLLBACK
-- Risk: low/med; release lokal sudah `3f9a7f9` sementara live verification dari sandbox terbatas karena DNS/network.
-- Rollback: revert commit ini untuk mengembalikan kontrak distribusi, workflow artifact, dan ledger.
+- Risk: low/med; live smoke strict belum hijau karena release live belum sejalan dan DNS/network sandbox intermittent.
+- Rollback: revert commit task ini untuk kembali ke state sebelum kontrak authors dir ditambahkan.
