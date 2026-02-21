@@ -181,6 +181,20 @@ function titleFromUrl(url){
 }
 return { update: update, titleFromUrl: titleFromUrl };
 })();
+function parseHtmlDoc(html,url){
+if(!html) return null;
+var MAX=2*1024*1024;
+if(String(html).length>MAX) return null;
+try{
+if(url){
+var u=new URL(url,w.location&&w.location.href?w.location.href:'');
+if(u.origin!==(w.location&&w.location.origin?w.location.origin:'')) return null;
+}
+}catch(_){}
+if(!w.DOMParser) return null;
+// @gg-allow-html-in-js LEGACY:LEGACY-0013
+return new DOMParser().parseFromString(String(html),'text/html');
+}
 GG.core.render = GG.core.render || (function(){
 function fail(code, info){
   var err = new Error('render-failed');
@@ -231,10 +245,7 @@ function rehydrateComments(root){
 }
 function apply(html, url){
   if (!html) throw fail('empty', { url: url });
-  if (!w.DOMParser) throw fail('parser', { url: url });
-// @gg-allow-html-in-js LEGACY:LEGACY-0013
-  var parser = new w.DOMParser();
-  var doc = parser.parseFromString(html, 'text/html');
+  var doc = parseHtmlDoc(html, url);
   if (!doc) throw fail('parse', { url: url });
   var source = findTarget(doc);
   var target = findTarget(w.document);
@@ -2724,11 +2735,11 @@ function init(){
     fetch(next, { credentials: 'same-origin' })
       .then(function(res){
         if(!res.ok) throw new Error('Request failed');
-        return res.text();
+        return res.text().then(function(html){ return { html: html, url: res.url || next }; });
       })
-      .then(function(html){
-// @gg-allow-html-in-js LEGACY:LEGACY-0022
-        var doc = new DOMParser().parseFromString(html, 'text/html');
+      .then(function(payload){
+        var doc = parseHtmlDoc(payload && payload.html, (payload && payload.url) || next);
+        if(!doc) throw new Error('Parse failed');
         var nodes = extractPosts(doc);
         if(nodes.length) appendPosts(nodes);
         if(updateNext(doc)){
@@ -3073,8 +3084,7 @@ function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.i
 function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[]; out._t=Date.now(); tocCache[key]=out; pruneToc(out._t); }
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0027
-function parseHeadingItems(html,sourceUrl){ if(!html||!window.DOMParser) return []; var doc=new DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'),metaNode=doc.querySelector('.gg-postmeta'),out=[],headings,max=0,tags=[],contributors=[],updated='',readTime='',author=''; if(metaNode){ tags=parseTagItems(metaNode.getAttribute('data-tags')||''); author=authorSlug(metaNode.getAttribute('data-author')||''); contributors=splitSlugs(metaNode.getAttribute('data-contributors')||'',/\s*;\s*/).filter(function(s){ return s&&s!==author; }); updated=parseIsoDate(metaNode.getAttribute('data-updated')||''); } readTime=calcReadTime(root); out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime }; if(!root) return out; headings=root.querySelectorAll('h2, h3, h4'); max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
+function parseHeadingItems(html,sourceUrl){ var doc=parseHtmlDoc(html,sourceUrl); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'),metaNode=doc.querySelector('.gg-postmeta'),out=[],headings,max=0,tags=[],contributors=[],updated='',readTime='',author=''; if(metaNode){ tags=parseTagItems(metaNode.getAttribute('data-tags')||''); author=authorSlug(metaNode.getAttribute('data-author')||''); contributors=splitSlugs(metaNode.getAttribute('data-contributors')||'',/\s*;\s*/).filter(function(s){ return s&&s!==author; }); updated=parseIsoDate(metaNode.getAttribute('data-updated')||''); } readTime=calcReadTime(root); out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime }; if(!root) return out; headings=root.querySelectorAll('h2, h3, h4'); max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
 
 function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
 function clearHoverIntent(){ if(hoverIntentTimer){ clearTimeout(hoverIntentTimer); hoverIntentTimer = 0; } hoverIntentCardKey = ''; }

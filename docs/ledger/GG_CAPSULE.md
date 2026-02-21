@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-REMOVE-DOMPARSER-AUTHORS-20260221: Replace authors/tags DOMParser parsing with regex JSON-script extraction + JSON.parse and tighten allowlist ratchet to 3.
+- TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221: Centralize core DOMParser parsing into one budgeted/same-origin helper and tighten allowlist ratchet to 1.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 7a7c4cc
+RELEASE_ID: 6491208
 RELEASE_HISTORY:
-- 7a7c4cc
-- c66c5d1
-PROD_PINNED_JS: /assets/v/7a7c4cc/main.js
-PROD_PINNED_APP: /assets/v/7a7c4cc/app.js
-PROD_PINNED_CSS: /assets/v/7a7c4cc/main.css
+- 6491208
+- 9f54660
+PROD_PINNED_JS: /assets/v/6491208/main.js
+PROD_PINNED_APP: /assets/v/6491208/app.js
+PROD_PINNED_CSS: /assets/v/6491208/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-REMOVE-DOMPARSER-CORE-20260221
+- TASK-SHORTCODES-A11Y-POLISH-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-REMOVE-DOMPARSER-AUTHORS-20260221 removed LEGACY-0001/0002 by replacing authors/tags DOMParser usage with regex extraction of JSON script blocks + JSON.parse, and set allowlist `max_allow=3`.
+- 2026-02-21 TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221 removed LEGACY-0022/0027 by centralizing HTML parsing into `parseHtmlDoc(html,url)` with 2MB size budget + same-origin expectation, leaving only LEGACY-0013 and setting `max_allow=1`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

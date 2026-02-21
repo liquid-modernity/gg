@@ -23,6 +23,7 @@ run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
 run node tools/verify-route-a11y-contract.mjs
 run node tools/verify-core-swap-no-innerhtml.mjs
+run node tools/verify-core-domparser-singleton.mjs
 run node tools/verify-core-panel-no-innerhtml.mjs
 run node tools/verify-comments-gate-no-innerhtml.mjs
 run node tools/verify-shortcodes-no-innerhtml.mjs

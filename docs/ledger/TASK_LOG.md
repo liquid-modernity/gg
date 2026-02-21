@@ -2062,3 +2062,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): parser now validates `authors.pakrpp.href` and falls back gracefully if JSON script missing/invalid; gate realigned release assets to 7a7c4cc
 - RISKS: low/med; manual 3-minute author/tag directory sanity still required in browser
 - NEXT: TASK-REMOVE-DOMPARSER-CORE-20260221
+
+## 2026-02-21 — TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221 — Centralize core DOMParser to singleton
+- DATE: 2026-02-21
+- TASK_ID: TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221
+- TITLE: Centralize DOMParser parsing (singleton + safety budget) + tighten ratchet
+- MODE (DEV/PROD impact): core parser hardening + singleton verifier + allowlist ratchet tightening
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add central `parseHtmlDoc(html,url)` helper with 2MB size budget and same-origin expectation, replace remaining two core DOMParser callsites, and enforce single-callsite contract
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-core-domparser-singleton.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-core-domparser-singleton.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): core-domparser-singleton PASS; legacy ratchet PASS (`allow=1`, `max_allow=1`); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): DOMParser call now centralized in `parseHtmlDoc`; load-more and heading parsing now call helper; gate realigned release assets to 6491208
+- RISKS: low/med; manual load-more and heading-list sanity still required in browser
+- NEXT: TASK-SHORTCODES-A11Y-POLISH-20260221
