@@ -4362,14 +4362,11 @@ GG.core.commentsGate = GG.core.commentsGate || (function(){
       btn.setAttribute('aria-disabled', 'true');
     }
     var frag = null;
-    if (tpl && tpl.content) {
-      frag = tpl.content.cloneNode(true);
-    } else if (tpl) {
-      var tmp = d.createElement('div');
-// @gg-allow-html-in-js LEGACY:LEGACY-0035
-      tmp.innerHTML = tpl.innerHTML || '';
-      frag = d.createDocumentFragment();
-      while (tmp.firstChild) frag.appendChild(tmp.firstChild);
+    if (tpl) {
+      var tmp=d.createElement('div'),nodes=[].slice.call((tpl.content&&tpl.content.childNodes)||tpl.childNodes||[]),i=0;
+      tmp.textContent='';
+      for(;i<nodes.length;i++) tmp.appendChild(nodes[i].cloneNode(true));
+      frag=d.createDocumentFragment(); while(tmp.firstChild) frag.appendChild(tmp.firstChild);
     }
     if (tpl && tpl.parentNode) tpl.parentNode.removeChild(tpl);
     if (gate && gate.parentNode) gate.parentNode.removeChild(gate);

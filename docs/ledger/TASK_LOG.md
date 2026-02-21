@@ -2014,3 +2014,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): no `panel.innerHTML` remains in panels/infopanel skeleton region; gate realigned release assets to b13d129 in current tree state
 - RISKS: low/med; manual 2-minute panel open/focus-trap sanity still required in real browser
 - NEXT: TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221
+
+## 2026-02-21 — TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221 — Comments gate template clone without innerHTML
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221
+- TITLE: Clone comments gate template without innerHTML + tighten ratchet
+- MODE (DEV/PROD impact): core comments gate refactor + verifier guardrail + allowlist ratchet tightening
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove LEGACY-0035 by replacing `tmp.innerHTML = tpl.innerHTML` in comments gate with node-clone flow from `tpl.content`/`tpl.childNodes`, add dedicated verifier, wire into gate, and reduce allowlist count
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-comments-gate-no-innerhtml.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-comments-gate-no-innerhtml.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): comments-gate verifier PASS; allowlist ratchet PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): comments gate now clones template child nodes directly without HTML string parsing
+- RISKS: low/med; manual 3-minute comments sanity still required in real browser
+- NEXT: TASK-PHASE8-SHORTCODES-STRATEGY-20260222

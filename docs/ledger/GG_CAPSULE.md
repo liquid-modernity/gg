@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221: Replace editorial panel skeleton `panel.innerHTML` template with DOM builder and tighten allowlist ratchet to 8.
+- TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221: Replace comments gate `tmp.innerHTML = tpl.innerHTML` with safe template node cloning and tighten allowlist ratchet to 7.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: b13d129
+RELEASE_ID: c690b35
 RELEASE_HISTORY:
-- b13d129
-- 5f8ed20
-PROD_PINNED_JS: /assets/v/b13d129/main.js
-PROD_PINNED_APP: /assets/v/b13d129/app.js
-PROD_PINNED_CSS: /assets/v/b13d129/main.css
+- c690b35
+- b3db62b
+PROD_PINNED_JS: /assets/v/c690b35/main.js
+PROD_PINNED_APP: /assets/v/c690b35/app.js
+PROD_PINNED_CSS: /assets/v/c690b35/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221
+- TASK-PHASE8-SHORTCODES-STRATEGY-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221 replaced editorial panel skeleton template `panel.innerHTML` with DOM nodes, removed LEGACY-0024, and set allowlist `max_allow=8`.
+- 2026-02-21 TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221 replaced comments gate template copy `tmp.innerHTML = tpl.innerHTML` with cloned nodes from `tpl.content`/`tpl.childNodes`, removed LEGACY-0035, and set allowlist `max_allow=7`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
