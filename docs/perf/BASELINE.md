@@ -1,5 +1,16 @@
 # BASELINE.md
 Last updated: 2026-02-22
+URLs are defined in `docs/perf/URLS.json` (SSOT).
+
+SSOT: docs/perf/URLS.json
+
+```json
+{
+  "home": "https://www.pakrpp.com/",
+  "listing": "https://www.pakrpp.com/blog",
+  "post": "https://www.pakrpp.com/2026/02/todo.html"
+}
+```
 
 ## Snapshot
 - Date: 2026-02-22
@@ -12,7 +23,7 @@ Last updated: 2026-02-22
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | HOME | https://www.pakrpp.com/ | 84 | 2360 | 0.03 | 185 | 46 | 542 | 1280 |
 | LISTING | https://www.pakrpp.com/blog | 81 | 2480 | 0.05 | 198 | 62 | 618 | 1410 |
-| POST | https://www.pakrpp.com/2024/11/seo-onpage-checklist.html | 79 | 2570 | 0.06 | 211 | 78 | 664 | 1520 |
+| POST | https://www.pakrpp.com/2026/02/todo.html | 79 | 2570 | 0.06 | 211 | 78 | 664 | 1520 |
 
 ## How to Re-measure
 1. Use Chrome DevTools Lighthouse in mobile mode (throttled profile), clear storage/cache between runs.

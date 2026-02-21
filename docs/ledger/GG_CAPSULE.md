@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-AUTOMEASURE-CI-20260222: Add live Lighthouse CI workflow with budget assertions, summary, and artifact retention.
+- TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222: Enforce URL SSOT across BASELINE and Lighthouse CI config with drift verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: b674e4f
+RELEASE_ID: ae3084f
 RELEASE_HISTORY:
+- ae3084f
 - b674e4f
-- bf87521
-PROD_PINNED_JS: /assets/v/b674e4f/main.js
-PROD_PINNED_APP: /assets/v/b674e4f/app.js
-PROD_PINNED_CSS: /assets/v/b674e4f/main.css
+PROD_PINNED_JS: /assets/v/ae3084f/main.js
+PROD_PINNED_APP: /assets/v/ae3084f/app.js
+PROD_PINNED_CSS: /assets/v/ae3084f/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-BASELINE-SYNC-URLS-20260222
+- TASK-PERF-TREND-ARTIFACTS-20260222
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-AUTOMEASURE-CI-20260222 added live Lighthouse workflow, lighthouserc budget assertions, summary tool, and perf workflow contract verifier.
+- 2026-02-22 TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222 introduced docs/perf/URLS.json as SSOT (`urls.*`), baseline URL sync, and verifier guardrail.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

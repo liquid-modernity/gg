@@ -30,4 +30,5 @@ Last updated: 2026-02-22
 
 ## URL Governance
 - URLs are sourced from `docs/perf/URLS.json` (single source).
+- Lighthouse config (`lighthouse/lighthouserc.ci.js`) reads `docs/perf/URLS.json` only (key: `urls.home|urls.listing|urls.post`).
 - Update URLs only via explicit perf task and keep them in sync with `docs/perf/BASELINE.md`.

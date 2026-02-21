@@ -6,32 +6,19 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const budgetsPath = path.join(root, "docs/perf/BUDGETS.json");
 const urlsPath = path.join(root, "docs/perf/URLS.json");
-const baselinePath = path.join(root, "docs/perf/BASELINE.md");
 
 function readJson(absPath) {
   const raw = fs.readFileSync(absPath, "utf8");
   return JSON.parse(raw);
 }
 
-function parseUrlsFromBaseline(absPath) {
-  const raw = fs.readFileSync(absPath, "utf8");
-  const found = {};
-  const rowRe = /^\|\s*(HOME|LISTING|POST)\s*\|\s*(https?:\/\/[^\s|]+)\s*\|/gim;
-  let m;
-  while ((m = rowRe.exec(raw))) {
-    const key = String(m[1] || "").toLowerCase();
-    found[key] = String(m[2] || "").trim();
-  }
-  return [found.home, found.listing, found.post].filter(Boolean);
-}
-
 function getUrls() {
-  if (fs.existsSync(urlsPath)) {
-    const payload = readJson(urlsPath);
-    const surfaces = payload && payload.surfaces ? payload.surfaces : {};
-    return [surfaces.home, surfaces.listing, surfaces.post].filter(Boolean);
+  if (!fs.existsSync(urlsPath)) {
+    throw new Error("Missing docs/perf/URLS.json");
   }
-  return parseUrlsFromBaseline(baselinePath);
+  const payload = readJson(urlsPath);
+  const urls = payload && payload.urls ? payload.urls : {};
+  return [urls.home, urls.listing, urls.post].filter(Boolean);
 }
 
 const budgets = readJson(budgetsPath);
@@ -39,7 +26,7 @@ const ratchet = (budgets && budgets.ratchet) || {};
 const urls = getUrls();
 
 if (!urls.length) {
-  throw new Error("No Lighthouse URLs found (docs/perf/URLS.json or BASELINE.md)");
+  throw new Error("No Lighthouse URLs found in docs/perf/URLS.json");
 }
 
 module.exports = {

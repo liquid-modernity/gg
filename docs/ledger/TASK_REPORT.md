@@ -1,27 +1,24 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-PERF-AUTOMEASURE-CI-20260222
-TITLE: Add Lighthouse CI live perf workflow + summary + artifacts
+TASK_ID: TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222
+TITLE: Add URLS SSOT and enforce baseline/CI alignment
 
 SUMMARY
-- Added live Lighthouse CI workflow with deterministic triggers:
-  - `workflow_run` after deploy workflow (`Deploy to Cloudflare Workers`) completes successfully on `main`
-  - daily `schedule` (02:30 Asia/Jakarta)
-  - `workflow_dispatch` manual run
-- Added Lighthouse CI config that reads hard ceilings from `docs/perf/BUDGETS.json` and URLs from `docs/perf/URLS.json`.
-- Added summary generator that parses `.lighthouseci/*.report.json` and writes markdown table to stdout + GitHub Step Summary.
-- Added optional temporary public storage upload step for quick links, while keeping `.lighthouseci` artifact upload as source-of-truth evidence.
-- Added verifier contract and wired it into `gate:prod`.
+- Converted `docs/perf/URLS.json` into strict SSOT schema using `urls.home`, `urls.listing`, and `urls.post`.
+- Updated `docs/perf/BASELINE.md` to explicitly declare SSOT and include the exact URLs from `URLS.json`.
+- Updated `lighthouse/lighthouserc.ci.js` to read `docs/perf/URLS.json` only (removed BASELINE fallback parsing).
+- Added `tools/verify-perf-urls-ssot.mjs` to fail on drift across URLS/BASELINE/LHCI config.
+- Wired SSOT verifier into `tools/gate-prod.sh`.
+- Updated `docs/perf/CI_LIGHTHOUSE.md` with SSOT usage guidance.
 
 FILES CHANGED
-- .github/workflows/perf-lighthouse.yml
+- docs/perf/URLS.json
+- docs/perf/BASELINE.md
 - lighthouse/lighthouserc.ci.js
-- tools/perf/lhci-summary.mjs
-- tools/verify-perf-workflow-contract.mjs
+- tools/verify-perf-urls-ssot.mjs
 - tools/gate-prod.sh
 - docs/perf/CI_LIGHTHOUSE.md
-- docs/perf/URLS.json
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
@@ -30,15 +27,10 @@ FILES CHANGED
 - src/worker.js
 - public/assets/v/<RELEASE_ID>/*
 
-TRIGGER CONTRACT
-- `workflow_run`: references exact deploy workflow name `Deploy to Cloudflare Workers`.
-- `schedule`: `30 19 * * *` UTC (02:30 Asia/Jakarta).
-- `workflow_dispatch`: manual ad-hoc run.
-
 VERIFICATION OUTPUTS
-- `node tools/verify-perf-workflow-contract.mjs`
+- `node tools/verify-perf-urls-ssot.mjs`
 ```text
-VERIFY_PERF_WORKFLOW_CONTRACT: PASS
+PASS: perf URLs SSOT aligned
 ```
 
 - `npm run gate:prod`
@@ -46,11 +38,11 @@ VERIFY_PERF_WORKFLOW_CONTRACT: PASS
 VERIFY_RULEBOOKS: PASS
 VERIFY_RELEASE_ALIGNED: PASS
 VERIFY_PERF_WORKFLOW_CONTRACT: PASS
+PASS: perf URLs SSOT aligned
 VERIFY_BUDGETS: PASS
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-MANUAL NOTES
-- Live Lighthouse execution is performed by GitHub Actions workflow on live URLs.
-- Local sandbox cannot resolve live DNS in this environment, so live-run proof is produced in CI artifacts/summary.
+NOTES
+- `docs/perf/URLS.json` post URL is now pinned to `https://www.pakrpp.com/2026/02/todo.html` per SSOT contract for baseline and CI.

@@ -2222,3 +2222,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): Lighthouse URLs now sourced from `docs/perf/URLS.json`; workflow includes optional temporary-public-storage upload but source-of-truth remains artifact + step summary
 - RISKS: low/med; live Lighthouse can still be noisy despite 3-run median strategy
 - NEXT: TASK-PERF-BASELINE-SYNC-URLS-20260222
+
+## 2026-02-22 — TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222 — Perf URLs SSOT alignment
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222
+- TITLE: Add URLS SSOT and enforce baseline/CI alignment
+- MODE (DEV/PROD impact): perf contract/docs/CI config guardrails only
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: make `docs/perf/URLS.json` the single source for perf URLs, force BASELINE and LHCI config alignment, and add drift verifier wired to gate
+- CHANGES (files touched): docs/perf/URLS.json; docs/perf/BASELINE.md; lighthouse/lighthouserc.ci.js; tools/verify-perf-urls-ssot.mjs; tools/gate-prod.sh; docs/perf/CI_LIGHTHOUSE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-perf-urls-ssot.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: pending on next workflow run
+- DEPLOY STATUS: no deploy change in this task
+- VERIFY (URLs + expected): perf-urls-ssot PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): lighthouserc fallback parsing from BASELINE removed; SSOT now strict via URLS.json (`urls.home/listing/post`)
+- RISKS: low; stable post URL in SSOT must be maintained to avoid CI measurement failures
+- NEXT: TASK-PERF-TREND-ARTIFACTS-20260222
