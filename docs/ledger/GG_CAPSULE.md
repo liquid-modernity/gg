@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221: Remove all search innerHTML writes and tighten legacy allowlist ratchet.
+- TASK-TEMPLATE-INVALID-NESTING-FIX-20260221: Remove invalid nested interactive elements in Blogger templates and enforce with verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 5bae869
+RELEASE_ID: 0a516a5
 RELEASE_HISTORY:
-- 5bae869
-- f2b2580
-PROD_PINNED_JS: /assets/v/5bae869/main.js
-PROD_PINNED_APP: /assets/v/5bae869/app.js
-PROD_PINNED_CSS: /assets/v/5bae869/main.css
+- 0a516a5
+- e89e449
+PROD_PINNED_JS: /assets/v/0a516a5/main.js
+PROD_PINNED_APP: /assets/v/0a516a5/app.js
+PROD_PINNED_CSS: /assets/v/0a516a5/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-TEMPLATE-INVALID-NESTING-FIX-20260221
+- TASK-A11Y-CLICK-TARGETS-TOUCH-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221 refactored search listbox rendering to DOM APIs, removed LEGACY-0073..0077, and tightened max_allow=37.
+- 2026-02-21 TASK-TEMPLATE-INVALID-NESTING-FIX-20260221 replaced dock Store link/button nesting with single anchor in `index.dev.xml` and `index.prod.xml`, plus added template nesting verifier in gate.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

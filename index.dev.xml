@@ -3320,12 +3320,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='gg-dock__label'>Home (Blog Page)</span>
   </button>
   
-  <a href='https://pakrpp.com/p/shop.html'> <button aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-dock-action='1' type='button'>
-  <span aria-hidden='true' class='gg-dock__icon'>
-    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>local_mall</span>
-  </span>
+  <a aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-dock-action='1' href='https://pakrpp.com/p/shop.html'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>local_mall</span>
+    </span>
     <span class='gg-dock__label'>Store</span>
-  </button></a>
+  </a>
 
   <!-- SEARCH: muncul di semua mode -->
   <button aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-dock-action='1' type='button'>

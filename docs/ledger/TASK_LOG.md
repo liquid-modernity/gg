@@ -1836,3 +1836,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): initial gate failed because `verify-palette-a11y` expected literal option-role token; fixed via static contract marker while keeping DOM-only rendering
 - RISKS: low/med; manual 3-minute search keyboard sanity still required on real browser session
 - NEXT: TASK-TEMPLATE-INVALID-NESTING-FIX-20260221
+
+---
+
+## 2026-02-21 — TASK-TEMPLATE-INVALID-NESTING-FIX-20260221 — Template interactive nesting guardrail
+- DATE: 2026-02-21
+- TASK_ID: TASK-TEMPLATE-INVALID-NESTING-FIX-20260221
+- TITLE: Remove invalid nested interactive elements
+- MODE (DEV/PROD impact): template markup fix + verifier guardrail + gate wiring + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove nested interactive elements (`a > button` / `button > a`) in `index.prod.xml` and `index.dev.xml`, add static verifier, wire into `gate:prod`
+- CHANGES (files touched): index.prod.xml; index.dev.xml; tools/verify-template-no-nested-interactives.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-template-no-nested-interactives.mjs; npm run gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): nested-interactives verifier PASS; gate:prod PASS (offline smoke fallback); gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): one existing prod template change had removed Blog1 `numPosts`; restored minimal required setting to satisfy guardrail contract without changing unrelated behavior
+- RISKS: low/med; strict live smoke remains network-dependent in sandbox
+- NEXT: TASK-A11Y-CLICK-TARGETS-TOUCH-20260221
