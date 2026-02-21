@@ -45,6 +45,12 @@ Forbidden:
 - `innerHTML`, `insertAdjacentHTML`, HTML template strings containing `<...>`
 - Injecting CSS rules (creating `<style>`, `style.textContent = ...`, CSS-in-JS)
 
+Legacy exception (explicit):
+- Legacy HTML-in-JS is allowed ONLY if listed in `docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json` + annotated.
+- Every allowed legacy occurrence must have a comment on the same line or immediately above:
+  - `// @gg-allow-html-in-js LEGACY:<ID>`
+- No `<ID>`, no pass.
+
 Allowed:
 - Toggle classes/state (`.gg-is-*`) and set `data-gg-*` attributes
 - Clone `<template id="gg-tpl-*">` that is defined in XML

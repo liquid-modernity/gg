@@ -197,6 +197,7 @@
     if (mode === 'podcast') {
       var p = [];
       for (var i = 0; i < CHANNEL_COUNTS.podcast; i++) p.push(skeletonCard('gg-label-channel__thumb--sq'));
+// @gg-allow-html-in-js LEGACY:LEGACY-0005
       body.innerHTML = '<div class="gg-label-channel__section"><div class="gg-label-channel__rail">' + p.join('') + '</div></div>';
       return;
     }
@@ -205,6 +206,7 @@
       var sh = [];
       for (var y = 0; y < CHANNEL_COUNTS.youtube; y++) yt.push(skeletonCard('gg-label-channel__thumb--yt'));
       for (var s = 0; s < CHANNEL_COUNTS.shorts; s++) sh.push(skeletonCard('gg-label-channel__thumb--short'));
+// @gg-allow-html-in-js LEGACY:LEGACY-0006
       body.innerHTML =
         '<div class="gg-label-channel__section">' +
           '<p class="gg-label-channel__subhead">YOUTUBEISH</p>' +
@@ -221,6 +223,7 @@
       var mod = (k % 5 === 0) ? 'gg-label-channel__card--tall' : '';
       m.push(skeletonCard('gg-label-channel__thumb--photo', mod));
     }
+// @gg-allow-html-in-js LEGACY:LEGACY-0007
     body.innerHTML = '<div class="gg-label-channel__masonry">' + m.join('') + '</div>';
   }
 
@@ -237,6 +240,7 @@
     if (!body) return 0;
     if (mode === 'podcast') {
       var podcast = cap(items, CHANNEL_COUNTS.podcast);
+// @gg-allow-html-in-js LEGACY:LEGACY-0008
       body.innerHTML =
         '<div class="gg-label-channel__section">' +
           '<div class="gg-label-channel__rail">' +
@@ -247,6 +251,7 @@
     }
     if (mode === 'videos') {
       var split = resolveVideos(items);
+// @gg-allow-html-in-js LEGACY:LEGACY-0009
       body.innerHTML =
         '<div class="gg-label-channel__section">' +
           '<p class="gg-label-channel__subhead">YOUTUBEISH</p>' +
@@ -264,6 +269,7 @@
     }
     var photos = cap((items || []).filter(function(it){ return !it.isVideo; }), CHANNEL_COUNTS.photography);
     if (!photos.length) photos = cap(items, CHANNEL_COUNTS.photography);
+// @gg-allow-html-in-js LEGACY:LEGACY-0010
     body.innerHTML =
       '<div class="gg-label-channel__masonry">' +
         photos.map(function(it, idx){
@@ -284,6 +290,7 @@
     }
     host.setAttribute('data-gg-mode', mode);
     host.setAttribute('data-gg-label', label);
+// @gg-allow-html-in-js LEGACY:LEGACY-0011
     host.innerHTML =
       '<header class="gg-label-channel__hd">' +
         '<p class="gg-label-channel__kicker">CHANNEL</p>' +
@@ -364,3 +371,4 @@
 
   M.init = M.init || init;
 })(window.GG = window.GG || {}, window, document);
+

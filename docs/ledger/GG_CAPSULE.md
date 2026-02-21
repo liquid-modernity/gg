@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221: Reduced-motion aware scroll behavior (single a11y policy helper).
+- TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221: Guardrail baseline for legacy HTML-in-JS with audited allowlist.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 31989ef
+RELEASE_ID: 705e9bf
 RELEASE_HISTORY:
-- 31989ef
-- 0496644
-PROD_PINNED_JS: /assets/v/31989ef/main.js
-PROD_PINNED_APP: /assets/v/31989ef/app.js
-PROD_PINNED_CSS: /assets/v/31989ef/main.css
+- 705e9bf
+- 45a1bed
+PROD_PINNED_JS: /assets/v/705e9bf/main.js
+PROD_PINNED_APP: /assets/v/705e9bf/app.js
+PROD_PINNED_CSS: /assets/v/705e9bf/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
+- TASK-HTML-IN-JS-MIGRATION-PHASE1-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221 all smooth-scroll callsites now honor reduced motion via GG.services.a11y.scrollBehavior()
+- 2026-02-21 TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221 verifier+allowlist baseline blocks unannotated HTML-in-JS growth
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

@@ -232,6 +232,7 @@ function rehydrateComments(root){
 function apply(html, url){
   if (!html) throw fail('empty', { url: url });
   if (!w.DOMParser) throw fail('parser', { url: url });
+// @gg-allow-html-in-js LEGACY:LEGACY-0013
   var parser = new w.DOMParser();
   var doc = parser.parseFromString(html, 'text/html');
   if (!doc) throw fail('parse', { url: url });
@@ -280,6 +281,7 @@ function apply(html, url){
     }catch(e){}
   }
   var doSwap = function(){
+// @gg-allow-html-in-js LEGACY:LEGACY-0014
     target.innerHTML = source.innerHTML;
     if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
       try { GG.ui.layout.sync(doc, url); } catch (_) {}
@@ -705,6 +707,7 @@ ui.skeleton.markup = ui.skeleton.markup || '' +
 '</div>';
 ui.skeleton.render = ui.skeleton.render || function(target){
 if(!target) return;
+// @gg-allow-html-in-js LEGACY:LEGACY-0015
 target.innerHTML = ui.skeleton.markup;
 };
 ui.layout = ui.layout || {};
@@ -1180,6 +1183,7 @@ function setLoading(slot, on){
   if (on){
     if (slot.__ggLoading) return;
     slot.__ggLoading = true;
+// @gg-allow-html-in-js LEGACY:LEGACY-0016
     slot.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Loading comments...</div>";
   } else {
     slot.__ggLoading = false;
@@ -1197,6 +1201,7 @@ function mount(){
 
   if (src.parentNode !== slot){
     setLoading(slot, false);
+// @gg-allow-html-in-js LEGACY:LEGACY-0017
     slot.innerHTML = '';
     slot.appendChild(src);
   } else {
@@ -1230,6 +1235,7 @@ function mountWithRetry(){
     if (tries >= max) {
       var s = ensureSlot();
       if (s){
+// @gg-allow-html-in-js LEGACY:LEGACY-0018
         s.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Comments are not available right now.</div>";
       }
       return;
@@ -1977,10 +1983,12 @@ function renderFooterTags(article){
   var tags = collectTags(article);
   if(!tags.length){
     slot.hidden = true;
+// @gg-allow-html-in-js LEGACY:LEGACY-0019
     slot.innerHTML = '';
     return;
   }
   slot.hidden = false;
+// @gg-allow-html-in-js LEGACY:LEGACY-0020
   slot.innerHTML = '';
   tags.slice(0, 16).forEach(function(tag){
     var chip = document.createElement('a');
@@ -2125,6 +2133,7 @@ btn.type = 'button';
 btn.className = 'gg-post__tool gg-post__action--poster';
 btn.setAttribute('data-gg-postbar', 'poster');
 btn.setAttribute('aria-label', 'Share as Poster');
+// @gg-allow-html-in-js LEGACY:LEGACY-0021
 btn.innerHTML = '<span aria-hidden="true" class="gg-icon material-symbols-rounded">image</span>';
 if (shareBtn && shareBtn.parentNode) {
   shareBtn.parentNode.insertBefore(btn, shareBtn.nextSibling);
@@ -2607,6 +2616,7 @@ function init(){
         return res.text();
       })
       .then(function(html){
+// @gg-allow-html-in-js LEGACY:LEGACY-0022
         var doc = new DOMParser().parseFromString(html, 'text/html');
         var nodes = extractPosts(doc);
         if(nodes.length) appendPosts(nodes);
@@ -2693,6 +2703,7 @@ function init(){
     };
   });
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0023
   feed.innerHTML = '';
   feed.classList.add('gg-pp__track');
   items.forEach(function(data){
@@ -2817,6 +2828,7 @@ if (!panel) return;
 if (qs('.gg-editorial-preview', panel)) return;
 function row(id, icon, label, value, hidden){ return '<div class="gg-epanel__row" data-row="'+id+'"'+(hidden?' hidden':'')+'><span class="gg-icon gg-epanel__icon" aria-hidden="true">'+icon+'</span><div class="gg-epanel__cell"><dt class="gg-epanel__label">'+label+'</dt><dd class="gg-epanel__value">'+value+'</dd></div></div>'; }
 var rows=[row('title','article','Title','<a data-s="title" href="#"></a>'),row('author','person','Written by','<a data-s="author-link" href="#"><span data-s="author"></span></a>'),row('contributors','groups','Contributor by','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="contributors"></div>',true),row('labels','label','Label','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="labels"></div>',true),row('tags','sell','Tags','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="tags"></div>',true),row('date','calendar_today','Date','<span data-s="date"></span>'),row('updated','event_repeat','Updated','<span data-s="updated"></span>',true),row('comments','comment','Comments','<span data-s="comments"></span>'),row('readtime','schedule','Read time','<span data-s="readtime"></span>'),row('snippet','text_snippet','Snippet','<span data-s="snippet"></span>',true),row('toc','toc','Table of Contents','<div class="gg-epanel__value--toc"><ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol><p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p></div>')].join('');
+// @gg-allow-html-in-js LEGACY:LEGACY-0024
 panel.innerHTML = '<div class="gg-info-panel__card gg-editorial-preview gg-epanel"><div class="gg-epanel__head"><span class="gg-epanel__eyebrow">Editorial Preview</span></div><div class="gg-epanel__media"><img class="gg-info-panel__thumb-img" alt=""/></div><div class="gg-epanel__body gg-info-panel__details"><dl class="gg-epanel__rows">'+rows+'</dl></div><div class="gg-epanel__foot"><a class="gg-info-panel__hero-cta gg-epanel__cta" href="#"><span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span><span>Read this post</span></a></div></div>';
 renderTocSkeleton(6, TOC_HINT_LOCK);
 }
@@ -2879,7 +2891,9 @@ hint.textContent = text;
 hint.hidden = !text;
 }
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0025
 function renderTocSkeleton(count, hint){ var list=qs('[data-gg-slot="toc"]', panel),n=parseInt(count,10),i=0,li,row,line; if(!list) return; if(!isFinite(n)||n<1) n=6; if(n>8) n=8; list.innerHTML=''; for(;i<n;i++){ li=document.createElement('li'); li.className='gg-info-panel__tocitem gg-info-panel__tocitem--skeleton'; row=document.createElement('span'); row.className='gg-info-panel__toclink'; line=document.createElement('span'); line.className='gg-info-panel__tocline'; row.appendChild(line); li.appendChild(row); list.appendChild(li); } setTocHint(hint||''); }
+// @gg-allow-html-in-js LEGACY:LEGACY-0026
 function renderTocItems(items){ var list=qs('[data-gg-slot="toc"]', panel),rows=Array.isArray(items)?items:[],i=0,item,li,level,link,num,text; if(!list) return; list.innerHTML=''; if(!rows.length){ setTocHint('No headings found.'); return; } for(;i<rows.length;i++){ item=rows[i]||{}; li=document.createElement('li'); level=parseInt(item.level,10); if(!isFinite(level)||level<2) level=2; if(level>4) level=4; li.className='gg-info-panel__tocitem gg-info-panel__toclvl-'+level; link=document.createElement('a'); link.className='gg-info-panel__toclink'; link.href=item.href||'#'; num=document.createElement('span'); num.className='gg-info-panel__tocnum'; num.textContent=String(i+1).padStart(2,'0'); text=document.createElement('span'); text.className='gg-info-panel__toctext'; text.textContent=item.text||'Section'; link.appendChild(num); link.appendChild(text); li.appendChild(link); list.appendChild(li); } setTocHint(''); }
 
 function toAbsUrl(raw){ try { return new URL(String(raw || ''), window.location.href).toString(); } catch (_) { return ''; } }
@@ -2890,6 +2904,7 @@ function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.i
 function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[]; out._t=Date.now(); tocCache[key]=out; pruneToc(out._t); }
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0027
 function parseHeadingItems(html,sourceUrl){ if(!html||!window.DOMParser) return []; var doc=new DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'),metaNode=doc.querySelector('.gg-postmeta'),out=[],headings,max=0,tags=[],contributors=[],updated='',readTime='',author=''; if(metaNode){ tags=parseTagItems(metaNode.getAttribute('data-tags')||''); author=authorSlug(metaNode.getAttribute('data-author')||''); contributors=splitSlugs(metaNode.getAttribute('data-contributors')||'',/\s*;\s*/).filter(function(s){ return s&&s!==author; }); updated=parseIsoDate(metaNode.getAttribute('data-updated')||''); } readTime=calcReadTime(root); out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime }; if(!root) return out; headings=root.querySelectorAll('h2, h3, h4'); max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
 
 function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
@@ -2925,6 +2940,7 @@ function prefetchToc(href){ return resolveTocItems(href, { abortOthers: true }).
 function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var key=tocCacheKey(href),abs=toAbsUrl(href),cached; if(!key||!abs){ renderTocSkeleton(6,'Unable to open.'); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return items||[]; }).catch(function(){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)) renderTocSkeleton(6,'Open article for headings.'); return []; }); }
 function updateTocForCard(card, href){ if(!card||!href){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(href),cached; if(!key){ abortToc(''); renderTocSkeleton(6,'Unable to open.'); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,'Loading headings...'); hydrateToc(card, href); }
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0028
 function fillChipsToSlot(slot, items, max){ var chipRow=qs('[data-gg-slot="'+slot+'"]', panel),list=items||[],i=0,x=null,href='',el=null,tx=null,n=Math.min(list.length,max||12); if(!chipRow) return; chipRow.innerHTML=''; for(i=0;i<n;i++){ x=list[i]||{}; href=cleanText(x.href||''); el=document.createElement(href?'a':'span'); el.className='gg-chip'; if(href){ el.href=href; if(x.src) el.setAttribute('data-src',x.src); } tx=document.createElement('span'); tx.className='gg-chip__text'; tx.textContent=x.text||''; el.appendChild(tx); chipRow.appendChild(el); } }
 function applyPostMeta(key){ var m=key?postMetaCache.get(key):null,t=m&&Array.isArray(m.t)?m.t:[],c=m&&Array.isArray(m.c)?m.c:[],u=cleanText(m&&m.u?m.u:''),r=cleanText(m&&m.r?m.r:''),a=cleanText(m&&m.a?m.a:''),list=[],chips=[],resolved=[],i=0,base=0,token=0,one=null,ttoken=0; setS('updated',u); setRow('updated',!!u); setRow('contributors',!!c.length); setRow('tags',!!t.length); if(t.length){ fillChipsToSlot('tags',t,14); ttoken=panel?(panel.__ggTagMetaToken=(panel.__ggTagMetaToken||0)+1):0; tagResolveMany(t).then(function(rows){ if(!panel||panel.__ggMetaKey!==key||(ttoken&&panel.__ggTagMetaToken!==ttoken)) return; fillChipsToSlot('tags',Array.isArray(rows)?rows:[],14); }).catch(function(){}); } else fillChipsToSlot('tags',[],14); if(a) list.push(a); for(i=0;i<c.length;i++){ if(c[i]) list.push(c[i]); } if(list.length){ for(i=0;i<list.length;i++){ one=authorFallback(list[i]); chips.push({ text:one&&one.name||'', href:one&&one.href||'', src:one&&one.src||'fallback' }); } base=a?1:0; if(a&&chips[0]){ setS('author',chips[0].text); setHref('[data-s="author-link"]',chips[0].href||'#',chips[0].src||'fallback'); setRow('author',!!chips[0].text); } fillChipsToSlot('contributors',chips.slice(base),12); token=panel?(panel.__ggAuthorMetaToken=(panel.__ggAuthorMetaToken||0)+1):0; authorResolveMany(list).then(function(rows){ var x=null; if(!panel||panel.__ggMetaKey!==key||(token&&panel.__ggAuthorMetaToken!==token)) return; resolved=[]; base=a?1:0; if(Array.isArray(rows)){ if(a&&rows[0]){ x=rows[0]||{}; setS('author',x.name||''); setHref('[data-s="author-link"]',x.href||'#',x.src||'fallback'); setRow('author',!!x.name); } for(i=base;i<rows.length;i++){ x=rows[i]||{}; resolved.push({ text:x.name||'', href:x.href||'', src:x.src||'fallback' }); } fillChipsToSlot('contributors',resolved,12); } }).catch(function(){}); } else fillChipsToSlot('contributors',[],12); if(r){ setS('readtime',r); setRow('readtime',true); } }
 
@@ -3209,6 +3225,7 @@ function renderEntriesAsList(itemsRoot, entries){
     ul.appendChild(li);
   });
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0029
   itemsRoot.innerHTML = '';
   itemsRoot.appendChild(ul);
 }
@@ -3241,6 +3258,7 @@ function normalizeItems(itemsRoot){
       li.appendChild(a);
       list.appendChild(li);
     });
+// @gg-allow-html-in-js LEGACY:LEGACY-0030
     itemsRoot.innerHTML = '';
     itemsRoot.appendChild(list);
   }
@@ -3275,6 +3293,7 @@ function ensureSummary(details, title, icon){
   if (!summary) {
     summary = document.createElement('summary');
     summary.className = 'gg-navtree__summary';
+// @gg-allow-html-in-js LEGACY:LEGACY-0031
     summary.innerHTML =
       '<span class="gg-navtree__summary-icon material-symbols-rounded" aria-hidden="true"></span>' +
       '<span class="gg-navtree__summary-text"></span>' +
@@ -3508,6 +3527,7 @@ function transform(el){
         '</div>';
     });
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0032
     el.innerHTML = html;
     el.__ggShortcodesDone = true;
     wireAccordions(el);
@@ -3527,6 +3547,7 @@ GG.modules.Skeleton = (function(){
   function buildCard(){
     var card = document.createElement('div');
     card.className = 'gg-skeleton-card';
+// @gg-allow-html-in-js LEGACY:LEGACY-0033
     card.innerHTML =
       '<div class="gg-skeleton-thumb gg-shimmer"></div>' +
       '<div class="gg-skeleton-line gg-shimmer"></div>' +
@@ -3800,6 +3821,7 @@ GG.modules.RelatedInline = (function(){
     var wrap = document.createElement('aside');
     wrap.className = 'gg-related-inline';
     wrap.setAttribute('role','complementary');
+// @gg-allow-html-in-js LEGACY:LEGACY-0034
     wrap.innerHTML =
       '<div class="gg-related-inline__eyebrow">Baca juga</div>' +
       '<a class="gg-related-inline__title" href="'+item.href+'">'+item.title+'</a>' +
@@ -4120,6 +4142,7 @@ GG.core.commentsGate = GG.core.commentsGate || (function(){
       frag = tpl.content.cloneNode(true);
     } else if (tpl) {
       var tmp = d.createElement('div');
+// @gg-allow-html-in-js LEGACY:LEGACY-0035
       tmp.innerHTML = tpl.innerHTML || '';
       frag = d.createDocumentFragment();
       while (tmp.firstChild) frag.appendChild(tmp.firstChild);
@@ -4237,6 +4260,7 @@ if (d.readyState === 'loading') {
       if (!el || !el.innerHTML) return;
       if (el.dataset.ggShortcodeDone === '1') return;
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0036
       el.innerHTML = el.innerHTML.replace(SHORT_RE, (_, raw) => {
         const id = extractYouTubeId(raw);
         if (!id) {
@@ -4303,6 +4327,7 @@ if (d.readyState === 'loading') {
         const allowAttr = allowAuto
           ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
           : 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+// @gg-allow-html-in-js LEGACY:LEGACY-0037 LEGACY:LEGACY-0038
         box.innerHTML = `
           <iframe
             src="https://www.youtube.com/embed/${id}?autoplay=${autoplay}"
@@ -4796,6 +4821,7 @@ function isSystemPath(pathname){
 
       var head = document.createElement('div');
       head.className = 'gg-left-panel__head';
+// @gg-allow-html-in-js LEGACY:LEGACY-0039
       head.innerHTML =
         '<div class="gg-left-panel__brand">' +
           '<span class="gg-left-panel__brand-title"></span>' +
@@ -5308,6 +5334,7 @@ function isSystemPath(pathname){
     if (!wrap) return;
     var msg = getMessages();
     var list = cloneState();
+// @gg-allow-html-in-js LEGACY:LEGACY-0040
     wrap.innerHTML = '';
     if (!list.length) {
       if (empty) empty.style.display = '';
@@ -5344,6 +5371,7 @@ function isSystemPath(pathname){
       removeBtn.setAttribute('aria-label', msg.removeBtn);
       var removeIcon = d.createElement('span');
       removeIcon.className = 'gg-icon gg-library-list__remove-icon';
+// @gg-allow-html-in-js LEGACY:LEGACY-0041
       removeIcon.innerHTML = '<svg class="gg-icon__svg"><use href="#gg-ic-bookmark-remove-line"/></svg>';
       var removeLabel = d.createElement('span');
       removeLabel.className = 'gg-library-list__remove-label';
@@ -5942,3 +5970,4 @@ function isSystemPath(pathname){
 
 
 })(window);
+

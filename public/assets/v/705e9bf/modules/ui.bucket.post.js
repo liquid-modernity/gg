@@ -253,6 +253,7 @@
   }
 
   function build(){
+// @gg-allow-html-in-js LEGACY:LEGACY-0071
     list.innerHTML = '';
     empty.hidden = true;
 
@@ -411,6 +412,7 @@
         frag.appendChild(createChip(slug, 'post_footer'));
       }
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0072
       block.innerHTML = '';
       if (hasTag) {
         block.appendChild(frag);
@@ -451,3 +453,4 @@
 
 
 })(window);
+

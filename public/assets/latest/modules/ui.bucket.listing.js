@@ -219,10 +219,12 @@
     function renderPosts(state, node, label){
       var ul = node.querySelector('.gg-lt__children');
       if (!ul) return;
+// @gg-allow-html-in-js LEGACY:LEGACY-0042
       ul.innerHTML = '';
       var posts = (shared.map && shared.map[label]) ? shared.map[label] : [];
       posts = posts.slice(0, state.maxPosts || 10);
       if (!posts.length) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0043
         ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
         return;
       }
@@ -230,6 +232,7 @@
         var li = d.createElement('li');
         li.className = 'gg-lt__post';
         li.setAttribute('role', 'none');
+// @gg-allow-html-in-js LEGACY:LEGACY-0044
         li.innerHTML =
           '<a href="'+p.url+'" role="treeitem">' +
             '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
@@ -263,9 +266,11 @@
       if (!treeEl) return;
       var labels = labelListForRoot(state);
       if (!labels.length) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0045
         treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
         return;
       }
+// @gg-allow-html-in-js LEGACY:LEGACY-0046
       treeEl.innerHTML = '';
       labels.forEach(function(label){
         var node = d.createElement('li');
@@ -273,6 +278,7 @@
         node.setAttribute('data-label', label);
         node.setAttribute('role', 'treeitem');
         node.setAttribute('aria-expanded', 'false');
+// @gg-allow-html-in-js LEGACY:LEGACY-0047
         node.innerHTML =
           '<button class="gg-lt__row" type="button" aria-expanded="false">' +
             '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
@@ -480,6 +486,7 @@
           return;
         }
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0048
         treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels...</li>';
         if (window.GG_DEBUG) {
           if (state.debugTimer) clearTimeout(state.debugTimer);
@@ -492,6 +499,7 @@
           applyActive(el, state);
           clearDebug(state);
         }).catch(function(err){
+// @gg-allow-html-in-js LEGACY:LEGACY-0049
           treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
           if (window.GG_DEBUG) {
             try { console.warn('[labelTree] feed failed', err); } catch (_) {}
@@ -620,6 +628,7 @@
       var n = getColCount();
       if (state.cols && state.cols.length === n) return;
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0050
       grid.innerHTML = "";
       state.cols = [];
       state.colHeights = [];
@@ -706,6 +715,7 @@
       var thumb = esc(item.thumb || "");
       var href = postUrl;
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0051
       tile.innerHTML =
         '<div class="shade"></div>' +
         '<div class="thumb"><img loading="lazy" alt="' + title + '" src="' + thumb + '"></div>' +
@@ -773,6 +783,7 @@
       state.done = false;
       state.emptySkips = 0;
 
+// @gg-allow-html-in-js LEGACY:LEGACY-0052
       grid.innerHTML = "";
       state.cols = null;
       state.colHeights = null;
@@ -866,6 +877,7 @@
       for(var i=0;i<list.length;i++) h+='<a class="gg-search-assist__item" href="'+e(list[i].url)+'"><span>'+e(list[i].title)+'</span>'+(list[i].label?'<small>'+e(list[i].label)+'</small>':'')+'</a>';
       h+='</div>';
     }else h+='<p class="e">No local matches for "<strong>'+e(q)+'</strong>".</p>';
+// @gg-allow-html-in-js LEGACY:LEGACY-0053
     b.innerHTML=h+'<p class="f">Server results below</p>';
   };
   var api=G.services&&G.services.api&&G.services.api.getFeed;
@@ -1123,6 +1135,7 @@
       var arr = Array.from(state.years);
       arr.sort(function(a,b){ return Number(b)-Number(a); });
       var cur = state.year;
+// @gg-allow-html-in-js LEGACY:LEGACY-0054
       yearSel.innerHTML = '<option value="">All years</option>' + arr.map(function(y){
         return '<option value="'+esc(y)+'">'+esc(y)+'</option>';
       }).join("");
@@ -1133,6 +1146,7 @@
       var y = state.year;
       if(!y){
         monthSel.disabled = true;
+// @gg-allow-html-in-js LEGACY:LEGACY-0055
         monthSel.innerHTML = '<option value="">All months</option>';
         monthSel.value = "";
         state.month = "";
@@ -1142,6 +1156,7 @@
       var arr = set ? Array.from(set) : [];
       arr.sort();
       monthSel.disabled = false;
+// @gg-allow-html-in-js LEGACY:LEGACY-0056
       monthSel.innerHTML = '<option value="">All months</option>' + arr.map(function(m){
         return '<option value="'+esc(m)+'">'+esc(m)+'</option>';
       }).join("");
@@ -1153,6 +1168,7 @@
       var arr = Array.from(state.labels.keys());
       arr.sort(function(a,b){ return a.localeCompare(b,"id"); });
       var cur = state.label;
+// @gg-allow-html-in-js LEGACY:LEGACY-0057
       labelSel.innerHTML = '<option value="">All labels</option>' + arr.map(function(lbl){
         var cnt = state.labels.get(lbl)||0;
         return '<option value="'+esc(lbl)+'">'+esc(lbl)+' ('+cnt+')</option>';
@@ -1251,6 +1267,7 @@
     }
 
     function render(){
+// @gg-allow-html-in-js LEGACY:LEGACY-0058
       groupsEl.innerHTML = "";
 
       var items = state.order.map(function(id){ return state.byId.get(id); }).filter(Boolean);
@@ -1264,6 +1281,7 @@
 
         var group = document.createElement("div");
         group.className = "gg-group";
+// @gg-allow-html-in-js LEGACY:LEGACY-0059
         group.innerHTML =
           '<div class="gg-group-title"><span>'+esc(day)+'</span><span class="count">'+arr.length+'</span></div>' +
           '<div class="gg-list"></div>';
@@ -1291,6 +1309,7 @@
           el.setAttribute("role","listitem");
           el.setAttribute("tabindex","0");
           el.dataset.url = item.postUrl || "";
+// @gg-allow-html-in-js LEGACY:LEGACY-0060
           el.innerHTML =
             '<div class="gg-date">'+esc(dateTxt)+'</div>' +
             '<div class="gg-main">' +
@@ -1586,6 +1605,7 @@
   }
 
   function renderDirectory(target, map) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0061
     target.innerHTML = '';
     var keys = [];
     for (var key in map) {
@@ -1729,6 +1749,7 @@
 
   GG.modules.tagHubPage.renderPosts = function (listRoot, posts) {
     if (!listRoot) { return; }
+// @gg-allow-html-in-js LEGACY:LEGACY-0062
     listRoot.innerHTML = '';
     GG.core.state.remove(listRoot, 'loading');
     GG.core.state.remove(listRoot, 'empty');
@@ -1750,6 +1771,7 @@
 
   GG.modules.tagHubPage.renderError = function (listRoot) {
     if (!listRoot) { return; }
+// @gg-allow-html-in-js LEGACY:LEGACY-0063
     listRoot.innerHTML = '';
     GG.core.state.remove(listRoot, 'loading');
     GG.core.state.remove(listRoot, 'empty');
@@ -1903,6 +1925,7 @@
       if (resultsSection) { resultsSection.style.display = 'none'; }
       if (directorySection) { directorySection.style.removeProperty('display'); }
       if (listRoot) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0064
         listRoot.innerHTML = '';
         GG.core.state.remove(listRoot, 'loading');
         GG.core.state.remove(listRoot, 'error');
@@ -2127,3 +2150,4 @@
 
 
 })(window);
+

@@ -1,0 +1,556 @@
+{
+  "v": 1,
+  "updated": "2026-02-21",
+  "rules": {
+    "deny_patterns": [
+      "innerHTML\\s*=",
+      "insertAdjacentHTML\\s*\\(",
+      "outerHTML\\s*=",
+      "document\\.write\\s*\\(",
+      "Range\\s*\\(\\)\\.createContextualFragment",
+      "DOMParser\\s*\\("
+    ],
+    "html_template_string_pattern": "`[^`]*<[^`]+>`"
+  },
+  "allow": [
+    {
+      "id": "LEGACY-0001",
+      "file": "public/assets/latest/modules/ui.bucket.authors.js",
+      "pattern": "DOMParser\\s*\\(",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0002",
+      "file": "public/assets/latest/modules/ui.bucket.authors.js",
+      "pattern": "DOMParser\\s*\\(",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0003",
+      "file": "public/assets/latest/modules/ui.bucket.authors.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0004",
+      "file": "public/assets/latest/modules/ui.bucket.authors.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0005",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0006",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0007",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0008",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0009",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0010",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0011",
+      "file": "public/assets/latest/modules/ui.bucket.channel.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0012",
+      "file": "public/assets/latest/modules/ui.bucket.cmd.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0013",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "DOMParser\\s*\\(",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0014",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0015",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0016",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0017",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0018",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0019",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0020",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0021",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0022",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "DOMParser\\s*\\(",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0023",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0024",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0025",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0026",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0027",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "DOMParser\\s*\\(",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0028",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0029",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0030",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0031",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0032",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0033",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0034",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0035",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0036",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0037",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0038",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "`[^`]*<[^`]+>`",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0039",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0040",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0041",
+      "file": "public/assets/latest/modules/ui.bucket.core.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0042",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0043",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0044",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0045",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0046",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0047",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0048",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0049",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0050",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0051",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0052",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0053",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0054",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0055",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0056",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0057",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0058",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0059",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0060",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0061",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0062",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0063",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0064",
+      "file": "public/assets/latest/modules/ui.bucket.listing.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0065",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0066",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0067",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0068",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0069",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0070",
+      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0071",
+      "file": "public/assets/latest/modules/ui.bucket.post.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0072",
+      "file": "public/assets/latest/modules/ui.bucket.post.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0073",
+      "file": "public/assets/latest/modules/ui.bucket.search.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0074",
+      "file": "public/assets/latest/modules/ui.bucket.search.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0075",
+      "file": "public/assets/latest/modules/ui.bucket.search.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0076",
+      "file": "public/assets/latest/modules/ui.bucket.search.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    },
+    {
+      "id": "LEGACY-0077",
+      "file": "public/assets/latest/modules/ui.bucket.search.js",
+      "pattern": "innerHTML\\s*=",
+      "note": "baseline legacy",
+      "introduced_by": "baseline"
+    }
+  ]
+}

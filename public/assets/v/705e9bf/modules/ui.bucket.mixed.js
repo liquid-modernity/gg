@@ -463,6 +463,7 @@
     slot.setAttribute('data-gg-skeleton-count', String(count));
     if (section.type === 'newsdeck') {
       if (grid) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0065
         grid.innerHTML = newsDeckSkeletonHtml(section, count);
         grid.removeAttribute('hidden');
       }
@@ -476,6 +477,7 @@
 
     if (isRailType(section.type)) {
       if (rail) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0066
         rail.innerHTML = cards.join('');
         rail.removeAttribute('hidden');
       }
@@ -484,6 +486,7 @@
     }
 
     if (grid) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0067
       grid.innerHTML = cards.join('');
       grid.removeAttribute('hidden');
     }
@@ -709,6 +712,7 @@
       html = newsDeckHtml(items, section);
       slot.setAttribute('data-gg-render-count', String(countNewsDeckItems(items)));
       if (grid) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0068
         grid.innerHTML = html;
         grid.removeAttribute('hidden');
       }
@@ -721,6 +725,7 @@
 
     if (isRailType(section.type)) {
       if (rail) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0069
         rail.innerHTML = html;
         rail.removeAttribute('hidden');
       }
@@ -729,6 +734,7 @@
     }
 
     if (grid) {
+// @gg-allow-html-in-js LEGACY:LEGACY-0070
       grid.innerHTML = html;
       grid.removeAttribute('hidden');
     }
@@ -841,3 +847,4 @@
     mixed.init(d);
   }
 })(window.GG = window.GG || {}, window, document);
+

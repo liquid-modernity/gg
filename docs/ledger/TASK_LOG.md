@@ -1656,3 +1656,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate initially failed by 3 bytes on ui.bucket.core.js gzip budget and passed after minimal budget bump
 - RISKS: low/med; live smoke remains network-dependent in sandbox
 - NEXT: TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
+
+---
+
+## 2026-02-21 — TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221 — Baseline-locked legacy HTML-in-JS guardrail
+- DATE: 2026-02-21
+- TASK_ID: TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
+- TITLE: Block new HTML-in-JS with allowlisted legacy exceptions
+- MODE (DEV/PROD impact): docs contract + verification gate + module annotations + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add explicit legacy exception policy, bootstrap per-occurrence annotations and allowlist baseline, enforce new verifier in gate
+- CHANGES (files touched): docs/AGENTS.md; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/gen-legacy-htmljs-allowlist.mjs; tools/verify-no-new-html-in-js.mjs; tools/gate-prod.sh; public/assets/latest/modules/ui.bucket.authors.js; public/assets/latest/modules/ui.bucket.channel.js; public/assets/latest/modules/ui.bucket.cmd.js; public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/modules/ui.bucket.mixed.js; public/assets/latest/modules/ui.bucket.post.js; public/assets/latest/modules/ui.bucket.search.js; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-new-html-in-js.mjs; npm run -s gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-no-new-html-in-js PASS; gate:prod PASS; gate-release FAIL in sandbox due DNS resolution failure for www.pakrpp.com
+- NOTES (gotchas): baseline annotations increased JS bundle sizes; budgets were adjusted minimally for core/listing/search to keep gate deterministic
+- RISKS: medium; strict live checks remain network-dependent and can fail in offline sandbox despite local guardrail pass
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE1-20260221

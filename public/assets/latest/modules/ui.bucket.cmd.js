@@ -101,6 +101,7 @@
         if(!S.items.length)html+='<div class="gg-search__hint">No command</div>';
         for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="gg-opt-'+i+'" role="option" aria-selected="false" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
         html+='<div class="gg-search__hint">Enter run · Esc close</div>';
+// @gg-allow-html-in-js LEGACY:LEGACY-0012
         u.panel.innerHTML=html;
         S.a=-1;
         if(S.items.length)pick(0);
@@ -155,3 +156,4 @@
   })();
   if(GG.boot&&GG.boot.onReady)GG.boot.onReady(function(){if(M.searchCmd&&M.searchCmd.init)M.searchCmd.init();});
 })(window,document);
+
