@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221: Guardrail baseline for legacy HTML-in-JS with audited allowlist.
+- TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221: One-use LEGACY id enforcement (no reuse allowed).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 705e9bf
+RELEASE_ID: 0ce6a5c
 RELEASE_HISTORY:
+- 0ce6a5c
 - 705e9bf
-- 45a1bed
-PROD_PINNED_JS: /assets/v/705e9bf/main.js
-PROD_PINNED_APP: /assets/v/705e9bf/app.js
-PROD_PINNED_CSS: /assets/v/705e9bf/main.css
+PROD_PINNED_JS: /assets/v/0ce6a5c/main.js
+PROD_PINNED_APP: /assets/v/0ce6a5c/app.js
+PROD_PINNED_CSS: /assets/v/0ce6a5c/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-HTML-IN-JS-MIGRATION-PHASE1-20260221
+- TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221 verifier+allowlist baseline blocks unannotated HTML-in-JS growth
+- 2026-02-21 TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221 verifier hardened to fail duplicate LEGACY id reuse
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

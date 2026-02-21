@@ -1,6 +1,7 @@
 {
   "v": 1,
   "updated": "2026-02-21",
+  "one_use": true,
   "rules": {
     "deny_patterns": [
       "innerHTML\\s*=",

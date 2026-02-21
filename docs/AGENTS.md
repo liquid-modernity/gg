@@ -47,6 +47,7 @@ Forbidden:
 
 Legacy exception (explicit):
 - Legacy HTML-in-JS is allowed ONLY if listed in `docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json` + annotated.
+- Each `LEGACY:<ID>` is single-use (one occurrence only). Reuse is forbidden.
 - Every allowed legacy occurrence must have a comment on the same line or immediately above:
   - `// @gg-allow-html-in-js LEGACY:<ID>`
 - No `<ID>`, no pass.

@@ -1,31 +1,19 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
-TITLE: Block new HTML-in-JS with allowlisted legacy exceptions
+TASK_ID: TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221
+TITLE: Enforce one-use legacy ids for HTML-in-JS
 
 SUMMARY
-- Added explicit legacy policy to `docs/AGENTS.md` section 2.2: legacy HTML-in-JS is only allowed when annotated and allowlisted.
-- Bootstrapped baseline allowlist `docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json` (v1, updated 2026-02-21) from current HEAD.
-- Added annotations on existing legacy callsites across module files using `// @gg-allow-html-in-js LEGACY:<ID>`.
-- Added generator helper `tools/gen-legacy-htmljs-allowlist.mjs` for baseline/bootstrap workflow.
-- Added hard gate verifier `tools/verify-no-new-html-in-js.mjs` and wired it into `tools/gate-prod.sh` immediately after rulebook verification.
+- Hardened `tools/verify-no-new-html-in-js.mjs` so a LEGACY id cannot be reused by another occurrence.
+- Added policy text in `docs/AGENTS.md` that every `LEGACY:<ID>` is single-use.
+- Updated allowlist contract with `"one_use": true` for explicit policy signaling.
+- Preserved gate order and existing gate wiring.
 
 FILES CHANGED
+- tools/verify-no-new-html-in-js.mjs
 - docs/AGENTS.md
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/gen-legacy-htmljs-allowlist.mjs
-- tools/verify-no-new-html-in-js.mjs
-- tools/gate-prod.sh
-- public/assets/latest/modules/ui.bucket.authors.js
-- public/assets/latest/modules/ui.bucket.channel.js
-- public/assets/latest/modules/ui.bucket.cmd.js
-- public/assets/latest/modules/ui.bucket.core.js
-- public/assets/latest/modules/ui.bucket.listing.js
-- public/assets/latest/modules/ui.bucket.mixed.js
-- public/assets/latest/modules/ui.bucket.post.js
-- public/assets/latest/modules/ui.bucket.search.js
-- tools/perf-budgets.json
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -69,5 +57,4 @@ FAIL: smoke failed after 1 attempt(s)
 ```
 
 NOTES
-- `gate-release` failed because strict live smoke requires external DNS/network access that is unavailable in this sandbox.
-- To keep gate deterministic after baseline annotations, gzip/raw budgets were increased minimally for `ui.bucket.core.js`, `ui.bucket.listing.js`, and `ui.bucket.search.js`.
+- `gate-release` remains strict-live and failed in this sandbox due external DNS/network unavailability.

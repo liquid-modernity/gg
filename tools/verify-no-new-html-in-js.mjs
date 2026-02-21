@@ -110,10 +110,26 @@ if (!violations.length) {
     fail("required target missing: public/assets/latest/modules/ui.bucket.core.js");
   }
 
+  const annoFirstUse = new Map();
+
   for (const fileRel of relFiles) {
     const fileAbs = path.join(root, fileRel);
     const source = fs.readFileSync(fileAbs, "utf8");
     const lines = source.split(/\r?\n/);
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const ids = extractIds(lines[i]);
+      if (!ids.length) continue;
+      for (const id of ids) {
+        const loc = `${fileRel}:${i + 1}`;
+        if (annoFirstUse.has(id)) {
+          fail(`${loc} duplicate LEGACY id annotation reuse: ${id} (first: ${annoFirstUse.get(id)})`);
+          continue;
+        }
+        annoFirstUse.set(id, loc);
+      }
+    }
+
     const matches = collectMatches(source, denyPatterns, templatePattern);
     totalMatches += matches.length;
 
@@ -126,11 +142,18 @@ if (!violations.length) {
         continue;
       }
 
+      const orderedIds = annotationIds
+        .slice()
+        .sort((a, b) => Number(usedIds.has(a)) - Number(usedIds.has(b)));
+
       let picked = null;
-      for (const id of annotationIds) {
+      for (const id of orderedIds) {
         const allow = allowById.get(id);
         if (!allow) continue;
-        if (usedIds.has(id)) continue;
+        if (usedIds.has(id)) {
+          fail(`${fileRel}:${match.line} duplicate LEGACY id reuse: ${id}`);
+          continue;
+        }
         if (allow.file !== fileRel) continue;
         if (allow.pattern !== match.pattern) continue;
         picked = id;

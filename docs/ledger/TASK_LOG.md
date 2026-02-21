@@ -1674,3 +1674,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): baseline annotations increased JS bundle sizes; budgets were adjusted minimally for core/listing/search to keep gate deterministic
 - RISKS: medium; strict live checks remain network-dependent and can fail in offline sandbox despite local guardrail pass
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE1-20260221
+
+---
+
+## 2026-02-21 — TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221 — One-use LEGACY ID enforcement
+- DATE: 2026-02-21
+- TASK_ID: TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221
+- TITLE: Enforce one-use legacy ids for HTML-in-JS
+- MODE (DEV/PROD impact): verifier hardening + policy docs + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: make LEGACY IDs single-use with hard fail on reuse; keep multi-id comments supported without allowing ID reuse abuse
+- CHANGES (files touched): tools/verify-no-new-html-in-js.mjs; docs/AGENTS.md; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-new-html-in-js.mjs; npm run -s gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-no-new-html-in-js PASS; gate:prod PASS; gate-release FAIL in sandbox (DNS resolution to www.pakrpp.com unavailable)
+- NOTES (gotchas): strict one-use check initially surfaced baseline multi-id annotation behavior and required verifier ordering hardening for deterministic mapping
+- RISKS: low/med; strict live verification remains network-dependent in sandbox
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
