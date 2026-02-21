@@ -215,17 +215,27 @@
       var folder = node.querySelector('.gg-lt__folder');
       if (folder) folder.textContent = open ? 'folder_open' : 'folder';
     }
+    function clearChildren(el){
+      if (!el) return;
+      el.textContent = '';
+    }
+    function appendMutedItem(list, message){
+      if (!list) return;
+      var li = d.createElement('li');
+      li.className = 'gg-lt__muted';
+      li.setAttribute('role', 'presentation');
+      li.textContent = message;
+      list.appendChild(li);
+    }
 
     function renderPosts(state, node, label){
       var ul = node.querySelector('.gg-lt__children');
       if (!ul) return;
-// @gg-allow-html-in-js LEGACY:LEGACY-0042
-      ul.innerHTML = '';
+      clearChildren(ul);
       var posts = (shared.map && shared.map[label]) ? shared.map[label] : [];
       posts = posts.slice(0, state.maxPosts || 10);
       if (!posts.length) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0043
-        ul.innerHTML = '<li class="gg-lt__muted" role="presentation">No posts</li>';
+        appendMutedItem(ul, 'No posts');
         return;
       }
       posts.forEach(function(p){
@@ -266,25 +276,35 @@
       if (!treeEl) return;
       var labels = labelListForRoot(state);
       if (!labels.length) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0045
-        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">No labels found</li>';
+        clearChildren(treeEl);
+        appendMutedItem(treeEl, 'No labels found');
         return;
       }
-// @gg-allow-html-in-js LEGACY:LEGACY-0046
-      treeEl.innerHTML = '';
+      clearChildren(treeEl);
       labels.forEach(function(label){
         var node = d.createElement('li');
         node.className = 'gg-lt__node';
         node.setAttribute('data-label', label);
         node.setAttribute('role', 'treeitem');
         node.setAttribute('aria-expanded', 'false');
-// @gg-allow-html-in-js LEGACY:LEGACY-0047
-        node.innerHTML =
-          '<button class="gg-lt__row" type="button" aria-expanded="false">' +
-            '<span class="material-symbols-rounded gg-lt__folder" aria-hidden="true">folder</span>' +
-            '<span class="gg-lt__labeltxt">'+escapeHtml(label)+'</span>' +
-          '</button>' +
-          '<ul class="gg-lt__children" role="group"></ul>';
+        var row = d.createElement('button');
+        row.className = 'gg-lt__row';
+        row.type = 'button';
+        row.setAttribute('aria-expanded', 'false');
+        var folder = d.createElement('span');
+        folder.className = 'material-symbols-rounded gg-lt__folder';
+        folder.setAttribute('aria-hidden', 'true');
+        folder.textContent = 'folder';
+        var text = d.createElement('span');
+        text.className = 'gg-lt__labeltxt';
+        text.textContent = label;
+        row.appendChild(folder);
+        row.appendChild(text);
+        var children = d.createElement('ul');
+        children.className = 'gg-lt__children';
+        children.setAttribute('role', 'group');
+        node.appendChild(row);
+        node.appendChild(children);
         treeEl.appendChild(node);
       });
     }
@@ -486,8 +506,8 @@
           return;
         }
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0048
-        treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Loading labels...</li>';
+        clearChildren(treeEl);
+        appendMutedItem(treeEl, 'Loading labels...');
         if (window.GG_DEBUG) {
           if (state.debugTimer) clearTimeout(state.debugTimer);
           state.debugTimer = setTimeout(function(){
@@ -499,8 +519,8 @@
           applyActive(el, state);
           clearDebug(state);
         }).catch(function(err){
-// @gg-allow-html-in-js LEGACY:LEGACY-0049
-          treeEl.innerHTML = '<li class="gg-lt__muted" role="presentation">Unable to load labels</li>';
+          clearChildren(treeEl);
+          appendMutedItem(treeEl, 'Unable to load labels');
           if (window.GG_DEBUG) {
             try { console.warn('[labelTree] feed failed', err); } catch (_) {}
             clearDebug(state);
@@ -628,8 +648,7 @@
       var n = getColCount();
       if (state.cols && state.cols.length === n) return;
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0050
-      grid.innerHTML = "";
+      grid.textContent = "";
       state.cols = [];
       state.colHeights = [];
       state.queue = [];
@@ -783,8 +802,7 @@
       state.done = false;
       state.emptySkips = 0;
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0052
-      grid.innerHTML = "";
+      grid.textContent = "";
       state.cols = null;
       state.colHeights = null;
       state.queue = [];
@@ -857,7 +875,6 @@
   var r=d.getElementById('postcards')||d.querySelector('#Blog1 .blog-posts')||d.querySelector('.blog-posts');
   var m=(r&&r.parentNode)||d.querySelector('main')||d.getElementById('Blog1')||d.getElementById('gg-main');
   if(!m) return;
-  var e=function(s){ return String(s||'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var go=function(u){
     if(!u) return;
     try{
@@ -870,15 +887,54 @@
   if(!b){ b=d.createElement('section'); b.id='gg-search-assist'; b.className='gg-search-assist'; b.setAttribute('aria-label','Local suggestions'); m.insertBefore(b,r||m.firstChild); }
   b.onclick=function(ev){ var a=ev.target&&ev.target.closest?ev.target.closest('a.gg-search-assist__item'):null; if(!a) return; ev.preventDefault(); go(a.getAttribute('href')); };
   var draw=function(list,msg){
-    var h='<div class="h"><b>Local suggestions</b><small>From your library</small></div>';
-    if(msg) h+='<p class="e">'+e(msg)+'</p>';
-    else if(list&&list.length){
-      h+='<div class="l">';
-      for(var i=0;i<list.length;i++) h+='<a class="gg-search-assist__item" href="'+e(list[i].url)+'"><span>'+e(list[i].title)+'</span>'+(list[i].label?'<small>'+e(list[i].label)+'</small>':'')+'</a>';
-      h+='</div>';
-    }else h+='<p class="e">No local matches for "<strong>'+e(q)+'</strong>".</p>';
-// @gg-allow-html-in-js LEGACY:LEGACY-0053
-    b.innerHTML=h+'<p class="f">Server results below</p>';
+    b.textContent = '';
+    var head=d.createElement('div');
+    head.className='h';
+    var strongHead=d.createElement('b');
+    strongHead.textContent='Local suggestions';
+    var smallHead=d.createElement('small');
+    smallHead.textContent='From your library';
+    head.appendChild(strongHead);
+    head.appendChild(smallHead);
+    b.appendChild(head);
+    if(msg){
+      var pMsg=d.createElement('p');
+      pMsg.className='e';
+      pMsg.textContent=String(msg||'');
+      b.appendChild(pMsg);
+    }else if(list&&list.length){
+      var listWrap=d.createElement('div');
+      listWrap.className='l';
+      for(var i=0;i<list.length;i++){
+        var row=list[i]||{};
+        var a=d.createElement('a');
+        a.className='gg-search-assist__item';
+        a.href=String(row.url||'#');
+        var t=d.createElement('span');
+        t.textContent=String(row.title||'');
+        a.appendChild(t);
+        if(row.label){
+          var sm=d.createElement('small');
+          sm.textContent=String(row.label);
+          a.appendChild(sm);
+        }
+        listWrap.appendChild(a);
+      }
+      b.appendChild(listWrap);
+    }else{
+      var pEmpty=d.createElement('p');
+      pEmpty.className='e';
+      pEmpty.appendChild(d.createTextNode('No local matches for "'));
+      var key=d.createElement('strong');
+      key.textContent=String(q||'');
+      pEmpty.appendChild(key);
+      pEmpty.appendChild(d.createTextNode('".'));
+      b.appendChild(pEmpty);
+    }
+    var foot=d.createElement('p');
+    foot.className='f';
+    foot.textContent='Server results below';
+    b.appendChild(foot);
   };
   var api=G.services&&G.services.api&&G.services.api.getFeed;
   if(typeof api!=='function'){ draw(0,'Local suggestions unavailable'); return; }
@@ -1125,6 +1181,26 @@
     function showLoader(on){
       GG.core.state.toggle(loader, "hidden", !on);
     }
+    function clearChildren(el){
+      if (!el) return;
+      el.textContent = "";
+    }
+    function rebuildSelect(selectEl, firstLabel, values, renderText){
+      if (!selectEl) return;
+      clearChildren(selectEl);
+      var frag = d.createDocumentFragment();
+      var base = d.createElement("option");
+      base.value = "";
+      base.textContent = firstLabel;
+      frag.appendChild(base);
+      (values || []).forEach(function(val){
+        var opt = d.createElement("option");
+        opt.value = String(val);
+        opt.textContent = renderText ? renderText(val) : String(val);
+        frag.appendChild(opt);
+      });
+      selectEl.appendChild(frag);
+    }
 
     function buildUrl(){
       if (state.nextUrl) return state.nextUrl;
@@ -1135,10 +1211,7 @@
       var arr = Array.from(state.years);
       arr.sort(function(a,b){ return Number(b)-Number(a); });
       var cur = state.year;
-// @gg-allow-html-in-js LEGACY:LEGACY-0054
-      yearSel.innerHTML = '<option value="">All years</option>' + arr.map(function(y){
-        return '<option value="'+esc(y)+'">'+esc(y)+'</option>';
-      }).join("");
+      rebuildSelect(yearSel, "All years", arr);
       if(cur && arr.indexOf(cur)!==-1) yearSel.value = cur;
     }
 
@@ -1146,8 +1219,7 @@
       var y = state.year;
       if(!y){
         monthSel.disabled = true;
-// @gg-allow-html-in-js LEGACY:LEGACY-0055
-        monthSel.innerHTML = '<option value="">All months</option>';
+        rebuildSelect(monthSel, "All months", []);
         monthSel.value = "";
         state.month = "";
         return;
@@ -1156,10 +1228,7 @@
       var arr = set ? Array.from(set) : [];
       arr.sort();
       monthSel.disabled = false;
-// @gg-allow-html-in-js LEGACY:LEGACY-0056
-      monthSel.innerHTML = '<option value="">All months</option>' + arr.map(function(m){
-        return '<option value="'+esc(m)+'">'+esc(m)+'</option>';
-      }).join("");
+      rebuildSelect(monthSel, "All months", arr);
       if(state.month && arr.indexOf(state.month)!==-1) monthSel.value = state.month;
       else { monthSel.value=""; state.month=""; }
     }
@@ -1168,11 +1237,10 @@
       var arr = Array.from(state.labels.keys());
       arr.sort(function(a,b){ return a.localeCompare(b,"id"); });
       var cur = state.label;
-// @gg-allow-html-in-js LEGACY:LEGACY-0057
-      labelSel.innerHTML = '<option value="">All labels</option>' + arr.map(function(lbl){
+      rebuildSelect(labelSel, "All labels", arr, function(lbl){
         var cnt = state.labels.get(lbl)||0;
-        return '<option value="'+esc(lbl)+'">'+esc(lbl)+' ('+cnt+')</option>';
-      }).join("");
+        return String(lbl) + " (" + cnt + ")";
+      });
       if(cur && state.labels.has(cur)) labelSel.value = cur;
     }
 
@@ -1267,8 +1335,7 @@
     }
 
     function render(){
-// @gg-allow-html-in-js LEGACY:LEGACY-0058
-      groupsEl.innerHTML = "";
+      clearChildren(groupsEl);
 
       var items = state.order.map(function(id){ return state.byId.get(id); }).filter(Boolean);
       var filtered = applyFilters(items);
@@ -1281,12 +1348,19 @@
 
         var group = document.createElement("div");
         group.className = "gg-group";
-// @gg-allow-html-in-js LEGACY:LEGACY-0059
-        group.innerHTML =
-          '<div class="gg-group-title"><span>'+esc(day)+'</span><span class="count">'+arr.length+'</span></div>' +
-          '<div class="gg-list"></div>';
-
-        var list = qs(group, ".gg-list");
+        var titleRow = document.createElement("div");
+        titleRow.className = "gg-group-title";
+        var titleText = document.createElement("span");
+        titleText.textContent = String(day || "");
+        var count = document.createElement("span");
+        count.className = "count";
+        count.textContent = String(arr.length);
+        titleRow.appendChild(titleText);
+        titleRow.appendChild(count);
+        var list = document.createElement("div");
+        list.className = "gg-list";
+        group.appendChild(titleRow);
+        group.appendChild(list);
 
         arr.forEach(function(item){
           var d = parseDateISO(item.published);
@@ -1605,8 +1679,7 @@
   }
 
   function renderDirectory(target, map) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0061
-    target.innerHTML = '';
+    target.textContent = '';
     var keys = [];
     for (var key in map) {
       if (Object.prototype.hasOwnProperty.call(map, key)) {
@@ -1749,8 +1822,7 @@
 
   GG.modules.tagHubPage.renderPosts = function (listRoot, posts) {
     if (!listRoot) { return; }
-// @gg-allow-html-in-js LEGACY:LEGACY-0062
-    listRoot.innerHTML = '';
+    listRoot.textContent = '';
     GG.core.state.remove(listRoot, 'loading');
     GG.core.state.remove(listRoot, 'empty');
     GG.core.state.remove(listRoot, 'error');
@@ -1771,8 +1843,7 @@
 
   GG.modules.tagHubPage.renderError = function (listRoot) {
     if (!listRoot) { return; }
-// @gg-allow-html-in-js LEGACY:LEGACY-0063
-    listRoot.innerHTML = '';
+    listRoot.textContent = '';
     GG.core.state.remove(listRoot, 'loading');
     GG.core.state.remove(listRoot, 'empty');
     GG.core.state.add(listRoot, 'error');
@@ -1925,8 +1996,7 @@
       if (resultsSection) { resultsSection.style.display = 'none'; }
       if (directorySection) { directorySection.style.removeProperty('display'); }
       if (listRoot) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0064
-        listRoot.innerHTML = '';
+        listRoot.textContent = '';
         GG.core.state.remove(listRoot, 'loading');
         GG.core.state.remove(listRoot, 'error');
       }
@@ -2150,4 +2220,3 @@
 
 
 })(window);
-

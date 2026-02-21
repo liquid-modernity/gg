@@ -1,19 +1,23 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221
-TITLE: Enforce one-use legacy ids for HTML-in-JS
+TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
+TITLE: Replace HTML injection with DOM APIs in listing module
 
 SUMMARY
-- Hardened `tools/verify-no-new-html-in-js.mjs` so a LEGACY id cannot be reused by another occurrence.
-- Added policy text in `docs/AGENTS.md` that every `LEGACY:<ID>` is single-use.
-- Updated allowlist contract with `"one_use": true` for explicit policy signaling.
-- Preserved gate order and existing gate wiring.
+- Migrated most `innerHTML` usage in `public/assets/latest/modules/ui.bucket.listing.js` to DOM APIs.
+- Replaced container clearing, static list messages, and `<select>` option builders with safe node creation.
+- Kept only 3 allowlisted legacy complex builders in this file (`LEGACY-0044`, `LEGACY-0051`, `LEGACY-0060`).
+- Reduced allowlist entries by removing obsolete listing exceptions.
+
+ALLOWLIST SIZE
+- Before: 77
+- After: 57
 
 FILES CHANGED
-- tools/verify-no-new-html-in-js.mjs
-- docs/AGENTS.md
+- public/assets/latest/modules/ui.bucket.listing.js
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
+- tools/perf-budgets.json
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -25,13 +29,13 @@ FILES CHANGED
 VERIFICATION OUTPUTS
 - `node tools/verify-no-new-html-in-js.mjs`
 ```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=77 allowlisted_matches=77 violations=0
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
 ```
 
 - `npm run -s gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=77 allowlisted_matches=77 violations=0
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
 PASS: verify-panels-inert-safety
 PASS: verify-smooth-scroll-policy
 VERIFY_AUTHORS_DIR_CONTRACT: PASS
@@ -50,11 +54,12 @@ PASS: gate:prod
 
 - `bash tools/gate-release.sh`
 ```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=77 allowlisted_matches=77 violations=0
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
 NOTES
-- `gate-release` remains strict-live and failed in this sandbox due external DNS/network unavailability.
+- `gate-release` failed due strict live smoke requiring DNS/network access not available in sandbox.
+- `ui.bucket.listing.js` legacy occurrences now: 3.

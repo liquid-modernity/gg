@@ -1692,3 +1692,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): strict one-use check initially surfaced baseline multi-id annotation behavior and required verifier ordering hardening for deterministic mapping
 - RISKS: low/med; strict live verification remains network-dependent in sandbox
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
+
+---
+
+## 2026-02-21 — TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221 — Listing DOM migration
+- DATE: 2026-02-21
+- TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
+- TITLE: Replace HTML injection with DOM APIs in listing module
+- MODE (DEV/PROD impact): module refactor + allowlist reduction + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: migrate clearing/static/select builders and several container builders from innerHTML to DOM APIs; keep only high-noise complex card legacy
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.listing.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-new-html-in-js.mjs; npm run -s gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-no-new-html-in-js PASS with total_matches=57; gate:prod PASS; gate-release FAIL in sandbox due DNS resolution failure for www.pakrpp.com
+- NOTES (gotchas): listing bundle size changed after DOM migration; budgets for ui.bucket.listing.js adjusted minimally; allowlist reduced 77 -> 57 and listing legacy reduced to 3 occurrences
+- RISKS: low/med; strict live smoke remains network-dependent in sandbox
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221

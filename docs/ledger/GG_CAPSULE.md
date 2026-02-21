@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221: One-use LEGACY id enforcement (no reuse allowed).
+- TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221: Replace listing HTML injection with DOM APIs (legacy sharply reduced).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 0ce6a5c
+RELEASE_ID: c7d6ec6
 RELEASE_HISTORY:
-- 0ce6a5c
-- 705e9bf
-PROD_PINNED_JS: /assets/v/0ce6a5c/main.js
-PROD_PINNED_APP: /assets/v/0ce6a5c/app.js
-PROD_PINNED_CSS: /assets/v/0ce6a5c/main.css
+- c7d6ec6
+- 282faf2
+PROD_PINNED_JS: /assets/v/c7d6ec6/main.js
+PROD_PINNED_APP: /assets/v/c7d6ec6/app.js
+PROD_PINNED_CSS: /assets/v/c7d6ec6/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
+- TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-LEGACY-HTMLJS-GATE-HARDEN-20260221 verifier hardened to fail duplicate LEGACY id reuse
+- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221 migrated most listing innerHTML to DOM APIs (3 legacy left)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
