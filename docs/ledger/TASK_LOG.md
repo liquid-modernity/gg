@@ -1602,3 +1602,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate:prod realigned release id automatically to e0ff634; strict live checks remain network-dependent
 - RISKS: low/med; strict live proof may fail in sandboxed/offline environment despite local contract pass
 - NEXT: TASK-TAGS-DIR-20260221
+
+---
+
+## 2026-02-21 — TASK-DETERMINISTIC-AUDIT-PROOF-20260221 — Deterministic audit proof guardrail
+- DATE: 2026-02-21
+- TASK_ID: TASK-DETERMINISTIC-AUDIT-PROOF-20260221
+- TITLE: Deterministic zip:audit (clean tree + gate + proof)
+- MODE (DEV/PROD impact): release tooling + ledger + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN (3df8745)
+- SCOPE: harden zip-audit preconditions, enforce proof listing, keep gate parity, update ledger state
+- CHANGES (files touched): tools/zip-audit.sh; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/3df8745/*; public/assets/v/cd8a289/* (removed)
+- COMMANDS RUN (local): npm run -s gate:prod; npm run -s zip:audit; unzip -l dist/gg-audit.zip | egrep 'docs/AGENTS.md|docs/NAMING.md|docs/release/DISTRIBUTION.md|docs/pages/p-author.html|docs/pages/p-tags.html|docs/pages/p-sitemap.html|tools/verify-rulebooks.mjs|tools/verify-authors-dir-contract.mjs|tools/verify-tags-dir-contract.mjs|tools/verify-sitemap-page-contract.mjs'
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): gate:prod PASS (offline smoke fallback); zip:audit PASS and proof listing includes all required contract files
+- NOTES (gotchas): zip:audit now runs gate:prod first and aborts if working tree changes after gate
+- RISKS: low/med; strict live smoke remains dependent on external DNS/network
+- NEXT: TASK-NATIVE-FEEL-FOCUS-20260221
