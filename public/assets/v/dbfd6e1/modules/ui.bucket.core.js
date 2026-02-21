@@ -1048,59 +1048,6 @@ if (GG.modules.posterCanvas && typeof GG.modules.posterCanvas.init === 'function
 if (GG.modules.posterEngine && typeof GG.modules.posterEngine.init === 'function') GG.modules.posterEngine.init();
 if (GG.modules.shareMotion && typeof GG.modules.shareMotion.init === 'function') GG.modules.shareMotion.init();
 };
-function ggPaletteOverlay(){
-var panel = document.getElementById('gg-palette-list');
-return panel && panel.nodeType === 1 ? panel : null;
-}
-function patchSearchOverlayModalBindings(){
-var search = GG.modules && GG.modules.search;
-if (!search || search._ggOverlayModalPatched) return !!(search && search._ggOverlayModalPatched);
-if (typeof search.open !== 'function' || typeof search.close !== 'function') return false;
-var prevOpen = search.open;
-var prevClose = search.close;
-search.open = function(){
-  var trigger = document.activeElement;
-  var out = prevOpen.apply(this, arguments);
-  try{
-    var panel = ggPaletteOverlay();
-    if (panel && !panel.hidden && GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') {
-      GG.services.a11y.modalOpen(panel, trigger, { label: 'Command palette' });
-    }
-  }catch(_){}
-  return out;
-};
-search.close = function(skipRestore){
-  var panel = ggPaletteOverlay();
-  var out = prevClose.apply(this, arguments);
-  try{
-    if (panel && GG.services && GG.services.a11y && typeof GG.services.a11y.modalClose === 'function') {
-      GG.services.a11y.modalClose(panel, { restoreFocus: !skipRestore });
-    }
-  }catch(_){}
-  return out;
-};
-search._ggOverlayModalPatched = true;
-return true;
-}
-function bindSearchOverlayModal(){
-if (patchSearchOverlayModalBindings()) return;
-w.setTimeout(function(){ patchSearchOverlayModalBindings(); }, 120);
-}
-if (!GG.ui._searchOverlayModalBound) {
-GG.ui._searchOverlayModalBound = true;
-if (GG.boot && GG.boot.onReady) GG.boot.onReady(bindSearchOverlayModal);
-else if (GG.boot && GG.boot.defer) GG.boot.defer(bindSearchOverlayModal);
-else w.setTimeout(bindSearchOverlayModal, 1);
-w.addEventListener('gg:search-open', function(){
-  bindSearchOverlayModal();
-  w.setTimeout(function(){
-    var panel = ggPaletteOverlay();
-    if (panel && !panel.hidden && GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') {
-      GG.services.a11y.modalOpen(panel, document.activeElement, { label: 'Command palette' });
-    }
-  }, 0);
-});
-}
 GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open, triggerEl){
 var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
 if(!modal) return;
@@ -5842,7 +5789,10 @@ function isSystemPath(pathname){
     A.modalOpen = A.modalOpen || function(modalEl, triggerEl, opts){
       var options = opts || {};
       var trigger = triggerEl && triggerEl.nodeType === 1 ? triggerEl : d.activeElement;
+      var role = '';
       if (!modalEl || modalEl.nodeType !== 1) return false;
+      role = String(modalEl.getAttribute('role') || '').toLowerCase();
+      if (modalEl.id === 'gg-palette-list' || role === 'listbox') return false;
       if (A._activeModalEl && A._activeModalEl !== modalEl && typeof A.modalClose === 'function') {
         A.modalClose(A._activeModalEl, { restoreFocus: false });
       }
