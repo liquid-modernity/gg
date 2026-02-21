@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222: Enforce intrinsic width/height fallback on JS-created images/iframes to reduce CLS and lock via verifier.
+- TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222: Harden yt-lite iframe activation with nocookie host, a11y title, and intent-only preconnect.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: c41fbf2
+RELEASE_ID: 25f2397
 RELEASE_HISTORY:
-- c41fbf2
-- 76c745e
-PROD_PINNED_JS: /assets/v/c41fbf2/main.js
-PROD_PINNED_APP: /assets/v/c41fbf2/app.js
-PROD_PINNED_CSS: /assets/v/c41fbf2/main.css
+- 25f2397
+- 27047ba
+PROD_PINNED_JS: /assets/v/25f2397/main.js
+PROD_PINNED_APP: /assets/v/25f2397/app.js
+PROD_PINNED_CSS: /assets/v/25f2397/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222
+- TASK-PERF-FONTS-CLS-INP-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222 added intrinsic-dimension helper for JS media, wired listing/mixed/core iframe dims, and enforced CLS dimension guardrail in gate.
+- 2026-02-21 TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222 switched yt-lite embeds to youtube-nocookie, added iframe title/referrer/allow policy, and warmed preconnect only on user intent.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

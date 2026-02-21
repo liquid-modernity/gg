@@ -2158,3 +2158,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): initial gate failed raw budget for `ui.bucket.core.js`; adjusted raw budget ceiling in `tools/perf-budgets.json` to accommodate intrinsic-dims guardrail additions while keeping gzip ceiling unchanged
 - RISKS: low/med; manual 5-minute CLS visual sanity still required on listing/mixed/YT-lite activation in real browser
 - NEXT: TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222
+
+## 2026-02-21 — TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222 — YT lite iframe hardening
+- DATE: 2026-02-21
+- TASK_ID: TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222
+- TITLE: Harden yt-lite embed (nocookie + title + intent preconnect)
+- MODE (DEV/PROD impact): core yt-lite iframe policy hardening + verifier + gate wiring + perf docs
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: replace yt-lite embed source with youtube-nocookie, add iframe title/referrerpolicy/allow policy, keep intrinsic dims, add intent-only preconnect warmup on pointerenter/focus, add policy verifier and wire into gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-yt-iframe-policy.mjs; tools/gate-prod.sh; docs/perf/IFRAME_POLICY.md; tools/verify-cls-dimensions-policy.mjs; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-yt-iframe-policy.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): yt iframe policy verifier PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): updated legacy CLS verifier snippet window to avoid false negative after iframe hardening; adjusted core JS perf budgets to accommodate additional iframe policy logic
+- RISKS: low/med; manual 3-minute hover/focus preconnect and SR iframe-title sanity still required in browser
+- NEXT: TASK-PERF-FONTS-CLS-INP-20260222

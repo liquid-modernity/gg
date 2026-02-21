@@ -99,7 +99,7 @@ function verifyCore(core) {
   if (!coreIframeCreate.length) fail("core missing createElement('iframe') occurrences for policy scan");
   coreIframeCreate.forEach((m) => {
     const idx = m.index || 0;
-    const snippet = core.slice(idx, idx + 560);
+    const snippet = core.slice(idx, idx + 1200);
     if (!/setIntrinsicDims\(\s*iframe\s*,\s*\d+\s*,\s*\d+\s*\)/.test(snippet)) {
       fail("core has JS-created <iframe> without nearby setIntrinsicDims(iframe, w, h)");
     }

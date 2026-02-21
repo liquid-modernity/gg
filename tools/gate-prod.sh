@@ -41,6 +41,7 @@ run node tools/verify-tap-targets.mjs
 run node tools/verify-image-perf-policy.mjs
 run node tools/verify-responsive-thumbs-policy.mjs
 run node tools/verify-cls-dimensions-policy.mjs
+run node tools/verify-yt-iframe-policy.mjs
 run node tools/verify-responsive-thumbs-crop-policy.mjs
 run node tools/verify-palette-not-modal.mjs
 run node tools/verify-modal-open-close-parity.mjs

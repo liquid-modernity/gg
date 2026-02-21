@@ -3829,10 +3829,32 @@ function wireAccordions(scope){
 }
 
 function hydrateLiteEmbeds(root){
+  function preconnectOnce(href){
+    if (!href) return;
+    var docEl = document.documentElement;
+    if (!docEl) return;
+    var safe = String(href).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!safe) return;
+    var attr = 'data-gg-preconnect-' + safe;
+    if (docEl.getAttribute(attr)) return;
+    docEl.setAttribute(attr, '1');
+    var head = document.head || (document.getElementsByTagName('head')[0]);
+    if (!head) return;
+    var link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = href;
+    link.crossOrigin = 'anonymous';
+    head.appendChild(link);
+  }
+
   qsa('.gg-yt-lite', root).forEach(function(box){
     var id = box.getAttribute('data-id');
     var label = trimText(box.getAttribute('aria-label') || '');
     var load = null;
+    var warm = function(){
+      preconnectOnce('https://www.youtube-nocookie.com');
+      preconnectOnce('https://i.ytimg.com');
+    };
     if (!label || label === YT_LABEL) {
       var host = box.closest ? box.closest(AREA_SEL) : null;
       var heading = host && host.querySelector ? host.querySelector('h1,h2,h3') : null;
@@ -3840,10 +3862,17 @@ function hydrateLiteEmbeds(root){
       box.setAttribute('aria-label', title ? (YT_LABEL + ': ' + title) : YT_LABEL);
     }
     if (!id || box.dataset.ggA11yBound === '1') return;
+    box.addEventListener('pointerenter', warm, { once:true });
+    box.addEventListener('focus', warm, { once:true });
     load = function(){
+      var t = (box.getAttribute('aria-label') || '').replace(/^Play video:\s*/i, '').trim();
+      warm();
       var iframe = document.createElement('iframe');
-      iframe.src = 'https://www.youtube.com/embed/' + id;
+      iframe.src = 'https://www.youtube-nocookie.com/embed/' + id;
       iframe.style.cssText = 'width:100%;height:100%;border:0';
+      iframe.setAttribute('title', t ? ('YouTube video: ' + t) : 'YouTube video player');
+      iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      iframe.setAttribute('allow', 'accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share');
       if (GG.services && GG.services.images && typeof GG.services.images.setIntrinsicDims === 'function') {
         GG.services.images.setIntrinsicDims(iframe, 16, 9);
       }
