@@ -2190,3 +2190,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): ratchet contract compares `docs/perf/BUDGETS.json` against `docs/perf/BUDGETS.lock.json`; any `max_*` increase now hard-fails unless lock is intentionally updated
 - RISKS: low; baseline metrics are trend snapshots and still need periodic intentional refresh tasks
 - NEXT: TASK-PERF-FONTS-CLS-INP-20260222
+
+## 2026-02-22 — TASK-PERF-FONTS-CLS-INP-20260222 — Font preload + swap policy guardrails
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-FONTS-CLS-INP-20260222
+- TITLE: Preload critical woff2 + swap + guardrails
+- MODE (DEV/PROD impact): template head font preload policy + CSS @font-face policy + verifier + gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: preload only critical above-the-fold font file (Material Symbols Rounded), enforce font-display policy, add deterministic verifier and policy docs
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/main.css; tools/verify-font-policy.mjs; tools/gate-prod.sh; docs/perf/FONTS_POLICY.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-font-policy.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): verify-font-policy PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): fonts.googleapis stylesheet preload removed; icon font now loaded from explicit gstatic woff2 preload + @font-face swap in main.css
+- RISKS: low/med; hardcoded gstatic URL should be reviewed if Google rotates asset URL in future
+- NEXT: TASK-PERF-AUTOMEASURE-CI-20260223

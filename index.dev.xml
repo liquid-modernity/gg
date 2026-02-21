@@ -195,10 +195,8 @@ img{max-width:100%;height:auto;}
 
     <b:include data='blog' name='all-head-content'/>
 <!-- GAGA HOME OF CSS -->
-        <link href='https://fonts.googleapis.com' rel='preconnect'/>
-<link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-<link rel='preload' as='style' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' onload='this.onload=null;this.rel="stylesheet"'/>
-<noscript><link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap'/></noscript>
+        <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
+<link rel='preload' as='font' type='font/woff2' href='https://fonts.gstatic.com/s/materialsymbolsrounded/v317/syl7-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvDmUSVOK7BDB_Qb9vUSzq3wzLK-P0J-V_Zs-obHph2-jOcZTKPq8a9A5M.woff2' crossorigin=''/>
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */

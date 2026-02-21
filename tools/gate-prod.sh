@@ -44,6 +44,7 @@ run node tools/verify-cls-dimensions-policy.mjs
 run node tools/verify-yt-iframe-policy.mjs
 run node tools/verify-responsive-thumbs-crop-policy.mjs
 run node tools/verify-perf-budgets.mjs
+run node tools/verify-font-policy.mjs
 run node tools/verify-palette-not-modal.mjs
 run node tools/verify-modal-open-close-parity.mjs
 run node tools/verify-overlay-modal-contract.mjs

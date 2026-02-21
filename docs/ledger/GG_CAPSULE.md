@@ -1,8 +1,8 @@
 # GG_CAPSULE (current session)
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-BASELINE-BUDGET-RATCHET-20260222: Add 3-surface baseline and deterministic budget ratchet verifier to block silent perf regressions.
+- TASK-PERF-FONTS-CLS-INP-20260222: Harden font loading policy with critical woff2 preload + swap font-display guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: a2092ab
+RELEASE_ID: bf87521
 RELEASE_HISTORY:
-- a2092ab
-- 25f2397
-PROD_PINNED_JS: /assets/v/a2092ab/main.js
-PROD_PINNED_APP: /assets/v/a2092ab/app.js
-PROD_PINNED_CSS: /assets/v/a2092ab/main.css
+- bf87521
+- 3482776
+PROD_PINNED_JS: /assets/v/bf87521/main.js
+PROD_PINNED_APP: /assets/v/bf87521/app.js
+PROD_PINNED_CSS: /assets/v/bf87521/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-FONTS-CLS-INP-20260222
+- TASK-PERF-AUTOMEASURE-CI-20260223
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-BASELINE-BUDGET-RATCHET-20260222 introduced BASELINE/BUDGETS/BUDGETS.lock contracts and gate verifier enforcing ratchet non-loosening.
+- 2026-02-22 TASK-PERF-FONTS-CLS-INP-20260222 added Material Symbols woff2 preload, main.css @font-face swap policy, and verify-font-policy gate.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

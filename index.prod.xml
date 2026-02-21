@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='a2092ab' name='gg-release'/>
+    <meta content='bf87521' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/a2092ab/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/a2092ab/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/bf87521/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/bf87521/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -146,10 +146,8 @@ img{max-width:100%;height:auto;}
     <b:include data='blog' name='all-head-content'/>
 <link href='/manifest.webmanifest' rel='manifest'/>
 <!-- GAGA HOME OF CSS -->
-        <link href='https://fonts.googleapis.com' rel='preconnect'/>
-<link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
-<link as='style' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-<noscript><link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&amp;display=swap' rel='stylesheet'/></noscript>
+        <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
+<link as='font' crossorigin='' href='https://fonts.gstatic.com/s/materialsymbolsrounded/v317/syl7-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvDmUSVOK7BDB_Qb9vUSzq3wzLK-P0J-V_Zs-obHph2-jOcZTKPq8a9A5M.woff2' rel='preload' type='font/woff2'/>
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */
@@ -227,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='a2092ab' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='bf87521' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -3875,7 +3873,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/a2092ab/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/bf87521/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>
