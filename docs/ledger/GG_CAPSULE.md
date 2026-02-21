@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221: Correct responsive thumbnail crop semantics so `-c` is preserved only when already present, with deterministic verifier guardrails.
+- TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222: Enforce intrinsic width/height fallback on JS-created images/iframes to reduce CLS and lock via verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 5e3c739
+RELEASE_ID: c41fbf2
 RELEASE_HISTORY:
-- 5e3c739
-- 96439b2
-PROD_PINNED_JS: /assets/v/5e3c739/main.js
-PROD_PINNED_APP: /assets/v/5e3c739/app.js
-PROD_PINNED_CSS: /assets/v/5e3c739/main.css
+- c41fbf2
+- 76c745e
+PROD_PINNED_JS: /assets/v/c41fbf2/main.js
+PROD_PINNED_APP: /assets/v/c41fbf2/app.js
+PROD_PINNED_CSS: /assets/v/c41fbf2/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222
+- TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221 removed forced crop mode in responsive thumb resizing; now preserves existing `-c` only and never introduces `-c` on uncropped originals.
+- 2026-02-21 TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222 added intrinsic-dimension helper for JS media, wired listing/mixed/core iframe dims, and enforced CLS dimension guardrail in gate.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

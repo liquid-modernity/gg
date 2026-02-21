@@ -3415,7 +3415,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "searchCacheTTL": 60, "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
 <template id='gg-tpl-sc-yt-lite'>
   <div aria-label='Play video' class='gg-yt-lite' data-gg-yt-label='1' data-id='' role='button' tabindex='0'>
-    <img alt='' decoding='async' loading='lazy' src=''/>
+    <img alt='' decoding='async' height='9' loading='lazy' src='' width='16'/>
     <div aria-hidden='true' class='gg-yt-play'></div>
   </div>
 </template>

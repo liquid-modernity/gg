@@ -761,6 +761,9 @@
       img.alt = title;
       img.src = thumb;
       var imageSvc = GG.services && GG.services.images;
+      if (imageSvc && typeof imageSvc.setIntrinsicDims === "function") {
+        imageSvc.setIntrinsicDims(img, 40, 27);
+      }
       if (imageSvc && typeof imageSvc.buildSrcset === "function") {
         var widths = [320, 480, 640, 960, 1280];
         var built = imageSvc.buildSrcset(img.src, widths, {

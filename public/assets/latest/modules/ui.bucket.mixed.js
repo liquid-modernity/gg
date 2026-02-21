@@ -641,7 +641,43 @@
     });
   }
 
-  function appendCardThumb(thumb, imageUrl) {
+  function resolveThumbDims(root, section) {
+    var kind = '';
+    if (root && root.getAttribute) {
+      kind = (root.getAttribute('data-gg-kind') || root.getAttribute('data-type') || '').toLowerCase();
+    }
+    if (!kind && section) {
+      kind = String(section.kind || section.type || '').toLowerCase();
+    }
+    var dims = [100, 148];
+    switch (kind) {
+      case 'youtube':
+      case 'youtubeish':
+        dims = [16, 9];
+        break;
+      case 'shorts':
+      case 'short':
+      case 'shortish':
+        dims = [9, 16];
+        break;
+      case 'instagram':
+      case 'instagramish':
+        dims = [4, 6];
+        break;
+      case 'podcast':
+      case 'podcastish':
+      case 'newsdeck':
+      case 'newsish':
+        dims = [1, 1];
+        break;
+      default:
+        dims = [100, 148];
+        break;
+    }
+    return dims;
+  }
+
+  function appendCardThumb(thumb, imageUrl, root, section) {
     var src = String(imageUrl || '').trim();
     if (!src || !thumb) return;
     var img = createEl('img');
@@ -657,6 +693,10 @@
     }
     img.setAttribute('src', src);
     var imageSvc = G.services && G.services.images;
+    var dims = resolveThumbDims(root, section);
+    if (imageSvc && typeof imageSvc.setIntrinsicDims === 'function') {
+      imageSvc.setIntrinsicDims(img, dims[0], dims[1]);
+    }
     if (imageSvc && typeof imageSvc.buildSrcset === 'function') {
       var widths = [240, 360, 480, 720, 960, 1200];
       var built = imageSvc.buildSrcset(img.src, widths, {
@@ -690,14 +730,14 @@
     return yr + ' y ago';
   }
 
-  function createMixedCard(item, section) {
+  function createMixedCard(item, section, root) {
     var safeItem = item || {};
     var kicker = titleCaseLabel((safeItem.labels && safeItem.labels[0]) || section.label || section.type);
     var card = createEl('a', 'gg-mixed__card');
     card.setAttribute('href', safeItem.url || '#');
 
     var thumb = createEl('span', 'gg-mixed__thumb');
-    appendCardThumb(thumb, safeItem.image);
+    appendCardThumb(thumb, safeItem.image, root, section);
     card.appendChild(thumb);
 
     var body = createEl('span', 'gg-mixed__body');
@@ -713,7 +753,7 @@
     return card;
   }
 
-  function createNewsDeckItem(item, colLabel, labelName) {
+  function createNewsDeckItem(item, colLabel, labelName, section, root) {
     var safeItem = item || {};
     var sourceName = titleCaseLabel((safeItem.labels && safeItem.labels[0]) || colLabel || labelName || 'News');
     var ago = timeAgo(safeItem.published || '');
@@ -741,14 +781,14 @@
     body.appendChild(time);
 
     var thumb = createEl('span', 'gg-newsdeck__thumb');
-    appendCardThumb(thumb, safeItem.image);
+    appendCardThumb(thumb, safeItem.image, root, section);
 
     link.appendChild(body);
     link.appendChild(thumb);
     return link;
   }
 
-  function createNewsDeck(columns, section) {
+  function createNewsDeck(columns, section, root) {
     var wrap = createEl('div', 'gg-newsdeck');
     var cols = Array.isArray(columns) ? columns : [];
     for (var c = 0; c < cols.length; c++) {
@@ -761,7 +801,7 @@
 
       var items = Array.isArray(col.items) ? col.items : [];
       for (var r = 0; r < items.length; r++) {
-        colEl.appendChild(createNewsDeckItem(items[r], col.label, labelName));
+        colEl.appendChild(createNewsDeckItem(items[r], col.label, labelName, section, root));
       }
       wrap.appendChild(colEl);
     }
@@ -787,7 +827,7 @@
       slot.setAttribute('data-gg-render-count', String(countNewsDeckItems(list)));
       if (grid) {
         clearNode(grid);
-        grid.appendChild(createNewsDeck(list, section));
+        grid.appendChild(createNewsDeck(list, section, slot));
         grid.removeAttribute('hidden');
       }
       if (rail) {
@@ -803,7 +843,7 @@
       if (rail) {
         clearNode(rail);
         for (var i = 0; i < list.length; i++) {
-          rail.appendChild(createMixedCard(list[i], section));
+          rail.appendChild(createMixedCard(list[i], section, slot));
         }
         rail.removeAttribute('hidden');
       }
@@ -817,7 +857,7 @@
     if (grid) {
       clearNode(grid);
       for (var j = 0; j < list.length; j++) {
-        grid.appendChild(createMixedCard(list[j], section));
+        grid.appendChild(createMixedCard(list[j], section, slot));
       }
       grid.removeAttribute('hidden');
     }

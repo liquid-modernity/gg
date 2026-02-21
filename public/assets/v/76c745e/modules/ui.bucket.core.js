@@ -1336,9 +1336,17 @@ return {
   sizes: conf.sizes || null
 };
 };
+services.images.setIntrinsicDims = services.images.setIntrinsicDims || function(el, w, h){
+if (!el || !w || !h) return;
+var W = (w|0), H = (h|0);
+if (W <= 0 || H <= 0) return;
+el.setAttribute('width', String(W));
+el.setAttribute('height', String(H));
+};
 GG.services.images.isResizableThumbUrl = GG.services.images.isResizableThumbUrl || services.images.isResizableThumbUrl;
 GG.services.images.resizeThumbUrl = GG.services.images.resizeThumbUrl || services.images.resizeThumbUrl;
 GG.services.images.buildSrcset = GG.services.images.buildSrcset || services.images.buildSrcset;
+GG.services.images.setIntrinsicDims = GG.services.images.setIntrinsicDims || services.images.setIntrinsicDims;
 
 services.comments = services.comments || (function(){
 var moved = false;
@@ -2848,6 +2856,9 @@ function buildCard(data){
     var img = document.createElement('img');
     img.src = data.img;
     img.alt = data.title || '';
+    if (GG.services && GG.services.images && typeof GG.services.images.setIntrinsicDims === 'function') {
+      GG.services.images.setIntrinsicDims(img, 100, 148);
+    }
     thumb.appendChild(img);
   }
   a.appendChild(thumb);
@@ -3787,6 +3798,9 @@ function buildYoutubeLite(id){
     img.setAttribute('src', 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
     img.setAttribute('loading', 'lazy');
     img.setAttribute('decoding', 'async');
+    if (GG.services && GG.services.images && typeof GG.services.images.setIntrinsicDims === 'function') {
+      GG.services.images.setIntrinsicDims(img, 16, 9);
+    }
     if (!img.hasAttribute('alt')) img.setAttribute('alt', '');
   }
   return node;
@@ -3830,6 +3844,9 @@ function hydrateLiteEmbeds(root){
       var iframe = document.createElement('iframe');
       iframe.src = 'https://www.youtube.com/embed/' + id;
       iframe.style.cssText = 'width:100%;height:100%;border:0';
+      if (GG.services && GG.services.images && typeof GG.services.images.setIntrinsicDims === 'function') {
+        GG.services.images.setIntrinsicDims(iframe, 16, 9);
+      }
       iframe.setAttribute('allowfullscreen', '');
       box.textContent = '';
       box.appendChild(iframe);
@@ -4259,6 +4276,9 @@ GG.modules.RelatedInline = (function(){
       img.className = 'gg-related-inline__thumb';
       img.src = item.thumb;
       img.alt = item.title || '';
+      if (GG.services && GG.services.images && typeof GG.services.images.setIntrinsicDims === 'function') {
+        GG.services.images.setIntrinsicDims(img, 100, 150);
+      }
       wrap.appendChild(img);
     }
 
