@@ -1980,3 +1980,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate auto-ran dirty-release build to align release ID from `0fd3deb` to `ff1c3d0` before full verification.
 - RISKS: low/med; manual sanity for skeleton/related-inline/youtube-lite/left-panel visual parity still recommended in browser.
 - NEXT: TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260222
+
+---
+
+## 2026-02-21 — TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221 — Swap #gg-main via DOM nodes
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221
+- TITLE: Replace core SPA swap `innerHTML` with DOM fragment clone + script neutralization
+- MODE (DEV/PROD impact): core SPA render pipeline refactor + verifier + allowlist ratchet tightening + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove LEGACY-0014 (`target.innerHTML = source.innerHTML`) from `GG.core.render.apply()` and swap with cloned fragment flow that neutralizes scripts (`type=text/plain`, `data-gg-inert=1`) before append; add verifier and wire gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-core-swap-no-innerhtml.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-core-swap-no-innerhtml.mjs; node tools/verify-no-new-html-in-js.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): core-swap verifier PASS; no-new-html-in-js PASS (`total_matches=9`); ratchet PASS (`allow=9`, `max_allow=9`); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): gate auto-ran dirty-release build to align release ID from `79c5b91` to `35a8a1e` before full verification.
+- RISKS: low/med; manual SPA navigation sanity still recommended (listing -> post -> back focus and no blank swap).
+- NEXT: TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221

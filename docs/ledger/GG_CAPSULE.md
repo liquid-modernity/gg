@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE6-CORE-QUICK-WINS-20260221: Remove core quick-win innerHTML/template blocks (0015/0033/0034/0037/0038/0039) and tighten allowlist ratchet to 10.
+- TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221: Replace `#gg-main` swap from `innerHTML` to cloned DOM fragment with script neutralization and tighten allowlist ratchet to 9.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 79c5b91
+RELEASE_ID: 73c49f1
 RELEASE_HISTORY:
-- 79c5b91
-- ff1c3d0
-PROD_PINNED_JS: /assets/v/79c5b91/main.js
-PROD_PINNED_APP: /assets/v/79c5b91/app.js
-PROD_PINNED_CSS: /assets/v/79c5b91/main.css
+- 73c49f1
+- 35a8a1e
+PROD_PINNED_JS: /assets/v/73c49f1/main.js
+PROD_PINNED_APP: /assets/v/73c49f1/app.js
+PROD_PINNED_CSS: /assets/v/73c49f1/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260222
+- TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE6-CORE-QUICK-WINS-20260221 refactored core quick-win blocks to DOM builders, removed LEGACY-0015/0033/0034/0037/0038/0039, and set allowlist `max_allow=10`.
+- 2026-02-21 TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221 replaced `target.innerHTML = source.innerHTML` with DOM fragment cloning + script neutralization, removed LEGACY-0014, and set allowlist `max_allow=9`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

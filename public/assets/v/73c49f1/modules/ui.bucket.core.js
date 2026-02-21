@@ -240,6 +240,29 @@ function apply(html, url){
   var target = findTarget(w.document);
   if (!source || !target) throw fail('target', { url: url });
   var meta = extractMeta(doc);
+  function cloneSwapContent(srcEl){
+    var frag = w.document.createDocumentFragment();
+    var nodes = Array.prototype.slice.call(srcEl.childNodes || []);
+    function neutralizeScripts(node){
+      if (!node || node.nodeType !== 1) return;
+      var tag = String(node.tagName || '').toLowerCase();
+      if (tag === 'script') {
+        node.type = 'text/plain';
+        node.setAttribute('data-gg-inert', '1');
+      }
+      var scripts = node.querySelectorAll ? node.querySelectorAll('script') : [];
+      for (var i = 0; i < scripts.length; i++) {
+        scripts[i].type = 'text/plain';
+        scripts[i].setAttribute('data-gg-inert', '1');
+      }
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      var cloned = nodes[i].cloneNode(true);
+      neutralizeScripts(cloned);
+      frag.appendChild(cloned);
+    }
+    return frag;
+  }
   function shouldReduceMotion(){
     try{
       if(GG.store&&GG.store.get){
@@ -255,8 +278,9 @@ function apply(html, url){
     return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
   var doSwap = function(){
-// @gg-allow-html-in-js LEGACY:LEGACY-0014
-    target.innerHTML = source.innerHTML;
+    var frag = cloneSwapContent(source);
+    target.textContent = '';
+    target.appendChild(frag);
     if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
       try { GG.ui.layout.sync(doc, url); } catch (_) {}
     }

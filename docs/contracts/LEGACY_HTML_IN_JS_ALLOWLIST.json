@@ -36,13 +36,6 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0014",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0022",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "DOMParser\\s*\\(",
@@ -85,5 +78,5 @@
       "introduced_by": "baseline"
     }
   ],
-  "max_allow": 10
+  "max_allow": 9
 }
