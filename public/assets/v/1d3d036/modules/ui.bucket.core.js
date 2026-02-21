@@ -254,32 +254,6 @@ function apply(html, url){
     }catch(e){}
     return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
-  function announceRoute(){
-    var main=w.document.getElementById('gg-main')||w.document.querySelector('main.gg-main');
-    if(main){
-      if(!main.hasAttribute('tabindex')) main.setAttribute('tabindex','-1');
-      try{ main.focus({ preventScroll: true }); }catch(e){ try{ main.focus(); }catch(_){} }
-    }
-    var title=(meta&&meta.title)||(doc&&doc.title)||w.document.title||'Page loaded';
-    if(GG.services&&GG.services.a11y&&GG.services.a11y.announce){
-      GG.services.a11y.announce(title,{politeness:'polite'});
-      return;
-    }
-    try{
-      var live=w.document.querySelector('.gg-sr-announcer,[data-gg-announcer]');
-      if(!live&&w.document.body){
-        live=w.document.createElement('div');
-        live.className='gg-sr-announcer gg-visually-hidden';
-        live.setAttribute('aria-live','polite');
-        live.setAttribute('aria-atomic','true');
-        w.document.body.appendChild(live);
-      }
-      if(live){
-        live.textContent='';
-        w.setTimeout(function(){ live.textContent=String(title||'Page loaded'); },10);
-      }
-    }catch(e){}
-  }
   var doSwap = function(){
 // @gg-allow-html-in-js LEGACY:LEGACY-0014
     target.innerHTML = source.innerHTML;
@@ -303,7 +277,6 @@ function apply(html, url){
     }
     GG.core.render._lastUrl = url || '';
     GG.core.render._lastAt = Date.now();
-    announceRoute();
   };
   var docRef = w.document;
   if (docRef && docRef.startViewTransition && !shouldReduceMotion()) {
@@ -642,6 +615,45 @@ if(GG.core && GG.core.router && GG.core.router.handleClick && !actions._routerBo
   else w.setTimeout(bindRouter, 1);
 }
 };
+function scheduleRouteA11y(){
+  var raf = w.requestAnimationFrame || function(fn){ return w.setTimeout(fn, 16); };
+  raf(function(){
+    raf(function(){
+      var main = d.getElementById('gg-main') || d.querySelector('main.gg-main');
+      if (main) {
+        if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+        try { main.focus({preventScroll:true}); } catch (_) { try { main.focus(); } catch(__){} }
+      }
+      var title = (d.title || '').trim();
+      if (!title) return;
+      if (GG.services && GG.services.a11y && typeof GG.services.a11y.announce === 'function') {
+        GG.services.a11y.announce('Dibuka: ' + title, { politeness:'polite' });
+      }
+    });
+  });
+}
+function patchRouteA11y(){
+  var router = GG.core && GG.core.router;
+  if (!router || router._a11yRoutePatched) return;
+  var prevOnNavigate = typeof router.onNavigate === 'function' ? router.onNavigate : null;
+  var prevOnPopState = typeof router.onPopState === 'function' ? router.onPopState : null;
+  router.onNavigate = function(){
+    if (prevOnNavigate) {
+      try { prevOnNavigate.apply(this, arguments); } catch (_) {}
+    }
+    scheduleRouteA11y();
+  };
+  router.onPopState = function(){
+    if (prevOnPopState) {
+      try { prevOnPopState.apply(this, arguments); } catch (_) {}
+    }
+    scheduleRouteA11y();
+  };
+  router._a11yRoutePatched = true;
+}
+if (GG.boot && GG.boot.onReady) GG.boot.onReady(patchRouteA11y);
+else if (GG.boot && GG.boot.defer) GG.boot.defer(patchRouteA11y);
+else w.setTimeout(patchRouteA11y, 1);
 actions.back = actions.back || function(){
 try {
   var ref = d.referrer || '';
@@ -5970,4 +5982,3 @@ function isSystemPath(pathname){
 
 
 })(window);
-

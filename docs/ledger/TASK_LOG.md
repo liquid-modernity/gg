@@ -1710,3 +1710,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): listing bundle size changed after DOM migration; budgets for ui.bucket.listing.js adjusted minimally; allowlist reduced 77 -> 57 and listing legacy reduced to 3 occurrences
 - RISKS: low/med; strict live smoke remains network-dependent in sandbox
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
+
+---
+
+## 2026-02-21 — TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221 — SPA route focus + announce
+- DATE: 2026-02-21
+- TASK_ID: TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221
+- TITLE: Focus + polite announce on SPA route changes
+- MODE (DEV/PROD impact): a11y behavior + guardrail verifier + gate wiring + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: patch router callbacks (navigate/popstate) with one-time wrapper, enforce #gg-main focus and SR title announcement, add contract verifier
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-route-a11y-contract.mjs; tools/gate-prod.sh; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-route-a11y-contract.mjs; npm run gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task yet
+- VERIFY (URLs + expected): route a11y verifier PASS; gate:prod PASS (offline smoke fallback in sandbox); gate-release strict live smoke FAIL due DNS/network resolution to www.pakrpp.com
+- NOTES (gotchas): initial gate run hit gzip budget edge and was resolved by removing redundant legacy route announce fallback so router callback path is single source
+- RISKS: low/med; manual browser sanity for focus behavior and SR speech still needs interactive run
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221

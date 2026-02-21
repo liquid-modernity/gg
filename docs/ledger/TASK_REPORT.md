@@ -1,40 +1,42 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221
-TITLE: Replace HTML injection with DOM APIs in listing module
+TASK_ID: TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221
+TITLE: Focus + announce on SPA route changes
 
 SUMMARY
-- Migrated most `innerHTML` usage in `public/assets/latest/modules/ui.bucket.listing.js` to DOM APIs.
-- Replaced container clearing, static list messages, and `<select>` option builders with safe node creation.
-- Kept only 3 allowlisted legacy complex builders in this file (`LEGACY-0044`, `LEGACY-0051`, `LEGACY-0060`).
-- Reduced allowlist entries by removing obsolete listing exceptions.
-
-ALLOWLIST SIZE
-- Before: 77
-- After: 57
+- Added one-time router a11y patch in `ui.bucket.core.js` that wraps `router.onNavigate` and `router.onPopState`.
+- On SPA route callbacks, behavior now runs after double `requestAnimationFrame`:
+  - focus moves to `#gg-main` using `preventScroll:true`
+  - SR announcement uses `GG.services.a11y.announce('Dibuka: ' + document.title, { politeness:'polite' })` when title is non-empty.
+- Patch is guarded with `router._a11yRoutePatched` to prevent double wrapping.
+- Added verifier `tools/verify-route-a11y-contract.mjs` and wired it into `tools/gate-prod.sh`.
+- Removed legacy in-render route announce path so route callbacks become the single source for focus+announce timing.
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.listing.js
-- docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/perf-budgets.json
-- docs/ledger/GG_CAPSULE.md
+- public/assets/latest/modules/ui.bucket.core.js
+- tools/verify-route-a11y-contract.mjs
+- tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
+- docs/ledger/GG_CAPSULE.md
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/<RELEASE_ID>/* (build output)
+- public/assets/v/d790c38/*
+- public/assets/v/1d3d036/*
+- public/assets/v/c7d6ec6/* (removed)
 
 VERIFICATION OUTPUTS
-- `node tools/verify-no-new-html-in-js.mjs`
+- `node tools/verify-route-a11y-contract.mjs`
 ```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
+VERIFY_ROUTE_A11Y_CONTRACT: PASS
 ```
 
-- `npm run -s gate:prod`
+- `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
+VERIFY_ROUTE_A11Y_CONTRACT: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
 PASS: verify-panels-inert-safety
 PASS: verify-smooth-scroll-policy
@@ -54,12 +56,15 @@ PASS: gate:prod
 
 - `bash tools/gate-release.sh`
 ```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
+VERIFY_ROUTE_A11Y_CONTRACT: PASS
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
-NOTES
-- `gate-release` failed due strict live smoke requiring DNS/network access not available in sandbox.
-- `ui.bucket.listing.js` legacy occurrences now: 3.
+MANUAL SANITY
+- Not executed in this sandbox (no interactive browser/screen-reader session).
+- Required checks pending on real browser session:
+  - Navigate via internal link: focus lands on `#gg-main`, polite announcement speaks `Dibuka: <title>`.
+  - Back/Forward popstate repeats the same behavior.
+  - No visible scroll jump regression.

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221: Replace listing HTML injection with DOM APIs (legacy sharply reduced).
+- TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221: Enforce focus + polite announce on SPA route navigation callbacks.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: c7d6ec6
+RELEASE_ID: d790c38
 RELEASE_HISTORY:
-- c7d6ec6
-- 282faf2
-PROD_PINNED_JS: /assets/v/c7d6ec6/main.js
-PROD_PINNED_APP: /assets/v/c7d6ec6/app.js
-PROD_PINNED_CSS: /assets/v/c7d6ec6/main.css
+- d790c38
+- 1d3d036
+PROD_PINNED_JS: /assets/v/d790c38/main.js
+PROD_PINNED_APP: /assets/v/d790c38/app.js
+PROD_PINNED_CSS: /assets/v/d790c38/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE1-LISTING-20260221 migrated most listing innerHTML to DOM APIs (3 legacy left)
+- 2026-02-21 TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221 patched router callbacks for #gg-main focus + SR title announce.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
