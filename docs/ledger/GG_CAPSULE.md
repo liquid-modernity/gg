@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221: Replace `#gg-main` swap from `innerHTML` to cloned DOM fragment with script neutralization and tighten allowlist ratchet to 9.
+- TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221: Replace editorial panel skeleton `panel.innerHTML` template with DOM builder and tighten allowlist ratchet to 8.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 73c49f1
+RELEASE_ID: b13d129
 RELEASE_HISTORY:
-- 73c49f1
-- 35a8a1e
-PROD_PINNED_JS: /assets/v/73c49f1/main.js
-PROD_PINNED_APP: /assets/v/73c49f1/app.js
-PROD_PINNED_CSS: /assets/v/73c49f1/main.css
+- b13d129
+- 5f8ed20
+PROD_PINNED_JS: /assets/v/b13d129/main.js
+PROD_PINNED_APP: /assets/v/b13d129/app.js
+PROD_PINNED_CSS: /assets/v/b13d129/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221
+- TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260221 replaced `target.innerHTML = source.innerHTML` with DOM fragment cloning + script neutralization, removed LEGACY-0014, and set allowlist `max_allow=9`.
+- 2026-02-21 TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221 replaced editorial panel skeleton template `panel.innerHTML` with DOM nodes, removed LEGACY-0024, and set allowlist `max_allow=8`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

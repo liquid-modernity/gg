@@ -2934,13 +2934,26 @@ GG.core.state.toggle(bd, 'visible', !!show && surface === 'post');
 }
 
 function ensurePanelSkeleton(){
-if (!panel) return;
-if (qs('.gg-editorial-preview', panel)) return;
-function row(id, icon, label, value, hidden){ return '<div class="gg-epanel__row" data-row="'+id+'"'+(hidden?' hidden':'')+'><span class="gg-icon gg-epanel__icon" aria-hidden="true">'+icon+'</span><div class="gg-epanel__cell"><dt class="gg-epanel__label">'+label+'</dt><dd class="gg-epanel__value">'+value+'</dd></div></div>'; }
-var rows=[row('title','article','Title','<a data-s="title" href="#"></a>'),row('author','person','Written by','<a data-s="author-link" href="#"><span data-s="author"></span></a>'),row('contributors','groups','Contributor by','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="contributors"></div>',true),row('labels','label','Label','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="labels"></div>',true),row('tags','sell','Tags','<div class="gg-chip-row gg-epanel__chips" data-gg-slot="tags"></div>',true),row('date','calendar_today','Date','<span data-s="date"></span>'),row('updated','event_repeat','Updated','<span data-s="updated"></span>',true),row('comments','comment','Comments','<span data-s="comments"></span>'),row('readtime','schedule','Read time','<span data-s="readtime"></span>'),row('snippet','text_snippet','Snippet','<span data-s="snippet"></span>',true),row('toc','toc','Table of Contents','<div class="gg-epanel__value--toc"><ol class="gg-info-panel__toclist" data-gg-slot="toc"></ol><p class="gg-info-panel__tochint" data-gg-slot="toc-hint"></p></div>')].join('');
-// @gg-allow-html-in-js LEGACY:LEGACY-0024
-panel.innerHTML = '<div class="gg-info-panel__card gg-editorial-preview gg-epanel"><div class="gg-epanel__head"><span class="gg-epanel__eyebrow">Editorial Preview</span></div><div class="gg-epanel__media"><img class="gg-info-panel__thumb-img" alt=""/></div><div class="gg-epanel__body gg-info-panel__details"><dl class="gg-epanel__rows">'+rows+'</dl></div><div class="gg-epanel__foot"><a class="gg-info-panel__hero-cta gg-epanel__cta" href="#"><span class="gg-icon material-symbols-rounded" aria-hidden="true">visibility</span><span>Read this post</span></a></div></div>';
-renderTocSkeleton(6, TOC_HINT_LOCK);
+if(!panel) return;
+if(qs('.gg-editorial-preview',panel)) return;
+function n(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var rows,dd;
+function makeRow(id,ic,lb,h){var r=n('div','gg-epanel__row');r.setAttribute('data-row',id);if(h)r.hidden=true;var i=n('span','gg-icon gg-epanel__icon',ic);i.setAttribute('aria-hidden','true');var cell=n('div','gg-epanel__cell');dd=n('dd','gg-epanel__value');cell.appendChild(n('dt','gg-epanel__label',lb));cell.appendChild(dd);r.appendChild(i);r.appendChild(cell);rows.appendChild(r);return dd;}
+function addSpanRow(id,ic,lb,key,h){var sp=n('span','','—');sp.setAttribute('data-s',key);makeRow(id,ic,lb,h).appendChild(sp);}
+function addChipRow(id,ic,lb,slot,h){var ch=n('div','gg-chip-row gg-epanel__chips');ch.setAttribute('data-gg-slot',slot);makeRow(id,ic,lb,h).appendChild(ch);}
+panel.textContent='';
+var card=n('div','gg-info-panel__card gg-editorial-preview gg-epanel');
+var head=n('div','gg-epanel__head'); head.appendChild(n('span','gg-epanel__eyebrow','Editorial Preview')); card.appendChild(head);
+var media=n('div','gg-epanel__media'),img=n('img','gg-info-panel__thumb-img'); img.setAttribute('alt',''); media.appendChild(img); card.appendChild(media);
+var body=n('div','gg-epanel__body gg-info-panel__details'); rows=n('dl','gg-epanel__rows');
+var titleLink=n('a','','—');titleLink.setAttribute('data-s','title');titleLink.setAttribute('href','#');makeRow('title','article','Title').appendChild(titleLink);
+var authorLink=n('a'),authorText=n('span','','—');authorLink.setAttribute('data-s','author-link');authorLink.setAttribute('href','#');authorText.setAttribute('data-s','author');authorLink.appendChild(authorText);makeRow('author','person','Written by').appendChild(authorLink);
+addChipRow('contributors','groups','Contributor by','contributors',true);addChipRow('labels','label','Label','labels',true);addChipRow('tags','sell','Tags','tags',true);
+addSpanRow('date','calendar_today','Date','date');addSpanRow('updated','event_repeat','Updated','updated',true);addSpanRow('comments','comment','Comments','comments');addSpanRow('readtime','schedule','Read time','readtime');addSpanRow('snippet','text_snippet','Snippet','snippet',true);
+var tocWrap=n('div','gg-epanel__value--toc'),tocList=n('ol','gg-info-panel__toclist'),tocHint=n('p','gg-info-panel__tochint'); tocList.setAttribute('data-gg-slot','toc'); tocHint.setAttribute('data-gg-slot','toc-hint'); tocWrap.appendChild(tocList); tocWrap.appendChild(tocHint); makeRow('toc','toc','Table of Contents').appendChild(tocWrap);
+body.appendChild(rows); card.appendChild(body);
+var foot=n('div','gg-epanel__foot'),cta=n('a','gg-info-panel__hero-cta gg-epanel__cta'),ctaIcon=n('span','gg-icon material-symbols-rounded','visibility');cta.setAttribute('href','#');ctaIcon.setAttribute('aria-hidden','true');cta.appendChild(ctaIcon);cta.appendChild(n('span','','Read this post'));foot.appendChild(cta);card.appendChild(foot);
+panel.appendChild(card); renderTocSkeleton(6,TOC_HINT_LOCK);
 }
 
 function extractThumbSrc(card){

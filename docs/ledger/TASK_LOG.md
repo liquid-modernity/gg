@@ -1998,3 +1998,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate auto-ran dirty-release build to align release ID from `79c5b91` to `35a8a1e` before full verification.
 - RISKS: low/med; manual SPA navigation sanity still recommended (listing -> post -> back focus and no blank swap).
 - NEXT: TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221
+
+## 2026-02-21 — TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221 — Panel skeleton DOM build (no innerHTML)
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE7-CORE-PANEL-SKELETON-NO-INNERHTML-20260221
+- TITLE: Build panels skeleton via DOM (no innerHTML) + tighten ratchet
+- MODE (DEV/PROD impact): core panel rendering refactor + verifier guardrail + allowlist ratchet tightening
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove LEGACY-0024 by replacing panel skeleton `innerHTML` template with DOM node construction, add dedicated verifier, wire into gate, and reduce allowlist count
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-core-panel-no-innerhtml.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-core-panel-no-innerhtml.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): core-panel verifier PASS; allowlist ratchet PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): no `panel.innerHTML` remains in panels/infopanel skeleton region; gate realigned release assets to b13d129 in current tree state
+- RISKS: low/med; manual 2-minute panel open/focus-trap sanity still required in real browser
+- NEXT: TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221
