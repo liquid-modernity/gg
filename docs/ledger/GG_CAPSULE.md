@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221: Enforce focus + polite announce on SPA route navigation callbacks.
+- TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221: Remove trivial core HTML injection hotspots and empty innerHTML clears.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: d790c38
+RELEASE_ID: 54dc090
 RELEASE_HISTORY:
-- d790c38
-- 1d3d036
-PROD_PINNED_JS: /assets/v/d790c38/main.js
-PROD_PINNED_APP: /assets/v/d790c38/app.js
-PROD_PINNED_CSS: /assets/v/d790c38/main.css
+- 54dc090
+- 18b2e63
+PROD_PINNED_JS: /assets/v/54dc090/main.js
+PROD_PINNED_APP: /assets/v/54dc090/app.js
+PROD_PINNED_CSS: /assets/v/54dc090/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
+- TASK-LEGACY-ALLOWLIST-RATCHET-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221 patched router callbacks for #gg-main focus + SR title announce.
+- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221 removed empty innerHTML clears and simple DOM injection in core.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

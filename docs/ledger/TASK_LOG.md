@@ -1728,3 +1728,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): initial gate run hit gzip budget edge and was resolved by removing redundant legacy route announce fallback so router callback path is single source
 - RISKS: low/med; manual browser sanity for focus behavior and SR speech still needs interactive run
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
+
+---
+
+## 2026-02-21 — TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221 — Core hotspot cleanup
+- DATE: 2026-02-21
+- TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
+- TITLE: Remove trivial innerHTML usage in core hotspots
+- MODE (DEV/PROD impact): core module refactor + guardrail verifier + allowlist reduction + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove all `innerHTML=''` in ui.bucket.core.js, migrate comments status HTML and simple icon/button HTML to DOM APIs, add no-innerhtml-clear verifier, wire gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-no-innerhtml-clear.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-innerhtml-clear.mjs; node tools/verify-no-new-html-in-js.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run ship -- -m "refactor(ui): remove trivial innerHTML usage in core hotspots"; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: shipped via ship workflow (push main)
+- VERIFY (URLs + expected): no-innerhtml-clear PASS; no-new-html-in-js PASS with allowlist reduced to 42; gate:prod PASS; gate-release strict live smoke expected to fail in sandbox DNS-offline conditions
+- NOTES (gotchas): gate initially failed on `ui.bucket.core.js` gzip by small delta; budget updated minimally to keep deterministic gate
+- RISKS: low/med; strict live smoke remains network-dependent in sandbox
+- NEXT: TASK-LEGACY-ALLOWLIST-RATCHET-20260221

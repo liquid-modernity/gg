@@ -120,58 +120,9 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0016",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0017",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0018",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0019",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0020",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0021",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0022",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "DOMParser\\s*\\(",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0023",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
       "note": "baseline legacy",
       "introduced_by": "baseline"
     },
@@ -183,51 +134,9 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0025",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0026",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0027",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "DOMParser\\s*\\(",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0028",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0029",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0030",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0031",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
       "note": "baseline legacy",
       "introduced_by": "baseline"
     },
@@ -282,20 +191,6 @@
     },
     {
       "id": "LEGACY-0039",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0040",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0041",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "innerHTML\\s*=",
       "note": "baseline legacy",

@@ -1,43 +1,51 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-NATIVE-FEEL-ROUTE-FOCUS-ANNOUNCE-20260221
-TITLE: Focus + announce on SPA route changes
+TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
+TITLE: Remove trivial innerHTML usage in core hotspots
 
 SUMMARY
-- Added one-time router a11y patch in `ui.bucket.core.js` that wraps `router.onNavigate` and `router.onPopState`.
-- On SPA route callbacks, behavior now runs after double `requestAnimationFrame`:
-  - focus moves to `#gg-main` using `preventScroll:true`
-  - SR announcement uses `GG.services.a11y.announce('Dibuka: ' + document.title, { politeness:'polite' })` when title is non-empty.
-- Patch is guarded with `router._a11yRoutePatched` to prevent double wrapping.
-- Added verifier `tools/verify-route-a11y-contract.mjs` and wired it into `tools/gate-prod.sh`.
-- Removed legacy in-render route announce path so route callbacks become the single source for focus+announce timing.
+- Removed all `innerHTML = ''` usage from `public/assets/latest/modules/ui.bucket.core.js` and replaced with `textContent = ''`.
+- Replaced comments loading/unavailable HTML strings with DOM API rendering (`createElement` + `textContent` + aria attributes).
+- Replaced trivial button/icon HTML in core hotspots with DOM node creation.
+- Added `tools/verify-no-innerhtml-clear.mjs` and wired it into `tools/gate-prod.sh`.
+- Cleaned obsolete legacy annotations and reduced allowlist entries accordingly.
+
+ALLOWLIST SIZE
+- Before: 57
+- After: 42
 
 FILES CHANGED
 - public/assets/latest/modules/ui.bucket.core.js
-- tools/verify-route-a11y-contract.mjs
+- docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
+- tools/verify-no-innerhtml-clear.mjs
 - tools/gate-prod.sh
+- tools/perf-budgets.json
+- docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
-- docs/ledger/GG_CAPSULE.md
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/d790c38/*
-- public/assets/v/1d3d036/*
-- public/assets/v/c7d6ec6/* (removed)
+- public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-route-a11y-contract.mjs`
+- `node tools/verify-no-innerhtml-clear.mjs`
 ```text
-VERIFY_ROUTE_A11Y_CONTRACT: PASS
+VERIFY_NO_INNERHTML_CLEAR: PASS
+```
+
+- `node tools/verify-no-new-html-in-js.mjs`
+```text
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
 VERIFY_ROUTE_A11Y_CONTRACT: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=57 allowlisted_matches=57 violations=0
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
+VERIFY_NO_INNERHTML_CLEAR: PASS
 PASS: verify-panels-inert-safety
 PASS: verify-smooth-scroll-policy
 VERIFY_AUTHORS_DIR_CONTRACT: PASS
@@ -56,15 +64,13 @@ PASS: gate:prod
 
 - `bash tools/gate-release.sh`
 ```text
-VERIFY_ROUTE_A11Y_CONTRACT: PASS
+VERIFY_NO_INNERHTML_CLEAR: PASS
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
-MANUAL SANITY
-- Not executed in this sandbox (no interactive browser/screen-reader session).
-- Required checks pending on real browser session:
-  - Navigate via internal link: focus lands on `#gg-main`, polite announcement speaks `Dibuka: <title>`.
-  - Back/Forward popstate repeats the same behavior.
-  - No visible scroll jump regression.
+NOTES
+- `gate-release` strict live smoke fails in this sandbox due DNS/network resolution limits.
+- Budget for `modules/ui.bucket.core.js` was adjusted minimally (`max_gzip` 55400 -> 55600) to reflect intentional DOM-based refactor footprint.

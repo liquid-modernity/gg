@@ -1190,13 +1190,24 @@ function findBloggerCommentsRoot(){
 function ensureSlot(){
   return qs('.gg-comments-panel[data-gg-panel="comments"] [data-gg-slot="comments"]');
 }
+function setSlotStatus(slot, message){
+  if (!slot) return;
+  var text = String(message || '').trim();
+  slot.textContent = '';
+  if (!text) return;
+  var status = document.createElement('div');
+  status.className = 'gg-comments-loading';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  status.textContent = text;
+  slot.appendChild(status);
+}
 function setLoading(slot, on){
   if (!slot) return;
   if (on){
     if (slot.__ggLoading) return;
     slot.__ggLoading = true;
-// @gg-allow-html-in-js LEGACY:LEGACY-0016
-    slot.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Loading comments...</div>";
+    setSlotStatus(slot, 'Loading comments...');
   } else {
     slot.__ggLoading = false;
     var el = slot.querySelector('.gg-comments-loading');
@@ -1213,8 +1224,7 @@ function mount(){
 
   if (src.parentNode !== slot){
     setLoading(slot, false);
-// @gg-allow-html-in-js LEGACY:LEGACY-0017
-    slot.innerHTML = '';
+    slot.textContent = '';
     slot.appendChild(src);
   } else {
     setLoading(slot, false);
@@ -1247,8 +1257,7 @@ function mountWithRetry(){
     if (tries >= max) {
       var s = ensureSlot();
       if (s){
-// @gg-allow-html-in-js LEGACY:LEGACY-0018
-        s.innerHTML = "<div class='gg-comments-loading' role='status' aria-live='polite'>Comments are not available right now.</div>";
+        setSlotStatus(s, 'Comments are not available right now.');
       }
       return;
     }
@@ -1995,13 +2004,11 @@ function renderFooterTags(article){
   var tags = collectTags(article);
   if(!tags.length){
     slot.hidden = true;
-// @gg-allow-html-in-js LEGACY:LEGACY-0019
-    slot.innerHTML = '';
+    slot.textContent = '';
     return;
   }
   slot.hidden = false;
-// @gg-allow-html-in-js LEGACY:LEGACY-0020
-  slot.innerHTML = '';
+  slot.textContent = '';
   tags.slice(0, 16).forEach(function(tag){
     var chip = document.createElement('a');
     chip.className = 'gg-post__tag';
@@ -2145,8 +2152,11 @@ btn.type = 'button';
 btn.className = 'gg-post__tool gg-post__action--poster';
 btn.setAttribute('data-gg-postbar', 'poster');
 btn.setAttribute('aria-label', 'Share as Poster');
-// @gg-allow-html-in-js LEGACY:LEGACY-0021
-btn.innerHTML = '<span aria-hidden="true" class="gg-icon material-symbols-rounded">image</span>';
+var icon = document.createElement('span');
+icon.setAttribute('aria-hidden', 'true');
+icon.className = 'gg-icon material-symbols-rounded';
+icon.textContent = 'image';
+btn.appendChild(icon);
 if (shareBtn && shareBtn.parentNode) {
   shareBtn.parentNode.insertBefore(btn, shareBtn.nextSibling);
 } else {
@@ -2715,8 +2725,7 @@ function init(){
     };
   });
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0023
-  feed.innerHTML = '';
+  feed.textContent = '';
   feed.classList.add('gg-pp__track');
   items.forEach(function(data){
     feed.appendChild(buildCard(data));
@@ -2903,10 +2912,56 @@ hint.textContent = text;
 hint.hidden = !text;
 }
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0025
-function renderTocSkeleton(count, hint){ var list=qs('[data-gg-slot="toc"]', panel),n=parseInt(count,10),i=0,li,row,line; if(!list) return; if(!isFinite(n)||n<1) n=6; if(n>8) n=8; list.innerHTML=''; for(;i<n;i++){ li=document.createElement('li'); li.className='gg-info-panel__tocitem gg-info-panel__tocitem--skeleton'; row=document.createElement('span'); row.className='gg-info-panel__toclink'; line=document.createElement('span'); line.className='gg-info-panel__tocline'; row.appendChild(line); li.appendChild(row); list.appendChild(li); } setTocHint(hint||''); }
-// @gg-allow-html-in-js LEGACY:LEGACY-0026
-function renderTocItems(items){ var list=qs('[data-gg-slot="toc"]', panel),rows=Array.isArray(items)?items:[],i=0,item,li,level,link,num,text; if(!list) return; list.innerHTML=''; if(!rows.length){ setTocHint('No headings found.'); return; } for(;i<rows.length;i++){ item=rows[i]||{}; li=document.createElement('li'); level=parseInt(item.level,10); if(!isFinite(level)||level<2) level=2; if(level>4) level=4; li.className='gg-info-panel__tocitem gg-info-panel__toclvl-'+level; link=document.createElement('a'); link.className='gg-info-panel__toclink'; link.href=item.href||'#'; num=document.createElement('span'); num.className='gg-info-panel__tocnum'; num.textContent=String(i+1).padStart(2,'0'); text=document.createElement('span'); text.className='gg-info-panel__toctext'; text.textContent=item.text||'Section'; link.appendChild(num); link.appendChild(text); li.appendChild(link); list.appendChild(li); } setTocHint(''); }
+function renderTocSkeleton(count, hint){
+var list = qs('[data-gg-slot="toc"]', panel), n = parseInt(count, 10), i = 0, li, row, line;
+if(!list) return;
+if(!isFinite(n) || n < 1) n = 6;
+if(n > 8) n = 8;
+list.textContent = '';
+for(; i < n; i++){
+  li = document.createElement('li');
+  li.className = 'gg-info-panel__tocitem gg-info-panel__tocitem--skeleton';
+  row = document.createElement('span');
+  row.className = 'gg-info-panel__toclink';
+  line = document.createElement('span');
+  line.className = 'gg-info-panel__tocline';
+  row.appendChild(line);
+  li.appendChild(row);
+  list.appendChild(li);
+}
+setTocHint(hint || '');
+}
+function renderTocItems(items){
+var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? items : [], i = 0, item, li, level, link, num, text;
+if(!list) return;
+list.textContent = '';
+if(!rows.length){
+  setTocHint('No headings found.');
+  return;
+}
+for(; i < rows.length; i++){
+  item = rows[i] || {};
+  li = document.createElement('li');
+  level = parseInt(item.level, 10);
+  if(!isFinite(level) || level < 2) level = 2;
+  if(level > 4) level = 4;
+  li.className = 'gg-info-panel__tocitem gg-info-panel__toclvl-' + level;
+  link = document.createElement('a');
+  link.className = 'gg-info-panel__toclink';
+  link.href = item.href || '#';
+  num = document.createElement('span');
+  num.className = 'gg-info-panel__tocnum';
+  num.textContent = String(i + 1).padStart(2, '0');
+  text = document.createElement('span');
+  text.className = 'gg-info-panel__toctext';
+  text.textContent = item.text || 'Section';
+  link.appendChild(num);
+  link.appendChild(text);
+  li.appendChild(link);
+  list.appendChild(li);
+}
+setTocHint('');
+}
 
 function toAbsUrl(raw){ try { return new URL(String(raw || ''), window.location.href).toString(); } catch (_) { return ''; } }
 function tocCacheKey(url){ var abs = toAbsUrl(url), parsed; if (!abs) return ''; try { parsed = new URL(abs); return parsed.origin + parsed.pathname + parsed.search; } catch (_) { return abs; } }
@@ -2952,8 +3007,26 @@ function prefetchToc(href){ return resolveTocItems(href, { abortOthers: true }).
 function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var key=tocCacheKey(href),abs=toAbsUrl(href),cached; if(!key||!abs){ renderTocSkeleton(6,'Unable to open.'); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return items||[]; }).catch(function(){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)) renderTocSkeleton(6,'Open article for headings.'); return []; }); }
 function updateTocForCard(card, href){ if(!card||!href){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(href),cached; if(!key){ abortToc(''); renderTocSkeleton(6,'Unable to open.'); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,'Loading headings...'); hydrateToc(card, href); }
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0028
-function fillChipsToSlot(slot, items, max){ var chipRow=qs('[data-gg-slot="'+slot+'"]', panel),list=items||[],i=0,x=null,href='',el=null,tx=null,n=Math.min(list.length,max||12); if(!chipRow) return; chipRow.innerHTML=''; for(i=0;i<n;i++){ x=list[i]||{}; href=cleanText(x.href||''); el=document.createElement(href?'a':'span'); el.className='gg-chip'; if(href){ el.href=href; if(x.src) el.setAttribute('data-src',x.src); } tx=document.createElement('span'); tx.className='gg-chip__text'; tx.textContent=x.text||''; el.appendChild(tx); chipRow.appendChild(el); } }
+function fillChipsToSlot(slot, items, max){
+var chipRow = qs('[data-gg-slot="' + slot + '"]', panel), list = items || [], i = 0, x = null, href = '', el = null, tx = null, n = Math.min(list.length, max || 12);
+if(!chipRow) return;
+chipRow.textContent = '';
+for(i = 0; i < n; i++){
+  x = list[i] || {};
+  href = cleanText(x.href || '');
+  el = document.createElement(href ? 'a' : 'span');
+  el.className = 'gg-chip';
+  if(href){
+    el.href = href;
+    if(x.src) el.setAttribute('data-src', x.src);
+  }
+  tx = document.createElement('span');
+  tx.className = 'gg-chip__text';
+  tx.textContent = x.text || '';
+  el.appendChild(tx);
+  chipRow.appendChild(el);
+}
+}
 function applyPostMeta(key){ var m=key?postMetaCache.get(key):null,t=m&&Array.isArray(m.t)?m.t:[],c=m&&Array.isArray(m.c)?m.c:[],u=cleanText(m&&m.u?m.u:''),r=cleanText(m&&m.r?m.r:''),a=cleanText(m&&m.a?m.a:''),list=[],chips=[],resolved=[],i=0,base=0,token=0,one=null,ttoken=0; setS('updated',u); setRow('updated',!!u); setRow('contributors',!!c.length); setRow('tags',!!t.length); if(t.length){ fillChipsToSlot('tags',t,14); ttoken=panel?(panel.__ggTagMetaToken=(panel.__ggTagMetaToken||0)+1):0; tagResolveMany(t).then(function(rows){ if(!panel||panel.__ggMetaKey!==key||(ttoken&&panel.__ggTagMetaToken!==ttoken)) return; fillChipsToSlot('tags',Array.isArray(rows)?rows:[],14); }).catch(function(){}); } else fillChipsToSlot('tags',[],14); if(a) list.push(a); for(i=0;i<c.length;i++){ if(c[i]) list.push(c[i]); } if(list.length){ for(i=0;i<list.length;i++){ one=authorFallback(list[i]); chips.push({ text:one&&one.name||'', href:one&&one.href||'', src:one&&one.src||'fallback' }); } base=a?1:0; if(a&&chips[0]){ setS('author',chips[0].text); setHref('[data-s="author-link"]',chips[0].href||'#',chips[0].src||'fallback'); setRow('author',!!chips[0].text); } fillChipsToSlot('contributors',chips.slice(base),12); token=panel?(panel.__ggAuthorMetaToken=(panel.__ggAuthorMetaToken||0)+1):0; authorResolveMany(list).then(function(rows){ var x=null; if(!panel||panel.__ggMetaKey!==key||(token&&panel.__ggAuthorMetaToken!==token)) return; resolved=[]; base=a?1:0; if(Array.isArray(rows)){ if(a&&rows[0]){ x=rows[0]||{}; setS('author',x.name||''); setHref('[data-s="author-link"]',x.href||'#',x.src||'fallback'); setRow('author',!!x.name); } for(i=base;i<rows.length;i++){ x=rows[i]||{}; resolved.push({ text:x.name||'', href:x.href||'', src:x.src||'fallback' }); } fillChipsToSlot('contributors',resolved,12); } }).catch(function(){}); } else fillChipsToSlot('contributors',[],12); if(r){ setS('readtime',r); setRow('readtime',true); } }
 
 function extractLabels(card){ var seen={},tags=qsa('.gg-post-card__labels a, a[rel="tag"]', card).map(function(a){ return { text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }; }).filter(function(x){ var k=x.text.toLowerCase(); return k&&!seen[k]&&(seen[k]=1); }),a; if(tags.length) return tags; a=qs('.gg-post-card__label a', card); return a?[{ text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }]:[]; }
@@ -3237,8 +3310,7 @@ function renderEntriesAsList(itemsRoot, entries){
     ul.appendChild(li);
   });
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0029
-  itemsRoot.innerHTML = '';
+  itemsRoot.textContent = '';
   itemsRoot.appendChild(ul);
 }
 
@@ -3270,8 +3342,7 @@ function normalizeItems(itemsRoot){
       li.appendChild(a);
       list.appendChild(li);
     });
-// @gg-allow-html-in-js LEGACY:LEGACY-0030
-    itemsRoot.innerHTML = '';
+    itemsRoot.textContent = '';
     itemsRoot.appendChild(list);
   }
 
@@ -3305,11 +3376,18 @@ function ensureSummary(details, title, icon){
   if (!summary) {
     summary = document.createElement('summary');
     summary.className = 'gg-navtree__summary';
-// @gg-allow-html-in-js LEGACY:LEGACY-0031
-    summary.innerHTML =
-      '<span class="gg-navtree__summary-icon material-symbols-rounded" aria-hidden="true"></span>' +
-      '<span class="gg-navtree__summary-text"></span>' +
-      '<span class="gg-navtree__summary-chev material-symbols-rounded" aria-hidden="true">expand_more</span>';
+    var iconNode = document.createElement('span');
+    iconNode.className = 'gg-navtree__summary-icon material-symbols-rounded';
+    iconNode.setAttribute('aria-hidden', 'true');
+    var textNode = document.createElement('span');
+    textNode.className = 'gg-navtree__summary-text';
+    var chevNode = document.createElement('span');
+    chevNode.className = 'gg-navtree__summary-chev material-symbols-rounded';
+    chevNode.setAttribute('aria-hidden', 'true');
+    chevNode.textContent = 'expand_more';
+    summary.appendChild(iconNode);
+    summary.appendChild(textNode);
+    summary.appendChild(chevNode);
     details.insertBefore(summary, details.firstChild);
   }
 
@@ -5346,8 +5424,7 @@ function isSystemPath(pathname){
     if (!wrap) return;
     var msg = getMessages();
     var list = cloneState();
-// @gg-allow-html-in-js LEGACY:LEGACY-0040
-    wrap.innerHTML = '';
+    wrap.textContent = '';
     if (!list.length) {
       if (empty) empty.style.display = '';
       return;
@@ -5383,8 +5460,12 @@ function isSystemPath(pathname){
       removeBtn.setAttribute('aria-label', msg.removeBtn);
       var removeIcon = d.createElement('span');
       removeIcon.className = 'gg-icon gg-library-list__remove-icon';
-// @gg-allow-html-in-js LEGACY:LEGACY-0041
-      removeIcon.innerHTML = '<svg class="gg-icon__svg"><use href="#gg-ic-bookmark-remove-line"/></svg>';
+      var removeSvg = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      removeSvg.setAttribute('class', 'gg-icon__svg');
+      var removeUse = d.createElementNS('http://www.w3.org/2000/svg', 'use');
+      removeUse.setAttribute('href', '#gg-ic-bookmark-remove-line');
+      removeSvg.appendChild(removeUse);
+      removeIcon.appendChild(removeSvg);
       var removeLabel = d.createElement('span');
       removeLabel.className = 'gg-library-list__remove-label';
       removeLabel.textContent = msg.removeBtn;
