@@ -1,52 +1,43 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-RELEASE-GATE-MODES-20260221
-TITLE: Split local vs live release gates (CI is source of truth)
+TASK_ID: TASK-TAP-TARGETS-V2-20260221
+TITLE: Expand 44px tap target contract (icon buttons + nav links)
 
 SUMMARY
-- Refactored release gating into two modes:
-  - `tools/gate-release.sh` is now a dispatcher.
-  - `tools/gate-release-live.sh` is strict LIVE gate (copied from previous strict gate script).
-- Local default no longer depends on external DNS/live reachability and runs deterministic repo-safe checks.
-- CI deploy workflow now runs strict LIVE gate after deploy with retry wrapper to absorb transient network issues without lowering strictness.
-- Distribution contract now states local vs CI gate responsibilities explicitly.
+- Expanded 44px hit-area contract to additional real-world offenders in CSS.
+- Extended `tools/verify-tap-targets.mjs` so these selectors are now mandatory and regression-protected.
+- Expanded manual sweep checklist for icon buttons, sidebar links, and head buttons.
 
-WHY SPLIT EXISTS
-- Local development environment can have DNS/network limits; release gate should not block local progress for non-code infrastructure reachability.
-- CI has stable network/runtime and is therefore the authoritative release proof for LIVE checks.
+SELECTORS ADDED TO CONTRACT
+- `.gg-icon-btn`
+- `nav.gg-dock .gg-dock__search .gg-icon-btn`
+- `.gg-leftnav__link`
+- `.gg-lt[data-gg-module="labeltree"] .gg-lt__headbtn`
+- `#gg-toc .gg-toc__headbtn`
+
+CSS CHANGES
+- `nav.gg-dock .gg-dock__search .gg-icon-btn`: replaced `40px` sizing with `var(--gg-tap-min)` + min-size guards.
+- `.gg-leftnav__link`: added `min-height: var(--gg-tap-min)`.
+- `.gg-lt[data-gg-module="labeltree"] .gg-lt__headbtn` (both duplicated blocks): added `min-height: var(--gg-tap-min)`.
+- `#gg-toc .gg-toc__headbtn`: added `min-height: var(--gg-tap-min)`.
 
 FILES CHANGED
-- tools/gate-release-live.sh
-- tools/gate-release.sh
-- .github/workflows/deploy.yml
-- docs/release/DISTRIBUTION.md
+- public/assets/latest/main.css
+- tools/verify-tap-targets.mjs
+- docs/a11y/TAP_TARGETS_SWEEP.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
-
-WORKFLOW PROOF (DEPLOY RUNS STRICT LIVE GATE)
-- File: `.github/workflows/deploy.yml`
-- Added step:
-```yaml
-- name: Post-deploy strict live gate (retry)
-  run: |
-    ...
-    if bash tools/gate-release-live.sh; then
-      echo "PASS: gate-release-live"
-      break
-    fi
-```
+- index.prod.xml
+- public/sw.js
+- src/worker.js
+- public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `bash tools/gate-release.sh`
+- `node tools/verify-tap-targets.mjs`
 ```text
-INFO: live checks run only in CI or with GG_GATE_RELEASE_LIVE=1
-...
-PASS: gate:prod
-...
-PASS: palette a11y contract (mode=repo, release=3b01c55)
-PASS: gate:release(local)
+PASS: tap targets contract (44px)
 ```
 
 - `npm run gate:prod`
@@ -81,22 +72,15 @@ PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-- `bash tools/gate-release-live.sh` (local sandbox evidence)
+- `bash tools/gate-release.sh`
 ```text
-...
-curl: (6) Could not resolve host: www.pakrpp.com
-FAIL: __gg_worker_ping request failed
-FAIL: smoke failed after 1 attempt(s)
-```
-
-- `GG_GATE_RELEASE_LIVE=1 bash tools/gate-release.sh` (forced dispatcher to LIVE path)
-```text
-...
-curl: (6) Could not resolve host: www.pakrpp.com
-FAIL: __gg_worker_ping request failed
-FAIL: smoke failed after 1 attempt(s)
+INFO: live checks run only in CI or with GG_GATE_RELEASE_LIVE=1
+PASS: tap targets contract (44px)
+PASS: gate:prod
+PASS: palette a11y contract (mode=repo, release=042358e)
+PASS: gate:release(local)
 ```
 
 NOTES
-- Local dispatcher intentionally never claims LIVE PASS.
-- LIVE proof is now mandatory in CI via `tools/gate-release-live.sh` post-deploy step.
+- During `npm run gate:prod`, release artifacts were automatically realigned to `RELEASE_ID=042358e`.
+- Local release gate intentionally stays non-live; strict live proof remains in CI via `gate-release-live.sh`.

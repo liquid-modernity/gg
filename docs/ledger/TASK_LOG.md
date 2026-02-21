@@ -1908,3 +1908,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): local dispatcher intentionally runs `verify-headers --mode=config` + `verify-palette-a11y --mode=repo` and prints non-live PASS label to avoid false LIVE claims
 - RISKS: low; strict live proof now centralized in CI networked environment
 - NEXT: TASK-TAP-TARGETS-V2-20260221
+
+---
+
+## 2026-02-21 — TASK-TAP-TARGETS-V2-20260221 — Expand 44px tap target contract coverage
+- DATE: 2026-02-21
+- TASK_ID: TASK-TAP-TARGETS-V2-20260221
+- TITLE: Expand 44px tap target contract (icon buttons + nav links)
+- MODE (DEV/PROD impact): CSS a11y sizing hardening + verifier extension + checklist expansion + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: extend tap-target coverage to `.gg-icon-btn`, dock search icon button, sidebar nav links, labeltree head button, and TOC head button; enforce via verifier to block regressions
+- CHANGES (files touched): public/assets/latest/main.css; tools/verify-tap-targets.mjs; docs/a11y/TAP_TARGETS_SWEEP.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-tap-targets.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): verify-tap-targets PASS; gate:prod PASS (offline smoke fallback in sandbox); gate:release(local) PASS; strict live checks remain CI-authoritative
+- NOTES (gotchas): `gate:prod` auto-ran `npm run build` to realign release from `cb6131c` to `042358e` after CSS/verifier + ledger edits
+- RISKS: low; manual mobile thumb sweep still recommended on real devices
+- NEXT: TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-RELEASE-GATE-MODES-20260221: Split release gate into local dispatcher and strict live CI proof gate.
+- TASK-TAP-TARGETS-V2-20260221: Expand 44px tap target contract to icon buttons, dock search icon, sidebar links, and section head buttons.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: cb6131c
+RELEASE_ID: 042358e
 RELEASE_HISTORY:
-- cb6131c
-- 3b01c55
-PROD_PINNED_JS: /assets/v/cb6131c/main.js
-PROD_PINNED_APP: /assets/v/cb6131c/app.js
-PROD_PINNED_CSS: /assets/v/cb6131c/main.css
+- 042358e
+- f0c0a52
+PROD_PINNED_JS: /assets/v/042358e/main.js
+PROD_PINNED_APP: /assets/v/042358e/app.js
+PROD_PINNED_CSS: /assets/v/042358e/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-TAP-TARGETS-V2-20260221
+- TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-RELEASE-GATE-MODES-20260221 introduced `gate-release-live.sh`, converted `gate-release.sh` to local/live dispatcher, added post-deploy strict live gate retries in CI, and updated distribution contract.
+- 2026-02-21 TASK-TAP-TARGETS-V2-20260221 expanded tap-target CSS coverage and verifier contract for `.gg-icon-btn`, dock search icon button, `.gg-leftnav__link`, labeltree head button, and TOC head button.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

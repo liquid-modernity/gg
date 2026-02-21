@@ -27,6 +27,10 @@ if (!fs.existsSync(cssPath)) {
 
   const required = [
     {
+      label: ".gg-icon-btn",
+      selectorRe: /(^|[^\w-])\.gg-icon-btn(?![\w-])/i,
+    },
+    {
       label: ".gg-tree-toggle",
       selectorRe: /(^|[^\w-])\.gg-tree-toggle(?![\w-])/i,
     },
@@ -57,6 +61,23 @@ if (!fs.existsSync(cssPath)) {
     {
       label: ".gg-share-sheet__close-btn",
       selectorRe: /(^|[^\w-])\.gg-share-sheet__close-btn(?![\w-])/i,
+    },
+    {
+      label: "nav.gg-dock .gg-dock__search .gg-icon-btn",
+      selectorRe: /nav\.gg-dock\s+\.gg-dock__search\s+\.gg-icon-btn(?![\w-])/i,
+    },
+    {
+      label: ".gg-leftnav__link",
+      selectorRe: /(^|[^\w-])\.gg-leftnav__link(?![\w-])/i,
+    },
+    {
+      label: ".gg-lt[data-gg-module=\"labeltree\"] .gg-lt__headbtn",
+      selectorRe:
+        /\.gg-lt\[data-gg-module=["']labeltree["']\]\s+\.gg-lt__headbtn(?![\w-])/i,
+    },
+    {
+      label: "#gg-toc .gg-toc__headbtn",
+      selectorRe: /#gg-toc\s+\.gg-toc__headbtn(?![\w-])/i,
     },
     {
       label: "nav.gg-dock .gg-dock__search input",
