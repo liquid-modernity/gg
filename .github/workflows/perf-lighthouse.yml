@@ -1,0 +1,80 @@
+name: Perf Lighthouse (Live)
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Cloudflare Workers"]
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    # 02:30 Asia/Jakarta (UTC+7) == 19:30 UTC (previous day)
+    - cron: "30 19 * * *"
+
+concurrency:
+  group: perf-lighthouse-main
+  cancel-in-progress: true
+
+jobs:
+  lighthouse_live:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout (workflow_dispatch/schedule)
+        if: ${{ github.event_name != 'workflow_run' }}
+        uses: actions/checkout@v4
+
+      - name: Checkout (workflow_run head SHA)
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run Lighthouse CI (with retries)
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in 1 2 3; do
+            echo "LHCI attempt ${attempt}/3"
+            rm -rf .lighthouseci
+            if npx -y @lhci/cli@0.13.0 autorun --config=./lighthouse/lighthouserc.ci.js; then
+              success=1
+              break
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              echo "LHCI failed, retrying in 20s..."
+              sleep 20
+            fi
+          done
+          if [ "${success}" -ne 1 ]; then
+            echo "ERROR: Lighthouse CI failed after 3 attempts"
+            exit 1
+          fi
+
+      - name: Optional temporary public storage links
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          npx -y @lhci/cli@0.13.0 upload --target=temporary-public-storage --inputDir=.lighthouseci \
+            | tee .lighthouseci/temporary-public-storage.txt
+
+      - name: Build LHCI summary
+        run: node tools/perf/lhci-summary.mjs
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci-${{ github.run_id }}
+          path: .lighthouseci
+          if-no-files-found: error

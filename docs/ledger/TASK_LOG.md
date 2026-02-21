@@ -2206,3 +2206,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): fonts.googleapis stylesheet preload removed; icon font now loaded from explicit gstatic woff2 preload + @font-face swap in main.css
 - RISKS: low/med; hardcoded gstatic URL should be reviewed if Google rotates asset URL in future
 - NEXT: TASK-PERF-AUTOMEASURE-CI-20260223
+
+## 2026-02-22 — TASK-PERF-AUTOMEASURE-CI-20260222 — Live Lighthouse CI workflow + contract guardrails
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-AUTOMEASURE-CI-20260222
+- TITLE: Add Lighthouse CI live perf workflow + summary + artifacts
+- MODE (DEV/PROD impact): CI-only perf governance (no runtime feature change)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add live Lighthouse workflow (workflow_run + schedule + manual), lighthouserc budgets from `docs/perf/BUDGETS.json`, Markdown summary generator, artifact upload, and repo verifier contract
+- CHANGES (files touched): .github/workflows/perf-lighthouse.yml; lighthouse/lighthouserc.ci.js; tools/perf/lhci-summary.mjs; tools/verify-perf-workflow-contract.mjs; tools/gate-prod.sh; docs/perf/CI_LIGHTHOUSE.md; docs/perf/URLS.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-perf-workflow-contract.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: pending on next workflow run
+- DEPLOY STATUS: no deploy change in this task
+- VERIFY (URLs + expected): perf workflow contract PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): Lighthouse URLs now sourced from `docs/perf/URLS.json`; workflow includes optional temporary-public-storage upload but source-of-truth remains artifact + step summary
+- RISKS: low/med; live Lighthouse can still be noisy despite 3-run median strategy
+- NEXT: TASK-PERF-BASELINE-SYNC-URLS-20260222

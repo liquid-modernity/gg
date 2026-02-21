@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-FONTS-CLS-INP-20260222: Harden font loading policy with critical woff2 preload + swap font-display guardrails.
+- TASK-PERF-AUTOMEASURE-CI-20260222: Add live Lighthouse CI workflow with budget assertions, summary, and artifact retention.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: bf87521
+RELEASE_ID: b674e4f
 RELEASE_HISTORY:
+- b674e4f
 - bf87521
-- 3482776
-PROD_PINNED_JS: /assets/v/bf87521/main.js
-PROD_PINNED_APP: /assets/v/bf87521/app.js
-PROD_PINNED_CSS: /assets/v/bf87521/main.css
+PROD_PINNED_JS: /assets/v/b674e4f/main.js
+PROD_PINNED_APP: /assets/v/b674e4f/app.js
+PROD_PINNED_CSS: /assets/v/b674e4f/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-AUTOMEASURE-CI-20260223
+- TASK-PERF-BASELINE-SYNC-URLS-20260222
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-FONTS-CLS-INP-20260222 added Material Symbols woff2 preload, main.css @font-face swap policy, and verify-font-policy gate.
+- 2026-02-22 TASK-PERF-AUTOMEASURE-CI-20260222 added live Lighthouse workflow, lighthouserc budget assertions, summary tool, and perf workflow contract verifier.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
