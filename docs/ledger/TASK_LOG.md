@@ -1764,3 +1764,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate includes release realignment when GG_CAPSULE changes
 - RISKS: low/med; strict live smoke remains network-dependent in sandbox
 - NEXT: TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221
+
+---
+
+## 2026-02-21 — TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221 — Overlay modal contract
+- DATE: 2026-02-21
+- TASK_ID: TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221
+- TITLE: Modal contract for overlays (trap + esc + restore focus)
+- MODE (DEV/PROD impact): a11y behavior + verifier guardrail + gate wiring + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add a11y modal helper in core, wire command/search and comments-help overlays, enforce single-modal behavior, add static contract verifier
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-overlay-modal-contract.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-overlay-modal-contract.mjs; node tools/verify-no-new-html-in-js.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run ship -- -m "feat(a11y): modal contract for overlays (trap + esc + restore focus)"; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: shipped via ship workflow (push main)
+- VERIFY (URLs + expected): overlay verifier PASS; no-new-html-in-js PASS; gate:prod PASS; gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): gate required budget rebaseline for ui.bucket.core.js after modal helper + overlay wiring footprint
+- RISKS: low/med; manual 3-minute browser sanity still required outside sandbox
+- NEXT: TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221

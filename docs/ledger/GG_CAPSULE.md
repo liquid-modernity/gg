@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-LEGACY-ALLOWLIST-RATCHET-20260221: Enforce no-growth ratchet for legacy HTML-in-JS allowlist size.
+- TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221: Modalize command/search and comments-help overlays with trap/esc/restore.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: a2194da
+RELEASE_ID: 6e43748
 RELEASE_HISTORY:
-- a2194da
-- 54dc090
-PROD_PINNED_JS: /assets/v/a2194da/main.js
-PROD_PINNED_APP: /assets/v/a2194da/app.js
-PROD_PINNED_CSS: /assets/v/a2194da/main.css
+- 6e43748
+- 02acffe
+PROD_PINNED_JS: /assets/v/6e43748/main.js
+PROD_PINNED_APP: /assets/v/6e43748/app.js
+PROD_PINNED_CSS: /assets/v/6e43748/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221
+- TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-LEGACY-ALLOWLIST-RATCHET-20260221 added max_allow ratchet guardrail for LEGACY allowlist.
+- 2026-02-21 TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221 added overlay modal helper and command/search modal wiring.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

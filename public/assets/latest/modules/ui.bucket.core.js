@@ -632,6 +632,11 @@ function scheduleRouteA11y(){
     });
   });
 }
+function closeActiveModalForRoute(){
+  var a11y = GG.services && GG.services.a11y;
+  if (!a11y || !a11y._activeModalEl || typeof a11y.modalClose !== 'function') return;
+  try { a11y.modalClose(a11y._activeModalEl, { restoreFocus: false }); } catch (_) {}
+}
 function patchRouteA11y(){
   var router = GG.core && GG.core.router;
   if (!router || router._a11yRoutePatched) return;
@@ -641,12 +646,14 @@ function patchRouteA11y(){
     if (prevOnNavigate) {
       try { prevOnNavigate.apply(this, arguments); } catch (_) {}
     }
+    closeActiveModalForRoute();
     scheduleRouteA11y();
   };
   router.onPopState = function(){
     if (prevOnPopState) {
       try { prevOnPopState.apply(this, arguments); } catch (_) {}
     }
+    closeActiveModalForRoute();
     scheduleRouteA11y();
   };
   router._a11yRoutePatched = true;
@@ -706,8 +713,8 @@ ui.dialog = ui.dialog || {};
 ui.dialog.open = ui.dialog.open || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', true); };
 ui.dialog.close = ui.dialog.close || function(){ return toggleHost('.gg-dialog-host,[data-gg-ui="dialog"]', false); };
 ui.overlay = ui.overlay || {};
-ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); };
-ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
+ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); var trigger = d.activeElement; if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); if(GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') GG.services.a11y.modalOpen(el, trigger, { label: 'Overlay' }); };
+ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; if(GG.services && GG.services.a11y && typeof GG.services.a11y.modalClose === 'function') GG.services.a11y.modalClose(el); GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
 ui.skeleton = ui.skeleton || {};
 ui.skeleton.markup = ui.skeleton.markup || '' +
 '<div class="gg-skeleton" aria-hidden="true">' +
@@ -1008,19 +1015,92 @@ if (GG.modules.posterCanvas && typeof GG.modules.posterCanvas.init === 'function
 if (GG.modules.posterEngine && typeof GG.modules.posterEngine.init === 'function') GG.modules.posterEngine.init();
 if (GG.modules.shareMotion && typeof GG.modules.shareMotion.init === 'function') GG.modules.shareMotion.init();
 };
-GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open){
+function ggPaletteOverlay(){
+var panel = document.getElementById('gg-palette-list');
+return panel && panel.nodeType === 1 ? panel : null;
+}
+function patchSearchOverlayModalBindings(){
+var search = GG.modules && GG.modules.search;
+if (!search || search._ggOverlayModalPatched) return !!(search && search._ggOverlayModalPatched);
+if (typeof search.open !== 'function' || typeof search.close !== 'function') return false;
+var prevOpen = search.open;
+var prevClose = search.close;
+search.open = function(){
+  var trigger = document.activeElement;
+  var out = prevOpen.apply(this, arguments);
+  try{
+    var panel = ggPaletteOverlay();
+    if (panel && !panel.hidden && GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') {
+      GG.services.a11y.modalOpen(panel, trigger, { label: 'Command palette' });
+    }
+  }catch(_){}
+  return out;
+};
+search.close = function(skipRestore){
+  var panel = ggPaletteOverlay();
+  var out = prevClose.apply(this, arguments);
+  try{
+    if (panel && GG.services && GG.services.a11y && typeof GG.services.a11y.modalClose === 'function') {
+      GG.services.a11y.modalClose(panel, { restoreFocus: !skipRestore });
+    }
+  }catch(_){}
+  return out;
+};
+search._ggOverlayModalPatched = true;
+return true;
+}
+function bindSearchOverlayModal(){
+if (patchSearchOverlayModalBindings()) return;
+w.setTimeout(function(){ patchSearchOverlayModalBindings(); }, 120);
+}
+if (!GG.ui._searchOverlayModalBound) {
+GG.ui._searchOverlayModalBound = true;
+if (GG.boot && GG.boot.onReady) GG.boot.onReady(bindSearchOverlayModal);
+else if (GG.boot && GG.boot.defer) GG.boot.defer(bindSearchOverlayModal);
+else w.setTimeout(bindSearchOverlayModal, 1);
+w.addEventListener('gg:search-open', function(){
+  bindSearchOverlayModal();
+  w.setTimeout(function(){
+    var panel = ggPaletteOverlay();
+    if (panel && !panel.hidden && GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') {
+      GG.services.a11y.modalOpen(panel, document.activeElement, { label: 'Command palette' });
+    }
+  }, 0);
+});
+}
+GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open, triggerEl){
 var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
 if(!modal) return;
+if (open){
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  GG.core.state.toggle(modal, 'open', true);
+  if (GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') {
+    GG.services.a11y.modalOpen(modal, triggerEl, { label: 'Comments help' });
+  }
+  return;
+}
+if (GG.services && GG.services.a11y && typeof GG.services.a11y.modalClose === 'function') {
+  GG.services.a11y.modalClose(modal);
+}
 modal.hidden = !open;
 modal.setAttribute('aria-hidden', open ? 'false' : 'true');
 GG.core.state.toggle(modal, 'open', !!open);
 };
-GG.actions.register('comments-help', function(){
-GG.ui.toggleCommentsHelp(true);
+GG.actions.register('comments-help', function(ctx){
+GG.ui.toggleCommentsHelp(true, ctx && ctx.element);
 });
 GG.actions.register('comments-help-close', function(){
 GG.ui.toggleCommentsHelp(false);
 });
+if (!GG.ui._commentsHelpBackdropBound) {
+GG.ui._commentsHelpBackdropBound = true;
+document.addEventListener('click', function(evt){
+  var modal = document.querySelector('[data-gg-modal=\"comments-help\"]');
+  if (!modal || modal.hidden) return;
+  if (evt && evt.target === modal) GG.ui.toggleCommentsHelp(false);
+}, true);
+}
 GG.actions.register('like', function(){
 GG.ui.ggToast('Coming soon');
 });
@@ -5683,6 +5763,10 @@ function isSystemPath(pathname){
   (function(a11y, A){
     A._inertStack = A._inertStack || [];
     A._announcer = A._announcer || null;
+    A._activeModalEl = A._activeModalEl || null;
+    A._activeModalCleanup = A._activeModalCleanup || null;
+    A._activeModalTrigger = A._activeModalTrigger || null;
+    A._activeModalEsc = A._activeModalEsc || null;
     A.reducedMotion = A.reducedMotion || {};
     A.reducedMotion.get = A.reducedMotion.get || function(){ return !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches); };
     A.reducedMotion.watch = A.reducedMotion.watch || function(cb){ if(!w.matchMedia) return function(){}; var mq = w.matchMedia('(prefers-reduced-motion: reduce)'); var h = function(e){ if(cb) cb(!!e.matches); }; if(mq.addEventListener) mq.addEventListener('change', h); else if(mq.addListener) mq.addListener(h); return function(){ if(mq.removeEventListener) mq.removeEventListener('change', h); else if(mq.removeListener) mq.removeListener(h); }; };
@@ -5692,9 +5776,71 @@ function isSystemPath(pathname){
     A.inert = A.inert || function(root, keep){ var host = root || d.body || d.documentElement; if(!host) return null; var kids = Array.prototype.slice.call(host.children || []); var record = []; kids.forEach(function(el){ if(!el || el === keep) return; record.push(setInert(el, true)); }); A._inertStack.push(record); return record; };
     A.restoreInert = A.restoreInert || function(){ var record = A._inertStack.pop(); if(!record) return; record.forEach(function(item){ if(item && item.el) setInert(item.el, false); }); };
     A.focusTrap = A.focusTrap || function(container, opts){ if(!container) return function(){}; var options = opts || {}; var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex=\"-1\"])'; function focusables(){ return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){ return el.offsetParent !== null && !el.hasAttribute('disabled'); }); } function onKey(e){ if(e.key !== 'Tab') return; var list = focusables(); if(!list.length){ container.focus(); e.preventDefault(); return; } var first = list[0]; var last = list[list.length - 1]; if(e.shiftKey && d.activeElement === first){ e.preventDefault(); last.focus(); } else if(!e.shiftKey && d.activeElement === last){ e.preventDefault(); first.focus(); } } container.addEventListener('keydown', onKey); if(options.autofocus !== false){ var list = focusables(); if(list[0]) list[0].focus(); } return function(){ container.removeEventListener('keydown', onKey); }; };
+    function safeFocus(el){ if(!el || typeof el.focus !== 'function') return; try { el.focus({preventScroll:true}); } catch(_) { try { el.focus(); } catch(__){} } }
+    A.modalClose = A.modalClose || function(modalEl, opts){
+      var target = modalEl || A._activeModalEl;
+      var options = opts || {};
+      var isActive = !!(target && A._activeModalEl === target);
+      var restoreFocus = options.restoreFocus !== false;
+      var trigger = isActive ? A._activeModalTrigger : null;
+      if (!target || target.nodeType !== 1) return false;
+      if (isActive) {
+        if (A._activeModalCleanup) {
+          try { A._activeModalCleanup(); } catch (_) {}
+        }
+        A._activeModalCleanup = null;
+        A._activeModalEl = null;
+        A._activeModalTrigger = null;
+        A._activeModalEsc = null;
+      }
+      target.hidden = true;
+      target.setAttribute('aria-hidden', 'true');
+      if (GG.core && GG.core.state) GG.core.state.toggle(target, 'open', false);
+      if (restoreFocus && trigger && trigger !== target) safeFocus(trigger);
+      return true;
+    };
+    A.modalOpen = A.modalOpen || function(modalEl, triggerEl, opts){
+      var options = opts || {};
+      var trigger = triggerEl && triggerEl.nodeType === 1 ? triggerEl : d.activeElement;
+      if (!modalEl || modalEl.nodeType !== 1) return false;
+      if (A._activeModalEl && A._activeModalEl !== modalEl && typeof A.modalClose === 'function') {
+        A.modalClose(A._activeModalEl, { restoreFocus: false });
+      }
+      if (A._activeModalCleanup) {
+        try { A._activeModalCleanup(); } catch (_) {}
+      }
+      A._activeModalCleanup = null;
+      A._activeModalEl = modalEl;
+      A._activeModalTrigger = trigger && trigger.nodeType === 1 ? trigger : null;
+      modalEl.setAttribute('role','dialog');
+      modalEl.setAttribute('aria-modal', 'true');
+      if (options.label && !modalEl.getAttribute('aria-label') && !modalEl.getAttribute('aria-labelledby')) {
+        modalEl.setAttribute('aria-label', String(options.label));
+      }
+      if (!modalEl.hasAttribute('tabindex')) modalEl.setAttribute('tabindex', '-1');
+      modalEl.hidden = false;
+      modalEl.setAttribute('aria-hidden', 'false');
+      if (GG.core && GG.core.state) GG.core.state.toggle(modalEl, 'open', true);
+      var trapCleanup = typeof A.focusTrap === 'function' ? A.focusTrap(modalEl, {autofocus:false}) : function(){};
+      var onEsc = function(evt){
+        if (!evt || evt.key !== 'Escape') return;
+        evt.preventDefault();
+        A.modalClose(modalEl);
+      };
+      d.addEventListener('keydown', onEsc, true);
+      A._activeModalEsc = onEsc;
+      A._activeModalCleanup = function(){
+        try { d.removeEventListener('keydown', onEsc, true); } catch (_) {}
+        try { trapCleanup(); } catch (_) {}
+      };
+      safeFocus(modalEl);
+      return true;
+    };
     A.init = A.init || function(){ if(A._init) return; A._init = true; function sync(val){ if(GG.store && GG.store.set) GG.store.set({ reducedMotion: !!val }); if(GG.ui && GG.ui.applyRootState && GG.store && GG.store.get) GG.ui.applyRootState(d.documentElement, GG.store.get()); else if(d.documentElement) GG.core.state.toggle(d.documentElement, 'reduced-motion', !!val); } var initial = A.reducedMotion.get(); sync(initial); A._rmUnsub = A.reducedMotion.watch(sync); };
     a11y.announce = a11y.announce || function(message, opts){ return A.announce(message, opts); };
     a11y.focusTrap = a11y.focusTrap || function(container, opts){ return A.focusTrap(container, opts); };
+    a11y.modalOpen = a11y.modalOpen || function(modalEl, triggerEl, opts){ return A.modalOpen(modalEl, triggerEl, opts); };
+    a11y.modalClose = a11y.modalClose || function(modalEl, opts){ return A.modalClose(modalEl, opts); };
     a11y.inertManager = a11y.inertManager || { push: function(root, keep){ return A.inert(root, keep); }, pop: function(){ return A.restoreInert(); }, clear: function(){ while(A._inertStack.length) A.restoreInert(); } };
     a11y.reducedMotion = a11y.reducedMotion || { get: function(){ return A.reducedMotion.get(); }, watch: function(cb){ return A.reducedMotion.watch(cb); } };
     a11y.scrollBehavior = a11y.scrollBehavior || function(){ return A.scrollBehavior(); };
