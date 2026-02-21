@@ -29,6 +29,11 @@ If none of those patterns exist, resize is skipped.
   - `[240, 360, 480, 720, 960, 1200]`
   - `sizes: (max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw`
 
+## Crop semantics
+- Preserve existing crop flag only.
+- If original URL has `-c` (`/sNNN-c/` or `=sNNN-c`), resized output keeps `-c`.
+- If original URL has no `-c` (`/sNNN/` or `=sNNN`), resized output must never introduce `-c`.
+
 ## Why safe-only
 - Blogger image URL formats can vary across sources.
 - Unsafe rewriting risks broken thumbnails and regressions.

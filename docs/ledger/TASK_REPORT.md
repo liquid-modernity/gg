@@ -1,43 +1,29 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221
-TITLE: Add safe-only srcset/sizes for resizable thumbs + guardrails
+TASK_ID: TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221
+TITLE: Preserve crop flag only (never force -c) + guardrails
 
 SUMMARY
-- Added reusable helper under `GG.services.images` in `public/assets/latest/modules/ui.bucket.core.js`:
-  - `isResizableThumbUrl(url)`
-  - `resizeThumbUrl(url, size, keepCrop)`
-  - `buildSrcset(url, widths, opts)`
-- Helper is safe-only and pure string replacement:
-  - host allowlist: `blogger.googleusercontent.com` / `googleusercontent.com`
-  - supported resize patterns:
-    - `/sNNN/` and `/sNNN-c/`
-    - `=sNNN` and `=sNNN-c`
-  - unknown URL format => return `null` and keep original `src`.
-- Applied guarded responsive thumbs in `public/assets/latest/modules/ui.bucket.listing.js`:
-  - keeps TASK 35 LCP policy (first image eager + high, second eager + auto, rest lazy + auto)
-  - adds `buildSrcset` widths `[320, 480, 640, 960, 1280]`
-  - assigns `img.src/srcset/sizes` only inside `if (built && built.srcset)`.
-- Applied guarded responsive thumbs in `public/assets/latest/modules/ui.bucket.mixed.js`:
-  - keeps conservative mixed-first eager+auto policy from TASK 35
-  - adds `buildSrcset` widths `[240, 360, 480, 720, 960, 1200]`
-  - assigns `img.src/srcset/sizes` only inside `if (built && built.srcset)`.
-- Added verifier `tools/verify-responsive-thumbs-policy.mjs` and wired to `tools/gate-prod.sh`.
-- Added docs `docs/perf/RESPONSIVE_THUMBS.md`.
+- Fixed crop semantics in `public/assets/latest/modules/ui.bucket.core.js` inside `services.images.resizeThumbUrl`:
+  - before: `var useCrop = !!keepCrop || hadCrop;`
+  - after: `var preserve = (keepCrop !== false); var useCrop = preserve && hadCrop;`
+- Resulting policy is strict:
+  - if original URL has `-c`, resized URL keeps `-c`
+  - if original URL has no `-c`, resized URL never adds `-c`
+- Kept safe-only responsive thumb behavior unchanged for listing/mixed callsites.
+- Added verifier `tools/verify-responsive-thumbs-crop-policy.mjs` (static checks + runtime behavior checks from extracted function snippets).
+- Wired new verifier into `tools/gate-prod.sh`.
+- Updated `docs/perf/RESPONSIVE_THUMBS.md` with a dedicated crop semantics section.
 
-SAFE-ONLY CONTRACT CONFIRMED
-- Resizing is attempted only when URL is recognized as Blogger/Googleusercontent resize format.
-- Non-recognized URLs are not rewritten, so images do not break.
+WHY FORCED -C WAS REMOVED
+- Forcing `-c` can tighten composition unexpectedly and cause visual mismatch against original thumbnails.
+- Correct behavior is preservation-only: retain crop flag when it already exists, never introduce new crop mode.
 
 FILES CHANGED
 - public/assets/latest/modules/ui.bucket.core.js
-- public/assets/latest/modules/ui.bucket.listing.js
-- public/assets/latest/modules/ui.bucket.mixed.js
-- tools/verify-responsive-thumbs-policy.mjs
-- tools/verify-image-perf-policy.mjs
+- tools/verify-responsive-thumbs-crop-policy.mjs
 - tools/gate-prod.sh
-- tools/perf-budgets.json
 - docs/perf/RESPONSIVE_THUMBS.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -48,6 +34,11 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
+- `node tools/verify-responsive-thumbs-crop-policy.mjs`
+```text
+PASS: responsive thumbs does not force -c
+```
+
 - `node tools/verify-responsive-thumbs-policy.mjs`
 ```text
 PASS: responsive thumbs policy (safe-only)
@@ -58,16 +49,12 @@ PASS: responsive thumbs policy (safe-only)
 VERIFY_RULEBOOKS: PASS
 PASS: image perf policy
 PASS: responsive thumbs policy (safe-only)
+PASS: responsive thumbs does not force -c
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=1 allowlisted_matches=1 violations=0
 VERIFY_BUDGETS: PASS
-PASS: palette a11y contract (mode=repo, release=7260353)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
 MANUAL SANITY
-- Pending manual browser check:
-  - listing + mixed thumbnails still load with no broken images
-  - `srcset` + `sizes` appears only for recognized googleusercontent URLs
-  - mobile viewport requests smaller variants
-  - no CLS visual regressions
+- Pending manual check (3 minutes): compare 2-3 thumbs before/after to ensure composition is not unexpectedly tighter-cropped.

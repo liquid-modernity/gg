@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221: Add safe-only responsive thumbnails (`srcset` + `sizes`) for listing/mixed cards with reusable `GG.services.images` helper and gate guardrails.
+- TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221: Correct responsive thumbnail crop semantics so `-c` is preserved only when already present, with deterministic verifier guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 7260353
+RELEASE_ID: 5e3c739
 RELEASE_HISTORY:
-- 7260353
-- f4cf019
-PROD_PINNED_JS: /assets/v/7260353/main.js
-PROD_PINNED_APP: /assets/v/7260353/app.js
-PROD_PINNED_CSS: /assets/v/7260353/main.css
+- 5e3c739
+- 96439b2
+PROD_PINNED_JS: /assets/v/5e3c739/main.js
+PROD_PINNED_APP: /assets/v/5e3c739/app.js
+PROD_PINNED_CSS: /assets/v/5e3c739/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221 added safe URL-based thumbnail resizing helper (`isResizableThumbUrl`/`resizeThumbUrl`/`buildSrcset`) and applied guarded srcset/sizes to listing and mixed without forcing unknown URL formats.
+- 2026-02-21 TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221 removed forced crop mode in responsive thumb resizing; now preserves existing `-c` only and never introduces `-c` on uncropped originals.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

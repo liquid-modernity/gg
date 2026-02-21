@@ -2126,3 +2126,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): enforced safe-only rewrite path; non-resizable URLs keep original `src`; adjusted perf budgets with tight headroom for core/listing modules after helper + policy wiring
 - RISKS: low/med; manual mobile viewport network check still required to confirm browser picks smaller variants and no broken thumbs
 - NEXT: TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222
+
+## 2026-02-21 — TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221 — Preserve crop only, never force -c
+- DATE: 2026-02-21
+- TASK_ID: TASK-PERF-RESPONSIVE-THUMBS-CROP-CORRECTNESS-20260221
+- TITLE: Preserve crop flag only (never force -c) + guardrails
+- MODE (DEV/PROD impact): core image resize semantics fix + crop-policy verifier + gate wiring + perf doc update
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: fix `services.images.resizeThumbUrl` so `-c` is preserved only when present in original URL; keep safe-only srcset behavior for listing/mixed; add deterministic verifier and gate wiring
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-responsive-thumbs-crop-policy.mjs; tools/gate-prod.sh; docs/perf/RESPONSIVE_THUMBS.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-responsive-thumbs-crop-policy.mjs; node tools/verify-responsive-thumbs-policy.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): responsive-thumbs-crop-policy PASS; responsive-thumbs-policy PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): removed forced-crop expression (`!!keepCrop || hadCrop`); crop semantics now "preserve only"; gate realigned release artifacts to `5e3c739`
+- RISKS: low; manual visual check of 2-3 thumbs still required to confirm composition does not tighten unexpectedly
+- NEXT: TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222

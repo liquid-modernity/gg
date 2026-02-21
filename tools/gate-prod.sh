@@ -40,6 +40,7 @@ run node tools/verify-icon-controls-a11y.mjs
 run node tools/verify-tap-targets.mjs
 run node tools/verify-image-perf-policy.mjs
 run node tools/verify-responsive-thumbs-policy.mjs
+run node tools/verify-responsive-thumbs-crop-policy.mjs
 run node tools/verify-palette-not-modal.mjs
 run node tools/verify-modal-open-close-parity.mjs
 run node tools/verify-overlay-modal-contract.mjs

@@ -1291,7 +1291,8 @@ var n = parseInt(size, 10);
 if (!services.images.isResizableThumbUrl(src)) return null;
 if (!isFinite(n) || n <= 0) return null;
 var hadCrop = /\/s\d+-c\//i.test(src) || /=s\d+-c(?=$|[?#&])/i.test(src);
-var useCrop = !!keepCrop || hadCrop;
+var preserve = (keepCrop !== false);
+var useCrop = preserve && hadCrop;
 var seg = '/s' + String(n) + (useCrop ? '-c' : '') + '/';
 if (/\/s\d+(?:-c)?\//i.test(src)) {
   return src.replace(/\/s\d+(?:-c)?\//i, seg);
