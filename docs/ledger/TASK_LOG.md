@@ -2110,3 +2110,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate realigned release artifacts to `e95d010` during verification before final commit
 - RISKS: low/med; manual Lighthouse before/after and tap-through sanity still needed for real LCP impact validation
 - NEXT: TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260222
+
+## 2026-02-21 — TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221 — Safe-only responsive thumbs policy
+- DATE: 2026-02-21
+- TASK_ID: TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221
+- TITLE: Add safe-only srcset/sizes for resizable thumbs + guardrails
+- MODE (DEV/PROD impact): shared image helper in core + listing/mixed thumb policy + verifier + gate wiring + perf docs
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add `GG.services.images` helper (`isResizableThumbUrl`, `resizeThumbUrl`, `buildSrcset`), apply guarded responsive thumbs in listing/mixed, add `verify-responsive-thumbs-policy`, wire gate, and document URL pattern contract
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/modules/ui.bucket.mixed.js; tools/verify-responsive-thumbs-policy.mjs; tools/verify-image-perf-policy.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/perf/RESPONSIVE_THUMBS.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-responsive-thumbs-policy.mjs; node tools/verify-image-perf-policy.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): responsive-thumbs verifier PASS; image-perf-policy PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): enforced safe-only rewrite path; non-resizable URLs keep original `src`; adjusted perf budgets with tight headroom for core/listing modules after helper + policy wiring
+- RISKS: low/med; manual mobile viewport network check still required to confirm browser picks smaller variants and no broken thumbs
+- NEXT: TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222

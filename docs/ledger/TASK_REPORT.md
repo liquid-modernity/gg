@@ -1,42 +1,44 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-PERF-IMAGE-LCP-POLICY-20260221
-TITLE: Prioritize LCP candidate image (eager + fetchpriority) + add guardrails
+TASK_ID: TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221
+TITLE: Add safe-only srcset/sizes for resizable thumbs + guardrails
 
 SUMMARY
-- Updated `public/assets/latest/modules/ui.bucket.listing.js` in `addTile()` to enforce deterministic image loading policy:
-  - `img.decoding = 'async'`
-  - tile index policy based on render queue length:
-    - first tile: `loading='eager'` + `fetchpriority='high'`
-    - second tile: `loading='eager'` + `fetchpriority='auto'`
-    - remaining tiles: `loading='lazy'` + `fetchpriority='auto'`
-  - added `sizes="(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw"`
-- Updated `public/assets/latest/modules/ui.bucket.mixed.js` in `appendCardThumb()`:
-  - keep `decoding='async'` baseline
-  - default lazy loading
-  - one conservative first-thumb boost: `loading='eager'` + `fetchpriority='auto'`
-- Added verifier `tools/verify-image-perf-policy.mjs` and wired it into `tools/gate-prod.sh`.
-- Added policy doc `docs/perf/IMAGE_POLICY.md` to lock contract and rationale.
-- No markup injection and no allowlist changes introduced.
+- Added reusable helper under `GG.services.images` in `public/assets/latest/modules/ui.bucket.core.js`:
+  - `isResizableThumbUrl(url)`
+  - `resizeThumbUrl(url, size, keepCrop)`
+  - `buildSrcset(url, widths, opts)`
+- Helper is safe-only and pure string replacement:
+  - host allowlist: `blogger.googleusercontent.com` / `googleusercontent.com`
+  - supported resize patterns:
+    - `/sNNN/` and `/sNNN-c/`
+    - `=sNNN` and `=sNNN-c`
+  - unknown URL format => return `null` and keep original `src`.
+- Applied guarded responsive thumbs in `public/assets/latest/modules/ui.bucket.listing.js`:
+  - keeps TASK 35 LCP policy (first image eager + high, second eager + auto, rest lazy + auto)
+  - adds `buildSrcset` widths `[320, 480, 640, 960, 1280]`
+  - assigns `img.src/srcset/sizes` only inside `if (built && built.srcset)`.
+- Applied guarded responsive thumbs in `public/assets/latest/modules/ui.bucket.mixed.js`:
+  - keeps conservative mixed-first eager+auto policy from TASK 35
+  - adds `buildSrcset` widths `[240, 360, 480, 720, 960, 1200]`
+  - assigns `img.src/srcset/sizes` only inside `if (built && built.srcset)`.
+- Added verifier `tools/verify-responsive-thumbs-policy.mjs` and wired to `tools/gate-prod.sh`.
+- Added docs `docs/perf/RESPONSIVE_THUMBS.md`.
 
-WHAT CHANGED
-- Listing:
-  - deterministic eager/high only for first candidate
-  - explicit eager/auto for second candidate
-  - explicit lazy/auto for the rest
-  - async decode + conservative `sizes`
-- Mixed:
-  - async decode maintained
-  - default lazy policy retained
-  - only one eager+auto thumbnail boost
+SAFE-ONLY CONTRACT CONFIRMED
+- Resizing is attempted only when URL is recognized as Blogger/Googleusercontent resize format.
+- Non-recognized URLs are not rewritten, so images do not break.
 
 FILES CHANGED
+- public/assets/latest/modules/ui.bucket.core.js
 - public/assets/latest/modules/ui.bucket.listing.js
 - public/assets/latest/modules/ui.bucket.mixed.js
+- tools/verify-responsive-thumbs-policy.mjs
 - tools/verify-image-perf-policy.mjs
 - tools/gate-prod.sh
-- docs/perf/IMAGE_POLICY.md
+- tools/perf-budgets.json
+- docs/perf/RESPONSIVE_THUMBS.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
@@ -46,25 +48,26 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-image-perf-policy.mjs`
+- `node tools/verify-responsive-thumbs-policy.mjs`
 ```text
-PASS: image perf policy
+PASS: responsive thumbs policy (safe-only)
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
-PASS: shortcodes a11y contract
 PASS: image perf policy
+PASS: responsive thumbs policy (safe-only)
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=1 allowlisted_matches=1 violations=0
 VERIFY_BUDGETS: PASS
-PASS: palette a11y contract (mode=repo, release=e95d010)
+PASS: palette a11y contract (mode=repo, release=7260353)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
 MANUAL SANITY
-- Pending manual browser/Lighthouse check:
-  - listing first tile not lazy; only first tile fetchpriority=high
-  - no CLS regressions
-  - compare LCP before/after on listing page
+- Pending manual browser check:
+  - listing + mixed thumbnails still load with no broken images
+  - `srcset` + `sizes` appears only for recognized googleusercontent URLs
+  - mobile viewport requests smaller variants
+  - no CLS visual regressions

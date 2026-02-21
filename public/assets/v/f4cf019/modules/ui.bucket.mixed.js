@@ -656,6 +656,20 @@
       img.setAttribute('fetchpriority', 'auto');
     }
     img.setAttribute('src', src);
+    var imageSvc = G.services && G.services.images;
+    if (imageSvc && typeof imageSvc.buildSrcset === 'function') {
+      var widths = [240, 360, 480, 720, 960, 1200];
+      var built = imageSvc.buildSrcset(img.src, widths, {
+        keepCrop: true,
+        max: 1600,
+        sizes: '(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw'
+      });
+      if (built && built.srcset) {
+        img.src = built.src || img.src;
+        img.srcset = built.srcset;
+        if (built.sizes) img.sizes = built.sizes;
+      }
+    }
     thumb.appendChild(img);
   }
 

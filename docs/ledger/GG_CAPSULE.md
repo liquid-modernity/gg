@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PERF-IMAGE-LCP-POLICY-20260221: Prioritize listing LCP candidate image loading and enforce deterministic image performance policy via guardrail verifier.
+- TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221: Add safe-only responsive thumbnails (`srcset` + `sizes`) for listing/mixed cards with reusable `GG.services.images` helper and gate guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: e95d010
+RELEASE_ID: 7260353
 RELEASE_HISTORY:
-- e95d010
-- c73cd7a
-PROD_PINNED_JS: /assets/v/e95d010/main.js
-PROD_PINNED_APP: /assets/v/e95d010/app.js
-PROD_PINNED_CSS: /assets/v/e95d010/main.css
+- 7260353
+- f4cf019
+PROD_PINNED_JS: /assets/v/7260353/main.js
+PROD_PINNED_APP: /assets/v/7260353/app.js
+PROD_PINNED_CSS: /assets/v/7260353/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260222
+- TASK-PERF-IMAGE-CLS-WIDTH-HEIGHT-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PERF-IMAGE-LCP-POLICY-20260221 applied image LCP loading/fetchpriority policy in listing and mixed modules, added `verify-image-perf-policy`, wired gate, and documented `docs/perf/IMAGE_POLICY.md`.
+- 2026-02-21 TASK-PERF-RESPONSIVE-THUMBS-SRCSET-20260221 added safe URL-based thumbnail resizing helper (`isResizableThumbUrl`/`resizeThumbUrl`/`buildSrcset`) and applied guarded srcset/sizes to listing and mixed without forcing unknown URL formats.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

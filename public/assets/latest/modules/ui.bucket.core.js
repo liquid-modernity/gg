@@ -1276,6 +1276,69 @@ services.api.getHtml = services.api.getHtml || function(url){
 return services.api.fetch(url, 'text');
 };
 
+services.images = services.images || {};
+services.images.isResizableThumbUrl = services.images.isResizableThumbUrl || function(url){
+var src = String(url || '').trim();
+if (!src) return false;
+if (!/blogger\.googleusercontent\.com|googleusercontent\.com/i.test(src)) return false;
+if (/\/s\d+(?:-c)?\//i.test(src)) return true;
+if (/=s\d+(?:-c)?(?=$|[?#&])/i.test(src)) return true;
+return false;
+};
+services.images.resizeThumbUrl = services.images.resizeThumbUrl || function(url, size, keepCrop){
+var src = String(url || '').trim();
+var n = parseInt(size, 10);
+if (!services.images.isResizableThumbUrl(src)) return null;
+if (!isFinite(n) || n <= 0) return null;
+var hadCrop = /\/s\d+-c\//i.test(src) || /=s\d+-c(?=$|[?#&])/i.test(src);
+var useCrop = !!keepCrop || hadCrop;
+var seg = '/s' + String(n) + (useCrop ? '-c' : '') + '/';
+if (/\/s\d+(?:-c)?\//i.test(src)) {
+  return src.replace(/\/s\d+(?:-c)?\//i, seg);
+}
+if (/=s\d+(?:-c)?(?=$|[?#&])/i.test(src)) {
+  return src.replace(/=s\d+(?:-c)?(?=$|[?#&])/i, '=s' + String(n) + (useCrop ? '-c' : ''));
+}
+return null;
+};
+services.images.buildSrcset = services.images.buildSrcset || function(url, widths, opts){
+var src = String(url || '').trim();
+var conf = opts || {};
+var max = parseInt(conf.max, 10);
+var hasMax = isFinite(max) && max > 0;
+var list = Array.isArray(widths) ? widths : [];
+var out = [];
+var seen = {};
+var i = 0;
+if (!services.images.isResizableThumbUrl(src)) return null;
+for (i = 0; i < list.length; i++) {
+  var n = parseInt(list[i], 10);
+  if (!isFinite(n) || n <= 0) continue;
+  if (hasMax && n > max) continue;
+  if (seen[n]) continue;
+  seen[n] = 1;
+  out.push(n);
+}
+if (!out.length) return null;
+out.sort(function(a, b){ return a - b; });
+var parts = [];
+for (i = 0; i < out.length; i++) {
+  var resized = services.images.resizeThumbUrl(src, out[i], conf.keepCrop);
+  if (!resized) continue;
+  parts.push(resized + ' ' + String(out[i]) + 'w');
+}
+if (!parts.length) return null;
+var preferred = services.images.resizeThumbUrl(src, out[0], conf.keepCrop) || src;
+return {
+  src: preferred,
+  srcset: parts.join(', '),
+  sizes: conf.sizes || null
+};
+};
+GG.services.images.isResizableThumbUrl = GG.services.images.isResizableThumbUrl || services.images.isResizableThumbUrl;
+GG.services.images.resizeThumbUrl = GG.services.images.resizeThumbUrl || services.images.resizeThumbUrl;
+GG.services.images.buildSrcset = GG.services.images.buildSrcset || services.images.buildSrcset;
+
 services.comments = services.comments || (function(){
 var moved = false;
 function qs(sel, root){ return (root || document).querySelector(sel); }
