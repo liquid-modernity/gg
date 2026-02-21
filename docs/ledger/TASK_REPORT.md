@@ -1,26 +1,23 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE2-CORE-HOTSPOTS-20260221
-TITLE: Remove trivial innerHTML usage in core hotspots
+TASK_ID: TASK-LEGACY-ALLOWLIST-RATCHET-20260221
+TITLE: Ratchet legacy allowlist (no growth)
 
 SUMMARY
-- Removed all `innerHTML = ''` usage from `public/assets/latest/modules/ui.bucket.core.js` and replaced with `textContent = ''`.
-- Replaced comments loading/unavailable HTML strings with DOM API rendering (`createElement` + `textContent` + aria attributes).
-- Replaced trivial button/icon HTML in core hotspots with DOM node creation.
-- Added `tools/verify-no-innerhtml-clear.mjs` and wired it into `tools/gate-prod.sh`.
-- Cleaned obsolete legacy annotations and reduced allowlist entries accordingly.
+- Added top-level `max_allow` to `docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json`.
+- Set `max_allow` to the current baseline after TASK 14.
+- Added `tools/verify-legacy-allowlist-ratchet.mjs` to block allowlist growth unless `max_allow` is explicitly raised.
+- Wired ratchet verifier into `tools/gate-prod.sh`.
 
-ALLOWLIST SIZE
-- Before: 57
-- After: 42
+RATCHET VALUE
+- max_allow: 42
+- allow length (current): 42
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.core.js
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/verify-no-innerhtml-clear.mjs
+- tools/verify-legacy-allowlist-ratchet.mjs
 - tools/gate-prod.sh
-- tools/perf-budgets.json
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -30,14 +27,9 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-no-innerhtml-clear.mjs`
+- `node tools/verify-legacy-allowlist-ratchet.mjs`
 ```text
-VERIFY_NO_INNERHTML_CLEAR: PASS
-```
-
-- `node tools/verify-no-new-html-in-js.mjs`
-```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
+VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 ```
 
 - `npm run gate:prod`
@@ -45,6 +37,7 @@ VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violation
 VERIFY_RULEBOOKS: PASS
 VERIFY_ROUTE_A11Y_CONTRACT: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
+VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_NO_INNERHTML_CLEAR: PASS
 PASS: verify-panels-inert-safety
 PASS: verify-smooth-scroll-policy
@@ -62,15 +55,5 @@ PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-- `bash tools/gate-release.sh`
-```text
-VERIFY_NO_INNERHTML_CLEAR: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
-curl: (6) Could not resolve host: www.pakrpp.com
-FAIL: __gg_worker_ping request failed
-FAIL: smoke failed after 1 attempt(s)
-```
-
 NOTES
-- `gate-release` strict live smoke fails in this sandbox due DNS/network resolution limits.
-- Budget for `modules/ui.bucket.core.js` was adjusted minimally (`max_gzip` 55400 -> 55600) to reflect intentional DOM-based refactor footprint.
+- `gate:prod` auto-realigned release metadata/artifacts after `GG_CAPSULE` update.

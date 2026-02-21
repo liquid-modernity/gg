@@ -1746,3 +1746,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate initially failed on `ui.bucket.core.js` gzip by small delta; budget updated minimally to keep deterministic gate
 - RISKS: low/med; strict live smoke remains network-dependent in sandbox
 - NEXT: TASK-LEGACY-ALLOWLIST-RATCHET-20260221
+
+---
+
+## 2026-02-21 — TASK-LEGACY-ALLOWLIST-RATCHET-20260221 — Legacy allowlist no-growth ratchet
+- DATE: 2026-02-21
+- TASK_ID: TASK-LEGACY-ALLOWLIST-RATCHET-20260221
+- TITLE: Ratchet legacy allowlist (no growth)
+- MODE (DEV/PROD impact): guardrail verifier + gate wiring + ledger + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add max_allow contract to legacy allowlist, verify no-growth rule, wire ratchet verifier into gate
+- CHANGES (files touched): docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-legacy-allowlist-ratchet.mjs; tools/gate-prod.sh; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run ship -- -m "chore(guardrails): ratchet legacy allowlist (no growth)"
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: shipped via ship workflow (push main)
+- VERIFY (URLs + expected): ratchet verifier PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): gate includes release realignment when GG_CAPSULE changes
+- RISKS: low/med; strict live smoke remains network-dependent in sandbox
+- NEXT: TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221

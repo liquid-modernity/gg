@@ -308,5 +308,6 @@
       "note": "baseline legacy",
       "introduced_by": "baseline"
     }
-  ]
+  ],
+  "max_allow": 42
 }
