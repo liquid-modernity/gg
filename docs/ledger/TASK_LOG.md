@@ -1,5 +1,5 @@
 # TASK LOG (append-only)
-Last updated: 2026-02-14
+Last updated: 2026-02-21
 
 > Purpose: immutable-ish history for AI context + audit trail.
 > Rule: NEVER rewrite old entries. Only append.
@@ -1530,3 +1530,21 @@ Last updated: 2026-02-14
 - NOTES (gotchas): build used ALLOW_DIRTY_RELEASE=1 due to working tree changes
 - RISKS: low/med; degraded mode uses localStorage and may be blocked; PWA stays disabled when degraded
 - NEXT: TBD
+
+---
+
+## 2026-02-21 — TASK-RULEBOOK-20260221 — Rulebook sync + verification guardrail
+- DATE: 2026-02-21
+- TASK_ID: TASK-RULEBOOK-20260221
+- TITLE: Sync AGENTS/NAMING rulebooks + add verifier guardrail
+- MODE (DEV/PROD impact): docs + verification tooling
+- RELEASE_REF: GG_CAPSULE AUTOGEN (23dc4a0)
+- SCOPE: rulebook overwrite/create, verifier implementation, verify pipeline wiring, ledger updates
+- CHANGES (files touched): docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md (rulebook/verifier/package/capsule targets verified already aligned; no net diff)
+- COMMANDS RUN (local): node tools/verify-rulebooks.mjs; ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:release; npm run verify:assets; node tools/verify-template-contract.mjs; node tools/verify-router-contract.mjs; node tools/verify-budgets.mjs; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs; SMOKE_LIVE_HTML=1 tools/smoke.sh; SMOKE_EXPECT=live SMOKE_LIVE_HTML=1 tools/smoke.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): smoke release-match with local expected id failed (live still 09e2ce4), smoke with SMOKE_EXPECT=live passed full live checks
+- NOTES (gotchas): updating GG_CAPSULE changed computed release fingerprint; release realign/build required before verify:release could pass
+- RISKS: low/med; local release id 23dc4a0 not yet deployed so live remains 09e2ce4 until deployment pipeline runs
+- NEXT: deploy/promote release 23dc4a0 then rerun smoke with default expected release
