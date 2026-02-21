@@ -2174,3 +2174,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): updated legacy CLS verifier snippet window to avoid false negative after iframe hardening; adjusted core JS perf budgets to accommodate additional iframe policy logic
 - RISKS: low/med; manual 3-minute hover/focus preconnect and SR iframe-title sanity still required in browser
 - NEXT: TASK-PERF-FONTS-CLS-INP-20260222
+
+## 2026-02-22 — TASK-PERF-BASELINE-BUDGET-RATCHET-20260222 — Perf baseline + budget ratchet contract
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-BASELINE-BUDGET-RATCHET-20260222
+- TITLE: Add baseline + budgets with ratchet verifier
+- MODE (DEV/PROD impact): repo-native perf governance docs + verifier + gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add 3-surface baseline document (HOME/LISTING/POST), add budgets + lock ratchet contract, add deterministic verifier to block missing baseline/keys and ratchet loosening, wire to gate, and document distribution discipline
+- CHANGES (files touched): docs/perf/BASELINE.md; docs/perf/BUDGETS.json; docs/perf/BUDGETS.lock.json; tools/verify-perf-budgets.mjs; tools/gate-prod.sh; docs/release/DISTRIBUTION.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md
+- COMMANDS RUN (local): node tools/verify-perf-budgets.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): perf budget verifier PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): ratchet contract compares `docs/perf/BUDGETS.json` against `docs/perf/BUDGETS.lock.json`; any `max_*` increase now hard-fails unless lock is intentionally updated
+- RISKS: low; baseline metrics are trend snapshots and still need periodic intentional refresh tasks
+- NEXT: TASK-PERF-FONTS-CLS-INP-20260222

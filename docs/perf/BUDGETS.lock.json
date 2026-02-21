@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "updated": "2026-02-22",
+  "targets": {
+    "lcp_ms": 2500,
+    "cls": 0.05,
+    "inp_ms": 200,
+    "tbt_ms": 75,
+    "transfer_kb": 650
+  },
+  "ratchet": {
+    "max_lcp_ms": 2800,
+    "max_cls": 0.10,
+    "max_inp_ms": 300,
+    "max_tbt_ms": 150,
+    "max_transfer_kb": 850
+  }
+}

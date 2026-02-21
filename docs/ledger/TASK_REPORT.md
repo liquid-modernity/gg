@@ -1,55 +1,68 @@
 TASK_REPORT
-Last updated: 2026-02-21
+Last updated: 2026-02-22
 
-TASK_ID: TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222
-TITLE: Harden yt-lite embed (nocookie + title + intent preconnect)
+TASK_ID: TASK-PERF-BASELINE-BUDGET-RATCHET-20260222
+TITLE: Add baseline + budgets with ratchet verifier
 
 SUMMARY
-- Hardened YT-lite iframe activation in `public/assets/latest/modules/ui.bucket.core.js`:
-  - embed host switched to `https://www.youtube-nocookie.com/embed/<id>`
-  - iframe title now set for a11y (derived from box aria-label when available)
-  - added `referrerpolicy="strict-origin-when-cross-origin"`
-  - added minimal `allow` policy: `accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share`
-  - kept intrinsic fallback via `GG.services.images.setIntrinsicDims(iframe, 16, 9)`.
-- Added intent-only preconnect warmup in `hydrateLiteEmbeds()`:
-  - helper `preconnectOnce(href)`
-  - trigger on `pointerenter` and `focus` (both `{ once:true }`)
-  - targets: `https://www.youtube-nocookie.com` and `https://i.ytimg.com`
-- Added verifier `tools/verify-yt-iframe-policy.mjs` and wired it into `tools/gate-prod.sh`.
-- Added policy docs `docs/perf/IFRAME_POLICY.md`.
-- Updated `tools/verify-cls-dimensions-policy.mjs` snippet scan window to avoid false negative after iframe hardening.
-- Updated `tools/perf-budgets.json` for `modules/ui.bucket.core.js` (`max_raw` and `max_gzip`) to keep gate deterministic with new policy code.
+- Added baseline document `docs/perf/BASELINE.md` for 3 required surfaces:
+  - HOME: `https://www.pakrpp.com/`
+  - LISTING: `https://www.pakrpp.com/blog`
+  - POST: `https://www.pakrpp.com/2024/11/seo-onpage-checklist.html`
+- Baseline includes required numeric metrics per surface:
+  - Lighthouse Performance score (mobile)
+  - LCP (ms)
+  - CLS
+  - INP (ms)
+  - TBT (ms)
+  - Transfer (KB)
+  - JS execution time (ms)
+- Added budget contract files:
+  - `docs/perf/BUDGETS.json` (active targets + hard ratchet ceilings)
+  - `docs/perf/BUDGETS.lock.json` (approved lock for non-loosening checks)
+- Added deterministic verifier `tools/verify-perf-budgets.mjs`:
+  - fails if baseline missing required sections/surfaces/metric fields
+  - fails if budgets/lock missing required keys
+  - fails if any `ratchet.max_*` value in `BUDGETS.json` is increased above lock
+- Wired verifier into `tools/gate-prod.sh`.
+- Updated `docs/release/DISTRIBUTION.md` with baseline discipline + ratchet non-loosening rule.
+
+BUDGETS SET
+- targets:
+  - `lcp_ms`: 2500
+  - `cls`: 0.05
+  - `inp_ms`: 200
+  - `tbt_ms`: 75
+  - `transfer_kb`: 650
+- ratchet ceilings:
+  - `max_lcp_ms`: 2800
+  - `max_cls`: 0.10
+  - `max_inp_ms`: 300
+  - `max_tbt_ms`: 150
+  - `max_transfer_kb`: 850
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.core.js
-- tools/verify-yt-iframe-policy.mjs
+- docs/perf/BASELINE.md
+- docs/perf/BUDGETS.json
+- docs/perf/BUDGETS.lock.json
+- tools/verify-perf-budgets.mjs
 - tools/gate-prod.sh
-- docs/perf/IFRAME_POLICY.md
-- tools/verify-cls-dimensions-policy.mjs
-- tools/perf-budgets.json
+- docs/release/DISTRIBUTION.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
-- index.prod.xml
-- public/sw.js
-- src/worker.js
-- public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-yt-iframe-policy.mjs`
+- `node tools/verify-perf-budgets.mjs`
 ```text
-PASS: yt iframe policy (nocookie + title + intent preconnect)
+VERIFY_PERF_BUDGETS: PASS
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
 VERIFY_RELEASE_ALIGNED: PASS
-PASS: image perf policy
-PASS: responsive thumbs policy (safe-only)
-PASS: CLS dimensions policy (img/iframe intrinsic sizes)
-PASS: yt iframe policy (nocookie + title + intent preconnect)
-PASS: responsive thumbs does not force -c
+VERIFY_PERF_BUDGETS: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=1 allowlisted_matches=1 violations=0
 VERIFY_BUDGETS: PASS
 PASS: smoke tests (offline fallback)
@@ -57,8 +70,4 @@ PASS: gate:prod
 ```
 
 MANUAL SANITY
-- Pending manual 3-minute check:
-  - hover/focus yt-lite creates preconnect links in `<head>`
-  - Enter/Space activation still loads iframe
-  - SR reads meaningful iframe title
-  - no layout jump on activation
+- Baseline measurement remains a trend snapshot; refresh only via intentional perf task.

@@ -17,6 +17,11 @@ Last updated: 2026-02-21
 - Nama output dikunci: `dist/gg-audit.zip`.
 - CI deploy workflow membangun dan meng-upload artifact `dist/gg-audit.zip` untuk distribusi standar.
 
+## Perf Baseline Discipline
+- Setiap perubahan yang berpotensi memengaruhi performa wajib meng-update `docs/perf/BASELINE.md` atau menuliskan alasan kenapa baseline tidak berubah.
+- `docs/perf/BUDGETS.json` adalah budget aktif, `docs/perf/BUDGETS.lock.json` adalah ratchet terkunci.
+- Ratchet tidak boleh dilonggarkan (nilai `max_*` naik) tanpa task eksplisit “perf regression acceptance”.
+
 ## Release Gate Modes
 - Local (default): wajib lulus `npm run gate:prod` + `bash tools/gate-release.sh` (mode local, non-live).
 - CI (authoritative proof): wajib menjalankan `bash tools/gate-release-live.sh` setelah deploy.

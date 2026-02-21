@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222: Harden yt-lite iframe activation with nocookie host, a11y title, and intent-only preconnect.
+- TASK-PERF-BASELINE-BUDGET-RATCHET-20260222: Add 3-surface baseline and deterministic budget ratchet verifier to block silent perf regressions.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 25f2397
+RELEASE_ID: a2092ab
 RELEASE_HISTORY:
+- a2092ab
 - 25f2397
-- 27047ba
-PROD_PINNED_JS: /assets/v/25f2397/main.js
-PROD_PINNED_APP: /assets/v/25f2397/app.js
-PROD_PINNED_CSS: /assets/v/25f2397/main.css
+PROD_PINNED_JS: /assets/v/a2092ab/main.js
+PROD_PINNED_APP: /assets/v/a2092ab/app.js
+PROD_PINNED_CSS: /assets/v/a2092ab/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-PERF-FONTS-CLS-INP-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-PERF-IFRAME-LAZY-PLACEHOLDER-20260222 switched yt-lite embeds to youtube-nocookie, added iframe title/referrer/allow policy, and warmed preconnect only on user intent.
+- 2026-02-22 TASK-PERF-BASELINE-BUDGET-RATCHET-20260222 introduced BASELINE/BUDGETS/BUDGETS.lock contracts and gate verifier enforcing ratchet non-loosening.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
