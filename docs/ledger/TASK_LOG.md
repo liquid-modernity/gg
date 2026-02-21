@@ -1782,3 +1782,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate required budget rebaseline for ui.bucket.core.js after modal helper + overlay wiring footprint
 - RISKS: low/med; manual 3-minute browser sanity still required outside sandbox
 - NEXT: TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
+
+---
+
+## 2026-02-21 — TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221 — Skip link + icon label guardrails
+- DATE: 2026-02-21
+- TASK_ID: TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
+- TITLE: Skip link + icon control accessible-name contract
+- MODE (DEV/PROD impact): template/core a11y + new verifiers + gate wiring + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: enforce `.gg-skip-link[href="#gg-main"]` contract, add runtime focus safeguard binding for skip link, audit/fix icon-control names, and add static regression guardrails
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/modules/ui.bucket.core.js; tools/verify-skip-link-contract.mjs; tools/verify-icon-controls-a11y.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-skip-link-contract.mjs; node tools/verify-icon-controls-a11y.mjs; npm run gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): skip-link verifier PASS; icon-controls verifier PASS; gate:prod PASS; gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): first gate run required release realignment + small core budget rebaseline after a11y patch footprint
+- RISKS: low/med; manual 2-minute SR/keyboard sanity still required on real browser
+- NEXT: TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221

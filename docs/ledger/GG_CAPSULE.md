@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221: Modalize command/search and comments-help overlays with trap/esc/restore.
+- TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221: Enforce skip link contract and icon-control accessible names with gate guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 6e43748
+RELEASE_ID: 5ff679c
 RELEASE_HISTORY:
-- 6e43748
-- 02acffe
-PROD_PINNED_JS: /assets/v/6e43748/main.js
-PROD_PINNED_APP: /assets/v/6e43748/app.js
-PROD_PINNED_CSS: /assets/v/6e43748/main.css
+- 5ff679c
+- dc4bbc3
+PROD_PINNED_JS: /assets/v/5ff679c/main.js
+PROD_PINNED_APP: /assets/v/5ff679c/app.js
+PROD_PINNED_CSS: /assets/v/5ff679c/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
+- TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221 added overlay modal helper and command/search modal wiring.
+- 2026-02-21 TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221 added skip-link contract, icon-label fixes, and new a11y verifiers in gate.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

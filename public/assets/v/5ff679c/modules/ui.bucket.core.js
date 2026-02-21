@@ -619,11 +619,7 @@ function scheduleRouteA11y(){
   var raf = w.requestAnimationFrame || function(fn){ return w.setTimeout(fn, 16); };
   raf(function(){
     raf(function(){
-      var main = d.getElementById('gg-main') || d.querySelector('main.gg-main');
-      if (main) {
-        if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
-        try { main.focus({preventScroll:true}); } catch (_) { try { main.focus(); } catch(__){} }
-      }
+      focusMain(true);
       var title = (d.title || '').trim();
       if (!title) return;
       if (GG.services && GG.services.a11y && typeof GG.services.a11y.announce === 'function') {
@@ -631,6 +627,39 @@ function scheduleRouteA11y(){
       }
     });
   });
+}
+function ensureMainFocusTarget(){
+  var main = d.getElementById('gg-main') || d.querySelector('main.gg-main');
+  if (main && !main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+  return main || null;
+}
+function focusMain(preventScroll){
+  var main = ensureMainFocusTarget();
+  if (!main) return null;
+  if (preventScroll) {
+    try { main.focus({preventScroll:true}); } catch (_) { try { main.focus(); } catch(__){} }
+  } else {
+    try { main.focus(); } catch (_) {}
+  }
+  return main;
+}
+function bindSkipLink(){
+  if (actions._skipLinkBound) return;
+  actions._skipLinkBound = true;
+  d.addEventListener('click', function(evt){
+    var link = evt && evt.target && evt.target.closest ? evt.target.closest('a.gg-skip-link[href="#gg-main"],a.gg-skiplink[href="#gg-main"]') : null;
+    if (!link) return;
+    evt.preventDefault();
+    var main = ensureMainFocusTarget();
+    if (!main) return;
+    try {
+      if (w.location.hash !== '#gg-main') w.location.hash = 'gg-main';
+    } catch (_) {}
+    if (typeof main.scrollIntoView === 'function') {
+      try { main.scrollIntoView({ block:'start', behavior:'auto' }); } catch (_) { try { main.scrollIntoView(true); } catch(__){} }
+    }
+    focusMain(true);
+  }, true);
 }
 function closeActiveModalForRoute(){
   var a11y = GG.services && GG.services.a11y;
@@ -658,9 +687,13 @@ function patchRouteA11y(){
   };
   router._a11yRoutePatched = true;
 }
-if (GG.boot && GG.boot.onReady) GG.boot.onReady(patchRouteA11y);
-else if (GG.boot && GG.boot.defer) GG.boot.defer(patchRouteA11y);
-else w.setTimeout(patchRouteA11y, 1);
+function initRouteA11yBindings(){
+  patchRouteA11y();
+  bindSkipLink();
+}
+if (GG.boot && GG.boot.onReady) GG.boot.onReady(initRouteA11yBindings);
+else if (GG.boot && GG.boot.defer) GG.boot.defer(initRouteA11yBindings);
+else w.setTimeout(initRouteA11yBindings, 1);
 actions.back = actions.back || function(){
 try {
   var ref = d.referrer || '';
@@ -3564,18 +3597,21 @@ function seedLabelTree(root){
       GG.core.state.remove(li, 'collapsed');
 
       var toggle = qs('.gg-tree-toggle', li);
+      var name = textOf(link);
+      var toggleLabel = name ? ('Toggle ' + name) : 'Toggle section';
       if (!toggle) {
         toggle = document.createElement('button');
         toggle.type = 'button';
         toggle.className = 'gg-tree-toggle';
         toggle.setAttribute('data-gg-action', 'tree-toggle');
         toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', toggleLabel);
         li.insertBefore(toggle, li.firstChild);
       } else {
         toggle.setAttribute('aria-expanded', 'true');
+        if (!toggle.getAttribute('aria-label')) toggle.setAttribute('aria-label', toggleLabel);
       }
 
-      var name = textOf(link);
       if (name === 'Label 1' || name === 'Label 6') {
         if (!qs(':scope > ul', li)) {
           var childUl = document.createElement('ul');
@@ -5029,10 +5065,14 @@ function isSystemPath(pathname){
           if (qs(':scope > .gg-tree-toggle', li)) return;
 
           var btn = document.createElement('button');
+          var link = qs(':scope > a', li) || qs('a', li);
+          var linkName = link ? textOf(link) : '';
+          var toggleLabel = linkName ? ('Toggle ' + linkName) : 'Toggle section';
           btn.type = 'button';
           btn.className = 'gg-tree-toggle';
           btn.setAttribute('aria-expanded', 'true');
           btn.setAttribute('data-gg-action', 'tree-toggle');
+          btn.setAttribute('aria-label', toggleLabel);
 
           li.insertBefore(btn, li.firstChild);
         });

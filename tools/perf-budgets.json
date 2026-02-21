@@ -37,8 +37,8 @@
     {
       "id": "modules/ui.bucket.core.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.core.js",
-      "max_raw": 232000,
-      "max_gzip": 57000
+      "max_raw": 233500,
+      "max_gzip": 57500
     },
     {
       "id": "modules/ui.bucket.listing.js",

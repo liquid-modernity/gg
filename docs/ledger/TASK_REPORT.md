@@ -1,54 +1,47 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-NATIVE-FEEL-OVERLAY-CMD-TRAP-20260221
-TITLE: Modal contract for overlays (trap + esc + restore focus)
-
-TARGET OVERLAYS FOUND (PRE-CODE DISCOVERY)
-- Command/search overlay root: `#gg-palette-list`
-- Command/search open entry points:
-  - window event `gg:search-open`
-  - dock search input `#gg-dock .gg-dock__search input[type="search"]` (focus/input path)
-  - hotkey path `Ctrl/Cmd+K` via UI loader -> `search.openFromHotkey()`
-- Command/search close controls:
-  - `[data-gg-dock-close]`
-  - `Escape`
-  - outside pointerdown path in search module
-- Comments help overlay root: `[data-gg-modal="comments-help"]`
-- Comments help open trigger: `[data-gg-action="comments-help"]`
-- Comments help close selector/path:
-  - `[data-gg-action="comments-help-close"]`
-  - backdrop click (`event.target === modal root`)
+TASK_ID: TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
+TITLE: Skip link + icon control accessible-name contract
 
 SUMMARY
-- Added `GG.services.a11y.modalOpen(modalEl, triggerEl, opts)` and `GG.services.a11y.modalClose(modalEl, opts)` in `ui.bucket.core.js`.
-- Enforced modal ARIA contract on open (`role="dialog"`, `aria-modal="true"`, optional label, focusability via `tabindex=-1`).
-- Added deterministic single-modal behavior via global active modal tracking (`_activeModalEl`, `_activeModalCleanup`, `_activeModalTrigger`).
-- Added Esc-close behavior (capture keydown) and focus restore to opening trigger.
-- Wired helper into actual overlays:
-  - command/search palette (`#gg-palette-list`) by patching `GG.modules.search.open/close`
-  - comments-help modal toggle/actions
-  - generic `ui.overlay.open/close`
-- Added route-change cleanup to close active modal before route a11y focus/announce.
-- Added static verifier `tools/verify-overlay-modal-contract.mjs` and wired into `tools/gate-prod.sh`.
+- Added global skip-link contract in template shell with `.gg-skip-link[href="#gg-main"]`, hidden until focused.
+- Added skip-link runtime focus binding in core so click always lands focus on `#gg-main` safely.
+- Added explicit labels for icon controls that were previously implicit.
+- Added static guardrails to prevent regressions (`verify-skip-link-contract` and `verify-icon-controls-a11y`) and wired both into `gate:prod`.
 
-CHANGES
+CONTROLS FIXED (selector -> label)
+- `.gg-post-card__action--bookmark[data-gg-action="bookmark"]` -> `aria-label="Bookmark"`
+- `.gg-post-card__tool[data-gg-action="like"]` -> `aria-label="Like"`
+- `.gg-post-card__action--share[data-gg-action="share"]` -> `aria-label="Share"`
+- `.gg-post-card__tool--info[data-gg-action="info"]` -> `aria-label="Information"`
+- Dynamic `.gg-tree-toggle` buttons in core modules -> `aria-label="Toggle <section>"` fallback `Toggle section`
+- `a.gg-skip-link[href="#gg-main"]` + runtime focus safeguard (`tabindex=-1` + focus)
+
+FILES CHANGED
+- index.prod.xml
+- index.dev.xml
 - public/assets/latest/modules/ui.bucket.core.js
-- tools/verify-overlay-modal-contract.mjs
+- tools/verify-skip-link-contract.mjs
+- tools/verify-icon-controls-a11y.mjs
 - tools/gate-prod.sh
 - tools/perf-budgets.json
-- docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
-- index.prod.xml
+- docs/ledger/GG_CAPSULE.md
 - public/sw.js
 - src/worker.js
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-overlay-modal-contract.mjs`
+- `node tools/verify-skip-link-contract.mjs`
 ```text
-VERIFY_OVERLAY_MODAL_CONTRACT: PASS
+VERIFY_SKIP_LINK_CONTRACT: PASS
+```
+
+- `node tools/verify-icon-controls-a11y.mjs`
+```text
+VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
 ```
 
 - `npm run gate:prod`
@@ -56,6 +49,8 @@ VERIFY_OVERLAY_MODAL_CONTRACT: PASS
 VERIFY_RULEBOOKS: PASS
 VERIFY_ROUTE_A11Y_CONTRACT: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
+VERIFY_SKIP_LINK_CONTRACT: PASS
+VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
 VERIFY_OVERLAY_MODAL_CONTRACT: PASS
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_NO_INNERHTML_CLEAR: PASS
@@ -75,25 +70,17 @@ PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-- `node tools/verify-no-new-html-in-js.mjs`
-```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
-```
-
 - `bash tools/gate-release.sh`
 ```text
-VERIFY_OVERLAY_MODAL_CONTRACT: PASS
+VERIFY_SKIP_LINK_CONTRACT: PASS
+VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
 MANUAL SANITY
-- Not executable in this sandbox (no interactive browser).
-- Pending checks on real browser session:
-  - Ctrl/Cmd+K open palette -> Tab/Shift+Tab stay inside modal, Esc closes, focus returns to trigger.
-  - Open overlay A then B -> previous overlay auto closes (single-modal rule).
-
-NOTES
-- No new `innerHTML`/`insertAdjacentHTML` was introduced.
-- Budget baseline for `modules/ui.bucket.core.js` was re-aligned to absorb modal helper footprint (`max_raw 232000`, `max_gzip 57000`).
+- Not executable in this terminal sandbox (no interactive browser/screen reader).
+- Pending manual checks on real browser:
+  - Tab once -> skip link appears; Enter jumps and focus lands on `#gg-main`.
+  - SR announces meaningful names for icon controls.

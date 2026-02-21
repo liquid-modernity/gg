@@ -230,11 +230,11 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   outline-offset:3px;
 }
 
+.gg-skip-link,
 .gg-skiplink{
   position:absolute;
   top:0;
-  left:0;
-  transform:translateY(-120%);
+  left:-999px;
   padding:10px 12px;
   background:Canvas;
   color:CanvasText;
@@ -242,7 +242,11 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
   z-index:9999;
   text-decoration:none;
 }
-.gg-skiplink:focus{ transform:translateY(0); }
+.gg-skip-link:focus,
+.gg-skiplink:focus{
+  left:var(--gg-space-16, 16px);
+  top:var(--gg-space-16, 16px);
+}
 
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
@@ -270,7 +274,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 </head>
 
   <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))'>
-    <a class='gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
+    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
     <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
@@ -1876,22 +1880,22 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span aria-hidden='true' class='gg-post-card__badge'><data:post.numberOfComments/></span>
   </a>
 
-  <button class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' title='Bookmark' type='button'>
+  <button aria-label='Bookmark' class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' title='Bookmark' type='button'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
     <span class='gg-visually-hidden'>Bookmark</span>
   </button>
 
-  <button class='gg-post-card__tool' data-gg-action='like' title='Like' type='button'>
+  <button aria-label='Like' class='gg-post-card__tool' data-gg-action='like' title='Like' type='button'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>
     <span class='gg-visually-hidden'>Like</span>
   </button>
 
-  <button class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' title='Share' type='button'>
+  <button aria-label='Share' class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' title='Share' type='button'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
     <span class='gg-visually-hidden'>Share</span>
   </button>
 
-  <button class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' title='Information' type='button'>
+  <button aria-label='Information' class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' title='Information' type='button'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
     <span class='gg-visually-hidden'>Information</span>
   </button>

@@ -23,6 +23,8 @@ run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
 run node tools/verify-route-a11y-contract.mjs
 run node tools/verify-no-new-html-in-js.mjs
+run node tools/verify-skip-link-contract.mjs
+run node tools/verify-icon-controls-a11y.mjs
 run node tools/verify-overlay-modal-contract.mjs
 run node tools/verify-legacy-allowlist-ratchet.mjs
 run node tools/verify-no-innerhtml-clear.mjs
