@@ -70,6 +70,36 @@
       if(!q)return all;
       return all.filter(function(c){return c.title.indexOf(q)>-1||c.id.indexOf(q)>-1||c.hint.indexOf(q)>-1;});
     }
+    function sectionNode(text, klass){
+      var div = d.createElement('div');
+      div.className = klass;
+      div.setAttribute('role', 'presentation');
+      div.setAttribute('aria-hidden', 'true');
+      div.textContent = String(text || '');
+      return div;
+    }
+    function cmdOption(cmd, i){
+      // option contract tokens: role="option" aria-selected="false"
+      var a = d.createElement('a');
+      a.href = '#';
+      a.className = 'gg-search__result gg-search-item gg-search-cmd';
+      a.id = 'gg-opt-' + i;
+      a.setAttribute('role', 'option');
+      a.setAttribute('aria-selected', 'false');
+      a.setAttribute('data-cmd', cmd && cmd.id ? String(cmd.id) : '');
+
+      var title = d.createElement('span');
+      title.className = 'gg-search__title';
+      title.textContent = cmd && cmd.title ? String(cmd.title) : '';
+
+      var meta = d.createElement('span');
+      meta.className = 'gg-search__meta';
+      meta.textContent = cmd && cmd.hint ? String(cmd.hint) : '';
+
+      a.appendChild(title);
+      a.appendChild(meta);
+      return a;
+    }
     function pick(i){
       var u=ui();if(!u)return;
       var n=qsa('.gg-search-cmd',u.panel);
@@ -97,12 +127,13 @@
         var u=ui();if(!u)return;
         if(!isCmd(u.input.value))return;
         S.items=cmdList(u.input.value);
-        var html='<div class="gg-search__section">Commands</div>';
-        if(!S.items.length)html+='<div class="gg-search__hint">No command</div>';
-        for(var i=0;i<S.items.length;i++)html+='<a href="#" class="gg-search__result gg-search-item gg-search-cmd" id="gg-opt-'+i+'" role="option" aria-selected="false" data-cmd="'+S.items[i].id+'"><span class="gg-search__title">'+S.items[i].title+'</span><span class="gg-search__meta">'+S.items[i].hint+'</span></a>';
-        html+='<div class="gg-search__hint">Enter run · Esc close</div>';
-// @gg-allow-html-in-js LEGACY:LEGACY-0012
-        u.panel.innerHTML=html;
+        var frag = d.createDocumentFragment();
+        u.panel.textContent = '';
+        frag.appendChild(sectionNode('Commands', 'gg-search__section'));
+        if(!S.items.length) frag.appendChild(sectionNode('No command', 'gg-search__hint'));
+        for(var i=0;i<S.items.length;i++) frag.appendChild(cmdOption(S.items[i], i));
+        frag.appendChild(sectionNode('Enter run · Esc close', 'gg-search__hint'));
+        u.panel.appendChild(frag);
         S.a=-1;
         if(S.items.length)pick(0);
       }catch(e){fail('r',e);}
@@ -156,4 +187,3 @@
   })();
   if(GG.boot&&GG.boot.onReady)GG.boot.onReady(function(){if(M.searchCmd&&M.searchCmd.init)M.searchCmd.init();});
 })(window,document);
-

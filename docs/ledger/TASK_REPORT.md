@@ -1,41 +1,36 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221
-TITLE: Remove HTML-in-JS injection in mixed module and tighten allowlist ratchet
+TASK_ID: TASK-PHASE6-TRIVIAL-REMAINS-LISTING-POST-CMD-20260221
+TITLE: Remove remaining trivial HTML-in-JS in listing/post/cmd + tighten ratchet
 
 SUMMARY
-- Refactored `public/assets/latest/modules/ui.bucket.mixed.js` to DOM-based rendering (no `innerHTML` / `insertAdjacentHTML` / `outerHTML`).
-- Removed mixed-specific legacy allowlist entries (`LEGACY-0065..LEGACY-0070`).
-- Added mixed-specific guardrails and wired them into `gate:prod`.
-- Tightened allowlist ratchet to exact baseline after refactor.
-
-STEP 1 — MIXED LEGACY INVENTORY (BEFORE)
-- LEGACY-0065 | pattern: `innerHTML\\s*=` | note: inject newsdeck skeleton columns/placeholders into grid
-- LEGACY-0066 | pattern: `innerHTML\\s*=` | note: inject rail skeleton cards
-- LEGACY-0067 | pattern: `innerHTML\\s*=` | note: inject grid skeleton cards
-- LEGACY-0068 | pattern: `innerHTML\\s*=` | note: inject rendered newsdeck markup
-- LEGACY-0069 | pattern: `innerHTML\\s*=` | note: inject rendered rail cards markup
-- LEGACY-0070 | pattern: `innerHTML\\s*=` | note: inject rendered grid cards markup
+- Replaced all remaining `innerHTML = ...` assignments in target modules with DOM API rendering:
+  - `public/assets/latest/modules/ui.bucket.listing.js` (LEGACY-0044, LEGACY-0051, LEGACY-0060)
+  - `public/assets/latest/modules/ui.bucket.post.js` (LEGACY-0071, LEGACY-0072)
+  - `public/assets/latest/modules/ui.bucket.cmd.js` (LEGACY-0012)
+- Added new guardrail verifier `tools/verify-no-innerhtml-assign-modules.mjs` and wired it into `tools/gate-prod.sh`.
+- Removed migrated legacy IDs from allowlist and tightened ratchet.
 
 ALLOWLIST COUNT
-- Before: `28`
-- After: `22`
-- `max_allow`: `22`
+- Before: `22`
+- After: `16`
+- `max_allow`: `16`
 
 IDS REMOVED
-- LEGACY-0065
-- LEGACY-0066
-- LEGACY-0067
-- LEGACY-0068
-- LEGACY-0069
-- LEGACY-0070
+- LEGACY-0012
+- LEGACY-0044
+- LEGACY-0051
+- LEGACY-0060
+- LEGACY-0071
+- LEGACY-0072
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.mixed.js
+- public/assets/latest/modules/ui.bucket.listing.js
+- public/assets/latest/modules/ui.bucket.post.js
+- public/assets/latest/modules/ui.bucket.cmd.js
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/verify-mixed-no-innerhtml.mjs
-- tools/verify-mixed-no-trivial-htmljs.mjs
+- tools/verify-no-innerhtml-assign-modules.mjs
 - tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -46,14 +41,9 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-mixed-no-innerhtml.mjs`
+- `node tools/verify-no-innerhtml-assign-modules.mjs`
 ```text
-PASS: mixed.js has no innerHTML
-```
-
-- `node tools/verify-mixed-no-trivial-htmljs.mjs`
-```text
-PASS: mixed.js trivial htmljs blocked
+VERIFY_NO_INNERHTML_ASSIGN_MODULES: PASS
 ```
 
 - `node tools/verify-legacy-allowlist-ratchet.mjs`
@@ -63,40 +53,22 @@ VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 
 - `node tools/verify-no-new-html-in-js.mjs`
 ```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=22 allowlisted_matches=22 violations=0
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=16 allowlisted_matches=16 violations=0
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=22 allowlisted_matches=22 violations=0
-PASS: mixed.js has no innerHTML
-PASS: mixed.js trivial htmljs blocked
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=16 allowlisted_matches=16 violations=0
+VERIFY_NO_INNERHTML_ASSIGN_MODULES: PASS
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
-PASS: phase4 trivial htmljs blocked
-VERIFY_TEMPLATE_CONTRACT: PASS
 VERIFY_BUDGETS: PASS
-VERIFY_INLINE_CSS: PASS
-VERIFY_CRP: PASS
+PASS: palette a11y contract (mode=repo, release=0fd3deb)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-- `bash tools/gate-release.sh`
-```text
-INFO: live checks run only in CI or with GG_GATE_RELEASE_LIVE=1
-PASS: mixed.js has no innerHTML
-PASS: mixed.js trivial htmljs blocked
-PASS: gate:prod
-PASS: gate:release(local)
-```
-
-- `npm run zip:audit`
-```text
-FAIL: working tree must be clean before zip:audit (integrity guardrail)
-```
-
 NOTES
-- Gate realigned release artifacts to the current `RELEASE_ID` during verification.
-- Manual 5-minute browser sanity for mixed sections (home/listing) was not executable in this CLI-only environment.
-- `zip:audit` is re-run after ship on clean tree to produce final artifact.
+- Initial `gate:prod` run failed due `verify-budgets` on `ui.bucket.listing.js`; resolved by slimming implementation while preserving DOM-only rendering.
+- Initial `verify-palette-a11y` fallback failed because verifier expects literal option role token in command module; resolved by keeping explicit static token while retaining DOM node construction.
+- Manual sanity checks for listing/post/cmd behavior remain required in browser.

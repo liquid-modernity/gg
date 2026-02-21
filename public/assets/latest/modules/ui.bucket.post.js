@@ -253,8 +253,7 @@
   }
 
   function build(){
-// @gg-allow-html-in-js LEGACY:LEGACY-0071
-    list.innerHTML = '';
+    list.textContent = '';
     empty.hidden = true;
 
     var body = findPostBody();
@@ -412,8 +411,7 @@
         frag.appendChild(createChip(slug, 'post_footer'));
       }
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0072
-      block.innerHTML = '';
+      block.textContent = '';
       if (hasTag) {
         block.appendChild(frag);
       } else if (GG.state && GG.state.isAdmin) {
@@ -453,4 +451,3 @@
 
 
 })(window);
-

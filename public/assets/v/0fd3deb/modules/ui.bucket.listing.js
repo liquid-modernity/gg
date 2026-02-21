@@ -242,12 +242,18 @@
         var li = d.createElement('li');
         li.className = 'gg-lt__post';
         li.setAttribute('role', 'none');
-// @gg-allow-html-in-js LEGACY:LEGACY-0044
-        li.innerHTML =
-          '<a href="'+p.url+'" role="treeitem">' +
-            '<span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">article</span>' +
-            '<span>'+escapeHtml(p.title)+'</span>' +
-          '</a>';
+        var link = d.createElement('a');
+        link.href = p && p.url ? String(p.url) : '#';
+        link.setAttribute('role', 'treeitem');
+        var icon = d.createElement('span');
+        icon.className = 'material-symbols-rounded gg-lt__doc';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'article';
+        var title = d.createElement('span');
+        title.textContent = p && p.title ? String(p.title) : '';
+        link.appendChild(icon);
+        link.appendChild(title);
+        li.appendChild(link);
         ul.appendChild(li);
       });
       var activeUrl = getActivePostUrl();
@@ -542,11 +548,11 @@
   function qs(root, sel){ return (root || document).querySelector(sel); }
   function qsa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function setText(el, t){ if (el) el.textContent = t; }
-  function esc(s){
-    s = (s == null) ? "" : String(s);
-    return s.replace(/[&<>"']/g, function (c) {
-      return ({ "&":"\u0026amp;","<":"\u0026lt;",">":"\u0026gt;",'"':"\u0026quot;","'":"\u0026#039;" })[c];
-    });
+  function mk(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
   }
 
   function isYT(item){
@@ -729,17 +735,30 @@
       tile.className = cls.join(" ");
 
       var badge = yt ? "YouTube" : "Image";
-      var title = esc(item.title || "");
-      var postUrl = esc(item.postUrl || "#");
-      var thumb = esc(item.thumb || "");
-      var href = postUrl;
+      var title = item.title || "";
+      var href = item.postUrl || "#";
+      var thumb = item.thumb || "";
 
-// @gg-allow-html-in-js LEGACY:LEGACY-0051
-      tile.innerHTML =
-        '<div class="shade"></div>' +
-        '<div class="thumb"><img loading="lazy" alt="' + title + '" src="' + thumb + '"></div>' +
-        '<div class="meta"><span class="badge">' + badge + '</span><span class="title">' + title + '</span></div>' +
-        '<a href="' + href + '" aria-label="' + title + '"></a>';
+      var shade = mk("div", "shade");
+      var thumbWrap = mk("div", "thumb");
+      var img = mk("img");
+      img.loading = "lazy";
+      img.alt = title;
+      img.src = thumb;
+      thumbWrap.appendChild(img);
+
+      var meta = mk("div", "meta");
+      meta.appendChild(mk("span", "badge", badge));
+      meta.appendChild(mk("span", "title", title));
+
+      var link = mk("a");
+      link.href = href;
+      link.setAttribute("aria-label", title);
+
+      tile.appendChild(shade);
+      tile.appendChild(thumbWrap);
+      tile.appendChild(meta);
+      tile.appendChild(link);
 
       var w = weightFromClasses(tile.className);
       var idx = pickColIndex(w);
@@ -962,11 +981,11 @@
   function qs(root, sel){ return (root||document).querySelector(sel); }
   function qsa(root, sel){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
   function setText(el, t){ if(el) el.textContent = t; }
-  function esc(s){
-    s = (s==null) ? "" : String(s);
-    return s.replace(/[&<>"']/g, function(c){
-      return ({ "&":"\u0026amp;","<":"\u0026lt;",">":"\u0026gt;",'"':"\u0026quot;","'":"\u0026#039;" })[c];
-    });
+  function mk(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
   }
 
   function isYT(item){
@@ -1366,37 +1385,43 @@
           var d = parseDateISO(item.published);
           var dateTxt = d ? fmtDate(d) : "";
 
-          var title = esc(item.title || "(untitled)");
-          var url = esc(item.postUrl || "#");
+          var title = item.title || "(untitled)";
+          var url = item.postUrl || "#";
           var labelText = Array.isArray(item.labels) ? (item.labels[0] || "") : (item.labels || "");
-          var lbl = esc(labelText);
+          var lbl = labelText || "";
 
           var yt = isYT(item);
           var hasSignals = !!(item.type || item.media || item.thumb);
           var badgeText = !hasSignals ? "Type?" : (yt ? "YouTube" : "Image");
           var badgeState = !hasSignals ? "unk" : (yt ? "yt" : "img");
 
-          var snippet = item && item.snippet ? esc(item.snippet) : "";
+          var snippet = item && item.snippet ? item.snippet : "";
 
           var el = document.createElement("div");
           el.className = "gg-item";
           el.setAttribute("role","listitem");
           el.setAttribute("tabindex","0");
           el.dataset.url = item.postUrl || "";
-// @gg-allow-html-in-js LEGACY:LEGACY-0060
-          el.innerHTML =
-            '<div class="gg-date">'+esc(dateTxt)+'</div>' +
-            '<div class="gg-main">' +
-              '<a class="gg-link" href="'+url+'">'+title+'</a>' +
-              '<div class="gg-badges">' +
-                '<span class="gg-badge" data-gg-state="'+badgeState+'">'+badgeText+'</span>' +
-                (lbl ? '<span class="gg-badge">'+lbl+'</span>' : '') +
-              '</div>' +
-              '<div class="gg-snippet">'+ (snippet || "") +'</div>' +
-            '</div>' +
-            '<button class="gg-toggle" type="button" aria-label="Toggle details">Details</button>';
+          var dateNode = mk("div", "gg-date", dateTxt || "");
+          var mainNode = mk("div", "gg-main");
+          var linkNode = mk("a", "gg-link", title);
+          linkNode.href = url;
+          var badgesNode = mk("div", "gg-badges");
+          var typeBadge = mk("span", "gg-badge", badgeText);
+          typeBadge.setAttribute("data-gg-state", badgeState);
+          badgesNode.appendChild(typeBadge);
+          if (lbl) badgesNode.appendChild(mk("span", "gg-badge", lbl));
+          var btn = mk("button", "gg-toggle", "Details");
+          btn.type = "button";
+          btn.setAttribute("aria-label", "Toggle details");
 
-          var btn = qs(el, ".gg-toggle");
+          mainNode.appendChild(linkNode);
+          mainNode.appendChild(badgesNode);
+          mainNode.appendChild(mk("div", "gg-snippet", snippet || ""));
+
+          el.appendChild(dateNode);
+          el.appendChild(mainNode);
+          el.appendChild(btn);
           btn.addEventListener("click", function(e){
             e.stopPropagation();
             GG.core.state.toggle(el, "open");
@@ -1853,12 +1878,10 @@
     listRoot.appendChild(errMsg);
   };
 
-  // Upgrade breadcrumb untuk halaman /p/tags.html dan /p/tags.html?tag=...
   GG.modules.tagHubPage.updateBreadcrumb = function (tagSlug) {
     var nav = document.querySelector('nav.gg-post__breadcrumbs') || document.querySelector('nav.breadcrumbs.gg-post__breadcrumbs');
     if (!nav) { return; }
 
-    // Jangan dua kali enhance
     if (nav.getAttribute('data-gg-tags-breadcrumb-enhanced') === 'true') {
       return;
     }
@@ -1876,13 +1899,11 @@
       labelText = 'tags';
     }
 
-    // Ubah current <span> "tags" menjadi <a> "tags" yang bisa diklik
     var tagsLink = document.createElement('a');
     tagsLink.className = 'gg-post__breadcrumbs-link gg-post__breadcrumbs-link--label gg-tags-page__crumb-tags';
     tagsLink.href = '/p/tags.html';
     tagsLink.textContent = labelText;
 
-    // Kalau TIDAK ada tagSlug (mode direktori), jadikan link ini current page
     if (!tagSlug) {
       tagsLink.setAttribute('aria-current', 'page');
       nav.replaceChild(tagsLink, current);
@@ -1890,14 +1911,11 @@
       return;
     }
 
-    // Kalau ADA tagSlug (mode Tag detail): "tags" jadi link biasa
     nav.replaceChild(tagsLink, current);
 
-    // Tambah separator baru
     var sepClone = sepTemplate.cloneNode(true);
     nav.appendChild(sepClone);
 
-    // Tambah crumb terakhir "#blogger" sebagai current page
     var currentTag = document.createElement('span');
     currentTag.className = 'gg-post__breadcrumbs-current gg-tags-page__crumb-current';
     currentTag.setAttribute('aria-current', 'page');
@@ -2071,9 +2089,8 @@
   };
 })(window.GG, document);
 
-/* GG prefetch — HOME/LISTING only (safe, no PJAX) */
 (() => {
-  const CACHE_PAGES = "gg-pages-v2"; // HARUS sama dengan CACHE_PAGES di public/sw.js
+  const CACHE_PAGES = "gg-pages-v2";
   const MAX_PREFETCH = 10;
   const MAX_INFLIGHT = 2;
 
@@ -2081,10 +2098,8 @@
     const container = document.querySelector("#postcards");
     if (!container) return;
 
-    // extra guard: jangan jalan di post page (/YYYY/MM/...)
     if (/^\/\d{4}\/\d{2}\//.test(location.pathname)) return;
 
-    // hormati data saver / koneksi buruk
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn && (conn.saveData || /2g/.test(conn.effectiveType || ""))) return;
 
@@ -2099,10 +2114,8 @@
         const url = new URL(href, location.href);
         if (url.origin !== location.origin) return null;
 
-        // hanya post pages (Blogger umum: /YYYY/MM/slug.html)
         if (!/^\/\d{4}\/\d{2}\//.test(url.pathname)) return null;
 
-        // buang hash (#comments) & param aneh (mis: ?m=1)
         url.hash = "";
         if (url.searchParams.has("m")) url.searchParams.delete("m");
 
@@ -2129,7 +2142,6 @@
       try {
         const cache = await caches.open(CACHE_PAGES);
 
-        // kalau sudah ada, stop
         const hit = await cache.match(urlStr);
         if (hit) return;
 
@@ -2143,20 +2155,17 @@
           await cache.put(urlStr, res.clone());
         }
       } catch (e) {
-        // prefetch harus silent: jangan bikin error noisy
       } finally {
         inflight--;
       }
     }
 
-    // Kandidat link: hanya thumb + title link
     function getCandidateAnchors() {
       return container.querySelectorAll(
         'a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]'
       );
     }
 
-    // 1) Hover/pointerover prefetch (paling efektif)
     container.addEventListener(
       "pointerover",
       (e) => {
@@ -2170,7 +2179,6 @@
       { passive: true }
     );
 
-    // 2) Keyboard focus prefetch (aksesibilitas)
     container.addEventListener(
       "focusin",
       (e) => {
@@ -2183,7 +2191,6 @@
       }
     );
 
-    // 3) Viewport prefetch (pelan + disiplin)
     const io = new IntersectionObserver(
       (entries) => {
         for (const ent of entries) {
@@ -2198,7 +2205,6 @@
 
     getCandidateAnchors().forEach((a) => io.observe(a));
 
-    // 4) Warm-up 4 link pertama saat idle
     schedule(() => {
       const anchors = Array.from(getCandidateAnchors()).slice(0, 4);
       anchors.forEach((a) => {

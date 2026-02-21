@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221: Remove mixed-module HTML injection paths and tighten legacy allowlist ratchet to 22.
+- TASK-PHASE6-TRIVIAL-REMAINS-LISTING-POST-CMD-20260221: Remove remaining trivial innerHTML assignments in listing/post/cmd, add module-level verifier, and tighten allowlist ratchet to 16.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: acdb7f4
+RELEASE_ID: 0fd3deb
 RELEASE_HISTORY:
-- acdb7f4
-- fa8c5a2
-PROD_PINNED_JS: /assets/v/acdb7f4/main.js
-PROD_PINNED_APP: /assets/v/acdb7f4/app.js
-PROD_PINNED_CSS: /assets/v/acdb7f4/main.css
+- 0fd3deb
+- fe087d1
+PROD_PINNED_JS: /assets/v/0fd3deb/main.js
+PROD_PINNED_APP: /assets/v/0fd3deb/app.js
+PROD_PINNED_CSS: /assets/v/0fd3deb/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE6-CORE-HOTSPOTS-20260222
+- TASK-PHASE6-CORE-QUICK-WINS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221 refactored `ui.bucket.mixed.js` to DOM rendering (no innerHTML), added mixed guardrail verifiers, removed LEGACY-0065..0070, and set allowlist `max_allow=22`.
+- 2026-02-21 TASK-PHASE6-TRIVIAL-REMAINS-LISTING-POST-CMD-20260221 removed LEGACY-0012/0044/0051/0060/0071/0072 via DOM API refactors in listing/post/cmd, added `verify-no-innerhtml-assign-modules`, and set allowlist `max_allow=16`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
