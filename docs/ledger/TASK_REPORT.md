@@ -1,47 +1,54 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221
-TITLE: Skip link + icon control accessible-name contract
+TASK_ID: TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221
+TITLE: Keep palette as combobox/listbox (no modal) + add keyboard trap sweep guardrails
 
 SUMMARY
-- Added global skip-link contract in template shell with `.gg-skip-link[href="#gg-main"]`, hidden until focused.
-- Added skip-link runtime focus binding in core so click always lands focus on `#gg-main` safely.
-- Added explicit labels for icon controls that were previously implicit.
-- Added static guardrails to prevent regressions (`verify-skip-link-contract` and `verify-icon-controls-a11y`) and wired both into `gate:prod`.
+- Removed semantic mistake: command/search palette (`#gg-palette-list`) is no longer treated as modal dialog.
+- Retained true modal behavior for real dialogs (share sheet, comments help, overlay, panels flow unchanged).
+- Hardened `GG.services.a11y.modalOpen` so listbox/palette cannot be modalized accidentally in future.
+- Added static guardrails and wired them into `gate:prod`.
+- Added manual QA checklist for consistent keyboard-trap sweep.
 
-CONTROLS FIXED (selector -> label)
-- `.gg-post-card__action--bookmark[data-gg-action="bookmark"]` -> `aria-label="Bookmark"`
-- `.gg-post-card__tool[data-gg-action="like"]` -> `aria-label="Like"`
-- `.gg-post-card__action--share[data-gg-action="share"]` -> `aria-label="Share"`
-- `.gg-post-card__tool--info[data-gg-action="info"]` -> `aria-label="Information"`
-- Dynamic `.gg-tree-toggle` buttons in core modules -> `aria-label="Toggle <section>"` fallback `Toggle section`
-- `a.gg-skip-link[href="#gg-main"]` + runtime focus safeguard (`tabindex=-1` + focus)
+WHAT WAS REMOVED (PALETTE MODALIZATION)
+- Deleted palette modal patch block in `public/assets/latest/modules/ui.bucket.core.js`:
+  - `ggPaletteOverlay()`
+  - `patchSearchOverlayModalBindings()`
+  - `bindSearchOverlayModal()`
+  - `gg:search-open` listener that called `GG.services.a11y.modalOpen(panel, ...)` for `#gg-palette-list`
 
-FILES CHANGED
-- index.prod.xml
-- index.dev.xml
-- public/assets/latest/modules/ui.bucket.core.js
-- tools/verify-skip-link-contract.mjs
-- tools/verify-icon-controls-a11y.mjs
-- tools/gate-prod.sh
-- tools/perf-budgets.json
-- docs/ledger/TASK_LOG.md
-- docs/ledger/TASK_REPORT.md
-- docs/ledger/GG_CAPSULE.md
-- public/sw.js
-- src/worker.js
-- public/assets/v/<RELEASE_ID>/*
+CHANGES
+- `public/assets/latest/modules/ui.bucket.core.js`
+  - removed modal binding for palette/listbox.
+  - added `modalOpen` guard:
+    - if `modalEl.id === "gg-palette-list"` or `role="listbox"` => return false (no dialog role/aria-modal/focusTrap).
+- `tools/verify-palette-not-modal.mjs` (new)
+- `tools/verify-modal-open-close-parity.mjs` (new)
+- `tools/gate-prod.sh` (wire new verifiers)
+- `docs/a11y/KEYBOARD_TRAP_SWEEP.md` (new manual checklist)
+- `docs/ledger/TASK_LOG.md`
+- `docs/ledger/TASK_REPORT.md`
+- `docs/ledger/GG_CAPSULE.md`
+- `index.prod.xml`
+- `public/sw.js`
+- `src/worker.js`
+- `public/assets/v/<RELEASE_ID>/*`
 
 VERIFICATION OUTPUTS
-- `node tools/verify-skip-link-contract.mjs`
+- `node tools/verify-palette-not-modal.mjs`
 ```text
-VERIFY_SKIP_LINK_CONTRACT: PASS
+VERIFY_PALETTE_NOT_MODAL: PASS
 ```
 
-- `node tools/verify-icon-controls-a11y.mjs`
+- `node tools/verify-modal-open-close-parity.mjs`
 ```text
-VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
+VERIFY_MODAL_OPEN_CLOSE_PARITY: PASS modalOpen=3 modalClose=6
+```
+
+- `node tools/verify-palette-a11y.mjs --mode=repo`
+```text
+PASS: palette a11y contract (mode=repo, release=d80ee2d)
 ```
 
 - `npm run gate:prod`
@@ -51,6 +58,8 @@ VERIFY_ROUTE_A11Y_CONTRACT: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=42 allowlisted_matches=42 violations=0
 VERIFY_SKIP_LINK_CONTRACT: PASS
 VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
+VERIFY_PALETTE_NOT_MODAL: PASS
+VERIFY_MODAL_OPEN_CLOSE_PARITY: PASS modalOpen=3 modalClose=6
 VERIFY_OVERLAY_MODAL_CONTRACT: PASS
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_NO_INNERHTML_CLEAR: PASS
@@ -72,15 +81,17 @@ PASS: gate:prod
 
 - `bash tools/gate-release.sh`
 ```text
-VERIFY_SKIP_LINK_CONTRACT: PASS
-VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=69 labeled=69 unlabeledSuspects=0
+VERIFY_PALETTE_NOT_MODAL: PASS
+VERIFY_MODAL_OPEN_CLOSE_PARITY: PASS modalOpen=3 modalClose=6
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
-MANUAL SANITY
-- Not executable in this terminal sandbox (no interactive browser/screen reader).
-- Pending manual checks on real browser:
-  - Tab once -> skip link appears; Enter jumps and focus lands on `#gg-main`.
-  - SR announces meaningful names for icon controls.
+MANUAL SWEEP ARTIFACT
+- Added `docs/a11y/KEYBOARD_TRAP_SWEEP.md` with repeatable checkbox flow for:
+  - post panels
+  - share sheet
+  - comments help modal
+  - overlay
+  - search dock combobox/listbox (explicitly no trap)

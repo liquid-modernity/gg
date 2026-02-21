@@ -1800,3 +1800,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): first gate run required release realignment + small core budget rebaseline after a11y patch footprint
 - RISKS: low/med; manual 2-minute SR/keyboard sanity still required on real browser
 - NEXT: TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221
+
+---
+
+## 2026-02-21 — TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221 — Palette semantic fix + trap sweep guardrails
+- DATE: 2026-02-21
+- TASK_ID: TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221
+- TITLE: Keep palette as combobox/listbox (no modal) + add keyboard trap sweep guardrails
+- MODE (DEV/PROD impact): a11y semantic correction + verifier guardrails + gate wiring + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove accidental modalization of `#gg-palette-list`, harden `modalOpen()` against listbox misuse, add two static verifiers, wire gate, and add repeatable manual keyboard-trap checklist
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-palette-not-modal.mjs; tools/verify-modal-open-close-parity.mjs; tools/gate-prod.sh; docs/a11y/KEYBOARD_TRAP_SWEEP.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-palette-not-modal.mjs; node tools/verify-modal-open-close-parity.mjs; node tools/verify-palette-a11y.mjs --mode=repo; npm run gate:prod; bash tools/gate-release.sh
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): palette-not-modal PASS; modal-open-close-parity PASS; verify-palette-a11y PASS; gate:prod PASS; gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): `gate:prod` auto-ran build to realign release after source edits (`RELEASE_ID d80ee2d`)
+- RISKS: low/med; manual keyboard/screen-reader sweep still required in real browser session
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221: Enforce skip link contract and icon-control accessible names with gate guardrails.
+- TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221: Keep palette as combobox/listbox and add keyboard-trap sweep guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 5ff679c
+RELEASE_ID: d80ee2d
 RELEASE_HISTORY:
+- d80ee2d
 - 5ff679c
-- dc4bbc3
-PROD_PINNED_JS: /assets/v/5ff679c/main.js
-PROD_PINNED_APP: /assets/v/5ff679c/app.js
-PROD_PINNED_CSS: /assets/v/5ff679c/main.css
+PROD_PINNED_JS: /assets/v/d80ee2d/main.js
+PROD_PINNED_APP: /assets/v/d80ee2d/app.js
+PROD_PINNED_CSS: /assets/v/d80ee2d/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221
+- TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-OVERLAY-ARIA-LABELS-AUDIT-20260221 added skip-link contract, icon-label fixes, and new a11y verifiers in gate.
+- 2026-02-21 TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221 removed palette modalization and added palette/modal parity verifiers.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
