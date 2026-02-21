@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-RULEBOOK-20260221: Rulebook operational sync + guardrail verifier.
+- TASK-DIST-AUDIT-20260221: Enforce gg-audit distribution contract + CI artifact upload.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 23dc4a0
+RELEASE_ID: 3f9a7f9
 RELEASE_HISTORY:
+- 3f9a7f9
 - 23dc4a0
-- 09e2ce4
-PROD_PINNED_JS: /assets/v/23dc4a0/main.js
-PROD_PINNED_APP: /assets/v/23dc4a0/app.js
-PROD_PINNED_CSS: /assets/v/23dc4a0/main.css
+PROD_PINNED_JS: /assets/v/3f9a7f9/main.js
+PROD_PINNED_APP: /assets/v/3f9a7f9/app.js
+PROD_PINNED_CSS: /assets/v/3f9a7f9/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - P0-03 Telemetry redaction/allowlist (strip query/fragment, allowlist keys).
 
 LAST_PATCH:
-- 2026-02-21 TASK-RULEBOOK-20260221 sync AGENTS/NAMING + add verify-rulebooks
+- 2026-02-21 TASK-DIST-AUDIT-20260221 enforce distribution contract (zip-audit only)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

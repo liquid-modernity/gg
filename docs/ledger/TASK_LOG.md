@@ -1548,3 +1548,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): updating GG_CAPSULE changed computed release fingerprint; release realign/build required before verify:release could pass
 - RISKS: low/med; local release id 23dc4a0 not yet deployed so live remains 09e2ce4 until deployment pipeline runs
 - NEXT: deploy/promote release 23dc4a0 then rerun smoke with default expected release
+
+---
+
+## 2026-02-21 — TASK-DIST-AUDIT-20260221 — Distribution contract (zip-audit only)
+- DATE: 2026-02-21
+- TASK_ID: TASK-DIST-AUDIT-20260221
+- TITLE: Enforce gg-audit distribution contract (tools/zip-audit.sh only)
+- MODE (DEV/PROD impact): docs + CI workflow + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN (3f9a7f9)
+- SCOPE: add distribution contract docs, handoff guardrail wording, deploy artifact upload, ledger updates
+- CHANGES (files touched): docs/release/DISTRIBUTION.md; docs/ledger/NEW_ROOM_HANDOFF.md; .github/workflows/deploy.yml; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): npm run verify:release; ALLOW_DIRTY_RELEASE=1 npm run build; npm run verify:release; npm run verify:assets; node tools/verify-template-contract.mjs; node tools/verify-router-contract.mjs; node tools/verify-budgets.mjs; node tools/verify-inline-css.mjs; node tools/verify-crp.mjs; SMOKE_LIVE_HTML=1 tools/smoke.sh; SMOKE_ALLOW_OFFLINE_FALLBACK=1 SMOKE_LIVE_HTML=1 tools/smoke.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): strict live smoke failed in sandbox (DNS resolve), offline fallback smoke passed, zip:audit enforced clean-tree guardrail
+- NOTES (gotchas): verify:release may require build realignment when GG_CAPSULE text changes
+- RISKS: low/med; smoke can fail on live release mismatch until deployment catches up
+- NEXT: run deploy pipeline to publish aligned release and recheck strict live smoke
