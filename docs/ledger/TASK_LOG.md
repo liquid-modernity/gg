@@ -1962,3 +1962,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): initial gate failed budget and palette-a11y static token expectation; fixed by trimming listing payload under budget and keeping explicit option role token in cmd module while staying DOM-only.
 - RISKS: low/med; manual sanity for listing/post/cmd interactions still required in browser session.
 - NEXT: TASK-PHASE6-CORE-QUICK-WINS-20260221
+
+---
+
+## 2026-02-21 — TASK-PHASE6-CORE-QUICK-WINS-20260221 — Core quick wins (remove targeted legacy HTML-in-JS)
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE6-CORE-QUICK-WINS-20260221
+- TITLE: Replace targeted core innerHTML/template blocks with DOM nodes + tighten ratchet
+- MODE (DEV/PROD impact): core module refactor + allowlist ratchet reduction + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: migrate LEGACY-0015, 0033, 0034, 0037, 0038, 0039 in `ui.bucket.core.js` from HTML string injection to DOM builders; remove corresponding allowlist entries and tighten `max_allow`
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-new-html-in-js.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): no-new-html-in-js PASS (`total_matches=10`); allowlist-ratchet PASS (`allow=10`, `max_allow=10`); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): gate auto-ran dirty-release build to align release ID from `0fd3deb` to `ff1c3d0` before full verification.
+- RISKS: low/med; manual sanity for skeleton/related-inline/youtube-lite/left-panel visual parity still recommended in browser.
+- NEXT: TASK-PHASE7-CORE-SPA-SWAP-NO-INNERHTML-20260222

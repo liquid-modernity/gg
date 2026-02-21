@@ -43,13 +43,6 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0015",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0022",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "DOMParser\\s*\\(",
@@ -78,20 +71,6 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0033",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0034",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0035",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "innerHTML\\s*=",
@@ -104,28 +83,7 @@
       "pattern": "innerHTML\\s*=",
       "note": "baseline legacy",
       "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0037",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0038",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "`[^`]*<[^`]+>`",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0039",
-      "file": "public/assets/latest/modules/ui.bucket.core.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
     }
   ],
-  "max_allow": 16
+  "max_allow": 10
 }

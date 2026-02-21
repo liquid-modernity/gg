@@ -749,18 +749,23 @@ ui.overlay = ui.overlay || {};
 ui.overlay.open = ui.overlay.open || function(){ var el = d.getElementById('gg-overlay'); var trigger = d.activeElement; if(!el) return; el.hidden = false; GG.core.state.remove(el, 'hidden'); GG.core.state.add(el, 'open'); if(GG.services && GG.services.a11y && typeof GG.services.a11y.modalOpen === 'function') GG.services.a11y.modalOpen(el, trigger, { label: 'Overlay' }); };
 ui.overlay.close = ui.overlay.close || function(){ var el = d.getElementById('gg-overlay'); if(!el) return; if(GG.services && GG.services.a11y && typeof GG.services.a11y.modalClose === 'function') GG.services.a11y.modalClose(el); GG.core.state.remove(el, 'open'); GG.core.state.add(el, 'hidden'); el.hidden = true; };
 ui.skeleton = ui.skeleton || {};
-ui.skeleton.markup = ui.skeleton.markup || '' +
-'<div class="gg-skeleton" aria-hidden="true">' +
-  '<div class="gg-skeleton__bar gg-skeleton__hero"></div>' +
-  '<div class="gg-skeleton__bar gg-skeleton__title"></div>' +
-  '<div class="gg-skeleton__bar gg-skeleton__line"></div>' +
-  '<div class="gg-skeleton__bar gg-skeleton__line"></div>' +
-  '<div class="gg-skeleton__bar gg-skeleton__line gg-skeleton__line--short"></div>' +
-'</div>';
 ui.skeleton.render = ui.skeleton.render || function(target){
 if(!target) return;
-// @gg-allow-html-in-js LEGACY:LEGACY-0015
-target.innerHTML = ui.skeleton.markup;
+target.textContent = '';
+var wrap = d.createElement('div');
+wrap.className = 'gg-skeleton';
+wrap.setAttribute('aria-hidden', 'true');
+function addBar(name){
+  var bar = d.createElement('div');
+  bar.className = 'gg-skeleton__bar ' + name;
+  wrap.appendChild(bar);
+}
+addBar('gg-skeleton__hero');
+addBar('gg-skeleton__title');
+addBar('gg-skeleton__line');
+addBar('gg-skeleton__line');
+addBar('gg-skeleton__line gg-skeleton__line--short');
+target.appendChild(wrap);
 };
 ui.layout = ui.layout || {};
 ui.layout._inferSurfaceFromUrl = ui.layout._inferSurfaceFromUrl || function(url){
@@ -3700,12 +3705,20 @@ GG.modules.Skeleton = (function(){
   function buildCard(){
     var card = document.createElement('div');
     card.className = 'gg-skeleton-card';
-// @gg-allow-html-in-js LEGACY:LEGACY-0033
-    card.innerHTML =
-      '<div class="gg-skeleton-thumb gg-shimmer"></div>' +
-      '<div class="gg-skeleton-line gg-shimmer"></div>' +
-      '<div class="gg-skeleton-line gg-shimmer" style="width:80%"></div>' +
-      '<div class="gg-skeleton-line gg-shimmer" style="width:65%"></div>';
+    var thumb = document.createElement('div');
+    thumb.className = 'gg-skeleton-thumb gg-shimmer';
+    card.appendChild(thumb);
+
+    function addLine(width){
+      var line = document.createElement('div');
+      line.className = 'gg-skeleton-line gg-shimmer';
+      if (width) line.style.width = width;
+      card.appendChild(line);
+    }
+
+    addLine('');
+    addLine('80%');
+    addLine('65%');
     return card;
   }
 
@@ -3974,15 +3987,36 @@ GG.modules.RelatedInline = (function(){
     var wrap = document.createElement('aside');
     wrap.className = 'gg-related-inline';
     wrap.setAttribute('role','complementary');
-// @gg-allow-html-in-js LEGACY:LEGACY-0034
-    wrap.innerHTML =
-      '<div class="gg-related-inline__eyebrow">Baca juga</div>' +
-      '<a class="gg-related-inline__title" href="'+item.href+'">'+item.title+'</a>' +
-      (item.thumb ? '<img class="gg-related-inline__thumb" src="'+item.thumb+'" alt="'+item.title+'"/>' : '') +
-      '<div class="gg-related-inline__meta">' +
-        '<span class="material-symbols-rounded" aria-hidden="true">auto_stories</span>' +
-        '<span>'+(item.date || 'Artikel terkait')+'</span>' +
-      '</div>';
+    var eyebrow = document.createElement('div');
+    eyebrow.className = 'gg-related-inline__eyebrow';
+    eyebrow.textContent = 'Baca juga';
+    wrap.appendChild(eyebrow);
+
+    var title = document.createElement('a');
+    title.className = 'gg-related-inline__title';
+    title.href = item.href;
+    title.textContent = item.title;
+    wrap.appendChild(title);
+
+    if (item.thumb) {
+      var img = document.createElement('img');
+      img.className = 'gg-related-inline__thumb';
+      img.src = item.thumb;
+      img.alt = item.title || '';
+      wrap.appendChild(img);
+    }
+
+    var meta = document.createElement('div');
+    meta.className = 'gg-related-inline__meta';
+    var icon = document.createElement('span');
+    icon.className = 'material-symbols-rounded';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = 'auto_stories';
+    var label = document.createElement('span');
+    label.textContent = item.date || 'Artikel terkait';
+    meta.appendChild(icon);
+    meta.appendChild(label);
+    wrap.appendChild(meta);
     return wrap;
   }
 
@@ -4480,13 +4514,15 @@ if (d.readyState === 'loading') {
         const allowAttr = allowAuto
           ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
           : 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-// @gg-allow-html-in-js LEGACY:LEGACY-0037 LEGACY:LEGACY-0038
-        box.innerHTML = `
-          <iframe
-            src="https://www.youtube.com/embed/${id}?autoplay=${autoplay}"
-            style="width:100%;height:100%;border:0;"
-            allow="${allowAttr}"
-            allowfullscreen></iframe>`;
+        const iframe = document.createElement('iframe');
+        iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=' + autoplay;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = '0';
+        iframe.allow = allowAttr;
+        iframe.setAttribute('allowfullscreen', '');
+        box.textContent = '';
+        box.appendChild(iframe);
       };
 
       box.addEventListener('click', load, { passive:true });
@@ -4974,12 +5010,12 @@ function isSystemPath(pathname){
 
       var head = document.createElement('div');
       head.className = 'gg-left-panel__head';
-// @gg-allow-html-in-js LEGACY:LEGACY-0039
-      head.innerHTML =
-        '<div class="gg-left-panel__brand">' +
-          '<span class="gg-left-panel__brand-title"></span>' +
-        '</div>' +
-        '';
+      var brand = document.createElement('div');
+      brand.className = 'gg-left-panel__brand';
+      var title = document.createElement('span');
+      title.className = 'gg-left-panel__brand-title';
+      brand.appendChild(title);
+      head.appendChild(brand);
 
       var wrap = qs('.gg-blog-sidebar__section', left) || left;
       wrap.insertBefore(head, wrap.firstChild);

@@ -1,37 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-PHASE6-TRIVIAL-REMAINS-LISTING-POST-CMD-20260221
-TITLE: Remove remaining trivial HTML-in-JS in listing/post/cmd + tighten ratchet
+TASK_ID: TASK-PHASE6-CORE-QUICK-WINS-20260221
+TITLE: Replace core quick-win innerHTML/template blocks with DOM nodes + tighten ratchet
 
 SUMMARY
-- Replaced all remaining `innerHTML = ...` assignments in target modules with DOM API rendering:
-  - `public/assets/latest/modules/ui.bucket.listing.js` (LEGACY-0044, LEGACY-0051, LEGACY-0060)
-  - `public/assets/latest/modules/ui.bucket.post.js` (LEGACY-0071, LEGACY-0072)
-  - `public/assets/latest/modules/ui.bucket.cmd.js` (LEGACY-0012)
-- Added new guardrail verifier `tools/verify-no-innerhtml-assign-modules.mjs` and wired it into `tools/gate-prod.sh`.
-- Removed migrated legacy IDs from allowlist and tightened ratchet.
+- Refactored the targeted core legacy blocks in `public/assets/latest/modules/ui.bucket.core.js` to pure DOM APIs:
+  - LEGACY-0015: `ui.skeleton.render` now builds skeleton bars via `createElement`.
+  - LEGACY-0033: `GG.modules.Skeleton.buildCard` now builds thumb/line nodes with DOM.
+  - LEGACY-0034: `GG.modules.RelatedInline.buildCard` now builds eyebrow/title/thumb/meta nodes with DOM.
+  - LEGACY-0037 + LEGACY-0038: YouTube hydrate now creates `iframe` node and appends it.
+  - LEGACY-0039: left panel header now built with DOM nodes.
+- Removed the corresponding legacy annotations from core callsites.
+- Removed six entries from allowlist and tightened ratchet.
 
 ALLOWLIST COUNT
-- Before: `22`
-- After: `16`
-- `max_allow`: `16`
+- Before: `16`
+- After: `10`
+- `max_allow`: `10`
 
 IDS REMOVED
-- LEGACY-0012
-- LEGACY-0044
-- LEGACY-0051
-- LEGACY-0060
-- LEGACY-0071
-- LEGACY-0072
+- LEGACY-0015
+- LEGACY-0033
+- LEGACY-0034
+- LEGACY-0037
+- LEGACY-0038
+- LEGACY-0039
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.listing.js
-- public/assets/latest/modules/ui.bucket.post.js
-- public/assets/latest/modules/ui.bucket.cmd.js
+- public/assets/latest/modules/ui.bucket.core.js
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/verify-no-innerhtml-assign-modules.mjs
-- tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
@@ -41,9 +39,9 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-no-innerhtml-assign-modules.mjs`
+- `node tools/verify-no-new-html-in-js.mjs`
 ```text
-VERIFY_NO_INNERHTML_ASSIGN_MODULES: PASS
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=10 allowlisted_matches=10 violations=0
 ```
 
 - `node tools/verify-legacy-allowlist-ratchet.mjs`
@@ -51,24 +49,17 @@ VERIFY_NO_INNERHTML_ASSIGN_MODULES: PASS
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 ```
 
-- `node tools/verify-no-new-html-in-js.mjs`
-```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=16 allowlisted_matches=16 violations=0
-```
-
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=16 allowlisted_matches=16 violations=0
-VERIFY_NO_INNERHTML_ASSIGN_MODULES: PASS
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=10 allowlisted_matches=10 violations=0
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_BUDGETS: PASS
-PASS: palette a11y contract (mode=repo, release=0fd3deb)
+PASS: palette a11y contract (mode=repo, release=79c5b91)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
 NOTES
-- Initial `gate:prod` run failed due `verify-budgets` on `ui.bucket.listing.js`; resolved by slimming implementation while preserving DOM-only rendering.
-- Initial `verify-palette-a11y` fallback failed because verifier expects literal option role token in command module; resolved by keeping explicit static token while retaining DOM node construction.
-- Manual sanity checks for listing/post/cmd behavior remain required in browser.
+- During gate preflight, release alignment moved from `ff1c3d0` to `79c5b91` via `ALLOW_DIRTY_RELEASE=1 npm run build` inside `tools/gate-prod.sh`.
+- Manual browser sanity is still recommended for visual parity of skeleton blocks, related inline card rendering, YouTube lite hydration, and left panel header.
