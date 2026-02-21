@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-RECONCILE-GATE-PROOF-20260221: Reconcile gate parity + proof guardrails.
+- TASK-DETERMINISTIC-AUDIT-PROOF-20260221: Deterministic zip:audit with gate+proof.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: e0ff634
+RELEASE_ID: 3df8745
 RELEASE_HISTORY:
+- 3df8745
 - e0ff634
-- cd8a289
-PROD_PINNED_JS: /assets/v/e0ff634/main.js
-PROD_PINNED_APP: /assets/v/e0ff634/app.js
-PROD_PINNED_CSS: /assets/v/e0ff634/main.css
+PROD_PINNED_JS: /assets/v/3df8745/main.js
+PROD_PINNED_APP: /assets/v/3df8745/app.js
+PROD_PINNED_CSS: /assets/v/3df8745/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-TAGS-DIR-20260221
+- TASK-NATIVE-FEEL-FOCUS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-RECONCILE-GATE-PROOF-20260221 gate parity + proof verifiers
+- 2026-02-21 TASK-DETERMINISTIC-AUDIT-PROOF-20260221 deterministic zip gate + proof archive
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
