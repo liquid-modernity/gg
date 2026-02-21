@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-DETERMINISTIC-AUDIT-PROOF-20260221: Deterministic zip:audit with gate+proof.
+- TASK-NATIVE-FEEL-PANELS-TRAP-20260221: Modalize post panels with focus trap + safe inert scope.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 3df8745
+RELEASE_ID: 580adce
 RELEASE_HISTORY:
-- 3df8745
-- e0ff634
-PROD_PINNED_JS: /assets/v/3df8745/main.js
-PROD_PINNED_APP: /assets/v/3df8745/app.js
-PROD_PINNED_CSS: /assets/v/3df8745/main.css
+- 580adce
+- 2036cc5
+PROD_PINNED_JS: /assets/v/580adce/main.js
+PROD_PINNED_APP: /assets/v/580adce/app.js
+PROD_PINNED_CSS: /assets/v/580adce/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-NATIVE-FEEL-FOCUS-20260221
+- TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-DETERMINISTIC-AUDIT-PROOF-20260221 deterministic zip gate + proof archive
+- 2026-02-21 TASK-NATIVE-FEEL-PANELS-TRAP-20260221 panels modalized (post XOR + focus trap + scoped inert verifier)
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

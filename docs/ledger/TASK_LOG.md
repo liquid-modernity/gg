@@ -1620,3 +1620,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): zip:audit now runs gate:prod first and aborts if working tree changes after gate
 - RISKS: low/med; strict live smoke remains dependent on external DNS/network
 - NEXT: TASK-NATIVE-FEEL-FOCUS-20260221
+
+---
+
+## 2026-02-21 — TASK-NATIVE-FEEL-PANELS-TRAP-20260221 — Post panel modal safety + focus trap
+- DATE: 2026-02-21
+- TASK_ID: TASK-NATIVE-FEEL-PANELS-TRAP-20260221
+- TITLE: Modalize post panels (focus trap + safe inert scope)
+- MODE (DEV/PROD impact): UI behavior + verifier gate + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove main inert usage, scope inert to layout siblings, enforce left/right XOR on post, wire static safety verifier
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-panels-inert-safety.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*; prior pinned release dirs removed by build realignment
+- COMMANDS RUN (local): node tools/verify-panels-inert-safety.mjs; npm run -s gate:prod
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-panels-inert-safety PASS; gate:prod PASS (offline smoke fallback after DNS failure to www.pakrpp.com)
+- NOTES (gotchas): gate initially failed due gzip budget delta on modules/ui.bucket.core.js and was resolved by minimal budget bump to match intentional modal a11y change; manual sanity test requires browser session
+- RISKS: low/med; manual a11y sanity (Tab 30x + Esc focus return) still pending interactive browser confirmation
+- NEXT: TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221

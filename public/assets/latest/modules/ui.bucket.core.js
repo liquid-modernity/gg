@@ -4623,10 +4623,11 @@ function isSystemPath(pathname){
   }
 
   GG.modules.Panels = (function () {
-    var main, left, right, backdrop;
+    var main, layout, left, right, backdrop;
     var bound = false;
     var lastFocus = null;
     var pendingFocus = null;
+    var trapCleanup = null;
 
     function getAttr(el, name){ return el ? el.getAttribute(name) : null; }
     function getRightState(){
@@ -4673,15 +4674,54 @@ function isSystemPath(pathname){
         }
       }
     }
-    function setMainInert(on){
-      if (!main) return;
-      if (on){
-        main.setAttribute('inert', '');
-        main.setAttribute('aria-hidden', 'true');
-      } else {
-        main.removeAttribute('inert');
-        main.removeAttribute('aria-hidden');
+    function clearFocusTrap(){
+      if (!trapCleanup) return;
+      try { trapCleanup(); } catch(_) {}
+      trapCleanup = null;
+    }
+    function setFocusTrap(panel){
+      clearFocusTrap();
+      var trap = GG.services && GG.services.a11y && GG.services.a11y.focusTrap;
+      if (!panel || typeof trap !== 'function') return;
+      trapCleanup = trap(panel, { autofocus: false }) || null;
+    }
+    function parentChildUnderLayout(node){
+      if (!layout || !node) return null;
+      if (node.parentElement === layout) return node;
+      var current = node;
+      while (current && current.parentElement && current.parentElement !== layout) {
+        current = current.parentElement;
       }
+      if (current && current.parentElement === layout) return current;
+      return null;
+    }
+    function clearNodeInert(node){
+      if (!node) return;
+      node.removeAttribute('inert');
+      if (Object.prototype.hasOwnProperty.call(node, '__ggPanelsAriaHidden')) {
+        var prev = node.__ggPanelsAriaHidden;
+        if (prev === null) node.removeAttribute('aria-hidden');
+        else node.setAttribute('aria-hidden', prev);
+        delete node.__ggPanelsAriaHidden;
+      }
+    }
+    function setLayoutInert(activeAside){
+      if (!layout || !layout.children) return;
+      var activeChild = parentChildUnderLayout(activeAside);
+      Array.prototype.forEach.call(layout.children, function(child){
+        if (activeChild && child !== activeChild) {
+          if (!Object.prototype.hasOwnProperty.call(child, '__ggPanelsAriaHidden')) {
+            child.__ggPanelsAriaHidden = child.hasAttribute('aria-hidden') ? child.getAttribute('aria-hidden') : null;
+          }
+          child.setAttribute('inert', '');
+          child.setAttribute('aria-hidden', 'true');
+          return;
+        }
+        clearNodeInert(child);
+      });
+    }
+    function isPostSurface(){
+      return getAttr(main, 'data-gg-surface') === 'post';
     }
 
     function setLeft(state, opts){
@@ -4691,7 +4731,9 @@ function isSystemPath(pathname){
       if (state === 'open' && prev !== 'open') {
         rememberFocus(opts.from || document.activeElement);
         pendingFocus = 'left';
-        if (shouldMobile() && getRightState() === 'open') {
+        if (isPostSurface() && getRightState() === 'open') {
+          setRight('closed', { skipUpdate: true });
+        } else if (shouldMobile() && getRightState() === 'open') {
           setRightAttr('closed');
         }
       }
@@ -4707,7 +4749,9 @@ function isSystemPath(pathname){
       if (state === 'open' && prev !== 'open') {
         rememberFocus(opts.from || document.activeElement);
         pendingFocus = 'right';
-        if (shouldMobile() && getAttr(main, 'data-gg-left-panel') === 'open') {
+        if (isPostSurface() && getAttr(main, 'data-gg-left-panel') === 'open') {
+          setLeft('closed', { skipUpdate: true });
+        } else if (shouldMobile() && getAttr(main, 'data-gg-left-panel') === 'open') {
           setAttr(main, 'data-gg-left-panel', 'closed');
         }
       }
@@ -4724,15 +4768,18 @@ function isSystemPath(pathname){
       var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
       var rightOpen = getRightState() === 'open';
       var show = surface === 'post' && (leftOpen || rightOpen);
+      var activeAside = rightOpen ? right : (leftOpen ? left : null);
       if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
-      setMainInert(show);
+      setLayoutInert(show ? activeAside : null);
       if (left) left.setAttribute('aria-hidden', leftOpen ? 'false' : 'true');
       if (right) right.setAttribute('aria-hidden', rightOpen ? 'false' : 'true');
       if (show && pendingFocus) {
         focusPanel(pendingFocus);
         pendingFocus = null;
       }
+      if (show && activeAside) setFocusTrap(activeAside);
+      else clearFocusTrap();
     }
 
     function closeAll(opts){
@@ -4863,8 +4910,9 @@ function isSystemPath(pathname){
       var surfaceChanged = main.__ggPanelsSurface !== surface;
       if (surfaceChanged) main.__ggPanelsSurface = surface;
 
-      left  = qs('.gg-blog-sidebar--left', main);
-      right = qs('.gg-blog-sidebar--right', main);
+      layout = main && main.querySelector ? main.querySelector('.gg-blog-layout') : null;
+      left = layout ? layout.querySelector('.gg-blog-sidebar--left') : qs('.gg-blog-sidebar--left', main);
+      right = layout ? layout.querySelector('.gg-blog-sidebar--right') : qs('.gg-blog-sidebar--right', main);
 
       if (isPostSurface){
         if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
