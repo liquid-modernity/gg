@@ -16,6 +16,31 @@ function normHref(raw,slug){ var href=clean(raw); if(!href) return '/p/'+slug+'.
 function initials(name){ var src=clean(name),m=src.match(/\b[^\W_]/g)||[],a=(m[0]||src.slice(0,1)||'').toUpperCase(),b=(m[1]||src.slice(1,2)||'').toUpperCase(); return (a+b)||'A'; }
 function tagSlugify(raw){ return clean(raw).toLowerCase().replace(/^#/,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]+/g,'').replace(/^-+|-+$/g,''); }
 function tagHref(key){ return key?('/p/tags.html?tag='+encodeURIComponent(key)):'#'; }
+function escRe(raw){ return String(raw||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function extractJsonScript(html,id){
+var src=String(html||''),safe='',re=null,m=null,raw='';
+if(!src||!id) return '';
+safe=escRe(id);
+re=new RegExp('<script[^>]*\\bid=[\\"\\\']'+safe+'[\\"\\\'][^>]*\\btype=[\\"\\\']application\\/json[\\"\\\'][^>]*>([\\s\\S]*?)<\\/script>','i');
+m=re.exec(src);
+if(!m||!m[1]){
+re=new RegExp('<script[^>]*\\btype=[\\"\\\']application\\/json[\\"\\\'][^>]*\\bid=[\\"\\\']'+safe+'[\\"\\\'][^>]*>([\\s\\S]*?)<\\/script>','i');
+m=re.exec(src);
+}
+if(!m||!m[1]) return '';
+raw=String(m[1]||'').trim();
+return raw||'';
+}
+function parseJsonFromScript(html,id){
+var raw=extractJsonScript(html,id);
+if(!raw) return null;
+try{ return JSON.parse(raw); }catch(_){}
+try{
+raw=raw.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+return JSON.parse(raw);
+}catch(_){}
+return null;
+}
 
 GG.services.authorsDir = GG.services.authorsDir || (function(){
 var KEY_PREFIX='gg_authors_dir_v',ACTIVE_KEY='gg_authors_dir_active',LEGACY_KEY='gg_authors_dir_v1',URL='/p/author.html',cache=null,pending=null,warnedMissing=Object.create(null);
@@ -32,9 +57,7 @@ function addEntry(out,key,val){ var s=slugify(key),name='',href=''; if(!s) retur
 function normalizePayload(payload){ var out={},src=payload,i=0,item=null,key=''; if(!payload) return out; if(typeof payload==='object'&&!Array.isArray(payload)){ if(payload.authors&&typeof payload.authors==='object') src=payload.authors; else if(Array.isArray(payload.items)) src=payload.items; } if(Array.isArray(src)){ for(i=0;i<src.length;i++){ item=src[i]; if(!item||typeof item!=='object') continue; addEntry(out,item.slug||item.id||item.key||item.name,item); } return out; } if(!src||typeof src!=='object') return out; for(key in src){ if(!Object.prototype.hasOwnProperty.call(src,key)) continue; if(key==='v'||key==='authors'||key==='items'||key==='aliases') continue; addEntry(out,key,src[key]); } return out; }
 function normalizeAliases(payload,map){ var out={},src=null,key='',val=null,alias='',target=''; if(!payload||typeof payload!=='object'||Array.isArray(payload)) return out; src=payload.aliases; if(!src||typeof src!=='object'||Array.isArray(src)) return out; for(key in src){ if(!Object.prototype.hasOwnProperty.call(src,key)) continue; alias=slugify(key); if(!alias) continue; val=src[key]; if(typeof val==='string'){ target=slugify(val); if(target){ out[alias]=target; continue; } } if(val&&typeof val==='object'){ target=slugify(val.slug||val.key||val.id||val.author||''); if(target){ out[alias]=target; continue; } if(clean(val.href||val.url||val.name||val.title)){ addEntry(map,alias,val); out[alias]=alias; } } } return out; }
 function parsePayload(payload){ var v=1,map={},aliases={}; if(payload&&typeof payload==='object'&&!Array.isArray(payload)&&Object.prototype.hasOwnProperty.call(payload,'v')) v=asVersion(payload.v); map=normalizePayload(payload); if(!map||typeof map!=='object') map={}; aliases=normalizeAliases(payload,map); if(!aliases||typeof aliases!=='object') aliases={}; return { v:v, map:map, aliases:aliases }; }
-function parseNode(node){ var raw='',parsed=null; if(!node) return { v:1, map:{} }; raw=clean(node.textContent||''); if(!raw&&node.getAttribute){ raw=clean(node.getAttribute('data-json')||node.getAttribute('value')||''); } if(!raw) return { v:1, map:{} }; try{ parsed=JSON.parse(raw); return parsePayload(parsed); }catch(_){ return { v:1, map:{} }; } }
-// @gg-allow-html-in-js LEGACY:LEGACY-0001
-function parseHtml(html){ var doc=null,script=null; if(!html||!w.DOMParser) return { v:1, map:{} }; doc=new w.DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return { v:1, map:{} }; script=doc.querySelector('script#gg-authors-dir[type=\"application/json\"]')||doc.querySelector('#gg-authors-dir'); return parseNode(script); }
+function parseHtml(html){ var payload=parseJsonFromScript(html,'gg-authors-dir'),href=''; if(!payload||typeof payload!=='object'||Array.isArray(payload)||!payload.authors||typeof payload.authors!=='object') return { v:1, map:{}, aliases:{} }; href=clean(payload.authors&&payload.authors.pakrpp&&payload.authors.pakrpp.href||''); if(!href) return { v:1, map:{}, aliases:{} }; return parsePayload(payload); }
 function resolveOne(raw,map,aliases,strict){ var orig=slugify(raw),s=orig,target='',it=null,name='',href='',src='fallback'; if(!s) return { slug:'', name:'', href:'', src:'fallback' }; target=aliases&&aliases[s]?slugify(aliases[s]):''; if(target) s=target; it=s&&map?map[s]:null; if(!it&&strict) warnMissingOnce(orig); name=clean(it&&it.name?it.name:''); href=clean(it&&(it.href||it.url)?(it.href||it.url):''); if(href){ href=normHref(href,s); src='dir'; } else href='/p/'+s+'.html'; if(!name) name=titleCase(s)||'Author'; return { slug:s, name:name, href:href, src:src }; }
 function loadAuthorsDir(){ var fallback=readCache(); if(cache&&cache.map) return Promise.resolve(cache.map); if(pending) return pending; if(!w.fetch){ cache=fallback||{ v:1, map:{}, aliases:{} }; return Promise.resolve(cache.map); } pending=w.fetch(authorsDirUrl(),{ method:'GET', cache:'no-store', credentials:'same-origin' }).then(function(res){ if(!res||!res.ok) throw new Error('authors-dir'); return res.text(); }).then(function(html){ cache=parseHtml(html); if(!cache||typeof cache!=='object') cache={ v:1, map:{}, aliases:{} }; if(!cache.map||typeof cache.map!=='object') cache.map={}; if(!cache.aliases||typeof cache.aliases!=='object'||Array.isArray(cache.aliases)) cache.aliases={}; cache.v=asVersion(cache.v); writeCache(cache); return cache.map; }).catch(function(){ cache=fallback||cache||{ v:1, map:{}, aliases:{} }; if(!cache.map||typeof cache.map!=='object') cache.map={}; if(!cache.aliases||typeof cache.aliases!=='object'||Array.isArray(cache.aliases)) cache.aliases={}; return cache.map; }).finally(function(){ pending=null; }); return pending; }
 function resolveMany(raw){ var list=Array.isArray(raw)?raw:[raw],slugs=[],seen={},i=0,s='',aliases={}; for(i=0;i<list.length;i++){ s=slugify(list[i]); if(!s||seen[s]) continue; seen[s]=1; slugs.push(s); } if(!slugs.length) return Promise.resolve([]); return loadAuthorsDir().then(function(map){ aliases=cache&&cache.aliases&&typeof cache.aliases==='object'&&!Array.isArray(cache.aliases)?cache.aliases:{}; return slugs.map(function(it){ return resolveOne(it,map,aliases,true); }); }).catch(function(){ return slugs.map(function(it){ return resolveOne(it,{},null,false); }); }); }
@@ -49,10 +72,8 @@ function resolveOne(raw,map){ var x=raw&&typeof raw==='object'?raw:{},k=keyOf(ra
 function readCache(){ try{ var raw=w.sessionStorage&&w.sessionStorage.getItem(KEY),parsed=null; if(!raw) return null; parsed=JSON.parse(raw); return parsed&&typeof parsed==='object'?parsed:null; }catch(_){ return null; } }
 function writeCache(map){ try{ if(w.sessionStorage) w.sessionStorage.setItem(KEY,JSON.stringify(map||{})); }catch(_){} }
 function addEntry(out,key,val){ var k=tagSlugify(key),name=''; if(!k) return; if(typeof val==='string'){ out[k]={ name:clean(val)||titleCase(k) }; return; } if(!val||typeof val!=='object') return; name=clean(val.name||val.title||val.text||''); out[k]={ name:name||titleCase(k) }; }
-function normalizePayload(payload){ var out={},i=0,item=null,key=''; if(!payload) return out; if(Array.isArray(payload)){ for(i=0;i<payload.length;i++){ item=payload[i]; if(!item||typeof item!=='object') continue; addEntry(out,item.key||item.slug||item.id||item.name,item); } return out; } if(typeof payload!=='object') return out; if(Array.isArray(payload.tags)) return normalizePayload(payload.tags); if(Array.isArray(payload.items)) return normalizePayload(payload.items); for(key in payload){ if(!Object.prototype.hasOwnProperty.call(payload,key)) continue; addEntry(out,key,payload[key]); } return out; }
-function parseNode(node){ if(!node) return {}; var samples=[ clean(node.textContent||''), clean(node.getAttribute&&node.getAttribute('data-json')||''), clean(node.getAttribute&&node.getAttribute('value')||'') ],i=0,raw='',parsed=null,out=null; for(i=0;i<samples.length;i++){ raw=samples[i]; if(!raw) continue; try{ parsed=JSON.parse(raw); out=normalizePayload(parsed); if(out&&typeof out==='object') return out; }catch(_){} } return {}; }
-// @gg-allow-html-in-js LEGACY:LEGACY-0002
-function parseHtml(html){ if(!html||!w.DOMParser) return {}; var doc=new w.DOMParser().parseFromString(String(html||''),'text/html'); if(!doc) return {}; return parseNode(doc.querySelector('#gg-tags-dir')); }
+function normalizePayload(payload){ var out={},i=0,item=null,key=''; if(!payload) return out; if(Array.isArray(payload)){ for(i=0;i<payload.length;i++){ item=payload[i]; if(!item||typeof item!=='object') continue; addEntry(out,item.key||item.slug||item.id||item.name,item); } return out; } if(typeof payload!=='object') return out; if(payload.tags&&typeof payload.tags==='object'&&!Array.isArray(payload.tags)) return normalizePayload(payload.tags); if(Array.isArray(payload.tags)) return normalizePayload(payload.tags); if(Array.isArray(payload.items)) return normalizePayload(payload.items); for(key in payload){ if(!Object.prototype.hasOwnProperty.call(payload,key)) continue; if(key==='v'||key==='tags'||key==='items') continue; addEntry(out,key,payload[key]); } return out; }
+function parseHtml(html){ var payload=parseJsonFromScript(html,'gg-tags-dir'); if(!payload||typeof payload!=='object') return {}; return normalizePayload(payload); }
 function load(){ if(cache) return Promise.resolve(cache); cache=readCache(); if(cache) return Promise.resolve(cache); if(pending) return pending; if(!w.fetch){ cache={}; return Promise.resolve(cache); } pending=w.fetch(URL,{ method:'GET', cache:'no-store', credentials:'same-origin' }).then(function(res){ if(!res||!res.ok) throw new Error('tags-dir'); return res.text(); }).then(function(html){ cache=parseHtml(html); if(!cache||typeof cache!=='object') cache={}; writeCache(cache); return cache; }).catch(function(){ cache=cache||{}; return cache; }).finally(function(){ pending=null; }); return pending; }
 function resolveMany(raw){ var list=Array.isArray(raw)?raw:[raw],uniq=[],seen={},i=0,k=''; for(i=0;i<list.length;i++){ k=keyOf(list[i]); if(!k||seen[k]) continue; seen[k]=1; uniq.push(list[i]); } if(!uniq.length) return Promise.resolve([]); return load().then(function(map){ return uniq.map(function(it){ return resolveOne(it,map); }); }).catch(function(){ return uniq.map(function(it){ return resolveOne(it,{}); }); }); }
 function resolve(raw){ return resolveMany([raw]).then(function(rows){ return rows[0]||resolveOne(raw,{}); }); }

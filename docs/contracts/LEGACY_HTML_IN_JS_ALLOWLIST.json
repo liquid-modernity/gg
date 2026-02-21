@@ -15,20 +15,6 @@
   },
   "allow": [
     {
-      "id": "LEGACY-0001",
-      "file": "public/assets/latest/modules/ui.bucket.authors.js",
-      "pattern": "DOMParser\\s*\\(",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0002",
-      "file": "public/assets/latest/modules/ui.bucket.authors.js",
-      "pattern": "DOMParser\\s*\\(",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0013",
       "file": "public/assets/latest/modules/ui.bucket.core.js",
       "pattern": "DOMParser\\s*\\(",
@@ -50,5 +36,5 @@
       "introduced_by": "baseline"
     }
   ],
-  "max_allow": 5
+  "max_allow": 3
 }

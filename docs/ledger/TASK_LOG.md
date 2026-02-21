@@ -2046,3 +2046,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate realigned release artifacts to af5bc9d; shortcode transform now runs via `ShortcodesV2.init` and `ShortcodesV2.reinit` in `GG.app.rehydrate`
 - RISKS: low/med; manual shortcode rendering sanity still required in real browser
 - NEXT: TASK-REMOVE-DOMPARSER-AUTHORS-20260221
+
+## 2026-02-21 — TASK-REMOVE-DOMPARSER-AUTHORS-20260221 — Remove DOMParser from authors module
+- DATE: 2026-02-21
+- TASK_ID: TASK-REMOVE-DOMPARSER-AUTHORS-20260221
+- TITLE: Remove DOMParser; extract JSON scripts safely + tighten ratchet
+- MODE (DEV/PROD impact): authors/tags directory parser refactor + verifier guardrail + allowlist ratchet tightening
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: replace DOMParser-based HTML parsing in `ui.bucket.authors.js` with regex extraction of `<script type="application/json">` blocks and `JSON.parse`; remove LEGACY-0001/0002; add DOMParser ban verifier; wire gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.authors.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-no-domparser-authors.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-domparser-authors.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): no-domparser-authors PASS; allowlist ratchet PASS (`allow=3`, `max_allow=3`); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): parser now validates `authors.pakrpp.href` and falls back gracefully if JSON script missing/invalid; gate realigned release assets to 7a7c4cc
+- RISKS: low/med; manual 3-minute author/tag directory sanity still required in browser
+- NEXT: TASK-REMOVE-DOMPARSER-CORE-20260221

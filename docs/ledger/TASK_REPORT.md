@@ -1,42 +1,35 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-PHASE8-SHORTCODES-STRATEGY-20260221
-TITLE: Shortcodes V2 DOM transformer + XML templates (no innerHTML) + tighten ratchet
+TASK_ID: TASK-REMOVE-DOMPARSER-AUTHORS-20260221
+TITLE: Remove DOMParser from authors module + tighten ratchet
 
 SUMMARY
-- Replaced shortcode engines that used `innerHTML` writes with one unified DOM transformer: `GG.modules.ShortcodesV2`.
-- Removed legacy shortcode writes tied to `LEGACY-0032` and `LEGACY-0036` in `ui.bucket.core.js`.
-- Added XML template hooks for shortcode rendering in both templates:
-  - `#gg-tpl-sc-yt-lite`
-  - `#gg-tpl-sc-accordion`
-- Implemented DOM-only shortcode handling for:
-  - `[youtube]...[/youtube]`
-  - `[youtube id="..."]`
-  - standalone accordion markers `[accordion title="..."] ... [/accordion]`
-- Added shortcode authoring contract document: `docs/content/SHORTCODES.md`.
-- Added verifiers and gate wiring:
-  - `tools/verify-shortcodes-no-innerhtml.mjs`
-  - `tools/verify-shortcodes-templates.mjs`
+- Replaced DOMParser HTML parsing in `ui.bucket.authors.js` with safe JSON script extraction using regex + `JSON.parse`.
+- Added shared helpers inside module:
+  - `extractJsonScript(html, id)`
+  - `parseJsonFromScript(html, id)`
+- Applied parser for both directories:
+  - authors dir from `#gg-authors-dir`
+  - tags dir from `#gg-tags-dir`
+- Added shape validation for authors payload requiring `authors.pakrpp.href`; invalid payload now fails gracefully to fallback cache/empty map (no throw).
+- Removed allowlist entries `LEGACY-0001` and `LEGACY-0002`.
+- Added verifier `tools/verify-no-domparser-authors.mjs` and wired it to `tools/gate-prod.sh`.
 
 ALLOWLIST COUNT
-- Before: `7`
-- After: `5`
-- max_allow: `5`
+- Before: `5`
+- After: `3`
+- max_allow: `3`
 
 IDS REMOVED
-- LEGACY-0032
-- LEGACY-0036
+- LEGACY-0001
+- LEGACY-0002
 
 FILES CHANGED
-- index.prod.xml
-- index.dev.xml
-- public/assets/latest/modules/ui.bucket.core.js
-- docs/content/SHORTCODES.md
-- tools/verify-shortcodes-no-innerhtml.mjs
-- tools/verify-shortcodes-templates.mjs
-- tools/gate-prod.sh
+- public/assets/latest/modules/ui.bucket.authors.js
 - docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
+- tools/verify-no-domparser-authors.mjs
+- tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
@@ -46,14 +39,9 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-shortcodes-no-innerhtml.mjs`
+- `node tools/verify-no-domparser-authors.mjs`
 ```text
-PASS: shortcodes has no innerHTML writes
-```
-
-- `node tools/verify-shortcodes-templates.mjs`
-```text
-VERIFY_SHORTCODES_TEMPLATES: PASS
+PASS: authors module has no DOMParser
 ```
 
 - `node tools/verify-legacy-allowlist-ratchet.mjs`
@@ -69,16 +57,16 @@ PASS: panels skeleton has no innerHTML
 PASS: comments gate has no innerHTML
 PASS: shortcodes has no innerHTML writes
 VERIFY_SHORTCODES_TEMPLATES: PASS
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=5 allowlisted_matches=5 violations=0
+PASS: authors module has no DOMParser
+VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=3 allowlisted_matches=3 violations=0
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_BUDGETS: PASS
-PASS: palette a11y contract (mode=repo, release=af5bc9d)
+PASS: palette a11y contract (mode=repo, release=7a7c4cc)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
 MANUAL SANITY
 - Pending manual browser check:
-  - `[youtube]...[/youtube]` and `[youtube id="..."]` render to lite embed.
-  - Accordion open/close markers preserve inner body DOM and toggle `aria-expanded`.
-  - Invalid shortcode formatting remains readable as plain text.
+  - `/p/author.html` and `/p/tags.html` directory rendering + link correctness
+  - no console errors while author/tag directory data loads

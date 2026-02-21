@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE8-SHORTCODES-STRATEGY-20260221: Replace shortcode engines with DOM-based ShortcodesV2 + XML templates and tighten allowlist ratchet to 5.
+- TASK-REMOVE-DOMPARSER-AUTHORS-20260221: Replace authors/tags DOMParser parsing with regex JSON-script extraction + JSON.parse and tighten allowlist ratchet to 3.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: af5bc9d
+RELEASE_ID: 7a7c4cc
 RELEASE_HISTORY:
-- af5bc9d
-- 86dda1b
-PROD_PINNED_JS: /assets/v/af5bc9d/main.js
-PROD_PINNED_APP: /assets/v/af5bc9d/app.js
-PROD_PINNED_CSS: /assets/v/af5bc9d/main.css
+- 7a7c4cc
+- c66c5d1
+PROD_PINNED_JS: /assets/v/7a7c4cc/main.js
+PROD_PINNED_APP: /assets/v/7a7c4cc/app.js
+PROD_PINNED_CSS: /assets/v/7a7c4cc/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-REMOVE-DOMPARSER-AUTHORS-20260221
+- TASK-REMOVE-DOMPARSER-CORE-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE8-SHORTCODES-STRATEGY-20260221 removed LEGACY-0032/0036 by replacing shortcode `innerHTML` rewrites with DOM transform + XML templates (`gg-tpl-sc-yt-lite`, `gg-tpl-sc-accordion`) and set allowlist `max_allow=5`.
+- 2026-02-21 TASK-REMOVE-DOMPARSER-AUTHORS-20260221 removed LEGACY-0001/0002 by replacing authors/tags DOMParser usage with regex extraction of JSON script blocks + JSON.parse, and set allowlist `max_allow=3`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
