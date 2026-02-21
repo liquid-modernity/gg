@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-TAP-TARGETS-V2-20260221: Expand 44px tap target contract to icon buttons, dock search icon, sidebar links, and section head buttons.
+- TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221: Remove mixed-module HTML injection paths and tighten legacy allowlist ratchet to 22.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 042358e
+RELEASE_ID: acdb7f4
 RELEASE_HISTORY:
-- 042358e
-- f0c0a52
-PROD_PINNED_JS: /assets/v/042358e/main.js
-PROD_PINNED_APP: /assets/v/042358e/app.js
-PROD_PINNED_CSS: /assets/v/042358e/main.css
+- acdb7f4
+- fa8c5a2
+PROD_PINNED_JS: /assets/v/acdb7f4/main.js
+PROD_PINNED_APP: /assets/v/acdb7f4/app.js
+PROD_PINNED_CSS: /assets/v/acdb7f4/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221
+- TASK-PHASE6-CORE-HOTSPOTS-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-TAP-TARGETS-V2-20260221 expanded tap-target CSS coverage and verifier contract for `.gg-icon-btn`, dock search icon button, `.gg-leftnav__link`, labeltree head button, and TOC head button.
+- 2026-02-21 TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221 refactored `ui.bucket.mixed.js` to DOM rendering (no innerHTML), added mixed guardrail verifiers, removed LEGACY-0065..0070, and set allowlist `max_allow=22`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

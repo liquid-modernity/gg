@@ -395,62 +395,73 @@
     return count;
   }
 
-  function skeletonCardHtml(section) {
-    return (
-      '<article class="gg-mixed__card gg-mixed__card--placeholder" aria-hidden="true">' +
-        '<span class="gg-mixed__thumb"></span>' +
-        '<span class="gg-mixed__body">' +
-          '<span class="gg-mixed__kicker"></span>' +
-          '<span class="gg-mixed__headline"></span>' +
-        '</span>' +
-      '</article>'
-    );
+  function createEl(tag, className) {
+    var el = d.createElement(tag);
+    if (className) el.className = className;
+    return el;
   }
 
-  function newsDeckSkeletonHtml(section, count) {
+  function clearNode(node) {
+    if (!node) return;
+    node.textContent = '';
+  }
+
+  function createMixedSkeletonCard() {
+    var article = createEl('article', 'gg-mixed__card gg-mixed__card--placeholder');
+    article.setAttribute('aria-hidden', 'true');
+
+    var thumb = createEl('span', 'gg-mixed__thumb');
+    var body = createEl('span', 'gg-mixed__body');
+    var kicker = createEl('span', 'gg-mixed__kicker');
+    var headline = createEl('span', 'gg-mixed__headline');
+
+    body.appendChild(kicker);
+    body.appendChild(headline);
+    article.appendChild(thumb);
+    article.appendChild(body);
+    return article;
+  }
+
+  function createNewsDeckSkeletonItem() {
+    var article = createEl('article', 'gg-newsdeck__item gg-newsdeck__item--placeholder');
+    article.setAttribute('aria-hidden', 'true');
+
+    var body = createEl('span', 'gg-newsdeck__body');
+    body.appendChild(createEl('span', 'gg-newsdeck__kicker'));
+    body.appendChild(createEl('span', 'gg-newsdeck__title'));
+    body.appendChild(createEl('span', 'gg-newsdeck__time'));
+
+    article.appendChild(body);
+    article.appendChild(createEl('span', 'gg-newsdeck__thumb'));
+    return article;
+  }
+
+  function buildNewsDeckSkeleton(section, count) {
     var colCount = clampInt(section && section.cols, 3, 1, 3);
     var rowCount = clampInt(section && section.max, 3, 1, 16);
     var labels = toLabelList(section && section.labels);
     if (!labels.length) labels = [section && section.label ? section.label : 'news'];
 
-    var out = [];
+    var wrap = createEl('div', 'gg-newsdeck');
+    if (colCount < 1) colCount = 1;
+
     for (var c = 0; c < colCount; c++) {
-      var rows = [];
+      var col = createEl('div', 'gg-newsdeck__col');
+      var label = createEl('p', 'gg-newsdeck__col-label');
+      label.textContent = titleCaseLabel(labels[c] || labels[labels.length - 1] || 'news');
+      col.appendChild(label);
       for (var i = 0; i < rowCount; i++) {
-        rows.push(
-          '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
-            '<span class="gg-newsdeck__body">' +
-              '<span class="gg-newsdeck__kicker"></span>' +
-              '<span class="gg-newsdeck__title"></span>' +
-              '<span class="gg-newsdeck__time"></span>' +
-            '</span>' +
-            '<span class="gg-newsdeck__thumb"></span>' +
-          '</article>'
-        );
+        col.appendChild(createNewsDeckSkeletonItem());
       }
-      out.push(
-        '<div class="gg-newsdeck__col">' +
-          '<p class="gg-newsdeck__col-label">' + esc(titleCaseLabel(labels[c] || labels[labels.length - 1] || 'news')) + '</p>' +
-          rows.join('') +
-        '</div>'
-      );
+      wrap.appendChild(col);
     }
 
-    if (!out.length) {
+    if (!wrap.childNodes.length) {
       for (var k = 0; k < count; k++) {
-        out.push(
-        '<article class="gg-newsdeck__item gg-newsdeck__item--placeholder" aria-hidden="true">' +
-          '<span class="gg-newsdeck__body">' +
-            '<span class="gg-newsdeck__kicker"></span>' +
-            '<span class="gg-newsdeck__title"></span>' +
-            '<span class="gg-newsdeck__time"></span>' +
-          '</span>' +
-          '<span class="gg-newsdeck__thumb"></span>' +
-        '</article>'
-        );
+        wrap.appendChild(createNewsDeckSkeletonItem());
       }
     }
-    return '<div class="gg-newsdeck">' + out.join('') + '</div>';
+    return wrap;
   }
 
   function renderSkeleton(slot, section) {
@@ -458,39 +469,47 @@
     var grid = slot.querySelector('[data-role="grid"]');
     var rail = slot.querySelector('[data-role="rail"]');
     var count = skeletonCountFor(section);
-    var cards = [];
 
     slot.setAttribute('data-gg-skeleton-count', String(count));
     if (section.type === 'newsdeck') {
       if (grid) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0065
-        grid.innerHTML = newsDeckSkeletonHtml(section, count);
+        clearNode(grid);
+        grid.appendChild(buildNewsDeckSkeleton(section, count));
         grid.removeAttribute('hidden');
       }
-      if (rail) rail.setAttribute('hidden', 'hidden');
+      if (rail) {
+        clearNode(rail);
+        rail.setAttribute('hidden', 'hidden');
+      }
       return;
-    }
-
-    for (var i = 0; i < count; i++) {
-      cards.push(skeletonCardHtml(section));
     }
 
     if (isRailType(section.type)) {
       if (rail) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0066
-        rail.innerHTML = cards.join('');
+        clearNode(rail);
+        for (var i = 0; i < count; i++) {
+          rail.appendChild(createMixedSkeletonCard());
+        }
         rail.removeAttribute('hidden');
       }
-      if (grid) grid.setAttribute('hidden', 'hidden');
+      if (grid) {
+        clearNode(grid);
+        grid.setAttribute('hidden', 'hidden');
+      }
       return;
     }
 
     if (grid) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0067
-      grid.innerHTML = cards.join('');
+      clearNode(grid);
+      for (var j = 0; j < count; j++) {
+        grid.appendChild(createMixedSkeletonCard());
+      }
       grid.removeAttribute('hidden');
     }
-    if (rail) rail.setAttribute('hidden', 'hidden');
+    if (rail) {
+      clearNode(rail);
+      rail.setAttribute('hidden', 'hidden');
+    }
   }
 
   function ensureGlobal(cfg) {
@@ -621,21 +640,15 @@
     });
   }
 
-  function cardHtml(item, section) {
-    var kicker = titleCaseLabel((item.labels && item.labels[0]) || section.label || section.type);
-    var img = item.image
-      ? '<img alt="" decoding="async" loading="lazy" src="' + esc(item.image) + '"/>'
-      : '';
-
-    return (
-      '<a class="gg-mixed__card" href="' + esc(item.url) + '">' +
-        '<span class="gg-mixed__thumb">' + img + '</span>' +
-        '<span class="gg-mixed__body">' +
-          '<span class="gg-mixed__kicker">' + esc(kicker) + '</span>' +
-          '<span class="gg-mixed__headline">' + esc(item.title) + '</span>' +
-        '</span>' +
-      '</a>'
-    );
+  function appendCardThumb(thumb, imageUrl) {
+    var src = String(imageUrl || '').trim();
+    if (!src || !thumb) return;
+    var img = createEl('img');
+    img.setAttribute('alt', '');
+    img.setAttribute('decoding', 'async');
+    img.setAttribute('loading', 'lazy');
+    img.setAttribute('src', src);
+    thumb.appendChild(img);
   }
 
   function timeAgo(iso) {
@@ -655,42 +668,82 @@
     return yr + ' y ago';
   }
 
-  function newsDeckHtml(columns, section) {
+  function createMixedCard(item, section) {
+    var safeItem = item || {};
+    var kicker = titleCaseLabel((safeItem.labels && safeItem.labels[0]) || section.label || section.type);
+    var card = createEl('a', 'gg-mixed__card');
+    card.setAttribute('href', safeItem.url || '#');
+
+    var thumb = createEl('span', 'gg-mixed__thumb');
+    appendCardThumb(thumb, safeItem.image);
+    card.appendChild(thumb);
+
+    var body = createEl('span', 'gg-mixed__body');
+    var kickerEl = createEl('span', 'gg-mixed__kicker');
+    kickerEl.textContent = kicker;
+    body.appendChild(kickerEl);
+
+    var titleEl = createEl('span', 'gg-mixed__headline');
+    titleEl.textContent = String(safeItem.title || '');
+    body.appendChild(titleEl);
+
+    card.appendChild(body);
+    return card;
+  }
+
+  function createNewsDeckItem(item, colLabel, labelName) {
+    var safeItem = item || {};
+    var sourceName = titleCaseLabel((safeItem.labels && safeItem.labels[0]) || colLabel || labelName || 'News');
+    var ago = timeAgo(safeItem.published || '');
+    var dateIso = String(safeItem.published || '');
+
+    var link = createEl('a', 'gg-newsdeck__item');
+    link.setAttribute('href', safeItem.url || '#');
+
+    var body = createEl('span', 'gg-newsdeck__body');
+    var kicker = createEl('span', 'gg-newsdeck__kicker');
+    kicker.textContent = sourceName;
+    body.appendChild(kicker);
+
+    var title = createEl('span', 'gg-newsdeck__title');
+    title.textContent = String(safeItem.title || '');
+    body.appendChild(title);
+
+    var time = createEl('time', 'gg-newsdeck__time');
+    time.setAttribute('datetime', dateIso);
+    time.appendChild(d.createTextNode(String(ago || 'Just published')));
+    var openIcon = createEl('span', 'gg-icon gg-newsdeck__open');
+    openIcon.setAttribute('aria-hidden', 'true');
+    openIcon.textContent = 'open_in_new';
+    time.appendChild(openIcon);
+    body.appendChild(time);
+
+    var thumb = createEl('span', 'gg-newsdeck__thumb');
+    appendCardThumb(thumb, safeItem.image);
+
+    link.appendChild(body);
+    link.appendChild(thumb);
+    return link;
+  }
+
+  function createNewsDeck(columns, section) {
+    var wrap = createEl('div', 'gg-newsdeck');
     var cols = Array.isArray(columns) ? columns : [];
-    if (!cols.length) return '';
-    var colHtml = [];
     for (var c = 0; c < cols.length; c++) {
       var col = cols[c] || {};
       var labelName = titleCaseLabel(col.label || (section.labels && section.labels[c]) || section.label || 'News');
-      var rows = [];
+      var colEl = createEl('div', 'gg-newsdeck__col');
+      var label = createEl('p', 'gg-newsdeck__col-label');
+      label.textContent = labelName;
+      colEl.appendChild(label);
+
       var items = Array.isArray(col.items) ? col.items : [];
       for (var r = 0; r < items.length; r++) {
-        var item = items[r] || {};
-        var img = item.image
-          ? '<img alt="" decoding="async" loading="lazy" src="' + esc(item.image) + '"/>'
-          : '';
-        var sourceName = titleCaseLabel((item.labels && item.labels[0]) || col.label || labelName || 'News');
-        var ago = timeAgo(item.published || '');
-        var dateIso = String(item.published || '');
-        rows.push(
-          '<a class="gg-newsdeck__item" href="' + esc(item.url || '#') + '">' +
-            '<span class="gg-newsdeck__body">' +
-              '<span class="gg-newsdeck__kicker">' + esc(sourceName) + '</span>' +
-              '<span class="gg-newsdeck__title">' + esc(item.title || '') + '</span>' +
-              '<time class="gg-newsdeck__time" datetime="' + esc(dateIso) + '">' + esc(ago || 'Just published') + '<span aria-hidden="true" class="gg-icon gg-newsdeck__open">open_in_new</span></time>' +
-            '</span>' +
-            '<span class="gg-newsdeck__thumb">' + img + '</span>' +
-          '</a>'
-        );
+        colEl.appendChild(createNewsDeckItem(items[r], col.label, labelName));
       }
-      colHtml.push(
-        '<div class="gg-newsdeck__col">' +
-          '<p class="gg-newsdeck__col-label">' + esc(labelName) + '</p>' +
-          rows.join('') +
-        '</div>'
-      );
+      wrap.appendChild(colEl);
     }
-    return '<div class="gg-newsdeck">' + colHtml.join('') + '</div>';
+    return wrap;
   }
 
   function countNewsDeckItems(columns) {
@@ -706,39 +759,50 @@
   function render(slot, section, items) {
     var grid = slot.querySelector('[data-role="grid"]');
     var rail = slot.querySelector('[data-role="rail"]');
-    var html = '';
+    var list = Array.isArray(items) ? items : [];
 
     if (section.type === 'newsdeck') {
-      html = newsDeckHtml(items, section);
-      slot.setAttribute('data-gg-render-count', String(countNewsDeckItems(items)));
+      slot.setAttribute('data-gg-render-count', String(countNewsDeckItems(list)));
       if (grid) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0068
-        grid.innerHTML = html;
+        clearNode(grid);
+        grid.appendChild(createNewsDeck(list, section));
         grid.removeAttribute('hidden');
       }
-      if (rail) rail.setAttribute('hidden', 'hidden');
+      if (rail) {
+        clearNode(rail);
+        rail.setAttribute('hidden', 'hidden');
+      }
       return;
     }
 
-    html = items.map(function(item){ return cardHtml(item, section); }).join('');
-    slot.setAttribute('data-gg-render-count', String(items.length));
+    slot.setAttribute('data-gg-render-count', String(list.length));
 
     if (isRailType(section.type)) {
       if (rail) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0069
-        rail.innerHTML = html;
+        clearNode(rail);
+        for (var i = 0; i < list.length; i++) {
+          rail.appendChild(createMixedCard(list[i], section));
+        }
         rail.removeAttribute('hidden');
       }
-      if (grid) grid.setAttribute('hidden', 'hidden');
+      if (grid) {
+        clearNode(grid);
+        grid.setAttribute('hidden', 'hidden');
+      }
       return;
     }
 
     if (grid) {
-// @gg-allow-html-in-js LEGACY:LEGACY-0070
-      grid.innerHTML = html;
+      clearNode(grid);
+      for (var j = 0; j < list.length; j++) {
+        grid.appendChild(createMixedCard(list[j], section));
+      }
       grid.removeAttribute('hidden');
     }
-    if (rail) rail.setAttribute('hidden', 'hidden');
+    if (rail) {
+      clearNode(rail);
+      rail.setAttribute('hidden', 'hidden');
+    }
   }
 
   function loadSlot(slot, cfg) {
@@ -847,4 +911,3 @@
     mixed.init(d);
   }
 })(window.GG = window.GG || {}, window, document);
-

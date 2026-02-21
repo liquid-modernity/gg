@@ -155,48 +155,6 @@
       "introduced_by": "baseline"
     },
     {
-      "id": "LEGACY-0065",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0066",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0067",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0068",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0069",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0070",
-      "file": "public/assets/latest/modules/ui.bucket.mixed.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
       "id": "LEGACY-0071",
       "file": "public/assets/latest/modules/ui.bucket.post.js",
       "pattern": "innerHTML\\s*=",
@@ -211,5 +169,5 @@
       "introduced_by": "baseline"
     }
   ],
-  "max_allow": 28
+  "max_allow": 22
 }

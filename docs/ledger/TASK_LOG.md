@@ -1926,3 +1926,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): `gate:prod` auto-ran `npm run build` to realign release from `cb6131c` to `042358e` after CSS/verifier + ledger edits
 - RISKS: low; manual mobile thumb sweep still recommended on real devices
 - NEXT: TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221
+
+---
+
+## 2026-02-21 — TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221 — Remove mixed HTML-in-JS injections
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE5-REDUCE-MIXED-HTMLJS-20260221
+- TITLE: Remove HTML-in-JS injection in mixed module and tighten allowlist ratchet
+- MODE (DEV/PROD impact): mixed-media renderer refactor + htmljs guardrails + allowlist ratchet tightening + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove trivial/remaining HTML injection paths in `ui.bucket.mixed.js`, replace with DOM API rendering, add mixed-specific verifiers, wire gate, and reduce allowlist count to <=22
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.mixed.js; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/verify-mixed-no-innerhtml.mjs; tools/verify-mixed-no-trivial-htmljs.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-mixed-no-innerhtml.mjs; node tools/verify-mixed-no-trivial-htmljs.mjs; node tools/verify-no-new-html-in-js.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): mixed verifiers PASS; no-new-html-in-js PASS (total_matches=22); ratchet PASS (`allow=22`, `max_allow=22`); gate:prod PASS (offline smoke fallback in sandbox); gate:release(local) PASS
+- NOTES (gotchas): first `zip:audit` run intentionally failed on dirty tree (contract guardrail); run again after ship on clean tree
+- RISKS: low/med; manual 5-minute home/listing mixed-section sanity still required in browser (not executable in this CLI environment)
+- NEXT: TASK-PHASE6-CORE-HOTSPOTS-20260222
