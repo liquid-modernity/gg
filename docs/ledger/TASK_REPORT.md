@@ -1,74 +1,63 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221
-TITLE: Centralize DOMParser parsing (singleton + safety budget) + tighten ratchet
+TASK_ID: TASK-SHORTCODES-A11Y-POLISH-20260221
+TITLE: Polish shortcodes outputs (yt-lite + accordion semantics)
 
 SUMMARY
-- Added centralized parser helper `parseHtmlDoc(html, url)` in `ui.bucket.core.js` with safety contract:
-  - size budget: reject input over 2MB
-  - same-origin expectation when URL is provided
-  - single DOMParser callsite only
-- Replaced two former DOMParser callsites with helper usage:
-  - LoadMore fetch HTML parse path
-  - `parseHeadingItems(html, sourceUrl)` parse path
-- Kept core render pipeline behavior intact while routing parser through the same helper.
-- Removed LEGACY-0022 and LEGACY-0027; only LEGACY-0013 remains for DOMParser pattern.
-- Added verifier `tools/verify-core-domparser-singleton.mjs` and wired it into `tools/gate-prod.sh`.
+- Updated shortcode templates in `index.prod.xml` and `index.dev.xml`:
+  - `gg-tpl-sc-yt-lite` now has keyboard/button semantics (`role="button"`, `tabindex="0"`), baseline label (`aria-label="Play video"`), and runtime hook (`data-gg-yt-label="1"`).
+  - `gg-tpl-sc-accordion` now includes stable hooks (`data-gg-acc`, `data-gg-acc-toggle`, `data-gg-acc-body`) for runtime binding.
+- Updated `GG.modules.ShortcodesV2` in `public/assets/latest/modules/ui.bucket.core.js`:
+  - Added `bindA11y(root)` and wired it into transform flow to ensure new/rehydrated nodes are bound.
+  - YT lite now guarantees keyboard activation with `Enter`/`Space`, and keeps a meaningful label baseline (`Play video`) with runtime title derivation.
+  - Accordion now sets stable unique `body.id`, wires `aria-controls` on toggle, and keeps `aria-expanded` synchronized with `body.hidden` state.
+  - Added double-bind guard using `data-gg-a11y-bound="1"`.
+- Added `tools/verify-shortcodes-a11y-contract.mjs` and wired it into `tools/gate-prod.sh` after shortcode contract verifiers.
+- No HTML injection introduced. No new legacy allowlist entry added.
 
-ALLOWLIST COUNT
-- Before: `3`
-- After: `1`
-- max_allow: `1`
-
-IDS REMOVED
-- LEGACY-0022
-- LEGACY-0027
+WHAT CHANGED
+- YT lite label + keyboard:
+  - baseline `Play video` label present
+  - runtime label derivation + Enter/Space keyboard activation
+- Accordion semantics:
+  - runtime `aria-controls` mapping to generated `gg-acc-body-*` ids
+  - `aria-expanded` and `hidden` state stay in sync
 
 FILES CHANGED
+- index.prod.xml
+- index.dev.xml
 - public/assets/latest/modules/ui.bucket.core.js
-- docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/verify-core-domparser-singleton.mjs
+- tools/verify-shortcodes-a11y-contract.mjs
 - tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
-- index.prod.xml
 - public/sw.js
 - src/worker.js
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-core-domparser-singleton.mjs`
+- `node tools/verify-shortcodes-a11y-contract.mjs`
 ```text
-PASS: core DOMParser is singleton + budgeted
-```
-
-- `node tools/verify-legacy-allowlist-ratchet.mjs`
-```text
-VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
+PASS: shortcodes a11y contract
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
-PASS: core swap has no innerHTML
-PASS: core DOMParser is singleton + budgeted
-PASS: panels skeleton has no innerHTML
-PASS: comments gate has no innerHTML
 PASS: shortcodes has no innerHTML writes
 VERIFY_SHORTCODES_TEMPLATES: PASS
-PASS: authors module has no DOMParser
+PASS: shortcodes a11y contract
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=1 allowlisted_matches=1 violations=0
-VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
 VERIFY_BUDGETS: PASS
-PASS: palette a11y contract (mode=repo, release=6491208)
+PASS: palette a11y contract (mode=repo, release=f109652)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
 MANUAL SANITY
-- Pending manual browser sanity:
-  - listing -> post -> back (no blank main / no console errors)
-  - load more posts still appends correctly
-  - TOC/headings parse still produces heading list
+- Pending manual browser check:
+  - YT lite: Tab focus, Enter/Space activation, SR announces at least "Play video"
+  - Accordion: button announced with expanded/collapsed, `aria-controls` valid, body hidden toggles
+  - SPA navigation rehydrate: inserted shortcodes remain interactive

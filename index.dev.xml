@@ -3414,18 +3414,18 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <!-- /GAGA  -->
 <div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "searchCacheTTL": 60, "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
 <template id='gg-tpl-sc-yt-lite'>
-  <div class='gg-yt-lite' data-id=''>
+  <div aria-label='Play video' class='gg-yt-lite' data-gg-yt-label='1' data-id='' role='button' tabindex='0'>
     <img alt='' decoding='async' loading='lazy' src=''/>
     <div aria-hidden='true' class='gg-yt-play'></div>
   </div>
 </template>
 <template id='gg-tpl-sc-accordion'>
-  <div class='gg-sc-accordion'>
-    <button aria-expanded='false' class='gg-sc-accordion__toggle' type='button'>
+  <div class='gg-sc-accordion' data-gg-acc='1'>
+    <button aria-expanded='false' class='gg-sc-accordion__toggle' data-gg-acc-toggle='1' type='button'>
       <span class='gg-sc-accordion__title'></span>
       <span aria-hidden='true' class='gg-sc-accordion__icon'>expand_more</span>
     </button>
-    <div class='gg-sc-accordion__body'></div>
+    <div class='gg-sc-accordion__body' data-gg-acc-body='1'></div>
   </div>
 </template>
 <template id='gg-toast-tpl'>

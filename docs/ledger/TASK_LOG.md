@@ -2078,3 +2078,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): DOMParser call now centralized in `parseHtmlDoc`; load-more and heading parsing now call helper; gate realigned release assets to 6491208
 - RISKS: low/med; manual load-more and heading-list sanity still required in browser
 - NEXT: TASK-SHORTCODES-A11Y-POLISH-20260221
+
+## 2026-02-21 — TASK-SHORTCODES-A11Y-POLISH-20260221 — Shortcodes a11y polish (yt-lite + accordion)
+- DATE: 2026-02-21
+- TASK_ID: TASK-SHORTCODES-A11Y-POLISH-20260221
+- TITLE: Polish shortcodes outputs (yt-lite + accordion semantics)
+- MODE (DEV/PROD impact): shortcode template + runtime a11y binding + verifier guardrail + gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: make `gg-yt-lite` keyboard/SR friendly (label + Enter/Space activation), add stable accordion hooks with runtime `aria-controls`/`hidden` sync, and enforce via new verifier in `gate:prod`
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/modules/ui.bucket.core.js; tools/verify-shortcodes-a11y-contract.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-shortcodes-a11y-contract.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): shortcodes-a11y verifier PASS; gate:prod PASS (offline smoke fallback in sandbox); budgets PASS after slimming ShortcodesV2 changes
+- NOTES (gotchas): first pass failed budgets; trimmed ShortcodesV2 binder implementation to stay under `ui.bucket.core.js` raw/gzip limits while preserving required a11y behavior
+- RISKS: low/med; manual 5-minute keyboard/SR sanity still required on real browser for yt-lite activation and accordion expanded/collapsed announcement
+- NEXT: TASK-PERF-IMAGE-LQIP-STRATEGY-20260222

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221: Centralize core DOMParser parsing into one budgeted/same-origin helper and tighten allowlist ratchet to 1.
+- TASK-SHORTCODES-A11Y-POLISH-20260221: Polish ShortcodesV2 outputs for keyboard + screen reader semantics (yt-lite labels/keyboard + accordion aria-controls/hidden sync) with guardrail verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 6491208
+RELEASE_ID: f109652
 RELEASE_HISTORY:
-- 6491208
-- 9f54660
-PROD_PINNED_JS: /assets/v/6491208/main.js
-PROD_PINNED_APP: /assets/v/6491208/app.js
-PROD_PINNED_CSS: /assets/v/6491208/main.css
+- f109652
+- 7c99ea3
+PROD_PINNED_JS: /assets/v/f109652/main.js
+PROD_PINNED_APP: /assets/v/f109652/app.js
+PROD_PINNED_CSS: /assets/v/f109652/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-SHORTCODES-A11Y-POLISH-20260221
+- TASK-PERF-IMAGE-LQIP-STRATEGY-20260222
 
 LAST_PATCH:
-- 2026-02-21 TASK-REMOVE-DOMPARSER-CORE-SINGLETON-20260221 removed LEGACY-0022/0027 by centralizing HTML parsing into `parseHtmlDoc(html,url)` with 2MB size budget + same-origin expectation, leaving only LEGACY-0013 and setting `max_allow=1`.
+- 2026-02-21 TASK-SHORTCODES-A11Y-POLISH-20260221 updated shortcode templates + ShortcodesV2 binder to enforce yt-lite keyboard activation/accessible labels and accordion aria-controls+hidden sync, then added `verify-shortcodes-a11y-contract` to gate.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
