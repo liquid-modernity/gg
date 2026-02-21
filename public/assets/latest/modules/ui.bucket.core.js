@@ -1081,7 +1081,7 @@ var icon = element && element.querySelector ? element.querySelector('.gg-icon') 
 var dirDown = icon && icon.textContent && icon.textContent.indexOf('_down') > -1;
 var doc = document.documentElement;
 var maxY = Math.max(0, doc.scrollHeight - window.innerHeight);
-window.scrollTo({ top: dirDown ? maxY : 0, behavior: 'smooth' });
+window.scrollTo({ top: dirDown ? maxY : 0, behavior: GG.services.a11y.scrollBehavior() });
 });
 
 (function(GG, w, d){
@@ -1684,7 +1684,7 @@ if (!sel) return;
 var t = document.querySelector(sel);
 if (!t) return;
 try {
-  t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  t.scrollIntoView({ behavior: GG.services.a11y.scrollBehavior(), block: 'start' });
 } catch (e) {
   t.scrollIntoView(true);
 }
@@ -2407,9 +2407,9 @@ function init(){
     var doc = document.documentElement;
     var maxY = Math.max(0, doc.scrollHeight - window.innerHeight);
     if(lastDir === 'down'){
-      window.scrollTo({ top: maxY, behavior: 'smooth' });
+      window.scrollTo({ top: maxY, behavior: GG.services.a11y.scrollBehavior() });
     }else{
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: GG.services.a11y.scrollBehavior() });
     }
   }
 
@@ -2717,7 +2717,7 @@ function recalc(){
 
 function jump(index, smooth){
   var offset = index * (cardWidth + gap);
-  feed.scrollTo({ left: offset, behavior: smooth ? 'smooth' : 'auto' });
+  feed.scrollTo({ left: offset, behavior: smooth ? GG.services.a11y.scrollBehavior() : 'auto' });
 }
 
 function start(){
@@ -5565,6 +5565,7 @@ function isSystemPath(pathname){
     A.reducedMotion = A.reducedMotion || {};
     A.reducedMotion.get = A.reducedMotion.get || function(){ return !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches); };
     A.reducedMotion.watch = A.reducedMotion.watch || function(cb){ if(!w.matchMedia) return function(){}; var mq = w.matchMedia('(prefers-reduced-motion: reduce)'); var h = function(e){ if(cb) cb(!!e.matches); }; if(mq.addEventListener) mq.addEventListener('change', h); else if(mq.addListener) mq.addListener(h); return function(){ if(mq.removeEventListener) mq.removeEventListener('change', h); else if(mq.removeListener) mq.removeListener(h); }; };
+    A.scrollBehavior = A.scrollBehavior || function(){ try { return A.reducedMotion.get() ? 'auto' : 'smooth'; } catch(e) {} return (w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth'; };
     A.announce = A.announce || function(message, opts){ if(message === undefined || message === null) return; var el = A._announcer || d.querySelector('.gg-sr-announcer,[data-gg-announcer]'); if(!el){ if(!d.body) return; el = d.createElement('div'); el.className = 'gg-sr-announcer gg-visually-hidden'; el.setAttribute('aria-live', 'polite'); el.setAttribute('aria-atomic', 'true'); d.body.appendChild(el); } A._announcer = el; el.setAttribute('aria-live', (opts && opts.politeness) || el.getAttribute('aria-live') || 'polite'); el.textContent = ''; setTimeout(function(){ el.textContent = String(message); }, 10); };
     function setInert(el, inert){ if(!el || el.nodeType !== 1) return null; var prev = { el: el, aria: el.getAttribute('aria-hidden'), inert: el.hasAttribute('inert') }; if(inert){ el.setAttribute('aria-hidden','true'); el.setAttribute('inert',''); }else{ if(prev.aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', prev.aria); if(prev.inert) el.setAttribute('inert',''); else el.removeAttribute('inert'); } return prev; }
     A.inert = A.inert || function(root, keep){ var host = root || d.body || d.documentElement; if(!host) return null; var kids = Array.prototype.slice.call(host.children || []); var record = []; kids.forEach(function(el){ if(!el || el === keep) return; record.push(setInert(el, true)); }); A._inertStack.push(record); return record; };
@@ -5575,6 +5576,7 @@ function isSystemPath(pathname){
     a11y.focusTrap = a11y.focusTrap || function(container, opts){ return A.focusTrap(container, opts); };
     a11y.inertManager = a11y.inertManager || { push: function(root, keep){ return A.inert(root, keep); }, pop: function(){ return A.restoreInert(); }, clear: function(){ while(A._inertStack.length) A.restoreInert(); } };
     a11y.reducedMotion = a11y.reducedMotion || { get: function(){ return A.reducedMotion.get(); }, watch: function(cb){ return A.reducedMotion.watch(cb); } };
+    a11y.scrollBehavior = a11y.scrollBehavior || function(){ return A.scrollBehavior(); };
   })(GG.a11y, GG.services.a11y);
 
 })(window.GG, window, document);

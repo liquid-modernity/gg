@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-NATIVE-FEEL-PANELS-TRAP-20260221: Modalize post panels with focus trap + safe inert scope.
+- TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221: Reduced-motion aware scroll behavior (single a11y policy helper).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 580adce
+RELEASE_ID: 31989ef
 RELEASE_HISTORY:
-- 580adce
-- 2036cc5
-PROD_PINNED_JS: /assets/v/580adce/main.js
-PROD_PINNED_APP: /assets/v/580adce/app.js
-PROD_PINNED_CSS: /assets/v/580adce/main.css
+- 31989ef
+- 0496644
+PROD_PINNED_JS: /assets/v/31989ef/main.js
+PROD_PINNED_APP: /assets/v/31989ef/app.js
+PROD_PINNED_CSS: /assets/v/31989ef/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221
+- TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-NATIVE-FEEL-PANELS-TRAP-20260221 panels modalized (post XOR + focus trap + scoped inert verifier)
+- 2026-02-21 TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221 all smooth-scroll callsites now honor reduced motion via GG.services.a11y.scrollBehavior()
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

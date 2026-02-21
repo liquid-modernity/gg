@@ -1638,3 +1638,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate initially failed due gzip budget delta on modules/ui.bucket.core.js and was resolved by minimal budget bump to match intentional modal a11y change; manual sanity test requires browser session
 - RISKS: low/med; manual a11y sanity (Tab 30x + Esc focus return) still pending interactive browser confirmation
 - NEXT: TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221
+
+---
+
+## 2026-02-21 — TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221 — Reduced-motion scroll policy enforcement
+- DATE: 2026-02-21
+- TASK_ID: TASK-NATIVE-FEEL-REDUCED-MOTION-SCROLL-20260221
+- TITLE: Honor reduced motion for all scrolling
+- MODE (DEV/PROD impact): UI behavior + verifier gate + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add centralized scroll behavior helper, replace hardcoded smooth scroll usage, enforce static policy verifier in gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-smooth-scroll-policy.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-smooth-scroll-policy.mjs; npm run -s gate:prod
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-smooth-scroll-policy PASS; gate:prod PASS (offline smoke fallback due DNS resolution failure in sandbox)
+- NOTES (gotchas): gate initially failed by 3 bytes on ui.bucket.core.js gzip budget and passed after minimal budget bump
+- RISKS: low/med; live smoke remains network-dependent in sandbox
+- NEXT: TASK-LEGACY-HTML-IN-JS-REALITY-CHECK-20260221
