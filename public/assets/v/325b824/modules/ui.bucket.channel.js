@@ -15,21 +15,16 @@
     photo: 'photography',
     photos: 'photography'
   };
-  var DEFAULT_COUNTS = {
-    podcast: 6,
-    youtube: 3,
-    shorts: 5,
-    photography: 12
-  };
   var CHANNEL_CONFIG = M.CONFIG || {};
   var CHANNEL_MODE_MAP = CHANNEL_CONFIG.modeByLabel || M.MODE_BY_LABEL || DEFAULT_MODE_BY_LABEL;
   var countConfig = CHANNEL_CONFIG.counts || {};
-  var CHANNEL_COUNTS = {
-    podcast: parseInt(countConfig.podcast, 10) || DEFAULT_COUNTS.podcast,
-    youtube: parseInt(countConfig.youtube, 10) || DEFAULT_COUNTS.youtube,
-    shorts: parseInt(countConfig.shorts, 10) || DEFAULT_COUNTS.shorts,
-    photography: parseInt(countConfig.photography, 10) || DEFAULT_COUNTS.photography
-  };
+  var CHANNEL_COUNTS = { podcast: 6, youtube: 3, shorts: 5, photography: 12 };
+  if (countConfig) {
+    if (parseInt(countConfig.podcast, 10) > 0) CHANNEL_COUNTS.podcast = parseInt(countConfig.podcast, 10);
+    if (parseInt(countConfig.youtube, 10) > 0) CHANNEL_COUNTS.youtube = parseInt(countConfig.youtube, 10);
+    if (parseInt(countConfig.shorts, 10) > 0) CHANNEL_COUNTS.shorts = parseInt(countConfig.shorts, 10);
+    if (parseInt(countConfig.photography, 10) > 0) CHANNEL_COUNTS.photography = parseInt(countConfig.photography, 10);
+  }
   var activeReq = 0;
 
   function esc(s){
