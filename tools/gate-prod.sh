@@ -25,6 +25,8 @@ run node tools/verify-route-a11y-contract.mjs
 run node tools/verify-core-swap-no-innerhtml.mjs
 run node tools/verify-core-panel-no-innerhtml.mjs
 run node tools/verify-comments-gate-no-innerhtml.mjs
+run node tools/verify-shortcodes-no-innerhtml.mjs
+run node tools/verify-shortcodes-templates.mjs
 run node tools/verify-no-new-html-in-js.mjs
 run node tools/verify-no-innerhtml-assign-modules.mjs
 run node tools/verify-mixed-no-innerhtml.mjs

@@ -2030,3 +2030,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): comments gate now clones template child nodes directly without HTML string parsing
 - RISKS: low/med; manual 3-minute comments sanity still required in real browser
 - NEXT: TASK-PHASE8-SHORTCODES-STRATEGY-20260222
+
+## 2026-02-21 — TASK-PHASE8-SHORTCODES-STRATEGY-20260221 — Shortcodes V2 DOM transformer + XML templates
+- DATE: 2026-02-21
+- TASK_ID: TASK-PHASE8-SHORTCODES-STRATEGY-20260221
+- TITLE: Shortcodes V2 DOM transformer + XML templates (no innerHTML) + tighten ratchet
+- MODE (DEV/PROD impact): shortcode engine refactor + XML template contract + guardrail verifiers + allowlist ratchet tightening
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove LEGACY-0032/0036 by replacing shortcode string rewrites with DOM transformer, add required shortcode templates in dev/prod XML, wire shortcode verifiers into gate, and define authoring contract docs
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/modules/ui.bucket.core.js; docs/content/SHORTCODES.md; tools/verify-shortcodes-no-innerhtml.mjs; tools/verify-shortcodes-templates.mjs; tools/gate-prod.sh; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-shortcodes-no-innerhtml.mjs; node tools/verify-shortcodes-templates.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): shortcode no-innerHTML verifier PASS; shortcode template verifier PASS; legacy allowlist ratchet PASS (`allow=5`, `max_allow=5`); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): gate realigned release artifacts to af5bc9d; shortcode transform now runs via `ShortcodesV2.init` and `ShortcodesV2.reinit` in `GG.app.rehydrate`
+- RISKS: low/med; manual shortcode rendering sanity still required in real browser
+- NEXT: TASK-REMOVE-DOMPARSER-AUTHORS-20260221

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221: Replace comments gate `tmp.innerHTML = tpl.innerHTML` with safe template node cloning and tighten allowlist ratchet to 7.
+- TASK-PHASE8-SHORTCODES-STRATEGY-20260221: Replace shortcode engines with DOM-based ShortcodesV2 + XML templates and tighten allowlist ratchet to 5.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: c690b35
+RELEASE_ID: af5bc9d
 RELEASE_HISTORY:
-- c690b35
-- b3db62b
-PROD_PINNED_JS: /assets/v/c690b35/main.js
-PROD_PINNED_APP: /assets/v/c690b35/app.js
-PROD_PINNED_CSS: /assets/v/c690b35/main.css
+- af5bc9d
+- 86dda1b
+PROD_PINNED_JS: /assets/v/af5bc9d/main.js
+PROD_PINNED_APP: /assets/v/af5bc9d/app.js
+PROD_PINNED_CSS: /assets/v/af5bc9d/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PHASE8-SHORTCODES-STRATEGY-20260222
+- TASK-REMOVE-DOMPARSER-AUTHORS-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-PHASE7-COMMENTS-GATE-NO-INNERHTML-20260221 replaced comments gate template copy `tmp.innerHTML = tpl.innerHTML` with cloned nodes from `tpl.content`/`tpl.childNodes`, removed LEGACY-0035, and set allowlist `max_allow=7`.
+- 2026-02-21 TASK-PHASE8-SHORTCODES-STRATEGY-20260221 removed LEGACY-0032/0036 by replacing shortcode `innerHTML` rewrites with DOM transform + XML templates (`gg-tpl-sc-yt-lite`, `gg-tpl-sc-accordion`) and set allowlist `max_allow=5`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

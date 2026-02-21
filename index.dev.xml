@@ -3413,6 +3413,21 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <div aria-atomic='true' aria-live='polite' class='gg-sr-announcer gg-visually-hidden'></div>
 <!-- /GAGA  -->
 <div id='gg-config' data-json='{"commentsEnabled": true, "maxPosts": 5, "searchLabels": ["Feature", "Blog"], "searchCacheTTL": 60, "feedBase": "/feeds/posts/default", "feedSummaryBase": "/feeds/posts/summary"}' style='display:none'></div>
+<template id='gg-tpl-sc-yt-lite'>
+  <div class='gg-yt-lite' data-id=''>
+    <img alt='' decoding='async' loading='lazy' src=''/>
+    <div aria-hidden='true' class='gg-yt-play'></div>
+  </div>
+</template>
+<template id='gg-tpl-sc-accordion'>
+  <div class='gg-sc-accordion'>
+    <button aria-expanded='false' class='gg-sc-accordion__toggle' type='button'>
+      <span class='gg-sc-accordion__title'></span>
+      <span aria-hidden='true' class='gg-sc-accordion__icon'>expand_more</span>
+    </button>
+    <div class='gg-sc-accordion__body'></div>
+  </div>
+</template>
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'></span></div>
 </template>
