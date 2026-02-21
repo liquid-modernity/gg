@@ -317,6 +317,7 @@ verify_repo(){
 
   echo "GG_VERIFY: running checks..."
   verify_basics
+  npm run -s gate:prod
 
   # Optional: npm lint/test if present
   if [[ -f "$root/package.json" ]]; then

@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-AUTHORS-DIR-20260221: Authors directory datasource contract + verifier.
+- TASK-RECONCILE-GATE-PROOF-20260221: Reconcile gate parity + proof guardrails.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: cd8a289
+RELEASE_ID: e0ff634
 RELEASE_HISTORY:
+- e0ff634
 - cd8a289
-- 3f9a7f9
-PROD_PINNED_JS: /assets/v/cd8a289/main.js
-PROD_PINNED_APP: /assets/v/cd8a289/app.js
-PROD_PINNED_CSS: /assets/v/cd8a289/main.css
+PROD_PINNED_JS: /assets/v/e0ff634/main.js
+PROD_PINNED_APP: /assets/v/e0ff634/app.js
+PROD_PINNED_CSS: /assets/v/e0ff634/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- P0-03 Telemetry redaction/allowlist (strip query/fragment, allowlist keys).
+- TASK-TAGS-DIR-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-AUTHORS-DIR-20260221 add authors dir datasource contract + verifier
+- 2026-02-21 TASK-RECONCILE-GATE-PROOF-20260221 gate parity + proof verifiers
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

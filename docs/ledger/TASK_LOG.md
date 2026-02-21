@@ -1584,3 +1584,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): verify:release initially failed due release alignment drift and required build realignment
 - RISKS: low/med; live smoke in sandbox is not stable due DNS/network and undeployed release mismatch
 - NEXT: deploy release cd8a289, then rerun strict smoke in network-enabled environment
+
+---
+
+## 2026-02-21 — TASK-RECONCILE-GATE-PROOF-20260221 — Reconcile gate parity + proof guardrails
+- DATE: 2026-02-21
+- TASK_ID: TASK-RECONCILE-GATE-PROOF-20260221
+- TITLE: Reconcile rulebooks + authors contract + gate parity
+- MODE (DEV/PROD impact): tooling guards + ledger + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN (e0ff634)
+- SCOPE: enforce verifiers in gate, align local verify parity, update ledger, produce artifact proof path
+- CHANGES (files touched): tools/verify-authors-dir-contract.mjs; tools/gate-prod.sh; tools/scripts:gg; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/e0ff634/*; public/assets/v/3f9a7f9/* (removed)
+- COMMANDS RUN (local): node tools/verify-rulebooks.mjs; node tools/verify-authors-dir-contract.mjs; npm run gate:prod; bash tools/gate-release.sh; ./scripts/gg verify
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): gate:prod PASS (offline smoke fallback); gate-release FAIL at strict live smoke due DNS resolution failure
+- NOTES (gotchas): gate:prod realigned release id automatically to e0ff634; strict live checks remain network-dependent
+- RISKS: low/med; strict live proof may fail in sandboxed/offline environment despite local contract pass
+- NEXT: TASK-TAGS-DIR-20260221
