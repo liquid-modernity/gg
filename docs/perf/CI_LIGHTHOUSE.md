@@ -22,6 +22,17 @@ Last updated: 2026-02-22
 - Raw Lighthouse outputs are stored in `.lighthouseci`.
 - Workflow uploads `.lighthouseci` as a GitHub Actions artifact.
 - `tools/perf/lhci-summary.mjs` writes a readable metrics table into GitHub Step Summary.
+- `tools/perf/lhci-trend.mjs` writes `.lighthouseci/trend.json` and a ratchet delta table to GitHub Step Summary.
+- Workflow also uploads a dedicated artifact for `.lighthouseci/trend.json`.
+
+## Trend JSON
+- Path: `.lighthouseci/trend.json`
+- Core fields:
+  - `generated_at`, `commit`
+  - `urls` (copied from `docs/perf/URLS.json`)
+  - `results[]` per key (`home|listing|post`): score, LCP, CLS, INP, TBT, transfer KB, ratchet pass/fail + reasons
+  - `ratchet` (copied from `docs/perf/BUDGETS.json`)
+- Compare runs by downloading artifacts from two workflow runs and diffing `results`.
 
 ## Temporary Public Storage (Optional)
 - Workflow includes an optional LHCI upload step to temporary public storage for quick share links.

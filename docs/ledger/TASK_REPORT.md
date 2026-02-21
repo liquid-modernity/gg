@@ -1,23 +1,32 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222
-TITLE: Add URLS SSOT and enforce baseline/CI alignment
+TASK_ID: TASK-PERF-TREND-ARTIFACTS-20260222
+TITLE: Add perf trend.json artifact and ratchet diff summary
 
 SUMMARY
-- Converted `docs/perf/URLS.json` into strict SSOT schema using `urls.home`, `urls.listing`, and `urls.post`.
-- Updated `docs/perf/BASELINE.md` to explicitly declare SSOT and include the exact URLs from `URLS.json`.
-- Updated `lighthouse/lighthouserc.ci.js` to read `docs/perf/URLS.json` only (removed BASELINE fallback parsing).
-- Added `tools/verify-perf-urls-ssot.mjs` to fail on drift across URLS/BASELINE/LHCI config.
-- Wired SSOT verifier into `tools/gate-prod.sh`.
-- Updated `docs/perf/CI_LIGHTHOUSE.md` with SSOT usage guidance.
+- Added `tools/perf/lhci-trend.mjs` to produce `.lighthouseci/trend.json` from Lighthouse LHR files.
+- Trend output stores one aggregated record per URL key (`home`, `listing`, `post`) with:
+  - performance score, LCP, CLS, INP, TBT, transfer KB
+  - timestamp + short commit
+  - ratchet pass/fail + reasons against `docs/perf/BUDGETS.json`.
+- Updated `.github/workflows/perf-lighthouse.yml`:
+  - run trend step after summary step
+  - upload dedicated artifact `.lighthouseci/trend.json`
+  - keep full `.lighthouseci` artifact upload.
+- Updated perf workflow contract verifier to enforce trend step and trend artifact upload.
+- Updated `docs/perf/CI_LIGHTHOUSE.md` with trend artifact location/fields and comparison guidance.
+
+ARTIFACT PATHS
+- `.lighthouseci/trend.json` (generated in workflow)
+- GitHub Actions artifacts:
+  - `lighthouseci-<run_id>` (full reports)
+  - `lighthouse-trend-<run_id>` (trend JSON only)
 
 FILES CHANGED
-- docs/perf/URLS.json
-- docs/perf/BASELINE.md
-- lighthouse/lighthouserc.ci.js
-- tools/verify-perf-urls-ssot.mjs
-- tools/gate-prod.sh
+- tools/perf/lhci-trend.mjs
+- .github/workflows/perf-lighthouse.yml
+- tools/verify-perf-workflow-contract.mjs
 - docs/perf/CI_LIGHTHOUSE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -28,9 +37,14 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-perf-urls-ssot.mjs`
+- `node tools/perf/lhci-trend.mjs` (local fixture execution)
 ```text
-PASS: perf URLs SSOT aligned
+PASS: lhci trend artifact -> .lighthouseci/trend.json
+```
+
+- `node tools/verify-perf-workflow-contract.mjs`
+```text
+VERIFY_PERF_WORKFLOW_CONTRACT: PASS
 ```
 
 - `npm run gate:prod`
@@ -45,4 +59,4 @@ PASS: gate:prod
 ```
 
 NOTES
-- `docs/perf/URLS.json` post URL is now pinned to `https://www.pakrpp.com/2026/02/todo.html` per SSOT contract for baseline and CI.
+- Trend step is CI tooling only; no runtime JS/CSS behavior was changed.

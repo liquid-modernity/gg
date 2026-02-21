@@ -6,6 +6,7 @@ const requiredFiles = [
   ".github/workflows/perf-lighthouse.yml",
   "lighthouse/lighthouserc.ci.js",
   "tools/perf/lhci-summary.mjs",
+  "tools/perf/lhci-trend.mjs",
 ];
 const failures = [];
 
@@ -31,10 +32,14 @@ if (fs.existsSync(workflowAbs)) {
   }
   if (!/lighthouse\/lighthouserc\.ci\.js/i.test(src)) fail("workflow missing LHCI configPath usage");
   if (!/tools\/perf\/lhci-summary\.mjs/i.test(src)) fail("workflow missing summary step");
+  if (!/tools\/perf\/lhci-trend\.mjs/i.test(src)) fail("workflow missing trend step");
   const hasArtifactUpload = /actions\/upload-artifact@/i.test(src);
   const hasTreoshUploadArtifacts = /uploadArtifacts\s*:\s*true/i.test(src);
   if (!hasArtifactUpload && !hasTreoshUploadArtifacts) {
     fail("workflow must upload Lighthouse artifacts (upload-artifact or treosh uploadArtifacts)");
+  }
+  if (!/\.lighthouseci\/trend\.json/i.test(src)) {
+    fail("workflow must upload .lighthouseci/trend.json artifact");
   }
 }
 

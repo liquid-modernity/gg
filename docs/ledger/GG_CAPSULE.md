@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222: Enforce URL SSOT across BASELINE and Lighthouse CI config with drift verifier.
+- TASK-PERF-TREND-ARTIFACTS-20260222: Generate trend.json from LHCI reports with ratchet diff and artifact upload.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: ae3084f
+RELEASE_ID: 4bef74e
 RELEASE_HISTORY:
+- 4bef74e
 - ae3084f
-- b674e4f
-PROD_PINNED_JS: /assets/v/ae3084f/main.js
-PROD_PINNED_APP: /assets/v/ae3084f/app.js
-PROD_PINNED_CSS: /assets/v/ae3084f/main.css
+PROD_PINNED_JS: /assets/v/4bef74e/main.js
+PROD_PINNED_APP: /assets/v/4bef74e/app.js
+PROD_PINNED_CSS: /assets/v/4bef74e/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-TREND-ARTIFACTS-20260222
+- TASK-PERF-TREND-HISTORY-20260223
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-BASELINE-SYNC-URLS-SSOT-20260222 introduced docs/perf/URLS.json as SSOT (`urls.*`), baseline URL sync, and verifier guardrail.
+- 2026-02-22 TASK-PERF-TREND-ARTIFACTS-20260222 added `lhci-trend.mjs`, workflow trend artifact upload, and ratchet delta summary output.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

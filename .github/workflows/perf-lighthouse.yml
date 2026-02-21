@@ -72,9 +72,19 @@ jobs:
       - name: Build LHCI summary
         run: node tools/perf/lhci-summary.mjs
 
+      - name: Build LHCI trend artifact
+        run: node tools/perf/lhci-trend.mjs
+
       - name: Upload Lighthouse artifacts
         uses: actions/upload-artifact@v4
         with:
           name: lighthouseci-${{ github.run_id }}
           path: .lighthouseci
+          if-no-files-found: error
+
+      - name: Upload Lighthouse trend JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-trend-${{ github.run_id }}
+          path: .lighthouseci/trend.json
           if-no-files-found: error

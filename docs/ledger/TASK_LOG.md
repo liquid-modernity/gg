@@ -2238,3 +2238,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): lighthouserc fallback parsing from BASELINE removed; SSOT now strict via URLS.json (`urls.home/listing/post`)
 - RISKS: low; stable post URL in SSOT must be maintained to avoid CI measurement failures
 - NEXT: TASK-PERF-TREND-ARTIFACTS-20260222
+
+## 2026-02-22 — TASK-PERF-TREND-ARTIFACTS-20260222 — LHCI trend artifact + ratchet delta summary
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-TREND-ARTIFACTS-20260222
+- TITLE: Add perf trend.json artifact and ratchet diff summary
+- MODE (DEV/PROD impact): CI-only perf tooling and docs (no runtime changes)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: generate `.lighthouseci/trend.json` from LHCI reports with per-URL records and ratchet pass/fail reasons, append delta summary to Step Summary, and upload trend artifact in workflow
+- CHANGES (files touched): tools/perf/lhci-trend.mjs; .github/workflows/perf-lighthouse.yml; tools/verify-perf-workflow-contract.mjs; docs/perf/CI_LIGHTHOUSE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-perf-workflow-contract.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: pending on next perf-lighthouse workflow run
+- DEPLOY STATUS: no deploy change in this task
+- VERIFY (URLs + expected): perf workflow contract PASS (includes trend step + trend artifact path check); gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): trend records are aggregated to one record per key (`home|listing|post`) using median of available runs; INP missing is reported as n/a and non-failing
+- RISKS: low/med; live LHCI variability remains despite multi-run aggregation
+- NEXT: TASK-PERF-TREND-HISTORY-20260223
