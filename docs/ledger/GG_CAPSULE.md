@@ -1,8 +1,8 @@
 # GG_CAPSULE (current session)
-Last updated: 2026-02-14
+Last updated: 2026-02-21
 
 NOW:
-- TASK-0009D: Worker detection LKG + backoff.
+- TASK-RULEBOOK-20260221: Rulebook operational sync + guardrail verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 09e2ce4
+RELEASE_ID: 23dc4a0
 RELEASE_HISTORY:
+- 23dc4a0
 - 09e2ce4
-- ed079a1
-PROD_PINNED_JS: /assets/v/09e2ce4/main.js
-PROD_PINNED_APP: /assets/v/09e2ce4/app.js
-PROD_PINNED_CSS: /assets/v/09e2ce4/main.css
+PROD_PINNED_JS: /assets/v/23dc4a0/main.js
+PROD_PINNED_APP: /assets/v/23dc4a0/app.js
+PROD_PINNED_CSS: /assets/v/23dc4a0/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - P0-03 Telemetry redaction/allowlist (strip query/fragment, allowlist keys).
 
 LAST_PATCH:
-- 2026-02-14 TASK-0009D worker detection LKG + backoff
+- 2026-02-21 TASK-RULEBOOK-20260221 sync AGENTS/NAMING + add verify-rulebooks
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
