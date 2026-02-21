@@ -22,6 +22,7 @@ run npm run verify:xml
 run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
 run node tools/verify-authors-dir-contract.mjs
+run node tools/verify-tags-dir-contract.mjs
 run node tools/verify-router-contract.mjs
 run node tools/verify-ui-guardrails.mjs
 run node tools/verify-template-contract.mjs
