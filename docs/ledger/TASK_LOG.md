@@ -1890,3 +1890,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): allowlist dropped from 37 to 28 by removing LEGACY-0003..0011; mixed module complex rendering left for next phase
 - RISKS: low/med; manual 5-minute listing/authors/panel sanity still required in real browser
 - NEXT: TASK-A11Y-HITAREA-VERIFY-AND-SWEEP-20260221
+
+---
+
+## 2026-02-21 — TASK-RELEASE-GATE-MODES-20260221 — Split release gate modes (local vs live)
+- DATE: 2026-02-21
+- TASK_ID: TASK-RELEASE-GATE-MODES-20260221
+- TITLE: Split local vs live release gates (CI is source of truth)
+- MODE (DEV/PROD impact): release guardrail flow + CI workflow hardening + distribution contract clarification
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: move strict live checks into `tools/gate-release-live.sh`, turn `tools/gate-release.sh` into mode dispatcher, enforce post-deploy strict live gate with retries in CI, and document local/CI proof split
+- CHANGES (files touched): tools/gate-release-live.sh; tools/gate-release.sh; .github/workflows/deploy.yml; docs/release/DISTRIBUTION.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md
+- COMMANDS RUN (local): bash tools/gate-release.sh; npm run gate:prod; bash tools/gate-release-live.sh; GG_GATE_RELEASE_LIVE=1 bash tools/gate-release.sh
+- CI STATUS: pending (authoritative live proof runs in deploy workflow)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): gate:release(local) PASS without DNS dependency; gate:prod PASS; strict live mode fails in sandbox DNS (`Could not resolve host: www.pakrpp.com`) as expected for local env; deploy workflow now contains `Post-deploy strict live gate (retry)` running `bash tools/gate-release-live.sh`
+- NOTES (gotchas): local dispatcher intentionally runs `verify-headers --mode=config` + `verify-palette-a11y --mode=repo` and prints non-live PASS label to avoid false LIVE claims
+- RISKS: low; strict live proof now centralized in CI networked environment
+- NEXT: TASK-TAP-TARGETS-V2-20260221

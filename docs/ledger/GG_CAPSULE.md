@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221: Reduce legacy HTML-in-JS debt in channel/mixed/authors and tighten allowlist ratchet to <=30.
+- TASK-RELEASE-GATE-MODES-20260221: Split release gate into local dispatcher and strict live CI proof gate.
 
 CONSTRAINTS:
 - main-only
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-A11Y-HITAREA-VERIFY-AND-SWEEP-20260221
+- TASK-TAP-TARGETS-V2-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221 migrated channel/authors low-hanging HTML-in-JS to DOM APIs, removed 9 legacy IDs, and tightened max_allow to 28.
+- 2026-02-21 TASK-RELEASE-GATE-MODES-20260221 introduced `gate-release-live.sh`, converted `gate-release.sh` to local/live dispatcher, added post-deploy strict live gate retries in CI, and updated distribution contract.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

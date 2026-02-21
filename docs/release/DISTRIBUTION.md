@@ -16,3 +16,8 @@ Last updated: 2026-02-21
 - `tools/zip-audit.sh` hard-fail jika working tree tidak bersih.
 - Nama output dikunci: `dist/gg-audit.zip`.
 - CI deploy workflow membangun dan meng-upload artifact `dist/gg-audit.zip` untuk distribusi standar.
+
+## Release Gate Modes
+- Local (default): wajib lulus `npm run gate:prod` + `bash tools/gate-release.sh` (mode local, non-live).
+- CI (authoritative proof): wajib menjalankan `bash tools/gate-release-live.sh` setelah deploy.
+- Live checks (`verify-headers --mode=live` + `verify-palette-a11y --mode=live`) hanya mandatory proof di CI atau saat dipaksa dengan `GG_GATE_RELEASE_LIVE=1`.

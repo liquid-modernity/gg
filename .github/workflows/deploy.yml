@@ -281,8 +281,21 @@ jobs:
             sleep $((attempt * 10))
           done
 
-      - name: Verify headers contract (live)
-        run: node tools/verify-headers.mjs --mode=live --base=https://www.pakrpp.com
+      - name: Post-deploy strict live gate (retry)
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            echo "Post-deploy live gate attempt ${attempt}/3"
+            if bash tools/gate-release-live.sh; then
+              echo "PASS: gate-release-live"
+              break
+            fi
+            if [ "${attempt}" -eq 3 ]; then
+              echo "ERROR: gate-release-live failed after retries"
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
 
       - name: Post-deploy smoke tests
         env:

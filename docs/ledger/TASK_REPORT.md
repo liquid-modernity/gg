@@ -1,98 +1,102 @@
 TASK_REPORT
 Last updated: 2026-02-21
 
-TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
-TITLE: Phase4 reduce HTML-in-JS debt (channel/mixed/authors) + tighten ratchet
+TASK_ID: TASK-RELEASE-GATE-MODES-20260221
+TITLE: Split local vs live release gates (CI is source of truth)
 
 SUMMARY
-- Migrated low-hanging HTML-in-JS in `ui.bucket.channel.js` and `ui.bucket.authors.js` to DOM API rendering (`createElement`, `textContent`, `appendChild`) and removed corresponding legacy annotations.
-- Kept complex `ui.bucket.mixed.js` rendering callsites for next phase (still allowlisted) to avoid broad behavior risk in this task.
-- Added phase4 guardrail verifier `tools/verify-phase4-no-trivial-htmljs.mjs` and wired it into `tools/gate-prod.sh`.
-- Tightened allowlist ratchet to `max_allow=28`.
+- Refactored release gating into two modes:
+  - `tools/gate-release.sh` is now a dispatcher.
+  - `tools/gate-release-live.sh` is strict LIVE gate (copied from previous strict gate script).
+- Local default no longer depends on external DNS/live reachability and runs deterministic repo-safe checks.
+- CI deploy workflow now runs strict LIVE gate after deploy with retry wrapper to absorb transient network issues without lowering strictness.
+- Distribution contract now states local vs CI gate responsibilities explicitly.
 
-TARGET IDS (BEFORE CHANGES)
-- `public/assets/latest/modules/ui.bucket.authors.js`
-  - LEGACY-0001, LEGACY-0002, LEGACY-0003, LEGACY-0004
-- `public/assets/latest/modules/ui.bucket.channel.js`
-  - LEGACY-0005, LEGACY-0006, LEGACY-0007, LEGACY-0008, LEGACY-0009, LEGACY-0010, LEGACY-0011
-- `public/assets/latest/modules/ui.bucket.mixed.js`
-  - LEGACY-0065, LEGACY-0066, LEGACY-0067, LEGACY-0068, LEGACY-0069, LEGACY-0070
-
-ALLOWLIST COUNT
-- Before: `37`
-- After: `28`
-- `max_allow`: `28`
-
-IDS REMOVED
-- LEGACY-0003
-- LEGACY-0004
-- LEGACY-0005
-- LEGACY-0006
-- LEGACY-0007
-- LEGACY-0008
-- LEGACY-0009
-- LEGACY-0010
-- LEGACY-0011
+WHY SPLIT EXISTS
+- Local development environment can have DNS/network limits; release gate should not block local progress for non-code infrastructure reachability.
+- CI has stable network/runtime and is therefore the authoritative release proof for LIVE checks.
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.channel.js
-- public/assets/latest/modules/ui.bucket.authors.js
-- docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json
-- tools/verify-phase4-no-trivial-htmljs.mjs
-- tools/gate-prod.sh
+- tools/gate-release-live.sh
+- tools/gate-release.sh
+- .github/workflows/deploy.yml
+- docs/release/DISTRIBUTION.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
-- index.prod.xml
-- public/sw.js
-- src/worker.js
-- public/assets/v/<RELEASE_ID>/*
+
+WORKFLOW PROOF (DEPLOY RUNS STRICT LIVE GATE)
+- File: `.github/workflows/deploy.yml`
+- Added step:
+```yaml
+- name: Post-deploy strict live gate (retry)
+  run: |
+    ...
+    if bash tools/gate-release-live.sh; then
+      echo "PASS: gate-release-live"
+      break
+    fi
+```
 
 VERIFICATION OUTPUTS
-- `node tools/verify-phase4-no-trivial-htmljs.mjs`
+- `bash tools/gate-release.sh`
 ```text
-PASS: phase4 trivial htmljs blocked
-```
-
-- `node tools/verify-no-new-html-in-js.mjs`
-```text
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
-```
-
-- `node tools/verify-legacy-allowlist-ratchet.mjs`
-```text
-VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
+INFO: live checks run only in CI or with GG_GATE_RELEASE_LIVE=1
+...
+PASS: gate:prod
+...
+PASS: palette a11y contract (mode=repo, release=3b01c55)
+PASS: gate:release(local)
 ```
 
 - `npm run gate:prod`
 ```text
 VERIFY_RULEBOOKS: PASS
+VERIFY_AUTHORS_DIR_CONTRACT: PASS
 VERIFY_ROUTE_A11Y_CONTRACT: PASS
 VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
-PASS: phase4 trivial htmljs blocked
+VERIFY_SEARCH_NO_INNERHTML: PASS
+VERIFY_SKIP_LINK_CONTRACT: PASS
+VERIFY_ICON_CONTROLS_A11Y: PASS checkedCandidates=68 labeled=68 unlabeledSuspects=0
+PASS: tap targets contract (44px)
+VERIFY_PALETTE_NOT_MODAL: PASS
+VERIFY_MODAL_OPEN_CLOSE_PARITY: PASS modalOpen=3 modalClose=6
+VERIFY_OVERLAY_MODAL_CONTRACT: PASS
 VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
+PASS: phase4 trivial htmljs blocked
+VERIFY_NO_INNERHTML_CLEAR: PASS
+PASS: verify-panels-inert-safety
+PASS: verify-smooth-scroll-policy
+VERIFY_SITEMAP_PAGE_CONTRACT: PASS
+VERIFY_TAGS_DIR_CONTRACT: PASS
+VERIFY_ROUTER_CONTRACT: PASS
+VERIFY_UI_GUARDRAILS: PASS
 VERIFY_TEMPLATE_NO_NESTED_INTERACTIVES: PASS
 VERIFY_TEMPLATE_CONTRACT: PASS
 VERIFY_TEMPLATE_FINGERPRINT: PASS
 VERIFY_BUDGETS: PASS
 VERIFY_INLINE_CSS: PASS
 VERIFY_CRP: PASS
-PASS: palette a11y contract (mode=repo, release=3b01c55)
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-ADDITIONAL VERIFY
-- `bash tools/gate-release.sh`
+- `bash tools/gate-release-live.sh` (local sandbox evidence)
 ```text
-PASS: phase4 trivial htmljs blocked
-VERIFY_NO_NEW_HTML_IN_JS: PASS total_matches=28 allowlisted_matches=28 violations=0
-VERIFY_LEGACY_ALLOWLIST_RATCHET: PASS
+...
+curl: (6) Could not resolve host: www.pakrpp.com
+FAIL: __gg_worker_ping request failed
+FAIL: smoke failed after 1 attempt(s)
+```
+
+- `GG_GATE_RELEASE_LIVE=1 bash tools/gate-release.sh` (forced dispatcher to LIVE path)
+```text
+...
 curl: (6) Could not resolve host: www.pakrpp.com
 FAIL: __gg_worker_ping request failed
 FAIL: smoke failed after 1 attempt(s)
 ```
 
 NOTES
-- `gate:prod` realigned release artifacts to `RELEASE_ID=3b01c55` after task changes.
-- `gate-release` strict live smoke fails in this sandbox due DNS/network resolution, while local contract verifiers pass.
+- Local dispatcher intentionally never claims LIVE PASS.
+- LIVE proof is now mandatory in CI via `tools/gate-release-live.sh` post-deploy step.
