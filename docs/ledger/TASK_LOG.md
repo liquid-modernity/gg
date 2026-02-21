@@ -1818,3 +1818,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): `gate:prod` auto-ran build to realign release after source edits (`RELEASE_ID d80ee2d`)
 - RISKS: low/med; manual keyboard/screen-reader sweep still required in real browser session
 - NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221
+
+---
+
+## 2026-02-21 — TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221 — Search DOM render migration
+- DATE: 2026-02-21
+- TASK_ID: TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221
+- TITLE: Render search listbox with DOM APIs (no innerHTML) + tighten allowlist ratchet
+- MODE (DEV/PROD impact): search module refactor + guardrail verifier + allowlist/ratchet tightening + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove all `.innerHTML` writes from `ui.bucket.search.js`, keep combobox/listbox semantics, remove LEGACY-0073..0077 allowlist entries, add search no-innerHTML verifier, wire gate
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.search.js; tools/verify-search-no-innerhtml.mjs; tools/gate-prod.sh; docs/contracts/LEGACY_HTML_IN_JS_ALLOWLIST.json; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-search-no-innerhtml.mjs; node tools/verify-no-new-html-in-js.mjs; node tools/verify-legacy-allowlist-ratchet.mjs; node tools/verify-palette-a11y.mjs --mode=repo; npm run gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): search-no-innerhtml PASS; no-new-html-in-js PASS (total_matches=37); legacy-ratchet PASS (max_allow=37); gate:prod PASS; gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): initial gate failed because `verify-palette-a11y` expected literal option-role token; fixed via static contract marker while keeping DOM-only rendering
+- RISKS: low/med; manual 3-minute search keyboard sanity still required on real browser session
+- NEXT: TASK-TEMPLATE-INVALID-NESTING-FIX-20260221

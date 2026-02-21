@@ -2,7 +2,7 @@
 Last updated: 2026-02-21
 
 NOW:
-- TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221: Keep palette as combobox/listbox and add keyboard-trap sweep guardrails.
+- TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221: Remove all search innerHTML writes and tighten legacy allowlist ratchet.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: dbfd6e1
+RELEASE_ID: 5bae869
 RELEASE_HISTORY:
-- dbfd6e1
-- d80ee2d
-PROD_PINNED_JS: /assets/v/dbfd6e1/main.js
-PROD_PINNED_APP: /assets/v/dbfd6e1/app.js
-PROD_PINNED_CSS: /assets/v/dbfd6e1/main.css
+- 5bae869
+- f2b2580
+PROD_PINNED_JS: /assets/v/5bae869/main.js
+PROD_PINNED_APP: /assets/v/5bae869/app.js
+PROD_PINNED_CSS: /assets/v/5bae869/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221
+- TASK-TEMPLATE-INVALID-NESTING-FIX-20260221
 
 LAST_PATCH:
-- 2026-02-21 TASK-A11Y-KEYBOARD-TRAP-SWEEP-20260221 removed palette modalization and added palette/modal parity verifiers.
+- 2026-02-21 TASK-HTML-IN-JS-MIGRATION-PHASE3-SEARCH-20260221 refactored search listbox rendering to DOM APIs, removed LEGACY-0073..0077, and tightened max_allow=37.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

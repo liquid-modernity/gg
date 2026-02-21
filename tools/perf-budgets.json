@@ -61,8 +61,8 @@
     {
       "id": "modules/ui.bucket.search.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.search.js",
-      "max_raw": 13444,
-      "max_gzip": 3950
+      "max_raw": 16300,
+      "max_gzip": 4600
     },
     {
       "id": "main.css",

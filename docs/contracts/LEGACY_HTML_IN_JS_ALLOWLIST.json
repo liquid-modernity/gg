@@ -272,42 +272,7 @@
       "pattern": "innerHTML\\s*=",
       "note": "baseline legacy",
       "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0073",
-      "file": "public/assets/latest/modules/ui.bucket.search.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0074",
-      "file": "public/assets/latest/modules/ui.bucket.search.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0075",
-      "file": "public/assets/latest/modules/ui.bucket.search.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0076",
-      "file": "public/assets/latest/modules/ui.bucket.search.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
-    },
-    {
-      "id": "LEGACY-0077",
-      "file": "public/assets/latest/modules/ui.bucket.search.js",
-      "pattern": "innerHTML\\s*=",
-      "note": "baseline legacy",
-      "introduced_by": "baseline"
     }
   ],
-  "max_allow": 42
+  "max_allow": 37
 }
