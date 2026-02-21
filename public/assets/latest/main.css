@@ -427,7 +427,8 @@ html.gg-search-focus #gg-dock [data-gg-dock-close]{
 }
 nav.gg-dock .gg-dock__search input{
   flex:1;
-  height: 34px;
+  height: var(--gg-tap-min);
+  min-height: var(--gg-tap-min);
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.18);
   padding: 0 12px;
@@ -813,8 +814,10 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
 .gg-blog-sidebar--left li.gg-tree > ul{ display: block; }
 
 .gg-tree-toggle{
-  width: 28px;
-  height: 28px;
+  width: var(--gg-tap-min);
+  height: var(--gg-tap-min);
+  min-width: var(--gg-tap-min);
+  min-height: var(--gg-tap-min);
   border-radius: 9px;
   border: 0px solid #e5e7eb;
   background: #fff;
@@ -1288,8 +1291,10 @@ a.gg-search-assist__item > small{
   appearance: none;
     border: 0px solid transparent;
     background: transparent;
-    width: 33px;
-    height: 33px;
+    width: var(--gg-tap-min);
+    height: var(--gg-tap-min);
+    min-width: var(--gg-tap-min);
+    min-height: var(--gg-tap-min);
     border-radius: 999px;
     display: grid;
     place-items: center;
@@ -2819,8 +2824,10 @@ main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--lef
 
 .gg-post__tool{
   appearance: none;
-  height: 38px;
-  width: 38px;
+  width: var(--gg-tap-min);
+  height: var(--gg-tap-min);
+  min-width: var(--gg-tap-min);
+  min-height: var(--gg-tap-min);
   padding: 0;
   position: relative;
 
@@ -3239,7 +3246,10 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
     background:#f5f7fb;
     border:1px solid #e3e8f0;
     border-radius:10px;
-    width:32px;height:32px;
+    width:var(--gg-tap-min);
+    height:var(--gg-tap-min);
+    min-width:var(--gg-tap-min);
+    min-height:var(--gg-tap-min);
     display:inline-flex;align-items:center;justify-content:center;
     cursor:pointer;
     color:#0f172a;
@@ -3909,7 +3919,8 @@ nav.gg-dock .gg-dock__perimeter-progress{
 
   .gg-lt[data-gg-module="labeltree"] .gg-lt__panelbtn{
     border:0 !important; background:transparent !important;
-    width:32px !important; height:32px !important;
+    width:var(--gg-tap-min) !important; height:var(--gg-tap-min) !important;
+    min-width:var(--gg-tap-min) !important; min-height:var(--gg-tap-min) !important;
     display:inline-flex !important; align-items:center !important; justify-content:center !important;
     border-radius:10px !important; cursor:pointer !important;
   }
@@ -3978,7 +3989,7 @@ nav.gg-dock .gg-dock__perimeter-progress{
   #gg-postinfo .gg-pi__headbtn:focus{background:#eeeeee;outline-offset:1px !important;}
   #gg-postinfo .gg-pi__ico{font-size:18px;line-height:1}
 
-  #gg-postinfo .gg-pi__toggle{border:0;background:transparent;width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  #gg-postinfo .gg-pi__toggle{border:0;background:transparent;width:var(--gg-tap-min);height:var(--gg-tap-min);min-width:var(--gg-tap-min);min-height:var(--gg-tap-min);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
   #gg-postinfo .gg-pi__toggle:hover{background:#f3f4f6}
   #gg-postinfo .gg-pi__toggle:focus{background:#eeeeee;outline-offset:1px}
 
@@ -4037,7 +4048,7 @@ nav.gg-dock .gg-dock__perimeter-progress{
 
   #gg-toc .gg-toc__toggle{
     border:0;background:transparent;
-    width:32px;height:32px;border-radius:10px;
+    width:var(--gg-tap-min);height:var(--gg-tap-min);min-width:var(--gg-tap-min);min-height:var(--gg-tap-min);border-radius:10px;
     display:inline-flex;align-items:center;justify-content:center;
     cursor:pointer;
   }
@@ -4116,7 +4127,8 @@ nav.gg-dock .gg-dock__perimeter-progress{
 
   .gg-lt[data-gg-module="labeltree"] .gg-lt__panelbtn{
     border:0 !important; background:transparent !important;
-    width:32px !important; height:32px !important;
+    width:var(--gg-tap-min) !important; height:var(--gg-tap-min) !important;
+    min-width:var(--gg-tap-min) !important; min-height:var(--gg-tap-min) !important;
     display:inline-flex !important; align-items:center !important; justify-content:center !important;
     border-radius:10px !important; cursor:pointer !important;
   }
@@ -6402,8 +6414,10 @@ ul.tx-tasklist input[type=checkbox]{margin-top:3px}
   position:absolute;
   top:10px;
   right:10px;
-  width:34px;
-  height:34px;
+  width:var(--gg-tap-min);
+  height:var(--gg-tap-min);
+  min-width:var(--gg-tap-min);
+  min-height:var(--gg-tap-min);
   border-radius:999px;
   border:1px solid var(--gg-border, rgba(15,23,42,.12));
   background:var(--gg-surface, #fff);

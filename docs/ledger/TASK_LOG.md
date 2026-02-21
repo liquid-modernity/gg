@@ -1854,3 +1854,21 @@ Last updated: 2026-02-21
 - NOTES (gotchas): one existing prod template change had removed Blog1 `numPosts`; restored minimal required setting to satisfy guardrail contract without changing unrelated behavior
 - RISKS: low/med; strict live smoke remains network-dependent in sandbox
 - NEXT: TASK-A11Y-CLICK-TARGETS-TOUCH-20260221
+
+---
+
+## 2026-02-21 — TASK-A11Y-TAP-TARGETS-20260221 — Tap target 44px contract
+- DATE: 2026-02-21
+- TASK_ID: TASK-A11Y-TAP-TARGETS-20260221
+- TITLE: Enforce 44px tap targets for interactive controls
+- MODE (DEV/PROD impact): CSS a11y sizing fix + verifier guardrail + gate wiring + checklist doc + release realignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: enforce `--gg-tap-min` usage on known undersized controls, add static verifier for tap-target contract, wire verifier into `gate:prod`, and add manual sweep checklist
+- CHANGES (files touched): public/assets/latest/main.css; tools/verify-tap-targets.mjs; tools/gate-prod.sh; docs/a11y/TAP_TARGETS_SWEEP.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-tap-targets.mjs; npm run gate:prod; bash tools/gate-release.sh; npm run zip:audit
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): tap-target verifier PASS; gate:prod PASS (offline smoke fallback in sandbox); gate-release strict live smoke FAIL in sandbox DNS
+- NOTES (gotchas): gate realigned release artifacts to new RELEASE_ID after CSS and gate wiring updates
+- RISKS: low/med; strict live smoke remains network-dependent in sandbox
+- NEXT: TASK-HTML-IN-JS-MIGRATION-PHASE4-20260221
