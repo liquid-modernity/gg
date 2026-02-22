@@ -275,6 +275,20 @@ function apply(html, url){
     }
     return frag;
   }
+  function showSwapFailToast(){
+    if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') {
+      try { GG.ui.toast.show('Failed to load, retry'); } catch (_) {}
+    }
+  }
+  function replaceWithFragment(targetEl, frag){
+    if (!targetEl || !frag) return;
+    if (typeof targetEl.replaceChildren === 'function') {
+      targetEl.replaceChildren(frag);
+      return;
+    }
+    while (targetEl.firstChild) targetEl.removeChild(targetEl.firstChild);
+    targetEl.appendChild(frag);
+  }
   function shouldReduceMotion(){
     try{
       if(GG.store&&GG.store.get){
@@ -336,33 +350,49 @@ function apply(html, url){
     }
   }
   var doSwap = function(){
-    var frag = cloneSwapContent(source);
+    var body = w.document && w.document.body;
+    var prevVisibility = (target && target.style) ? target.style.visibility : '';
+    var swapped = false;
     var mainScope = null;
-    target.textContent = '';
-    target.appendChild(frag);
-    mainScope = resolveMainScope(target);
-    clearRehydrateFlags(mainScope);
-    if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
-      try { GG.ui.layout.sync(doc, url); } catch (_) {}
+    try {
+      var frag = cloneSwapContent(source);
+      if (!frag || !frag.childNodes || !frag.childNodes.length) throw fail('swap-empty', { url: url });
+      replaceWithFragment(target, frag);
+      swapped = true;
+      mainScope = resolveMainScope(target);
+      clearRehydrateFlags(mainScope);
+      if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
+        try { GG.ui.layout.sync(doc, url); } catch (_) {}
+      }
+      if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
+        try { GG.core.surface.update(url); } catch (_) {}
+      }
+      if (GG.core && GG.core.meta && GG.core.meta.update) {
+        var payload = {};
+        if (meta.title) payload.title = meta.title;
+        if (meta.description) payload.description = meta.description;
+        if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
+        if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+      }
+      var rehydrated = rehydrateComments(target);
+      if (!rehydrated) rehydrateComments(doc);
+      if (GG.app && typeof GG.app.rehydrate === 'function') {
+        try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
+      }
+      runAfterSwapRehydrate(mainScope);
+      GG.core.render._lastUrl = url || '';
+      GG.core.render._lastAt = Date.now();
+    } catch (err) {
+      showSwapFailToast();
+      throw (err && err.code) ? err : fail('swap', { url: url, error: err && err.message ? err.message : '' });
+    } finally {
+      if (body) {
+        if (body.classList) body.classList.remove('is-loading');
+        else body.className = body.className.replace(/\bis-loading\b/g, ' ').trim();
+        if (GG.core && GG.core.state) GG.core.state.remove(body, 'loading');
+      }
+      if (!swapped && target && target.style) target.style.visibility = prevVisibility || '';
     }
-    if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
-      try { GG.core.surface.update(url); } catch (_) {}
-    }
-    if (GG.core && GG.core.meta && GG.core.meta.update) {
-      var payload = {};
-      if (meta.title) payload.title = meta.title;
-      if (meta.description) payload.description = meta.description;
-      if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
-      if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
-    }
-    var rehydrated = rehydrateComments(target);
-    if (!rehydrated) rehydrateComments(doc);
-    if (GG.app && typeof GG.app.rehydrate === 'function') {
-      try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
-    }
-    runAfterSwapRehydrate(mainScope);
-    GG.core.render._lastUrl = url || '';
-    GG.core.render._lastAt = Date.now();
   };
   var docRef = w.document;
   if (docRef && docRef.startViewTransition && !shouldReduceMotion()) {
