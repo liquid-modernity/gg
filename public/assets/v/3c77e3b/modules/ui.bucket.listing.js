@@ -2252,6 +2252,215 @@
   GG.modules.prefetch.init = GG.modules.prefetch.init || init;
 })();
 
+(function(G,w,d){
+  'use strict';
+  if(!G) return;
+  G.modules = G.modules || {};
+  G.modules.listingLoadMore = G.modules.listingLoadMore || (function(){
+    var WRAP_SEL='[data-gg-module="loadmore"]';
+    var BTN_SEL='#loadmore';
+    var LIST_SEL='#postcards';
+    var PAGER_SEL='#blog-pager .blog-pager-older-link, .blog-pager-older-link';
+
+    function qs(root, sel){ return (root || d).querySelector(sel); }
+    function toAbs(raw){ try { return new URL(String(raw || ''), w.location.href).toString(); } catch(_){ return ''; } }
+    function firstUrl(){
+      var pager = qs(d, PAGER_SEL);
+      return toAbs(pager && pager.getAttribute ? pager.getAttribute('href') : '');
+    }
+    function pickNext(scope){
+      var fromWrap = scope && scope.querySelector ? scope : null;
+      var btn = fromWrap ? qs(fromWrap, BTN_SEL) : null;
+      var fromBtn = toAbs(btn && btn.getAttribute ? btn.getAttribute('data-next') : '');
+      if (fromBtn) return fromBtn;
+      var pager = qs(fromWrap || d, PAGER_SEL);
+      return toAbs(pager && pager.getAttribute ? pager.getAttribute('href') : '');
+    }
+    function cardKey(node){
+      if (!node || !node.getAttribute) return '';
+      var key = toAbs(node.getAttribute('data-url') || '');
+      if (key) return key;
+      var id = String(node.getAttribute('data-id') || '').trim();
+      if (id) return 'id:' + id;
+      var link = qs(node, '.gg-post-card__title-link[href], .gg-post-card__thumb[href], a[href]');
+      return toAbs(link && link.getAttribute ? link.getAttribute('href') : '');
+    }
+    function currentKeys(list){
+      var out = Object.create(null);
+      var cards = list ? list.querySelectorAll('.gg-post-card') : [];
+      for (var i = 0; i < cards.length; i++) {
+        var key = cardKey(cards[i]);
+        if (key) out[key] = 1;
+      }
+      return out;
+    }
+    function sanitizeClone(node, usedIds){
+      var clone = node.cloneNode(true);
+      var all = [clone];
+      if (clone.querySelectorAll) all = all.concat(Array.prototype.slice.call(clone.querySelectorAll('*')));
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (!el || el.nodeType !== 1) continue;
+        if ((el.tagName || '').toLowerCase() === 'script') {
+          el.type = 'text/plain';
+          el.setAttribute('data-gg-inert', '1');
+        }
+        if (el.hasAttribute('id')) {
+          var id = el.getAttribute('id');
+          if (!id || usedIds[id] || d.getElementById(id)) el.removeAttribute('id');
+          else usedIds[id] = 1;
+        }
+      }
+      return clone;
+    }
+    function collectCards(doc){
+      var src = qs(doc, LIST_SEL);
+      if (!src) return [];
+      var nodes = [];
+      var children = src.children ? Array.prototype.slice.call(src.children) : [];
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].classList && children[i].classList.contains('gg-post-card')) nodes.push(children[i]);
+      }
+      if (!nodes.length) nodes = Array.prototype.slice.call(src.querySelectorAll('.gg-post-card'));
+      return nodes;
+    }
+    function appendCards(state, nodes){
+      var keys = currentKeys(state.list);
+      var usedIds = Object.create(null);
+      var added = 0;
+      for (var i = 0; i < nodes.length; i++) {
+        var clone = sanitizeClone(nodes[i], usedIds);
+        var key = cardKey(clone);
+        if (key && keys[key]) continue;
+        if (key) keys[key] = 1;
+        state.list.appendChild(clone);
+        added++;
+      }
+      return added;
+    }
+    function ensureError(state){
+      if (state.errorEl && state.errorEl.isConnected) return state.errorEl;
+      var el = qs(state.wrap, '[data-gg-loadmore-error]');
+      if (!el) {
+        el = d.createElement('p');
+        el.className = 'gg-loadmore__error';
+        el.setAttribute('data-gg-loadmore-error', '1');
+        el.setAttribute('role', 'status');
+        el.setAttribute('aria-live', 'polite');
+        el.hidden = true;
+        state.wrap.appendChild(el);
+      }
+      state.errorEl = el;
+      return el;
+    }
+    function setError(state, message){
+      var el = ensureError(state);
+      var text = String(message || '').trim();
+      el.textContent = text;
+      el.hidden = !text;
+    }
+    function setLabel(state, text){
+      if (state.labelEl) state.labelEl.textContent = text;
+    }
+    function syncButton(state){
+      if (!state.btn) return;
+      var done = !state.nextUrl;
+      state.done = done;
+      state.btn.hidden = done;
+      state.btn.disabled = state.loading || done;
+      state.btn.setAttribute('aria-disabled', (state.loading || done) ? 'true' : 'false');
+      if (state.nextUrl) state.btn.setAttribute('data-next', state.nextUrl);
+      else state.btn.removeAttribute('data-next');
+    }
+    function setLoading(state, on){
+      state.loading = !!on;
+      if (state.btn) {
+        state.btn.setAttribute('aria-busy', on ? 'true' : 'false');
+        state.btn.classList.toggle('gg-is-loading', !!on);
+      }
+      syncButton(state);
+    }
+    function resolveParser(){
+      return G.core && typeof G.core.parseHtmlDoc === 'function' ? G.core.parseHtmlDoc : null;
+    }
+    function loadNext(state){
+      if (!state || state.loading || state.done) return;
+      var next = state.nextUrl || pickNext(state.wrap) || firstUrl();
+      if (!next) {
+        state.nextUrl = '';
+        syncButton(state);
+        return;
+      }
+      state.nextUrl = next;
+      setError(state, '');
+      setLoading(state, true);
+      setLabel(state, 'Loading...');
+      fetch(next, { credentials: 'omit' })
+        .then(function(res){
+          if (!res || !res.ok) throw new Error('request-failed');
+          return res.text().then(function(html){ return { html: html, url: res.url || next }; });
+        })
+        .then(function(payload){
+          var parseDoc = resolveParser();
+          if (!parseDoc) throw new Error('parser-unavailable');
+          var doc = parseDoc(payload && payload.html, (payload && payload.url) || next);
+          if (!doc) throw new Error('parse-failed');
+          appendCards(state, collectCards(doc));
+          state.nextUrl = pickNext(doc);
+          setLabel(state, state.nextUrl ? state.baseLabel : 'No more articles');
+        })
+        .catch(function(){
+          setError(state, 'Failed to load more articles. Tap again to retry.');
+          setLabel(state, 'Retry loading');
+        })
+        .finally(function(){
+          setLoading(state, false);
+          syncButton(state);
+        });
+    }
+    function bind(root){
+      var wrap = qs(root, WRAP_SEL);
+      if (!wrap) return;
+      var list = qs(d, LIST_SEL) || qs(root, LIST_SEL);
+      if (!list) return;
+      var btn = qs(wrap, BTN_SEL);
+      if (!btn) return;
+      var state = wrap.__ggLoadMoreState || {};
+      if (wrap.dataset.ggBoundLoadMore !== '1') {
+        var freshBtn = btn.cloneNode(true);
+        if (btn.parentNode) btn.parentNode.replaceChild(freshBtn, btn);
+        btn = freshBtn;
+        wrap.dataset.ggBoundLoadMore = '1';
+      }
+      state.wrap = wrap;
+      state.list = list;
+      state.btn = btn;
+      state.labelEl = qs(btn, '.gg-loadmore__label');
+      state.baseLabel = state.labelEl ? String(state.labelEl.textContent || '').trim() : 'Load More Articles';
+      state.nextUrl = pickNext(wrap) || firstUrl();
+      state.loading = false;
+      state.done = !state.nextUrl;
+      wrap.__ggLoadMoreState = state;
+      if (!btn.__ggLoadMoreBound) {
+        btn.__ggLoadMoreBound = true;
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          loadNext(state);
+        });
+      }
+      setError(state, '');
+      setLabel(state, state.baseLabel || 'Load More Articles');
+      syncButton(state);
+    }
+    function init(root){ bind(root || d); }
+    function rehydrate(root){ bind(root || d); }
+    return { init: init, rehydrate: rehydrate };
+  })();
+  G.modules.LoadMore = G.modules.LoadMore || {};
+  G.modules.LoadMore.init = function(root){ G.modules.listingLoadMore.init(root || d); };
+  G.modules.LoadMore.rehydrate = function(root){ G.modules.listingLoadMore.rehydrate(root || d); };
+})(window.GG = window.GG || {}, window, document);
+
 (function(G,w,d){'use strict';if(!G||!d.querySelector('[data-gg-module="mixed-media"]'))return;function i(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init){G.modules.mixedMedia.init();return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.mixed.js').then(function(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init)G.modules.mixedMedia.init();}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);
 
 (function(G,w,d){'use strict';if(!G)return;function p(){var x=(w.location&&w.location.pathname)||'';return /^\/search\/label\/[^/?#]+/i.test(x);}function i(){if(!p())return;if(G.modules&&G.modules.labelChannel&&G.modules.labelChannel.init){G.modules.labelChannel.init(d);return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.channel.js').then(function(){if(G.modules&&G.modules.labelChannel&&G.modules.labelChannel.init)G.modules.labelChannel.init(d);}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);

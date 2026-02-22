@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222: Canonical `.gg-postmeta` source wired to editorial preview pipeline (listing + post contract) with gate verifier.
+- TASK-UX-LISTING-LOADMORE-FIX-20260222: Load more now uses canonical Blogger pager flow, safe append, and SPA-safe rehydrate contract.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 92a57d2
+RELEASE_ID: 876cfbd
 RELEASE_HISTORY:
-- 92a57d2
-- b869b6d
-PROD_PINNED_JS: /assets/v/92a57d2/main.js
-PROD_PINNED_APP: /assets/v/92a57d2/app.js
-PROD_PINNED_CSS: /assets/v/92a57d2/main.css
+- 876cfbd
+- 3c77e3b
+PROD_PINNED_JS: /assets/v/876cfbd/main.js
+PROD_PINNED_APP: /assets/v/876cfbd/app.js
+PROD_PINNED_CSS: /assets/v/876cfbd/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-PERF-TREND-HISTORY-20260223
+- TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222 restored postmeta extraction/render contract + verifier and gate wiring.
+- 2026-02-22 TASK-UX-LISTING-LOADMORE-FIX-20260222 fixed loadmore state machine (no double-load, retry state, pager-based next URL, SPA rehydrate).
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

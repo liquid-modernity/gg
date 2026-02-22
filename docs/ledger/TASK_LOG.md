@@ -2302,3 +2302,20 @@ Last updated: 2026-02-21
 - NOTES (gotchas): core module size increased due postmeta parser/render path; `tools/perf-budgets.json` core budget ceiling bumped minimally to keep gate deterministic
 - RISKS: low/med; post detail info panel still follows existing post-toolbar/panel behavior, manual UX sweep on real browser remains recommended
 - NEXT: TASK-PERF-TREND-HISTORY-20260223
+
+## 2026-02-22 — TASK-UX-LISTING-LOADMORE-FIX-20260222 — Restore load more articles contract
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-LISTING-LOADMORE-FIX-20260222
+- TITLE: Restore load more articles (pager-based fetch + safe append) + guardrails
+- MODE (DEV/PROD impact): runtime listing/home behavior + verifier + gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: fix loadmore reliability on `/blog` and home listing, prevent double-load/stuck state, make SPA rehydrate deterministic, add static verifier
+- ROOT_CAUSE: legacy loadmore binding in core mixed stale next-url fallback and non-deterministic bind readiness, then rehydrate path lacked explicit loadmore rebind contract
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/modules/ui.bucket.core.js; tools/verify-loadmore-contract.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*; removed public/assets/v/b869b6d/*
+- COMMANDS RUN (local): node tools/verify-loadmore-contract.mjs; npm run gate:prod
+- CI STATUS: pending on next pipeline run
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): verify-loadmore-contract PASS; gate:prod PASS (offline smoke fallback in local sandbox)
+- NOTES (gotchas): gate required release realignment build and a minimal listing budget ceiling update due deterministic bundle growth from loadmore hardening
+- RISKS: low/med; manual browser sanity on `/blog` + SPA transition still required for UX confirmation
+- NEXT: TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
