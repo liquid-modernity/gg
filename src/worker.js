@@ -195,6 +195,289 @@ const isAppJsAsset = (value) => {
 
 const BLOG_LISTING_MIN_POSTCARDS = 9;
 const BLOG_LISTING_BACKFILL_HOPS = 3;
+const BLOG_LISTING_FEED_MAX_RESULTS = 30;
+
+const toPositiveInt = (value, fallback, max = BLOG_LISTING_FEED_MAX_RESULTS) => {
+  const parsed = parseInt(String(value || ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  if (Number.isFinite(max) && max > 0 && parsed > max) return max;
+  return parsed;
+};
+
+const escapeHtml = (value) =>
+  String(value || "").replace(/[&<>"']/g, (ch) => {
+    if (ch === "&") return "&amp;";
+    if (ch === "<") return "&lt;";
+    if (ch === ">") return "&gt;";
+    if (ch === '"') return "&quot;";
+    return "&#39;";
+  });
+
+const cleanText = (value) => String(value || "").replace(/\s+/g, " ").trim();
+
+const stripHtml = (value) =>
+  cleanText(
+    String(value || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+  );
+
+const truncateText = (value, maxLen) => {
+  const input = cleanText(value);
+  if (!input) return "";
+  const limit = toPositiveInt(maxLen, 160, 1000);
+  if (input.length <= limit) return input;
+  return `${input.slice(0, limit - 3).trim()}...`;
+};
+
+const formatIsoDate = (raw) => {
+  const source = String(raw || "").trim();
+  if (!source) return "";
+  const parsed = new Date(source);
+  if (Number.isNaN(parsed.getTime())) return source.slice(0, 10);
+  return parsed.toISOString().slice(0, 10);
+};
+
+const extractFeedPostId = (entry) => {
+  const raw = cleanText(entry && entry.id && entry.id.$t ? entry.id.$t : "");
+  if (!raw) return "";
+  const m = raw.match(/post-(\d+)/i);
+  if (m && m[1]) return m[1];
+  const tail = raw.split(".").pop();
+  return cleanText(tail);
+};
+
+const pickFeedAlternateUrl = (entry) => {
+  const links = Array.isArray(entry && entry.link) ? entry.link : [];
+  for (const link of links) {
+    if (!link || link.rel !== "alternate" || !link.href) continue;
+    return cleanText(link.href);
+  }
+  return "";
+};
+
+const pickFeedThumb = (entry) => {
+  const mediaThumb = cleanText(entry && entry["media$thumbnail"] && entry["media$thumbnail"].url);
+  if (mediaThumb) return mediaThumb;
+  const mediaContent = Array.isArray(entry && entry["media$content"]) ? entry["media$content"] : [];
+  for (const item of mediaContent) {
+    const url = cleanText(item && item.url);
+    if (url) return url;
+  }
+  return "";
+};
+
+const pickFeedAuthor = (entry) => {
+  const list = Array.isArray(entry && entry.author) ? entry.author : [];
+  if (!list.length) return { name: "", url: "", avatar: "" };
+  const one = list[0] || {};
+  return {
+    name: cleanText(one && one.name && one.name.$t),
+    url: cleanText(one && one.uri && one.uri.$t),
+    avatar: cleanText(one && one["gd$image"] && one["gd$image"].src),
+  };
+};
+
+const buildFeedLabelUrl = (label, origin) => {
+  const normalized = cleanText(label);
+  if (!normalized) return "";
+  try {
+    return new URL(`/search/label/${encodeURIComponent(normalized)}`, origin).toString();
+  } catch (e) {
+    return `/search/label/${encodeURIComponent(normalized)}`;
+  }
+};
+
+const buildFeedPostCard = (entry, requestUrl) => {
+  const origin = (() => {
+    try {
+      return new URL(requestUrl).origin;
+    } catch (e) {
+      return "";
+    }
+  })();
+  const postUrl = pickFeedAlternateUrl(entry);
+  if (!postUrl) return null;
+  const title = cleanText(entry && entry.title && entry.title.$t) || "Untitled";
+  const postId = extractFeedPostId(entry);
+  const publishedIso = cleanText(entry && entry.published && entry.published.$t);
+  const publishedText = formatIsoDate(publishedIso);
+  const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t);
+  const commentsText = commentsRaw || "0";
+  const excerpt = truncateText(
+    stripHtml(
+      cleanText(entry && entry.summary && entry.summary.$t) ||
+        cleanText(entry && entry.content && entry.content.$t)
+    ),
+    220
+  );
+  const author = pickFeedAuthor(entry);
+  const thumb = pickFeedThumb(entry);
+  const categories = Array.isArray(entry && entry.category) ? entry.category : [];
+  const labels = categories
+    .map((item) => cleanText(item && item.term))
+    .filter(Boolean);
+  const label = labels.length ? labels[0] : "";
+  const labelUrl = buildFeedLabelUrl(label, origin || postUrl);
+  const safeUrl = escapeHtml(postUrl);
+  const safeTitle = escapeHtml(title);
+  const safeExcerpt = escapeHtml(excerpt);
+  const safeDateIso = escapeHtml(publishedIso);
+  const safeDateText = escapeHtml(publishedText);
+  const safeComments = escapeHtml(commentsText);
+  const safeAuthorName = escapeHtml(author.name);
+  const safeAuthorUrl = escapeHtml(author.url);
+  const safeAuthorAvatar = escapeHtml(author.avatar);
+  const safePostId = escapeHtml(postId);
+  const safeLabel = escapeHtml(label);
+  const safeLabelUrl = escapeHtml(labelUrl);
+  const safeThumb = escapeHtml(thumb);
+  const thumbHtml = safeThumb
+    ? `<a class='gg-post-card__thumb' href='${safeUrl}'><img alt='${safeTitle}' class='gg-post-card__thumb-img' decoding='async' loading='lazy' src='${safeThumb}'/></a>`
+    : `<a class='gg-post-card__thumb' href='${safeUrl}' aria-label='${safeTitle}'></a>`;
+  const labelHtml =
+    safeLabel && safeLabelUrl
+      ? `<span class='gg-post-card__label'><a href='${safeLabelUrl}' rel='tag'>${safeLabel}</a></span><span class='gg-post-card__meta-sep'>&#8226;</span>`
+      : "";
+  const cardHtml = [
+    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safeUrl}'>`,
+    thumbHtml,
+    "<div class='gg-post-card__body'>",
+    "<div class='gg-post-card__meta'>",
+    labelHtml,
+    `<span class='gg-post-card__meta-item gg-post-card__meta-item--date'><time class='gg-post-card__date' datetime='${safeDateIso}' title='${safeDateIso}'>${safeDateText}</time></span>`,
+    "<span class='gg-post-card__meta-sep'>&#8226;</span>",
+    `<span class='gg-post-card__meta-item gg-post-card__meta-item--comments'>${safeComments}</span>`,
+    "</div>",
+    `<h2 class='gg-post-card__title'><a class='gg-post-card__title-link' href='${safeUrl}'>${safeTitle}</a></h2>`,
+    `<p class='gg-post-card__excerpt'>${safeExcerpt}</p>`,
+    "</div>",
+    "</article>",
+  ].join("");
+  return {
+    key: postId ? `id:${postId}` : `data-url:${postUrl}`,
+    html: cardHtml,
+  };
+};
+
+const buildListingFeedUrl = (requestUrl, targetCount) => {
+  const req = new URL(requestUrl);
+  const feed = new URL("/feeds/posts/default", req.origin);
+  const maxResults = toPositiveInt(
+    req.searchParams.get("max-results"),
+    toPositiveInt(targetCount, BLOG_LISTING_MIN_POSTCARDS),
+    BLOG_LISTING_FEED_MAX_RESULTS
+  );
+  feed.searchParams.set("alt", "json");
+  feed.searchParams.set("max-results", String(maxResults));
+  const updatedMax = cleanText(req.searchParams.get("updated-max"));
+  if (updatedMax) feed.searchParams.set("updated-max", updatedMax);
+  const startIndex = toPositiveInt(req.searchParams.get("start-index"), 0, 1000000);
+  if (startIndex > 1) feed.searchParams.set("start-index", String(startIndex));
+  return { url: feed.toString(), maxResults };
+};
+
+const mapFeedNextToSearchUrl = (feed, requestUrl, fallbackMaxResults) => {
+  const req = new URL(requestUrl);
+  const links = Array.isArray(feed && feed.link) ? feed.link : [];
+  for (const link of links) {
+    if (!link || link.rel !== "next" || !link.href) continue;
+    let next;
+    try {
+      next = new URL(link.href, req.origin);
+    } catch (e) {
+      continue;
+    }
+    const out = new URL("/search", req.origin);
+    const updatedMax = cleanText(next.searchParams.get("updated-max"));
+    const startIndex = cleanText(next.searchParams.get("start-index"));
+    const maxResults = cleanText(next.searchParams.get("max-results")) || String(fallbackMaxResults);
+    if (updatedMax) out.searchParams.set("updated-max", updatedMax);
+    if (startIndex) out.searchParams.set("start-index", startIndex);
+    if (maxResults) out.searchParams.set("max-results", maxResults);
+    if (!out.searchParams.has("updated-max") && !out.searchParams.has("start-index")) {
+      continue;
+    }
+    return out.toString();
+  }
+  return "";
+};
+
+const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
+  const needed = toPositiveInt(neededCount, BLOG_LISTING_MIN_POSTCARDS, BLOG_LISTING_FEED_MAX_RESULTS);
+  if (needed <= 0) return { cards: [], nextUrl: "" };
+  const seen = seenKeys || new Set();
+  const { url: feedUrl, maxResults } = buildListingFeedUrl(requestUrl, needed);
+  let feedRes;
+  try {
+    feedRes = await fetch(feedUrl, {
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+  } catch (e) {
+    return { cards: [], nextUrl: "" };
+  }
+  if (!feedRes || !feedRes.ok) {
+    return { cards: [], nextUrl: "" };
+  }
+  let json;
+  try {
+    json = await feedRes.json();
+  } catch (e) {
+    return { cards: [], nextUrl: "" };
+  }
+  const feed = json && json.feed ? json.feed : null;
+  const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
+  const cards = [];
+  for (const entry of entries) {
+    const card = buildFeedPostCard(entry, requestUrl);
+    if (!card || !card.html) continue;
+    if (seen.has(card.key)) continue;
+    seen.add(card.key);
+    cards.push(card);
+    if (cards.length >= needed) break;
+  }
+  return {
+    cards,
+    nextUrl: mapFeedNextToSearchUrl(feed, requestUrl, maxResults),
+  };
+};
+
+const buildLoadMoreWrapHtml = (nextUrl) => {
+  const normalized = cleanText(nextUrl);
+  if (!normalized) return "";
+  const safeNext = escapeHtml(normalized);
+  return [
+    "<div class='gg-loadmore-wrap' data-gg-module='loadmore'>",
+    `<button class='gg-loadmore' data-next='${safeNext}' id='loadmore' type='button'>`,
+    "<span class='gg-loadmore__label'>Load More Articles</span>",
+    "<span aria-hidden='true' class='gg-loadmore__spinner'></span>",
+    "</button>",
+    "</div>",
+  ].join("");
+};
+
+const patchLoadMoreNextUrl = (html, nextUrl) => {
+  const source = String(html || "");
+  const normalized = cleanText(nextUrl);
+  if (!source || !normalized) return source;
+  const buttonRe = /<button\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-loadmore\b[^'"]*\1[^>]*>/i;
+  const match = buttonRe.exec(source);
+  if (!match) return source;
+  const tag = match[0];
+  const safeNext = escapeHtml(normalized);
+  let patched = tag;
+  if (/\bdata-next\s*=/.test(tag)) {
+    patched = tag.replace(/\bdata-next\s*=\s*(['"])[^'"]*\1/i, `data-next='${safeNext}'`);
+  } else {
+    patched = tag.replace(/>$/, ` data-next='${safeNext}'>`);
+  }
+  return `${source.slice(0, match.index)}${patched}${source.slice(match.index + tag.length)}`;
+};
 
 const responseFromHtml = (response, html) => {
   const headers = new Headers(response.headers);
@@ -384,7 +667,15 @@ const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount
   return out;
 };
 
-const ensureBlogListingPostcards = async (response, requestUrl) => {
+const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
+  const options = opts || {};
+  const targetCount = toPositiveInt(
+    options.targetCount,
+    BLOG_LISTING_MIN_POSTCARDS,
+    BLOG_LISTING_FEED_MAX_RESULTS
+  );
+  const allowCreateContainer = options.allowCreateContainer === true;
+  const useHtmlBackfill = options.useHtmlBackfill !== false;
   let html = "";
   try {
     html = await response.text();
@@ -397,22 +688,73 @@ const ensureBlogListingPostcards = async (response, requestUrl) => {
 
   const range = findElementByIdRange(html, "div", "postcards");
   if (!range) {
-    return responseFromHtml(response, html);
+    if (!allowCreateContainer) {
+      return responseFromHtml(response, html);
+    }
+    const feedFill = await fetchFeedCards(requestUrl, targetCount, new Set());
+    if (!feedFill.cards.length) {
+      return responseFromHtml(response, html);
+    }
+    const cardsHtml = feedFill.cards.map((card) => card.html).join("");
+    const listingHtml = `<div class='gg-stack' id='postcards'>${cardsHtml}</div>${buildLoadMoreWrapHtml(
+      feedFill.nextUrl
+    )}`;
+    const blogRange = findElementByIdRange(html, "div", "blog");
+    if (blogRange) {
+      html = `${html.slice(0, blogRange.innerStart)}${listingHtml}${html.slice(blogRange.innerStart)}`;
+    } else {
+      const mainRange = findElementByIdRange(html, "main", "gg-main");
+      if (mainRange) {
+        html = `${html.slice(0, mainRange.innerStart)}${listingHtml}${html.slice(mainRange.innerStart)}`;
+      } else {
+        html = `${listingHtml}${html}`;
+      }
+    }
+    const out = responseFromHtml(response, html);
+    out.headers.set("x-gg-ssr-postcards", String(feedFill.cards.length));
+    out.headers.set("x-gg-ssr-backfill", String(feedFill.cards.length));
+    if (feedFill.nextUrl) {
+      out.headers.set("x-gg-ssr-next", feedFill.nextUrl);
+    }
+    return out;
   }
 
   const existing = extractPostCards(range.innerHtml);
-  if (existing.length >= BLOG_LISTING_MIN_POSTCARDS) {
+  if (existing.length >= targetCount) {
     const out = responseFromHtml(response, html);
     out.headers.set("x-gg-ssr-postcards", String(existing.length));
     return out;
   }
 
-  const needed = BLOG_LISTING_MIN_POSTCARDS - existing.length;
   const seen = new Set(existing.map((card) => card.key));
-  const extras = await collectBackfillPostCards(html, requestUrl, seen, needed);
+  const extras = [];
+  let loadMoreNext = "";
+  if (useHtmlBackfill) {
+    const htmlNeeded = targetCount - existing.length;
+    const htmlExtras = await collectBackfillPostCards(html, requestUrl, seen, htmlNeeded);
+    for (const extra of htmlExtras) {
+      if (!extra || !extra.html) continue;
+      extras.push(extra);
+    }
+  }
+
+  const remaining = targetCount - (existing.length + extras.length);
+  if (remaining > 0) {
+    const feedFill = await fetchFeedCards(requestUrl, remaining, seen);
+    if (feedFill.cards.length) {
+      extras.push(...feedFill.cards);
+    }
+    if (feedFill.nextUrl) {
+      loadMoreNext = feedFill.nextUrl;
+    }
+  }
+
   if (extras.length > 0) {
     const extraHtml = extras.map((card) => card.html).join("");
     html = `${html.slice(0, range.innerEnd)}${extraHtml}${html.slice(range.innerEnd)}`;
+  }
+  if (loadMoreNext) {
+    html = patchLoadMoreNextUrl(html, loadMoreNext);
   }
 
   const out = responseFromHtml(response, html);
@@ -420,7 +762,44 @@ const ensureBlogListingPostcards = async (response, requestUrl) => {
   if (extras.length > 0) {
     out.headers.set("x-gg-ssr-backfill", String(extras.length));
   }
+  if (loadMoreNext) {
+    out.headers.set("x-gg-ssr-next", loadMoreNext);
+  }
   return out;
+};
+
+const shouldFallbackListingPagination = (url) => {
+  if (!url) return false;
+  if (url.pathname !== "/search") return false;
+  return (
+    url.searchParams.has("updated-max") ||
+    url.searchParams.has("start-index") ||
+    url.searchParams.has("max-results")
+  );
+};
+
+const listingTargetCountFromUrl = (url, fallback = BLOG_LISTING_MIN_POSTCARDS) => {
+  if (!url) return fallback;
+  return toPositiveInt(url.searchParams.get("max-results"), fallback, BLOG_LISTING_FEED_MAX_RESULTS);
+};
+
+const shouldSkipListingFallback = (html) => {
+  const source = String(html || "");
+  if (!source) return true;
+  return !/id\s*=\s*['"]blog['"]/i.test(source);
+};
+
+const ensureListingResponse = async (response, requestUrl, opts = {}) => {
+  let html = "";
+  try {
+    html = await response.clone().text();
+  } catch (e) {
+    return ensureBlogListingPostcards(response, requestUrl, opts);
+  }
+  if (shouldSkipListingFallback(html)) {
+    return responseFromHtml(response, html);
+  }
+  return ensureBlogListingPostcards(response, requestUrl, opts);
 };
 
 const CSP_REPORT_BUCKET = new Map();
@@ -505,8 +884,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "a05318a";
-    const TEMPLATE_ALLOWED_RELEASES = ["a05318a","698fccf"];
+    const WORKER_VERSION = "b7907fb";
+    const TEMPLATE_ALLOWED_RELEASES = ["b7907fb","f3661f1"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -790,6 +1169,7 @@ export default {
       let originRequest = request;
       let originUrl = new URL(request.url);
       let forceListing = false;
+      const paginationListingFallback = shouldFallbackListingPagination(url);
 
       if (pathname === "/blog" || pathname === "/blog/") {
         originUrl.pathname = "/";
@@ -1134,8 +1514,14 @@ export default {
         }
         const transformed = rewritten.transform(originRes);
         let htmlResponse = transformed;
-        if (forceListing && request.method !== "HEAD") {
-          htmlResponse = await ensureBlogListingPostcards(transformed, request.url);
+        if (request.method !== "HEAD" && (forceListing || paginationListingFallback)) {
+          htmlResponse = await ensureListingResponse(transformed, request.url, {
+            targetCount: forceListing
+              ? BLOG_LISTING_MIN_POSTCARDS
+              : listingTargetCountFromUrl(url, BLOG_LISTING_MIN_POSTCARDS),
+            allowCreateContainer: paginationListingFallback,
+            useHtmlBackfill: forceListing,
+          });
         }
         let out = stamp(htmlResponse, { cspReportEnabled });
         if (templateMismatch) {
@@ -1162,7 +1548,7 @@ export default {
           out.headers.set("x-gg-template-contract", "1");
           out.headers.set("x-gg-template-contract-reason", templateContractReason);
         }
-        if (forceListing) {
+        if (forceListing || paginationListingFallback) {
           out.headers.set("Cache-Control", "no-store, max-age=0");
           out.headers.set("Pragma", "no-cache");
           out.headers.set("Expires", "0");
