@@ -1620,6 +1620,7 @@ a.gg-search-assist__item > small{
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
+#gg-left-sidebar-list{min-height:0;overflow:auto;}
 #gg-left-sidebar-page [data-gg-scroll="pages"]{
   flex: 1 1 auto;
   min-height: 0;
