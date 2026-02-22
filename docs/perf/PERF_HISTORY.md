@@ -6,10 +6,10 @@ Last updated: 2026-02-22
 - Main branch stays clean; history data is not committed to `main`.
 
 ## Dashboard Pointers
-- Perf Dashboard (GitHub Pages): `DASHBOARD_URL: XXX`
+- Perf Dashboard (GitHub Pages): `https://liquid-modernity.github.io/gg/perf/index.html`
 - Perf History Branch: `perf-history`
 - Latest snapshot JSON: `perf/latest.json` (inside `perf-history` branch)
-- Note: replace `XXX` with the published Pages URL after enabling Pages in repo settings.
+- Note: this URL is the stable public dashboard endpoint.
 
 ## Branch Contents (`perf-history`)
 - `perf/history.ndjson`
@@ -44,8 +44,7 @@ Last updated: 2026-02-22
 3. Branch: `perf-history`.
 4. Folder: `/(root)`.
 5. Save and wait for publish status.
-6. Replace `DASHBOARD_URL: XXX` above with the exact published URL.
-7. Dashboard file is served from `perf/index.html`:
+6. Dashboard file is served from `perf/index.html`:
    - `https://<owner>.github.io/<repo>/perf/index.html`
 
 ## Bootstrap Branch (Automatic)

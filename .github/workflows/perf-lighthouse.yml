@@ -161,19 +161,15 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          DASHBOARD_URL="${PERF_DASHBOARD_URL:-XXX}"
+          DASHBOARD_URL="${PERF_DASHBOARD_URL:-https://liquid-modernity.github.io/gg/perf/index.html}"
           REPO_FULL="${GITHUB_REPOSITORY:-owner/repo}"
           OWNER="${REPO_FULL%%/*}"
           REPO="${REPO_FULL##*/}"
           {
             echo "### Perf Dashboard Pointers"
-            if [ "${DASHBOARD_URL}" = "XXX" ]; then
-              echo "- Perf dashboard: XXX"
-              echo "- Set GitHub Pages source to branch \`perf-history\` folder \`/(root)\`."
-              echo "- Expected project URL: https://${OWNER}.github.io/${REPO}/perf/index.html"
-            else
-              echo "- Perf dashboard: ${DASHBOARD_URL}"
-            fi
+            echo "- Perf dashboard: ${DASHBOARD_URL}"
+            echo "- GitHub Pages source: branch \`perf-history\`, folder \`/(root)\`."
+            echo "- Fallback default URL: https://${OWNER}.github.io/${REPO}/perf/index.html"
             echo "- Latest snapshot: perf-history/perf/latest.json"
             echo "- History log: perf-history/perf/history.ndjson"
           } >> "${GITHUB_STEP_SUMMARY}"
