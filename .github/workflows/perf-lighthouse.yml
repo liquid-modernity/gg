@@ -75,20 +75,35 @@ jobs:
       - name: Build LHCI trend artifact
         run: node tools/perf/lhci-trend.mjs
 
+      - name: Stage LHCI artifacts
+        run: |
+          set -euo pipefail
+          rm -rf lighthouseci-artifacts
+          mkdir -p lighthouseci-artifacts
+          if [ ! -d .lighthouseci ]; then
+            echo "ERROR: missing .lighthouseci output directory"
+            ls -la
+            exit 1
+          fi
+          cp -R .lighthouseci/. lighthouseci-artifacts/
+          if [ ! -f lighthouseci-artifacts/trend.json ]; then
+            echo "ERROR: missing lighthouseci-artifacts/trend.json"
+            ls -la lighthouseci-artifacts
+            exit 1
+          fi
+
       - name: Upload Lighthouse artifacts
         uses: actions/upload-artifact@v4
         with:
           name: lighthouseci-${{ github.run_id }}
-          path: .lighthouseci
-          include-hidden-files: true
+          path: lighthouseci-artifacts
           if-no-files-found: error
 
       - name: Upload Lighthouse trend JSON
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-trend-${{ github.run_id }}
-          path: .lighthouseci/trend.json
-          include-hidden-files: true
+          path: lighthouseci-artifacts/trend.json
           if-no-files-found: error
 
       - name: Prepare perf-history worktree
@@ -114,7 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           HIST_DIR="${RUNNER_TEMP}/perf-history"
-          cp .lighthouseci/trend.json "${HIST_DIR}/.trend.json"
+          cp lighthouseci-artifacts/trend.json "${HIST_DIR}/.trend.json"
           before_lines="$(wc -l < "${HIST_DIR}/perf/history.ndjson" | tr -d ' ')"
           node tools/perf/perf-history-append.mjs --trend "${HIST_DIR}/.trend.json" --out "${HIST_DIR}/.rec.json"
           cat "${HIST_DIR}/.rec.json" >> "${HIST_DIR}/perf/history.ndjson"

@@ -33,19 +33,15 @@ if (fs.existsSync(workflowAbs)) {
   if (!/lighthouse\/lighthouserc\.ci\.js/i.test(src)) fail("workflow missing LHCI configPath usage");
   if (!/tools\/perf\/lhci-summary\.mjs/i.test(src)) fail("workflow missing summary step");
   if (!/tools\/perf\/lhci-trend\.mjs/i.test(src)) fail("workflow missing trend step");
+  if (!/name:\s*Stage LHCI artifacts/i.test(src)) fail("workflow missing artifact staging step");
+  if (!/lighthouseci-artifacts/i.test(src)) fail("workflow missing lighthouseci-artifacts staging path");
   const hasArtifactUpload = /actions\/upload-artifact@/i.test(src);
   const hasTreoshUploadArtifacts = /uploadArtifacts\s*:\s*true/i.test(src);
   if (!hasArtifactUpload && !hasTreoshUploadArtifacts) {
     fail("workflow must upload Lighthouse artifacts (upload-artifact or treosh uploadArtifacts)");
   }
-  if (!/\.lighthouseci\/trend\.json/i.test(src)) {
-    fail("workflow must upload .lighthouseci/trend.json artifact");
-  }
-  if (!/name:\s*Upload Lighthouse artifacts[\s\S]*?include-hidden-files:\s*true/i.test(src)) {
-    fail("workflow must set include-hidden-files: true for Upload Lighthouse artifacts");
-  }
-  if (!/name:\s*Upload Lighthouse trend JSON[\s\S]*?include-hidden-files:\s*true/i.test(src)) {
-    fail("workflow must set include-hidden-files: true for Upload Lighthouse trend JSON");
+  if (!/lighthouseci-artifacts\/trend\.json/i.test(src)) {
+    fail("workflow must upload lighthouseci-artifacts/trend.json artifact");
   }
 }
 
