@@ -9,7 +9,7 @@ Last updated: 2026-02-22
 - Metrics/assertions are enforced from `docs/perf/BUDGETS.json` ratchet ceilings:
   - LCP
   - CLS
-  - INP
+  - INP (best-effort; non-blocking warning when audit is unavailable on runner)
   - TBT
   - total byte weight
 

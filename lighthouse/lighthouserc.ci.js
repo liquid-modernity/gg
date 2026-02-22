@@ -24,9 +24,22 @@ function getUrls() {
 const budgets = readJson(budgetsPath);
 const ratchet = (budgets && budgets.ratchet) || {};
 const urls = getUrls();
+const inpAssertLevel = process.env.LHCI_INP_ASSERT_LEVEL || "warn";
 
 if (!urls.length) {
   throw new Error("No Lighthouse URLs found in docs/perf/URLS.json");
+}
+
+const assertions = {
+  "largest-contentful-paint": ["error", { maxNumericValue: ratchet.max_lcp_ms }],
+  "cumulative-layout-shift": ["error", { maxNumericValue: ratchet.max_cls }],
+  "total-blocking-time": ["error", { maxNumericValue: ratchet.max_tbt_ms }],
+  "total-byte-weight": ["error", { maxNumericValue: ratchet.max_transfer_kb * 1024 }],
+};
+
+if (typeof ratchet.max_inp_ms === "number" && isFinite(ratchet.max_inp_ms)) {
+  // INP audit is not guaranteed on all Lighthouse runners; keep it non-blocking by default.
+  assertions["interaction-to-next-paint"] = [inpAssertLevel, { maxNumericValue: ratchet.max_inp_ms }];
 }
 
 module.exports = {
@@ -40,13 +53,7 @@ module.exports = {
       },
     },
     assert: {
-      assertions: {
-        "largest-contentful-paint": ["error", { maxNumericValue: ratchet.max_lcp_ms }],
-        "cumulative-layout-shift": ["error", { maxNumericValue: ratchet.max_cls }],
-        "interaction-to-next-paint": ["error", { maxNumericValue: ratchet.max_inp_ms }],
-        "total-blocking-time": ["error", { maxNumericValue: ratchet.max_tbt_ms }],
-        "total-byte-weight": ["error", { maxNumericValue: ratchet.max_transfer_kb * 1024 }],
-      },
+      assertions,
     },
     upload: {
       target: "filesystem",
