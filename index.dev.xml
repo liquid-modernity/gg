@@ -1041,7 +1041,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
       <b:else/>
@@ -1073,10 +1073,12 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </span>
 </b:includable>
         <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
 </b:includable>
         <b:includable id='postReactions'>
   <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
@@ -1790,7 +1792,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
       <b:else/>
@@ -1810,9 +1812,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' expr:data-author-url='data:post.author.profileUrl ?: &quot;&quot;' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' data-author-url='' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
 <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
   <b:attr name='data-author-avatar' expr:value='data:post.author.authorPhoto.url'/>
+</b:if>
+<b:if cond='data:post.author and data:post.author.profileUrl'>
+  <b:attr name='data-author-url' expr:value='data:post.author.profileUrl'/>
 </b:if>
 <b:if cond='data:post.labels'>
   <div class='gg-post-card__labels' hidden='hidden'>
@@ -2298,7 +2303,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </div>
 </b:includable>
               <b:includable id='postFooterAuthorProfile' var='post'>
-  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+  <b:if cond='data:post.author and data:post.author.aboutMe and data:view.isPost'>
     <div class='author-profile'>
       <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
         <img class='author-image' decoding='async' expr:alt='data:post.author.name + &quot; photo&quot;' expr:src='data:post.author.authorPhoto.url' height='50' loading='lazy' width='50'/>
@@ -2332,10 +2337,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </span>
 </b:includable>
               <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
 </b:includable>
               <b:includable id='postMeta' var='post'>
   <b:include data='post' name='postMetadataJSON'/>
@@ -3032,7 +3039,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
       <b:else/>
@@ -3064,10 +3071,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </span>
 </b:includable>
           <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
 </b:includable>
           <b:includable id='postReactions'>
   <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->

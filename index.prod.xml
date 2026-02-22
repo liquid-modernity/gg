@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='b3acaf3' name='gg-release'/>
+    <meta content='e49c3fb' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/b3acaf3/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/b3acaf3/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/e49c3fb/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/e49c3fb/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='b3acaf3' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='e49c3fb' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -1201,7 +1201,7 @@ text-align: center;
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
       <b:else/>
@@ -1233,10 +1233,12 @@ text-align: center;
   </span>
 </b:includable>
         <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
 </b:includable>
         <b:includable id='postReactions'>
   <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
@@ -2133,7 +2135,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
       <b:else/>
@@ -2153,9 +2155,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' expr:data-author-url='data:post.author.profileUrl ?: &quot;&quot;' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' data-author-url='' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
 <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
   <b:attr name='data-author-avatar' expr:value='data:post.author.authorPhoto.url'/>
+</b:if>
+<b:if cond='data:post.author and data:post.author.profileUrl'>
+  <b:attr name='data-author-url' expr:value='data:post.author.profileUrl'/>
 </b:if>
 <b:if cond='data:post.labels'>
   <div class='gg-post-card__labels' hidden='hidden'>
@@ -2641,7 +2646,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </div>
 </b:includable>
               <b:includable id='postFooterAuthorProfile' var='post'>
-  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+  <b:if cond='data:post.author and data:post.author.aboutMe and data:view.isPost'>
     <div class='author-profile'>
       <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
         <img class='author-image' decoding='async' expr:alt='data:post.author.name + &quot; photo&quot;' expr:src='data:post.author.authorPhoto.url' height='50' loading='lazy' width='50'/>
@@ -2675,10 +2680,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </span>
 </b:includable>
               <b:includable id='postLocation'>
-  <span class='byline post-location'>
-    <data:byline.label/>
-    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-  </span>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
 </b:includable>
               <b:includable id='postMeta' var='post'>
   <b:include data='post' name='postMetadataJSON'/>
@@ -3924,7 +3931,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/b3acaf3/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/e49c3fb/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

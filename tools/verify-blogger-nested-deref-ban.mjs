@@ -28,6 +28,10 @@ const checks = [
     re: /authorPhoto\.url\s*\?:/gi,
   },
   {
+    label: "unsafe author profileUrl nested deref fallback",
+    re: /author\.profileUrl\s*\?:/gi,
+  },
+  {
     label: "unsafe lastUpdated nested deref fallback",
     re: /lastUpdated\.iso8601\s*\?:/gi,
   },
@@ -39,7 +43,22 @@ const checks = [
     label: "unsafe featuredImage isResizable condition",
     re: /cond\s*=\s*(['"])data:post\.featuredImage\.isResizable\1/gi,
   },
+  {
+    label: "unsafe author profileUrl condition",
+    re: /cond\s*=\s*(['"])data:post\.author\.profileUrl\1/gi,
+  },
+  {
+    label: "unsafe author aboutMe condition missing author guard",
+    re: /cond\s*=\s*(['"])data:post\.author\.aboutMe\s+and\s+data:view\.isPost\1/gi,
+  },
 ];
+
+function hasNearbyLocationGuard(source, index) {
+  const start = Math.max(0, index - 320);
+  const end = Math.min(source.length, index + 320);
+  const window = source.slice(start, end);
+  return /cond\s*=\s*(['"])[\s\S]{0,260}?data:post\.location\s+and[\s\S]{0,260}?data:post\.location\.mapsUrl[\s\S]{0,260}?\1/i.test(window);
+}
 
 for (const rel of files) {
   const abs = path.join(root, rel);
@@ -58,6 +77,16 @@ for (const rel of files) {
         `${rel}:${lineNumberAt(source, index)} ${check.label} | ${snippetAt(source, index)}`
       );
     }
+  }
+
+  const locationUse = /data:post\.location\.mapsUrl/gi;
+  let locationMatch;
+  while ((locationMatch = locationUse.exec(source))) {
+    const index = locationMatch.index;
+    if (hasNearbyLocationGuard(source, index)) continue;
+    failures.push(
+      `${rel}:${lineNumberAt(source, index)} unsafe location.mapsUrl usage without nearby location guard | ${snippetAt(source, index)}`
+    );
   }
 }
 
