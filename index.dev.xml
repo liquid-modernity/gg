@@ -1845,7 +1845,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div class='gg-post-card__body'>
       <div class='gg-post-card__meta'>
        <span class='gg-post-card__label'>
-  <b:if cond='data:post.labels'>
+  <b:if cond='data:post.labels and data:post.labels.first'>
     <a expr:href='data:post.labels.first.url' rel='tag'>
       <data:post.labels.first.name/>
     </a>
@@ -2003,7 +2003,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </a>
 
       <!-- LABEL PERTAMA (opsional) -->
-      <b:if cond='data:post.labels'>
+      <b:if cond='data:post.labels and data:post.labels[0]'>
         <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
         <a class='gg-post__breadcrumbs-link' expr:href='data:post.labels[0].url'>
           <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
@@ -2193,7 +2193,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
         <!-- LABELS -->
         <p class='gg-post__label'>
-        <b:if cond='data:post.labels'>
+        <b:if cond='data:post.labels and data:post.labels.first'>
           <a class='gg-post__label-link' expr:href='data:post.labels.first.url'>
             <data:post.labels.first.name/>
           </a>

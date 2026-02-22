@@ -217,6 +217,20 @@ listing_canonical_check() {
   echo "PASS: listing canonical/og/twitter clean ${canon}"
 }
 
+blog1_gadget_crash_check() {
+  local url html
+  url="${BASE}/blog?x=$(date +%s)"
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+    die "blog crash check fetch failed (${url})"
+  fi
+  if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
+    echo "DEBUG: Blog1 crash marker detected (${url})"
+    grep -Fin -C 2 "Failed to render gadget 'Blog1'" <<<"${html}" | head -n 20 || true
+    die "blog contains Blog1 gadget crash marker"
+  fi
+  echo "PASS: blog gadget crash marker absent"
+}
+
 extract_schema_json() {
   node -e '
     const html = require("fs").readFileSync(0,"utf8");
@@ -321,18 +335,54 @@ schema_check_post() {
 
 post_detail_contract_check() {
   local marker_re="<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b"
+  local strict_post_re="class=['\"][^'\"]*\\bgg-post\\b[^'\"]*['\"]"
+  local crash_marker="Failed to render gadget 'Blog1'"
   local primary_raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
+  local sentinel_raw sentinel_url sentinel_html sentinel_reason
   local blog_html blog_candidate
   local raw url html reason
-  local -a raw_candidates=()
-  local -a failures=()
+  local -a diag_candidates=()
+  local -a diag_failures=()
   local seen
 
-  raw_candidates+=("${primary_raw}")
-  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
-    raw_candidates+=("${SMOKE_POST_URL}")
+  sentinel_raw="$(printf '%s' "${primary_raw}" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+  if [[ -z "${sentinel_raw}" ]]; then
+    die "post detail sentinel path is empty"
+  fi
+  if [[ "${sentinel_raw}" == http://* || "${sentinel_raw}" == https://* ]]; then
+    sentinel_url="${sentinel_raw}"
+  else
+    sentinel_url="${BASE%/}/${sentinel_raw#/}"
   fi
 
+  sentinel_html=""
+  sentinel_reason=""
+  if ! sentinel_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${sentinel_url}" | tr -d '\r')"; then
+    sentinel_reason="fetch failed"
+  elif grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
+    sentinel_reason="contains Blog1 gadget crash marker"
+  elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
+    sentinel_reason="missing strict gg-post marker"
+  fi
+
+  if [[ -z "${sentinel_reason}" ]]; then
+    echo "PASS: post detail contract (${sentinel_url})"
+    return 0
+  fi
+
+  if [[ -n "${sentinel_html}" ]]; then
+    if grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
+      echo "DEBUG: sentinel Blog1 crash marker (${sentinel_url})"
+      grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
+    elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
+      echo "DEBUG: sentinel missing strict gg-post marker (${sentinel_url})"
+      grep -Ein -C 1 "gg-post|gg-post__title|gg-post__content|error_page|gg-error__title|There was an error processing the markup" <<<"${sentinel_html}" | head -n 40 || true
+    fi
+  fi
+
+  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
+    diag_candidates+=("${SMOKE_POST_URL}")
+  fi
   if blog_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${BASE}/blog?x=$(date +%s)" | tr -d '\r' 2>/dev/null)"; then
     blog_candidate="$(
       printf '%s' "${blog_html}" | node -e '
@@ -356,12 +406,12 @@ post_detail_contract_check() {
       '
     )"
     if [[ -n "${blog_candidate}" ]]; then
-      raw_candidates+=("${blog_candidate}")
+      diag_candidates+=("${blog_candidate}")
     fi
   fi
 
-  seen=$'\n'
-  for raw in "${raw_candidates[@]}"; do
+  seen=$'\n'"${sentinel_raw}"$'\n'
+  for raw in "${diag_candidates[@]}"; do
     raw="$(printf '%s' "${raw}" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     if [[ -z "${raw}" ]]; then
       continue
@@ -378,31 +428,31 @@ post_detail_contract_check() {
     fi
 
     if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-      failures+=("fetch failed (${url})")
+      diag_failures+=("fetch failed (${url})")
       continue
     fi
 
-    if grep -Eqi "${marker_re}" <<<"${html}"; then
-      echo "PASS: post detail contract (${url})"
-      return 0
-    fi
-
     reason="missing gg-post markers"
-    if grep -Fqi "There was an error processing the markup" <<<"${html}"; then
+    if grep -Fqi "${crash_marker}" <<<"${html}"; then
+      reason="contains Blog1 gadget crash marker"
+    elif grep -Fqi "There was an error processing the markup" <<<"${html}"; then
       reason="upstream markup error"
     elif grep -Eqi "data-gg-page=['\"]error['\"]|data:blog.pageType == \"error_page\"|gg-error__title" <<<"${html}"; then
       reason="error-page surface"
+    elif grep -Eqi "${marker_re}" <<<"${html}"; then
+      reason="has broad gg-post markers"
     fi
-    failures+=("${reason} (${url})")
+    diag_failures+=("${reason} (${url})")
   done
 
-  if (( ${#failures[@]} > 0 )); then
-    echo "DEBUG: post detail contract failures"
-    for reason in "${failures[@]}"; do
+  if (( ${#diag_failures[@]} > 0 )); then
+    echo "DEBUG: post detail supplemental diagnostics"
+    for reason in "${diag_failures[@]}"; do
       echo "- ${reason}"
     done
   fi
-  die "post detail contract missing gg-post markers"
+
+  die "post detail contract failed for sentinel (${sentinel_url}): ${sentinel_reason}"
 }
 
 security_headers_check() {
@@ -594,6 +644,7 @@ redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
 redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
 redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
 listing_canonical_check "${BASE}/blog"
+blog1_gadget_crash_check
 schema_check_home
 schema_check_listing
 post_detail_contract_check
@@ -674,6 +725,9 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       fi
       if ! grep -Eqi 'data-gg-surface=["'"'"']listing["'"'"']' <<<"${html}"; then
         die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
+      fi
+      if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} contains Blog1 gadget crash marker"
       fi
       gg_post_card_class_count="$(
         printf '%s' "${html}" \
