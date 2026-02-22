@@ -281,18 +281,51 @@ const extractPostCards = (fragment) => {
   return out;
 };
 
-const extractLoadMoreUrl = (html, baseUrl) => {
+const normalizeListingNextUrl = (rawUrl, baseUrl) => {
+  if (!rawUrl || !baseUrl) return "";
+  try {
+    const base = new URL(baseUrl);
+    const next = new URL(String(rawUrl), base.href);
+    if (next.origin !== base.origin) {
+      return new URL(`${next.pathname}${next.search}${next.hash}`, base.origin).toString();
+    }
+    return next.toString();
+  } catch (e) {
+    return "";
+  }
+};
+
+const hasClassToken = (className, token) => {
+  if (!className || !token) return false;
+  return String(className)
+    .split(/\s+/)
+    .some((part) => String(part || "").trim() === token);
+};
+
+const extractListingNextUrl = (html, baseUrl) => {
   const buttonRe = /<button\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-loadmore\b[^'"]*\1[^>]*>/gi;
   let match;
   while ((match = buttonRe.exec(String(html || "")))) {
     const tag = match[0];
     const dataNext = extractAttrValue(tag, "data-next");
     if (!dataNext) continue;
-    try {
-      return new URL(dataNext, baseUrl).toString();
-    } catch (e) {
-      return "";
-    }
+    const normalized = normalizeListingNextUrl(dataNext, baseUrl);
+    if (normalized) return normalized;
+  }
+
+  const anchorRe = /<a\b[^>]*>/gi;
+  while ((match = anchorRe.exec(String(html || "")))) {
+    const tag = match[0];
+    const className = extractAttrValue(tag, "class");
+    const id = extractAttrValue(tag, "id");
+    const isOlderPager =
+      hasClassToken(className, "blog-pager-older-link") ||
+      /blog-pager-older-link/i.test(String(id || ""));
+    if (!isOlderPager) continue;
+    const href = extractAttrValue(tag, "href");
+    if (!href) continue;
+    const normalized = normalizeListingNextUrl(href, baseUrl);
+    if (normalized) return normalized;
   }
   return "";
 };
@@ -302,7 +335,7 @@ const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount
   const seen = seenKeys || new Set();
   const visited = new Set();
   let hops = 0;
-  let nextUrl = extractLoadMoreUrl(seedHtml, seedUrl);
+  let nextUrl = extractListingNextUrl(seedHtml, seedUrl);
 
   while (nextUrl && out.length < neededCount && hops < BLOG_LISTING_BACKFILL_HOPS) {
     if (visited.has(nextUrl)) break;
@@ -344,7 +377,7 @@ const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount
       }
     }
 
-    nextUrl = extractLoadMoreUrl(nextHtml, nextUrl);
+    nextUrl = extractListingNextUrl(nextHtml, nextUrl);
     hops += 1;
   }
 
@@ -472,8 +505,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "6c2deaa";
-    const TEMPLATE_ALLOWED_RELEASES = ["6c2deaa","8a30028"];
+    const WORKER_VERSION = "e47fbf2";
+    const TEMPLATE_ALLOWED_RELEASES = ["e47fbf2","950b298"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");

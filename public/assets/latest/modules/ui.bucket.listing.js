@@ -1062,7 +1062,7 @@
           clearTimeout(t);
           resolve(data);
         })
-        .catch(function(err){
+        .catch(function(){
           if(done) return;
           done = true;
           clearTimeout(t);
@@ -2264,17 +2264,26 @@
 
     function qs(root, sel){ return (root || d).querySelector(sel); }
     function toAbs(raw){ try { return new URL(String(raw || ''), w.location.href).toString(); } catch(_){ return ''; } }
+    function normalizeNext(raw){
+      try {
+        var next = new URL(String(raw || ''), w.location.href);
+        if (next.origin !== w.location.origin) return next.pathname + next.search + next.hash;
+        return next.toString();
+      } catch(_) {
+        return '';
+      }
+    }
     function firstUrl(){
       var pager = qs(d, PAGER_SEL);
-      return toAbs(pager && pager.getAttribute ? pager.getAttribute('href') : '');
+      return normalizeNext(pager && pager.getAttribute ? pager.getAttribute('href') : '');
     }
     function pickNext(scope){
       var fromWrap = scope && scope.querySelector ? scope : null;
       var btn = fromWrap ? qs(fromWrap, BTN_SEL) : null;
-      var fromBtn = toAbs(btn && btn.getAttribute ? btn.getAttribute('data-next') : '');
+      var fromBtn = normalizeNext(btn && btn.getAttribute ? btn.getAttribute('data-next') : '');
       if (fromBtn) return fromBtn;
       var pager = qs(fromWrap || d, PAGER_SEL);
-      return toAbs(pager && pager.getAttribute ? pager.getAttribute('href') : '');
+      return normalizeNext(pager && pager.getAttribute ? pager.getAttribute('href') : '');
     }
     function cardKey(node){
       if (!node || !node.getAttribute) return '';
@@ -2407,8 +2416,7 @@
       if (!opts.preserveLabel) setLabel(state, 'Loading...');
       return fetch(next, {
         credentials: 'same-origin',
-        cache: 'no-store',
-        headers: { 'Accept': 'text/html' }
+        cache: 'no-store'
       })
         .then(function(res){
           if (!res || !res.ok) throw new Error('request-failed');
@@ -2429,9 +2437,6 @@
             setError(state, 'Failed to load more articles. Tap again to retry.');
             setLabel(state, 'Retry loading');
           }
-          if (w.GG_DEBUG && w.console && typeof w.console.warn === 'function') {
-            w.console.warn('[loadmore] fetch failed', err);
-          }
           return 0;
         })
         .finally(function(){
@@ -2442,7 +2447,7 @@
     function ensureMinimum(state){
       if (!state || state._ensurePending) return;
       if (!state.list || !state.nextUrl) return;
-      var target = state.minCards || 9;
+      var target = 9;
       if (countCards(state.list) >= target) return;
       state._ensurePending = true;
       var tries = 3;
@@ -2462,14 +2467,13 @@
       step();
     }
     function bind(root){
-      var wrap = qs(root, WRAP_SEL);
-      if (!wrap) return;
+      var wrap = qs(root, WRAP_SEL) || qs(d, WRAP_SEL);
       var list = qs(d, LIST_SEL) || qs(root, LIST_SEL);
       if (!list) return;
+      if (!wrap) wrap = list.parentElement || list;
       var btn = qs(wrap, BTN_SEL);
-      if (!btn) return;
       var state = wrap.__ggLoadMoreState || {};
-      if (wrap.dataset.ggBoundLoadMore !== '1') {
+      if (btn && wrap.dataset.ggBoundLoadMore !== '1') {
         var freshBtn = btn.cloneNode(true);
         if (btn.parentNode) btn.parentNode.replaceChild(freshBtn, btn);
         btn = freshBtn;
@@ -2478,14 +2482,13 @@
       state.wrap = wrap;
       state.list = list;
       state.btn = btn;
-      state.labelEl = qs(btn, '.gg-loadmore__label');
+      state.labelEl = btn ? qs(btn, '.gg-loadmore__label') : null;
       state.baseLabel = state.labelEl ? String(state.labelEl.textContent || '').trim() : 'Load More Articles';
       state.nextUrl = pickNext(wrap) || firstUrl();
-      state.minCards = 9;
       state.loading = false;
       state.done = !state.nextUrl;
       wrap.__ggLoadMoreState = state;
-      if (!btn.__ggLoadMoreBound) {
+      if (btn && !btn.__ggLoadMoreBound) {
         btn.__ggLoadMoreBound = true;
         btn.addEventListener('click', function(e){
           e.preventDefault();
