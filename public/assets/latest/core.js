@@ -581,7 +581,7 @@ throw err;
 }
 if (mode === 'text' || mode === 'html') return res.text();
 return res.json();
-}).catch(function(){
+}).catch(function(err){
 if (err && err.name === 'GGApiError') {
 services.api._log({ type: 'api', stage: 'error', url: url, code: err.code });
 throw err;
