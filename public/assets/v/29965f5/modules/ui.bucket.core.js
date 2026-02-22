@@ -5308,6 +5308,20 @@ function isSystemPath(pathname){
     var pendingFocus = null;
     var trapCleanup = null;
 
+    function focusNoScroll(el){
+      if (!el || typeof el.focus !== 'function') return;
+      var x = window.pageXOffset || 0;
+      var y = window.pageYOffset || 0;
+      try {
+        el.focus({ preventScroll: true });
+      } catch(_) {
+        try {
+          el.focus();
+          window.scrollTo({ left: x, top: y, behavior: 'auto' });
+        } catch(__) {}
+      }
+    }
+
     function getAttr(el, name){ return el ? el.getAttribute(name) : null; }
     function getRightState(){
       return getAttr(main, 'data-gg-right-panel') || getAttr(main, 'data-gg-info-panel') || 'closed';
@@ -5326,9 +5340,7 @@ function isSystemPath(pathname){
       var el = lastFocus;
       lastFocus = null;
       if (el && document.contains(el) && typeof el.focus === 'function') {
-        try { el.focus({ preventScroll: true }); } catch(_) {
-          try { el.focus(); } catch(_) {}
-        }
+        focusNoScroll(el);
       }
     }
     function focusPanel(side){
@@ -5348,9 +5360,7 @@ function isSystemPath(pathname){
         focusable = panel;
       }
       if (focusable && typeof focusable.focus === 'function') {
-        try { focusable.focus({ preventScroll: true }); } catch(_) {
-          try { focusable.focus(); } catch(_) {}
-        }
+        focusNoScroll(focusable);
       }
     }
     function clearFocusTrap(){
