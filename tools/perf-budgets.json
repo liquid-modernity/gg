@@ -37,8 +37,8 @@
     {
       "id": "modules/ui.bucket.core.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.core.js",
-      "max_raw": 244500,
-      "max_gzip": 60200
+      "max_raw": 250000,
+      "max_gzip": 61500
     },
     {
       "id": "modules/ui.bucket.listing.js",
@@ -49,8 +49,8 @@
     {
       "id": "modules/ui.bucket.post.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.post.js",
-      "max_raw": 16309,
-      "max_gzip": 4758
+      "max_raw": 18200,
+      "max_gzip": 4900
     },
     {
       "id": "modules/ui.bucket.poster.js",

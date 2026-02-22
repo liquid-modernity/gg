@@ -364,6 +364,86 @@
   boot();
 })();
 
+(function(GG, d){
+  'use strict';
+  GG.modules = GG.modules || {};
+  GG.modules.TOC = GG.modules.TOC || (function(){
+    function clean(v){ return String(v || '').replace(/\s+/g, ' ').trim(); }
+    function resolveRoot(scope){
+      var host = (scope && scope.querySelector) ? scope : d;
+      return (host.querySelector && host.querySelector('#gg-toc')) || d.getElementById('gg-toc');
+    }
+    function resolveBody(scope){
+      var host = (scope && scope.querySelector) ? scope : d;
+      return host.querySelector('.gg-post__content.post-body.entry-content') ||
+             host.querySelector('.post-body.entry-content') ||
+             host.querySelector('.entry-content') ||
+             host.querySelector('[itemprop="articleBody"]') ||
+             host.querySelector('.post-body');
+    }
+    function ensureId(h){
+      var base = clean(h && h.textContent ? h.textContent : '').toLowerCase().replace(/[^\w\s\-]/g, '').replace(/\s+/g, '-').replace(/\-+/g, '-').replace(/^\-+|\-+$/g, '') || 'section';
+      var id = base;
+      var i = 2;
+      while (d.getElementById(id) && d.getElementById(id) !== h) id = base + '-' + (i++);
+      h.id = id;
+      return id;
+    }
+    function reset(scope){
+      var root = resolveRoot(scope);
+      var list = root ? root.querySelector('.gg-toc__list') : null;
+      var empty = root ? root.querySelector('.gg-toc__empty') : null;
+      if (!root || !list) return false;
+      list.textContent = '';
+      if (empty) empty.hidden = true;
+      root.hidden = true;
+      return true;
+    }
+    function build(scope){
+      var root = resolveRoot(scope);
+      var list = root ? root.querySelector('.gg-toc__list') : null;
+      var empty = root ? root.querySelector('.gg-toc__empty') : null;
+      var body = resolveBody(scope);
+      var items = [];
+      var i = 0;
+      var h = null;
+      var li = null;
+      var a = null;
+      var n = null;
+      var t = null;
+      if (!root || !list || !body) return false;
+      list.textContent = '';
+      if (empty) empty.hidden = true;
+      items = Array.prototype.slice.call(body.querySelectorAll('h2')).filter(function(x){ return clean(x.textContent).length > 0; });
+      if (!items.length) {
+        root.hidden = true;
+        return true;
+      }
+      root.hidden = false;
+      for (; i < items.length && i < 12; i++) {
+        h = items[i];
+        li = d.createElement('li');
+        li.className = 'gg-toc__item gg-toc__lvl-2';
+        a = d.createElement('a');
+        a.className = 'gg-toc__link';
+        a.href = '#' + ensureId(h);
+        n = d.createElement('span');
+        n.className = 'gg-toc__num';
+        n.textContent = String(i + 1) + '.';
+        t = d.createElement('span');
+        t.className = 'gg-toc__txt';
+        t.textContent = clean(h.textContent);
+        a.appendChild(n);
+        a.appendChild(t);
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+      return true;
+    }
+    return { reset: reset, build: build };
+  })();
+})(window.GG = window.GG || {}, document);
+
 (function (GG, d) {
   'use strict';
   GG.modules = GG.modules || {};

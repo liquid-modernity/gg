@@ -289,10 +289,59 @@ function apply(html, url){
     }catch(e){}
     return !!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
+  function resolveMainScope(targetEl){
+    var main = null;
+    if (targetEl && typeof targetEl.closest === 'function') {
+      main = targetEl.closest('main.gg-main[data-gg-surface]') || targetEl.closest('main.gg-main') || targetEl.closest('main');
+    }
+    if (!main) {
+      main = w.document.querySelector('main.gg-main[data-gg-surface]') ||
+             w.document.querySelector('main.gg-main') ||
+             findTarget(w.document);
+    }
+    return main || targetEl || w.document;
+  }
+  function clearRehydrateFlags(mainScope){
+    if (!mainScope || !mainScope.querySelectorAll) return;
+    var areas = mainScope.querySelectorAll('.post-body, .entry-content, #post-body');
+    var i = 0;
+    for (; i < areas.length; i++) {
+      areas[i].removeAttribute('data-gg-shortcodes-done');
+    }
+    var a11yBound = mainScope.querySelectorAll('.gg-yt-lite[data-gg-a11y-bound], .gg-sc-accordion[data-gg-a11y-bound], [data-gg-acc][data-gg-a11y-bound]');
+    for (i = 0; i < a11yBound.length; i++) {
+      a11yBound[i].removeAttribute('data-gg-a11y-bound');
+    }
+    var bound = mainScope.querySelectorAll('[data-gg-bound-load-more]');
+    for (i = 0; i < bound.length; i++) {
+      bound[i].removeAttribute('data-gg-bound-load-more');
+    }
+  }
+  function runAfterSwapRehydrate(mainScope){
+    if (!mainScope || !GG.modules) return;
+    if (GG.modules.ShortcodesV2 && typeof GG.modules.ShortcodesV2.transformArea === 'function') {
+      try { GG.modules.ShortcodesV2.transformArea(mainScope); } catch (_) {}
+    }
+    if (GG.modules.ShortcodesV2 && typeof GG.modules.ShortcodesV2.bindA11y === 'function') {
+      try { GG.modules.ShortcodesV2.bindA11y(mainScope); } catch (_) {}
+    }
+    if (GG.modules.TOC && typeof GG.modules.TOC.reset === 'function') {
+      try { GG.modules.TOC.reset(mainScope); } catch (_) {}
+    }
+    if (GG.modules.TOC && typeof GG.modules.TOC.build === 'function') {
+      try { GG.modules.TOC.build(mainScope, { headings: 'h2' }); } catch (_) {}
+    }
+    if (GG.modules.Comments && typeof GG.modules.Comments.reset === 'function') {
+      try { GG.modules.Comments.reset(mainScope); } catch (_) {}
+    }
+  }
   var doSwap = function(){
     var frag = cloneSwapContent(source);
+    var mainScope = null;
     target.textContent = '';
     target.appendChild(frag);
+    mainScope = resolveMainScope(target);
+    clearRehydrateFlags(mainScope);
     if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
       try { GG.ui.layout.sync(doc, url); } catch (_) {}
     }
@@ -311,6 +360,7 @@ function apply(html, url){
     if (GG.app && typeof GG.app.rehydrate === 'function') {
       try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
     }
+    runAfterSwapRehydrate(mainScope);
     GG.core.render._lastUrl = url || '';
     GG.core.render._lastAt = Date.now();
   };
@@ -4904,7 +4954,39 @@ GG.modules.Comments = GG.modules.Comments || (function(){
 
     return true;
   }
-  return { ensureLoaded: ensureLoaded };
+  function reset(root){
+    var scope = (root && root.querySelectorAll) ? root : d;
+    var hosts = [];
+    var i = 0;
+    var host = null;
+    var btn = null;
+    if (scope.querySelectorAll) {
+      hosts = Array.prototype.slice.call(scope.querySelectorAll('.gg-post__comments[data-gg-comments-gate="1"], .gg-post__comments'));
+    }
+    if (!hosts.length) {
+      host = hostRoot();
+      if (host) hosts = [host];
+    }
+    if (!hosts.length) return false;
+    for (i = 0; i < hosts.length; i++) {
+      host = hosts[i];
+      if (!host || !host.setAttribute) continue;
+      host.removeAttribute('data-gg-comments-primary');
+      if (!host.__ggCommentsLoaded) host.removeAttribute('data-gg-comments-loaded');
+      host.__ggCommentsPrimaryAutoTriggered = false;
+      btn = host.querySelector ? host.querySelector('[data-gg-comments-load]') : null;
+      if (btn && !host.__ggCommentsLoaded) {
+        btn.hidden = false;
+        btn.disabled = false;
+        btn.removeAttribute('aria-disabled');
+      }
+    }
+    if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
+      try { GG.core.commentsGate.init(); } catch (_) {}
+    }
+    return true;
+  }
+  return { ensureLoaded: ensureLoaded, reset: reset };
 })();
 
 function hookCommentsGate(){

@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-UX-COMMENTS-SINGLE-CTA-20260222: Post detail comments now load via single primary CTA (auto-load, no second internal load layer).
+- TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222: SPA swap now rehydrates shortcodes + TOC + comments state (no empty TOC noise).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 2903d04
+RELEASE_ID: 77d4178
 RELEASE_HISTORY:
-- 2903d04
-- 5499229
-PROD_PINNED_JS: /assets/v/2903d04/main.js
-PROD_PINNED_APP: /assets/v/2903d04/app.js
-PROD_PINNED_CSS: /assets/v/2903d04/main.css
+- 77d4178
+- 063c845
+PROD_PINNED_JS: /assets/v/77d4178/main.js
+PROD_PINNED_APP: /assets/v/77d4178/app.js
+PROD_PINNED_CSS: /assets/v/77d4178/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -37,10 +37,10 @@ LIVE CONTRACT (must hold):
 - offline: https://www.pakrpp.com/offline.html
 
 NEXT_TASK:
-- TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
+- user-priority
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-COMMENTS-SINGLE-CTA-20260222 added single-cta comments loader + comments load guardrail verifier.
+- 2026-02-22 TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222 added after-swap rehydrate hooks for ShortcodesV2/TOC/Comments plus verifier.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

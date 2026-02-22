@@ -2335,3 +2335,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): core bundle grew slightly due comments helper; perf budget raw ceiling for core adjusted minimally to remain deterministic
 - RISKS: low; manual click-flow sanity still required on real browser runtime
 - NEXT: TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
+
+## 2026-02-22 — TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222 — SPA rehydrate hooks for shortcodes/TOC/comments
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222
+- TITLE: Rehydrate shortcodes + ToC + comments state after SPA route swap
+- MODE (DEV/PROD impact): runtime SPA rehydrate path + verifier/gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add deterministic after-swap hook in `GG.core.render.apply()` for ShortcodesV2, TOC, and comments state reset; clear done/bound flags; add guardrail verifier
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/ui.bucket.post.js; tools/verify-rehydrate-hooks.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-rehydrate-hooks.mjs; npm run gate:prod
+- CI STATUS: pending next workflow run
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-rehydrate-hooks PASS; gate:prod PASS (offline smoke fallback in local sandbox)
+- NOTES (gotchas): gate required budget adjustment for `ui.bucket.core.js` and `ui.bucket.post.js` due new SPA rehydrate contract code
+- RISKS: low/med; manual browser sanity still recommended for listing->post SPA transitions
+- NEXT: user-priority task

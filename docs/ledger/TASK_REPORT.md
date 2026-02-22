@@ -1,40 +1,49 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-UX-COMMENTS-SINGLE-CTA-20260222
-TITLE: Single-CTA comment loading (auto-load + hide internal load button)
+TASK_ID: TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222
+TITLE: Rehydrate shortcodes/ToC/comments after SPA swap
 
 SUMMARY
-- Added `GG.modules.Comments.ensureLoaded()` in `public/assets/latest/modules/ui.bucket.core.js` as a dedicated primary comment CTA loader.
-- Updated post detail comment button flow (`data-gg-postbar='comments'`) so opening comments panel now calls `GG.modules.Comments.ensureLoaded({ fromPrimaryAction:true })`.
-- Internal comments gate button (`[data-gg-comments-load]`) is auto-triggered once when primary comment button is used, then hidden and state-marked with `data-gg-comments-loaded='1'`.
-- Added scroll-to-comments behavior only for explicit primary comment button click path.
-- Preserved native Blogger comments as black-box content (no rewrite of native internal comment markup/flows).
-- Added guardrail verifier `tools/verify-comments-single-cta.mjs` and wired it into `tools/gate-prod.sh`.
-- Bumped core raw perf budget ceiling minimally due deterministic code-size increase from new comments single-cta path.
+- Added explicit after-swap rehydrate hooks in `GG.core.render.apply()` so SPA navigation now triggers:
+  - `GG.modules.ShortcodesV2.transformArea(main)`
+  - `GG.modules.ShortcodesV2.bindA11y(main)`
+  - `GG.modules.TOC.reset(main)` then `GG.modules.TOC.build(main, { headings:'h2' })`
+  - `GG.modules.Comments.reset(main)` (state-only, no forced auto-load)
+- Added done/bound flag reset before rehydrate (`data-gg-shortcodes-done`, `data-gg-a11y-bound`, `data-gg-bound-load-more`) so modules do not skip on swapped DOM.
+- Added lightweight `GG.modules.TOC` contract in `ui.bucket.post.js` for deterministic `reset/build` after SPA swap, with H2-only list and auto-hide when empty (no “No content found” row).
+- Added `Comments.reset()` in core comments module to reset primary CTA state and re-init comments gate safely.
+- Added verifier `tools/verify-rehydrate-hooks.mjs` and wired it into `tools/gate-prod.sh`.
+- Updated `tools/perf-budgets.json` ceilings for `ui.bucket.core.js` and `ui.bucket.post.js` to match deterministic bundle growth from this rehydrate contract change.
 
 FILES CHANGED
 - public/assets/latest/modules/ui.bucket.core.js
-- public/assets/latest/main.css
-- tools/verify-comments-single-cta.mjs
+- public/assets/latest/modules/ui.bucket.post.js
+- tools/verify-rehydrate-hooks.mjs
 - tools/gate-prod.sh
 - tools/perf-budgets.json
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
+- index.prod.xml
+- public/sw.js
+- src/worker.js
+- public/assets/v/77d4178/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-comments-single-cta.mjs`
+- `node tools/verify-rehydrate-hooks.mjs`
 ```text
-PASS: comments single-cta contract
+PASS: rehydrate hooks contract
 ```
 
 - `npm run gate:prod`
 ```text
-PASS: comments single-cta contract
-VERIFY_PERF_BUDGETS: PASS
+PASS: rehydrate hooks contract
+VERIFY_BUDGETS: PASS
 PASS: gate:prod
 ```
 
-MANUAL SANITY TARGET
-- Open post detail -> click comment button once -> comments load and appear in comments panel without showing a second “Load comments” step.
+MANUAL SANITY
+- Not executed in this environment (CLI-only). Recommended on real browser:
+  - home/blog -> post SPA navigation: ToC appears immediately when H2 exists.
+  - comment button on post after SPA navigation: comments panel works without hard refresh.
