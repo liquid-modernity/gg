@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: perf-lighthouse-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   lighthouse_live:
@@ -152,8 +152,8 @@ jobs:
             echo "### Perf Dashboard Pointers"
             if [ "${DASHBOARD_URL}" = "XXX" ]; then
               echo "- Perf dashboard: XXX"
-              echo "- Set GitHub Pages source to branch \`perf-history\` folder \`/perf\`."
-              echo "- Expected project URL: https://${OWNER}.github.io/${REPO}/index.html"
+              echo "- Set GitHub Pages source to branch \`perf-history\` folder \`/(root)\`."
+              echo "- Expected project URL: https://${OWNER}.github.io/${REPO}/perf/index.html"
             else
               echo "- Perf dashboard: ${DASHBOARD_URL}"
             fi
