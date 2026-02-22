@@ -17,7 +17,7 @@ fi
 
 # Strict: no offline smoke fallback/skip and no template mismatch allowance.
 if ! run env GATE_ALLOW_OFFLINE_SMOKE_SKIP=0 GATE_SMOKE_ALLOW_OFFLINE_FALLBACK=0 SMOKE_ATTEMPTS=1 npm run gate:prod; then
-  echo "HINT: if logs show \"Failed to render gadget 'Blog1'\", this is a Blogger template error. Paste updated index.prod.xml into Blogger PROD theme, then re-run deploy." >&2
+  echo "THIS WILL NOT FIX ITSELF BY WORKERS DEPLOY — YOU MUST PASTE index.prod.xml INTO BLOGGER THEME" >&2
   exit 1
 fi
 

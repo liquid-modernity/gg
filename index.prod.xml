@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='3787e20' name='gg-release'/>
+    <meta content='b3acaf3' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/3787e20/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/3787e20/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/b3acaf3/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/b3acaf3/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='3787e20' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='b3acaf3' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -2199,10 +2199,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div class='gg-post-card__body'>
       <div class='gg-post-card__meta'>
        <span class='gg-post-card__label'>
-  <b:if cond='data:post.labels and data:post.labels.first'>
-    <a expr:href='data:post.labels.first.url' rel='tag'>
-      <data:post.labels.first.name/>
-    </a>
+  <b:if cond='data:post.labels'>
+    <b:loop values='data:post.labels' index='i' var='lab'>
+      <b:if cond='data:i == 0'>
+        <a expr:href='data:lab.url' rel='tag'>
+          <data:lab.name/>
+        </a>
+      </b:if>
+    </b:loop>
   <b:else/>
     Post
   </b:if>
@@ -2365,14 +2369,18 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </a>
 
       <!-- LABEL PERTAMA (opsional) -->
-      <b:if cond='data:post.labels and data:post.labels[0]'>
-        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-        <a class='gg-post__breadcrumbs-link' expr:href='data:post.labels[0].url'>
-          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
-          <span class='gg-post__breadcrumbs-label'>
-            <b:eval expr='data:post.labels[0].name'/>
-          </span>
-        </a>
+      <b:if cond='data:post.labels'>
+        <b:loop values='data:post.labels' index='i' var='lab'>
+          <b:if cond='data:i == 0'>
+            <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+            <a class='gg-post__breadcrumbs-link' expr:href='data:lab.url'>
+              <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
+              <span class='gg-post__breadcrumbs-label'>
+                <b:eval expr='data:lab.name'/>
+              </span>
+            </a>
+          </b:if>
+        </b:loop>
       </b:if>
 
       <!-- TITLE POST (current) -->
@@ -2555,10 +2563,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
         <!-- LABELS -->
         <p class='gg-post__label'>
-        <b:if cond='data:post.labels and data:post.labels.first'>
-          <a class='gg-post__label-link' expr:href='data:post.labels.first.url'>
-            <data:post.labels.first.name/>
-          </a>
+        <b:if cond='data:post.labels'>
+          <b:loop values='data:post.labels' index='i' var='lab'>
+            <b:if cond='data:i == 0'>
+              <a class='gg-post__label-link' expr:href='data:lab.url'>
+                <data:lab.name/>
+              </a>
+            </b:if>
+          </b:loop>
         <b:else/>
           Post
         </b:if>
@@ -3912,7 +3924,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/3787e20/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/b3acaf3/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>
