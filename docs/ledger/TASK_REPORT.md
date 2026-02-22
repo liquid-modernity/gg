@@ -1,49 +1,44 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222
-TITLE: Rehydrate shortcodes/ToC/comments after SPA swap
+TASK_ID: TASK-UX-PANELS-NO-SCROLLTOP-20260222
+TITLE: Prevent panel-open scroll jump on post detail
 
 SUMMARY
-- Added explicit after-swap rehydrate hooks in `GG.core.render.apply()` so SPA navigation now triggers:
-  - `GG.modules.ShortcodesV2.transformArea(main)`
-  - `GG.modules.ShortcodesV2.bindA11y(main)`
-  - `GG.modules.TOC.reset(main)` then `GG.modules.TOC.build(main, { headings:'h2' })`
-  - `GG.modules.Comments.reset(main)` (state-only, no forced auto-load)
-- Added done/bound flag reset before rehydrate (`data-gg-shortcodes-done`, `data-gg-a11y-bound`, `data-gg-bound-load-more`) so modules do not skip on swapped DOM.
-- Added lightweight `GG.modules.TOC` contract in `ui.bucket.post.js` for deterministic `reset/build` after SPA swap, with H2-only list and auto-hide when empty (no “No content found” row).
-- Added `Comments.reset()` in core comments module to reset primary CTA state and re-init comments gate safely.
-- Added verifier `tools/verify-rehydrate-hooks.mjs` and wired it into `tools/gate-prod.sh`.
-- Updated `tools/perf-budgets.json` ceilings for `ui.bucket.core.js` and `ui.bucket.post.js` to match deterministic bundle growth from this rehydrate contract change.
+- Audited `GG.modules.Panels` open/close path in `public/assets/latest/modules/ui.bucket.core.js` and confirmed no direct `scrollTo({ top: 0 ... })` calls inside the Panels module.
+- Hardened focus behavior with new local helper `focusNoScroll(el)`:
+  - Primary path: `el.focus({ preventScroll:true })`
+  - Fallback path (older browsers): restore viewport using captured `pageXOffset/pageYOffset` after focus, so opening/closing panels does not jump article position.
+- Applied helper to both panel-open focus path and focus-restore path (`focusPanel` + `restoreFocus`).
+- Added guardrail verifier `tools/verify-no-scrolltop-panels.mjs` and wired it to `tools/gate-prod.sh`.
 
 FILES CHANGED
 - public/assets/latest/modules/ui.bucket.core.js
-- public/assets/latest/modules/ui.bucket.post.js
-- tools/verify-rehydrate-hooks.mjs
+- tools/verify-no-scrolltop-panels.mjs
 - tools/gate-prod.sh
-- tools/perf-budgets.json
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/77d4178/*
+- public/assets/v/8c1fb78/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-rehydrate-hooks.mjs`
+- `node tools/verify-no-scrolltop-panels.mjs`
 ```text
-PASS: rehydrate hooks contract
+PASS: panels no scrolltop contract
 ```
 
 - `npm run gate:prod`
 ```text
-PASS: rehydrate hooks contract
-VERIFY_BUDGETS: PASS
+PASS: panels no scrolltop contract
 PASS: gate:prod
 ```
 
 MANUAL SANITY
-- Not executed in this environment (CLI-only). Recommended on real browser:
-  - home/blog -> post SPA navigation: ToC appears immediately when H2 exists.
-  - comment button on post after SPA navigation: comments panel works without hard refresh.
+- Not executed in this CLI environment.
+- Recommended browser check:
+  - Open a long post, scroll mid-article.
+  - Open left/right panel from post toolbar.
+  - Confirm viewport position does not jump to top.

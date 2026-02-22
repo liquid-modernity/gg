@@ -59,6 +59,7 @@ run node tools/verify-legacy-allowlist-ratchet.mjs
 run node tools/verify-phase4-no-trivial-htmljs.mjs
 run node tools/verify-no-innerhtml-clear.mjs
 run node tools/verify-panels-inert-safety.mjs
+run node tools/verify-no-scrolltop-panels.mjs
 run node tools/verify-smooth-scroll-policy.mjs
 run node tools/verify-authors-dir-contract.mjs
 run node tools/verify-sitemap-page-contract.mjs

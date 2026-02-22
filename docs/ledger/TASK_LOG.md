@@ -2351,3 +2351,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate required budget adjustment for `ui.bucket.core.js` and `ui.bucket.post.js` due new SPA rehydrate contract code
 - RISKS: low/med; manual browser sanity still recommended for listing->post SPA transitions
 - NEXT: user-priority task
+
+## 2026-02-22 — TASK-UX-PANELS-NO-SCROLLTOP-20260222 — Prevent panel-open scroll jumps in post detail
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-PANELS-NO-SCROLLTOP-20260222
+- TITLE: Prevent scroll-to-top on post side panel open
+- MODE (DEV/PROD impact): runtime panel focus behavior hardening + verifier/gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: audit `GG.modules.Panels` open/close path, enforce no-scroll focus fallback, add static verifier to block `scrollTo({top:0` within Panels module
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; tools/verify-no-scrolltop-panels.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-no-scrolltop-panels.mjs; npm run gate:prod
+- CI STATUS: pending next workflow run
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): verify-no-scrolltop-panels PASS; gate:prod PASS (offline smoke fallback in local sandbox)
+- NOTES (gotchas): panel module had no direct `scrollTo({top:0})` before patch; fix hardens focus fallback to restore viewport if browser ignores `preventScroll`
+- RISKS: low; focus fallback now issues `window.scrollTo({left:x, top:y, behavior:'auto'})` only to preserve current viewport
+- NEXT: user-priority task

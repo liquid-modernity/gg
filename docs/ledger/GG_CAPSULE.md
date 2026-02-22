@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222: SPA swap now rehydrates shortcodes + TOC + comments state (no empty TOC noise).
+- TASK-UX-PANELS-NO-SCROLLTOP-20260222: Post left/right panel open now preserves viewport scroll position (no jump to top).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 77d4178
+RELEASE_ID: 8c1fb78
 RELEASE_HISTORY:
+- 8c1fb78
 - 77d4178
-- 063c845
-PROD_PINNED_JS: /assets/v/77d4178/main.js
-PROD_PINNED_APP: /assets/v/77d4178/app.js
-PROD_PINNED_CSS: /assets/v/77d4178/main.css
+PROD_PINNED_JS: /assets/v/8c1fb78/main.js
+PROD_PINNED_APP: /assets/v/8c1fb78/app.js
+PROD_PINNED_CSS: /assets/v/8c1fb78/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-SPA-REHYDRATE-TOC-COMMENTS-20260222 added after-swap rehydrate hooks for ShortcodesV2/TOC/Comments plus verifier.
+- 2026-02-22 TASK-UX-PANELS-NO-SCROLLTOP-20260222 hardened Panels focus fallback to preserve viewport and added no-scrolltop verifier.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
