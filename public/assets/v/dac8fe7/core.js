@@ -798,13 +798,26 @@ var from = w.location.href;
 var u = new URL(url, w.location.href);
 if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
 router.saveScroll(from);
+var fromState = (w.history && w.history.state && typeof w.history.state === 'object') ? w.history.state : router._stateFor(from);
+function rollbackToFrom(){
+try {
+if (w.history && w.history.replaceState) {
+w.history.replaceState(fromState || router._stateFor(from), '', from);
+}
+} catch (_) {}
+if (router && typeof router._applySurface === 'function') {
+router._applySurface(from);
+}
+}
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
-router._applySurface(url);
 var p = router._load(url, { pop: false });
 if (p && typeof p.then === 'function') {
 return p.then(function(ok){
-if(ok===false)return false;
+if(ok===false){
+rollbackToFrom();
+return false;
+}
 var bodySurface = d.body ? (d.body.getAttribute('data-gg-surface') || '') : '';
 var canonicalEl = d.querySelector('link[rel="canonical"]');
 if (bodySurface !== router._inferSurface(url) || !canonicalEl || canonicalEl.href !== u.href) {
@@ -814,6 +827,10 @@ return false;
 router.lastUrl = u.pathname + u.search + u.hash;
 return true;
 });
+}
+if (p === false) {
+rollbackToFrom();
+return false;
 }
 return p;
 } catch (e) {
@@ -825,7 +842,6 @@ router._onPopState = router._onPopState || function(evt){
 try {
 var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
 var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
-router._applySurface(w.location.href);
 router._load(w.location.href, { pop: true, scrollY: y });
 } catch (e) {
 router.fallback(w.location.href);

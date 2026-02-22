@@ -4779,29 +4779,48 @@ for (var i = 0; i < GG.app.plan.length; i++) {
 }
 };
 
+GG.app.ensureBuckets = GG.app.ensureBuckets || function(){
+var b = GG.__uiBuckets = GG.__uiBuckets || {};
+var loads = [];
+var main = document.querySelector('main.gg-main[data-gg-surface],main.gg-main');
+var surface = main ? (main.getAttribute('data-gg-surface') || '').toLowerCase() : '';
+var needPost = surface === 'post' || surface === 'page' || surface === 'postdetail' || !!document.querySelector('article.gg-post,.gg-post__content.post-body.entry-content,.post-body.entry-content,.post-body,#gg-toc');
+var needListing = !!document.querySelector('#postcards,[data-gg-module="loadmore"],#loadmore,.gg-labeltree[data-gg-module="labeltree"],[data-gg-module="labeltree"]');
+if (!GG.boot || typeof GG.boot.loadModule !== 'function') return Promise.resolve(true);
+if (needPost && !b.post) loads.push(GG.boot.loadModule('ui.bucket.post.js'));
+if (needListing && !b.listing) loads.push(GG.boot.loadModule('ui.bucket.listing.js'));
+if (!loads.length) return Promise.resolve(true);
+return Promise.all(loads).then(function(){ return true; }, function(){ return false; });
+};
+
 GG.app.rehydrate = GG.app.rehydrate || function(context){
-var ctx = context || {};
 if (GG.ui && GG.ui.layout && typeof GG.ui.layout.refresh === 'function') {
-  GG.ui.layout.refresh(ctx.doc || null);
+  GG.ui.layout.refresh(context && context.doc ? context.doc : null);
 }
-var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
-var tasks = [
-  { name: 'homeState.reinit', fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
-  { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
-  { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
-  { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
-  { name: 'ShortcodesV2.reinit', fn: function(){ if (GG.modules.ShortcodesV2 && GG.modules.ShortcodesV2.transformRoot) GG.modules.ShortcodesV2.transformRoot(document); } },
-  { name: 'LeftNav.reinit', fn: function(){ if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
-  { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
-  { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
-  { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
-  { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
-  { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
-  { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
-];
-for (var i = 0; i < tasks.length; i++) {
-  GG.boot.safeInit(tasks[i].name, tasks[i].fn);
+function runTasks(){
+  var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
+  var tasks = [
+    { name: 'homeState.reinit', fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
+    { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
+    { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
+    { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+    { name: 'ShortcodesV2.reinit', fn: function(){ if (GG.modules.ShortcodesV2 && GG.modules.ShortcodesV2.transformRoot) GG.modules.ShortcodesV2.transformRoot(document); } },
+    { name: 'LeftNav.reinit', fn: function(){ if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
+    { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
+    { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
+    { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
+    { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
+    { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
+    { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
+  ];
+  for (var i = 0; i < tasks.length; i++) {
+    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
+  }
 }
+var ensured = GG.app && typeof GG.app.ensureBuckets === 'function' ? GG.app.ensureBuckets() : null;
+if (ensured && typeof ensured.then === 'function') return ensured.then(runTasks, runTasks);
+runTasks();
+return true;
 };
 
 (function(){
