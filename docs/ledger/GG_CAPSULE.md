@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-UX-PANELS-NO-SCROLLTOP-20260222: Post left/right panel open now preserves viewport scroll position (no jump to top).
+- HOTFIX-LIVE-GATE-SSR-POSTCARDS-20260222: strict live smoke now uses resilient SSR postcard minimum + loadmore fallback contract.
 
 CONSTRAINTS:
 - main-only
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-PANELS-NO-SCROLLTOP-20260222 hardened Panels focus fallback to preserve viewport and added no-scrolltop verifier.
+- 2026-02-22 HOTFIX-LIVE-GATE-SSR-POSTCARDS-20260222 replaced brittle `>=9` SSR postcard check with configurable minimum + loadmore/pager fallback requirement.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

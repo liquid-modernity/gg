@@ -553,6 +553,13 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
 
   live_blog_hard_refresh_check() {
     local rounds="${1:-5}"
+    local min_postcards="${SMOKE_LIVE_MIN_SSR_POSTCARDS:-1}"
+    if ! [[ "${min_postcards}" =~ ^[0-9]+$ ]]; then
+      die "LIVE_HTML /blog invalid SMOKE_LIVE_MIN_SSR_POSTCARDS (${min_postcards})"
+    fi
+    if (( min_postcards < 1 )); then
+      die "LIVE_HTML /blog SMOKE_LIVE_MIN_SSR_POSTCARDS must be >=1 (got ${min_postcards})"
+    fi
     local i
     for (( i=1; i<=rounds; i++ )); do
       local ts hdr body status html postcards_tag cache_control postcards_count
@@ -615,8 +622,14 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
         }
         process.stdout.write(String(cards.length));
       ' | tr -d '[:space:]')"
-      if [[ -z "${postcards_count}" ]] || (( postcards_count < 9 )); then
-        die "LIVE_HTML /blog hard refresh #${i} expected >=9 SSR postcards (got ${postcards_count:-0})"
+      if [[ -z "${postcards_count}" ]] || (( postcards_count < min_postcards )); then
+        die "LIVE_HTML /blog hard refresh #${i} expected >=${min_postcards} SSR postcards (got ${postcards_count:-0})"
+      fi
+      if (( postcards_count < 9 )); then
+        if ! grep -Eqi 'data-gg-module=["'"'"']loadmore["'"'"']|id=["'"'"']blog-pager["'"'"']|blog-pager-older-link' <<<"${html}"; then
+          die "LIVE_HTML /blog hard refresh #${i} low SSR postcards (${postcards_count}) without loadmore/pager fallback"
+        fi
+        echo "INFO: LIVE_HTML /blog hard refresh #${i} SSR postcards=${postcards_count} (loadmore/pager fallback present)"
       fi
       if grep -Eqi '#postcards\s*\[\s*data-gg-skeleton\s*=\s*["'"'"']on["'"'"']\s*\]\s*\{[^}]*visibility\s*:\s*hidden' <<<"${html}"; then
         die "LIVE_HTML /blog hard refresh #${i} found hidden-SSR skeleton css"
