@@ -1451,9 +1451,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               </b:includable>
               <b:includable id='aboutPostAuthor'>
                 <div class='author-name'>
-                  <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+                  <b:if cond='data:post.author and data:post.author.profileUrl'>
+                    <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+                      <span><data:post.author.name/></span>
+                    </a>
+                  <b:else/>
                     <span><data:post.author.name/></span>
-                  </a>
+                  </b:if>
                 </div>
                 <div><span class='author-desc'><data:post.author.aboutMe/></span></div>
               </b:includable>

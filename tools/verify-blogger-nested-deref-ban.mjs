@@ -60,6 +60,13 @@ function hasNearbyLocationGuard(source, index) {
   return /cond\s*=\s*(['"])[\s\S]{0,260}?data:post\.location\s+and[\s\S]{0,260}?data:post\.location\.mapsUrl[\s\S]{0,260}?\1/i.test(window);
 }
 
+function hasNearbyAuthorProfileGuard(source, index) {
+  const start = Math.max(0, index - 320);
+  const end = Math.min(source.length, index + 320);
+  const window = source.slice(start, end);
+  return /cond\s*=\s*(['"])[\s\S]{0,260}?data:post\.author\s+and[\s\S]{0,260}?data:post\.author\.profileUrl[\s\S]{0,260}?\1/i.test(window);
+}
+
 for (const rel of files) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) {
@@ -86,6 +93,16 @@ for (const rel of files) {
     if (hasNearbyLocationGuard(source, index)) continue;
     failures.push(
       `${rel}:${lineNumberAt(source, index)} unsafe location.mapsUrl usage without nearby location guard | ${snippetAt(source, index)}`
+    );
+  }
+
+  const authorProfileHref = /expr:href\s*=\s*(['"])data:post\.author\.profileUrl\1/gi;
+  let authorProfileMatch;
+  while ((authorProfileMatch = authorProfileHref.exec(source))) {
+    const index = authorProfileMatch.index;
+    if (hasNearbyAuthorProfileGuard(source, index)) continue;
+    failures.push(
+      `${rel}:${lineNumberAt(source, index)} unsafe author.profileUrl href without nearby author/profileUrl guard | ${snippetAt(source, index)}`
     );
   }
 }
