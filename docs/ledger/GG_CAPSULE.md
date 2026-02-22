@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-TREND-ARTIFACTS-20260222: Generate trend.json from LHCI reports with ratchet diff and artifact upload.
+- TASK-PERF-TREND-HISTORY-BRANCH-20260222: Persist Lighthouse trend into append-only `perf-history` branch with static dashboard build.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 4bef74e
+RELEASE_ID: f25e4f5
 RELEASE_HISTORY:
+- f25e4f5
 - 4bef74e
-- ae3084f
-PROD_PINNED_JS: /assets/v/4bef74e/main.js
-PROD_PINNED_APP: /assets/v/4bef74e/app.js
-PROD_PINNED_CSS: /assets/v/4bef74e/main.css
+PROD_PINNED_JS: /assets/v/f25e4f5/main.js
+PROD_PINNED_APP: /assets/v/f25e4f5/app.js
+PROD_PINNED_CSS: /assets/v/f25e4f5/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-PERF-TREND-HISTORY-20260223
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-TREND-ARTIFACTS-20260222 added `lhci-trend.mjs`, workflow trend artifact upload, and ratchet delta summary output.
+- 2026-02-22 TASK-PERF-TREND-HISTORY-BRANCH-20260222 added `perf-history` branch writer/builder workflow and history contract verifier.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

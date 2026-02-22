@@ -2254,3 +2254,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): trend records are aggregated to one record per key (`home|listing|post`) using median of available runs; INP missing is reported as n/a and non-failing
 - RISKS: low/med; live LHCI variability remains despite multi-run aggregation
 - NEXT: TASK-PERF-TREND-HISTORY-20260223
+
+## 2026-02-22 — TASK-PERF-TREND-HISTORY-BRANCH-20260222 — perf-history branch persistence + static dashboard
+- DATE: 2026-02-22
+- TASK_ID: TASK-PERF-TREND-HISTORY-BRANCH-20260222
+- TITLE: Add perf-history branch writer + dashboard builder
+- MODE (DEV/PROD impact): CI-only perf history tooling (no runtime code change)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: persist trend records to append-only `perf-history` branch (`perf/history.ndjson`, `perf/latest.json`, `perf/index.html`) and enforce repo contract with verifier
+- CHANGES (files touched): tools/perf/perf-history-append.mjs; tools/perf/perf-history-build.mjs; .github/workflows/perf-lighthouse.yml; docs/perf/PERF_HISTORY.md; tools/verify-perf-history-contract.mjs; tools/gate-prod.sh; tools/verify-perf-workflow-contract.mjs; docs/perf/CI_LIGHTHOUSE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-perf-history-contract.mjs; node tools/verify-perf-workflow-contract.mjs; npm run gate:prod; npm run zip:audit
+- CI STATUS: pending on next perf-lighthouse workflow run
+- DEPLOY STATUS: no deploy change in this task
+- VERIFY (URLs + expected): perf-history contract PASS; perf-workflow contract PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): workflow now requires `permissions.contents: write` and pushes only to `perf-history`; append-only growth guard checks `history.ndjson` line count increase
+- RISKS: low/med; first run may initialize orphan `perf-history` branch content in CI if branch does not yet exist
+- NEXT: TASK-PERF-TREND-HISTORY-20260223

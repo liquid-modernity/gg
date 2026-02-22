@@ -1,0 +1,37 @@
+# PERF_HISTORY.md
+Last updated: 2026-02-22
+
+## What It Is
+- Perf history is persisted on a dedicated append-only branch: `perf-history`.
+- Main branch stays clean; history data is not committed to `main`.
+
+## Branch Contents (`perf-history`)
+- `perf/history.ndjson`
+  - One JSON object per Lighthouse run (one line per run).
+- `perf/latest.json`
+  - Latest snapshot extracted from history.
+- `perf/index.html`
+  - Static dashboard built from history (last 20 runs + metric sparklines).
+
+## Record Fields
+- `generated_at`
+- `commit` (short SHA)
+- `run_url`
+- `urls` (from `docs/perf/URLS.json`)
+- `results[]` (`home|listing|post` metrics + ratchet pass/reasons)
+- `ratchet` (copied from `docs/perf/BUDGETS.json`)
+- `overall_pass` (true/false)
+
+## How It Is Written
+- Workflow `perf-lighthouse.yml` generates `.lighthouseci/trend.json`.
+- CI appends one normalized line to `perf/history.ndjson`.
+- CI rebuilds `perf/latest.json` and `perf/index.html`.
+- CI commits and pushes only to `perf-history`.
+
+## How To View
+- GitHub branch browser: `perf-history` branch files under `perf/`.
+- Optional: enable GitHub Pages on `perf-history` and serve `perf/index.html`.
+
+## Growth / Rotation Policy
+- Current mode: append-only, no rotation.
+- If file grows too large, plan a dedicated maintenance task to archive or keep rolling windows (e.g., 365 days) without rewriting history silently.

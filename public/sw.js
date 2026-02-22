@@ -1,5 +1,5 @@
 /* public/sw.js — deterministic updates + offline fallback */
-const VERSION = "4bef74e";
+const VERSION = "f25e4f5";
 const CACHE_STATIC = `gg-static-${VERSION}`;
 const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 

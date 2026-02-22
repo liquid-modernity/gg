@@ -18,7 +18,7 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       actions: read
 
     steps:
@@ -88,3 +88,61 @@ jobs:
           name: lighthouse-trend-${{ github.run_id }}
           path: .lighthouseci/trend.json
           if-no-files-found: error
+
+      - name: Prepare perf-history worktree
+        run: |
+          set -euo pipefail
+          HIST_DIR="${RUNNER_TEMP}/perf-history"
+          rm -rf "${HIST_DIR}"
+          git fetch origin perf-history:perf-history || true
+          if git show-ref --verify --quiet refs/heads/perf-history; then
+            git worktree add "${HIST_DIR}" perf-history
+          else
+            git worktree add "${HIST_DIR}" HEAD
+            (
+              cd "${HIST_DIR}"
+              git checkout --orphan perf-history
+              git rm -rf . >/dev/null 2>&1 || true
+            )
+          fi
+          mkdir -p "${HIST_DIR}/perf"
+          touch "${HIST_DIR}/perf/history.ndjson"
+
+      - name: Append perf-history record and rebuild dashboard
+        run: |
+          set -euo pipefail
+          HIST_DIR="${RUNNER_TEMP}/perf-history"
+          cp .lighthouseci/trend.json "${HIST_DIR}/.trend.json"
+          before_lines="$(wc -l < "${HIST_DIR}/perf/history.ndjson" | tr -d ' ')"
+          node tools/perf/perf-history-append.mjs --trend "${HIST_DIR}/.trend.json" --out "${HIST_DIR}/.rec.json"
+          cat "${HIST_DIR}/.rec.json" >> "${HIST_DIR}/perf/history.ndjson"
+          echo >> "${HIST_DIR}/perf/history.ndjson"
+          after_lines="$(wc -l < "${HIST_DIR}/perf/history.ndjson" | tr -d ' ')"
+          if [ "${after_lines}" -le "${before_lines}" ]; then
+            echo "ERROR: perf/history.ndjson did not grow"
+            exit 1
+          fi
+          node tools/perf/perf-history-build.mjs --root "${HIST_DIR}"
+
+      - name: Commit and push perf-history branch
+        run: |
+          set -euo pipefail
+          HIST_DIR="${RUNNER_TEMP}/perf-history"
+          cd "${HIST_DIR}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add perf/history.ndjson perf/latest.json perf/index.html
+          if git diff --cached --quiet; then
+            echo "No perf-history changes to commit"
+            exit 0
+          fi
+          short_sha="${GITHUB_SHA::7}"
+          git commit -m "perf(history): append ${short_sha} run ${GITHUB_RUN_ID}"
+          git push origin perf-history
+
+      - name: Cleanup perf-history worktree
+        if: always()
+        run: |
+          set -euo pipefail
+          HIST_DIR="${RUNNER_TEMP}/perf-history"
+          git worktree remove "${HIST_DIR}" --force || true

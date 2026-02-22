@@ -1,32 +1,39 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-PERF-TREND-ARTIFACTS-20260222
-TITLE: Add perf trend.json artifact and ratchet diff summary
+TASK_ID: TASK-PERF-TREND-HISTORY-BRANCH-20260222
+TITLE: Add perf-history branch writer + dashboard builder
 
 SUMMARY
-- Added `tools/perf/lhci-trend.mjs` to produce `.lighthouseci/trend.json` from Lighthouse LHR files.
-- Trend output stores one aggregated record per URL key (`home`, `listing`, `post`) with:
-  - performance score, LCP, CLS, INP, TBT, transfer KB
-  - timestamp + short commit
-  - ratchet pass/fail + reasons against `docs/perf/BUDGETS.json`.
-- Updated `.github/workflows/perf-lighthouse.yml`:
-  - run trend step after summary step
-  - upload dedicated artifact `.lighthouseci/trend.json`
-  - keep full `.lighthouseci` artifact upload.
-- Updated perf workflow contract verifier to enforce trend step and trend artifact upload.
-- Updated `docs/perf/CI_LIGHTHOUSE.md` with trend artifact location/fields and comparison guidance.
+- Added CI history persistence scripts:
+  - `tools/perf/perf-history-append.mjs`
+  - `tools/perf/perf-history-build.mjs`
+- Updated `perf-lighthouse` workflow to persist trend to append-only branch `perf-history`:
+  - fetch/switch worktree for `perf-history`
+  - append one NDJSON record per run (`perf/history.ndjson`)
+  - build `perf/latest.json` and `perf/index.html`
+  - commit + push to `perf-history`
+- Added append-only guard in workflow (`history.ndjson` must grow).
+- Added contract verifier `tools/verify-perf-history-contract.mjs` and wired it into `gate:prod`.
+- Updated docs with branch/data model and viewing guidance in `docs/perf/PERF_HISTORY.md` and `docs/perf/CI_LIGHTHOUSE.md`.
 
-ARTIFACT PATHS
-- `.lighthouseci/trend.json` (generated in workflow)
-- GitHub Actions artifacts:
-  - `lighthouseci-<run_id>` (full reports)
-  - `lighthouse-trend-<run_id>` (trend JSON only)
+ARTIFACTS / DATA TARGET
+- `perf-history` branch files:
+  - `perf/history.ndjson`
+  - `perf/latest.json`
+  - `perf/index.html`
+- Existing workflow artifacts remain:
+  - `.lighthouseci` bundle
+  - `.lighthouseci/trend.json`
 
 FILES CHANGED
-- tools/perf/lhci-trend.mjs
+- tools/perf/perf-history-append.mjs
+- tools/perf/perf-history-build.mjs
 - .github/workflows/perf-lighthouse.yml
+- docs/perf/PERF_HISTORY.md
+- tools/verify-perf-history-contract.mjs
 - tools/verify-perf-workflow-contract.mjs
+- tools/gate-prod.sh
 - docs/perf/CI_LIGHTHOUSE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
@@ -37,9 +44,9 @@ FILES CHANGED
 - public/assets/v/<RELEASE_ID>/*
 
 VERIFICATION OUTPUTS
-- `node tools/perf/lhci-trend.mjs` (local fixture execution)
+- `node tools/verify-perf-history-contract.mjs`
 ```text
-PASS: lhci trend artifact -> .lighthouseci/trend.json
+VERIFY_PERF_HISTORY_CONTRACT: PASS
 ```
 
 - `node tools/verify-perf-workflow-contract.mjs`
@@ -52,11 +59,17 @@ VERIFY_PERF_WORKFLOW_CONTRACT: PASS
 VERIFY_RULEBOOKS: PASS
 VERIFY_RELEASE_ALIGNED: PASS
 VERIFY_PERF_WORKFLOW_CONTRACT: PASS
+VERIFY_PERF_HISTORY_CONTRACT: PASS
 PASS: perf URLs SSOT aligned
 VERIFY_BUDGETS: PASS
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-NOTES
-- Trend step is CI tooling only; no runtime JS/CSS behavior was changed.
+WORKFLOW DRY-RUN SANITY (STATIC)
+- Workflow includes:
+  - `permissions: contents: write`
+  - `git fetch origin perf-history:perf-history`
+  - `git push origin perf-history`
+  - trend append + build steps
+- Local environment cannot execute GitHub-token push to remote branch; this is validated in CI run context.
