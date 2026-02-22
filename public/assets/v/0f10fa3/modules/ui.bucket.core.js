@@ -1433,24 +1433,27 @@ services.postmeta = services.postmeta || {};
 services.postmeta.getFromContext = services.postmeta.getFromContext || function(ctxEl){
 var root = ctxEl && ctxEl.querySelector ? ctxEl : d;
 var doc = (root && root.ownerDocument) ? root.ownerDocument : d;
-var node = root.querySelector ? root.querySelector('.gg-postmeta') : null;
+var nodes = root && root.querySelectorAll ? root.querySelectorAll('.gg-postmeta') : null;
+var node = (nodes && nodes.length) ? nodes[nodes.length - 1] : null;
 var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '' };
 var labels = [], i = 0, text = '', key = '', href = '', body = null, meta = null, seen = {}, parts = [];
 function clean(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function split(raw, rx){
-  var src = clean(raw), list = src ? src.split(rx || /[;,]/) : [], out = [];
+  var src = clean(raw), list = src ? src.split(rx || /[;,]/) : [], outParts = [];
   seen = {};
   for (var j = 0; j < list.length; j++) {
     var one = clean(list[j]), k = one.toLowerCase();
     if (!one || seen[k]) continue;
     seen[k] = 1;
-    out.push(one);
+    outParts.push(one);
   }
-  return out;
+  return outParts;
 }
 function tagKey(raw){ return clean(raw).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, ''); }
 if (node) {
   out.author = clean(node.getAttribute('data-author') || '');
+  out.updated = clean(node.getAttribute('data-updated') || '');
+  out.readMin = clean(node.getAttribute('data-read-min') || '');
   parts = split(node.getAttribute('data-contributors') || '', /\s*;\s*/);
   for (i = 0; i < parts.length; i++) {
     if (out.author && parts[i].toLowerCase() === out.author.toLowerCase()) continue;
@@ -1462,8 +1465,6 @@ if (node) {
     if (!key) continue;
     out.tags.push({ key: key, text: parts[i], href: '/p/tags.html?tag=' + encodeURIComponent(key) });
   }
-  out.updated = clean(node.getAttribute('data-updated') || '');
-  out.readMin = clean(node.getAttribute('data-read-min') || '');
 }
 if (!out.author && root && root.getAttribute) {
   out.author = clean(root.getAttribute('data-author-name') || root.getAttribute('data-author') || '');
@@ -2674,7 +2675,7 @@ if(act === 'focus'){
 if(act === 'save'){ savePost(article); return; }
 
 if(act === 'comments'){
-  toggleComments(btn); // <- ini sekarang bener-bener toggle (open/close)
+  toggleComments(btn);
   return;
 }
 
@@ -4306,7 +4307,7 @@ GG.modules.ReadingProgress = (function(){
   function init(dock, main){
     mainEl = main || qs('main.gg-main[data-gg-surface]');
     var surface = mainEl ? mainEl.getAttribute('data-gg-surface') : '';
-    if(surface !== 'post' && surface !== 'postdetail' && surface !== 'page') return;
+    if(surface !== 'post' && surface !== 'page') return;
 
     article = qs('.gg-post__content.post-body.entry-content') ||
               qs('.post-body.entry-content') ||
@@ -4731,7 +4732,7 @@ GG.app.plan = [
 { name: 'Skeleton.init', selector: '#postcards', init: function(){ if (GG.modules.Skeleton) GG.modules.Skeleton.init(); } },
 { name: 'Panels.init', selector: 'main.gg-main[data-gg-surface]', init: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
 { name: 'InfoPanel.init', selector: '.gg-info-panel[data-gg-panel="info"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
-{ name: 'PostDetail.init', selector: 'main.gg-main[data-gg-surface="post"], main.gg-main[data-gg-surface="page"], main.gg-main[data-gg-surface="postdetail"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+{ name: 'PostDetail.init', selector: 'main.gg-main[data-gg-surface="post"], main.gg-main[data-gg-surface="page"]', init: function(){ var main = document.querySelector('main.gg-main[data-gg-surface]'); if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
 { name: 'labelTree.init', selector: '.gg-labeltree[data-gg-module="labeltree"]', init: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
 { name: 'breadcrumbs.init', selector: 'nav.gg-post__breadcrumbs', init: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
 { name: 'readTime.init', selector: '[data-slot="readtime"]', init: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
@@ -4788,7 +4789,7 @@ var b = GG.__uiBuckets = GG.__uiBuckets || {};
 var loads = [];
 var main = document.querySelector('main.gg-main[data-gg-surface],main.gg-main');
 var surface = main ? (main.getAttribute('data-gg-surface') || '').toLowerCase() : '';
-var needPost = surface === 'post' || surface === 'page' || surface === 'postdetail' || !!document.querySelector('article.gg-post,.gg-post__content.post-body.entry-content,.post-body.entry-content,.post-body,#gg-toc');
+var needPost = surface === 'post' || surface === 'page';
 var needListing = !!document.querySelector('#postcards,[data-gg-module="loadmore"],#loadmore,.gg-labeltree[data-gg-module="labeltree"],[data-gg-module="labeltree"]');
 if (!GG.boot || typeof GG.boot.loadModule !== 'function') return Promise.resolve(true);
 if (needPost && !b.post) loads.push(GG.boot.loadModule('ui.bucket.post.js'));
@@ -4813,6 +4814,8 @@ function runTasks(){
     { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
     { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
     { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
+    { name: 'TOC.reinit', fn: function(){ if (GG.modules.TOC && typeof GG.modules.TOC.init === 'function') GG.modules.TOC.init(document, { headings: 'h2' }); } },
+    { name: 'postInfoAuthors.reinit', fn: function(){ if (GG.modules.postInfoAuthors && GG.modules.postInfoAuthors.init) GG.modules.postInfoAuthors.init(document); } },
     { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
     { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
     { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
@@ -4968,10 +4971,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var shouldScroll = fromPrimary && o.scroll !== false;
     if (!host) return false;
 
-    if (fromPrimary) {
-      host.setAttribute('data-gg-comments-primary', '1');
-      markLoaded(host);
-    }
+    if (fromPrimary) markLoaded(host);
 
     if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
       GG.core.commentsGate.init();
@@ -4980,10 +4980,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (fromPrimary) {
       var btn = host.querySelector ? host.querySelector('[data-gg-comments-load]') : null;
       if (btn) {
-        if (!host.__ggCommentsPrimaryAutoTriggered) {
-          host.__ggCommentsPrimaryAutoTriggered = true;
-          try { btn.click(); } catch (_) {}
-        }
+        try { btn.click(); } catch (_) {}
       } else if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.load === 'function' && !host.__ggCommentsLoaded) {
         GG.core.commentsGate.load(host, 'primary-action');
       }
@@ -5024,9 +5021,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     for (i = 0; i < hosts.length; i++) {
       host = hosts[i];
       if (!host || !host.setAttribute) continue;
-      host.removeAttribute('data-gg-comments-primary');
       if (!host.__ggCommentsLoaded) host.removeAttribute('data-gg-comments-loaded');
-      host.__ggCommentsPrimaryAutoTriggered = false;
       btn = host.querySelector ? host.querySelector('[data-gg-comments-load]') : null;
       if (btn && !host.__ggCommentsLoaded) {
         btn.hidden = false;
@@ -5351,7 +5346,7 @@ function isSystemPath(pathname){
   }
 
   function shouldMobile(){
-    return window.matchMedia && window.matchMedia('(max-width: 960px)').matches;
+    return window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
   }
 
   GG.modules.Panels = (function () {
@@ -5463,7 +5458,8 @@ function isSystemPath(pathname){
       });
     }
     function isPostSurface(){
-      return getAttr(main, 'data-gg-surface') === 'post';
+      var surface = getAttr(main, 'data-gg-surface') || '';
+      return surface === 'post' || surface === 'page';
     }
 
     function setLeft(state, opts){
@@ -5509,7 +5505,9 @@ function updateBackdrop(){
   var surface = getAttr(main, 'data-gg-surface') || '';
   var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
   var rightOpen = getRightState() === 'open';
-  var show = surface[0] === 'p' && (leftOpen || rightOpen);
+  var mobileOverlay = shouldMobile();
+  var isDetailSurface = surface === 'post' || surface === 'page';
+  var show = mobileOverlay && isDetailSurface && (leftOpen || rightOpen);
   var activeAside = rightOpen ? right : (leftOpen ? left : null);
   if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
@@ -5653,7 +5651,7 @@ function updateBackdrop(){
       main = qs('main.gg-main[data-gg-surface]') || qs('main.gg-main') || qs('main');
       if (!main) return;
       var surface = main.getAttribute('data-gg-surface') || '';
-      var isPostSurface = surface === 'post';
+      var isPostSurface = surface === 'post' || surface === 'page';
       var surfaceChanged = main.__ggPanelsSurface !== surface;
       if (surfaceChanged) main.__ggPanelsSurface = surface;
 

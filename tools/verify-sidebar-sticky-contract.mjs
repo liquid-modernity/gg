@@ -39,20 +39,49 @@ if (!fs.existsSync(cssPath)) {
     fail("missing position: sticky on sidebar contract");
   }
 
-  const requiredScrollable = ["#gg-left-sidebar-list", "#gg-toc .gg-toc__list"];
-  for (const sel of requiredScrollable) {
-    const candidates = blocks.filter((b) => b.selector.includes(sel));
-    if (!candidates.length) {
-      fail(`missing selector block: ${sel}`);
-      continue;
-    }
-    const ok = candidates.some((b) => {
+  const tocScrollableSel = "#gg-toc .gg-toc__list";
+  const tocCandidates = blocks.filter((b) => b.selector.includes(tocScrollableSel));
+  if (!tocCandidates.length) {
+    fail(`missing selector block: ${tocScrollableSel}`);
+  } else {
+    const tocOk = tocCandidates.some((b) => {
       const hasOverflowAuto = /overflow(?:-y)?\s*:\s*auto/i.test(b.body);
       const hasMinHeight = /min-height\s*:\s*0/i.test(b.body);
       return hasOverflowAuto && hasMinHeight;
     });
-    if (!ok) {
-      fail(`${sel} must include min-height:0 + overflow:auto`);
+    if (!tocOk) {
+      fail(`${tocScrollableSel} must include min-height:0 + overflow:auto`);
+    }
+  }
+
+  const listSel = "#gg-left-sidebar-list";
+  const listCandidates = blocks.filter((b) => b.selector.includes(listSel));
+  if (!listCandidates.length) {
+    fail(`missing selector block: ${listSel}`);
+  } else {
+    const listHasMinHeight = listCandidates.some((b) => /min-height\s*:\s*0/i.test(b.body));
+    if (!listHasMinHeight) {
+      fail(`${listSel} must include min-height:0`);
+    }
+
+    // New contract: listing uses a dedicated scroll zone (pages-only) instead of scrolling whole sidebar.
+    const pagesSel = '#gg-left-sidebar-list [data-gg-scroll="pages"]';
+    const pagesCandidates = blocks.filter((b) => b.selector.includes(pagesSel));
+    const pagesOk = pagesCandidates.some((b) => {
+      const hasOverflowAuto = /overflow(?:-y)?\s*:\s*auto/i.test(b.body);
+      const hasMinHeight = /min-height\s*:\s*0/i.test(b.body);
+      return hasOverflowAuto && hasMinHeight;
+    });
+
+    // Backward-compatible pass path: whole list is scrollable.
+    const legacyOk = listCandidates.some((b) => {
+      const hasOverflowAuto = /overflow(?:-y)?\s*:\s*auto/i.test(b.body);
+      const hasMinHeight = /min-height\s*:\s*0/i.test(b.body);
+      return hasOverflowAuto && hasMinHeight;
+    });
+
+    if (!pagesOk && !legacyOk) {
+      fail(`${pagesSel} must include min-height:0 + overflow:auto (or keep legacy ${listSel} scrollable)`);
     }
   }
 }

@@ -57,8 +57,10 @@ if (!fs.existsSync(coreAbs)) {
   if (!core.includes("GG.services.postmeta")) {
     fail("core missing GG.services.postmeta export");
   }
-  if (!core.includes("querySelector('.gg-postmeta')")) {
-    fail("core missing canonical .gg-postmeta query");
+  const hasSingle = core.includes("querySelector('.gg-postmeta')");
+  const hasMulti = core.includes("querySelectorAll('.gg-postmeta')");
+  if (!hasSingle && !hasMulti) {
+    fail("core missing .gg-postmeta query (single or multi-node)");
   }
 }
 
