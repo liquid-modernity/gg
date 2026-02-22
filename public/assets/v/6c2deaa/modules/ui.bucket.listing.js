@@ -2294,6 +2294,10 @@
       }
       return out;
     }
+    function countCards(list){
+      if (!list || !list.querySelectorAll) return 0;
+      return list.querySelectorAll('.gg-post-card').length;
+    }
     function sanitizeClone(node, usedIds){
       var clone = node.cloneNode(true);
       var all = [clone];
@@ -2314,14 +2318,19 @@
       return clone;
     }
     function collectCards(doc){
-      var src = qs(doc, LIST_SEL);
-      if (!src) return [];
+      var src = qs(doc, LIST_SEL) ||
+                qs(doc, '#Blog1 .blog-posts') ||
+                qs(doc, '.blog-posts');
       var nodes = [];
-      var children = src.children ? Array.prototype.slice.call(src.children) : [];
-      for (var i = 0; i < children.length; i++) {
-        if (children[i].classList && children[i].classList.contains('gg-post-card')) nodes.push(children[i]);
+      if (src) {
+        var children = src.children ? Array.prototype.slice.call(src.children) : [];
+        for (var i = 0; i < children.length; i++) {
+          if (children[i].classList && children[i].classList.contains('gg-post-card')) nodes.push(children[i]);
+        }
+        if (!nodes.length) nodes = Array.prototype.slice.call(src.querySelectorAll('.gg-post-card'));
+      } else {
+        nodes = Array.prototype.slice.call(doc.querySelectorAll('article.gg-post-card'));
       }
-      if (!nodes.length) nodes = Array.prototype.slice.call(src.querySelectorAll('.gg-post-card'));
       return nodes;
     }
     function appendCards(state, nodes){
@@ -2383,19 +2392,24 @@
     function resolveParser(){
       return G.core && typeof G.core.parseHtmlDoc === 'function' ? G.core.parseHtmlDoc : null;
     }
-    function loadNext(state){
-      if (!state || state.loading || state.done) return;
+    function loadNext(state, opts){
+      opts = opts || {};
+      if (!state || state.loading || state.done) return Promise.resolve(0);
       var next = state.nextUrl || pickNext(state.wrap) || firstUrl();
       if (!next) {
         state.nextUrl = '';
         syncButton(state);
-        return;
+        return Promise.resolve(0);
       }
       state.nextUrl = next;
       setError(state, '');
       setLoading(state, true);
-      setLabel(state, 'Loading...');
-      fetch(next, { credentials: 'omit' })
+      if (!opts.preserveLabel) setLabel(state, 'Loading...');
+      return fetch(next, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Accept': 'text/html' }
+      })
         .then(function(res){
           if (!res || !res.ok) throw new Error('request-failed');
           return res.text().then(function(html){ return { html: html, url: res.url || next }; });
@@ -2405,18 +2419,47 @@
           if (!parseDoc) throw new Error('parser-unavailable');
           var doc = parseDoc(payload && payload.html, (payload && payload.url) || next);
           if (!doc) throw new Error('parse-failed');
-          appendCards(state, collectCards(doc));
+          var added = appendCards(state, collectCards(doc));
           state.nextUrl = pickNext(doc);
-          setLabel(state, state.nextUrl ? state.baseLabel : 'No more articles');
+          if (!opts.preserveLabel) setLabel(state, state.nextUrl ? state.baseLabel : 'No more articles');
+          return added;
         })
-        .catch(function(){
-          setError(state, 'Failed to load more articles. Tap again to retry.');
-          setLabel(state, 'Retry loading');
+        .catch(function(err){
+          if (!opts.silent) {
+            setError(state, 'Failed to load more articles. Tap again to retry.');
+            setLabel(state, 'Retry loading');
+          }
+          if (w.GG_DEBUG && w.console && typeof w.console.warn === 'function') {
+            w.console.warn('[loadmore] fetch failed', err);
+          }
+          return 0;
         })
         .finally(function(){
           setLoading(state, false);
           syncButton(state);
         });
+    }
+    function ensureMinimum(state){
+      if (!state || state._ensurePending) return;
+      if (!state.list || !state.nextUrl) return;
+      var target = state.minCards || 9;
+      if (countCards(state.list) >= target) return;
+      state._ensurePending = true;
+      var tries = 3;
+      function step(){
+        if (!state.list || countCards(state.list) >= target || !state.nextUrl || tries <= 0) {
+          state._ensurePending = false;
+          syncButton(state);
+          return;
+        }
+        tries -= 1;
+        loadNext(state, { silent: true, preserveLabel: true }).then(function(){
+          step();
+        }, function(){
+          step();
+        });
+      }
+      step();
     }
     function bind(root){
       var wrap = qs(root, WRAP_SEL);
@@ -2438,6 +2481,7 @@
       state.labelEl = qs(btn, '.gg-loadmore__label');
       state.baseLabel = state.labelEl ? String(state.labelEl.textContent || '').trim() : 'Load More Articles';
       state.nextUrl = pickNext(wrap) || firstUrl();
+      state.minCards = 9;
       state.loading = false;
       state.done = !state.nextUrl;
       wrap.__ggLoadMoreState = state;
@@ -2451,6 +2495,7 @@
       setError(state, '');
       setLabel(state, state.baseLabel || 'Load More Articles');
       syncButton(state);
+      ensureMinimum(state);
     }
     function init(root){ bind(root || d); }
     function rehydrate(root){ bind(root || d); }

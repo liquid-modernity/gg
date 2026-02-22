@@ -266,6 +266,91 @@
   else autoInitToc();
 })(window.GG = window.GG || {}, window, document);
 
+(function(GG, w, d){
+  'use strict';
+  if (!GG) return;
+  function isVisible(el){
+    if (!el || typeof el.getClientRects !== 'function') return false;
+    if (el.hidden) return false;
+    if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return false;
+    return el.getClientRects().length > 0;
+  }
+  function resolveCommentsScope(container){
+    if (!container || !container.querySelector) return null;
+    if (container.matches && (container.matches('[data-gg-panel="comments"]') || container.matches('.gg-comments-panel'))) {
+      return container;
+    }
+    return container.querySelector('[data-gg-panel="comments"]:not([hidden])') ||
+           container.querySelector('.gg-comments-panel:not([hidden])');
+  }
+  function trapComments(container, opts){
+    if (!container) return function(){};
+    var options = opts || {};
+    var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
+    function focusables(){
+      return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){
+        if (!el || (el.hasAttribute && el.hasAttribute('disabled'))) return false;
+        return isVisible(el);
+      });
+    }
+    function focusNoScroll(el){
+      if (!el || typeof el.focus !== 'function') return;
+      var x = w.pageXOffset || 0;
+      var y = w.pageYOffset || 0;
+      try { el.focus({ preventScroll: true }); }
+      catch (_) {
+        try { el.focus(); w.scrollTo(x, y); } catch(__) {}
+      }
+    }
+    function onKey(e){
+      if (!e || e.key !== 'Tab') return;
+      var list = focusables();
+      if (!list.length) {
+        container.setAttribute('tabindex', '-1');
+        focusNoScroll(container);
+        e.preventDefault();
+        return;
+      }
+      var first = list[0];
+      var last = list[list.length - 1];
+      var active = d.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !container.contains(active)) {
+          e.preventDefault();
+          focusNoScroll(last);
+        }
+      } else if (active === last || !container.contains(active)) {
+        e.preventDefault();
+        focusNoScroll(first);
+      }
+    }
+    container.addEventListener('keydown', onKey);
+    if (options.autofocus !== false) {
+      var list = focusables();
+      if (list[0]) focusNoScroll(list[0]);
+    }
+    return function(){ container.removeEventListener('keydown', onKey); };
+  }
+  function patchFocusTrap(){
+    var S = GG.services = GG.services || {};
+    var A = S.a11y;
+    if (!A || typeof A.focusTrap !== 'function' || A.__ggCommentsTrapPatched) return false;
+    var original = A.focusTrap;
+    A.focusTrap = function(container, opts){
+      var commentsScope = resolveCommentsScope(container);
+      if (commentsScope) return trapComments(commentsScope, opts);
+      return original(container, opts);
+    };
+    A.__ggCommentsTrapPatched = true;
+    return true;
+  }
+  if (!patchFocusTrap()) {
+    if (GG.boot && typeof GG.boot.onReady === 'function') GG.boot.onReady(patchFocusTrap);
+    if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', patchFocusTrap, { once: true });
+    else w.setTimeout(patchFocusTrap, 0);
+  }
+})(window.GG = window.GG || {}, window, document);
+
 (function (GG, d) {
   'use strict';
   GG.modules = GG.modules || {};
