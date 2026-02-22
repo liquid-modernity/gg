@@ -1810,7 +1810,10 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' expr:data-author-avatar='data:post.author.authorPhoto ? data:post.author.authorPhoto.url : &quot;&quot;' expr:data-author-name='data:post.author.name' expr:data-author-url='data:post.author.profileUrl ?: &quot;&quot;' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' expr:data-author-url='data:post.author.profileUrl ?: &quot;&quot;' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+<b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
+  <b:attr name='data-author-avatar' expr:value='data:post.author.authorPhoto.url'/>
+</b:if>
 <b:if cond='data:post.labels'>
   <div class='gg-post-card__labels' hidden='hidden'>
     <b:loop values='data:post.labels' var='lab'>
@@ -1819,9 +1822,17 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </div>
 </b:if>
 <b:if cond='data:post.labels'>
-  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+  <b:if cond='data:post.lastUpdated'>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+  <b:else/>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+  </b:if>
 <b:else/>
-  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+  <b:if cond='data:post.lastUpdated'>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+  <b:else/>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+  </b:if>
 </b:if>
 
     <a class='gg-post-card__thumb' expr:href='data:post.url'>
@@ -1976,9 +1987,17 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </h1>      
     </header>
     <b:if cond='data:post.labels'>
-      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+      <b:if cond='data:post.lastUpdated'>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+      <b:else/>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+      </b:if>
     <b:else/>
-      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+      <b:if cond='data:post.lastUpdated'>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+      <b:else/>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+      </b:if>
     </b:if>
     <!-- /GAGA HEADER -->
 <!-- GAGA BREADCRUMBS -->

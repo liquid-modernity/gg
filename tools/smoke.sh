@@ -406,6 +406,7 @@ post_detail_contract_check() {
       else
         grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
       fi
+      echo "HINT: Blog1 crash marker = Blogger template error. Paste updated index.prod.xml into Blogger PROD theme, then re-run deploy."
     elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
       echo "DEBUG: sentinel missing strict gg-post marker (${sentinel_url})"
       grep -Ein -C 1 "gg-post|gg-post__title|gg-post__content|error_page|gg-error__title|There was an error processing the markup" <<<"${sentinel_html}" | head -n 40 || true
