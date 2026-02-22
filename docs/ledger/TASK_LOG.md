@@ -2319,3 +2319,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): gate required release realignment build and a minimal listing budget ceiling update due deterministic bundle growth from loadmore hardening
 - RISKS: low/med; manual browser sanity on `/blog` + SPA transition still required for UX confirmation
 - NEXT: TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
+
+## 2026-02-22 — TASK-UX-COMMENTS-SINGLE-CTA-20260222 — Single-CTA comments loading
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-COMMENTS-SINGLE-CTA-20260222
+- TITLE: Single-CTA comment loading + hide internal load button
+- MODE (DEV/PROD impact): post-detail comments UX flow + verifier/gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: make primary comment button load comments immediately, remove second internal load CTA layer, keep native Blogger comments behavior intact
+- CHANGES (files touched): public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/main.css; tools/verify-comments-single-cta.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-comments-single-cta.mjs; npm run gate:prod
+- CI STATUS: pending next pipeline run
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): comments-single-cta verifier PASS; gate:prod PASS (offline smoke fallback in local sandbox)
+- NOTES (gotchas): core bundle grew slightly due comments helper; perf budget raw ceiling for core adjusted minimally to remain deterministic
+- RISKS: low; manual click-flow sanity still required on real browser runtime
+- NEXT: TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222

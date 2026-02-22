@@ -4319,6 +4319,12 @@ main.gg-main[data-gg-right-mode="comments"] .gg-comments-panel__body {
   --gg-dock-width: auto;
 }
 
+.gg-post__comments[data-gg-comments-loaded="1"] [data-gg-comments-load],
+.gg-post__comments[data-gg-comments-primary="1"] [data-gg-comments-load],
+.gg-comments[data-gg-comments-loaded="1"] [data-gg-comments-load] {
+  display: none !important;
+}
+
 
 #comments > .gg-comments__head {
   position: sticky;

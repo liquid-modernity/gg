@@ -22,6 +22,7 @@ run npm run verify:xml
 run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
 run node tools/verify-postmeta-contract.mjs
+run node tools/verify-comments-single-cta.mjs
 run node tools/verify-loadmore-contract.mjs
 run node tools/verify-route-a11y-contract.mjs
 run node tools/verify-core-swap-no-innerhtml.mjs

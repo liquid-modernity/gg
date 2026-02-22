@@ -1,66 +1,40 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-UX-LISTING-LOADMORE-FIX-20260222
-TITLE: Restore Load More Articles (pager-based fetch + safe append + rehydrate)
+TASK_ID: TASK-UX-COMMENTS-SINGLE-CTA-20260222
+TITLE: Single-CTA comment loading (auto-load + hide internal load button)
 
-ROOT CAUSE CHECK
-- Selector and binding (before fix):
-  - Wrapper selector: `[data-gg-module="loadmore"]`
-  - Button selector: `#loadmore`
-  - Handler function: `fetchNext()` inside legacy `GG.modules.LoadMore` block in `public/assets/latest/modules/ui.bucket.core.js`
-  - Fetch URL source: `button[data-next]` then fallback `#more-fallback` (template fallback selector was stale), not canonical Blogger pager first.
-- Failure mode (reproduced from code path + runtime contract mismatch):
-  - Legacy bind marked `btn.__ggLoadMoreBound = true` before list readiness check; if list container was not ready at init moment, click handler could end up effectively unavailable/stale.
-  - Next-page discovery relied on stale fallback selector instead of canonical `.blog-pager-older-link`, causing next URL state to become fragile/stuck.
-  - Rehydrate path called `LoadMore.init()` only; no dedicated `rehydrate` contract to guarantee deterministic rebind after SPA navigation.
-
-SUMMARY OF FIX
-- Moved robust loadmore implementation into listing module contract:
-  - Added `GG.modules.listingLoadMore` in `public/assets/latest/modules/ui.bucket.listing.js` with:
-    - idempotent bind guard `data-gg-bound-load-more` (`dataset.ggBoundLoadMore`),
-    - in-flight guard (`state.loading`) to prevent double-load,
-    - loading state (`aria-busy`, `gg-is-loading`) and retryable inline error status,
-    - canonical pager discovery via `.blog-pager-older-link` / `#blog-pager`,
-    - safe append (`cloneNode(true)` + `appendChild`) and script neutralization,
-    - duplicate card-key filtering and duplicate id cleanup,
-    - explicit `init(root)` and `rehydrate(root)` entrypoints.
-- Updated core module wiring in `public/assets/latest/modules/ui.bucket.core.js`:
-  - `GG.modules.LoadMore` is now a proxy to listing implementation (`GG.modules.listingLoadMore`) with lazy module load fallback.
-  - Rehydrate pipeline now prefers `LoadMore.rehydrate(document)`.
-  - Exported parser contract for listing fetch parse path: `GG.core.parseHtmlDoc`.
-- Added guardrail verifier:
-  - `tools/verify-loadmore-contract.mjs`
-  - Wired into `tools/gate-prod.sh`.
-- Adjusted budget ceiling for `modules/ui.bucket.listing.js` in `tools/perf-budgets.json` to match current deterministic artifact size after loadmore hardening.
+SUMMARY
+- Added `GG.modules.Comments.ensureLoaded()` in `public/assets/latest/modules/ui.bucket.core.js` as a dedicated primary comment CTA loader.
+- Updated post detail comment button flow (`data-gg-postbar='comments'`) so opening comments panel now calls `GG.modules.Comments.ensureLoaded({ fromPrimaryAction:true })`.
+- Internal comments gate button (`[data-gg-comments-load]`) is auto-triggered once when primary comment button is used, then hidden and state-marked with `data-gg-comments-loaded='1'`.
+- Added scroll-to-comments behavior only for explicit primary comment button click path.
+- Preserved native Blogger comments as black-box content (no rewrite of native internal comment markup/flows).
+- Added guardrail verifier `tools/verify-comments-single-cta.mjs` and wired it into `tools/gate-prod.sh`.
+- Bumped core raw perf budget ceiling minimally due deterministic code-size increase from new comments single-cta path.
 
 FILES CHANGED
-- public/assets/latest/modules/ui.bucket.listing.js
 - public/assets/latest/modules/ui.bucket.core.js
-- tools/verify-loadmore-contract.mjs
+- public/assets/latest/main.css
+- tools/verify-comments-single-cta.mjs
 - tools/gate-prod.sh
 - tools/perf-budgets.json
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
-- index.prod.xml
-- public/sw.js
-- src/worker.js
-- public/assets/v/<RELEASE_ID>/*
-- removed old pinned release dirs: public/assets/v/92a57d2/* and public/assets/v/b869b6d/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-loadmore-contract.mjs`
+- `node tools/verify-comments-single-cta.mjs`
 ```text
-PASS: loadmore contract
+PASS: comments single-cta contract
 ```
 
 - `npm run gate:prod`
 ```text
-PASS: loadmore contract
+PASS: comments single-cta contract
 VERIFY_PERF_BUDGETS: PASS
 PASS: gate:prod
 ```
 
-NOTES
-- Manual browser sanity checks for `/blog` and home listing (multi-click loadmore and SPA navigation path) remain required on target runtime browser.
+MANUAL SANITY TARGET
+- Open post detail -> click comment button once -> comments load and appear in comments panel without showing a second “Load comments” step.

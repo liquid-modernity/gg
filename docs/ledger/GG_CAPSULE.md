@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-UX-LISTING-LOADMORE-FIX-20260222: Load more now uses canonical Blogger pager flow, safe append, and SPA-safe rehydrate contract.
+- TASK-UX-COMMENTS-SINGLE-CTA-20260222: Post detail comments now load via single primary CTA (auto-load, no second internal load layer).
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 876cfbd
+RELEASE_ID: 2903d04
 RELEASE_HISTORY:
-- 876cfbd
-- 3c77e3b
-PROD_PINNED_JS: /assets/v/876cfbd/main.js
-PROD_PINNED_APP: /assets/v/876cfbd/app.js
-PROD_PINNED_CSS: /assets/v/876cfbd/main.css
+- 2903d04
+- 5499229
+PROD_PINNED_JS: /assets/v/2903d04/main.js
+PROD_PINNED_APP: /assets/v/2903d04/app.js
+PROD_PINNED_CSS: /assets/v/2903d04/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-LISTING-LOADMORE-FIX-20260222 fixed loadmore state machine (no double-load, retry state, pager-based next URL, SPA rehydrate).
+- 2026-02-22 TASK-UX-COMMENTS-SINGLE-CTA-20260222 added single-cta comments loader + comments load guardrail verifier.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
