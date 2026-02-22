@@ -42,9 +42,19 @@ Last updated: 2026-02-22
 1. Open repo `Settings` -> `Pages`.
 2. Source: `Deploy from a branch`.
 3. Branch: `perf-history`.
-4. Folder: `/perf`.
+4. Folder: `/(root)`.
 5. Save and wait for publish status.
 6. Replace `DASHBOARD_URL: XXX` above with the exact published URL.
+7. Dashboard file is served from `perf/index.html`:
+   - `https://<owner>.github.io/<repo>/perf/index.html`
+
+## Bootstrap Branch (Automatic)
+- If `perf-history` is missing, run workflow: `Perf History Bootstrap`.
+- The workflow creates/updates:
+  - `perf/history.ndjson`
+  - `perf/latest.json`
+  - `perf/index.html`
+- After bootstrap succeeds, configure Pages with branch `perf-history` and folder `/(root)`.
 
 ## Growth / Rotation Policy
 - Current mode: append-only, no rotation.
