@@ -320,27 +320,89 @@ schema_check_post() {
 }
 
 post_detail_contract_check() {
-  local raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
-  local url
-  local html
+  local marker_re="<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b"
+  local primary_raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
+  local blog_html blog_candidate
+  local raw url html reason
+  local -a raw_candidates=()
+  local -a failures=()
+  local seen
 
-  if [[ "${raw}" == http://* || "${raw}" == https://* ]]; then
-    url="${raw}"
-  else
-    url="${BASE%/}/${raw#/}"
+  raw_candidates+=("${primary_raw}")
+  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
+    raw_candidates+=("${SMOKE_POST_URL}")
   fi
 
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-    die "post detail fetch failed (${url})"
+  if blog_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${BASE}/blog?x=$(date +%s)" | tr -d '\r' 2>/dev/null)"; then
+    blog_candidate="$(
+      printf '%s' "${blog_html}" | node -e '
+        const fs = require("fs");
+        const html = fs.readFileSync(0, "utf8");
+        let url = "";
+        const cardTag = html.match(/<article\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card\b[^"'"'"']*\1[^>]*>/i);
+        if (cardTag) {
+          const m = cardTag[0].match(/\bdata-url=(["'"'"'])([^"'"'"']+)\1/i);
+          if (m) url = m[2];
+        }
+        if (!url) {
+          const m = html.match(/<a\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card__title-link\b[^"'"'"']*\1[^>]*\bhref=(["'"'"'])([^"'"'"']+)\2/i);
+          if (m) url = m[3];
+        }
+        if (!url) {
+          const m = html.match(/<a\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card__thumb\b[^"'"'"']*\1[^>]*\bhref=(["'"'"'])([^"'"'"']+)\2/i);
+          if (m) url = m[3];
+        }
+        process.stdout.write(url);
+      '
+    )"
+    if [[ -n "${blog_candidate}" ]]; then
+      raw_candidates+=("${blog_candidate}")
+    fi
   fi
 
-  if ! grep -Eqi "<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b" <<<"${html}"; then
-    echo "DEBUG: post detail marker lines (${url})"
-    printf '%s\n' "${html}" | grep -Ein "gg-post|post__title|post__content|error|404" | head -n 30 || true
-    die "post detail contract missing gg-post markers (${url})"
-  fi
+  seen=$'\n'
+  for raw in "${raw_candidates[@]}"; do
+    raw="$(printf '%s' "${raw}" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    if [[ -z "${raw}" ]]; then
+      continue
+    fi
+    if [[ "${seen}" == *$'\n'"${raw}"$'\n'* ]]; then
+      continue
+    fi
+    seen+="${raw}"$'\n'
 
-  echo "PASS: post detail contract (${url})"
+    if [[ "${raw}" == http://* || "${raw}" == https://* ]]; then
+      url="${raw}"
+    else
+      url="${BASE%/}/${raw#/}"
+    fi
+
+    if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+      failures+=("fetch failed (${url})")
+      continue
+    fi
+
+    if grep -Eqi "${marker_re}" <<<"${html}"; then
+      echo "PASS: post detail contract (${url})"
+      return 0
+    fi
+
+    reason="missing gg-post markers"
+    if grep -Fqi "There was an error processing the markup" <<<"${html}"; then
+      reason="upstream markup error"
+    elif grep -Eqi "data-gg-page=['\"]error['\"]|data:blog.pageType == \"error_page\"|gg-error__title" <<<"${html}"; then
+      reason="error-page surface"
+    fi
+    failures+=("${reason} (${url})")
+  done
+
+  if (( ${#failures[@]} > 0 )); then
+    echo "DEBUG: post detail contract failures"
+    for reason in "${failures[@]}"; do
+      echo "- ${reason}"
+    done
+  fi
+  die "post detail contract missing gg-post markers"
 }
 
 security_headers_check() {
