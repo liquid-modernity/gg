@@ -170,6 +170,7 @@ const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "2");
 const keepCount = Number.isFinite(KEEP_RELEASES)
   ? Math.min(Math.max(KEEP_RELEASES, 1), 5)
   : 5;
+const PRUNE_ASSET_RELEASES = /^(1|true|yes)$/i.test(String(process.env.PRUNE_ASSET_RELEASES || ""));
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
@@ -276,7 +277,9 @@ replaceAllOrThrow(
 );
 
 updateCapsuleAutogen({ releaseId, releaseHistory });
-pruneAssetReleases({ keepReleaseIds: releaseHistory });
+if (PRUNE_ASSET_RELEASES) {
+  pruneAssetReleases({ keepReleaseIds: releaseHistory });
+}
 
 console.log(`RELEASE_ID ${releaseId}`);
 console.log(`FULL_HASH ${fullHash}`);
