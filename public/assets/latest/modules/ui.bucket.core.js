@@ -1348,6 +1348,69 @@ GG.services.images.resizeThumbUrl = GG.services.images.resizeThumbUrl || service
 GG.services.images.buildSrcset = GG.services.images.buildSrcset || services.images.buildSrcset;
 GG.services.images.setIntrinsicDims = GG.services.images.setIntrinsicDims || services.images.setIntrinsicDims;
 
+services.postmeta = services.postmeta || {};
+services.postmeta.getFromContext = services.postmeta.getFromContext || function(ctxEl){
+var root = ctxEl && ctxEl.querySelector ? ctxEl : d;
+var doc = (root && root.ownerDocument) ? root.ownerDocument : d;
+var node = root.querySelector ? root.querySelector('.gg-postmeta') : null;
+var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '' };
+var labels = [], i = 0, text = '', key = '', href = '', body = null, meta = null, seen = {}, parts = [];
+function clean(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
+function split(raw, rx){
+  var src = clean(raw), list = src ? src.split(rx || /[;,]/) : [], out = [];
+  seen = {};
+  for (var j = 0; j < list.length; j++) {
+    var one = clean(list[j]), k = one.toLowerCase();
+    if (!one || seen[k]) continue;
+    seen[k] = 1;
+    out.push(one);
+  }
+  return out;
+}
+function tagKey(raw){ return clean(raw).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, ''); }
+if (node) {
+  out.author = clean(node.getAttribute('data-author') || '');
+  parts = split(node.getAttribute('data-contributors') || '', /\s*;\s*/);
+  for (i = 0; i < parts.length; i++) {
+    if (out.author && parts[i].toLowerCase() === out.author.toLowerCase()) continue;
+    out.contributors.push(parts[i]);
+  }
+  parts = split(node.getAttribute('data-tags') || '', /\s*,\s*/);
+  for (i = 0; i < parts.length; i++) {
+    key = tagKey(parts[i]);
+    if (!key) continue;
+    out.tags.push({ key: key, text: parts[i], href: '/p/tags.html?tag=' + encodeURIComponent(key) });
+  }
+  out.updated = clean(node.getAttribute('data-updated') || '');
+  out.readMin = clean(node.getAttribute('data-read-min') || '');
+}
+if (!out.author && root && root.getAttribute) {
+  out.author = clean(root.getAttribute('data-author-name') || root.getAttribute('data-author') || '');
+}
+if (!out.tags.length && root && root.querySelectorAll) {
+  labels = root.querySelectorAll('.gg-post-card__labels a[rel="tag"], .gg-post__labels a, .gg-post-tags__chip, a[rel="tag"]');
+  for (i = 0; i < labels.length; i++) {
+    text = clean(labels[i].textContent || '');
+    key = tagKey(text);
+    if (!key) continue;
+    href = clean(labels[i].getAttribute('href') || '');
+    out.tags.push({ key: key, text: text, href: href || ('/p/tags.html?tag=' + encodeURIComponent(key)) });
+  }
+}
+if (!out.updated) {
+  meta = doc && doc.querySelector ? doc.querySelector('meta[property="article:modified_time"],meta[property="og:updated_time"],meta[property="article:published_time"]') : null;
+  out.updated = clean(meta ? meta.getAttribute('content') : '');
+}
+if (!out.readMin) {
+  body = root && root.querySelector ? (root.querySelector('.gg-post__content.post-body.entry-content') || root.querySelector('.post-body.entry-content') || root.querySelector('.entry-content') || root.querySelector('.post-body')) : null;
+  text = clean((body && body.textContent) || (root && root.textContent) || '');
+  if (text) out.readMin = String(Math.max(1, Math.ceil(text.split(/\s+/).length / 200)));
+}
+if (out.readMin) out.readLabel = out.readMin + ' min read';
+return out;
+};
+GG.services.postmeta = GG.services.postmeta || services.postmeta;
+
 services.comments = services.comments || (function(){
 var moved = false;
 function qs(sel, root){ return (root || document).querySelector(sel); }
@@ -2959,7 +3022,7 @@ var hoverCardKey = '';
 var hoverIntentCardKey = '';
 var hoverIntentTimer = 0;
 var HOVER_INTENT_MS = 160;
-var TOC_CAP = 24;
+var TOC_CAP = 12;
 var TOC_TTL_MS = 6e5;
 var TOC_LRU_MAX = 24;
 var TOC_HINT_LOCK = 'Hover preview. Click or tap to lock.';
@@ -3079,18 +3142,15 @@ function setRow(name, visible){ var row = qs('[data-row="'+name+'"]', panel); if
 function cleanText(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function cardAttr(card, name){ return card ? cleanText(card.getAttribute(name) || '') : ''; }
 function splitItems(raw, rx){ var src=cleanText(raw),parts=[],out=[],i=0,text=''; if(!src) return out; parts=src.split(rx||/\s*(?:\r?\n|[|;,])\s*/); for(i=0;i<parts.length;i++){ text=cleanText(parts[i]); if(text) out.push({ text:text, href:'' }); } return out; }
-function parseIsoDate(raw){ var v=cleanText(raw); return /^\d{4}-\d{2}-\d{2}$/.test(v)?v:''; }
 function calcReadTime(root){ if(!root) return ''; var clone=root.cloneNode(true),drop=clone.querySelectorAll('nav,footer'),i=0,text=''; for(;i<drop.length;i++) drop[i].remove(); text=cleanText(clone.textContent||''); if(!text) return ''; return Math.max(1,Math.ceil(text.split(/\s+/).length/200))+' min read'; }
 function authorDir(){ return GG.services&&GG.services.authorsDir ? GG.services.authorsDir : null; }
 function authorSlug(raw){ var svc=authorDir(),v=''; if(svc&&svc.slugify) return svc.slugify(raw); v=cleanText(raw).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); return v; }
 function authorTitle(slug){ var text=String(slug||'').replace(/-/g,' ').trim(); return text?text.replace(/\b[a-z]/g,function(m){ return m.toUpperCase(); }):''; }
-function splitSlugs(raw, rx){ var items=splitItems(raw,rx),out=[],seen={},i=0,s=''; for(;i<items.length;i++){ s=authorSlug(items[i].text); if(!s||seen[s]) continue; seen[s]=1; out.push(s); } return out; }
 function authorFallback(raw){ var svc=authorDir(),s=authorSlug(raw),name=''; if(svc&&svc.fallback) return svc.fallback(raw); name=authorTitle(s)||cleanText(raw)||'Author'; return { slug:s, name:name, href:s?('/p/'+s+'.html'):'#', src:'fallback' }; }
 function authorResolveMany(list){ var svc=authorDir(),items=list||[]; if(svc&&svc.resolveMany) return svc.resolveMany(items); if(GG.boot&&typeof GG.boot.loadModule==='function') return GG.boot.loadModule('ui.bucket.authors.js').then(function(){ var x=authorDir(); return x&&x.resolveMany ? x.resolveMany(items) : items.map(authorFallback); }).catch(function(){ return items.map(authorFallback); }); return Promise.resolve(items.map(authorFallback)); }
 function tagDir(){ return GG.services&&GG.services.tagsDir ? GG.services.tagsDir : null; }
 function tagSlug(raw){ var svc=tagDir(),v=''; if(svc&&svc.slugify) return svc.slugify(raw); v=cleanText(raw).toLowerCase().replace(/^#/,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]+/g,'').replace(/^-+|-+$/g,''); return v; }
 function tagHref(key){ return key?('/p/tags.html?tag='+encodeURIComponent(key)):'#'; }
-function parseTagItems(raw){ var items=splitItems(raw,/\s*,\s*/),out=[],seen={},i=0,text='',key=''; for(;i<items.length;i++){ text=cleanText(items[i].text); key=tagSlug(text); if(!key||seen[key]) continue; seen[key]=1; out.push({ key:key, text:text||key, href:tagHref(key) }); } return out; }
 function tagFallback(raw){ var x=raw&&typeof raw==='object'?raw:{},key=tagSlug(x.key||x.text||raw),text=cleanText(x.text||x.name||raw)||key; return { key:key, text:text, href:tagHref(key) }; }
 function tagResolveMany(list){ var svc=tagDir(),items=list||[]; if(svc&&svc.resolveMany) return svc.resolveMany(items); if(GG.boot&&typeof GG.boot.loadModule==='function') return GG.boot.loadModule('ui.bucket.authors.js').then(function(){ var x=tagDir(); return x&&x.resolveMany ? x.resolveMany(items) : items.map(tagFallback); }).catch(function(){ return items.map(tagFallback); }); return Promise.resolve(items.map(tagFallback)); }
 function setTocHint(message){
@@ -3103,6 +3163,7 @@ hint.hidden = !text;
 function renderTocSkeleton(count, hint){
 var list = qs('[data-gg-slot="toc"]', panel), n = parseInt(count, 10), i = 0, li, row, line;
 if(!list) return;
+setRow('toc', true);
 if(!isFinite(n) || n < 1) n = 6;
 if(n > 8) n = 8;
 list.textContent = '';
@@ -3124,9 +3185,11 @@ var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? item
 if(!list) return;
 list.textContent = '';
 if(!rows.length){
-  setTocHint('No headings found.');
+  setRow('toc', false);
+  setTocHint('');
   return;
 }
+setRow('toc', true);
 for(; i < rows.length; i++){
   item = rows[i] || {};
   li = document.createElement('li');
@@ -3159,7 +3222,33 @@ function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.i
 function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[]; out._t=Date.now(); tocCache[key]=out; pruneToc(out._t); }
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
-function parseHeadingItems(html,sourceUrl){ var doc=parseHtmlDoc(html,sourceUrl); if(!doc) return []; var root=doc.querySelector('.post-body, .post-body.entry-content'),metaNode=doc.querySelector('.gg-postmeta'),out=[],headings,max=0,tags=[],contributors=[],updated='',readTime='',author=''; if(metaNode){ tags=parseTagItems(metaNode.getAttribute('data-tags')||''); author=authorSlug(metaNode.getAttribute('data-author')||''); contributors=splitSlugs(metaNode.getAttribute('data-contributors')||'',/\s*;\s*/).filter(function(s){ return s&&s!==author; }); updated=parseIsoDate(metaNode.getAttribute('data-updated')||''); } readTime=calcReadTime(root); out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime }; if(!root) return out; headings=root.querySelectorAll('h2, h3, h4'); max=Math.min(headings.length,TOC_CAP); for(var i=0;i<max;i++){ var node=headings[i],text=(node.textContent||'').replace(/\s+/g,' ').trim(); if(!text) continue; var tag=String(node.tagName||'').toLowerCase(),level=tag==='h3'?3:(tag==='h4'?4:2),headingId=(node.getAttribute('id')||'').trim(),href=sourceUrl||'#'; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:level, href:href }); } return out; }
+function parseHeadingItems(html,sourceUrl){
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pmSvc=null,pm=null,author='',contributors=[],tags=[],updated='',readTime='',i=0,node=null,text='',headingId='',href='';
+if(!doc) return out;
+root=doc.querySelector('.post-body, .post-body.entry-content, .gg-post__content.post-body.entry-content');
+pmSvc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+pm=pmSvc?pmSvc.getFromContext(doc):null;
+author=authorSlug(pm&&pm.author?pm.author:'');
+contributors=(pm&&Array.isArray(pm.contributors)?pm.contributors:[]).map(function(name){ return authorSlug(name); }).filter(function(s){ return s&&s!==author; });
+tags=Array.isArray(pm&&pm.tags)?pm.tags:[];
+updated=cleanText(pm&&pm.updated?pm.updated:'');
+readTime=cleanText(pm&&pm.readLabel?pm.readLabel:'');
+if(!readTime) readTime=calcReadTime(root);
+out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime };
+if(!root) return out;
+headings=root.querySelectorAll('h2');
+max=Math.min(headings.length,TOC_CAP);
+for(i=0;i<max;i++){
+  node=headings[i];
+  text=(node&&node.textContent?node.textContent:'').replace(/\s+/g,' ').trim();
+  if(!text) continue;
+  headingId=(node.getAttribute('id')||'').trim();
+  href=sourceUrl||'#';
+  if(headingId) href+='#'+encodeURIComponent(headingId);
+  out.push({ text:text, level:2, href:href });
+}
+return out;
+}
 
 function fetchPostHtml(url,signal){ var abs=toAbsUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
 function clearHoverIntent(){ if(hoverIntentTimer){ clearTimeout(hoverIntentTimer); hoverIntentTimer = 0; } hoverIntentCardKey = ''; }
@@ -3214,7 +3303,66 @@ for(i = 0; i < n; i++){
   chipRow.appendChild(el);
 }
 }
-function applyPostMeta(key){ var m=key?postMetaCache.get(key):null,t=m&&Array.isArray(m.t)?m.t:[],c=m&&Array.isArray(m.c)?m.c:[],u=cleanText(m&&m.u?m.u:''),r=cleanText(m&&m.r?m.r:''),a=cleanText(m&&m.a?m.a:''),list=[],chips=[],resolved=[],i=0,base=0,token=0,one=null,ttoken=0; setS('updated',u); setRow('updated',!!u); setRow('contributors',!!c.length); setRow('tags',!!t.length); if(t.length){ fillChipsToSlot('tags',t,14); ttoken=panel?(panel.__ggTagMetaToken=(panel.__ggTagMetaToken||0)+1):0; tagResolveMany(t).then(function(rows){ if(!panel||panel.__ggMetaKey!==key||(ttoken&&panel.__ggTagMetaToken!==ttoken)) return; fillChipsToSlot('tags',Array.isArray(rows)?rows:[],14); }).catch(function(){}); } else fillChipsToSlot('tags',[],14); if(a) list.push(a); for(i=0;i<c.length;i++){ if(c[i]) list.push(c[i]); } if(list.length){ for(i=0;i<list.length;i++){ one=authorFallback(list[i]); chips.push({ text:one&&one.name||'', href:one&&one.href||'', src:one&&one.src||'fallback' }); } base=a?1:0; if(a&&chips[0]){ setS('author',chips[0].text); setHref('[data-s="author-link"]',chips[0].href||'#',chips[0].src||'fallback'); setRow('author',!!chips[0].text); } fillChipsToSlot('contributors',chips.slice(base),12); token=panel?(panel.__ggAuthorMetaToken=(panel.__ggAuthorMetaToken||0)+1):0; authorResolveMany(list).then(function(rows){ var x=null; if(!panel||panel.__ggMetaKey!==key||(token&&panel.__ggAuthorMetaToken!==token)) return; resolved=[]; base=a?1:0; if(Array.isArray(rows)){ if(a&&rows[0]){ x=rows[0]||{}; setS('author',x.name||''); setHref('[data-s="author-link"]',x.href||'#',x.src||'fallback'); setRow('author',!!x.name); } for(i=base;i<rows.length;i++){ x=rows[i]||{}; resolved.push({ text:x.name||'', href:x.href||'', src:x.src||'fallback' }); } fillChipsToSlot('contributors',resolved,12); } }).catch(function(){}); } else fillChipsToSlot('contributors',[],12); if(r){ setS('readtime',r); setRow('readtime',true); } }
+function applyPostMeta(key){
+var m=key?postMetaCache.get(key):null,t=null,c=null,u='',r='',a='',list=[],chips=[],resolved=[],i=0,base=0,token=0,one=null,ttoken=0;
+if(!m) return;
+t=Array.isArray(m.t)?m.t:[];
+c=Array.isArray(m.c)?m.c:[];
+u=cleanText(m.u||'');
+r=cleanText(m.r||'');
+a=cleanText(m.a||'');
+setS('updated',u);
+setRow('updated',!!u);
+setRow('contributors',!!c.length);
+setRow('tags',!!t.length);
+if(t.length){
+  fillChipsToSlot('tags',t,14);
+  ttoken=panel?(panel.__ggTagMetaToken=(panel.__ggTagMetaToken||0)+1):0;
+  tagResolveMany(t).then(function(rows){
+    if(!panel||panel.__ggMetaKey!==key||(ttoken&&panel.__ggTagMetaToken!==ttoken)) return;
+    fillChipsToSlot('tags',Array.isArray(rows)?rows:[],14);
+  }).catch(function(){});
+} else fillChipsToSlot('tags',[],14);
+if(a) list.push(a);
+for(i=0;i<c.length;i++){ if(c[i]) list.push(c[i]); }
+if(list.length){
+  for(i=0;i<list.length;i++){
+    one=authorFallback(list[i]);
+    chips.push({ text:one&&one.name||'', href:one&&one.href||'', src:one&&one.src||'fallback' });
+  }
+  base=a?1:0;
+  if(a&&chips[0]){
+    setS('author',chips[0].text);
+    setHref('[data-s="author-link"]',chips[0].href||'#',chips[0].src||'fallback');
+    setRow('author',!!chips[0].text);
+  }
+  fillChipsToSlot('contributors',chips.slice(base),12);
+  token=panel?(panel.__ggAuthorMetaToken=(panel.__ggAuthorMetaToken||0)+1):0;
+  authorResolveMany(list).then(function(rows){
+    var x=null;
+    if(!panel||panel.__ggMetaKey!==key||(token&&panel.__ggAuthorMetaToken!==token)) return;
+    resolved=[];
+    base=a?1:0;
+    if(Array.isArray(rows)){
+      if(a&&rows[0]){
+        x=rows[0]||{};
+        setS('author',x.name||'');
+        setHref('[data-s="author-link"]',x.href||'#',x.src||'fallback');
+        setRow('author',!!x.name);
+      }
+      for(i=base;i<rows.length;i++){
+        x=rows[i]||{};
+        resolved.push({ text:x.name||'', href:x.href||'', src:x.src||'fallback' });
+      }
+      fillChipsToSlot('contributors',resolved,12);
+    }
+  }).catch(function(){});
+} else fillChipsToSlot('contributors',[],12);
+if(r){
+  setS('readtime',r);
+  setRow('readtime',true);
+}
+}
 
 function extractLabels(card){ var seen={},tags=qsa('.gg-post-card__labels a, a[rel="tag"]', card).map(function(a){ return { text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }; }).filter(function(x){ var k=x.text.toLowerCase(); return k&&!seen[k]&&(seen[k]=1); }),a; if(tags.length) return tags; a=qs('.gg-post-card__label a', card); return a?[{ text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }]:[]; }
 function extractAuthor(card){ return { text:cardAttr(card,'data-author-name')||cardAttr(card,'data-author'), href:cardAttr(card,'data-author-url') }; }
@@ -3235,7 +3383,66 @@ var surface = main.getAttribute('data-gg-surface') || '';
 return (surface === 'home' || surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
-function openWithCard(card, trigger, opts){ if(!card) return; opts=opts||{}; ensurePanelSkeleton(); if(trigger) lastTrigger=trigger; if(panel) panel.__ggPreviewCard=card; var titleLink=qs('.gg-post-card__title-link', card),title=cleanText(titleLink?titleLink.textContent:''),href=cardHref(card),metaKey=tocCacheKey(href),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:'')||cardAttr(card,'data-comments')||'—',readTimeText=estimateReadTime(card),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),af=author.text&&authorFallback(author.text); if(panel) panel.__ggMetaKey=metaKey||''; setS('title',title||'—'); setHref('[data-s="title"]',href); setHref('.gg-epanel__cta',href); setS('author',author.text); setHref('[data-s="author-link"]',author.href||(af&&af.href)||'#',author.href?'dir':(af&&af.src)||'fallback'); setS('date',dateText); setS('updated',''); setS('comments',commentsText); setS('readtime',readTimeText); setS('snippet',quickSnippet); setImg(imgSrc,title); setRow('author',!!author.text); setRow('contributors',false); setRow('labels',!!labels.length); setRow('tags',false); setRow('date',!!dateText); setRow('updated',false); setRow('comments',!!commentsText); setRow('readtime',!!readTimeText); setRow('snippet',!!quickSnippet); if(labels.length) fillChipsToSlot('labels',labels,10); applyPostMeta(metaKey); if(panel) panel.hidden=false; setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel', 'open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } updateTocForCard(card, href); if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
+function openWithCard(card, trigger, opts){
+if(!card) return;
+opts=opts||{};
+ensurePanelSkeleton();
+if(trigger) lastTrigger=trigger;
+if(panel) panel.__ggPreviewCard=card;
+var titleLink=qs('.gg-post-card__title-link', card),title=cleanText(titleLink?titleLink.textContent:''),href=cardHref(card),metaKey=tocCacheKey(href),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:'')||cardAttr(card,'data-comments')||'—',readTimeText=estimateReadTime(card),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),pmSvc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=pmSvc?pmSvc.getFromContext(card):null,authorText=cleanText(pm&&pm.author?pm.author:author.text),updatedText=cleanText(pm&&pm.updated?pm.updated:''),tagMeta=Array.isArray(pm&&pm.tags)?pm.tags:[],contribMeta=Array.isArray(pm&&pm.contributors)?pm.contributors:[],chips=[],i=0,one=null,af=null;
+if(!tagMeta.length&&labels.length){
+  for(i=0;i<labels.length;i++){
+    var lb=labels[i]||{},lk=tagSlug(lb.text||'');
+    if(!lk) continue;
+    tagMeta.push({ key:lk, text:lb.text||lk, href:lb.href||tagHref(lk) });
+  }
+}
+readTimeText=cleanText(pm&&pm.readLabel?pm.readLabel:'')||readTimeText;
+af=authorText&&authorFallback(authorText);
+for(i=0;i<contribMeta.length;i++){
+  one=authorFallback(contribMeta[i]);
+  if(!one||!one.name) continue;
+  chips.push({ text:one.name, href:one.href||'#', src:one.src||'fallback' });
+}
+if(panel) panel.__ggMetaKey=metaKey||'';
+setS('title',title||'—');
+setHref('[data-s="title"]',href);
+setHref('.gg-epanel__cta',href);
+setS('author',authorText);
+setHref('[data-s="author-link"]',author.href||(af&&af.href)||'#',author.href?'dir':(af&&af.src)||'fallback');
+setS('date',dateText);
+setS('updated',updatedText);
+setS('comments',commentsText);
+setS('readtime',readTimeText);
+setS('snippet',quickSnippet);
+setImg(imgSrc,title);
+setRow('author',!!authorText);
+setRow('contributors',!!chips.length);
+setRow('labels',!!labels.length);
+setRow('tags',!!tagMeta.length);
+setRow('date',!!dateText);
+setRow('updated',!!updatedText);
+setRow('comments',!!commentsText);
+setRow('readtime',!!readTimeText);
+setRow('snippet',!!quickSnippet);
+fillChipsToSlot('contributors',chips,12);
+fillChipsToSlot('tags',tagMeta,14);
+if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);
+applyPostMeta(metaKey);
+if(panel) panel.hidden=false;
+setBackdropVisible(true);
+if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open');
+else if(main) main.setAttribute('data-gg-info-panel', 'open');
+if(opts.select){
+  selectedCardKey=cardKey(card)||null;
+  syncSlotInfoSelected(selectedCardKey);
+}
+updateTocForCard(card, href);
+if(opts.focusPanel!==false&&panel&&panel.focus){
+  panel.setAttribute('tabindex','-1');
+  try{ panel.focus({ preventScroll:true }); }catch(_){}
+}
+}
 
 function resetPanelState(){
 if (panel) {

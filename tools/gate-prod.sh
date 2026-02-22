@@ -21,6 +21,7 @@ run npm run verify:assets
 run npm run verify:xml
 run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
+run node tools/verify-postmeta-contract.mjs
 run node tools/verify-route-a11y-contract.mjs
 run node tools/verify-core-swap-no-innerhtml.mjs
 run node tools/verify-core-domparser-singleton.mjs

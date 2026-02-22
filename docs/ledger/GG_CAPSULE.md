@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-GH-PAGES-PERF-DASHBOARD-20260222: Publish-ready pointer contract for `perf-history` dashboard via GitHub Pages and CI Step Summary hints.
+- TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222: Canonical `.gg-postmeta` source wired to editorial preview pipeline (listing + post contract) with gate verifier.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 43b6882
+RELEASE_ID: 92a57d2
 RELEASE_HISTORY:
-- 43b6882
-- f25e4f5
-PROD_PINNED_JS: /assets/v/43b6882/main.js
-PROD_PINNED_APP: /assets/v/43b6882/app.js
-PROD_PINNED_CSS: /assets/v/43b6882/main.css
+- 92a57d2
+- b869b6d
+PROD_PINNED_JS: /assets/v/92a57d2/main.js
+PROD_PINNED_APP: /assets/v/92a57d2/app.js
+PROD_PINNED_CSS: /assets/v/92a57d2/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-PERF-TREND-HISTORY-20260223
 
 LAST_PATCH:
-- 2026-02-22 TASK-GH-PAGES-PERF-DASHBOARD-20260222 added Pages handoff pointers in docs and perf workflow Step Summary.
+- 2026-02-22 TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222 restored postmeta extraction/render contract + verifier and gate wiring.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

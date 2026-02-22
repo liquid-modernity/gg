@@ -831,7 +831,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc" data-headings="h2,h3,h4" data-scroll-offset="84">
+<nav id="gg-toc" class="gg-toc" data-headings="h2" data-scroll-offset="84">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
@@ -1818,6 +1818,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </b:loop>
   </div>
 </b:if>
+<b:if cond='data:post.labels'>
+  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+<b:else/>
+  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+</b:if>
 
     <a class='gg-post-card__thumb' expr:href='data:post.url'>
       <figure>
@@ -1966,6 +1971,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <data:post.title/>
       </h1>      
     </header>
+    <b:if cond='data:post.labels'>
+      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+    <b:else/>
+      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+    </b:if>
     <!-- /GAGA HEADER -->
 <!-- GAGA BREADCRUMBS -->
 <b:if cond='data:view.isPost or data:view.isPage'>

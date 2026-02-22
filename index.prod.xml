@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='43b6882' name='gg-release'/>
+    <meta content='92a57d2' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/43b6882/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/43b6882/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/92a57d2/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/92a57d2/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='43b6882' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='92a57d2' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -876,7 +876,7 @@ text-align: center;
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc" data-headings="h2,h3,h4" data-scroll-offset="84">
+<nav id="gg-toc" class="gg-toc" data-headings="h2" data-scroll-offset="84">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
@@ -2161,6 +2161,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </b:loop>
   </div>
 </b:if>
+<b:if cond='data:post.labels'>
+  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+<b:else/>
+  <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+</b:if>
 
     <a class='gg-post-card__thumb' expr:href='data:post.url'>
       <figure>
@@ -2279,7 +2284,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         </button>
       </div>
       <div class='gg-post__toolbar-group'>
-        <button aria-expanded='false' aria-label='Toggle info panel' class='gg-post__tool' data-gg-postbar='info' data-gg-toggle='left-panel' type='button'>
+        <button aria-expanded='false' aria-label='Toggle info panel' class='gg-post__tool' data-gg-postbar='info' type='button'>
   <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
 </button>
         <button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-postbar='focus' type='button'>
@@ -2288,7 +2293,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <button aria-label='Save post' class='gg-post__tool gg-post__action--bookmark' data-gg-postbar='save' type='button'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
         </button>
-    <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-postbar='comments' data-gg-toggle='right-panel' type='button'>
+    <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-postbar='comments' type='button'>
   <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
   <b:if cond='data:post.numberOfComments &gt; 0'>
     <span aria-hidden='true' class='gg-post__tool-badge'><data:post.numberOfComments/></span>
@@ -2309,6 +2314,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <data:post.title/>
       </h1>      
     </header>
+    <b:if cond='data:post.labels'>
+      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+    <b:else/>
+      <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601 ?: data:post.date.iso8601' data-read-min=''/>
+    </b:if>
     <!-- /GAGA HEADER -->
 <!-- GAGA BREADCRUMBS -->
 <b:if cond='data:view.isPost or data:view.isPage'>
@@ -3873,7 +3883,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/43b6882/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/92a57d2/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

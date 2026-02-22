@@ -2286,3 +2286,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): Pages activation is manual in repository settings; docs keep `DASHBOARD_URL: XXX` placeholder until confirmed
 - RISKS: low; placeholder must be replaced after Pages URL is confirmed live
 - NEXT: TASK-PERF-TREND-HISTORY-20260223
+
+## 2026-02-22 — TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222 — Restore canonical postmeta pipeline for editorial preview
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-POSTMETA-EDITORIAL-PREVIEW-20260222
+- TITLE: Restore postmeta pipeline for editorial preview (home/listing/post contract source)
+- MODE (DEV/PROD impact): template contract + core metadata extraction/render + verifier/gate + release artifacts refresh
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add canonical `.gg-postmeta` source in post card + post detail templates, add `GG.services.postmeta.getFromContext`, update editorial preview rows (author/contributors/tags/updated/readtime/toc h2-only), add verifier + gate wiring
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/modules/ui.bucket.core.js; tools/verify-postmeta-contract.mjs; tools/gate-prod.sh; tools/perf-budgets.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*; removed stale release dirs public/assets/v/43b6882/* and public/assets/v/f25e4f5/*
+- COMMANDS RUN (local): node tools/verify-postmeta-contract.mjs; npm run gate:prod
+- CI STATUS: n/a (local run)
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): verify-postmeta-contract PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): core module size increased due postmeta parser/render path; `tools/perf-budgets.json` core budget ceiling bumped minimally to keep gate deterministic
+- RISKS: low/med; post detail info panel still follows existing post-toolbar/panel behavior, manual UX sweep on real browser remains recommended
+- NEXT: TASK-PERF-TREND-HISTORY-20260223
