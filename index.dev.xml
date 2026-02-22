@@ -1826,8 +1826,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     <a class='gg-post-card__thumb' expr:href='data:post.url'>
       <figure>
-        <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
-          <img class='gg-post-card__thumb-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 480, &quot;480:324&quot;) + &quot; 480w, &quot; + resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;) + &quot; 800w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w, &quot; + resizeImage(data:post.featuredImage, 1600, &quot;1600:1080&quot;) + &quot; 1600w&quot;' height='810' loading='lazy' sizes='(max-width: 680px) 92vw, 520px' width='1200'/>
+        <b:if cond='data:post.featuredImage'>
+          <b:if cond='data:post.featuredImage.isResizable'>
+            <img class='gg-post-card__thumb-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 480, &quot;480:324&quot;) + &quot; 480w, &quot; + resizeImage(data:post.featuredImage, 800, &quot;800:540&quot;) + &quot; 800w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w, &quot; + resizeImage(data:post.featuredImage, 1600, &quot;1600:1080&quot;) + &quot; 1600w&quot;' height='810' loading='lazy' sizes='(max-width: 680px) 92vw, 520px' width='1200'/>
+          <b:else/>
+            <div aria-hidden='true' class='gg-post-card__thumb-placeholder'></div>
+          </b:if>
         <b:else/>
           <div aria-hidden='true' class='gg-post-card__thumb-placeholder'></div>
         </b:if>
@@ -2046,15 +2050,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <!-- /GAGA BREADCRUMBS -->
 
  <!-- COVER (opsional) -->
-    <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
-      <figure class='gg-post__cover' expr:data-caption='data:post.title'>
-        <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
-        <img class='gg-post__cover-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 640, &quot;640:432&quot;) + &quot; 640w, &quot; + resizeImage(data:post.featuredImage, 960, &quot;960:648&quot;) + &quot; 960w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w&quot;' fetchpriority='high' height='810' loading='eager' sizes='(max-width: 680px) 100vw, 720px' width='1200'/>
+    <b:if cond='data:post.featuredImage'>
+      <b:if cond='data:post.featuredImage.isResizable'>
+        <figure class='gg-post__cover' expr:data-caption='data:post.title'>
+          <img class='gg-post__cover-img' decoding='async' expr:alt='data:post.title' expr:src='resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;)' expr:srcset='resizeImage(data:post.featuredImage, 640, &quot;640:432&quot;) + &quot; 640w, &quot; + resizeImage(data:post.featuredImage, 960, &quot;960:648&quot;) + &quot; 960w, &quot; + resizeImage(data:post.featuredImage, 1200, &quot;1200:810&quot;) + &quot; 1200w&quot;' fetchpriority='high' height='810' loading='eager' sizes='(max-width: 680px) 100vw, 720px' width='1200'/>
+          <figcaption class='gg-post__cover-caption'>
+            <data:post.title/>
+          </figcaption>
+        </figure>
       </b:if>
-        <figcaption class='gg-post__cover-caption'>
-          <data:post.title/>
-        </figcaption>
-      </figure>
     </b:if>
      <!-- /COVER (opsional) -->
 
