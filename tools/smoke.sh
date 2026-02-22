@@ -562,7 +562,7 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     fi
     local i
     for (( i=1; i<=rounds; i++ )); do
-      local ts hdr body status html postcards_tag cache_control postcards_count
+      local ts hdr body status html postcards_tag cache_control postcards_count gg_post_card_class_count
       ts="$(date +%s)"
       hdr="$(mktemp)"
       body="$(mktemp)"
@@ -586,6 +586,15 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       fi
       if ! grep -Eqi 'data-gg-surface=["'"'"']listing["'"'"']' <<<"${html}"; then
         die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
+      fi
+      gg_post_card_class_count="$(
+        printf '%s' "${html}" \
+          | grep -Eoi 'class=["'"'"'][^"'"'"']*\bgg-post-card\b[^"'"'"']*["'"'"']' \
+          | wc -l \
+          | tr -d '[:space:]'
+      )"
+      if [[ -z "${gg_post_card_class_count}" ]] || (( gg_post_card_class_count < min_postcards )); then
+        die "LIVE_HTML /blog hard refresh #${i} expected >=${min_postcards} gg-post-card class matches (got ${gg_post_card_class_count:-0})"
       fi
 
       postcards_tag="$(grep -Eoi '<[^>]*id=["'"'"']postcards["'"'"'][^>]*>' <<<"${html}" | head -n 1 || true)"

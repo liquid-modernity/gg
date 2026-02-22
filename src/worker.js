@@ -767,6 +767,8 @@ export default {
         const dest = new URL(request.url);
         dest.pathname = "/blog";
         dest.searchParams.delete("view");
+        dest.searchParams.delete("max-results");
+        dest.searchParams.delete("start-index");
         dest.hash = "";
         const r = new Response(null, {
           status: 301,
@@ -792,6 +794,7 @@ export default {
       if (pathname === "/blog" || pathname === "/blog/") {
         originUrl.pathname = "/";
         originUrl.searchParams.set("view", "blog");
+        originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
         originRequest = new Request(originUrl.toString(), request);
         forceListing = true;
       }
