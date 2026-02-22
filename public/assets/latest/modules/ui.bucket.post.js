@@ -126,245 +126,7 @@
   })();
 })(window.GG = window.GG || {}, window, document);
 
-(function(){
-  var root = document.getElementById('gg-toc');
-  if(!root) return;
-
-  // prevent double init
-  if(root.dataset.ggInit === '1') return;
-  root.dataset.ggInit = '1';
-
-  var list = root.querySelector('.gg-toc__list');
-  var empty = root.querySelector('.gg-toc__empty');
-  var headBtn = root.querySelector('.gg-toc__headbtn');
-  var toggleBtn = root.querySelector('.gg-toc__toggle');
-  var io = null;
-
-  function qs(sel, scope){ return (scope || document).querySelector(sel); }
-  function qsa(sel, scope){ return Array.prototype.slice.call((scope || document).querySelectorAll(sel)); }
-  function txt(el){ return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim(); }
-
-  function setCollapsed(collapsed){
-    GG.core.state.toggle(root, 'collapsed', collapsed);
-    if(headBtn) headBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    if(toggleBtn){
-      toggleBtn.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
-      var i = toggleBtn.querySelector('.material-symbols-rounded');
-      if(i) i.textContent = collapsed ? 'expand_content' : 'collapse_content';
-    }
-  }
-
-  function getOffset(){
-    var off = parseInt(root.getAttribute('data-scroll-offset') || '84', 10);
-    return isFinite(off) ? off : 84;
-  }
-
-  function findPostBody(){
-    // sesuai struktur kamu
-    return qs('.gg-post__content.post-body.entry-content') ||
-           qs('.post-body.entry-content') ||
-           qs('.entry-content') ||
-           qs('[itemprop="articleBody"]') ||
-           qs('.post-body');
-  }
-
-  function slugify(s){
-    return String(s||'')
-      .toLowerCase()
-      .trim()
-      .replace(/[\u200B-\u200D\uFEFF]/g,'')
-      .replace(/[^\w\s\-]/g,'')
-      .replace(/\s+/g,'-')
-      .replace(/\-+/g,'-')
-      .replace(/^\-+|\-+$/g,'') || 'section';
-  }
-
-  function ensureId(h){
-    if(h.id && document.getElementById(h.id) === h) return h.id;
-    var base = slugify(txt(h));
-    var id = base;
-    var i = 2;
-    while(document.getElementById(id)) id = base + '-' + (i++);
-    h.id = id;
-    return id;
-  }
-
-  function getLevel(h){
-    var t = (h.tagName || 'H2').toLowerCase();
-    return t === 'h2' ? 2 : (t === 'h3' ? 3 : 4);
-  }
-
-  // numbering: h2 "1.", h3 "1.1", h4 "1.1.1"
-  function nextNumber(level, state){
-    if(level === 2){
-      state.c2++; state.c3 = 0; state.c4 = 0;
-      return String(state.c2) + '.';
-    }
-    if(level === 3){
-      if(state.c2 === 0) state.c2 = 1;
-      state.c3++; state.c4 = 0;
-      return state.c2 + '.' + state.c3;
-    }
-    if(state.c2 === 0) state.c2 = 1;
-    if(state.c3 === 0) state.c3 = 1;
-    state.c4++;
-    return state.c2 + '.' + state.c3 + '.' + state.c4;
-  }
-
-  function setActiveById(id){
-    qsa('.gg-toc__item', list).forEach(function(x){ GG.core.state.remove(x, 'active'); });
-    if(!id) return;
-
-    var a = list.querySelector('a.gg-toc__link[href="#' + id.replace(/"/g,'') + '"]');
-    if(!a) return;
-
-    var li = a.closest('.gg-toc__item');
-    if(li){
-      GG.core.state.add(li, 'active');
-      a.scrollIntoView({ block:'nearest' });
-    }
-  }
-
-  function setupScrollSpy(headings){
-    if(io && io.disconnect) io.disconnect();
-    io = null;
-    if(!('IntersectionObserver' in window)) return;
-
-    var offset = getOffset();
-    var lastActive = '';
-
-    io = new IntersectionObserver(function(entries){
-      var visible = entries.filter(function(e){ return e.isIntersecting; });
-      if(!visible.length) return;
-
-      visible.sort(function(a,b){ return a.boundingClientRect.top - b.boundingClientRect.top; });
-      var id = visible[0].target && visible[0].target.id;
-      if(!id || id === lastActive) return;
-      lastActive = id;
-
-      setActiveById(id);
-    }, {
-      root: null,
-      rootMargin: ('-' + (offset+8) + 'px 0px -70% 0px'),
-      threshold: [0.01, 0.1, 0.2]
-    });
-
-    headings.forEach(function(h){ io.observe(h); });
-  }
-
-  function build(){
-    list.textContent = '';
-    empty.hidden = true;
-
-    var body = findPostBody();
-    if(!body) return false;
-
-    var sel = (root.getAttribute('data-headings') || 'h2,h3')
-      .split(',').map(function(x){ return x.trim(); }).filter(Boolean).join(',');
-
-    var headings = qsa(sel, body).filter(function(h){ return txt(h).length > 0; });
-
-    if(!headings.length){
-      empty.hidden = false;
-      return true;
-    }
-
-    var offset = getOffset();
-    var numState = {c2:0, c3:0, c4:0};
-
-    headings.forEach(function(h){
-      var id = ensureId(h);
-      try{ h.style.scrollMarginTop = offset + 'px'; }catch(_){}
-
-      var level = getLevel(h);
-      var num = nextNumber(level, numState);
-
-      var li = document.createElement('li');
-      li.className = 'gg-toc__item gg-toc__lvl-' + level;
-
-      var a = document.createElement('a');
-      a.className = 'gg-toc__link';
-      a.href = '#' + id;
-
-      var n = document.createElement('span');
-      n.className = 'gg-toc__num';
-      n.textContent = num;
-
-      var t = document.createElement('span');
-      t.className = 'gg-toc__txt';
-      t.textContent = txt(h);
-
-      a.appendChild(n);
-      a.appendChild(t);
-      li.appendChild(a);
-      list.appendChild(li);
-    });
-
-    setupScrollSpy(headings);
-
-    // set active by hash if exists
-    var hash = (location.hash || '').replace('#','');
-    if(hash && document.getElementById(hash)){
-      setActiveById(hash);
-      // ensure jump to section even though IDs are created at runtime
-      var target = document.getElementById(hash);
-      if(target){
-        var y = target.getBoundingClientRect().top + window.pageYOffset - getOffset();
-        window.scrollTo({ top: y, behavior: 'auto' });
-      }
-    }
-
-    return true;
-  }
-
-  function boot(){
-    var tries = 0;
-    var max = 80; // 80 x 100ms = 8 detik
-
-    (function tick(){
-      tries++;
-      var ok = build();
-      if(ok) return;
-
-      if(tries >= max){
-        empty.hidden = false;
-        return;
-      }
-      setTimeout(tick, 100);
-    })();
-  }
-
-  // collapse/expand panel
-  root.addEventListener('click', function(e){
-    if(e.target.closest('.gg-toc__headbtn') || e.target.closest('.gg-toc__toggle')){
-      setCollapsed(!GG.core.state.has(root, 'collapsed'));
-      return;
-    }
-  });
-
-  // smooth scroll with offset
-  list.addEventListener('click', function(e){
-    var a = e.target.closest('a.gg-toc__link');
-    if(!a) return;
-
-    var id = (a.getAttribute('href') || '').replace('#','');
-    var target = id ? document.getElementById(id) : null;
-    if(!target) return;
-
-    e.preventDefault();
-
-    var y = target.getBoundingClientRect().top + window.pageYOffset - getOffset();
-    window.scrollTo({ top: y, behavior: 'smooth' });
-    history.replaceState(null, '', '#' + id);
-
-    setActiveById(id);
-  });
-
-  setCollapsed(false);
-  boot();
-})();
-
-(function(GG, d){
+(function(GG, w, d){
   'use strict';
   GG.modules = GG.modules || {};
   GG.modules.TOC = GG.modules.TOC || (function(){
@@ -389,6 +151,44 @@
       h.id = id;
       return id;
     }
+    function getOffset(root){
+      var off = parseInt((root && root.getAttribute('data-scroll-offset')) || '84', 10);
+      return isFinite(off) ? off : 84;
+    }
+    function setCollapsed(root, collapsed){
+      if (!root) return;
+      if (GG.core && GG.core.state && typeof GG.core.state.toggle === 'function') {
+        GG.core.state.toggle(root, 'collapsed', !!collapsed);
+      }
+      var headBtn = root.querySelector('.gg-toc__headbtn');
+      var toggleBtn = root.querySelector('.gg-toc__toggle');
+      if (headBtn) headBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      if (toggleBtn) {
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
+        var icon = toggleBtn.querySelector('.material-symbols-rounded');
+        if (icon) icon.textContent = collapsed ? 'expand_content' : 'collapse_content';
+      }
+    }
+    function bind(root){
+      if (!root || root.__ggTocBound) return;
+      root.__ggTocBound = true;
+      root.addEventListener('click', function(e){
+        if (!e || !e.target || !e.target.closest) return;
+        if (e.target.closest('.gg-toc__headbtn,.gg-toc__toggle')) {
+          var collapsed = GG.core && GG.core.state && typeof GG.core.state.has === 'function' ? GG.core.state.has(root, 'collapsed') : false;
+          setCollapsed(root, !collapsed);
+          return;
+        }
+        var a = e.target.closest('a.gg-toc__link');
+        if (!a) return;
+        var id = (a.getAttribute('href') || '').replace(/^#/, '');
+        var target = id ? d.getElementById(id) : null;
+        if (!target) return;
+        e.preventDefault();
+        w.scrollTo({ top: target.getBoundingClientRect().top + (w.pageYOffset || 0) - getOffset(root), behavior: 'smooth' });
+        try { if (w.history && w.history.replaceState) w.history.replaceState(w.history.state || null, '', '#' + id); } catch (_) {}
+      });
+    }
     function reset(scope){
       var root = resolveRoot(scope);
       var list = root ? root.querySelector('.gg-toc__list') : null;
@@ -399,11 +199,12 @@
       root.hidden = true;
       return true;
     }
-    function build(scope){
+    function build(scope, opts){
       var root = resolveRoot(scope);
       var list = root ? root.querySelector('.gg-toc__list') : null;
       var empty = root ? root.querySelector('.gg-toc__empty') : null;
       var body = resolveBody(scope);
+      var headings = (opts && typeof opts.headings === 'string') ? opts.headings : 'h2';
       var items = [];
       var i = 0;
       var h = null;
@@ -411,17 +212,27 @@
       var a = null;
       var n = null;
       var t = null;
-      if (!root || !list || !body) return false;
+      var off = 0;
+      if (!root || !list) return false;
+      bind(root);
       list.textContent = '';
       if (empty) empty.hidden = true;
-      items = Array.prototype.slice.call(body.querySelectorAll('h2')).filter(function(x){ return clean(x.textContent).length > 0; });
+      if (!body) {
+        root.hidden = true;
+        return true;
+      }
+      items = Array.prototype.slice.call(body.querySelectorAll(headings)).filter(function(x){
+        return (x && x.tagName && x.tagName.toLowerCase() === 'h2' && clean(x.textContent).length > 0);
+      });
       if (!items.length) {
         root.hidden = true;
         return true;
       }
       root.hidden = false;
+      off = getOffset(root);
       for (; i < items.length && i < 12; i++) {
         h = items[i];
+        try { h.style.scrollMarginTop = off + 'px'; } catch (_) {}
         li = d.createElement('li');
         li.className = 'gg-toc__item gg-toc__lvl-2';
         a = d.createElement('a');
@@ -438,11 +249,22 @@
         li.appendChild(a);
         list.appendChild(li);
       }
+      setCollapsed(root, false);
       return true;
     }
-    return { reset: reset, build: build };
+    function init(scope, opts){
+      return build(scope, opts);
+    }
+    return { init: init, reset: reset, build: build };
   })();
-})(window.GG = window.GG || {}, document);
+  function autoInitToc(){
+    if (GG.modules && GG.modules.TOC && typeof GG.modules.TOC.init === 'function') {
+      GG.modules.TOC.init(d, { headings: 'h2' });
+    }
+  }
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', autoInitToc, { once: true });
+  else autoInitToc();
+})(window.GG = window.GG || {}, window, document);
 
 (function (GG, d) {
   'use strict';

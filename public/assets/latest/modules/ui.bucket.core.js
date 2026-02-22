@@ -2493,8 +2493,14 @@ var b = btnByAct('focus');
 if(!b) return;
 var icon = b.querySelector('.gg-icon.material-symbols-rounded');
 if(icon) icon.textContent = on ? 'center_focus_strong' : 'center_focus_weak';
-GG.core.state.toggle(b, 'active', !!on);           // filled via CSS [data-gg-state~="active"]
+GG.core.state.toggle(b, 'active', !!on);
 b.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+function focusNoScroll(el){
+if(!el||typeof el.focus!=='function')return;
+var x=w.pageXOffset||0,y=w.pageYOffset||0;
+try{el.focus({preventScroll:true});}
+catch(_){try{el.focus();w.scrollTo(x,y);}catch(__){}}
 }
 function leftState(){ return main.getAttribute('data-gg-left-panel') || 'closed'; }
 function rightState(){
@@ -2542,7 +2548,7 @@ if(commentsPanel){
   commentsPanel.setAttribute('tabindex','-1');
   if(showComments){
     commentsPanel.removeAttribute('inert');
-    try { commentsPanel.focus({ preventScroll:true }); } catch(_) {}
+    focusNoScroll(commentsPanel);
   }
 }
 if(infoPanelRight){
@@ -2551,7 +2557,7 @@ if(infoPanelRight){
   infoPanelRight.setAttribute('tabindex','-1');
   if(showInfo){
     infoPanelRight.removeAttribute('inert');
-    try { infoPanelRight.focus({ preventScroll:true }); } catch(_) {}
+    focusNoScroll(infoPanelRight);
   }
 }
 }
@@ -2595,10 +2601,8 @@ return rightState() === 'open' && rightMode() === 'comments';
 function toggleComments(triggerBtn){
 if(isCommentsOpen()) hideRightPanel(triggerBtn);
 else{
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
   showRightPanel('comments');
-  if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.ensureLoaded === 'function') {
-    GG.modules.Comments.ensureLoaded({ fromPrimaryAction: true, triggerEl: triggerBtn });
-  }
 }
 }
 var prevLeft, prevRight, prevMode;
@@ -5501,13 +5505,13 @@ function isSystemPath(pathname){
       if (state === 'closed' && prev === 'open' && opts.restoreFocus) restoreFocus();
     }
 
-    function updateBackdrop(){
-      var surface = getAttr(main, 'data-gg-surface') || '';
-      var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
-      var rightOpen = getRightState() === 'open';
-      var show = surface === 'post' && (leftOpen || rightOpen);
-      var activeAside = rightOpen ? right : (leftOpen ? left : null);
-      if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
+function updateBackdrop(){
+  var surface = getAttr(main, 'data-gg-surface') || '';
+  var leftOpen  = getAttr(main, 'data-gg-left-panel') === 'open';
+  var rightOpen = getRightState() === 'open';
+  var show = surface[0] === 'p' && (leftOpen || rightOpen);
+  var activeAside = rightOpen ? right : (leftOpen ? left : null);
+  if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
       setLayoutInert(show ? activeAside : null);
       if (left) left.setAttribute('aria-hidden', leftOpen ? 'false' : 'true');

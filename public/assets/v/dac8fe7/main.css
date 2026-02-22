@@ -629,8 +629,8 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
     position: sticky;
     top: var(--gg-sticky-top, 16px);
     align-self: start;
-    height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
-    max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    height: calc(100dvh - var(--gg-sticky-top, 16px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 16px));
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -655,8 +655,8 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
     position: sticky;
     top: var(--gg-sticky-top, 16px);
     width: var(--gg-col-right);
-    height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
-    max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    height: calc(100dvh - var(--gg-sticky-top, 16px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 16px));
     min-height: 0;
     overflow: hidden;
     background: transparent;
@@ -1569,8 +1569,10 @@ a.gg-search-assist__item > small{
 .gg-blog-sidebar__section-page{
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 6px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .gg-blog-sidebar--right{
@@ -1603,15 +1605,24 @@ a.gg-search-assist__item > small{
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   gap: var(--gg-left-sidebar-gap);
   padding: 12px;
   border: 1px solid var(--gg-border);
   border-radius: var(--gg-radius-md);
   background: var(--gg-surface);
   box-shadow: var(--gg-shadow-sm);
+}
+#gg-left-sidebar-list,
+#gg-left-sidebar-page,
+#gg-left-sidebar-page [data-gg-scroll="pages"]{
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#gg-left-sidebar-page [data-gg-scroll="pages"]{
+  flex: 1 1 auto;
+  min-height: 0;
 }
 #gg-left-sidebar-list .widget,
 #gg-left-sidebar-page .widget{
@@ -2772,9 +2783,9 @@ main.gg-main[data-gg-surface="post"] .gg-post{
 }
 .gg-blog-layout--post{
   display: grid;
-  grid-template-columns: minmax(0, var(--gg-col-left)) minmax(0, var(--gg-main-max)) minmax(0, var(--gg-col-right));
-  max-width: calc(var(--gg-col-left) + var(--gg-main-max) + var(--gg-col-right));
-  margin-inline: auto;
+  grid-template-columns: minmax(0, var(--gg-col-left)) minmax(0, min(var(--gg-main-max), calc(100vw - var(--gg-col-left) - var(--gg-col-right)))) minmax(0, var(--gg-col-right));
+  max-width: none;
+  margin-inline: 0;
   padding: 0;
   gap: var(--gg-col-gap);
   justify-content: center;
@@ -2789,8 +2800,8 @@ main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--rig
   display: block;
   position: sticky;
   top: var(--gg-sticky-top, 16px);
-  height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
-  max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+  height: calc(100dvh - var(--gg-sticky-top, 16px));
+  max-height: calc(100dvh - var(--gg-sticky-top, 16px));
   min-height: 0;
   overflow: hidden;
   background: transparent;
@@ -3251,8 +3262,8 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
   .gg-blog-sidebar{
     position: sticky;
     top: var(--gg-sticky-top, 12px);
-    height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
-    max-height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    height: calc(100dvh - var(--gg-sticky-top, 12px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 12px));
     min-height: 0;
     z-index: var(--z-sticky-2);
     padding: 0;
@@ -3278,8 +3289,8 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left,
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--right{
     top: var(--gg-sticky-top, 12px);
-    height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
-    max-height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    height: calc(100dvh - var(--gg-sticky-top, 12px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 12px));
     border-radius: var(--gg-radius-md);
   }
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left{
@@ -5063,16 +5074,6 @@ main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right{
   max-height: calc(100dvh - var(--gg-sticky-top, 0px)) !important;
   display: flex !important;
   flex-direction: column !important;
-}
-
-
-@media (min-width: 921px){
-  .gg-blog-sidebar{
-    position: sticky;
-    top: var(--gg-sticky-top, 0px);
-    overflow: visible !important;
-    max-height: none !important;
-  }
 }
 
 
