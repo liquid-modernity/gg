@@ -196,6 +196,7 @@ const isAppJsAsset = (value) => {
 const BLOG_LISTING_MIN_POSTCARDS = 9;
 const BLOG_LISTING_BACKFILL_HOPS = 3;
 const BLOG_LISTING_FEED_MAX_RESULTS = 30;
+const BLOG_LISTING_FEED_MAX_PAGES = 4;
 
 const toPositiveInt = (value, fallback, max = BLOG_LISTING_FEED_MAX_RESULTS) => {
   const parsed = parseInt(String(value || ""), 10);
@@ -302,7 +303,9 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const title = cleanText(entry && entry.title && entry.title.$t) || "Untitled";
   const postId = extractFeedPostId(entry);
   const publishedIso = cleanText(entry && entry.published && entry.published.$t);
-  const publishedText = formatIsoDate(publishedIso);
+  const updatedIso = cleanText(entry && entry.updated && entry.updated.$t);
+  const publishedRaw = publishedIso || updatedIso;
+  const publishedText = formatIsoDate(publishedRaw);
   const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t);
   const commentsText = commentsRaw || "0";
   const excerpt = truncateText(
@@ -323,7 +326,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const safeUrl = escapeHtml(postUrl);
   const safeTitle = escapeHtml(title);
   const safeExcerpt = escapeHtml(excerpt);
-  const safeDateIso = escapeHtml(publishedIso);
+  const safeDateIso = escapeHtml(publishedRaw);
   const safeDateText = escapeHtml(publishedText);
   const safeComments = escapeHtml(commentsText);
   const safeAuthorName = escapeHtml(author.name);
@@ -358,24 +361,32 @@ const buildFeedPostCard = (entry, requestUrl) => {
   return {
     key: postId ? `id:${postId}` : `data-url:${postUrl}`,
     html: cardHtml,
+    published: publishedRaw,
   };
 };
 
-const buildListingFeedUrl = (requestUrl, targetCount) => {
+const buildListingFeedQuery = (requestUrl, targetCount) => {
   const req = new URL(requestUrl);
-  const feed = new URL("/feeds/posts/default", req.origin);
   const maxResults = toPositiveInt(
     req.searchParams.get("max-results"),
     toPositiveInt(targetCount, BLOG_LISTING_MIN_POSTCARDS),
     BLOG_LISTING_FEED_MAX_RESULTS
   );
-  feed.searchParams.set("alt", "json");
-  feed.searchParams.set("max-results", String(maxResults));
   const updatedMax = cleanText(req.searchParams.get("updated-max"));
-  if (updatedMax) feed.searchParams.set("updated-max", updatedMax);
-  const startIndex = toPositiveInt(req.searchParams.get("start-index"), 0, 1000000);
-  if (startIndex > 1) feed.searchParams.set("start-index", String(startIndex));
-  return { url: feed.toString(), maxResults };
+  const startIndex = toPositiveInt(req.searchParams.get("start-index"), 1, 1000000);
+  return { maxResults, updatedMax, startIndex };
+};
+
+const buildListingFeedUrl = (requestUrl, targetCount, startIndex) => {
+  const req = new URL(requestUrl);
+  const feed = new URL("/feeds/posts/default", req.origin);
+  const query = buildListingFeedQuery(requestUrl, targetCount);
+  feed.searchParams.set("alt", "json");
+  feed.searchParams.set("max-results", String(query.maxResults));
+  if (query.updatedMax) feed.searchParams.set("updated-max", query.updatedMax);
+  const cursor = toPositiveInt(startIndex, query.startIndex, 1000000);
+  if (cursor > 1) feed.searchParams.set("start-index", String(cursor));
+  return { url: feed.toString(), maxResults: query.maxResults };
 };
 
 const mapFeedNextToSearchUrl = (feed, requestUrl, fallbackMaxResults) => {
@@ -404,46 +415,109 @@ const mapFeedNextToSearchUrl = (feed, requestUrl, fallbackMaxResults) => {
   return "";
 };
 
+const parseFeedNextStartIndex = (feed, fallback) => {
+  const links = Array.isArray(feed && feed.link) ? feed.link : [];
+  for (const link of links) {
+    if (!link || link.rel !== "next" || !link.href) continue;
+    let next;
+    try {
+      next = new URL(link.href);
+    } catch (e) {
+      continue;
+    }
+    const parsed = toPositiveInt(next.searchParams.get("start-index"), 0, 1000000);
+    if (parsed > 0) return parsed;
+  }
+  return toPositiveInt(fallback, 0, 1000000);
+};
+
+const buildSearchNextUrlFromPublished = (requestUrl, published, maxResults) => {
+  const raw = cleanText(published);
+  if (!raw) return "";
+  try {
+    const req = new URL(requestUrl);
+    const out = new URL("/search", req.origin);
+    out.searchParams.set("updated-max", raw);
+    out.searchParams.set("max-results", String(toPositiveInt(maxResults, BLOG_LISTING_MIN_POSTCARDS)));
+    return out.toString();
+  } catch (e) {
+    return "";
+  }
+};
+
 const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
   const needed = toPositiveInt(neededCount, BLOG_LISTING_MIN_POSTCARDS, BLOG_LISTING_FEED_MAX_RESULTS);
   if (needed <= 0) return { cards: [], nextUrl: "" };
   const seen = seenKeys || new Set();
-  const { url: feedUrl, maxResults } = buildListingFeedUrl(requestUrl, needed);
-  let feedRes;
-  try {
-    feedRes = await fetch(feedUrl, {
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });
-  } catch (e) {
-    return { cards: [], nextUrl: "" };
-  }
-  if (!feedRes || !feedRes.ok) {
-    return { cards: [], nextUrl: "" };
-  }
-  let json;
-  try {
-    json = await feedRes.json();
-  } catch (e) {
-    return { cards: [], nextUrl: "" };
-  }
-  const feed = json && json.feed ? json.feed : null;
-  const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
+  const query = buildListingFeedQuery(requestUrl, needed);
+  let nextStartIndex = query.startIndex;
   const cards = [];
-  for (const entry of entries) {
-    const card = buildFeedPostCard(entry, requestUrl);
-    if (!card || !card.html) continue;
-    if (seen.has(card.key)) continue;
-    seen.add(card.key);
-    cards.push(card);
-    if (cards.length >= needed) break;
+  let fallbackNextUrl = "";
+  let lastPublished = "";
+  let pages = 0;
+
+  while (cards.length < needed && pages < BLOG_LISTING_FEED_MAX_PAGES) {
+    pages += 1;
+    const { url: feedUrl, maxResults } = buildListingFeedUrl(requestUrl, needed, nextStartIndex);
+    let feedRes;
+    try {
+      feedRes = await fetch(feedUrl, {
+        headers: {
+          Accept: "application/json",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+    } catch (e) {
+      break;
+    }
+    if (!feedRes || !feedRes.ok) break;
+
+    let json;
+    try {
+      json = await feedRes.json();
+    } catch (e) {
+      break;
+    }
+    const feed = json && json.feed ? json.feed : null;
+    const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
+    if (!fallbackNextUrl) {
+      fallbackNextUrl = mapFeedNextToSearchUrl(feed, requestUrl, maxResults);
+    }
+
+    let addedThisPage = 0;
+    for (const entry of entries) {
+      const card = buildFeedPostCard(entry, requestUrl);
+      if (!card || !card.html) continue;
+      if (seen.has(card.key)) continue;
+      seen.add(card.key);
+      cards.push(card);
+      addedThisPage += 1;
+      if (card.published) {
+        lastPublished = card.published;
+      }
+      if (cards.length >= needed) break;
+    }
+    if (cards.length >= needed) {
+      fallbackNextUrl = buildSearchNextUrlFromPublished(requestUrl, lastPublished, maxResults) || fallbackNextUrl;
+      break;
+    }
+
+    const nextFromFeed = parseFeedNextStartIndex(feed, 0);
+    if (!nextFromFeed || nextFromFeed <= nextStartIndex) {
+      break;
+    }
+    if (entries.length === 0 && addedThisPage === 0) {
+      break;
+    }
+    nextStartIndex = nextFromFeed;
   }
+
+  const nextUrl =
+    buildSearchNextUrlFromPublished(requestUrl, lastPublished, query.maxResults) || fallbackNextUrl;
   return {
     cards,
-    nextUrl: mapFeedNextToSearchUrl(feed, requestUrl, maxResults),
+    nextUrl,
   };
 };
 
@@ -884,8 +958,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "b7907fb";
-    const TEMPLATE_ALLOWED_RELEASES = ["b7907fb","f3661f1"];
+    const WORKER_VERSION = "707007b";
+    const TEMPLATE_ALLOWED_RELEASES = ["707007b","b7907fb"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
