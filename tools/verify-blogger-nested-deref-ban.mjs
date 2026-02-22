@@ -51,6 +51,10 @@ const checks = [
     label: "unsafe author aboutMe condition missing author guard",
     re: /cond\s*=\s*(['"])data:post\.author\.aboutMe\s+and\s+data:view\.isPost\1/gi,
   },
+  {
+    label: "unsafe labels map expression in template",
+    re: /data:post\.labels\s+map\s*\(/gi,
+  },
 ];
 
 function hasNearbyLocationGuard(source, index) {

@@ -1832,9 +1832,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:if>
 <b:if cond='data:post.labels'>
   <b:if cond='data:post.lastUpdated'>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
   <b:else/>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
   </b:if>
 <b:else/>
   <b:if cond='data:post.lastUpdated'>
@@ -2001,9 +2001,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </header>
     <b:if cond='data:post.labels'>
       <b:if cond='data:post.lastUpdated'>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' expr:data-tags='(data:post.labels map (l =&gt; l.name)) join &quot;, &quot;' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
       </b:if>
     <b:else/>
       <b:if cond='data:post.lastUpdated'>
