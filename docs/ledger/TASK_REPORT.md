@@ -1,36 +1,46 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: HOTFIX-LIVE-GATE-SSR-POSTCARDS-20260222
-TITLE: Fix strict live gate `/blog` SSR postcard false-fail
+TASK_ID: TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222
+TITLE: Sticky full-height sidebars with isolated scroll regions
 
 SUMMARY
-- Root cause: `tools/smoke.sh` live hard-refresh check used hardcoded threshold `>=9` SSR postcards in `#postcards`.
-- Current live `/blog` can legitimately render fewer SSR cards (observed 1) and rely on loadmore/pager for additional items, causing strict gate to fail even when listing surface and fallback pagination are present.
-- Fix applied in `live_blog_hard_refresh_check()`:
-  - Added configurable minimum: `SMOKE_LIVE_MIN_SSR_POSTCARDS` (default `1`).
-  - Kept hard-fail when SSR cards are below configured minimum.
-  - Added safety rule: when SSR cards are low (`<9`), page must still contain loadmore/pager fallback (`data-gg-module='loadmore'` or `#blog-pager` or `.blog-pager-older-link`), otherwise fail.
+- Reworked sidebar containers in `public/assets/latest/main.css` from fixed-drawer behavior to sticky full-height viewport behavior.
+- Removed sidebar fixed-position rules from listing/post/mobile sidebar blocks and standardized sticky dimensions with `height/max-height` + `min-height:0`.
+- Ensured sidebars stay inside layout container flow so they stop before footer/container end.
+- Isolated scroll regions:
+  - Left sidebar: `#gg-left-sidebar-list` (and sidebar section variants) now uses `min-height:0 + overflow:auto + overscroll-behavior:contain`.
+  - ToC: `#gg-toc` now uses flex column structure; only `.gg-toc__list` scrolls (`overflow:auto`, `min-height:0`).
+- Aligned post layout container behavior closer to listing/home alignment by using sticky side columns in `.gg-blog-layout--post` (no fixed side drawers).
+- Added verifier `tools/verify-sidebar-sticky-contract.mjs` and wired into `tools/gate-prod.sh`.
 
 FILES CHANGED
-- tools/smoke.sh
+- public/assets/latest/main.css
+- tools/verify-sidebar-sticky-contract.mjs
+- tools/gate-prod.sh
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
+- index.prod.xml
+- public/sw.js
+- src/worker.js
+- public/assets/v/cc3ed54/*
 
 VERIFICATION OUTPUTS
-- `bash -n tools/smoke.sh`
+- `node tools/verify-sidebar-sticky-contract.mjs`
 ```text
-PASS (no syntax errors)
+PASS: sidebar sticky contract
 ```
 
-- `node tools/verify-ledger.mjs`
+- `npm run gate:prod`
 ```text
-VERIFY_LEDGER: PASS
-RELEASE_ID=8c1fb78
+PASS: sidebar sticky contract
+PASS: gate:prod
 ```
 
-NOTES
-- Full live smoke cannot be executed from this local sandbox because DNS resolution to `www.pakrpp.com` is unavailable in this environment.
-- This hotfix targets the exact failing check:
-  `FAIL: LIVE_HTML /blog hard refresh #1 expected >=9 SSR postcards (got 1)`
+MANUAL SANITY
+- Not executed in this CLI-only environment.
+- Recommended browser checks:
+  - Post/listing desktop: sidebars are full-height sticky and stop at layout end (no footer overlap).
+  - Left sidebar: only pages-list region scrolls.
+  - ToC: header stays, ToC list scrolls independently.

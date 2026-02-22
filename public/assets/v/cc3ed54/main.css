@@ -627,11 +627,15 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
 @media (min-width: 921px){
   .gg-blog-sidebar{
     position: sticky;
-    top: var(--gg-sticky-top, 84px);
+    top: var(--gg-sticky-top, 16px);
     align-self: start;
-    max-height: calc(100dvh - (var(--gg-sticky-top, 84px) * 2));
-    overflow: auto;
-    padding-right: 2px;
+    height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-right: 0;
   }
 }
 
@@ -640,30 +644,30 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   main.gg-main[data-gg-surface="home"] .gg-blog-layout--list,
   main.gg-main[data-gg-surface="feed"] .gg-blog-layout--list,
   main.gg-main[data-gg-surface="page"] .gg-blog-layout--list{
-    grid-template-columns: minmax(0, var(--gg-col-left)) minmax(0, min(var(--gg-col-main), calc(100vw - var(--gg-col-left))));
-    max-width: calc(var(--gg-col-left) + var(--gg-col-main));
+    grid-template-columns: minmax(0, var(--gg-col-left)) minmax(0, min(var(--gg-col-main), calc(100vw - var(--gg-col-left) - var(--gg-col-right)))) minmax(0, var(--gg-col-right));
+    max-width: calc(var(--gg-col-left) + var(--gg-col-main) + var(--gg-col-right));
     margin-inline: auto;
   }
 
   main.gg-main[data-gg-surface="home"] .gg-blog-layout--list .gg-blog-sidebar--right,
   main.gg-main[data-gg-surface="feed"] .gg-blog-layout--list .gg-blog-sidebar--right,
   main.gg-main[data-gg-surface="page"] .gg-blog-layout--list .gg-blog-sidebar--right{
-    position: fixed;
-    top: 72px;
-    bottom: 16px;
-    right: 16px;
-    width: min(var(--gg-right-drawer-w), var(--gg-drawer-max-vw-compact));
-    max-height: none;
-    overflow: auto;
-    background: var(--gg-surface);
-    border: 1px solid var(--gg-border);
-    border-radius: var(--gg-radius);
-    box-shadow: var(--gg-shadow-soft);
-    transform: translateX(110%);
-    opacity: 0;
-    pointer-events: none;
-    z-index: var(--z-overlay-2);
-    transition: transform .18s ease, opacity .18s ease;
+    position: sticky;
+    top: var(--gg-sticky-top, 16px);
+    width: var(--gg-col-right);
+    height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+    min-height: 0;
+    overflow: hidden;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: var(--z-sticky);
+    transition: none;
   }
 
   main.gg-main[data-gg-info-panel="open"] .gg-blog-layout--list .gg-blog-sidebar--right,
@@ -703,6 +707,8 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
+  height: 100%;
 }
 
 .gg-leftnav__profile{
@@ -1564,15 +1570,42 @@ a.gg-search-assist__item > small{
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 0;
+}
+
+.gg-blog-sidebar--right{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.gg-blog-sidebar--right > .gg-info-panel,
+.gg-blog-sidebar--right > .gg-comments-panel,
+.gg-blog-sidebar--right > .gg-blog-sidebar__section,
+.gg-blog-sidebar--right > .gg-blog-sidebar__section-page{
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#gg-right-sidebar-list,
+#gg-right-sidebar-post,
+#gg-right-sidebar-page{
+  min-height: 0;
+  overflow: hidden;
 }
 
 
 #gg-left-sidebar-list,
-#gg-left-sidebar-page{
+#gg-left-sidebar-page,
+#gg-left-sidebar-post{
   --gg-left-sidebar-gap: 12px;
   --gg-left-sidebar-divider: color-mix(in srgb, var(--gg-border) 85%, transparent);
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   gap: var(--gg-left-sidebar-gap);
   padding: 12px;
   border: 1px solid var(--gg-border);
@@ -2725,9 +2758,7 @@ main.gg-main[data-gg-surface="post"][data-gg-left-panel="closed"] .gg-blog-sideb
 
 main.gg-main[data-gg-surface="post"]{
   background: var(--gg-bg);
-  --gg-main-max: var(--gg-reading-max);
-  --gg-center-w: min(var(--gg-reading-max), calc(100% - 32px));
-  --gg-center-left: calc((100% - var(--gg-center-w)) / 2);
+  --gg-main-max: min(var(--gg-col-main), calc(100vw - var(--gg-col-left) - var(--gg-col-right) - 32px));
 }
 
 main.gg-main[data-gg-surface="post"],
@@ -2737,14 +2768,15 @@ main.gg-main[data-gg-surface="post"] .gg-blog-main{
 
 main.gg-main[data-gg-surface="post"] .gg-post{
   max-width: 100%;
-  padding: 0 12px 32px;
+  padding: 0 0 32px;
 }
 .gg-blog-layout--post{
   display: grid;
-  grid-template-columns: 1fr minmax(0, var(--gg-main-max)) 1fr;
-  max-width: none;
-  margin: 0;
+  grid-template-columns: minmax(0, var(--gg-col-left)) minmax(0, var(--gg-main-max)) minmax(0, var(--gg-col-right));
+  max-width: calc(var(--gg-col-left) + var(--gg-main-max) + var(--gg-col-right));
+  margin-inline: auto;
   padding: 0;
+  gap: var(--gg-col-gap);
   justify-content: center;
 }
 .gg-blog-layout--post .gg-blog-main{
@@ -2755,38 +2787,37 @@ main.gg-main[data-gg-surface="post"] .gg-post{
 main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left,
 main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--right{
   display: block;
-  position: fixed;
-  top: 72px;
-  bottom: 16px;
-  max-height: none;
-  overflow: auto;
-  background: var(--gg-surface);
-  border: 1px solid var(--gg-border);
-  border-radius: var(--gg-radius);
-  box-shadow: var(--gg-shadow-soft);
-  z-index: var(--z-overlay-2);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform .18s ease, opacity .18s ease;
+  position: sticky;
+  top: var(--gg-sticky-top, 16px);
+  height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+  max-height: calc(100dvh - var(--gg-sticky-top, 16px) - 16px);
+  min-height: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: var(--z-sticky);
+  opacity: 1;
+  pointer-events: auto;
+  transition: none;
 }
 main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left{
-  width: var(--gg-left-drawer-w);
-  left: max(12px, calc(var(--gg-center-left) - 16px - var(--gg-left-drawer-w)));
-  transform: translateX(-110%);
+  width: var(--gg-col-left);
+  left: auto;
+  transform: none;
 }
 main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--right{
-  width: var(--gg-right-drawer-w);
-  right: max(12px, calc(var(--gg-center-left) - 16px - var(--gg-right-drawer-w)));
-  transform: translateX(110%);
+  width: var(--gg-col-right);
+  right: auto;
+  transform: none;
 }
 main.gg-main[data-gg-surface="post"][data-gg-left-panel="open"] .gg-blog-sidebar--left{
-  transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
 main.gg-main[data-gg-surface="post"][data-gg-right-panel="open"] .gg-blog-sidebar--right,
 main.gg-main[data-gg-surface="post"][data-gg-info-panel="open"] .gg-blog-sidebar--right{
-  transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
@@ -3218,41 +3249,46 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
 
   
   .gg-blog-sidebar{
-    position: fixed;
-    top: 0; bottom: 0;
-    height: 100dvh;
+    position: sticky;
+    top: var(--gg-sticky-top, 12px);
+    height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    max-height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    min-height: 0;
     z-index: var(--z-sticky-2);
-    padding: 16px;
-    max-height: none;
+    padding: 0;
+    overflow: hidden;
   }
   .gg-blog-sidebar--left{
-    left: 0;
-    width: min(var(--gg-drawer-max-vw-mobile), var(--gg-left-drawer-w));
-    transform: translateX(-110%);
+    left: auto;
+    width: auto;
+    transform: none;
   }
   .gg-blog-sidebar--right{
-    right: 0;
-    width: min(var(--gg-drawer-max-vw-mobile), var(--gg-right-drawer-w));
-    transform: translateX(110%);
+    right: auto;
+    width: auto;
+    transform: none;
   }
 
-  main.gg-main[data-gg-left-panel="open"] .gg-blog-sidebar--left{ transform: translateX(0); }
+  main.gg-main[data-gg-left-panel="closed"] .gg-blog-sidebar--left{ display: none; }
+  main.gg-main[data-gg-left-panel="open"] .gg-blog-sidebar--left{ display: flex; }
+  main.gg-main[data-gg-right-panel="closed"][data-gg-info-panel="closed"] .gg-blog-sidebar--right{ display: none; }
   main.gg-main[data-gg-info-panel="open"] .gg-blog-sidebar--right,
-  main.gg-main[data-gg-right-panel="open"] .gg-blog-sidebar--right{ transform: translateX(0); }
+  main.gg-main[data-gg-right-panel="open"] .gg-blog-sidebar--right{ display: flex; }
 
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left,
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--right{
-    top: 0;
-    bottom: 0;
-    border-radius: 0;
+    top: var(--gg-sticky-top, 12px);
+    height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    max-height: calc(100dvh - var(--gg-sticky-top, 12px) - 12px);
+    border-radius: var(--gg-radius-md);
   }
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--left{
-    left: 0;
-    width: min(var(--gg-drawer-max-vw-mobile), var(--gg-left-drawer-w));
+    left: auto;
+    width: auto;
   }
   main.gg-main[data-gg-surface="post"] .gg-blog-layout--post .gg-blog-sidebar--right{
-    right: 0;
-    width: min(var(--gg-drawer-max-vw-mobile), var(--gg-right-drawer-w));
+    right: auto;
+    width: auto;
   }
 
  
@@ -4083,10 +4119,34 @@ nav.gg-dock .gg-dock__perimeter-progress{
   #gg-toc .gg-toc__toggle:hover{background:#f3f4f6}
   #gg-toc .gg-toc__toggle:focus{background:#eeeeee;outline-offset:1px}
 
-  #gg-toc .gg-toc__body{display:block}
+  #gg-toc{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    height:100%;
+  }
+  #gg-toc .gg-toc__body{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+  }
   #gg-toc[data-gg-state~="collapsed"] .gg-toc__body{display:none}
 
-  #gg-toc .gg-toc__list{list-style:none;margin:0 0 0 25px;padding:0;display:flex;flex-direction:column;gap:2px}
+  #gg-toc .gg-toc__list{
+    list-style:none;
+    margin:0 0 0 25px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    flex:1 1 auto;
+    min-height:0;
+    overflow:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
   #gg-toc .gg-toc__item{display:block}
 
   

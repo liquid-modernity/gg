@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- HOTFIX-LIVE-GATE-SSR-POSTCARDS-20260222: strict live smoke now uses resilient SSR postcard minimum + loadmore fallback contract.
+- TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222: sidebars now use sticky full-height contract with isolated scroll regions.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 29965f5
+RELEASE_ID: cc3ed54
 RELEASE_HISTORY:
+- cc3ed54
 - 29965f5
-- 8c1fb78
-PROD_PINNED_JS: /assets/v/29965f5/main.js
-PROD_PINNED_APP: /assets/v/29965f5/app.js
-PROD_PINNED_CSS: /assets/v/29965f5/main.css
+PROD_PINNED_JS: /assets/v/cc3ed54/main.js
+PROD_PINNED_APP: /assets/v/cc3ed54/app.js
+PROD_PINNED_CSS: /assets/v/cc3ed54/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-02-22 HOTFIX-LIVE-GATE-SSR-POSTCARDS-20260222 replaced brittle `>=9` SSR postcard check with configurable minimum + loadmore/pager fallback requirement.
+- 2026-02-22 TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222 converted sidebar containers to sticky full-height and locked scroll to list/ToC regions.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

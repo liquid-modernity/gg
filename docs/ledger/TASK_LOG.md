@@ -2383,3 +2383,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): `/blog` live SSR currently returns 1 postcard + loadmore wrapper, so fixed hardcoded `>=9` to configurable minimum (`SMOKE_LIVE_MIN_SSR_POSTCARDS`, default `1`) with fallback integrity assertion
 - RISKS: low; contract still blocks empty SSR and blocks low-card pages that also lack pager/loadmore
 - NEXT: user-priority task
+
+## 2026-02-22 — TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222 — Sticky full-height sidebars with isolated scroll regions
+- DATE: 2026-02-22
+- TASK_ID: TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222
+- TITLE: Sticky full-height sidebars with isolated scroll regions
+- MODE (DEV/PROD impact): layout CSS contract + verifier/gate wiring
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: convert sidebar containers to sticky full-height behavior, remove sidebar fixed-position rules, isolate scroll to left pages-list region and ToC list region, and add static contract verifier
+- CHANGES (files touched): public/assets/latest/main.css; tools/verify-sidebar-sticky-contract.mjs; tools/gate-prod.sh; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; index.prod.xml; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*
+- COMMANDS RUN (local): node tools/verify-sidebar-sticky-contract.mjs; npm run gate:prod
+- CI STATUS: pending next workflow run
+- DEPLOY STATUS: not deployed in this task
+- VERIFY (URLs + expected): sidebar-sticky verifier PASS; gate:prod PASS (offline smoke fallback in local sandbox)
+- NOTES (gotchas): prior CSS used fixed sidebar drawers for several breakpoints; contract now enforces sticky + explicit scroll areas (left list + ToC list)
+- RISKS: med; mobile drawer interaction changed to sticky/show-hide behavior and should be sanity-checked on real devices
+- NEXT: user-priority task

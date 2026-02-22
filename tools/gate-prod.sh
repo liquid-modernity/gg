@@ -42,6 +42,7 @@ run node tools/verify-search-no-innerhtml.mjs
 run node tools/verify-skip-link-contract.mjs
 run node tools/verify-icon-controls-a11y.mjs
 run node tools/verify-tap-targets.mjs
+run node tools/verify-sidebar-sticky-contract.mjs
 run node tools/verify-image-perf-policy.mjs
 run node tools/verify-responsive-thumbs-policy.mjs
 run node tools/verify-cls-dimensions-policy.mjs
