@@ -35,7 +35,7 @@ module.exports = {
       url: urls,
       numberOfRuns: 3,
       settings: {
-        preset: "mobile",
+        emulatedFormFactor: "mobile",
         throttlingMethod: "simulate",
       },
     },
