@@ -353,8 +353,10 @@ post_detail_contract_check() {
   local marker_re="<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b"
   local strict_post_re="class=['\"][^'\"]*\\bgg-post\\b[^'\"]*['\"]"
   local crash_marker="Failed to render gadget 'Blog1'"
+  local sentinel_attempts="${SMOKE_POST_DETAIL_ATTEMPTS:-3}"
   local primary_raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
-  local sentinel_raw sentinel_url sentinel_html sentinel_reason
+  local sentinel_raw sentinel_url sentinel_html sentinel_reason sentinel_fetch_url
+  local sentinel_attempt
   local blog_html blog_candidate
   local raw url html reason
   local -a diag_candidates=()
@@ -371,15 +373,39 @@ post_detail_contract_check() {
     sentinel_url="${BASE%/}/${sentinel_raw#/}"
   fi
 
+  if ! [[ "${sentinel_attempts}" =~ ^[0-9]+$ ]] || (( sentinel_attempts < 1 )); then
+    die "post detail sentinel attempts must be >=1 (got ${sentinel_attempts})"
+  fi
+
   sentinel_html=""
   sentinel_reason=""
-  if ! sentinel_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${sentinel_url}" | tr -d '\r')"; then
-    sentinel_reason="fetch failed"
-  elif grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
-    sentinel_reason="contains Blog1 gadget crash marker"
-  elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
-    sentinel_reason="missing strict gg-post marker"
-  fi
+  for (( sentinel_attempt=1; sentinel_attempt<=sentinel_attempts; sentinel_attempt++ )); do
+    if [[ "${sentinel_url}" == *\?* ]]; then
+      sentinel_fetch_url="${sentinel_url}&x=$(date +%s)${sentinel_attempt}"
+    else
+      sentinel_fetch_url="${sentinel_url}?x=$(date +%s)${sentinel_attempt}"
+    fi
+
+    if ! sentinel_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${sentinel_fetch_url}" | tr -d '\r')"; then
+      sentinel_reason="fetch failed"
+      continue
+    fi
+    if grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
+      sentinel_reason="contains Blog1 gadget crash marker"
+      break
+    fi
+    if grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
+      sentinel_reason=""
+      break
+    fi
+    if grep -Fqi "There was an error processing the markup" <<<"${sentinel_html}"; then
+      sentinel_reason="upstream markup error"
+    elif grep -Eqi "data-gg-page=['\"]error['\"]|data:blog.pageType == \"error_page\"|gg-error__title" <<<"${sentinel_html}"; then
+      sentinel_reason="error-page surface"
+    else
+      sentinel_reason="missing strict gg-post marker"
+    fi
+  done
 
   if [[ -z "${sentinel_reason}" ]]; then
     echo "PASS: post detail contract (${sentinel_url})"
@@ -407,8 +433,8 @@ post_detail_contract_check() {
         grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
       fi
       echo "THIS WILL NOT FIX ITSELF BY WORKERS DEPLOY — YOU MUST PASTE index.prod.xml INTO BLOGGER THEME"
-    elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
-      echo "DEBUG: sentinel missing strict gg-post marker (${sentinel_url})"
+    else
+      echo "DEBUG: sentinel ${sentinel_reason} (${sentinel_url})"
       grep -Ein -C 1 "gg-post|gg-post__title|gg-post__content|error_page|gg-error__title|There was an error processing the markup" <<<"${sentinel_html}" | head -n 40 || true
     fi
   fi
