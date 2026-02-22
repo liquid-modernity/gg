@@ -2270,3 +2270,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): workflow now requires `permissions.contents: write` and pushes only to `perf-history`; append-only growth guard checks `history.ndjson` line count increase
 - RISKS: low/med; first run may initialize orphan `perf-history` branch content in CI if branch does not yet exist
 - NEXT: TASK-PERF-TREND-HISTORY-20260223
+
+## 2026-02-22 — TASK-GH-PAGES-PERF-DASHBOARD-20260222 — GitHub Pages pointer for perf dashboard
+- DATE: 2026-02-22
+- TASK_ID: TASK-GH-PAGES-PERF-DASHBOARD-20260222
+- TITLE: Link perf dashboard + perf-history branch
+- MODE (DEV/PROD impact): docs + CI summary pointer only (no runtime code change)
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add GitHub Pages handoff pointers for `perf-history` dashboard and surface URL guidance in CI Step Summary
+- CHANGES (files touched): docs/perf/PERF_HISTORY.md; .github/workflows/perf-lighthouse.yml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md
+- COMMANDS RUN (local): node tools/verify-perf-history-contract.mjs; node tools/verify-perf-workflow-contract.mjs; npm run gate:prod
+- CI STATUS: pending on next perf-lighthouse workflow run
+- DEPLOY STATUS: no deploy change in this task
+- VERIFY (URLs + expected): perf-history contract PASS; perf-workflow contract PASS; gate:prod PASS (offline smoke fallback in sandbox)
+- NOTES (gotchas): Pages activation is manual in repository settings; docs keep `DASHBOARD_URL: XXX` placeholder until confirmed
+- RISKS: low; placeholder must be replaced after Pages URL is confirmed live
+- NEXT: TASK-PERF-TREND-HISTORY-20260223

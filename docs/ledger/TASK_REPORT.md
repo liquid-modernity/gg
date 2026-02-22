@@ -1,47 +1,34 @@
 TASK_REPORT
 Last updated: 2026-02-22
 
-TASK_ID: TASK-PERF-TREND-HISTORY-BRANCH-20260222
-TITLE: Add perf-history branch writer + dashboard builder
+TASK_ID: TASK-GH-PAGES-PERF-DASHBOARD-20260222
+TITLE: Link perf dashboard + perf-history branch
 
 SUMMARY
-- Added CI history persistence scripts:
-  - `tools/perf/perf-history-append.mjs`
-  - `tools/perf/perf-history-build.mjs`
-- Updated `perf-lighthouse` workflow to persist trend to append-only branch `perf-history`:
-  - fetch/switch worktree for `perf-history`
-  - append one NDJSON record per run (`perf/history.ndjson`)
-  - build `perf/latest.json` and `perf/index.html`
-  - commit + push to `perf-history`
-- Added append-only guard in workflow (`history.ndjson` must grow).
-- Added contract verifier `tools/verify-perf-history-contract.mjs` and wired it into `gate:prod`.
-- Updated docs with branch/data model and viewing guidance in `docs/perf/PERF_HISTORY.md` and `docs/perf/CI_LIGHTHOUSE.md`.
+- Added GitHub Pages handoff pointers in `docs/perf/PERF_HISTORY.md` with explicit placeholder `DASHBOARD_URL: XXX` until Pages publish URL is confirmed.
+- Added CI Step Summary pointer block in `.github/workflows/perf-lighthouse.yml` so every run prints:
+  - dashboard URL (or setup hint if still placeholder)
+  - latest snapshot path (`perf-history/perf/latest.json`)
+  - history log path (`perf-history/perf/history.ndjson`)
+- Kept dashboard output path Pages-friendly and unchanged (`perf/index.html` on `perf-history`).
 
-ARTIFACTS / DATA TARGET
-- `perf-history` branch files:
-  - `perf/history.ndjson`
-  - `perf/latest.json`
-  - `perf/index.html`
-- Existing workflow artifacts remain:
-  - `.lighthouseci` bundle
-  - `.lighthouseci/trend.json`
+MANUAL ACTION REQUIRED (GITHUB SETTINGS)
+- Enable GitHub Pages in repository settings:
+  1) Source: Deploy from a branch
+  2) Branch: perf-history
+  3) Folder: /perf
+- After GitHub confirms published URL, replace `DASHBOARD_URL: XXX` in `docs/perf/PERF_HISTORY.md`.
 
 FILES CHANGED
-- tools/perf/perf-history-append.mjs
-- tools/perf/perf-history-build.mjs
-- .github/workflows/perf-lighthouse.yml
 - docs/perf/PERF_HISTORY.md
-- tools/verify-perf-history-contract.mjs
-- tools/verify-perf-workflow-contract.mjs
-- tools/gate-prod.sh
-- docs/perf/CI_LIGHTHOUSE.md
+- .github/workflows/perf-lighthouse.yml
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
 - docs/ledger/GG_CAPSULE.md
 - index.prod.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/<RELEASE_ID>/*
+- public/assets/v/43b6882/*
 
 VERIFICATION OUTPUTS
 - `node tools/verify-perf-history-contract.mjs`
@@ -56,20 +43,14 @@ VERIFY_PERF_WORKFLOW_CONTRACT: PASS
 
 - `npm run gate:prod`
 ```text
-VERIFY_RULEBOOKS: PASS
 VERIFY_RELEASE_ALIGNED: PASS
 VERIFY_PERF_WORKFLOW_CONTRACT: PASS
 VERIFY_PERF_HISTORY_CONTRACT: PASS
 PASS: perf URLs SSOT aligned
-VERIFY_BUDGETS: PASS
+PASS: font policy
 PASS: smoke tests (offline fallback)
 PASS: gate:prod
 ```
 
-WORKFLOW DRY-RUN SANITY (STATIC)
-- Workflow includes:
-  - `permissions: contents: write`
-  - `git fetch origin perf-history:perf-history`
-  - `git push origin perf-history`
-  - trend append + build steps
-- Local environment cannot execute GitHub-token push to remote branch; this is validated in CI run context.
+NOTES
+- Local environment cannot perform repository Settings -> Pages operations, so this task ships with explicit manual setup guidance and placeholder URL contract.

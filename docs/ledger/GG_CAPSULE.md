@@ -2,7 +2,7 @@
 Last updated: 2026-02-22
 
 NOW:
-- TASK-PERF-TREND-HISTORY-BRANCH-20260222: Persist Lighthouse trend into append-only `perf-history` branch with static dashboard build.
+- TASK-GH-PAGES-PERF-DASHBOARD-20260222: Publish-ready pointer contract for `perf-history` dashboard via GitHub Pages and CI Step Summary hints.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: f25e4f5
+RELEASE_ID: 43b6882
 RELEASE_HISTORY:
+- 43b6882
 - f25e4f5
-- 4bef74e
-PROD_PINNED_JS: /assets/v/f25e4f5/main.js
-PROD_PINNED_APP: /assets/v/f25e4f5/app.js
-PROD_PINNED_CSS: /assets/v/f25e4f5/main.css
+PROD_PINNED_JS: /assets/v/43b6882/main.js
+PROD_PINNED_APP: /assets/v/43b6882/app.js
+PROD_PINNED_CSS: /assets/v/43b6882/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - TASK-PERF-TREND-HISTORY-20260223
 
 LAST_PATCH:
-- 2026-02-22 TASK-PERF-TREND-HISTORY-BRANCH-20260222 added `perf-history` branch writer/builder workflow and history contract verifier.
+- 2026-02-22 TASK-GH-PAGES-PERF-DASHBOARD-20260222 added Pages handoff pointers in docs and perf workflow Step Summary.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

@@ -140,6 +140,27 @@ jobs:
           git commit -m "perf(history): append ${short_sha} run ${GITHUB_RUN_ID}"
           git push origin perf-history
 
+      - name: Perf dashboard pointers
+        if: always()
+        run: |
+          set -euo pipefail
+          DASHBOARD_URL="${PERF_DASHBOARD_URL:-XXX}"
+          REPO_FULL="${GITHUB_REPOSITORY:-owner/repo}"
+          OWNER="${REPO_FULL%%/*}"
+          REPO="${REPO_FULL##*/}"
+          {
+            echo "### Perf Dashboard Pointers"
+            if [ "${DASHBOARD_URL}" = "XXX" ]; then
+              echo "- Perf dashboard: XXX"
+              echo "- Set GitHub Pages source to branch \`perf-history\` folder \`/perf\`."
+              echo "- Expected project URL: https://${OWNER}.github.io/${REPO}/index.html"
+            else
+              echo "- Perf dashboard: ${DASHBOARD_URL}"
+            fi
+            echo "- Latest snapshot: perf-history/perf/latest.json"
+            echo "- History log: perf-history/perf/history.ndjson"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Cleanup perf-history worktree
         if: always()
         run: |

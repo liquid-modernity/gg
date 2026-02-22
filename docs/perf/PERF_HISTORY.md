@@ -5,6 +5,12 @@ Last updated: 2026-02-22
 - Perf history is persisted on a dedicated append-only branch: `perf-history`.
 - Main branch stays clean; history data is not committed to `main`.
 
+## Dashboard Pointers
+- Perf Dashboard (GitHub Pages): `DASHBOARD_URL: XXX`
+- Perf History Branch: `perf-history`
+- Latest snapshot JSON: `perf/latest.json` (inside `perf-history` branch)
+- Note: replace `XXX` with the published Pages URL after enabling Pages in repo settings.
+
 ## Branch Contents (`perf-history`)
 - `perf/history.ndjson`
   - One JSON object per Lighthouse run (one line per run).
@@ -31,6 +37,14 @@ Last updated: 2026-02-22
 ## How To View
 - GitHub branch browser: `perf-history` branch files under `perf/`.
 - Optional: enable GitHub Pages on `perf-history` and serve `perf/index.html`.
+
+## GitHub Pages Setup (Manual)
+1. Open repo `Settings` -> `Pages`.
+2. Source: `Deploy from a branch`.
+3. Branch: `perf-history`.
+4. Folder: `/perf`.
+5. Save and wait for publish status.
+6. Replace `DASHBOARD_URL: XXX` above with the exact published URL.
 
 ## Growth / Rotation Policy
 - Current mode: append-only, no rotation.
