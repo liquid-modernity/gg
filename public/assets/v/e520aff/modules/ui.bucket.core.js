@@ -275,6 +275,20 @@ function apply(html, url){
     }
     return frag;
   }
+  function showSwapFailToast(){
+    if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') {
+      try { GG.ui.toast.show('Failed to load, retry'); } catch (_) {}
+    }
+  }
+  function replaceWithFragment(targetEl, frag){
+    if (!targetEl || !frag) return;
+    if (typeof targetEl.replaceChildren === 'function') {
+      targetEl.replaceChildren(frag);
+      return;
+    }
+    while (targetEl.firstChild) targetEl.removeChild(targetEl.firstChild);
+    targetEl.appendChild(frag);
+  }
   function shouldReduceMotion(){
     try{
       if(GG.store&&GG.store.get){
@@ -336,33 +350,49 @@ function apply(html, url){
     }
   }
   var doSwap = function(){
-    var frag = cloneSwapContent(source);
+    var body = w.document && w.document.body;
+    var prevVisibility = (target && target.style) ? target.style.visibility : '';
+    var swapped = false;
     var mainScope = null;
-    target.textContent = '';
-    target.appendChild(frag);
-    mainScope = resolveMainScope(target);
-    clearRehydrateFlags(mainScope);
-    if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
-      try { GG.ui.layout.sync(doc, url); } catch (_) {}
+    try {
+      var frag = cloneSwapContent(source);
+      if (!frag || !frag.childNodes || !frag.childNodes.length) throw fail('swap-empty', { url: url });
+      replaceWithFragment(target, frag);
+      swapped = true;
+      mainScope = resolveMainScope(target);
+      clearRehydrateFlags(mainScope);
+      if (GG.ui && GG.ui.layout && typeof GG.ui.layout.sync === 'function') {
+        try { GG.ui.layout.sync(doc, url); } catch (_) {}
+      }
+      if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
+        try { GG.core.surface.update(url); } catch (_) {}
+      }
+      if (GG.core && GG.core.meta && GG.core.meta.update) {
+        var payload = {};
+        if (meta.title) payload.title = meta.title;
+        if (meta.description) payload.description = meta.description;
+        if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
+        if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
+      }
+      var rehydrated = rehydrateComments(target);
+      if (!rehydrated) rehydrateComments(doc);
+      if (GG.app && typeof GG.app.rehydrate === 'function') {
+        try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
+      }
+      runAfterSwapRehydrate(mainScope);
+      GG.core.render._lastUrl = url || '';
+      GG.core.render._lastAt = Date.now();
+    } catch (err) {
+      showSwapFailToast();
+      throw (err && err.code) ? err : fail('swap', { url: url, error: err && err.message ? err.message : '' });
+    } finally {
+      if (body) {
+        if (body.classList) body.classList.remove('is-loading');
+        else body.className = body.className.replace(/\bis-loading\b/g, ' ').trim();
+        if (GG.core && GG.core.state) GG.core.state.remove(body, 'loading');
+      }
+      if (!swapped && target && target.style) target.style.visibility = prevVisibility || '';
     }
-    if (GG.core && GG.core.surface && typeof GG.core.surface.update === 'function') {
-      try { GG.core.surface.update(url); } catch (_) {}
-    }
-    if (GG.core && GG.core.meta && GG.core.meta.update) {
-      var payload = {};
-      if (meta.title) payload.title = meta.title;
-      if (meta.description) payload.description = meta.description;
-      if (meta.ogTitle) payload.ogTitle = meta.ogTitle;
-      if (payload.title || payload.description || payload.ogTitle) GG.core.meta.update(payload);
-    }
-    var rehydrated = rehydrateComments(target);
-    if (!rehydrated) rehydrateComments(doc);
-    if (GG.app && typeof GG.app.rehydrate === 'function') {
-      try { GG.app.rehydrate({ doc: doc, url: url }); } catch (_) {}
-    }
-    runAfterSwapRehydrate(mainScope);
-    GG.core.render._lastUrl = url || '';
-    GG.core.render._lastAt = Date.now();
   };
   var docRef = w.document;
   if (docRef && docRef.startViewTransition && !shouldReduceMotion()) {
@@ -4749,29 +4779,79 @@ for (var i = 0; i < GG.app.plan.length; i++) {
 }
 };
 
+GG.app.ensureBuckets = GG.app.ensureBuckets || function(context){
+var root = document;
+var buckets = GG.__uiBuckets = GG.__uiBuckets || {};
+var loads = [];
+var main = root.querySelector('main.gg-main[data-gg-surface]') || root.querySelector('main.gg-main');
+var surface = main ? String(main.getAttribute('data-gg-surface') || '').toLowerCase() : '';
+var hasPostLike = false;
+var hasListingLike = false;
+
+function has(sel){
+  try { return !!(root.querySelector && root.querySelector(sel)); } catch (_) { return false; }
+}
+
+if (surface === 'post' || surface === 'page' || surface === 'postdetail') hasPostLike = true;
+if (!hasPostLike && has('article.gg-post, .gg-post__content.post-body.entry-content, .post-body.entry-content, .post-body, #gg-toc')) hasPostLike = true;
+
+if (has('#postcards, [data-gg-module="loadmore"], #loadmore, .gg-labeltree[data-gg-module="labeltree"], [data-gg-module="labeltree"]')) hasListingLike = true;
+
+if (hasPostLike && !buckets.post && GG.boot && typeof GG.boot.loadModule === 'function') {
+  loads.push(GG.boot.loadModule('ui.bucket.post.js'));
+}
+if (hasListingLike && !buckets.listing && GG.boot && typeof GG.boot.loadModule === 'function') {
+  loads.push(GG.boot.loadModule('ui.bucket.listing.js'));
+}
+
+if (!loads.length) {
+  if (w.Promise && typeof w.Promise.resolve === 'function') return w.Promise.resolve(true);
+  return true;
+}
+if (w.Promise && typeof w.Promise.all === 'function') {
+  return w.Promise.all(loads).then(function(){ return true; }).catch(function(){ return false; });
+}
+return Promise.all(loads).then(function(){ return true; }).catch(function(){ return false; });
+};
+
 GG.app.rehydrate = GG.app.rehydrate || function(context){
 var ctx = context || {};
 if (GG.ui && GG.ui.layout && typeof GG.ui.layout.refresh === 'function') {
   GG.ui.layout.refresh(ctx.doc || null);
 }
-var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
-var tasks = [
-  { name: 'homeState.reinit', fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
-  { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
-  { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
-  { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
-  { name: 'ShortcodesV2.reinit', fn: function(){ if (GG.modules.ShortcodesV2 && GG.modules.ShortcodesV2.transformRoot) GG.modules.ShortcodesV2.transformRoot(document); } },
-  { name: 'LeftNav.reinit', fn: function(){ if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
-  { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
-  { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
-  { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
-  { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
-  { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
-  { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
-];
-for (var i = 0; i < tasks.length; i++) {
-  GG.boot.safeInit(tasks[i].name, tasks[i].fn);
+function runTasks(){
+  var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
+  var tasks = [
+    { name: 'homeState.reinit', fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
+    { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
+    { name: 'InfoPanel.reinit', fn: function(){ if (main && GG.modules.InfoPanel) GG.modules.InfoPanel.init(main); } },
+    { name: 'PostDetail.reinit', fn: function(){ if (main && GG.modules.PostDetail) GG.modules.PostDetail.init(main); } },
+    { name: 'ShortcodesV2.reinit', fn: function(){ if (GG.modules.ShortcodesV2 && GG.modules.ShortcodesV2.transformRoot) GG.modules.ShortcodesV2.transformRoot(document); } },
+    { name: 'LeftNav.reinit', fn: function(){ if (main && GG.modules.LeftNav) GG.modules.LeftNav.init(main); } },
+    { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
+    { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
+    { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
+    { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
+    { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
+    { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
+  ];
+  for (var i = 0; i < tasks.length; i++) {
+    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
+  }
 }
+
+var ensured = (GG.app && typeof GG.app.ensureBuckets === 'function') ? GG.app.ensureBuckets(ctx) : null;
+if (ensured && typeof ensured.then === 'function') {
+  return ensured.then(function(){
+    runTasks();
+    return true;
+  }).catch(function(){
+    runTasks();
+    return false;
+  });
+}
+runTasks();
+return true;
 };
 
 (function(){

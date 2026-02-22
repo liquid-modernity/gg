@@ -282,11 +282,21 @@ return out;
 function shouldReduceMotion(){var st=GG.store&&GG.store.get&&GG.store.get();return st&&st.reducedMotion!==undefined?!!st.reducedMotion:!!(w.matchMedia&&w.matchMedia('(prefers-reduced-motion: reduce)').matches);}
 function announceRoute(){var el=d.getElementById('gg-main');if(el){el.tabIndex=-1;try{el.focus({preventScroll:true});}catch(e){el.focus();}}var t=doc.title||'Page loaded',a=GG.services&&GG.services.a11y&&GG.services.a11y.announce;if(a)a(t,{politeness:'polite'});}
 var doSwap=function(){
-t.innerHTML=s.innerHTML;
+var body=d.body;
+var prevVisibility=t&&t.style?t.style.visibility:'';
+var swapped=false;
+try{
+var mainFrag=d.createDocumentFragment();
+var mainNodes=Array.prototype.slice.call(s.childNodes||[]);
+for(var i=0;i<mainNodes.length;i++)mainFrag.appendChild(mainNodes[i].cloneNode(true));
+if(!mainFrag.firstChild)throw fail('swap-empty',{url:url});
+if(t.replaceChildren)t.replaceChildren(mainFrag);
+else{while(t.firstChild)t.removeChild(t.firstChild);t.appendChild(mainFrag);}
 ['aside.gg-blog-sidebar--left','aside.gg-blog-sidebar--right'].forEach(function(sel){
 var ss=doc.querySelector(sel),tt=d.querySelector(sel);
 if(ss&&tt)tt.innerHTML=ss.innerHTML;
 });
+swapped=true;
 var attrs=syncMainAttrs();
 var sf=attrs['data-gg-surface']||'',pg=attrs['data-gg-page']||'';
 if(d.body){
@@ -314,6 +324,17 @@ if(GG.app&&typeof GG.app.rehydrate==='function')try{GG.app.rehydrate({doc:doc,ur
 GG.core.render._lastUrl=url||'';
 GG.core.render._lastAt=Date.now();
 announceRoute();
+}catch(err){
+if(GG.ui&&GG.ui.toast&&typeof GG.ui.toast.show==='function'){try{GG.ui.toast.show('Failed to load, retry');}catch(_){}}
+throw err&&err.code?err:fail('swap',{url:url,error:err&&err.message?err.message:''});
+}finally{
+if(body){
+if(body.classList)body.classList.remove('is-loading');
+else body.className=body.className.replace(/\bis-loading\b/g,' ').trim();
+if(GG.core&&GG.core.state)GG.core.state.remove(body,'loading');
+}
+if(!swapped&&t&&t.style)t.style.visibility=prevVisibility||'';
+}
 };
 if(d&&d.startViewTransition&&!shouldReduceMotion()){try{d.startViewTransition(function(){doSwap();});}catch(e){doSwap();}}else{doSwap();}
 return true;
@@ -560,7 +581,7 @@ throw err;
 }
 if (mode === 'text' || mode === 'html') return res.text();
 return res.json();
-}).catch(function(err){
+}).catch(function(){
 if (err && err.name === 'GGApiError') {
 services.api._log({ type: 'api', stage: 'error', url: url, code: err.code });
 throw err;
@@ -704,13 +725,6 @@ if(!url) return;
 if(!GG.services || !GG.services.api || !GG.services.api.getHtml) return router.fallback(url);
 var options = opts || {};
 var scrollY = (typeof options.scrollY === 'number') ? options.scrollY : null;
-var target = (GG.core && GG.core.render && GG.core.render.findTarget)
-? GG.core.render.findTarget(d)
-: null;
-if (target && GG.ui && GG.ui.skeleton && GG.ui.skeleton.render) {
-GG.ui.skeleton.render(target);
-}
-try { w.scrollTo(0, 0); } catch (e) {}
 var done = false;
 function finish(){
 if (done) return;
@@ -733,9 +747,13 @@ else w.scrollTo(0, 0);
 if (options.pop && typeof router.onPopState === 'function') router.onPopState(url, w.history ? w.history.state : null);
 if (!options.pop && typeof router.onNavigate === 'function') router.onNavigate(url);
 finish();
-}).catch(function(){
+return true;
+}).catch(function(err){
 finish();
-router.fallback(url);
+if(GG.ui&&GG.ui.toast&&typeof GG.ui.toast.show==='function'){
+try{GG.ui.toast.show('Failed to load, retry');}catch(_){}
+}
+return false;
 });
 };
 
@@ -780,12 +798,26 @@ var from = w.location.href;
 var u = new URL(url, w.location.href);
 if((u.pathname||'').indexOf('/search')===0)return w.location.assign(u.href);
 router.saveScroll(from);
+var fromState = (w.history && w.history.state && typeof w.history.state === 'object') ? w.history.state : router._stateFor(from);
+function rollbackToFrom(){
+try {
+if (w.history && w.history.replaceState) {
+w.history.replaceState(fromState || router._stateFor(from), '', from);
+}
+} catch (_) {}
+if (router && typeof router._applySurface === 'function') {
+router._applySurface(from);
+}
+}
 if (url === from) return w.Promise&&w.Promise.resolve?w.Promise.resolve(true):true;
 w.history.pushState(router._stateFor(url), '', url);
-router._applySurface(url);
 var p = router._load(url, { pop: false });
 if (p && typeof p.then === 'function') {
-return p.then(function(){
+return p.then(function(ok){
+if(ok===false){
+rollbackToFrom();
+return false;
+}
 var bodySurface = d.body ? (d.body.getAttribute('data-gg-surface') || '') : '';
 var canonicalEl = d.querySelector('link[rel="canonical"]');
 if (bodySurface !== router._inferSurface(url) || !canonicalEl || canonicalEl.href !== u.href) {
@@ -795,6 +827,10 @@ return false;
 router.lastUrl = u.pathname + u.search + u.hash;
 return true;
 });
+}
+if (p === false) {
+rollbackToFrom();
+return false;
 }
 return p;
 } catch (e) {
@@ -806,7 +842,6 @@ router._onPopState = router._onPopState || function(evt){
 try {
 var state = (evt && evt.state) ? evt.state : (w.history ? w.history.state : null);
 var y = (state && state.gg && typeof state.gg.scrollY === 'number') ? state.gg.scrollY : 0;
-router._applySurface(w.location.href);
 router._load(w.location.href, { pop: true, scrollY: y });
 } catch (e) {
 router.fallback(w.location.href);
