@@ -593,21 +593,26 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
         const fs = require("fs");
         const html = fs.readFileSync(0, "utf8");
         const open = html.match(/<div\b[^>]*\bid=(["\x27])postcards\1[^>]*>/i);
+        const cardRe = /<article\b[^>]*\bgg-post-card\b[^>]*>/gi;
         if (!open) { process.stdout.write("0"); process.exit(0); }
         const start = open.index + open[0].length;
-        const re = /<\/?div\b[^>]*>/gi;
-        re.lastIndex = start;
-        let depth = 1;
+        const tail = html.slice(start);
         let end = -1;
-        let m;
-        while ((m = re.exec(html))) {
-          if (/^<\//.test(m[0])) depth -= 1;
-          else if (!/\/\s*>$/.test(m[0])) depth += 1;
-          if (depth === 0) { end = m.index; break; }
+        const markers = [
+          /<div\b[^>]*\bclass=(["\x27])[^"\x27]*\bgg-loadmore-wrap\b[^"\x27]*\1[^>]*>/i,
+          /<div\b[^>]*\bdata-gg-module=(["\x27])loadmore\1[^>]*>/i,
+          /<div\b[^>]*\bid=(["\x27])blog-pager\1[^>]*>/i
+        ];
+        for (const marker of markers) {
+          const m = tail.match(marker);
+          if (!m || typeof m.index !== "number") continue;
+          if (end < 0 || m.index < end) end = m.index;
         }
-        if (end < 0) { process.stdout.write("0"); process.exit(0); }
-        const fragment = html.slice(start, end);
-        const cards = fragment.match(/<article\b[^>]*\bclass\s*=\s*(["\x27])[^"\x27]*\bgg-post-card\b[^"\x27]*\1/gi) || [];
+        const fragment = end >= 0 ? tail.slice(0, end) : tail;
+        let cards = fragment.match(cardRe) || [];
+        if (!cards.length && end >= 0) {
+          cards = html.match(cardRe) || [];
+        }
         process.stdout.write(String(cards.length));
       ' | tr -d '[:space:]')"
       if [[ -z "${postcards_count}" ]] || (( postcards_count < 9 )); then
