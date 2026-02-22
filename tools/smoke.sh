@@ -11,6 +11,7 @@ die(){
 
 BASE="${BASE:-https://www.pakrpp.com}"
 ALLOW_OFFLINE_FALLBACK="${SMOKE_ALLOW_OFFLINE_FALLBACK:-0}"
+SMOKE_POST_DETAIL_PATH="${SMOKE_POST_DETAIL_PATH:-/2026/02/automatically-identify-key-words-and.html}"
 
 echo "SMOKE: base=${BASE}"
 
@@ -318,6 +319,30 @@ schema_check_post() {
   echo "PASS: schema post"
 }
 
+post_detail_contract_check() {
+  local raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
+  local url
+  local html
+
+  if [[ "${raw}" == http://* || "${raw}" == https://* ]]; then
+    url="${raw}"
+  else
+    url="${BASE%/}/${raw#/}"
+  fi
+
+  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
+    die "post detail fetch failed (${url})"
+  fi
+
+  if ! grep -Eqi "<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b" <<<"${html}"; then
+    echo "DEBUG: post detail marker lines (${url})"
+    printf '%s\n' "${html}" | grep -Ein "gg-post|post__title|post__content|error|404" | head -n 30 || true
+    die "post detail contract missing gg-post markers (${url})"
+  fi
+
+  echo "PASS: post detail contract (${url})"
+}
+
 security_headers_check() {
   local url="$1"
   local label="$2"
@@ -509,6 +534,7 @@ redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
 listing_canonical_check "${BASE}/blog"
 schema_check_home
 schema_check_listing
+post_detail_contract_check
 if [[ -n "${SMOKE_POST_URL:-}" ]]; then
   schema_check_post "${SMOKE_POST_URL}"
 fi

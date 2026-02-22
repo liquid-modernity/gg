@@ -415,15 +415,15 @@ text-align: center;
       <div class='gg-error__inner'>
         <p class='gg-error__code'>404</p>
         <h1 class='gg-error__title' id='gg-error-title'>
-          Halaman tidak ditemukan
+          Not found
         </h1>
         <p class='gg-error__body'>
           Link yang kamu buka sudah tidak aktif, dipindahkan, atau salah ketik.
         </p>
 
         <div class='gg-error__actions'>
-          <a class='gg-btn gg-btn--primary' expr:href='data:blog.homepageUrl'>
-            Kembali ke beranda
+          <a class='gg-btn gg-btn--primary' href='/blog'>
+            Kembali ke /blog
           </a>
           <a class='gg-btn gg-btn--ghost' href='#gg-search'>
             Cari artikel
