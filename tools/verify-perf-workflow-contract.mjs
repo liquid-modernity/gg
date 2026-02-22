@@ -41,6 +41,12 @@ if (fs.existsSync(workflowAbs)) {
   if (!/\.lighthouseci\/trend\.json/i.test(src)) {
     fail("workflow must upload .lighthouseci/trend.json artifact");
   }
+  if (!/name:\s*Upload Lighthouse artifacts[\s\S]*?include-hidden-files:\s*true/i.test(src)) {
+    fail("workflow must set include-hidden-files: true for Upload Lighthouse artifacts");
+  }
+  if (!/name:\s*Upload Lighthouse trend JSON[\s\S]*?include-hidden-files:\s*true/i.test(src)) {
+    fail("workflow must set include-hidden-files: true for Upload Lighthouse trend JSON");
+  }
 }
 
 if (failures.length) {

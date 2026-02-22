@@ -80,6 +80,7 @@ jobs:
         with:
           name: lighthouseci-${{ github.run_id }}
           path: .lighthouseci
+          include-hidden-files: true
           if-no-files-found: error
 
       - name: Upload Lighthouse trend JSON
@@ -87,6 +88,7 @@ jobs:
         with:
           name: lighthouse-trend-${{ github.run_id }}
           path: .lighthouseci/trend.json
+          include-hidden-files: true
           if-no-files-found: error
 
       - name: Prepare perf-history worktree
