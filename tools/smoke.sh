@@ -224,8 +224,24 @@ blog1_gadget_crash_check() {
     die "blog crash check fetch failed (${url})"
   fi
   if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
+    local snippet
+    snippet="$(
+      printf '%s' "${html}" | node -e '
+        const fs = require("fs");
+        const html = fs.readFileSync(0, "utf8");
+        const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
+        if (!m || typeof m.index !== "number") process.exit(0);
+        const start = Math.max(0, m.index - 200);
+        const end = Math.min(html.length, m.index + m[0].length + 200);
+        process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
+      '
+    )"
     echo "DEBUG: Blog1 crash marker detected (${url})"
-    grep -Fin -C 2 "Failed to render gadget 'Blog1'" <<<"${html}" | head -n 20 || true
+    if [[ -n "${snippet}" ]]; then
+      echo "DEBUG: Blog1 crash snippet: ${snippet}"
+    else
+      grep -Fin -C 2 "Failed to render gadget 'Blog1'" <<<"${html}" | head -n 20 || true
+    fi
     die "blog contains Blog1 gadget crash marker"
   fi
   echo "PASS: blog gadget crash marker absent"
@@ -372,8 +388,24 @@ post_detail_contract_check() {
 
   if [[ -n "${sentinel_html}" ]]; then
     if grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
+      local sentinel_snippet
+      sentinel_snippet="$(
+        printf '%s' "${sentinel_html}" | node -e '
+          const fs = require("fs");
+          const html = fs.readFileSync(0, "utf8");
+          const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
+          if (!m || typeof m.index !== "number") process.exit(0);
+          const start = Math.max(0, m.index - 200);
+          const end = Math.min(html.length, m.index + m[0].length + 200);
+          process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
+        '
+      )"
       echo "DEBUG: sentinel Blog1 crash marker (${sentinel_url})"
-      grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
+      if [[ -n "${sentinel_snippet}" ]]; then
+        echo "DEBUG: sentinel crash snippet: ${sentinel_snippet}"
+      else
+        grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
+      fi
     elif ! grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
       echo "DEBUG: sentinel missing strict gg-post marker (${sentinel_url})"
       grep -Ein -C 1 "gg-post|gg-post__title|gg-post__content|error_page|gg-error__title|There was an error processing the markup" <<<"${sentinel_html}" | head -n 40 || true
@@ -727,6 +759,21 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
         die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
       fi
       if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
+        local live_snippet
+        live_snippet="$(
+          printf '%s' "${html}" | node -e '
+            const fs = require("fs");
+            const html = fs.readFileSync(0, "utf8");
+            const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
+            if (!m || typeof m.index !== "number") process.exit(0);
+            const start = Math.max(0, m.index - 200);
+            const end = Math.min(html.length, m.index + m[0].length + 200);
+            process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
+          '
+        )"
+        if [[ -n "${live_snippet}" ]]; then
+          echo "DEBUG: LIVE_HTML /blog hard refresh #${i} crash snippet: ${live_snippet}"
+        fi
         die "LIVE_HTML /blog hard refresh #${i} contains Blog1 gadget crash marker"
       fi
       gg_post_card_class_count="$(

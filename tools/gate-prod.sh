@@ -73,6 +73,7 @@ run node tools/verify-ui-guardrails.mjs
 run node tools/verify-template-no-nested-interactives.mjs
 run node tools/verify-template-contract.mjs
 run node tools/verify-blogger-label-guards.mjs
+run node tools/verify-blogger-null-deref-guards.mjs
 run npm run verify:template-fingerprint
 run node tools/verify-headers.mjs --mode=config
 run node tools/verify-budgets.mjs
