@@ -814,7 +814,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
       <div class="gg-pi__metaitem">
         <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">calendar_today</span>
         <span data-slot="date" data-gg-marker="panel-post-date">&#8212;</span> • <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
-        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 minutes read</span>
+        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 min read</span>
       </div>
       <div class="gg-pi__metaitem gg-pi__metaitem--updated">
         <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">event_repeat</span>

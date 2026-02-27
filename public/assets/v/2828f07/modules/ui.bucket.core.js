@@ -3031,7 +3031,7 @@ var HOVER_INTENT_MS = 160;
 var TOC_CAP = 12;
 var TOC_TTL_MS = 6e5;
 var TOC_LRU_MAX = 24;
-var TOC_HINT_LOCK = 'Hover preview. Click or tap to lock.';
+var TOC_HINT_LOCK = '';
 var tocCache = Object.create(null);
 var tocPending = Object.create(null);
 var tocAborters = Object.create(null);
@@ -3286,8 +3286,8 @@ return tocPending[key];
 
 function prefetchToc(href){ return resolveTocItems(href, { abortOthers: true }).catch(function(){ return []; }); }
 
-function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var key=tocCacheKey(href),abs=toAbsUrl(href),cached; if(!key||!abs){ renderTocSkeleton(6,'Unable to open.'); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return items||[]; }).catch(function(){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)) renderTocSkeleton(6,'Open article for headings.'); return []; }); }
-function updateTocForCard(card, href){ if(!card||!href){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(href),cached; if(!key){ abortToc(''); renderTocSkeleton(6,'Unable to open.'); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,'Loading headings...'); hydrateToc(card, href); }
+function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var key=tocCacheKey(href),abs=toAbsUrl(href),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return items||[]; }).catch(function(){ var active=panel&&panel.__ggPreviewCard?panel.__ggPreviewCard:null; if(active&&cardKey(active)===cardKey(card)) renderTocSkeleton(6,TOC_HINT_LOCK); return []; }); }
+function updateTocForCard(card, href){ if(!card||!href){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(href),cached; if(!key){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,TOC_HINT_LOCK); hydrateToc(card, href); }
 
 function fillChipsToSlot(slot, items, max){
 var chipRow = qs('[data-gg-slot="' + slot + '"]', panel), list = items || [], i = 0, x = null, href = '', el = null, tx = null, n = Math.min(list.length, max || 12);
@@ -4793,6 +4793,7 @@ var needPost = surface === 'post' || surface === 'page';
 var needListing = !!document.querySelector('#postcards,[data-gg-module="loadmore"],#loadmore,.gg-labeltree[data-gg-module="labeltree"],[data-gg-module="labeltree"]');
 if (!GG.boot || typeof GG.boot.loadModule !== 'function') return Promise.resolve(true);
 if (needPost && !b.post) loads.push(GG.boot.loadModule('ui.bucket.post.js'));
+if (needPost && !b.authors) loads.push(GG.boot.loadModule('ui.bucket.authors.js'));
 if (needListing && !b.listing) loads.push(GG.boot.loadModule('ui.bucket.listing.js'));
 if (!loads.length) return Promise.resolve(true);
 return Promise.all(loads).then(function(){ return true; }, function(){ return false; });

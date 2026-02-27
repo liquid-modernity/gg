@@ -29,6 +29,30 @@
     } catch (_) {}
   }
 
+  function readPageMarker(node){
+    if (!node) return '';
+    try {
+      if (node.dataset && typeof node.dataset.ggPage !== 'undefined') {
+        return String(node.dataset.ggPage || '');
+      }
+      return String(node.getAttribute('data-gg-page') || '');
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function isLegalPage(){
+    var rootPage = readPageMarker(d.documentElement).trim().toLowerCase();
+    var bodyPage = readPageMarker(d.body).trim().toLowerCase();
+    return rootPage === 'legal' || bodyPage === 'legal';
+  }
+
+  if (isLegalPage()) {
+    w.__GG_LEGAL_PAGE = true;
+    setBootStage(2);
+    return;
+  }
+
   var el = d.createElement('script');
   el.src = coreUrl;
   el.async = true;

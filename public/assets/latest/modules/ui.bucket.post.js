@@ -109,7 +109,7 @@
       if (!raw) return '';
       var words = raw.split(' ').filter(Boolean).length;
       var mins = Math.max(1, Math.round(words / WPM));
-      return mins + ' minutes read';
+      return mins + ' min read';
     }
     function init(root){
       var scope = (root && root.querySelector) ? root : d;
@@ -263,7 +263,10 @@
       var empty = root ? root.querySelector('.gg-toc__empty') : null;
       if (!root || !list) return false;
       list.textContent = '';
-      if (empty) empty.hidden = true;
+      if (empty) {
+        empty.textContent = '';
+        empty.hidden = true;
+      }
       root.hidden = true;
       return true;
     }
@@ -285,8 +288,15 @@
       bind(root);
       ensureId._state = { ids: collectExistingIds(body || d), counts: {} };
       list.textContent = '';
-      if (empty) empty.hidden = true;
+      if (empty) {
+        empty.textContent = '';
+        empty.hidden = true;
+      }
       if (!body) {
+        if (empty) {
+          empty.textContent = '';
+          empty.hidden = true;
+        }
         root.hidden = true;
         return true;
       }
@@ -294,6 +304,10 @@
         return isEligibleHeading(x);
       });
       if (!items.length) {
+        if (empty) {
+          empty.textContent = '';
+          empty.hidden = true;
+        }
         root.hidden = true;
         return true;
       }
@@ -317,6 +331,10 @@
         a.appendChild(t);
         li.appendChild(a);
         list.appendChild(li);
+      }
+      if (empty) {
+        empty.textContent = '';
+        empty.hidden = true;
       }
       setCollapsed(root, false);
       return true;
@@ -487,15 +505,15 @@
 (function (GG, w, d) {
   'use strict';
   if (!GG || !GG.boot || typeof GG.boot.loadModule !== 'function') return;
-  function init(){
+  function initPostInfo(){
     GG.boot.loadModule('ui.bucket.authors.js').then(function(){
       if (GG.modules && GG.modules.postInfoAuthors && typeof GG.modules.postInfoAuthors.init === 'function') {
         GG.modules.postInfoAuthors.init(d);
       }
     }).catch(function(){});
   }
-  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', init, { once: true });
-  else init();
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', initPostInfo, { once: true });
+  else initPostInfo();
 })(window.GG = window.GG || {}, window, document);
 
 })(window);

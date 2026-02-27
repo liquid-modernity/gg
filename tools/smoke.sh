@@ -1107,6 +1107,10 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "verify-live-toc-functional failed"
   fi
 
+  if ! node "${ROOT}/tools/verify-live-post-leftpanel.mjs" --base="${BASE}" --post="${live_post_target}"; then
+    die "verify-live-post-leftpanel failed"
+  fi
+
   if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
     die "verify-router-contract failed"
   fi
