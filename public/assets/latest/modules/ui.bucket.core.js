@@ -3244,23 +3244,27 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null; if(!doc) return out; root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content'); pm=svc?svc.getFromContext(doc):{}; author=cleanText(pm.author||''); contributors=Array.isArray(pm.contributors)?pm.contributors:[]; tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){ return x&&x.text; }); updated=cleanText(pm.updated||''); readTime=readMinLabel(pm.readMin||''); if(!readTime) readTime=calcReadTime(root); snippet=cleanText(pm.snippet||''); if(!snippet&&root&&root.querySelectorAll){ paras=root.querySelectorAll('p'); for(pi=0;pi<paras.length;pi++){ pnode=paras[pi]; if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; ptxt=cleanText(pnode.textContent||''); if(!ptxt) continue; snippet=clipText(ptxt,180); if(snippet) break; } } out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime, s:snippet }; if(!root) return out; headings=root.querySelectorAll('h2'); max=Math.min(headings.length,TOC_CAP); baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#'; for(i=0;i<max;i++){ node=headings[i]; if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; text=(node.textContent||'').replace(/\\s+/g,' ').trim(); if(!text) continue; headingId=(node.getAttribute('id')||'').trim(); href=baseHref; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:2, href:href }); } return out;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null; if(!doc) return out; root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content'); pm=svc?svc.getFromContext(doc):{}; author=cleanText(pm.author||''); contributors=Array.isArray(pm.contributors)?pm.contributors:[]; tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){ return x&&x.text; }); updated=cleanText(pm.updated||''); readTime=readMinLabel(pm.readMin||''); if(!readTime) readTime=calcReadTime(root); snippet=cleanText(pm.snippet||''); if(!snippet&&root&&root.querySelectorAll){ paras=root.querySelectorAll('p'); for(pi=0;pi<paras.length;pi++){ pnode=paras[pi]; if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; ptxt=cleanText(pnode.textContent||''); if(!ptxt) continue; snippet=clipText(ptxt,180); if(snippet) break; } } if(!snippet&&root) snippet=clipText(cleanText(root.textContent||''),180); out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime, s:snippet }; if(!root) return out; headings=root.querySelectorAll('h2'); max=Math.min(headings.length,TOC_CAP); baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#'; for(i=0;i<max;i++){ node=headings[i]; if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; text=(node.textContent||'').replace(/\\s+/g,' ').trim(); if(!text) continue; headingId=(node.getAttribute('id')||'').trim(); href=baseHref; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:2, href:href }); } return out;
 }
 
+function postLikeHtml(raw){ return /(\bpost-body\b|\bentry-content\b|\bgg-postmeta\b|data-gg-module=['\"]post-detail['\"]|class=['\"][^'\"]*\bgg-post\b)/i.test(String(raw||'')); }
 function fetchPostHtml(url,signal){
-var abs=normalizePostUrl(url),opts={ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal },retry='',sep='';
+var abs=normalizePostUrl(url),opts={ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal },sep='',retry='';
 if(!abs) return Promise.reject(new Error('u'));
 if(!window.fetch) return Promise.reject(new Error('n'));
 return window.fetch(abs,opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
-    var txt=String(html||'');
-    if(!/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt)) return txt;
+    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
+    if(postLikeHtml(txt)&&!moved) return txt;
     sep=abs.indexOf('?')>=0?'&':'?';
     retry=abs+sep+'m=1';
     return window.fetch(retry,opts).then(function(next){
       if(!next||!next.ok) return txt;
-      return next.text().then(function(nextHtml){ return String(nextHtml||txt); });
+      return next.text().then(function(nextHtml){
+        var out=String(nextHtml||'');
+        return postLikeHtml(out)?out:txt;
+      });
     }).catch(function(){ return txt; });
   });
 });
