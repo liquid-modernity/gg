@@ -1095,6 +1095,10 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "verify-live-listing-epanel failed"
   fi
 
+  if ! node "${ROOT}/tools/verify-listing-epanel-instant-rows.mjs" --base="${BASE}"; then
+    die "verify-listing-epanel-instant-rows failed"
+  fi
+
   if ! node "${ROOT}/tools/verify-live-legal-clean-room.mjs" --base="${BASE}"; then
     die "verify-live-legal-clean-room failed"
   fi
