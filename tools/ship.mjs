@@ -52,6 +52,25 @@ function diagnose(label, output) {
       ],
     };
   }
+  if (
+    (label === "PUSH" || label === "RETRY_PUSH") &&
+    matchAny(out, [
+      /invalid username or token/i,
+      /authentication failed/i,
+      /password authentication is not supported/i,
+      /could not read username/i,
+      /device not configured/i,
+    ])
+  ) {
+    return {
+      reason: "GitHub authentication failed for HTTPS remote.",
+      steps: [
+        "gh auth login -h github.com -p https -w",
+        "or rerun npm run ship and enter GitHub username + Personal Access Token when prompted",
+        "then rerun: npm run ship",
+      ],
+    };
+  }
   if (label === "STASH_POP" && matchAny(out, [/CONFLICT/i, /needs merge/i])) {
     return {
       reason: "Conflicts after stash pop.",
@@ -92,7 +111,12 @@ function printFailure({ label, output }, verbose) {
 function runStep(label, cmd) {
   process.stdout.write(`\n$ ${cmd}\n`);
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, { shell: true, env: process.env });
+    const child = spawn(cmd, {
+      shell: true,
+      env: process.env,
+      // Allow git/npm commands to ask credentials or confirmations in interactive shells.
+      stdio: ["inherit", "pipe", "pipe"],
+    });
     let output = "";
     child.stdout.on("data", (data) => {
       const text = data.toString();
