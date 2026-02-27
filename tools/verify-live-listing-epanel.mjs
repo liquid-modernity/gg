@@ -110,19 +110,41 @@ function verifyContract(url, html) {
     }
   }
 
-  const cardRe = /<article\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-post-card\b[^"']*\1[^>]*>/gi;
-  let hasAuthorAndSnippet = false;
-  for (const match of source.matchAll(cardRe)) {
-    const tag = String(match[0] || "");
-    const author = readAttr(tag, "data-gg-author");
-    const snippet = readAttr(tag, "data-gg-snippet");
-    if (author && snippet) {
-      hasAuthorAndSnippet = true;
-      break;
-    }
+  const cardBlockRe =
+    /<article\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-post-card\b[^"']*\1[^>]*>[\s\S]*?<\/article>/gi;
+  const cards = [...source.matchAll(cardBlockRe)].map((match) => String(match[0] || ""));
+  if (!cards.length) {
+    failures.push(`no .gg-post-card blocks found @ ${url}`);
+    return;
   }
-  if (!hasAuthorAndSnippet) {
-    failures.push("no gg-post-card has non-empty data-gg-author + data-gg-snippet");
+
+  for (let i = 0; i < cards.length; i += 1) {
+    const block = cards[i];
+    const open = block.match(/^<article\b[^>]*>/i);
+    const tag = open ? String(open[0] || "") : "";
+    const idx = i + 1;
+    const authorAttr = readAttr(tag, "data-author-name") || readAttr(tag, "data-author");
+    const updatedAttr = readAttr(tag, "data-updated") || readAttr(tag, "data-gg-updated");
+    const snippetAttr = readAttr(tag, "data-snippet") || readAttr(tag, "data-gg-snippet");
+    const hasExcerptEl = /<p\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-post-card__excerpt\b[^"']*\1/i.test(block);
+    const postMetaOpen = block.match(/<div\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-postmeta\b[^"']*\1[^>]*>/i);
+
+    if (!authorAttr) failures.push(`card#${idx}: missing data-author-name/data-author @ ${url}`);
+    if (!updatedAttr) failures.push(`card#${idx}: missing data-updated/data-gg-updated @ ${url}`);
+    if (!snippetAttr && !hasExcerptEl) {
+      failures.push(`card#${idx}: missing snippet source (data-snippet/data-gg-snippet or .gg-post-card__excerpt) @ ${url}`);
+    }
+    if (!postMetaOpen) {
+      failures.push(`card#${idx}: missing .gg-postmeta node @ ${url}`);
+      continue;
+    }
+    const postMetaTag = String(postMetaOpen[0] || "");
+    if (!readAttr(postMetaTag, "data-author")) {
+      failures.push(`card#${idx}: .gg-postmeta missing data-author @ ${url}`);
+    }
+    if (!readAttr(postMetaTag, "data-updated")) {
+      failures.push(`card#${idx}: .gg-postmeta missing data-updated @ ${url}`);
+    }
   }
 }
 
