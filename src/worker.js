@@ -1399,8 +1399,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "78533f2";
-    const TEMPLATE_ALLOWED_RELEASES = ["78533f2","7c09174"];
+    const WORKER_VERSION = "e036c84";
+    const TEMPLATE_ALLOWED_RELEASES = ["e036c84","063aa95"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
