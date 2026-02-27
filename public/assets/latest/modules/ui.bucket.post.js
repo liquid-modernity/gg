@@ -130,6 +130,8 @@
   'use strict';
   GG.modules = GG.modules || {};
   GG.modules.TOC = GG.modules.TOC || (function(){
+    var TOC_SELECTOR_DEFAULT = 'h2,h3';
+    var TOC_MAX_ITEMS = 12;
     function clean(v){ return String(v || '').replace(/\s+/g, ' ').trim(); }
     function resolveRoot(scope){
       var host = (scope && scope.querySelector) ? scope : d;
@@ -143,11 +145,77 @@
              host.querySelector('[itemprop="articleBody"]') ||
              host.querySelector('.post-body');
     }
+    function resolveHeadingSelector(root, opts){
+      var fromOpts = (opts && typeof opts.headings === 'string') ? clean(opts.headings) : '';
+      var fromRoot = clean(root && root.getAttribute ? root.getAttribute('data-headings') : '');
+      var raw = fromOpts || fromRoot || TOC_SELECTOR_DEFAULT;
+      var selectors = raw.split(',').map(function(x){ return clean(x).toLowerCase(); }).filter(Boolean);
+      var out = [];
+      var i = 0;
+      var one = '';
+      for (; i < selectors.length; i++) {
+        one = selectors[i];
+        if (one !== 'h2' && one !== 'h3') continue;
+        if (out.indexOf(one) !== -1) continue;
+        out.push(one);
+      }
+      return out.length ? out.join(',') : TOC_SELECTOR_DEFAULT;
+    }
+    function slugify(text){
+      var raw = clean(text || '').toLowerCase();
+      if (!raw) return 'section';
+      var normalized = raw;
+      try {
+        normalized = raw.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+      } catch (_) {}
+      normalized = normalized
+        .replace(/&[a-z0-9#]+;/gi, ' ')
+        .replace(/[^a-z0-9\s-]/g, ' ')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      return normalized || 'section';
+    }
+    function collectExistingIds(scope){
+      var set = {};
+      var host = (scope && scope.querySelectorAll) ? scope : d;
+      var all = host.querySelectorAll ? host.querySelectorAll('[id]') : [];
+      var i = 0;
+      var id = '';
+      for (; i < all.length; i++) {
+        id = clean(all[i].getAttribute('id'));
+        if (!id) continue;
+        set[id] = true;
+      }
+      return set;
+    }
+    function isEligibleHeading(node){
+      if (!node || !node.tagName) return false;
+      var tag = node.tagName.toLowerCase();
+      if (tag !== 'h2' && tag !== 'h3') return false;
+      if (!clean(node.textContent || '')) return false;
+      if (node.hidden) return false;
+      if (String(node.getAttribute && node.getAttribute('aria-hidden') || '').toLowerCase() === 'true') return false;
+      if (!node.closest) return true;
+      if (node.closest('pre,code,script,style,template')) return false;
+      if (node.closest('[hidden],[aria-hidden="true"],.gg-visually-hidden,.visually-hidden')) return false;
+      return true;
+    }
     function ensureId(h){
-      var base = clean(h && h.textContent ? h.textContent : '').toLowerCase().replace(/[^\w\s\-]/g, '').replace(/\s+/g, '-').replace(/\-+/g, '-').replace(/^\-+|\-+$/g, '') || 'section';
-      var id = base;
-      var i = 2;
-      while (d.getElementById(id) && d.getElementById(id) !== h) id = base + '-' + (i++);
+      if (!h) return '';
+      var existing = clean(h.getAttribute && h.getAttribute('id'));
+      if (existing) return existing;
+      var state = ensureId._state || { ids: collectExistingIds(d), counts: {} };
+      ensureId._state = state;
+      var base = slugify(h && h.textContent ? h.textContent : '');
+      var count = state.counts[base] || 0;
+      var id = '';
+      do {
+        count += 1;
+        id = count === 1 ? base : (base + '-' + count);
+      } while (state.ids[id] || (d.getElementById(id) && d.getElementById(id) !== h));
+      state.counts[base] = count;
+      state.ids[id] = true;
       h.id = id;
       return id;
     }
@@ -204,7 +272,7 @@
       var list = root ? root.querySelector('.gg-toc__list') : null;
       var empty = root ? root.querySelector('.gg-toc__empty') : null;
       var body = resolveBody(scope);
-      var headings = (opts && typeof opts.headings === 'string') ? opts.headings : 'h2';
+      var headings = resolveHeadingSelector(root, opts);
       var items = [];
       var i = 0;
       var h = null;
@@ -215,6 +283,7 @@
       var off = 0;
       if (!root || !list) return false;
       bind(root);
+      ensureId._state = { ids: collectExistingIds(body || d), counts: {} };
       list.textContent = '';
       if (empty) empty.hidden = true;
       if (!body) {
@@ -222,7 +291,7 @@
         return true;
       }
       items = Array.prototype.slice.call(body.querySelectorAll(headings)).filter(function(x){
-        return (x && x.tagName && x.tagName.toLowerCase() === 'h2' && clean(x.textContent).length > 0);
+        return isEligibleHeading(x);
       });
       if (!items.length) {
         root.hidden = true;
@@ -230,7 +299,7 @@
       }
       root.hidden = false;
       off = getOffset(root);
-      for (; i < items.length && i < 12; i++) {
+      for (; i < items.length && i < TOC_MAX_ITEMS; i++) {
         h = items[i];
         try { h.style.scrollMarginTop = off + 'px'; } catch (_) {}
         li = d.createElement('li');
@@ -253,13 +322,26 @@
       return true;
     }
     function init(scope, opts){
-      return build(scope, opts);
+      var retries = 0;
+      function run(){
+        build(scope, opts);
+        var root = resolveRoot(scope);
+        var body = resolveBody(scope);
+        if (!root || !body) return;
+        if (!root.hidden) return;
+        if (!body.querySelector('h2,h3')) return;
+        if (retries >= 4) return;
+        retries += 1;
+        w.setTimeout(run, 120 * retries);
+      }
+      run();
+      return true;
     }
     return { init: init, reset: reset, build: build };
   })();
   function autoInitToc(){
     if (GG.modules && GG.modules.TOC && typeof GG.modules.TOC.init === 'function') {
-      GG.modules.TOC.init(d, { headings: 'h2' });
+      GG.modules.TOC.init(d, { headings: 'h2,h3' });
     }
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', autoInitToc, { once: true });

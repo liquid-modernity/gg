@@ -835,7 +835,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc" data-headings="h2" data-scroll-offset="84">
+<nav id="gg-toc" class="gg-toc" data-headings="h2,h3" data-scroll-offset="84">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
@@ -848,7 +848,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
   <div class="gg-toc__body">
     <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
-    <div class="gg-toc__empty" hidden>No content found</div>
+    <div class="gg-toc__empty" hidden></div>
   </div>
 </nav>]]></b:widget-setting>
             </b:widget-settings>

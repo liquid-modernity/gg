@@ -79,7 +79,7 @@
   --gg-featured-max-h: 320px;
 
   
-  --gg-sticky-top: 16px;
+  --gg-sticky-top: 0px;
 
   
   --gg-dock-safe: 86px;
@@ -199,6 +199,49 @@ body{
   background: var(--gg-bg);
   color: var(--gg-ink);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+[data-gg-page="legal"] :is(
+  .gg-mixed,
+  [id^="gg-mixed-"],
+  [data-gg-mixed],
+  [data-gg-module="mixed-media"],
+  .gg-newsdeck,
+  .gg-post__comments,
+  #comments,
+  #comments-ssr,
+  .gg-comments,
+  .gg-comments-panel,
+  [data-gg-panel="comments"],
+  [data-gg-postbar="comments"],
+  [data-gg-comments-gate],
+  [data-gg-comments-load],
+  [data-gg-action="comments-help"],
+  [data-gg-modal="comments-help"],
+  .gg-blog-sidebar--right > .gg-comments-panel,
+  .gg-blog-sidebar--right > .gg-info-panel
+),
+.gg-page--legal :is(
+  .gg-mixed,
+  [id^="gg-mixed-"],
+  [data-gg-mixed],
+  [data-gg-module="mixed-media"],
+  .gg-newsdeck,
+  .gg-post__comments,
+  #comments,
+  #comments-ssr,
+  .gg-comments,
+  .gg-comments-panel,
+  [data-gg-panel="comments"],
+  [data-gg-postbar="comments"],
+  [data-gg-comments-gate],
+  [data-gg-comments-load],
+  [data-gg-action="comments-help"],
+  [data-gg-modal="comments-help"],
+  .gg-blog-sidebar--right > .gg-comments-panel,
+  .gg-blog-sidebar--right > .gg-info-panel
+){
+  display: none !important;
 }
 
 body[data-gg-surface="listing"] .hero-section{ display: none !important; }
@@ -627,10 +670,10 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
 @media (min-width: 921px){
   .gg-blog-sidebar{
     position: sticky;
-    top: var(--gg-sticky-top, 16px);
+    top: var(--gg-sticky-top, 0px);
     align-self: start;
-    height: calc(100dvh - var(--gg-sticky-top, 16px));
-    max-height: calc(100dvh - var(--gg-sticky-top, 16px));
+    height: calc(100dvh - var(--gg-sticky-top, 0px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 0px));
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -653,10 +696,10 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   main.gg-main[data-gg-surface="feed"] .gg-blog-layout--list .gg-blog-sidebar--right,
   main.gg-main[data-gg-surface="page"] .gg-blog-layout--list .gg-blog-sidebar--right{
     position: sticky;
-    top: var(--gg-sticky-top, 16px);
+    top: var(--gg-sticky-top, 0px);
     width: var(--gg-col-right);
-    height: calc(100dvh - var(--gg-sticky-top, 16px));
-    max-height: calc(100dvh - var(--gg-sticky-top, 16px));
+    height: calc(100dvh - var(--gg-sticky-top, 0px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 0px));
     min-height: 0;
     overflow: hidden;
     background: transparent;
@@ -708,7 +751,7 @@ main.gg-main[data-gg-surface="post"] .gg-home-blog{
   flex-direction: column;
   gap: 14px;
   min-height: 0;
-  height: 100%;
+  height: 100%;padding: 10px;
 }
 
 .gg-leftnav__profile{
@@ -1599,7 +1642,6 @@ a.gg-search-assist__item > small{
 #gg-left-sidebar-list,
 #gg-left-sidebar-page,
 #gg-left-sidebar-post{
-  --gg-left-sidebar-gap: 12px;
   --gg-left-sidebar-divider: color-mix(in srgb, var(--gg-border) 85%, transparent);
   display: flex;
   flex-direction: column;
@@ -2459,8 +2501,10 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
   display: grid;
   width: min(100%, clamp(320px, 22vw, 360px));
   margin-inline: auto;
-  max-height: calc(100vh - 112px);
-  overflow: hidden;
+  max-height: calc(100vh - 0px);
+    overflow: hidden;
+    min-height: 0;
+    height: 100%;
 }
 .gg-editorial-preview{
   display: grid;
@@ -2799,9 +2843,9 @@ main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-post{
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post :is(.gg-blog-sidebar--left,.gg-blog-sidebar--right){
   display: block;
   position: sticky;
-  top: var(--gg-sticky-top, 16px);
-  height: calc(100dvh - var(--gg-sticky-top, 16px));
-  max-height: calc(100dvh - var(--gg-sticky-top, 16px));
+  top: var(--gg-sticky-top, 0px);
+  height: calc(100dvh - var(--gg-sticky-top, 0px));
+  max-height: calc(100dvh - var(--gg-sticky-top, 0px));
   min-height: 0;
   overflow: hidden;
   background: transparent;
@@ -3258,9 +3302,9 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
   
   .gg-blog-sidebar{
     position: sticky;
-    top: var(--gg-sticky-top, 12px);
-    height: calc(100dvh - var(--gg-sticky-top, 12px));
-    max-height: calc(100dvh - var(--gg-sticky-top, 12px));
+    top: var(--gg-sticky-top, 0px);
+    height: calc(100dvh - var(--gg-sticky-top, 0px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 0px));
     min-height: 0;
     z-index: var(--z-sticky-2);
     padding: 0;
@@ -3284,9 +3328,9 @@ main.gg-main[data-gg-surface="post"] .gg-post__comments{
   main.gg-main[data-gg-right-panel="open"] .gg-blog-sidebar--right{ display: flex; }
 
   main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post :is(.gg-blog-sidebar--left,.gg-blog-sidebar--right){
-    top: var(--gg-sticky-top, 12px);
-    height: calc(100dvh - var(--gg-sticky-top, 12px));
-    max-height: calc(100dvh - var(--gg-sticky-top, 12px));
+    top: var(--gg-sticky-top, 0px);
+    height: calc(100dvh - var(--gg-sticky-top, 0px));
+    max-height: calc(100dvh - var(--gg-sticky-top, 0px));
     border-radius: var(--gg-radius-md);
   }
   main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-blog-sidebar--left{

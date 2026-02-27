@@ -343,7 +343,7 @@ function apply(html, url){
       try { GG.modules.TOC.reset(mainScope); } catch (_) {}
     }
     if (GG.modules.TOC && typeof GG.modules.TOC.build === 'function') {
-      try { GG.modules.TOC.build(mainScope, { headings: 'h2' }); } catch (_) {}
+      try { GG.modules.TOC.build(mainScope, { headings: 'h2,h3' }); } catch (_) {}
     }
     if (GG.modules.Comments && typeof GG.modules.Comments.reset === 'function') {
       try { GG.modules.Comments.reset(mainScope); } catch (_) {}
@@ -4814,7 +4814,7 @@ function runTasks(){
     { name: 'labelTree.reinit', fn: function(){ if (GG.modules.labelTree) GG.modules.labelTree.init(); } },
     { name: 'breadcrumbs.reinit', fn: function(){ if (GG.modules.breadcrumbs) GG.modules.breadcrumbs.init(document); } },
     { name: 'readTime.reinit', fn: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
-    { name: 'TOC.reinit', fn: function(){ if (GG.modules.TOC && typeof GG.modules.TOC.init === 'function') GG.modules.TOC.init(document, { headings: 'h2' }); } },
+    { name: 'TOC.reinit', fn: function(){ if (GG.modules.TOC && typeof GG.modules.TOC.init === 'function') GG.modules.TOC.init(document, { headings: 'h2,h3' }); } },
     { name: 'postInfoAuthors.reinit', fn: function(){ if (GG.modules.postInfoAuthors && GG.modules.postInfoAuthors.init) GG.modules.postInfoAuthors.init(document); } },
     { name: 'LoadMore.reinit', fn: function(){ if (GG.modules.LoadMore) { if (typeof GG.modules.LoadMore.rehydrate === 'function') GG.modules.LoadMore.rehydrate(document); else GG.modules.LoadMore.init(); } } },
     { name: 'tagHubPage.reinit', fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },

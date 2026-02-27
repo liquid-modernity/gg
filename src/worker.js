@@ -625,6 +625,291 @@ const findElementByIdRange = (html, tagName, id) => {
   };
 };
 
+const findElementRangeFromOpenTag = (source, tagName, openStart, openTag) => {
+  const html = String(source || "");
+  const name = String(tagName || "").trim().toLowerCase();
+  const tag = String(openTag || "");
+  if (!html || !name || !tag) return null;
+  const openEnd = openStart + tag.length;
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const tokenRe = new RegExp(`<\\/?${escapedName}\\b[^>]*>`, "gi");
+  tokenRe.lastIndex = openEnd;
+  let depth = 1;
+  let closeStart = -1;
+  let closeEnd = -1;
+  let token;
+  while ((token = tokenRe.exec(html))) {
+    const tokenTag = token[0];
+    const isClose = /^<\//.test(tokenTag);
+    const selfClose = /\/>\s*$/.test(tokenTag);
+    if (isClose) depth -= 1;
+    else if (!selfClose) depth += 1;
+    if (depth === 0) {
+      closeStart = token.index;
+      closeEnd = tokenRe.lastIndex;
+      break;
+    }
+  }
+  if (closeStart < 0 || closeEnd < 0) return null;
+  return {
+    openStart,
+    openEnd,
+    closeStart,
+    closeEnd,
+    innerStart: openEnd,
+    innerEnd: closeStart,
+    openTag: tag,
+    innerHtml: html.slice(openEnd, closeStart),
+  };
+};
+
+const classListHasToken = (className, token) => {
+  if (!className || !token) return false;
+  const wanted = String(token || "").trim();
+  if (!wanted) return false;
+  return String(className || "")
+    .split(/\s+/)
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .includes(wanted);
+};
+
+const findElementByClassRange = (html, classToken, opts = {}) => {
+  const source = String(html || "");
+  if (!source) return null;
+  const wanted = String(classToken || "").trim();
+  if (!wanted) return null;
+  const requiredClassTokens = Array.isArray(opts.requiredClassTokens)
+    ? opts.requiredClassTokens.map((token) => String(token || "").trim()).filter(Boolean)
+    : [];
+  const openRe =
+    /<([a-z0-9:-]+)\b[^>]*\bclass\s*=\s*(?:(['"])([^'"]*)\2|([^\s"'=<>`]+))[^>]*>/gi;
+  let match;
+  while ((match = openRe.exec(source))) {
+    const tagName = String(match[1] || "").trim().toLowerCase();
+    const className = String(match[3] || match[4] || "");
+    if (!classListHasToken(className, wanted)) continue;
+    let allRequired = true;
+    for (const token of requiredClassTokens) {
+      if (!classListHasToken(className, token)) {
+        allRequired = false;
+        break;
+      }
+    }
+    if (!allRequired) continue;
+    const openTag = match[0];
+    const openStart = match.index;
+    const range = findElementRangeFromOpenTag(source, tagName, openStart, openTag);
+    if (range) return range;
+  }
+  return null;
+};
+
+const decodeHtmlEntities = (input) => {
+  return String(input || "").replace(
+    /&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi,
+    (m, code) => {
+      const token = String(code || "").toLowerCase();
+      if (token === "amp") return "&";
+      if (token === "lt") return "<";
+      if (token === "gt") return ">";
+      if (token === "quot") return '"';
+      if (token === "apos") return "'";
+      if (token === "nbsp") return " ";
+      if (token.startsWith("#x")) {
+        const cp = Number.parseInt(token.slice(2), 16);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+        return m;
+      }
+      if (token.startsWith("#")) {
+        const cp = Number.parseInt(token.slice(1), 10);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+      }
+      return m;
+    }
+  );
+};
+
+const stripHtmlTags = (html) => {
+  return String(html || "").replace(/<[^>]*>/g, " ");
+};
+
+const slugifyHeadingId = (raw) => {
+  const source = decodeHtmlEntities(stripHtmlTags(raw))
+    .toLowerCase()
+    .trim();
+  if (!source) return "section";
+  let normalized = source;
+  try {
+    normalized = source.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  } catch (e) {
+    normalized = source;
+  }
+  const slug = normalized
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "section";
+};
+
+const collectIdSetFromHtml = (html) => {
+  const set = new Set();
+  const source = String(html || "");
+  const idRe = /\bid\s*=\s*(?:(['"])([^'"]+)\1|([^\s"'=<>`]+))/gi;
+  let match;
+  while ((match = idRe.exec(source))) {
+    const id = String(match[2] || match[3] || "").trim();
+    if (!id) continue;
+    set.add(id);
+  }
+  return set;
+};
+
+const collectBlockedRanges = (html) => {
+  const source = String(html || "");
+  const ranges = [];
+  const patterns = [
+    /<pre\b[\s\S]*?<\/pre>/gi,
+    /<code\b[\s\S]*?<\/code>/gi,
+    /<script\b[\s\S]*?<\/script>/gi,
+    /<style\b[\s\S]*?<\/style>/gi,
+    /<template\b[\s\S]*?<\/template>/gi,
+    /<([a-z0-9:-]+)\b[^>]*\bhidden\b[^>]*>[\s\S]*?<\/\1>/gi,
+    /<([a-z0-9:-]+)\b[^>]*\baria-hidden\s*=\s*(['"])true\2[^>]*>[\s\S]*?<\/\1>/gi,
+  ];
+  for (const re of patterns) {
+    let match;
+    while ((match = re.exec(source))) {
+      ranges.push([match.index, re.lastIndex]);
+      if (!match[0]) break;
+    }
+  }
+  ranges.sort((a, b) => a[0] - b[0]);
+  return ranges;
+};
+
+const isIndexInsideRanges = (index, ranges) => {
+  const point = Number(index);
+  if (!Number.isFinite(point) || point < 0) return false;
+  const list = Array.isArray(ranges) ? ranges : [];
+  for (const range of list) {
+    const start = Array.isArray(range) ? Number(range[0]) : -1;
+    const end = Array.isArray(range) ? Number(range[1]) : -1;
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    if (point >= start && point < end) return true;
+  }
+  return false;
+};
+
+const extractIdFromAttrs = (attrs) => {
+  const source = String(attrs || "");
+  const match = source.match(/\bid\s*=\s*(?:(['"])([^'"]*)\1|([^\s"'=<>`]+))/i);
+  return match ? String(match[2] || match[3] || "").trim() : "";
+};
+
+const createUniqueHeadingId = (text, usedIds, slugCounts) => {
+  const base = slugifyHeadingId(text);
+  const ids = usedIds || new Set();
+  const counts = slugCounts || new Map();
+  let n = Number(counts.get(base) || 0);
+  let id = "";
+  do {
+    n += 1;
+    id = n === 1 ? base : `${base}-${n}`;
+  } while (ids.has(id));
+  counts.set(base, n);
+  ids.add(id);
+  return id;
+};
+
+const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
+  const source = String(bodyHtml || "");
+  const headingRe = /<h([23])\b([^>]*)>([\s\S]*?)<\/h\1>/gi;
+  const blocked = collectBlockedRanges(source);
+  const ids = usedIds || new Set();
+  const slugCounts = new Map();
+  const items = [];
+  let out = "";
+  let last = 0;
+  let match;
+  while ((match = headingRe.exec(source))) {
+    const start = match.index;
+    const end = headingRe.lastIndex;
+    const level = Number.parseInt(match[1], 10);
+    const attrs = String(match[2] || "");
+    const inner = String(match[3] || "");
+    const full = String(match[0] || "");
+    out += source.slice(last, start);
+    let replacement = full;
+    if (!isIndexInsideRanges(start, blocked)) {
+      const isHiddenHeading =
+        /\bhidden\b/i.test(attrs) || /\baria-hidden\s*=\s*(['"])true\1/i.test(attrs);
+      const text = decodeHtmlEntities(stripHtmlTags(inner)).replace(/\s+/g, " ").trim();
+      if (!isHiddenHeading && text) {
+        let id = extractIdFromAttrs(attrs);
+        if (!id) {
+          id = createUniqueHeadingId(text, ids, slugCounts);
+          replacement = `<h${level}${attrs} id="${escapeHtml(id)}">${inner}</h${level}>`;
+        } else {
+          ids.add(id);
+        }
+        items.push({
+          id,
+          text,
+        });
+      }
+    }
+    out += replacement;
+    last = end;
+  }
+  out += source.slice(last);
+  return { html: out, items };
+};
+
+const buildPostTocListHtml = (items) => {
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) return "";
+  const cap = rows.slice(0, 12);
+  return cap
+    .map((item, index) => {
+      const id = String((item && item.id) || "").trim();
+      const text = String((item && item.text) || "").trim();
+      if (!id || !text) return "";
+      return [
+        '<li class="gg-toc__item gg-toc__lvl-2">',
+        `<a class="gg-toc__link" href="#${escapeHtml(id)}">`,
+        `<span class="gg-toc__num">${index + 1}.</span>`,
+        `<span class="gg-toc__txt">${escapeHtml(text)}</span>`,
+        "</a>",
+        "</li>",
+      ].join("");
+    })
+    .join("");
+};
+
+const cleanPostTocHtml = (html) => {
+  const source = String(html || "");
+  if (!source) return source;
+  if (!/id\s*=\s*(['"])gg-toc\1/i.test(source)) return source;
+  const bodyRange =
+    findElementByClassRange(source, "post-body", {
+      requiredClassTokens: ["post-body", "entry-content"],
+    }) || findElementByClassRange(source, "post-body");
+  if (!bodyRange) {
+    return source.replace(/No content found/gi, "");
+  }
+  const usedIds = collectIdSetFromHtml(source);
+  const toc = buildTocFromPostBodyHtml(bodyRange.innerHtml, usedIds);
+  let out = `${source.slice(0, bodyRange.innerStart)}${toc.html}${source.slice(bodyRange.innerEnd)}`;
+  const listRange = findElementByClassRange(out, "gg-toc__list");
+  if (listRange) {
+    const listHtml = buildPostTocListHtml(toc.items);
+    out = `${out.slice(0, listRange.innerStart)}${listHtml}${out.slice(listRange.innerEnd)}`;
+  }
+  return out.replace(/No content found/gi, "");
+};
+
 const normalizeCardKey = (cardHtml, fallback) => {
   const id = extractAttrValue(cardHtml, "data-id");
   if (id) return `id:${id}`;
@@ -669,6 +954,19 @@ const hasClassToken = (className, token) => {
   return String(className)
     .split(/\s+/)
     .some((part) => String(part || "").trim() === token);
+};
+
+const addClassToken = (className, token) => {
+  const cleanToken = String(token || "").trim();
+  if (!cleanToken) return String(className || "").trim();
+  const parts = String(className || "")
+    .split(/\s+/)
+    .map((part) => String(part || "").trim())
+    .filter(Boolean);
+  if (!parts.includes(cleanToken)) {
+    parts.push(cleanToken);
+  }
+  return parts.join(" ");
 };
 
 const extractListingNextUrl = (html, baseUrl) => {
@@ -881,6 +1179,64 @@ const isBypassEnhancementPath = (pathname) => {
   return /\.txt$/i.test(path) || path.startsWith("/.well-known/");
 };
 
+const isPostLikePath = (pathname) => {
+  const path = String(pathname || "");
+  if (!path) return false;
+  if (/^\/20\d{2}\/\d{2}\/[^/?#]+\.html$/i.test(path)) return true;
+  if (/^\/p\/[^/?#]+\.html$/i.test(path)) return true;
+  return false;
+};
+
+const LEGAL_PAGE_PATHS = new Set([
+  "/p/editorial-policy.html",
+  "/p/privacy-policy.html",
+  "/p/terms-of-service.html",
+  "/p/accessibility.html",
+]);
+
+const isLegalPage = (pathname) => {
+  return LEGAL_PAGE_PATHS.has(String(pathname || ""));
+};
+
+const LEGAL_CLEAN_ROOM_SELECTORS = [
+  "script#gg-mixed-config",
+  ".gg-mixed",
+  "[id^=\"gg-mixed-\"]",
+  "[data-gg-mixed]",
+  "[data-gg-module=\"mixed-media\"]",
+  ".gg-mixed__error",
+  ".gg-mixed__card--placeholder",
+  ".gg-newsdeck",
+  ".gg-post__comments",
+  "#comments",
+  "#comments-ssr",
+  "#comments-block",
+  "#comments-block-ssr",
+  ".gg-comments",
+  ".comments2",
+  ".gg-comments-panel",
+  "[data-gg-panel=\"comments\"]",
+  "[data-gg-postbar=\"comments\"]",
+  "[data-gg-comments-gate]",
+  "[data-gg-comments-load]",
+  "[data-gg-action=\"comments-help\"]",
+  "[data-gg-modal=\"comments-help\"]",
+  "a[href=\"#comments\"]",
+  "a[href*=\"#comments\"]",
+];
+
+const applyLegalCleanRoomRewrites = (rewriter) => {
+  const removeElement = {
+    element(el) {
+      el.remove();
+    },
+  };
+  for (const selector of LEGAL_CLEAN_ROOM_SELECTORS) {
+    rewriter.on(selector, removeElement);
+  }
+  return rewriter;
+};
+
 const ensureListingResponse = async (response, requestUrl, opts = {}) => {
   let html = "";
   try {
@@ -892,6 +1248,19 @@ const ensureListingResponse = async (response, requestUrl, opts = {}) => {
     return responseFromHtml(response, html);
   }
   return ensureBlogListingPostcards(response, requestUrl, opts);
+};
+
+const ensurePostTocResponse = async (response) => {
+  let html = "";
+  try {
+    html = await response.clone().text();
+  } catch (e) {
+    return response;
+  }
+  if (!html) return response;
+  const patched = cleanPostTocHtml(html);
+  if (patched === html) return response;
+  return responseFromHtml(response, patched);
 };
 
 const CSP_REPORT_BUCKET = new Map();
@@ -981,8 +1350,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "512544b";
-    const TEMPLATE_ALLOWED_RELEASES = ["512544b","9d3aea1"];
+    const legalPage = isLegalPage(pathname);
+    const WORKER_VERSION = "f7d4ad2";
+    const TEMPLATE_ALLOWED_RELEASES = ["f7d4ad2","512544b"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1453,6 +1823,13 @@ export default {
         const rewritten = new HTMLRewriter()
           .on("html", {
             element(el) {
+              if (legalPage) {
+                el.setAttribute("data-gg-page", "legal");
+                const className = addClassToken(el.getAttribute("class"), "gg-page--legal");
+                if (className) {
+                  el.setAttribute("class", className);
+                }
+              }
               if (forceListing) {
                 el.setAttribute("data-gg-prehome", "blog");
               }
@@ -1525,8 +1902,21 @@ export default {
               el.remove();
             },
           })
+          .on("#gg-toc .gg-toc__empty", {
+            element(el) {
+              el.setAttribute("hidden", "");
+              el.setInnerContent("");
+            },
+          })
           .on("body", {
             element(el) {
+              if (legalPage) {
+                el.setAttribute("data-gg-page", "legal");
+                const className = addClassToken(el.getAttribute("class"), "gg-page--legal");
+                if (className) {
+                  el.setAttribute("class", className);
+                }
+              }
               meta.surface = (el.getAttribute("data-gg-surface") || "").trim();
               if (forceListing) {
                 el.setAttribute("data-gg-surface", "listing");
@@ -1536,7 +1926,7 @@ export default {
                 `<script id="gg-schema" type="application/ld+json">${schemaJson}</script>`,
                 { html: true }
               );
-              if (templateMismatch) {
+              if (templateMismatch && !legalPage) {
                 el.prepend(mismatchBanner, { html: true });
               }
             },
@@ -1620,6 +2010,9 @@ export default {
               },
             });
         }
+        if (legalPage) {
+          applyLegalCleanRoomRewrites(rewritten);
+        }
         const transformed = rewritten.transform(originRes);
         let htmlResponse = transformed;
         if (request.method !== "HEAD" && (forceListing || paginationListingFallback)) {
@@ -1630,6 +2023,14 @@ export default {
             allowCreateContainer: paginationListingFallback,
             useHtmlBackfill: forceListing,
           });
+        }
+        if (
+          request.method !== "HEAD" &&
+          !forceListing &&
+          !paginationListingFallback &&
+          isPostLikePath(pathname)
+        ) {
+          htmlResponse = await ensurePostTocResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
         if (templateMismatch) {

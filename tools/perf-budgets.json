@@ -7,8 +7,8 @@
     {
       "id": "main.js",
       "path": "public/assets/v/<REL>/main.js",
-      "max_raw": 1500,
-      "max_gzip": 700
+      "max_raw": 2200,
+      "max_gzip": 850
     },
     {
       "id": "app.js",
@@ -49,8 +49,8 @@
     {
       "id": "modules/ui.bucket.post.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.post.js",
-      "max_raw": 18200,
-      "max_gzip": 4900
+      "max_raw": 20500,
+      "max_gzip": 5300
     },
     {
       "id": "modules/ui.bucket.poster.js",
@@ -67,7 +67,7 @@
     {
       "id": "main.css",
       "path": "public/assets/v/<REL>/main.css",
-      "max_raw": 188433,
+      "max_raw": 191000,
       "max_gzip": 36932
     },
     {

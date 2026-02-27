@@ -201,6 +201,49 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
+[data-gg-page="legal"] :is(
+  .gg-mixed,
+  [id^="gg-mixed-"],
+  [data-gg-mixed],
+  [data-gg-module="mixed-media"],
+  .gg-newsdeck,
+  .gg-post__comments,
+  #comments,
+  #comments-ssr,
+  .gg-comments,
+  .gg-comments-panel,
+  [data-gg-panel="comments"],
+  [data-gg-postbar="comments"],
+  [data-gg-comments-gate],
+  [data-gg-comments-load],
+  [data-gg-action="comments-help"],
+  [data-gg-modal="comments-help"],
+  .gg-blog-sidebar--right > .gg-comments-panel,
+  .gg-blog-sidebar--right > .gg-info-panel
+),
+.gg-page--legal :is(
+  .gg-mixed,
+  [id^="gg-mixed-"],
+  [data-gg-mixed],
+  [data-gg-module="mixed-media"],
+  .gg-newsdeck,
+  .gg-post__comments,
+  #comments,
+  #comments-ssr,
+  .gg-comments,
+  .gg-comments-panel,
+  [data-gg-panel="comments"],
+  [data-gg-postbar="comments"],
+  [data-gg-comments-gate],
+  [data-gg-comments-load],
+  [data-gg-action="comments-help"],
+  [data-gg-modal="comments-help"],
+  .gg-blog-sidebar--right > .gg-comments-panel,
+  .gg-blog-sidebar--right > .gg-info-panel
+){
+  display: none !important;
+}
+
 body[data-gg-surface="listing"] .hero-section{ display: none !important; }
 
 img{ max-width: 100%; display: block; }

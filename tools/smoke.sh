@@ -1091,8 +1091,16 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "verify-live-banned-markers failed"
   fi
 
+  if ! node "${ROOT}/tools/verify-live-legal-clean-room.mjs" --base="${BASE}"; then
+    die "verify-live-legal-clean-room failed"
+  fi
+
   if ! node "${ROOT}/tools/verify-live-panel-metadata.mjs" --base="${BASE}" --post="${live_post_target}"; then
     die "verify-live-panel-metadata failed"
+  fi
+
+  if ! node "${ROOT}/tools/verify-live-toc-functional.mjs" --base="${BASE}" --post="${live_post_target}"; then
+    die "verify-live-toc-functional failed"
   fi
 
   if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
