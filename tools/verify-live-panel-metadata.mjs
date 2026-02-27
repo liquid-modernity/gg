@@ -13,14 +13,34 @@ const DEFAULT_BASE = "https://www.pakrpp.com";
 const DEFAULT_TIMEOUT_MS = 10000;
 
 const LISTING_MARKERS = [
+  "panel-listing-editorial",
   "panel-listing-title",
-  "panel-listing-date",
-  "panel-listing-updated",
-  "panel-listing-reading-time",
-  "panel-listing-toc",
-  "panel-listing-tags",
   "panel-listing-author",
   "panel-listing-contributor",
+  "panel-listing-labels",
+  "panel-listing-tags",
+  "panel-listing-date",
+  "panel-listing-updated",
+  "panel-listing-comments",
+  "panel-listing-reading-time",
+  "panel-listing-snippet",
+  "panel-listing-toc",
+  "panel-listing-cta",
+];
+
+const LISTING_ROWS = [
+  "title",
+  "author",
+  "contributors",
+  "labels",
+  "tags",
+  "date",
+  "updated",
+  "comments",
+  "readtime",
+  "snippet",
+  "toc",
+  "cta",
 ];
 
 const POST_MARKERS = [
@@ -32,6 +52,21 @@ const POST_MARKERS = [
   "panel-post-tags",
   "panel-post-author",
   "panel-post-contributor",
+];
+
+const BANNED_LISTING_TEXT = ["Curated stories", "Feed unavailable", "No content found", "Dummy"];
+
+const CARD_MIN_ATTRS = ["data-gg-author", "data-gg-tags", "data-gg-updated"];
+const CARD_REQUIRED_ATTRS = [
+  "data-gg-author",
+  "data-gg-contributors",
+  "data-gg-tags",
+  "data-gg-labels",
+  "data-gg-date",
+  "data-gg-updated",
+  "data-gg-comments",
+  "data-gg-readtime",
+  "data-gg-snippet",
 ];
 
 const baseRaw = (getArg("--base") || DEFAULT_BASE).trim();
@@ -63,6 +98,17 @@ function normalizeUrl(raw) {
 function markerRegex(marker) {
   const escaped = String(marker).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`\\bdata-gg-marker\\s*=\\s*([\"'])${escaped}\\1`, "i");
+}
+
+function rowRegex(row) {
+  const escaped = String(row).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\bdata-row\\s*=\\s*([\"'])${escaped}\\1`, "i");
+}
+
+function hasAttr(tag, attrName) {
+  const escaped = String(attrName).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`\\b${escaped}\\s*=\\s*(?:\"[^\"]*\"|'[^']*'|[^\\s\"'=<>\\\`]+)`, "i");
+  return re.test(String(tag || ""));
 }
 
 function findPostUrl(html, baseUrl) {
@@ -115,8 +161,54 @@ function verifyMarkers(targetId, url, html, markers, failures) {
   const src = String(html || "");
   for (const marker of markers) {
     if (!markerRegex(marker).test(src)) {
-      failures.push(`${targetId}: missing marker \"${marker}\" @ ${url}`);
+      failures.push(`${targetId}: missing marker "${marker}" @ ${url}`);
     }
+  }
+}
+
+function verifyListingContract(url, html, failures) {
+  const src = String(html || "");
+  if (!/\bdata-gg-epanel\s*=\s*(["'])editorial\1/i.test(src)) {
+    failures.push(`listing: missing editorial marker data-gg-epanel="editorial" @ ${url}`);
+  }
+
+  verifyMarkers("listing", url, src, LISTING_MARKERS, failures);
+
+  for (const row of LISTING_ROWS) {
+    if (!rowRegex(row).test(src)) {
+      failures.push(`listing: missing row marker data-row="${row}" @ ${url}`);
+    }
+  }
+
+  for (const marker of BANNED_LISTING_TEXT) {
+    if (src.toLowerCase().includes(marker.toLowerCase())) {
+      failures.push(`listing: banned text "${marker}" found @ ${url}`);
+    }
+  }
+
+  const cardRe =
+    /<article\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-post-card\b[^"']*\1[^>]*>/gi;
+  let foundMin = false;
+  let foundFull = false;
+  for (const m of src.matchAll(cardRe)) {
+    const tag = String(m[0] || "");
+    if (!foundMin && CARD_MIN_ATTRS.every((attr) => hasAttr(tag, attr))) {
+      foundMin = true;
+    }
+    if (!foundFull && CARD_REQUIRED_ATTRS.every((attr) => hasAttr(tag, attr))) {
+      foundFull = true;
+    }
+    if (foundMin && foundFull) break;
+  }
+  if (!foundMin) {
+    failures.push(
+      `listing: no gg-post-card carries minimum attrs (${CARD_MIN_ATTRS.join(", ")}) @ ${url}`
+    );
+  }
+  if (!foundFull) {
+    failures.push(
+      `listing: no gg-post-card carries full attrs (${CARD_REQUIRED_ATTRS.join(", ")}) @ ${url}`
+    );
   }
 }
 
@@ -136,7 +228,7 @@ if (listing) {
     failures.push(`listing: status ${listing.status} ${listingUrl}`);
   } else {
     listingHtml = String(listing.text || "");
-    verifyMarkers("listing", listingUrl, listingHtml, LISTING_MARKERS, failures);
+    verifyListingContract(listingUrl, listingHtml, failures);
   }
 }
 

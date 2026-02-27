@@ -318,6 +318,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const updatedIso = cleanText(entry && entry.updated && entry.updated.$t);
   const publishedRaw = publishedIso || updatedIso;
   const publishedText = formatIsoDate(publishedRaw);
+  const updatedText = formatIsoDate(updatedIso || publishedRaw);
   const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t);
   const commentsText = commentsRaw || "0";
   const excerpt = truncateText(
@@ -333,18 +334,25 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const labels = categories
     .map((item) => cleanText(item && item.term))
     .filter(Boolean);
+  const labelsCsv = labels.join(",");
   const label = labels.length ? labels[0] : "";
   const labelUrl = buildFeedLabelUrl(label, origin || postUrl);
+  const excerptWords = excerpt ? excerpt.split(/\s+/).filter(Boolean).length : 0;
+  const readMin = excerptWords ? String(Math.max(1, Math.ceil(excerptWords / 200))) : "";
+  const readLabel = readMin ? `${readMin} min read` : "";
   const safeUrl = escapeHtml(postUrl);
   const safeTitle = escapeHtml(title);
   const safeExcerpt = escapeHtml(excerpt);
   const safeDateIso = escapeHtml(publishedRaw);
   const safeDateText = escapeHtml(publishedText);
+  const safeUpdatedText = escapeHtml(updatedText);
   const safeComments = escapeHtml(commentsText);
   const safeAuthorName = escapeHtml(author.name);
   const safeAuthorUrl = escapeHtml(author.url);
   const safeAuthorAvatar = escapeHtml(author.avatar);
   const safePostId = escapeHtml(postId);
+  const safeLabelsCsv = escapeHtml(labelsCsv);
+  const safeReadLabel = escapeHtml(readLabel);
   const safeLabel = escapeHtml(label);
   const safeLabelUrl = escapeHtml(labelUrl);
   const safeThumb = escapeHtml(thumb);
@@ -356,7 +364,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
       ? `<span class='gg-post-card__label'><a href='${safeLabelUrl}' rel='tag'>${safeLabel}</a></span><span class='gg-post-card__meta-sep'>&#8226;</span>`
       : "";
   const cardHtml = [
-    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safeUrl}'>`,
+    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-readtime='${safeReadLabel}' data-snippet='${safeExcerpt}' data-title='${safeTitle}' data-updated='${safeUpdatedText}' data-url='${safeUrl}' data-gg-author='${safeAuthorName}' data-gg-comments='${safeComments}' data-gg-contributors='' data-gg-date='${safeDateText}' data-gg-labels='${safeLabelsCsv}' data-gg-readtime='${safeReadLabel}' data-gg-snippet='${safeExcerpt}' data-gg-tags='${safeLabelsCsv}' data-gg-toc-json='' data-gg-updated='${safeUpdatedText}'>`,
     thumbHtml,
     "<div class='gg-post-card__body'>",
     "<div class='gg-post-card__meta'>",
@@ -825,7 +833,7 @@ const createUniqueHeadingId = (text, usedIds, slugCounts) => {
 
 const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
   const source = String(bodyHtml || "");
-  const headingRe = /<h([23])\b([^>]*)>([\s\S]*?)<\/h\1>/gi;
+  const headingRe = /<h2\b([^>]*)>([\s\S]*?)<\/h2>/gi;
   const blocked = collectBlockedRanges(source);
   const ids = usedIds || new Set();
   const slugCounts = new Map();
@@ -836,9 +844,9 @@ const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
   while ((match = headingRe.exec(source))) {
     const start = match.index;
     const end = headingRe.lastIndex;
-    const level = Number.parseInt(match[1], 10);
-    const attrs = String(match[2] || "");
-    const inner = String(match[3] || "");
+    const level = 2;
+    const attrs = String(match[1] || "");
+    const inner = String(match[2] || "");
     const full = String(match[0] || "");
     out += source.slice(last, start);
     let replacement = full;
@@ -967,6 +975,46 @@ const addClassToken = (className, token) => {
     parts.push(cleanToken);
   }
   return parts.join(" ");
+};
+
+const firstCardValue = (el, names) => {
+  if (!el || !Array.isArray(names)) return "";
+  for (const name of names) {
+    const value = cleanText(el.getAttribute(name) || "");
+    if (value) return value;
+  }
+  return "";
+};
+
+const setCardAttr = (el, name, value) => {
+  if (!el || !name) return;
+  el.setAttribute(name, String(value || ""));
+};
+
+const decoratePostCardDataset = (el) => {
+  if (!el) return;
+  const author = firstCardValue(el, ["data-gg-author", "data-author-name", "data-author"]);
+  const contributors = firstCardValue(el, ["data-gg-contributors", "data-contributors"]);
+  const tags = firstCardValue(el, ["data-gg-tags", "data-tags"]);
+  const labels = firstCardValue(el, ["data-gg-labels"]);
+  const date = firstCardValue(el, ["data-gg-date", "data-date", "data-published"]);
+  const updated = firstCardValue(el, ["data-gg-updated", "data-updated", "data-last-updated"]) || date;
+  const comments = firstCardValue(el, ["data-gg-comments", "data-comments"]);
+  const readtime = firstCardValue(el, ["data-gg-readtime", "data-readtime", "data-read-time"]);
+  const snippet = firstCardValue(el, ["data-gg-snippet", "data-snippet"]);
+  const tocJson = firstCardValue(el, ["data-gg-toc-json"]);
+  const normalizedTags = tags || labels;
+  const normalizedLabels = labels || tags;
+  setCardAttr(el, "data-gg-author", author);
+  setCardAttr(el, "data-gg-contributors", contributors);
+  setCardAttr(el, "data-gg-tags", normalizedTags);
+  setCardAttr(el, "data-gg-labels", normalizedLabels);
+  setCardAttr(el, "data-gg-date", date);
+  setCardAttr(el, "data-gg-updated", updated);
+  setCardAttr(el, "data-gg-comments", comments);
+  setCardAttr(el, "data-gg-readtime", readtime);
+  setCardAttr(el, "data-gg-snippet", snippet);
+  setCardAttr(el, "data-gg-toc-json", tocJson);
 };
 
 const extractListingNextUrl = (html, baseUrl) => {
@@ -1351,8 +1399,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "f7d4ad2";
-    const TEMPLATE_ALLOWED_RELEASES = ["f7d4ad2","512544b"];
+    const WORKER_VERSION = "e30613c";
+    const TEMPLATE_ALLOWED_RELEASES = ["e30613c","376bc55"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1890,6 +1938,11 @@ export default {
           .on("title", {
             text(text) {
               meta.titleText += text.text;
+            },
+          })
+          .on("article.gg-post-card", {
+            element(el) {
+              decoratePostCardDataset(el);
             },
           })
           .on("article", {

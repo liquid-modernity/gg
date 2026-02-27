@@ -835,7 +835,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc" data-headings="h2,h3" data-scroll-offset="84">
+<nav id="gg-toc" class="gg-toc" data-headings="h2" data-scroll-offset="84">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
@@ -1203,35 +1203,35 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
         </div>
@@ -1364,28 +1364,28 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
         </div>
@@ -1820,7 +1820,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' data-author-url='' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-id='data:post.id' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' data-author-url='' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-date='data:post.date' expr:data-id='data:post.id' expr:data-readtime='&quot;&quot;' expr:data-snippet='data:post.snippet' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-url='data:post.url' expr:data-gg-author='data:post.author.name' expr:data-gg-comments='data:post.numberOfComments' expr:data-gg-contributors='&quot;&quot;' expr:data-gg-date='data:post.date' expr:data-gg-labels='&quot;&quot;' expr:data-gg-readtime='&quot;&quot;' expr:data-gg-snippet='data:post.snippet' expr:data-gg-tags='&quot;&quot;' expr:data-gg-toc-json='&quot;&quot;' expr:data-gg-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601'>
 <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
   <b:attr name='data-author-avatar' expr:value='data:post.author.authorPhoto.url'/>
 </b:if>
@@ -2633,21 +2633,21 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
         </div>
@@ -2676,35 +2676,35 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
         </div>
@@ -2840,42 +2840,42 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
             </span>
           </article>
         </div>
@@ -2895,15 +2895,19 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <ol data-gg-slot='toc'></ol>
     <p data-gg-slot='toc-hint'></p>
   </div>
-  <div aria-hidden='true' class='gg-visually-hidden' data-gg-preview-contract='panel-meta' data-gg-panelmeta='listing'>
-    <span data-gg-marker='panel-listing-title' data-s='title'></span>
-    <span data-gg-marker='panel-listing-date' data-s='date'></span>
-    <span data-gg-marker='panel-listing-updated' data-s='updated'></span>
-    <span data-gg-marker='panel-listing-reading-time' data-s='readtime'></span>
-    <span data-gg-marker='panel-listing-author' data-s='author'></span>
-    <div data-gg-marker='panel-listing-contributor' data-gg-slot='contributors'></div>
-    <div data-gg-marker='panel-listing-tags' data-gg-slot='tags'></div>
-    <ol data-gg-marker='panel-listing-toc' data-gg-slot='toc'></ol>
+  <div aria-hidden='true' class='gg-visually-hidden' data-gg-epanel='editorial' data-gg-marker='panel-listing-editorial' data-gg-preview-contract='panel-meta' data-gg-panelmeta='listing'>
+    <span data-gg-marker='panel-listing-title' data-row='title' data-s='title'></span>
+    <span data-gg-marker='panel-listing-author' data-row='author' data-s='author'></span>
+    <div data-gg-marker='panel-listing-contributor' data-row='contributors' data-gg-slot='contributors'></div>
+    <div data-gg-marker='panel-listing-labels' data-row='labels' data-gg-slot='labels'></div>
+    <div data-gg-marker='panel-listing-tags' data-row='tags' data-gg-slot='tags'></div>
+    <span data-gg-marker='panel-listing-date' data-row='date' data-s='date'></span>
+    <span data-gg-marker='panel-listing-updated' data-row='updated' data-s='updated'></span>
+    <span data-gg-marker='panel-listing-comments' data-row='comments' data-s='comments'></span>
+    <span data-gg-marker='panel-listing-reading-time' data-row='readtime' data-s='readtime'></span>
+    <span data-gg-marker='panel-listing-snippet' data-row='snippet' data-s='snippet'></span>
+    <ol data-gg-marker='panel-listing-toc' data-row='toc' data-gg-slot='toc'></ol>
+    <a data-gg-marker='panel-listing-cta' data-row='cta' href='#'>Read this post</a>
   </div>
 
   <!-- GAGA COMMENTS PANEL (POST DETAIL) -->

@@ -130,7 +130,7 @@
   'use strict';
   GG.modules = GG.modules || {};
   GG.modules.TOC = GG.modules.TOC || (function(){
-    var TOC_SELECTOR_DEFAULT = 'h2,h3';
+    var TOC_SELECTOR_DEFAULT = 'h2';
     var TOC_MAX_ITEMS = 12;
     function clean(v){ return String(v || '').replace(/\s+/g, ' ').trim(); }
     function resolveRoot(scope){
@@ -155,7 +155,7 @@
       var one = '';
       for (; i < selectors.length; i++) {
         one = selectors[i];
-        if (one !== 'h2' && one !== 'h3') continue;
+        if (one !== 'h2') continue;
         if (out.indexOf(one) !== -1) continue;
         out.push(one);
       }
@@ -192,7 +192,7 @@
     function isEligibleHeading(node){
       if (!node || !node.tagName) return false;
       var tag = node.tagName.toLowerCase();
-      if (tag !== 'h2' && tag !== 'h3') return false;
+      if (tag !== 'h2') return false;
       if (!clean(node.textContent || '')) return false;
       if (node.hidden) return false;
       if (String(node.getAttribute && node.getAttribute('aria-hidden') || '').toLowerCase() === 'true') return false;
@@ -329,7 +329,7 @@
         var body = resolveBody(scope);
         if (!root || !body) return;
         if (!root.hidden) return;
-        if (!body.querySelector('h2,h3')) return;
+        if (!body.querySelector('h2')) return;
         if (retries >= 4) return;
         retries += 1;
         w.setTimeout(run, 120 * retries);
@@ -341,7 +341,7 @@
   })();
   function autoInitToc(){
     if (GG.modules && GG.modules.TOC && typeof GG.modules.TOC.init === 'function') {
-      GG.modules.TOC.init(d, { headings: 'h2,h3' });
+      GG.modules.TOC.init(d, { headings: 'h2' });
     }
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', autoInitToc, { once: true });

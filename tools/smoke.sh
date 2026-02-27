@@ -1099,7 +1099,11 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "verify-live-panel-metadata failed"
   fi
 
-  if ! node "${ROOT}/tools/verify-live-toc-functional.mjs" --base="${BASE}" --post="${live_post_target}"; then
+  toc_args=(--base="${BASE}" --post="${live_post_target}")
+  if [[ -n "${SMOKE_PAGE_URL:-}" ]]; then
+    toc_args+=(--page="${SMOKE_PAGE_URL}")
+  fi
+  if ! node "${ROOT}/tools/verify-live-toc-functional.mjs" "${toc_args[@]}"; then
     die "verify-live-toc-functional failed"
   fi
 

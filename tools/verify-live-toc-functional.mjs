@@ -15,6 +15,7 @@ const DEFAULT_TIMEOUT_MS = 10000;
 const stripTrailingSlash = (s) => String(s || "").replace(/\/+$/, "");
 const baseRaw = (getArg("--base") || DEFAULT_BASE).trim();
 const postRaw = (getArg("--post") || "").trim();
+const pageRaw = (getArg("--page") || "").trim();
 const timeoutRaw = parseInt(getArg("--timeout-ms"), 10);
 const timeoutMs = Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : DEFAULT_TIMEOUT_MS;
 
@@ -179,11 +180,11 @@ const stripBlockedBlocks = (html) => {
 
 const countEligibleHeadings = (postBodyHtml) => {
   const source = stripBlockedBlocks(postBodyHtml);
-  const re = /<h([23])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
+  const re = /<h2\b[^>]*>([\s\S]*?)<\/h2>/gi;
   let count = 0;
   let match;
   while ((match = re.exec(source))) {
-    const text = cleanText(match[2] || "");
+    const text = cleanText(match[1] || "");
     if (!text) continue;
     count += 1;
   }
@@ -208,6 +209,47 @@ const countTocLinks = (tocHtml) => {
 };
 
 const failures = [];
+
+async function verifyTocTarget(kind, targetUrl) {
+  if (!targetUrl) return;
+  let result;
+  try {
+    const sep = targetUrl.includes("?") ? "&" : "?";
+    result = await fetchText(`${targetUrl}${sep}x=${Date.now()}`);
+  } catch (e) {
+    const msg = e && e.name === "AbortError" ? "timeout" : (e && e.message ? e.message : "fetch-failed");
+    failures.push(`${kind}: fetch failed (${msg}) ${targetUrl}`);
+    return;
+  }
+  if (!result.ok) {
+    failures.push(`${kind}: status ${result.status} ${targetUrl}`);
+    return;
+  }
+  if (!/\btext\/html\b/i.test(result.contentType)) {
+    failures.push(`${kind}: non-html content-type "${result.contentType}" ${targetUrl}`);
+    return;
+  }
+  const html = String(result.text || "");
+  if (/No content found/i.test(html)) {
+    failures.push(`${kind}: forbidden text "No content found" present @ ${targetUrl}`);
+  }
+  const postBodyHtml = findPostBodyHtml(html);
+  if (!postBodyHtml) {
+    failures.push(`${kind}: unable to locate .post-body/.entry-content container @ ${targetUrl}`);
+    return;
+  }
+  const headingCount = countEligibleHeadings(postBodyHtml);
+  const tocHtml = extractTocContainerHtml(html);
+  const tocLinkCount = countTocLinks(tocHtml);
+  if (headingCount > 0 && tocLinkCount < 1) {
+    failures.push(`${kind}: headings=${headingCount} but TOC links=${tocLinkCount} in #gg-toc @ ${targetUrl}`);
+  }
+  if (headingCount === 0 && tocLinkCount > 0) {
+    failures.push(
+      `${kind}: headings=${headingCount} but TOC links=${tocLinkCount} (expected hidden/empty TOC) @ ${targetUrl}`
+    );
+  }
+}
 
 let postUrl = "";
 if (postRaw) {
@@ -235,47 +277,14 @@ if (!postUrl) {
   }
 }
 
-if (postUrl) {
-  let post;
-  try {
-    const sep = postUrl.includes("?") ? "&" : "?";
-    post = await fetchText(`${postUrl}${sep}x=${Date.now()}`);
-  } catch (e) {
-    const msg = e && e.name === "AbortError" ? "timeout" : (e && e.message ? e.message : "fetch-failed");
-    failures.push(`post: fetch failed (${msg}) ${postUrl}`);
-  }
-
-  if (post) {
-    if (!post.ok) {
-      failures.push(`post: status ${post.status} ${postUrl}`);
-    } else if (!/\btext\/html\b/i.test(post.contentType)) {
-      failures.push(`post: non-html content-type "${post.contentType}" ${postUrl}`);
-    } else {
-      const html = String(post.text || "");
-      if (/No content found/i.test(html)) {
-        failures.push(`post: forbidden text "No content found" present @ ${postUrl}`);
-      }
-      const postBodyHtml = findPostBodyHtml(html);
-      if (!postBodyHtml) {
-        failures.push(`post: unable to locate .post-body/.entry-content container @ ${postUrl}`);
-      } else {
-        const headingCount = countEligibleHeadings(postBodyHtml);
-        const tocHtml = extractTocContainerHtml(html);
-        const tocLinkCount = countTocLinks(tocHtml);
-        if (headingCount > 0 && tocLinkCount < 1) {
-          failures.push(
-            `post: headings=${headingCount} but TOC links=${tocLinkCount} in #gg-toc @ ${postUrl}`
-          );
-        }
-        if (headingCount === 0 && tocLinkCount > 0) {
-          failures.push(
-            `post: headings=${headingCount} but TOC links=${tocLinkCount} (expected hidden/empty TOC) @ ${postUrl}`
-          );
-        }
-      }
-    }
-  }
+let pageUrl = "";
+if (pageRaw) {
+  pageUrl = normalizeUrl(pageRaw);
+  if (!pageUrl) failures.push(`page: invalid --page target (${pageRaw})`);
 }
+
+await verifyTocTarget("post", postUrl);
+if (pageUrl) await verifyTocTarget("page", pageUrl);
 
 if (failures.length) {
   console.error("VERIFY_LIVE_TOC_FUNCTIONAL: FAIL");
@@ -283,4 +292,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`VERIFY_LIVE_TOC_FUNCTIONAL: PASS post=${postUrl || "(auto)"}`);
+console.log(`VERIFY_LIVE_TOC_FUNCTIONAL: PASS post=${postUrl || "(auto)"} page=${pageUrl || "(skip)"}`);

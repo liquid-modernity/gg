@@ -343,7 +343,7 @@ function apply(html, url){
       try { GG.modules.TOC.reset(mainScope); } catch (_) {}
     }
     if (GG.modules.TOC && typeof GG.modules.TOC.build === 'function') {
-      try { GG.modules.TOC.build(mainScope, { headings: 'h2' }); } catch (_) {}
+      try { GG.modules.TOC.build(mainScope, { headings: 'h2,h3' }); } catch (_) {}
     }
     if (GG.modules.Comments && typeof GG.modules.Comments.reset === 'function') {
       try { GG.modules.Comments.reset(mainScope); } catch (_) {}
