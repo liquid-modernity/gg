@@ -581,9 +581,46 @@ assert_status() {
   echo "PASS: ${label}"
 }
 
+txt_asset_check() {
+  local url="$1"
+  local label="$2"
+  local headers status
+  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} headers fetch failed"
+  fi
+  status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
+  if [[ "${status}" != "200" ]]; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} expected 200 (got ${status})"
+  fi
+  if ! echo "${headers}" | grep -qi '^content-type:[[:space:]]*text/plain'; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} expected text/plain content-type"
+  fi
+  if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} must not include x-gg-template-mismatch"
+  fi
+
+  local body
+  if ! body="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} body fetch failed"
+  fi
+  if echo "${body}" | grep -qi "Template mismatch detected"; then
+    die "${label} contains template mismatch banner content"
+  fi
+  echo "PASS: ${label}"
+}
+
 authoritative_header "${BASE}/sw.js?x=1" '^cache-control:.*no-store' "sw.js is no-store"
 authoritative_header "${BASE}/gg-flags.json?x=1" '^cache-control:.*no-store' "gg-flags.json is no-store"
 authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*immutable' "assets/v main.js is immutable"
+txt_asset_check "${BASE}/llms.txt?x=1" "llms.txt"
+txt_asset_check "${BASE}/ads.txt?x=1" "ads.txt"
+txt_asset_check "${BASE}/robots.txt?x=1" "robots.txt"
 
 flags_headers="$(curl -sSI "${BASE}/gg-flags.json?x=1" | tr -d '\r')"
 if ! echo "${flags_headers}" | grep -qi '^x-gg-worker-version:'; then
@@ -688,6 +725,86 @@ if ! echo "${flags_json}" | grep -q '"csp_report_enabled"'; then
   die "gg-flags.json missing csp_report_enabled"
 fi
 echo "PASS: gg-flags.json csp_report_enabled present"
+
+flags_mode="$(printf '%s' "${flags_json}" | node -e '
+  const fs = require("fs");
+  let data = null;
+  try {
+    data = JSON.parse(fs.readFileSync(0, "utf8"));
+  } catch (_) {
+    process.exit(2);
+  }
+  const mode = String((data && data.mode) || "").trim().toLowerCase();
+  if (!mode) process.exit(3);
+  process.stdout.write(mode);
+')"
+if [[ -z "${flags_mode}" ]]; then
+  die "gg-flags.json missing mode"
+fi
+if [[ "${flags_mode}" != "public" && "${flags_mode}" != "lab" ]]; then
+  die "gg-flags.json invalid mode (${flags_mode})"
+fi
+echo "PASS: gg-flags.json mode=${flags_mode}"
+
+robots_mode_check() {
+  local mode="$1"
+  local url="$2"
+  local label="$3"
+  local headers robots html
+  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+    die "${label} robots headers fetch failed"
+  fi
+  robots="$(echo "${headers}" | awk -F': *' 'tolower($1)=="x-robots-tag"{print tolower($2)}' | head -n 1 | tr -d '\n')"
+  if [[ -z "${robots}" ]]; then
+    echo "DEBUG: ${label} headers"
+    echo "${headers}" | sed -n '1,30p'
+    die "${label} missing x-robots-tag"
+  fi
+
+  if [[ "${mode}" == "public" ]]; then
+    if [[ "${robots}" == *noindex* || "${robots}" == *nofollow* ]]; then
+      die "${label} x-robots-tag must not include noindex/nofollow in public mode (got: ${robots})"
+    fi
+    if [[ "${robots}" != *index* || "${robots}" != *follow* ]]; then
+      die "${label} x-robots-tag must include index, follow in public mode (got: ${robots})"
+    fi
+    if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
+      die "${label} robots html fetch failed"
+    fi
+    if ! printf '%s' "${html}" | node -e '
+      const fs = require("fs");
+      const html = fs.readFileSync(0, "utf8");
+      function attr(tag, name){
+        const m = tag.match(new RegExp(name + "\\s*=\\s*(?:([\"\\047])([^\"\\047]*)\\1|([^\\s\"\\047=<>`]+))", "i"));
+        return m ? String(m[2] || m[3] || "") : "";
+      }
+      const metas = [...html.matchAll(/<meta\\b[^>]*>/gi)].map((m) => m[0]);
+      for (const tag of metas) {
+        const name = attr(tag, "name").trim().toLowerCase();
+        if (name !== "robots") continue;
+        const content = attr(tag, "content").trim().toLowerCase();
+        if (content.includes("noindex") || content.includes("nofollow")) {
+          process.exit(1);
+        }
+      }
+      process.exit(0);
+    '; then
+      echo "DEBUG: ${label} robots meta tags"
+      printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+name=['\"]robots['\"][^>]*>|<meta[^>]+content=['\"][^'\"]*noindex[^'\"]*['\"][^>]*>" | head -n 20 || true
+      die "${label} public mode must not contain noindex/nofollow in meta robots"
+    fi
+    echo "PASS: ${label} robots public"
+    return 0
+  fi
+
+  if [[ "${robots}" != *noindex* || "${robots}" != *nofollow* ]]; then
+    die "${label} x-robots-tag must include noindex, nofollow in lab mode (got: ${robots})"
+  fi
+  echo "PASS: ${label} robots lab"
+}
+
+robots_mode_check "${flags_mode}" "${BASE}/?x=1" "home"
+robots_mode_check "${flags_mode}" "${BASE}/blog?x=1" "blog"
 
 csp_report_code="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "${BASE}/api/csp-report" -H "Content-Type: application/csp-report" --data '{"test":true}')"
 if [[ "${csp_report_code}" != "204" ]]; then
@@ -968,6 +1085,15 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   live_dom_check_page "${BASE}/" "home"
   live_dom_check_page "${BASE}/blog" "blog"
   live_blog_hard_refresh_check 5
+
+  live_post_target="${SMOKE_POST_URL:-${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}}"
+  if ! node "${ROOT}/tools/verify-live-banned-markers.mjs" --base="${BASE}" --post="${live_post_target}"; then
+    die "verify-live-banned-markers failed"
+  fi
+
+  if ! node "${ROOT}/tools/verify-live-panel-metadata.mjs" --base="${BASE}" --post="${live_post_target}"; then
+    die "verify-live-panel-metadata failed"
+  fi
 
   if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
     die "verify-router-contract failed"

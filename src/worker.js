@@ -21,11 +21,20 @@ const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
 
 const FLAGS_TTL_MS = 60 * 1000;
 let flagsCache = { ts: 0, value: null };
+const FLAGS_MODE_PUBLIC = "public";
+const FLAGS_MODE_LAB = "lab";
+
+const normalizeFlagsMode = (value) => {
+  const mode = String(value || "").trim().toLowerCase();
+  if (mode === FLAGS_MODE_LAB) return FLAGS_MODE_LAB;
+  return FLAGS_MODE_PUBLIC;
+};
 
 const normalizeFlags = (data) => {
   const out = {
     sw: { enabled: true },
     csp_report_enabled: true,
+    mode: FLAGS_MODE_PUBLIC,
   };
   if (data && typeof data === "object") {
     if (data.sw && typeof data.sw === "object") {
@@ -36,8 +45,11 @@ const normalizeFlags = (data) => {
     if (typeof data.csp_report_enabled === "boolean") {
       out.csp_report_enabled = data.csp_report_enabled;
     }
+    if (typeof data.mode === "string") {
+      out.mode = normalizeFlagsMode(data.mode);
+    }
     for (const [key, value] of Object.entries(data)) {
-      if (key === "sw" || key === "csp_report_enabled") continue;
+      if (key === "sw" || key === "csp_report_enabled" || key === "mode") continue;
       out[key] = value;
     }
   }
@@ -863,6 +875,12 @@ const shouldSkipListingFallback = (html) => {
   return !/id\s*=\s*['"]blog['"]/i.test(source);
 };
 
+const isBypassEnhancementPath = (pathname) => {
+  const path = String(pathname || "");
+  if (!path) return false;
+  return /\.txt$/i.test(path) || path.startsWith("/.well-known/");
+};
+
 const ensureListingResponse = async (response, requestUrl, opts = {}) => {
   let html = "";
   try {
@@ -940,6 +958,11 @@ const addSecurityHeaders = (resp, requestUrl, contentType, opts = {}) => {
   );
   headers.set("X-Frame-Options", "SAMEORIGIN");
   const isHtml = (contentType || "").toLowerCase().includes("text/html");
+  const robotsMode = normalizeFlagsMode(opts.robotsMode);
+  const robotsTag = robotsMode === FLAGS_MODE_LAB ? "noindex, nofollow" : "index, follow";
+  if (isHtml) {
+    headers.set("X-Robots-Tag", robotsTag);
+  }
   const cspReportEnabled = opts.cspReportEnabled !== false;
   if (isHtml && cspReportEnabled) {
     const origin = new URL(requestUrl).origin;
@@ -958,8 +981,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const WORKER_VERSION = "0f10fa3";
-    const TEMPLATE_ALLOWED_RELEASES = ["0f10fa3","1a94925"];
+    const WORKER_VERSION = "87c08f8";
+    const TEMPLATE_ALLOWED_RELEASES = ["87c08f8","c82b583"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1211,7 +1234,8 @@ export default {
       pathname.startsWith("/gg-pwa-icon/") ||
       pathname === "/sw.js" ||
       pathname === "/manifest.webmanifest" ||
-      pathname === "/offline.html";
+      pathname === "/offline.html" ||
+      isBypassEnhancementPath(pathname);
 
     // Reverse proxy Blogger untuk semua non-asset path.
     if (!shouldTryAssets) {
@@ -1268,6 +1292,9 @@ export default {
       if (contentType.indexOf("text/html") !== -1) {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
+        const robotsMode = normalizeFlagsMode(flags.mode);
+        const robotsMetaContent =
+          robotsMode === FLAGS_MODE_LAB ? "noindex, nofollow" : "index, follow";
         const expectedEnv = "prod";
         const expectedRelease = WORKER_VERSION;
         const shouldEvaluateTemplate = request.method !== "HEAD";
@@ -1466,6 +1493,13 @@ export default {
               assignMeta("author", el.getAttribute("content"));
             },
           })
+          .on("meta", {
+            element(el) {
+              const metaName = (el.getAttribute("name") || "").trim().toLowerCase();
+              if (metaName !== "robots") return;
+              el.setAttribute("content", robotsMetaContent);
+            },
+          })
           .on("meta[property=\"article:published_time\"]", {
             element(el) {
               assignMeta("pub", el.getAttribute("content"));
@@ -1597,7 +1631,7 @@ export default {
             useHtmlBackfill: forceListing,
           });
         }
-        let out = stamp(htmlResponse, { cspReportEnabled });
+        let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
         if (templateMismatch) {
           if (out.status !== 200) {
             out = new Response(out.body, {
@@ -1678,17 +1712,24 @@ export default {
 
       const r = new Response(assetRes.body, assetRes);
       r.headers.set("Cache-Control", "no-store");
+      if (/\.txt$/i.test(pathname)) {
+        r.headers.set("Content-Type", "text/plain; charset=utf-8");
+      }
       const errContentType = r.headers.get("content-type") || "";
       if (errContentType.toLowerCase().includes("text/html")) {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
-        return stamp(r, { cspReportEnabled });
+        const robotsMode = normalizeFlagsMode(flags.mode);
+        return stamp(r, { cspReportEnabled, robotsMode });
       }
       return stamp(r);
     }
 
     const res = new Response(assetRes.body, assetRes);
     const setCache = (v) => res.headers.set("Cache-Control", v);
+    if (/\.txt$/i.test(pathname)) {
+      res.headers.set("Content-Type", "text/plain; charset=utf-8");
+    }
 
     if (pathname.startsWith("/assets/latest/")) {
       setCache("no-store, max-age=0");
@@ -1710,7 +1751,8 @@ export default {
     if (assetContentType.toLowerCase().includes("text/html")) {
       const flags = await loadFlags(env);
       const cspReportEnabled = flags.csp_report_enabled !== false;
-      return stamp(res, { cspReportEnabled });
+      const robotsMode = normalizeFlagsMode(flags.mode);
+      return stamp(res, { cspReportEnabled, robotsMode });
     }
     return stamp(res);
   },

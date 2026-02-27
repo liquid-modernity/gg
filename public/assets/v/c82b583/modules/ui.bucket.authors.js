@@ -83,6 +83,19 @@ return { key:KEY, url:URL, slugify:tagSlugify, fallback:function(raw){ return re
 GG.modules.postInfoAuthors = GG.modules.postInfoAuthors || {};
 function qs(sel, root){ return (root||d).querySelector(sel); }
 function splitSlugs(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,s=''; if(!src) return out; parts=src.split(/\s*;\s*/); for(i=0;i<parts.length;i++){ s=slugify(parts[i]); if(!s||seen[s]) continue; seen[s]=1; out.push(s); } return out; }
+function initPostInfoRelated(scope){
+if(GG.modules&&GG.modules.postInfoTags&&typeof GG.modules.postInfoTags.init==='function') GG.modules.postInfoTags.init(scope||d);
+if(GG.modules&&GG.modules.postInfoLabels&&typeof GG.modules.postInfoLabels.init==='function') GG.modules.postInfoLabels.init(scope||d);
+if(GG.modules&&GG.modules.postInfoMeta&&typeof GG.modules.postInfoMeta.init==='function') GG.modules.postInfoMeta.init(scope||d);
+}
+function postMetaFromScope(scope,article){
+var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var pm=null;
+if(svc){
+  try{ pm=svc.getFromContext(article||scope||d); }catch(_){ pm=null; }
+}
+return pm&&typeof pm==='object'?pm:{ author:'', contributors:[], tags:[], updated:'', readMin:'', readLabel:'' };
+}
 function renderPeople(slot,rows,role){
 var list=rows||[],i=0,row=null,name='',href='',a=null,av=null,meta=null,pn=null,pr=null;
 if(!slot) return;
@@ -101,13 +114,14 @@ meta.appendChild(pn); meta.appendChild(pr); a.appendChild(av); a.appendChild(met
 }
 }
 GG.modules.postInfoAuthors.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,metaNode=null;
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null;
 var authorSlug='',contributors=[],authorSlot=null,contribSlot=null,contribSec=null,list=[],i=0,token=0,fb=[],svc=GG.services&&GG.services.authorsDir?GG.services.authorsDir:null;
-if(!info||!svc) return;
+if(!info) return;
+if(!svc){ initPostInfoRelated(scope); return; }
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
-metaNode=qs('.gg-postmeta',article||scope)||qs('.gg-postmeta',scope);
-authorSlug=svc.slugify((metaNode&&metaNode.getAttribute('data-author'))||(article&&article.getAttribute('data-author'))||'');
-contributors=splitSlugs((metaNode&&metaNode.getAttribute('data-contributors'))||'').filter(function(slug){ return slug&&slug!==authorSlug; });
+pm=postMetaFromScope(scope,article);
+authorSlug=svc.slugify((pm&&pm.author)||(article&&article.getAttribute('data-author'))||'');
+contributors=(Array.isArray(pm&&pm.contributors)?pm.contributors:[]).map(function(one){ return svc.slugify(one); }).filter(function(slug){ return slug&&slug!==authorSlug; });
 authorSlot=qs('[data-slot="author"]',info);
 contribSlot=qs('[data-slot="contributors"]',info);
 contribSec=qs('.gg-pi__sec--contributors',info);
@@ -116,6 +130,7 @@ for(i=0;i<contributors.length;i++) list.push(contributors[i]);
 if(authorSlot) renderPeople(authorSlot,authorSlug?[svc.fallback(authorSlug)]:[],'Author');
 if(contribSlot){ fb=contributors.map(function(slug){ return svc.fallback(slug); }); renderPeople(contribSlot,fb,'Contributor'); }
 if(contribSec) contribSec.hidden=contributors.length===0;
+initPostInfoRelated(scope);
 if(!list.length) return;
 token=(info.__ggAuthorsToken||0)+1;
 info.__ggAuthorsToken=token;
@@ -133,16 +148,31 @@ if(contribSec) contribSec.hidden=contribRows.length===0;
 GG.modules.postInfoTags = GG.modules.postInfoTags || {};
 function parseTags(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,key='',text=''; if(!src) return out; parts=src.split(/\s*,\s*/); for(i=0;i<parts.length;i++){ text=clean(parts[i]); key=tagSlugify(text); if(!key||seen[key]) continue; seen[key]=1; out.push({ key:key, text:text||key, href:tagHref(key) }); } return out; }
 function renderTags(slot,rows){ var list=rows||[],i=0,row=null,name='',href='',a=null; if(!slot) return; slot.textContent=''; for(i=0;i<list.length;i++){ row=list[i]||{}; name=clean(row.text||row.name||''); href=clean(row.href||''); if(!name) continue; a=d.createElement('a'); a.className='gg-pi__chip'; a.href=href||'#'; a.textContent=name; slot.appendChild(a); } }
+function parseLabels(article){
+var links=article&&article.querySelectorAll?article.querySelectorAll('.gg-post__label-link,.gg-post__labels a[rel="tag"],.post-labels a[rel="tag"]'):[];
+var out=[],seen={},i=0,a=null,text='',href='',key='';
+for(i=0;i<links.length;i++){
+  a=links[i];
+  text=clean(a&&a.textContent||'');
+  key=tagSlugify(text);
+  if(!key||seen[key]) continue;
+  seen[key]=1;
+  href=clean(a&&a.getAttribute?a.getAttribute('href'):'');
+  out.push({ key:key, text:text||key, href:href||tagHref(key) });
+}
+return out;
+}
 GG.modules.postInfoTags.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,metaNode=null,slot=null,sec=null,svc=GG.services&&GG.services.tagsDir?GG.services.tagsDir:null;
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,svc=GG.services&&GG.services.tagsDir?GG.services.tagsDir:null,pm=null;
 var tags=[],raw='',m=[],i=0,token=0;
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
-metaNode=qs('.gg-postmeta',article||scope)||qs('.gg-postmeta',scope);
+pm=postMetaFromScope(scope,article);
 slot=qs('[data-slot="tags"]',info);
 sec=qs('.gg-pi__sec--tags',info);
 if(!slot) return;
-tags=parseTags((metaNode&&metaNode.getAttribute('data-tags'))||'');
+tags=Array.isArray(pm&&pm.tags)?pm.tags:[];
+if(!tags.length) tags=parseTags('');
 if(!tags.length&&article){ raw=clean((qs('.gg-post-tags',article)||{}).textContent||''); m=raw.match(/#[^#\s]+/g)||[]; if(m.length){ raw=''; for(i=0;i<m.length;i++) raw+=(raw?',':'')+m[i].replace(/^#/,''); tags=parseTags(raw); } }
 if(sec) sec.hidden=!tags.length;
 if(!tags.length){ renderTags(slot,[]); return; }
@@ -152,5 +182,119 @@ token=(info.__ggTagsToken||0)+1;
 info.__ggTagsToken=token;
 svc.resolveMany(tags).then(function(rows){ if(!info||info.__ggTagsToken!==token) return; renderTags(slot,Array.isArray(rows)?rows:[]); }).catch(function(){});
 };
+
+GG.modules.postInfoLabels = GG.modules.postInfoLabels || {};
+function renderLabels(slot,rows){
+var list=rows||[],i=0,row=null,name='',href='',a=null,ico=null,txt=null;
+if(!slot) return;
+slot.textContent='';
+for(i=0;i<list.length;i++){
+  row=list[i]||{};
+  name=clean(row.text||row.name||'');
+  href=clean(row.href||'');
+  if(!name) continue;
+  a=d.createElement('a');
+  a.className='gg-pi__chip';
+  a.href=href||'#';
+  ico=d.createElement('span');
+  ico.className='gg-pi__chipico material-symbols-rounded';
+  ico.setAttribute('aria-hidden','true');
+  ico.textContent='folder';
+  txt=d.createElement('span');
+  txt.textContent=name;
+  a.appendChild(ico);
+  a.appendChild(txt);
+  slot.appendChild(a);
+}
+}
+GG.modules.postInfoLabels.init = function(root){
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,labels=[];
+if(!info) return;
+article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
+slot=qs('[data-slot="labels"]',info);
+sec=qs('.gg-pi__sec--labels',info);
+if(!slot) return;
+labels=parseLabels(article);
+if(sec) sec.hidden=!labels.length;
+renderLabels(slot,labels);
+};
+
+GG.modules.postInfoMeta = GG.modules.postInfoMeta || {};
+function ensureUpdatedSlot(info){
+var existing=qs('[data-slot="updated"]',info),metaWrap=null,row=null,ico=null,text=null;
+if(existing) return existing;
+metaWrap=qs('.gg-pi__meta',info);
+if(!metaWrap) return null;
+row=d.createElement('div');
+row.className='gg-pi__metaitem gg-pi__metaitem--updated';
+ico=d.createElement('span');
+ico.className='material-symbols-rounded gg-pi__mico';
+ico.setAttribute('aria-hidden','true');
+ico.textContent='event_repeat';
+text=d.createElement('span');
+text.setAttribute('data-slot','updated');
+text.textContent='—';
+row.appendChild(ico);
+row.appendChild(text);
+metaWrap.appendChild(row);
+return text;
+}
+GG.modules.postInfoMeta.init = function(root){
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null,dateSlot=null,updatedSlot=null,readSlot=null,dateNode=null,dateText='',updatedText='',readText='';
+if(!info) return;
+article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
+pm=postMetaFromScope(scope,article);
+dateSlot=qs('[data-slot="date"]',info);
+updatedSlot=ensureUpdatedSlot(info);
+readSlot=qs('[data-slot="readtime"]',info);
+dateNode=article&&article.querySelector?article.querySelector('.gg-post__date,time[datetime]'):null;
+dateText=clean((dateNode&&dateNode.textContent)||'');
+updatedText=clean(pm&&pm.updated||'');
+readText=clean(pm&&pm.readLabel||'');
+if(dateSlot&&dateText) dateSlot.textContent=dateText;
+if(updatedSlot&&updatedText) updatedSlot.textContent=updatedText;
+if(readSlot&&readText) readSlot.textContent=readText;
+};
+
+function commentsHost(){
+return d.querySelector('.gg-post__comments[data-gg-comments-gate="1"]')||d.querySelector('.gg-post__comments')||d.getElementById('comments');
+}
+function openComposer(host){
+if(!host||!host.querySelector) return;
+var footer=host.querySelector('.gg-comments__footer');
+var form=host.querySelector('#top-ce')||host.querySelector('.comment-form#top-ce');
+var srcNode=host.querySelector('#comment-editor-src');
+var iframe=host.querySelector('iframe#comment-editor');
+var cta=host.querySelector('#gg-top-continue .comment-reply, #top-continue .comment-reply, a.comment-reply[data-gg-footer-cta]');
+function prime(focus){
+  var src=srcNode&&srcNode.getAttribute?String(srcNode.getAttribute('href')||'').trim():'';
+  if(footer) footer.setAttribute('data-gg-open','1');
+  if(form){ form.hidden=false; form.removeAttribute('hidden'); form.style.removeProperty('display'); }
+  if(iframe&&src&&!String(iframe.getAttribute('src')||'').trim()) iframe.setAttribute('src',src);
+  if(focus&&iframe&&typeof iframe.focus==='function'){ try{ iframe.focus(); }catch(_){} }
+}
+prime(false);
+if(cta&&!cta.__ggComposerBound){
+  cta.__ggComposerBound=true;
+  cta.addEventListener('click',function(e){ if(e)e.preventDefault(); prime(true); });
+}
+}
+function bindCommentsComposer(){
+if(d.__ggComposerBridgeBound) return;
+d.__ggComposerBridgeBound=true;
+d.addEventListener('click',function(e){
+  var btn=e&&e.target&&e.target.closest?e.target.closest('[data-gg-postbar="comments"]'):null;
+  var tries=0;
+  if(!btn) return;
+  (function waitReady(){
+    var host=commentsHost();
+    tries++;
+    if(host) openComposer(host);
+    if(tries<8&&host&&host.querySelector&&host.querySelector('[data-gg-comments-load]')) w.setTimeout(waitReady,120);
+  })();
+},true);
+}
+if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',bindCommentsComposer,{once:true});
+else bindCommentsComposer();
 })(window.GG=window.GG||{},window,document);
 })(window);

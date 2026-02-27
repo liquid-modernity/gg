@@ -2,5 +2,6 @@
   "sw": {
     "enabled": true
   },
-  "csp_report_enabled": true
+  "csp_report_enabled": true,
+  "mode": "public"
 }

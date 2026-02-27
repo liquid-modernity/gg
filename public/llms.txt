@@ -1,0 +1,4 @@
+# llms.txt for www.pakrpp.com
+site: https://www.pakrpp.com/
+sitemap: https://www.pakrpp.com/sitemap.xml
+policy: https://www.pakrpp.com/p/privacy-policy.html

@@ -761,7 +761,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 <!-- GAGA META DATA -->
 
 <!-- GAGA INFORMATION (POST DETAIL) -->
-<div id="gg-postinfo" class="gg-pi" data-wpm="200">
+<div id="gg-postinfo" class="gg-pi" data-wpm="200" data-gg-panelmeta="post">
   <div class="gg-pi__head">
     <button class="gg-pi__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-pi__ico" aria-hidden="true">info</span>
@@ -780,7 +780,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
         <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">person</span>
         <div class="gg-pi__kicker">Written by</div>
       </div>
-      <div class="gg-pi__people" data-slot="author"></div>
+      <div class="gg-pi__people" data-slot="author" data-gg-marker="panel-post-author"></div>
     </div>
 
     <!-- CONTRIBUTORS (placeholder siap, data via data-contributors) -->
@@ -789,7 +789,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
         <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">groups</span>
         <div class="gg-pi__kicker">Contributors</div>
       </div>
-      <div class="gg-pi__people" data-slot="contributors"></div>
+      <div class="gg-pi__people" data-slot="contributors" data-gg-marker="panel-post-contributor"></div>
     </div>
 
     <!-- LABELS (icon kiri + chips; folder icon ada di dalam chip) -->
@@ -807,14 +807,18 @@ body:not([data-gg-surface="landing"]) .hero-section {
         <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">sell</span>
         <div class="gg-pi__kicker">Tags</div>
       </div>
-      <div class="gg-pi__chips" data-slot="tags" aria-label="Tags"></div>
+      <div class="gg-pi__chips" data-slot="tags" data-gg-marker="panel-post-tags" aria-label="Tags"></div>
     </div>
 
     <div class="gg-pi__meta">
       <div class="gg-pi__metaitem">
         <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">calendar_today</span>
-        <span data-slot="date">&#8212;</span> • <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
-        <span data-slot="readtime">1 minutes read</span>
+        <span data-slot="date" data-gg-marker="panel-post-date">&#8212;</span> • <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
+        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 minutes read</span>
+      </div>
+      <div class="gg-pi__metaitem gg-pi__metaitem--updated">
+        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">event_repeat</span>
+        <span data-slot="updated" data-gg-marker="panel-post-updated">&#8212;</span>
       </div>
     </div>
 
@@ -843,7 +847,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
   </div>
 
   <div class="gg-toc__body">
-    <ol class="gg-toc__list" aria-label="Table of contents"></ol>
+    <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
     <div class="gg-toc__empty" hidden>No content found</div>
   </div>
 </nav>]]></b:widget-setting>
@@ -1995,7 +1999,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
    
  <!-- GAGA HEADER -->
     <header class='gg-post__header'>
-      <h1 class='gg-post__title'>
+      <h1 class='gg-post__title' data-gg-marker='panel-post-title'>
         <data:post.title/>
       </h1>      
     </header>
@@ -2890,6 +2894,16 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div aria-hidden='true' class='gg-visually-hidden' data-gg-preview-contract='toc'>
     <ol data-gg-slot='toc'></ol>
     <p data-gg-slot='toc-hint'></p>
+  </div>
+  <div aria-hidden='true' class='gg-visually-hidden' data-gg-preview-contract='panel-meta' data-gg-panelmeta='listing'>
+    <span data-gg-marker='panel-listing-title' data-s='title'></span>
+    <span data-gg-marker='panel-listing-date' data-s='date'></span>
+    <span data-gg-marker='panel-listing-updated' data-s='updated'></span>
+    <span data-gg-marker='panel-listing-reading-time' data-s='readtime'></span>
+    <span data-gg-marker='panel-listing-author' data-s='author'></span>
+    <div data-gg-marker='panel-listing-contributor' data-gg-slot='contributors'></div>
+    <div data-gg-marker='panel-listing-tags' data-gg-slot='tags'></div>
+    <ol data-gg-marker='panel-listing-toc' data-gg-slot='toc'></ol>
   </div>
 
   <!-- GAGA COMMENTS PANEL (POST DETAIL) -->
