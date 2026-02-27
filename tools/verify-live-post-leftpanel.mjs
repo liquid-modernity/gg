@@ -169,6 +169,13 @@ const extractTocHtml = (html) => {
   return m ? String(m[0] || "") : "";
 };
 
+const extractSectionById = (html, id) => {
+  const source = String(html || "");
+  const escaped = String(id || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const m = source.match(new RegExp(`<section\\b(?=[^>]*\\bid\\s*=\\s*(["'])${escaped}\\1)[^>]*>[\\s\\S]*?<\\/section>`, "i"));
+  return m ? String(m[0] || "") : "";
+};
+
 const countTocLinks = (tocHtml) => {
   const source = String(tocHtml || "");
   if (!source) return 0;
@@ -210,6 +217,13 @@ if (!targetUrl) {
       }
       if (!/\bid\s*=\s*(["'])gg-toc\1/i.test(html)) {
         failures.push(`missing #gg-toc @ ${targetUrl}`);
+      }
+      if (/\bid\s*=\s*(["'])gg-labeltree-detail\1/i.test(html)) {
+        failures.push(`forbidden #gg-labeltree-detail present @ ${targetUrl}`);
+      }
+      const leftSidebar = extractSectionById(html, "gg-left-sidebar-post");
+      if (leftSidebar && /\bInterests\b/i.test(leftSidebar)) {
+        failures.push(`forbidden "Interests" text in post left sidebar @ ${targetUrl}`);
       }
 
       const postBodyHtml = findPostBodyHtml(html);

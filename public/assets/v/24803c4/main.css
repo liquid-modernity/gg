@@ -2489,7 +2489,7 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
 .gg-epanel__media{
   position: relative;
   display: block;
-  aspect-ratio: 15 / 9;
+  aspect-ratio: 1/var(--gg-card-ratio);
   border-bottom: 1px solid var(--gg-border);
   background: color-mix(in srgb, var(--gg-surface) 86%, #e5e7eb);
   overflow: hidden;

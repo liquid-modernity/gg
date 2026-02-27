@@ -1638,17 +1638,7 @@ a.gg-search-assist__item > small{
   overflow: hidden;
 }
 
-.gg-panelcard{
-  --gg-panel-pad: 12px;
-  --gg-panel-row-gap: 10px;
-  --gg-panel-icon-size: 18px;
-  --gg-panel-label-size: 12px;
-  --gg-panel-value-size: 13px;
-  background: var(--gg-surface);
-  border: 1px solid var(--gg-border);
-  border-radius: var(--gg-radius-md);
-  box-shadow: var(--gg-shadow-sm);
-}
+.gg-panelcard{--gg-panel-pad:12px;--gg-panel-row-gap:10px;--gg-panel-icon-size:18px;--gg-panel-label-size:12px;--gg-panel-value-size:13px;background:var(--gg-surface);border:1px solid var(--gg-border);border-radius:var(--gg-radius-md);box-shadow:var(--gg-shadow-sm);}
 
 
 #gg-left-sidebar-list,
@@ -2499,7 +2489,7 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
 .gg-epanel__media{
   position: relative;
   display: block;
-  aspect-ratio: 15 / 9;
+  aspect-ratio: 1/var(--gg-card-ratio);
   border-bottom: 1px solid var(--gg-border);
   background: color-mix(in srgb, var(--gg-surface) 86%, #e5e7eb);
   overflow: hidden;
@@ -2836,8 +2826,8 @@ main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layo
 }
 main.gg-main[data-gg-surface="post"] .gg-blog-sidebar--left #gg-postinfo,
 main.gg-main[data-gg-surface="page"] .gg-blog-sidebar--left #gg-postinfo{
-  flex: 0 0 auto;
-  min-height: 0;
+  flex:0 0 auto;
+  min-height:0;
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-blog-sidebar--right{
   width: var(--gg-col-right);
@@ -2881,11 +2871,11 @@ main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-
 main.gg-main[data-gg-surface="post"] .gg-blog-sidebar--left #gg-toc,
 main.gg-main[data-gg-surface="page"] .gg-blog-sidebar--left #gg-toc,
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) #gg-toc{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) #gg-toc .gg-toc__body{
   min-height: 0;
