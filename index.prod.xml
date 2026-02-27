@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='133d5d3' name='gg-release'/>
+    <meta content='b35360b' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/133d5d3/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/133d5d3/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/b35360b/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/b35360b/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='133d5d3' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='b35360b' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -682,10 +682,10 @@ text-align: center;
           <b:widget id='HTML17' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html">About & Philosophy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html">Board of Authors</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html">Editorial Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html">Transparency & Disclosure</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>About & Philosophy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Board of Authors</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Editorial Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Transparency & Disclosure</a></li>
 </ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
@@ -704,10 +704,10 @@ text-align: center;
           <b:widget id='HTML18' locked='false' title='Knowledge Hub' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html">Topic Index</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html">Visual Sitemap</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html">Digital Library</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html">Industry Glossary</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Topic Index</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Visual Sitemap</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Digital Library</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Industry Glossary</a></li>
 </ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
@@ -726,11 +726,11 @@ text-align: center;
           <b:widget id='HTML19' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html">Help Center</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html">Knowledge Base (FAQ)</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html">Contact Us</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html">Partnership & Career</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html">Press & Media Kit</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Help Center</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Knowledge Base (FAQ)</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Contact Us</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Partnership & Career</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Press & Media Kit</a></li>
 </ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
@@ -749,10 +749,10 @@ text-align: center;
           <b:widget id='HTML20' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html">Privacy Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html">Terms of Service</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html">Disclaimer</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html">Accessibility Statement</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Privacy Policy</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Terms of Service</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Disclaimer</a></li>
+  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Accessibility Statement</a></li>
 </ul>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
@@ -1755,8 +1755,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='style.layout'>1x1</b:widget-setting>
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
-                <b:widget-setting name='postsPerAd'>1</b:widget-setting>
                 <b:widget-setting name='numPosts'>9</b:widget-setting>
+                <b:widget-setting name='postsPerAd'>1</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
@@ -2163,12 +2163,12 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-gg-module='post-card' expr:data-author='data:post.author.name' data-author-avatar='' expr:data-author-name='data:post.author.name' data-author-url='' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-date='data:post.date' expr:data-id='data:post.id' expr:data-readtime='&quot;&quot;' expr:data-snippet='data:post.snippet' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-url='data:post.url' expr:data-gg-author='data:post.author.name' expr:data-gg-comments='data:post.numberOfComments' expr:data-gg-contributors='&quot;&quot;' expr:data-gg-date='data:post.date' expr:data-gg-labels='&quot;&quot;' expr:data-gg-readtime='&quot;&quot;' expr:data-gg-snippet='data:post.snippet' expr:data-gg-tags='&quot;&quot;' expr:data-gg-toc-json='&quot;&quot;' expr:data-gg-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601'>
+  <article class='gg-post-card' data-author-avatar='' data-author-url='' data-gg-module='post-card' expr:data-author='data:post.author.name' expr:data-author-name='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-date='data:post.date' expr:data-gg-author='data:post.author.name' expr:data-gg-comments='data:post.numberOfComments' expr:data-gg-contributors='&quot;&quot;' expr:data-gg-date='data:post.date' expr:data-gg-labels='&quot;&quot;' expr:data-gg-readtime='&quot;&quot;' expr:data-gg-snippet='data:post.snippet' expr:data-gg-tags='&quot;&quot;' expr:data-gg-toc-json='&quot;&quot;' expr:data-gg-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-id='data:post.id' expr:data-readtime='&quot;&quot;' expr:data-snippet='data:post.snippet' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-url='data:post.url'>
 <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
-  <b:attr name='data-author-avatar' expr:value='data:post.author.authorPhoto.url'/>
+  <b:attr expr:value='data:post.author.authorPhoto.url' name='data-author-avatar'/>
 </b:if>
 <b:if cond='data:post.author and data:post.author.profileUrl'>
-  <b:attr name='data-author-url' expr:value='data:post.author.profileUrl'/>
+  <b:attr expr:value='data:post.author.profileUrl' name='data-author-url'/>
 </b:if>
 <b:if cond='data:post.labels'>
   <div class='gg-post-card__labels' hidden='hidden'>
@@ -2179,15 +2179,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:if>
 <b:if cond='data:post.labels'>
   <b:if cond='data:post.lastUpdated'>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
   <b:else/>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
   </b:if>
 <b:else/>
   <b:if cond='data:post.lastUpdated'>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
   <b:else/>
-    <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
   </b:if>
 </b:if>
 
@@ -2213,7 +2213,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <div class='gg-post-card__meta'>
        <span class='gg-post-card__label'>
   <b:if cond='data:post.labels'>
-    <b:loop values='data:post.labels' index='i' var='lab'>
+    <b:loop index='i' values='data:post.labels' var='lab'>
       <b:if cond='data:i == 0'>
         <a expr:href='data:lab.url' rel='tag'>
           <data:lab.name/>
@@ -2348,15 +2348,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </header>
     <b:if cond='data:post.labels'>
       <b:if cond='data:post.lastUpdated'>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
       </b:if>
     <b:else/>
       <b:if cond='data:post.lastUpdated'>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.lastUpdated.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' expr:data-author='data:post.author.name' data-contributors='' data-tags='' expr:data-updated='data:post.date.iso8601' data-read-min=''/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
       </b:if>
     </b:if>
     <!-- /GAGA HEADER -->
@@ -2383,7 +2383,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
       <!-- LABEL PERTAMA (opsional) -->
       <b:if cond='data:post.labels'>
-        <b:loop values='data:post.labels' index='i' var='lab'>
+        <b:loop index='i' values='data:post.labels' var='lab'>
           <b:if cond='data:i == 0'>
             <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
             <a class='gg-post__breadcrumbs-link' expr:href='data:lab.url'>
@@ -2577,7 +2577,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <!-- LABELS -->
         <p class='gg-post__label'>
         <b:if cond='data:post.labels'>
-          <b:loop values='data:post.labels' index='i' var='lab'>
+          <b:loop index='i' values='data:post.labels' var='lab'>
             <b:if cond='data:i == 0'>
               <a class='gg-post__label-link' expr:href='data:lab.url'>
                 <data:lab.name/>
@@ -3235,18 +3235,18 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <ol data-gg-slot='toc'/>
     <p data-gg-slot='toc-hint'/>
   </div>
-  <div aria-hidden='true' class='gg-visually-hidden' data-gg-epanel='editorial' data-gg-marker='panel-listing-editorial' data-gg-preview-contract='panel-meta' data-gg-panelmeta='listing'>
-    <span data-gg-marker='panel-listing-title' data-row='title' data-s='title'></span>
-    <span data-gg-marker='panel-listing-author' data-row='author' data-s='author'></span>
-    <div data-gg-marker='panel-listing-contributor' data-row='contributors' data-gg-slot='contributors'></div>
-    <div data-gg-marker='panel-listing-labels' data-row='labels' data-gg-slot='labels'></div>
-    <div data-gg-marker='panel-listing-tags' data-row='tags' data-gg-slot='tags'></div>
-    <span data-gg-marker='panel-listing-date' data-row='date' data-s='date'></span>
-    <span data-gg-marker='panel-listing-updated' data-row='updated' data-s='updated'></span>
-    <span data-gg-marker='panel-listing-comments' data-row='comments' data-s='comments'></span>
-    <span data-gg-marker='panel-listing-reading-time' data-row='readtime' data-s='readtime'></span>
-    <span data-gg-marker='panel-listing-snippet' data-row='snippet' data-s='snippet'></span>
-    <ol data-gg-marker='panel-listing-toc' data-row='toc' data-gg-slot='toc'></ol>
+  <div aria-hidden='true' class='gg-visually-hidden' data-gg-epanel='editorial' data-gg-marker='panel-listing-editorial' data-gg-panelmeta='listing' data-gg-preview-contract='panel-meta'>
+    <span data-gg-marker='panel-listing-title' data-row='title' data-s='title'/>
+    <span data-gg-marker='panel-listing-author' data-row='author' data-s='author'/>
+    <div data-gg-marker='panel-listing-contributor' data-gg-slot='contributors' data-row='contributors'/>
+    <div data-gg-marker='panel-listing-labels' data-gg-slot='labels' data-row='labels'/>
+    <div data-gg-marker='panel-listing-tags' data-gg-slot='tags' data-row='tags'/>
+    <span data-gg-marker='panel-listing-date' data-row='date' data-s='date'/>
+    <span data-gg-marker='panel-listing-updated' data-row='updated' data-s='updated'/>
+    <span data-gg-marker='panel-listing-comments' data-row='comments' data-s='comments'/>
+    <span data-gg-marker='panel-listing-reading-time' data-row='readtime' data-s='readtime'/>
+    <span data-gg-marker='panel-listing-snippet' data-row='snippet' data-s='snippet'/>
+    <ol data-gg-marker='panel-listing-toc' data-gg-slot='toc' data-row='toc'/>
     <a data-gg-marker='panel-listing-cta' data-row='cta' href='#'>Read this post</a>
   </div>
 
@@ -3935,16 +3935,16 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <template id='gg-tpl-sc-yt-lite'>
   <div aria-label='Play video' class='gg-yt-lite' data-gg-yt-label='1' data-id='' role='button' tabindex='0'>
     <img alt='' decoding='async' height='9' loading='lazy' src='' width='16'/>
-    <div aria-hidden='true' class='gg-yt-play'></div>
+    <div aria-hidden='true' class='gg-yt-play'/>
   </div>
 </template>
 <template id='gg-tpl-sc-accordion'>
   <div class='gg-sc-accordion' data-gg-acc='1'>
     <button aria-expanded='false' class='gg-sc-accordion__toggle' data-gg-acc-toggle='1' type='button'>
-      <span class='gg-sc-accordion__title'></span>
+      <span class='gg-sc-accordion__title'/>
       <span aria-hidden='true' class='gg-sc-accordion__icon'>expand_more</span>
     </button>
-    <div class='gg-sc-accordion__body' data-gg-acc-body='1'></div>
+    <div class='gg-sc-accordion__body' data-gg-acc-body='1'/>
   </div>
 </template>
 <template id='gg-toast-tpl'>
@@ -3953,7 +3953,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/133d5d3/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/b35360b/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>
