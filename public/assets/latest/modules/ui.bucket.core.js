@@ -1432,11 +1432,10 @@ GG.services.images.setIntrinsicDims = GG.services.images.setIntrinsicDims || ser
 services.postmeta = services.postmeta || {};
 services.postmeta.getFromContext = services.postmeta.getFromContext || function(ctxEl){
 var root = ctxEl && ctxEl.querySelector ? ctxEl : d;
-var doc = (root && root.ownerDocument) ? root.ownerDocument : d;
-var nodes = root && root.querySelectorAll ? root.querySelectorAll('.gg-postmeta') : null;
-var node = (nodes && nodes.length) ? nodes[nodes.length - 1] : null;
+var doc = root && root.nodeType === 9 ? root : ((root && root.ownerDocument) ? root.ownerDocument : d);
+var nodes = root && root.querySelectorAll ? root.querySelectorAll('.gg-postmeta,[data-gg-postmeta],#gg-postmeta') : null;
 var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '' };
-var labels = [], i = 0, text = '', key = '', href = '', body = null, meta = null, seen = {}, parts = [];
+var labels = [], i = 0, text = '', key = '', href = '', body = null, meta = null, seen = {}, parts = [], best = null, bestScore = -1, cand = null;
 function clean(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function split(raw, rx){
   var src = clean(raw), list = src ? src.split(rx || /[;,]/) : [], outParts = [];
@@ -1450,16 +1449,43 @@ function split(raw, rx){
   return outParts;
 }
 function tagKey(raw){ return clean(raw).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, ''); }
-if (node) {
-  out.author = clean(node.getAttribute('data-author') || '');
-  out.updated = clean(node.getAttribute('data-updated') || '');
-  out.readMin = clean(node.getAttribute('data-read-min') || '');
-  parts = split(node.getAttribute('data-contributors') || '', /\s*;\s*/);
+function readNode(node){
+  var pm = { author: '', contributors: [], tags: [], updated: '', readMin: '' };
+  if (!node || !node.getAttribute) return pm;
+  pm.author = clean(node.getAttribute('data-author') || node.getAttribute('data-gg-author') || node.getAttribute('author') || '');
+  pm.updated = clean(node.getAttribute('data-updated') || node.getAttribute('data-gg-updated') || '');
+  pm.readMin = clean(node.getAttribute('data-read-min') || node.getAttribute('data-readtime') || node.getAttribute('data-gg-read-min') || node.getAttribute('data-gg-readtime') || '');
+  pm.contributors = split(node.getAttribute('data-contributors') || node.getAttribute('data-gg-contributors') || '', /\s*;\s*/);
+  pm.tags = split(node.getAttribute('data-tags') || node.getAttribute('data-gg-tags') || '', /\s*,\s*/);
+  return pm;
+}
+function scoreMeta(pm){
+  var score = 0;
+  if (!pm || typeof pm !== 'object') return 0;
+  score += pm.author ? 2 : 0;
+  score += pm.updated ? 2 : 0;
+  score += pm.readMin ? 1 : 0;
+  score += (pm.contributors && pm.contributors.length ? pm.contributors.length * 3 : 0);
+  score += (pm.tags && pm.tags.length ? pm.tags.length * 4 : 0);
+  return score;
+}
+for (i = 0; nodes && i < nodes.length; i++) {
+  cand = readNode(nodes[i]);
+  if (scoreMeta(cand) > bestScore) {
+    bestScore = scoreMeta(cand);
+    best = cand;
+  }
+}
+if (best) {
+  out.author = clean(best.author || '');
+  out.updated = clean(best.updated || '');
+  out.readMin = clean(best.readMin || '');
+  parts = Array.isArray(best.contributors) ? best.contributors : [];
   for (i = 0; i < parts.length; i++) {
     if (out.author && parts[i].toLowerCase() === out.author.toLowerCase()) continue;
     out.contributors.push(parts[i]);
   }
-  parts = split(node.getAttribute('data-tags') || '', /\s*,\s*/);
+  parts = Array.isArray(best.tags) ? best.tags : [];
   for (i = 0; i < parts.length; i++) {
     key = tagKey(parts[i]);
     if (!key) continue;
@@ -1469,7 +1495,7 @@ if (node) {
 if (!out.author && root && root.getAttribute) {
   out.author = clean(root.getAttribute('data-author-name') || root.getAttribute('data-author') || '');
 }
-if (!out.tags.length && !node && root && root.querySelectorAll) {
+if (!out.tags.length && root && root.querySelectorAll) {
   labels = root.querySelectorAll('.gg-post-card__labels a[rel="tag"], .gg-post__labels a, .gg-post-tags__chip, a[rel="tag"]');
   for (i = 0; i < labels.length; i++) {
     text = clean(labels[i].textContent || '');
@@ -3235,7 +3261,7 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt=''; if(!doc) return out; root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content'); pm=readBestPostMeta(doc); author=cleanText(pm.author||''); contributors=Array.isArray(pm.contributors)?pm.contributors:[]; tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){ return x&&x.text; }); updated=cleanText(pm.updated||''); readTime=readMinLabel(pm.readMin||''); if(!readTime) readTime=calcReadTime(root); snippet=cleanText(pm.snippet||''); if(!snippet&&root&&root.querySelectorAll){ paras=root.querySelectorAll('p'); for(pi=0;pi<paras.length;pi++){ pnode=paras[pi]; if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; ptxt=cleanText(pnode.textContent||''); if(!ptxt) continue; snippet=clipText(ptxt,180); if(snippet) break; } } out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime, s:snippet }; if(!root) return out; headings=root.querySelectorAll('h2'); max=Math.min(headings.length,TOC_CAP); baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#'; for(i=0;i<max;i++){ node=headings[i]; if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; text=(node.textContent||'').replace(/\\s+/g,' ').trim(); if(!text) continue; headingId=(node.getAttribute('id')||'').trim(); href=baseHref; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:2, href:href }); } return out;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null; if(!doc) return out; root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content'); pm=svc?svc.getFromContext(doc):readBestPostMeta(doc); author=cleanText(pm.author||''); contributors=Array.isArray(pm.contributors)?pm.contributors:[]; tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){ return x&&x.text; }); updated=cleanText(pm.updated||''); readTime=readMinLabel(pm.readMin||''); if(!readTime) readTime=calcReadTime(root); snippet=cleanText(pm.snippet||''); if(!snippet&&root&&root.querySelectorAll){ paras=root.querySelectorAll('p'); for(pi=0;pi<paras.length;pi++){ pnode=paras[pi]; if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; ptxt=cleanText(pnode.textContent||''); if(!ptxt) continue; snippet=clipText(ptxt,180); if(snippet) break; } } out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime, s:snippet }; if(!root) return out; headings=root.querySelectorAll('h2'); max=Math.min(headings.length,TOC_CAP); baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#'; for(i=0;i<max;i++){ node=headings[i]; if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue; text=(node.textContent||'').replace(/\\s+/g,' ').trim(); if(!text) continue; headingId=(node.getAttribute('id')||'').trim(); href=baseHref; if(headingId) href+='#'+encodeURIComponent(headingId); out.push({ text:text, level:2, href:href }); } return out;
 }
 
 function fetchPostHtml(url,signal){ var abs=normalizePostUrl(url); if(!abs) return Promise.reject(new Error('u')); if(!window.fetch) return Promise.reject(new Error('n')); return window.fetch(abs,{ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal }).then(function(res){ if(!res||!res.ok) throw new Error('f'); return res.text(); }); }
