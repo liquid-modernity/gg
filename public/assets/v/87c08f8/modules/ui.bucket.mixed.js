@@ -378,7 +378,7 @@
   function setError(slot, msg) {
     var el = slot.querySelector('[data-role="error"]');
     if (!el) return;
-    el.textContent = String(msg || 'Feed unavailable.');
+    el.textContent = String(msg || 'Content temporarily unavailable.');
     el.removeAttribute('hidden');
   }
 
@@ -893,7 +893,7 @@
         setState(slot, 'loaded');
       }, function(){
         setState(slot, 'error');
-        setError(slot, 'Feed unavailable.');
+        setError(slot, 'Content temporarily unavailable.');
       })
       .then(function(){
         slot.__ggMixedLoading = false;

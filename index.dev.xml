@@ -527,7 +527,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
         <div class='gg-card'>
           <h3 class='gg-h3'>Quick brief</h3>
-          <p class='gg-p'>Dummy form (no backend). Use WhatsApp for real requests.</p>
+          <p class='gg-p'>Contact shortcut via WhatsApp for now.</p>
         </div>
       </div>
     </div>
@@ -1203,40 +1203,40 @@ body:not([data-gg-surface="landing"]) .hero-section {
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>FEATURED</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
         </div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -1342,7 +1342,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'></div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -1364,34 +1364,34 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'></div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -2633,26 +2633,26 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>YOUTUBE</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
         </div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -2676,40 +2676,40 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>SHORTS</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
         </div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -2815,7 +2815,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'></div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
@@ -2840,47 +2840,47 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
           <article class='gg-mixed__card gg-mixed__card--placeholder'>
             <span class='gg-mixed__thumb'></span>
             <span class='gg-mixed__body'>
               <span class='gg-mixed__kicker'>PODCAST</span>
-              <span class='gg-mixed__headline'>Curated stories are loading.</span>
+              <span class='gg-mixed__headline'>Curated stories will appear shortly.</span>
             </span>
           </article>
         </div>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'></div>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Feed unavailable.</p>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
       </div>
     </section>
 </b:includable>
