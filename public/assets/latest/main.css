@@ -2458,8 +2458,10 @@ main.gg-main[data-gg-surface="listing"] .gg-mixed[data-gg-kind="featured"]{
   display: grid;
   width: min(100%, clamp(320px, 22vw, 360px));
   margin-inline: auto;
-  max-height: calc(100vh - 112px);
-  overflow: hidden;
+  max-height: calc(100vh - 0px);
+    overflow: hidden;
+    min-height: 0;
+    height: 100%;
 }
 .gg-editorial-preview{
   display: grid;
