@@ -4,6 +4,8 @@ import path from "path";
 const root = process.cwd();
 const cssRel = "public/assets/latest/main.css";
 const cssPath = path.join(root, cssRel);
+const coreRel = "public/assets/latest/modules/ui.bucket.core.js";
+const corePath = path.join(root, coreRel);
 const failures = [];
 
 function fail(msg) {
@@ -83,6 +85,21 @@ if (!fs.existsSync(cssPath)) {
     if (!pagesOk && !legacyOk) {
       fail(`${pagesSel} must include min-height:0 + overflow:auto (or keep legacy ${listSel} scrollable)`);
     }
+  }
+}
+
+if (!fs.existsSync(corePath)) {
+  fail(`missing js file: ${coreRel}`);
+} else {
+  const core = fs.readFileSync(corePath, "utf8");
+  if (!core.includes("data-gg-sb-mode") || !core.includes("data-gg-sb-ready")) {
+    fail("LeftNav slotter must expose data-gg-sb-mode + data-gg-sb-ready markers");
+  }
+  if (!core.includes("scheduleRepair(") || !core.includes("MutationObserver")) {
+    fail("LeftNav slotter must include repair retry + observer fallback");
+  }
+  if (!core.includes("orderBody=mode==='post'?['HTML4','HTML1','HTML17','HTML18','HTML19','HTML20','HTML21']")) {
+    fail("LeftNav post body order must keep Information before Interests and nav groups");
   }
 }
 

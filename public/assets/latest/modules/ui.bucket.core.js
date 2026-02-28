@@ -3842,6 +3842,39 @@ if(hidden) node.setAttribute('inert','');
 else node.removeAttribute('inert');
 }
 
+function resolveMain(mainEl){
+if(mainEl&&mainEl.getAttribute) return mainEl;
+return qs('main.gg-main[data-gg-surface]',document)||qs('main.gg-main',document)||null;
+}
+
+function detectMode(left, mainEl){
+var main=resolveMain(mainEl),surface=main?(main.getAttribute('data-gg-surface')||'').toLowerCase():'';
+var bodySurface=document.body?(document.body.getAttribute('data-gg-surface')||'').toLowerCase():'';
+if(surface==='post'||surface==='page') return 'post';
+if(bodySurface==='post'||bodySurface==='page') return 'post';
+if(surface==='listing'||surface==='home'||surface==='landing'||surface==='feed') return 'list';
+if(bodySurface==='listing'||bodySurface==='home'||bodySurface==='landing'||bodySurface==='feed') return 'list';
+if(qs('#HTML3,#HTML4,#gg-postinfo,#gg-toc',left)) return 'post';
+return 'list';
+}
+
+function slotContractOk(left, mode){
+var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb);
+if(!sb||!top||!body||!bot) return false;
+if(mode==='post'){
+  return !!((qs('#HTML27,.gg-leftnav__profile',top))&&(qs('#HTML3,#gg-toc',top))&&(qs('#HTML4,#gg-postinfo',body))&&(qs('#HTML28,.gg-leftnav__socialbar',bot))&&!qs('#HTML1',top));
+}
+return !!((qs('#HTML27,.gg-leftnav__profile',top))&&(qs('#HTML1,.gg-labeltree[data-gg-module="labeltree"]',top))&&(qs('#HTML17,#HTML18,#HTML19,#HTML20,#HTML21,.gg-navtree',body))&&(qs('#HTML28,.gg-leftnav__socialbar',bot)));
+}
+
+function setSlotState(left, mode, ready){
+var sb=qs('.gg-sb',left)||left;
+if(!sb) return;
+sb.setAttribute('data-gg-sb-mode', mode==='post'?'post':'list');
+if(ready) sb.setAttribute('data-gg-sb-ready','1');
+else sb.removeAttribute('data-gg-sb-ready');
+}
+
 function widgetCount(root){
 var kids=root&&root.children?root.children:[],i=0,n=0,one=null;
 for(i=0;i<kids.length;i++){ one=kids[i]; if(one&&one.nodeType===1&&one.classList&&one.classList.contains('widget')) n++; }
@@ -3849,10 +3882,10 @@ return n;
 }
 function arrangeSegments(left, mainEl){
 var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb);
-var main=(mainEl&&mainEl.getAttribute)?mainEl:qs('main.gg-main[data-gg-surface]',document),surface=main?(main.getAttribute('data-gg-surface')||''):'',mode='list';
+var mode='list';
 var listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',left),i=0,orderTop=[],orderBody=[],orderBot=['HTML28'],stash=document.createDocumentFragment(),stashNodes=[];
-if(!sb||!top||!body||!bot) return;
-mode=((surface&&surface.charAt(0)==='p')||qs('#gg-postinfo',left))?'post':'list';
+if(!sb||!top||!body||!bot) return { mode:'list', ready:false };
+mode=detectMode(left, mainEl);
 stashNodes=qsa('.gg-sb__top > .widget, .gg-sb__body > .widget, .gg-sb__bot > .widget',sb);
 for(i=0;i<stashNodes.length;i++) stash.appendChild(stashNodes[i]);
 if(stash.childNodes.length) body.appendChild(stash);
@@ -3865,16 +3898,56 @@ setHiddenInert(postSec,true);
 setHiddenInert(top,widgetCount(top)===0);
 setHiddenInert(bot,widgetCount(bot)===0);
 setHiddenInert(body,false);
+var ready=slotContractOk(left,mode);
+setSlotState(left,mode,ready);
+return { mode:mode, ready:ready };
+}
+
+function scheduleRepair(left, mainEl, attempt){
+var tries=(typeof attempt==='number'&&attempt>=0)?attempt:0;
+var result=arrangeSegments(left,mainEl);
+if(result&&result.ready) return;
+if(tries>=6) return;
+setTimeout(function(){ scheduleRepair(left,mainEl,tries+1); }, Math.min(640, 60*Math.pow(2,tries)));
+}
+
+function ensureObserver(left, mainEl){
+if(!left||left.__ggSbObserver) return;
+if(!window.MutationObserver) return;
+var scheduled=false;
+function queue(){
+  if(scheduled) return;
+  scheduled=true;
+  (window.requestAnimationFrame||setTimeout)(function(){
+    scheduled=false;
+    scheduleRepair(left,mainEl,0);
+  },16);
+}
+left.__ggSbObserver=new MutationObserver(function(muts){
+  var i=0,m=null,t=null;
+  for(i=0;i<muts.length;i++){
+    m=muts[i];
+    if(m.type==='childList'&&((m.addedNodes&&m.addedNodes.length)||(m.removedNodes&&m.removedNodes.length))){ queue(); return; }
+    if(m.type==='attributes'){
+      t=m.target;
+      if(t&&t.id&&(t.id==='gg-left-sidebar-list'||t.id==='gg-left-sidebar-post'||t.id==='gg-main'||t.id==='gg-toc'||t.id==='gg-postinfo')){ queue(); return; }
+    }
+  }
+});
+left.__ggSbObserver.observe(left,{ childList:true, subtree:true, attributes:true, attributeFilter:['hidden','data-gg-surface','data-gg-home-state'] });
 }
 
 function init(mainEl){
-  var scope = mainEl || document;
-  var left = qs('.gg-blog-sidebar--left', scope);
+  var scope=(mainEl&&mainEl.querySelector&&mainEl.querySelector('.gg-blog-sidebar--left'))?mainEl:document;
+  var left = qs('.gg-blog-sidebar--left', scope) || qs('.gg-blog-sidebar--left', document);
   if (!left) return;
   left.classList.add('gg-leftnav-ready');
 
   enhanceCustomPages(left);
-  arrangeSegments(left, mainEl);
+  scheduleRepair(left, mainEl, 0);
+  ensureObserver(left, mainEl);
+  setTimeout(function(){ scheduleRepair(left, mainEl, 0); }, 140);
+  setTimeout(function(){ scheduleRepair(left, mainEl, 0); }, 480);
 }
 
 return { init: init };
