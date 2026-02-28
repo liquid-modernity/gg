@@ -7554,7 +7554,7 @@ z-index: var(--z-overlay);
 .gg-overlay[hidden],
 .gg-overlay[data-gg-state~="hidden"]{ display:none !important; }
 
-main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb{display:flex;flex-direction:column;gap:10px;height:calc(100dvh - var(--gg-sticky-top,0px));min-height:0;overflow:hidden;padding:10px;border:1px solid var(--gg-border);border-radius:var(--gg-radius-md);background:var(--gg-surface);box-shadow:var(--gg-shadow-sm);}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb{display:flex;flex-direction:column;gap:10px;height:100%;max-height:100%;min-height:0;overflow:hidden;padding:10px;border:1px solid var(--gg-border);border-radius:var(--gg-radius-md);background:var(--gg-surface);box-shadow:var(--gg-shadow-sm);}
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top,main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__body,main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__bot{display:flex;flex-direction:column;gap:10px;min-height:0;}
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top{
 flex:0 0 auto;

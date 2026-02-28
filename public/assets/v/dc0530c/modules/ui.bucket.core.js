@@ -3832,9 +3832,12 @@ if(!node)return;node.hidden=!!hidden;if(hidden)node.setAttribute('inert','');els
 function detectMode(left){return qs('#gg-postinfo,#gg-toc',left)?'post':'list';}
 
 function pick(root, needle, many){
-if(!root||!needle) return many?[]:null;
-var sel=':scope > .widget:has('+needle+')';
-try{ return many?qsa(sel,root):qs(sel,root); }catch(_){ return many?[]:null; }
+if(!root||!needle)return many?[]:null;
+var s=':scope>.widget:has('+needle+')';
+try{return many?qsa(s,root):qs(s,root);}catch(_){}
+var ws=qsa(':scope>.widget',root),out=many?[]:null,i=0;
+for(;i<ws.length;i++)try{if(ws[i].querySelector(needle)){if(many)out.push(ws[i]);else return ws[i];}}catch(_){}
+return many?out:null;
 }
 
 function arrangeSegments(left){
@@ -4548,7 +4551,7 @@ try {
   if (!el) {
     el = document.createElement('div');
     el.id = 'gg-debug-overlay';
-    el.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99999;max-width:60vw;max-height:45vh;overflow:auto;padding:8px 10px;background:#111;color:#e6e6e6;border:1px solid #333;border-radius:6px;font:11px/1.3 monospace;white-space:pre;pointer-events:none;opacity:0.92;';
+    el.style.cssText = 'position:fixed;bottom:8px;padding:8px;background:#111;color:#e6e6e6;pointer-events:none;opacity:.9';
     document.body.appendChild(el);
   }
 
