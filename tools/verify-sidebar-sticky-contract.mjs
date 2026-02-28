@@ -112,7 +112,8 @@ if (!fs.existsSync(corePath)) {
   }
   const postOrderLegacy = core.includes("moveOne(body,infoWidget); moveOne(body,interestWidget); moveMany(body,navWidgets);");
   const postOrderRefactor = /pushUnique\(bodyOrder,\s*infoWidget\)\s*;\s*pushUnique\(bodyOrder,\s*interestWidget\)\s*;\s*pushManyUnique\(bodyOrder,\s*navWidgets\)/.test(core);
-  if (!postOrderLegacy && !postOrderRefactor) {
+  const postOrderLoopNav = /pushUnique\(bodyOrder,\s*infoWidget\)\s*;\s*pushUnique\(bodyOrder,\s*interestWidget\)\s*;[\s\S]{0,260}for\(\s*i=0;navWidgets&&i<navWidgets\.length;i\+\+\)pushUnique\(bodyOrder,\s*navWidgets\[i\]\);/.test(core);
+  if (!postOrderLegacy && !postOrderRefactor && !postOrderLoopNav) {
     fail("LeftNav post body order must keep Information before Interests and nav groups");
   }
 }

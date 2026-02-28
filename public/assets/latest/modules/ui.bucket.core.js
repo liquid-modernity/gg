@@ -3844,9 +3844,8 @@ function arrangeSegments(left){
 var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb),mode;
 var listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',left),i=0;
 var profileWidget=null,tocWidget=null,infoWidget=null,interestWidget=null,followWidget=null,navWidgets=[];
-var topOrder=[],bodyOrder=[],botOrder=[],seen=[],extras=[],allWidgets=[];
-if(!sb||!top||!body||!bot)return;
-if(left.__ggSbMutating)return;
+var topOrder=[],bodyOrder=[],botOrder=[];
+if(!sb||!top||!body||!bot||left.__ggSbMutating)return;
 mode=detectMode(left);
 if(mode==='post'){
 profileWidget=pick(left,'.gg-leftnav__profile');
@@ -3861,32 +3860,25 @@ interestWidget=pick(left,'.gg-labeltree[data-gg-module=\"labeltree\"]');
 navWidgets=pick(left,'details.gg-navtree',true);
 followWidget=pick(left,'.gg-leftnav__socialbar');
 }
-function pushUnique(list,node){ if(!node||!left.contains(node)) return; if(list.indexOf(node)>=0) return; list.push(node); }
-function pushManyUnique(list,nodes){ var k=0; if(!nodes||!nodes.length) return; for(k=0;k<nodes.length;k++) pushUnique(list,nodes[k]); }
+function pushUnique(list,node){ if(node&&list.indexOf(node)<0) list.push(node); }
 function place(host,order){
-var k=0,node=null,anchor=null;
-if(!host) return;
+var k=0,node=null;
 for(k=0;k<order.length;k++){
 node=order[k];
-if(!node||!left.contains(node)) continue;
+if(!node) continue;
 setHiddenInert(node,false);
-anchor=host.children[k]||null;
-if(node.parentElement!==host||anchor!==node) host.insertBefore(node,anchor);
+if(node.parentElement!==host||host.children[k]!==node) host.insertBefore(node,host.children[k]||null);
 }
 }
 if(mode==='post'){
 pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);
-pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);pushManyUnique(bodyOrder,navWidgets);
+pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);
 pushUnique(botOrder,followWidget);
 }else{
 pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);
-pushManyUnique(bodyOrder,navWidgets);
 pushUnique(botOrder,followWidget);
 }
-seen=topOrder.concat(bodyOrder,botOrder);
-allWidgets=qsa('.gg-sb__top>.widget,.gg-sb__body>.widget,.gg-sb__bot>.widget',sb);
-for(i=0;i<allWidgets.length;i++){ if(seen.indexOf(allWidgets[i])<0) extras.push(allWidgets[i]); }
-pushManyUnique(bodyOrder,extras);
+for(i=0;navWidgets&&i<navWidgets.length;i++)pushUnique(bodyOrder,navWidgets[i]);
 left.__ggSbMutating=1;
 try{
 place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);
