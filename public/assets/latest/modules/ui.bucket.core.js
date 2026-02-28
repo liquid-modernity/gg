@@ -3097,7 +3097,8 @@ GG.core.state.toggle(bd, 'visible', !!show && surface === 'post');
 
 function ensurePanelSkeleton(){
 if(!panel) return;
-if(qs('.gg-editorial-preview',panel)) return;
+var existing=qs('.gg-editorial-preview',panel);
+if(existing) return;
 function n(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
 var rows,dd;
 function makeRow(id,ic,lb,h){var r=n('div','gg-epanel__row');r.setAttribute('data-row',id);if(h)r.hidden=true;var i=n('span','gg-icon gg-epanel__icon',ic);i.setAttribute('aria-hidden','true');var cell=n('div','gg-epanel__cell');dd=n('dd','gg-epanel__value');cell.appendChild(n('dt','gg-epanel__label',lb));cell.appendChild(dd);r.appendChild(i);r.appendChild(cell);rows.appendChild(r);return dd;}
@@ -3156,7 +3157,7 @@ function cleanText(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function cardAttr(card, name){ return card ? cleanText(card.getAttribute(name) || '') : ''; }
 function splitList(raw, rx){ var src=cleanText(raw),parts=src?src.split(rx||/\s*[;,]\s*/):[],out=[],i=0,text=''; for(i=0;i<parts.length;i++){ text=cleanText(parts[i]); if(text) out.push(text); } return out; }
 function clipText(raw,max){ var txt=cleanText(raw),n=parseInt(max,10)||0; if(!txt||n<8||txt.length<=n) return txt; return txt.slice(0,n).replace(/[.,;:!?\s]+$/,'')+'...'; }
-function humanDate(raw){ var txt=cleanText(raw),m=txt.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/),y=0,mm=0,d=0,dt=null,opts={ weekday:'long', month:'long', day:'2-digit', year:'numeric' }; if(!txt) return ''; if(m){ y=parseInt(m[1],10)||0; mm=(parseInt(m[2],10)||1)-1; d=parseInt(m[3],10)||1; dt=new Date(Date.UTC(y,mm,d)); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric', timeZone:'UTC' }); } dt=new Date(txt); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',opts); return txt; }
+function humanDate(raw){ var txt=cleanText(raw).replace(/februari/ig,'February'),m=txt.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/),y=0,mm=0,d=0,dt=null,opts={ weekday:'long', month:'long', day:'2-digit', year:'numeric' }; if(!txt) return ''; if(m){ y=parseInt(m[1],10)||0; mm=(parseInt(m[2],10)||1)-1; d=parseInt(m[3],10)||1; dt=new Date(Date.UTC(y,mm,d)); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric', timeZone:'UTC' }); } dt=new Date(txt); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',opts); return cleanText(raw); }
 function readMinLabel(raw){ var txt=cleanText(raw),m,mins; if(!txt) return ''; m=txt.match(/(\d+)/); if(!m) return ''; mins=Math.max(1,parseInt(m[1],10)||1); return mins+' min read'; }
 function parsePostMetaFromCard(card){ var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=svc&&card?svc.getFromContext(card):{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' },meta=card?qs('.gg-postmeta,[data-gg-postmeta],#gg-postmeta',card):null,raw=''; if(!card) return pm||{}; pm=pm&&typeof pm==='object'?pm:{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' }; if(meta&&meta.getAttribute){ raw=cleanText(meta.getAttribute('data-author')||meta.getAttribute('data-gg-author')||''); if(raw) pm.author=raw; raw=cleanText(meta.getAttribute('data-updated')||meta.getAttribute('data-gg-updated')||''); if(raw) pm.updated=raw; raw=cleanText(meta.getAttribute('data-read-min')||meta.getAttribute('data-readtime')||meta.getAttribute('data-gg-read-min')||meta.getAttribute('data-gg-readtime')||''); if(raw) pm.readMin=raw; raw=cleanText(meta.getAttribute('data-snippet')||meta.getAttribute('data-gg-snippet')||''); if(raw) pm.snippet=raw; pm.contributors=splitList(meta.getAttribute('data-contributors')||meta.getAttribute('data-gg-contributors')||'',/\s*;\s*/); pm.tags=splitList(meta.getAttribute('data-tags')||meta.getAttribute('data-gg-tags')||'',/\s*,\s*/); } if(!pm.author) pm.author=cardAttr(card,'data-author-name')||cardAttr(card,'data-author'); if(!pm.updated) pm.updated=cardAttr(card,'data-updated')||cardAttr(card,'data-gg-updated'); if(!pm.readMin) pm.readMin=cardAttr(card,'data-read-min')||cardAttr(card,'data-readtime'); if(!pm.snippet) pm.snippet=cardAttr(card,'data-snippet')||cardAttr(card,'data-gg-snippet'); if(!Array.isArray(pm.contributors)||!pm.contributors.length) pm.contributors=splitList(cardAttr(card,'data-contributors'),/\s*;\s*/); if(!Array.isArray(pm.tags)||!pm.tags.length) pm.tags=splitList(cardAttr(card,'data-tags'),/\s*,\s*/); return pm; }
 function calcReadTime(root){ if(!root) return ''; var clone=root.cloneNode(true),drop=clone.querySelectorAll('nav,footer'),i=0,text=''; for(;i<drop.length;i++) drop[i].remove(); text=cleanText(clone.textContent||''); if(!text) return ''; return Math.max(1,Math.ceil(text.split(/\s+/).length/200))+' min read'; }
@@ -3604,12 +3605,6 @@ if (id === 'HTML21' || id === 'HTML26') return 'smart_toy';
   return pickLinkIcon(title || id || '', '');
 }
 
-function setWidgetIcon(id, icon){
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.setAttribute('data-gg-icon', icon);
-}
-
 function cleanUrl(raw){
   return (raw || '').replace(/[)\],.;]+$/g, '');
 }
@@ -3853,23 +3848,20 @@ for(i=0;i<kids.length;i++){ one=kids[i]; if(one&&one.nodeType===1&&one.classList
 return n;
 }
 function arrangeSegments(left, mainEl){
-var sb=qs('.gg-sb',left)||qs('.gg-leftnav',left)||left,top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb);
-var main=(mainEl&&mainEl.getAttribute)?mainEl:qs('main.gg-main[data-gg-surface]',document),surface=main?(main.getAttribute('data-gg-surface')||''):'';
-var detail=surface==='post'||surface==='page',listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',left),ids=['HTML17','HTML18','HTML19','HTML20','HTML21'],i=0,id='',node=null;
-if(!top||!body||!bot) return;
-if(listSec&&listSec.parentNode!==body) body.appendChild(listSec);
-if(postSec&&postSec.parentNode!==body) body.appendChild(postSec);
-function move(widgetId,target,hide){ node=qs('#'+widgetId,left); if(!node) return; if(target&&node.parentNode!==target) target.appendChild(node); setHiddenInert(node,!!hide); }
-function order(host,list){ for(i=0;i<list.length;i++){ node=qs('#'+list[i],host); if(node) host.appendChild(node); } }
-move('HTML27',top,false); move('HTML28',bot,false);
-if(detail){ move('HTML3',top,false); move('HTML1',body,false); move('HTML4',body,false); }
-else { move('HTML1',top,false); move('HTML3',body,true); move('HTML4',body,true); }
-for(i=0;i<ids.length;i++){ id=ids[i]; move(id,body,false); }
-order(top,detail?['HTML27','HTML3']:['HTML27','HTML1']);
-order(body,detail?['HTML1','HTML4','HTML17','HTML18','HTML19','HTML20','HTML21']:['HTML17','HTML18','HTML19','HTML20','HTML21','HTML4']);
-order(bot,['HTML28']);
-setHiddenInert(listSec,!!listSec&&widgetCount(listSec)===0);
-setHiddenInert(postSec,!!postSec&&widgetCount(postSec)===0);
+var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb);
+var main=(mainEl&&mainEl.getAttribute)?mainEl:qs('main.gg-main[data-gg-surface]',document),surface=main?(main.getAttribute('data-gg-surface')||''):'',mode='list';
+var listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',left),i=0,orderTop=[],orderBody=[],orderBot=['HTML28'],stash=document.createDocumentFragment(),stashNodes=[];
+if(!sb||!top||!body||!bot) return;
+mode=((surface&&surface.charAt(0)==='p')||qs('#gg-postinfo',left))?'post':'list';
+stashNodes=qsa('.gg-sb__top > .widget, .gg-sb__body > .widget, .gg-sb__bot > .widget',sb);
+for(i=0;i<stashNodes.length;i++) stash.appendChild(stashNodes[i]);
+if(stash.childNodes.length) body.appendChild(stash);
+orderTop=mode==='post'?['HTML27','HTML3']:['HTML27','HTML1'];
+orderBody=mode==='post'?['HTML1','HTML4','HTML17','HTML18','HTML19','HTML20','HTML21']:['HTML17','HTML18','HTML19','HTML20','HTML21'];
+function moveMany(host,list){ var frag=document.createDocumentFragment(),k=0,w=null; for(k=0;k<list.length;k++){ w=document.getElementById(list[k]); if(!w||!left.contains(w)) continue; setHiddenInert(w,false); frag.appendChild(w); } if(frag.childNodes.length) host.appendChild(frag); }
+moveMany(top,orderTop); moveMany(body,orderBody); moveMany(bot,orderBot);
+setHiddenInert(listSec,true);
+setHiddenInert(postSec,true);
 setHiddenInert(top,widgetCount(top)===0);
 setHiddenInert(bot,widgetCount(bot)===0);
 setHiddenInert(body,false);
