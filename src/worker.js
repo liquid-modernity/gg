@@ -1711,7 +1711,14 @@ export default {
       const shouldEnhanceHtml = isHtmlResponse && originRes.status >= 200 && originRes.status < 300;
       if (isHtmlResponse && !shouldEnhanceHtml) {
         // Keep upstream redirects/errors intact (not rewritten into mismatch HTML).
-        return stamp(originRes);
+        const passthrough = stamp(originRes);
+        // Avoid sticky browser cache for redirect/error HTML variants (mobile m=1 chain, etc).
+        if (originRes.status >= 300) {
+          passthrough.headers.set("Cache-Control", "no-store, max-age=0");
+          passthrough.headers.set("Pragma", "no-cache");
+          passthrough.headers.set("Expires", "0");
+        }
+        return passthrough;
       }
       if (shouldEnhanceHtml) {
         const flags = await loadFlags(env);
