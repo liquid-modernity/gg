@@ -3115,7 +3115,7 @@ addChipRow('contributors','groups','Contributor by','contributors',true);addChip
 addSpanRow('date','calendar_today','Date','date');addSpanRow('updated','event_repeat','Updated','updated',true);addSpanRow('comments','comment','Comments','comments');addSpanRow('readtime','schedule','Read time','readtime');addSpanRow('snippet','text_snippet','Snippet','snippet',true);
 var tocWrap=n('div','gg-epanel__value--toc'),tocList=n('ol','gg-info-panel__toclist'),tocHint=n('p','gg-info-panel__tochint'); tocList.setAttribute('data-gg-slot','toc'); tocHint.setAttribute('data-gg-slot','toc-hint'); tocWrap.appendChild(tocList); tocWrap.appendChild(tocHint); makeRow('toc','toc','Table of Contents').appendChild(tocWrap);
 body.appendChild(rows); card.appendChild(body);
-var foot=n('div','gg-epanel__foot'),cta=n('a','gg-info-panel__hero-cta gg-epanel__cta'),ctaIcon=n('span','gg-icon material-symbols-rounded','visibility');cta.setAttribute('href','#');ctaIcon.setAttribute('aria-hidden','true');cta.appendChild(ctaIcon);cta.appendChild(n('span','','Read this post'));foot.appendChild(cta);card.appendChild(foot);
+var foot=n('div','gg-epanel__foot'),cta=n('a','gg-epanel__cta'),ctaIcon=n('span','gg-icon material-symbols-rounded','visibility');cta.setAttribute('href','#');ctaIcon.setAttribute('aria-hidden','true');cta.appendChild(ctaIcon);cta.appendChild(n('span','','Read this post'));foot.appendChild(cta);card.appendChild(foot);
 panel.appendChild(card); renderTocSkeleton(6,TOC_HINT_LOCK);
 }
 
@@ -3402,7 +3402,7 @@ af=authorText&&authorFallback(authorText);
 if(panel) panel.__ggMetaKey=metaKey||'';
 setS('title',title||'—');
 setHref('[data-s="title"]',href);
-setHref('.gg-epanel__cta',href);
+setHref('.gg-epanel__cta,.gg-info-panel__hero-cta',href);
 setS('author',authorText);
 setHref('[data-s="author-link"]',author.href||(af&&af.href)||'#',author.href?'dir':(af&&af.src)||'fallback');
 setS('date',dateText);
