@@ -342,7 +342,7 @@
       if (state.panelBtn) {
         state.panelBtn.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
         var icon = state.panelBtn.querySelector('.material-symbols-rounded');
-        if (icon) icon.textContent = open ? 'collapse_content' : 'expand_content';
+        if (icon) icon.textContent = 'expand_more';
       }
     }
 

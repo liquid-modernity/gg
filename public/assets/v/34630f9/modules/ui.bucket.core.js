@@ -3603,11 +3603,11 @@ return pickIcon(text || url || '');
 }
 
 function pickGroupIcon(id, title){
-if (id === 'HTML17' || id === 'HTML22') return 'verified_user';
-if (id === 'HTML18' || id === 'HTML23') return 'hub';
+if (id === 'HTML17' || id === 'HTML22') return 'policy';
+if (id === 'HTML18' || id === 'HTML23') return 'menu_book';
 if (id === 'HTML19' || id === 'HTML24') return 'support_agent';
 if (id === 'HTML20' || id === 'HTML25') return 'gavel';
-if (id === 'HTML21' || id === 'HTML26') return 'article';
+if (id === 'HTML21' || id === 'HTML26') return 'smart_toy';
   return pickLinkIcon(title || id || '', '');
 }
 
