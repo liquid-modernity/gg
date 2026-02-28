@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-02-27T19:52:41.079Z",
-  "commit": "cbc6027",
+  "generated_at": "2026-02-28T19:40:23.664Z",
+  "commit": "efd8e49",
   "urls": {
     "home": "https://www.pakrpp.com/",
     "listing": "https://www.pakrpp.com/blog",
@@ -11,7 +11,7 @@
       "key": "home",
       "finalUrl": "https://www.pakrpp.com/",
       "performance": 1,
-      "lcp_ms": 818,
+      "lcp_ms": 809,
       "cls": 0,
       "inp_ms": null,
       "tbt_ms": 0,
@@ -27,7 +27,7 @@
       "key": "listing",
       "finalUrl": "https://www.pakrpp.com/blog",
       "performance": 1,
-      "lcp_ms": 789,
+      "lcp_ms": 790,
       "cls": 0,
       "inp_ms": null,
       "tbt_ms": 0,
@@ -43,7 +43,7 @@
       "key": "post",
       "finalUrl": "https://www.pakrpp.com/2026/02/todo.html",
       "performance": 1,
-      "lcp_ms": 795,
+      "lcp_ms": 803,
       "cls": 0,
       "inp_ms": null,
       "tbt_ms": 0,
@@ -64,5 +64,5 @@
     "max_transfer_kb": 850
   },
   "overall_pass": true,
-  "run_url": "https://github.com/liquid-modernity/gg/actions/runs/22501400938"
+  "run_url": "https://github.com/liquid-modernity/gg/actions/runs/22527602801"
 }
