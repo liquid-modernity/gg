@@ -1399,8 +1399,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "6391035";
-    const TEMPLATE_ALLOWED_RELEASES = ["6391035","248f998"];
+    const WORKER_VERSION = "f06d30f";
+    const TEMPLATE_ALLOWED_RELEASES = ["f06d30f","6391035"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1707,7 +1707,13 @@ export default {
       }
 
       const contentType = originRes.headers.get("content-type") || "";
-      if (contentType.indexOf("text/html") !== -1) {
+      const isHtmlResponse = contentType.indexOf("text/html") !== -1;
+      const shouldEnhanceHtml = isHtmlResponse && originRes.status >= 200 && originRes.status < 300;
+      if (isHtmlResponse && !shouldEnhanceHtml) {
+        // Keep upstream redirects/errors intact (not rewritten into mismatch HTML).
+        return stamp(originRes);
+      }
+      if (shouldEnhanceHtml) {
         const flags = await loadFlags(env);
         const cspReportEnabled = flags.csp_report_enabled !== false;
         const robotsMode = normalizeFlagsMode(flags.mode);
@@ -2104,13 +2110,6 @@ export default {
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
         if (templateMismatch) {
-          if (out.status !== 200) {
-            out = new Response(out.body, {
-              status: 200,
-              statusText: "OK",
-              headers: out.headers,
-            });
-          }
           if (!templateMismatchReason) {
             templateMismatchReason = "unknown";
           }

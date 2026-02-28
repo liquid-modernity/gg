@@ -7554,7 +7554,7 @@ z-index: var(--z-overlay);
 .gg-overlay[hidden],
 .gg-overlay[data-gg-state~="hidden"]{ display:none !important; }
 
-main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb{display:flex;flex-direction:column;gap:10px;height:calc(100dvh - var(--gg-sticky-top,0px));min-height:0;overflow:hidden;padding:10px;border:1px solid var(--gg-border);border-radius:var(--gg-radius-md);background:var(--gg-surface);box-shadow:var(--gg-shadow-sm);}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb{display:flex;flex-direction:column;gap:10px;height:100%;max-height:100%;min-height:0;overflow:hidden;padding:10px;border:1px solid var(--gg-border);border-radius:var(--gg-radius-md);background:var(--gg-surface);box-shadow:var(--gg-shadow-sm);}
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top,main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__body,main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__bot{display:flex;flex-direction:column;gap:10px;min-height:0;}
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top{
 flex:0 0 auto;
@@ -7631,6 +7631,34 @@ font-size:8px;
 letter-spacing:.14em;
 text-transform:uppercase;
 color:var(--gg-muted);
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-leftnav__sociallinks{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-leftnav__sociallink{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:var(--gg-tap-soc);
+height:var(--gg-tap-soc);
+min-width:var(--gg-tap-soc);
+min-height:var(--gg-tap-soc);
+padding:0;
+border:1px solid var(--gg-border);
+border-radius:999px;
+background:color-mix(in srgb, var(--gg-surface) 90%, #e5e7eb);
+color:var(--gg-ink);
+line-height:1;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-leftnav__sociallink svg{
+width:16px;
+height:16px;
+fill:currentColor;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-sb__bot > .widget:has(.gg-leftnav__socialbar) > :where(.widget-title,.title){
+display:none !important;
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-footer__legal{
 padding-top:8px;
