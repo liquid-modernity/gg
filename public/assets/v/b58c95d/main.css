@@ -3532,8 +3532,7 @@ margin-inline: auto;
 
 
 .gg-topbar{
-    position: sticky;
-    display: contents;
+position: sticky;
 top: 0;
 z-index: var(--z-float-1);
 backdrop-filter: blur(var(--gg-glass-blur, 14px));

@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='34630f9' name='gg-release'/>
+    <meta content='d965047' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/34630f9/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/34630f9/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/d965047/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/d965047/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='34630f9' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='d965047' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -797,22 +797,31 @@ text-align: center;
           <b:widget id='HTML28' locked='false' title='Follow' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
-  <p class="gg-leftnav__sociallabel">Follow</p>
-  <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
-    <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></svg>
-    </a>
-    <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></svg>
-    </a>
-    <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
-    </a>
-    <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></svg>
-    </a>
-  </div>
-</div>]]></b:widget-setting>
+                <p class="gg-leftnav__sociallabel">Follow</p>
+                <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
+                  <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
+                  </a>
+                  <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></path></svg>
+                  </a>
+                  <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></path></svg>
+                  </a>
+                  <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></path></svg>
+                  </a>
+               <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-tt-line'/>        </use></svg>
+                    </a>
+                    <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
+                    </a>
+                    <a aria-label='Email: hello@pakrpp.com' class='gg-leftnav__sociallink' href='mailto:hello@pakrpp.com' role='listitem'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-mail-line'/>        </use></svg>
+                    </a>
+                </div>
+              </div>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -3421,60 +3430,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div aria-label='Footer actions' class='gg-footer__social' role='region'>
   <p class='gg-footer__social-title'>Follow us</p>
 
-  <!-- 1) Social Media -->
-  <div aria-label='Social media' class='gg-footer__cluster'>
-    <div aria-label='Social links' class='gg-footer__social-links' role='list'>
-      <a aria-label='Facebook: pakrpp' class='gg-footer__social-link' href='https://www.facebook.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-fb-line'/>
-        </svg>
-        <span class='gg-sr-only'>Facebook</span>
-      </a>
-
-      <a aria-label='X: pakrpp' class='gg-footer__social-link' href='https://x.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-x-line'/>
-        </svg>
-        <span class='gg-sr-only'>X</span>
-      </a>
-
-      <a aria-label='Instagram: pakrpp' class='gg-footer__social-link' href='https://www.instagram.com/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-ig-line'/>
-        </svg>
-        <span class='gg-sr-only'>Instagram</span>
-      </a>
-
-      <a aria-label='TikTok: pakrpp' class='gg-footer__social-link' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-tt-line'/>
-        </svg>
-        <span class='gg-sr-only'>TikTok</span>
-      </a>
-
-      <a aria-label='LinkedIn: pakrpp' class='gg-footer__social-link' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-li-line'/>
-        </svg>
-        <span class='gg-sr-only'>LinkedIn</span>
-      </a>
-
-      <a aria-label='YouTube: pakrpp' class='gg-footer__social-link' href='https://www.youtube.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-yt-line'/>
-        </svg>
-        <span class='gg-sr-only'>YouTube</span>
-      </a>
-
-      <a aria-label='Email: hello@pakrpp.com' class='gg-footer__social-link' href='mailto:hello@pakrpp.com' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-mail-line'/>
-        </svg>
-        <span class='gg-sr-only'>Email</span>
-      </a>
-    </div>
-  </div>
-
   <!-- 2) AI Summary -->
   <p class='gg-footer__social-title'>AI Summary</p>
   <div aria-label='AI summary tools' class='gg-footer__cluster'>
@@ -3543,19 +3498,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <hr class='gg-footer__divider'/>
 
        <div class='gg-footer__grid gg-footer__grid--minimal'>
-        <div>
-          <h3 class='gg-footer__heading'>Shop and Learn</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Store</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Mac</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Pad</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Phone</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Watch</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp TV &amp; Home</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Accessories</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Gift Cards</a></li>
-          </ul>
-        </div>
+       
 
         <div>
           <h3 class='gg-footer__heading'>Account</h3>
@@ -3566,16 +3509,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           </ul>
 </div>
 
-        <div>
-          <h3 class='gg-footer__heading'>Entertainment</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp TV+</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Music</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Arcade</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp News+</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Books</a></li>
-          </ul>
-        </div>
+        
 
         <div>
           <h3 class='gg-footer__heading'>pakrpp Store</h3>
@@ -3841,7 +3775,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/34630f9/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/d965047/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>
