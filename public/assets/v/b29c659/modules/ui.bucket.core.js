@@ -2544,13 +2544,6 @@ setBtnActive('info', leftOpen);
 setBtnActive('comments', rightOpen && mode === 'comments');
 setFocusIcon(focusOn);
 
-if (leftSidebar) {
-  leftSidebar.setAttribute('aria-hidden', leftOpen ? 'false' : 'true');
-}
-if (rightSidebar) {
-  rightSidebar.setAttribute('aria-hidden', rightOpen ? 'false' : 'true');
-}
-
 var showComments = rightOpen && mode === 'comments';
 var showInfo = rightOpen && mode && mode !== 'comments';
 
@@ -3847,72 +3840,39 @@ function enhanceCustomPages(root){
   });
 }
 
-function decorateLinks(root){
-  qsa('.PageList ul li a, .LinkList ul li a', root).forEach(function (a) {
-    a.classList.add('gg-leftnav__link');
-    a.setAttribute('data-gg-icon', pickIcon(textOf(a)));
-  });
-
-  qsa('.Label ul > li > a', root).forEach(function (a) {
-    a.classList.add('gg-leftnav__link');
-    if (!a.getAttribute('data-gg-icon')) {
-      a.setAttribute('data-gg-icon', 'folder');
-    }
-  });
-
-  qsa('.Label ul li ul li > a', root).forEach(function (a) {
-    a.classList.add('gg-leftnav__link');
-    a.setAttribute('data-gg-icon', 'description');
-  });
+function setHiddenInert(node, hidden){
+if(!node) return;
+node.hidden=!!hidden;
+if(hidden) node.setAttribute('inert','');
+else node.removeAttribute('inert');
 }
 
-function seedLabelTree(root){
-  qsa('.Label ul', root).forEach(function (ul) {
-    ul.classList.add('gg-label-tree');
-    qsa(':scope > li', ul).forEach(function (li) {
-      var link = qs('a', li);
-      if (!link) return;
-      link.classList.add('gg-leftnav__link');
-      link.setAttribute('data-gg-icon', 'folder');
-
-      li.classList.add('gg-tree');
-      GG.core.state.add(li, 'open');
-      GG.core.state.remove(li, 'collapsed');
-
-      var toggle = qs('.gg-tree-toggle', li);
-      var name = textOf(link);
-      var toggleLabel = name ? ('Toggle ' + name) : 'Toggle section';
-      if (!toggle) {
-        toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'gg-tree-toggle';
-        toggle.setAttribute('data-gg-action', 'tree-toggle');
-        toggle.setAttribute('aria-expanded', 'true');
-        toggle.setAttribute('aria-label', toggleLabel);
-        li.insertBefore(toggle, li.firstChild);
-      } else {
-        toggle.setAttribute('aria-expanded', 'true');
-        if (!toggle.getAttribute('aria-label')) toggle.setAttribute('aria-label', toggleLabel);
-      }
-
-      if (name === 'Label 1' || name === 'Label 6') {
-        if (!qs(':scope > ul', li)) {
-          var childUl = document.createElement('ul');
-          ['Post 1 of ' + name, 'Post 2 of ' + name].forEach(function (title) {
-            var childLi = document.createElement('li');
-            var a = document.createElement('a');
-            a.className = 'gg-leftnav__link';
-            a.setAttribute('data-gg-icon', 'description');
-            a.href = link.getAttribute('href') || '#';
-            a.textContent = title;
-            childLi.appendChild(a);
-            childUl.appendChild(childLi);
-          });
-          li.appendChild(childUl);
-        }
-      }
-    });
-  });
+function widgetCount(root){
+var kids=root&&root.children?root.children:[],i=0,n=0,one=null;
+for(i=0;i<kids.length;i++){ one=kids[i]; if(one&&one.nodeType===1&&one.classList&&one.classList.contains('widget')) n++; }
+return n;
+}
+function arrangeSegments(left, mainEl){
+var sb=qs('.gg-sb',left)||qs('.gg-leftnav',left)||left,top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb);
+var main=(mainEl&&mainEl.getAttribute)?mainEl:qs('main.gg-main[data-gg-surface]',document),surface=main?(main.getAttribute('data-gg-surface')||''):'';
+var detail=surface==='post'||surface==='page',listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',left),ids=['HTML17','HTML18','HTML19','HTML20','HTML21'],i=0,id='',node=null;
+if(!top||!body||!bot) return;
+if(listSec&&listSec.parentNode!==body) body.appendChild(listSec);
+if(postSec&&postSec.parentNode!==body) body.appendChild(postSec);
+function move(widgetId,target,hide){ node=qs('#'+widgetId,left); if(!node) return; if(target&&node.parentNode!==target) target.appendChild(node); setHiddenInert(node,!!hide); }
+function order(host,list){ for(i=0;i<list.length;i++){ node=qs('#'+list[i],host); if(node) host.appendChild(node); } }
+move('HTML27',top,false); move('HTML28',bot,false);
+if(detail){ move('HTML3',top,false); move('HTML1',body,false); move('HTML4',body,false); }
+else { move('HTML1',top,false); move('HTML3',body,true); move('HTML4',body,true); }
+for(i=0;i<ids.length;i++){ id=ids[i]; move(id,body,false); }
+order(top,detail?['HTML27','HTML3']:['HTML27','HTML1']);
+order(body,detail?['HTML1','HTML4','HTML17','HTML18','HTML19','HTML20','HTML21']:['HTML17','HTML18','HTML19','HTML20','HTML21','HTML4']);
+order(bot,['HTML28']);
+setHiddenInert(listSec,!!listSec&&widgetCount(listSec)===0);
+setHiddenInert(postSec,!!postSec&&widgetCount(postSec)===0);
+setHiddenInert(top,widgetCount(top)===0);
+setHiddenInert(bot,widgetCount(bot)===0);
+setHiddenInert(body,false);
 }
 
 function init(mainEl){
@@ -3921,15 +3881,8 @@ function init(mainEl){
   if (!left) return;
   left.classList.add('gg-leftnav-ready');
 
-  setWidgetIcon('Profile1', 'verified_user');
-  setWidgetIcon('PageList2', 'collections_bookmark');
-  setWidgetIcon('Label1', 'inventory_2');
-  setWidgetIcon('Label2', 'inventory_2');
-  setWidgetIcon('PageList1', 'list_alt');
-
-  decorateLinks(left);
-  seedLabelTree(left);
   enhanceCustomPages(left);
+  arrangeSegments(left, mainEl);
 }
 
 return { init: init };
@@ -5439,16 +5392,21 @@ function isSystemPath(pathname){
         delete node.__ggPanelsAriaHidden;
       }
     }
-    function setLayoutInert(activeAside){
-      if (!layout || !layout.children) return;
-      var activeChild = parentChildUnderLayout(activeAside);
-      Array.prototype.forEach.call(layout.children, function(child){
-        if (activeChild && child !== activeChild) {
-          if (!Object.prototype.hasOwnProperty.call(child, '__ggPanelsAriaHidden')) {
-            child.__ggPanelsAriaHidden = child.hasAttribute('aria-hidden') ? child.getAttribute('aria-hidden') : null;
-          }
+function setLayoutInert(activeAside){
+  if (!layout || !layout.children) return;
+  var activeChild = parentChildUnderLayout(activeAside);
+  Array.prototype.forEach.call(layout.children, function(child){
+    var isInteractiveAside = !!(child && child.matches && child.matches('aside.gg-blog-sidebar'));
+    if (activeChild && child !== activeChild) {
           child.setAttribute('inert', '');
-          child.setAttribute('aria-hidden', 'true');
+          if (!isInteractiveAside) {
+            if (!Object.prototype.hasOwnProperty.call(child, '__ggPanelsAriaHidden')) {
+              child.__ggPanelsAriaHidden = child.hasAttribute('aria-hidden') ? child.getAttribute('aria-hidden') : null;
+            }
+            child.setAttribute('aria-hidden', 'true');
+          } else if (Object.prototype.hasOwnProperty.call(child, '__ggPanelsAriaHidden')) {
+            delete child.__ggPanelsAriaHidden;
+          }
           return;
         }
         clearNodeInert(child);
@@ -5509,8 +5467,6 @@ function updateBackdrop(){
   if (backdrop) GG.core.state.toggle(backdrop, 'visible', show);
       lockScroll(show);
       setLayoutInert(show ? activeAside : null);
-      if (left) left.setAttribute('aria-hidden', leftOpen ? 'false' : 'true');
-      if (right) right.setAttribute('aria-hidden', rightOpen ? 'false' : 'true');
       if (show && pendingFocus) {
         focusPanel(pendingFocus);
         pendingFocus = null;
