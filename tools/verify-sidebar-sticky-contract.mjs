@@ -110,7 +110,9 @@ if (!fs.existsSync(corePath)) {
   for (const signal of selectorSignals) {
     if (!core.includes(signal)) fail(`LeftNav slotter must be selector-based (${signal})`);
   }
-  if (!core.includes("moveOne(body,infoWidget); moveOne(body,interestWidget); moveMany(body,navWidgets);")) {
+  const postOrderLegacy = core.includes("moveOne(body,infoWidget); moveOne(body,interestWidget); moveMany(body,navWidgets);");
+  const postOrderRefactor = /pushUnique\(bodyOrder,\s*infoWidget\)\s*;\s*pushUnique\(bodyOrder,\s*interestWidget\)\s*;\s*pushManyUnique\(bodyOrder,\s*navWidgets\)/.test(core);
+  if (!postOrderLegacy && !postOrderRefactor) {
     fail("LeftNav post body order must keep Information before Interests and nav groups");
   }
 }
