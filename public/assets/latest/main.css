@@ -1920,10 +1920,8 @@ fill:currentColor;
 display: grid;
 gap: var(--gg-mixed-gap);
 min-width: 0;
-padding: 10px 12px 12px;
-border: 1px solid var(--gg-border);
-border-radius: var(--gg-radius-sm);
-background: var(--gg-surface);
+padding:10px 0px;
+
 }
 .gg-main__col{
 min-width: 0;
@@ -7179,15 +7177,7 @@ justify-content:center;
 
 
 .gg-touch{
-min-width:48px!important;
-min-height:48px!important;
-display:inline-flex!important;
-align-items:center!important;
 
-padding:0px!important;
-box-sizing:border-box!important;
-margin:0px!important;
-border-radius:12px!important;
 }
 
 

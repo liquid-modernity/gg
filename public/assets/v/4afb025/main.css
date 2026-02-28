@@ -55,6 +55,7 @@
 --gg-space-24: 24px;
 --gg-space-32: 32px;
 --gg-tap-min: 44px;
+--gg-tap-soc: 22px;
 
 --gg-shadow-sm: 0 1px 2px rgba(11,13,16,.08);
 --gg-shadow-md: 0 8px 24px rgba(11,13,16,.10);
@@ -1888,10 +1889,10 @@ gap:8px;
 display:inline-flex;
 align-items:center;
 justify-content:center;
-width:var(--gg-tap-min);
-height:var(--gg-tap-min);
-min-width:var(--gg-tap-min);
-min-height:var(--gg-tap-min);
+width:var(--gg-tap-soc);
+height:var(--gg-tap-soc);
+min-width:var(--gg-tap-soc);
+min-height:var(--gg-tap-soc);
 padding:0;
 border:1px solid var(--gg-border);
 border-radius:999px;
@@ -1919,10 +1920,8 @@ fill:currentColor;
 display: grid;
 gap: var(--gg-mixed-gap);
 min-width: 0;
-padding: 10px 12px 12px;
-border: 1px solid var(--gg-border);
-border-radius: var(--gg-radius-sm);
-background: var(--gg-surface);
+padding:10px 0px;
+
 }
 .gg-main__col{
 min-width: 0;
@@ -3531,7 +3530,8 @@ margin-inline: auto;
 
 
 .gg-topbar{
-position: sticky;
+    position: sticky;
+    display: contents;
 top: 0;
 z-index: var(--z-float-1);
 backdrop-filter: blur(var(--gg-glass-blur, 14px));
@@ -7177,15 +7177,7 @@ justify-content:center;
 
 
 .gg-touch{
-min-width:48px!important;
-min-height:48px!important;
-display:inline-flex!important;
-align-items:center!important;
 
-padding:0px!important;
-box-sizing:border-box!important;
-margin:0px!important;
-border-radius:12px!important;
 }
 
 
