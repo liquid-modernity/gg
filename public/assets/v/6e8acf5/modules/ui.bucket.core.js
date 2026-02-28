@@ -3235,7 +3235,7 @@ setTocHint('');
 }
 
 function toAbsUrl(raw){ try { return new URL(String(raw || ''), window.location.href).toString(); } catch (_) { return ''; } }
-function normalizePostUrl(raw){ var abs=toAbsUrl(raw),u=null,m=''; if(!abs) return ''; try{ u=new URL(abs); m=cleanText(u.searchParams.get('m')||''); if(m==='0'||m==='1') u.searchParams.delete('m'); u.hash=''; return u.toString(); }catch(_){ return abs; } }
+function normalizePostUrl(raw){ var abs=toAbsUrl(raw),u=null,m='',loc=window.location||{},h=cleanText(loc.host||''),lh=cleanText(loc.hostname||'').toLowerCase(),uh=''; if(!abs) return ''; try{ u=new URL(abs,window.location.href); uh=cleanText(u.hostname||'').toLowerCase(); if(h&&u.host&&u.host!==h&&/(^|\\.)pakrpp\\.com$/.test(uh)&&/(^|\\.)pakrpp\\.com$/.test(lh)){ if(loc.protocol) u.protocol=loc.protocol; u.host=h; } m=cleanText(u.searchParams.get('m')||''); if(m==='0'||m==='1') u.searchParams.delete('m'); u.hash=''; return u.toString(); }catch(_){ return abs; } }
 function tocCacheKey(url){ var abs = normalizePostUrl(url), parsed; if (!abs) return ''; try { parsed = new URL(abs); return parsed.origin + parsed.pathname + parsed.search; } catch (_) { return abs; } }
 
 function pruneToc(now){ var keys=Object.keys(tocCache),i=0,key='',rows=null,ts=0,drop=''; for(;i<keys.length;i++){ key=keys[i]; rows=tocCache[key]; ts=rows&&rows._t?rows._t:0; if(!rows||!Array.isArray(rows)||(TOC_TTL_MS>0&&ts&&now-ts>TOC_TTL_MS)){ delete tocCache[key]; postMetaCache.delete(key); } } keys=Object.keys(tocCache); while(keys.length>TOC_LRU_MAX){ drop=keys.shift(); delete tocCache[drop]; postMetaCache.delete(drop); } }

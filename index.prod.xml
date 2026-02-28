@@ -14,7 +14,7 @@ html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-
     </b:if>
 
     <meta content='prod' name='gg-env'/>
-    <meta content='4afb025' name='gg-release'/>
+    <meta content='36a52a1' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <style>
@@ -25,8 +25,8 @@ body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-se
 [hidden]{display:none!important;}
 img{max-width:100%;height:auto;}
     </style>
-    <link as='style' href='/assets/v/4afb025/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/4afb025/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/36a52a1/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/36a52a1/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -225,7 +225,7 @@ text-align: center;
 
   <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-surface='data:view.isHomepage ? &quot;landing&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;))'>
     <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='prod' data-release='4afb025' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-release='36a52a1' hidden='hidden' id='gg-fingerprint'/>
     <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
@@ -631,7 +631,7 @@ text-align: center;
     <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
       <div class='gg-leftnav'>
       <!-- Versi HOME/LIST -->
-      <b:if cond='data:view.isMultipleItems'>
+      <b:if cond='data:view.isMultipleItems or data:view.isSingleItem'>
         <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
           <b:widget id='HTML27' locked='false' title='Profile' type='HTML' visible='true'>
             <b:widget-settings>
@@ -794,7 +794,7 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML28' locked='false' title='Follow' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML28' locked='false' title='Follow' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <p class="gg-leftnav__sociallabel">look at me on</p>
@@ -817,11 +817,11 @@ text-align: center;
                     <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
                       <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
                     </a>
-                    <a aria-label='Email: hello@pakrpp.com' class='gg-leftnav__sociallink' href='mailto:hello@pakrpp.com' role='listitem'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-mail-line'/>        </use></svg>
-                    </a>
                 </div>
-              </div>]]></b:widget-setting>
+              </div>
+ <div class='gg-footer__legal'>
+        <span>Copyright © 2026 PakRPP. All rights reserved.</span>
+</div>]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -834,7 +834,7 @@ text-align: center;
          </b:if>      
 
       <!-- Versi POST DETAIL -->
-      <b:if cond='data:view.isSingleItem and data:view.isPost'>
+      <b:if cond='data:view.isSingleItem'>
         <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-post' name='Left Sidebar (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
@@ -940,16 +940,9 @@ text-align: center;
     </div>
   </b:includable>
           </b:widget>
-          <!-- Sidebar contract (post): keep ONLY Information + TOC -->
         </b:section>
       </b:if>
       
-      
-       <!-- Versi PAGE DETAIL -->
-  <b:if cond='data:view.isPage'>
-    <b:section class='gg-blog-sidebar__section-page gg-panelcard' id='gg-left-sidebar-page' name='Left Sidebar (Page)' showaddelement='true'/>
-  </b:if>
-
       
       </div>
     </aside>
@@ -964,7 +957,7 @@ text-align: center;
       <!-- GAGA FEATURED POST -->
     <b:if cond='data:view.isMultipleItems'>
     <b:section class='gg-home-blog__body' id='gg-featuredpost1' name='gg-featuredpost1' showaddelement='true'>
-      <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='true'>
+      <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='false'>
         <b:widget-settings>
           <b:widget-setting name='showSnippet'>false</b:widget-setting>
           <b:widget-setting name='showPostTitle'>true</b:widget-setting>
@@ -1404,7 +1397,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </section>
 </b:includable>
       </b:widget>
-      <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='true'>
+      <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='false'>
         <b:widget-settings>
           <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
         </b:widget-settings>
@@ -2811,7 +2804,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <div class='gg-comments__addslot' id='gg-addslot'/>
   <div class='gg-comments__composerslot' id='gg-composer-slot'/>
       </div>
-  </section>
+  </section>                
 </b:includable>
               <b:includable id='tooltipCss'>
   <!-- LINT.IfChange -->
@@ -3493,92 +3486,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>
     </button>
   </div>
-</div>
-      <hr class='gg-footer__divider'/>
-
-       <div class='gg-footer__grid gg-footer__grid--minimal'>
-       
-
-        <div>
-          <h3 class='gg-footer__heading'>Account</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Manage Your Account</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Store Account</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp.com</a></li>
-          </ul>
-</div>
-
-        
-
-        <div>
-          <h3 class='gg-footer__heading'>pakrpp Store</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Find a Store</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp Bar</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Today at pakrpp</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Certified Refurbished</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Financing</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Order Status</a></li>
-            <li><a href='https://www.pakrpp.com#' rel='noopener noreferrer' target='_blank'>Shopping Help</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class='gg-footer__heading'>For Business</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp and Business</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Shop for Business</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>IT Deployment</a></li>
-          </ul>
-</div>
-
-        <div>
-          <h3 class='gg-footer__heading'>For Education</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>pakrpp and Education</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Shop for K-12</a></li>
-            <li><a href='https://www.pakrpp.com#' rel='noopener noreferrer' target='_blank'>Shop for College</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class='gg-footer__heading'>pakrpp Values</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Accessibility</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Education</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Environment</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Inclusion and Diversity</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Privacy</a></li>
-            <li><a href='https://www.pakrpp.com' rel='noopener noreferrer' target='_blank'>Supplier Responsibility</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class='gg-footer__heading'>About pakrpp</h3>
-          <ul class='gg-footer__list'>
-            <li><a href='#'>Newsroom</a></li>
-            <li><a href='#'>pakrpp Leadership</a></li>
-            <li><a href='#'>Career Opportunities</a></li>
-            <li><a href='#'>Investors</a></li>
-            <li><a href='#'>Ethics &amp; Compliance</a></li>
-            <li><a href='#'>Contact</a></li>
-          </ul>
-        </div>
-      </div>
-
-
-      <p class='gg-footer__note'>For business inquiries, email <a href='mailto:hello@pakrpp.com'>hello@pakrpp.com</a>.</p>
-
-      <div class='gg-footer__legal'>
-        <span>&#169;<data:blog.title/>. All rights reserved.</span>
-        <div aria-label='Legal' class='gg-footer__legal-nav'>
-          <span>Privacy &#8226;</span>
-          <span>Terms &#8226;</span>
-          <span>Sales &amp; Refunds &#8226;</span>
-          <span>Legal &#8226;</span>
-          <span>Site Map</span>
-        </div>
-        <div aria-label='Language switcher' class='gg-lang-switcher'>
+       <div aria-label='Language switcher' class='gg-lang-switcher'>
           <button aria-controls='gg-lang-switcher-menu' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
             <span class='gg-lang-switcher__current' data-gg-lang-current='true'>Bahasa</span>
             <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
@@ -3592,7 +3500,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </button>
           </div>
         </div>
-      </div>
+</div>
     </div>
   </footer>
       <!-- /GAGA FOOTER -->
@@ -3774,7 +3682,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         
 
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/4afb025/boot.js?v=20260203160035'/>
+<script defer='defer' src='/assets/v/36a52a1/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

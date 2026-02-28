@@ -3235,7 +3235,22 @@ setTocHint('');
 }
 
 function toAbsUrl(raw){ try { return new URL(String(raw || ''), window.location.href).toString(); } catch (_) { return ''; } }
-function normalizePostUrl(raw){ var abs=toAbsUrl(raw),u=null,m=''; if(!abs) return ''; try{ u=new URL(abs); m=cleanText(u.searchParams.get('m')||''); if(m==='0'||m==='1') u.searchParams.delete('m'); u.hash=''; return u.toString(); }catch(_){ return abs; } }
+function isPakrppHost(host){ var h=cleanText(host).toLowerCase(); return /(^|\.)pakrpp\.com$/.test(h); }
+function normalizePostUrl(raw){
+var abs=toAbsUrl(raw),u=null,m='',loc=window.location||{},curHost=cleanText(loc.host||''),curProto=cleanText(loc.protocol||'');
+if(!abs) return '';
+try{
+  u=new URL(abs, window.location.href);
+  if(curHost&&u.host&&u.host!==curHost&&isPakrppHost(u.hostname||'')&&isPakrppHost(loc.hostname||'')){
+    if(curProto) u.protocol=curProto;
+    u.host=curHost;
+  }
+  m=cleanText(u.searchParams.get('m')||'');
+  if(m==='0'||m==='1') u.searchParams.delete('m');
+  u.hash='';
+  return u.toString();
+}catch(_){ return abs; }
+}
 function tocCacheKey(url){ var abs = normalizePostUrl(url), parsed; if (!abs) return ''; try { parsed = new URL(abs); return parsed.origin + parsed.pathname + parsed.search; } catch (_) { return abs; } }
 
 function pruneToc(now){ var keys=Object.keys(tocCache),i=0,key='',rows=null,ts=0,drop=''; for(;i<keys.length;i++){ key=keys[i]; rows=tocCache[key]; ts=rows&&rows._t?rows._t:0; if(!rows||!Array.isArray(rows)||(TOC_TTL_MS>0&&ts&&now-ts>TOC_TTL_MS)){ delete tocCache[key]; postMetaCache.delete(key); } } keys=Object.keys(tocCache); while(keys.length>TOC_LRU_MAX){ drop=keys.shift(); delete tocCache[drop]; postMetaCache.delete(drop); } }
@@ -3603,11 +3618,11 @@ return pickIcon(text || url || '');
 }
 
 function pickGroupIcon(id, title){
-if (id === 'HTML17' || id === 'HTML22') return 'verified_user';
-if (id === 'HTML18' || id === 'HTML23') return 'hub';
+if (id === 'HTML17' || id === 'HTML22') return 'policy';
+if (id === 'HTML18' || id === 'HTML23') return 'menu_book';
 if (id === 'HTML19' || id === 'HTML24') return 'support_agent';
 if (id === 'HTML20' || id === 'HTML25') return 'gavel';
-if (id === 'HTML21' || id === 'HTML26') return 'article';
+if (id === 'HTML21' || id === 'HTML26') return 'smart_toy';
   return pickLinkIcon(title || id || '', '');
 }
 

@@ -1920,10 +1920,8 @@ fill:currentColor;
 display: grid;
 gap: var(--gg-mixed-gap);
 min-width: 0;
-padding: 10px 12px 12px;
-border: 1px solid var(--gg-border);
-border-radius: var(--gg-radius-sm);
-background: var(--gg-surface);
+padding:10px 0px;
+
 }
 .gg-main__col{
 min-width: 0;
@@ -2970,42 +2968,62 @@ flex-direction: column;
 overflow: visible;
 }
 
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page){
-display: flex;
-flex-direction: column;
-gap: 10px;
-min-height: 0;
-overflow: hidden;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-blog-sidebar--left .gg-leftnav{
+display:flex;
+flex-direction:column;
+min-height:0;
+height:100%;
+overflow:hidden;
+gap:10px;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) > .widget{
-min-height: 0;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post{
+order:1;
+flex:0 0 auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+min-height:0;
+overflow:hidden;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) > .widget > .widget-content{
-display: flex;
-flex-direction: column;
-min-height: 0;
-overflow: hidden;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post > .widget{
+min-height:0;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) > .widget:has(#gg-toc){
-flex: 1 1 0;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post > .widget > .widget-content{
+display:flex;
+flex-direction:column;
+min-height:0;
+overflow:visible;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) > .widget:not(:has(#gg-postinfo)):not(:has(#gg-toc)){
-display: none !important;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post > .widget:has(#gg-toc){
+order:1;
+flex:0 0 auto;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left :is(#gg-labeltree-detail,[data-gg-labeltree="detail"],.gg-lt__headbtn,.gg-navtree,[data-gg-navtree="group"]){
-display: none !important;
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post > .widget:has(#gg-postinfo){
+order:2;
+flex:0 0 auto;
 }
-main.gg-main[data-gg-surface="post"] .gg-blog-sidebar--left #gg-toc,
-main.gg-main[data-gg-surface="page"] .gg-blog-sidebar--left #gg-toc,
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) #gg-toc{
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post > .widget:not(:has(#gg-postinfo)):not(:has(#gg-toc)){
+display:none !important;
+}
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-list{
+order:2;
 flex:1 1 auto;
 min-height:0;
 overflow:auto;
 overscroll-behavior:contain;
 -webkit-overflow-scrolling:touch;
 }
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) :is(#gg-left-sidebar-post,#gg-left-sidebar-page) #gg-toc .gg-toc__body{
-min-height: 0;
+main.gg-main[data-gg-surface="post"] .gg-blog-sidebar--left #gg-toc,
+main.gg-main[data-gg-surface="page"] .gg-blog-sidebar--left #gg-toc,
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post #gg-toc{
+max-height:min(42dvh,420px);
+min-height:0;
+overflow:auto;
+overscroll-behavior:contain;
+-webkit-overflow-scrolling:touch;
+}
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) #gg-left-sidebar-post #gg-toc .gg-toc__body{
+min-height:0;
 }
 
 
@@ -3508,10 +3526,6 @@ color:#0f172a;
 }
 
 } 
-main.gg-main[data-gg-surface="post"] .gg-leftnav__profile{ display:none !important; }
-
-
-
 
 #gg-landing{ background: var(--gg-bg, #f6f7f9); color: var(--gg-ink, #0f172a); }
 #gg-landing a{ color: inherit; text-decoration: none; }
@@ -3532,7 +3546,8 @@ margin-inline: auto;
 
 
 .gg-topbar{
-position: sticky;
+    position: sticky;
+    display: contents;
 top: 0;
 z-index: var(--z-float-1);
 backdrop-filter: blur(var(--gg-glass-blur, 14px));
@@ -7178,15 +7193,7 @@ justify-content:center;
 
 
 .gg-touch{
-min-width:48px!important;
-min-height:48px!important;
-display:inline-flex!important;
-align-items:center!important;
 
-padding:0px!important;
-box-sizing:border-box!important;
-margin:0px!important;
-border-radius:12px!important;
 }
 
 
