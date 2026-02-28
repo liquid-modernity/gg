@@ -1686,7 +1686,7 @@ position:sticky;bottom:0;z-index:5;margin-top:auto;padding-top:10px;border-top:1
 #gg-left-sidebar-list>.widget:has(.gg-leftnav__socialbar) .widget-content{
 gap:0;padding:0;
 }
-main.gg-main .gg-leftnav.gg-sb:not([data-gg-sb-ready=1]) #gg-left-sidebar-list>.widget:has(:is(.gg-leftnav__profile,.gg-leftnav__socialbar)){position:static !important;top:auto !important;bottom:auto !important;}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb #gg-left-sidebar-list>.widget:has(:is(.gg-leftnav__profile,.gg-leftnav__socialbar)){position:static !important;top:auto !important;bottom:auto !important;}
 #gg-left-sidebar-page,#gg-left-sidebar-post{overflow:hidden;}
 :is(#gg-left-sidebar-list,#gg-left-sidebar-page,#gg-left-sidebar-post) .widget{
 margin: 0;
