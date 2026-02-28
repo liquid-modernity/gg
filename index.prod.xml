@@ -1654,6 +1654,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
                 <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+                <b:widget-setting name='numPosts'>9</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
