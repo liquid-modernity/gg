@@ -1399,8 +1399,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "c000ddc";
-    const TEMPLATE_ALLOWED_RELEASES = ["c000ddc","b29c659"];
+    const WORKER_VERSION = "18de78c";
+    const TEMPLATE_ALLOWED_RELEASES = ["18de78c","c000ddc"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1776,9 +1776,6 @@ export default {
           hasArticle: false,
           surface: "",
         };
-        let hasEnvMetaMarker = false;
-        let hasReleaseMetaMarker = false;
-        let hasFingerprintMarker = false;
         const assignMeta = (key, value) => {
           if (value) {
             meta[key] = value;
@@ -1923,13 +1920,11 @@ export default {
           })
           .on("meta[name=\"gg-env\"]", {
             element(el) {
-              hasEnvMetaMarker = true;
               el.setAttribute("content", expectedEnv);
             },
           })
           .on("meta[name=\"gg-release\"]", {
             element(el) {
-              hasReleaseMetaMarker = true;
               el.setAttribute("content", expectedRelease);
             },
           })
@@ -1972,20 +1967,9 @@ export default {
           })
           .on("div#gg-fingerprint", {
             element(el) {
-              hasFingerprintMarker = true;
               el.setAttribute("data-env", expectedEnv);
               el.setAttribute("data-release", expectedRelease);
               el.setAttribute("hidden", "");
-            },
-          })
-          .on("head", {
-            element(el) {
-              if (!hasEnvMetaMarker) {
-                el.append(`<meta name="gg-env" content="${expectedEnv}">`, { html: true });
-              }
-              if (!hasReleaseMetaMarker) {
-                el.append(`<meta name="gg-release" content="${expectedRelease}">`, { html: true });
-              }
             },
           })
           .on("#gg-toc .gg-toc__empty", {
@@ -2012,12 +1996,6 @@ export default {
                 `<script id="gg-schema" type="application/ld+json">${schemaJson}</script>`,
                 { html: true }
               );
-              if (!hasFingerprintMarker) {
-                el.prepend(
-                  `<div id="gg-fingerprint" data-env="${expectedEnv}" data-release="${expectedRelease}" hidden></div>`,
-                  { html: true }
-                );
-              }
               if (templateMismatch && !legalPage) {
                 el.prepend(mismatchBanner, { html: true });
               }
