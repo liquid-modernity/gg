@@ -221,10 +221,6 @@ if (!targetUrl) {
       if (/\bid\s*=\s*(["'])gg-labeltree-detail\1/i.test(html)) {
         failures.push(`forbidden #gg-labeltree-detail present @ ${targetUrl}`);
       }
-      const leftSidebar = extractSectionById(html, "gg-left-sidebar-post");
-      if (leftSidebar && /\bInterests\b/i.test(leftSidebar)) {
-        failures.push(`forbidden "Interests" text in post left sidebar @ ${targetUrl}`);
-      }
 
       const postBodyHtml = findPostBodyHtml(html);
       if (!postBodyHtml) {

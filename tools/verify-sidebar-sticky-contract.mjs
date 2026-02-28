@@ -98,9 +98,19 @@ if (!fs.existsSync(corePath)) {
   if (!core.includes("scheduleRepair(")) {
     fail("LeftNav slotter must include repair retry pass");
   }
-  const postOrderLegacy = "orderBody=mode==='post'?['HTML4','HTML1','HTML17','HTML18','HTML19','HTML20','HTML21']";
-  const postOrderCurrent = "orderBody=mode==='post'?['HTML4','HTML30','HTML31','HTML32','HTML33','HTML34','HTML35']";
-  if (!core.includes(postOrderLegacy) && !core.includes(postOrderCurrent)) {
+  const selectorSignals = [
+    "function pick(root, needle, many)",
+    "pick(left,'.gg-leftnav__profile')",
+    "pick(left,'.gg-labeltree[data-gg-module",
+    "pick(left,'details.gg-navtree',true)",
+    "pick(left,'.gg-leftnav__socialbar')",
+    "pick(left,'#gg-toc')",
+    "pick(left,'#gg-postinfo')",
+  ];
+  for (const signal of selectorSignals) {
+    if (!core.includes(signal)) fail(`LeftNav slotter must be selector-based (${signal})`);
+  }
+  if (!core.includes("moveOne(body,infoWidget); moveOne(body,interestWidget); moveMany(body,navWidgets);")) {
     fail("LeftNav post body order must keep Information before Interests and nav groups");
   }
 }
