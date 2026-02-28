@@ -3857,7 +3857,7 @@ stashNodes=qsa('.gg-sb__top > .widget, .gg-sb__body > .widget, .gg-sb__bot > .wi
 for(i=0;i<stashNodes.length;i++) stash.appendChild(stashNodes[i]);
 if(stash.childNodes.length) body.appendChild(stash);
 orderTop=mode==='post'?['HTML27','HTML3']:['HTML27','HTML1'];
-orderBody=mode==='post'?['HTML1','HTML4','HTML17','HTML18','HTML19','HTML20','HTML21']:['HTML17','HTML18','HTML19','HTML20','HTML21'];
+orderBody=mode==='post'?['HTML4','HTML1','HTML17','HTML18','HTML19','HTML20','HTML21']:['HTML17','HTML18','HTML19','HTML20','HTML21'];
 function moveMany(host,list){ var frag=document.createDocumentFragment(),k=0,w=null; for(k=0;k<list.length;k++){ w=document.getElementById(list[k]); if(!w||!left.contains(w)) continue; setHiddenInert(w,false); frag.appendChild(w); } if(frag.childNodes.length) host.appendChild(frag); }
 moveMany(top,orderTop); moveMany(body,orderBody); moveMany(bot,orderBot);
 setHiddenInert(listSec,true);
