@@ -3842,7 +3842,7 @@ if(hidden) node.setAttribute('inert','');
 else node.removeAttribute('inert');
 }
 
-function detectMode(left, mainEl){ var main=(mainEl&&mainEl.getAttribute)?mainEl:(qs('main.gg-main[data-gg-surface]',document)||qs('main.gg-main',document)); var surface=((main&&main.getAttribute('data-gg-surface'))||(document.body&&document.body.getAttribute('data-gg-surface'))||'').toLowerCase(); return ((surface&&surface.charAt(0)==='p')||qs('#HTML4,#gg-postinfo',left))?'post':'list'; }
+function detectMode(left, mainEl){ var main=(mainEl&&mainEl.getAttribute)?mainEl:(qs('main.gg-main[data-gg-surface]',document)||qs('main.gg-main',document)); var s=((main&&main.getAttribute('data-gg-surface'))||(document.body&&document.body.getAttribute('data-gg-surface'))||'').toLowerCase(),p=((window.location&&window.location.pathname)||'/').replace(/\/+$/,'')||'/'; if((s&&s.charAt(0)==='p')||qs('#HTML4,#gg-postinfo',left)) return 'post'; if(s==='listing'||s==='home'||s==='landing'||s==='feed'||p==='/'||p==='/blog'||p.indexOf('/search')===0) return 'list'; return 'post'; }
 
 function widgetCount(root){
 var kids=root&&root.children?root.children:[],i=0,n=0,one=null;
@@ -3876,6 +3876,7 @@ function init(mainEl){
   enhanceCustomPages(left);
   scheduleRepair(left, mainEl);
   setTimeout(function(){ scheduleRepair(left, mainEl); }, 260);
+  setTimeout(function(){ scheduleRepair(left, mainEl); }, 920);
 }
 
 return { init: init };
