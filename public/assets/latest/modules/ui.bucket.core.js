@@ -3248,18 +3248,18 @@ var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,aut
 }
 
 function postLikeHtml(raw){ return /(\bpost-body\b|\bentry-content\b|\bgg-postmeta\b|data-gg-module=['\"]post-detail['\"]|class=['\"][^'\"]*\bgg-post\b)/i.test(String(raw||'')); }
+function mobilePostUrl(raw){ try{ var u=new URL(String(raw||'')); u.searchParams.set('m','1'); return u.toString(); }catch(_){ return String(raw||''); } }
 function fetchPostHtml(url,signal){
-var abs=normalizePostUrl(url),opts={ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal },sep='',retry='';
+var abs=normalizePostUrl(url),opts={ method:'GET', cache:'no-store', credentials:'same-origin', signal:signal },fallback='';
 if(!abs) return Promise.reject(new Error('u'));
 if(!window.fetch) return Promise.reject(new Error('n'));
-return window.fetch(abs,opts).then(function(res){
+return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
     var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
     if(postLikeHtml(txt)&&!moved) return txt;
-    sep=abs.indexOf('?')>=0?'&':'?';
-    retry=abs+sep+'m=1';
-    return window.fetch(retry,opts).then(function(next){
+    fallback=abs;
+    return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
       return next.text().then(function(nextHtml){
         var out=String(nextHtml||'');
@@ -3284,10 +3284,11 @@ tocAborters[key] = controller;
 infoDebug('InfoPanel fetch start', abs);
 tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
   var items = parseHeadingItems(html, abs);
-  var meta = items && items._m ? items._m : null;
+  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s));
   infoDebug('InfoPanel fetch meta', meta || {});
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
+  if (!Array.isArray(items) || (!items.length && !metaStrong)) throw new Error('p');
   writeToc(key, items);
   return items;
 }).catch(function(err){
