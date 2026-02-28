@@ -98,7 +98,9 @@ if (!fs.existsSync(corePath)) {
   if (!core.includes("scheduleRepair(")) {
     fail("LeftNav slotter must include repair retry pass");
   }
-  if (!core.includes("orderBody=mode==='post'?['HTML4','HTML1','HTML17','HTML18','HTML19','HTML20','HTML21']")) {
+  const postOrderLegacy = "orderBody=mode==='post'?['HTML4','HTML1','HTML17','HTML18','HTML19','HTML20','HTML21']";
+  const postOrderCurrent = "orderBody=mode==='post'?['HTML4','HTML30','HTML31','HTML32','HTML33','HTML34','HTML35']";
+  if (!core.includes(postOrderLegacy) && !core.includes(postOrderCurrent)) {
     fail("LeftNav post body order must keep Information before Interests and nav groups");
   }
 }
