@@ -3889,6 +3889,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
+<script>//<![CDATA[
+  (function(d,w){'use strict';function q(s,r){return(r||d).querySelector(s)}function c(s,r){return(r||d).querySelectorAll(s).length}var env=String(((q('meta[name="gg-env"]')||{}).content||'')).toLowerCase().trim();if(env!=='lab'&&env!=='dev')return;function run(){var sb=q('.gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-ready="1"]'),mode='',top=null,bot=null,topN=0,botN=0,bad=false;if(!sb)return;mode=String(sb.getAttribute('data-gg-sb-mode')||'list').toLowerCase();top=q('.gg-sb__top',sb);bot=q('.gg-sb__bot',sb);topN=top?c(':scope > .widget',top):0;botN=bot?c(':scope > .widget',bot):0;bad=!topN||!botN;if(!bad&&mode==='post')bad=!q('.gg-leftnav__profile',top)||!q('#gg-toc',top);if(!bad&&mode!=='post')bad=!q('.gg-leftnav__profile',top)||!q('.gg-labeltree[data-gg-module="labeltree"]',top);if(bad){sb.dataset.ggSbError='slot-assert';try{if(w.console&&typeof console.warn==='function')console.warn('[GG][LeftNav] segmented slot assertion failed',{mode:mode,top:topN,bot:botN});}catch(_){}}else delete sb.dataset.ggSbError;}function boot(){run();w.requestAnimationFrame(run);setTimeout(run,280);setTimeout(run,960);}if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',boot,{once:true});else boot();if(w.MutationObserver){var host=q('.gg-blog-sidebar--left');if(host)(new MutationObserver(run)).observe(host,{attributes:true,attributeFilter:['data-gg-sb-ready','data-gg-sb-mode','hidden'],childList:true,subtree:true});}})(document,window);
+  //]]></script>
         
 
 <!-- GAGA HOME OF JS -->
