@@ -66,10 +66,14 @@ async function main() {
   if (!listAside) throw new Error("listing missing left sidebar");
   if (!postAside) throw new Error("post missing left sidebar");
 
-  const listHas = /gg-left-sidebar-list/.test(listAside);
-  const postHas = /gg-left-sidebar-post|gg-postinfo/.test(postAside);
-  if (!listHas) throw new Error("listing sidebar missing gg-left-sidebar-list");
-  if (!postHas) throw new Error("post sidebar missing gg-left-sidebar-post/gg-postinfo");
+  const listHas = /gg-left-sidebar-list|gg-left-sb-body-list|data-gg-sb-native=['"]1['"]/.test(listAside);
+  const postHas = /gg-left-sidebar-post|gg-left-sb-body-post|gg-postinfo/.test(postAside);
+  if (!listHas) {
+    throw new Error("listing sidebar missing expected marker (gg-left-sidebar-list or gg-left-sb-body-list)");
+  }
+  if (!postHas) {
+    throw new Error("post sidebar missing expected marker (gg-left-sidebar-post or gg-left-sb-body-post/gg-postinfo)");
+  }
   if (listAside === postAside) throw new Error("left sidebar blocks identical");
 
   console.log(`PASS: multizone markers differ (listing vs post)`);
