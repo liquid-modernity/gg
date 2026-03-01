@@ -10,6 +10,7 @@
 
 import { execSync, spawn } from "node:child_process";
 import fs from "node:fs";
+import path from "node:path";
 
 function sh(cmd, opts = {}) {
   return execSync(cmd, { stdio: "pipe", encoding: "utf8", ...opts }).trim();
@@ -27,6 +28,12 @@ function matchAny(text, patterns) {
 
 function diagnose(label, output) {
   const out = output || "";
+  if (/public\/assets\/v has \d+ release dirs \(max \d+\)/i.test(out)) {
+    return {
+      reason: "Release directory quota exceeded under public/assets/v.",
+      steps: ["npm run ship (auto-heal prunes oldest release dirs before gates)"],
+    };
+  }
   if (out.includes("Release not aligned to HEAD")) {
     return {
       reason: "Mismatch between pinned release files and computed release id.",
@@ -181,6 +188,10 @@ function parseArgs() {
   let msg = process.env.SHIP_MSG || "release: update artifacts";
   let workMsg = process.env.SHIP_WORK_MSG || "chore: update work";
   let verbose = false;
+  let maxReleaseDirs = Number(process.env.SHIP_MAX_RELEASE_DIRS || 5);
+  if (!Number.isFinite(maxReleaseDirs) || maxReleaseDirs < 1) {
+    maxReleaseDirs = 5;
+  }
   for (let i = 0; i < args.length; i++) {
     if ((args[i] === "-m" || args[i] === "--message") && args[i + 1]) {
       msg = args[i + 1];
@@ -195,8 +206,16 @@ function parseArgs() {
     if (args[i] === "--verbose") {
       verbose = true;
     }
+    if (args[i] === "--max-release-dirs" && args[i + 1]) {
+      const parsed = Number(args[i + 1]);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        maxReleaseDirs = parsed;
+      }
+      i++;
+      continue;
+    }
   }
-  return { msg, workMsg, verbose };
+  return { msg, workMsg, verbose, maxReleaseDirs };
 }
 
 function ensureNoMergeInProgress() {
@@ -247,8 +266,55 @@ async function tryPush(label, verbose) {
   }
 }
 
+function listReleaseDirs() {
+  const base = path.resolve("public/assets/v");
+  if (!fs.existsSync(base)) return [];
+  const dirs = fs
+    .readdirSync(base, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const full = path.join(base, entry.name);
+      let mtimeMs = 0;
+      try {
+        mtimeMs = fs.statSync(full).mtimeMs;
+      } catch {}
+      return { name: entry.name, full, mtimeMs };
+    });
+  dirs.sort((a, b) => b.mtimeMs - a.mtimeMs || b.name.localeCompare(a.name));
+  return dirs;
+}
+
+function autoHealReleaseDirs(maxKeep) {
+  const dirs = listReleaseDirs();
+  if (dirs.length <= maxKeep) {
+    console.log(`AUTO_HEAL: release dirs ${dirs.length}/${maxKeep} OK`);
+    return [];
+  }
+
+  const keep = new Set();
+  const pinned = readReleaseIdFromCapsule();
+  if (pinned) keep.add(pinned);
+
+  for (const dir of dirs) {
+    if (keep.size >= maxKeep) break;
+    keep.add(dir.name);
+  }
+
+  const toRemove = dirs.filter((dir) => !keep.has(dir.name));
+  for (const dir of toRemove) {
+    fs.rmSync(dir.full, { recursive: true, force: true });
+  }
+
+  if (toRemove.length) {
+    console.log(
+      `AUTO_HEAL: pruned ${toRemove.length} old release dir(s): ${toRemove.map((d) => d.name).join(", ")}`
+    );
+  }
+  return toRemove.map((d) => d.name);
+}
+
 async function main() {
-  const { msg, workMsg, verbose } = parseArgs();
+  const { msg, workMsg, verbose, maxReleaseDirs } = parseArgs();
 
   if (!isInsideGit()) {
     console.error("ERROR: Not inside a git repository.");
@@ -296,6 +362,9 @@ async function main() {
     }
   }
 
+  // 3.5) Auto-heal release directory quota before checks/build.
+  autoHealReleaseDirs(maxReleaseDirs);
+
   // 4) Work commit if dirty
   if (isDirty()) {
     workCommitSha = await stageAndCommit(workMsg, false, "WORK_COMMIT", verbose);
@@ -304,6 +373,17 @@ async function main() {
   // 5) Prep release (ci + build + verify:release)
   try {
     await runStep("PREP_RELEASE", "npm run prep:release");
+  } catch (err) {
+    printFailure(err, verbose);
+    process.exit(1);
+  }
+
+  // 5.1) Auto-heal again after build may mint a new release dir.
+  autoHealReleaseDirs(maxReleaseDirs);
+
+  // 5.2) Full prod gate (includes performance budgets and smoke).
+  try {
+    await runStep("GATE_PROD", "npm run gate:prod");
   } catch (err) {
     printFailure(err, verbose);
     process.exit(1);
@@ -333,6 +413,14 @@ async function main() {
     }
     try {
       await runStep("RETRY_PREP_RELEASE", "npm run prep:release");
+    } catch (err) {
+      printFailure(err, verbose);
+      process.exit(1);
+    }
+
+    autoHealReleaseDirs(maxReleaseDirs);
+    try {
+      await runStep("RETRY_GATE_PROD", "npm run gate:prod");
     } catch (err) {
       printFailure(err, verbose);
       process.exit(1);
