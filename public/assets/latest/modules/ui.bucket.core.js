@@ -3846,50 +3846,13 @@ var topOrder=[],bodyOrder=[],botOrder=[];
 if(!sb||!top||!body||!bot||left.__ggSbMutating)return;
 if(sb.getAttribute('data-gg-sb-native')==='1'){sb.setAttribute('data-gg-sb-ready','1');sb.setAttribute('data-gg-sb-mode',detectMode(left)==='post'?'post':'list');return;}
 mode=detectMode(left);
-if(mode==='post'){
-profileWidget=pick(left,'.gg-leftnav__profile');
-tocWidget=pick(left,'#gg-toc');
-infoWidget=pick(left,'#gg-postinfo');
-interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');
-navWidgets=pick(left,'details.gg-navtree',true);
-followWidget=pick(left,'.gg-leftnav__socialbar');
-}else{
-profileWidget=pick(left,'.gg-leftnav__profile');
-interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');
-navWidgets=pick(left,'details.gg-navtree',true);
-followWidget=pick(left,'.gg-leftnav__socialbar');
-}
+if(mode==='post'){profileWidget=pick(left,'.gg-leftnav__profile');tocWidget=pick(left,'#gg-toc');infoWidget=pick(left,'#gg-postinfo');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}else{profileWidget=pick(left,'.gg-leftnav__profile');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}
 function pushUnique(list,node){ if(node&&list.indexOf(node)<0) list.push(node); }
-function place(host,order){
-var k=0,node=null;
-for(k=0;k<order.length;k++){
-node=order[k];
-if(!node) continue;
-setHiddenInert(node,false);
-if(node.parentElement!==host||host.children[k]!==node) host.insertBefore(node,host.children[k]||null);
-}
-}
-if(mode==='post'){
-pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);
-pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);
-pushUnique(botOrder,followWidget);
-}else{
-pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);
-pushUnique(botOrder,followWidget);
-}
+function place(host,order){var k=0,node=null;for(k=0;k<order.length;k++){node=order[k];if(!node) continue;setHiddenInert(node,false);if(node.parentElement!==host||host.children[k]!==node) host.insertBefore(node,host.children[k]||null);}}
+if(mode==='post'){pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);pushUnique(botOrder,followWidget);}else{pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);pushUnique(botOrder,followWidget);}
 for(i=0;navWidgets&&i<navWidgets.length;i++)pushUnique(bodyOrder,navWidgets[i]);
 left.__ggSbMutating=1;
-try{
-place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);
-setHiddenInert(listSec,true);setHiddenInert(postSec,true);
-setHiddenInert(top,!qsa(':scope > .widget',top).length);
-setHiddenInert(bot,!qsa(':scope > .widget',bot).length);
-setHiddenInert(body,false);
-sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');
-sb.setAttribute('data-gg-sb-ready','1');
-}finally{
-left.__ggSbMutating=0;
-}
+try{place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);setHiddenInert(listSec,true);setHiddenInert(postSec,true);setHiddenInert(top,!qsa(':scope > .widget',top).length);setHiddenInert(bot,!qsa(':scope > .widget',bot).length);setHiddenInert(body,false);sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');sb.setAttribute('data-gg-sb-ready','1');}finally{left.__ggSbMutating=0;}
 }
 
 function scheduleRepair(left){arrangeSegments(left);}
