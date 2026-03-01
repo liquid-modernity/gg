@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='ff41e6d' name='gg-release'/>
+    <meta content='a5e0e8b' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/ff41e6d/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/ff41e6d/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/a5e0e8b/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/a5e0e8b/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -232,7 +232,7 @@ text-align: center;
     <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='ff41e6d' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='a5e0e8b' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage'>
 	    <template id='gg-mixed-config'><![CDATA[
 {
@@ -3918,7 +3918,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/ff41e6d/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/a5e0e8b/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>

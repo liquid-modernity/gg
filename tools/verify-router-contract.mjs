@@ -125,7 +125,11 @@ function validateMixedGate(listingSource, label) {
   if (!/c&&c\.surface/.test(listingSource)) {
     failures.push(`${label}: mixed init gate must use routerCtx.surface`);
   }
-  if (!/cs!=='landing'&&cs!=='home'/.test(listingSource)) {
+  const hasLandingHomeGuard =
+    /cs!=='landing'&&cs!=='home'/.test(listingSource) ||
+    /v===['"]landing['"]\|\|v===['"]home['"]/.test(listingSource) ||
+    /['"]landing['"]===v\|\|['"]home['"]===v/.test(listingSource);
+  if (!hasLandingHomeGuard) {
     failures.push(`${label}: mixed init gate must allow only landing/home surfaces`);
   }
   if (/c&&c\.view&&c\.view!==['"]home['"]/.test(listingSource)) {
