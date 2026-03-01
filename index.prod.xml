@@ -630,11 +630,12 @@ text-align: center;
     <!-- SIDEBAR KIRI -->
     <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
       <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left'>
-      <div class='gg-sb__top' data-gg-sb='top'></div>
-      <div class='gg-sb__body' data-gg-sb='body'>
-      <!-- Versi HOME/LIST -->
-      <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
+        
+        <div class='gg-sb__top' data-gg-sb='top'>
+        
+        
+         <b:if cond='data:view.isMultipleItems'>
+        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-top-bloglisting' name='Left Sidebar (Blog)' showaddelement='true'>
           <b:widget id='HTML27' locked='false' title='Profile' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
@@ -681,6 +682,68 @@ text-align: center;
     </div>
   </b:includable>
           </b:widget>
+        </b:section>
+          </b:if>
+        
+                 <b:if cond='data:view.isSingleItem'>
+        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-top-postpagedetail' name='Left Sidebar (Blog)' showaddelement='true'>
+          <b:widget id='HTML29' locked='false' title='Profile' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
+          <div class='gg-leftnav__avatar'>
+            <img decoding='async' expr:alt='data:blog.title + &quot; logo&quot;' height='56' loading='lazy' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png' width='56'/>
+          </div>
+          <div class='gg-leftnav__meta'>
+            <p class='gg-leftnav__title'>PakRPP</p>
+          </div>
+          <span class='gg-leftnav__badge' title='Verified'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded gg-icon--md'>verified</span>
+          </span>
+        </div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+          <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
+<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2" data-scroll-offset="84">
+  <div class="gg-toc__head">
+    <button class="gg-toc__headbtn" type="button" aria-expanded="true">
+      <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
+      <span class="gg-toc__title">Table of Contents</span>
+    </button>
+    <button class="gg-toc__toggle" type="button" aria-label="Collapse">
+      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
+    </button>
+  </div>
+
+  <div class="gg-toc__body">
+    <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
+    <div class="gg-toc__empty" hidden></div>
+  </div>
+</nav>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+    <b:include name='widget-title'/>
+    <div class='widget-content'>
+      <data:content/>
+    </div>
+  </b:includable>
+          </b:widget>
+        </b:section>
+          </b:if>
+        
+         </div>
+      <div class='gg-sb__body' data-gg-sb='body'>
+        
+      <!-- Versi HOME/LIST -->
+      <b:if cond='data:view.isMultipleItems'>
+        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
           <b:widget id='HTML17' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
@@ -796,98 +859,13 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-          <b:widget id='HTML28' locked='false' title='Follow' type='HTML' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
-                <p class="gg-leftnav__sociallabel">look at me on</p>
-                <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
-                  <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
-                  </a>
-                  <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></path></svg>
-                  </a>
-                  <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></path></svg>
-                  </a>
-                  <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></path></svg>
-                  </a>
-               <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-tt-line'/>        </use></svg>
-                    </a>
-                    <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
-                    </a>
-                </div>
-              </div>
- <div class='gg-footer__legal'>
-        <span>Copyright © 2026 PakRPP. All rights reserved.</span>
-</div>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-          </b:widget>
         </b:section>
          </b:if>      
 
       <!-- Versi POST DETAIL -->
       <b:if cond='data:view.isSingleItem'>
         <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-post' name='Left Sidebar (Post)' showaddelement='true'>
-          
-<b:widget id='HTML29' locked='false' title='Profile' type='HTML' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
-          <div class='gg-leftnav__avatar'>
-            <img decoding='async' expr:alt='data:blog.title + &quot; logo&quot;' height='56' loading='lazy' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png' width='56'/>
-          </div>
-          <div class='gg-leftnav__meta'>
-            <p class='gg-leftnav__title'>PakRPP</p>
-          </div>
-          <span class='gg-leftnav__badge' title='Verified'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded gg-icon--md'>verified</span>
-          </span>
-        </div>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-          </b:widget>
-<b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2" data-scroll-offset="84">
-  <div class="gg-toc__head">
-    <button class="gg-toc__headbtn" type="button" aria-expanded="true">
-      <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
-      <span class="gg-toc__title">Table of Contents</span>
-    </button>
-    <button class="gg-toc__toggle" type="button" aria-label="Collapse">
-      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
-    </button>
-  </div>
-
-  <div class="gg-toc__body">
-    <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
-    <div class="gg-toc__empty" hidden></div>
-  </div>
-</nav>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-    <b:include name='widget-title'/>
-    <div class='widget-content'>
-      <data:content/>
-    </div>
-  </b:includable>
-          </b:widget>
-<b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA INFORMATION (POST DETAIL) -->
 <!-- GAGA META DATA -->
@@ -950,15 +928,15 @@ text-align: center;
         <div class="gg-pi__kicker">DATE</div>
         <span data-slot="date" data-gg-marker="panel-post-date">&#8212;</span>
       </div>
-      <div class="gg-pi__metaitem gg-pi__metaitem--readtime">
-        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
-        <div class="gg-pi__kicker">READ TIME</div>
-        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 min read</span>
-      </div>
       <div class="gg-pi__metaitem gg-pi__metaitem--updated">
         <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">event_repeat</span>
         <div class="gg-pi__kicker">UPDATED</div>
         <span data-slot="updated" data-gg-marker="panel-post-updated">&#8212;</span>
+      </div>
+<div class="gg-pi__metaitem gg-pi__metaitem--readtime">
+        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
+        <div class="gg-pi__kicker">READ TIME</div>
+        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 min read</span>
       </div>
     </div>
 
@@ -972,7 +950,7 @@ text-align: center;
     </div>
   </b:includable>
           </b:widget>
-<b:widget id='HTML30' locked='false' title='Interests' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML30' locked='false' title='Interests' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div id="gg-labeltree-post" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="post" data-max-posts="10">
   <div class="gg-lt__head">
@@ -994,7 +972,7 @@ text-align: center;
     </div>
   </b:includable>
           </b:widget>
-<b:widget id='HTML31' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML31' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>About & Philosophy</a></li>
@@ -1016,7 +994,7 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-<b:widget id='HTML32' locked='false' title='Knowledge Hub' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML32' locked='false' title='Knowledge Hub' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Topic Index</a></li>
@@ -1038,7 +1016,7 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-<b:widget id='HTML33' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML33' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Help Center</a></li>
@@ -1061,7 +1039,7 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-<b:widget id='HTML34' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML34' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Privacy Policy</a></li>
@@ -1083,7 +1061,7 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-<b:widget id='HTML35' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
+          <b:widget id='HTML35' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
   <li class="gg-navtree__item">
@@ -1109,7 +1087,19 @@ text-align: center;
   </details>
 </b:includable>
           </b:widget>
-<b:widget id='HTML36' locked='false' title='Follow' type='HTML' visible='true'>
+        </b:section>
+        
+      </b:if>
+           
+      </div>
+     
+       <div class='gg-sb__bot' data-gg-sb='bot'>
+        
+
+  <b:if cond='data:view.isMultipleItems'>
+
+        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-bottom-bloglisting' name='Left Sidebar (Blog)' showaddelement='true'>
+          <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <p class="gg-leftnav__sociallabel">look at me on</p>
@@ -1145,13 +1135,56 @@ text-align: center;
   </div>
 </b:includable>
           </b:widget>
-
         </b:section>
-      </b:if>
-      
-      
-      </div>
-      <div class='gg-sb__bot' data-gg-sb='bot'></div>
+          </b:if>
+        
+        <b:if cond='data:view.isSingleItem'>
+
+        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-bottom-postpagedetail' name='Left Sidebar (Blog)' showaddelement='true'>
+          <b:widget id='HTML40' locked='false' title='look at me on' type='HTML' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
+                <p class="gg-leftnav__sociallabel">look at me on</p>
+                <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
+                  <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
+                  </a>
+                  <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></path></svg>
+                  </a>
+                  <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></path></svg>
+                  </a>
+                  <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></path></svg>
+                  </a>
+               <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-tt-line'/>        </use></svg>
+                    </a>
+                    <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
+                    </a>
+                </div>
+              </div>
+ <div class='gg-footer__legal'>
+        <span>Copyright © 2026 PakRPP. All rights reserved.</span>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <data:content/>
+  </div>
+</b:includable>
+          </b:widget>
+        </b:section>
+          </b:if>
+        
+        </div>  
+        
+        
+        
+        
       </div>
     </aside>
     
@@ -1854,7 +1887,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
                 <b:widget-setting name='postsPerAd'>1</b:widget-setting>
-                <b:widget-setting name='numPosts'>9</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
                 <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
@@ -3889,9 +3921,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <template id='gg-toast-tpl'>
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
-<script>//<![CDATA[
+<script><![CDATA[
   (function(d,w){'use strict';function q(s,r){return(r||d).querySelector(s)}function c(s,r){return(r||d).querySelectorAll(s).length}var env=String(((q('meta[name="gg-env"]')||{}).content||'')).toLowerCase().trim();if(env!=='lab'&&env!=='dev')return;function run(){var sb=q('.gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-ready="1"]'),mode='',top=null,bot=null,topN=0,botN=0,bad=false;if(!sb)return;mode=String(sb.getAttribute('data-gg-sb-mode')||'list').toLowerCase();top=q('.gg-sb__top',sb);bot=q('.gg-sb__bot',sb);topN=top?c(':scope > .widget',top):0;botN=bot?c(':scope > .widget',bot):0;bad=!topN||!botN;if(!bad&&mode==='post')bad=!q('.gg-leftnav__profile',top)||!q('#gg-toc',top);if(!bad&&mode!=='post')bad=!q('.gg-leftnav__profile',top)||!q('.gg-labeltree[data-gg-module="labeltree"]',top);if(bad){sb.dataset.ggSbError='slot-assert';try{if(w.console&&typeof console.warn==='function')console.warn('[GG][LeftNav] segmented slot assertion failed',{mode:mode,top:topN,bot:botN});}catch(_){}}else delete sb.dataset.ggSbError;}function boot(){run();w.requestAnimationFrame(run);setTimeout(run,280);setTimeout(run,960);}if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',boot,{once:true});else boot();if(w.MutationObserver){var host=q('.gg-blog-sidebar--left');if(host)(new MutationObserver(run)).observe(host,{attributes:true,attributeFilter:['data-gg-sb-ready','data-gg-sb-mode','hidden'],childList:true,subtree:true});}})(document,window);
-  //]]></script>
+  ]]></script>
         
 
 <!-- GAGA HOME OF JS -->
