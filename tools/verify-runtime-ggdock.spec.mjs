@@ -4,20 +4,19 @@ const BASE_URL = process.env.GG_RUNTIME_BASE_URL || 'https://www.pakrpp.com/';
 
 test.setTimeout(60000);
 
-async function dockSearchOpen(page) {
+async function isBlogSurface(page) {
   return page.evaluate(() => {
-    const dock = document.querySelector('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
-    if (!dock) return null;
-    const states = String(dock.getAttribute('data-gg-state') || '')
-      .split(/\s+/)
-      .filter(Boolean);
-    if (states.includes('search')) return true;
-    // Defensive fallback if state class toggling is ever reintroduced.
-    return dock.classList ? dock.classList.contains('search') : false;
+    const url = window.location.pathname || '';
+    if (/^\/blog(?:\/)?$/i.test(url)) return true;
+    const main =
+      document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main');
+    const bodySurface = String(document.body?.getAttribute('data-gg-surface') || '').toLowerCase();
+    const mainSurface = String(main?.getAttribute('data-gg-surface') || '').toLowerCase();
+    return bodySurface === 'listing' || mainSurface === 'listing';
   });
 }
 
-test('runtime smoke: gg-dock boot + search toggle', async ({ page }) => {
+test('runtime smoke: gg-dock boot + home-blog navigation', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
   const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
@@ -38,26 +37,14 @@ test('runtime smoke: gg-dock boot + search toggle', async ({ page }) => {
     )
     .toBeTruthy();
 
-  const searchOpenBtn = page.locator('nav.gg-dock [data-gg-action="search"]').first();
-  await expect(searchOpenBtn).toBeVisible({ timeout: 15000 });
-
-  await searchOpenBtn.click({ timeout: 10000, force: true });
+  const blogBtn = page.locator('nav.gg-dock [data-gg-action="home-blog"]').first();
+  await expect(blogBtn).toBeVisible({ timeout: 15000 });
+  await blogBtn.click({ timeout: 10000, force: true });
 
   await expect
-    .poll(async () => dockSearchOpen(page), {
-      timeout: 15000,
-      message: 'Dock search state did not open after gg-dock search click'
+    .poll(async () => isBlogSurface(page), {
+      timeout: 20000,
+      message: 'Dock home-blog action did not navigate/flip to blog surface'
     })
     .toBe(true);
-
-  const searchCloseBtn = page.locator('nav.gg-dock [data-gg-action="search-exit"]').first();
-  await expect(searchCloseBtn).toBeVisible({ timeout: 10000 });
-  await searchCloseBtn.click({ timeout: 10000, force: true });
-
-  await expect
-    .poll(async () => dockSearchOpen(page), {
-      timeout: 10000,
-      message: 'Dock search state did not close after search-exit click'
-    })
-    .toBe(false);
 });
