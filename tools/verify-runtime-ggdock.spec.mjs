@@ -1,44 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.GG_RUNTIME_BASE_URL || 'https://www.pakrpp.com/';
+
 test.setTimeout(60000);
 
-async function leftPanelState(page) {
+async function dockSearchOpen(page) {
   return page.evaluate(() => {
-    const main = document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main');
-    if (!main) return null;
-    return (main.getAttribute('data-gg-left-panel') || '').toLowerCase() || null;
+    const dock = document.querySelector('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
+    if (!dock) return null;
+    return dock.classList.contains('search');
   });
 }
 
-async function ensureBlogMode(page) {
-  const toggleVisible = page.locator(
-    'nav.gg-dock [data-gg-action="left-toggle"]:visible, nav.gg-dock [data-gg-toggle="left-panel"]:visible'
-  );
-  if ((await toggleVisible.count()) > 0) return;
-
-  const blogBtn = page.locator('nav.gg-dock [data-gg-action="home-blog"]').first();
-  await expect(blogBtn).toBeVisible({ timeout: 10000 });
-  await blogBtn.click({ timeout: 10000, force: true });
-
-  await expect
-    .poll(
-      async () => {
-        const url = page.url();
-        const onBlogUrl = /\/blog(?:[/?#]|$)/i.test(url);
-        const homeState = await page.evaluate(() => {
-          const main = document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main');
-          return ((main && main.getAttribute('data-gg-home-state')) || '').toLowerCase();
-        });
-        const visibleToggleCount = await toggleVisible.count();
-        return onBlogUrl || homeState === 'blog' || visibleToggleCount > 0;
-      },
-      { timeout: 20000, message: 'Failed to transition dock from landing to blog mode' }
-    )
-    .toBeTruthy();
-}
-
-test('runtime smoke: gg-dock boot + toggle left panel', async ({ page }) => {
+test('runtime smoke: gg-dock boot + search toggle', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
   const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
@@ -59,32 +33,26 @@ test('runtime smoke: gg-dock boot + toggle left panel', async ({ page }) => {
     )
     .toBeTruthy();
 
-  await ensureBlogMode(page);
+  const searchOpenBtn = page.locator('nav.gg-dock [data-gg-action="search"]').first();
+  await expect(searchOpenBtn).toBeVisible({ timeout: 15000 });
 
-  const toggle = page.locator(
-    'nav.gg-dock [data-gg-action="left-toggle"]:visible, nav.gg-dock [data-gg-toggle="left-panel"]:visible'
-  );
-  await expect(toggle.first()).toBeVisible({ timeout: 15000 });
-
-  const before = await leftPanelState(page);
-  try {
-    await toggle.first().click({ timeout: 10000, force: true });
-  } catch (_) {
-    await page.evaluate(() => {
-      const btn = document.querySelector(
-        'nav.gg-dock [data-gg-action="left-toggle"], nav.gg-dock [data-gg-toggle="left-panel"]'
-      );
-      if (btn) btn.click();
-    });
-  }
+  await searchOpenBtn.click({ timeout: 10000, force: true });
 
   await expect
-    .poll(async () => leftPanelState(page), {
+    .poll(async () => dockSearchOpen(page), {
       timeout: 15000,
-      message: `Left panel state did not change after gg-dock toggle click (before=${before})`
+      message: 'Dock search state did not open after gg-dock search click'
     })
-    .not.toBe(before);
+    .toBe(true);
 
-  const after = await leftPanelState(page);
-  expect(['open', 'closed']).toContain(after);
+  const searchCloseBtn = page.locator('nav.gg-dock [data-gg-action="search-exit"]').first();
+  await expect(searchCloseBtn).toBeVisible({ timeout: 10000 });
+  await searchCloseBtn.click({ timeout: 10000, force: true });
+
+  await expect
+    .poll(async () => dockSearchOpen(page), {
+      timeout: 10000,
+      message: 'Dock search state did not close after search-exit click'
+    })
+    .toBe(false);
 });
