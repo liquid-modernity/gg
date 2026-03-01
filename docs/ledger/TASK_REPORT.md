@@ -1,92 +1,40 @@
 TASK_REPORT
 Last updated: 2026-03-01
 
-TASK_ID: TASK-P0-XML-ROUTER-ADDENDUM-HARDENING
+TASK_ID: TASK-P0-TAXONOMY-NORMALIZATION
 PARENT: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
-TITLE: Router addendum hardening (HTML correctness + no inline config script + context-gated init)
+TITLE: Taxonomy normalization for mixed-init gating + search/label attrs
 
-SUMMARY
-- Hardened XML script correctness by converting self-closing boot script tags to standard closing form in both templates.
-- Kept prod template free from the custom inline diagnostic script block (none present).
-- Confirmed head has no `<style>` blocks; critical CSS remains in `<b:skin>`.
-- Converted `gg-mixed-config` from inline JSON `<script>` to homepage-gated `<template id="gg-mixed-config">` in both templates.
-- Updated mixed module parser to read config safely from template/script text without `innerHTML`.
-- Added router-context utility in core runtime to read and normalize:
-  - `data-gg-view`
-  - `data-gg-device`
-  - `data-gg-preview`
-  - `data-gg-layout`
-  - `data-gg-sb-mode`
-  - `data-gg-label`
-  - `data-gg-query`
-- Applied router-context gating (`when`) to feature init/rehydrate so modules run only on intended view contexts:
-  - home-only: home state
-  - listing-like: loadmore/prefetch/skeleton/popular/info panel
-  - post/page: post detail, TOC/readtime/breadcrumbs/related/shortcodes/share
-  - system pages: sitemap/tag directory/hub
-- Updated listing mixed lazy-init so mixed module mounts only on `view=home`.
-- Updated CSS gating to prioritize `[data-gg-view]` and `[data-gg-device]` while preserving backward compatibility with `data-gg-page` and `data-gg-surface`.
-- Updated `verify-ui-guardrails` parser to accept both `<template>` and legacy `<script>` for `gg-mixed-config` JSON contract.
+SYMPTOM
+- `/blog` could still be treated as `home` by mixed lazy-init path because the gate used `view==='home'`.
+- `data-gg-query` and `data-gg-label` were sourced from `data:view.title`, so label/search semantics were ambiguous.
+- Label pages could carry `data-gg-query`, which is semantically wrong for taxonomy routing.
 
-FILES CHANGED
-- index.prod.xml
-- index.dev.xml
-- public/assets/latest/modules/ui.bucket.mixed.js
-- public/assets/latest/modules/ui.bucket.core.js
-- public/assets/latest/modules/ui.bucket.listing.js
-- public/assets/latest/main.css
-- tools/verify-ui-guardrails.mjs
-- docs/ledger/GG_CAPSULE.md
-- docs/ledger/TASK_LOG.md
-- docs/ledger/TASK_REPORT.md
+ROOT CAUSE
+- Mixed module gate in listing bucket depended on `routerCtx.view` and `data-gg-view`, not `surface`.
+- Template attrs on `<body>` and `#gg-main` used broad conditions and title fallback instead of `data:view.search.query` and `data:view.search.label`.
+- Router verifier had no explicit assertion for these taxonomy semantics, so regressions were not blocked.
 
-VERIFICATION OUTPUTS
-- `npm run verify:xml`
-```text
-OK index.dev.xml
-OK index.prod.xml
-```
+PATCH
+- `public/assets/latest/modules/ui.bucket.listing.js`
+  - Changed mixed init gate to key off `surface` (`routerCtx.surface` + `data-gg-surface`) and allow only `landing/home`.
+  - Removed dependency on `view==='home'` / `data-gg-view` for mixed bootstrap.
+- `index.prod.xml`, `index.dev.xml`
+  - `data-gg-label` now set only when label search and sourced from `data:view.search.label`.
+  - `data-gg-query` now set only when search AND NOT label search, sourced from `data:view.search.query`.
+  - Applied on both `<body>` and `<main id='gg-main'>`.
+- `tools/verify-router-contract.mjs`
+  - Added mixed-gate assertions: surface-based, no view-based mixed gate.
+  - Added taxonomy assertions: `gg-label` and `gg-query` must use search object semantics; legacy `data:view.title` mapping is rejected.
 
-- `node tools/verify-template-contract.mjs`
-```text
-VERIFY_TEMPLATE_CONTRACT: PASS
-```
-
-- `npm run verify:template-fingerprint`
-```text
-VERIFY_TEMPLATE_FINGERPRINT: PASS
-```
-
-- `node tools/verify-inline-css.mjs`
-```text
-VERIFY_INLINE_CSS: PASS
-```
-
-- `node tools/verify-router-contract.mjs`
-```text
-VERIFY_ROUTER_CONTRACT: PASS
-```
-
-- `node tools/verify-mixed-no-innerhtml.mjs`
-```text
-PASS: mixed.js has no innerHTML
-```
-
-- `node tools/verify-mixed-no-trivial-htmljs.mjs`
-```text
-PASS: mixed.js trivial htmljs blocked
-```
-
-- `node tools/verify-ui-guardrails.mjs`
-```text
-VERIFY_UI_GUARDRAILS: PASS
-```
-
-- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
-```text
-PASS: smoke tests
-```
+PROOF
+- `node tools/verify-router-contract.mjs` → `VERIFY_ROUTER_CONTRACT: PASS`
+- `npm run verify:xml` → `OK index.dev.xml`, `OK index.prod.xml`
+- `npm run verify:assets` → `VERIFY_ASSETS: PASS`
+- `./scripts/gg auto` → `GG_VERIFY: PASSED`, `PASS: smoke tests`, `PASS: gate:prod`
+- Perf budget remained green after optimization:
+  - `modules/ui.bucket.listing.js` raw `86271` (budget `86400`) via `node tools/verify-budgets.mjs`
 
 NOTES
-- Initial smoke failure occurred because `verify-ui-guardrails` expected only `<script id='gg-mixed-config'>`; this verifier was patched to parse both `<template>` and `<script>` formats.
-- Backward compatibility is preserved: `expr:data-gg-page` and `expr:data-gg-surface` remain unchanged in template contracts.
+- Asset retention gate tripped during release (`public/assets/v` > 5); oldest release dir was pruned to restore contract before rerun.
+- Live smoke currently tracks deployed worker release (`ff41e6d`); new release pin is generated locally (`a5e0e8b`) and awaits deployment propagation.

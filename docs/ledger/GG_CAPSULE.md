@@ -2,7 +2,7 @@
 Last updated: 2026-03-01
 
 NOW:
-- TASK-P0-XML-ROUTER-ADDENDUM-HARDENING: router addendum hardening for HTML correctness, mixed-config template contract, and router-context gating across CSS/JS init.
+- TASK-P0-TAXONOMY-NORMALIZATION: normalize SSR+JS taxonomy semantics for mixed gating and search/label attrs.
 
 CONSTRAINTS:
 - main-only
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-03-01 TASK-P0-XML-ROUTER-ADDENDUM-HARDENING hardened addendum rules: boot script tags switched to non-self-closing HTML form, `gg-mixed-config` converted to homepage-gated `<template>`, mixed module parser made template/script compatible without `innerHTML`, router-context utility added in core for `data-gg-view/device/preview/layout/sb-mode/label/query`, feature init gated by router context, CSS gates updated to prioritize `[data-gg-view]` and `[data-gg-device]`.
+- 2026-03-01 TASK-P0-TAXONOMY-NORMALIZATION normalized taxonomy semantics: mixed lazy-init now gated by `surface` (`landing/home`) instead of `view`, `/blog` excluded from mixed bootstrap, `data-gg-query` sourced only from `data:view.search.query` on non-label search, `data-gg-label` sourced only from `data:view.search.label` on label search, and router verifier hardened to block regressions.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)
