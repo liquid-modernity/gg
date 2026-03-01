@@ -1,46 +1,106 @@
 TASK_REPORT
-Last updated: 2026-02-22
+Last updated: 2026-03-01
 
-TASK_ID: TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222
-TITLE: Sticky full-height sidebars with isolated scroll regions
+TASK_ID: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
+TITLE: Blogger-first SSR router taxonomy and gating with backward-compatible contracts
 
 SUMMARY
-- Reworked sidebar containers in `public/assets/latest/main.css` from fixed-drawer behavior to sticky full-height viewport behavior.
-- Removed sidebar fixed-position rules from listing/post/mobile sidebar blocks and standardized sticky dimensions with `height/max-height` + `min-height:0`.
-- Ensured sidebars stay inside layout container flow so they stop before footer/container end.
-- Isolated scroll regions:
-  - Left sidebar: `#gg-left-sidebar-list` (and sidebar section variants) now uses `min-height:0 + overflow:auto + overscroll-behavior:contain`.
-  - ToC: `#gg-toc` now uses flex column structure; only `.gg-toc__list` scrolls (`overflow:auto`, `min-height:0`).
-- Aligned post layout container behavior closer to listing/home alignment by using sticky side columns in `.gg-blog-layout--post` (no fixed side drawers).
-- Added verifier `tools/verify-sidebar-sticky-contract.mjs` and wired into `tools/gate-prod.sh`.
+- Added a single SSR router taxonomy layer in both templates (`index.prod.xml`, `index.dev.xml`) using nested `b:with` variables:
+  `ggIsError`, `ggIsMobile`, `ggIsHome`, `ggIsListing`, `ggIsPost`, `ggIsPage`, `ggIsSingle`, `ggIsSearch`, `ggIsLabel`, `ggIsArchive`, `ggIsLayout`, `ggIsSystemPage`, `ggViewKind`.
+- Preserved required template contract markers:
+  - `<body>` still keeps original `expr:data-gg-page` and `expr:data-gg-surface`.
+  - `<main id="gg-main">` still keeps original `expr:data-gg-page` and `expr:data-gg-surface`.
+- Added new SSR router attrs on both `<body>` and `#gg-main`:
+  - `expr:data-gg-view='data:ggViewKind'`
+  - `expr:data-gg-device='data:ggIsMobile ? "mobile" : "desktop"'`
+  - `expr:data-gg-preview='data:view.isPreview ? "1" : "0"'`
+  - `expr:data-gg-layout='data:ggIsLayout ? "1" : "0"'`
+  - conditional `data-gg-label` / `data-gg-query` attrs for label/search views.
+- Tightened Load More SSR gating:
+  - now rendered only when `isMultipleItems` AND not search/label/archive AND `olderPageUrl` exists.
+- Scoped `gg-mixed-config` to homepage only so it does not render on post/page/error.
+- Upgraded left sidebar mode contract:
+  - `expr:data-gg-sb-mode='post|list|system'` using `ggIsSystemPage` URL matching.
+- Removed the custom inline diagnostic script block near end of `index.prod.xml`.
+- Moved custom critical head style blocks into `<b:skin>` in both templates (no additional head `<style>` block left).
+- Release artifacts were realigned to `RELEASE_ID=cf094be` and oldest release dir was pruned to satisfy `verify:assets` cap.
+
+NEW IDENTIFIERS (NAMING CHECK)
+- `data-gg-view`
+- `data-gg-device`
+- `data-gg-preview`
+- `data-gg-layout`
+- `ggIsSystemPage` (template variable)
+- `ggViewKind` (template variable)
+
+All identifiers follow `docs/NAMING.md` (`data-gg-*` / `gg*` internal template vars).
 
 FILES CHANGED
-- public/assets/latest/main.css
-- tools/verify-sidebar-sticky-contract.mjs
-- tools/gate-prod.sh
-- docs/ledger/TASK_LOG.md
-- docs/ledger/TASK_REPORT.md
-- docs/ledger/GG_CAPSULE.md
 - index.prod.xml
+- index.dev.xml
 - public/sw.js
 - src/worker.js
-- public/assets/v/cc3ed54/*
+- public/assets/v/cf094be/*
+- docs/ledger/GG_CAPSULE.md
+- docs/ledger/TASK_LOG.md
+- docs/ledger/TASK_REPORT.md
+- removed: public/assets/v/4c69317/*
 
 VERIFICATION OUTPUTS
-- `node tools/verify-sidebar-sticky-contract.mjs`
+- `npm run verify:xml`
 ```text
-PASS: sidebar sticky contract
+OK index.dev.xml
+OK index.prod.xml
 ```
 
-- `npm run gate:prod`
+- `npm run verify:assets`
 ```text
-PASS: sidebar sticky contract
-PASS: gate:prod
+VERIFY_ASSETS: PASS
+RELEASE_ID=cf094be
 ```
 
-MANUAL SANITY
-- Not executed in this CLI-only environment.
-- Recommended browser checks:
-  - Post/listing desktop: sidebars are full-height sticky and stop at layout end (no footer overlap).
-  - Left sidebar: only pages-list region scrolls.
-  - ToC: header stays, ToC list scrolls independently.
+- `npm run verify:release`
+```text
+VERIFY_RULEBOOKS: PASS
+VERIFY_AUTHORS_DIR_CONTRACT: PASS
+VERIFY_RELEASE_ALIGNED: PASS
+```
+
+- `node tools/verify-template-contract.mjs`
+```text
+VERIFY_TEMPLATE_CONTRACT: PASS
+```
+
+- `node tools/verify-router-contract.mjs`
+```text
+VERIFY_ROUTER_CONTRACT: PASS
+```
+
+- `node tools/verify-budgets.mjs`
+```text
+VERIFY_BUDGETS: PASS
+```
+
+- `node tools/verify-inline-css.mjs`
+```text
+VERIFY_INLINE_CSS: PASS
+```
+
+- `node tools/verify-crp.mjs`
+```text
+VERIFY_CRP: PASS
+```
+
+- `./scripts/gg auto`
+```text
+GG_VERIFY: PASSED
+```
+Note: in sandbox, final stage uses offline smoke fallback because DNS to `www.pakrpp.com` is blocked.
+
+BACKWARD COMPATIBILITY NOTES
+- Existing consumers of `data-gg-page` and `data-gg-surface` remain unaffected because the original expressions were preserved.
+- New attrs (`data-gg-view/device/preview/layout`) are additive and safe for progressive adoption.
+- Sidebar mode upgrade is additive (`system` mode added without breaking prior `post/list` usage).
+
+DEPLOY NOTES
+- Local environment cannot validate live DNS (`www.pakrpp.com`) from sandbox; CI/live smoke is still required for full live confirmation after template paste/deploy.

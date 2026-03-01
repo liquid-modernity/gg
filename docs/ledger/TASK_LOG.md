@@ -2399,3 +2399,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): prior CSS used fixed sidebar drawers for several breakpoints; contract now enforces sticky + explicit scroll areas (left list + ToC list)
 - RISKS: med; mobile drawer interaction changed to sticky/show-hide behavior and should be sanity-checked on real devices
 - NEXT: user-priority task
+
+## 2026-03-01 — TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING — SSR router taxonomy + Blogger-first gating
+- DATE: 2026-03-01
+- TASK_ID: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
+- TITLE: Refactor Blogger router taxonomy and gating with backward-compatible template contracts
+- MODE (DEV/PROD impact): template contracts + SSR routing attributes + release alignment
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: add router `b:with` vars in prod/dev templates, mirror SSR attrs on `<body>`/`#gg-main`, tighten listing Load More gating, homepage-only mixed config, 3-state sidebar mode (`post|list|system`), move critical head styles into `<b:skin>`, remove custom prod inline diagnostic script
+- CHANGES (files touched): index.prod.xml; index.dev.xml; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md; public/sw.js; src/worker.js; public/assets/v/<RELEASE_ID>/*; removed `public/assets/v/4c69317/*`
+- COMMANDS RUN (local): `npm run verify:xml`; `npm run verify:assets`; `npm run verify:release`; `node tools/verify-template-contract.mjs`; `node tools/verify-router-contract.mjs`; `node tools/verify-budgets.mjs`; `node tools/verify-inline-css.mjs`; `node tools/verify-crp.mjs`; `./scripts/gg auto`
+- CI STATUS: pending next workflow run
+- DEPLOY STATUS: pending ship in this task
+- VERIFY (URLs + expected): all static contracts PASS locally; smoke path used offline fallback in sandbox because DNS to `www.pakrpp.com` is blocked in this environment
+- NOTES (gotchas): `build` initially failed on dirty tree by design; release was realigned through `./scripts/gg auto` with `ALLOW_DIRTY_RELEASE=1`; assets retention cap (max 5 release dirs) required pruning the oldest `public/assets/v/4c69317`
+- RISKS: medium-low; Blogger runtime compile must still be confirmed after manual paste of updated template in live theme
+- NEXT: user-priority task

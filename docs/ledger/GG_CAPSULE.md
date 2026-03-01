@@ -1,8 +1,8 @@
 # GG_CAPSULE (current session)
-Last updated: 2026-02-22
+Last updated: 2026-03-01
 
 NOW:
-- TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222: sidebars now use sticky full-height contract with isolated scroll regions.
+- TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING: SSR router taxonomy/gating is now handled first in Blogger conditionals with backward-compatible contract attrs retained.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: fa31420
+RELEASE_ID: 2fbdd83
 RELEASE_HISTORY:
-- fa31420
-- 2b0f654
-PROD_PINNED_JS: /assets/v/fa31420/main.js
-PROD_PINNED_APP: /assets/v/fa31420/app.js
-PROD_PINNED_CSS: /assets/v/fa31420/main.css
+- 2fbdd83
+- cf094be
+PROD_PINNED_JS: /assets/v/2fbdd83/main.js
+PROD_PINNED_APP: /assets/v/2fbdd83/app.js
+PROD_PINNED_CSS: /assets/v/2fbdd83/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-02-22 TASK-UX-SIDEBARS-FULLHEIGHT-SCROLL-20260222 converted sidebar containers to sticky full-height and locked scroll to list/ToC regions.
+- 2026-03-01 TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING added SSR router `b:with` taxonomy (`error/home/label/search/archive/post/page/listing`), mirrored `data-gg-view/device/preview/layout` on `<body>` and `#gg-main`, tightened Load More gating for non-search/non-label/non-archive listings, homepage-scoped `gg-mixed-config`, upgraded sidebar mode to `post|list|system`, removed custom inline diagnostic script from prod template, and released `cf094be`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

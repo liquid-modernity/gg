@@ -3,77 +3,10 @@
 <html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 
   <head>
-    <b:if cond='data:view.isHomepage'>
-      <style>
-html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;landing&quot;],
-html[data-gg-prehome=&quot;blog&quot;]  [data-gg-home-root=&quot;1&quot;] .gg-home-landing { display:none !important; }
-
-html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] [data-gg-home-layer=&quot;blog&quot;],
-html[data-gg-prehome=&quot;landing&quot;] [data-gg-home-root=&quot;1&quot;] .gg-home-blog { display:none !important; }
-      </style>
-    </b:if>
-
     <meta name='gg:mode' content='dev'/>
     <meta name='gg-env' content='dev'/>
     <meta name='gg-release' content='dev'/>
-    <script>
-    (function(){
-      try{
-        var m=document.querySelector("meta[name='gg:mode']");
-        if(!m) return;
-        if(m.getAttribute("content")!=="dev") return;
-        var nav=window.navigator;
-        if(!nav){ try{console.info("GG DEV: inline SW cleanup");}catch(e){}; return; }
-        if(!nav.serviceWorker){ try{console.info("GG DEV: inline SW cleanup");}catch(e){}; return; }
-        var key="gg_dev_inline_sw_cleaned";
-        var already=false;
-        try{ already=!!sessionStorage.getItem(key); }catch(e){}
-        var had=false;
-        var tasks=[];
-        try{
-          tasks.push(nav.serviceWorker.getRegistrations().then(function(list){
-            if(list){ if(list.length) had=true; }
-            var regs=list?list:[];
-            return Promise.all(regs.map(function(reg){
-              try{ return reg.unregister(); }catch(e){ return null; }
-            }));
-          }).catch(function(){}));
-        }catch(e){}
-        try{
-          if(window.caches){
-            tasks.push(caches.keys().then(function(keys){
-              var target=keys.filter(function(k){ return /^gg-/.test(k)||/^workbox-/.test(k); });
-              if(target.length) had=true;
-              return Promise.all(target.map(function(k){ return caches.delete(k); }));
-            }).catch(function(){}));
-          }
-        }catch(e){}
-        Promise.all(tasks).then(function(){
-          var controlled=false;
-          try{ controlled=!!nav.serviceWorker.controller; }catch(e){}
-          var shouldReload=false;
-          if(!already){
-            if(controlled||had) shouldReload=true;
-          }
-          if(shouldReload){
-            try{ sessionStorage.setItem(key,"1"); }catch(e){}
-            location.reload();
-            return;
-          }
-          try{ console.info("GG DEV: inline SW cleanup"); }catch(e){}
-        });
-      }catch(e){}
-    })();
-    </script>
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <style>
-:root{--gg-bg:#f6f7f9;--gg-ink:#0f172a;}
-*{box-sizing:border-box;}
-html,body{height:100%;}
-body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji";}
-[hidden]{display:none!important;}
-img{max-width:100%;height:auto;}
-    </style>
     <link rel='preload' as='style' href='/assets/latest/main.css?v=20260203160035' onload='this.onload=null;this.rel="stylesheet"'/>
     <noscript><link rel='stylesheet' href='/assets/latest/main.css?v=20260203160035'/></noscript>
     <!-- Structured data (Schema.org) -->
@@ -200,6 +133,12 @@ img{max-width:100%;height:auto;}
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */
+:root{--gg-bg:#f6f7f9;--gg-ink:#0f172a;}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--gg-bg);color:var(--gg-ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+[hidden]{display:none!important;}
+img{max-width:100%;height:auto;}
 :root{ --gg-main-max: 1285px; }
 html{ box-sizing:border-box; }
 *,*::before,*::after{ box-sizing:inherit; }
@@ -222,6 +161,10 @@ body[data-gg-surface="post"] .gg-home-landing{
   display:none !important;
 }
 body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
+html[data-gg-prehome="blog"] [data-gg-home-root="1"] [data-gg-home-layer="landing"],
+html[data-gg-prehome="blog"] [data-gg-home-root="1"] .gg-home-landing{display:none !important;}
+html[data-gg-prehome="landing"] [data-gg-home-root="1"] [data-gg-home-layer="blog"],
+html[data-gg-prehome="landing"] [data-gg-home-root="1"] .gg-home-blog{display:none !important;}
 
 :where(a, button, input, textarea, select, summary, [role="button"], [tabindex]):focus-visible{
   outline:2px solid currentColor;
@@ -266,15 +209,31 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 ]]></b:skin>
     
-<!-- /GAGA HOME OF CSS -->
+	<!-- /GAGA HOME OF CSS -->
 
-    <b:include data='blog' name='google-analytics'/>
+	    <b:include data='blog' name='google-analytics'/>
 </head>
 
-  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))'>
-    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
-    <script id='gg-mixed-config' type='application/json'><![CDATA[
+<b:with value='data:blog.pageType == &quot;error_page&quot;' var='ggIsError'>
+<b:with value='data:blog.isMobileRequest' var='ggIsMobile'>
+<b:with value='data:view.isHomepage' var='ggIsHome'>
+<b:with value='data:view.isMultipleItems' var='ggIsListing'>
+<b:with value='data:view.isPost' var='ggIsPost'>
+<b:with value='data:view.isPage' var='ggIsPage'>
+<b:with value='data:view.isSingleItem' var='ggIsSingle'>
+<b:with value='data:view.isSearch' var='ggIsSearch'>
+<b:with value='data:view.isLabelSearch' var='ggIsLabel'>
+<b:with value='data:view.isArchive' var='ggIsArchive'>
+<b:with value='data:view.isLayoutMode' var='ggIsLayout'>
+<b:with value='data:view.url and (data:view.url contains &quot;/p/tags.html&quot; or data:view.url contains &quot;/p/sitemap.html&quot; or data:view.url contains &quot;/p/library.html&quot; or data:view.url contains &quot;/p/author.html&quot;)' var='ggIsSystemPage'>
+<b:with value='data:ggIsError ? &quot;error&quot; : (data:ggIsHome ? &quot;home&quot; : (data:ggIsLabel ? &quot;label&quot; : (data:ggIsSearch ? &quot;search&quot; : (data:ggIsArchive ? &quot;archive&quot; : (data:ggIsPost ? &quot;post&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;listing&quot;))))))' var='ggViewKind'>
+	  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? "mobile" : "desktop"' expr:data-gg-preview='data:view.isPreview ? "1" : "0"' expr:data-gg-layout='data:ggIsLayout ? "1" : "0"'>
+    <b:attr cond='data:ggIsLabel' expr:value='data:view.title' name='data-gg-label'/>
+    <b:attr cond='data:ggIsSearch' expr:value='data:view.title' name='data-gg-query'/>
+	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
+	    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
+    <b:if cond='data:view.isHomepage'>
+	    <script id='gg-mixed-config' type='application/json'><![CDATA[
 {
   "fetch": {
     "max_results": 84,
@@ -291,6 +250,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
   ]
 }
 ]]></script>
+    </b:if>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
       <!-- Logo -->
@@ -331,8 +291,10 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;))))' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))'>
+  <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;))))' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
+    <b:attr cond='data:ggIsLabel' expr:value='data:view.title' name='data-gg-label'/>
+    <b:attr cond='data:ggIsSearch' expr:value='data:view.title' name='data-gg-query'/>
 
     
      
@@ -558,7 +520,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     
     <!-- SIDEBAR KIRI -->
     <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
-      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:view.isSingleItem ? &quot;post&quot; : &quot;list&quot;'>
+      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
          <b:if cond='data:view.isMultipleItems'>
         <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list' name='Left SB Top (List)' showaddelement='true'>
           <b:widget id='HTML27' locked='false' title='Profile' type='HTML' visible='true'>
@@ -1648,7 +1610,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 
   <!-- LOAD MORE -->
               <div class='gg-loadmore-wrap' data-gg-module='loadmore'>
-                  <b:if cond='data:view.isMultipleItems and data:olderPageUrl'>
+                  <b:if cond='data:view.isMultipleItems and not data:view.isSearch and not data:view.isLabelSearch and not data:view.isArchive and data:olderPageUrl'>
                     <button class='gg-loadmore' expr:data-next='data:olderPageUrl' id='loadmore' type='button'>
                       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>article</span>
                       <span class='gg-loadmore__label'>Load More Articles</span>
@@ -3720,4 +3682,17 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <script defer='defer' src='/assets/latest/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 </body>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
+</b:with>
 </html>
