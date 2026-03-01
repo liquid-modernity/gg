@@ -8,7 +8,12 @@ async function dockSearchOpen(page) {
   return page.evaluate(() => {
     const dock = document.querySelector('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
     if (!dock) return null;
-    return dock.classList.contains('search');
+    const states = String(dock.getAttribute('data-gg-state') || '')
+      .split(/\s+/)
+      .filter(Boolean);
+    if (states.includes('search')) return true;
+    // Defensive fallback if state class toggling is ever reintroduced.
+    return dock.classList ? dock.classList.contains('search') : false;
   });
 }
 
