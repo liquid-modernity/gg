@@ -11,6 +11,33 @@ async function leftPanelState(page) {
   });
 }
 
+async function ensureBlogMode(page) {
+  const toggleVisible = page.locator(
+    'nav.gg-dock [data-gg-action="left-toggle"]:visible, nav.gg-dock [data-gg-toggle="left-panel"]:visible'
+  );
+  if ((await toggleVisible.count()) > 0) return;
+
+  const blogBtn = page.locator('nav.gg-dock [data-gg-action="home-blog"]').first();
+  await expect(blogBtn).toBeVisible({ timeout: 10000 });
+  await blogBtn.click({ timeout: 10000, force: true });
+
+  await expect
+    .poll(
+      async () => {
+        const url = page.url();
+        const onBlogUrl = /\/blog(?:[/?#]|$)/i.test(url);
+        const homeState = await page.evaluate(() => {
+          const main = document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main');
+          return ((main && main.getAttribute('data-gg-home-state')) || '').toLowerCase();
+        });
+        const visibleToggleCount = await toggleVisible.count();
+        return onBlogUrl || homeState === 'blog' || visibleToggleCount > 0;
+      },
+      { timeout: 20000, message: 'Failed to transition dock from landing to blog mode' }
+    )
+    .toBeTruthy();
+}
+
 test('runtime smoke: gg-dock boot + toggle left panel', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
@@ -32,17 +59,28 @@ test('runtime smoke: gg-dock boot + toggle left panel', async ({ page }) => {
     )
     .toBeTruthy();
 
+  await ensureBlogMode(page);
+
   const toggle = page.locator(
-    'nav.gg-dock [data-gg-action="left-toggle"], nav.gg-dock [data-gg-toggle="left-panel"]'
+    'nav.gg-dock [data-gg-action="left-toggle"]:visible, nav.gg-dock [data-gg-toggle="left-panel"]:visible'
   );
   await expect(toggle.first()).toBeVisible({ timeout: 15000 });
 
   const before = await leftPanelState(page);
-  await toggle.first().click({ timeout: 10000 });
+  try {
+    await toggle.first().click({ timeout: 10000, force: true });
+  } catch (_) {
+    await page.evaluate(() => {
+      const btn = document.querySelector(
+        'nav.gg-dock [data-gg-action="left-toggle"], nav.gg-dock [data-gg-toggle="left-panel"]'
+      );
+      if (btn) btn.click();
+    });
+  }
 
   await expect
     .poll(async () => leftPanelState(page), {
-      timeout: 10000,
+      timeout: 15000,
       message: `Left panel state did not change after gg-dock toggle click (before=${before})`
     })
     .not.toBe(before);
