@@ -2,7 +2,7 @@
 Last updated: 2026-03-01
 
 NOW:
-- TASK-P0-TAXONOMY-NORMALIZATION: normalize SSR+JS taxonomy semantics for mixed gating and search/label attrs.
+- TASK-P1-HYGIENE-HARDENING: harden template hygiene (no stray style, strict script correctness, mixed config guardrails).
 
 CONSTRAINTS:
 - main-only
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-03-01 TASK-P0-TAXONOMY-NORMALIZATION normalized taxonomy semantics: mixed lazy-init now gated by `surface` (`landing/home`) instead of `view`, `/blog` excluded from mixed bootstrap, `data-gg-query` sourced only from `data:view.search.query` on non-label search, `data-gg-label` sourced only from `data:view.search.label` on label search, and router verifier hardened to block regressions.
+- 2026-03-01 TASK-P1-HYGIENE-HARDENING: removed stray inline tooltip `<style>` from template includables, moved tooltip CSS into `public/assets/latest/main.css`, hardened `gg-mixed-config` gate with `/blog` exclusion, added strict `verify-template-hygiene` gate (self-closing script/style-outside-skin/inline-exec script checks), and wired it into `gate:prod`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

@@ -2447,3 +2447,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): build initially failed due dirty-tree release guard and was re-run with `ALLOW_DIRTY_RELEASE=1`; assets retention cap (max 5 dirs) required pruning oldest release dirs
 - RISKS: low; taxonomy mapping now explicit but relies on Blogger exposing `data:view.search.*` consistently on search/label views
 - NEXT: user-priority task
+
+## 2026-03-01 — TASK-P1-HYGIENE-HARDENING — Template hygiene hardening
+- DATE: 2026-03-01
+- TASK_ID: TASK-P1-HYGIENE-HARDENING
+- TITLE: Harden template hygiene (style/script correctness + mixed config guard)
+- MODE (DEV/PROD impact): template shell + CSS asset + verification gates
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: remove stray inline `<style>` from tooltip includable, move tooltip CSS into versioned `main.css`, harden `gg-mixed-config` gate against `/blog` alias, add strict template hygiene verifier, wire verifier into gate-prod, and expose convenient npm script aliases for required checks
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/main.css; tools/verify-template-hygiene.mjs; tools/gate-prod.sh; package.json; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md; docs/ledger/GG_CAPSULE.md
+- COMMANDS RUN (local): `npm run verify:xml`; `npm run verify:template-contract`; `npm run verify:template-fingerprint`; `npm run verify-inline-css`; `npm run verify:template-hygiene`; `SMOKE_EXPECT=live tools/smoke.sh`; route header checks via `curl -sSI` for `/`, `/blog`, post, legal/page/system endpoints
+- CI STATUS: local mandatory checks PASS
+- DEPLOY STATUS: not deployed in this task (code committed locally)
+- VERIFY (URLs + expected): smoke PASS on `https://www.pakrpp.com`; route probes for `/p/tags.html` and `/p/authors.html` returned `HTTP 200` and `x-robots-tag: index, follow`
+- NOTES (gotchas): verifier allows native Blogger comments bootstrap call `BLOG_CMT_createIframe(...)` as Protected Zone exception while still blocking other inline executable script in prod template
+- RISKS: low; tightened mixed-config gate depends on `data:view.url` availability but includes null-safe fallback branch
+- NEXT: user-priority task

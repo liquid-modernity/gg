@@ -1,40 +1,53 @@
 TASK_REPORT
 Last updated: 2026-03-01
 
-TASK_ID: TASK-P0-TAXONOMY-NORMALIZATION
-PARENT: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
-TITLE: Taxonomy normalization for mixed-init gating + search/label attrs
+TASK_ID: TASK-P1-HYGIENE-HARDENING
+PARENT: TASK-P0-TAXONOMY-NORMALIZATION
+TITLE: Template hygiene hardening (no stray style, no inline executable JS in prod, mixed config hard gate)
 
 SYMPTOM
-- `/blog` could still be treated as `home` by mixed lazy-init path because the gate used `view==='home'`.
-- `data-gg-query` and `data-gg-label` were sourced from `data:view.title`, so label/search semantics were ambiguous.
-- Label pages could carry `data-gg-query`, which is semantically wrong for taxonomy routing.
+- Template still had a `<style>` block inside `tooltipCss` includable (outside `<b:skin>`), violating hygiene target.
+- No dedicated verifier existed to enforce template hygiene rules (self-closing script, CDATA script, style outside skin, mixed config container/gate).
+- `gg-mixed-config` gate used homepage-only condition but was not explicitly hardened against `/blog` alias leakage in SSR.
 
 ROOT CAUSE
-- Mixed module gate in listing bucket depended on `routerCtx.view` and `data-gg-view`, not `surface`.
-- Template attrs on `<body>` and `#gg-main` used broad conditions and title fallback instead of `data:view.search.query` and `data:view.search.label`.
-- Router verifier had no explicit assertion for these taxonomy semantics, so regressions were not blocked.
+- Legacy Blogger tooltip includable still emitted inline `<style>`.
+- Existing checks were split and did not provide one strict policy gate for template hygiene.
+- Mixed config gate had no explicit `/blog` exclusion in condition.
 
 PATCH
-- `public/assets/latest/modules/ui.bucket.listing.js`
-  - Changed mixed init gate to key off `surface` (`routerCtx.surface` + `data-gg-surface`) and allow only `landing/home`.
-  - Removed dependency on `view==='home'` / `data-gg-view` for mixed bootstrap.
 - `index.prod.xml`, `index.dev.xml`
-  - `data-gg-label` now set only when label search and sourced from `data:view.search.label`.
-  - `data-gg-query` now set only when search AND NOT label search, sourced from `data:view.search.query`.
-  - Applied on both `<body>` and `<main id='gg-main'>`.
-- `tools/verify-router-contract.mjs`
-  - Added mixed-gate assertions: surface-based, no view-based mixed gate.
-  - Added taxonomy assertions: `gg-label` and `gg-query` must use search object semantics; legacy `data:view.title` mapping is rejected.
+  - Hardened `gg-mixed-config` gate:
+    - from `data:view.isHomepage`
+    - to `data:view.isHomepage and (not data:view.url or not (data:view.url contains "/blog"))`
+  - Removed inline `<style>` from `tooltipCss` includable.
+- `public/assets/latest/main.css`
+  - Moved tooltip rules from template inline style into versioned external CSS asset.
+- `tools/verify-template-hygiene.mjs` (new)
+  - Fails on:
+    - `<script .../>`
+    - `<style>` outside `<b:skin>`
+    - inline executable CDATA script in `index.prod.xml`
+    - `gg-mixed-config` rendered as `<script>` instead of `<template>`
+    - missing homepage gate and missing `/blog` exclusion for `gg-mixed-config`
+  - Keeps strict allowlist for native Blogger comment bootstrap call `BLOG_CMT_createIframe(...)` (protected zone).
+- `package.json`
+  - Added scripts:
+    - `verify:template-contract`
+    - `verify:template-hygiene`
+    - `verify-inline-css`
+- `tools/gate-prod.sh`
+  - Added `node tools/verify-template-hygiene.mjs` to mandatory gate sequence.
 
 PROOF
-- `node tools/verify-router-contract.mjs` → `VERIFY_ROUTER_CONTRACT: PASS`
-- `npm run verify:xml` → `OK index.dev.xml`, `OK index.prod.xml`
-- `npm run verify:assets` → `VERIFY_ASSETS: PASS`
-- `./scripts/gg auto` → `GG_VERIFY: PASSED`, `PASS: smoke tests`, `PASS: gate:prod`
-- Perf budget remained green after optimization:
-  - `modules/ui.bucket.listing.js` raw `86271` (budget `86400`) via `node tools/verify-budgets.mjs`
+- `npm run verify:template-contract` → PASS
+- `npm run verify:template-fingerprint` → PASS
+- `npm run verify-inline-css` → PASS (`style=0`, budget within limit)
+- `npm run verify:template-hygiene` → PASS
+- `SMOKE_EXPECT=live tools/smoke.sh` → PASS
+- Route smoke headers:
+  - `/`, `/blog`, post, `/p/privacy-policy.html`, `/p/tags.html`, `/p/authors.html` all `HTTP 200` + `x-robots-tag: index, follow`
 
 NOTES
-- Asset retention gate tripped during release (`public/assets/v` > 5); oldest release dir was pruned to restore contract before rerun.
-- Live smoke currently tracks deployed worker release (`ff41e6d`); new release pin is generated locally (`a5e0e8b`) and awaits deployment propagation.
+- No router semantics changed (`data-gg-page` / `data-gg-surface` retained).
+- Prod template remains free of inline executable diagnostic script; JSON-LD script blocks are preserved as non-executable structured-data payload.
