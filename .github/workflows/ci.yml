@@ -84,6 +84,14 @@ jobs:
       - name: Verify template fingerprint
         run: node tools/verify-template-fingerprint.mjs
 
+      - name: Install Playwright Chromium (runtime smoke)
+        run: npx -y playwright@1.52.0 install --with-deps chromium
+
+      - name: Runtime smoke (gg-dock interactivity)
+        env:
+          GG_RUNTIME_BASE_URL: https://www.pakrpp.com/
+        run: npx -y playwright@1.52.0 test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line
+
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
 
