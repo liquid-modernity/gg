@@ -233,7 +233,12 @@
     if (!el) return cfg;
 
     try {
-      var raw = JSON.parse(el.textContent || '{}');
+      var text = '';
+      var tag = String(el.tagName || '').toUpperCase();
+      if (tag === 'TEMPLATE') text = (el.content && el.content.textContent) || el.textContent || '';
+      else text = el.textContent || '';
+      if (!text && el.getAttribute) text = el.getAttribute('data-json') || '';
+      var raw = JSON.parse(text || '{}');
       if (raw && raw.fetch && typeof raw.fetch === 'object') {
         cfg.fetch.max_results = clampInt(raw.fetch.max_results, DEFAULT_FETCH_MAX, 1, 120);
         cfg.fetch.order = String(raw.fetch.order || DEFAULT_ORDER).trim() || DEFAULT_ORDER;
