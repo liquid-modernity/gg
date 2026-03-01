@@ -93,7 +93,11 @@ jobs:
       - name: Runtime smoke (gg-dock interactivity)
         env:
           GG_RUNTIME_BASE_URL: https://www.pakrpp.com/
-        run: npx playwright test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line
+        run: |
+          set -e
+          echo "Runtime smoke test source fingerprint:"
+          sed -n '1,120p' tools/verify-runtime-ggdock.spec.mjs
+          npx playwright test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line
 
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
