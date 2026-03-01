@@ -113,21 +113,88 @@ function validateCore(core, label) {
   });
 }
 
+function validateMixedGate(listingSource, label) {
+  if (!listingSource) {
+    failures.push(`${label} missing or empty`);
+    return;
+  }
+
+  if (!/data-gg-surface/.test(listingSource)) {
+    failures.push(`${label}: mixed init gate must read data-gg-surface`);
+  }
+  if (!/c&&c\.surface/.test(listingSource)) {
+    failures.push(`${label}: mixed init gate must use routerCtx.surface`);
+  }
+  if (!/cs!=='landing'&&cs!=='home'/.test(listingSource)) {
+    failures.push(`${label}: mixed init gate must allow only landing/home surfaces`);
+  }
+  if (/c&&c\.view&&c\.view!==['"]home['"]/.test(listingSource)) {
+    failures.push(`${label}: mixed init gate still keyed by routerCtx.view==='home'`);
+  }
+  if (/data-gg-view/.test(listingSource)) {
+    failures.push(`${label}: mixed init gate must not depend on data-gg-view`);
+  }
+}
+
+function countMatches(source, re) {
+  const hits = source.match(re);
+  return hits ? hits.length : 0;
+}
+
+function validateTemplateTaxonomy(source, label) {
+  if (!source) {
+    failures.push(`${label} missing or empty`);
+    return;
+  }
+
+  const labelPattern = /<b:attr\s+cond='[^']*data:ggIsLabel[^']*data:view\.search[^']*data:view\.search\.label[^']*'\s+expr:value='data:view\.search\.label'\s+name='data-gg-label'\/>/g;
+  const queryPattern = /<b:attr\s+cond='[^']*data:ggIsSearch[^']*not\s+data:ggIsLabel[^']*data:view\.search[^']*data:view\.search\.query[^']*'\s+expr:value='data:view\.search\.query'\s+name='data-gg-query'\/>/g;
+
+  if (countMatches(source, labelPattern) < 2) {
+    failures.push(`${label}: data-gg-label must be sourced from data:view.search.label on body+main attrs`);
+  }
+  if (countMatches(source, queryPattern) < 2) {
+    failures.push(`${label}: data-gg-query must be sourced from data:view.search.query and excluded for label pages`);
+  }
+
+  const legacyLabel =
+    /name='data-gg-label'[^>]*expr:value='data:view\.title'|expr:value='data:view\.title'[^>]*name='data-gg-label'/i;
+  const legacyQuery =
+    /name='data-gg-query'[^>]*expr:value='data:view\.title'|expr:value='data:view\.title'[^>]*name='data-gg-query'/i;
+  if (legacyLabel.test(source)) {
+    failures.push(`${label}: legacy data-gg-label mapping to data:view.title is not allowed`);
+  }
+  if (legacyQuery.test(source)) {
+    failures.push(`${label}: legacy data-gg-query mapping to data:view.title is not allowed`);
+  }
+}
+
 const indexXml = readFile("index.prod.xml");
+const indexDevXml = readFile("index.dev.xml");
 const releaseId = extractReleaseId(indexXml);
 if (!releaseId) {
   failures.push("unable to extract release id from index.prod.xml");
 }
 
+validateTemplateTaxonomy(indexXml, "index.prod.xml");
+validateTemplateTaxonomy(indexDevXml, "index.dev.xml");
+
 if (releaseId) {
   const pinnedCore = readFile(`public/assets/v/${releaseId}/core.js`);
   validateCore(pinnedCore, `pinned core.js (v/${releaseId})`);
+  const pinnedListing = readFile(`public/assets/v/${releaseId}/modules/ui.bucket.listing.js`);
+  validateMixedGate(pinnedListing, `pinned ui.bucket.listing.js (v/${releaseId})`);
 }
 
 const latestCorePath = path.join(root, "public", "assets", "latest", "core.js");
 if (fs.existsSync(latestCorePath)) {
   const latestCore = fs.readFileSync(latestCorePath, "utf8");
   validateCore(latestCore, "latest core.js");
+}
+const latestListingPath = path.join(root, "public", "assets", "latest", "modules", "ui.bucket.listing.js");
+if (fs.existsSync(latestListingPath)) {
+  const latestListing = fs.readFileSync(latestListingPath, "utf8");
+  validateMixedGate(latestListing, "latest ui.bucket.listing.js");
 }
 
 if (failures.length) {

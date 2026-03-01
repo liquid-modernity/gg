@@ -228,8 +228,8 @@ body:not([data-gg-surface="landing"]) .hero-section {
 <b:with value='data:view.url and (data:view.url contains &quot;/p/tags.html&quot; or data:view.url contains &quot;/p/sitemap.html&quot; or data:view.url contains &quot;/p/library.html&quot; or data:view.url contains &quot;/p/author.html&quot;)' var='ggIsSystemPage'>
 <b:with value='data:ggIsError ? &quot;error&quot; : (data:ggIsHome ? &quot;home&quot; : (data:ggIsLabel ? &quot;label&quot; : (data:ggIsSearch ? &quot;search&quot; : (data:ggIsArchive ? &quot;archive&quot; : (data:ggIsPost ? &quot;post&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;listing&quot;))))))' var='ggViewKind'>
 	  <body expr:class='"loading"' expr:data-gg-surface='data:view.isHomepage ? "landing" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post"))' expr:data-gg-page='data:blog.pageType == "error_page" ? "error" : (data:view.isHomepage ? "home" : (data:view.isMultipleItems ? "listing" : (data:view.isPage ? "page" : "post")))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? "mobile" : "desktop"' expr:data-gg-preview='data:view.isPreview ? "1" : "0"' expr:data-gg-layout='data:ggIsLayout ? "1" : "0"'>
-    <b:attr cond='data:ggIsLabel' expr:value='data:view.title' name='data-gg-label'/>
-    <b:attr cond='data:ggIsSearch' expr:value='data:view.title' name='data-gg-query'/>
+    <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
+    <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
 	    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
     <b:if cond='data:view.isHomepage'>
@@ -293,8 +293,8 @@ body:not([data-gg-surface="landing"]) .hero-section {
 
   <main class='gg-main' id='gg-main' tabindex='-1' expr:data-gg-home-state='data:view.isHomepage ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-surface='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isHomepage ? &quot;home&quot; : &quot;feed&quot;))))' expr:data-gg-page='data:blog.pageType == &quot;error_page&quot; ? &quot;error&quot; : (data:view.isHomepage ? &quot;home&quot; : (data:view.isMultipleItems ? &quot;listing&quot; : (data:view.isPage ? &quot;page&quot; : &quot;post&quot;)))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
-    <b:attr cond='data:ggIsLabel' expr:value='data:view.title' name='data-gg-label'/>
-    <b:attr cond='data:ggIsSearch' expr:value='data:view.title' name='data-gg-query'/>
+    <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
+    <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
 
     
      
