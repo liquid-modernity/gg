@@ -233,7 +233,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
 	    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
     <b:if cond='data:view.isHomepage'>
-	    <script id='gg-mixed-config' type='application/json'><![CDATA[
+	    <template id='gg-mixed-config'><![CDATA[
 {
   "fetch": {
     "max_results": 84,
@@ -249,7 +249,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"defer":1,"kicker":"PODCAST"}
   ]
 }
-]]></script>
+]]></template>
     </b:if>
     <!-- GAGA LOGO SVG -->
     <svg aria-hidden='true' class='gg-visually-hidden' focusable='false' xmlns='http://www.w3.org/2000/svg'>
@@ -3679,7 +3679,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </template>
 
 <!-- GAGA HOME OF JS -->
-  <script defer='defer' src='/assets/latest/boot.js?v=20260203160035'/>
+  <script defer='defer' src='/assets/latest/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 </body>
 </b:with>

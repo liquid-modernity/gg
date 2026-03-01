@@ -2,7 +2,7 @@
 Last updated: 2026-03-01
 
 NOW:
-- TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING: SSR router taxonomy/gating is now handled first in Blogger conditionals with backward-compatible contract attrs retained.
+- TASK-P0-XML-ROUTER-ADDENDUM-HARDENING: router addendum hardening for HTML correctness, mixed-config template contract, and router-context gating across CSS/JS init.
 
 CONSTRAINTS:
 - main-only
@@ -14,13 +14,13 @@ CONSTRAINTS:
 - apex redirect via Cloudflare Redirect Rule (301) to https://www.pakrpp.com/$1
 
 <!-- GG:AUTOGEN:BEGIN -->
-RELEASE_ID: 2fbdd83
+RELEASE_ID: ff41e6d
 RELEASE_HISTORY:
+- ff41e6d
 - 2fbdd83
-- cf094be
-PROD_PINNED_JS: /assets/v/2fbdd83/main.js
-PROD_PINNED_APP: /assets/v/2fbdd83/app.js
-PROD_PINNED_CSS: /assets/v/2fbdd83/main.css
+PROD_PINNED_JS: /assets/v/ff41e6d/main.js
+PROD_PINNED_APP: /assets/v/ff41e6d/app.js
+PROD_PINNED_CSS: /assets/v/ff41e6d/main.css
 <!-- GG:AUTOGEN:END -->
 
 LIVE CONTRACT (must hold):
@@ -40,7 +40,7 @@ NEXT_TASK:
 - user-priority
 
 LAST_PATCH:
-- 2026-03-01 TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING added SSR router `b:with` taxonomy (`error/home/label/search/archive/post/page/listing`), mirrored `data-gg-view/device/preview/layout` on `<body>` and `#gg-main`, tightened Load More gating for non-search/non-label/non-archive listings, homepage-scoped `gg-mixed-config`, upgraded sidebar mode to `post|list|system`, removed custom inline diagnostic script from prod template, and released `cf094be`.
+- 2026-03-01 TASK-P0-XML-ROUTER-ADDENDUM-HARDENING hardened addendum rules: boot script tags switched to non-self-closing HTML form, `gg-mixed-config` converted to homepage-gated `<template>`, mixed module parser made template/script compatible without `innerHTML`, router-context utility added in core for `data-gg-view/device/preview/layout/sb-mode/label/query`, feature init gated by router context, CSS gates updated to prioritize `[data-gg-view]` and `[data-gg-device]`.
 
 RISKS (top 5):
 - Manual paste mismatch (dev/prod)

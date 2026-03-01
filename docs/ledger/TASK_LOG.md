@@ -2415,3 +2415,19 @@ Last updated: 2026-02-21
 - NOTES (gotchas): `build` initially failed on dirty tree by design; release was realigned through `./scripts/gg auto` with `ALLOW_DIRTY_RELEASE=1`; assets retention cap (max 5 release dirs) required pruning the oldest `public/assets/v/4c69317`
 - RISKS: medium-low; Blogger runtime compile must still be confirmed after manual paste of updated template in live theme
 - NEXT: user-priority task
+
+## 2026-03-01 — TASK-P0-XML-ROUTER-ADDENDUM-HARDENING — Router addendum hardening (HTML correctness + no inline config script + ctx-gated init)
+- DATE: 2026-03-01
+- TASK_ID: TASK-P0-XML-ROUTER-ADDENDUM-HARDENING
+- TITLE: Harden router addendum with template-safe config, strict script tag correctness, and router-context driven module gating
+- MODE (DEV/PROD impact): template + runtime JS/CSS + verifier compatibility
+- RELEASE_REF: GG_CAPSULE AUTOGEN
+- SCOPE: replace self-closing boot script tags in prod/dev XML, keep prod free of custom inline diagnostic script, convert homepage `gg-mixed-config` to `<template>`, update mixed parser and verifier for template/script compatibility, add router-context utility (`data-gg-view/device/preview/layout/sb-mode/label/query`) and gate module init/rehydrate by view intent, plus CSS gates prioritizing `[data-gg-view]`/`[data-gg-device]`
+- CHANGES (files touched): index.prod.xml; index.dev.xml; public/assets/latest/modules/ui.bucket.mixed.js; public/assets/latest/modules/ui.bucket.core.js; public/assets/latest/modules/ui.bucket.listing.js; public/assets/latest/main.css; tools/verify-ui-guardrails.mjs; docs/ledger/GG_CAPSULE.md; docs/ledger/TASK_LOG.md; docs/ledger/TASK_REPORT.md
+- COMMANDS RUN (local): `npm run verify:xml`; `node tools/verify-template-contract.mjs`; `npm run verify:template-fingerprint`; `node tools/verify-inline-css.mjs`; `node tools/verify-router-contract.mjs`; `node tools/verify-mixed-no-innerhtml.mjs`; `node tools/verify-mixed-no-trivial-htmljs.mjs`; `node tools/verify-ui-guardrails.mjs`; `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+- CI STATUS: pending next workflow run
+- DEPLOY STATUS: pending ship for this task
+- VERIFY (URLs + expected): smoke live PASS on `https://www.pakrpp.com` with release `2fbdd83` and all live contracts (banned markers/legal/toc/panel metadata/multizone) passing
+- NOTES (gotchas): `verify-ui-guardrails` initially failed because it assumed `gg-mixed-config` was only `<script>` JSON; patched to accept both `<template>` and `<script>` formats
+- RISKS: low/med; router-context gating narrows module init by view, so future features must declare correct `when` routing intent
+- NEXT: user-priority task

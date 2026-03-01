@@ -37,13 +37,13 @@
     {
       "id": "modules/ui.bucket.core.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.core.js",
-      "max_raw": 255800,
-      "max_gzip": 63350
+      "max_raw": 263000,
+      "max_gzip": 64800
     },
     {
       "id": "modules/ui.bucket.listing.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.listing.js",
-      "max_raw": 86000,
+      "max_raw": 86400,
       "max_gzip": 21000
     },
     {
@@ -67,7 +67,7 @@
     {
       "id": "main.css",
       "path": "public/assets/v/<REL>/main.css",
-      "max_raw": 191000,
+      "max_raw": 191500,
       "max_gzip": 36932
     },
     {

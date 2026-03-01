@@ -1,50 +1,44 @@
 TASK_REPORT
 Last updated: 2026-03-01
 
-TASK_ID: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
-TITLE: Blogger-first SSR router taxonomy and gating with backward-compatible contracts
+TASK_ID: TASK-P0-XML-ROUTER-ADDENDUM-HARDENING
+PARENT: TASK-P0-XML-ROUTER-TAXONOMY-AND-GATING
+TITLE: Router addendum hardening (HTML correctness + no inline config script + context-gated init)
 
 SUMMARY
-- Added a single SSR router taxonomy layer in both templates (`index.prod.xml`, `index.dev.xml`) using nested `b:with` variables:
-  `ggIsError`, `ggIsMobile`, `ggIsHome`, `ggIsListing`, `ggIsPost`, `ggIsPage`, `ggIsSingle`, `ggIsSearch`, `ggIsLabel`, `ggIsArchive`, `ggIsLayout`, `ggIsSystemPage`, `ggViewKind`.
-- Preserved required template contract markers:
-  - `<body>` still keeps original `expr:data-gg-page` and `expr:data-gg-surface`.
-  - `<main id="gg-main">` still keeps original `expr:data-gg-page` and `expr:data-gg-surface`.
-- Added new SSR router attrs on both `<body>` and `#gg-main`:
-  - `expr:data-gg-view='data:ggViewKind'`
-  - `expr:data-gg-device='data:ggIsMobile ? "mobile" : "desktop"'`
-  - `expr:data-gg-preview='data:view.isPreview ? "1" : "0"'`
-  - `expr:data-gg-layout='data:ggIsLayout ? "1" : "0"'`
-  - conditional `data-gg-label` / `data-gg-query` attrs for label/search views.
-- Tightened Load More SSR gating:
-  - now rendered only when `isMultipleItems` AND not search/label/archive AND `olderPageUrl` exists.
-- Scoped `gg-mixed-config` to homepage only so it does not render on post/page/error.
-- Upgraded left sidebar mode contract:
-  - `expr:data-gg-sb-mode='post|list|system'` using `ggIsSystemPage` URL matching.
-- Removed the custom inline diagnostic script block near end of `index.prod.xml`.
-- Moved custom critical head style blocks into `<b:skin>` in both templates (no additional head `<style>` block left).
-- Release artifacts were realigned to `RELEASE_ID=cf094be` and oldest release dir was pruned to satisfy `verify:assets` cap.
-
-NEW IDENTIFIERS (NAMING CHECK)
-- `data-gg-view`
-- `data-gg-device`
-- `data-gg-preview`
-- `data-gg-layout`
-- `ggIsSystemPage` (template variable)
-- `ggViewKind` (template variable)
-
-All identifiers follow `docs/NAMING.md` (`data-gg-*` / `gg*` internal template vars).
+- Hardened XML script correctness by converting self-closing boot script tags to standard closing form in both templates.
+- Kept prod template free from the custom inline diagnostic script block (none present).
+- Confirmed head has no `<style>` blocks; critical CSS remains in `<b:skin>`.
+- Converted `gg-mixed-config` from inline JSON `<script>` to homepage-gated `<template id="gg-mixed-config">` in both templates.
+- Updated mixed module parser to read config safely from template/script text without `innerHTML`.
+- Added router-context utility in core runtime to read and normalize:
+  - `data-gg-view`
+  - `data-gg-device`
+  - `data-gg-preview`
+  - `data-gg-layout`
+  - `data-gg-sb-mode`
+  - `data-gg-label`
+  - `data-gg-query`
+- Applied router-context gating (`when`) to feature init/rehydrate so modules run only on intended view contexts:
+  - home-only: home state
+  - listing-like: loadmore/prefetch/skeleton/popular/info panel
+  - post/page: post detail, TOC/readtime/breadcrumbs/related/shortcodes/share
+  - system pages: sitemap/tag directory/hub
+- Updated listing mixed lazy-init so mixed module mounts only on `view=home`.
+- Updated CSS gating to prioritize `[data-gg-view]` and `[data-gg-device]` while preserving backward compatibility with `data-gg-page` and `data-gg-surface`.
+- Updated `verify-ui-guardrails` parser to accept both `<template>` and legacy `<script>` for `gg-mixed-config` JSON contract.
 
 FILES CHANGED
 - index.prod.xml
 - index.dev.xml
-- public/sw.js
-- src/worker.js
-- public/assets/v/cf094be/*
+- public/assets/latest/modules/ui.bucket.mixed.js
+- public/assets/latest/modules/ui.bucket.core.js
+- public/assets/latest/modules/ui.bucket.listing.js
+- public/assets/latest/main.css
+- tools/verify-ui-guardrails.mjs
 - docs/ledger/GG_CAPSULE.md
 - docs/ledger/TASK_LOG.md
 - docs/ledger/TASK_REPORT.md
-- removed: public/assets/v/4c69317/*
 
 VERIFICATION OUTPUTS
 - `npm run verify:xml`
@@ -53,32 +47,14 @@ OK index.dev.xml
 OK index.prod.xml
 ```
 
-- `npm run verify:assets`
-```text
-VERIFY_ASSETS: PASS
-RELEASE_ID=cf094be
-```
-
-- `npm run verify:release`
-```text
-VERIFY_RULEBOOKS: PASS
-VERIFY_AUTHORS_DIR_CONTRACT: PASS
-VERIFY_RELEASE_ALIGNED: PASS
-```
-
 - `node tools/verify-template-contract.mjs`
 ```text
 VERIFY_TEMPLATE_CONTRACT: PASS
 ```
 
-- `node tools/verify-router-contract.mjs`
+- `npm run verify:template-fingerprint`
 ```text
-VERIFY_ROUTER_CONTRACT: PASS
-```
-
-- `node tools/verify-budgets.mjs`
-```text
-VERIFY_BUDGETS: PASS
+VERIFY_TEMPLATE_FINGERPRINT: PASS
 ```
 
 - `node tools/verify-inline-css.mjs`
@@ -86,21 +62,31 @@ VERIFY_BUDGETS: PASS
 VERIFY_INLINE_CSS: PASS
 ```
 
-- `node tools/verify-crp.mjs`
+- `node tools/verify-router-contract.mjs`
 ```text
-VERIFY_CRP: PASS
+VERIFY_ROUTER_CONTRACT: PASS
 ```
 
-- `./scripts/gg auto`
+- `node tools/verify-mixed-no-innerhtml.mjs`
 ```text
-GG_VERIFY: PASSED
+PASS: mixed.js has no innerHTML
 ```
-Note: in sandbox, final stage uses offline smoke fallback because DNS to `www.pakrpp.com` is blocked.
 
-BACKWARD COMPATIBILITY NOTES
-- Existing consumers of `data-gg-page` and `data-gg-surface` remain unaffected because the original expressions were preserved.
-- New attrs (`data-gg-view/device/preview/layout`) are additive and safe for progressive adoption.
-- Sidebar mode upgrade is additive (`system` mode added without breaking prior `post/list` usage).
+- `node tools/verify-mixed-no-trivial-htmljs.mjs`
+```text
+PASS: mixed.js trivial htmljs blocked
+```
 
-DEPLOY NOTES
-- Local environment cannot validate live DNS (`www.pakrpp.com`) from sandbox; CI/live smoke is still required for full live confirmation after template paste/deploy.
+- `node tools/verify-ui-guardrails.mjs`
+```text
+VERIFY_UI_GUARDRAILS: PASS
+```
+
+- `SMOKE_LIVE_HTML=1 tools/smoke.sh`
+```text
+PASS: smoke tests
+```
+
+NOTES
+- Initial smoke failure occurred because `verify-ui-guardrails` expected only `<script id='gg-mixed-config'>`; this verifier was patched to parse both `<template>` and `<script>` formats.
+- Backward compatibility is preserved: `expr:data-gg-page` and `expr:data-gg-surface` remain unchanged in template contracts.

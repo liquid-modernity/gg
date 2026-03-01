@@ -354,12 +354,17 @@ function verifySectionTagContract(indexXml, id, opts) {
 }
 
 function parseMixedConfig(indexXml) {
-  const m = indexXml.match(
-    /<script[^>]*id=['"]gg-mixed-config['"][^>]*>\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*<\/script>/i
+  const templateMatch = indexXml.match(
+    /<template[^>]*id=['"]gg-mixed-config['"][^>]*>\s*([\s\S]*?)\s*<\/template>/i
   );
+  const scriptMatch = indexXml.match(
+    /<script[^>]*id=['"]gg-mixed-config['"][^>]*>\s*([\s\S]*?)\s*<\/script>/i
+  );
+  const m = templateMatch || scriptMatch;
   if (!m) return null;
   try {
-    return JSON.parse(m[1]);
+    const raw = String(m[1] || "").replace(/^\s*<!\[CDATA\[/, "").replace(/\]\]>\s*$/, "");
+    return JSON.parse(raw);
   } catch (_) {
     return null;
   }
