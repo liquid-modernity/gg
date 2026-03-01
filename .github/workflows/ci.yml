@@ -97,7 +97,7 @@ jobs:
           set -e
           echo "Runtime smoke test source fingerprint:"
           sed -n '1,120p' tools/verify-runtime-ggdock.spec.mjs
-          npx playwright test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line
+          npx playwright test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line --output=/tmp/gg-playwright-results
 
       - name: Verify headers contract (config)
         run: node tools/verify-headers.mjs --mode=config
@@ -114,6 +114,7 @@ jobs:
       - name: Verify build determinism
         run: |
           set -e
+          rm -rf test-results playwright-report
           if ! git diff --exit-code; then
             echo "Build produced changes. Run npm run build locally and commit generated artifacts."
             exit 1
