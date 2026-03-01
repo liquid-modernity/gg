@@ -3892,10 +3892,12 @@ left.__ggSbMutating=0;
 }
 }
 
+function scheduleRepair(left){arrangeSegments(left);}
+
 function init(mainEl){
 var left=qs('.gg-blog-sidebar--left',mainEl)||qs('.gg-blog-sidebar--left',document);
-if(!left)return;enhanceCustomPages(left);arrangeSegments(left);
-if(window.MutationObserver&&!left.__ggSbObs){var t=0;left.__ggSbObs=1;(new MutationObserver(function(){if(left.__ggSbMutating||t)return;t=1;requestAnimationFrame(function(){t=0;arrangeSegments(left);});})).observe(left,{childList:true,subtree:true});}
+if(!left)return;enhanceCustomPages(left);scheduleRepair(left);
+if(window.MutationObserver&&!left.__ggSbObs){var t=0;left.__ggSbObs=1;(new MutationObserver(function(){if(left.__ggSbMutating||t)return;t=1;requestAnimationFrame(function(){t=0;scheduleRepair(left);});})).observe(left,{childList:true,subtree:true});}
 }
 
 return{init:init};
