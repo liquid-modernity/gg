@@ -19,6 +19,10 @@ if ! "${ROOT}/tools/check-links.sh"; then
   die "check-links failed"
 fi
 
+if ! node "${ROOT}/tools/verify-no-selfclosing-script.mjs"; then
+  die "verify-no-selfclosing-script failed"
+fi
+
 if ! node "${ROOT}/tools/verify-ui-guardrails.mjs"; then
   die "verify-ui-guardrails failed"
 fi

@@ -17,7 +17,7 @@ Dokumen lain (termasuk GagaCodexGroundrules.docx) adalah **konsep/legacy** dan t
 Di template Blogger XML:
 - **BOLEH**:
   1) Critical CSS di dalam `<b:skin>`
-  2) External scripts: `<script defer='defer' src='…'/>`
+  2) External scripts: `<script defer='defer' src='…'></script>` (wajib explicit closing tag, tidak boleh self-closing)
   3) Markup skeleton + hooks (id/class/data-attr) untuk UI
   4) Native Blogger Comments widget (black box, lihat Protected Zone)
 
