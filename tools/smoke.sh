@@ -918,6 +918,15 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
       if ! grep -Eqi 'data-gg-surface=["'"'"']listing["'"'"']' <<<"${html}"; then
         die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
       fi
+      if ! grep -Eqi 'data-gg-page=["'"'"']listing["'"'"']' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-page=\"listing\""
+      fi
+      if ! grep -Eqi 'data-gg-view=["'"'"']listing["'"'"']' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-view=\"listing\""
+      fi
+      if ! grep -Eqi 'data-gg-home-state=["'"'"']blog["'"'"']' <<<"${html}"; then
+        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-home-state=\"blog\""
+      fi
       if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
         local live_snippet
         live_snippet="$(

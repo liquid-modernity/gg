@@ -1399,8 +1399,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "63c1382";
-    const TEMPLATE_ALLOWED_RELEASES = ["63c1382","ee58d86"];
+    const WORKER_VERSION = "9070fe5";
+    const TEMPLATE_ALLOWED_RELEASES = ["9070fe5","60e2702"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -2003,6 +2003,9 @@ export default {
               meta.surface = (el.getAttribute("data-gg-surface") || "").trim();
               if (forceListing) {
                 el.setAttribute("data-gg-surface", "listing");
+                // Canonicalize router taxonomy for /blog SSR so runtime modules do not see "home".
+                el.setAttribute("data-gg-page", "listing");
+                el.setAttribute("data-gg-view", "listing");
               }
               const schemaJson = buildSchema();
               el.prepend(
@@ -2061,6 +2064,11 @@ export default {
             })
             .on("main#gg-main", {
               element(el) {
+                el.setAttribute("data-gg-surface", "listing");
+                el.setAttribute("data-gg-page", "listing");
+                el.setAttribute("data-gg-view", "listing");
+                // Keep home-root contract but force blog state for listing alias.
+                el.setAttribute("data-gg-home-state", "blog");
                 el.prepend(listingH1, { html: true });
               },
             })
