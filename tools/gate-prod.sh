@@ -28,6 +28,7 @@ run node tools/verify-rulebooks.mjs
 run node tools/verify-postmeta-contract.mjs
 run node tools/verify-post-fetch-parser.mjs
 run node tools/verify-rehydrate-hooks.mjs
+run node tools/verify-runtime-es5-compat.mjs
 run node tools/verify-comments-single-cta.mjs
 run node tools/verify-loadmore-contract.mjs
 run node tools/verify-route-a11y-contract.mjs

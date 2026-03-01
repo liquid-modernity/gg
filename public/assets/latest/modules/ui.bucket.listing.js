@@ -7,19 +7,18 @@
   GG.__uiBuckets.listing = true;
 
 (function(){
-  var run = function(){
-    const v = document.getElementById("ggHeroVideo");
-    const hero = document.getElementById("gg-landing-hero");
-    if (!v || !hero || !("IntersectionObserver" in window)) return;
-
-    v.play().catch(()=>{});
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e=> e.isIntersecting ? v.play().catch(()=>{}) : v.pause());
-    }, { threshold: 0.25 });
+  var run=function(){
+    var v=document.getElementById("ggHeroVideo"),hero=document.getElementById("gg-landing-hero");
+    if(!v||!hero||!("IntersectionObserver" in window)) return;
+    var safePlay=function(){try{var p=v.play();if(p&&typeof p.catch==="function")p.catch(function(){});}catch(_){}};
+    safePlay();
+    var io=new IntersectionObserver(function(entries){
+      for(var i=0;i<entries.length;i++){var e=entries[i];if(e&&e.isIntersecting)safePlay();else{try{v.pause();}catch(_){}}}
+    },{threshold:0.25});
     io.observe(hero);
   };
-  if (window.GG && GG.boot && GG.boot.defer) GG.boot.defer(run);
-  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+  if(window.GG&&GG.boot&&GG.boot.defer) GG.boot.defer(run);
+  else if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run,{once:true});
   else run();
 })();
 
@@ -2121,135 +2120,71 @@
   };
 })(window.GG, document);
 
-(() => {
-  const CACHE_PAGES = "gg-pages-v2";
-  const MAX_PREFETCH = 10;
-  const MAX_INFLIGHT = 2;
-
-  function init() {
-    const container = document.querySelector("#postcards");
-    if (!container) return;
-
-    if (/^\/\d{4}\/\d{2}\//.test(location.pathname)) return;
-
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn && (conn.saveData || /2g/.test(conn.effectiveType || ""))) return;
-
-    if (!("caches" in window) || !window.fetch) return;
-
-    let budget = MAX_PREFETCH;
-    let inflight = 0;
-    const seen = new Set();
-
-    function normalizePostUrl(href) {
-      try {
-        const url = new URL(href, location.href);
-        if (url.origin !== location.origin) return null;
-
-        if (!/^\/\d{4}\/\d{2}\//.test(url.pathname)) return null;
-
-        url.hash = "";
-        if (url.searchParams.has("m")) url.searchParams.delete("m");
-
+(function(){
+  var CACHE_PAGES="gg-pages-v2",MAX_PREFETCH=10,MAX_INFLIGHT=2;
+  function init(){
+    var container=document.querySelector("#postcards");
+    if(!container||/^\/\d{4}\/\d{2}\//.test(location.pathname)) return;
+    var conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(conn&&(conn.saveData||/2g/.test(conn.effectiveType||""))) return;
+    if(!("caches" in window)||!window.fetch) return;
+    var budget=MAX_PREFETCH,inflight=0,seen=new Set();
+    function normalizePostUrl(href){
+      try{
+        var url=new URL(href,location.href);
+        if(url.origin!==location.origin||!/^\/\d{4}\/\d{2}\//.test(url.pathname)) return null;
+        url.hash="";
+        if(url.searchParams.has("m")) url.searchParams.delete("m");
         return url.toString();
-      } catch (e) {
-        return null;
-      }
+      }catch(e){ return null; }
     }
-
-    function schedule(fn) {
-      if ("requestIdleCallback" in window) requestIdleCallback(fn, { timeout: 1200 });
-      else setTimeout(fn, 150);
-    }
-
-    async function prefetchToCache(urlStr) {
-      if (!urlStr || budget <= 0) return;
-      if (seen.has(urlStr)) return;
-      if (inflight >= MAX_INFLIGHT) return;
-
-      seen.add(urlStr);
-      budget--;
-      inflight++;
-
-      try {
-        const cache = await caches.open(CACHE_PAGES);
-
-        const hit = await cache.match(urlStr);
-        if (hit) return;
-
-        const res = await fetch(urlStr, {
-          credentials: "same-origin",
-          headers: { Accept: "text/html" },
+    function schedule(fn){ if("requestIdleCallback" in window) requestIdleCallback(fn,{timeout:1200}); else setTimeout(fn,150); }
+    function prefetchToCache(urlStr){
+      if(!urlStr||budget<=0||seen.has(urlStr)||inflight>=MAX_INFLIGHT) return;
+      seen.add(urlStr);budget--;inflight++;
+      var done=function(){ inflight--; };
+      return caches.open(CACHE_PAGES).then(function(cache){
+        return cache.match(urlStr).then(function(hit){
+          if(hit) return;
+          return fetch(urlStr,{credentials:"same-origin",headers:{Accept:"text/html"}}).then(function(res){
+            var ct=res&&res.headers?(res.headers.get("content-type")||""):"";
+            if(res&&res.ok&&ct.indexOf("text/html")>-1) return cache.put(urlStr,res.clone());
+          });
         });
-
-        const ct = res.headers.get("content-type") || "";
-        if (res.ok && ct.includes("text/html")) {
-          await cache.put(urlStr, res.clone());
-        }
-      } catch (e) {
-      } finally {
-        inflight--;
-      }
+      }).catch(function(){}).then(done,done);
     }
-
-    function getCandidateAnchors() {
-      return container.querySelectorAll(
-        'a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]'
-      );
+    function getCandidateAnchors(){ return container.querySelectorAll("a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]"); }
+    function onCandidateEvent(e){
+      var a=e.target&&e.target.closest?e.target.closest("a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]"):null;
+      if(!a) return;
+      var u=normalizePostUrl(a.getAttribute("href"));
+      if(u) schedule(function(){ prefetchToCache(u); });
     }
-
-    container.addEventListener(
-      "pointerover",
-      (e) => {
-        const a = e.target && e.target.closest
-          ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
-          : null;
-        if (!a) return;
-        const u = normalizePostUrl(a.getAttribute("href"));
-        if (u) schedule(() => prefetchToCache(u));
-      },
-      { passive: true }
-    );
-
-    container.addEventListener(
-      "focusin",
-      (e) => {
-        const a = e.target && e.target.closest
-          ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
-          : null;
-        if (!a) return;
-        const u = normalizePostUrl(a.getAttribute("href"));
-        if (u) schedule(() => prefetchToCache(u));
+    container.addEventListener("pointerover",onCandidateEvent,{passive:true});
+    container.addEventListener("focusin",onCandidateEvent);
+    var io=new IntersectionObserver(function(entries){
+      for(var i=0;i<entries.length;i++){
+        var ent=entries[i];
+        if(!ent.isIntersecting) continue;
+        io.unobserve(ent.target);
+        var u=normalizePostUrl(ent.target.getAttribute("href"));
+        if(u) schedule((function(urlToPrefetch){ return function(){ prefetchToCache(urlToPrefetch); }; })(u));
       }
-    );
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const ent of entries) {
-          if (!ent.isIntersecting) continue;
-          io.unobserve(ent.target);
-          const u = normalizePostUrl(ent.target.getAttribute("href"));
-          if (u) schedule(() => prefetchToCache(u));
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    getCandidateAnchors().forEach((a) => io.observe(a));
-
-    schedule(() => {
-      const anchors = Array.from(getCandidateAnchors()).slice(0, 4);
-      anchors.forEach((a) => {
-        const u = normalizePostUrl(a.getAttribute("href"));
-        if (u) prefetchToCache(u);
-      });
+    },{rootMargin:"200px"});
+    var anchorsToObserve=getCandidateAnchors();
+    for(var j=0;j<anchorsToObserve.length;j++) io.observe(anchorsToObserve[j]);
+    schedule(function(){
+      var anchors=Array.prototype.slice.call(getCandidateAnchors(),0,4);
+      for(var k=0;k<anchors.length;k++){
+        var u=normalizePostUrl(anchors[k].getAttribute("href"));
+        if(u) prefetchToCache(u);
+      }
     });
   }
-
-  window.GG = window.GG || {};
-  GG.modules = GG.modules || {};
-  GG.modules.prefetch = GG.modules.prefetch || {};
-  GG.modules.prefetch.init = GG.modules.prefetch.init || init;
+  window.GG=window.GG||{};
+  GG.modules=GG.modules||{};
+  GG.modules.prefetch=GG.modules.prefetch||{};
+  GG.modules.prefetch.init=GG.modules.prefetch.init||init;
 })();
 
 (function(G,w,d){

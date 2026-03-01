@@ -1264,8 +1264,8 @@ GG.services.actions.init = GG.services.actions.init || function(){ if(GG.service
 })(window.GG = window.GG || {}, window, document);
 
 
-GG.actions.register('dock:toggle', () => {
-const s = GG.store.get();
+GG.actions.register('dock:toggle', function(){
+var s = GG.store.get();
 GG.store.set({ dockOpen: !s.dockOpen });
 });
 GG.ui = GG.ui || {};
@@ -1888,8 +1888,8 @@ GG.boot.init = function(){
 
 (function(){
 var run = function(){
-const v = document.getElementById("ggHeroVideo");
-const hero = document.getElementById("gg-landing-hero");
+var v = document.getElementById("ggHeroVideo");
+var hero = document.getElementById("gg-landing-hero");
 if (!v || !hero || !("IntersectionObserver" in window)) return;
 var reduced = false;
 try{
@@ -1918,9 +1918,21 @@ if (reduced || slowNet) {
   return;
 }
 
-v.play().catch(()=>{});
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=> e.isIntersecting ? v.play().catch(()=>{}) : v.pause());
+var safePlay = function(){
+  try {
+    var p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(function(){});
+  } catch (_) {}
+};
+safePlay();
+var io = new IntersectionObserver(function(entries){
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    if (e && e.isIntersecting) safePlay();
+    else {
+      try { v.pause(); } catch (_) {}
+    }
+  }
 }, { threshold: 0.25 });
 io.observe(hero);
 };

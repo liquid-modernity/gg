@@ -62,16 +62,19 @@ GG.modules.search = GG.modules.search || (function(){
   function IX(){
     if (S.r) return Promise.resolve(S.i);
     if (S.p) return S.p;
-    S.p = LI().finally(function(){ S.p = null; });
+    var done = function(){ S.p = null; };
+    S.p = LI();
+    S.p.then(done, done);
     return S.p;
   }
 
-  async function LI(){
-    if (!GG.services || !GG.services.api || !GG.services.api.getFeed) throw 0;
-    var feed = await GG.services.api.getFeed({ summary: 1, 'max-results': 500 });
-    S.i = FM(feed);
-    S.r = 1;
-    return S.i;
+  function LI(){
+    if (!GG.services || !GG.services.api || !GG.services.api.getFeed) return Promise.reject(0);
+    return GG.services.api.getFeed({ summary: 1, 'max-results': 500 }).then(function(feed){
+      S.i = FM(feed);
+      S.r = 1;
+      return S.i;
+    });
   }
 
   function UI(){

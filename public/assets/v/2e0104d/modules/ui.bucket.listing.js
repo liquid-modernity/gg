@@ -8,13 +8,25 @@
 
 (function(){
   var run = function(){
-    const v = document.getElementById("ggHeroVideo");
-    const hero = document.getElementById("gg-landing-hero");
+    var v = document.getElementById("ggHeroVideo");
+    var hero = document.getElementById("gg-landing-hero");
     if (!v || !hero || !("IntersectionObserver" in window)) return;
 
-    v.play().catch(()=>{});
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e=> e.isIntersecting ? v.play().catch(()=>{}) : v.pause());
+    var safePlay = function(){
+      try {
+        var p = v.play();
+        if (p && typeof p.catch === 'function') p.catch(function(){});
+      } catch (_) {}
+    };
+    safePlay();
+    var io = new IntersectionObserver(function(entries){
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        if (e && e.isIntersecting) safePlay();
+        else {
+          try { v.pause(); } catch (_) {}
+        }
+      }
     }, { threshold: 0.25 });
     io.observe(hero);
   };
@@ -2121,29 +2133,29 @@
   };
 })(window.GG, document);
 
-(() => {
-  const CACHE_PAGES = "gg-pages-v2";
-  const MAX_PREFETCH = 10;
-  const MAX_INFLIGHT = 2;
+(function(){
+  var CACHE_PAGES = "gg-pages-v2";
+  var MAX_PREFETCH = 10;
+  var MAX_INFLIGHT = 2;
 
   function init() {
-    const container = document.querySelector("#postcards");
+    var container = document.querySelector("#postcards");
     if (!container) return;
 
     if (/^\/\d{4}\/\d{2}\//.test(location.pathname)) return;
 
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn && (conn.saveData || /2g/.test(conn.effectiveType || ""))) return;
 
     if (!("caches" in window) || !window.fetch) return;
 
-    let budget = MAX_PREFETCH;
-    let inflight = 0;
-    const seen = new Set();
+    var budget = MAX_PREFETCH;
+    var inflight = 0;
+    var seen = new Set();
 
     function normalizePostUrl(href) {
       try {
-        const url = new URL(href, location.href);
+        var url = new URL(href, location.href);
         if (url.origin !== location.origin) return null;
 
         if (!/^\/\d{4}\/\d{2}\//.test(url.pathname)) return null;
@@ -2162,7 +2174,7 @@
       else setTimeout(fn, 150);
     }
 
-    async function prefetchToCache(urlStr) {
+    function prefetchToCache(urlStr) {
       if (!urlStr || budget <= 0) return;
       if (seen.has(urlStr)) return;
       if (inflight >= MAX_INFLIGHT) return;
@@ -2171,25 +2183,29 @@
       budget--;
       inflight++;
 
-      try {
-        const cache = await caches.open(CACHE_PAGES);
-
-        const hit = await cache.match(urlStr);
-        if (hit) return;
-
-        const res = await fetch(urlStr, {
-          credentials: "same-origin",
-          headers: { Accept: "text/html" },
+      return caches
+        .open(CACHE_PAGES)
+        .then(function(cache){
+          return cache.match(urlStr).then(function(hit){
+            if (hit) return null;
+            return fetch(urlStr, {
+              credentials: "same-origin",
+              headers: { Accept: "text/html" },
+            }).then(function(res){
+              var ct = res && res.headers ? (res.headers.get("content-type") || "") : "";
+              if (res && res.ok && ct.indexOf("text/html") > -1) {
+                return cache.put(urlStr, res.clone());
+              }
+              return null;
+            });
+          });
+        })
+        .catch(function(){})
+        .then(function(){
+          inflight--;
+        }, function(){
+          inflight--;
         });
-
-        const ct = res.headers.get("content-type") || "";
-        if (res.ok && ct.includes("text/html")) {
-          await cache.put(urlStr, res.clone());
-        }
-      } catch (e) {
-      } finally {
-        inflight--;
-      }
     }
 
     function getCandidateAnchors() {
@@ -2200,47 +2216,55 @@
 
     container.addEventListener(
       "pointerover",
-      (e) => {
-        const a = e.target && e.target.closest
+      function(e){
+        var a = e.target && e.target.closest
           ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
           : null;
         if (!a) return;
-        const u = normalizePostUrl(a.getAttribute("href"));
-        if (u) schedule(() => prefetchToCache(u));
+        var u = normalizePostUrl(a.getAttribute("href"));
+        if (u) schedule(function(){ prefetchToCache(u); });
       },
       { passive: true }
     );
 
     container.addEventListener(
       "focusin",
-      (e) => {
-        const a = e.target && e.target.closest
+      function(e){
+        var a = e.target && e.target.closest
           ? e.target.closest('a.gg-post-card__thumb[href], a.gg-post-card__title-link[href]')
           : null;
         if (!a) return;
-        const u = normalizePostUrl(a.getAttribute("href"));
-        if (u) schedule(() => prefetchToCache(u));
+        var u = normalizePostUrl(a.getAttribute("href"));
+        if (u) schedule(function(){ prefetchToCache(u); });
       }
     );
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const ent of entries) {
+    var io = new IntersectionObserver(
+      function(entries){
+        for (var i = 0; i < entries.length; i++) {
+          var ent = entries[i];
           if (!ent.isIntersecting) continue;
           io.unobserve(ent.target);
-          const u = normalizePostUrl(ent.target.getAttribute("href"));
-          if (u) schedule(() => prefetchToCache(u));
+          var u = normalizePostUrl(ent.target.getAttribute("href"));
+          if (u) {
+            (function(urlToPrefetch){
+              schedule(function(){ prefetchToCache(urlToPrefetch); });
+            })(u);
+          }
         }
       },
       { rootMargin: "200px" }
     );
 
-    getCandidateAnchors().forEach((a) => io.observe(a));
+    var anchorsToObserve = getCandidateAnchors();
+    for (var j = 0; j < anchorsToObserve.length; j++) {
+      io.observe(anchorsToObserve[j]);
+    }
 
-    schedule(() => {
-      const anchors = Array.from(getCandidateAnchors()).slice(0, 4);
-      anchors.forEach((a) => {
-        const u = normalizePostUrl(a.getAttribute("href"));
+    schedule(function(){
+      var anchors = Array.prototype.slice.call(getCandidateAnchors()).slice(0, 4);
+      anchors.forEach(function(a){
+        var u = normalizePostUrl(a.getAttribute("href"));
         if (u) prefetchToCache(u);
       });
     });
@@ -2509,7 +2533,7 @@
   G.modules.LoadMore.rehydrate = function(root){ G.modules.listingLoadMore.rehydrate(root || d); };
 })(window.GG = window.GG || {}, window, document);
 
-(function(G,w,d){'use strict';if(!G||!d.querySelector('[data-gg-module="mixed-media"]'))return;function h(){var v='';try{if(G.core&&G.core.routerCtx&&G.core.routerCtx.current){var c=G.core.routerCtx.current();v=String((c&&c.surface)||'').toLowerCase();}}catch(_){ }if(!v){var b=d.body;v=String((b&&b.getAttribute&&b.getAttribute('data-gg-surface'))||'').toLowerCase();}return !v||v==='landing'||v==='home';}function i(){if(!h())return;if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init){G.modules.mixedMedia.init();return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.mixed.js').then(function(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init)G.modules.mixedMedia.init();}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);
+(function(G,w,d){'use strict';if(!G||!d.querySelector('[data-gg-module="mixed-media"]'))return;function h(){var v='';try{if(G.core&&G.core.routerCtx&&G.core.routerCtx.current){var c=G.core.routerCtx.current();v=String((c&&c.surface)||'').toLowerCase();}}catch(_){ }if(!v){var b=d.body;v=String((b&&b.getAttribute&&b.getAttribute('data-gg-surface'))||'').toLowerCase();}if(v!=='landing'&&v!=='home')return false;return true;}function i(){if(!h())return;if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init){G.modules.mixedMedia.init();return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.mixed.js').then(function(){if(G.modules&&G.modules.mixedMedia&&G.modules.mixedMedia.init)G.modules.mixedMedia.init();}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);
 
 (function(G,w,d){'use strict';if(!G)return;function p(){var x=(w.location&&w.location.pathname)||'';return /^\/search\/label\/[^/?#]+/i.test(x);}function i(){if(!p())return;if(G.modules&&G.modules.labelChannel&&G.modules.labelChannel.init){G.modules.labelChannel.init(d);return;}if(!(G.boot&&G.boot.loadModule))return;G.boot.loadModule('ui.bucket.channel.js').then(function(){if(G.modules&&G.modules.labelChannel&&G.modules.labelChannel.init)G.modules.labelChannel.init(d);}).catch(function(){});}if(G.boot&&G.boot.onReady)G.boot.onReady(i);else if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',i,{once:true});else i();})(window.GG=window.GG||{},window,document);
 
