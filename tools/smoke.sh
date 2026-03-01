@@ -23,6 +23,18 @@ if ! node "${ROOT}/tools/verify-no-selfclosing-script.mjs"; then
   die "verify-no-selfclosing-script failed"
 fi
 
+if ! node "${ROOT}/tools/verify-no-inline-diagnostic-script.mjs"; then
+  die "verify-no-inline-diagnostic-script failed"
+fi
+
+if ! node "${ROOT}/tools/verify-no-head-style-blocks.mjs"; then
+  die "verify-no-head-style-blocks failed"
+fi
+
+if ! node "${ROOT}/tools/verify-mixed-config-gated.mjs"; then
+  die "verify-mixed-config-gated failed"
+fi
+
 if ! node "${ROOT}/tools/verify-ui-guardrails.mjs"; then
   die "verify-ui-guardrails failed"
 fi

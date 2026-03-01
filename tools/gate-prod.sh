@@ -20,6 +20,9 @@ fi
 run npm run verify:assets
 run npm run verify:xml
 run node tools/verify-no-selfclosing-script.mjs
+run node tools/verify-no-inline-diagnostic-script.mjs
+run node tools/verify-no-head-style-blocks.mjs
+run node tools/verify-mixed-config-gated.mjs
 run node tools/verify-ledger.mjs
 run node tools/verify-rulebooks.mjs
 run node tools/verify-postmeta-contract.mjs
