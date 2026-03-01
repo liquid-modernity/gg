@@ -629,13 +629,9 @@ text-align: center;
     
     <!-- SIDEBAR KIRI -->
     <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
-      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left'>
-        
-        <div class='gg-sb__top' data-gg-sb='top'>
-        
-        
+      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:view.isSingleItem ? &quot;post&quot; : &quot;list&quot;'>
          <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-top-bloglisting' name='Left Sidebar (Blog)' showaddelement='true'>
+        <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list' name='Left SB Top (List)' showaddelement='true'>
           <b:widget id='HTML27' locked='false' title='Profile' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
@@ -686,7 +682,7 @@ text-align: center;
           </b:if>
         
                  <b:if cond='data:view.isSingleItem'>
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-top-postpagedetail' name='Left Sidebar (Blog)' showaddelement='true'>
+        <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-post' name='Left SB Top (Post)' showaddelement='true'>
           <b:widget id='HTML29' locked='false' title='Profile' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
@@ -738,12 +734,9 @@ text-align: center;
         </b:section>
           </b:if>
         
-         </div>
-      <div class='gg-sb__body' data-gg-sb='body'>
-        
       <!-- Versi HOME/LIST -->
       <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list' name='Left Sidebar (Blog)' showaddelement='true'>
+        <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-list' name='Left SB Body (List)' showaddelement='true'>
           <b:widget id='HTML17' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
@@ -864,7 +857,7 @@ text-align: center;
 
       <!-- Versi POST DETAIL -->
       <b:if cond='data:view.isSingleItem'>
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-post' name='Left Sidebar (Post)' showaddelement='true'>
+        <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA INFORMATION (POST DETAIL) -->
@@ -1090,16 +1083,9 @@ text-align: center;
         </b:section>
         
       </b:if>
-           
-      </div>
-     
-       <div class='gg-sb__bot' data-gg-sb='bot'>
-        
-
   <b:if cond='data:view.isMultipleItems'>
-
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-bottom-bloglisting' name='Left Sidebar (Blog)' showaddelement='true'>
-          <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
+        <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-list' name='Left SB Bot (List)' showaddelement='true'>
+          <b:widget id='HTML28' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <p class="gg-leftnav__sociallabel">look at me on</p>
@@ -1139,9 +1125,8 @@ text-align: center;
           </b:if>
         
         <b:if cond='data:view.isSingleItem'>
-
-        <b:section class='gg-blog-sidebar__section gg-panelcard' id='gg-left-sidebar-list-sticky-bottom-postpagedetail' name='Left Sidebar (Blog)' showaddelement='true'>
-          <b:widget id='HTML40' locked='false' title='look at me on' type='HTML' visible='true'>
+        <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-post' name='Left SB Bot (Post)' showaddelement='true'>
+          <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <p class="gg-leftnav__sociallabel">look at me on</p>
@@ -1180,7 +1165,6 @@ text-align: center;
         </b:section>
           </b:if>
         
-        </div>  
         
         
         

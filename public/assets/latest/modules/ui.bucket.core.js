@@ -3846,6 +3846,12 @@ var listSec=qs('#gg-left-sidebar-list',left),postSec=qs('#gg-left-sidebar-post',
 var profileWidget=null,tocWidget=null,infoWidget=null,interestWidget=null,followWidget=null,navWidgets=[];
 var topOrder=[],bodyOrder=[],botOrder=[];
 if(!sb||!top||!body||!bot||left.__ggSbMutating)return;
+if(sb.getAttribute('data-gg-sb-native')==='1'){
+mode=detectMode(left);
+sb.setAttribute('data-gg-sb-ready','1');
+sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');
+return;
+}
 mode=detectMode(left);
 if(mode==='post'){
 profileWidget=pick(left,'.gg-leftnav__profile');
