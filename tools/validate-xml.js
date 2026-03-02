@@ -6,6 +6,16 @@ function stripBom(s) {
   return s.replace(/^\uFEFF/, '');
 }
 
+function assertNoSelfClosingScript(xml, file) {
+  const re = /<script\b[^>]*\/>/i;
+  const m = re.exec(xml);
+  if (m) {
+    throw new Error(
+      `${file}: Invalid HTML: self-closing script tag found; must be <script ...></script> at ${m.index}`
+    );
+  }
+}
+
 function parse(xml, file) {
   let i = 0;
   const stack = [];
@@ -87,6 +97,7 @@ function parse(xml, file) {
 
 for (const f of files) {
   const xml = stripBom(fs.readFileSync(f, 'utf8'));
+  assertNoSelfClosingScript(xml, f);
   parse(xml, f);
   console.log('OK', f);
 }

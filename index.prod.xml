@@ -3750,7 +3750,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </a>
 
   <div aria-hidden='false' class='gg-dock__search' data-gg-dock-search='1' data-gg-searchbar='1'>
-    <form action='https://www.pakrpp.com/search' method='get' role='search'>
+    <form expr:action='data:blog.searchUrl' method='get' role='search'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
       <input aria-activedescendant='' aria-autocomplete='list' aria-controls='gg-palette-list' aria-expanded='false' aria-label='Search input' data-gg-dock-search-input='1' name='q' placeholder='Search articles...' role='combobox' type='search'/>
       <button aria-label='Submit search' class='gg-icon-btn gg-touch' type='submit'>
@@ -3762,7 +3762,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </form>
   </div>
 </nav>
-<section aria-hidden='true' aria-label='More shortcuts' class='gg-dock-more' id='gg-dock-more'>
+<section aria-label='More shortcuts' class='gg-dock-more' id='gg-dock-more'>
   <div aria-labelledby='gg-dock-more-title' class='gg-dock-more__sheet' role='dialog'>
     <div class='gg-dock-more__head'>
       <p class='gg-dock-more__title' id='gg-dock-more-title'>More</p>

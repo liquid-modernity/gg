@@ -19,10 +19,11 @@ Di template Blogger XML:
   1) Critical CSS di dalam `<b:skin>`
   2) External scripts: `<script defer='defer' src='…'></script>` (wajib explicit closing tag, tidak boleh self-closing)
   3) Markup skeleton + hooks (id/class/data-attr) untuk UI
-  4) Native Blogger Comments widget (black box, lihat Protected Zone)
+  4) JSON-LD non-executable: `<script type='application/ld+json'>...</script>`
+  5) Native Blogger Comments widget (black box, lihat Protected Zone), termasuk script yang diinjeksi oleh Blogger
 
 - **DILARANG**:
-  - Inline `<script>` apa pun
+  - Inline executable JS logic di template (handler/runtime script buatan template)
   - CSS non-critical di luar `<b:skin>`
   - Menyisipkan fitur/logic JS atau modul CSS di template
 
