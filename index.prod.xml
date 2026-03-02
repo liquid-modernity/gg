@@ -228,7 +228,7 @@ text-align: center;
 <b:with value='data:view.isLayoutMode' var='ggIsLayout'>
 <b:with value='data:view.url and (data:view.url contains &quot;/p/tags.html&quot; or data:view.url contains &quot;/p/sitemap.html&quot; or data:view.url contains &quot;/p/library.html&quot; or data:view.url contains &quot;/p/author.html&quot;)' var='ggIsSystemPage'>
 <b:with value='data:ggIsError ? &quot;error&quot; : (data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsHome ? &quot;home&quot; : (data:ggIsLabel ? &quot;label&quot; : (data:ggIsSearch ? &quot;search&quot; : (data:ggIsArchive ? &quot;archive&quot; : (data:ggIsPost ? &quot;post&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;listing&quot;)))))))' var='ggViewKind'>
-	  <body expr:class='&quot;loading&quot;' expr:data-gg-page='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;home&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-surface='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;landing&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;'>
+	  <body expr:class='&quot;loading&quot;' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-page='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;home&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;landing&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-view='data:ggViewKind'>
     <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
@@ -243,12 +243,12 @@ text-align: center;
   },
   "sections": [
     {"id":"gg-mixed-featuredstrip","type":"rail","kind":"featured","label":"blog","max":5,"kicker":"FEATURED"},
-    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
-    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"defer":1,"kicker":"YOUTUBE"},
-    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"defer":1,"kicker":"SHORTS"},
-    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"defer":1,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"defer":1,"kicker":"PODCAST"}
+    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":4,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":5,"kicker":"BOOKISH"},
+    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":4,"defer":1,"kicker":"YOUTUBE"},
+    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":6,"defer":1,"kicker":"SHORTS"},
+    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":4,"defer":1,"kicker":"NEWSDECK"},
+    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":7,"defer":1,"kicker":"PODCAST"}
   ]
 }
 ]]></template>
@@ -412,7 +412,7 @@ text-align: center;
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-home-state='data:ggIsHome ? (data:ggIsBlogHome ? &quot;blog&quot; : &quot;landing&quot;) : &quot;blog&quot;' expr:data-gg-page='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;home&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-surface='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;landing&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-view='data:ggViewKind' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' id='gg-main' tabindex='-1'>
+  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-home-state='data:ggIsHome ? (data:ggIsBlogHome ? &quot;blog&quot; : &quot;landing&quot;) : &quot;blog&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-page='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;home&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggIsError ? &quot;error&quot; : (data:ggIsHome and not data:ggIsBlogHome ? &quot;landing&quot; : (data:ggIsHome and data:ggIsBlogHome ? &quot;listing&quot; : (data:ggIsListing ? &quot;listing&quot; : (data:ggIsPage ? &quot;page&quot; : &quot;post&quot;))))' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
     <b:attr cond='data:view.isHomepage' name='data-gg-home-root' value='1'/>
     <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
@@ -1195,284 +1195,6 @@ text-align: center;
       <!-- GAGA FEATURED POST -->
     <b:if cond='data:view.isMultipleItems'>
     <b:section class='gg-home-blog__body' id='gg-featuredpost1' name='gg-featuredpost1' showaddelement='true'>
-      <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='false'>
-        <b:widget-settings>
-          <b:widget-setting name='showSnippet'>false</b:widget-setting>
-          <b:widget-setting name='showPostTitle'>true</b:widget-setting>
-          <b:widget-setting name='postId'>5397372929598071338</b:widget-setting>
-          <b:widget-setting name='showFirstImage'>true</b:widget-setting>
-          <b:widget-setting name='useMostRecentPost'>false</b:widget-setting>
-        </b:widget-settings>
-        <b:includable id='main' var='this'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <b:include name='snippetedPosts'/>
-  </div>
-</b:includable>
-        <b:includable id='blogThisShare'>
-  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-        <b:includable id='bylineByName' var='byline'>
-  <b:switch var='data:byline.name'>
-  <b:case value='share'/>
-    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
-  <b:case value='comments'/>
-    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
-  <b:case value='location'/>
-    <b:include cond='data:post.location' name='postLocation'/>
-  <b:case value='timestamp'/>
-    <b:include cond='not data:view.isPage' name='postTimestamp'/>
-  <b:case value='author'/>
-    <b:include name='postAuthor'/>
-  <b:case value='labels'/>
-    <b:include cond='data:post.labels' name='postLabels'/>
-  <b:case value='icons'/>
-    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
-  </b:switch>
-</b:includable>
-        <b:includable id='bylineRegion' var='regionItems'>
-  <b:loop values='data:regionItems' var='byline'>
-    <b:include data='byline' name='bylineByName'/>
-  </b:loop>
-</b:includable>
-        <b:includable id='commentsLink'>
-         <!-- GAGA commentsLink -->
-  <b:if cond='data:post.allowComments'>
-    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='data:post.url + &quot;#comments&quot;'>
-
-      <span aria-hidden='true' class='material-symbols-rounded'>comment</span>
-
-      <span class='meta-count'>
-        <b:if cond='data:post.numberOfComments &gt; 0'>
-          <b:if cond='data:post.numberOfComments == 1'>
-            1 <span class='meta-comments__short'>Cmt</span>
-            <span class='meta-comments__long'>Comment</span>
-          <b:else/>
-            <data:post.numberOfComments/>
-            <span class='meta-comments__short'>Cmts</span>
-            <span class='meta-comments__long'>Comments</span>
-          </b:if>
-        <b:else/>
-          <data:messages.postAComment/>
-        </b:if>
-      </span>
-
-    </a>
-  </b:if>
-           <!-- /GAGA commentsLink -->
-</b:includable>
-        <b:includable id='commentsLinkIframe'>
-  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
-</b:includable>
-        <b:includable id='emailPostIcon'>
-  <span class='byline post-icons'>
-    <!-- email post links -->
-    <span class='item-action'>
-      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
-        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
-      </a>
-    </span>
-  </span>
-</b:includable>
-        <b:includable id='facebookShare'>
-  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-        <b:includable id='footerBylines'>
-  <b:if cond='data:widgets.Blog.first.footerBylines'>
-    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
-      <b:if cond='not data:region.items.empty'>
-        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
-          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
-            <b:include data='region.items' name='bylineRegion'/>
-          </b:with>
-        </div>
-      </b:if>
-    </b:loop>
-  </b:if>
-</b:includable>
-        <b:includable id='googlePlusShare'>
-</b:includable>
-        <b:includable id='headerByline'>
-  <b:if cond='data:widgets.Blog.first.headerByline'>
-    <div class='post-header'>
-      <div class='post-header-line-1'>
-        <b:with value='&quot;header-1&quot;' var='regionName'>
-          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
-        </b:with>
-      </div>
-    </div>
-  </b:if>
-</b:includable>
-        <b:includable id='linkShare'>
-  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
-    <b:include name='platformShare'/>
-  </b:with>
-</b:includable>
-        <b:includable id='otherSharingButton'>
-  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
-    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
-      <b:include name='sharingPlatformIcon'/>
-    </b:with>
-    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
-  </span>
-</b:includable>
-        <b:includable id='platformShare'>
-  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
-    <span class='share-button-link-text'>
-      <data:platform.shareMessage/>
-    </span>
-  </a>
-</b:includable>
-        <b:includable id='postAuthor'>
-  <span class='byline post-author vcard'>
-    <span class='post-author-label'>
-      <data:byline.label/>
-    </span>
-    <span class='fn'>
-      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
-          <span><data:post.author.name/></span>
-        </a>
-      <b:else/>
-        <span><data:post.author.name/></span>
-      </b:if>
-    </span>
-  </span>
-</b:includable>
-        <b:includable id='postCommentsLink'>
-  <span class='byline post-comment-link container'>
-    <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
-  </span>
-</b:includable>
-        <b:includable id='postJumpLink' var='post'>
-  <div class='jump-link flat-button'>
-    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
-      <b:eval expr='data:blog.jumpLinkMessage'/>
-    </a>
-  </div>
-</b:includable>
-        <b:includable id='postLabels'>
-  <span class='byline post-labels'>
-    <span class='byline-label'><data:byline.label/></span>
-    <b:loop index='i' values='data:post.labels' var='label'>
-      <a expr:href='data:label.url' rel='tag'>
-        <data:label.name/>
-      </a>
-    </b:loop>
-  </span>
-</b:includable>
-        <b:includable id='postLocation'>
-  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
-    <span class='byline post-location'>
-      <data:byline.label/>
-      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
-    </span>
-  </b:if>
-</b:includable>
-        <b:includable id='postReactions'>
-  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
-</b:includable>
-        <b:includable id='postShareButtons'>
-  <div class='byline post-share-buttons goog-inline-block'>
-    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
-      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
-      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
-    </b:with>
-  </div>
-</b:includable>
-        <b:includable id='postTimestamp'>
-  <span class='byline post-timestamp'>
-    <data:byline.label/>
-    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
-        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
-          <data:post.date/>
-        </time>
-      </a>
-    </b:if>
-  </span>
-</b:includable>
-        <b:includable id='sharingButton'>
-  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
-    <b:include name='sharingPlatformIcon'/>
-    <span class='platform-sharing-text'><data:platform.name/></span>
-  </span>
-</b:includable>
-        <b:includable id='sharingButtonContent'>
-  <div class='flat-icon-button ripple'>
-    <b:include name='shareIcon'/>
-  </div>
-</b:includable>
-        <b:includable id='sharingButtons'>
-  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
-    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
-      <b:include name='sharingButtonContent'/>
-    </button>
-    <b:include name='sharingButtonsMenu'/>
-  </div>
-</b:includable>
-        <b:includable id='sharingButtonsMenu'>
-  <div class='share-buttons-container'>
-    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
-      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
-        <li>
-          <b:include name='sharingButton'/>
-        </li>
-      </b:loop>
-      <li aria-hidden='true' data-gg-state='hidden'>
-        <b:include name='otherSharingButton'/>
-      </li>
-    </ul>
-  </div>
-</b:includable>
-        <b:includable id='sharingPlatformIcon'>
-  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
-</b:includable>
-        <b:includable id='snippetedPostByline'>
-  <b:with value='(data:widgets first (w =&gt; w.type == &quot;Blog&quot;)).allBylineItems' var='blogBylines'>
-    <div class='item-byline'>
-      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;author&quot;)' var='byline'>
-        <b:include cond='data:byline and data:this.postDisplay.showAuthor' data='post' name='postAuthor'/>
-      </b:with>
-      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;timestamp&quot;)' var='byline'>
-        <b:include cond='data:byline and data:this.postDisplay.showDate' data='post' name='postTimestamp'/>
-      </b:with>
-    </div>
-  </b:with>
-</b:includable>
-        <b:includable id='snippetedPostContent'>
-  <div class='post-content'>
-    <b:include cond='data:this.postDisplay.showTitle' name='snippetedPostTitle'/>
-    <b:include cond='data:this.postDisplay.showDate or data:this.postDisplay.showAuthor' name='snippetedPostByline'/>
-    <b:include cond='data:this.postDisplay.showSnippet' data='post' name='postSnippet'/>
-    <b:include cond='data:this.postDisplay.showFeaturedImage and data:post.featuredImage' name='snippetedPostThumbnail'/>
-  </div>
-</b:includable>
-        <b:includable id='snippetedPostThumbnail'>
-  <div class='item-thumbnail'>
-    <a expr:aria-label='data:post.title' expr:href='data:post.url' expr:title='data:post.title'>
-      <b:include data='{                         image: data:post.featuredImage,                         imageSizes: [72, 144],                         imageRatio: &quot;1:1&quot;,                         sourceSizes: &quot;72px&quot;                        }' name='responsiveImage'/>
-    </a>
-  </div>
-</b:includable>
-        <b:includable id='snippetedPostTitle'>
-  <b:if cond='data:post.title != &quot;&quot;'>
-    <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
-  </b:if>
-</b:includable>
-        <b:includable id='snippetedPosts'>
-  <div role='feed'>
-    <!-- Don't render the post that we're currently already looking at. -->
-    <b:loop values='data:posts filter (p =&gt; p.id != data:view.postId)' var='post'>
-      <article class='post' role='article'>
-        <b:include name='snippetedPostContent'/>
-      </article>
-    </b:loop>
-  </div>
-</b:includable>
-      </b:widget>
       <b:widget id='HTML15' locked='false' title='Popular' type='HTML' version='2' visible='true'>
         <b:widget-settings>
           <b:widget-setting name='content'>(Ratio 1:1.48, 16 item). memanggil API Blogger (/feeds/posts/summary?orderby=published) based on spesific label Show image thumbnail</b:widget-setting>
@@ -1627,55 +1349,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               </article>
             </div>
           </div>
-        </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
-        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
-      </div>
-    </section>
-</b:includable>
-      </b:widget>
-      <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='true'>
-        <b:widget-settings>
-          <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-        </b:widget-settings>
-        <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
-      <header class='gg-mixed__hd'>
-        <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
-        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
-        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
-      </header>
-            <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
         </div>
         <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
         <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
@@ -1871,6 +1544,516 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </b:if>
     <!-- /GAGA FEATURED POST -->
           <b:section class='gg-home-blog__body' id='blog' name='gg-page-body' showaddelement='true'>
+            <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='false'>
+              <b:widget-settings>
+                <b:widget-setting name='showSnippet'>false</b:widget-setting>
+                <b:widget-setting name='showPostTitle'>true</b:widget-setting>
+                <b:widget-setting name='postId'>5397372929598071338</b:widget-setting>
+                <b:widget-setting name='showFirstImage'>true</b:widget-setting>
+                <b:widget-setting name='useMostRecentPost'>false</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main' var='this'>
+  <b:include name='widget-title'/>
+  <div class='widget-content'>
+    <b:include name='snippetedPosts'/>
+  </div>
+</b:includable>
+              <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+              <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+              <b:includable id='commentsLink'>
+         <!-- GAGA commentsLink -->
+  <b:if cond='data:post.allowComments'>
+    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='data:post.url + &quot;#comments&quot;'>
+
+      <span aria-hidden='true' class='material-symbols-rounded'>comment</span>
+
+      <span class='meta-count'>
+        <b:if cond='data:post.numberOfComments &gt; 0'>
+          <b:if cond='data:post.numberOfComments == 1'>
+            1 <span class='meta-comments__short'>Cmt</span>
+            <span class='meta-comments__long'>Comment</span>
+          <b:else/>
+            <data:post.numberOfComments/>
+            <span class='meta-comments__short'>Cmts</span>
+            <span class='meta-comments__long'>Comments</span>
+          </b:if>
+        <b:else/>
+          <data:messages.postAComment/>
+        </b:if>
+      </span>
+
+    </a>
+  </b:if>
+           <!-- /GAGA commentsLink -->
+</b:includable>
+              <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+              <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+              <b:includable id='googlePlusShare'>
+</b:includable>
+              <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+              <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+              <b:includable id='platformShare'>
+  <a expr:aria-label='data:platform.shareMessage' expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' rel='noopener' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+              <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+              <b:includable id='postCommentsLink'>
+  <span class='byline post-comment-link container'>
+    <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+  </span>
+</b:includable>
+              <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+              <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+              <b:includable id='postLocation'>
+  <b:if cond='data:post.location and data:post.location.mapsUrl and data:post.location.name'>
+    <span class='byline post-location'>
+      <data:byline.label/>
+      <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+    </span>
+  </b:if>
+</b:includable>
+              <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+              <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+              <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+              <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+              <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+              <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons' data-gg-state='hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' data-gg-state='hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+              <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+              <b:includable id='snippetedPostByline'>
+  <b:with value='(data:widgets first (w =&gt; w.type == &quot;Blog&quot;)).allBylineItems' var='blogBylines'>
+    <div class='item-byline'>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;author&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showAuthor' data='post' name='postAuthor'/>
+      </b:with>
+      <b:with value='data:blogBylines first (i =&gt; i.name == &quot;timestamp&quot;)' var='byline'>
+        <b:include cond='data:byline and data:this.postDisplay.showDate' data='post' name='postTimestamp'/>
+      </b:with>
+    </div>
+  </b:with>
+</b:includable>
+              <b:includable id='snippetedPostContent'>
+  <div class='post-content'>
+    <b:include cond='data:this.postDisplay.showTitle' name='snippetedPostTitle'/>
+    <b:include cond='data:this.postDisplay.showDate or data:this.postDisplay.showAuthor' name='snippetedPostByline'/>
+    <b:include cond='data:this.postDisplay.showSnippet' data='post' name='postSnippet'/>
+    <b:include cond='data:this.postDisplay.showFeaturedImage and data:post.featuredImage' name='snippetedPostThumbnail'/>
+  </div>
+</b:includable>
+              <b:includable id='snippetedPostThumbnail'>
+  <div class='item-thumbnail'>
+    <a expr:aria-label='data:post.title' expr:href='data:post.url' expr:title='data:post.title'>
+      <b:include data='{                         image: data:post.featuredImage,                         imageSizes: [72, 144],                         imageRatio: &quot;1:1&quot;,                         sourceSizes: &quot;72px&quot;                        }' name='responsiveImage'/>
+    </a>
+  </div>
+</b:includable>
+              <b:includable id='snippetedPostTitle'>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title'><a expr:href='data:post.url'><data:post.title/></a></h3>
+  </b:if>
+</b:includable>
+              <b:includable id='snippetedPosts'>
+  <div role='feed'>
+    <!-- Don't render the post that we're currently already looking at. -->
+    <b:loop values='data:posts filter (p =&gt; p.id != data:view.postId)' var='post'>
+      <article class='post' role='article'>
+        <b:include name='snippetedPostContent'/>
+      </article>
+    </b:loop>
+  </div>
+</b:includable>
+            </b:widget>
+            <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='false'>
+              <b:widget-settings>
+                <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
+      <header class='gg-mixed__hd'>
+        <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
+        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
+      </header>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+        </div>
+        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
+        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
+      </div>
+    </section>
+</b:includable>
+            </b:widget>
+            <b:widget id='HTML9' locked='false' title='Newsdeck 4' type='HTML' version='2' visible='false'>
+              <b:widget-settings>
+                <b:widget-setting name='content'>(Complex Card, 3 item)
+
+memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+    <section class='gg-mixed' data-cols='3' data-gg-cols='3' data-gg-disabled='1' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,blog,bookish' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,blog,bookish' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-4'>
+      <header class='gg-mixed__hd'>
+        <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
+        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
+      </header>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <div class='gg-newsdeck'>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>News</p>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Blog</p>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+            <div class='gg-newsdeck__col'>
+              <p class='gg-newsdeck__col-label'>Bookish</p>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
+                <span class='gg-newsdeck__body'>
+                  <span class='gg-newsdeck__kicker'/>
+                  <span class='gg-newsdeck__title'/>
+                  <span class='gg-newsdeck__time'/>
+                </span>
+                <span class='gg-newsdeck__thumb'/>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
+        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
+      </div>
+    </section>
+</b:includable>
+            </b:widget>
+            <b:widget id='HTML14' locked='false' title='Pinterest' type='HTML' version='2' visible='false'>
+              <b:widget-settings>
+                <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+              </b:widget-settings>
+              <b:includable id='main'>
+    <section class='gg-mixed' data-gg-disabled='1' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='pinterest' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-pinterestish'>
+      <header class='gg-mixed__hd'>
+        <p class='gg-mixed__kicker' data-role='kicker'>PINTEREST</p>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
+        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
+      </header>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>PINTEREST</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+        </div>
+        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
+        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
+      </div>
+    </section>
+</b:includable>
+            </b:widget>
             <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
               <b:widget-settings>
                 <b:widget-setting name='commentLabel'>Comments</b:widget-setting>
@@ -1883,7 +2066,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='style.layout'>1x1</b:widget-setting>
                 <b:widget-setting name='showLocation'>false</b:widget-setting>
                 <b:widget-setting name='showTimestamp'>true</b:widget-setting>
-                <b:widget-setting name='numPosts'>9</b:widget-setting>
                 <b:widget-setting name='postsPerAd'>1</b:widget-setting>
                 <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
                 <b:widget-setting name='showDateHeader'>false</b:widget-setting>
@@ -2693,66 +2875,10 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <div class='gg-post__footer'>
         <div aria-label='Tags' class='gg-post__footer-tags' data-gg-slot='footer-tags' hidden='true'/>
 
-        <!-- INLINE TAGS (untuk postTagsInline module) -->
-        <b:if cond='data:post.labels'>
-          <div aria-label='Tags' class='gg-post-tags'>
-            <b:loop values='data:post.labels' var='l'>
-              #<data:l.name/> <b:if cond='!data:l.isLast'> </b:if>
-            </b:loop>
-          </div>
-        </b:if>
+   
 
-        <!-- LABELS -->
-        <p class='gg-post__label'>
-        <b:if cond='data:post.labels'>
-          <b:loop index='i' values='data:post.labels' var='lab'>
-            <b:if cond='data:i == 0'>
-              <a class='gg-post__label-link' expr:href='data:lab.url'>
-                <data:lab.name/>
-              </a>
-            </b:if>
-          </b:loop>
-        <b:else/>
-          Post
-        </b:if>
-      </p>
-
-      <div class='gg-post__meta'>
-        <span class='gg-post__meta-item gg-post__meta-item--author'>
-          <span aria-hidden='true' class='ms'>person</span>
-          <data:post.author.name/>
-        </span>
-
-        <span class='gg-post__meta-sep'>&#8226;</span>
-
-        <span class='gg-post__meta-item gg-post__meta-item--date'>
-          <span aria-hidden='true' class='ms'>event</span>
-          <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
-            <data:post.date/>
-          </time>
-        </span>
-
-        <span class='gg-post__meta-sep'>&#8226;</span>
-
-        <span class='gg-post__meta-item gg-post__meta-item--comments'>
-          <span aria-hidden='true' class='ms'>chat_bubble</span>
-          <data:post.numberOfComments/>
-        </span>
-      </div>
+   
         
-        <b:if cond='data:post.labels'>
-          <div class='gg-post__labels'>
-            <span class='gg-post__labels-label'>Labels:</span>
-            <span class='gg-post__labels-list'>
-              <b:loop values='data:post.labels' var='l'>
-                <a class='gg-post__label-link' expr:href='data:l.url'>
-                  <data:l.name/>
-                </a>
-                <b:if cond='!data:l.isLast'>, </b:if>
-              </b:loop>
-            </span>
-          </div>
-        </b:if>
       </div>
 
       <!-- COMMENTS (forced threaded) -->
@@ -3435,192 +3561,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
   </b:if>
     
-      <b:section class='gg-popularpost1' id='gg-popularpost1' name='gg-popularpost1' showaddelement='true'>
-        <b:widget id='HTML9' locked='false' title='Newsdeck 4' type='HTML' version='2' visible='true'>
-          <b:widget-settings>
-            <b:widget-setting name='content'>(Complex Card, 3 item)
-
-memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-          </b:widget-settings>
-          <b:includable id='main'>
-    <section class='gg-mixed' data-cols='3' data-gg-cols='3' data-gg-disabled='1' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,blog,bookish' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,blog,bookish' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-4'>
-      <header class='gg-mixed__hd'>
-        <p class='gg-mixed__kicker' data-role='kicker'>NEWSDECK</p>
-        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
-        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
-      </header>
-            <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <div class='gg-newsdeck'>
-            <div class='gg-newsdeck__col'>
-              <p class='gg-newsdeck__col-label'>News</p>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-            </div>
-            <div class='gg-newsdeck__col'>
-              <p class='gg-newsdeck__col-label'>Blog</p>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-            </div>
-            <div class='gg-newsdeck__col'>
-              <p class='gg-newsdeck__col-label'>Bookish</p>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-              <article aria-hidden='true' class='gg-newsdeck__item gg-newsdeck__item--placeholder'>
-                <span class='gg-newsdeck__body'>
-                  <span class='gg-newsdeck__kicker'/>
-                  <span class='gg-newsdeck__title'/>
-                  <span class='gg-newsdeck__time'/>
-                </span>
-                <span class='gg-newsdeck__thumb'/>
-              </article>
-            </div>
-          </div>
-        </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
-        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
-      </div>
-    </section>
-</b:includable>
-        </b:widget>
-        <b:widget id='HTML14' locked='false' title='Pinterest' type='HTML' version='2' visible='true'>
-          <b:widget-settings>
-            <b:widget-setting name='content'>(Masonry/Waterfall). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-          </b:widget-settings>
-          <b:includable id='main'>
-    <section class='gg-mixed' data-gg-disabled='1' data-gg-kind='pinterestish' data-gg-label='pinterest' data-gg-max='8' data-gg-mixed='1' data-gg-module='mixed-media' data-label='pinterest' data-max='8' data-order='published' data-type='instagram' id='gg-mixed-pinterestish'>
-      <header class='gg-mixed__hd'>
-        <p class='gg-mixed__kicker' data-role='kicker'>PINTEREST</p>
-        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
-        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
-      </header>
-            <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>PINTEREST</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-        </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
-        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
-      </div>
-    </section>
-</b:includable>
-        </b:widget>
-      </b:section>
-      <div aria-hidden='true' class='gg-anchor-end' id='gg-page-end' tabindex='-1'></div>
+      
+      <div aria-hidden='true' class='gg-anchor-end' id='gg-page-end' tabindex='-1'/>
       </main>
    <!-- GAGA FOOTER -->
   <footer class='gg-footer'>
@@ -3714,32 +3656,31 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <nav aria-label='Primary' class='gg-dock' data-gg-dock='1' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
   <a aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#gg-landing-hero' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;#gg-landing-hero&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
-      <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'>
-        <use href='#gg-logo-white'/>
-      </svg>
+      <!-- <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'><use href='#gg-logo-white'/></svg> -->
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
     <span class='gg-dock__label'>Home</span>
   </a>
 
+   <a aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;#gg-landing-hero-5&quot;'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>add_call</span>
+    </span>
+    <span class='gg-dock__label'>Contact</span>
+  </a>
+
   <a aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='blog' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;blog&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>newsmode</span>
     </span>
     <span class='gg-dock__label'>Blog</span>
   </a>
-
+  
   <a aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.searchUrl'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
     </span>
     <span class='gg-dock__label'>Search</span>
-  </a>
-
-  <a aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;#gg-landing-hero-5&quot;'>
-    <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
-    </span>
-    <span class='gg-dock__label'>Contact</span>
   </a>
 
   <a aria-label='More' class='gg-dock__item gg-dock__item--more' data-gg-action='more' data-gg-dock-action='1' data-gg-primary='1' href='#gg-dock-more'>
@@ -3878,7 +3819,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/d7bb1c2/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/d7bb1c2/boot.js?v=20260203160035'/>
 <!-- /GAGA HOME OF JS -->
 
 </body>

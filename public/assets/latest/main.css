@@ -83,7 +83,7 @@
 --gg-sticky-top: 0px;
 
 
---gg-dock-safe: 86px;
+--gg-dock-safe: 75px;
 --gg-glass-blur: 14px;
 --gg-glass-sat: 150%;
 --gg-glass-radius: 999px;
@@ -695,14 +695,9 @@ display: none;
 
 
 main.gg-main:is([data-gg-view="post"],[data-gg-surface="post"]) .gg-home-blog{
-
-display: flex;
-
-justify-content: center;
-
-}
-
-
+    display: flex;
+    justify-content: center;
+    padding-bottom: var(--gg-dock-safe);}
 
 .gg-blog-layout{
 display: grid;
@@ -2914,9 +2909,8 @@ background: var(--gg-bg);
 --gg-main-max: min(var(--gg-col-main), calc(100vw - var(--gg-col-left) - var(--gg-col-right) - 32px));
 }
 
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]),
-main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-main{
-padding-bottom: var(--gg-dock-safe);
+main#gg-main {
+    padding-bottom: var(--gg-dock-safe);
 }
 
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-post{
