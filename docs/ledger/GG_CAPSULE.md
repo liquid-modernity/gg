@@ -18,8 +18,6 @@ RELEASE_ID: 3e71a8a
 RELEASE_HISTORY:
 - 3e71a8a
 - 2e0104d
-- 9070fe5
-- 60e2702
 PROD_PINNED_JS: /assets/v/3e71a8a/main.js
 PROD_PINNED_APP: /assets/v/3e71a8a/app.js
 PROD_PINNED_CSS: /assets/v/3e71a8a/main.css
