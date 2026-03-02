@@ -2161,6 +2161,10 @@ var autoHideRaf = 0;
 var lastScrollY = 0;
 var dockHidden = false;
 var autoHideBound = false;
+var morePanelEl = null;
+var morePanelOpen = false;
+var escBound = false;
+var pendingBound = false;
 
 function scrollToAnchor(sel) {
 if (!sel) return;
@@ -2179,6 +2183,58 @@ var base = homeUrl || '/';
 var cleanBase = base.split('#')[0].replace(/\/+$/, '');
 var url = hash ? (cleanBase + '/' + hash) : (cleanBase + '/');
 window.location.href = url;
+}
+
+function blogHrefFromDock(){
+if (!dockEl) return '/blog';
+var blogLink = dockEl.querySelector('.gg-dock__item[data-gg-action="blog"]');
+var href = blogLink ? (blogLink.getAttribute('href') || '') : '';
+if (!href) href = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
+return href;
+}
+
+function clearMoreHash(){
+try {
+if (window.location && window.location.hash === '#gg-dock-more') {
+  if (window.history && typeof history.replaceState === 'function') {
+    history.replaceState(history.state || null, '', window.location.pathname + window.location.search);
+  } else {
+    window.location.hash = '';
+  }
+}
+} catch (_) {}
+}
+
+function ensureMorePanel(){
+if (!morePanelEl) morePanelEl = document.getElementById('gg-dock-more');
+return morePanelEl;
+}
+
+function openMorePanel(){
+var panel = ensureMorePanel();
+if (!panel) return false;
+morePanelOpen = true;
+panel.hidden = false;
+panel.setAttribute('aria-hidden', 'false');
+GG.core.state.remove(panel, 'hidden');
+GG.core.state.add(panel, 'open');
+clearMoreHash();
+revealDock();
+var closeEl = panel.querySelector('[data-gg-action="more-close"]');
+if (closeEl && closeEl.focus) {
+try { closeEl.focus(); } catch (_){}
+}
+return true;
+}
+
+function closeMorePanel(){
+var panel = ensureMorePanel();
+if (!panel) return;
+morePanelOpen = false;
+panel.setAttribute('aria-hidden', 'true');
+GG.core.state.remove(panel, 'open');
+GG.core.state.add(panel, 'hidden');
+clearMoreHash();
 }
 
 function enterSearch(){
@@ -2276,78 +2332,164 @@ function updateActive() {
 var state = effectiveDockState();
 
 buttons.forEach(function (btn) {
-  var action = btn.getAttribute('data-gg-action');
-  var match =
-    (state === 'landing'  && action === 'home-landing') ||
-    (state === 'blog'     && action === 'home-blog');
+var action = btn.getAttribute('data-gg-action');
+var match =
+    (state === 'landing'  && action === 'home') ||
+    (state === 'blog'     && action === 'blog');
 
   GG.core.state.toggle(btn, 'active', !!match);
-  btn.setAttribute('aria-pressed', match ? 'true' : 'false');
-
   if (match) btn.setAttribute('aria-current', 'page');
   else       btn.removeAttribute('aria-current');
 });
 scheduleWidthUpdate();
 }
 
+function runAction(action, payload){
+var anchor = payload && payload.anchor ? payload.anchor : '';
+var href = payload && payload.href ? payload.href : '';
+if (!action) return false;
+
+if (action === 'search') {
+if (!isSearchMode) {
+  enterSearch();
+} else if (searchForm) {
+  searchForm.submit();
+}
+try { window.dispatchEvent(new CustomEvent('gg:search-open', { detail: { source: 'dock' } })); } catch (_) {}
+return true;
+}
+
+if (action === 'search-exit') {
+exitSearch();
+return true;
+}
+
+if (action === 'more') {
+return openMorePanel();
+}
+
+if (action === 'more-close') {
+closeMorePanel();
+return true;
+}
+
+if (action === 'home') {
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('landing');
+  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+    GG.util.homeRouter.pushState('landing', '/');
+  } else {
+    try { history.pushState({ ggHome:'landing' }, '', '/'); } catch (_) {}
+  }
+  updateActive();
+  scrollToAnchor(anchor || '#gg-landing-hero');
+  return true;
+}
+return false;
+}
+
+if (action === 'blog') {
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('blog');
+  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+    GG.util.homeRouter.pushState('blog', '/blog');
+  }
+  updateActive();
+  var homeAnchor = document.getElementById('gg-home-blog-anchor') || document.querySelector('#gg-home-blog-anchor');
+  if (homeAnchor && homeAnchor.scrollIntoView) {
+    try { homeAnchor.scrollIntoView({ block:'start', behavior:'auto' }); } catch (_) { try { homeAnchor.scrollIntoView(true); } catch (__ ) {} }
+  }
+  return true;
+}
+if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
+  GG.core.router.go(href || blogHrefFromDock());
+  return true;
+}
+return false;
+}
+
+if (action === 'contact') {
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('landing');
+  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+    GG.util.homeRouter.pushState('landing', '/');
+  }
+  updateActive();
+  scrollToAnchor(anchor || '#gg-landing-hero-5');
+  return true;
+}
+return false;
+}
+
+if (anchor) {
+scrollToAnchor(anchor);
+return true;
+}
+
+return false;
+}
+
+function replayAction(payload){
+if (!payload) return false;
+var action = payload.action || '';
+return runAction(action, payload);
+}
+
+function consumePendingAction(){
+var boot = window.GG_BOOT || {};
+var pending = boot._pendingDockAction || window.__GG_PENDING_DOCK_ACTION || null;
+if (!pending) return null;
+boot._pendingDockAction = null;
+window.__GG_PENDING_DOCK_ACTION = null;
+return pending;
+}
+
+function maybeReplayPendingAction(){
+var pending = consumePendingAction();
+if (!pending) return;
+replayAction(pending);
+}
+
+function bindMorePanel(){
+var panel = ensureMorePanel();
+if (!panel || panel.__ggDockBound) return;
+panel.__ggDockBound = true;
+panel.addEventListener('click', function(evt){
+var closeLink = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="more-close"]') : null;
+if (closeLink) {
+  evt.preventDefault();
+  closeMorePanel();
+  return;
+}
+if (evt && evt.target === panel) {
+  closeMorePanel();
+}
+}, true);
+}
+
 function handleClick(evt) {
 var btn = evt.currentTarget;
-var action = btn.getAttribute('data-gg-action');
-var anchor = btn.getAttribute('data-gg-anchor');
-if (window.GG_DEBUG) console.log('[dock]', action, anchor || '');
-if (action === 'home-landing') {
-  if (isHomeCapable()  && GG.modules.homeState) {
-    GG.modules.homeState.setState('landing');
-    if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-      GG.util.homeRouter.pushState('landing', '/');
-    } else {
-      history.pushState({ ggHome:'landing' }, '', '/');
-    }
-    updateActive();
-    scrollToAnchor(anchor || '#gg-landing-hero');
-  } else {
-    goHome(anchor || '#gg-landing-hero');
-  }
-  return;
+var action = btn.getAttribute('data-gg-action') || '';
+var anchor = btn.getAttribute('data-gg-anchor') || '';
+var href = btn.getAttribute('href') || '';
+if (window.GG_DEBUG) console.log('[dock]', action, anchor || '', href || '');
+
+if (action === 'search' || action === 'search-exit' || action === 'more' || action === 'more-close') {
+evt.preventDefault();
+runAction(action, { action: action, anchor: anchor, href: href });
+return;
 }
-if (action === 'home-blog') {
+
+if (action === 'home' || action === 'blog' || action === 'contact') {
+if (runAction(action, { action: action, anchor: anchor, href: href })) {
   evt.preventDefault();
-  var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
-  if (GG.core && GG.core.router && typeof GG.core.router.go === 'function') {
-    GG.core.router.go(blogHref);
-  } else {
-    window.location.href = blogHref;
-  }
-  return;
 }
-if (action === 'search') {
-  evt.preventDefault();
-  if (!isSearchMode){
-    enterSearch();
-  } else if (searchForm){
-    searchForm.submit();
-  }
-  return;
+return;
 }
-if (action === 'search-exit'){
-  exitSearch();
-  return;
-}
-if (action === 'contact') {
-  if (isHomeCapable()  && GG.modules.homeState) {
-    GG.modules.homeState.setState('landing');
-    if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-      GG.util.homeRouter.pushState('landing', '/');
-    }
-    updateActive();
-    scrollToAnchor(anchor || '#gg-landing-hero-5');
-  } else {
-    goHome(anchor || '#gg-landing-hero-5');
-  }
-  return;
-}
+
 if (anchor) {
-  scrollToAnchor(anchor);
+evt.preventDefault();
+scrollToAnchor(anchor);
 }
 }
 
@@ -2361,7 +2503,7 @@ homeUrl   = dockEl.getAttribute('data-home-url')   || '/';
 searchUrl = dockEl.getAttribute('data-search-url') || null;
 
 buttons = Array.prototype.slice.call(
-  dockEl.querySelectorAll('.gg-dock__item')
+  dockEl.querySelectorAll('.gg-dock__item[data-gg-action]')
 );
 
 searchForm  = dockEl.querySelector('.gg-dock__search form');
@@ -2373,9 +2515,23 @@ buttons.forEach(function (btn) {
 if (dockEl.querySelector('[data-gg-action="search-exit"]')){
   dockEl.querySelector('[data-gg-action="search-exit"]').addEventListener('click', handleClick);
 }
+if (!escBound){
+escBound = true;
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') exitSearch();
+  if (e.key !== 'Escape') return;
+  exitSearch();
+  closeMorePanel();
 });
+}
+bindMorePanel();
+if (!pendingBound){
+pendingBound = true;
+window.addEventListener('gg:dock-action-pending', function(evt){
+  if (!evt || !evt.detail) return;
+  replayAction(evt.detail);
+});
+}
+maybeReplayPendingAction();
 
 updateActive();
 updateDockWidth();
@@ -2404,7 +2560,9 @@ if (mainEl && window.MutationObserver){
 
 return {
 init: init,
-updateActive: updateActive
+updateActive: updateActive,
+replayAction: replayAction,
+closeMorePanel: closeMorePanel
 };
 })();
 

@@ -62,16 +62,9 @@ GG.modules.search = GG.modules.search || (function(){
   function IX(){
     if (S.r) return Promise.resolve(S.i);
     if (S.p) return S.p;
-    S.p = LI().then(
-      function(result){
-        S.p = null;
-        return result;
-      },
-      function(err){
-        S.p = null;
-        throw err;
-      }
-    );
+    var done = function(){ S.p = null; };
+    S.p = LI();
+    S.p.then(done, done);
     return S.p;
   }
 
