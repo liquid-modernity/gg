@@ -20,7 +20,7 @@ if (!prodXml) failures.push("missing index.prod.xml");
 if (searchJs) {
   if (!/data-mode/.test(searchJs)) failures.push("search module missing data-mode anchor flag");
   if (!/getBoundingClientRect/.test(searchJs)) failures.push("search module missing dock rect measurement");
-  if (!/visualViewport/.test(searchJs) && !/addEventListener\\(['\"]resize['\"]/.test(searchJs)) {
+  if (!/visualViewport/.test(searchJs) && !/addEventListener\(['"]resize['"]/.test(searchJs)) {
     failures.push("search module missing resize/visualViewport handler");
   }
 }

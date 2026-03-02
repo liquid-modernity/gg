@@ -56,10 +56,19 @@ if (!fs.existsSync(cssPath)) {
     }
   }
 
-  const listSel = "#gg-left-sidebar-list";
-  const listCandidates = blocks.filter((b) => b.selector.includes(listSel));
+  const listSelectors = ["#gg-left-sb-body-list", "#gg-left-sidebar-list"];
+  let listSel = "";
+  let listCandidates = [];
+  for (const candidate of listSelectors) {
+    const found = blocks.filter((b) => b.selector.includes(candidate));
+    if (found.length) {
+      listSel = candidate;
+      listCandidates = found;
+      break;
+    }
+  }
   if (!listCandidates.length) {
-    fail(`missing selector block: ${listSel}`);
+    fail(`missing selector block: ${listSelectors.join(" or ")}`);
   } else {
     const listHasMinHeight = listCandidates.some((b) => /min-height\s*:\s*0/i.test(b.body));
     if (!listHasMinHeight) {
@@ -67,7 +76,7 @@ if (!fs.existsSync(cssPath)) {
     }
 
     // New contract: listing uses a dedicated scroll zone (pages-only) instead of scrolling whole sidebar.
-    const pagesSel = '#gg-left-sidebar-list [data-gg-scroll="pages"]';
+    const pagesSel = `${listSel} [data-gg-scroll="pages"]`;
     const pagesCandidates = blocks.filter((b) => b.selector.includes(pagesSel));
     const pagesOk = pagesCandidates.some((b) => {
       const hasOverflowAuto = /overflow(?:-y)?\s*:\s*auto/i.test(b.body);
