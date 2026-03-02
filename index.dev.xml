@@ -233,7 +233,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
 	    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
-    <b:if cond='data:ggIsHome and not data:ggIsBlogHome'>
+    <b:if cond='data:view.isHomepage and data:ggIsHome and not data:ggIsBlogHome'>
 	    <template id='gg-mixed-config'><![CDATA[
 {
   "fetch": {
