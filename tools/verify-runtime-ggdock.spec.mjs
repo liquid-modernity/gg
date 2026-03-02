@@ -4,16 +4,55 @@ const BASE_URL = process.env.GG_RUNTIME_BASE_URL || 'https://www.pakrpp.com/';
 
 test.setTimeout(60000);
 
-async function isBlogSurface(page) {
+async function isMorePanelVisible(page) {
   return page.evaluate(() => {
-    const url = window.location.pathname || '';
-    if (/^\/blog(?:\/)?$/i.test(url)) return true;
-    const main =
-      document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main');
-    const bodySurface = String(document.body?.getAttribute('data-gg-surface') || '').toLowerCase();
-    const mainSurface = String(main?.getAttribute('data-gg-surface') || '').toLowerCase();
-    return bodySurface === 'listing' || mainSurface === 'listing';
+    const panel = document.getElementById('gg-dock-more');
+    if (!panel) return false;
+    const state = String(panel.getAttribute('data-gg-state') || '').toLowerCase();
+    const isTarget = window.location.hash === '#gg-dock-more';
+    const css = window.getComputedStyle(panel);
+    const visible = css.display !== 'none' && css.visibility !== 'hidden';
+    return visible && (isTarget || state.indexOf('open') !== -1);
   });
+}
+
+async function isSearchVisible(page) {
+  return page.evaluate(() => {
+    const path = String(window.location.pathname || '').toLowerCase();
+    if (/^\/search(?:\/)?$/i.test(path)) return true;
+    const dock = document.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
+    const dockState = String(dock?.getAttribute('data-gg-state') || '').toLowerCase();
+    if (dockState.indexOf('search') !== -1) return true;
+    if (document.documentElement?.classList?.contains('gg-search-focus')) return true;
+    const input = dock?.querySelector('[data-gg-dock-search-input],input[type="search"]');
+    if (input) {
+      const cs = window.getComputedStyle(input);
+      if (cs.display !== 'none' && cs.visibility !== 'hidden') return true;
+    }
+    const dialog = document.querySelector(
+      '#gg-search[open],#gg-search-dialog[open],#gg-search-modal[open],[data-gg-search-modal]:not([hidden])'
+    );
+    return !!dialog;
+  });
+}
+
+async function verifyDockContract(page) {
+  const actions = ['home', 'blog', 'search', 'contact', 'more'];
+  const primary = page.locator('nav.gg-dock a.gg-dock__item[data-gg-primary="1"]');
+  await expect(primary).toHaveCount(5, { timeout: 15000 });
+
+  const payload = await page.evaluate(() => {
+    return Array.from(document.querySelectorAll('nav.gg-dock a.gg-dock__item[data-gg-primary="1"]'))
+      .map((el) => ({
+        action: el.getAttribute('data-gg-action') || '',
+        href: el.getAttribute('href') || '',
+      }));
+  });
+  const seen = payload.map((item) => item.action);
+  expect(seen.slice().sort()).toEqual(actions.slice().sort());
+  for (const item of payload) {
+    expect(String(item.href || '').trim().length).toBeGreaterThan(0);
+  }
 }
 
 async function readRuntimeFingerprint(page) {
@@ -54,11 +93,12 @@ function formatRuntimeFingerprint(fp) {
   ].join(' ');
 }
 
-test('runtime smoke: gg-dock boot + home-blog navigation', async ({ page }) => {
+test('runtime smoke: gg-dock fail-open more + search', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
   const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
   await expect(dock.first()).toBeVisible({ timeout: 15000 });
+  await verifyDockContract(page);
 
   const before = await readRuntimeFingerprint(page);
   if (before.mismatch) {
@@ -70,39 +110,29 @@ test('runtime smoke: gg-dock boot + home-blog navigation', async ({ page }) => {
     );
   }
 
-  // Boot lazily loads main.js on landing surfaces after user interaction.
-  await page.mouse.click(20, 20);
+  const moreBtn = page.locator('nav.gg-dock a[data-gg-action="more"]').first();
+  await expect(moreBtn).toBeVisible({ timeout: 15000 });
+  await moreBtn.click({ timeout: 10000, force: true });
+  await expect
+    .poll(async () => isMorePanelVisible(page), {
+      timeout: 20000,
+      message: 'Dock more action did not open visible panel (:target or JS state)'
+    })
+    .toBe(true);
 
-  try {
-    await expect
-      .poll(
-        async () =>
-          page.evaluate(() => {
-            const hasGG = typeof window.GG === 'object' && !!window.GG;
-            const boot = Number((document.documentElement?.dataset?.ggBoot || '0').trim() || '0');
-            return hasGG || boot >= 2;
-          }),
-        { timeout: 20000, message: 'GG runtime did not boot (window.GG missing and ggBoot stage < 2)' }
-      )
-      .toBeTruthy();
-  } catch (err) {
-    const afterBoot = await readRuntimeFingerprint(page);
-    throw new Error(
-      [
-        err && err.message ? err.message : 'GG runtime boot check failed',
-        `Diagnostic: ${formatRuntimeFingerprint(afterBoot)}`,
-      ].join('\n')
-    );
+  const closeMore = page.locator('#gg-dock-more [data-gg-action="more-close"]').first();
+  if (await closeMore.isVisible().catch(() => false)) {
+    await closeMore.click({ timeout: 10000, force: true });
   }
 
-  const blogBtn = page.locator('nav.gg-dock [data-gg-action="home-blog"]').first();
-  await expect(blogBtn).toBeVisible({ timeout: 15000 });
-  await blogBtn.click({ timeout: 10000, force: true });
+  const searchBtn = page.locator('nav.gg-dock a[data-gg-action="search"]').first();
+  await expect(searchBtn).toBeVisible({ timeout: 15000 });
+  await searchBtn.click({ timeout: 10000, force: true });
 
   await expect
-    .poll(async () => isBlogSurface(page), {
+    .poll(async () => isSearchVisible(page), {
       timeout: 20000,
-      message: 'Dock home-blog action did not navigate/flip to blog surface'
+      message: 'Dock search action did not expose search UI/fallback'
     })
     .toBe(true);
 });

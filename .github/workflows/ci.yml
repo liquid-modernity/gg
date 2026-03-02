@@ -49,6 +49,7 @@ jobs:
           npm run verify:assets
           npm run verify:xml
           node tools/verify-ui-guardrails.mjs
+          node tools/verify-dock-contract.mjs
           if [ -f tools/verify-theme-diff.mjs ]; then
             node tools/verify-theme-diff.mjs
           else
@@ -77,6 +78,9 @@ jobs:
 
       - name: Verify UI guardrails
         run: node tools/verify-ui-guardrails.mjs
+
+      - name: Verify dock contract
+        run: node tools/verify-dock-contract.mjs
 
       - name: Verify template contract
         run: node tools/verify-template-contract.mjs

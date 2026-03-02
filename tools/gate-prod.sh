@@ -76,6 +76,7 @@ run node tools/verify-sitemap-page-contract.mjs
 run node tools/verify-tags-dir-contract.mjs
 run node tools/verify-router-contract.mjs
 run node tools/verify-ui-guardrails.mjs
+run node tools/verify-dock-contract.mjs
 run node tools/verify-template-no-nested-interactives.mjs
 run node tools/verify-template-contract.mjs
 run node tools/verify-template-hygiene.mjs

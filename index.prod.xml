@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='3e71a8a' name='gg-release'/>
+    <meta content='f5aa1a0' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/3e71a8a/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/3e71a8a/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/f5aa1a0/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/f5aa1a0/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -232,7 +232,7 @@ text-align: center;
     <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='3e71a8a' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='f5aa1a0' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and (not data:view.url or not (data:view.url contains &quot;/blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 {
@@ -639,7 +639,7 @@ text-align: center;
     
     
     <!-- SIDEBAR KIRI -->
-    <aside class='gg-blog-sidebar gg-blog-sidebar--left'>
+    <aside class='gg-blog-sidebar gg-blog-sidebar--left' id='gg-left-panel'>
       <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
          <b:if cond='data:view.isMultipleItems'>
         <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list' name='Left SB Top (List)' showaddelement='true'>
@@ -3618,7 +3618,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
         </b:widget>
       </b:section>
-
+      <div aria-hidden='true' class='gg-anchor-end' id='gg-page-end' tabindex='-1'></div>
       </main>
    <!-- GAGA FOOTER -->
   <footer class='gg-footer'>
@@ -3710,95 +3710,87 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   
       
 <nav aria-label='Primary' class='gg-dock' data-gg-dock='1' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
-  <!-- SIDEBAR LEFT BUTTON: Muncul khusus disemua mode kecuali home landing, post detail --> 
-  <button aria-label='Toggle sidebar' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-action='left-toggle' data-gg-dock-action='1' data-gg-toggle='left-panel' data-gg-when='blog' type='button'>
-  <span aria-hidden='true' class='gg-dock__icon'>
-    <span aria-hidden='true' class='gg-icon material-symbols-rounded'>left_panel_open</span>
-  </span>
-   <span class='gg-dock__label'>Open Sidebar</span>
-  </button>
-    
-  <!-- HOME: muncul di Landing & Blog/Post -->
-  <button aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero' data-gg-dock-action='1' type='button'>
+  <a aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#gg-landing-hero' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;#gg-landing-hero&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
-     <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'>
-  <use href='#gg-logo-white'/>
-</svg>
+      <svg aria-label='GAGA Logo (White)' height='14' viewBox='0 0 130 200' width='14'>
+        <use href='#gg-logo-white'/>
+      </svg>
     </span>
-    <span class='gg-dock__label'>Home (Landing Page)</span>
-  </button>
+    <span class='gg-dock__label'>Home</span>
+  </a>
 
-  <!-- SECTION 2&#8211;5: HANYA di Landing -->
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars' data-gg-dock-action='1' data-gg-when='landing' type='button'>
-    <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>interests</span>
-    </span>
-    <span class='gg-dock__label'>Our services</span>
-  </button>
-
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-hero-3' data-gg-dock-action='1' data-gg-when='landing' type='button'>
-    <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>handyman</span>
-    </span>
-    <span class='gg-dock__label'>What we do</span>
-  </button>
-
-  <button class='gg-dock__item' data-gg-action='home-landing' data-gg-anchor='#gg-landing-pillars-4' data-gg-dock-action='1' data-gg-when='landing' type='button'>
-    <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>assignment</span>
-    </span>
-    <span class='gg-dock__label'>Assignment</span>
-  </button>
-
-  <button aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' data-gg-dock-action='1' type='button'>
-     <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
-    </span>
-    <span class='gg-dock__label'>Contact</span>
-  </button>
-
-  <!-- BLOG: muncul di semua mode -->
-  <button aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='home-blog' data-gg-dock-action='1' type='button'>
+  <a aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='blog' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;blog&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
-    <span class='gg-dock__label'>Home (Blog Page)</span>
-  </button>
-  
-  <a aria-label='Store' class='gg-panel-x gg-dock__item gg-dock__item--blog' data-gg-dock-action='1' href='https://pakrpp.com/p/shop.html'>
-    <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>local_mall</span>
-    </span>
-    <span class='gg-dock__label'>Store</span>
+    <span class='gg-dock__label'>Blog</span>
   </a>
 
-  <!-- SEARCH: muncul di semua mode -->
-  <button aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-dock-action='1' type='button'>
+  <a aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.searchUrl'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
     </span>
+    <span class='gg-dock__label'>Search</span>
+  </a>
 
-  </button>
-
-  <button aria-label='Go to bottom' class='gg-dock__item gg-backtotop' data-gg-action='jump' data-gg-dock-action='1' hidden='hidden' type='button'>
+  <a aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#gg-landing-hero-5' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;#gg-landing-hero-5&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>keyboard_double_arrow_down</span>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
     </span>
-    <span class='gg-dock__label'>Jump</span>
-  </button>
+    <span class='gg-dock__label'>Contact</span>
+  </a>
+
+  <a aria-label='More' class='gg-dock__item gg-dock__item--more' data-gg-action='more' data-gg-dock-action='1' data-gg-primary='1' href='#gg-dock-more'>
+    <span aria-hidden='true' class='gg-dock__icon'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>more_horiz</span>
+    </span>
+    <span class='gg-dock__label'>More</span>
+  </a>
 
   <div aria-hidden='false' class='gg-dock__search' data-gg-dock-search='1' data-gg-searchbar='1'>
     <form action='https://www.pakrpp.com/search' method='get' role='search'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>search</span>
       <input aria-activedescendant='' aria-autocomplete='list' aria-controls='gg-palette-list' aria-expanded='false' aria-label='Search input' data-gg-dock-search-input='1' name='q' placeholder='Search articles...' role='combobox' type='search'/>
-          <button aria-label='Submit search' class='gg-icon-btn gg-touch' type='submit'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_upward</span>
-      </button><button aria-label='Close search' class='gg-icon-btn gg-touch' data-gg-action='search-exit' data-gg-dock-close='1' type='button'>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
+      <button aria-label='Submit search' class='gg-icon-btn gg-touch' type='submit'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_upward</span>
       </button>
-      </form>
+      <button aria-label='Close search' class='gg-icon-btn gg-touch' data-gg-action='search-exit' data-gg-dock-close='1' type='button'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
+      </button>
+    </form>
   </div>
 </nav>
+<section aria-hidden='true' aria-label='More shortcuts' class='gg-dock-more' id='gg-dock-more'>
+  <div aria-labelledby='gg-dock-more-title' class='gg-dock-more__sheet' role='dialog'>
+    <div class='gg-dock-more__head'>
+      <p class='gg-dock-more__title' id='gg-dock-more-title'>More</p>
+      <a class='gg-dock-more__close' data-gg-action='more-close' href='#'>Close</a>
+    </div>
+    <ul class='gg-dock-more__list'>
+      <b:if cond='data:view.isHomepage and data:view.url != data:blog.homepageUrl + &quot;blog&quot;'>
+        <li><a href='#gg-landing-pillars'>Our services</a></li>
+        <li><a href='#gg-landing-hero-3'>What we do</a></li>
+        <li><a href='#gg-landing-pillars-4'>Assignment</a></li>
+        <li><a href='#gg-landing-hero-5'>Contact</a></li>
+        <li><a expr:href='data:blog.homepageUrl + &quot;blog&quot;'>Home (Blog Page)</a></li>
+      </b:if>
+      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:view.url == data:blog.homepageUrl + &quot;blog&quot;)'>
+        <li><a href='#gg-left-panel'>Open Sidebar</a></li>
+        <li><a href='/p/shop.html'>Store</a></li>
+        <li><a href='/p/tags.html'>Tags</a></li>
+        <li><a href='/p/authors.html'>Authors</a></li>
+      </b:if>
+      <b:if cond='data:view.isSingleItem'>
+        <li><a href='#gg-page-end'>Jump</a></li>
+        <b:if cond='data:view.isPost'>
+          <li><a href='#gg-toc'>ToC</a></li>
+        </b:if>
+        <li><a href='/p/shop.html'>Store</a></li>
+        <li><a expr:href='data:blog.searchUrl'>Search</a></li>
+      </b:if>
+    </ul>
+  </div>
+</section>
 
 </div>
           
@@ -3883,7 +3875,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/3e71a8a/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/f5aa1a0/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>
