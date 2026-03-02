@@ -1,6 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.GG_RUNTIME_BASE_URL || 'https://www.pakrpp.com/';
+const BLOG_URL = (() => {
+  try {
+    return new URL('blog', BASE_URL).toString();
+  } catch (_) {
+    const base = String(BASE_URL || '').replace(/\/+$/, '');
+    return `${base}/blog`;
+  }
+})();
 
 test.setTimeout(60000);
 
@@ -93,6 +101,10 @@ function formatRuntimeFingerprint(fp) {
   ].join(' ');
 }
 
+function formatRuntimeError(title, fp) {
+  return [title, formatRuntimeFingerprint(fp)].join('\n');
+}
+
 test('runtime smoke: gg-dock fail-open more + search', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
@@ -102,12 +114,7 @@ test('runtime smoke: gg-dock fail-open more + search', async ({ page }) => {
 
   const before = await readRuntimeFingerprint(page);
   if (before.mismatch) {
-    throw new Error(
-      [
-        'Template mismatch active on live HTML; runtime enhancements are intentionally disabled.',
-        formatRuntimeFingerprint(before),
-      ].join('\n')
-    );
+    throw new Error(formatRuntimeError('Template mismatch active on live HTML; runtime enhancements are intentionally disabled.', before));
   }
 
   const moreBtn = page.locator('nav.gg-dock a[data-gg-action="more"]').first();
@@ -133,6 +140,50 @@ test('runtime smoke: gg-dock fail-open more + search', async ({ page }) => {
     .poll(async () => isSearchVisible(page), {
       timeout: 20000,
       message: 'Dock search action did not expose search UI/fallback'
+    })
+    .toBe(true);
+});
+
+test('runtime smoke: /blog boot early + listing loaded + more panel', async ({ page }) => {
+  await page.goto(BLOG_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+  const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
+  await expect(dock.first()).toBeVisible({ timeout: 15000 });
+  await verifyDockContract(page);
+
+  const before = await readRuntimeFingerprint(page);
+  if (before.mismatch) {
+    throw new Error(formatRuntimeError('Template mismatch active on /blog; runtime enhancements are intentionally disabled.', before));
+  }
+
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          return Number((document.documentElement?.dataset?.ggBoot || '0').trim() || '0');
+        }),
+      { timeout: 2000, message: '/blog boot stage did not reach >=2 within 2s' }
+    )
+    .toBeGreaterThanOrEqual(2);
+
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          return !!window.__GG_LISTING_LOADED;
+        }),
+      { timeout: 15000, message: '/blog listing module did not report __GG_LISTING_LOADED=true' }
+    )
+    .toBe(true);
+
+  const moreBtn = page.locator('nav.gg-dock a[data-gg-action="more"]').first();
+  await expect(moreBtn).toBeVisible({ timeout: 15000 });
+  await moreBtn.click({ timeout: 10000, force: true });
+
+  await expect
+    .poll(async () => isMorePanelVisible(page), {
+      timeout: 20000,
+      message: '/blog more action did not open visible panel (:target or JS state)'
     })
     .toBe(true);
 });
