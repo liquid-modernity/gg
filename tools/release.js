@@ -149,18 +149,37 @@ function buildReleaseHistory(releaseId, priorHistory, keepCount) {
   return out.slice(0, keepCount);
 }
 
-function pruneAssetReleases({ keepReleaseIds }) {
+function pruneAssetReleases({ keepReleaseIds, keepCount }) {
   const vRoot = path.join("public", "assets", "v");
   if (!fs.existsSync(vRoot)) return;
+  const maxKeep = Number.isFinite(keepCount) ? Math.max(keepCount, 1) : 5;
   const keep = new Set((keepReleaseIds || []).filter(Boolean));
+  const entries = fs
+    .readdirSync(vRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name && !entry.name.startsWith("."))
+    .map((entry) => {
+      const full = path.join(vRoot, entry.name);
+      let mtimeMs = 0;
+      try {
+        mtimeMs = fs.statSync(full).mtimeMs || 0;
+      } catch (_) {}
+      return { name: entry.name, full, mtimeMs };
+    })
+    .sort((a, b) => {
+      if (b.mtimeMs !== a.mtimeMs) return b.mtimeMs - a.mtimeMs;
+      return a.name.localeCompare(b.name);
+    });
+  if (!entries.length) return;
+  if (keep.size < maxKeep) {
+    for (const entry of entries) {
+      if (keep.size >= maxKeep) break;
+      keep.add(entry.name);
+    }
+  }
   if (!keep.size) return;
-  const entries = fs.readdirSync(vRoot, { withFileTypes: true });
   entries.forEach((entry) => {
-    if (!entry.isDirectory()) return;
-    const name = entry.name;
-    if (!name || name.startsWith(".")) return;
-    if (keep.has(name)) return;
-    fs.rmSync(path.join(vRoot, name), { recursive: true, force: true });
+    if (keep.has(entry.name)) return;
+    fs.rmSync(entry.full, { recursive: true, force: true });
   });
 }
 
@@ -170,7 +189,12 @@ const KEEP_RELEASES = Number(process.env.KEEP_RELEASES || "2");
 const keepCount = Number.isFinite(KEEP_RELEASES)
   ? Math.min(Math.max(KEEP_RELEASES, 1), 5)
   : 5;
-const PRUNE_ASSET_RELEASES = /^(1|true|yes)$/i.test(String(process.env.PRUNE_ASSET_RELEASES || ""));
+const ASSET_KEEP_RELEASES = Number(process.env.ASSET_KEEP_RELEASES || "5");
+const assetKeepCount = Number.isFinite(ASSET_KEEP_RELEASES)
+  ? Math.min(Math.max(ASSET_KEEP_RELEASES, 1), 10)
+  : 5;
+const pruneRaw = String(process.env.PRUNE_ASSET_RELEASES || "1").trim();
+const PRUNE_ASSET_RELEASES = !/^(0|false|no)$/i.test(pruneRaw);
 const envRel = process.env.RELEASE_ID ? String(process.env.RELEASE_ID).trim() : "";
 const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
@@ -278,7 +302,7 @@ replaceAllOrThrow(
 
 updateCapsuleAutogen({ releaseId, releaseHistory });
 if (PRUNE_ASSET_RELEASES) {
-  pruneAssetReleases({ keepReleaseIds: releaseHistory });
+  pruneAssetReleases({ keepReleaseIds: releaseHistory, keepCount: assetKeepCount });
 }
 
 console.log(`RELEASE_ID ${releaseId}`);
