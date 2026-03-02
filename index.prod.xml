@@ -234,7 +234,7 @@ text-align: center;
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
 	    <div data-env='prod' data-release='bd47ed6' hidden='hidden' id='gg-fingerprint'/>
-    <b:if cond='data:view.isHomepage and data:ggIsHome and not data:ggIsBlogHome'>
+    <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 {
   "fetch": {
