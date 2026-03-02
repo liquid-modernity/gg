@@ -4820,9 +4820,8 @@ try {
 
 GG.boot.initDebugOverlay = GG.boot.initDebugOverlay || function(){
 try {
-  var debug = false;
-  try { debug = new URL(window.location.href).searchParams.get('ggdebug') === '1'; } catch (e) {}
-  if (!debug) return;
+  if (!/(?:\?|&)ggdebug=1(?:&|$)/.test(location.search||'')) return;
+  if (!GG.debugStatus) { GG.debugStatus = function(t){ var r = document.documentElement, b = document.body, m = document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main'), sw = navigator.serviceWorker && navigator.serviceWorker.controller, rel = document.querySelector('meta[name="gg-release"]'), fp = document.getElementById('gg-fingerprint'), mods = GG.boot && GG.boot._moduleLoadResults || {}, boot = (r && r.dataset && r.dataset.ggBoot) || (r && r.getAttribute && r.getAttribute('data-gg-boot')) || '0'; function a(n){ return (m && m.getAttribute && m.getAttribute(n)) || (b && b.getAttribute && b.getAttribute(n)) || ''; } try { console.info('[ggdebug:' + (t || '') + '] ggBoot=' + boot + ' release=' + (rel && rel.content || '') + ' fp=' + (fp && fp.getAttribute && fp.getAttribute('data-release') || '') + ' surface=' + a('data-gg-surface') + ' page=' + a('data-gg-page') + ' view=' + a('data-gg-view') + ' sw=' + (!!sw) + ' uiReady=' + (GG.boot && GG.boot._uiReady ? 1 : 0), mods); } catch (_) {} }; GG.debugStatus(); }
 
   var el = document.getElementById('gg-debug-overlay');
   if (!el) {

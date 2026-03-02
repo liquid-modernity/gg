@@ -144,7 +144,7 @@ test('runtime smoke: gg-dock fail-open more + search', async ({ page }) => {
     .toBe(true);
 });
 
-test('runtime smoke: /blog boot early + listing loaded + more panel', async ({ page }) => {
+test('runtime smoke: /blog boot early + listing loaded + more + search', async ({ page }) => {
   await page.goto(BLOG_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
   const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
@@ -186,4 +186,42 @@ test('runtime smoke: /blog boot early + listing loaded + more panel', async ({ p
       message: '/blog more action did not open visible panel (:target or JS state)'
     })
     .toBe(true);
+
+  const closeMore = page.locator('#gg-dock-more [data-gg-action="more-close"]').first();
+  if (await closeMore.isVisible().catch(() => false)) {
+    await closeMore.click({ timeout: 10000, force: true });
+  }
+
+  const searchBtn = page.locator('nav.gg-dock a[data-gg-action="search"]').first();
+  await expect(searchBtn).toBeVisible({ timeout: 15000 });
+  await searchBtn.click({ timeout: 10000, force: true });
+
+  await expect
+    .poll(async () => isSearchVisible(page), {
+      timeout: 20000,
+      message: '/blog search action did not expose search UI/fallback'
+    })
+    .toBe(true);
+});
+
+test('runtime smoke: /blog fail-open without JS', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  try {
+    await page.goto(BLOG_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+    const dock = page.locator('nav.gg-dock[data-gg-module="dock"], nav.gg-dock');
+    await expect(dock.first()).toBeVisible({ timeout: 15000 });
+    await verifyDockContract(page);
+
+    const moreBtn = page.locator('nav.gg-dock a[data-gg-action="more"]').first();
+    await expect(moreBtn).toBeVisible({ timeout: 15000 });
+    await moreBtn.click({ timeout: 10000 });
+
+    await expect(page).toHaveURL(/#gg-dock-more$/, { timeout: 10000 });
+    const moreVisible = await isMorePanelVisible(page);
+    expect(moreVisible).toBe(true);
+  } finally {
+    await context.close();
+  }
 });

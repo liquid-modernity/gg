@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='b46cfd8' name='gg-release'/>
+    <meta content='b55e377' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/b46cfd8/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/b46cfd8/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/b55e377/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/b55e377/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -233,7 +233,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='b46cfd8' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='b55e377' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 {
@@ -3769,14 +3769,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <a class='gg-dock-more__close' data-gg-action='more-close' href='#'>Close</a>
     </div>
     <ul class='gg-dock-more__list'>
-      <b:if cond='data:view.isHomepage and data:view.url != data:blog.homepageUrl + &quot;blog&quot;'>
+      <b:if cond='data:view.isHomepage and not data:ggIsBlogHome'>
         <li><a href='#gg-landing-pillars'>Our services</a></li>
         <li><a href='#gg-landing-hero-3'>What we do</a></li>
         <li><a href='#gg-landing-pillars-4'>Assignment</a></li>
         <li><a href='#gg-landing-hero-5'>Contact</a></li>
         <li><a expr:href='data:blog.homepageUrl + &quot;blog&quot;'>Home (Blog Page)</a></li>
       </b:if>
-      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:view.url == data:blog.homepageUrl + &quot;blog&quot;)'>
+      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:ggIsBlogHome)'>
         <li><a href='#gg-left-panel'>Open Sidebar</a></li>
         <li><a href='/p/shop.html'>Store</a></li>
         <li><a href='/p/tags.html'>Tags</a></li>
@@ -3877,7 +3877,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/b46cfd8/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/b55e377/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>

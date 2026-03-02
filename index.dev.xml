@@ -3535,14 +3535,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <a class='gg-dock-more__close' data-gg-action='more-close' href='#'>Close</a>
     </div>
     <ul class='gg-dock-more__list'>
-      <b:if cond='data:view.isHomepage and data:view.url != data:blog.homepageUrl + &quot;blog&quot;'>
+      <b:if cond='data:view.isHomepage and not data:ggIsBlogHome'>
         <li><a href='#gg-landing-pillars'>Our services</a></li>
         <li><a href='#gg-landing-hero-3'>What we do</a></li>
         <li><a href='#gg-landing-pillars-4'>Assignment</a></li>
         <li><a href='#gg-landing-hero-5'>Contact</a></li>
         <li><a expr:href='data:blog.homepageUrl + &quot;blog&quot;'>Home (Blog Page)</a></li>
       </b:if>
-      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:view.url == data:blog.homepageUrl + &quot;blog&quot;)'>
+      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:ggIsBlogHome)'>
         <li><a href='#gg-left-panel'>Open Sidebar</a></li>
         <li><a href='/p/shop.html'>Store</a></li>
         <li><a href='/p/tags.html'>Tags</a></li>

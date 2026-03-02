@@ -943,10 +943,19 @@ if (!name) return '';
 return moduleUrl(name);
 };
 
+GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
 GG.boot.loadModule = GG.boot.loadModule || function(name){
 if (!name) return Promise.reject(new Error('module-name-missing'));
 var url = GG.boot.moduleUrl ? GG.boot.moduleUrl(name) : moduleUrl(name);
-return GG.boot.loadScript(url);
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results[name] = 'loading';
+return GG.boot.loadScript(url).then(function(out){
+results[name] = 'ok';
+return out;
+}).catch(function(err){
+results[name] = 'err';
+throw err;
+});
 };
 
 function setBootStage(stage){
@@ -978,24 +987,35 @@ else w.setTimeout(fn, t);
 
 function loadPwa(){
 var url = moduleUrl('pwa.js');
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results['pwa.js'] = 'loading';
 return GG.boot.loadScript(url).then(function(){
+results['pwa.js'] = 'ok';
 if (GG.modules && GG.modules.pwa && typeof GG.modules.pwa.init === 'function') {
 GG.modules.pwa.init();
 }
+}).catch(function(err){
+results['pwa.js'] = 'err';
+throw err;
 });
 }
 
 function loadUi(){
 var url = moduleUrl('ui.js');
 if (GG.boot._uiPromise) return GG.boot._uiPromise;
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results['ui.js'] = 'loading';
 GG.boot._uiPromise = GG.boot.loadScript(url).then(function(){
 if (GG.modules && GG.modules.ui && typeof GG.modules.ui.init === 'function') {
 try { GG.modules.ui.init(); } catch (_) {}
 }
 GG.boot._uiReady = true;
+results['ui.js'] = 'ok';
 return true;
 }).catch(function(err){
 GG.boot._uiPromise = null;
+GG.boot._uiReady = false;
+results['ui.js'] = 'err';
 throw err;
 });
 return GG.boot._uiPromise;
