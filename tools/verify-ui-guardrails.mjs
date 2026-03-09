@@ -373,12 +373,12 @@ function parseMixedConfig(indexXml) {
 function verifyMixedContracts(indexXml) {
   const required = [
     { id: "gg-mixed-featuredstrip", kind: "featured", type: "rail", max: 5, layout: "rail" },
-    { id: "gg-mixed-newsish-1", kind: "newsish", type: "newsdeck", cols: 3, max: 4, layout: "newsdeck" },
-    { id: "gg-mixed-bookish", kind: "bookish", type: "bookish", max: 5, layout: "grid" },
-    { id: "gg-mixed-youtubeish", kind: "youtubeish", type: "youtube", max: 4, layout: "rail", defer: true },
-    { id: "gg-mixed-shortish", kind: "shortish", type: "shorts", max: 6, layout: "rail", defer: true },
-    { id: "gg-mixed-newsish-2", kind: "newsish", type: "newsdeck", cols: 3, max: 4, layout: "newsdeck", defer: true },
-    { id: "gg-mixed-podcastish", kind: "podcastish", type: "podcast", max: 7, layout: "rail", defer: true },
+    { id: "gg-mixed-newsish-1", kind: "newsish", type: "newsdeck", cols: 3, max: 3, layout: "newsdeck" },
+    { id: "gg-mixed-bookish", kind: "bookish", type: "bookish", max: 4, layout: "grid" },
+    { id: "gg-mixed-youtubeish", kind: "youtubeish", type: "youtube", max: 3, layout: "rail", defer: true },
+    { id: "gg-mixed-shortish", kind: "shortish", type: "shorts", max: 5, layout: "rail", defer: true },
+    { id: "gg-mixed-newsish-2", kind: "newsish", type: "newsdeck", cols: 3, max: 3, layout: "newsdeck", defer: true },
+    { id: "gg-mixed-podcastish", kind: "podcastish", type: "podcast", max: 6, layout: "rail", defer: true },
   ];
 
   required.forEach((section) => {
