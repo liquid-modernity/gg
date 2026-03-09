@@ -1,16 +1,17 @@
 # Documentation
-Last updated: 2026-02-05
+Last updated: 2026-03-09
 
 ## Authority Ladder
 If any document conflicts, follow the highest authority below.
 
-1) `docs/ledger/GG_CAPSULE.md` (live state: NOW/NEXT/RELEASE_ID, endpoints)
-2) `docs/AI/CONTEXT_PACK.md` (stable rules and constraints)
-3) `docs/release/ASSET_CONTRACT.md` (asset/cache contract details)
-4) `docs/ci/PIPELINE.md` (pipeline reference)
-5) Everything else (supporting, may be stale)
+1) `docs/MASTER_INDEX.md` (current SoT map + verify tiers + minimum release path)
+2) `docs/ledger/GG_CAPSULE.md` (live state: NOW/NEXT/RELEASE_ID, endpoints)
+3) `docs/AI/CONTEXT_PACK.md` (stable rules and constraints)
+4) `docs/release/ASSET_CONTRACT.md` (asset/cache contract details)
+5) `docs/ci/PIPELINE.md` (pipeline reference)
+6) Everything else (supporting, may be stale)
 
-Conflict rule: **GG_CAPSULE wins for state**. **Contracts win for behavior**.
+Conflict rule: **MASTER_INDEX decides audit path**. **GG_CAPSULE wins for state**. **Contracts win for behavior**.
 
 ## What This Repo Is
 This repo contains the Blogger theme assets and the Cloudflare Worker that fronts the Blogger origin. The Worker serves root assets (`/sw.js`, `/manifest.webmanifest`, `/offline.html`), proxies Blogger pages, and adds required headers.

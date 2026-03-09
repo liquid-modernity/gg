@@ -235,21 +235,13 @@ body:not([data-gg-surface="landing"]) .hero-section {
 	    <div data-env='dev' data-release='dev' hidden='hidden' id='gg-fingerprint'></div>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
-{
-  "fetch": {
-    "max_results": 84,
-    "order": "published"
-  },
-  "sections": [
-    {"id":"gg-mixed-featuredstrip","type":"rail","kind":"featured","label":"blog","max":5,"kicker":"FEATURED"},
-    {"id":"gg-mixed-newsish-1","type":"newsdeck","label":"news","labels":["news","bookish","podcast"],"cols":3,"max":3,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-bookish","type":"bookish","label":"bookish","max":4,"kicker":"BOOKISH"},
-    {"id":"gg-mixed-youtubeish","type":"youtube","label":"youtube","max":3,"defer":1,"kicker":"YOUTUBE"},
-    {"id":"gg-mixed-shortish","type":"shorts","label":"shorts","max":5,"defer":1,"kicker":"SHORTS"},
-    {"id":"gg-mixed-newsish-2","type":"newsdeck","label":"news","labels":["news","youtube","shorts"],"cols":3,"max":3,"defer":1,"kicker":"NEWSDECK"},
-    {"id":"gg-mixed-podcastish","type":"podcast","label":"podcast","max":6,"defer":1,"kicker":"PODCAST"}
-  ]
-}
+	{
+	  "source": "dom",
+	  "fetch": {
+	    "max_results": 84,
+	    "order": "published"
+	  }
+	}
 ]]></template>
     </b:if>
     <!-- GAGA LOGO SVG -->
@@ -600,7 +592,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2" data-scroll-offset="84">
+<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
@@ -3023,7 +3015,130 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     <!-- GAGA SIDEBAR RIGHT -->
 <aside class='gg-blog-sidebar gg-blog-sidebar--right'>
-  <div class='gg-info-panel' data-gg-panel='info'></div>
+  <div class='gg-info-panel' data-gg-panel='info'>
+    <div class='gg-info-panel__card gg-editorial-preview gg-epanel'>
+      <div class='gg-epanel__head'>
+        <span class='gg-epanel__eyebrow'>Editorial Preview</span>
+      </div>
+      <div class='gg-epanel__media'>
+        <img alt='' class='gg-info-panel__thumb-img'/>
+      </div>
+      <div class='gg-epanel__body gg-info-panel__details'>
+        <dl class='gg-epanel__rows'>
+          <div class='gg-epanel__row' data-row='title'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>article</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Title</dt>
+              <dd class='gg-epanel__value'>
+                <a data-s='title' href='#'>&#8212;</a>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='author'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>person</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Written by</dt>
+              <dd class='gg-epanel__value'>
+                <a data-s='author-link' href='#'>
+                  <span data-s='author'>&#8212;</span>
+                </a>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='contributors' hidden='hidden'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>groups</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Contributor by</dt>
+              <dd class='gg-epanel__value'>
+                <div class='gg-chip-row gg-epanel__chips' data-gg-slot='contributors'/>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='labels' hidden='hidden'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>label</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Label</dt>
+              <dd class='gg-epanel__value'>
+                <div class='gg-chip-row gg-epanel__chips' data-gg-slot='labels'/>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='tags' hidden='hidden'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>sell</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Tags</dt>
+              <dd class='gg-epanel__value'>
+                <div class='gg-chip-row gg-epanel__chips' data-gg-slot='tags'/>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='date'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>calendar_today</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Date</dt>
+              <dd class='gg-epanel__value'>
+                <span data-s='date'>&#8212;</span>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='updated' hidden='hidden'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>event_repeat</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Updated</dt>
+              <dd class='gg-epanel__value'>
+                <span data-s='updated'>&#8212;</span>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='comments'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>comment</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Comments</dt>
+              <dd class='gg-epanel__value'>
+                <span data-s='comments'>&#8212;</span>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='readtime'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>schedule</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Read time</dt>
+              <dd class='gg-epanel__value'>
+                <span data-s='readtime'>&#8212;</span>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='snippet' hidden='hidden'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>text_snippet</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Snippet</dt>
+              <dd class='gg-epanel__value'>
+                <span data-s='snippet'>&#8212;</span>
+              </dd>
+            </div>
+          </div>
+          <div class='gg-epanel__row' data-row='toc'>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>toc</span>
+            <div class='gg-epanel__cell'>
+              <dt class='gg-epanel__label'>Table of Contents</dt>
+              <dd class='gg-epanel__value'>
+                <div class='gg-epanel__value--toc'>
+                  <ol class='gg-info-panel__toclist' data-gg-slot='toc'/>
+                  <p class='gg-info-panel__tochint' data-gg-slot='toc-hint'/>
+                </div>
+              </dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+      <div class='gg-epanel__foot'>
+        <a class='gg-epanel__cta' href='#'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>visibility</span>
+          <span>Read this post</span>
+        </a>
+      </div>
+    </div>
+  </div>
   <div aria-hidden='true' class='gg-visually-hidden' data-gg-preview-contract='toc'>
     <ol data-gg-slot='toc'></ol>
     <p data-gg-slot='toc-hint'></p>

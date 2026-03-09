@@ -66,6 +66,27 @@ function verifyCore(core, label) {
 const indexXml = readFile("index.prod.xml");
 const rel = extractReleaseId(indexXml);
 if (!rel) failures.push("unable to extract release id from index.prod.xml");
+if (indexXml && /data-scroll-offset\s*=/.test(indexXml)) {
+  failures.push("index.prod.xml: #gg-toc must not hardcode data-scroll-offset");
+}
+
+const postModule = readFile("public/assets/latest/modules/ui.bucket.post.js");
+if (!postModule) {
+  failures.push("public/assets/latest/modules/ui.bucket.post.js missing");
+} else {
+  if (!postModule.includes("--gg-sticky-top")) {
+    failures.push("ui.bucket.post.js: TOC offset must read --gg-sticky-top");
+  }
+  if (!postModule.includes("scroll-padding-top")) {
+    failures.push("ui.bucket.post.js: TOC offset must consider scroll-padding-top");
+  }
+  if (!postModule.includes("querySelector('.gg-post__toolbar')")) {
+    failures.push("ui.bucket.post.js: TOC offset must consider .gg-post__toolbar height");
+  }
+  if (/return\s+computed\s*>\s*0\s*\?\s*computed\s*:\s*\d+\s*;/.test(postModule)) {
+    failures.push("ui.bucket.post.js: TOC offset must not use hardcoded numeric fallback");
+  }
+}
 
 verifyCore(readFile("public/assets/latest/modules/ui.bucket.core.js"), "latest ui.bucket.core.js");
 if (rel) {

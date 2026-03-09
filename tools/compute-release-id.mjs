@@ -59,9 +59,16 @@ function normalizeWorker(worker) {
   let out = worker.replace(/const\s+WORKER_VERSION\s*=\s*"[^"]+"/, 'const WORKER_VERSION="__REL__"');
   out = out.replace(
     /const\s+TEMPLATE_ALLOWED_RELEASES\s*=\s*\[[^\]]*\];/,
-    'const TEMPLATE_ALLOWED_RELEASES = ["__REL__", "__PREV__"];'
+    'const TEMPLATE_ALLOWED_RELEASES = ["__REL__"];'
   );
   return out;
+}
+
+function normalizeHeaders(headersText) {
+  return String(headersText || "").replace(
+    /(X-GG-Assets:\s*)[A-Za-z0-9._-]+/gi,
+    "$1__REL__"
+  );
 }
 
 function normalizeCapsule(md) {
@@ -96,6 +103,7 @@ export function computeReleaseId() {
   inputs.set("index.prod.xml", normalizeIndex(readText("index.prod.xml")));
   inputs.set("public/sw.js", normalizeSw(readText("public/sw.js")));
   inputs.set("src/worker.js", normalizeWorker(readText("src/worker.js")));
+  inputs.set("public/_headers", normalizeHeaders(readText("public/_headers")));
   inputs.set("docs/ledger/GG_CAPSULE.md", normalizeCapsule(readText("docs/ledger/GG_CAPSULE.md")));
 
   const hash = crypto.createHash("sha256");

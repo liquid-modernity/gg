@@ -220,8 +220,33 @@
       return id;
     }
     function getOffset(root){
-      var off = parseInt((root && root.getAttribute('data-scroll-offset')) || '84', 10);
-      return isFinite(off) ? off : 84;
+      var explicit = parseInt((root && root.getAttribute('data-scroll-offset')) || '', 10);
+      if (isFinite(explicit) && explicit > 0) return explicit;
+
+      var computed = 0;
+      var stickyTop = 0;
+      try {
+        stickyTop = parseFloat(w.getComputedStyle(d.documentElement).getPropertyValue('--gg-sticky-top')) || 0;
+      } catch (_) {}
+      if (stickyTop > 0) computed = Math.max(computed, Math.ceil(stickyTop));
+
+      var toolbar = d.querySelector('.gg-post__toolbar');
+      if (toolbar && toolbar.getBoundingClientRect) {
+        var toolRect = toolbar.getBoundingClientRect();
+        if (toolRect && toolRect.height > 0) {
+          computed = Math.max(computed, Math.ceil(toolRect.height + 8));
+        }
+      }
+
+      var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"]');
+      if (dock && dock.getBoundingClientRect) {
+        var dockRect = dock.getBoundingClientRect();
+        if (dockRect && dockRect.height > 0 && dockRect.top <= 0) {
+          computed = Math.max(computed, Math.ceil(dockRect.height + 8));
+        }
+      }
+
+      return computed > 0 ? computed : 84;
     }
     function setCollapsed(root, collapsed){
       if (!root) return;

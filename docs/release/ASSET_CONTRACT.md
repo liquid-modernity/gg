@@ -1,5 +1,5 @@
 # Asset Release Contract (LATEST vs PINNED)
-Last updated: 2026-02-05
+Last updated: 2026-03-09
 
 ## Purpose
 Define a deterministic asset contract so DEV is fast and uncached (`/assets/latest/*`) and PROD is stable and immutable (`/assets/v/<RELEASE_ID>/*`). This is enforced at the Cloudflare Worker (`gg`) layer and by repo build outputs.
@@ -19,6 +19,7 @@ Define a deterministic asset contract so DEV is fast and uncached (`/assets/late
 
 - **Global (always)**
   - `/sw.js` and `/gg-flags.json` must be `Cache-Control: no-store`.
+  - `public/_headers` `X-GG-Assets` token must equal active `RELEASE_ID`.
 
 ## Cache Header Enforcement (Worker `gg`)
 - `/assets/latest/*` → no-store

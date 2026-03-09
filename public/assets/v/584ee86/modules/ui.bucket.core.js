@@ -1082,95 +1082,10 @@ if (comments.__ggDocked) return;
 panel.appendChild(comments);
 comments.__ggDocked = true;
 };
-ui.layout._listingFlowOrder = ui.layout._listingFlowOrder || {
-top: ['gg-mixed-featuredstrip', 'gg-mixed-newsish-1', 'gg-mixed-bookish'],
-deferred: ['gg-mixed-youtubeish', 'gg-mixed-shortish', 'gg-mixed-newsish-2', 'gg-mixed-podcastish'],
-disabled: ['gg-mixed-instagramish', 'gg-mixed-newsish-3', 'gg-mixed-newsish-4', 'gg-mixed-pinterestish']
-};
 ui.layout._normalizeListingFlow = ui.layout._normalizeListingFlow || function(){
 var main = d.querySelector('main.gg-main[data-gg-surface="listing"] .gg-blog-main');
 if (!main) return;
-
-function mixedWidgetById(id){
-  var section = id ? d.getElementById(id) : null;
-  if (!section) return null;
-  return section.closest('.widget') || section;
-}
-function moveWidget(widget, anchor){
-  if (!widget || !main || !anchor) return;
-  widget.classList.add('gg-mixed-widget--flow');
-  if (widget.parentNode !== main || widget.nextSibling !== anchor) {
-    main.insertBefore(widget, anchor);
-  }
-}
-function markWidget(widget, orderIdx, isDeferred){
-  if (!widget) return;
-  widget.classList.add('gg-mixed-widget--flow');
-  widget.setAttribute('data-gg-flow-order', String(orderIdx));
-  if (isDeferred) widget.classList.add('gg-mixed-widget--deferred');
-  else widget.classList.remove('gg-mixed-widget--deferred');
-}
-function hideSectionById(id){
-  var section = id ? d.getElementById(id) : null;
-  if (!section) return;
-  section.setAttribute('data-gg-disabled', '1');
-  var widget = section.closest('.widget');
-  if (widget) {
-    widget.hidden = true;
-    widget.setAttribute('data-gg-disabled', '1');
-  }
-}
-
-var blogSection = d.getElementById('blog');
-if (!blogSection || blogSection.parentNode !== main) return;
-
-var order = ui.layout._listingFlowOrder || {};
-var top = Array.isArray(order.top) ? order.top : [];
-var deferred = Array.isArray(order.deferred) ? order.deferred : [];
-var disabled = Array.isArray(order.disabled) ? order.disabled : [];
-var ssrReady = main.getAttribute('data-gg-listing-flow-ssr') === '1';
-var topWidgets = [];
-var deferredWidgets = [];
-
-for (var i = 0; i < top.length; i++) {
-  var topWidget = mixedWidgetById(top[i]);
-  if (!topWidget) continue;
-  markWidget(topWidget, i + 1, false);
-  topWidgets.push(topWidget);
-}
-
-for (var j = 0; j < deferred.length; j++) {
-  var deferredWidget = mixedWidgetById(deferred[j]);
-  if (!deferredWidget) continue;
-  markWidget(deferredWidget, top.length + j + 1, true);
-  deferredWidgets.push(deferredWidget);
-}
-
-if (!ssrReady) {
-  for (var m = 0; m < topWidgets.length; m++) {
-    moveWidget(topWidgets[m], blogSection);
-  }
-  var cursor = blogSection;
-  for (var n = 0; n < deferredWidgets.length; n++) {
-    var widget = deferredWidgets[n];
-    if (widget.parentNode !== main || widget.previousSibling !== cursor) {
-      main.insertBefore(widget, cursor.nextSibling);
-    }
-    cursor = widget;
-  }
-}
-
-for (var k = 0; k < disabled.length; k++) {
-  hideSectionById(disabled[k]);
-}
-
-var featuredWidget = d.getElementById('FeaturedPost1');
-if (featuredWidget) {
-  featuredWidget.hidden = true;
-  featuredWidget.setAttribute('data-gg-relocated', '1');
-}
-
-main.setAttribute('data-gg-listing-flow', 'reading-first');
+main.setAttribute('data-gg-listing-flow', 'ssr');
 };
 ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
 var next = surface || ui.layout.detectSurface(doc, url);

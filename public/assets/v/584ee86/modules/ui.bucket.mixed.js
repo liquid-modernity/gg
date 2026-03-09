@@ -225,8 +225,7 @@
       fetch: {
         max_results: DEFAULT_FETCH_MAX,
         order: DEFAULT_ORDER,
-      },
-      sectionsById: Object.create(null),
+      }
     };
 
     var el = d.getElementById('gg-mixed-config');
@@ -243,25 +242,6 @@
         cfg.fetch.max_results = clampInt(raw.fetch.max_results, DEFAULT_FETCH_MAX, 1, 120);
         cfg.fetch.order = String(raw.fetch.order || DEFAULT_ORDER).trim() || DEFAULT_ORDER;
       }
-      var sections = Array.isArray(raw && raw.sections) ? raw.sections : [];
-      for (var i = 0; i < sections.length; i++) {
-        var s = sections[i] || {};
-        var id = String(s.id || '').trim();
-        if (!id) continue;
-        cfg.sectionsById[id] = {
-          id: id,
-          type: inferType(s.type, s.kind || s.type),
-          kind: normalizeLabel(s.kind || s.type || ''),
-          label: String(s.label || '').trim(),
-          labels: toLabelList(s.labels || ''),
-          cols: clampInt(s.cols, 3, 1, 3),
-          max: clampInt(s.max, 8, 1, 16),
-          order: String(s.order || cfg.fetch.order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
-          defer: s.defer === true || String(s.defer || '') === '1',
-          kicker: String(s.kicker || '').trim(),
-          title: String(s.title || '').trim(),
-        };
-      }
     } catch (_) {
       return cfg;
     }
@@ -270,24 +250,20 @@
   }
 
   function resolveSectionConfig(slot, cfg) {
-    var id = String(slot.id || '').trim();
-    var fromJson = (id && cfg.sectionsById[id]) ? cfg.sectionsById[id] : null;
-
-    var kindRaw = slot.getAttribute('data-gg-kind') || (fromJson && (fromJson.kind || fromJson.type)) || slot.getAttribute('data-type') || 'bookish';
-    var typeRaw = (fromJson && fromJson.type) || slot.getAttribute('data-type') || kindRaw || 'bookish';
+    var kindRaw = slot.getAttribute('data-gg-kind') || slot.getAttribute('data-type') || 'bookish';
+    var typeRaw = slot.getAttribute('data-type') || kindRaw || 'bookish';
     var type = inferType(typeRaw, kindRaw);
-    var label = (fromJson && fromJson.label) || slot.getAttribute('data-label') || slot.getAttribute('data-gg-label') || 'blog';
-    var labels = toLabelList((fromJson && fromJson.labels) || slot.getAttribute('data-labels') || slot.getAttribute('data-gg-labels') || '');
-    var colsRaw = (fromJson && fromJson.cols) || slot.getAttribute('data-cols') || slot.getAttribute('data-gg-cols') || '3';
-    var maxRaw = (fromJson && fromJson.max) || slot.getAttribute('data-max') || slot.getAttribute('data-gg-max') || '8';
-    var order = (fromJson && fromJson.order) || slot.getAttribute('data-order') || cfg.fetch.order || DEFAULT_ORDER;
+    var label = slot.getAttribute('data-label') || slot.getAttribute('data-gg-label') || 'blog';
+    var labels = toLabelList(slot.getAttribute('data-labels') || slot.getAttribute('data-gg-labels') || '');
+    var colsRaw = slot.getAttribute('data-cols') || slot.getAttribute('data-gg-cols') || '3';
+    var maxRaw = slot.getAttribute('data-max') || slot.getAttribute('data-gg-max') || '8';
+    var order = slot.getAttribute('data-order') || cfg.fetch.order || DEFAULT_ORDER;
     var deferRaw =
-      (fromJson && (fromJson.defer === true || String(fromJson.defer || '') === '1')) ||
       slot.getAttribute('data-gg-defer') === '1' ||
       slot.getAttribute('data-defer') === '1';
 
     var section = {
-      id: id,
+      id: String(slot.id || '').trim(),
       type: type,
       kind: normalizeLabel(kindRaw || type),
       label: String(label || '').trim(),
@@ -296,8 +272,8 @@
       max: clampInt(maxRaw, 8, 1, 16),
       order: String(order || DEFAULT_ORDER).trim() || DEFAULT_ORDER,
       defer: !!deferRaw,
-      kicker: (fromJson && fromJson.kicker) ? String(fromJson.kicker).trim() : '',
-      title: (fromJson && fromJson.title) ? String(fromJson.title).trim() : '',
+      kicker: '',
+      title: '',
     };
 
     if (section.type === 'newsdeck') {
@@ -919,9 +895,6 @@
   }
 
   function init(root) {
-    if (G.ui && G.ui.layout && typeof G.ui.layout._normalizeListingFlow === 'function') {
-      try { G.ui.layout._normalizeListingFlow(); } catch (_) {}
-    }
     var cfg = parseConfig();
     var slots = collectSlots(root);
     if (!slots.length) return;

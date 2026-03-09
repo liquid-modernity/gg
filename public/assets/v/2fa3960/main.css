@@ -1696,6 +1696,13 @@ min-height: 0;
 flex: 1 1 auto;
 min-height: 0;
 }
+.gg-info-panel__fallback{
+margin: 0;
+padding: 12px;
+font-size: 12px;
+line-height: 1.45;
+color: var(--gg-muted);
+}
 
 #gg-right-sidebar-list,
 #gg-right-sidebar-post,
@@ -4746,9 +4753,9 @@ font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
 
 
 main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right {
-overflow: visible;
-height: calc(100dvh - (var(--gg-sticky-top, 0px) * 2));
-max-height: calc(100dvh - (var(--gg-sticky-top, 0px) * 2));
+overflow: hidden;
+height: calc(100dvh - var(--gg-sticky-top, 0px));
+max-height: calc(100dvh - var(--gg-sticky-top, 0px));
 display: flex;
 flex-direction: column;
 -webkit-overflow-scrolling: touch;
@@ -4930,13 +4937,13 @@ display: block !important;
 
 #comments:not(.gg-comments--docked) > .gg-comments__head,
 #comments:not(.gg-comments--docked) > .gg-comments__footer {
-position: static !important;
-top: auto !important;
-bottom: auto !important;
-left: auto !important;
-right: auto !important;
-width: auto !important;
-transform: none !important;
+position: static;
+top: auto;
+bottom: auto;
+left: auto;
+right: auto;
+width: auto;
+transform: none;
 }
 
 
@@ -4977,27 +4984,14 @@ min-height: 0;
 #comments .gg-comments__footer{
 position: sticky;
 bottom: 0;
-background: var(--gg-surface-2);
-
-
-display: flex;
-flex-direction: column;
-gap: 10px;
-z-index: var(--z-raise-5);
-margin-top: auto;
-}
-
-
-#comments .gg-comments__footer{
-position: sticky;
-bottom: 0;
 z-index: var(--z-raise-7);
-
 background: var(--gg-surface-2);
+display: flex;
 flex-direction: column;
 gap: 0;
 padding: 0;
 overflow: visible;
+margin-top: auto;
 margin-bottom:16px;
 }
 #comments .gg-comments__footer-inner{
@@ -5008,11 +5002,11 @@ padding: 12px;
 }
 #comments .gg-comments__footer .continue,
 #comments .gg-comments__footer #top-continue{
-position: static !important;
-bottom: auto !important;
-padding: 0 !important;
-margin: 0 !important;
-background: transparent !important;
+position: static;
+bottom: auto;
+padding: 0;
+margin: 0;
+background: transparent;
 order: 0;
 }
 #comments .gg-comments__footer #top-continue .comment-reply{
@@ -5021,12 +5015,12 @@ justify-content: center;
 }
 #comments .gg-comments__footer #top-ce{
 order: 1;
-border: 0 !important;
-background: transparent !important;
-position: static !important;
-bottom: auto !important;
-padding: 0 !important;
-max-width: 100% !important;
+border: 0;
+background: transparent;
+position: static;
+bottom: auto;
+padding: 0;
+max-width: 100%;
 flex-direction: column;
 gap: 10px;
 }
@@ -5054,7 +5048,7 @@ right: auto;
 bottom: auto;
 }
 
-#comments.gg-comments--replying > .gg-comments__footer-spacer { height: 0 !important; }
+#comments.gg-comments--replying > .gg-comments__footer-spacer { height: 0; }
 
 
 main.gg-main[data-gg-right-mode="comments"] #comments {
@@ -5066,13 +5060,13 @@ main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__head,
 main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__footer,
 main.gg-main[data-gg-right-mode="comments"] #comments.gg-comments--docked > .gg-comments__head,
 main.gg-main[data-gg-right-mode="comments"] #comments.gg-comments--docked > .gg-comments__footer {
-position: relative !important;
-top: auto !important;
-bottom: auto !important;
-left: auto !important;
-right: auto !important;
-width: auto !important;
-transform: none !important;
+position: relative;
+top: auto;
+bottom: auto;
+left: auto;
+right: auto;
+width: auto;
+transform: none;
 }
 main.gg-main[data-gg-right-mode="comments"] #comments > .gg-comments__content {
 flex: 1 1 auto;
@@ -5454,32 +5448,6 @@ align-content: center;
 text-decoration: underline;
 }
 
-
-main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right{
-overflow: hidden !important;
-height: calc(100dvh - var(--gg-sticky-top, 0px)) !important;
-max-height: calc(100dvh - var(--gg-sticky-top, 0px)) !important;
-display: flex !important;
-flex-direction: column !important;
-}
-
-
-#comments{
-display: flex;
-flex-direction: column;
-min-height: 0; 
-}
-
-#comments .gg-comments__head{ flex: 0 0 auto; }
-#comments .gg-comments__footer{ flex: 0 0 auto; }
-
-
-#comments .gg-comments__content{
-flex: 1 1 auto;
-min-height: 0;
-overflow: auto;
--webkit-overflow-scrolling: touch;
-}
 
 #gg-sitemap{max-width:1100px;margin:24px auto;padding:0 14px;font-family:system-ui}
 #gg-sitemap .gg-head{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}

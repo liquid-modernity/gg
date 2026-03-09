@@ -16,6 +16,7 @@ if ! run npm run verify:release; then
   run env ALLOW_DIRTY_RELEASE=1 npm run build
   run npm run verify:release
 fi
+# verify:release already includes verify-rulebooks + verify-authors-dir-contract.
 
 run npm run verify:assets
 run npm run verify:xml
@@ -24,7 +25,6 @@ run node tools/verify-no-inline-diagnostic-script.mjs
 run node tools/verify-no-head-style-blocks.mjs
 run node tools/verify-mixed-config-gated.mjs
 run node tools/verify-ledger.mjs
-run node tools/verify-rulebooks.mjs
 run node tools/verify-postmeta-contract.mjs
 run node tools/verify-post-fetch-parser.mjs
 run node tools/verify-rehydrate-hooks.mjs
@@ -71,7 +71,6 @@ run node tools/verify-no-innerhtml-clear.mjs
 run node tools/verify-panels-inert-safety.mjs
 run node tools/verify-no-scrolltop-panels.mjs
 run node tools/verify-smooth-scroll-policy.mjs
-run node tools/verify-authors-dir-contract.mjs
 run node tools/verify-sitemap-page-contract.mjs
 run node tools/verify-tags-dir-contract.mjs
 run node tools/verify-router-contract.mjs

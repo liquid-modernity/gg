@@ -343,12 +343,11 @@ function verifySectionTagContract(indexXml, id, opts) {
   if (opts.max != null) parts.push(`(?=[^>]*data-gg-max=['"]${opts.max}['"])`);
   if (opts.cols != null) parts.push(`(?=[^>]*data-gg-cols=['"]${opts.cols}['"])`);
   if (opts.defer === true) parts.push(`(?=[^>]*data-gg-defer=['"]1['"])`);
-  if (opts.disabled === true) parts.push(`(?=[^>]*data-gg-disabled=['"]1['"])`);
   const re = new RegExp(`<section${parts.join("")}[^>]*>`, "i");
   if (!re.test(indexXml)) {
     failures.push(
       `index.prod.xml: section ${id} contract mismatch` +
-        ` (expected kind=${opts.kind || "-"} type=${opts.type || "-"} max=${opts.max ?? "-"} cols=${opts.cols ?? "-"} defer=${opts.defer ? "1" : "-"} disabled=${opts.disabled ? "1" : "-"})`
+        ` (expected kind=${opts.kind || "-"} type=${opts.type || "-"} max=${opts.max ?? "-"} cols=${opts.cols ?? "-"} defer=${opts.defer ? "1" : "-"})`
     );
   }
 }
@@ -387,76 +386,42 @@ function verifyMixedContracts(indexXml) {
     else verifyMixedSectionSkeleton(indexXml, section);
   });
 
-  const disabledLegacy = [
-    "gg-mixed-instagramish",
-    "gg-mixed-newsish-3",
-    "gg-mixed-newsish-4",
-    "gg-mixed-pinterestish",
-  ];
-  disabledLegacy.forEach((id) => {
-    if (new RegExp(`<section\\b(?=[^>]*id=['"]${id}['"])`, "i").test(indexXml)) {
-      verifySectionTagContract(indexXml, id, { disabled: true });
+  const requiredIds = new Set(required.map((section) => section.id));
+  const actualIds = Array.from(
+    indexXml.matchAll(
+      /<section\b(?=[^>]*\bdata-gg-module=['"]mixed-media['"])(?=[^>]*\bid=['"]([^'"]+)['"])[^>]*>/gi
+    ),
+    (m) => m[1]
+  );
+  const actualUnique = Array.from(new Set(actualIds));
+  actualUnique.forEach((id) => {
+    if (!requiredIds.has(id)) {
+      failures.push(`index.prod.xml: unexpected mixed section id (${id})`);
     }
   });
 
+  const disabledSectionRe =
+    /<section\b(?=[^>]*\bdata-gg-module=['"]mixed-media['"])(?=[^>]*\bdata-gg-disabled=['"]1['"])[^>]*>/gi;
+  let disabledMatch;
+  while ((disabledMatch = disabledSectionRe.exec(indexXml))) {
+    const tag = String(disabledMatch[0] || "");
+    const idMatch = tag.match(/\bid=['"]([^'"]+)['"]/i);
+    failures.push(
+      `index.prod.xml: mixed section must not be disabled in template (${idMatch ? idMatch[1] : "unknown-id"})`
+    );
+  }
+
   const config = parseMixedConfig(indexXml);
-  if (!config || !Array.isArray(config.sections)) {
+  if (!config || typeof config !== "object") {
     failures.push(`index.prod.xml: gg-mixed-config missing/invalid JSON`);
     return;
   }
-  const sectionsById = new Map(
-    config.sections
-      .filter((s) => s && s.id)
-      .map((s) => [String(s.id), s])
-  );
-
-  const sectionOrder = config.sections
-    .map((s) => (s && s.id ? String(s.id) : ""))
-    .filter(Boolean);
-  const expectedOrder = [
-    "gg-mixed-featuredstrip",
-    "gg-mixed-newsish-1",
-    "gg-mixed-bookish",
-    "gg-mixed-youtubeish",
-    "gg-mixed-shortish",
-    "gg-mixed-newsish-2",
-    "gg-mixed-podcastish",
-  ];
-  if (sectionOrder.length < expectedOrder.length) {
-    failures.push(`index.prod.xml: gg-mixed-config section order missing required entries`);
-  } else {
-    for (let i = 0; i < expectedOrder.length; i += 1) {
-      if (sectionOrder[i] !== expectedOrder[i]) {
-        failures.push(
-          `index.prod.xml: gg-mixed-config order mismatch at index ${i + 1} (expected ${expectedOrder[i]}, found ${sectionOrder[i] || "-"})`
-        );
-      }
-    }
+  if (String(config.source || "").toLowerCase() !== "dom") {
+    failures.push(`index.prod.xml: gg-mixed-config source must be "dom"`);
   }
-
-  required.forEach((section) => {
-    const cfg = sectionsById.get(section.id);
-    if (!cfg) {
-      failures.push(`index.prod.xml: gg-mixed-config missing section ${section.id}`);
-      return;
-    }
-    if (parseInt(cfg.max, 10) !== section.max) {
-      failures.push(
-        `index.prod.xml: gg-mixed-config ${section.id} max must be ${section.max} (found ${cfg.max})`
-      );
-    }
-    if (section.type && String(cfg.type || "").toLowerCase() !== String(section.type).toLowerCase()) {
-      failures.push(
-        `index.prod.xml: gg-mixed-config ${section.id} type must be ${section.type} (found ${cfg.type})`
-      );
-    }
-    if (section.defer) {
-      const defer = cfg.defer === true || String(cfg.defer || "") === "1";
-      if (!defer) {
-        failures.push(`index.prod.xml: gg-mixed-config ${section.id} must set defer=1`);
-      }
-    }
-  });
+  if (Array.isArray(config.sections) && config.sections.length) {
+    failures.push(`index.prod.xml: gg-mixed-config sections must be removed (DOM is source of truth)`);
+  }
 }
 
 function isSidebarRootSelector(selector) {
@@ -502,22 +467,11 @@ function verifyRuntimeContracts(coreJsRel, mixedJsRel, label) {
   const mixedJs = readFile(mixedJsRel);
   if (!coreJs || !mixedJs) return;
 
-  if (
-    !/top:\s*\[\s*['"]gg-mixed-featuredstrip['"]\s*,\s*['"]gg-mixed-newsish-1['"]\s*,\s*['"]gg-mixed-bookish['"]\s*\]/.test(
-      coreJs
-    )
-  ) {
-    failures.push(`${label}: listing top order contract missing in ui.bucket.core.js`);
+  if (/_listingFlowOrder/.test(coreJs)) {
+    failures.push(`${label}: ui.bucket.core.js must not keep hardcoded _listingFlowOrder`);
   }
-  if (
-    !/deferred:\s*\[\s*['"]gg-mixed-youtubeish['"]\s*,\s*['"]gg-mixed-shortish['"]\s*,\s*['"]gg-mixed-newsish-2['"]\s*,\s*['"]gg-mixed-podcastish['"]\s*\]/.test(
-      coreJs
-    )
-  ) {
-    failures.push(`${label}: listing deferred order contract missing in ui.bucket.core.js`);
-  }
-  if (!/data-gg-listing-flow['"],\s*'reading-first'/.test(coreJs)) {
-    failures.push(`${label}: listing flow marker reading-first missing in ui.bucket.core.js`);
+  if (!/data-gg-listing-flow['"],\s*'ssr'/.test(coreJs)) {
+    failures.push(`${label}: listing flow marker ssr missing in ui.bucket.core.js`);
   }
 
   if (!/rootMargin:\s*['"]900px 0px['"]/.test(mixedJs)) {
@@ -526,8 +480,14 @@ function verifyRuntimeContracts(coreJsRel, mixedJsRel, label) {
   if (!/data-gg-defer/.test(mixedJs)) {
     failures.push(`${label}: mixed module must read data-gg-defer contract`);
   }
-  if (!/data-gg-disabled/.test(mixedJs)) {
-    failures.push(`${label}: mixed module must skip data-gg-disabled sections`);
+  if (/sectionsById/.test(mixedJs) || /fromJson/.test(mixedJs)) {
+    failures.push(`${label}: mixed module must not use JSON section overrides (DOM is SSOT)`);
+  }
+  if (/data-gg-disabled/.test(mixedJs)) {
+    failures.push(`${label}: mixed module must not carry data-gg-disabled runtime path`);
+  }
+  if (/gg-mixed-deferred|gg-home-blog-anchor/.test(mixedJs)) {
+    failures.push(`${label}: mixed module must not relocate mixed sections via DOM anchors`);
   }
 }
 

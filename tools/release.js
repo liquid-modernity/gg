@@ -200,7 +200,7 @@ const releaseId = envRel || run("node tools/compute-release-id.mjs");
 const fullHash = run("git rev-parse HEAD");
 const priorHistory = readCapsuleReleaseHistory();
 const releaseHistory = buildReleaseHistory(releaseId, priorHistory, keepCount);
-const templateAllowlist = releaseHistory.slice(0, 2);
+const templateAllowlist = [releaseId];
 
 const destDir = path.join("public", "assets", "v", releaseId);
 const latestDir = path.join("public", "assets", "latest");
@@ -298,6 +298,13 @@ replaceAllOrThrow(
   /(<div(?=[^>]*id=['"]gg-fingerprint['"])[^>]*data-release=)(['"])[^'"]*\2/gi,
   `$1$2${releaseId}$2`,
   "prod gg-fingerprint data-release"
+);
+
+replaceAllOrThrow(
+  "public/_headers",
+  /(X-GG-Assets:\s*)[A-Za-z0-9._-]+/g,
+  `$1${releaseId}`,
+  "headers X-GG-Assets release"
 );
 
 updateCapsuleAutogen({ releaseId, releaseHistory });

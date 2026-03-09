@@ -1399,12 +1399,13 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "93d75c7";
-    const TEMPLATE_ALLOWED_RELEASES = ["93d75c7","bd858ed"];
+    const WORKER_VERSION = "e420693";
+    const TEMPLATE_ALLOWED_RELEASES = ["e420693"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
       h.set("X-GG-Worker-Version", WORKER_VERSION);
+      h.set("X-GG-Assets", WORKER_VERSION);
       const out = new Response(res.body, {
         status: res.status,
         statusText: res.statusText,
@@ -2165,30 +2166,6 @@ export default {
 
     // Jangan cache response error
     if (!assetRes.ok) {
-      const isVersionedAsset = pathname.startsWith("/assets/v/");
-      const isMissingAsset = assetRes.status === 404;
-      const lowerPath = pathname.toLowerCase();
-      const isRescuable =
-        lowerPath.endsWith(".js") || lowerPath.endsWith(".css") || lowerPath.endsWith(".map");
-      if (isVersionedAsset && isMissingAsset && isRescuable) {
-        const rescuePath = pathname.replace(/^\/assets\/v\/[^/]+\//, "/assets/latest/");
-        try {
-          const rescueUrl = new URL(rescuePath, request.url);
-          const rescueReq = new Request(rescueUrl.toString(), request);
-          const rescueRes = await env.ASSETS.fetch(rescueReq);
-          if (rescueRes && rescueRes.ok) {
-            const rescueOut = new Response(rescueRes.body, rescueRes);
-            rescueOut.headers.set("Cache-Control", "no-store, max-age=0");
-            rescueOut.headers.set("Pragma", "no-cache");
-            rescueOut.headers.set("X-GG-Asset-Rescue", "1");
-            rescueOut.headers.set("X-GG-Asset-Rescue-From", pathname);
-            return stamp(rescueOut);
-          }
-        } catch (e) {
-          // Fall through to standard error handling if rescue fails.
-        }
-      }
-
       if (pathname === "/sw.js") {
         const r = new Response("sw.js missing in ASSETS", { status: 404 });
         r.headers.set("Cache-Control", "no-store");

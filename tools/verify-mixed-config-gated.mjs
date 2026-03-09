@@ -33,6 +33,25 @@ for (const rel of files) {
   if (!/data:view\.isHomepage/.test(cond)) {
     failures.push(`${rel}: gg-mixed-config gate must include data:view.isHomepage`);
   }
+
+  const configMatch = source.match(
+    /<template[^>]*id=['"]gg-mixed-config['"][^>]*>\s*<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>\s*<\/template>/i
+  );
+  if (!configMatch) {
+    failures.push(`${rel}: gg-mixed-config template must wrap JSON in CDATA`);
+    continue;
+  }
+  try {
+    const cfg = JSON.parse(String(configMatch[1] || "{}"));
+    if (String(cfg.source || "").toLowerCase() !== "dom") {
+      failures.push(`${rel}: gg-mixed-config source must be \"dom\"`);
+    }
+    if (Array.isArray(cfg.sections) && cfg.sections.length) {
+      failures.push(`${rel}: gg-mixed-config sections must be removed (DOM is SSOT)`);
+    }
+  } catch (err) {
+    failures.push(`${rel}: gg-mixed-config JSON invalid (${err && err.message ? err.message : "parse error"})`);
+  }
 }
 
 if (failures.length) {

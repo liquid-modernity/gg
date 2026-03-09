@@ -708,17 +708,12 @@ var until = Date.now() + ((ms > 0) ? ms : 2000);
 w.__gg_router_failopen_until = until;
 return until;
 };
-router._isRecovering = router._isRecovering || function(){
-return Date.now() < (w.__gg_router_failopen_until || 0);
-};
 router._isRuntimeReady = router._isRuntimeReady || function(){
-if (router._isRecovering && router._isRecovering()) return false;
-if (!(w.history && w.history.pushState)) return false;
-if (!(GG && GG.core && GG.core.render && typeof GG.core.render.apply === 'function')) return false;
-if (!(d && d.body)) return false;
-var root = d.documentElement;
-var raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
-return (((+raw) || 0) >= 2);
+if (Date.now() < (w.__gg_router_failopen_until || 0)) return false;
+if (!(w.history && w.history.pushState && d && d.body)) return false;
+if (!(GG && GG.core && GG.core.render && GG.core.render.apply)) return false;
+var root = d.documentElement, raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
+return ((+raw) || 0) >= 2;
 };
 
 router.fallback = router.fallback || function(url){

@@ -88,7 +88,6 @@
     }
     return { init: init };
   })();
-  GG.modules.breadcrumb = GG.modules.breadcrumbs;
 })(window.GG = window.GG || {}, window, document);
 
 (function(GG, w, d){
@@ -220,8 +219,20 @@
       return id;
     }
     function getOffset(root){
-      var off = parseInt((root && root.getAttribute('data-scroll-offset')) || '84', 10);
-      return isFinite(off) ? off : 84;
+      var explicit = parseInt((root && root.getAttribute('data-scroll-offset')) || '', 10);
+      if (isFinite(explicit) && explicit > 0) return explicit;
+      var computed = 0;
+      var style = null;
+      try { style = w.getComputedStyle(d.documentElement); } catch (_) {}
+      if (style) computed = Math.max(
+        parseFloat(style.getPropertyValue('--gg-sticky-top')) || 0,
+        parseFloat(style.getPropertyValue('scroll-padding-top')) || 0
+      );
+      var toolbar = d.querySelector('.gg-post__toolbar');
+      if (toolbar && toolbar.getBoundingClientRect) {
+        computed = Math.max(computed, (toolbar.getBoundingClientRect().height || 0) + 8);
+      }
+      return Math.ceil(computed);
     }
     function setCollapsed(root, collapsed){
       if (!root) return;
@@ -264,7 +275,6 @@
       if (!root || !list) return false;
       list.textContent = '';
       if (empty) {
-        empty.textContent = '';
         empty.hidden = true;
       }
       root.hidden = true;
@@ -289,14 +299,9 @@
       ensureId._state = { ids: collectExistingIds(body || d), counts: {} };
       list.textContent = '';
       if (empty) {
-        empty.textContent = '';
         empty.hidden = true;
       }
       if (!body) {
-        if (empty) {
-          empty.textContent = '';
-          empty.hidden = true;
-        }
         root.hidden = true;
         return true;
       }
@@ -304,10 +309,6 @@
         return isEligibleHeading(x);
       });
       if (!items.length) {
-        if (empty) {
-          empty.textContent = '';
-          empty.hidden = true;
-        }
         root.hidden = true;
         return true;
       }
@@ -331,10 +332,6 @@
         a.appendChild(t);
         li.appendChild(a);
         list.appendChild(li);
-      }
-      if (empty) {
-        empty.textContent = '';
-        empty.hidden = true;
       }
       setCollapsed(root, false);
       return true;
@@ -495,11 +492,6 @@
     }
   };
 
-  function autoInitPostTags() {
-    GG.modules.postTagsInline.init(d);
-  }
-
-  GG.modules.postTagsInline.autoInit = autoInitPostTags;
 })(window.GG, document);
 
 (function (GG, w, d) {
