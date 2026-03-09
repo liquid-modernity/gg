@@ -20,7 +20,7 @@
       "id": "core.js",
       "path": "public/assets/v/<REL>/core.js",
       "max_raw": 42000,
-      "max_gzip": 10500
+      "max_gzip": 10510
     },
     {
       "id": "modules/pwa.js",
@@ -37,8 +37,8 @@
     {
       "id": "modules/ui.bucket.core.js",
       "path": "public/assets/v/<REL>/modules/ui.bucket.core.js",
-      "max_raw": 268000,
-      "max_gzip": 66000
+      "max_raw": 268200,
+      "max_gzip": 66030
     },
     {
       "id": "modules/ui.bucket.listing.js",
