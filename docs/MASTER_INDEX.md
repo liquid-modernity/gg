@@ -17,6 +17,7 @@ Canonical entry scripts in `package.json`:
 - P0 blocking: `npm run verify:p0`
 - P1 quality: `npm run verify:p1`
 - P2 audit/reference: `npm run verify:p2`
+- Ship final preflight: `npm run preflight:ship` (same gate path used by `npm run ship` before commit/push)
 
 ### P0 blocking (ship gate)
 `npm run verify:p0` expands to:
@@ -37,6 +38,7 @@ Canonical entry scripts in `package.json`:
 - `node tools/verify-dock-contract.mjs`
 - `node tools/verify-route-a11y-contract.mjs`
 - `node tools/verify-loadmore-contract.mjs`
+- `node tools/verify-runtime-core-features.mjs`
 - `node tools/verify-render-atomic-swap.mjs`
 - `node tools/verify-ui-guardrails.mjs`
 - `node tools/verify-template-no-nested-interactives.mjs`
@@ -64,10 +66,17 @@ Live/reference checks tetap di P2 manual:
 Overlap teridentifikasi:
 - `npm run verify:release` sudah mencakup `verify-rulebooks` + `verify-authors-dir-contract`.
 - `tools/gate-prod.sh` sebelumnya menjalankan dua verify itu lagi secara eksplisit.
+- `tools/verify-runtime-core-features.mjs` (P1) menguji runtime nyata untuk 5 fitur inti: TOC, right/sidebar metadata panel, Load More, dock, toolbar.
+Overlap parsial runtime harness vs verifier contract lama:
+- `tools/verify-infopanel-toc-contract.mjs` (P0) untuk guardrail struktur/token TOC + panel.
+- `tools/verify-dock-contract.mjs` (P1) untuk kontrak struktur dock/action.
+- `tools/verify-loadmore-contract.mjs` (P1) untuk kontrak DOM-safe + rehydrate loadmore.
+- `tools/verify-postmeta-contract.mjs` (P0) untuk kontrak sumber metadata panel.
 
 Konsolidasi dilakukan:
 - `tools/gate-prod.sh`: eksekusi ganda `verify-rulebooks` dan `verify-authors-dir-contract` dihapus.
 - Alasan tertulis di file gate: dua verify tersebut sudah dijalankan oleh `verify:release`.
+- Runtime core feature harness masuk jalur QA resmi di P1 (`npm run verify:p1`) sebagai behavioral check utama.
 
 Konsolidasi operasional:
 - Tier runner ditambahkan di `package.json` (`verify:p0`, `verify:p1`, `verify:p2`, `audit:min`) agar jalur audit tidak menyebar.
@@ -75,9 +84,17 @@ Konsolidasi operasional:
 ## 4) Verify Status (kept / merged / retired)
 Dipertahankan:
 - Semua verify existing tetap ada sebagai tool individual.
+- `verify-infopanel-toc-contract`, `verify-postmeta-contract`, `verify-dock-contract`, `verify-loadmore-contract` tetap dipertahankan.
 
 Digabung (execution path):
 - `verify-rulebooks` + `verify-authors-dir-contract` digabung jalur eksekusinya lewat `verify:release` untuk gate.
+
+Redundant parsial (tidak dipensiunkan):
+- `verify-runtime-core-features` overlap perilaku dengan verifier contract lama, tetapi contract verifier tetap dibutuhkan untuk guardrail statis cepat.
+- Toolbar belum punya verifier contract statis setara; coverage runtime tetap berada di harness P1.
+
+Diturunkan bobot:
+- Tidak ada pada tahap ini; contract verifier lama tetap aktif sesuai tier semula.
 
 Dipensiunkan:
 - Tidak ada verify tool yang dipensiunkan pada perubahan ini.
@@ -106,6 +123,7 @@ Urutan minimum untuk audit lokal:
 1. `npm run verify:p0`
 2. `npm run verify:p1`
 3. `npm run audit:min` (alias langkah 1+2 untuk audit cepat)
+4. `npm run preflight:ship` (representasi gate final ship)
 
 Jika perlu evidence governance/perf:
 1. `npm run verify:p2`

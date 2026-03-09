@@ -54,7 +54,7 @@ function diagnose(label, output) {
       reason: "Remote main advanced.",
       steps: [
         "git pull --rebase",
-        "npm run prep:release",
+        "npm run preflight:ship",
         "git add -A && git commit --amend --no-edit && git push",
       ],
     };
@@ -186,7 +186,6 @@ function readReleaseIdFromCapsule() {
 function parseArgs() {
   const args = process.argv.slice(2);
   let msg = process.env.SHIP_MSG || "release: update artifacts";
-  let workMsg = process.env.SHIP_WORK_MSG || "chore: update work";
   let verbose = false;
   let maxReleaseDirs = Number(process.env.SHIP_MAX_RELEASE_DIRS || 5);
   if (!Number.isFinite(maxReleaseDirs) || maxReleaseDirs < 1) {
@@ -195,11 +194,6 @@ function parseArgs() {
   for (let i = 0; i < args.length; i++) {
     if ((args[i] === "-m" || args[i] === "--message") && args[i + 1]) {
       msg = args[i + 1];
-      i++;
-      continue;
-    }
-    if (args[i] === "--work-msg" && args[i + 1]) {
-      workMsg = args[i + 1];
       i++;
       continue;
     }
@@ -215,7 +209,7 @@ function parseArgs() {
       continue;
     }
   }
-  return { msg, workMsg, verbose, maxReleaseDirs };
+  return { msg, verbose, maxReleaseDirs };
 }
 
 function ensureNoMergeInProgress() {
@@ -257,9 +251,9 @@ async function stageAndCommit(msg, amend, label, verbose) {
   }
 }
 
-async function tryPush(label, verbose) {
+async function tryPush(label, pushCmd) {
   try {
-    await runStep(label, "git push");
+    await runStep(label, pushCmd);
     return { ok: true };
   } catch (err) {
     return { ok: false, err };
@@ -314,7 +308,23 @@ function autoHealReleaseDirs(maxKeep) {
 }
 
 async function main() {
-  const { msg, workMsg, verbose, maxReleaseDirs } = parseArgs();
+  const { msg, verbose, maxReleaseDirs } = parseArgs();
+  const pullRebaseCmd = (process.env.SHIP_PULL_REBASE_CMD || "git pull --rebase").trim();
+  const pushCmd = (process.env.SHIP_PUSH_CMD || "git push").trim();
+  const preflightCmd = (process.env.SHIP_PREFLIGHT_CMD || "npm run preflight:ship").trim();
+
+  if (!pullRebaseCmd) {
+    console.error("ERROR: SHIP_PULL_REBASE_CMD resolved to empty command.");
+    process.exit(1);
+  }
+  if (!pushCmd) {
+    console.error("ERROR: SHIP_PUSH_CMD resolved to empty command.");
+    process.exit(1);
+  }
+  if (!preflightCmd) {
+    console.error("ERROR: SHIP_PREFLIGHT_CMD resolved to empty command.");
+    process.exit(1);
+  }
 
   if (!isInsideGit()) {
     console.error("ERROR: Not inside a git repository.");
@@ -330,7 +340,6 @@ async function main() {
   }
 
   let stashed = false;
-  let workCommitSha = null;
   let releaseCommitSha = null;
 
   // 1) Autostash if dirty, so pull --rebase can run
@@ -346,7 +355,7 @@ async function main() {
 
   // 2) Pull --rebase
   try {
-    await runStep("PULL_REBASE", "git pull --rebase");
+    await runStep("PULL_REBASE", pullRebaseCmd);
   } catch (err) {
     printFailure(err, verbose);
     process.exit(1);
@@ -365,35 +374,19 @@ async function main() {
   // 3.5) Auto-heal release directory quota before checks/build.
   autoHealReleaseDirs(maxReleaseDirs);
 
-  // 4) Work commit if dirty
-  if (isDirty()) {
-    workCommitSha = await stageAndCommit(workMsg, false, "WORK_COMMIT", verbose);
-  }
-
-  // 5) Prep release (ci + build + verify:release)
+  // 4) Final preflight gate before any commit/push side effects.
   try {
-    await runStep("PREP_RELEASE", "npm run prep:release");
+    await runStep("PREFLIGHT_FINAL", preflightCmd);
   } catch (err) {
     printFailure(err, verbose);
     process.exit(1);
   }
 
-  // 5.1) Auto-heal again after build may mint a new release dir.
-  autoHealReleaseDirs(maxReleaseDirs);
-
-  // 5.2) Full prod gate (includes performance budgets and smoke).
-  try {
-    await runStep("GATE_PROD", "npm run gate:prod");
-  } catch (err) {
-    printFailure(err, verbose);
-    process.exit(1);
-  }
-
-  // 6) Commit release artifacts
+  // 5) Commit release artifacts (and any staged work) only after final preflight is green.
   releaseCommitSha = await stageAndCommit(msg, false, "COMMIT", verbose);
 
-  // 7) Push; if rejected, retry once with rebase + prep + amend + push
-  const pushResult = await tryPush("PUSH", verbose);
+  // 6) Push; if rejected, retry once with rebase + preflight + amend + push.
+  const pushResult = await tryPush("PUSH", pushCmd);
   if (pushResult.ok) {
     // continue to summary
   } else {
@@ -403,24 +396,17 @@ async function main() {
       process.exit(1);
     }
 
-    console.log("\n⚠️ push rejected. Retrying once (rebase + prep:release + amend) ...");
+    console.log("\n⚠️ push rejected. Retrying once (rebase + preflight:ship + amend) ...");
     ensureNoMergeInProgress();
     try {
-      await runStep("RETRY_PULL_REBASE", "git pull --rebase");
+      await runStep("RETRY_PULL_REBASE", pullRebaseCmd);
     } catch (err) {
       printFailure(err, verbose);
       process.exit(1);
     }
-    try {
-      await runStep("RETRY_PREP_RELEASE", "npm run prep:release");
-    } catch (err) {
-      printFailure(err, verbose);
-      process.exit(1);
-    }
-
     autoHealReleaseDirs(maxReleaseDirs);
     try {
-      await runStep("RETRY_GATE_PROD", "npm run gate:prod");
+      await runStep("RETRY_PREFLIGHT_FINAL", preflightCmd);
     } catch (err) {
       printFailure(err, verbose);
       process.exit(1);
@@ -433,7 +419,7 @@ async function main() {
       }
     }
 
-    const retryPush = await tryPush("RETRY_PUSH", verbose);
+    const retryPush = await tryPush("RETRY_PUSH", pushCmd);
     if (!retryPush.ok) {
       printFailure(retryPush.err, verbose);
       process.exit(1);
@@ -446,7 +432,6 @@ async function main() {
 
   console.log("\nSHIP SUMMARY");
   console.log(`RELEASE_ID: ${releaseId}`);
-  console.log(`WORK_COMMIT: ${workCommitSha || "none"}`);
   console.log(`RELEASE_COMMIT: ${releaseCommitSha || "none"}`);
   console.log(`FINAL_TREE: ${finalClean ? "clean" : "dirty"}`);
 
