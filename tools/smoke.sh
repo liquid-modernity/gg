@@ -876,6 +876,26 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   if [[ -z "${live_rel}" ]]; then
     die "SMOKE_LIVE_HTML=1 requires a resolved expected release id"
   fi
+  live_retry_max="${SMOKE_LIVE_RETRY_MAX:-4}"
+  live_retry_base_ms="${SMOKE_LIVE_RETRY_BASE_MS:-800}"
+  live_retry_cap_ms="${SMOKE_LIVE_RETRY_CAP_MS:-10000}"
+  live_retry_timeout_ms="${SMOKE_LIVE_RETRY_TIMEOUT_MS:-10000}"
+  live_inter_request_delay_ms="${SMOKE_LIVE_INTER_REQUEST_DELAY_MS:-250}"
+  live_verifier_gap_ms="${SMOKE_LIVE_VERIFIER_GAP_MS:-300}"
+  live_user_agent="${SMOKE_LIVE_USER_AGENT:-gg-live-gate/1.0 (+https://www.pakrpp.com)}"
+  live_verifier_attempts="${SMOKE_LIVE_VERIFIER_ATTEMPTS:-2}"
+  live_verifier_retry_base_ms="${SMOKE_LIVE_VERIFIER_RETRY_BASE_MS:-1500}"
+  live_verifier_retry_cap_ms="${SMOKE_LIVE_VERIFIER_RETRY_CAP_MS:-10000}"
+
+  sleep_ms() {
+    local ms="$1"
+    if ! [[ "${ms}" =~ ^[0-9]+$ ]] || (( ms <= 0 )); then
+      return 0
+    fi
+    local seconds
+    seconds="$(awk -v ms="${ms}" 'BEGIN { printf "%.3f", ms / 1000 }')"
+    sleep "${seconds}"
+  }
 
   live_fetch_stream() {
     local url="$1"
@@ -1112,11 +1132,39 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   live_blog_hard_refresh_check 5
 
   live_post_target="${SMOKE_POST_URL:-${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}}"
-  if ! node "${ROOT}/tools/verify-live-banned-markers.mjs" --base="${BASE}" --post="${live_post_target}"; then
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_BANNED_MARKERS" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-banned-markers.mjs" \
+      --base="${BASE}" \
+      --post="${live_post_target}" \
+      --timeout-ms="${live_retry_timeout_ms}" \
+      --retry-max="${live_retry_max}" \
+      --retry-base-ms="${live_retry_base_ms}" \
+      --retry-cap-ms="${live_retry_cap_ms}" \
+      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
+      --user-agent="${live_user_agent}"; then
     die "verify-live-banned-markers failed"
   fi
 
-  if ! node "${ROOT}/tools/verify-live-listing-epanel.mjs" --base="${BASE}"; then
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_LISTING_EPANEL" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-listing-epanel.mjs" \
+      --base="${BASE}" \
+      --timeout-ms="${live_retry_timeout_ms}" \
+      --retry-max="${live_retry_max}" \
+      --retry-base-ms="${live_retry_base_ms}" \
+      --retry-cap-ms="${live_retry_cap_ms}" \
+      --user-agent="${live_user_agent}"; then
     die "verify-live-listing-epanel failed"
   fi
 
@@ -1124,11 +1172,40 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
     die "verify-listing-epanel-instant-rows failed"
   fi
 
-  if ! node "${ROOT}/tools/verify-live-legal-clean-room.mjs" --base="${BASE}"; then
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_LEGAL_CLEAN_ROOM" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-legal-clean-room.mjs" \
+      --base="${BASE}" \
+      --timeout-ms="${live_retry_timeout_ms}" \
+      --retry-max="${live_retry_max}" \
+      --retry-base-ms="${live_retry_base_ms}" \
+      --retry-cap-ms="${live_retry_cap_ms}" \
+      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
+      --user-agent="${live_user_agent}"; then
     die "verify-live-legal-clean-room failed"
   fi
 
-  if ! node "${ROOT}/tools/verify-live-panel-metadata.mjs" --base="${BASE}" --post="${live_post_target}"; then
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_PANEL_METADATA" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-panel-metadata.mjs" \
+      --base="${BASE}" \
+      --post="${live_post_target}" \
+      --timeout-ms="${live_retry_timeout_ms}" \
+      --retry-max="${live_retry_max}" \
+      --retry-base-ms="${live_retry_base_ms}" \
+      --retry-cap-ms="${live_retry_cap_ms}" \
+      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
+      --user-agent="${live_user_agent}"; then
     die "verify-live-panel-metadata failed"
   fi
 
@@ -1136,11 +1213,40 @@ if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
   if [[ -n "${SMOKE_PAGE_URL:-}" ]]; then
     toc_args+=(--page="${SMOKE_PAGE_URL}")
   fi
-  if ! node "${ROOT}/tools/verify-live-toc-functional.mjs" "${toc_args[@]}"; then
+  toc_args+=(
+    --timeout-ms="${live_retry_timeout_ms}"
+    --retry-max="${live_retry_max}"
+    --retry-base-ms="${live_retry_base_ms}"
+    --retry-cap-ms="${live_retry_cap_ms}"
+    --inter-request-delay-ms="${live_inter_request_delay_ms}"
+    --user-agent="${live_user_agent}"
+  )
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_TOC_FUNCTIONAL" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-toc-functional.mjs" "${toc_args[@]}"; then
     die "verify-live-toc-functional failed"
   fi
 
-  if ! node "${ROOT}/tools/verify-live-post-leftpanel.mjs" --base="${BASE}" --post="${live_post_target}"; then
+  sleep_ms "${live_verifier_gap_ms}"
+  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "VERIFY_LIVE_POST_LEFTPANEL" \
+    --max-attempts "${live_verifier_attempts}" \
+    --base-delay-ms "${live_verifier_retry_base_ms}" \
+    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+    -- \
+    node "${ROOT}/tools/verify-live-post-leftpanel.mjs" \
+      --base="${BASE}" \
+      --post="${live_post_target}" \
+      --timeout-ms="${live_retry_timeout_ms}" \
+      --retry-max="${live_retry_max}" \
+      --retry-base-ms="${live_retry_base_ms}" \
+      --retry-cap-ms="${live_retry_cap_ms}" \
+      --user-agent="${live_user_agent}"; then
     die "verify-live-post-leftpanel failed"
   fi
 

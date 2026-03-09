@@ -288,18 +288,28 @@ jobs:
       - name: Post-deploy strict live gate (retry)
         run: |
           set -euo pipefail
-          for attempt in 1 2 3; do
-            echo "Post-deploy live gate attempt ${attempt}/3"
+          max_attempts=3
+          gate_ok=0
+          for attempt in $(seq 1 "${max_attempts}"); do
+            echo "Post-deploy live gate attempt ${attempt}/${max_attempts}"
             if bash tools/gate-release-live.sh; then
               echo "PASS: gate-release-live"
+              gate_ok=1
               break
             fi
-            if [ "${attempt}" -eq 3 ]; then
-              echo "ERROR: gate-release-live failed after retries"
-              exit 1
+            if [ "${attempt}" -ge "${max_attempts}" ]; then
+              break
             fi
-            sleep $((attempt * 10))
+            backoff=$((5 * (2 ** (attempt - 1))))
+            jitter=$((RANDOM % 5))
+            wait_s=$((backoff + jitter))
+            echo "WARN: gate-release-live failed on attempt ${attempt}; retry in ${wait_s}s"
+            sleep "${wait_s}"
           done
+          if [ "${gate_ok}" -ne 1 ]; then
+            echo "ERROR: gate-release-live failed after ${max_attempts} attempts"
+            exit 1
+          fi
 
       - name: Post-deploy smoke tests
         env:
