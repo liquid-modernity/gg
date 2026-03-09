@@ -230,13 +230,10 @@
 
     var el = d.getElementById('gg-mixed-config');
     if (!el) return cfg;
+    if (String(el.tagName || '').toUpperCase() !== 'TEMPLATE') return cfg;
 
     try {
-      var text = '';
-      var tag = String(el.tagName || '').toUpperCase();
-      if (tag === 'TEMPLATE') text = (el.content && el.content.textContent) || el.textContent || '';
-      else text = el.textContent || '';
-      if (!text && el.getAttribute) text = el.getAttribute('data-json') || '';
+      var text = (el.content && el.content.textContent) || el.textContent || '';
       var raw = JSON.parse(text || '{}');
       if (raw && raw.fetch && typeof raw.fetch === 'object') {
         cfg.fetch.max_results = clampInt(raw.fetch.max_results, DEFAULT_FETCH_MAX, 1, 120);
@@ -258,9 +255,7 @@
     var colsRaw = slot.getAttribute('data-cols') || slot.getAttribute('data-gg-cols') || '3';
     var maxRaw = slot.getAttribute('data-max') || slot.getAttribute('data-gg-max') || '8';
     var order = slot.getAttribute('data-order') || cfg.fetch.order || DEFAULT_ORDER;
-    var deferRaw =
-      slot.getAttribute('data-gg-defer') === '1' ||
-      slot.getAttribute('data-defer') === '1';
+    var deferRaw = slot.getAttribute('data-gg-defer') === '1';
 
     var section = {
       id: String(slot.id || '').trim(),
@@ -888,8 +883,8 @@
       list.unshift(root);
     }
     return list.filter(function(slot){
-      if (!slot || slot.getAttribute('data-gg-disabled') === '1') return false;
-      if (slot.closest && slot.closest('[data-gg-disabled="1"]')) return false;
+      if (!slot) return false;
+      if (!slot.id || !/^gg-mixed-/.test(slot.id)) return false;
       return true;
     });
   }
