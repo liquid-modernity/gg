@@ -33,6 +33,24 @@ if (!fs.existsSync(sourcePath)) {
     failures.push("router.onPopState is not wired to closeActiveModalForRoute()");
   }
 
+  const focusTrapBlockMatch = source.match(
+    /A\.focusTrap\s*=\s*A\.focusTrap\s*\|\|\s*function\s*\([^)]*\)\s*\{[\s\S]*?return function\(\)\{\s*container\.removeEventListener\('keydown', onKey\);\s*\};\s*\};/
+  );
+  if (!focusTrapBlockMatch) {
+    failures.push("missing shared A.focusTrap implementation block");
+  } else {
+    const focusTrapBlock = focusTrapBlockMatch[0];
+    if (!/container\.contains\(active\)/.test(focusTrapBlock)) {
+      failures.push("A.focusTrap missing out-of-container active-element guard");
+    }
+    if (!/active\s*===\s*container/.test(focusTrapBlock)) {
+      failures.push("A.focusTrap missing container-focused Tab guard");
+    }
+    if (!/getClientRects/.test(focusTrapBlock)) {
+      failures.push("A.focusTrap missing visibility guard based on getClientRects");
+    }
+  }
+
 }
 
 if (failures.length) {
