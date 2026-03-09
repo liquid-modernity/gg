@@ -2124,6 +2124,92 @@ if (!morePanelEl) morePanelEl = document.getElementById('gg-dock-more');
 return morePanelEl;
 }
 
+function textOf(el){
+return (el && el.textContent ? el.textContent : '').replace(/\s+/g, ' ').trim();
+}
+
+function clearMoreFooterItems(list){
+if (!list) return;
+var stale = list.querySelectorAll('[data-gg-more-origin="footer"]');
+for (var i = 0; i < stale.length; i++) {
+  if (stale[i] && stale[i].parentNode) stale[i].parentNode.removeChild(stale[i]);
+}
+}
+
+function appendMoreFooterLinkItem(list, href, label, source){
+if (!list || !label) return;
+var li = document.createElement('li');
+li.setAttribute('data-gg-more-origin', 'footer');
+var a = document.createElement('a');
+a.href = href || '#';
+a.textContent = label;
+if (source) {
+  var rel = source.getAttribute('rel');
+  var target = source.getAttribute('target');
+  if (rel) a.setAttribute('rel', rel);
+  if (target) a.setAttribute('target', target);
+}
+li.appendChild(a);
+list.appendChild(li);
+}
+
+function resolveMoreItemLabel(title, link){
+var titleText = textOf(title);
+var aria = link ? (link.getAttribute('aria-label') || '').trim() : '';
+var sr = link ? textOf(link.querySelector('.gg-sr-only')) : '';
+var base = aria || sr || titleText || 'Action';
+if (titleText && base.toLowerCase().indexOf(titleText.toLowerCase()) === -1) {
+  return titleText + ' · ' + base;
+}
+return base;
+}
+
+function syncMoreFooterActions(panel){
+if (!panel) return;
+var list = panel.querySelector('.gg-dock-more__list');
+if (!list) return;
+clearMoreFooterItems(list);
+
+var footerActions = document.querySelector('.gg-footer__social');
+if (!footerActions) return;
+
+var titles = footerActions.querySelectorAll('.gg-footer__social-title');
+for (var i = 0; i < titles.length; i++) {
+  var title = titles[i];
+  var cluster = title ? title.nextElementSibling : null;
+  while (cluster && (!cluster.classList || !cluster.classList.contains('gg-footer__cluster'))) {
+    cluster = cluster.nextElementSibling;
+  }
+  if (!cluster) continue;
+  var links = cluster.querySelectorAll('.gg-footer__social-links a.gg-footer__social-link');
+  for (var j = 0; j < links.length; j++) {
+    var link = links[j];
+    appendMoreFooterLinkItem(
+      list,
+      link.getAttribute('href') || '#',
+      resolveMoreItemLabel(title, link),
+      link
+    );
+  }
+}
+
+var installButton = document.getElementById('install');
+if (installButton) {
+  var installLabel = (installButton.getAttribute('aria-label') || '').trim() ||
+    textOf(installButton.querySelector('.gg-install__label')) ||
+    textOf(installButton) ||
+    'Install web app';
+  var li = document.createElement('li');
+  li.setAttribute('data-gg-more-origin', 'footer');
+  var a = document.createElement('a');
+  a.href = '#';
+  a.setAttribute('data-gg-more-action', 'install');
+  a.textContent = installLabel;
+  li.appendChild(a);
+  list.appendChild(li);
+}
+}
+
 function openMorePanel(){
 var panel = ensureMorePanel();
 if (!panel) return false;
@@ -2132,6 +2218,7 @@ panel.hidden = false;
 panel.setAttribute('aria-hidden', 'false');
 GG.core.state.remove(panel, 'hidden');
 GG.core.state.add(panel, 'open');
+syncMoreFooterActions(panel);
 clearMoreHash();
 revealDock();
 var closeEl = panel.querySelector('[data-gg-action="more-close"]');
@@ -2370,9 +2457,19 @@ if (!panel || panel.__ggDockBound) return;
 panel.__ggDockBound = true;
 panel.addEventListener('click', function(evt){
 var closeLink = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="more-close"]') : null;
+var installLink = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-more-action="install"]') : null;
 if (closeLink) {
   evt.preventDefault();
   closeMorePanel();
+  return;
+}
+if (installLink) {
+  evt.preventDefault();
+  closeMorePanel();
+  var installButton = document.getElementById('install');
+  if (installButton && installButton.click) {
+    try { installButton.click(); } catch (_) {}
+  }
   return;
 }
 if (evt && evt.target === panel) {
@@ -2470,6 +2567,8 @@ if (mainEl && window.MutationObserver){
   });
   homeObs.observe(mainEl, { attributes:true, attributeFilter:['data-gg-home-state','data-gg-surface'] });
 }
+dockEl.setAttribute('data-gg-ready', '1');
+window.__GG_DOCK_READY = true;
 }
 
 return {
