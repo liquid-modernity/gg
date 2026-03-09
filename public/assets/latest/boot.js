@@ -163,13 +163,8 @@ return action === 'home' || action === 'blog' || action === 'contact' || action 
 }
 
 function isDockReady(){
-if (w.__GG_DOCK_READY === true) return true;
-try {
 var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
-if (!dock) return false;
-return dock.getAttribute('data-gg-ready') === '1';
-} catch (_) {}
-return false;
+return !!(dock && dock.getAttribute('data-gg-ready') === '1');
 }
 
 function clearPendingDockAction(){

@@ -1031,22 +1031,18 @@ return loadUi();
 function bindUiInteractRequest(){
 if (GG.boot._uiInteractBound) return;
 GG.boot._uiInteractBound = true;
-var request = function(reason){
-if (GG.boot && typeof GG.boot.requestUi === 'function') GG.boot.requestUi(reason);
-};
+var request = GG.boot && GG.boot.requestUi;
+if (typeof request !== 'function') return;
 var onPointer = function(){
 request('interact');
 };
-var onTouch = function(){ request('touch'); };
-var onClick = function(){ request('click'); };
 var onKey = function(e){
 var key = (e && e.key ? e.key : '').toLowerCase();
 if (e && (e.ctrlKey || e.metaKey) && key === 'k') return;
 request('key');
 };
 try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
-try { d.addEventListener('touchstart', onTouch, { passive: true, capture: true, once: true }); } catch (_) {}
-try { d.addEventListener('click', onClick, { capture: true, once: true }); } catch (_) {}
+try { d.addEventListener('touchstart', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
 try { d.addEventListener('keydown', onKey, { capture: true, once: true }); } catch (_) {}
 }
 
@@ -1129,8 +1125,8 @@ if (d.readyState === 'complete') scheduleUiPrefetch();
 else w.addEventListener('load', function(){ scheduleUiPrefetch(); }, { once: true });
 } else if (!isLandingSurface()) {
 var fallbackPrefetch = function(){
-if (GG.boot && GG.boot._uiReady) return;
-if (GG.boot && typeof GG.boot.requestUi === 'function') GG.boot.requestUi('idle-fallback');
+if (!GG.boot || GG.boot._uiReady || typeof GG.boot.requestUi !== 'function') return;
+GG.boot.requestUi('idle');
 };
 if (d.readyState === 'complete') w.setTimeout(fallbackPrefetch, 1200);
 else w.addEventListener('load', function(){ w.setTimeout(fallbackPrefetch, 1200); }, { once: true });
