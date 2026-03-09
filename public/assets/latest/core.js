@@ -1033,17 +1033,8 @@ if (GG.boot._uiInteractBound) return;
 GG.boot._uiInteractBound = true;
 var request = GG.boot && GG.boot.requestUi;
 if (typeof request !== 'function') return;
-var onPointer = function(){
-request('interact');
-};
-var onKey = function(e){
-var key = (e && e.key ? e.key : '').toLowerCase();
-if (e && (e.ctrlKey || e.metaKey) && key === 'k') return;
-request('key');
-};
+var onPointer = function(){ request('interact'); };
 try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
-try { d.addEventListener('touchstart', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
-try { d.addEventListener('keydown', onKey, { capture: true, once: true }); } catch (_) {}
 }
 
 bindUiInteractRequest();
