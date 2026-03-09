@@ -1,5 +1,5 @@
 # MASTER_INDEX
-Last updated: 2026-03-09
+Last updated: 2026-03-10
 
 ## 1) Active Source Of Truth (runtime + release)
 - Runtime template: `index.prod.xml`
@@ -39,6 +39,7 @@ Canonical entry scripts in `package.json`:
 - `node tools/verify-route-a11y-contract.mjs`
 - `node tools/verify-loadmore-contract.mjs`
 - `node tools/verify-runtime-core-features.mjs`
+- `node tools/verify-runtime-secondary-features.mjs`
 - `node tools/verify-render-atomic-swap.mjs`
 - `node tools/verify-ui-guardrails.mjs`
 - `node tools/verify-template-no-nested-interactives.mjs`
@@ -67,6 +68,7 @@ Overlap teridentifikasi:
 - `npm run verify:release` sudah mencakup `verify-rulebooks` + `verify-authors-dir-contract`.
 - `tools/gate-prod.sh` sebelumnya menjalankan dua verify itu lagi secara eksplisit.
 - `tools/verify-runtime-core-features.mjs` (P1) menguji runtime nyata untuk 5 fitur inti: TOC, right/sidebar metadata panel, Load More, dock, toolbar.
+- `tools/verify-runtime-secondary-features.mjs` (P1) menguji runtime sekunder yang realistis tanpa browser E2E penuh: label tree interactions, sidebar section interactions, keyboard/focus basics yang dapat disimulasikan sah.
 Overlap parsial runtime harness vs verifier contract lama:
 - `tools/verify-infopanel-toc-contract.mjs` (P0) untuk guardrail struktur/token TOC + panel.
 - `tools/verify-dock-contract.mjs` (P1) untuk kontrak struktur dock/action.
@@ -77,6 +79,7 @@ Konsolidasi dilakukan:
 - `tools/gate-prod.sh`: eksekusi ganda `verify-rulebooks` dan `verify-authors-dir-contract` dihapus.
 - Alasan tertulis di file gate: dua verify tersebut sudah dijalankan oleh `verify:release`.
 - Runtime core feature harness masuk jalur QA resmi di P1 (`npm run verify:p1`) sebagai behavioral check utama.
+- Runtime secondary feature harness dipromosikan ke P1 setelah burn-in stabil (3/3 pass tanpa flake) untuk menutup gap coverage fitur sekunder tanpa menambah banyak verifier kecil.
 
 Konsolidasi operasional:
 - Tier runner ditambahkan di `package.json` (`verify:p0`, `verify:p1`, `verify:p2`, `audit:min`) agar jalur audit tidak menyebar.
@@ -91,6 +94,7 @@ Digabung (execution path):
 
 Redundant parsial (tidak dipensiunkan):
 - `verify-runtime-core-features` overlap perilaku dengan verifier contract lama, tetapi contract verifier tetap dibutuhkan untuk guardrail statis cepat.
+- `verify-runtime-secondary-features` melengkapi runtime behavior untuk area sekunder; tidak menggantikan kebutuhan browser E2E untuk history/focus-trap native/navigation engine.
 - Toolbar belum punya verifier contract statis setara; coverage runtime tetap berada di harness P1.
 
 Diturunkan bobot:
