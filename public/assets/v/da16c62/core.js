@@ -708,6 +708,13 @@ var until = Date.now() + ((ms > 0) ? ms : 2000);
 w.__gg_router_failopen_until = until;
 return until;
 };
+router._isRuntimeReady = router._isRuntimeReady || function(){
+if (Date.now() < (w.__gg_router_failopen_until || 0)) return false;
+if (!(w.history && w.history.pushState && d && d.body)) return false;
+if (!(GG && GG.core && GG.core.render && typeof GG.core.render.apply === 'function')) return false;
+var root = d.documentElement, raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
+return ((+raw) || 0) >= 2;
+};
 
 router.fallback = router.fallback || function(url){
 if(!url) return;
@@ -753,10 +760,8 @@ finish();
 return true;
 }).catch(function(){
 finish();
-if (Date.now() >= (w.__gg_router_failopen_until || 0)) {
 router._enterRecovering(2000);
 router.fallback(url);
-}
 return false;
 });
 };
@@ -779,12 +784,7 @@ var url = new URL(href, w.location.href);
 if (url.origin !== w.location.origin) return;
 if (router._shouldIntercept && !router._shouldIntercept(url)) return;
 if (url.pathname === w.location.pathname && url.search === w.location.search && url.hash) return;
-if (Date.now() < (w.__gg_router_failopen_until || 0)) return;
-if (!(w.history&&w.history.pushState)) return;
-if (!(GG&&GG.core&&GG.core.render&&GG.core.render.apply)) return;
-var root = d.documentElement;
-var raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
-if (((+raw) || 0) < 2) return;
+if (router._isRuntimeReady && !router._isRuntimeReady()) return;
 evt.preventDefault();
 router.navigate(url.href);
 } catch (e) {

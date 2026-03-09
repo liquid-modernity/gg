@@ -22,7 +22,7 @@ if (B._booted) return;
 B._booted = 1;
 
 function K(){
-var n = d.querySelectorAll ? d.querySelectorAll('dialog#gg-search,#gg-search-dialog,#gg-search-modal,[data-gg-search-modal]') : [];
+var n = d.querySelectorAll ? d.querySelectorAll('dialog#gg-search,[data-gg-search-modal]') : [];
 for (var i = 0; i < n.length; i++) {
   var e = n[i];
   if (e && e.parentNode) e.parentNode.removeChild(e);

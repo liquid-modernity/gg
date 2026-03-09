@@ -711,7 +711,7 @@ return until;
 router._isRuntimeReady = router._isRuntimeReady || function(){
 if (Date.now() < (w.__gg_router_failopen_until || 0)) return false;
 if (!(w.history && w.history.pushState && d && d.body)) return false;
-if (!(GG && GG.core && GG.core.render && typeof GG.core.render.apply === 'function')) return false;
+if (!(GG && GG.core && GG.core.render && GG.core.render.apply)) return false;
 var root = d.documentElement, raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
 return ((+raw) || 0) >= 2;
 };
