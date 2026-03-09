@@ -703,9 +703,27 @@ w.history.replaceState(router._mergeState({ gg: { url: href, scrollY: getScrollY
 } catch (e) {}
 };
 
+router._enterRecovering = router._enterRecovering || function(ms){
+var until = Date.now() + ((ms > 0) ? ms : 2000);
+w.__gg_router_failopen_until = until;
+return until;
+};
+router._isRecovering = router._isRecovering || function(){
+return Date.now() < (w.__gg_router_failopen_until || 0);
+};
+router._isRuntimeReady = router._isRuntimeReady || function(){
+if (router._isRecovering && router._isRecovering()) return false;
+if (!(w.history && w.history.pushState)) return false;
+if (!(GG && GG.core && GG.core.render && typeof GG.core.render.apply === 'function')) return false;
+if (!(d && d.body)) return false;
+var root = d.documentElement;
+var raw = root ? ((root.dataset && typeof root.dataset.ggBoot !== 'undefined') ? root.dataset.ggBoot : root.getAttribute('data-gg-boot')) : '';
+return (((+raw) || 0) >= 2);
+};
+
 router.fallback = router.fallback || function(url){
 if(!url) return;
-try { w.location.href = url; } catch (e) {}
+w.location.assign(url);
 };
 router._setLoading = router._setLoading || function(on){
 var body = d.body;
@@ -722,7 +740,6 @@ if (GG.core && GG.core.state) GG.core.state.remove(body, 'loading');
 };
 router._load = router._load || function(url, opts){
 if(!url) return;
-if(!GG.services || !GG.services.api || !GG.services.api.getHtml) return router.fallback(url);
 var options = opts || {};
 var scrollY = (typeof options.scrollY === 'number') ? options.scrollY : null;
 var done = false;
@@ -736,9 +753,7 @@ var hard=(options&&typeof options.timeoutMs==='number')?options.timeoutMs:((GG.s
 var p=GG.services.api.getHtml(url);
 if(hard>0)p=Promise.race([p,new Promise(function(_,rej){w.setTimeout(function(){rej({code:'timeout'});},hard);})]);
 return p.then(function(html){
-if (!GG.core || !GG.core.render || !GG.core.render.apply) throw new Error('render-missing');
-var ok = GG.core.render.apply(html, url);
-if (!ok) throw new Error('render-failed');
+if (!(GG.core&&GG.core.render&&GG.core.render.apply&&GG.core.render.apply(html, url))) throw 0;
 if (router && typeof router._applySurface === 'function') {
 router._applySurface(url);
 }
@@ -748,11 +763,10 @@ if (options.pop && typeof router.onPopState === 'function') router.onPopState(ur
 if (!options.pop && typeof router.onNavigate === 'function') router.onNavigate(url);
 finish();
 return true;
-}).catch(function(err){
+}).catch(function(){
 finish();
-if(GG.ui&&GG.ui.toast&&typeof GG.ui.toast.show==='function'){
-try{GG.ui.toast.show('Failed to load, retry');}catch(_){}
-}
+router._enterRecovering(2000);
+router.fallback(url);
 return false;
 });
 };
@@ -771,27 +785,19 @@ if (target && target !== '_self') return;
 var href = anchor.getAttribute('href');
 if(!href || href.charAt(0) === '#') return;
 if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
-var rel = anchor.getAttribute('rel') || '';
-if (/\bexternal\b/i.test(rel)) return;
 var url = new URL(href, w.location.href);
 if (url.origin !== w.location.origin) return;
 if (router._shouldIntercept && !router._shouldIntercept(url)) return;
-var samePath = (url.pathname === w.location.pathname && url.search === w.location.search);
-if (samePath && url.hash) return;
+if (url.pathname === w.location.pathname && url.search === w.location.search && url.hash) return;
+if (router._isRuntimeReady && !router._isRuntimeReady()) return;
 evt.preventDefault();
-var canRoute = !!(router && typeof router.navigate === 'function' && router._supports && router._supports());
-if (!canRoute) {
-try { w.location.href = url.href; } catch (_) {}
-return;
-}
 router.navigate(url.href);
 } catch (e) {
-router.fallback((evt && evt.target && evt.target.href) ? evt.target.href : w.location.href);
+router.fallback(url ? url.href : w.location.href);
 }
 };
 
 router.navigate = router.navigate || function(url){
-if(!router._supports()) return router.fallback(url);
 try {
 if(!url) return;
 var from = w.location.href;
@@ -943,10 +949,19 @@ if (!name) return '';
 return moduleUrl(name);
 };
 
+GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
 GG.boot.loadModule = GG.boot.loadModule || function(name){
 if (!name) return Promise.reject(new Error('module-name-missing'));
 var url = GG.boot.moduleUrl ? GG.boot.moduleUrl(name) : moduleUrl(name);
-return GG.boot.loadScript(url);
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results[name] = 'loading';
+return GG.boot.loadScript(url).then(function(out){
+results[name] = 'ok';
+return out;
+}).catch(function(err){
+results[name] = 'err';
+throw err;
+});
 };
 
 function setBootStage(stage){
@@ -978,24 +993,35 @@ else w.setTimeout(fn, t);
 
 function loadPwa(){
 var url = moduleUrl('pwa.js');
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results['pwa.js'] = 'loading';
 return GG.boot.loadScript(url).then(function(){
+results['pwa.js'] = 'ok';
 if (GG.modules && GG.modules.pwa && typeof GG.modules.pwa.init === 'function') {
 GG.modules.pwa.init();
 }
+}).catch(function(err){
+results['pwa.js'] = 'err';
+throw err;
 });
 }
 
 function loadUi(){
 var url = moduleUrl('ui.js');
 if (GG.boot._uiPromise) return GG.boot._uiPromise;
+var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
+results['ui.js'] = 'loading';
 GG.boot._uiPromise = GG.boot.loadScript(url).then(function(){
 if (GG.modules && GG.modules.ui && typeof GG.modules.ui.init === 'function') {
 try { GG.modules.ui.init(); } catch (_) {}
 }
 GG.boot._uiReady = true;
+results['ui.js'] = 'ok';
 return true;
 }).catch(function(err){
 GG.boot._uiPromise = null;
+GG.boot._uiReady = false;
+results['ui.js'] = 'err';
 throw err;
 });
 return GG.boot._uiPromise;
