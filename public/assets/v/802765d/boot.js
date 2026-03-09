@@ -159,7 +159,12 @@ return '';
 }
 
 function shouldInterceptAction(action){
-return action === 'search' || action === 'more';
+return action === 'home' || action === 'blog' || action === 'contact' || action === 'search' || action === 'more';
+}
+
+function isDockReady(){
+var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
+return !!(dock && dock.getAttribute('data-gg-ready') === '1');
 }
 
 function clearPendingDockAction(){
@@ -184,6 +189,7 @@ catch (_) {
 function tryReplayPendingDockAction(){
 var pending = B._pendingDockAction || w.__GG_PENDING_DOCK_ACTION;
 if (!pending) return false;
+if (!isDockReady()) return false;
 var dock = w.GG && w.GG.modules && w.GG.modules.Dock;
 if (!dock || typeof dock.replayAction !== 'function') return false;
 var ok = false;
@@ -271,7 +277,7 @@ var link = t.closest('a[data-gg-action]');
 if (!link) return;
 var scope = link.closest ? link.closest('nav.gg-dock,#gg-dock-more') : null;
 if (!scope) return;
-var dockReady = !!(w.GG && w.GG.modules && w.GG.modules.Dock && typeof w.GG.modules.Dock.replayAction === 'function');
+var dockReady = isDockReady();
 if (dockReady) return;
 queueDockAction(link, evt);
 }
