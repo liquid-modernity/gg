@@ -6552,46 +6552,7 @@ function updateBackdrop(){
     function setInert(el, inert){ if(!el || el.nodeType !== 1) return null; var prev = { el: el, aria: el.getAttribute('aria-hidden'), inert: el.hasAttribute('inert') }; if(inert){ el.setAttribute('aria-hidden','true'); el.setAttribute('inert',''); }else{ if(prev.aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', prev.aria); if(prev.inert) el.setAttribute('inert',''); else el.removeAttribute('inert'); } return prev; }
     A.inert = A.inert || function(root, keep){ var host = root || d.body || d.documentElement; if(!host) return null; var kids = Array.prototype.slice.call(host.children || []); var record = []; kids.forEach(function(el){ if(!el || el === keep) return; record.push(setInert(el, true)); }); A._inertStack.push(record); return record; };
     A.restoreInert = A.restoreInert || function(){ var record = A._inertStack.pop(); if(!record) return; record.forEach(function(item){ if(item && item.el) setInert(item.el, false); }); };
-    A.focusTrap = A.focusTrap || function(container, opts){
-      if(!container) return function(){};
-      var options = opts || {};
-      var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex=\"-1\"])';
-      function visible(el){
-        if (!el || el.hidden || (el.getAttribute && el.getAttribute('aria-hidden') === 'true')) return false;
-        return !!(el.getClientRects && el.getClientRects().length);
-      }
-      function focusNoScroll(el){
-        if (!el || typeof el.focus !== 'function') return;
-        var x = w.pageXOffset || 0, y = w.pageYOffset || 0;
-        try { el.focus({ preventScroll: true }); }
-        catch (_) { try { el.focus(); w.scrollTo(x, y); } catch(__){} }
-      }
-      function focusables(){
-        return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){
-          return !el.hasAttribute('disabled') && visible(el);
-        });
-      }
-      function onKey(e){
-        if(!e || e.key !== 'Tab') return;
-        var list = focusables();
-        if(!list.length){
-          if (!container.hasAttribute('tabindex')) container.setAttribute('tabindex', '-1');
-          focusNoScroll(container);
-          e.preventDefault();
-          return;
-        }
-        var first = list[0], last = list[list.length - 1], active = d.activeElement;
-        var out = !(active && container.contains(active));
-        if(e.shiftKey && (out || active === first || active === container)){ e.preventDefault(); focusNoScroll(last); return; }
-        if(!e.shiftKey && (out || active === last || active === container)){ e.preventDefault(); focusNoScroll(first); }
-      }
-      container.addEventListener('keydown', onKey);
-      if(options.autofocus !== false){
-        var list = focusables();
-        if(list[0]) focusNoScroll(list[0]);
-      }
-      return function(){ container.removeEventListener('keydown', onKey); };
-    };
+    A.focusTrap = A.focusTrap || function(container, opts){ if(!container) return function(){}; var selector = (opts && opts.selector) || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex=\"-1\"])'; function focusNoScroll(el){ if(!el || typeof el.focus !== 'function') return; try { el.focus({ preventScroll: true }); } catch (_) { try { el.focus(); } catch(__){} } } function focusables(){ return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function(el){ return !el.hasAttribute('disabled') && !el.hidden && (!el.getAttribute || el.getAttribute('aria-hidden') !== 'true') && !!(el.getClientRects && el.getClientRects().length); }); } function onKey(e){ if(!e || e.key !== 'Tab') return; var list = focusables(); if(!list.length){ container.setAttribute('tabindex', '-1'); focusNoScroll(container); e.preventDefault(); return; } var first = list[0], last = list[list.length - 1], active = d.activeElement, out = !(active && container.contains(active)); if (e.shiftKey ? (out || active === first || active === container) : (out || active === last || active === container)) { e.preventDefault(); focusNoScroll(e.shiftKey ? last : first); } } container.addEventListener('keydown', onKey); if(!(opts && opts.autofocus === false)){ var list = focusables(); if(list[0]) focusNoScroll(list[0]); } return function(){ container.removeEventListener('keydown', onKey); }; };
     function safeFocus(el){ if(!el || typeof el.focus !== 'function') return; try { el.focus({preventScroll:true}); } catch(_) { try { el.focus(); } catch(__){} } }
     A.modalClose = A.modalClose || function(modalEl, opts){
       var target = modalEl || A._activeModalEl;
