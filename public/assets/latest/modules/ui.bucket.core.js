@@ -2237,6 +2237,7 @@ function syncMoreFooterActions(panel){
 if (!panel) return;
 var list = panel.querySelector('.gg-dock-more__list');
 if (!list) return;
+var navShortcuts = collectNavTreeShortcuts();
 clearMoreFooterItems(list);
 clearMoreNavItems(list);
 
@@ -2275,7 +2276,6 @@ if (installButton) {
   list.appendChild(li);
 }
 
-var navShortcuts = collectNavTreeShortcuts();
 for (var n = 0; n < navShortcuts.length; n++) {
   appendMoreNavShortcutItem(list, navShortcuts[n]);
 }

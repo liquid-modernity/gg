@@ -164,26 +164,8 @@ function shouldInterceptAction(action){
 return action === 'home' || action === 'blog' || action === 'contact' || action === 'search' || action === 'more';
 }
 
-function isHomeCapableSurface(){
-var main = d.querySelector ? d.querySelector('main.gg-main[data-gg-home-root],main.gg-main[data-gg-surface]') : null;
-if (!main) return false;
-if ((main.getAttribute('data-gg-home-root') || '') === '1') return true;
-var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
-if (surface === 'landing' || surface === 'home') return true;
-var hasLanding = !!(main.querySelector && main.querySelector('[data-gg-home-layer="landing"],.gg-home-landing'));
-var hasBlog = !!(main.querySelector && main.querySelector('[data-gg-home-layer="blog"],.gg-home-blog'));
-return hasLanding && hasBlog;
-}
-
 function shouldHardFallback(action){
-if (action === 'blog') return true;
-if (action === 'home' || action === 'contact') return !isHomeCapableSurface();
-return false;
-}
-
-function fallbackDelayForAction(action){
-if (!shouldHardFallback(action)) return 0;
-return 2200;
+return action === 'home' || action === 'blog';
 }
 
 function isDockReady(){
@@ -248,7 +230,7 @@ var timer = w.setInterval(function(){
 function requestUiNow(reason, replayTimeoutMs){
 C();
 var tries = 0;
-var maxTries = 90;
+var maxTries = 70;
 (function tick(){
   var boot = w.GG && w.GG.boot;
   if (boot && typeof boot.requestUi === 'function') {
@@ -264,17 +246,16 @@ var maxTries = 90;
   tries += 1;
   if (tries < maxTries) w.setTimeout(tick, 50);
 })();
-waitForDockReplay((typeof replayTimeoutMs === 'number' && replayTimeoutMs > 0) ? replayTimeoutMs : 4200);
+waitForDockReplay((typeof replayTimeoutMs === 'number' && replayTimeoutMs > 0) ? replayTimeoutMs : 3600);
 }
 
-function queueDockAction(link, evt, opts){
+function queueDockAction(link, evt){
 if (!link) return;
-opts = opts || {};
 var action = String((link.getAttribute('data-gg-action') || '')).toLowerCase();
 if (!action) return;
 var href = link.getAttribute('href') || '';
 var anchor = readAnchor(link, href);
-var fallbackMs = fallbackDelayForAction(action);
+var fallbackMs = shouldHardFallback(action) ? 2200 : 0;
 var payload = {
   action: action,
   href: href,
@@ -284,7 +265,6 @@ var payload = {
 B._pendingDockAction = payload;
 w.__GG_PENDING_DOCK_ACTION = payload;
 requestUiNow('dock-action:' + action, fallbackMs > 0 ? (fallbackMs + 1200) : 4200);
-if (opts.primeOnly) return;
 if (shouldInterceptAction(action)) {
   if (evt && evt.preventDefault) evt.preventDefault();
   if (evt && evt.stopPropagation) evt.stopPropagation();
@@ -302,20 +282,7 @@ if (fallbackMs > 0) {
     clearPendingDockAction();
     hardNavigate(href || anchor || '/');
   }, fallbackMs);
-}
-}
-
-function onDockActionPrime(evt){
-if (!evt || evt.defaultPrevented) return;
-if (Date.now() < (w.__gg_recovering_until || 0)) return;
-var t = evt.target;
-if (!t || !t.closest) return;
-var link = t.closest('a[data-gg-action]');
-if (!link) return;
-var scope = link.closest ? link.closest('nav.gg-dock,#gg-dock-more') : null;
-if (!scope) return;
-if (isDockReady()) return;
-queueDockAction(link, null, { primeOnly: true });
+  }
 }
 
 function onDockActionClick(evt){
@@ -329,12 +296,10 @@ var scope = link.closest ? link.closest('nav.gg-dock,#gg-dock-more') : null;
 if (!scope) return;
 var dockReady = isDockReady();
 if (dockReady) return;
-queueDockAction(link, evt, { primeOnly: false });
+queueDockAction(link, evt);
 }
 
 w.addEventListener('keydown', O, true);
-d.addEventListener('pointerdown', onDockActionPrime, true);
-d.addEventListener('touchstart', onDockActionPrime, { passive: true, capture: true });
 d.addEventListener('click', onDockActionClick, true);
 d.addEventListener('pointerdown', E, { passive: true, capture: true, once: true });
 d.addEventListener('touchstart', E, { passive: true, capture: true, once: true });

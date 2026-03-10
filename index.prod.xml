@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='5b92101' name='gg-release'/>
+    <meta content='eb73850' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/5b92101/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/5b92101/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/eb73850/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/eb73850/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -233,7 +233,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='5b92101' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='eb73850' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -635,29 +635,8 @@ text-align: center;
     <!-- SIDEBAR KIRI -->
     <aside class='gg-blog-sidebar gg-blog-sidebar--left' id='gg-left-panel'>
       <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
-         <b:if cond='data:view.isMultipleItems'>
+        <b:if cond='data:view.isMultipleItems'>
         <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list' name='Left SB Top (List)' showaddelement='true'>
-          <b:widget id='HTML27' locked='false' title='Profile' type='HTML' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
-          <div class='gg-leftnav__avatar'>
-            <img decoding='async' expr:alt='data:blog.title + &quot; logo&quot;' height='56' loading='lazy' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png' width='56'/>
-          </div>
-          <div class='gg-leftnav__meta'>
-            <p class='gg-leftnav__title'>PakRPP</p>
-          </div>
-          <span class='gg-leftnav__badge' title='Verified'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded gg-icon--md'>verified</span>
-          </span>
-        </div>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-          </b:widget>
           <b:widget id='HTML1' locked='false' title='Interests' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA LABEL TREE VERSI HOME/LIST -->
@@ -686,180 +665,6 @@ text-align: center;
         </b:section>
           </b:if>
         
-                 <b:if cond='data:view.isSingleItem'>
-        <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-post' name='Left SB Top (Post)' showaddelement='true'>
-          <b:widget id='HTML29' locked='false' title='Profile' type='HTML' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div class='gg-leftnav__profile' role='presentation'>
-          <div class='gg-leftnav__avatar'>
-            <img decoding='async' expr:alt='data:blog.title + &quot; logo&quot;' height='56' loading='lazy' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png' width='56'/>
-          </div>
-          <div class='gg-leftnav__meta'>
-            <p class='gg-leftnav__title'>PakRPP</p>
-          </div>
-          <span class='gg-leftnav__badge' title='Verified'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded gg-icon--md'>verified</span>
-          </span>
-        </div>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <b:include name='widget-title'/>
-  <div class='widget-content'>
-    <data:content/>
-  </div>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2">
-  <div class="gg-toc__head">
-    <button class="gg-toc__headbtn" type="button" aria-expanded="true">
-      <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
-      <span class="gg-toc__title">Table of Contents</span>
-    </button>
-    <button class="gg-toc__toggle" type="button" aria-label="Collapse">
-      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
-    </button>
-  </div>
-
-  <div class="gg-toc__body">
-    <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
-    <div class="gg-toc__empty" hidden></div>
-  </div>
-</nav>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-    <b:include name='widget-title'/>
-    <div class='widget-content'>
-      <data:content/>
-    </div>
-  </b:includable>
-          </b:widget>
-        </b:section>
-          </b:if>
-        
-      <!-- Versi HOME/LIST -->
-      <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-list' name='Left SB Body (List)' showaddelement='true'>
-          <b:widget id='HTML17' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>About & Philosophy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Board of Authors</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Editorial Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Transparency & Disclosure</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='policy' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>policy</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML18' locked='false' title='Knowledge Hub' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Topic Index</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Visual Sitemap</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Digital Library</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Industry Glossary</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='menu_book' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>menu_book</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML19' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Help Center</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Knowledge Base (FAQ)</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Contact Us</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Partnership & Career</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Press & Media Kit</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='support_agent' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>support_agent</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML20' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Privacy Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Terms of Service</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Disclaimer</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Accessibility Statement</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='gavel' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>gavel</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML21' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item">
-    <a class="gg-navtree__link" href="https://www.pakrpp.com/llms.txt">llms.txt</a>
-    <small class="gg-navtree__note">Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude).</small>
-  </li>
-  <li class="gg-navtree__item">
-    <a class="gg-navtree__link" href="https://www.pakrpp.com/ads.txt">ads.txt</a>
-    <small class="gg-navtree__note">Standar transparansi iklan digital (Authorized Digital Sellers).</small>
-  </li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='smart_toy' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>smart_toy</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-        </b:section>
-         </b:if>      
-
       <!-- Versi POST DETAIL -->
       <b:if cond='data:view.isSingleItem'>
         <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
@@ -969,121 +774,6 @@ text-align: center;
       <data:content/>
     </div>
   </b:includable>
-          </b:widget>
-          <b:widget id='HTML31' locked='false' title='Governance &amp;amp; Trust' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/about.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>About & Philosophy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/authors.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Board of Authors</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/editorial-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Editorial Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/transparency.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Transparency & Disclosure</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='policy' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>policy</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML32' locked='false' title='Knowledge Hub' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/tags.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Topic Index</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/sitemap.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Visual Sitemap</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/library.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Digital Library</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/glossary.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Industry Glossary</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='menu_book' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>menu_book</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML33' locked='false' title='Services &amp;amp; Connect' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/support.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Help Center</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/faq.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Knowledge Base (FAQ)</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/contact.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Contact Us</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/career.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Partnership & Career</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/media-kit.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Press & Media Kit</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='support_agent' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>support_agent</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML34' locked='false' title='Legal &amp;amp; Compliance' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/privacy-policy.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Privacy Policy</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/terms-of-service.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Terms of Service</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/disclaimer.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Disclaimer</a></li>
-  <li class="gg-navtree__item"><a class="gg-navtree__link" href="https://www.pakrpp.com/p/accessibility.html"><span class="material-symbols-rounded gg-lt__doc" aria-hidden="true">docs</span>Accessibility Statement</a></li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='gavel' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>gavel</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
-          </b:widget>
-          <b:widget id='HTML35' locked='false' title='AI &amp;amp; Ads Files' type='HTML' version='2' visible='true'>
-            <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<ul class="gg-navtree__list">
-  <li class="gg-navtree__item">
-    <a class="gg-navtree__link" href="https://www.pakrpp.com/llms.txt">llms.txt</a>
-    <small class="gg-navtree__note">Surat izin khusus untuk robot AI (ChatGPT, Gemini, Claude).</small>
-  </li>
-  <li class="gg-navtree__item">
-    <a class="gg-navtree__link" href="https://www.pakrpp.com/ads.txt">ads.txt</a>
-    <small class="gg-navtree__note">Standar transparansi iklan digital (Authorized Digital Sellers).</small>
-  </li>
-</ul>]]></b:widget-setting>
-            </b:widget-settings>
-            <b:includable id='main'>
-  <details class='gg-navtree' data-gg-default='closed' data-gg-icon='smart_toy' data-gg-navtree='group'>
-    <summary class='gg-navtree__summary'>
-      <span aria-hidden='true' class='gg-navtree__summary-icon material-symbols-rounded'>smart_toy</span>
-      <span class='gg-navtree__summary-text'><data:title/></span>
-      <span aria-hidden='true' class='gg-navtree__summary-chev material-symbols-rounded'>expand_more</span>
-    </summary>
-    <div class='widget-content gg-navtree__items'>
-      <data:content/>
-    </div>
-  </details>
-</b:includable>
           </b:widget>
         </b:section>
         
@@ -3421,26 +3111,26 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <li data-gg-more-origin='footer'><a href='#'>AI Summary · ChatGPT</a></li>
       <li data-gg-more-origin='footer'><a href='/p/pay.html#paypal'>Payment · PayPal</a></li>
       <li data-gg-more-origin='footer'><a data-gg-more-action='install' href='#'>Install Web App to Device</a></li>
-      <li data-gg-more-origin='navtree'>
-        <a href='/p/about.html'>
+      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
+        <a class='gg-navtree__link' href='/p/about.html'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
           <span>About &amp; Philosophy</span>
         </a>
       </li>
-      <li data-gg-more-origin='navtree'>
-        <a href='/p/tags.html'>
+      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
+        <a class='gg-navtree__link' href='/p/tags.html'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
           <span>Topic Index</span>
         </a>
       </li>
-      <li data-gg-more-origin='navtree'>
-        <a href='/p/support.html'>
+      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
+        <a class='gg-navtree__link' href='/p/support.html'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
           <span>Help Center</span>
         </a>
       </li>
-      <li data-gg-more-origin='navtree'>
-        <a href='/p/privacy-policy.html'>
+      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
+        <a class='gg-navtree__link' href='/p/privacy-policy.html'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
           <span>Privacy Policy</span>
         </a>
@@ -3532,7 +3222,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/5b92101/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/eb73850/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>

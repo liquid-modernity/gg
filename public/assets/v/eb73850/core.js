@@ -1006,62 +1006,20 @@ var url = moduleUrl('ui.js');
 if (GG.boot._uiPromise) return GG.boot._uiPromise;
 var results = GG.boot._moduleLoadResults = GG.boot._moduleLoadResults || {};
 results['ui.js'] = 'loading';
-GG.boot._uiHydrated = false;
 GG.boot._uiPromise = GG.boot.loadScript(url).then(function(){
-var initResult = null;
 if (GG.modules && GG.modules.ui && typeof GG.modules.ui.init === 'function') {
-try { initResult = GG.modules.ui.init(); } catch (_) {}
+try { GG.modules.ui.init(); } catch (_) {}
 }
-return Promise.resolve(initResult).catch(function(){ return false; }).then(function(){
-return waitForUiHydration(4200);
-}).then(function(hydrated){
-GG.boot._uiHydrated = !!(GG.boot._uiHydrated || hydrated);
 GG.boot._uiReady = true;
 results['ui.js'] = 'ok';
 return true;
-});
 }).catch(function(err){
 GG.boot._uiPromise = null;
 GG.boot._uiReady = false;
-GG.boot._uiHydrated = false;
 results['ui.js'] = 'err';
 throw err;
 });
 return GG.boot._uiPromise;
-}
-
-function isUiHydrated(){
-if (GG.boot && GG.boot._uiHydrated) return true;
-if (GG.app && GG.app._init) return true;
-var dock = d.querySelector ? d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock') : null;
-if (dock && dock.getAttribute && dock.getAttribute('data-gg-ready') === '1') return true;
-return false;
-}
-
-function waitForUiHydration(timeoutMs){
-if (isUiHydrated()) return Promise.resolve(true);
-var timeout = (typeof timeoutMs === 'number' && timeoutMs > 0) ? timeoutMs : 3600;
-return new Promise(function(resolve){
-var done = false;
-var started = Date.now();
-var timer = 0;
-function finish(ok){
-  if (done) return;
-  done = true;
-  if (timer) w.clearInterval(timer);
-  try { w.removeEventListener('gg:ui-ready', onReady, true); } catch (_) {}
-  resolve(!!ok);
-}
-function onReady(){ finish(true); }
-try { w.addEventListener('gg:ui-ready', onReady, true); } catch (_) {}
-timer = w.setInterval(function(){
-  if (isUiHydrated()) {
-    finish(true);
-    return;
-  }
-  if (Date.now() - started > timeout) finish(false);
-}, 40);
-});
 }
 
 GG.boot.requestUi = GG.boot.requestUi || function(reason){
@@ -1079,7 +1037,6 @@ var fired = false;
 function off(){
   try { d.removeEventListener('pointerdown', onPointer, true); } catch (_) {}
   try { d.removeEventListener('touchstart', onTouch, true); } catch (_) {}
-  try { d.removeEventListener('click', onClick, true); } catch (_) {}
   try { d.removeEventListener('keydown', onKey, true); } catch (_) {}
 }
 function run(reason){
@@ -1090,11 +1047,9 @@ function run(reason){
 }
 function onPointer(){ run('interact:pointerdown'); }
 function onTouch(){ run('interact:touchstart'); }
-function onClick(){ run('interact:click'); }
 function onKey(){ run('interact:keydown'); }
 try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true }); } catch (_) {}
 try { d.addEventListener('touchstart', onTouch, { passive: true, capture: true }); } catch (_) {}
-try { d.addEventListener('click', onClick, { capture: true }); } catch (_) {}
 try { d.addEventListener('keydown', onKey, { capture: true }); } catch (_) {}
 }
 

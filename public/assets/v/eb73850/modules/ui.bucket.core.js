@@ -2197,37 +2197,6 @@ if (titleText && base.toLowerCase().indexOf(titleText.toLowerCase()) === -1) {
 return base;
 }
 
-function stripIconText(link, text){
-if (!link || !text) return text;
-var icon = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
-var iconText = icon ? textOf(icon) : '';
-if (!iconText) return text;
-var out = text.replace(iconText, '').trim();
-return out || text;
-}
-
-function resolveNavShortcutLabel(link){
-var label = stripIconText(link, textOf(link));
-if (!label) label = (link && link.getAttribute ? (link.getAttribute('aria-label') || '').trim() : '') || 'Shortcut';
-return label;
-}
-
-function resolveNavShortcutIcon(link){
-if (!link) return 'link';
-var icon = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
-var iconText = icon ? textOf(icon) : '';
-if (iconText) return iconText;
-var dataIcon = (link.getAttribute && link.getAttribute('data-gg-icon')) ? link.getAttribute('data-gg-icon') : '';
-if (dataIcon) return dataIcon;
-var details = link.closest ? link.closest('details.gg-navtree') : null;
-if (details) {
-  var summaryIcon = details.querySelector ? details.querySelector('.gg-navtree__summary-icon.material-symbols-rounded') : null;
-  var summaryText = summaryIcon ? textOf(summaryIcon) : '';
-  if (summaryText) return summaryText;
-}
-return 'link';
-}
-
 function collectNavTreeShortcuts(){
 var out = [];
 var seen = {};
@@ -2242,7 +2211,13 @@ for (var i = 0; i < links.length; i++) {
   if (link.closest && link.closest('template')) continue;
   var href = (link.getAttribute('href') || '').trim();
   if (!href || href === '#' || /^javascript:/i.test(href)) continue;
-  var label = resolveNavShortcutLabel(link);
+  var iconEl = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
+  var icon = iconEl ? textOf(iconEl) : '';
+  if (!icon) icon = (link.getAttribute('data-gg-icon') || '').trim();
+  if (!icon) icon = 'link';
+  var label = textOf(link);
+  if (icon && label.indexOf(icon) === 0) label = label.slice(icon.length).trim();
+  if (!label) label = (link.getAttribute('aria-label') || '').trim() || 'Shortcut';
   if (!label) continue;
   var key = label.toLowerCase() + '|' + href.replace(/\/+$/, '');
   if (seen[key]) continue;
@@ -2250,7 +2225,7 @@ for (var i = 0; i < links.length; i++) {
   out.push({
     href: href,
     label: label,
-    icon: resolveNavShortcutIcon(link),
+    icon: icon,
     source: link
   });
   if (out.length >= 14) break;
@@ -2262,6 +2237,7 @@ function syncMoreFooterActions(panel){
 if (!panel) return;
 var list = panel.querySelector('.gg-dock-more__list');
 if (!list) return;
+var navShortcuts = collectNavTreeShortcuts();
 clearMoreFooterItems(list);
 clearMoreNavItems(list);
 
@@ -2300,7 +2276,6 @@ if (installButton) {
   list.appendChild(li);
 }
 
-var navShortcuts = collectNavTreeShortcuts();
 for (var n = 0; n < navShortcuts.length; n++) {
   appendMoreNavShortcutItem(list, navShortcuts[n]);
 }
@@ -2359,47 +2334,8 @@ var attr = mainEl.getAttribute('data-gg-home-state');
 return (attr === 'blog') ? 'blog' : 'landing';
 }
 
-function hasHomeLayers(){
-if (!mainEl || !mainEl.querySelector) return false;
-var landing = mainEl.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
-var blog = mainEl.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
-return !!(landing && blog);
-}
-
-function forceHomeState(state){
-if (!hasHomeLayers()) return false;
-var landing = mainEl.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
-var blog = mainEl.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
-var showLanding = state !== 'blog';
-if (landing) {
-  landing.style.display = showLanding ? 'block' : 'none';
-  landing.setAttribute('aria-hidden', showLanding ? 'false' : 'true');
-}
-if (blog) {
-  blog.style.display = showLanding ? 'none' : 'block';
-  blog.setAttribute('aria-hidden', showLanding ? 'true' : 'false');
-}
-if (mainEl) mainEl.setAttribute('data-gg-home-state', showLanding ? 'landing' : 'blog');
-return true;
-}
-
-function setHomeStateSafe(state){
-var done = false;
-if (GG.modules && GG.modules.homeState && typeof GG.modules.homeState.setState === 'function') {
-  try {
-    GG.modules.homeState.setState(state);
-    done = true;
-  } catch (_) {}
-}
-if (!done) done = forceHomeState(state);
-return done;
-}
-
 function isHomeCapable(){
-if (!mainEl) return false;
-if ((mainEl.getAttribute('data-gg-home-root') || '') === '1') return true;
-if (hasHomeLayers()) return true;
-return !!(GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
+return !!(mainEl && GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
 }
 function effectiveDockState() {
 if (isHomeCapable()) return currentHomeState();
@@ -2510,8 +2446,8 @@ return true;
 }
 
 if (action === 'home') {
-if (isHomeCapable()) {
-  setHomeStateSafe('landing');
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('landing', '/');
   } else {
@@ -2525,8 +2461,8 @@ return false;
 }
 
 if (action === 'blog') {
-if (isHomeCapable()) {
-  setHomeStateSafe('blog');
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('blog');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('blog', '/blog');
   }
@@ -2545,8 +2481,8 @@ return false;
 }
 
 if (action === 'contact') {
-if (isHomeCapable()) {
-  setHomeStateSafe('landing');
+if (isHomeCapable() && GG.modules.homeState) {
+  GG.modules.homeState.setState('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('landing', '/');
   }
@@ -2660,12 +2596,15 @@ if (dockEl.querySelector('[data-gg-action="search-exit"]')){
 if (!escBound){
 escBound = true;
 document.addEventListener('keydown', function(e){
-  if (e.key !== 'Escape') return;
+if (e.key !== 'Escape') return;
   exitSearch();
   closeMorePanel();
 });
 }
 bindMorePanel();
+var initMorePanel = ensureMorePanel();
+if (initMorePanel) syncMoreFooterActions(initMorePanel);
+if (((window.location && window.location.hash) || '') === '#gg-dock-more') openMorePanel();
 if (!pendingBound){
 pendingBound = true;
 window.addEventListener('gg:dock-action-pending', function(evt){
@@ -5108,15 +5047,6 @@ GG.app.plan.forEach(function(item){
 GG.app.selectorMap[item.name] = GG.core.selectorLabel(item.selector);
 });
 
-function markUiHydrated(source){
-if (GG.boot) GG.boot._uiHydrated = true;
-try {
-  if (typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
-    window.dispatchEvent(new window.CustomEvent('gg:ui-ready', { detail: { source: source || 'ui' } }));
-  }
-} catch (_) {}
-}
-
 GG.app.init = GG.app.init || function(){
 if (GG.app._init) return;
 GG.app._init = true;
@@ -5136,7 +5066,6 @@ for (var i = 0; i < GG.app.plan.length; i++) {
 	    GG.boot.safeInit(item.name, function(){ item.init(host); });
 	  })(GG.app.plan[i]);
 	}
-markUiHydrated('app.init');
 };
 
 GG.app.ensureBuckets = GG.app.ensureBuckets || function(){
@@ -5187,7 +5116,6 @@ function runTasks(){
 	    }
 	    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
 	  }
-  markUiHydrated('app.rehydrate');
 	}
 var ensured = GG.app && typeof GG.app.ensureBuckets === 'function' ? GG.app.ensureBuckets() : null;
 if (ensured && typeof ensured.then === 'function') return ensured.then(runTasks, runTasks);
