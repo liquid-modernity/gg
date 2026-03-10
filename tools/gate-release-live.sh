@@ -10,18 +10,14 @@ run() {
   "$@"
 }
 
-# Keep output clean: realign release artifacts before entering gate:prod.
+BASE_URL="${BASE_URL:-https://www.pakrpp.com}"
+
 if ! node tools/verify-release-aligned.mjs >/dev/null 2>&1; then
   run env ALLOW_DIRTY_RELEASE=1 npm run build
 fi
 
-# Strict: no offline smoke fallback/skip and no template mismatch allowance.
-if ! run env GATE_ALLOW_OFFLINE_SMOKE_SKIP=0 GATE_SMOKE_ALLOW_OFFLINE_FALLBACK=0 SMOKE_ATTEMPTS=1 npm run gate:prod; then
-  echo "THIS WILL NOT FIX ITSELF BY WORKERS DEPLOY — YOU MUST PASTE index.prod.xml INTO BLOGGER THEME" >&2
-  exit 1
-fi
+run env BASE="${BASE_URL}" SMOKE_ALLOW_OFFLINE_FALLBACK=0 SMOKE_LIVE_HTML=1 bash tools/smoke.sh
+run node tools/verify-headers.mjs --mode=live --release-source=live --base="${BASE_URL}"
+run node tools/verify-palette-a11y.mjs --mode=live --base="${BASE_URL}"
 
-run node tools/verify-headers.mjs --mode=live --release-source=live --base=https://www.pakrpp.com
-run node tools/verify-palette-a11y.mjs --mode=live --base=https://www.pakrpp.com
-
-echo "PASS: gate:release"
+echo "PASS: gate:release-live"

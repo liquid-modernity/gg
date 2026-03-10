@@ -14,8 +14,10 @@ if [[ "${CI:-0}" == "1" || "${GG_GATE_RELEASE_LIVE:-0}" == "1" ]]; then
   exec bash tools/gate-release-live.sh
 fi
 
-echo "INFO: live checks run only in CI or with GG_GATE_RELEASE_LIVE=1"
-run npm run gate:prod
-run node tools/verify-headers.mjs --mode=config
-run node tools/verify-palette-a11y.mjs --mode=repo
+run npm run preflight:ship
+
+if [[ "${GG_LOCAL_LIVE_SMOKE:-0}" == "1" ]]; then
+  run env BASE="${BASE:-https://www.pakrpp.com}" SMOKE_ALLOW_OFFLINE_FALLBACK=1 SMOKE_LIVE_HTML=1 bash tools/smoke.sh
+fi
+
 echo "PASS: gate:release(local)"

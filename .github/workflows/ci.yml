@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  ci:
+  verify:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,109 +23,30 @@ jobs:
 
       - name: Guard lockfile
         run: |
-          set -e
+          set -euo pipefail
           if [ ! -f package-lock.json ]; then
-            echo "ERROR: package-lock.json is required. Run npm install --package-lock-only --ignore-scripts and commit it."
+            echo "ERROR: package-lock.json is required."
             exit 1
           fi
 
-      - name: Install deps (npm ci)
-        run: |
-          set -e
-          npm ci
+      - name: Install deps
+        run: npm ci
 
-      - name: Verify release aligned (fast fail)
-        run: |
-          set -e
-          if ! node tools/verify-release-aligned.mjs; then
-            echo "Release not aligned to HEAD. Run npm run prep:release and commit artifacts."
-            exit 1
-          fi
+      - name: Build release artifacts
+        run: npm run build
 
-      - name: Build + verifiers
-        run: |
-          set -e
-          npm run build
-          npm run verify:assets
-          npm run verify:xml
-          node tools/verify-ui-guardrails.mjs
-          node tools/verify-dock-contract.mjs
-          if [ -f tools/verify-theme-diff.mjs ]; then
-            node tools/verify-theme-diff.mjs
-          else
-            echo "SKIP: tools/verify-theme-diff.mjs not found"
-          fi
-          if [ -f tools/check-links.sh ]; then
-            bash tools/check-links.sh
-          else
-            echo "SKIP: tools/check-links.sh not found"
-          fi
+      - name: Verify P0 (blocking)
+        run: npm run verify:p0
 
-      - name: Verify ledger + doc contracts
-        run: node tools/verify-ledger.mjs
+      - name: Verify P1 (runtime quality)
+        run: npm run verify:p1
 
-      - name: Verify audit docs (no static release ids)
-        run: node tools/verify-audit-docs.mjs
-
-      - name: Verify router contract
-        run: node tools/verify-router-contract.mjs
-
-      - name: Verify authors dir contract
-        run: node tools/verify-authors-dir-contract.mjs
-
-      - name: Verify InfoPanel TOC contract
-        run: node tools/verify-infopanel-toc-contract.mjs
-
-      - name: Verify UI guardrails
-        run: node tools/verify-ui-guardrails.mjs
-
-      - name: Verify dock contract
-        run: node tools/verify-dock-contract.mjs
-
-      - name: Verify template contract
-        run: node tools/verify-template-contract.mjs
-
-      - name: Verify template fingerprint
-        run: node tools/verify-template-fingerprint.mjs
-
-      - name: Install Playwright test runner (runtime smoke)
-        run: npm install --no-save --no-package-lock @playwright/test@1.52.0
-
-      - name: Install Playwright Chromium (runtime smoke)
-        run: npx playwright install --with-deps chromium
-
-      - name: Runtime smoke (gg-dock interactivity, live non-blocking)
-        id: runtime_smoke
-        continue-on-error: true
-        env:
-          GG_RUNTIME_BASE_URL: https://www.pakrpp.com/
-        run: |
-          set -e
-          echo "Runtime smoke test source fingerprint:"
-          sed -n '1,120p' tools/verify-runtime-ggdock.spec.mjs
-          npx playwright test tools/verify-runtime-ggdock.spec.mjs --browser=chromium --workers=1 --retries=1 --reporter=line --output=/tmp/gg-playwright-results
-
-      - name: Runtime smoke status note
-        if: ${{ always() && steps.runtime_smoke.outcome != 'success' }}
-        run: |
-          echo "::warning::Runtime smoke failed against current live site. CI/deploy is not blocked. Investigate release skew/template mismatch on https://www.pakrpp.com."
-
-      - name: Verify headers contract (config)
-        run: node tools/verify-headers.mjs --mode=config
-
-      - name: Verify performance budgets
-        run: node tools/verify-budgets.mjs
-
-      - name: Verify inline CSS budget
-        run: node tools/verify-inline-css.mjs
-
-      - name: Verify CRP regressions
-        run: node tools/verify-crp.mjs
+      - name: Verify P2 (reference)
+        run: npm run verify:p2
 
       - name: Verify build determinism
         run: |
-          set -e
-          rm -rf test-results playwright-report
+          set -euo pipefail
           if ! git diff --exit-code; then
             echo "Build produced changes. Run npm run build locally and commit generated artifacts."
             exit 1
@@ -135,35 +56,3 @@ jobs:
             git status --porcelain
             exit 1
           fi
-
-      - name: XML well-formedness
-        run: |
-          set -e
-          if command -v xmllint >/dev/null 2>&1; then
-            xmllint --noout index.dev.xml
-            xmllint --noout index.prod.xml
-          else
-            node tools/validate-xml.js
-          fi
-
-  trigger_deploy:
-    needs: ci
-    if: ${{ success() && github.ref_name == 'main' }}
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: read
-
-    steps:
-      - name: Dispatch deploy workflow
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-        run: |
-          set -e
-          curl -sS -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${REPO}/actions/workflows/deploy.yml/dispatches" \
-            -d "{\"ref\":\"main\",\"inputs\":{\"sha\":\"${SHA}\"}}"

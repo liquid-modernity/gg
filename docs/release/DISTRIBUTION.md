@@ -23,6 +23,7 @@ Last updated: 2026-02-21
 - Ratchet tidak boleh dilonggarkan (nilai `max_*` naik) tanpa task eksplisit “perf regression acceptance”.
 
 ## Release Gate Modes
-- Local (default): wajib lulus `npm run gate:prod` + `bash tools/gate-release.sh` (mode local, non-live).
-- CI (authoritative proof): wajib menjalankan `bash tools/gate-release-live.sh` setelah deploy.
-- Live checks (`verify-headers --mode=live` + `verify-palette-a11y --mode=live`) hanya mandatory proof di CI atau saat dipaksa dengan `GG_GATE_RELEASE_LIVE=1`.
+- Local harian: `npm run verify:p0` + `npm run verify:p1`.
+- Local final sebelum push: `npm run preflight:ship`, lalu `npm run ship`.
+- CI deploy (authoritative live proof): `bash tools/gate-release-live.sh` setelah `wrangler deploy`.
+- Local live smoke opsional: set `GG_LOCAL_LIVE_SMOKE=1` saat menjalankan `bash tools/gate-release.sh`.

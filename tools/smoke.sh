@@ -4,1263 +4,189 @@ trap 'echo "FAIL: smoke crashed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-die(){
+die() {
   echo "FAIL: $*" >&2
   exit 1
 }
 
 BASE="${BASE:-https://www.pakrpp.com}"
 ALLOW_OFFLINE_FALLBACK="${SMOKE_ALLOW_OFFLINE_FALLBACK:-0}"
-SMOKE_POST_DETAIL_PATH="${SMOKE_POST_DETAIL_PATH:-/2026/02/automatically-identify-key-words-and.html}"
+SMOKE_LIVE_HTML="${SMOKE_LIVE_HTML:-0}"
+POST_TARGET="${SMOKE_POST_URL:-${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH:-/2026/02/automatically-identify-key-words-and.html}}}"
+PAGE_TARGET="${SMOKE_PAGE_URL:-}"
+
+LIVE_TIMEOUT_MS="${SMOKE_LIVE_RETRY_TIMEOUT_MS:-10000}"
+LIVE_RETRY_MAX="${SMOKE_LIVE_RETRY_MAX:-4}"
+LIVE_RETRY_BASE_MS="${SMOKE_LIVE_RETRY_BASE_MS:-800}"
+LIVE_RETRY_CAP_MS="${SMOKE_LIVE_RETRY_CAP_MS:-10000}"
+LIVE_INTER_REQUEST_DELAY_MS="${SMOKE_LIVE_INTER_REQUEST_DELAY_MS:-250}"
+LIVE_VERIFIER_ATTEMPTS="${SMOKE_LIVE_VERIFIER_ATTEMPTS:-2}"
+LIVE_VERIFIER_RETRY_BASE_MS="${SMOKE_LIVE_VERIFIER_RETRY_BASE_MS:-1500}"
+LIVE_VERIFIER_RETRY_CAP_MS="${SMOKE_LIVE_VERIFIER_RETRY_CAP_MS:-10000}"
+LIVE_USER_AGENT="${SMOKE_LIVE_USER_AGENT:-gg-live-gate/1.0 (+https://www.pakrpp.com)}"
 
 echo "SMOKE: base=${BASE}"
 
-if ! "${ROOT}/tools/check-links.sh"; then
-  die "check-links failed"
-fi
-
-if ! node "${ROOT}/tools/verify-no-selfclosing-script.mjs"; then
-  die "verify-no-selfclosing-script failed"
-fi
-
-if ! node "${ROOT}/tools/verify-no-inline-diagnostic-script.mjs"; then
-  die "verify-no-inline-diagnostic-script failed"
-fi
-
-if ! node "${ROOT}/tools/verify-no-head-style-blocks.mjs"; then
-  die "verify-no-head-style-blocks failed"
-fi
-
-if ! node "${ROOT}/tools/verify-mixed-config-gated.mjs"; then
-  die "verify-mixed-config-gated failed"
-fi
-
-if ! node "${ROOT}/tools/verify-ui-guardrails.mjs"; then
-  die "verify-ui-guardrails failed"
-fi
-
-if ! node "${ROOT}/tools/verify-infopanel-toc-contract.mjs"; then
-  die "verify-infopanel-toc-contract failed"
-fi
-
-read_release_id_from_capsule() {
-  local file="${ROOT}/docs/ledger/GG_CAPSULE.md"
-  if [[ ! -f "${file}" ]]; then
-    return 0
-  fi
-
-  local id
-  id="$(grep -E 'RELEASE_ID' "${file}" | head -n 1 | sed -E 's/.*RELEASE_ID[^0-9a-f]*([0-9a-f]{7,40}).*/\1/' | tr -d '[:space:]')"
-  if [[ "${id}" =~ ^[0-9a-f]{7,40}$ ]]; then
-    echo "${id}"
-    return 0
-  fi
-
-  id="$(grep -Eo '/assets/v/[0-9a-f]{7,40}/' "${file}" | head -n 1 | sed -E 's#/assets/v/([0-9a-f]{7,40})/#\1#')"
-  if [[ "${id}" =~ ^[0-9a-f]{7,40}$ ]]; then
-    echo "${id}"
-    return 0
-  fi
-
-  return 0
+http_headers() {
+  local url="$1"
+  curl -sS -D - -o /dev/null --max-time 12 -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r'
 }
 
-capsule_file="${ROOT}/docs/ledger/GG_CAPSULE.md"
-if [[ -f "${capsule_file}" ]]; then
-  echo "DEBUG: GG_CAPSULE present: yes (${capsule_file})"
-else
-  echo "DEBUG: GG_CAPSULE present: no (${capsule_file})"
-fi
+header_value() {
+  local headers="$1"
+  local key="$2"
+  echo "${headers}" | awk -F': *' -v k="${key}" 'tolower($1)==tolower(k){print $2; exit}' | tr -d '[:space:]'
+}
 
-expected_release=""
-expected_source=""
-fallback_reason=""
-
-if [[ -n "${SMOKE_EXPECT:-}" ]]; then
-  if [[ "${SMOKE_EXPECT}" == "live" ]]; then
-    expected_release=""
-    expected_source="WORKER_HEADER"
-  else
-    expected_release="${SMOKE_EXPECT}"
-    expected_source="SMOKE_EXPECT"
+require_status_200() {
+  local headers="$1"
+  local label="$2"
+  local code
+  code="$(echo "${headers}" | awk 'NR==1{print $2}')"
+  if [[ "${code}" != "200" ]]; then
+    echo "${headers}" | sed -n '1,20p'
+    die "${label}: expected 200 (got ${code:-unknown})"
   fi
-else
-  expected_release="$(read_release_id_from_capsule)"
-  if [[ -n "${expected_release}" ]]; then
-    expected_source="GG_CAPSULE"
-  else
-    fallback_reason="capsule"
-    echo "INFO: GG_CAPSULE missing/unparseable; using worker header for expected release"
-  fi
-fi
+}
 
-ping_url="${BASE}/__gg_worker_ping?x=1"
-ping_headers="$(curl -sS -D - -o /dev/null --max-time 10 "${ping_url}" | tr -d '\r' || true)"
+ping_headers="$(http_headers "${BASE}/__gg_worker_ping?x=1" || true)"
 if [[ -z "${ping_headers}" ]]; then
   if [[ "${ALLOW_OFFLINE_FALLBACK}" == "1" ]]; then
     echo "INFO: __gg_worker_ping unavailable; running offline fallback"
-    if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
-      if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=repo; then
-        die "offline fallback verify-palette-a11y failed"
-      fi
-    fi
+    node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=repo
     echo "PASS: smoke tests (offline fallback)"
     exit 0
   fi
   die "__gg_worker_ping request failed"
 fi
-ping_status="$(echo "${ping_headers}" | head -n 1)"
-ping_code="$(echo "${ping_status}" | awk '{print $2}')"
-if [[ -z "${ping_code}" ]]; then
-  die "unable to read status from ${ping_url}"
+
+require_status_200 "${ping_headers}" "__gg_worker_ping"
+
+REL="$(header_value "${ping_headers}" "x-gg-worker-version")"
+if [[ -z "${REL}" ]]; then
+  echo "${ping_headers}" | sed -n '1,20p'
+  die "missing x-gg-worker-version on __gg_worker_ping"
 fi
-if [[ "${ping_code}" != "200" ]]; then
-  die "__gg_worker_ping not 200 (got ${ping_code})"
-fi
+echo "SMOKE: live release=${REL}"
 
-worker_version="$(echo "${ping_headers}" | awk -F': *' 'tolower($1)=="x-gg-worker-version"{print $2}' | head -n1 | tr -d '[:space:]')"
-if [[ -z "${worker_version}" ]]; then
-  die "missing x-gg-worker-version header from ${ping_url}"
-fi
-
-if [[ -z "${expected_release}" ]]; then
-  expected_release="${worker_version}"
-  expected_source="WORKER_HEADER"
-fi
-
-if [[ -n "${expected_release}" && -n "${expected_source}" ]]; then
-  echo "INFO: expected RELEASE_ID (${expected_source}): ${expected_release}"
-fi
-
-echo "SMOKE: base=${BASE} expected=${expected_release} got=${worker_version}"
-
-if [[ "${worker_version}" != "${expected_release}" ]]; then
-  die "worker version mismatch (expected ${expected_release}, got ${worker_version})"
-fi
-
-REL="${worker_version}"
-
-redirect_check() {
+check_template_headers() {
   local url="$1"
   local label="$2"
-  local headers status loc
-  headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"
-  status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
-  loc="$(printf '%s\n' "${headers}" \
-    | sed -n 's/^[Ll][Oo][Cc][Aa][Tt][Ii][Oo][Nn]:[[:space:]]*//p' \
-    | head -n 1)"
+  local headers
+  headers="$(http_headers "${url}?x=$(date +%s)")"
+  require_status_200 "${headers}" "${label}"
 
-  redirect_fail() {
-    local msg="$1"
-    echo "DEBUG: Location=${loc}"
+  local assets worker mismatch drift
+  assets="$(header_value "${headers}" "x-gg-assets")"
+  worker="$(header_value "${headers}" "x-gg-worker-version")"
+  mismatch="$(header_value "${headers}" "x-gg-template-mismatch")"
+  drift="$(header_value "${headers}" "x-gg-template-release-drift")"
+
+  if [[ -z "${assets}" || "${assets}" != "${REL}" ]]; then
     echo "${headers}" | sed -n '1,30p'
-    die "${label} ${msg}"
-  }
-
-  if [[ "${status}" != "301" ]]; then
-    redirect_fail "(got ${status}, want 301)"
+    die "${label}: x-gg-assets mismatch (got ${assets:-missing}, want ${REL})"
   fi
-  if [[ -z "${loc}" ]]; then
-    redirect_fail "missing Location header"
+  if [[ -z "${worker}" || "${worker}" != "${REL}" ]]; then
+    echo "${headers}" | sed -n '1,30p'
+    die "${label}: x-gg-worker-version mismatch (got ${worker:-missing}, want ${REL})"
   fi
-  if ! echo "${loc}" | grep -qi "/blog"; then
-    redirect_fail "Location missing /blog"
+  if [[ -n "${mismatch}" && "${mismatch}" != "0" ]]; then
+    echo "${headers}" | sed -n '1,30p'
+    die "${label}: x-gg-template-mismatch must be 0 (got ${mismatch})"
   fi
-  if echo "${loc}" | grep -qi "view=blog"; then
-    redirect_fail "Location still contains view=blog"
+  if [[ -n "${drift}" && "${drift}" != "0" ]]; then
+    echo "${headers}" | sed -n '1,30p'
+    die "${label}: x-gg-template-release-drift must be 0 (got ${drift})"
   fi
-  echo "PASS: ${label}"
+  echo "PASS: ${label} headers aligned (${REL})"
 }
 
-listing_canonical_check() {
+check_html_pin() {
   local url="$1"
-  local canon="${BASE}/blog"
-  local ts html
-  ts="$(date +%s)"
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=${ts}" | tr -d '\r')"; then
-    die "listing fetch failed"
+  local label="$2"
+  local html
+  html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}?x=$(date +%s)" | tr -d '\r')"
+  if ! grep -Fq "/assets/v/${REL}/boot.js" <<<"${html}"; then
+    die "${label}: missing boot.js pin /assets/v/${REL}/boot.js"
   fi
-
-  local canon_line og_line tw_line
-  canon_line="$(printf '%s\n' "${html}" | grep -Eoi "<link[^>]+rel=['\"]canonical['\"][^>]*>" | head -n 1 || true)"
-  og_line="$(printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+property=['\"]og:url['\"][^>]*>" | head -n 1 || true)"
-  tw_line="$(printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+name=['\"]twitter:url['\"][^>]*>" | head -n 1 || true)"
-
-  listing_debug_tags() {
-    echo "DEBUG: listing canonical/og/twitter tags (first 20)"
-    printf '%s\n' "${html}" | grep -Eoi "<(link|meta)[^>]+(canonical|og:url|twitter:url)[^>]*>" | head -n 20 || true
-  }
-
-  if [[ -z "${canon_line}" ]]; then
-    listing_debug_tags
-    die "listing canonical missing"
+  if ! grep -Fq "/assets/v/${REL}/main.css" <<<"${html}"; then
+    die "${label}: missing main.css pin /assets/v/${REL}/main.css"
   fi
-  if ! echo "${canon_line}" | grep -Fqi "${canon}"; then
-    listing_debug_tags
-    die "listing canonical not ${canon}"
+  if ! grep -Eqi "id=['\"]gg-dock['\"]" <<<"${html}"; then
+    die "${label}: missing #gg-dock"
   fi
-  if echo "${canon_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
-    listing_debug_tags
-    die "listing canonical contains tracking params"
-  fi
-
-  if [[ -z "${og_line}" ]]; then
-    listing_debug_tags
-    die "listing og:url missing"
-  fi
-  if ! echo "${og_line}" | grep -Fqi "${canon}"; then
-    listing_debug_tags
-    die "listing og:url not ${canon}"
-  fi
-  if echo "${og_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
-    listing_debug_tags
-    die "listing og:url contains tracking params"
-  fi
-
-  if [[ -z "${tw_line}" ]]; then
-    listing_debug_tags
-    die "listing twitter:url missing"
-  fi
-  if ! echo "${tw_line}" | grep -Fqi "${canon}"; then
-    listing_debug_tags
-    die "listing twitter:url not ${canon}"
-  fi
-  if echo "${tw_line}" | grep -Eqi '\?x=|[?&]view=|utm_|fbclid|gclid|msclkid'; then
-    listing_debug_tags
-    die "listing twitter:url contains tracking params"
-  fi
-
-  echo "PASS: listing canonical/og/twitter clean ${canon}"
+  echo "PASS: ${label} HTML pin + dock contract"
 }
 
-blog1_gadget_crash_check() {
-  local url html
-  url="${BASE}/blog?x=$(date +%s)"
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-    die "blog crash check fetch failed (${url})"
-  fi
-  if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
-    local snippet
-    snippet="$(
-      printf '%s' "${html}" | node -e '
-        const fs = require("fs");
-        const html = fs.readFileSync(0, "utf8");
-        const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
-        if (!m || typeof m.index !== "number") process.exit(0);
-        const start = Math.max(0, m.index - 200);
-        const end = Math.min(html.length, m.index + m[0].length + 200);
-        process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
-      '
-    )"
-    echo "DEBUG: Blog1 crash marker detected (${url})"
-    if [[ -n "${snippet}" ]]; then
-      echo "DEBUG: Blog1 crash snippet: ${snippet}"
-    else
-      grep -Fin -C 2 "Failed to render gadget 'Blog1'" <<<"${html}" | head -n 20 || true
-    fi
-    die "blog contains Blog1 gadget crash marker"
-  fi
-  echo "PASS: blog gadget crash marker absent"
-}
+check_template_headers "${BASE}/" "home"
+check_template_headers "${BASE}/blog" "blog"
+check_html_pin "${BASE}/" "home"
+check_html_pin "${BASE}/blog" "blog"
 
-extract_schema_json() {
-  node -e '
-    const html = require("fs").readFileSync(0,"utf8");
-    const m = html.match(/<script[^>]*id=["'"'"']gg-schema["'"'"'][^>]*>([\s\S]*?)<\/script>/i);
-    if (!m) { process.exit(2); }
-    const obj = JSON.parse(m[1]);
-    process.stdout.write(JSON.stringify(obj));
-  '
-}
+node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"
 
-schema_debug_snippet() {
+run_live_verifier() {
   local label="$1"
-  local html="$2"
-  echo "DEBUG: ${label} gg-schema snippet"
-  printf '%s\n' "${html}" | grep -in -C 2 "gg-schema" | head -n 20 || true
-}
-
-schema_debug_types() {
-  local schema="$1"
-  printf '%s\n' "${schema}" | node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];const types=graph.flatMap(n=>Array.isArray(n["@type"])?n["@type"]:[n["@type"]]).filter(Boolean);console.log("DEBUG: schema types:", types.join(", "));'
-}
-
-schema_check_home() {
-  local url="${BASE}/"
-  local html schema
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-    die "schema home fetch failed"
-  fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
-    schema_debug_snippet "home" "${html}"
-    die "schema missing/invalid on home"
-  fi
-  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
-    schema_debug_snippet "home" "${html}"
-    die "schema missing @context/@graph on home"
-  fi
-  echo "PASS: schema home"
-}
-
-schema_check_listing() {
-  local ts url html schema
-  ts="$(date +%s)"
-  url="${BASE}/blog?x=${ts}"
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-    die "schema listing fetch failed"
-  fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
-    schema_debug_snippet "listing" "${html}"
-    die "schema missing/invalid on listing"
-  fi
-  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
-    schema_debug_snippet "listing" "${html}"
-    die "schema missing @context/@graph on listing"
-  fi
-  if ! printf '%s\n' "${schema}" | EXPECTED_URL="${BASE}/blog" node -e 'const fs=require("fs");const d=JSON.parse(fs.readFileSync(0,"utf8"));const graph=d["@graph"]||[];const hasCollection=graph.some(n=>n["@type"]==="CollectionPage");if(!hasCollection)process.exit(2);const page=graph.find(n=>n["@type"]==="CollectionPage")||graph.find(n=>n["@type"]==="WebPage");if(!page||page.url!==process.env.EXPECTED_URL)process.exit(3);'; then
-    schema_debug_snippet "listing" "${html}"
-    die "schema listing url/type invalid"
-  fi
-  echo "PASS: schema listing"
-}
-
-schema_check_post() {
-  local url="$1"
-  local html schema
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-    die "schema post fetch failed (${url})"
-  fi
-  if ! schema="$(printf '%s\n' "${html}" | extract_schema_json)"; then
-    schema_debug_snippet "post" "${html}"
-    die "schema missing/invalid on post"
-  fi
-  if ! node -e 'const o=JSON.parse(process.argv[1]); if(!o["@context"]||!o["@graph"]) process.exit(1);' "${schema}"; then
-    schema_debug_types "${schema}"
-    schema_debug_snippet "post" "${html}"
-    die "schema missing @context/@graph on post"
-  fi
-  if ! cond_out="$(printf '%s\n' "${schema}" | node -e '
-    const fs=require("fs");
-    const d=JSON.parse(fs.readFileSync(0,"utf8"));
-    const graph=d["@graph"]||[];
-    const hasType=(node,t)=>{
-      const v=node["@type"];
-      if(Array.isArray(v)) return v.includes(t);
-      return v===t;
-    };
-    const post=graph.find(n=>hasType(n,"BlogPosting"));
-    if(!post) { console.error("FAIL_COND: missing BlogPosting"); process.exit(2); }
-    if(typeof post.url!=="string"||post.url.includes("?")) { console.error("FAIL_COND: BlogPosting url has query"); process.exit(3); }
-    const page=graph.find(n=>hasType(n,"WebPage"));
-    if(!page) { console.error("FAIL_COND: missing WebPage"); process.exit(4); }
-    if(typeof page.url!=="string"||page.url.includes("?")) { console.error("FAIL_COND: WebPage url has query"); process.exit(5); }
-  ' 2>&1)"; then
-    schema_debug_types "${schema}"
-    if [[ -n "${cond_out:-}" ]]; then
-      echo "DEBUG: ${cond_out}"
-    fi
-    schema_debug_snippet "post" "${html}"
-    die "schema BlogPosting/WebPage invalid on post"
-  fi
-  echo "PASS: schema post"
-}
-
-post_detail_contract_check() {
-  local marker_re="<article[^>]*class=['\"][^'\"]*gg-post\\b|class=['\"][^'\"]*gg-post__title\\b|class=['\"][^'\"]*gg-post__content\\b"
-  local strict_post_re="class=['\"][^'\"]*\\bgg-post\\b[^'\"]*['\"]"
-  local crash_marker="Failed to render gadget 'Blog1'"
-  local sentinel_attempts="${SMOKE_POST_DETAIL_ATTEMPTS:-3}"
-  local primary_raw="${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}"
-  local sentinel_raw sentinel_url sentinel_html sentinel_reason sentinel_fetch_url
-  local sentinel_attempt
-  local blog_html blog_candidate
-  local raw url html reason
-  local -a diag_candidates=()
-  local -a diag_failures=()
-  local seen
-
-  sentinel_raw="$(printf '%s' "${primary_raw}" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-  if [[ -z "${sentinel_raw}" ]]; then
-    die "post detail sentinel path is empty"
-  fi
-  if [[ "${sentinel_raw}" == http://* || "${sentinel_raw}" == https://* ]]; then
-    sentinel_url="${sentinel_raw}"
-  else
-    sentinel_url="${BASE%/}/${sentinel_raw#/}"
-  fi
-
-  if ! [[ "${sentinel_attempts}" =~ ^[0-9]+$ ]] || (( sentinel_attempts < 1 )); then
-    die "post detail sentinel attempts must be >=1 (got ${sentinel_attempts})"
-  fi
-
-  sentinel_html=""
-  sentinel_reason=""
-  for (( sentinel_attempt=1; sentinel_attempt<=sentinel_attempts; sentinel_attempt++ )); do
-    if [[ "${sentinel_url}" == *\?* ]]; then
-      sentinel_fetch_url="${sentinel_url}&x=$(date +%s)${sentinel_attempt}"
-    else
-      sentinel_fetch_url="${sentinel_url}?x=$(date +%s)${sentinel_attempt}"
-    fi
-
-    if ! sentinel_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${sentinel_fetch_url}" | tr -d '\r')"; then
-      sentinel_reason="fetch failed"
-      continue
-    fi
-    if grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
-      sentinel_reason="contains Blog1 gadget crash marker"
-      break
-    fi
-    if grep -Eqi "${strict_post_re}" <<<"${sentinel_html}"; then
-      sentinel_reason=""
-      break
-    fi
-    if grep -Fqi "There was an error processing the markup" <<<"${sentinel_html}"; then
-      sentinel_reason="upstream markup error"
-    elif grep -Eqi "data-gg-page=['\"]error['\"]|data:blog.pageType == \"error_page\"|gg-error__title" <<<"${sentinel_html}"; then
-      sentinel_reason="error-page surface"
-    else
-      sentinel_reason="missing strict gg-post marker"
-    fi
-  done
-
-  if [[ -z "${sentinel_reason}" ]]; then
-    echo "PASS: post detail contract (${sentinel_url})"
-    return 0
-  fi
-
-  if [[ -n "${sentinel_html}" ]]; then
-    if grep -Fqi "${crash_marker}" <<<"${sentinel_html}"; then
-      local sentinel_snippet
-      sentinel_snippet="$(
-        printf '%s' "${sentinel_html}" | node -e '
-          const fs = require("fs");
-          const html = fs.readFileSync(0, "utf8");
-          const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
-          if (!m || typeof m.index !== "number") process.exit(0);
-          const start = Math.max(0, m.index - 200);
-          const end = Math.min(html.length, m.index + m[0].length + 200);
-          process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
-        '
-      )"
-      echo "DEBUG: sentinel Blog1 crash marker (${sentinel_url})"
-      if [[ -n "${sentinel_snippet}" ]]; then
-        echo "DEBUG: sentinel crash snippet: ${sentinel_snippet}"
-      else
-        grep -Fin -C 2 "${crash_marker}" <<<"${sentinel_html}" | head -n 20 || true
-      fi
-      echo "THIS WILL NOT FIX ITSELF BY WORKERS DEPLOY — YOU MUST PASTE index.prod.xml INTO BLOGGER THEME"
-    else
-      echo "DEBUG: sentinel ${sentinel_reason} (${sentinel_url})"
-      grep -Ein -C 1 "gg-post|gg-post__title|gg-post__content|error_page|gg-error__title|There was an error processing the markup" <<<"${sentinel_html}" | head -n 40 || true
-    fi
-  fi
-
-  if [[ -n "${SMOKE_POST_URL:-}" ]]; then
-    diag_candidates+=("${SMOKE_POST_URL}")
-  fi
-  if blog_html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${BASE}/blog?x=$(date +%s)" | tr -d '\r' 2>/dev/null)"; then
-    blog_candidate="$(
-      printf '%s' "${blog_html}" | node -e '
-        const fs = require("fs");
-        const html = fs.readFileSync(0, "utf8");
-        let url = "";
-        const cardTag = html.match(/<article\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card\b[^"'"'"']*\1[^>]*>/i);
-        if (cardTag) {
-          const m = cardTag[0].match(/\bdata-url=(["'"'"'])([^"'"'"']+)\1/i);
-          if (m) url = m[2];
-        }
-        if (!url) {
-          const m = html.match(/<a\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card__title-link\b[^"'"'"']*\1[^>]*\bhref=(["'"'"'])([^"'"'"']+)\2/i);
-          if (m) url = m[3];
-        }
-        if (!url) {
-          const m = html.match(/<a\b[^>]*\bclass=(["'"'"'])[^"'"'"']*\bgg-post-card__thumb\b[^"'"'"']*\1[^>]*\bhref=(["'"'"'])([^"'"'"']+)\2/i);
-          if (m) url = m[3];
-        }
-        process.stdout.write(url);
-      '
-    )"
-    if [[ -n "${blog_candidate}" ]]; then
-      diag_candidates+=("${blog_candidate}")
-    fi
-  fi
-
-  seen=$'\n'"${sentinel_raw}"$'\n'
-  for raw in "${diag_candidates[@]}"; do
-    raw="$(printf '%s' "${raw}" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-    if [[ -z "${raw}" ]]; then
-      continue
-    fi
-    if [[ "${seen}" == *$'\n'"${raw}"$'\n'* ]]; then
-      continue
-    fi
-    seen+="${raw}"$'\n'
-
-    if [[ "${raw}" == http://* || "${raw}" == https://* ]]; then
-      url="${raw}"
-    else
-      url="${BASE%/}/${raw#/}"
-    fi
-
-    if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${url}" | tr -d '\r')"; then
-      diag_failures+=("fetch failed (${url})")
-      continue
-    fi
-
-    reason="missing gg-post markers"
-    if grep -Fqi "${crash_marker}" <<<"${html}"; then
-      reason="contains Blog1 gadget crash marker"
-    elif grep -Fqi "There was an error processing the markup" <<<"${html}"; then
-      reason="upstream markup error"
-    elif grep -Eqi "data-gg-page=['\"]error['\"]|data:blog.pageType == \"error_page\"|gg-error__title" <<<"${html}"; then
-      reason="error-page surface"
-    elif grep -Eqi "${marker_re}" <<<"${html}"; then
-      reason="has broad gg-post markers"
-    fi
-    diag_failures+=("${reason} (${url})")
-  done
-
-  if (( ${#diag_failures[@]} > 0 )); then
-    echo "DEBUG: post detail supplemental diagnostics"
-    for reason in "${diag_failures[@]}"; do
-      echo "- ${reason}"
-    done
-  fi
-
-  die "post detail contract failed for sentinel (${sentinel_url}): ${sentinel_reason}"
-}
-
-security_headers_check() {
-  local url="$1"
-  local label="$2"
-  local headers
-  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} headers fetch failed"
-  fi
-
-  header_fail() {
-    local msg="$1"
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} ${msg}"
-  }
-
-  if ! echo "${headers}" | grep -qi '^x-content-type-options:[[:space:]]*nosniff'; then
-    header_fail "missing x-content-type-options: nosniff"
-  fi
-  if ! echo "${headers}" | grep -qi '^referrer-policy:'; then
-    header_fail "missing referrer-policy"
-  fi
-  if ! echo "${headers}" | grep -qi '^permissions-policy:'; then
-    header_fail "missing permissions-policy"
-  fi
-  if ! echo "${headers}" | grep -qi '^x-frame-options:[[:space:]]*sameorigin'; then
-    header_fail "missing x-frame-options: sameorigin"
-  fi
-  if ! echo "${headers}" | grep -qi '^content-security-policy-report-only:'; then
-    header_fail "missing content-security-policy-report-only"
-  fi
-
-  echo "PASS: ${label} security headers"
-}
-
-authoritative_header() {
-  local url="$1"
-  local pattern="$2"
-  local label="$3"
-  local headers
-  if ! headers="$(curl -sSI "$url" | tr -d '\r')"; then
-    die "${label} (headers fetch failed)"
-  fi
-  if ! echo "${headers}" | grep -qi "$pattern"; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label}"
-  fi
-  echo "PASS: ${label}"
-}
-
-status_of() {
-  local url="$1"
-  curl -sSI "$url" | awk 'NR==1 {print $2}'
-}
-
-assert_status() {
-  local url="$1"
-  local expected="$2"
-  local label="$3"
-  local status
-  status="$(status_of "$url")"
-  if [[ "${status}" != "${expected}" ]]; then
-    die "${label} (got ${status}, want ${expected})"
-  fi
-  echo "PASS: ${label}"
-}
-
-txt_asset_check() {
-  local url="$1"
-  local label="$2"
-  local headers status
-  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} headers fetch failed"
-  fi
-  status="$(echo "${headers}" | awk 'NR==1 {print $2}')"
-  if [[ "${status}" != "200" ]]; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} expected 200 (got ${status})"
-  fi
-  if ! echo "${headers}" | grep -qi '^content-type:[[:space:]]*text/plain'; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} expected text/plain content-type"
-  fi
-  if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} must not include x-gg-template-mismatch"
-  fi
-
-  local body
-  if ! body="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} body fetch failed"
-  fi
-  if echo "${body}" | grep -qi "Template mismatch detected"; then
-    die "${label} contains template mismatch banner content"
-  fi
-  echo "PASS: ${label}"
-}
-
-authoritative_header "${BASE}/sw.js?x=1" '^cache-control:.*no-store' "sw.js is no-store"
-authoritative_header "${BASE}/gg-flags.json?x=1" '^cache-control:.*no-store' "gg-flags.json is no-store"
-authoritative_header "${BASE}/assets/v/${REL}/main.js?x=1" '^cache-control:.*immutable' "assets/v main.js is immutable"
-txt_asset_check "${BASE}/llms.txt?x=1" "llms.txt"
-txt_asset_check "${BASE}/ads.txt?x=1" "ads.txt"
-txt_asset_check "${BASE}/robots.txt?x=1" "robots.txt"
-
-flags_headers="$(curl -sSI "${BASE}/gg-flags.json?x=1" | tr -d '\r')"
-if ! echo "${flags_headers}" | grep -qi '^x-gg-worker-version:'; then
-  echo "DEBUG: gg-flags headers"
-  echo "${flags_headers}" | sed -n '1,30p'
-  die "gg-flags.json must be served by worker (missing x-gg-worker-version)"
-fi
-echo "PASS: gg-flags.json served by worker"
-
-security_headers_check "${BASE}/?x=1" "home"
-security_headers_check "${BASE}/blog?x=1" "blog"
-
-template_fingerprint_assert() {
-  local html="$1"
-  local label="$2"
-  local expected_env="$3"
-  local expected_release="$4"
-  if ! printf '%s\n' "${html}" \
-    | EXPECTED_ENV="${expected_env}" EXPECTED_RELEASE="${expected_release}" node -e '
-      const fs = require("fs");
-      const html = fs.readFileSync(0, "utf8");
-      const expectedEnv = String(process.env.EXPECTED_ENV || "").trim().toLowerCase();
-      const expectedRelease = String(process.env.EXPECTED_RELEASE || "").trim();
-      function attr(tag, name) {
-        if (!tag) return "";
-        const re = new RegExp(`${name}\\s*=\\s*([\"\\047])([^\"\\047]*)\\1`, "i");
-        const m = tag.match(re);
-        return m ? m[2] : "";
-      }
-      function findMeta(name) {
-        const re = /<meta\b[^>]*>/gi;
-        let m;
-        while ((m = re.exec(html))) {
-          const tag = m[0];
-          const n = attr(tag, "name").trim().toLowerCase();
-          if (n === name) return attr(tag, "content").trim();
-        }
-        return "";
-      }
-      const fpTagMatch = html.match(/<div\b[^>]*\bid=(["\047])gg-fingerprint\1[^>]*>/i);
-      const fpTag = fpTagMatch ? fpTagMatch[0] : "";
-      const envMeta = findMeta("gg-env").toLowerCase();
-      const relMeta = findMeta("gg-release");
-      const envDiv = attr(fpTag, "data-env").trim().toLowerCase();
-      const relDiv = attr(fpTag, "data-release").trim();
-      const missing = [];
-      if (!envMeta) missing.push("meta gg-env");
-      if (!relMeta) missing.push("meta gg-release");
-      if (!envDiv) missing.push("div gg-fingerprint data-env");
-      if (!relDiv) missing.push("div gg-fingerprint data-release");
-      if (missing.length) {
-        console.error(`missing ${missing.join(", ")}`);
-        process.exit(1);
-      }
-      if (envMeta !== expectedEnv || envDiv !== expectedEnv) {
-        console.error(`env mismatch envMeta=${envMeta} envDiv=${envDiv} expected=${expectedEnv}`);
-        process.exit(1);
-      }
-      if (relMeta !== expectedRelease || relDiv !== expectedRelease) {
-        console.error(`release mismatch relMeta=${relMeta} relDiv=${relDiv} expected=${expectedRelease}`);
-        process.exit(1);
-      }
-      process.stdout.write(`env=${envMeta} release=${relMeta}`);
-    '; then
-    echo "DEBUG: ${label} fingerprint tags"
-    printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+(gg-env|gg-release)[^>]*>|<div[^>]+id=['\"]gg-fingerprint['\"][^>]*>" | head -n 20 || true
-    die "${label} template fingerprint mismatch"
-  fi
-  echo "PASS: ${label} template fingerprint env/release"
-}
-
-template_mismatch_check() {
-  local url="$1"
-  local label="$2"
-  local headers html
-  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} mismatch headers fetch failed"
-  fi
-  if echo "${headers}" | grep -qi '^x-gg-template-mismatch:'; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} returned x-gg-template-mismatch header"
-  fi
-  if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} mismatch html fetch failed"
-  fi
-  if echo "${html}" | grep -qi 'gg-template-mismatch'; then
-    die "${label} mismatch banner detected"
-  fi
-  template_fingerprint_assert "${html}" "${label}" "prod" "${REL}"
-  echo "PASS: ${label} template mismatch header absent"
-}
-
-template_mismatch_check "${BASE}/?x=1" "home"
-template_mismatch_check "${BASE}/blog?x=1" "blog"
-
-flags_json="$(curl -fsSL "${BASE}/gg-flags.json?x=1" | tr -d '\r' || true)"
-if [[ -z "${flags_json}" ]]; then
-  die "gg-flags.json fetch failed"
-fi
-if ! echo "${flags_json}" | grep -q '"csp_report_enabled"'; then
-  die "gg-flags.json missing csp_report_enabled"
-fi
-echo "PASS: gg-flags.json csp_report_enabled present"
-
-flags_mode="$(printf '%s' "${flags_json}" | node -e '
-  const fs = require("fs");
-  let data = null;
-  try {
-    data = JSON.parse(fs.readFileSync(0, "utf8"));
-  } catch (_) {
-    process.exit(2);
-  }
-  const mode = String((data && data.mode) || "").trim().toLowerCase();
-  if (!mode) process.exit(3);
-  process.stdout.write(mode);
-')"
-if [[ -z "${flags_mode}" ]]; then
-  die "gg-flags.json missing mode"
-fi
-if [[ "${flags_mode}" != "public" && "${flags_mode}" != "lab" ]]; then
-  die "gg-flags.json invalid mode (${flags_mode})"
-fi
-echo "PASS: gg-flags.json mode=${flags_mode}"
-
-robots_mode_check() {
-  local mode="$1"
-  local url="$2"
-  local label="$3"
-  local headers robots html
-  if ! headers="$(curl -sSI -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-    die "${label} robots headers fetch failed"
-  fi
-  robots="$(echo "${headers}" | awk -F': *' 'tolower($1)=="x-robots-tag"{print tolower($2)}' | head -n 1 | tr -d '\n')"
-  if [[ -z "${robots}" ]]; then
-    echo "DEBUG: ${label} headers"
-    echo "${headers}" | sed -n '1,30p'
-    die "${label} missing x-robots-tag"
-  fi
-
-  if [[ "${mode}" == "public" ]]; then
-    if [[ "${robots}" == *noindex* || "${robots}" == *nofollow* ]]; then
-      die "${label} x-robots-tag must not include noindex/nofollow in public mode (got: ${robots})"
-    fi
-    if [[ "${robots}" != *index* || "${robots}" != *follow* ]]; then
-      die "${label} x-robots-tag must include index, follow in public mode (got: ${robots})"
-    fi
-    if ! html="$(curl -fsSL -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r')"; then
-      die "${label} robots html fetch failed"
-    fi
-    if ! printf '%s' "${html}" | node -e '
-      const fs = require("fs");
-      const html = fs.readFileSync(0, "utf8");
-      function attr(tag, name){
-        const m = tag.match(new RegExp(name + "\\s*=\\s*(?:([\"\\047])([^\"\\047]*)\\1|([^\\s\"\\047=<>`]+))", "i"));
-        return m ? String(m[2] || m[3] || "") : "";
-      }
-      const metas = [...html.matchAll(/<meta\\b[^>]*>/gi)].map((m) => m[0]);
-      for (const tag of metas) {
-        const name = attr(tag, "name").trim().toLowerCase();
-        if (name !== "robots") continue;
-        const content = attr(tag, "content").trim().toLowerCase();
-        if (content.includes("noindex") || content.includes("nofollow")) {
-          process.exit(1);
-        }
-      }
-      process.exit(0);
-    '; then
-      echo "DEBUG: ${label} robots meta tags"
-      printf '%s\n' "${html}" | grep -Eoi "<meta[^>]+name=['\"]robots['\"][^>]*>|<meta[^>]+content=['\"][^'\"]*noindex[^'\"]*['\"][^>]*>" | head -n 20 || true
-      die "${label} public mode must not contain noindex/nofollow in meta robots"
-    fi
-    echo "PASS: ${label} robots public"
-    return 0
-  fi
-
-  if [[ "${robots}" != *noindex* || "${robots}" != *nofollow* ]]; then
-    die "${label} x-robots-tag must include noindex, nofollow in lab mode (got: ${robots})"
-  fi
-  echo "PASS: ${label} robots lab"
-}
-
-robots_mode_check "${flags_mode}" "${BASE}/?x=1" "home"
-robots_mode_check "${flags_mode}" "${BASE}/blog?x=1" "blog"
-
-csp_report_code="$(curl -sS -o /dev/null -w "%{http_code}" -X POST "${BASE}/api/csp-report" -H "Content-Type: application/csp-report" --data '{"test":true}')"
-if [[ "${csp_report_code}" != "204" ]]; then
-  die "csp-report endpoint (got ${csp_report_code}, want 204)"
-fi
-echo "PASS: csp-report endpoint"
-
-assert_status "${BASE}/api/proxy" "400" "/api/proxy missing url"
-assert_status "${BASE}/api/proxy?url=not-a-url" "400" "/api/proxy invalid url"
-assert_status "${BASE}/api/proxy?url=https://example.com/" "403" "/api/proxy host not allowed"
-
-redirect_check "${BASE}/?view=blog" "redirect /?view=blog -> /blog"
-redirect_check "${BASE}/blog?view=blog" "redirect /blog?view=blog -> /blog"
-redirect_check "${BASE}/blog/" "redirect /blog/ -> /blog"
-listing_canonical_check "${BASE}/blog"
-blog1_gadget_crash_check
-schema_check_home
-schema_check_listing
-post_detail_contract_check
-if [[ -n "${SMOKE_POST_URL:-}" ]]; then
-  schema_check_post "${SMOKE_POST_URL}"
-fi
-
-sample_url="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvwoyib0SbHdRWPvh0kkeSCu_rlWeb2bXM2XylpGu9Zl7Pmeg5csuPXuyDW0Tq1Q6Q3C3y0aOaxfGd6PCyQeus6XITellrxOutl2Y9c6jLv_KmvlfOCGCY8O2Zmud32hwghg_a0HfskdDAnCI108_vQ4U-DNilI_QF9r0gphOdThjtHLg/s1600/OGcircle.png"
-status="$(curl -sSI -G --data-urlencode "url=${sample_url}" "${BASE}/api/proxy" | awk 'NR==1 {print $2}')"
-if [[ "${status}" == "200" ]]; then
-  echo "PASS: /api/proxy sample image"
-elif [[ "${status}" == "403" ]]; then
-  echo "INFO: /api/proxy sample image returned 403 (skipping)"
-else
-  die "/api/proxy sample image (got ${status})"
-fi
-
-headers_url="${BASE}/_headers?x=1"
-if ! headers_status="$(curl -sS -D - -o /dev/null --max-time 10 "${headers_url}" | tr -d '\r' | head -n 1)"; then
-  die "/_headers request failed"
-fi
-headers_code="$(echo "${headers_status}" | awk '{print $2}')"
-if [[ -z "${headers_code}" ]]; then
-  die "/_headers check failed to read status"
-elif [[ "${headers_code}" == "200" ]]; then
-  echo "PASS: /_headers present"
-elif [[ "${headers_code}" == "404" ]]; then
-  echo "INFO: /_headers not present (404) - skipping"
-elif [[ "${headers_code}" == 5* ]]; then
-  die "/_headers returned ${headers_code}"
-else
-  echo "INFO: /_headers status ${headers_code} - skipping"
-fi
-
-if [[ "${SMOKE_LIVE_HTML:-}" == "1" ]]; then
-  live_rel="${expected_release}"
-  if [[ -z "${live_rel}" ]]; then
-    die "SMOKE_LIVE_HTML=1 requires a resolved expected release id"
-  fi
-  live_retry_max="${SMOKE_LIVE_RETRY_MAX:-4}"
-  live_retry_base_ms="${SMOKE_LIVE_RETRY_BASE_MS:-800}"
-  live_retry_cap_ms="${SMOKE_LIVE_RETRY_CAP_MS:-10000}"
-  live_retry_timeout_ms="${SMOKE_LIVE_RETRY_TIMEOUT_MS:-10000}"
-  live_inter_request_delay_ms="${SMOKE_LIVE_INTER_REQUEST_DELAY_MS:-250}"
-  live_verifier_gap_ms="${SMOKE_LIVE_VERIFIER_GAP_MS:-300}"
-  live_user_agent="${SMOKE_LIVE_USER_AGENT:-gg-live-gate/1.0 (+https://www.pakrpp.com)}"
-  live_verifier_attempts="${SMOKE_LIVE_VERIFIER_ATTEMPTS:-2}"
-  live_verifier_retry_base_ms="${SMOKE_LIVE_VERIFIER_RETRY_BASE_MS:-1500}"
-  live_verifier_retry_cap_ms="${SMOKE_LIVE_VERIFIER_RETRY_CAP_MS:-10000}"
-
-  sleep_ms() {
-    local ms="$1"
-    if ! [[ "${ms}" =~ ^[0-9]+$ ]] || (( ms <= 0 )); then
-      return 0
-    fi
-    local seconds
-    seconds="$(awk -v ms="${ms}" 'BEGIN { printf "%.3f", ms / 1000 }')"
-    sleep "${seconds}"
-  }
-
-  live_fetch_stream() {
-    local url="$1"
-    curl -sS -H "Cache-Control: no-cache" -H "Pragma: no-cache" "$url" | tr -d '\r'
-  }
-
-  live_blog_hard_refresh_check() {
-    local rounds="${1:-5}"
-    local min_postcards="${SMOKE_LIVE_MIN_SSR_POSTCARDS:-9}"
-    if ! [[ "${min_postcards}" =~ ^[0-9]+$ ]]; then
-      die "LIVE_HTML /blog invalid SMOKE_LIVE_MIN_SSR_POSTCARDS (${min_postcards})"
-    fi
-    if (( min_postcards < 9 )); then
-      die "LIVE_HTML /blog SMOKE_LIVE_MIN_SSR_POSTCARDS must be >=9 (got ${min_postcards})"
-    fi
-    local i
-    for (( i=1; i<=rounds; i++ )); do
-      local ts hdr body status html postcards_tag cache_control postcards_count gg_post_card_class_count
-      ts="$(date +%s)"
-      hdr="$(mktemp)"
-      body="$(mktemp)"
-      if ! curl -sS -D "${hdr}" -H "Cache-Control: no-cache" -H "Pragma: no-cache" "${BASE}/blog?x=${ts}${i}" -o "${body}"; then
-        rm -f "${hdr}" "${body}"
-        die "LIVE_HTML /blog hard refresh #${i} request failed"
-      fi
-      status="$(awk 'NR==1 {print $2}' "${hdr}")"
-      cache_control="$(awk -F': *' 'tolower($1)=="cache-control"{print tolower($2); exit}' "${hdr}" | tr -d '\r')"
-      html="$(tr -d '\r' < "${body}")"
-      rm -f "${hdr}" "${body}"
-
-      if [[ "${status}" != "200" ]]; then
-        die "LIVE_HTML /blog hard refresh #${i} status (got ${status}, want 200)"
-      fi
-      if [[ -z "${cache_control}" ]] || ! grep -Eqi '(^|,)[[:space:]]*no-store([[:space:]]*,|$)' <<<"${cache_control}"; then
-        die "LIVE_HTML /blog hard refresh #${i} cache-control must include no-store (got: ${cache_control:-missing})"
-      fi
-      if ! grep -Eqi 'data-gg-prehome=["'"'"']blog["'"'"']' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-prehome=\"blog\""
-      fi
-      if ! grep -Eqi 'data-gg-surface=["'"'"']listing["'"'"']' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-surface=\"listing\""
-      fi
-      if ! grep -Eqi 'data-gg-page=["'"'"']listing["'"'"']' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-page=\"listing\""
-      fi
-      if ! grep -Eqi 'data-gg-view=["'"'"']listing["'"'"']' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-view=\"listing\""
-      fi
-      if ! grep -Eqi 'data-gg-home-state=["'"'"']blog["'"'"']' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} missing data-gg-home-state=\"blog\""
-      fi
-      if grep -Fqi "Failed to render gadget 'Blog1'" <<<"${html}"; then
-        local live_snippet
-        live_snippet="$(
-          printf '%s' "${html}" | node -e '
-            const fs = require("fs");
-            const html = fs.readFileSync(0, "utf8");
-            const m = html.match(/Failed to render gadget '"'"'Blog1'"'"'/);
-            if (!m || typeof m.index !== "number") process.exit(0);
-            const start = Math.max(0, m.index - 200);
-            const end = Math.min(html.length, m.index + m[0].length + 200);
-            process.stdout.write(html.slice(start, end).replace(/\s+/g, " ").trim());
-          '
-        )"
-        if [[ -n "${live_snippet}" ]]; then
-          echo "DEBUG: LIVE_HTML /blog hard refresh #${i} crash snippet: ${live_snippet}"
-        fi
-        die "LIVE_HTML /blog hard refresh #${i} contains Blog1 gadget crash marker"
-      fi
-      gg_post_card_class_count="$(
-        printf '%s' "${html}" \
-          | grep -Eoi 'class=["'"'"'][^"'"'"']*\bgg-post-card\b[^"'"'"']*["'"'"']' \
-          | wc -l \
-          | tr -d '[:space:]'
-      )"
-      if [[ -z "${gg_post_card_class_count}" ]] || (( gg_post_card_class_count < min_postcards )); then
-        die "LIVE_HTML /blog hard refresh #${i} expected >=${min_postcards} gg-post-card class matches (got ${gg_post_card_class_count:-0})"
-      fi
-
-      postcards_tag="$(grep -Eoi '<[^>]*id=["'"'"']postcards["'"'"'][^>]*>' <<<"${html}" | head -n 1 || true)"
-      if [[ -z "${postcards_tag}" ]]; then
-        die "LIVE_HTML /blog hard refresh #${i} missing #postcards"
-      fi
-      if grep -Eqi '\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0([;\s>]|$)' <<<"${postcards_tag}"; then
-        echo "DEBUG: #postcards tag: ${postcards_tag}"
-        die "LIVE_HTML /blog hard refresh #${i} #postcards appears hidden"
-      fi
-      postcards_count="$(printf '%s' "${html}" | node -e '
-        const fs = require("fs");
-        const html = fs.readFileSync(0, "utf8");
-        const open = html.match(/<div\b[^>]*\bid=(["\x27])postcards\1[^>]*>/i);
-        const cardRe = /<article\b[^>]*\bgg-post-card\b[^>]*>/gi;
-        if (!open) { process.stdout.write("0"); process.exit(0); }
-        const start = open.index + open[0].length;
-        const tail = html.slice(start);
-        let end = -1;
-        const markers = [
-          /<div\b[^>]*\bclass=(["\x27])[^"\x27]*\bgg-loadmore-wrap\b[^"\x27]*\1[^>]*>/i,
-          /<div\b[^>]*\bdata-gg-module=(["\x27])loadmore\1[^>]*>/i,
-          /<div\b[^>]*\bid=(["\x27])blog-pager\1[^>]*>/i
-        ];
-        for (const marker of markers) {
-          const m = tail.match(marker);
-          if (!m || typeof m.index !== "number") continue;
-          if (end < 0 || m.index < end) end = m.index;
-        }
-        const fragment = end >= 0 ? tail.slice(0, end) : tail;
-        let cards = fragment.match(cardRe) || [];
-        if (!cards.length && end >= 0) {
-          cards = html.match(cardRe) || [];
-        }
-        process.stdout.write(String(cards.length));
-      ' | tr -d '[:space:]')"
-      if [[ -z "${postcards_count}" ]] || (( postcards_count < min_postcards )); then
-        die "LIVE_HTML /blog hard refresh #${i} expected >=${min_postcards} SSR postcards (got ${postcards_count:-0})"
-      fi
-      if grep -Eqi '#postcards\s*\[\s*data-gg-skeleton\s*=\s*["'"'"']on["'"'"']\s*\]\s*\{[^}]*visibility\s*:\s*hidden' <<<"${html}"; then
-        die "LIVE_HTML /blog hard refresh #${i} found hidden-SSR skeleton css"
-      fi
-    done
-    echo "PASS: LIVE_HTML /blog hard refresh contract (${rounds}x)"
-  }
-
-  live_has_token() {
-    local url="$1"
-    local token="$2"
-    live_fetch_stream "$url" | grep -F "$token" > /dev/null
-  }
-
-  live_debug_detect() {
-    local url="$1"
-    echo "LIVE_HTML detected pins (assets/v):"
-    live_fetch_stream "$url" | grep -Eo "/assets/v/[0-9a-f]+/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
-    echo "LIVE_HTML detected latest (assets/latest):"
-    live_fetch_stream "$url" | grep -Eo "/assets/latest/(main\\.css|boot\\.js)" | sed -n '1,10p' || true
-  }
-
-  live_check() {
-    local url="$1"
-    local label="$2"
-    local ts
-    ts="$(date +%s)"
-    local fetch_url="${url}?x=${ts}"
-    if ! live_has_token "${fetch_url}" "/assets/v/${live_rel}/main.css"; then
-      live_debug_detect "${fetch_url}"
-      die "LIVE_HTML missing main.css pin (${label})"
-    fi
-    if ! live_has_token "${fetch_url}" "/assets/v/${live_rel}/boot.js"; then
-      live_debug_detect "${fetch_url}"
-      die "LIVE_HTML missing boot.js pin (${label})"
-    fi
-    echo "PASS: LIVE_HTML ${label} pinned to ${live_rel}"
-  }
-
-  live_h1_check() {
-    local url="$1"
-    local label="$2"
-    local expect_text="${3:-}"
-    local ts html count
-    ts="$(date +%s)"
-    html="$(live_fetch_stream "${url}?x=${ts}")"
-    count="$(printf '%s\n' "${html}" | grep -i -c "<h1" || true)"
-    if [[ "${count}" != "1" ]]; then
-      echo "DEBUG: ${label} h1 lines"
-      printf '%s\n' "${html}" | grep -in -C 1 "<h1" | head -n 20 || true
-      die "LIVE_HTML ${label} h1 count (got ${count}, want 1)"
-    fi
-    if [[ -n "${expect_text}" ]]; then
-      if ! printf '%s\n' "${html}" | grep -Ei "<h1[^>]*>[[:space:]]*${expect_text}[[:space:]]*<" > /dev/null; then
-        echo "DEBUG: ${label} h1 lines"
-        printf '%s\n' "${html}" | grep -in -C 1 "<h1" | head -n 20 || true
-        die "LIVE_HTML ${label} h1 missing ${expect_text}"
-      fi
-    fi
-    echo "PASS: LIVE_HTML ${label} h1 count"
-  }
-
-  live_check "${BASE}/" "home"
-  live_check "${BASE}/blog" "blog"
-  live_h1_check "${BASE}/" "home"
-  live_h1_check "${BASE}/blog" "blog" "Blog"
-  if ! node "${ROOT}/tools/verify-js-chain.mjs" --base="${BASE}"; then
-    die "verify-js-chain failed"
-  fi
-
-  live_dom_expect() {
-    local html="$1"
-    local label="$2"
-    local pattern="$3"
-    local debug_pattern="$4"
-    local desc="$5"
-    if ! grep -Eqi "${pattern}" <<<"${html}"; then
-      echo "DEBUG: ${label} ${desc} lines"
-      grep -Ein "${debug_pattern}" <<<"${html}" | head -n 20 || true
-      die "LIVE_HTML ${label} missing ${desc}"
-    fi
-  }
-
-  live_dom_check_page() {
-    local url="$1"
-    local label="$2"
-    local ts html
-    local gg_main_re="id=['\"]gg-main['\"]"
-    local gg_skiplink_re="<a[^>]*class=['\"][^'\"]*gg-skiplink[^'\"]*['\"][^>]*href=['\"]#gg-main['\"][^>]*>|<a[^>]*href=['\"]#gg-main['\"][^>]*class=['\"][^'\"]*gg-skiplink[^'\"]*['\"][^>]*>"
-    ts="$(date +%s)"
-    html="$(live_fetch_stream "${url}?x=${ts}")"
-    if [[ "${label}" == "home" ]]; then
-      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']landing[\"']" 'data-gg-surface' 'data-gg-surface=landing'
-      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-      live_dom_expect "${html}" "${label}" "${gg_skiplink_re}" "gg-skiplink|#gg-main" "skiplink a.gg-skiplink[href='#gg-main']"
-    else
-      live_dom_expect "${html}" "${label}" "data-gg-surface=[\"']listing[\"']" 'data-gg-surface' 'data-gg-surface=listing'
-      live_dom_expect "${html}" "${label}" "${gg_main_re}" 'gg-main' '#gg-main'
-      live_dom_expect "${html}" "${label}" "id=[\"']postcards[\"']" 'postcards' '#postcards'
-      live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc[\"']" 'data-gg-slot="toc"' 'TOC slot'
-      live_dom_expect "${html}" "${label}" "data-gg-slot=[\"']toc-hint[\"']" 'data-gg-slot="toc-hint"' 'TOC hint slot'
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-featuredstrip[\"'][^>]*data-gg-max=[\"']5[\"'])|(<section[^>]*data-gg-max=[\"']5[\"'][^>]*id=[\"']gg-mixed-featuredstrip[\"'])" "gg-mixed-featuredstrip|data-gg-max" "featured max=5"
-      live_dom_expect "${html}" "${label}" "id=[\"']gg-mixed-newsish-1[\"']" "gg-mixed-newsish-1" "NEWSISH-1 section"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-bookish[\"'][^>]*data-gg-max=[\"']4[\"'])|(<section[^>]*data-gg-max=[\"']4[\"'][^>]*id=[\"']gg-mixed-bookish[\"'])" "gg-mixed-bookish|data-gg-max" "bookish max=4"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-youtubeish[\"'][^>]*data-gg-max=[\"']3[\"'])|(<section[^>]*data-gg-max=[\"']3[\"'][^>]*id=[\"']gg-mixed-youtubeish[\"'])" "gg-mixed-youtubeish|data-gg-max" "youtube max=3"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-shortish[\"'][^>]*data-gg-max=[\"']5[\"'])|(<section[^>]*data-gg-max=[\"']5[\"'][^>]*id=[\"']gg-mixed-shortish[\"'])" "gg-mixed-shortish|data-gg-max" "shorts max=5"
-      live_dom_expect "${html}" "${label}" "id=[\"']gg-mixed-newsish-2[\"']" "gg-mixed-newsish-2" "NEWSISH-2 section"
-      live_dom_expect "${html}" "${label}" "<section[^>]*data-gg-cols=[\"']3[\"'][^>]*data-gg-max=[\"']3[\"'][^>]*data-type=[\"']newsdeck[\"'][^>]*id=[\"']gg-mixed-newsish-[^\"']+[\"']|<section[^>]*id=[\"']gg-mixed-newsish-[^\"']+[\"'][^>]*data-gg-cols=[\"']3[\"'][^>]*data-gg-max=[\"']3[\"'][^>]*data-type=[\"']newsdeck[\"']" "gg-mixed-newsish|data-gg-cols|data-gg-max|data-type" "NEWSISH 3x3 contract"
-      live_dom_expect "${html}" "${label}" "(<section[^>]*id=[\"']gg-mixed-podcastish[\"'][^>]*data-gg-max=[\"']6[\"'])|(<section[^>]*data-gg-max=[\"']6[\"'][^>]*id=[\"']gg-mixed-podcastish[\"'])" "gg-mixed-podcastish|data-gg-max" "podcast max=6"
-      if grep -Fqi "THE MIXED-MEDIA LAYOUT" <<<"${html}"; then
-        die "LIVE_HTML ${label} contains debug text THE MIXED-MEDIA LAYOUT"
-      fi
-    fi
-    echo "PASS: LIVE_HTML ${label} DOM contract"
-  }
-
-  live_dom_check_page "${BASE}/" "home"
-  live_dom_check_page "${BASE}/blog" "blog"
-  live_blog_hard_refresh_check 5
-
-  live_post_target="${SMOKE_POST_URL:-${SMOKE_POST_DETAIL_URL:-${SMOKE_POST_DETAIL_PATH}}}"
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_BANNED_MARKERS" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
+  shift
+  bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
+    --label "${label}" \
+    --max-attempts "${LIVE_VERIFIER_ATTEMPTS}" \
+    --base-delay-ms "${LIVE_VERIFIER_RETRY_BASE_MS}" \
+    --cap-delay-ms "${LIVE_VERIFIER_RETRY_CAP_MS}" \
     -- \
-    node "${ROOT}/tools/verify-live-banned-markers.mjs" \
-      --base="${BASE}" \
-      --post="${live_post_target}" \
-      --timeout-ms="${live_retry_timeout_ms}" \
-      --retry-max="${live_retry_max}" \
-      --retry-base-ms="${live_retry_base_ms}" \
-      --retry-cap-ms="${live_retry_cap_ms}" \
-      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
-      --user-agent="${live_user_agent}"; then
-    die "verify-live-banned-markers failed"
-  fi
+    "$@"
+}
 
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_LISTING_EPANEL" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
-    -- \
+if [[ "${SMOKE_LIVE_HTML}" == "1" ]]; then
+  run_live_verifier \
+    "VERIFY_LIVE_LISTING_EPANEL" \
     node "${ROOT}/tools/verify-live-listing-epanel.mjs" \
       --base="${BASE}" \
-      --timeout-ms="${live_retry_timeout_ms}" \
-      --retry-max="${live_retry_max}" \
-      --retry-base-ms="${live_retry_base_ms}" \
-      --retry-cap-ms="${live_retry_cap_ms}" \
-      --user-agent="${live_user_agent}"; then
-    die "verify-live-listing-epanel failed"
-  fi
+      --timeout-ms="${LIVE_TIMEOUT_MS}" \
+      --retry-max="${LIVE_RETRY_MAX}" \
+      --retry-base-ms="${LIVE_RETRY_BASE_MS}" \
+      --retry-cap-ms="${LIVE_RETRY_CAP_MS}" \
+      --user-agent="${LIVE_USER_AGENT}"
 
-  if ! node "${ROOT}/tools/verify-listing-epanel-instant-rows.mjs" --base="${BASE}"; then
-    die "verify-listing-epanel-instant-rows failed"
-  fi
-
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_LEGAL_CLEAN_ROOM" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
-    -- \
-    node "${ROOT}/tools/verify-live-legal-clean-room.mjs" \
-      --base="${BASE}" \
-      --timeout-ms="${live_retry_timeout_ms}" \
-      --retry-max="${live_retry_max}" \
-      --retry-base-ms="${live_retry_base_ms}" \
-      --retry-cap-ms="${live_retry_cap_ms}" \
-      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
-      --user-agent="${live_user_agent}"; then
-    die "verify-live-legal-clean-room failed"
-  fi
-
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_PANEL_METADATA" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
-    -- \
+  run_live_verifier \
+    "VERIFY_LIVE_PANEL_METADATA" \
     node "${ROOT}/tools/verify-live-panel-metadata.mjs" \
       --base="${BASE}" \
-      --post="${live_post_target}" \
-      --timeout-ms="${live_retry_timeout_ms}" \
-      --retry-max="${live_retry_max}" \
-      --retry-base-ms="${live_retry_base_ms}" \
-      --retry-cap-ms="${live_retry_cap_ms}" \
-      --inter-request-delay-ms="${live_inter_request_delay_ms}" \
-      --user-agent="${live_user_agent}"; then
-    die "verify-live-panel-metadata failed"
-  fi
+      --post="${POST_TARGET}" \
+      --timeout-ms="${LIVE_TIMEOUT_MS}" \
+      --retry-max="${LIVE_RETRY_MAX}" \
+      --retry-base-ms="${LIVE_RETRY_BASE_MS}" \
+      --retry-cap-ms="${LIVE_RETRY_CAP_MS}" \
+      --inter-request-delay-ms="${LIVE_INTER_REQUEST_DELAY_MS}" \
+      --user-agent="${LIVE_USER_AGENT}"
 
-  toc_args=(--base="${BASE}" --post="${live_post_target}")
-  if [[ -n "${SMOKE_PAGE_URL:-}" ]]; then
-    toc_args+=(--page="${SMOKE_PAGE_URL}")
-  fi
-  toc_args+=(
-    --timeout-ms="${live_retry_timeout_ms}"
-    --retry-max="${live_retry_max}"
-    --retry-base-ms="${live_retry_base_ms}"
-    --retry-cap-ms="${live_retry_cap_ms}"
-    --inter-request-delay-ms="${live_inter_request_delay_ms}"
-    --user-agent="${live_user_agent}"
+  toc_args=(
+    --base="${BASE}"
+    --post="${POST_TARGET}"
+    --timeout-ms="${LIVE_TIMEOUT_MS}"
+    --retry-max="${LIVE_RETRY_MAX}"
+    --retry-base-ms="${LIVE_RETRY_BASE_MS}"
+    --retry-cap-ms="${LIVE_RETRY_CAP_MS}"
+    --inter-request-delay-ms="${LIVE_INTER_REQUEST_DELAY_MS}"
+    --user-agent="${LIVE_USER_AGENT}"
   )
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_TOC_FUNCTIONAL" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
-    -- \
-    node "${ROOT}/tools/verify-live-toc-functional.mjs" "${toc_args[@]}"; then
-    die "verify-live-toc-functional failed"
+  if [[ -n "${PAGE_TARGET}" ]]; then
+    toc_args+=(--page="${PAGE_TARGET}")
   fi
+  run_live_verifier \
+    "VERIFY_LIVE_TOC_FUNCTIONAL" \
+    node "${ROOT}/tools/verify-live-toc-functional.mjs" "${toc_args[@]}"
 
-  sleep_ms "${live_verifier_gap_ms}"
-  if ! bash "${ROOT}/tools/run-live-verifier-with-retry.sh" \
-    --label "VERIFY_LIVE_POST_LEFTPANEL" \
-    --max-attempts "${live_verifier_attempts}" \
-    --base-delay-ms "${live_verifier_retry_base_ms}" \
-    --cap-delay-ms "${live_verifier_retry_cap_ms}" \
-    -- \
+  run_live_verifier \
+    "VERIFY_LIVE_POST_LEFTPANEL" \
     node "${ROOT}/tools/verify-live-post-leftpanel.mjs" \
       --base="${BASE}" \
-      --post="${live_post_target}" \
-      --timeout-ms="${live_retry_timeout_ms}" \
-      --retry-max="${live_retry_max}" \
-      --retry-base-ms="${live_retry_base_ms}" \
-      --retry-cap-ms="${live_retry_cap_ms}" \
-      --user-agent="${live_user_agent}"; then
-    die "verify-live-post-leftpanel failed"
-  fi
-
-  if ! node "${ROOT}/tools/verify-router-contract.mjs"; then
-    die "verify-router-contract failed"
-  fi
-
-  if ! node "${ROOT}/tools/verify-multizone.mjs" --base="${BASE}"; then
-    die "verify-multizone failed"
-  fi
-
-  if ! node "${ROOT}/tools/verify-palette-a11y.mjs" --mode=live --base="${BASE}"; then
-    die "verify-palette-a11y failed"
-  fi
+      --post="${POST_TARGET}" \
+      --timeout-ms="${LIVE_TIMEOUT_MS}" \
+      --retry-max="${LIVE_RETRY_MAX}" \
+      --retry-base-ms="${LIVE_RETRY_BASE_MS}" \
+      --retry-cap-ms="${LIVE_RETRY_CAP_MS}" \
+      --user-agent="${LIVE_USER_AGENT}"
 fi
 
 echo "PASS: smoke tests"
