@@ -3755,47 +3755,11 @@ var surface = main.getAttribute('data-gg-surface') || '';
 return (surface === 'home' || surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
-function panelValue(key){
-var node = panel ? qs('[data-s="' + key + '"]', panel) : null;
-return cleanText(node && node.textContent ? node.textContent : '');
-}
-
-function hasRowValue(value){
-var v = cleanText(value);
-return !!v && v !== '—';
-}
-
-function shouldSeedInitialPreview(){
-if (!panel || !main) return false;
-if (selectedCardKey) return false;
-if (panel.__ggSeeded === '1') return false;
-if (!hasRowValue(panelValue('title'))) return true;
-if (!hasRowValue(panelValue('author'))) return true;
-if (!hasRowValue(panelValue('date'))) return true;
-if (!hasRowValue(panelValue('comments'))) return true;
-return false;
-}
-
-function firstPreviewCard(){
-var cards = qsa('.gg-post-card', main), i = 0, card = null, href = '';
-for (; i < cards.length; i++) {
-  card = cards[i];
-  href = cardHref(card);
-  if (!card || !href || href === '#') continue;
-  return card;
-}
-return null;
-}
-
-function seedInitialPreview(){
-var card = null;
-if (!shouldSeedInitialPreview()) return false;
-card = firstPreviewCard();
-if (!card) return false;
-openWithCard(card, null, { focusPanel: false, previewOnly: true });
-if (panel) panel.__ggSeeded = '1';
-return true;
-}
+function panelValue(key){ var node=panel?qs('[data-s="'+key+'"]',panel):null; return cleanText(node&&node.textContent?node.textContent:''); }
+function hasRowValue(value){ var v=cleanText(value); return !!v&&v!=='—'; }
+function shouldSeedInitialPreview(){ return !!(panel&&main&&!selectedCardKey&&panel.__ggSeeded!=='1'&&(!hasRowValue(panelValue('title'))||!hasRowValue(panelValue('author'))||!hasRowValue(panelValue('date'))||!hasRowValue(panelValue('comments')))); }
+function firstPreviewCard(){ var cards=qsa('.gg-post-card',main),i=0,card=null,href=''; for(;i<cards.length;i++){ card=cards[i]; href=cardHref(card); if(!card||!href||href==='#') continue; return card; } return null; }
+function seedInitialPreview(){ var card=null; if(!shouldSeedInitialPreview()) return false; card=firstPreviewCard(); if(!card) return false; openWithCard(card,null,{ focusPanel:false, previewOnly:true }); if(panel) panel.__ggSeeded='1'; return true; }
 
 function openWithCard(card, trigger, opts){
 if(!card) return;
@@ -3836,17 +3800,11 @@ applyPostMeta(metaKey);
 if(panel) panel.hidden=false;
 updateTocForCard(card, hrefFetch);
 if(!previewOnly){
-  setBackdropVisible(true);
-  if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open');
-  else if(main) main.setAttribute('data-gg-info-panel', 'open');
-  if(opts.select){
-    selectedCardKey=cardKey(card)||null;
-    syncSlotInfoSelected(selectedCardKey);
-  }
-  if(opts.focusPanel!==false&&panel&&panel.focus){
-    panel.setAttribute('tabindex','-1');
-    try{ panel.focus({ preventScroll:true }); }catch(_){}
-  }
+setBackdropVisible(true);
+if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open');
+else if(main) main.setAttribute('data-gg-info-panel', 'open');
+if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); }
+if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} }
 }
 }
 
@@ -3967,12 +3925,7 @@ closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-
 }
 ensurePanelSkeleton();
 seedInitialPreview();
-if(!main.__ggInfoPanelSeeded){
-main.__ggInfoPanelSeeded=true;
-w.setTimeout(seedInitialPreview,180);
-w.setTimeout(seedInitialPreview,720);
-w.setTimeout(seedInitialPreview,1600);
-}
+if(!main.__ggInfoPanelSeeded){ main.__ggInfoPanelSeeded=true; w.setTimeout(seedInitialPreview,180); w.setTimeout(seedInitialPreview,720); w.setTimeout(seedInitialPreview,1600); }
 }
 
 return { init: init };
