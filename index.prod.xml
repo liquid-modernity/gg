@@ -3103,52 +3103,45 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <a class='gg-dock-more__close' data-gg-action='more-close' href='#'>Close</a>
     </div>
     <ul class='gg-dock-more__list'>
-      <b:if cond='data:view.isHomepage and not data:ggIsBlogHome'>
-        <li><a href='#gg-landing-pillars'>Our services</a></li>
-        <li><a href='#gg-landing-hero-3'>What we do</a></li>
-        <li><a href='#gg-landing-pillars-4'>Assignment</a></li>
-        <li><a href='#gg-landing-hero-5'>Contact</a></li>
-        <li><a expr:href='data:blog.homepageUrl + &quot;blog&quot;'>Home (Blog Page)</a></li>
-      </b:if>
-      <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:ggIsBlogHome)'>
-        <li><a data-gg-toggle='left-panel' href='#gg-left-panel'>Open Sidebar</a></li>
-        <li><a data-gg-toggle='right-panel' href='#gg-right-sidebar-list'>Editorial Panel</a></li>
-        <li><a href='/p/shop.html'>Store</a></li>
-        <li><a href='/p/tags.html'>Tags</a></li>
-        <li><a href='/p/authors.html'>Authors</a></li>
-      </b:if>
-      <b:if cond='data:view.isSingleItem'>
-        <li><a href='#gg-page-end'>Jump</a></li>
-        <b:if cond='data:view.isPost'>
-          <li><a href='#gg-toc'>ToC</a></li>
-        </b:if>
-        <li><a href='/p/shop.html'>Store</a></li>
-        <li><a expr:href='data:blog.searchUrl'>Search</a></li>
-      </b:if>
-      <li data-gg-more-origin='footer'><a href='#'>AI Summary · ChatGPT</a></li>
-      <li data-gg-more-origin='footer'><a href='/p/pay.html#paypal'>Payment · PayPal</a></li>
-      <li data-gg-more-origin='footer'><a data-gg-more-action='install' href='#'>Install Web App to Device</a></li>
+      <li data-gg-more-origin='footer'>
+        <a href='#'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>auto_awesome</span>
+          <span>AI Summary · ChatGPT</span>
+        </a>
+      </li>
+      <li data-gg-more-origin='footer'>
+        <a href='/p/pay.html#paypal'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>payments</span>
+          <span>Payment · PayPal</span>
+        </a>
+      </li>
+      <li data-gg-more-origin='footer'>
+        <a data-gg-more-action='install' href='#'>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>
+          <span>Install Web App to Device</span>
+        </a>
+      </li>
       <li class='gg-navtree__item' data-gg-more-origin='navtree'>
         <a class='gg-navtree__link' href='/p/about.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>account_balance</span>
           <span>About &amp; Philosophy</span>
         </a>
       </li>
       <li class='gg-navtree__item' data-gg-more-origin='navtree'>
         <a class='gg-navtree__link' href='/p/tags.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>topic</span>
           <span>Topic Index</span>
         </a>
       </li>
       <li class='gg-navtree__item' data-gg-more-origin='navtree'>
         <a class='gg-navtree__link' href='/p/support.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
           <span>Help Center</span>
         </a>
       </li>
       <li class='gg-navtree__item' data-gg-more-origin='navtree'>
         <a class='gg-navtree__link' href='/p/privacy-policy.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>docs</span>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>policy</span>
           <span>Privacy Policy</span>
         </a>
       </li>
