@@ -6,6 +6,7 @@ const root = process.cwd();
 const CORE_REL = "public/assets/latest/modules/ui.bucket.core.js";
 const POST_REL = "public/assets/latest/modules/ui.bucket.post.js";
 const LISTING_REL = "public/assets/latest/modules/ui.bucket.listing.js";
+const AUTHORS_REL = "public/assets/latest/modules/ui.bucket.authors.js";
 
 function readText(rel) {
   const abs = path.join(root, rel);
@@ -1120,7 +1121,173 @@ async function testToolbarRuntime(postDetailSnippet) {
     throw new Error("info action did not open left panel");
   }
 
-  return `right=${main.getAttribute("data-gg-right-panel")} mode=${main.getAttribute("data-gg-right-mode")} left=${main.getAttribute("data-gg-left-panel")}`;
+  return `right=${main.getAttribute("data-gg-right-panel")} mode=${main.getAttribute("data-gg-right-mode")} left=${main.getAttribute("data-gg-left-panel")} loaded=${commentsBlock.getAttribute("data-gg-comments-loaded") || "0"} native=${commentsSlot.querySelector("#comments") ? "present" : "missing"}`;
+}
+
+async function testPostLeftInfoRuntime(authorsSource) {
+  const { context, document, window, GG } = createRuntimeContext("https://www.pakrpp.com/2026/02/demo.html");
+  const storeFactory = () => ({
+    _store: Object.create(null),
+    getItem(key) {
+      return Object.prototype.hasOwnProperty.call(this._store, key) ? this._store[key] : null;
+    },
+    setItem(key, value) {
+      this._store[key] = String(value);
+    },
+    removeItem(key) {
+      delete this._store[key];
+    },
+  });
+  window.sessionStorage = storeFactory();
+  context.window.sessionStorage = window.sessionStorage;
+  context.sessionStorage = window.sessionStorage;
+
+  GG.services.postmeta = {
+    getFromContext() {
+      return {
+        author: "pakrpp",
+        contributors: ["editor-team"],
+        tags: [{ key: "ai-workflow", text: "AI Workflow", href: "/p/tags.html?tag=ai-workflow" }],
+        updated: "2026-02-20",
+        published: "2026-02-19",
+        readMin: "7",
+      };
+    },
+  };
+  GG.services.authorsDir = {
+    slugify(raw) {
+      return String(raw || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    },
+    fallback(raw) {
+      const slug = this.slugify(raw);
+      const name = slug === "pakrpp" ? "Pak RPP" : slug === "editor-team" ? "Editor Team" : slug || "Author";
+      return { slug, name, href: `/p/${slug || "author"}.html`, src: "fallback" };
+    },
+    async resolveMany(list) {
+      return (Array.isArray(list) ? list : []).map((item) => {
+        const slug = this.slugify(item);
+        const name = slug === "pakrpp" ? "Pak RPP" : slug === "editor-team" ? "Editor Team" : slug || "Author";
+        return { slug, name, href: `/p/${slug || "author"}.html`, src: "dir" };
+      });
+    },
+  };
+  GG.services.tagsDir = {
+    async resolveMany(list) {
+      return (Array.isArray(list) ? list : []).map((item) => {
+        const row = item && typeof item === "object" ? item : { text: String(item || "") };
+        const text = String(row.text || row.name || "").trim();
+        return { key: text.toLowerCase().replace(/\s+/g, "-"), text, href: row.href || "#" };
+      });
+    },
+  };
+
+  const main = document.createElement("main");
+  main.classList.add("gg-main");
+  main.setAttribute("data-gg-surface", "post");
+  document.body.appendChild(main);
+
+  const article = document.createElement("article");
+  article.classList.add("gg-post");
+  article.setAttribute("data-gg-module", "post-detail");
+  article.setAttribute("data-author", "pakrpp");
+  article.setAttribute("data-date", "2026-02-19");
+  const publishedDate = document.createElement("time");
+  publishedDate.classList.add("gg-post__date");
+  publishedDate.textContent = "2026-02-19";
+  article.appendChild(publishedDate);
+  const labelsWrap = document.createElement("div");
+  labelsWrap.classList.add("post-labels");
+  const labelA = document.createElement("a");
+  labelA.setAttribute("rel", "tag");
+  labelA.setAttribute("href", "/search/label/AI");
+  labelA.textContent = "AI";
+  labelsWrap.appendChild(labelA);
+  article.appendChild(labelsWrap);
+  const body = document.createElement("section");
+  body.classList.add("gg-post__content");
+  body.classList.add("post-body");
+  body.classList.add("entry-content");
+  body.textContent = "Runtime coverage ensures metadata hydration is populated with non-placeholder values.";
+  article.appendChild(body);
+  const pm = document.createElement("div");
+  pm.classList.add("gg-postmeta");
+  pm.setAttribute("data-contributors", "editor-team");
+  pm.setAttribute("data-tags", "AI Workflow");
+  pm.setAttribute("data-updated", "2026-02-20");
+  pm.setAttribute("data-read-min", "7");
+  article.appendChild(pm);
+  main.appendChild(article);
+
+  const info = document.createElement("div");
+  info.setAttribute("id", "gg-postinfo");
+  const bodyWrap = document.createElement("div");
+  bodyWrap.classList.add("gg-pi__body");
+  const authorSlot = document.createElement("div");
+  authorSlot.setAttribute("data-slot", "author");
+  bodyWrap.appendChild(authorSlot);
+  const contribSec = document.createElement("div");
+  contribSec.classList.add("gg-pi__sec--contributors");
+  contribSec.hidden = true;
+  const contribSlot = document.createElement("div");
+  contribSlot.setAttribute("data-slot", "contributors");
+  contribSec.appendChild(contribSlot);
+  bodyWrap.appendChild(contribSec);
+  const labelsSec = document.createElement("div");
+  labelsSec.classList.add("gg-pi__sec--labels");
+  labelsSec.hidden = true;
+  const labelsSlot = document.createElement("div");
+  labelsSlot.setAttribute("data-slot", "labels");
+  labelsSec.appendChild(labelsSlot);
+  bodyWrap.appendChild(labelsSec);
+  const tagsSec = document.createElement("div");
+  tagsSec.classList.add("gg-pi__sec--tags");
+  tagsSec.hidden = true;
+  const tagsSlot = document.createElement("div");
+  tagsSlot.setAttribute("data-slot", "tags");
+  tagsSec.appendChild(tagsSlot);
+  bodyWrap.appendChild(tagsSec);
+  const meta = document.createElement("div");
+  meta.classList.add("gg-pi__meta");
+  ["date", "updated", "readtime"].forEach((key) => {
+    const row = document.createElement("div");
+    row.classList.add(`gg-pi__metaitem--${key}`);
+    const slot = document.createElement("span");
+    slot.setAttribute("data-slot", key);
+    slot.textContent = "—";
+    row.appendChild(slot);
+    meta.appendChild(row);
+  });
+  bodyWrap.appendChild(meta);
+  info.appendChild(bodyWrap);
+  main.appendChild(info);
+
+  runSnippet(context, authorsSource, "authors.runtime");
+  if (!GG.modules.postInfoAuthors || typeof GG.modules.postInfoAuthors.init !== "function") {
+    throw new Error("postInfoAuthors module not registered");
+  }
+  GG.modules.postInfoAuthors.init(document);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const authorText = (info.querySelector('[data-slot="author"] .gg-pi__pname')?.textContent || "").trim();
+  const dateText = (info.querySelector('[data-slot="date"]')?.textContent || "").trim();
+  const updatedText = (info.querySelector('[data-slot="updated"]')?.textContent || "").trim();
+  const readText = (info.querySelector('[data-slot="readtime"]')?.textContent || "").trim();
+  const labelCount = info.querySelectorAll('[data-slot="labels"] .gg-pi__chip').length;
+  const tagCount = info.querySelectorAll('[data-slot="tags"] .gg-pi__chip').length;
+
+  if (!authorText || /^[-—]+$/.test(authorText)) throw new Error("author slot remained placeholder");
+  if (!dateText || /^[-—]+$/.test(dateText)) throw new Error("date slot remained placeholder");
+  if (!updatedText || /^[-—]+$/.test(updatedText)) throw new Error("updated slot remained placeholder");
+  if (!readText || /^[-—]+$/.test(readText)) throw new Error("readtime slot remained placeholder");
+  if (labelCount < 1) throw new Error("labels slot did not render chips");
+  if (tagCount < 1) throw new Error("tags slot did not render chips");
+
+  return `author="${authorText}" date="${dateText}" updated="${updatedText}" readtime="${readText}" labels=${labelCount} tags=${tagCount}`;
 }
 
 async function testTocRuntime(tocSnippet) {
@@ -1443,6 +1610,7 @@ async function main() {
   const coreSource = readText(CORE_REL);
   const postSource = readText(POST_REL);
   const listingSource = readText(LISTING_REL);
+  const authorsSource = readText(AUTHORS_REL);
 
   const dockSnippet = extractByRegex(
     coreSource,
@@ -1488,6 +1656,7 @@ async function main() {
 
   await runOne("dock", () => testDockRuntime(dockSnippet));
   await runOne("toolbar", () => testToolbarRuntime(postDetailSnippet));
+  await runOne("post left info metadata panel", () => testPostLeftInfoRuntime(authorsSource));
   await runOne("TOC", () => testTocRuntime(tocSnippet));
   await runOne("right/sidebar metadata panel", () => testInfoPanelRuntime(infoPanelSnippet));
   await runOne("Load More Article", () => testLoadMoreRuntime(loadMoreSnippet));

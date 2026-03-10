@@ -59,29 +59,35 @@ function verifyPanelSurfaces() {
     /RUNTIME right\/sidebar metadata panel: PASS :: ([^\n]+)/m
   );
   if (!metaLine) {
-    pushResult(false, "BLOG_RIGHT_METADATA_PANEL", "missing PASS marker in core runtime output");
+    pushResult(false, "BLOG_RIGHT_METADATA_POPULATED", "missing PASS marker in core runtime output");
   } else {
-    pushResult(true, "BLOG_RIGHT_METADATA_PANEL", metaLine);
+    pushResult(true, "BLOG_RIGHT_METADATA_POPULATED", metaLine);
+  }
+
+  const postInfoLine = lineMatch(
+    core.output,
+    /RUNTIME post left info metadata panel: PASS :: ([^\n]+)/m
+  );
+  if (!postInfoLine) {
+    pushResult(false, "POST_LEFT_INFO_METADATA_POPULATED", "missing PASS marker in core runtime output");
+  } else {
+    pushResult(true, "POST_LEFT_INFO_METADATA_POPULATED", postInfoLine);
   }
 
   const toolbarLine = lineMatch(core.output, /RUNTIME toolbar: PASS :: ([^\n]+)/m);
   if (!toolbarLine) {
-    pushResult(false, "POSTPAGE_TOOLBAR_PANEL_BRIDGE", "missing toolbar PASS marker");
+    pushResult(false, "POST_TOOLBAR_COMMENTS_REVEAL_NATIVE", "missing toolbar PASS marker");
   } else {
-    const leftOk = /\bleft=open\b/.test(toolbarLine);
     const rightOk = /\bright=open\b/.test(toolbarLine);
     const commentsOk = /\bmode=comments\b/.test(toolbarLine);
+    const loadedOk = /\bloaded=1\b/.test(toolbarLine);
+    const nativeOk = /\bnative=present\b/.test(toolbarLine);
     pushResult(
-      leftOk,
-      "POSTPAGE_LEFT_INFO_PANEL",
-      leftOk ? toolbarLine : `toolbar evidence missing left=open :: ${toolbarLine}`
-    );
-    pushResult(
-      rightOk && commentsOk,
-      "POSTPAGE_RIGHT_COMMENTS_PANEL_FROM_TOOLBAR",
-      rightOk && commentsOk
+      rightOk && commentsOk && loadedOk && nativeOk,
+      "POST_TOOLBAR_COMMENTS_REVEAL_NATIVE",
+      rightOk && commentsOk && loadedOk && nativeOk
         ? toolbarLine
-        : `toolbar evidence must include right=open + mode=comments :: ${toolbarLine}`
+        : `toolbar evidence must include right=open + mode=comments + loaded=1 + native=present :: ${toolbarLine}`
     );
   }
 
@@ -96,6 +102,62 @@ function verifyPanelSurfaces() {
     labelOk,
     "BLOG_LEFT_LABEL_TREE",
     labelOk ? "LABEL_TREE_INTERACTIONS marker detected" : "missing LABEL_TREE_INTERACTIONS PASS marker"
+  );
+}
+
+function sectionBlock(template, id) {
+  const re = new RegExp(`<b:section\\b[^>]*\\bid=['"]${String(id)}['"][\\s\\S]*?<\\/b:section>`, "i");
+  const m = String(template || "").match(re);
+  return m ? m[0] : "";
+}
+
+function verifySidebarIAContract() {
+  const template = fs.readFileSync(path.join(root, TEMPLATE_REL), "utf8");
+
+  const listTop = sectionBlock(template, "gg-left-sb-top-list");
+  const listBot = sectionBlock(template, "gg-left-sb-bot-list");
+  const postBody = sectionBlock(template, "gg-left-sb-body-post");
+  const postBot = sectionBlock(template, "gg-left-sb-bot-post");
+  const sectionsPresent = !!(listTop && listBot && postBody && postBot);
+  pushResult(
+    sectionsPresent,
+    "SIDEBAR_IA_SECTION_BLOCKS_PRESENT",
+    `listTop=${!!listTop} listBot=${!!listBot} postBody=${!!postBody} postBot=${!!postBot}`
+  );
+  if (!sectionsPresent) return;
+
+  const legacyTreeRe =
+    /Governance\s*&(?:amp;)?\s*Trust|Knowledge Hub|Services\s*&(?:amp;)?\s*Connect|Legal\s*&(?:amp;)?\s*Compliance|AI\s*&(?:amp;)?\s*Ads Files/i;
+  const navtreeRe = /gg-navtree/i;
+  const profileRe = /gg-leftnav__profile/i;
+  const socialRe = /gg-leftnav__socialbar/i;
+  const legalRe = /gg-footer__legal/i;
+
+  const blogComposite = `${listTop}\n${listBot}`;
+  const blogHasInterests = /id=["']gg-labeltree-home["']/i.test(blogComposite);
+  const blogHasSocial = socialRe.test(blogComposite);
+  const blogHasLegal = legalRe.test(blogComposite);
+  const blogHasProfile = profileRe.test(blogComposite);
+  const blogHasNavtree = navtreeRe.test(blogComposite) || legacyTreeRe.test(blogComposite);
+  const blogOk = blogHasInterests && blogHasSocial && blogHasLegal && !blogHasProfile && !blogHasNavtree;
+  pushResult(
+    blogOk,
+    "BLOG_LEFT_SIDEBAR_STRUCTURE_FINAL",
+    `interests=${blogHasInterests} social=${blogHasSocial} copyright=${blogHasLegal} profile=${blogHasProfile} legacyNavtree=${blogHasNavtree}`
+  );
+
+  const postComposite = `${postBody}\n${postBot}`;
+  const postHasInfo = /id=["']gg-postinfo["']/i.test(postComposite);
+  const postHasInterests = /id=["']gg-labeltree-post["']/i.test(postComposite);
+  const postHasSocial = socialRe.test(postComposite);
+  const postHasLegal = legalRe.test(postComposite);
+  const postHasProfile = profileRe.test(postComposite);
+  const postHasNavtree = navtreeRe.test(postComposite) || legacyTreeRe.test(postComposite);
+  const postOk = postHasInfo && postHasInterests && postHasSocial && postHasLegal && !postHasProfile && !postHasNavtree;
+  pushResult(
+    postOk,
+    "POST_LEFT_SIDEBAR_STRUCTURE_FINAL",
+    `information=${postHasInfo} interests=${postHasInterests} social=${postHasSocial} copyright=${postHasLegal} profile=${postHasProfile} legacyNavtree=${postHasNavtree}`
   );
 }
 
@@ -514,7 +576,7 @@ function verifyLandingDockRuntime() {
   });
   pushResult(
     moreOk && morePanel.hidden === false && hasAi && hasPayment && hasInstall && hasNavShortcut && hasNavIcon,
-    "LANDING_DOCK_MORE_DRAWER_CONTENT",
+    "MORE_DRAWER_COMPLETENESS",
     `open=${moreOk && morePanel.hidden === false} ai=${hasAi} payment=${hasPayment} install=${hasInstall} nav=${hasNavShortcut} navIcon=${hasNavIcon}`
   );
 
@@ -845,6 +907,7 @@ function printE2ENotes() {
 
 async function main() {
   verifyPanelSurfaces();
+  verifySidebarIAContract();
   verifyLandingDockRuntime();
   await verifyDockPreInitRuntime();
   verifyLandingViewportFit();
