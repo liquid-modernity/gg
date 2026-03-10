@@ -1430,8 +1430,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "9740795";
-    const TEMPLATE_ALLOWED_RELEASES = ["9740795"];
+    const WORKER_VERSION = "86f22c2";
+    const TEMPLATE_ALLOWED_RELEASES = ["86f22c2"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
