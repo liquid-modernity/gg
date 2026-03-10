@@ -1933,7 +1933,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </b:if>
 </b:includable>
               <b:includable id='postDetail' var='post'>
-  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-id='data:post.id' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-date='data:post.date' expr:data-id='data:post.id' expr:data-title='data:post.title' expr:data-url='data:post.url'>
     
     <!-- GAGA TOOLBAR POST DETAIL -->
     <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
