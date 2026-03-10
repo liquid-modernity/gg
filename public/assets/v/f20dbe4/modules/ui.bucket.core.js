@@ -2237,6 +2237,7 @@ function syncMoreFooterActions(panel){
 if (!panel) return;
 var list = panel.querySelector('.gg-dock-more__list');
 if (!list) return;
+var navShortcuts = collectNavTreeShortcuts();
 clearMoreFooterItems(list);
 clearMoreNavItems(list);
 
@@ -2275,7 +2276,6 @@ if (installButton) {
   list.appendChild(li);
 }
 
-var navShortcuts = collectNavTreeShortcuts();
 for (var n = 0; n < navShortcuts.length; n++) {
   appendMoreNavShortcutItem(list, navShortcuts[n]);
 }
@@ -2596,12 +2596,15 @@ if (dockEl.querySelector('[data-gg-action="search-exit"]')){
 if (!escBound){
 escBound = true;
 document.addEventListener('keydown', function(e){
-  if (e.key !== 'Escape') return;
+if (e.key !== 'Escape') return;
   exitSearch();
   closeMorePanel();
 });
 }
 bindMorePanel();
+var initMorePanel = ensureMorePanel();
+if (initMorePanel) syncMoreFooterActions(initMorePanel);
+if (((window.location && window.location.hash) || '') === '#gg-dock-more') openMorePanel();
 if (!pendingBound){
 pendingBound = true;
 window.addEventListener('gg:dock-action-pending', function(evt){

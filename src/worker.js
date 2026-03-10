@@ -1430,8 +1430,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "eb73850";
-    const TEMPLATE_ALLOWED_RELEASES = ["eb73850"];
+    const WORKER_VERSION = "f20dbe4";
+    const TEMPLATE_ALLOWED_RELEASES = ["f20dbe4"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -2016,6 +2016,26 @@ export default {
             },
           })
           .on("script#gg-schema", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("div#gg-left-sb-body-list", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("div#gg-left-sb-top-post", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("#gg-left-panel .gg-leftnav__profile", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("#gg-left-panel details.gg-navtree[data-gg-navtree=\"group\"]", {
             element(el) {
               el.remove();
             },
