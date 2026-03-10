@@ -28,8 +28,9 @@ Tujuan CI:
 Urutan:
 1. `npm ci`
 2. quick sanity: `npm run verify:release` + `npm run verify:assets`
-3. `wrangler deploy --config wrangler.jsonc`
-4. `bash tools/gate-release-live.sh`
+3. `workflow_dispatch` only: `npm run verify:p1` (manual deploy tidak boleh bypass runtime guard)
+4. `wrangler deploy --config wrangler.jsonc`
+5. `bash tools/gate-release-live.sh`
 
 `gate-release-live.sh` menjalankan:
 - `tools/smoke.sh` dalam mode strict live (`SMOKE_ALLOW_OFFLINE_FALLBACK=0`, `SMOKE_LIVE_HTML=1`)
@@ -49,4 +50,4 @@ Urutan:
 ## Principles
 - Tidak ada duplikasi besar CI vs deploy vs ship.
 - Verifier adalah support layer; live DOM tetap sumber kebenaran.
-- Checks granular/noisy tetap tersedia sebagai tools ad-hoc, tapi tidak memblokir jalur harian.
+- Checks granular/noisy berada di `tools/reference/` dan tidak memblokir jalur harian.

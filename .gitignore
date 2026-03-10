@@ -11,6 +11,8 @@ dist/
 build/
 coverage/
 .tmp/
+test-results/
+playwright-report/
 *.log
 *.pid
 *.seed

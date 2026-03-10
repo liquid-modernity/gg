@@ -84,7 +84,7 @@ git archive --format=zip --output "$TMP_ZIP" HEAD
     src/worker.js \
     tools/smoke.sh \
     tools/verify-ui-guardrails.mjs \
-    tools/verify-infopanel-toc-contract.mjs; do
+    tools/reference/verify-infopanel-toc-contract.mjs; do
     if [[ -f "$f" ]]; then
       echo "$(shasum -a 256 "$f" | awk '{print $1}')  $f"
     fi

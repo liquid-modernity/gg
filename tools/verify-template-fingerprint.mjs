@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { pathToFileURL } from "url";
 
 const root = process.cwd();
 const failures = [];
@@ -12,6 +11,12 @@ const read = (rel) => {
     return "";
   }
   return fs.readFileSync(p, "utf8");
+};
+
+const importEsmFromSource = async (sourceCode, sourceLabel = "inline-module") => {
+  const payload = `${String(sourceCode || "")}\n//# sourceURL=${String(sourceLabel || "inline-module")}`;
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(payload, "utf8").toString("base64")}`;
+  return import(moduleUrl);
 };
 
 const parseAttrs = (raw) => {
@@ -216,8 +221,7 @@ const runMismatchTest = async () => {
   globalThis.HTMLRewriter = buildTestHtmlRewriter();
 
   try {
-    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
-    const workerMod = await import(workerUrl);
+    const workerMod = await importEsmFromSource(worker, "src/worker.js#mismatch");
     const workerImpl = workerMod.default || workerMod;
     const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
     const body = await res.text();
@@ -314,8 +318,7 @@ const runMatchTest = async () => {
   globalThis.HTMLRewriter = buildTestHtmlRewriter();
 
   try {
-    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
-    const workerMod = await import(`${workerUrl}?match=${Date.now()}`);
+    const workerMod = await importEsmFromSource(worker, `src/worker.js#match-${Date.now()}`);
     const workerImpl = workerMod.default || workerMod;
     const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
     const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();
@@ -375,8 +378,10 @@ const runReleaseDriftAutofixTest = async () => {
   globalThis.HTMLRewriter = buildTestHtmlRewriter();
 
   try {
-    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
-    const workerMod = await import(`${workerUrl}?release-drift=${Date.now()}`);
+    const workerMod = await importEsmFromSource(
+      worker,
+      `src/worker.js#release-drift-${Date.now()}`
+    );
     const workerImpl = workerMod.default || workerMod;
     const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
     await res.text();
@@ -439,8 +444,7 @@ const runMinimalContractNoMarkerTest = async () => {
   globalThis.HTMLRewriter = buildTestHtmlRewriter();
 
   try {
-    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
-    const workerMod = await import(`${workerUrl}?minimal=${Date.now()}`);
+    const workerMod = await importEsmFromSource(worker, `src/worker.js#minimal-${Date.now()}`);
     const workerImpl = workerMod.default || workerMod;
     const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
     const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();

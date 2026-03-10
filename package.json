@@ -14,7 +14,7 @@
     "verify:template-contract": "node tools/verify-template-contract.mjs",
     "verify:template-fingerprint": "node tools/verify-template-fingerprint.mjs",
     "verify:template-hygiene": "node tools/verify-template-hygiene.mjs",
-    "verify:runtime-es5": "node tools/verify-runtime-es5-compat.mjs",
+    "verify:runtime-es5": "node tools/reference/verify-runtime-es5-compat.mjs",
     "verify-inline-css": "node tools/verify-inline-css.mjs",
     "verify:p0": "npm run verify:release && npm run verify:assets && npm run verify:xml && npm run verify:template-contract && npm run verify:template-hygiene && node tools/verify-postmeta-contract.mjs",
     "verify:p1": "node tools/verify-runtime-core-features.mjs && node tools/verify-runtime-surface-landing-panels.mjs && node tools/verify-runtime-secondary-features.mjs && node tools/verify-router-contract.mjs && node tools/verify-dock-contract.mjs && node tools/verify-ui-guardrails.mjs",

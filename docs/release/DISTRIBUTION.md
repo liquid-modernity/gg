@@ -26,4 +26,6 @@ Last updated: 2026-02-21
 - Local harian: `npm run verify:p0` + `npm run verify:p1`.
 - Local final sebelum push: `npm run preflight:ship`, lalu `npm run ship`.
 - CI deploy (authoritative live proof): `bash tools/gate-release-live.sh` setelah `wrangler deploy`.
+- Manual deploy (`workflow_dispatch`) wajib menjalankan `npm run verify:p1` sebelum deploy.
 - Local live smoke opsional: set `GG_LOCAL_LIVE_SMOKE=1` saat menjalankan `bash tools/gate-release.sh`.
+- Checks non-daily dipindahkan ke `tools/reference/` (reference/quarantine boundary).

@@ -76,15 +76,25 @@ Last updated: 2026-03-11
 -> trigger: `workflow_run` (`CI` success on `main`) or `workflow_dispatch`
 -> `npm ci`
 -> quick sanity (`verify:release` + `verify:assets`)
+-> manual-only guard: `verify:p1` when trigger is `workflow_dispatch`
 -> `wrangler deploy`
 -> `bash tools/gate-release-live.sh`
 -> `bash tools/smoke.sh` (strict live mode) + live header/palette checks
 
 ## 5) Downranked / Reference-Only Checks
 These remain as tools but are not in daily P0/P1:
-- `tools/verify-perf-workflow-contract.mjs`
-- `tools/verify-perf-history-contract.mjs`
-- `tools/verify-perf-urls-ssot.mjs`
+- `tools/reference/verify-perf-workflow-contract.mjs`
+- `tools/reference/verify-perf-history-contract.mjs`
+- `tools/reference/verify-perf-urls-ssot.mjs`
+- `tools/reference/verify-runtime-es5-compat.mjs`
+- `tools/reference/verify-route-a11y-contract.mjs`
+- `tools/reference/verify-loadmore-contract.mjs`
+- `tools/reference/verify-render-atomic-swap.mjs`
+- `tools/reference/verify-template-no-nested-interactives.mjs`
+- `tools/reference/verify-tap-targets.mjs`
+- `tools/reference/verify-mixed-config-gated.mjs`
+- `tools/reference/verify-sidebar-sticky-contract.mjs`
+- `tools/reference/verify-infopanel-toc-contract.mjs`
 - granular `verify-no-*/verify-*-policy` checks previously chained one-by-one in `gate-prod.sh`
 - direct ad-hoc long smoke sub-checks replaced by minimal live smoke orchestration
 

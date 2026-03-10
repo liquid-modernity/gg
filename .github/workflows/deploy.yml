@@ -43,6 +43,10 @@ jobs:
           npm run verify:release
           npm run verify:assets
 
+      - name: Verify P1 for manual deploy
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: npm run verify:p1
+
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
 
