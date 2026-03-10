@@ -68,13 +68,13 @@ function verifyPanelSurfaces() {
       "BLOG_RIGHT_TOC_4_LEVEL",
       tocOk ? metaLine : `expected tocLinks=4 in metadata runtime detail :: ${metaLine}`
     );
-    const thumbOrderOk = /\bthumbAfterTitle=true\b/.test(metaLine);
+    const thumbOrderOk = /\bthumbBeforeTitle=true\b/.test(metaLine);
     pushResult(
       thumbOrderOk,
       "BLOG_RIGHT_FIELD_ORDER_TITLE_THUMBNAIL",
       thumbOrderOk
         ? metaLine
-        : `expected thumbAfterTitle=true in metadata runtime detail :: ${metaLine}`
+        : `expected thumbBeforeTitle=true in metadata runtime detail :: ${metaLine}`
     );
   }
 

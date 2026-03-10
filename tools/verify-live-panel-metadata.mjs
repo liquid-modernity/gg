@@ -40,8 +40,8 @@ const LISTING_MARKERS = [
 ];
 
 const LISTING_ROWS = [
-  "title",
   "thumbnail",
+  "title",
   "author",
   "contributors",
   "labels",
@@ -56,8 +56,8 @@ const LISTING_ROWS = [
 ];
 
 const LISTING_ROW_ORDER = [
-  "title",
   "thumbnail",
+  "title",
   "author",
   "contributors",
   "labels",

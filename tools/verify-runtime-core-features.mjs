@@ -1434,13 +1434,6 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   preview.classList.add("gg-editorial-preview");
   panel.appendChild(preview);
 
-  const titleRow = document.createElement("div");
-  titleRow.setAttribute("data-row", "title");
-  preview.appendChild(titleRow);
-  const titleLink = document.createElement("a");
-  titleLink.setAttribute("data-s", "title");
-  titleRow.appendChild(titleLink);
-
   const mediaWrap = document.createElement("div");
   mediaWrap.classList.add("gg-epanel__media");
   mediaWrap.setAttribute("data-row", "thumbnail");
@@ -1448,6 +1441,13 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   thumb.classList.add("gg-info-panel__thumb-img");
   mediaWrap.appendChild(thumb);
   preview.appendChild(mediaWrap);
+
+  const titleRow = document.createElement("div");
+  titleRow.setAttribute("data-row", "title");
+  preview.appendChild(titleRow);
+  const titleLink = document.createElement("a");
+  titleLink.setAttribute("data-s", "title");
+  titleRow.appendChild(titleLink);
 
   const rows = [
     "author",
@@ -1610,10 +1610,10 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
 
   const titleIndex = preview.children.indexOf(titleRow);
   const mediaIndex = preview.children.indexOf(mediaWrap);
-  const thumbAfterTitle = titleIndex >= 0 && mediaIndex > titleIndex;
-  if (!thumbAfterTitle) throw new Error("metadata panel thumbnail must appear after title row");
+  const thumbBeforeTitle = mediaIndex >= 0 && titleIndex > mediaIndex;
+  if (!thumbBeforeTitle) throw new Error("metadata panel thumbnail must appear before title row");
 
-  return `panel=open title="${titleLink.textContent.trim()}" author="${authorText.textContent.trim()}" comments="${commentsText}" updated="${updatedText}" readtime="${readText}" tocLinks=${tocLinks} thumbAfterTitle=${thumbAfterTitle}`;
+  return `panel=open title="${titleLink.textContent.trim()}" author="${authorText.textContent.trim()}" comments="${commentsText}" updated="${updatedText}" readtime="${readText}" tocLinks=${tocLinks} thumbBeforeTitle=${thumbBeforeTitle}`;
 }
 
 async function testLoadMoreRuntime(loadMoreSnippet) {

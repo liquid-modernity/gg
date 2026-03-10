@@ -2821,7 +2821,6 @@ display: none;
 }
 }
 
-.gg-blog-layout--list .gg-info-panel{ padding:10px; }
 main.gg-main[data-gg-surface="home"] .gg-blog-layout--list .gg-info-panel__thumb.gg-info-panel__hero{
 aspect-ratio: 1 / var(--gg-card-ratio);
 }
