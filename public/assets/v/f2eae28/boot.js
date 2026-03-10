@@ -131,6 +131,8 @@ function E(){ C(); }
 
 function U(){
 try { d.removeEventListener('pointerdown', E, true); } catch (_) {}
+try { d.removeEventListener('touchstart', E, true); } catch (_) {}
+try { d.removeEventListener('click', E, true); } catch (_) {}
 try { d.removeEventListener('keydown', E, true); } catch (_) {}
 }
 
@@ -162,19 +164,40 @@ function shouldInterceptAction(action){
 return action === 'home' || action === 'blog' || action === 'contact' || action === 'search' || action === 'more';
 }
 
-function isDockReady(){
-if (w.__GG_DOCK_READY === true) return true;
-try {
-var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
-if (!dock) return false;
-return dock.getAttribute('data-gg-ready') === '1';
-} catch (_) {}
+function isHomeCapableSurface(){
+var main = d.querySelector ? d.querySelector('main.gg-main[data-gg-home-root],main.gg-main[data-gg-surface]') : null;
+if (!main) return false;
+if ((main.getAttribute('data-gg-home-root') || '') === '1') return true;
+var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+if (surface === 'landing' || surface === 'home') return true;
+var hasLanding = !!(main.querySelector && main.querySelector('[data-gg-home-layer="landing"],.gg-home-landing'));
+var hasBlog = !!(main.querySelector && main.querySelector('[data-gg-home-layer="blog"],.gg-home-blog'));
+return hasLanding && hasBlog;
+}
+
+function shouldHardFallback(action){
+if (action === 'blog') return true;
+if (action === 'home' || action === 'contact') return !isHomeCapableSurface();
 return false;
+}
+
+function fallbackDelayForAction(action){
+if (!shouldHardFallback(action)) return 0;
+return 2200;
+}
+
+function isDockReady(){
+var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
+return !!(dock && dock.getAttribute('data-gg-ready') === '1');
 }
 
 function clearPendingDockAction(){
 B._pendingDockAction = null;
 w.__GG_PENDING_DOCK_ACTION = null;
+if (B._pendingDockFallbackTimer) {
+  w.clearTimeout(B._pendingDockFallbackTimer);
+  B._pendingDockFallbackTimer = 0;
+}
 }
 
 function hardNavigate(href){
@@ -222,10 +245,10 @@ var timer = w.setInterval(function(){
 }, 60);
 }
 
-function requestUiNow(reason){
+function requestUiNow(reason, replayTimeoutMs){
 C();
 var tries = 0;
-var maxTries = 40;
+var maxTries = 90;
 (function tick(){
   var boot = w.GG && w.GG.boot;
   if (boot && typeof boot.requestUi === 'function') {
@@ -241,15 +264,17 @@ var maxTries = 40;
   tries += 1;
   if (tries < maxTries) w.setTimeout(tick, 50);
 })();
-waitForDockReplay(1800);
+waitForDockReplay((typeof replayTimeoutMs === 'number' && replayTimeoutMs > 0) ? replayTimeoutMs : 4200);
 }
 
-function queueDockAction(link, evt){
+function queueDockAction(link, evt, opts){
 if (!link) return;
+opts = opts || {};
 var action = String((link.getAttribute('data-gg-action') || '')).toLowerCase();
 if (!action) return;
 var href = link.getAttribute('href') || '';
 var anchor = readAnchor(link, href);
+var fallbackMs = fallbackDelayForAction(action);
 var payload = {
   action: action,
   href: href,
@@ -258,19 +283,39 @@ var payload = {
 };
 B._pendingDockAction = payload;
 w.__GG_PENDING_DOCK_ACTION = payload;
-requestUiNow('dock-action:' + action);
-if (!shouldInterceptAction(action)) return;
-if (evt && evt.preventDefault) evt.preventDefault();
-if (evt && evt.stopPropagation) evt.stopPropagation();
-if (evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+requestUiNow('dock-action:' + action, fallbackMs > 0 ? (fallbackMs + 1200) : 4200);
+if (opts.primeOnly) return;
+if (shouldInterceptAction(action)) {
+  if (evt && evt.preventDefault) evt.preventDefault();
+  if (evt && evt.stopPropagation) evt.stopPropagation();
+  if (evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+}
+if (fallbackMs > 0) {
+  if (B._pendingDockFallbackTimer) {
+    w.clearTimeout(B._pendingDockFallbackTimer);
+    B._pendingDockFallbackTimer = 0;
+  }
+  B._pendingDockFallbackTimer = w.setTimeout(function(){
+    var pending = B._pendingDockAction || w.__GG_PENDING_DOCK_ACTION;
+    if (!pending) return;
+    if ((pending.action || '') !== action) return;
+    clearPendingDockAction();
+    hardNavigate(href || anchor || '/');
+  }, fallbackMs);
+}
+}
 
-w.setTimeout(function(){
-  var pending = B._pendingDockAction || w.__GG_PENDING_DOCK_ACTION;
-  if (!pending) return;
-  if ((pending.action || '') !== action) return;
-  clearPendingDockAction();
-  hardNavigate(href || anchor || '/');
-}, 1400);
+function onDockActionPrime(evt){
+if (!evt || evt.defaultPrevented) return;
+if (Date.now() < (w.__gg_recovering_until || 0)) return;
+var t = evt.target;
+if (!t || !t.closest) return;
+var link = t.closest('a[data-gg-action]');
+if (!link) return;
+var scope = link.closest ? link.closest('nav.gg-dock,#gg-dock-more') : null;
+if (!scope) return;
+if (isDockReady()) return;
+queueDockAction(link, null, { primeOnly: true });
 }
 
 function onDockActionClick(evt){
@@ -284,12 +329,16 @@ var scope = link.closest ? link.closest('nav.gg-dock,#gg-dock-more') : null;
 if (!scope) return;
 var dockReady = isDockReady();
 if (dockReady) return;
-queueDockAction(link, evt);
+queueDockAction(link, evt, { primeOnly: false });
 }
 
 w.addEventListener('keydown', O, true);
+d.addEventListener('pointerdown', onDockActionPrime, true);
+d.addEventListener('touchstart', onDockActionPrime, { passive: true, capture: true });
 d.addEventListener('click', onDockActionClick, true);
 d.addEventListener('pointerdown', E, { passive: true, capture: true, once: true });
+d.addEventListener('touchstart', E, { passive: true, capture: true, once: true });
+d.addEventListener('click', E, { capture: true, once: true });
 d.addEventListener('keydown', E, { capture: true, once: true });
 
 var sf = ((d.body && d.body.getAttribute('data-gg-surface')) || '').toLowerCase();

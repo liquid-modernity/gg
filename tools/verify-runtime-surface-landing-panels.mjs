@@ -5,6 +5,7 @@ import { spawnSync } from "child_process";
 
 const root = process.cwd();
 const CORE_MODULE_REL = "public/assets/latest/modules/ui.bucket.core.js";
+const BOOT_REL = "public/assets/latest/boot.js";
 const MAIN_CSS_REL = "public/assets/latest/main.css";
 const TEMPLATE_REL = "index.prod.xml";
 
@@ -186,9 +187,13 @@ class FakeElement {
   querySelectorAll(selector) {
     const key = String(selector);
     if (this._queryAll.has(key)) return this._queryAll.get(key);
-    if (key === '[data-gg-more-origin="footer"]') {
+    if (key === "[data-gg-more-origin]") {
+      return this.children.filter((child) => child && child.getAttribute && child.getAttribute("data-gg-more-origin"));
+    }
+    if (/^\[data-gg-more-origin="[^"]+"\]$/.test(key)) {
+      const origin = key.replace(/^\[data-gg-more-origin="([^"]+)"\]$/, "$1");
       return this.children.filter(
-        (child) => child && child.getAttribute && child.getAttribute("data-gg-more-origin") === "footer"
+        (child) => child && child.getAttribute && child.getAttribute("data-gg-more-origin") === origin
       );
     }
     return [];
@@ -313,6 +318,27 @@ function verifyLandingDockRuntime() {
 
   footerSocial._queryAll.set(".gg-footer__social-title", [aiTitle, payTitle]);
 
+  const leftSidebar = new FakeElement("aside");
+  leftSidebar.classList.add("gg-blog-sidebar--left");
+  const navLinkPolicy = new FakeElement("a");
+  navLinkPolicy.setAttribute("href", "/p/privacy-policy.html");
+  navLinkPolicy.textContent = "docs Privacy Policy";
+  const navIconPolicy = new FakeElement("span");
+  navIconPolicy.className = "material-symbols-rounded";
+  navIconPolicy.textContent = "docs";
+  navLinkPolicy._queryOne.set(".material-symbols-rounded,.gg-icon.material-symbols-rounded", navIconPolicy);
+  const navLinkSupport = new FakeElement("a");
+  navLinkSupport.setAttribute("href", "/p/support.html");
+  navLinkSupport.textContent = "support_agent Help Center";
+  const navIconSupport = new FakeElement("span");
+  navIconSupport.className = "material-symbols-rounded";
+  navIconSupport.textContent = "support_agent";
+  navLinkSupport._queryOne.set(".material-symbols-rounded,.gg-icon.material-symbols-rounded", navIconSupport);
+  leftSidebar._queryAll.set(
+    "details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]",
+    [navLinkPolicy, navLinkSupport]
+  );
+
   const installButton = new FakeElement("button");
   installButton.setAttribute("id", "install");
   installButton.setAttribute("aria-label", "Add to your devices");
@@ -330,6 +356,7 @@ function verifyLandingDockRuntime() {
     querySelector(selector) {
       if (selector === "#gg-landing-hero-5") return contactTarget;
       if (selector === ".gg-footer__social") return footerSocial;
+      if (selector === ".gg-blog-sidebar--left") return leftSidebar;
       return null;
     },
     getElementById(id) {
@@ -468,11 +495,27 @@ function verifyLandingDockRuntime() {
     .filter(Boolean);
   const hasAi = labels.some((item) => /^AI Summary\b/i.test(item));
   const hasPayment = labels.some((item) => /^Payment\b/i.test(item));
-  const hasInstall = labels.some((item) => /add to your devices/i.test(item));
+  const hasInstall = labels.some((item) => /install web app to device/i.test(item));
+  const navItems = moreList.querySelectorAll('[data-gg-more-origin="navtree"]');
+  const hasNavShortcut = navItems.some((item) => {
+    const anchor = item && item.children ? item.children[0] : null;
+    if (!anchor || !anchor.children || anchor.children.length < 2) return false;
+    const labelNode = anchor.children[1];
+    const labelText = (labelNode && labelNode.textContent ? labelNode.textContent : "").trim();
+    return /privacy policy|help center/i.test(labelText);
+  });
+  const hasNavIcon = navItems.some((item) => {
+    const anchor = item && item.children ? item.children[0] : null;
+    if (!anchor || !anchor.children || anchor.children.length < 1) return false;
+    const iconNode = anchor.children[0];
+    const iconClass = iconNode && iconNode.className ? String(iconNode.className) : "";
+    const iconText = iconNode && iconNode.textContent ? String(iconNode.textContent).trim() : "";
+    return /material-symbols-rounded/.test(iconClass) && !!iconText;
+  });
   pushResult(
-    moreOk && morePanel.hidden === false && hasAi && hasPayment && hasInstall,
+    moreOk && morePanel.hidden === false && hasAi && hasPayment && hasInstall && hasNavShortcut && hasNavIcon,
     "LANDING_DOCK_MORE_DRAWER_CONTENT",
-    `open=${moreOk && morePanel.hidden === false} ai=${hasAi} payment=${hasPayment} install=${hasInstall}`
+    `open=${moreOk && morePanel.hidden === false} ai=${hasAi} payment=${hasPayment} install=${hasInstall} nav=${hasNavShortcut} navIcon=${hasNavIcon}`
   );
 
   const installAnchor = footerItems
@@ -491,6 +534,279 @@ function verifyLandingDockRuntime() {
     installClicks > 0,
     "LANDING_DOCK_MORE_INSTALL_ACTION",
     `installClicks=${installClicks}`
+  );
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function runDockPreInitScenario(opts) {
+  const action = String(opts.action || "");
+  const href = String(opts.href || "/");
+  const homeCapable = !!opts.homeCapable;
+  const provideReplay = !!opts.provideReplay;
+  const requestUiDelay = Number.isFinite(opts.requestUiDelay) ? opts.requestUiDelay : 0;
+  const replayDelay = Number.isFinite(opts.replayDelay) ? opts.replayDelay : 80;
+  const settleMs = Number.isFinite(opts.settleMs) ? opts.settleMs : 900;
+  const assignCalls = [];
+  let replayedAction = "";
+
+  const dockNode = new FakeElement("nav");
+  dockNode.classList.add("gg-dock");
+  dockNode.setAttribute("data-gg-module", "dock");
+  dockNode.setAttribute("data-gg-ready", "0");
+  const mainNode = new FakeElement("main");
+  mainNode.classList.add("gg-main");
+  mainNode.setAttribute("data-gg-surface", homeCapable ? "landing" : "post");
+  if (homeCapable) {
+    mainNode.setAttribute("data-gg-home-root", "1");
+  }
+
+  const docListeners = Object.create(null);
+  const winListeners = Object.create(null);
+  const document = {
+    readyState: "complete",
+    currentScript: { src: "/assets/latest/boot.js" },
+    documentElement: new FakeElement("html"),
+    body: new FakeElement("body"),
+    head: {
+      appendChild(node) {
+        const src = node && node.src ? String(node.src) : "";
+        if (/\/main\.js(?:\?|$)/.test(src)) {
+          setTimeout(() => {
+            if (node && typeof node.onload === "function") node.onload();
+          }, 10);
+        }
+        return node;
+      },
+    },
+    querySelectorAll(selector) {
+      if (String(selector) === "dialog#gg-search,[data-gg-search-modal]") return [];
+      return [];
+    },
+    getElementsByTagName(tag) {
+      if (String(tag).toLowerCase() === "script") return [{ src: "/assets/latest/boot.js" }];
+      return [];
+    },
+    createElement(tag) {
+      const t = String(tag || "").toLowerCase();
+      if (t === "script") {
+        return {
+          src: "",
+          async: false,
+          onload: null,
+          onerror: null,
+          setAttribute() {},
+        };
+      }
+      return new FakeElement(t || "div");
+    },
+    addEventListener(type, fn) {
+      const key = String(type);
+      if (!docListeners[key]) docListeners[key] = [];
+      docListeners[key].push(fn);
+    },
+    removeEventListener(type, fn) {
+      const key = String(type);
+      if (!docListeners[key]) return;
+      docListeners[key] = docListeners[key].filter((cb) => cb !== fn);
+    },
+    querySelector(selector) {
+      const key = String(selector);
+      if (key === "nav.gg-dock[data-gg-module=\"dock\"],nav.gg-dock") return dockNode;
+      if (key === "main.gg-main[data-gg-home-root],main.gg-main[data-gg-surface]") return mainNode;
+      if (key === "nav.gg-dock input[type=\"search\"],nav.gg-dock [data-gg-dock-search-input]") return null;
+      return null;
+    },
+  };
+  document.body.setAttribute("data-gg-surface", homeCapable ? "landing" : "post");
+
+  const windowObj = {
+    GG: {},
+    GG_BOOT: {},
+    __GG_PENDING_DOCK_ACTION: null,
+    __gg_recovering_until: 0,
+    location: {
+      href: homeCapable ? "https://example.test/" : "https://example.test/p/post.html",
+      pathname: homeCapable ? "/" : "/p/post.html",
+      search: "",
+      hash: "",
+      assign(next) {
+        assignCalls.push(String(next || ""));
+      },
+    },
+    history: {
+      state: null,
+      pushState() {},
+      replaceState() {},
+    },
+    requestAnimationFrame(cb) {
+      return setTimeout(() => {
+        if (typeof cb === "function") cb();
+      }, 0);
+    },
+    requestIdleCallback(cb) {
+      return setTimeout(() => {
+        if (typeof cb === "function") cb({ didTimeout: false, timeRemaining: () => 50 });
+      }, 0);
+    },
+    cancelAnimationFrame(id) {
+      clearTimeout(id);
+    },
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    addEventListener(type, fn) {
+      const key = String(type);
+      if (!winListeners[key]) winListeners[key] = [];
+      winListeners[key].push(fn);
+    },
+    removeEventListener(type, fn) {
+      const key = String(type);
+      if (!winListeners[key]) return;
+      winListeners[key] = winListeners[key].filter((cb) => cb !== fn);
+    },
+    dispatchEvent(evt) {
+      const key = evt && evt.type ? String(evt.type) : "";
+      const list = winListeners[key] || [];
+      list.forEach((fn) => {
+        try {
+          fn(evt);
+        } catch (_) {}
+      });
+    },
+    CustomEvent: function CustomEvent(type, init) {
+      this.type = type;
+      this.detail = init ? init.detail : null;
+    },
+  };
+
+  const context = vm.createContext({
+    window: windowObj,
+    document,
+    history: windowObj.history,
+    location: windowObj.location,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    Date,
+    URL,
+    URLSearchParams,
+    CustomEvent: windowObj.CustomEvent,
+    console,
+  });
+
+  const bootSource = fs.readFileSync(path.join(root, BOOT_REL), "utf8");
+  vm.runInContext(bootSource, context, { filename: "boot-preinit-runtime.mjs" });
+
+  setTimeout(() => {
+    windowObj.GG.boot = windowObj.GG.boot || {};
+    windowObj.GG.boot.requestUi = function requestUi() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          if (provideReplay) {
+            dockNode.setAttribute("data-gg-ready", "1");
+            windowObj.GG.modules = windowObj.GG.modules || {};
+            windowObj.GG.modules.Dock = {
+              replayAction(payload) {
+                replayedAction = payload && payload.action ? String(payload.action) : "";
+                return replayedAction === action;
+              },
+            };
+          }
+          resolve(true);
+        }, replayDelay);
+      });
+    };
+  }, Math.max(0, requestUiDelay));
+
+  const link = new FakeElement("a");
+  link.setAttribute("data-gg-action", action);
+  link.setAttribute("href", href);
+  link.closest = function closest(selector) {
+    if (String(selector) === "nav.gg-dock,#gg-dock-more") return dockNode;
+    return null;
+  };
+  const clickTarget = {
+    closest(selector) {
+      if (String(selector) === "a[data-gg-action]") return link;
+      return null;
+    },
+  };
+  const clickEvent = {
+    target: clickTarget,
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+    stopPropagation() {},
+    stopImmediatePropagation() {},
+  };
+  const clickHandlers = docListeners.click || [];
+  clickHandlers.forEach((fn) => {
+    try {
+      fn(clickEvent);
+    } catch (_) {}
+  });
+
+  await wait(settleMs);
+  const pending = !!(
+    (windowObj.GG_BOOT && windowObj.GG_BOOT._pendingDockAction) || windowObj.__GG_PENDING_DOCK_ACTION
+  );
+  return { assignCalls, replayedAction, pending };
+}
+
+async function verifyDockPreInitRuntime() {
+  const search = await runDockPreInitScenario({
+    action: "search",
+    href: "/search",
+    homeCapable: true,
+    provideReplay: true,
+    requestUiDelay: 60,
+    replayDelay: 120,
+    settleMs: 900,
+  });
+  const searchNoHardNav = search.assignCalls.length === 0;
+  const searchReplay = search.replayedAction === "search" && !search.pending;
+  pushResult(
+    searchNoHardNav && searchReplay,
+    "PREINIT_DOCK_SEARCH_INTENT",
+    `assign=${search.assignCalls.length} replay=${search.replayedAction || "-"} pending=${search.pending}`
+  );
+
+  const contact = await runDockPreInitScenario({
+    action: "contact",
+    href: "/#gg-landing-hero-5",
+    homeCapable: true,
+    provideReplay: true,
+    requestUiDelay: 60,
+    replayDelay: 120,
+    settleMs: 900,
+  });
+  const contactNoHardNav = contact.assignCalls.length === 0;
+  const contactReplay = contact.replayedAction === "contact" && !contact.pending;
+  pushResult(
+    contactNoHardNav && contactReplay,
+    "PREINIT_DOCK_CONTACT_INTENT",
+    `assign=${contact.assignCalls.length} replay=${contact.replayedAction || "-"} pending=${contact.pending}`
+  );
+
+  const blog = await runDockPreInitScenario({
+    action: "blog",
+    href: "/blog",
+    homeCapable: false,
+    provideReplay: false,
+    requestUiDelay: 0,
+    replayDelay: 0,
+    settleMs: 2500,
+  });
+  pushResult(
+    blog.assignCalls.length > 0,
+    "PREINIT_DOCK_ROUTE_FALLBACK_BLOG",
+    `assign=${blog.assignCalls.length} replay=${blog.replayedAction || "-"}`
   );
 }
 
@@ -527,9 +843,10 @@ function printE2ENotes() {
   notes.forEach((note) => console.log(`INFO E2E_REQUIRED :: ${note}`));
 }
 
-function main() {
+async function main() {
   verifyPanelSurfaces();
   verifyLandingDockRuntime();
+  await verifyDockPreInitRuntime();
   verifyLandingViewportFit();
   printE2ENotes();
 
@@ -541,4 +858,9 @@ function main() {
   console.log(`VERIFY_RUNTIME_SURFACE_LANDING_PANELS: PASS (${results.length} checks)`);
 }
 
-main();
+main().catch((err) => {
+  const detail = err && err.stack ? err.stack : String(err || "runtime-error");
+  pushResult(false, "VERIFY_RUNTIME_SURFACE_LANDING_PANELS_RUNTIME", normalizeLines(detail));
+  console.error(`VERIFY_RUNTIME_SURFACE_LANDING_PANELS: FAIL (runtime exception)`);
+  process.exit(1);
+});

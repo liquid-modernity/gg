@@ -2136,6 +2136,14 @@ for (var i = 0; i < stale.length; i++) {
 }
 }
 
+function clearMoreNavItems(list){
+if (!list) return;
+var stale = list.querySelectorAll('[data-gg-more-origin="navtree"]');
+for (var i = 0; i < stale.length; i++) {
+  if (stale[i] && stale[i].parentNode) stale[i].parentNode.removeChild(stale[i]);
+}
+}
+
 function appendMoreFooterLinkItem(list, href, label, source){
 if (!list || !label) return;
 var li = document.createElement('li');
@@ -2153,6 +2161,31 @@ li.appendChild(a);
 list.appendChild(li);
 }
 
+function appendMoreNavShortcutItem(list, item){
+if (!list || !item || !item.label) return;
+var li = document.createElement('li');
+li.setAttribute('data-gg-more-origin', 'navtree');
+var a = document.createElement('a');
+a.href = item.href || '#';
+if (item.source) {
+  var rel = item.source.getAttribute('rel');
+  var target = item.source.getAttribute('target');
+  if (rel) a.setAttribute('rel', rel);
+  if (target) a.setAttribute('target', target);
+}
+var iconText = (item.icon || '').trim() || 'link';
+var iconNode = document.createElement('span');
+iconNode.className = 'gg-icon material-symbols-rounded';
+iconNode.setAttribute('aria-hidden', 'true');
+iconNode.textContent = iconText;
+var labelNode = document.createElement('span');
+labelNode.textContent = item.label;
+a.appendChild(iconNode);
+a.appendChild(labelNode);
+li.appendChild(a);
+list.appendChild(li);
+}
+
 function resolveMoreItemLabel(title, link){
 var titleText = textOf(title);
 var aria = link ? (link.getAttribute('aria-label') || '').trim() : '';
@@ -2164,49 +2197,112 @@ if (titleText && base.toLowerCase().indexOf(titleText.toLowerCase()) === -1) {
 return base;
 }
 
+function stripIconText(link, text){
+if (!link || !text) return text;
+var icon = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
+var iconText = icon ? textOf(icon) : '';
+if (!iconText) return text;
+var out = text.replace(iconText, '').trim();
+return out || text;
+}
+
+function resolveNavShortcutLabel(link){
+var label = stripIconText(link, textOf(link));
+if (!label) label = (link && link.getAttribute ? (link.getAttribute('aria-label') || '').trim() : '') || 'Shortcut';
+return label;
+}
+
+function resolveNavShortcutIcon(link){
+if (!link) return 'link';
+var icon = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
+var iconText = icon ? textOf(icon) : '';
+if (iconText) return iconText;
+var dataIcon = (link.getAttribute && link.getAttribute('data-gg-icon')) ? link.getAttribute('data-gg-icon') : '';
+if (dataIcon) return dataIcon;
+var details = link.closest ? link.closest('details.gg-navtree') : null;
+if (details) {
+  var summaryIcon = details.querySelector ? details.querySelector('.gg-navtree__summary-icon.material-symbols-rounded') : null;
+  var summaryText = summaryIcon ? textOf(summaryIcon) : '';
+  if (summaryText) return summaryText;
+}
+return 'link';
+}
+
+function collectNavTreeShortcuts(){
+var out = [];
+var seen = {};
+var root = document.querySelector('.gg-blog-sidebar--left') || document;
+var links = root.querySelectorAll ? root.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]') : [];
+if ((!links || !links.length) && root !== document && document.querySelectorAll) {
+  links = document.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]');
+}
+for (var i = 0; i < links.length; i++) {
+  var link = links[i];
+  if (!link) continue;
+  if (link.closest && link.closest('template')) continue;
+  var href = (link.getAttribute('href') || '').trim();
+  if (!href || href === '#' || /^javascript:/i.test(href)) continue;
+  var label = resolveNavShortcutLabel(link);
+  if (!label) continue;
+  var key = label.toLowerCase() + '|' + href.replace(/\/+$/, '');
+  if (seen[key]) continue;
+  seen[key] = 1;
+  out.push({
+    href: href,
+    label: label,
+    icon: resolveNavShortcutIcon(link),
+    source: link
+  });
+  if (out.length >= 14) break;
+}
+return out;
+}
+
 function syncMoreFooterActions(panel){
 if (!panel) return;
 var list = panel.querySelector('.gg-dock-more__list');
 if (!list) return;
 clearMoreFooterItems(list);
+clearMoreNavItems(list);
 
 var footerActions = document.querySelector('.gg-footer__social');
-if (!footerActions) return;
-
-var titles = footerActions.querySelectorAll('.gg-footer__social-title');
-for (var i = 0; i < titles.length; i++) {
-  var title = titles[i];
-  var cluster = title ? title.nextElementSibling : null;
-  while (cluster && (!cluster.classList || !cluster.classList.contains('gg-footer__cluster'))) {
-    cluster = cluster.nextElementSibling;
-  }
-  if (!cluster) continue;
-  var links = cluster.querySelectorAll('.gg-footer__social-links a.gg-footer__social-link');
-  for (var j = 0; j < links.length; j++) {
-    var link = links[j];
-    appendMoreFooterLinkItem(
-      list,
-      link.getAttribute('href') || '#',
-      resolveMoreItemLabel(title, link),
-      link
-    );
+if (footerActions) {
+  var titles = footerActions.querySelectorAll('.gg-footer__social-title');
+  for (var i = 0; i < titles.length; i++) {
+    var title = titles[i];
+    var cluster = title ? title.nextElementSibling : null;
+    while (cluster && (!cluster.classList || !cluster.classList.contains('gg-footer__cluster'))) {
+      cluster = cluster.nextElementSibling;
+    }
+    if (!cluster) continue;
+    var links = cluster.querySelectorAll('.gg-footer__social-links a.gg-footer__social-link');
+    for (var j = 0; j < links.length; j++) {
+      var link = links[j];
+      appendMoreFooterLinkItem(
+        list,
+        link.getAttribute('href') || '#',
+        resolveMoreItemLabel(title, link),
+        link
+      );
+    }
   }
 }
 
 var installButton = document.getElementById('install');
 if (installButton) {
-  var installLabel = (installButton.getAttribute('aria-label') || '').trim() ||
-    textOf(installButton.querySelector('.gg-install__label')) ||
-    textOf(installButton) ||
-    'Install web app';
   var li = document.createElement('li');
   li.setAttribute('data-gg-more-origin', 'footer');
   var a = document.createElement('a');
   a.href = '#';
   a.setAttribute('data-gg-more-action', 'install');
-  a.textContent = installLabel;
+  a.textContent = 'Install Web App to Device';
   li.appendChild(a);
   list.appendChild(li);
+}
+
+var navShortcuts = collectNavTreeShortcuts();
+for (var n = 0; n < navShortcuts.length; n++) {
+  appendMoreNavShortcutItem(list, navShortcuts[n]);
 }
 }
 
@@ -2263,8 +2359,47 @@ var attr = mainEl.getAttribute('data-gg-home-state');
 return (attr === 'blog') ? 'blog' : 'landing';
 }
 
+function hasHomeLayers(){
+if (!mainEl || !mainEl.querySelector) return false;
+var landing = mainEl.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
+var blog = mainEl.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
+return !!(landing && blog);
+}
+
+function forceHomeState(state){
+if (!hasHomeLayers()) return false;
+var landing = mainEl.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
+var blog = mainEl.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
+var showLanding = state !== 'blog';
+if (landing) {
+  landing.style.display = showLanding ? 'block' : 'none';
+  landing.setAttribute('aria-hidden', showLanding ? 'false' : 'true');
+}
+if (blog) {
+  blog.style.display = showLanding ? 'none' : 'block';
+  blog.setAttribute('aria-hidden', showLanding ? 'true' : 'false');
+}
+if (mainEl) mainEl.setAttribute('data-gg-home-state', showLanding ? 'landing' : 'blog');
+return true;
+}
+
+function setHomeStateSafe(state){
+var done = false;
+if (GG.modules && GG.modules.homeState && typeof GG.modules.homeState.setState === 'function') {
+  try {
+    GG.modules.homeState.setState(state);
+    done = true;
+  } catch (_) {}
+}
+if (!done) done = forceHomeState(state);
+return done;
+}
+
 function isHomeCapable(){
-return !!(mainEl && GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
+if (!mainEl) return false;
+if ((mainEl.getAttribute('data-gg-home-root') || '') === '1') return true;
+if (hasHomeLayers()) return true;
+return !!(GG.util && GG.util.homeRouter && GG.util.homeRouter.isHomeRoute && GG.util.homeRouter.isHomeRoute(mainEl));
 }
 function effectiveDockState() {
 if (isHomeCapable()) return currentHomeState();
@@ -2375,8 +2510,8 @@ return true;
 }
 
 if (action === 'home') {
-if (isHomeCapable() && GG.modules.homeState) {
-  GG.modules.homeState.setState('landing');
+if (isHomeCapable()) {
+  setHomeStateSafe('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('landing', '/');
   } else {
@@ -2390,8 +2525,8 @@ return false;
 }
 
 if (action === 'blog') {
-if (isHomeCapable() && GG.modules.homeState) {
-  GG.modules.homeState.setState('blog');
+if (isHomeCapable()) {
+  setHomeStateSafe('blog');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('blog', '/blog');
   }
@@ -2410,8 +2545,8 @@ return false;
 }
 
 if (action === 'contact') {
-if (isHomeCapable() && GG.modules.homeState) {
-  GG.modules.homeState.setState('landing');
+if (isHomeCapable()) {
+  setHomeStateSafe('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
     GG.util.homeRouter.pushState('landing', '/');
   }
@@ -2436,19 +2571,15 @@ var action = payload.action || '';
 return runAction(action, payload);
 }
 
-function consumePendingAction(){
+function maybeReplayPendingAction(){
 var boot = window.GG_BOOT || {};
 var pending = boot._pendingDockAction || window.__GG_PENDING_DOCK_ACTION || null;
-if (!pending) return null;
+if (!pending) return;
+var ok = false;
+try { ok = !!replayAction(pending); } catch (_) { ok = false; }
+if (!ok) return;
 boot._pendingDockAction = null;
 window.__GG_PENDING_DOCK_ACTION = null;
-return pending;
-}
-
-function maybeReplayPendingAction(){
-var pending = consumePendingAction();
-if (!pending) return;
-replayAction(pending);
 }
 
 function bindMorePanel(){
@@ -2569,6 +2700,7 @@ if (mainEl && window.MutationObserver){
 }
 dockEl.setAttribute('data-gg-ready', '1');
 window.__GG_DOCK_READY = true;
+try { window.dispatchEvent(new CustomEvent('gg:dock-ready')); } catch (_) {}
 }
 
 return {
@@ -4976,6 +5108,15 @@ GG.app.plan.forEach(function(item){
 GG.app.selectorMap[item.name] = GG.core.selectorLabel(item.selector);
 });
 
+function markUiHydrated(source){
+if (GG.boot) GG.boot._uiHydrated = true;
+try {
+  if (typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
+    window.dispatchEvent(new window.CustomEvent('gg:ui-ready', { detail: { source: source || 'ui' } }));
+  }
+} catch (_) {}
+}
+
 GG.app.init = GG.app.init || function(){
 if (GG.app._init) return;
 GG.app._init = true;
@@ -4992,9 +5133,10 @@ for (var i = 0; i < GG.app.plan.length; i++) {
       if (window.GG_DIAG && GG_DIAG.modules) GG_DIAG.modules[item.name] = 'skip';
       return;
     }
-    GG.boot.safeInit(item.name, function(){ item.init(host); });
-  })(GG.app.plan[i]);
-}
+	    GG.boot.safeInit(item.name, function(){ item.init(host); });
+	  })(GG.app.plan[i]);
+	}
+markUiHydrated('app.init');
 };
 
 GG.app.ensureBuckets = GG.app.ensureBuckets || function(){
@@ -5039,13 +5181,14 @@ function runTasks(){
     { name: 'tagHubPage.reinit', when: { system:true }, fn: function(){ if (GG.modules.tagHubPage && GG.modules.tagHubPage.init) GG.modules.tagHubPage.init(document); } },
     { name: 'interactiveModules.reinit', fn: function(){ if (GG.util && GG.util.initInteractiveModules) GG.util.initInteractiveModules(document); } }
   ];
-  for (var i = 0; i < tasks.length; i++) {
-    if (ctx && tasks[i] && tasks[i].when && GG.core && GG.core.routerCtx && typeof GG.core.routerCtx.matches === 'function' && !GG.core.routerCtx.matches(tasks[i].when, ctx)) {
-      continue;
-    }
-    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
-  }
-}
+	  for (var i = 0; i < tasks.length; i++) {
+	    if (ctx && tasks[i] && tasks[i].when && GG.core && GG.core.routerCtx && typeof GG.core.routerCtx.matches === 'function' && !GG.core.routerCtx.matches(tasks[i].when, ctx)) {
+	      continue;
+	    }
+	    GG.boot.safeInit(tasks[i].name, tasks[i].fn);
+	  }
+  markUiHydrated('app.rehydrate');
+	}
 var ensured = GG.app && typeof GG.app.ensureBuckets === 'function' ? GG.app.ensureBuckets() : null;
 if (ensured && typeof ensured.then === 'function') return ensured.then(runTasks, runTasks);
 runTasks();
