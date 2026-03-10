@@ -3746,9 +3746,13 @@ var surface = main.getAttribute('data-gg-surface') || '';
 return (surface === 'home' || surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
+function hasS(key){ var node=panel?qs('[data-s="'+key+'"]',panel):null,v=cleanText(node&&node.textContent?node.textContent:''); return !!v&&v!=='—'; }
+function seedInitialPreview(){ var card=null; if(!panel||!main||selectedCardKey||panel.__ggSeeded==='1') return false; if(hasS('title')) return false; card=qs('.gg-post-card',main); if(!card) return false; openWithCard(card,null,{focusPanel:false,p:1}); panel.__ggSeeded='1'; return true; }
+
 function openWithCard(card, trigger, opts){
 if(!card) return;
 opts=opts||{};
+var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__ggPreviewCard=card;
@@ -3782,18 +3786,8 @@ if(instTags.length) fillChipsToSlot('tags',instTags,14); else fillChipsToSlot('t
 if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);
 applyPostMeta(metaKey);
 if(panel) panel.hidden=false;
-setBackdropVisible(true);
-if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open');
-else if(main) main.setAttribute('data-gg-info-panel', 'open');
-if(opts.select){
-  selectedCardKey=cardKey(card)||null;
-  syncSlotInfoSelected(selectedCardKey);
-}
 updateTocForCard(card, hrefFetch);
-if(opts.focusPanel!==false&&panel&&panel.focus){
-  panel.setAttribute('tabindex','-1');
-  try{ panel.focus({ preventScroll:true }); }catch(_){}
-}
+if(!p){ setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel','open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
 }
 
 function resetPanelState(){
@@ -3912,6 +3906,8 @@ closeObserver = new MutationObserver(function (muts) {
 closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-panel'] });
 }
 ensurePanelSkeleton();
+seedInitialPreview();
+if(!main.__ggInfoPanelSeeded){ main.__ggInfoPanelSeeded=1; w.setTimeout(seedInitialPreview,420); }
 }
 
 return { init: init };
