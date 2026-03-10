@@ -778,6 +778,19 @@ function createRuntimeContext(startUrl = "https://www.pakrpp.com/blog") {
         ensureLoaded(opts) {
           this._calls += 1;
           this._lastOpts = opts || null;
+          const host = document.querySelector(".gg-post__comments");
+          if (host) {
+            host.setAttribute("data-gg-comments-loaded", "1");
+            const gate = host.querySelector("[data-gg-comments-gate='ui']");
+            if (gate && gate.parentElement) gate.parentElement.removeChild(gate);
+            if (!host.querySelector("#comments")) {
+              const native = document.createElement("section");
+              native.setAttribute("id", "comments");
+              native.classList.add("gg-comments");
+              native.textContent = "Native comments runtime";
+              host.appendChild(native);
+            }
+          }
           return true;
         },
       },
@@ -1051,6 +1064,15 @@ async function testToolbarRuntime(postDetailSnippet) {
 
   const commentsBlock = document.createElement("div");
   commentsBlock.classList.add("gg-post__comments");
+  commentsBlock.setAttribute("data-gg-comments-gate", "1");
+  const commentsGate = document.createElement("div");
+  commentsGate.setAttribute("data-gg-comments-gate", "ui");
+  const commentsLoad = document.createElement("button");
+  commentsLoad.setAttribute("data-gg-comments-load", "1");
+  commentsLoad.type = "button";
+  commentsLoad.textContent = "Load comments";
+  commentsGate.appendChild(commentsLoad);
+  commentsBlock.appendChild(commentsGate);
   article.appendChild(commentsBlock);
 
   runSnippet(context, postDetailSnippet, "postdetail.runtime");
@@ -1085,6 +1107,12 @@ async function testToolbarRuntime(postDetailSnippet) {
   }
   if ((GG.services.comments._mountCalls || 0) < 1) {
     throw new Error("comments action did not trigger comments mount");
+  }
+  if (commentsBlock.getAttribute("data-gg-comments-loaded") !== "1") {
+    throw new Error("comments action did not mark native comments loaded");
+  }
+  if (!commentsSlot.querySelector("#comments")) {
+    throw new Error("native comments container was not present in comments slot");
   }
 
   toolbar.dispatchEvent(new MockEvent("click", { target: btnInfo }));
