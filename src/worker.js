@@ -205,6 +205,37 @@ const isAppJsAsset = (value) => {
   return lower.includes("/assets/");
 };
 
+const RELEASE_MISMATCH_REASON = "release_mismatch";
+
+const isReleaseDriftOnly = (reasons) => {
+  if (!Array.isArray(reasons) || !reasons.length) return false;
+  for (let i = 0; i < reasons.length; i++) {
+    if (String(reasons[i] || "").trim() !== RELEASE_MISMATCH_REASON) return false;
+  }
+  return true;
+};
+
+const rewriteVersionedAssetRef = (value, expectedRelease, origin) => {
+  const raw = String(value || "").trim();
+  const release = String(expectedRelease || "").trim();
+  if (!raw || !release) return raw;
+  let parsed;
+  try {
+    parsed = new URL(raw, origin);
+  } catch (_) {
+    return raw;
+  }
+  if (!origin || parsed.origin !== origin) return raw;
+  const match = parsed.pathname.match(/^\/assets\/v\/([^/]+)\/(.+)$/i);
+  if (!match) return raw;
+  if (String(match[1] || "").trim().toLowerCase() === release.toLowerCase()) return raw;
+  parsed.pathname = `/assets/v/${release}/${match[2]}`;
+  if (/^(?:https?:)?\/\//i.test(raw)) {
+    return parsed.toString();
+  }
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+};
+
 const BLOG_LISTING_MIN_POSTCARDS = 9;
 const BLOG_LISTING_BACKFILL_HOPS = 3;
 const BLOG_LISTING_FEED_MAX_RESULTS = 30;
@@ -1399,8 +1430,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "0bd15ee";
-    const TEMPLATE_ALLOWED_RELEASES = ["0bd15ee"];
+    const WORKER_VERSION = "5b92101";
+    const TEMPLATE_ALLOWED_RELEASES = ["5b92101"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -1732,6 +1763,8 @@ export default {
         const shouldEvaluateTemplate = request.method !== "HEAD";
         let templateMismatch = false;
         let templateMismatchReason = "";
+        let templateReleaseDrift = false;
+        let templateReleaseDriftReason = "";
         let templateContract = false;
         let templateContractReason = "";
         if (shouldEvaluateTemplate) {
@@ -1745,10 +1778,18 @@ export default {
               TEMPLATE_ALLOWED_RELEASES
             );
             const contractReasons = getTemplateContractReasons(html);
-            templateMismatch = mismatchReasons.length > 0;
-            templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
             templateContract = contractReasons.length > 0;
             templateContractReason = contractReasons.length ? contractReasons.join(",") : "";
+            const releaseOnlyMismatch = isReleaseDriftOnly(mismatchReasons);
+            templateReleaseDrift = releaseOnlyMismatch;
+            templateReleaseDriftReason = releaseOnlyMismatch ? mismatchReasons.join(",") : "";
+            templateMismatch = mismatchReasons.length > 0;
+            if (releaseOnlyMismatch && !templateContract) {
+              templateMismatch = false;
+              templateMismatchReason = "";
+            } else {
+              templateMismatchReason = mismatchReasons.length ? mismatchReasons.join(",") : "";
+            }
           } catch (e) {
             templateMismatch = true;
             templateMismatchReason = "unknown";
@@ -1986,6 +2027,26 @@ export default {
               el.setAttribute("hidden", "");
             },
           })
+          .on("link[href]", {
+            element(el) {
+              const href = (el.getAttribute("href") || "").trim();
+              if (!href) return;
+              const rewrittenHref = rewriteVersionedAssetRef(href, expectedRelease, url.origin);
+              if (rewrittenHref && rewrittenHref !== href) {
+                el.setAttribute("href", rewrittenHref);
+              }
+            },
+          })
+          .on("script[src]", {
+            element(el) {
+              const src = (el.getAttribute("src") || "").trim();
+              if (!src) return;
+              const rewrittenSrc = rewriteVersionedAssetRef(src, expectedRelease, url.origin);
+              if (rewrittenSrc && rewrittenSrc !== src) {
+                el.setAttribute("src", rewrittenSrc);
+              }
+            },
+          })
           .on("#gg-toc .gg-toc__empty", {
             element(el) {
               el.setAttribute("hidden", "");
@@ -2125,6 +2186,13 @@ export default {
           htmlResponse = await ensurePostTocResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
+        if (templateReleaseDrift) {
+          out.headers.set("x-gg-template-release-drift", "1");
+          out.headers.set(
+            "x-gg-template-release-drift-reason",
+            templateReleaseDriftReason || RELEASE_MISMATCH_REASON
+          );
+        }
         if (templateMismatch) {
           if (!templateMismatchReason) {
             templateMismatchReason = "unknown";

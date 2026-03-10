@@ -48,38 +48,52 @@ const buildTestHtmlRewriter = () =>
         if (!handler) continue;
         if (selector === "script[src]") {
           const re = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
-          html = html.replace(re, (full, attrs) => {
+          html = html.replace(re, (full, attrs, inner = "") => {
             if (!/\bsrc\s*=/.test(attrs)) return full;
             const attrMap = parseAttrs(attrs);
             let removed = false;
+            let mutated = false;
             const el = {
               getAttribute(name) {
                 return attrMap[name.toLowerCase()] || null;
+              },
+              setAttribute(name, value) {
+                attrMap[name.toLowerCase()] = String(value);
+                mutated = true;
               },
               remove() {
                 removed = true;
               },
             };
             if (handler.element) handler.element(el);
-            return removed ? "" : full;
+            if (removed) return "";
+            if (!mutated) return full;
+            return `<script${serializeAttrs(attrMap)}>${inner}</script>`;
           });
           continue;
         }
-        if (selector === "link[rel]") {
+        if (selector === "link[rel]" || selector === "link[href]") {
           const re = /<link\b([^>]*)>/gi;
           html = html.replace(re, (full, attrs) => {
             const attrMap = parseAttrs(attrs);
             let removed = false;
+            let mutated = false;
             const el = {
               getAttribute(name) {
                 return attrMap[name.toLowerCase()] || null;
+              },
+              setAttribute(name, value) {
+                attrMap[name.toLowerCase()] = String(value);
+                mutated = true;
               },
               remove() {
                 removed = true;
               },
             };
             if (handler.element) handler.element(el);
-            return removed ? "" : full;
+            if (removed) return "";
+            if (!mutated) return full;
+            return `<link${serializeAttrs(attrMap)}>`;
           });
           continue;
         }
@@ -328,6 +342,72 @@ const runMatchTest = async () => {
   }
 };
 
+const runReleaseDriftAutofixTest = async () => {
+  const originalFetch = globalThis.fetch;
+  const originalRewriter = globalThis.HTMLRewriter;
+  const versionMatch = worker.match(/const WORKER_VERSION = "([^"]+)";/);
+  const version = versionMatch ? versionMatch[1] : "";
+  if (!version) {
+    failures.push("release drift test: unable to parse WORKER_VERSION from src/worker.js");
+    return;
+  }
+  const testHtml = [
+    "<!doctype html>",
+    "<html>",
+    "<head>",
+    "<meta content='prod' name='gg-env'>",
+    "<meta content='OLD' name='gg-release'>",
+    "<link rel=\"stylesheet\" href=\"/assets/v/OLD/main.css\">",
+    "<script async src='/assets/v/OLD/boot.js?x=1'></script>",
+    "</head>",
+    "<body>",
+    "<div id=\"gg-fingerprint\" data-env=\"prod\" data-release=\"OLD\"></div>",
+    "<main id='gg-main'>Test</main>",
+    "</body>",
+    "</html>",
+  ].join("");
+
+  globalThis.fetch = async () =>
+    new Response(testHtml, {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  globalThis.HTMLRewriter = buildTestHtmlRewriter();
+
+  try {
+    const workerUrl = pathToFileURL(path.join(root, "src/worker.js")).href;
+    const workerMod = await import(`${workerUrl}?release-drift=${Date.now()}`);
+    const workerImpl = workerMod.default || workerMod;
+    const res = await workerImpl.fetch(new Request("https://unit.test/"), {});
+    await res.text();
+    const mismatchHeader = (res.headers.get("x-gg-template-mismatch") || "").trim();
+    const mismatchReason = (res.headers.get("x-gg-template-mismatch-reason") || "").trim();
+    const contractHeader = (res.headers.get("x-gg-template-contract") || "").trim();
+    const driftHeader = (res.headers.get("x-gg-template-release-drift") || "").trim();
+    const driftReason = (res.headers.get("x-gg-template-release-drift-reason") || "").trim();
+    if (mismatchHeader) {
+      failures.push(`release drift test: mismatch header must be absent (got ${mismatchHeader})`);
+    }
+    if (mismatchReason) {
+      failures.push(`release drift test: mismatch reason must be absent (got ${mismatchReason})`);
+    }
+    if (contractHeader) {
+      failures.push(`release drift test: contract header must be absent (got ${contractHeader})`);
+    }
+    if (driftHeader !== "1") {
+      failures.push(`release drift test: drift header must be 1 (got ${driftHeader || "(missing)"})`);
+    }
+    if (!driftReason) {
+      failures.push("release drift test: drift reason header missing");
+    }
+  } catch (err) {
+    failures.push(`release drift test: ${err && err.message ? err.message : String(err)}`);
+  } finally {
+    globalThis.fetch = originalFetch;
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+};
+
 const runMinimalContractNoMarkerTest = async () => {
   const originalFetch = globalThis.fetch;
   const originalRewriter = globalThis.HTMLRewriter;
@@ -405,6 +485,7 @@ const runMinimalContractNoMarkerTest = async () => {
 };
 
 await runMismatchTest();
+await runReleaseDriftAutofixTest();
 await runMatchTest();
 await runMinimalContractNoMarkerTest();
 

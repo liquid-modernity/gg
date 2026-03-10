@@ -1033,8 +1033,24 @@ if (GG.boot._uiInteractBound) return;
 GG.boot._uiInteractBound = true;
 var request = GG.boot && GG.boot.requestUi;
 if (typeof request !== 'function') return;
-var onPointer = function(){ request('interact'); };
-try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true, once: true }); } catch (_) {}
+var fired = false;
+function off(){
+  try { d.removeEventListener('pointerdown', onPointer, true); } catch (_) {}
+  try { d.removeEventListener('touchstart', onTouch, true); } catch (_) {}
+  try { d.removeEventListener('keydown', onKey, true); } catch (_) {}
+}
+function run(reason){
+  if (fired) return;
+  fired = true;
+  off();
+  try { request(reason || 'interact'); } catch (_) {}
+}
+function onPointer(){ run('interact:pointerdown'); }
+function onTouch(){ run('interact:touchstart'); }
+function onKey(){ run('interact:keydown'); }
+try { d.addEventListener('pointerdown', onPointer, { passive: true, capture: true }); } catch (_) {}
+try { d.addEventListener('touchstart', onTouch, { passive: true, capture: true }); } catch (_) {}
+try { d.addEventListener('keydown', onKey, { capture: true }); } catch (_) {}
 }
 
 bindUiInteractRequest();
@@ -1062,6 +1078,27 @@ return (body.getAttribute('data-gg-surface') || (body.dataset && body.dataset.gg
 function isLandingSurface(){
 return surfaceHint() === 'landing';
 }
+
+function isCriticalSurface(){
+var sf = surfaceHint();
+if (!sf) return false;
+return sf !== 'landing' && sf !== 'error';
+}
+
+function scheduleCriticalUiBootstrap(){
+if (!isCriticalSurface()) return;
+var run = function(){
+  if (!GG.boot || GG.boot._uiReady || GG.boot._uiPromise || typeof GG.boot.requestUi !== 'function') return;
+  GG.boot.requestUi('surface-critical');
+};
+if (d.readyState === 'loading') {
+  d.addEventListener('DOMContentLoaded', function(){ w.setTimeout(run, 80); }, { once: true });
+  return;
+}
+w.setTimeout(run, 80);
+}
+
+scheduleCriticalUiBootstrap();
 
 function afterPaint(fn){
 if (!w.requestAnimationFrame) { w.setTimeout(fn, 0); return; }
