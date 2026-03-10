@@ -53,12 +53,10 @@ const LISTING_ROWS = [
   "cta",
 ];
 
-const POST_MARKERS = [
-  "panel-post-title",
+const POST_LEFT_MARKERS = [
   "panel-post-date",
   "panel-post-updated",
   "panel-post-reading-time",
-  "panel-post-toc",
   "panel-post-tags",
   "panel-post-author",
   "panel-post-contributor",
@@ -105,6 +103,7 @@ const report = {
   transient: [],
   unavailable: [],
   functional: [],
+  evidence: [],
 };
 
 function addTransient(message) {
@@ -117,6 +116,10 @@ function addUnavailable(message) {
 
 function addFunctional(message) {
   report.functional.push(`FUNCTIONAL FAIL: ${message}`);
+}
+
+function addEvidence(message) {
+  report.evidence.push(`EVIDENCE: ${message}`);
 }
 
 function sleep(ms) {
@@ -220,9 +223,28 @@ async function fetchTextWithRetry(url, label) {
       });
 
       if (res.ok) {
+        const headers = {
+          ggAssets: String(res.headers.get("x-gg-assets") || "").trim(),
+          ggWorkerVersion: String(res.headers.get("x-gg-worker-version") || "").trim(),
+          ggTemplateMismatch: String(res.headers.get("x-gg-template-mismatch") || "").trim(),
+          ggTemplateMismatchReason: String(
+            res.headers.get("x-gg-template-mismatch-reason") || ""
+          ).trim(),
+          ggTemplateContract: String(res.headers.get("x-gg-template-contract") || "").trim(),
+          ggTemplateContractReason: String(
+            res.headers.get("x-gg-template-contract-reason") || ""
+          ).trim(),
+          ggTemplateReleaseDrift: String(
+            res.headers.get("x-gg-template-release-drift") || ""
+          ).trim(),
+          ggTemplateReleaseDriftReason: String(
+            res.headers.get("x-gg-template-release-drift-reason") || ""
+          ).trim(),
+        };
         return {
           ok: true,
           status: res.status,
+          headers,
           text: await res.text(),
         };
       }
@@ -291,16 +313,107 @@ function verifyMarkers(targetId, url, html, markers) {
   }
 }
 
+function verifyTemplateHeaders(targetId, url, headers) {
+  const h = headers && typeof headers === "object" ? headers : {};
+  const mismatch = h.ggTemplateMismatch === "1";
+  const contract = h.ggTemplateContract === "1";
+  const drift = h.ggTemplateReleaseDrift === "1";
+  addEvidence(
+    `${targetId}: x-gg-assets=${h.ggAssets || "-"} x-gg-worker-version=${h.ggWorkerVersion || "-"} x-gg-template-mismatch=${h.ggTemplateMismatch || "0"} x-gg-template-contract=${h.ggTemplateContract || "0"} x-gg-template-release-drift=${h.ggTemplateReleaseDrift || "0"}`
+  );
+  if (h.ggAssets && h.ggWorkerVersion && h.ggAssets !== h.ggWorkerVersion) {
+    addFunctional(
+      `${targetId}: release header mismatch x-gg-assets=${h.ggAssets} x-gg-worker-version=${h.ggWorkerVersion} @ ${url}`
+    );
+  }
+  if (mismatch || contract || drift) {
+    const reasons = [];
+    if (mismatch) reasons.push(`mismatch:${h.ggTemplateMismatchReason || "unknown"}`);
+    if (contract) reasons.push(`contract:${h.ggTemplateContractReason || "unknown"}`);
+    if (drift) reasons.push(`drift:${h.ggTemplateReleaseDriftReason || "unknown"}`);
+    addFunctional(
+      `${targetId}: template headers indicate live theme drift (${reasons.join(
+        ", "
+      )}) @ ${url}. Paste latest index.prod.xml into Blogger Theme.`
+    );
+  }
+}
+
+function findElementRangeFromOpen(source, openStart, openTag, tagName) {
+  const html = String(source || "");
+  const open = String(openTag || "");
+  const name = String(tagName || "").trim().toLowerCase();
+  if (!html || !open || !name) return null;
+  const openEnd = openStart + open.length;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`<\\/?${escaped}\\b[^>]*>`, "gi");
+  re.lastIndex = openEnd;
+  let depth = 1;
+  let closeStart = -1;
+  let closeEnd = -1;
+  let token;
+  while ((token = re.exec(html))) {
+    const tag = token[0];
+    const isClose = /^<\//.test(tag);
+    const selfClose = /\/>\s*$/.test(tag);
+    if (isClose) depth -= 1;
+    else if (!selfClose) depth += 1;
+    if (depth === 0) {
+      closeStart = token.index;
+      closeEnd = re.lastIndex;
+      break;
+    }
+  }
+  if (closeStart < 0 || closeEnd < 0) return null;
+  return {
+    outerHtml: html.slice(openStart, closeEnd),
+    innerHtml: html.slice(openEnd, closeStart),
+  };
+}
+
+function findTagBlockByClass(html, tagName, classToken) {
+  const source = String(html || "");
+  const tag = String(tagName || "").trim().toLowerCase();
+  const needle = String(classToken || "").trim();
+  if (!source || !tag || !needle) return "";
+  const openRe = new RegExp(
+    `<${tag}\\b[^>]*\\bclass\\s*=\\s*(?:(['"])([^'"]*)\\1|([^\\s"'=<>` + "`" + `]+))[^>]*>`,
+    "gi"
+  );
+  let match;
+  while ((match = openRe.exec(source))) {
+    const classes = String(match[2] || match[3] || "")
+      .split(/\s+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (!classes.includes(needle)) continue;
+    const range = findElementRangeFromOpen(source, match.index, match[0], tag);
+    if (range && range.outerHtml) return range.outerHtml;
+  }
+  return "";
+}
+
 function verifyListingContract(url, html) {
   const src = String(html || "");
-  if (!/\bdata-gg-epanel\s*=\s*(["'])editorial\1/i.test(src)) {
+  const rightScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--right");
+  if (!rightScope) {
+    addFunctional(`listing: missing right sidebar .gg-blog-sidebar--right @ ${url}`);
+  }
+  const scope = rightScope || src;
+  if (!/\bdata-gg-panel\s*=\s*(["'])info\1/i.test(scope)) {
+    addFunctional(`listing: missing right info panel hook data-gg-panel="info" @ ${url}`);
+  }
+  if (!/\bdata-gg-panelmeta\s*=\s*(["'])listing\1/i.test(scope)) {
+    addFunctional(`listing: missing right panelmeta contract data-gg-panelmeta="listing" @ ${url}`);
+  }
+  if (!/\bdata-gg-epanel\s*=\s*(["'])editorial\1/i.test(scope)) {
     addFunctional(`listing: missing editorial marker data-gg-epanel="editorial" @ ${url}`);
   }
 
-  verifyMarkers("listing", url, src, LISTING_MARKERS);
+  verifyMarkers("listing-right", url, scope, LISTING_MARKERS);
 
   for (const row of LISTING_ROWS) {
-    if (!rowRegex(row).test(src)) {
+    if (!rowRegex(row).test(scope)) {
       addFunctional(`listing: missing row marker data-row="${row}" @ ${url}`);
     }
   }
@@ -337,11 +450,63 @@ function verifyListingContract(url, html) {
   }
 }
 
+function verifyPostLeftContract(url, html) {
+  const src = String(html || "");
+  const leftScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--left");
+  if (!leftScope) {
+    addFunctional(`post: missing left sidebar .gg-blog-sidebar--left @ ${url}`);
+  }
+  const scope = leftScope || src;
+  if (!/\bid\s*=\s*(["'])gg-postinfo\1/i.test(scope)) {
+    addFunctional(`post: missing left info hook id="gg-postinfo" @ ${url}`);
+  }
+  if (!/\bdata-gg-panelmeta\s*=\s*(["'])post\1/i.test(scope)) {
+    addFunctional(`post: missing left panelmeta contract data-gg-panelmeta="post" @ ${url}`);
+  }
+  verifyMarkers("post-left", url, scope, POST_LEFT_MARKERS);
+}
+
+function verifyPostDataSource(url, html) {
+  const src = String(html || "");
+  const postRe =
+    /<article\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-post\b[^"']*\1[^>]*>/gi;
+  let postTag = "";
+  for (const m of src.matchAll(postRe)) {
+    postTag = String(m[0] || "");
+    if (postTag) break;
+  }
+  if (!postTag) {
+    addFunctional(`post: missing article.gg-post source @ ${url}`);
+    return;
+  }
+  const requiredPostAttrs = ["data-author", "data-date", "data-id"];
+  for (const attr of requiredPostAttrs) {
+    if (!hasAttr(postTag, attr)) {
+      addFunctional(`post: article.gg-post missing ${attr} (metadata source empty) @ ${url}`);
+    }
+  }
+  const postMetaRe =
+    /<div\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-postmeta\b[^"']*\1[^>]*>/gi;
+  let postMetaTag = "";
+  for (const m of src.matchAll(postMetaRe)) {
+    postMetaTag = String(m[0] || "");
+    if (postMetaTag) break;
+  }
+  if (!postMetaTag) {
+    addFunctional(`post: missing .gg-postmeta source node @ ${url}`);
+    return;
+  }
+  if (!hasAttr(postMetaTag, "data-updated")) {
+    addFunctional(`post: .gg-postmeta missing data-updated (metadata source empty) @ ${url}`);
+  }
+}
+
 const listingFetchUrl = `${listingUrl}?x=${Date.now()}`;
 let listingHtml = "";
 const listing = await fetchTextWithRetry(listingFetchUrl, "listing");
 if (listing.ok) {
   listingHtml = String(listing.text || "");
+  verifyTemplateHeaders("listing", listingUrl, listing.headers);
   verifyListingContract(listingUrl, listingHtml);
 } else if (listing.fatal) {
   addFunctional(`listing: status ${listing.status} ${listingUrl}`);
@@ -369,7 +534,9 @@ if (postUrl) {
   const sep = postUrl.includes("?") ? "&" : "?";
   const post = await fetchTextWithRetry(`${postUrl}${sep}x=${Date.now()}`, "post");
   if (post.ok) {
-    verifyMarkers("post", postUrl, post.text, POST_MARKERS);
+    verifyTemplateHeaders("post", postUrl, post.headers);
+    verifyPostLeftContract(postUrl, post.text);
+    verifyPostDataSource(postUrl, post.text);
   } else if (post.fatal) {
     addFunctional(`post: status ${post.status} ${postUrl}`);
   }
@@ -381,6 +548,7 @@ const hasFunctional = report.functional.length > 0;
 if (hasUnavailable || hasFunctional) {
   console.error("VERIFY_LIVE_PANEL_METADATA: FAIL");
   console.error(`- FAILURE_CLASS: ${hasFunctional ? "FUNCTIONAL_FAIL" : "LIVE_UNAVAILABLE"}`);
+  for (const line of report.evidence) console.error(`- ${line}`);
   for (const line of report.transient) console.error(`- ${line}`);
   for (const line of report.unavailable) console.error(`- ${line}`);
   for (const line of report.functional) console.error(`- ${line}`);
@@ -391,4 +559,5 @@ if (report.transient.length) {
   console.log("VERIFY_LIVE_PANEL_METADATA: TRANSIENT RECOVERY");
   for (const line of report.transient) console.log(`- ${line}`);
 }
+for (const line of report.evidence) console.log(`- ${line}`);
 console.log(`VERIFY_LIVE_PANEL_METADATA: PASS listing=${listingUrl} post=${postUrl || "(auto)"}`);
