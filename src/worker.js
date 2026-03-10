@@ -978,8 +978,9 @@ const cleanPostTocHtml = (html) => {
   }
   const infoListRange = findElementByClassRange(out, "gg-info-panel__toclist");
   if (infoListRange) {
-    const infoListHtml = buildInfoPanelTocListHtml(toc.items);
-    out = `${out.slice(0, infoListRange.innerStart)}${infoListHtml}${out.slice(infoListRange.innerEnd)}`;
+    // Final IA contract: post/page TOC lives on left Information panel only.
+    // Keep right Editorial Preview TOC for listing/blog runtime, not post/page HTML rewrite.
+    out = `${out.slice(0, infoListRange.innerStart)}${out.slice(infoListRange.innerEnd)}`;
   }
   return out.replace(/No content found/gi, "");
 };

@@ -419,6 +419,7 @@ function findTagBlockByClass(html, tagName, classToken) {
 
 function verifyListingContract(url, html) {
   const src = String(html || "");
+  addEvidence(`listing-scope: enforce metadata+toc on right editorial panel @ ${url}`);
   const rightScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--right");
   if (!rightScope) {
     addFunctional(`listing: missing right sidebar .gg-blog-sidebar--right @ ${url}`);
@@ -489,6 +490,9 @@ function verifyListingContract(url, html) {
 
 function verifyPostLeftContract(url, html) {
   const src = String(html || "");
+  addEvidence(
+    `post-scope: enforce metadata on left info panel only (right editorial not required) @ ${url}`
+  );
   const leftScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--left");
   if (!leftScope) {
     addFunctional(`post: missing left sidebar .gg-blog-sidebar--left @ ${url}`);

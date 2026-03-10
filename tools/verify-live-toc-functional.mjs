@@ -336,6 +336,9 @@ const extractRightTocContainerHtml = (html) => {
   return m ? String(m[0] || "") : "";
 };
 
+const hasListingTocMarker = (html) =>
+  /\bdata-gg-marker\s*=\s*(["'])panel-listing-toc\1/i.test(String(html || ""));
+
 const countTocLinks = (tocHtml, classToken) => {
   const source = String(tocHtml || "");
   if (!source) return 0;
@@ -351,6 +354,27 @@ const countTocLinks = (tocHtml, classToken) => {
   const fallback = source.match(/<a\b[^>]*\bhref\s*=\s*(["'])#[^"']+\1[^>]*>/gi);
   return fallback ? fallback.length : 0;
 };
+
+function verifyListingTocSurface(targetUrl, html) {
+  const source = String(html || "");
+  const rightTocHtml = extractRightTocContainerHtml(source);
+  const rightTocLinks = countTocLinks(rightTocHtml, "gg-info-panel__toclink");
+  const hasRightToc = !!rightTocHtml;
+  const hasMarker = hasListingTocMarker(source);
+  addEvidence(
+    `listing: right_container=${hasRightToc ? 1 : 0} right_marker=${hasMarker ? 1 : 0} right_links=${rightTocLinks} scope=right-only @ ${targetUrl}`
+  );
+  if (!hasRightToc) {
+    addFunctional(
+      `listing: missing right TOC container .gg-info-panel__toclist (final contract: /blog right panel) @ ${targetUrl}`
+    );
+  }
+  if (!hasMarker) {
+    addFunctional(
+      `listing: missing marker data-gg-marker=\"panel-listing-toc\" (final contract: /blog right panel) @ ${targetUrl}`
+    );
+  }
+}
 
 async function verifyTocTarget(kind, targetUrl) {
   if (!targetUrl) return;
@@ -392,25 +416,23 @@ async function verifyTocTarget(kind, targetUrl) {
   const leftTocLinks = countTocLinks(leftTocHtml, "gg-toc__link");
   const rightTocLinks = countTocLinks(rightTocHtml, "gg-info-panel__toclink");
   addEvidence(
-    `${kind}: h1=${headingCount.h1} h2=${headingCount.h2} h3=${headingCount.h3} h4=${headingCount.h4} total=${totalHeadings} expected_links=${expectedTocLinks} left_links=${leftTocLinks} right_links=${rightTocLinks} @ ${targetUrl}`
+    `${kind}: h1=${headingCount.h1} h2=${headingCount.h2} h3=${headingCount.h3} h4=${headingCount.h4} total=${totalHeadings} expected_links=${expectedTocLinks} left_links=${leftTocLinks} right_links=${rightTocLinks} scope=left-only @ ${targetUrl}`
   );
-  if (!leftTocHtml) addFunctional(`${kind}: missing left TOC container #gg-toc @ ${targetUrl}`);
-  if (!rightTocHtml) addFunctional(`${kind}: missing right TOC container .gg-info-panel__toclist @ ${targetUrl}`);
+  if (!leftTocHtml) {
+    addFunctional(`${kind}: missing left TOC container #gg-toc (final contract: post/page left panel) @ ${targetUrl}`);
+  }
   if (totalHeadings > 0 && leftTocLinks < expectedTocLinks) {
     addFunctional(
       `${kind}: expected left TOC links >=${expectedTocLinks} from h1-h4, got ${leftTocLinks} @ ${targetUrl}`
     );
   }
-  if (totalHeadings > 0 && rightTocLinks < expectedTocLinks) {
-    addFunctional(
-      `${kind}: expected right TOC links >=${expectedTocLinks} from h1-h4, got ${rightTocLinks} @ ${targetUrl}`
-    );
-  }
   if (totalHeadings === 0 && leftTocLinks > 0) {
     addFunctional(`${kind}: h1-h4 total=0 but left TOC links=${leftTocLinks} @ ${targetUrl}`);
   }
-  if (totalHeadings === 0 && rightTocLinks > 0) {
-    addFunctional(`${kind}: h1-h4 total=0 but right TOC links=${rightTocLinks} @ ${targetUrl}`);
+  if (rightTocLinks > 0) {
+    addFunctional(
+      `${kind}: right TOC links should be inactive for post/page final scope, got ${rightTocLinks} @ ${targetUrl}`
+    );
   }
 }
 
@@ -420,16 +442,19 @@ if (postRaw) {
   if (!postUrl) addFunctional(`post: invalid --post target (${postRaw})`);
 }
 
-if (!postUrl) {
-  const listing = await fetchTextWithRetry(`${blogUrl}?x=${Date.now()}`, "blog");
-  if (listing.ok) {
-    postUrl = findPostUrl(listing.text, base);
+let listingHtml = "";
+const listing = await fetchTextWithRetry(`${blogUrl}?x=${Date.now()}`, "blog");
+if (listing.ok) {
+  listingHtml = String(listing.text || "");
+  verifyListingTocSurface(blogUrl, listingHtml);
+  if (!postUrl) {
+    postUrl = findPostUrl(listingHtml, base);
     if (!postUrl) {
       addFunctional("post: unable to resolve post URL from /blog (set --post explicitly)");
     }
-  } else if (listing.fatal) {
-    addFunctional(`blog: status ${listing.status} ${blogUrl}`);
   }
+} else if (listing.fatal) {
+  addFunctional(`blog: status ${listing.status} ${blogUrl}`);
 }
 
 let pageUrl = "";
@@ -459,4 +484,6 @@ if (report.transient.length) {
   for (const line of report.transient) console.log(`- ${line}`);
 }
 for (const line of report.evidence) console.log(`- ${line}`);
-console.log(`VERIFY_LIVE_TOC_FUNCTIONAL: PASS post=${postUrl || "(auto)"} page=${pageUrl || "(skip)"}`);
+console.log(
+  `VERIFY_LIVE_TOC_FUNCTIONAL: PASS listing=${blogUrl} post=${postUrl || "(auto)"} page=${pageUrl || "(skip)"}`
+);
