@@ -1,4 +1,4 @@
-(function(w){
+(function(w, d){
 'use strict';
 var GG = w.GG = w.GG || {};
 GG.__uiBuckets = GG.__uiBuckets || {};
@@ -44,8 +44,7 @@ GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, ho
 var path = (pathname || '').replace(/\/+$/, '') || '/';
 var view = '';
 try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
-var workerOk = GG.core.hasWorker && GG.core.hasWorker();
-if (workerOk && path === '/blog') return true;
+if (path === '/blog') return true;
 if (path === '/' && view === 'blog') return true;
 return false;
 };
@@ -783,11 +782,11 @@ function refresh(url, doc){
   return cache;
 }
 function current(){
-  return cache || refresh(w.location ? w.location.href : '', d);
+  return cache || refresh(w.location ? w.location.href : '', d || w.document || document);
 }
 return { read: read, refresh: refresh, current: current, matches: matches };
 })();
-})(window);
+})(window, document);
 
 GG.store.set({
 lang: 'id-ID',
@@ -5446,7 +5445,7 @@ function isSystemPath(pathname){
     if(landingPath === '') landingPath = '/';
     var isProdHost = (GG.core && GG.core.isProdHost) ? GG.core.isProdHost(u.hostname || location.hostname) : false;
     var workerOk = (GG.core && GG.core.hasWorker) ? GG.core.hasWorker() : false;
-    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((workerOk && path === '/blog') || (path === '/' && view === 'blog'));
+    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((path === '/blog') || (path === '/' && view === 'blog'));
     var blogKey = '';
     if (isProdHost && workerOk) {
       blogKey = homeRoot().replace(/\/$/,'') + '/blog' + u.search;

@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='336d570' name='gg-release'/>
+    <meta content='d9d2fd0' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/336d570/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/336d570/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/d9d2fd0/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/d9d2fd0/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -233,7 +233,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='336d570' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='d9d2fd0' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -640,17 +640,10 @@ text-align: center;
           <b:widget id='HTML1' locked='false' title='Interests' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA LABEL TREE VERSI HOME/LIST -->
-<div id="gg-labeltree-home" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="home" data-max-posts="10">
-  <div class="gg-lt__head">
-    <button class="gg-lt__headbtn" type="button" aria-expanded="true">
-      <span class="material-symbols-rounded gg-lt__hico" aria-hidden="true">interests</span>
-      <span class="gg-lt__htxt">Interests</span>
-    </button>
+<div class='gg-epanel__head'><span class='gg-epanel__eyebrow'>Interests</span>  </div>
 
-    <button class="gg-lt__panelbtn" type="button" aria-label="Collapse panel">
-      <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-    </button>
-  </div>
+<div id="gg-labeltree-home" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="home" data-max-posts="10">
+
 
   <ul class="gg-lt__tree" role="tree" aria-label="Label tree"></ul>
 </div>]]></b:widget-setting>
@@ -772,16 +765,10 @@ text-align: center;
           </b:widget>
           <b:widget id='HTML30' locked='false' title='Interests' type='HTML' version='2' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div id="gg-labeltree-post" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="post" data-max-posts="10">
-  <div class="gg-lt__head">
-    <button class="gg-lt__headbtn" type="button" aria-expanded="true">
-      <span class="material-symbols-rounded gg-lt__hico" aria-hidden="true">interests</span>
-      <span class="gg-lt__htxt">Interests</span>
-    </button>
-    <button class="gg-lt__panelbtn" type="button" aria-label="Collapse panel">
-      <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-    </button>
-  </div>
+              <b:widget-setting name='content'><![CDATA[<div class='gg-epanel__head'><span class='gg-epanel__eyebrow'>Interests</span>  </div>
+
+<div id="gg-labeltree-post" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="post" data-max-posts="10">
+  
   <ul class="gg-lt__tree" role="tree" aria-label="Label tree"></ul>
 </div>]]></b:widget-setting>
             </b:widget-settings>
@@ -799,8 +786,7 @@ text-align: center;
         <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-list' name='Left SB Bot (List)' showaddelement='true'>
           <b:widget id='HTML28' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
-                <p class="gg-leftnav__sociallabel">look at me on</p>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA FOOTER --><footer><div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
                   <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
                     <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
@@ -822,9 +808,25 @@ text-align: center;
                     </a>
                 </div>
               </div>
+  
+<div aria-label='Language switcher' class='gg-lang-switcher'>
+          <button aria-controls='gg-lang-switcher-menu' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
+            <span class='gg-lang-switcher__current' data-gg-lang-current='true'>Bahasa</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
+          </button>
+          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu' role='listbox'>
+            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='id' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>Bahasa</span>
+            </button>
+            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='en' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>English</span>
+            </button>
+          </div>
+        </div>
+     
  <div class='gg-footer__legal'>
         <span>Copyright © 2026 PakRPP. All rights reserved.</span>
-</div>]]></b:widget-setting>
+</div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -840,8 +842,7 @@ text-align: center;
         <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-post' name='Left SB Bot (Post)' showaddelement='true'>
           <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
-                <p class="gg-leftnav__sociallabel">look at me on</p>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA FOOTER --><footer><div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
                 <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
                   <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
                     <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
@@ -863,9 +864,25 @@ text-align: center;
                     </a>
                 </div>
               </div>
+  
+<div aria-label='Language switcher' class='gg-lang-switcher'>
+          <button aria-controls='gg-lang-switcher-menu' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
+            <span class='gg-lang-switcher__current' data-gg-lang-current='true'>Bahasa</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
+          </button>
+          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu' role='listbox'>
+            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='id' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>Bahasa</span>
+            </button>
+            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='en' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name'>English</span>
+            </button>
+          </div>
+        </div>
+     
  <div class='gg-footer__legal'>
         <span>Copyright © 2026 PakRPP. All rights reserved.</span>
-</div>]]></b:widget-setting>
+</div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -1336,55 +1353,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </article>
     </b:loop>
   </div>
-</b:includable>
-            </b:widget>
-            <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='false'>
-              <b:widget-settings>
-                <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
-              </b:widget-settings>
-              <b:includable id='main'>
-    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
-      <header class='gg-mixed__hd'>
-        <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
-        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
-        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
-      </header>
-            <div class='gg-mixed__bd'>
-        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-          <article class='gg-mixed__card gg-mixed__card--placeholder'>
-            <span class='gg-mixed__thumb'/>
-            <span class='gg-mixed__body'>
-              <span class='gg-mixed__kicker'>BOOKISH</span>
-              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
-            </span>
-          </article>
-        </div>
-        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
-        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
-        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
-      </div>
-    </section>
 </b:includable>
             </b:widget>
             <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
@@ -2778,6 +2746,55 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
          
 </b:includable>
       </b:widget>
+      <b:widget id='HTML5' locked='false' title='Bookish' type='HTML' version='2' visible='true'>
+        <b:widget-settings>
+          <b:widget-setting name='content'>(Ratio 1:1.48, 8 item). memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
+        </b:widget-settings>
+        <b:includable id='main'>
+    <section class='gg-mixed' data-gg-kind='bookish' data-gg-label='bookish' data-gg-max='4' data-gg-mixed='1' data-gg-module='mixed-media' data-label='bookish' data-max='4' data-order='published' data-type='bookish' id='gg-mixed-bookish'>
+      <header class='gg-mixed__hd'>
+        <p class='gg-mixed__kicker' data-role='kicker'>BOOKISH</p>
+        <h2 class='gg-mixed__title' hidden='hidden'><data:title/></h2>
+        <a class='gg-mixed__more' data-role='more' href='#'>See all</a>
+      </header>
+            <div class='gg-mixed__bd'>
+        <div class='gg-mixed__grid' data-gg-mixed-grid='1' data-role='grid'>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+          <article class='gg-mixed__card gg-mixed__card--placeholder'>
+            <span class='gg-mixed__thumb'/>
+            <span class='gg-mixed__body'>
+              <span class='gg-mixed__kicker'>BOOKISH</span>
+              <span class='gg-mixed__headline'>Stories will appear shortly.</span>
+            </span>
+          </article>
+        </div>
+        <div class='gg-mixed__rail' data-role='rail' hidden='hidden'/>
+        <div aria-hidden='true' class='gg-mixed__skeleton' data-role='skeleton'/>
+        <p class='gg-mixed__error' data-role='error' hidden='hidden'>Content temporarily unavailable.</p>
+      </div>
+    </section>
+</b:includable>
+      </b:widget>
     </b:section>
     </div>
 
@@ -2787,7 +2804,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div class='gg-info-panel__card gg-editorial-preview gg-epanel'>
       <div class='gg-epanel__head'>
         <span class='gg-epanel__eyebrow'>Editorial Preview</span>
-        <div class='gg-epanel__row' data-row='title'>
+      </div>
+      <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'>
+        <img alt='' class='gg-info-panel__thumb-img'/>
+      </div>
+
+      <div class='gg-epanel__body gg-info-panel__details'>
+        <dl class='gg-epanel__rows'>
+                <div class='gg-epanel__row' data-row='title'>
           <span aria-hidden='true' class='gg-icon gg-epanel__icon'>article</span>
           <div class='gg-epanel__cell'>
             <dt class='gg-epanel__label'>Title</dt>
@@ -2796,12 +2820,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </dd>
           </div>
         </div>
-      </div>
-      <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'>
-        <img alt='' class='gg-info-panel__thumb-img'/>
-      </div>
-      <div class='gg-epanel__body gg-info-panel__details'>
-        <dl class='gg-epanel__rows'>
           <div class='gg-epanel__row' data-row='author'>
             <span aria-hidden='true' class='gg-icon gg-epanel__icon'>person</span>
             <div class='gg-epanel__cell'>
@@ -2958,93 +2976,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       
       <div aria-hidden='true' class='gg-anchor-end' id='gg-page-end' tabindex='-1'/>
       </main>
-   <!-- GAGA FOOTER -->
-  <footer class='gg-footer'>
-    <div class='gg-footer__inner'>
-    <div aria-label='Footer actions' class='gg-footer__social' role='region'>
+         
 
-  <!-- 2) AI Summary -->
-  <p class='gg-footer__social-title'>AI Summary</p>
-  <div aria-label='AI summary tools' class='gg-footer__cluster'>
-    <div aria-label='AI tools' class='gg-footer__social-links' role='list'>
-      <!-- contoh: nanti JS kamu yang bikin link final ke prompt/endpoint -->
-      <a aria-label='Minta ringkasan via ChatGPT' class='gg-footer__social-link' href='#' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-ai-openai'/>
-        </svg>
-        <span class='gg-sr-only'>ChatGPT</span>
-      </a>
-
-      <a aria-label='Minta ringkasan via Perplexity' class='gg-footer__social-link' href='#' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-ai-perplexity'/>
-        </svg>
-        <span class='gg-sr-only'>Perplexity</span>
-      </a>
-
-      <a aria-label='Minta ringkasan via Gemini' class='gg-footer__social-link' href='#' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-ai-gemini'/>
-        </svg>
-        <span class='gg-sr-only'>Gemini</span>
-      </a>
-
-      <a aria-label='Minta ringkasan via Meta AI' class='gg-footer__social-link' href='#' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-ai-meta'/>
-        </svg>
-        <span class='gg-sr-only'>Meta AI</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 3) Payment -->
-  <p class='gg-footer__social-title'>Payment</p>
-  <div aria-label='Payment methods' class='gg-footer__cluster'>
-    <div aria-label='Payment links' class='gg-footer__social-links' role='list'>
-      <!-- QRIS: ini idealnya buka halaman instruksi/QR statis -->
-      <a aria-label='Pembayaran QRIS' class='gg-footer__social-link' href='/p/pay.html#qris' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-pay-qris'/>
-        </svg>
-        <span class='gg-sr-only'>QRIS</span>
-      </a>
-
-      <!-- PayPal: arahkan ke halaman pay kamu, jangan langsung ke paypal.me kalau belum yakin -->
-      <a aria-label='Pembayaran PayPal' class='gg-footer__social-link' href='/p/pay.html#paypal' role='listitem'>
-        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>
-          <use href='#gg-ic-pay-paypal'/>
-        </svg>
-        <span class='gg-sr-only'>PayPal</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- Install -->
-  <div aria-label='Install app' class='gg-footer__cluster'>
-    <button aria-label='Add to your devices' class='gg-install' id='install' type='button'>
-      <span class='gg-install__label'>Add to your Devices</span>
-      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>
-    </button>
-  </div>
-       <div aria-label='Language switcher' class='gg-lang-switcher'>
-          <button aria-controls='gg-lang-switcher-menu' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
-            <span class='gg-lang-switcher__current' data-gg-lang-current='true'>Bahasa</span>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
-          </button>
-          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu' role='listbox'>
-            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='id' role='option' type='button'>
-              <span class='gg-lang-switcher__option-name'>Bahasa</span>
-            </button>
-            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-option='true' data-lang-code='en' role='option' type='button'>
-              <span class='gg-lang-switcher__option-name'>English</span>
-            </button>
-          </div>
-        </div>
-</div>
-    </div>
-  </footer>
-      <!-- /GAGA FOOTER -->
   
       
 <nav aria-label='Primary' class='gg-dock' data-gg-dock='1' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
@@ -3107,13 +3040,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <li data-gg-more-origin='footer'>
         <a href='#'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>auto_awesome</span>
-          <span>AI Summary · ChatGPT</span>
+          <span>AI Summary &#183; ChatGPT</span>
         </a>
       </li>
       <li data-gg-more-origin='footer'>
         <a href='/p/pay.html#paypal'>
           <span aria-hidden='true' class='gg-icon material-symbols-rounded'>payments</span>
-          <span>Payment · PayPal</span>
+          <span>Payment &#183; PayPal</span>
         </a>
       </li>
       <li data-gg-more-origin='footer'>
@@ -3233,7 +3166,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/336d570/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/d9d2fd0/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>
