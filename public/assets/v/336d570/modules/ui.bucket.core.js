@@ -1,4 +1,4 @@
-(function(w){
+(function(w, d){
 'use strict';
 var GG = w.GG = w.GG || {};
 GG.__uiBuckets = GG.__uiBuckets || {};
@@ -44,8 +44,7 @@ GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, ho
 var path = (pathname || '').replace(/\/+$/, '') || '/';
 var view = '';
 try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
-var workerOk = GG.core.hasWorker && GG.core.hasWorker();
-if (workerOk && path === '/blog') return true;
+if (path === '/blog') return true;
 if (path === '/' && view === 'blog') return true;
 return false;
 };
@@ -783,11 +782,11 @@ function refresh(url, doc){
   return cache;
 }
 function current(){
-  return cache || refresh(w.location ? w.location.href : '', d);
+  return cache || refresh(w.location ? w.location.href : '', d || w.document || document);
 }
 return { read: read, refresh: refresh, current: current, matches: matches };
 })();
-})(window);
+})(window, document);
 
 GG.store.set({
 lang: 'id-ID',
@@ -3596,49 +3595,15 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',tag='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');
-pm=svc?svc.getFromContext(doc):{};
-author=cleanText(pm.author||'');
-contributors=Array.isArray(pm.contributors)?pm.contributors:[];
-tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){ return x&&x.text; });
-updated=cleanText(pm.updated||'');
-readTime=readMinLabel(pm.readMin||'');
-if(!readTime) readTime=calcReadTime(root);
-snippet=cleanText(pm.snippet||'');
-if(!snippet&&root&&root.querySelectorAll){
-  paras=root.querySelectorAll('p');
-  for(pi=0;pi<paras.length;pi++){
-    pnode=paras[pi];
-    if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;
-    ptxt=cleanText(pnode.textContent||'');
-    if(!ptxt) continue;
-    snippet=clipText(ptxt,180);
-    if(snippet) break;
-  }
-}
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
+if(!snippet&&root&&root.querySelectorAll){paras=root.querySelectorAll('p');for(pi=0;pi<paras.length;pi++){pnode=paras[pi];if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;ptxt=cleanText(pnode.textContent||'');if(!ptxt) continue;snippet=clipText(ptxt,180);if(snippet) break;}}
 if(!snippet&&root) snippet=clipText(cleanText(root.textContent||''),180);
-out._m={ t:tags, a:author, c:contributors, u:updated, r:readTime, s:snippet };
+out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
-headings=root.querySelectorAll('h1,h2,h3,h4');
-max=Math.min(headings.length,TOC_CAP);
-baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){
-  node=headings[i];
-  if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;
-  tag=(node.tagName||'').toLowerCase();
-  if(!/^h[1-4]$/.test(tag)) continue;
-  level=parseInt(tag.replace('h',''),10);
-  if(!isFinite(level)||level<1) level=1;
-  if(level>4) level=4;
-  text=(node.textContent||'').replace(/\\s+/g,' ').trim();
-  if(!text) continue;
-  headingId=(node.getAttribute('id')||'').trim();
-  href=baseHref;
-  if(headingId) href+='#'+encodeURIComponent(headingId);
-  out.push({ text:text, level:level, href:href });
-}
+headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
+for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
 return out;
 }
 
@@ -5480,7 +5445,7 @@ function isSystemPath(pathname){
     if(landingPath === '') landingPath = '/';
     var isProdHost = (GG.core && GG.core.isProdHost) ? GG.core.isProdHost(u.hostname || location.hostname) : false;
     var workerOk = (GG.core && GG.core.hasWorker) ? GG.core.hasWorker() : false;
-    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((workerOk && path === '/blog') || (path === '/' && view === 'blog'));
+    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((path === '/blog') || (path === '/' && view === 'blog'));
     var blogKey = '';
     if (isProdHost && workerOk) {
       blogKey = homeRoot().replace(/\/$/,'') + '/blog' + u.search;

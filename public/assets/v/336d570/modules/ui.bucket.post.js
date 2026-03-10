@@ -318,8 +318,7 @@
       for (; i < items.length && i < TOC_MAX_ITEMS; i++) {
         h = items[i];
         try { h.style.scrollMarginTop = off + 'px'; } catch (_) {}
-        level = parseInt(((h.tagName || '').toLowerCase().replace('h', '')), 10);
-        if (!isFinite(level) || level < 1) level = 1;
+        level = parseInt((h.tagName || '').slice(1), 10) || 1;
         if (level > 4) level = 4;
         li = d.createElement('li');
         li.className = 'gg-toc__item gg-toc__lvl-' + level;
@@ -348,8 +347,7 @@
         var body = resolveBody(scope);
         if (!root || !body) return;
         if (!root.hidden) return;
-        var headingSelector = resolveHeadingSelector(root, opts);
-        if (!body.querySelector(headingSelector)) return;
+        if (!body.querySelector(resolveHeadingSelector(root, opts))) return;
         if (retries >= 4) return;
         retries += 1;
         w.setTimeout(run, 120 * retries);

@@ -587,6 +587,7 @@ gap: 8px;
 #gg-dock-more .gg-dock-more__list a{
 display: flex;
 align-items: center;
+gap: 10px;
 min-height: 42px;
 padding: 0 12px;
 border-radius: 12px;
