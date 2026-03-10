@@ -39,8 +39,7 @@ GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, ho
 var path = (pathname || '').replace(/\/+$/, '') || '/';
 var view = '';
 try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
-var workerOk = GG.core.hasWorker && GG.core.hasWorker();
-if (workerOk && path === '/blog') return true;
+if (path === '/blog') return true;
 if (path === '/' && view === 'blog') return true;
 return false;
 };
