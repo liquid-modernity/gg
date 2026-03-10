@@ -592,7 +592,7 @@ body:not([data-gg-surface="landing"]) .hero-section {
           <b:widget id='HTML3' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST DETAIL) -->
-<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h2">
+<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h1,h2,h3,h4">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>

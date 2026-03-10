@@ -49,6 +49,7 @@ const report = {
   transient: [],
   unavailable: [],
   functional: [],
+  evidence: [],
 };
 
 const addTransient = (message) => {
@@ -61,6 +62,10 @@ const addUnavailable = (message) => {
 
 const addFunctional = (message) => {
   report.functional.push(`FUNCTIONAL FAIL: ${message}`);
+};
+
+const addEvidence = (message) => {
+  report.evidence.push(`EVIDENCE: ${message}`);
 };
 
 const sleep = (ms) => {
@@ -302,29 +307,46 @@ const stripBlockedBlocks = (html) => {
 
 const countEligibleHeadings = (postBodyHtml) => {
   const source = stripBlockedBlocks(postBodyHtml);
-  const re = /<h2\b[^>]*>([\s\S]*?)<\/h2>/gi;
-  let count = 0;
+  const re = /<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
+  const levels = { h1: 0, h2: 0, h3: 0, h4: 0, total: 0 };
   let match;
   while ((match = re.exec(source))) {
-    const text = cleanText(match[1] || "");
+    const level = String(match[1] || "");
+    const text = cleanText(match[2] || "");
+    const key = `h${level}`;
     if (!text) continue;
-    count += 1;
+    if (!Object.prototype.hasOwnProperty.call(levels, key)) continue;
+    levels[key] += 1;
+    levels.total += 1;
   }
-  return count;
+  return levels;
 };
 
-const extractTocContainerHtml = (html) => {
+const extractLeftTocContainerHtml = (html) => {
   const source = String(html || "");
   const m = source.match(/<nav\b[^>]*\bid\s*=\s*(["'])gg-toc\1[^>]*>[\s\S]*?<\/nav>/i);
   return m ? String(m[0] || "") : "";
 };
 
-const countTocLinks = (tocHtml) => {
+const extractRightTocContainerHtml = (html) => {
+  const source = String(html || "");
+  const m = source.match(
+    /<ol\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-info-panel__toclist\b[^"']*\1[^>]*>[\s\S]*?<\/ol>/i
+  );
+  return m ? String(m[0] || "") : "";
+};
+
+const countTocLinks = (tocHtml, classToken) => {
   const source = String(tocHtml || "");
   if (!source) return 0;
-  const strict = source.match(
-    /<a\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-toc__link\b[^"']*\1[^>]*\bhref\s*=\s*(["'])#[^"']+\2[^>]*>/gi
-  );
+  const cls = String(classToken || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const strictRe = cls
+    ? new RegExp(
+        `<a\\b[^>]*\\bclass\\s*=\\s*([\"'])[^\"']*\\b${cls}\\b[^\"']*\\1[^>]*\\bhref\\s*=\\s*([\"'])#[^\"']+\\2[^>]*>`,
+        "gi"
+      )
+    : /<a\b[^>]*\bhref\s*=\s*(["'])#[^"']+\1[^>]*>/gi;
+  const strict = source.match(strictRe);
   if (strict && strict.length) return strict.length;
   const fallback = source.match(/<a\b[^>]*\bhref\s*=\s*(["'])#[^"']+\1[^>]*>/gi);
   return fallback ? fallback.length : 0;
@@ -363,15 +385,32 @@ async function verifyTocTarget(kind, targetUrl) {
   }
 
   const headingCount = countEligibleHeadings(postBodyHtml);
-  const tocHtml = extractTocContainerHtml(html);
-  const tocLinkCount = countTocLinks(tocHtml);
-  if (headingCount > 0 && tocLinkCount < 1) {
-    addFunctional(`${kind}: headings=${headingCount} but TOC links=${tocLinkCount} in #gg-toc @ ${targetUrl}`);
-  }
-  if (headingCount === 0 && tocLinkCount > 0) {
+  const totalHeadings = headingCount.total;
+  const expectedTocLinks = Math.min(totalHeadings, 12);
+  const leftTocHtml = extractLeftTocContainerHtml(html);
+  const rightTocHtml = extractRightTocContainerHtml(html);
+  const leftTocLinks = countTocLinks(leftTocHtml, "gg-toc__link");
+  const rightTocLinks = countTocLinks(rightTocHtml, "gg-info-panel__toclink");
+  addEvidence(
+    `${kind}: h1=${headingCount.h1} h2=${headingCount.h2} h3=${headingCount.h3} h4=${headingCount.h4} total=${totalHeadings} expected_links=${expectedTocLinks} left_links=${leftTocLinks} right_links=${rightTocLinks} @ ${targetUrl}`
+  );
+  if (!leftTocHtml) addFunctional(`${kind}: missing left TOC container #gg-toc @ ${targetUrl}`);
+  if (!rightTocHtml) addFunctional(`${kind}: missing right TOC container .gg-info-panel__toclist @ ${targetUrl}`);
+  if (totalHeadings > 0 && leftTocLinks < expectedTocLinks) {
     addFunctional(
-      `${kind}: headings=${headingCount} but TOC links=${tocLinkCount} (expected hidden/empty TOC) @ ${targetUrl}`
+      `${kind}: expected left TOC links >=${expectedTocLinks} from h1-h4, got ${leftTocLinks} @ ${targetUrl}`
     );
+  }
+  if (totalHeadings > 0 && rightTocLinks < expectedTocLinks) {
+    addFunctional(
+      `${kind}: expected right TOC links >=${expectedTocLinks} from h1-h4, got ${rightTocLinks} @ ${targetUrl}`
+    );
+  }
+  if (totalHeadings === 0 && leftTocLinks > 0) {
+    addFunctional(`${kind}: h1-h4 total=0 but left TOC links=${leftTocLinks} @ ${targetUrl}`);
+  }
+  if (totalHeadings === 0 && rightTocLinks > 0) {
+    addFunctional(`${kind}: h1-h4 total=0 but right TOC links=${rightTocLinks} @ ${targetUrl}`);
   }
 }
 
@@ -408,6 +447,7 @@ const hasFunctional = report.functional.length > 0;
 if (hasUnavailable || hasFunctional) {
   console.error("VERIFY_LIVE_TOC_FUNCTIONAL: FAIL");
   console.error(`- FAILURE_CLASS: ${hasFunctional ? "FUNCTIONAL_FAIL" : "LIVE_UNAVAILABLE"}`);
+  for (const line of report.evidence) console.error(`- ${line}`);
   for (const line of report.transient) console.error(`- ${line}`);
   for (const line of report.unavailable) console.error(`- ${line}`);
   for (const line of report.functional) console.error(`- ${line}`);
@@ -418,4 +458,5 @@ if (report.transient.length) {
   console.log("VERIFY_LIVE_TOC_FUNCTIONAL: TRANSIENT RECOVERY");
   for (const line of report.transient) console.log(`- ${line}`);
 }
+for (const line of report.evidence) console.log(`- ${line}`);
 console.log(`VERIFY_LIVE_TOC_FUNCTIONAL: PASS post=${postUrl || "(auto)"} page=${pageUrl || "(skip)"}`);

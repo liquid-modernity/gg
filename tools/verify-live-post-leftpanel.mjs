@@ -270,17 +270,21 @@ const stripBlockedBlocks = (html) => {
   return out;
 };
 
-const countEligibleH2 = (postBodyHtml) => {
+const countEligibleHeadings = (postBodyHtml) => {
   const source = stripBlockedBlocks(postBodyHtml);
-  const re = /<h2\b[^>]*>([\s\S]*?)<\/h2>/gi;
-  let count = 0;
+  const re = /<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
+  const levels = { h1: 0, h2: 0, h3: 0, h4: 0, total: 0 };
   let match;
   while ((match = re.exec(source))) {
-    const text = cleanText(match[1] || "");
+    const level = String(match[1] || "");
+    const text = cleanText(match[2] || "");
+    const key = `h${level}`;
     if (!text) continue;
-    count += 1;
+    if (!Object.prototype.hasOwnProperty.call(levels, key)) continue;
+    levels[key] += 1;
+    levels.total += 1;
   }
-  return count;
+  return levels;
 };
 
 const extractTocHtml = (html) => {
@@ -333,17 +337,22 @@ if (targetUrl) {
     if (!postBodyHtml) {
       addFunctional(`unable to locate article body @ ${targetUrl}`);
     } else {
-      const h2Count = countEligibleH2(postBodyHtml);
+      const headingCount = countEligibleHeadings(postBodyHtml);
+      const expectedLinks = Math.min(headingCount.total, 12);
       const tocHtml = extractTocHtml(html);
       const tocLinkCount = countTocLinks(tocHtml);
-      if (h2Count < 1) addFunctional(`expected >=1 H2 headings in article body @ ${targetUrl}`);
-      if (h2Count > 0 && tocLinkCount < 1) {
+      if (headingCount.total < 1) {
+        addFunctional(
+          `expected >=1 heading (h1-h4) in article body @ ${targetUrl} (h1=${headingCount.h1}, h2=${headingCount.h2}, h3=${headingCount.h3}, h4=${headingCount.h4})`
+        );
+      }
+      if (headingCount.total > 0 && tocLinkCount < expectedLinks) {
         const emptyHidden = /<div\b[^>]*\bclass\s*=\s*(["'])[^"']*\bgg-toc__empty\b[^"']*\1[^>]*\bhidden\b/i.test(
           tocHtml
         );
         if (!emptyHidden) {
           addFunctional(
-            `headings=${h2Count} but TOC links=${tocLinkCount} and empty block is not hidden @ ${targetUrl}`
+            `h1-h4 total=${headingCount.total} expected_links>=${expectedLinks} but TOC links=${tocLinkCount} and empty block is not hidden @ ${targetUrl}`
           );
         }
       }

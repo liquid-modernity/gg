@@ -864,7 +864,7 @@ const createUniqueHeadingId = (text, usedIds, slugCounts) => {
 
 const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
   const source = String(bodyHtml || "");
-  const headingRe = /<h2\b([^>]*)>([\s\S]*?)<\/h2>/gi;
+  const headingRe = /<h([1-4])\b([^>]*)>([\s\S]*?)<\/h\1>/gi;
   const blocked = collectBlockedRanges(source);
   const ids = usedIds || new Set();
   const slugCounts = new Map();
@@ -875,9 +875,9 @@ const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
   while ((match = headingRe.exec(source))) {
     const start = match.index;
     const end = headingRe.lastIndex;
-    const level = 2;
-    const attrs = String(match[1] || "");
-    const inner = String(match[2] || "");
+    const level = Number.parseInt(String(match[1] || ""), 10) || 1;
+    const attrs = String(match[2] || "");
+    const inner = String(match[3] || "");
     const full = String(match[0] || "");
     out += source.slice(last, start);
     let replacement = full;
@@ -896,6 +896,7 @@ const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
         items.push({
           id,
           text,
+          level,
         });
       }
     }
@@ -914,12 +915,41 @@ const buildPostTocListHtml = (items) => {
     .map((item, index) => {
       const id = String((item && item.id) || "").trim();
       const text = String((item && item.text) || "").trim();
+      let level = Number.parseInt(String((item && item.level) || ""), 10);
+      if (!Number.isFinite(level) || level < 1) level = 1;
+      if (level > 4) level = 4;
       if (!id || !text) return "";
       return [
-        '<li class="gg-toc__item gg-toc__lvl-2">',
+        `<li class="gg-toc__item gg-toc__lvl-${level}">`,
         `<a class="gg-toc__link" href="#${escapeHtml(id)}">`,
         `<span class="gg-toc__num">${index + 1}.</span>`,
         `<span class="gg-toc__txt">${escapeHtml(text)}</span>`,
+        "</a>",
+        "</li>",
+      ].join("");
+    })
+    .join("");
+};
+
+const buildInfoPanelTocListHtml = (items) => {
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) return "";
+  const cap = rows.slice(0, 12);
+  return cap
+    .map((item, index) => {
+      const id = String((item && item.id) || "").trim();
+      const text = String((item && item.text) || "").trim();
+      let level = Number.parseInt(String((item && item.level) || ""), 10);
+      const number = index + 1;
+      const numberText = number < 10 ? `0${number}` : String(number);
+      if (!Number.isFinite(level) || level < 1) level = 1;
+      if (level > 4) level = 4;
+      if (!id || !text) return "";
+      return [
+        `<li class="gg-info-panel__tocitem gg-info-panel__toclvl-${level}">`,
+        `<a class="gg-info-panel__toclink" href="#${escapeHtml(id)}">`,
+        `<span class="gg-info-panel__tocnum">${numberText}</span>`,
+        `<span class="gg-info-panel__toctext">${escapeHtml(text)}</span>`,
         "</a>",
         "</li>",
       ].join("");
@@ -945,6 +975,11 @@ const cleanPostTocHtml = (html) => {
   if (listRange) {
     const listHtml = buildPostTocListHtml(toc.items);
     out = `${out.slice(0, listRange.innerStart)}${listHtml}${out.slice(listRange.innerEnd)}`;
+  }
+  const infoListRange = findElementByClassRange(out, "gg-info-panel__toclist");
+  if (infoListRange) {
+    const infoListHtml = buildInfoPanelTocListHtml(toc.items);
+    out = `${out.slice(0, infoListRange.innerStart)}${infoListHtml}${out.slice(infoListRange.innerEnd)}`;
   }
   return out.replace(/No content found/gi, "");
 };
@@ -1430,8 +1465,8 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const legalPage = isLegalPage(pathname);
-    const WORKER_VERSION = "c3a1400";
-    const TEMPLATE_ALLOWED_RELEASES = ["c3a1400"];
+    const WORKER_VERSION = "3f1cc12";
+    const TEMPLATE_ALLOWED_RELEASES = ["3f1cc12"];
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
