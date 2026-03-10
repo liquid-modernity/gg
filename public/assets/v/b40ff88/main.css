@@ -3461,7 +3461,7 @@ color:#0f172a;
 #gg-landing *{ box-sizing: border-box; }
 html{ scroll-behavior: smooth; }
 .gg-section{ scroll-margin-top: 72px; }
-main.gg-main[data-gg-surface="home"] #gg-landing>.gg-section{
+main.gg-main:is([data-gg-surface="landing"],[data-gg-surface="home"],[data-gg-view="home"])[data-gg-home-state="landing"] #gg-landing>.gg-section{
 min-height:100vh;
 min-height:100svh;
 min-height:100dvh;

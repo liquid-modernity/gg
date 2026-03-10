@@ -131,6 +131,8 @@ function E(){ C(); }
 
 function U(){
 try { d.removeEventListener('pointerdown', E, true); } catch (_) {}
+try { d.removeEventListener('touchstart', E, true); } catch (_) {}
+try { d.removeEventListener('click', E, true); } catch (_) {}
 try { d.removeEventListener('keydown', E, true); } catch (_) {}
 }
 
@@ -162,19 +164,22 @@ function shouldInterceptAction(action){
 return action === 'home' || action === 'blog' || action === 'contact' || action === 'search' || action === 'more';
 }
 
+function shouldHardFallback(action){
+return action === 'home' || action === 'blog';
+}
+
 function isDockReady(){
-if (w.__GG_DOCK_READY === true) return true;
-try {
 var dock = d.querySelector('nav.gg-dock[data-gg-module="dock"],nav.gg-dock');
-if (!dock) return false;
-return dock.getAttribute('data-gg-ready') === '1';
-} catch (_) {}
-return false;
+return !!(dock && dock.getAttribute('data-gg-ready') === '1');
 }
 
 function clearPendingDockAction(){
 B._pendingDockAction = null;
 w.__GG_PENDING_DOCK_ACTION = null;
+if (B._pendingDockFallbackTimer) {
+  w.clearTimeout(B._pendingDockFallbackTimer);
+  B._pendingDockFallbackTimer = 0;
+}
 }
 
 function hardNavigate(href){
@@ -222,10 +227,10 @@ var timer = w.setInterval(function(){
 }, 60);
 }
 
-function requestUiNow(reason){
+function requestUiNow(reason, replayTimeoutMs){
 C();
 var tries = 0;
-var maxTries = 40;
+var maxTries = 70;
 (function tick(){
   var boot = w.GG && w.GG.boot;
   if (boot && typeof boot.requestUi === 'function') {
@@ -241,7 +246,7 @@ var maxTries = 40;
   tries += 1;
   if (tries < maxTries) w.setTimeout(tick, 50);
 })();
-waitForDockReplay(1800);
+waitForDockReplay((typeof replayTimeoutMs === 'number' && replayTimeoutMs > 0) ? replayTimeoutMs : 3600);
 }
 
 function queueDockAction(link, evt){
@@ -250,6 +255,7 @@ var action = String((link.getAttribute('data-gg-action') || '')).toLowerCase();
 if (!action) return;
 var href = link.getAttribute('href') || '';
 var anchor = readAnchor(link, href);
+var fallbackMs = shouldHardFallback(action) ? 2200 : 0;
 var payload = {
   action: action,
   href: href,
@@ -258,19 +264,25 @@ var payload = {
 };
 B._pendingDockAction = payload;
 w.__GG_PENDING_DOCK_ACTION = payload;
-requestUiNow('dock-action:' + action);
-if (!shouldInterceptAction(action)) return;
-if (evt && evt.preventDefault) evt.preventDefault();
-if (evt && evt.stopPropagation) evt.stopPropagation();
-if (evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
-
-w.setTimeout(function(){
-  var pending = B._pendingDockAction || w.__GG_PENDING_DOCK_ACTION;
-  if (!pending) return;
-  if ((pending.action || '') !== action) return;
-  clearPendingDockAction();
-  hardNavigate(href || anchor || '/');
-}, 1400);
+requestUiNow('dock-action:' + action, fallbackMs > 0 ? (fallbackMs + 1200) : 4200);
+if (shouldInterceptAction(action)) {
+  if (evt && evt.preventDefault) evt.preventDefault();
+  if (evt && evt.stopPropagation) evt.stopPropagation();
+  if (evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+}
+if (fallbackMs > 0) {
+  if (B._pendingDockFallbackTimer) {
+    w.clearTimeout(B._pendingDockFallbackTimer);
+    B._pendingDockFallbackTimer = 0;
+  }
+  B._pendingDockFallbackTimer = w.setTimeout(function(){
+    var pending = B._pendingDockAction || w.__GG_PENDING_DOCK_ACTION;
+    if (!pending) return;
+    if ((pending.action || '') !== action) return;
+    clearPendingDockAction();
+    hardNavigate(href || anchor || '/');
+  }, fallbackMs);
+  }
 }
 
 function onDockActionClick(evt){
@@ -290,6 +302,8 @@ queueDockAction(link, evt);
 w.addEventListener('keydown', O, true);
 d.addEventListener('click', onDockActionClick, true);
 d.addEventListener('pointerdown', E, { passive: true, capture: true, once: true });
+d.addEventListener('touchstart', E, { passive: true, capture: true, once: true });
+d.addEventListener('click', E, { capture: true, once: true });
 d.addEventListener('keydown', E, { capture: true, once: true });
 
 var sf = ((d.body && d.body.getAttribute('data-gg-surface')) || '').toLowerCase();
