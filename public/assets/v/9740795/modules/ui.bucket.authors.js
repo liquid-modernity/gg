@@ -109,6 +109,21 @@ if(!m) return '';
 mins=Math.max(1,parseInt(m[1],10)||1);
 return mins+' min read';
 }
+function humanDate(raw){
+var txt=clean(raw),m=null,y=0,mm=0,dd=0,dt=null;
+if(!txt) return '';
+m=txt.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/);
+if(m){
+  y=parseInt(m[1],10)||0;
+  mm=(parseInt(m[2],10)||1)-1;
+  dd=parseInt(m[3],10)||1;
+  dt=new Date(Date.UTC(y,mm,dd));
+  if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric', timeZone:'UTC' });
+}
+dt=new Date(txt);
+if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric' });
+return txt;
+}
 function estimateReadLabel(article){
 var body=null,text='',words=0;
 if(!article||!article.querySelector) return '';
@@ -123,13 +138,18 @@ var host=scope&&scope.querySelector?scope:d;
 var meta=host&&host.querySelector?host.querySelector('meta[property="article:modified_time"],meta[property="og:updated_time"],meta[property="article:published_time"]'):null;
 return clean(meta&&meta.getAttribute?meta.getAttribute('content'):'');
 }
+function readPublishedFromMeta(scope){
+var host=scope&&scope.querySelector?scope:d;
+var meta=host&&host.querySelector?host.querySelector('meta[property="article:published_time"],meta[property="og:published_time"]'):null;
+return clean(meta&&meta.getAttribute?meta.getAttribute('content'):'');
+}
 function postMetaFromScope(scope,article){
 var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 var pm=null,node=null,readMin='';
 if(svc){
   try{ pm=svc.getFromContext(article||scope||d); }catch(_){ pm=null; }
 }
-pm=pm&&typeof pm==='object'?pm:{ author:'', contributors:[], tags:[], updated:'', readMin:'', readLabel:'' };
+pm=pm&&typeof pm==='object'?pm:{ author:'', contributors:[], tags:[], updated:'', published:'', readMin:'', readLabel:'' };
 node=(article&&article.querySelectorAll?article.querySelectorAll('.gg-postmeta'):null);
 node=node&&node.length?node[node.length-1]:null;
 if(node&&node.getAttribute){
@@ -295,7 +315,7 @@ metaWrap.appendChild(row);
 return text;
 }
 GG.modules.postInfoMeta.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null,dateSlot=null,updatedSlot=null,readSlot=null,dateNode=null,dateText='',updatedText='',readText='',updatedRow=null;
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null,dateSlot=null,updatedSlot=null,readSlot=null,dateNode=null,dateText='',updatedText='',readText='',publishedText='',updatedRow=null;
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
 pm=postMetaFromScope(scope,article);
@@ -304,8 +324,11 @@ updatedSlot=ensureUpdatedSlot(info);
 readSlot=qs('[data-slot="readtime"]',info);
 updatedRow=updatedSlot&&updatedSlot.closest?updatedSlot.closest('.gg-pi__metaitem--updated'):null;
 dateNode=article&&article.querySelector?article.querySelector('.gg-post__date,time[datetime]'):null;
-dateText=clean((dateNode&&dateNode.textContent)||'');
-updatedText=clean(pm&&pm.updated||'')||readUpdatedFromMeta(scope);
+publishedText=clean(pm&&pm.published||'')||readPublishedFromMeta(scope);
+dateText=clean((dateNode&&dateNode.textContent)||'')||clean(article&&article.getAttribute?article.getAttribute('data-date'):'')||publishedText;
+updatedText=clean(pm&&pm.updated||'')||readUpdatedFromMeta(scope)||dateText;
+dateText=humanDate(dateText);
+updatedText=humanDate(updatedText);
 readText=normalizeReadLabel(pm&&pm.readLabel||pm&&pm.readMin||'')||estimateReadLabel(article);
 if(dateSlot&&dateText) dateSlot.textContent=dateText;
 if(updatedSlot){
