@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='d9d2fd0' name='gg-release'/>
+    <meta content='ba214c7' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/d9d2fd0/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/d9d2fd0/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/ba214c7/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/ba214c7/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -233,7 +233,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='d9d2fd0' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='ba214c7' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2804,14 +2804,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div class='gg-info-panel__card gg-editorial-preview gg-epanel'>
       <div class='gg-epanel__head'>
         <span class='gg-epanel__eyebrow'>Editorial Preview</span>
-      </div>
-      <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'>
-        <img alt='' class='gg-info-panel__thumb-img'/>
-      </div>
-
-      <div class='gg-epanel__body gg-info-panel__details'>
-        <dl class='gg-epanel__rows'>
-                <div class='gg-epanel__row' data-row='title'>
+        <div class='gg-epanel__row' data-row='title'>
           <span aria-hidden='true' class='gg-icon gg-epanel__icon'>article</span>
           <div class='gg-epanel__cell'>
             <dt class='gg-epanel__label'>Title</dt>
@@ -2820,6 +2813,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </dd>
           </div>
         </div>
+      </div>
+      <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'>
+        <img alt='' class='gg-info-panel__thumb-img'/>
+      </div>
+
+      <div class='gg-epanel__body gg-info-panel__details'>
+        <dl class='gg-epanel__rows'>
           <div class='gg-epanel__row' data-row='author'>
             <span aria-hidden='true' class='gg-icon gg-epanel__icon'>person</span>
             <div class='gg-epanel__cell'>
@@ -3166,7 +3166,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/d9d2fd0/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/ba214c7/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>
