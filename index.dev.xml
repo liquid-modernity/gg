@@ -3019,21 +3019,21 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <div class='gg-info-panel__card gg-editorial-preview gg-epanel'>
       <div class='gg-epanel__head'>
         <span class='gg-epanel__eyebrow'>Editorial Preview</span>
+        <div class='gg-epanel__row' data-row='title'>
+          <span aria-hidden='true' class='gg-icon gg-epanel__icon'>article</span>
+          <div class='gg-epanel__cell'>
+            <dt class='gg-epanel__label'>Title</dt>
+            <dd class='gg-epanel__value'>
+              <a data-s='title' href='#'>&#8212;</a>
+            </dd>
+          </div>
+        </div>
       </div>
-      <div class='gg-epanel__media'>
+      <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'>
         <img alt='' class='gg-info-panel__thumb-img'/>
       </div>
       <div class='gg-epanel__body gg-info-panel__details'>
         <dl class='gg-epanel__rows'>
-          <div class='gg-epanel__row' data-row='title'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'>article</span>
-            <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'>Title</dt>
-              <dd class='gg-epanel__value'>
-                <a data-s='title' href='#'>&#8212;</a>
-              </dd>
-            </div>
-          </div>
           <div class='gg-epanel__row' data-row='author'>
             <span aria-hidden='true' class='gg-icon gg-epanel__icon'>person</span>
             <div class='gg-epanel__cell'>
@@ -3145,6 +3145,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </div>
   <div aria-hidden='true' class='gg-visually-hidden' data-gg-epanel='editorial' data-gg-marker='panel-listing-editorial' data-gg-preview-contract='panel-meta' data-gg-panelmeta='listing'>
     <span data-gg-marker='panel-listing-title' data-row='title' data-s='title'></span>
+    <span data-gg-marker='panel-listing-thumbnail' data-row='thumbnail'></span>
     <span data-gg-marker='panel-listing-author' data-row='author' data-s='author'></span>
     <div data-gg-marker='panel-listing-contributor' data-row='contributors' data-gg-slot='contributors'></div>
     <div data-gg-marker='panel-listing-labels' data-row='labels' data-gg-slot='labels'></div>

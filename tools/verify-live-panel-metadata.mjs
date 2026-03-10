@@ -25,6 +25,7 @@ const DEFAULT_USER_AGENT = "gg-live-gate/1.0 (+https://www.pakrpp.com)";
 const LISTING_MARKERS = [
   "panel-listing-editorial",
   "panel-listing-title",
+  "panel-listing-thumbnail",
   "panel-listing-author",
   "panel-listing-contributor",
   "panel-listing-labels",
@@ -40,6 +41,7 @@ const LISTING_MARKERS = [
 
 const LISTING_ROWS = [
   "title",
+  "thumbnail",
   "author",
   "contributors",
   "labels",
@@ -51,6 +53,21 @@ const LISTING_ROWS = [
   "snippet",
   "toc",
   "cta",
+];
+
+const LISTING_ROW_ORDER = [
+  "title",
+  "thumbnail",
+  "author",
+  "contributors",
+  "labels",
+  "tags",
+  "date",
+  "updated",
+  "comments",
+  "readtime",
+  "snippet",
+  "toc",
 ];
 
 const POST_LEFT_MARKERS = [
@@ -171,6 +188,13 @@ function markerRegex(marker) {
 function rowRegex(row) {
   const escaped = String(row).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`\\bdata-row\\s*=\\s*([\"'])${escaped}\\1`, "i");
+}
+
+function rowIndex(source, row) {
+  const escaped = String(row).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`\\bdata-row\\s*=\\s*([\"'])${escaped}\\1`, "i");
+  const m = String(source || "").match(re);
+  return m && Number.isFinite(m.index) ? m.index : -1;
 }
 
 function hasAttr(tag, attrName) {
@@ -416,6 +440,19 @@ function verifyListingContract(url, html) {
     if (!rowRegex(row).test(scope)) {
       addFunctional(`listing: missing row marker data-row="${row}" @ ${url}`);
     }
+  }
+
+  let lastIdx = -1;
+  for (const row of LISTING_ROW_ORDER) {
+    const idx = rowIndex(scope, row);
+    if (idx < 0) continue;
+    if (idx < lastIdx) {
+      addFunctional(
+        `listing: metadata row order mismatch, "${row}" appears before required predecessor @ ${url}`
+      );
+      break;
+    }
+    lastIdx = idx;
   }
 
   for (const marker of BANNED_LISTING_TEXT) {

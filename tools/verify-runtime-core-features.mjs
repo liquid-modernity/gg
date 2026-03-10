@@ -1320,25 +1320,33 @@ async function testTocRuntime(tocSnippet) {
   postBody.classList.add("gg-post__content");
   postBody.classList.add("post-body");
   postBody.classList.add("entry-content");
-  const h2a = document.createElement("h2");
-  h2a.textContent = "First Heading";
-  h2a._top = 420;
-  const h2b = document.createElement("h2");
-  h2b.textContent = "Second Heading";
-  h2b._top = 860;
-  postBody.appendChild(h2a);
-  postBody.appendChild(h2b);
+  const h1 = document.createElement("h1");
+  h1.textContent = "Major Heading";
+  h1._top = 360;
+  const h2 = document.createElement("h2");
+  h2.textContent = "Heading";
+  h2._top = 480;
+  const h3 = document.createElement("h3");
+  h3.textContent = "Sub Heading";
+  h3._top = 620;
+  const h4 = document.createElement("h4");
+  h4.textContent = "Minor Heading";
+  h4._top = 760;
+  postBody.appendChild(h1);
+  postBody.appendChild(h2);
+  postBody.appendChild(h3);
+  postBody.appendChild(h4);
   document.body.appendChild(postBody);
 
   runSnippet(context, tocSnippet, "toc.runtime");
   if (!GG.modules.TOC || typeof GG.modules.TOC.init !== "function") {
     throw new Error("TOC module not registered");
   }
-  GG.modules.TOC.init(document, { headings: "h2" });
+  GG.modules.TOC.init(document, { headings: "h1,h2,h3,h4" });
 
   const links = list.querySelectorAll("a.gg-toc__link");
-  if (links.length !== 2) {
-    throw new Error(`TOC item count mismatch (expected 2, got ${links.length})`);
+  if (links.length !== 4) {
+    throw new Error(`TOC item count mismatch (expected 4, got ${links.length})`);
   }
   if (tocRoot.hidden) {
     throw new Error("TOC root still hidden despite headings");
@@ -1363,14 +1371,52 @@ async function testTocRuntime(tocSnippet) {
     throw new Error("TOC link does not point to heading hash");
   }
 
-  return `items=${links.length} firstHref=${firstLink.getAttribute("href")} scrollTop=${Math.round(lastScroll.top)}`;
+  const levels = Array.from(list.querySelectorAll(".gg-toc__item")).map((el) =>
+    String(el.className || "").match(/gg-toc__lvl-(\d)/)?.[1] || "?"
+  );
+  const levelCount = {
+    h1: levels.filter((x) => x === "1").length,
+    h2: levels.filter((x) => x === "2").length,
+    h3: levels.filter((x) => x === "3").length,
+    h4: levels.filter((x) => x === "4").length,
+  };
+  return `items=${links.length} h1=${levelCount.h1} h2=${levelCount.h2} h3=${levelCount.h3} h4=${levelCount.h4} firstHref=${firstLink.getAttribute("href")} scrollTop=${Math.round(lastScroll.top)}`;
 }
 
 async function testInfoPanelRuntime(infoPanelSnippet) {
   const { context, document, window, GG } = createRuntimeContext("https://www.pakrpp.com/blog");
-  window.fetch = async () => {
-    throw new Error("offline");
-  };
+  const parsedDoc = new MockDocument();
+  const parsedBody = parsedDoc.createElement("section");
+  parsedBody.classList.add("post-body");
+  parsedBody.classList.add("entry-content");
+  ["major-heading", "heading", "sub-heading", "minor-heading"].forEach((id, index) => {
+    const level = index + 1;
+    const h = parsedDoc.createElement(`h${level}`);
+    h.textContent =
+      level === 1
+        ? "Major Heading"
+        : level === 2
+          ? "Heading"
+          : level === 3
+            ? "Sub Heading"
+            : "Minor Heading";
+    h.setAttribute("id", id);
+    parsedBody.appendChild(h);
+  });
+  const parsedPara = parsedDoc.createElement("p");
+  parsedPara.textContent = "Runtime listing snippet body.";
+  parsedBody.appendChild(parsedPara);
+  parsedDoc.body.appendChild(parsedBody);
+
+  context.parseHtmlDoc = () => parsedDoc;
+  window.parseHtmlDoc = context.parseHtmlDoc;
+  window.fetch = async (url) => ({
+    ok: true,
+    status: 200,
+    url: String(url || ""),
+    text: async () =>
+      "<article class='gg-post'><div class='post-body entry-content'><h1 id='major-heading'>Major Heading</h1><h2 id='heading'>Heading</h2><h3 id='sub-heading'>Sub Heading</h3><h4 id='minor-heading'>Minor Heading</h4></div></article>",
+  });
   context.fetch = (...args) => window.fetch(...args);
 
   const main = document.createElement("main");
@@ -1388,15 +1434,22 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   preview.classList.add("gg-editorial-preview");
   panel.appendChild(preview);
 
+  const titleRow = document.createElement("div");
+  titleRow.setAttribute("data-row", "title");
+  preview.appendChild(titleRow);
+  const titleLink = document.createElement("a");
+  titleLink.setAttribute("data-s", "title");
+  titleRow.appendChild(titleLink);
+
   const mediaWrap = document.createElement("div");
   mediaWrap.classList.add("gg-epanel__media");
+  mediaWrap.setAttribute("data-row", "thumbnail");
   const thumb = document.createElement("img");
   thumb.classList.add("gg-info-panel__thumb-img");
   mediaWrap.appendChild(thumb);
   preview.appendChild(mediaWrap);
 
   const rows = [
-    "title",
     "author",
     "contributors",
     "labels",
@@ -1411,34 +1464,36 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   rows.forEach((name) => {
     const row = document.createElement("div");
     row.setAttribute("data-row", name);
+    if (name === "author") {
+      const authorLink = document.createElement("a");
+      authorLink.setAttribute("data-s", "author-link");
+      const authorText = document.createElement("span");
+      authorText.setAttribute("data-s", "author");
+      authorLink.appendChild(authorText);
+      row.appendChild(authorLink);
+    }
+    if (["date", "updated", "comments", "readtime", "snippet"].includes(name)) {
+      const span = document.createElement("span");
+      span.setAttribute("data-s", name);
+      row.appendChild(span);
+    }
+    if (["contributors", "labels", "tags", "toc", "toc-hint"].includes(name)) {
+      if (name === "toc") {
+        const listEl = document.createElement("ol");
+        listEl.setAttribute("data-gg-slot", "toc");
+        row.appendChild(listEl);
+        const hintEl = document.createElement("p");
+        hintEl.setAttribute("data-gg-slot", "toc-hint");
+        row.appendChild(hintEl);
+      } else {
+        const slot = document.createElement("div");
+        slot.setAttribute("data-gg-slot", name);
+        row.appendChild(slot);
+      }
+    }
     preview.appendChild(row);
   });
 
-  const titleLink = document.createElement("a");
-  titleLink.setAttribute("data-s", "title");
-  panel.appendChild(titleLink);
-  const authorLink = document.createElement("a");
-  authorLink.setAttribute("data-s", "author-link");
-  const authorText = document.createElement("span");
-  authorText.setAttribute("data-s", "author");
-  authorLink.appendChild(authorText);
-  panel.appendChild(authorLink);
-  ["date", "updated", "comments", "readtime", "snippet"].forEach((k) => {
-    const el = document.createElement("span");
-    el.setAttribute("data-s", k);
-    panel.appendChild(el);
-  });
-  ["contributors", "labels", "tags"].forEach((slot) => {
-    const el = document.createElement("div");
-    el.setAttribute("data-gg-slot", slot);
-    panel.appendChild(el);
-  });
-  const tocList = document.createElement("ol");
-  tocList.setAttribute("data-gg-slot", "toc");
-  panel.appendChild(tocList);
-  const tocHint = document.createElement("p");
-  tocHint.setAttribute("data-gg-slot", "toc-hint");
-  panel.appendChild(tocHint);
   const cta = document.createElement("a");
   cta.classList.add("gg-epanel__cta");
   panel.appendChild(cta);
@@ -1451,6 +1506,7 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   card.setAttribute("data-date", "March 01, 2026");
   card.setAttribute("data-readtime", "4 min read");
   card.setAttribute("data-snippet", "Snippet fallback");
+  card.setAttribute("data-updated", "2026-03-02T00:00:00Z");
   main.appendChild(card);
 
   const infoBtn = document.createElement("button");
@@ -1478,6 +1534,16 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   excerpt.textContent = "Metadata panel snippet from card excerpt";
   card.appendChild(excerpt);
 
+  const postMeta = document.createElement("div");
+  postMeta.classList.add("gg-postmeta");
+  postMeta.setAttribute("data-author", "Pak RPP");
+  postMeta.setAttribute("data-updated", "2026-03-02T00:00:00Z");
+  postMeta.setAttribute("data-read-min", "7");
+  postMeta.setAttribute("data-contributors", "Editor One;Editor Two");
+  postMeta.setAttribute("data-tags", "alpha,beta");
+  postMeta.setAttribute("data-snippet", "Metadata panel snippet from postmeta");
+  card.appendChild(postMeta);
+
   const labelWrap = document.createElement("span");
   labelWrap.classList.add("gg-post-card__label");
   const labelA = document.createElement("a");
@@ -1499,6 +1565,8 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   GG.modules.InfoPanel.init(main);
 
   main.dispatchEvent(new MockEvent("click", { target: infoBtn }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 
   if (main.getAttribute("data-gg-info-panel") !== "open") {
     throw new Error("info click did not set data-gg-info-panel=open");
@@ -1506,17 +1574,46 @@ async function testInfoPanelRuntime(infoPanelSnippet) {
   if (panel.hidden) {
     throw new Error("info click did not unhide right metadata panel");
   }
+  const authorText = panel.querySelector('[data-s="author"]');
   if ((titleLink.textContent || "").trim() !== "Runtime Metadata Title") {
     throw new Error("metadata panel title was not hydrated");
   }
-  if ((authorText.textContent || "").trim() !== "Pak RPP") {
+  if (!authorText || (authorText.textContent || "").trim() !== "Pak RPP") {
     throw new Error("metadata panel author was not hydrated");
   }
-  if (!/12/.test((panel.querySelector('[data-s="comments"]')?.textContent || "").trim())) {
+  const commentsText = (panel.querySelector('[data-s="comments"]')?.textContent || "").trim();
+  if (!/12/.test(commentsText)) {
     throw new Error("metadata panel comments field missing");
   }
+  const dateText = (panel.querySelector('[data-s="date"]')?.textContent || "").trim();
+  const updatedText = (panel.querySelector('[data-s="updated"]')?.textContent || "").trim();
+  const readText = (panel.querySelector('[data-s="readtime"]')?.textContent || "").trim();
+  const snippetText = (panel.querySelector('[data-s="snippet"]')?.textContent || "").trim();
+  if (!dateText || /^[-—]+$/.test(dateText)) throw new Error("metadata panel date field missing");
+  if (!updatedText || /^[-—]+$/.test(updatedText)) throw new Error("metadata panel updated field missing");
+  if (!readText || /^[-—]+$/.test(readText)) throw new Error("metadata panel readtime field missing");
+  if (!snippetText || /^[-—]+$/.test(snippetText)) throw new Error("metadata panel snippet field missing");
 
-  return `panel=open title="${titleLink.textContent.trim()}" author="${authorText.textContent.trim()}" comments="${panel.querySelector('[data-s="comments"]').textContent.trim()}"`;
+  const labelsCount = panel.querySelectorAll('[data-gg-slot="labels"] .gg-chip').length;
+  const tagsCount = panel.querySelectorAll('[data-gg-slot="tags"] .gg-chip').length;
+  const contributorsCount = panel.querySelectorAll('[data-gg-slot="contributors"] .gg-chip').length;
+  if (labelsCount < 1) throw new Error("metadata panel labels chips missing");
+  if (tagsCount < 1) throw new Error("metadata panel tags chips missing");
+  if (contributorsCount < 1) throw new Error("metadata panel contributors chips missing");
+
+  const tocLinks = panel.querySelectorAll('[data-gg-slot="toc"] a.gg-info-panel__toclink').length;
+  if (tocLinks !== 4) throw new Error(`metadata panel toc links mismatch (expected 4, got ${tocLinks})`);
+  const badHref = Array.from(panel.querySelectorAll('[data-gg-slot="toc"] a.gg-info-panel__toclink')).find(
+    (a) => !String(a.getAttribute("href") || "").includes("#")
+  );
+  if (badHref) throw new Error("metadata panel toc link missing hash target");
+
+  const titleIndex = preview.children.indexOf(titleRow);
+  const mediaIndex = preview.children.indexOf(mediaWrap);
+  const thumbAfterTitle = titleIndex >= 0 && mediaIndex > titleIndex;
+  if (!thumbAfterTitle) throw new Error("metadata panel thumbnail must appear after title row");
+
+  return `panel=open title="${titleLink.textContent.trim()}" author="${authorText.textContent.trim()}" comments="${commentsText}" updated="${updatedText}" readtime="${readText}" tocLinks=${tocLinks} thumbAfterTitle=${thumbAfterTitle}`;
 }
 
 async function testLoadMoreRuntime(loadMoreSnippet) {

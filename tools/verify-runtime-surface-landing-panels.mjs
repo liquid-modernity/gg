@@ -62,6 +62,20 @@ function verifyPanelSurfaces() {
     pushResult(false, "BLOG_RIGHT_METADATA_POPULATED", "missing PASS marker in core runtime output");
   } else {
     pushResult(true, "BLOG_RIGHT_METADATA_POPULATED", metaLine);
+    const tocOk = /\btocLinks=4\b/.test(metaLine);
+    pushResult(
+      tocOk,
+      "BLOG_RIGHT_TOC_4_LEVEL",
+      tocOk ? metaLine : `expected tocLinks=4 in metadata runtime detail :: ${metaLine}`
+    );
+    const thumbOrderOk = /\bthumbAfterTitle=true\b/.test(metaLine);
+    pushResult(
+      thumbOrderOk,
+      "BLOG_RIGHT_FIELD_ORDER_TITLE_THUMBNAIL",
+      thumbOrderOk
+        ? metaLine
+        : `expected thumbAfterTitle=true in metadata runtime detail :: ${metaLine}`
+    );
   }
 
   const postInfoLine = lineMatch(
@@ -72,6 +86,25 @@ function verifyPanelSurfaces() {
     pushResult(false, "POST_LEFT_INFO_METADATA_POPULATED", "missing PASS marker in core runtime output");
   } else {
     pushResult(true, "POST_LEFT_INFO_METADATA_POPULATED", postInfoLine);
+  }
+
+  const tocLine = lineMatch(core.output, /RUNTIME TOC: PASS :: ([^\n]+)/m);
+  if (!tocLine) {
+    pushResult(false, "POST_LEFT_TOC_4_LEVEL", "missing TOC PASS marker in core runtime output");
+  } else {
+    const levelOk =
+      /\bitems=4\b/.test(tocLine) &&
+      /\bh1=1\b/.test(tocLine) &&
+      /\bh2=1\b/.test(tocLine) &&
+      /\bh3=1\b/.test(tocLine) &&
+      /\bh4=1\b/.test(tocLine);
+    pushResult(
+      levelOk,
+      "POST_LEFT_TOC_4_LEVEL",
+      levelOk
+        ? tocLine
+        : `expected items=4 and h1..h4=1 in TOC runtime detail :: ${tocLine}`
+    );
   }
 
   const toolbarLine = lineMatch(core.output, /RUNTIME toolbar: PASS :: ([^\n]+)/m);
