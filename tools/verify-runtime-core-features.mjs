@@ -1076,8 +1076,12 @@ async function testToolbarRuntime(postDetailSnippet) {
   if ((GG.modules.Comments._calls || 0) < 1) {
     throw new Error("comments action did not trigger ensureLoaded");
   }
-  if (!GG.modules.Comments._lastOpts || GG.modules.Comments._lastOpts.forceLoad !== true) {
-    throw new Error("comments action did not force comments load");
+  if (
+    !GG.modules.Comments._lastOpts ||
+    (GG.modules.Comments._lastOpts.forceLoad !== true &&
+      GG.modules.Comments._lastOpts.fromPrimaryAction !== true)
+  ) {
+    throw new Error("comments action did not request immediate comments load");
   }
   if ((GG.services.comments._mountCalls || 0) < 1) {
     throw new Error("comments action did not trigger comments mount");

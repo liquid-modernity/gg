@@ -2956,9 +2956,6 @@ setRightMode(useMode);
 setRightState('open');
 applyFromAttrs();
 if (useMode === 'comments') {
-  if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.ensureLoaded === 'function') {
-    GG.modules.Comments.ensureLoaded({ forceLoad: true });
-  }
   if (GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
     GG.services.comments.mountWithRetry();
   }
@@ -2981,6 +2978,7 @@ return rightState() === 'open' && rightMode() === 'comments';
 function toggleComments(triggerBtn){
 if(isCommentsOpen()) hideRightPanel(triggerBtn);
 else{
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
   showRightPanel('comments');
 }
 }
