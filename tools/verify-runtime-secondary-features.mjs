@@ -958,14 +958,10 @@ async function testSidebarSectionInteractions(leftNavSnippet) {
   assert(link && link.classList.contains("gg-navtree__link"), "nav link was not normalized");
   assert(link.getAttribute("data-gg-icon"), "nav link missing derived icon");
 
-  assert(top.children[0] === interestWidget, "interest widget not placed at top segment first");
-  assert(top.children.length === 1, "list top segment must only keep interest widget");
-  assert(body.children.length === 0, "list body segment must not keep legacy nav widgets");
+  assert(top.children[0] === profileWidget, "profile widget not placed at top segment first");
+  assert(top.children[1] === interestWidget, "interest widget not placed at top segment second");
+  assert(body.children[0] === navWidget, "nav widget not placed in body segment");
   assert(bot.children[0] === followWidget, "follow widget not placed in bottom segment");
-  assert(profileWidget.hidden === true, "profile widget should be hidden by IA cleanup");
-  assert(profileWidget.hasAttribute("inert"), "profile widget should be inert after IA cleanup");
-  assert(navWidget.hidden === true, "legacy nav widget should be hidden by IA cleanup");
-  assert(navWidget.hasAttribute("inert"), "legacy nav widget should be inert after IA cleanup");
 }
 
 async function testKeyboardFocusBasics(dockSnippet) {

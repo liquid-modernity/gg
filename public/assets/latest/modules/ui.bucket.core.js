@@ -2144,91 +2144,19 @@ for (var i = 0; i < stale.length; i++) {
 }
 }
 
-function clearMoreLegacyItems(list){
-if (!list || !list.querySelectorAll) return;
-var legacy = list.querySelectorAll('li');
-var bannedLabel = /our services|what we do|assignment|open sidebar|editorial panel|store|authors|jump|toc|search|home \(blog page\)|contact/i;
-for (var i = 0; i < legacy.length; i++) {
-  var item = legacy[i];
-  if (!item) continue;
-  var origin = (item.getAttribute('data-gg-more-origin') || '').trim();
-  if (origin === 'footer' || origin === 'navtree') continue;
-  var link = item.querySelector ? item.querySelector('a') : null;
-  if (!link && item.children && item.children.length) link = item.children[0];
-  if (!link || !link.getAttribute) continue;
-  var action = (link.getAttribute('data-gg-more-action') || '').trim();
-  if (action === 'install') continue;
-  var toggle = (link.getAttribute('data-gg-toggle') || '').trim();
-  var href = (link.getAttribute('href') || '').trim();
-  var label = textOf(link).toLowerCase();
-  var isLegacyHref = href === '#gg-page-end' || href === '#gg-toc' || href === '/p/shop.html' || href === '/p/authors.html' || href === '/p/tags.html';
-  var isSearchHref = /^\/search(?:[/?#]|$)/i.test(href);
-  if (toggle || isLegacyHref || isSearchHref || bannedLabel.test(label)) {
-    if (item.parentNode) item.parentNode.removeChild(item);
-  }
-}
-}
-
-function inferMoreShortcutIcon(label, fallback){
-var text = String(label || '').toLowerCase();
-if (/\bai summary\b/.test(text)) return 'auto_awesome';
-if (/\bpayment\b/.test(text)) return 'payments';
-if (/\binstall\b/.test(text)) return 'install_desktop';
-return (fallback || 'link').trim() || 'link';
-}
-
-function appendMoreIconNode(anchor, source, fallbackIcon){
-if (!anchor) return;
-var iconNode = null;
-if (source && source.querySelector) {
-  var iconSvg = source.querySelector('svg');
-  if (iconSvg && typeof iconSvg.cloneNode === 'function') {
-    iconNode = iconSvg.cloneNode(true);
-    if (iconNode.setAttribute) {
-      iconNode.setAttribute('aria-hidden', 'true');
-      iconNode.setAttribute('focusable', 'false');
-    }
-  }
-  if (!iconNode) {
-    var iconTextNode = source.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded');
-    var iconText = iconTextNode ? textOf(iconTextNode) : '';
-    if (!iconText) iconText = (source.getAttribute('data-gg-icon') || '').trim();
-    if (iconText) {
-      iconNode = document.createElement('span');
-      iconNode.className = 'gg-icon material-symbols-rounded';
-      iconNode.setAttribute('aria-hidden', 'true');
-      iconNode.textContent = iconText;
-    }
-  }
-}
-if (!iconNode) {
-  iconNode = document.createElement('span');
-  iconNode.className = 'gg-icon material-symbols-rounded';
-  iconNode.setAttribute('aria-hidden', 'true');
-  iconNode.textContent = (fallbackIcon || 'link').trim() || 'link';
-}
-anchor.appendChild(iconNode);
-}
-
-function appendMoreFooterLinkItem(list, href, label, source, action, fallbackIcon){
+function appendMoreFooterLinkItem(list, href, label, source){
 if (!list || !label) return;
 var li = document.createElement('li');
 li.setAttribute('data-gg-more-origin', 'footer');
 var a = document.createElement('a');
 a.href = href || '#';
-appendMoreIconNode(a, source, fallbackIcon || 'link');
-var labelNode = document.createElement('span');
-labelNode.textContent = label;
-var actionName = (action || '').trim();
+a.textContent = label;
 if (source) {
   var rel = source.getAttribute('rel');
   var target = source.getAttribute('target');
-  if (!actionName) actionName = (source.getAttribute('data-gg-more-action') || '').trim();
   if (rel) a.setAttribute('rel', rel);
   if (target) a.setAttribute('target', target);
 }
-if (actionName) a.setAttribute('data-gg-more-action', actionName);
-a.appendChild(labelNode);
 li.appendChild(a);
 list.appendChild(li);
 }
@@ -2269,48 +2197,13 @@ if (titleText && base.toLowerCase().indexOf(titleText.toLowerCase()) === -1) {
 return base;
 }
 
-function collectExistingMoreFooterItems(list){
-var out = [];
-var seen = {};
-if (!list || !list.querySelectorAll) return out;
-var items = list.querySelectorAll('[data-gg-more-origin="footer"]');
-for (var i = 0; i < items.length; i++) {
-  var item = items[i];
-  if (!item) continue;
-  var link = item.querySelector ? item.querySelector('a') : null;
-  if (!link && item.children && item.children.length) link = item.children[0];
-  if (!link || !link.getAttribute) continue;
-  var href = (link.getAttribute('href') || '#').trim() || '#';
-  var label = textOf(link);
-  var iconEl = link.querySelector ? link.querySelector('svg,.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
-  var iconText = iconEl ? textOf(iconEl) : '';
-  if (iconText && label.indexOf(iconText) === 0) label = label.slice(iconText.length).trim();
-  if (!label) continue;
-  var action = (link.getAttribute('data-gg-more-action') || '').trim();
-  var key = (action || '-') + '|' + label.toLowerCase() + '|' + href.replace(/\/+$/, '');
-  if (seen[key]) continue;
-  seen[key] = 1;
-  out.push({
-    href: href,
-    label: label,
-    source: link,
-    action: action
-  });
-}
-return out;
-}
-
 function collectNavTreeShortcuts(){
 var out = [];
 var seen = {};
-var panel = ensureMorePanel();
-var links = panel && panel.querySelectorAll ? panel.querySelectorAll('[data-gg-more-origin="navtree"] > a[href]') : [];
-if ((!links || !links.length) && document.querySelectorAll) {
-  var root = document.querySelector('.gg-blog-sidebar--left') || document;
-  links = root.querySelectorAll ? root.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href]') : [];
-}
-if ((!links || !links.length) && document.querySelectorAll) {
-  links = document.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href]');
+var root = document.querySelector('.gg-blog-sidebar--left') || document;
+var links = root.querySelectorAll ? root.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]') : [];
+if ((!links || !links.length) && root !== document && document.querySelectorAll) {
+  links = document.querySelectorAll('details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]');
 }
 for (var i = 0; i < links.length; i++) {
   var link = links[i];
@@ -2340,26 +2233,13 @@ for (var i = 0; i < links.length; i++) {
 return out;
 }
 
-function defaultNavShortcuts(){
-return [
-  { href: '/p/about.html', label: 'About & Philosophy', icon: 'account_balance' },
-  { href: '/p/tags.html', label: 'Topic Index', icon: 'topic' },
-  { href: '/p/support.html', label: 'Help Center', icon: 'support_agent' },
-  { href: '/p/privacy-policy.html', label: 'Privacy Policy', icon: 'policy' }
-];
-}
-
 function syncMoreFooterActions(panel){
 if (!panel) return;
 var list = panel.querySelector('.gg-dock-more__list');
 if (!list) return;
-var fallbackFooterItems = collectExistingMoreFooterItems(list);
 var navShortcuts = collectNavTreeShortcuts();
-clearMoreLegacyItems(list);
 clearMoreFooterItems(list);
 clearMoreNavItems(list);
-var footerCount = 0;
-var fallbackInstall = null;
 
 var footerActions = document.querySelector('.gg-footer__social');
 if (footerActions) {
@@ -2378,62 +2258,24 @@ if (footerActions) {
         list,
         link.getAttribute('href') || '#',
         resolveMoreItemLabel(title, link),
-        link,
-        '',
-        inferMoreShortcutIcon(resolveMoreItemLabel(title, link), 'link')
+        link
       );
-      footerCount++;
     }
   }
 }
 
-for (var f = 0; f < fallbackFooterItems.length; f++) {
-  if (fallbackFooterItems[f] && fallbackFooterItems[f].action === 'install') {
-    fallbackInstall = fallbackFooterItems[f];
-    break;
-  }
-}
-if (!footerCount && fallbackFooterItems.length) {
-  for (var k = 0; k < fallbackFooterItems.length; k++) {
-    var fallbackItem = fallbackFooterItems[k];
-    if (!fallbackItem || fallbackItem.action === 'install') continue;
-    appendMoreFooterLinkItem(
-      list,
-      fallbackItem.href,
-      fallbackItem.label,
-      fallbackItem.source,
-      fallbackItem.action,
-      inferMoreShortcutIcon(fallbackItem.label, 'link')
-    );
-  }
-}
-if (!footerCount && !fallbackFooterItems.length) {
-  appendMoreFooterLinkItem(list, '#', 'AI Summary · ChatGPT', null, '', 'auto_awesome');
-  appendMoreFooterLinkItem(list, '/p/pay.html#paypal', 'Payment · PayPal', null, '', 'payments');
-}
-
 var installButton = document.getElementById('install');
 if (installButton) {
-  appendMoreFooterLinkItem(
-    list,
-    '#',
-    'Install Web App to Device',
-    installButton,
-    'install',
-    'install_desktop'
-  );
-} else if (fallbackInstall) {
-  appendMoreFooterLinkItem(
-    list,
-    fallbackInstall.href,
-    fallbackInstall.label,
-    fallbackInstall.source,
-    fallbackInstall.action || 'install',
-    'install_desktop'
-  );
+  var li = document.createElement('li');
+  li.setAttribute('data-gg-more-origin', 'footer');
+  var a = document.createElement('a');
+  a.href = '#';
+  a.setAttribute('data-gg-more-action', 'install');
+  a.textContent = 'Install Web App to Device';
+  li.appendChild(a);
+  list.appendChild(li);
 }
 
-if (!navShortcuts.length) navShortcuts = defaultNavShortcuts();
 for (var n = 0; n < navShortcuts.length; n++) {
   appendMoreNavShortcutItem(list, navShortcuts[n]);
 }
@@ -4359,48 +4201,21 @@ for(;i<ws.length;i++)try{if(ws[i].querySelector(needle)){if(many)out.push(ws[i])
 return many?out:null;
 }
 
-function hideLegacySidebarWidgets(left){
-if(!left) return;
-var seen = [];
-var bans = /Governance\s*&\s*Trust|Knowledge Hub|Services\s*&\s*Connect|Legal\s*&\s*Compliance|AI\s*&\s*Ads Files/i;
-var profileWidgets = pick(left,'.gg-leftnav__profile',true);
-var navWidgets = pick(left,'details.gg-navtree,.gg-navtree__item,.gg-navtree__list',true);
-var i=0,widget=null,title='';
-for(i=0;i<profileWidgets.length;i++){
-  widget = profileWidgets[i];
-  if(widget && seen.indexOf(widget)<0){ seen.push(widget); setHiddenInert(widget,true); }
-}
-for(i=0;i<navWidgets.length;i++){
-  widget = navWidgets[i];
-  if(widget && seen.indexOf(widget)<0){ seen.push(widget); setHiddenInert(widget,true); }
-}
-var widgets = qsa('.widget', left);
-for(i=0;i<widgets.length;i++){
-  widget = widgets[i];
-  if(!widget || widget.parentElement !== left) continue;
-  if(seen.indexOf(widget)>=0) continue;
-  title = textOf(qs('.widget-title,.title', widget)) || textOf(widget);
-  if(bans.test(title)){
-    seen.push(widget);
-    setHiddenInert(widget,true);
-  }
-}
-}
-
 function arrangeSegments(left){
 var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb),mode;
 var i=0;
-var tocWidget=null,infoWidget=null,interestWidget=null,followWidget=null;
+var profileWidget=null,tocWidget=null,infoWidget=null,interestWidget=null,followWidget=null,navWidgets=[];
 var topOrder=[],bodyOrder=[],botOrder=[];
 if(!sb||!top||!body||!bot||left.__gM)return;
-if(sb.getAttribute('data-gg-sb-native')==='1'){hideLegacySidebarWidgets(left);sb.setAttribute('data-gg-sb-ready','1');sb.setAttribute('data-gg-sb-mode',detectMode(left)==='post'?'post':'list');return;}
+if(sb.getAttribute('data-gg-sb-native')==='1'){sb.setAttribute('data-gg-sb-ready','1');sb.setAttribute('data-gg-sb-mode',detectMode(left)==='post'?'post':'list');return;}
 mode=detectMode(left);
-if(mode==='post'){tocWidget=pick(left,'#gg-toc');infoWidget=pick(left,'#gg-postinfo');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');followWidget=pick(left,'.gg-leftnav__socialbar');}else{interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');followWidget=pick(left,'.gg-leftnav__socialbar');}
+if(mode==='post'){profileWidget=pick(left,'.gg-leftnav__profile');tocWidget=pick(left,'#gg-toc');infoWidget=pick(left,'#gg-postinfo');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}else{profileWidget=pick(left,'.gg-leftnav__profile');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}
 function pushUnique(list,node){ if(node&&list.indexOf(node)<0) list.push(node); }
 function place(host,order){var k=0,node=null;for(k=0;k<order.length;k++){node=order[k];if(!node) continue;setHiddenInert(node,false);if(node.parentElement!==host||host.children[k]!==node) host.insertBefore(node,host.children[k]||null);}}
-if(mode==='post'){pushUnique(topOrder,tocWidget);pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);pushUnique(botOrder,followWidget);}else{pushUnique(topOrder,interestWidget);pushUnique(botOrder,followWidget);}
+if(mode==='post'){pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);pushUnique(botOrder,followWidget);}else{pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);pushUnique(botOrder,followWidget);}
+for(i=0;navWidgets&&i<navWidgets.length;i++)pushUnique(bodyOrder,navWidgets[i]);
 left.__gM=1;
-try{hideLegacySidebarWidgets(left);place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);setHiddenInert(top,!qsa(':scope > .widget',top).length);setHiddenInert(bot,!qsa(':scope > .widget',bot).length);setHiddenInert(body,false);sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');sb.setAttribute('data-gg-sb-ready','1');}finally{left.__gM=0;}
+try{place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);setHiddenInert(top,!qsa(':scope > .widget',top).length);setHiddenInert(bot,!qsa(':scope > .widget',bot).length);setHiddenInert(body,false);sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');sb.setAttribute('data-gg-sb-ready','1');}finally{left.__gM=0;}
 }
 
 function scheduleRepair(left){arrangeSegments(left);}

@@ -249,9 +249,6 @@ class FakeElement {
   querySelectorAll(selector) {
     const key = String(selector);
     if (this._queryAll.has(key)) return this._queryAll.get(key);
-    if (key === "li") {
-      return this.children.filter((child) => child && String(child.tagName || "").toLowerCase() === "li");
-    }
     if (key === "[data-gg-more-origin]") {
       return this.children.filter((child) => child && child.getAttribute && child.getAttribute("data-gg-more-origin"));
     }
@@ -348,14 +345,6 @@ function verifyLandingDockRuntime() {
   morePanel.setAttribute("aria-hidden", "true");
   const moreList = new FakeElement("ul");
   moreList.classList.add("gg-dock-more__list");
-  ["Jump", "Store", "Search"].forEach((label) => {
-    const li = new FakeElement("li");
-    const a = new FakeElement("a");
-    a.textContent = label;
-    a.setAttribute("href", "#");
-    li.appendChild(a);
-    moreList.appendChild(li);
-  });
   morePanel._queryOne.set(".gg-dock-more__list", moreList);
   const moreClose = new FakeElement("a");
   moreClose.setAttribute("data-gg-action", "more-close");
@@ -408,7 +397,7 @@ function verifyLandingDockRuntime() {
   navIconSupport.textContent = "support_agent";
   navLinkSupport._queryOne.set(".material-symbols-rounded,.gg-icon.material-symbols-rounded", navIconSupport);
   leftSidebar._queryAll.set(
-    "details.gg-navtree .gg-navtree__item > a[href]",
+    "details.gg-navtree .gg-navtree__item > a[href], .gg-navtree__item > a[href]",
     [navLinkPolicy, navLinkSupport]
   );
 
@@ -563,36 +552,12 @@ function verifyLandingDockRuntime() {
     href: "#gg-dock-more",
   });
   const footerItems = moreList.querySelectorAll('[data-gg-more-origin="footer"]');
-  const readAnchorLabel = (anchor) => {
-    if (!anchor) return "";
-    if (anchor.children && anchor.children.length) {
-      const labelNode = anchor.children[anchor.children.length - 1];
-      if (labelNode && labelNode.textContent) return String(labelNode.textContent).trim();
-    }
-    return anchor.textContent ? String(anchor.textContent).trim() : "";
-  };
   const labels = footerItems
-    .map((item) => readAnchorLabel(item && item.children ? item.children[0] : null))
+    .map((item) => (item.children[0] && item.children[0].textContent ? item.children[0].textContent : "").trim())
     .filter(Boolean);
   const hasAi = labels.some((item) => /^AI Summary\b/i.test(item));
   const hasPayment = labels.some((item) => /^Payment\b/i.test(item));
   const hasInstall = labels.some((item) => /install web app to device/i.test(item));
-  const hasFooterIcon = footerItems.every((item) => {
-    const anchor = item && item.children ? item.children[0] : null;
-    if (!anchor || !anchor.children || anchor.children.length < 1) return false;
-    const iconNode = anchor.children[0];
-    const iconClass = iconNode && iconNode.className ? String(iconNode.className) : "";
-    const iconTag = iconNode && iconNode.tagName ? String(iconNode.tagName).toLowerCase() : "";
-    const iconText = iconNode && iconNode.textContent ? String(iconNode.textContent).trim() : "";
-    return /material-symbols-rounded/.test(iconClass) || iconTag === "svg" || !!iconText;
-  });
-  const legacyItems = (moreList.children || [])
-    .map((item) => ({
-      origin: item && item.getAttribute ? String(item.getAttribute("data-gg-more-origin") || "").trim() : "",
-      label: readAnchorLabel(item && item.children ? item.children[0] : null),
-    }))
-    .filter((entry) => !entry.origin && /^(jump|store|search|open sidebar|editorial panel)$/i.test(entry.label || ""));
-  const hasLegacy = legacyItems.length > 0;
   const navItems = moreList.querySelectorAll('[data-gg-more-origin="navtree"]');
   const hasNavShortcut = navItems.some((item) => {
     const anchor = item && item.children ? item.children[0] : null;
@@ -610,17 +575,9 @@ function verifyLandingDockRuntime() {
     return /material-symbols-rounded/.test(iconClass) && !!iconText;
   });
   pushResult(
-    moreOk &&
-      morePanel.hidden === false &&
-      hasAi &&
-      hasPayment &&
-      hasInstall &&
-      hasFooterIcon &&
-      hasNavShortcut &&
-      hasNavIcon &&
-      !hasLegacy,
+    moreOk && morePanel.hidden === false && hasAi && hasPayment && hasInstall && hasNavShortcut && hasNavIcon,
     "MORE_DRAWER_COMPLETENESS",
-    `open=${moreOk && morePanel.hidden === false} ai=${hasAi} payment=${hasPayment} install=${hasInstall} footerIcon=${hasFooterIcon} nav=${hasNavShortcut} navIcon=${hasNavIcon} legacy=${hasLegacy} legacyItems=${legacyItems.map((entry) => entry.label).join("|") || "-"}`
+    `open=${moreOk && morePanel.hidden === false} ai=${hasAi} payment=${hasPayment} install=${hasInstall} nav=${hasNavShortcut} navIcon=${hasNavIcon}`
   );
 
   const installAnchor = footerItems
