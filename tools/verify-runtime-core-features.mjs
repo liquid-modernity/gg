@@ -752,7 +752,10 @@ function createRuntimeContext(startUrl = "https://www.pakrpp.com/blog") {
         },
       },
       comments: {
-        mountWithRetry() {},
+        _mountCalls: 0,
+        mountWithRetry() {
+          this._mountCalls += 1;
+        },
       },
     },
     modules: {
@@ -770,7 +773,13 @@ function createRuntimeContext(startUrl = "https://www.pakrpp.com/blog") {
         },
       },
       Comments: {
-        ensureLoaded() {},
+        _calls: 0,
+        _lastOpts: null,
+        ensureLoaded(opts) {
+          this._calls += 1;
+          this._lastOpts = opts || null;
+          return true;
+        },
       },
     },
   };
@@ -1063,6 +1072,15 @@ async function testToolbarRuntime(postDetailSnippet) {
   }
   if (commentsPanel.hidden) {
     throw new Error("comments panel remained hidden after comments action");
+  }
+  if ((GG.modules.Comments._calls || 0) < 1) {
+    throw new Error("comments action did not trigger ensureLoaded");
+  }
+  if (!GG.modules.Comments._lastOpts || GG.modules.Comments._lastOpts.forceLoad !== true) {
+    throw new Error("comments action did not force comments load");
+  }
+  if ((GG.services.comments._mountCalls || 0) < 1) {
+    throw new Error("comments action did not trigger comments mount");
   }
 
   toolbar.dispatchEvent(new MockEvent("click", { target: btnInfo }));

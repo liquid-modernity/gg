@@ -2955,8 +2955,13 @@ var useMode = mode || 'comments';
 setRightMode(useMode);
 setRightState('open');
 applyFromAttrs();
-if (useMode === 'comments' && GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
-  GG.services.comments.mountWithRetry();
+if (useMode === 'comments') {
+  if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.ensureLoaded === 'function') {
+    GG.modules.Comments.ensureLoaded({ forceLoad: true });
+  }
+  if (GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
+    GG.services.comments.mountWithRetry();
+  }
 }
 }
 
@@ -2976,7 +2981,6 @@ return rightState() === 'open' && rightMode() === 'comments';
 function toggleComments(triggerBtn){
 if(isCommentsOpen()) hideRightPanel(triggerBtn);
 else{
-  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
   showRightPanel('comments');
 }
 }
@@ -5257,21 +5261,21 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var o = opts || {};
     var host = hostRoot();
     var fromPrimary = !!o.fromPrimaryAction;
+    var forceLoad = fromPrimary || !!o.forceLoad;
     var shouldScroll = fromPrimary && o.scroll !== false;
     if (!host) return false;
-
-    if (fromPrimary) markLoaded(host);
 
     if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
       GG.core.commentsGate.init();
     }
 
-    if (fromPrimary) {
+    if (forceLoad) {
       var btn = host.querySelector ? host.querySelector('[data-gg-comments-load]') : null;
       if (btn) {
         try { btn.click(); } catch (_) {}
-      } else if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.load === 'function' && !host.__gC) {
-        GG.core.commentsGate.load(host, 'primary-action');
+      }
+      if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.load === 'function' && !host.__gC) {
+        GG.core.commentsGate.load(host, fromPrimary ? 'primary-action' : 'panel-open');
       }
     }
 
