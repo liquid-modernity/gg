@@ -2831,12 +2831,16 @@ var leftSidebar    = qs('.gg-blog-sidebar--left', main);
 var rightSidebar   = qs('.gg-blog-sidebar--right', main);
 var commentsPanel  = rightSidebar ? qs('[data-gg-panel="comments"]', rightSidebar) : null;
 var infoPanelRight = rightSidebar ? qs('[data-gg-panel="info"]', rightSidebar) : null;
+var infoCardPost   = infoPanelRight ? qs('#gg-postinfo', infoPanelRight) : null;
+var infoCardList   = infoPanelRight ? qs('.gg-editorial-preview', infoPanelRight) : null;
 var comments     = qs('.gg-post__comments', article);
 var commentsSlot = rightSidebar ? qs('[data-gg-panel="comments"] [data-gg-slot="comments"]', rightSidebar) : null;
 if(comments && commentsSlot && !comments.__ggMoved){
 commentsSlot.appendChild(comments);
 comments.__ggMoved = true;
 }
+if(infoCardPost) infoCardPost.hidden = false;
+if(infoCardList) infoCardList.hidden = true;
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
 }
@@ -2909,12 +2913,12 @@ var rightOpen = rightState() === 'open';
 var mode = rightMode();
 var focusOn = GG.core.state.has(document.body, 'focus-mode');
 
-setBtnActive('info', leftOpen);
+setBtnActive('info', rightOpen && mode === 'info');
 setBtnActive('comments', rightOpen && mode === 'comments');
 setFocusIcon(focusOn);
 
 var showComments = rightOpen && mode === 'comments';
-var showInfo = rightOpen && mode && mode !== 'comments';
+var showInfo = rightOpen && mode === 'info';
 
 if(commentsPanel){
   commentsPanel.hidden = !showComments;
@@ -2981,6 +2985,10 @@ else{
   showRightPanel('comments');
 }
 }
+function toggleInfo(triggerBtn){
+if(rightState() === 'open' && rightMode() === 'info') hideRightPanel(triggerBtn);
+else showRightPanel('info');
+}
 var prevLeft, prevRight, prevMode;
 function rememberPanels(){
 prevLeft = leftState();
@@ -3038,7 +3046,7 @@ if(act === 'back'){
 }
 
 if(act === 'info'){
-  setLeft(leftState() !== 'open', btn);
+  toggleInfo(btn);
   return;
 }
 
@@ -3556,8 +3564,8 @@ var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? item
 if(!list) return;
 list.textContent = '';
 if(!rows.length){
-  setRow('toc', false);
-  setTocHint('');
+  setRow('toc', true);
+  setTocHint('Open post');
   return;
 }
 setRow('toc', true);
@@ -3766,8 +3774,8 @@ var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__gP=card;
-var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){var n=cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));return (n&&(!authorText||n.toLowerCase()!==authorText.toLowerCase()))?{text:n}:null;}).filter(Boolean);
-if(!quickSnippet) quickSnippet=cardMeta.snippet;
+var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),af=null,instTags=((Array.isArray(cardMeta.tags)&&cardMeta.tags.length)?cardMeta.tags:(labels.length?labels:['post'])).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=((Array.isArray(cardMeta.contributors)&&cardMeta.contributors.length)?cardMeta.contributors:[authorText]).map(function(x){var n=cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));return n?{text:n}:null;}).filter(Boolean);
+if(!quickSnippet) quickSnippet=cardMeta.snippet||clipText(title,180);
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'—');
@@ -4189,7 +4197,7 @@ function enhanceCustomPages(root){ var widgets=[],i=0,id='',el=null; for(i=0;i<C
 
 function setHiddenInert(node, hidden){if(!node)return;node.hidden=!!hidden;if(hidden)node.setAttribute('inert','');else node.removeAttribute('inert');}
 
-function detectMode(left){return qs('#gg-postinfo,#gg-toc',left)?'post':'list';}
+function detectMode(left){return qs('#gg-toc',left)?'post':'list';}
 
 function pick(root, needle, many){
 if(!root||!needle)return many?[]:null;
@@ -4203,15 +4211,15 @@ return many?out:null;
 function arrangeSegments(left){
 var sb=qs('.gg-sb',left),top=qs('.gg-sb__top',sb),body=qs('.gg-sb__body',sb),bot=qs('.gg-sb__bot',sb),mode;
 var i=0;
-var profileWidget=null,tocWidget=null,infoWidget=null,interestWidget=null,followWidget=null,navWidgets=[];
+var profileWidget=null,tocWidget=null,interestWidget=null,followWidget=null,navWidgets=[];
 var topOrder=[],bodyOrder=[],botOrder=[];
 if(!sb||!top||!body||!bot||left.__gM)return;
 if(sb.getAttribute('data-gg-sb-native')==='1'){sb.setAttribute('data-gg-sb-ready','1');sb.setAttribute('data-gg-sb-mode',detectMode(left)==='post'?'post':'list');return;}
 mode=detectMode(left);
-if(mode==='post'){profileWidget=pick(left,'.gg-leftnav__profile');tocWidget=pick(left,'#gg-toc');infoWidget=pick(left,'#gg-postinfo');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}else{profileWidget=pick(left,'.gg-leftnav__profile');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}
+if(mode==='post'){profileWidget=pick(left,'.gg-leftnav__profile');tocWidget=pick(left,'#gg-toc');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}else{profileWidget=pick(left,'.gg-leftnav__profile');interestWidget=pick(left,'.gg-labeltree[data-gg-module="labeltree"]');navWidgets=pick(left,'details.gg-navtree',true);followWidget=pick(left,'.gg-leftnav__socialbar');}
 function pushUnique(list,node){ if(node&&list.indexOf(node)<0) list.push(node); }
 function place(host,order){var k=0,node=null;for(k=0;k<order.length;k++){node=order[k];if(!node) continue;setHiddenInert(node,false);if(node.parentElement!==host||host.children[k]!==node) host.insertBefore(node,host.children[k]||null);}}
-if(mode==='post'){pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);pushUnique(bodyOrder,infoWidget);pushUnique(bodyOrder,interestWidget);pushUnique(botOrder,followWidget);}else{pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);pushUnique(botOrder,followWidget);}
+if(mode==='post'){pushUnique(topOrder,profileWidget);pushUnique(topOrder,tocWidget);pushUnique(bodyOrder,interestWidget);pushUnique(botOrder,followWidget);}else{pushUnique(topOrder,profileWidget);pushUnique(topOrder,interestWidget);pushUnique(botOrder,followWidget);}
 for(i=0;navWidgets&&i<navWidgets.length;i++)pushUnique(bodyOrder,navWidgets[i]);
 left.__gM=1;
 try{place(top,topOrder);place(body,bodyOrder);place(bot,botOrder);setHiddenInert(top,!qsa(':scope > .widget',top).length);setHiddenInert(bot,!qsa(':scope > .widget',bot).length);setHiddenInert(body,false);sb.setAttribute('data-gg-sb-mode',mode==='post'?'post':'list');sb.setAttribute('data-gg-sb-ready','1');}finally{left.__gM=0;}

@@ -224,7 +224,11 @@ GG.modules.postInfoTags = GG.modules.postInfoTags || {};
 function parseTags(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,key='',text=''; if(!src) return out; parts=src.split(/\s*,\s*/); for(i=0;i<parts.length;i++){ text=clean(parts[i]); key=tagSlugify(text); if(!key||seen[key]) continue; seen[key]=1; out.push({ key:key, text:text||key, href:tagHref(key) }); } return out; }
 function renderTags(slot,rows){ var list=rows||[],i=0,row=null,name='',href='',a=null; if(!slot) return; slot.textContent=''; for(i=0;i<list.length;i++){ row=list[i]||{}; name=clean(row.text||row.name||''); href=clean(row.href||''); if(!name) continue; a=d.createElement('a'); a.className='gg-pi__chip'; a.href=href||'#'; a.textContent=name; slot.appendChild(a); } }
 function parseLabels(article){
-var links=article&&article.querySelectorAll?article.querySelectorAll('.gg-post__label-link,.gg-post__labels a[rel="tag"],.post-labels a[rel="tag"]'):[];
+var links=article&&article.querySelectorAll?article.querySelectorAll('.gg-post__label-link,.gg-post__labels a[rel="tag"],.post-labels a[rel="tag"],.gg-post__breadcrumbs a[href*="/search/label/"]'):[];
+var root=article&&article.ownerDocument?article.ownerDocument:d;
+if((!links||!links.length)&&root&&root.querySelectorAll){
+  links=root.querySelectorAll('.gg-post__labels a[rel="tag"],.post-labels a[rel="tag"],.gg-post__breadcrumbs a[href*="/search/label/"],.gg-post__label-link');
+}
 var out=[],seen={},i=0,a=null,text='',href='',key='';
 for(i=0;i<links.length;i++){
   a=links[i];

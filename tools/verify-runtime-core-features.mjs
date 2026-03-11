@@ -1030,6 +1030,10 @@ async function testToolbarRuntime(postDetailSnippet) {
   const infoPanel = document.createElement("div");
   infoPanel.setAttribute("data-gg-panel", "info");
   infoPanel.hidden = true;
+  const postInfoCard = document.createElement("div");
+  postInfoCard.setAttribute("id", "gg-postinfo");
+  postInfoCard.hidden = true;
+  infoPanel.appendChild(postInfoCard);
   right.appendChild(infoPanel);
 
   const commentsPanel = document.createElement("div");
@@ -1115,13 +1119,32 @@ async function testToolbarRuntime(postDetailSnippet) {
   if (!commentsSlot.querySelector("#comments")) {
     throw new Error("native comments container was not present in comments slot");
   }
+  const commentsMode = main.getAttribute("data-gg-right-mode");
+  const commentsOpen = main.getAttribute("data-gg-right-panel");
 
   toolbar.dispatchEvent(new MockEvent("click", { target: btnInfo }));
-  if (main.getAttribute("data-gg-left-panel") !== "open") {
-    throw new Error("info action did not open left panel");
+  if (main.getAttribute("data-gg-right-panel") !== "open") {
+    throw new Error("info action did not open right panel");
   }
+  if (main.getAttribute("data-gg-right-mode") !== "info") {
+    throw new Error("info action did not set right mode=info");
+  }
+  if (main.getAttribute("data-gg-left-panel") !== "closed") {
+    throw new Error("info action must keep left panel closed");
+  }
+  if (infoPanel.hidden) {
+    throw new Error("info panel remained hidden after info action");
+  }
+  if (postInfoCard.hidden) {
+    throw new Error("post info sheet card remained hidden after info action");
+  }
+  if (!commentsPanel.hidden) {
+    throw new Error("comments panel must be hidden when info sheet is open");
+  }
+  const infoMode = main.getAttribute("data-gg-right-mode");
+  const infoOpen = main.getAttribute("data-gg-right-panel");
 
-  return `right=${main.getAttribute("data-gg-right-panel")} mode=${main.getAttribute("data-gg-right-mode")} left=${main.getAttribute("data-gg-left-panel")} loaded=${commentsBlock.getAttribute("data-gg-comments-loaded") || "0"} native=${commentsSlot.querySelector("#comments") ? "present" : "missing"}`;
+  return `commentsRight=${commentsOpen} commentsMode=${commentsMode} infoRight=${infoOpen} infoMode=${infoMode} left=${main.getAttribute("data-gg-left-panel")} loaded=${commentsBlock.getAttribute("data-gg-comments-loaded") || "0"} native=${commentsSlot.querySelector("#comments") ? "present" : "missing"}`;
 }
 
 async function testPostLeftInfoRuntime(authorsSource) {
@@ -1753,7 +1776,7 @@ async function main() {
 
   await runOne("dock", () => testDockRuntime(dockSnippet));
   await runOne("toolbar", () => testToolbarRuntime(postDetailSnippet));
-  await runOne("post left info metadata panel", () => testPostLeftInfoRuntime(authorsSource));
+  await runOne("post info metadata sheet", () => testPostLeftInfoRuntime(authorsSource));
   await runOne("TOC", () => testTocRuntime(tocSnippet));
   await runOne("right/sidebar metadata panel", () => testInfoPanelRuntime(infoPanelSnippet));
   await runOne("Load More Article", () => testLoadMoreRuntime(loadMoreSnippet));

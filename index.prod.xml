@@ -4,11 +4,11 @@
 
   <head>
     <meta content='prod' name='gg-env'/>
-    <meta content='c5d7b79' name='gg-release'/>
+    <meta content='30bb743' name='gg-release'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
-    <link as='style' href='/assets/v/c5d7b79/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
-    <noscript><link href='/assets/v/c5d7b79/main.css?v=20260203160035' rel='stylesheet'/></noscript>
+    <link as='style' href='/assets/v/30bb743/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
+    <noscript><link href='/assets/v/30bb743/main.css?v=20260203160035' rel='stylesheet'/></noscript>
     <!-- Structured data (Schema.org) -->
 <script type='application/ld+json'>
 {
@@ -233,7 +233,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-release='c5d7b79' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-release='30bb743' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and not (data:view.url and (data:view.url contains &quot;/blog&quot; or data:view.url contains &quot;view=blog&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -663,83 +663,7 @@ text-align: center;
         <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
-              <b:widget-setting name='content'><![CDATA[<!-- GAGA INFORMATION (POST DETAIL) -->
-<!-- GAGA META DATA -->
-
-<!-- GAGA INFORMATION (POST DETAIL) -->
-<div id="gg-postinfo" class="gg-pi gg-panelcard" data-wpm="200" data-gg-panelmeta="post">
-  <div class="gg-pi__head">
-    <button class="gg-pi__headbtn" type="button" aria-expanded="true">
-      <span class="material-symbols-rounded gg-pi__ico" aria-hidden="true">info</span>
-      <span class="gg-pi__title">Information</span>
-    </button>
-    <button class="gg-pi__toggle" type="button" aria-label="Collapse">
-      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
-    </button>
-  </div>
-
-  <div class="gg-pi__body">
-
-    <!-- WRITTEN BY -->
-    <div class="gg-pi__sec">
-      <div class="gg-pi__sechead">
-        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">person</span>
-        <div class="gg-pi__kicker">Written by</div>
-      </div>
-      <div class="gg-pi__people" data-slot="author" data-gg-marker="panel-post-author"></div>
-    </div>
-
-    <!-- CONTRIBUTORS (placeholder siap, data via data-contributors) -->
-    <div class="gg-pi__sec gg-pi__sec--contributors" hidden>
-      <div class="gg-pi__sechead">
-        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">groups</span>
-        <div class="gg-pi__kicker">Contributors</div>
-      </div>
-      <div class="gg-pi__people" data-slot="contributors" data-gg-marker="panel-post-contributor"></div>
-    </div>
-
-    <!-- LABELS (icon kiri + chips; folder icon ada di dalam chip) -->
-<div class="gg-pi__sec gg-pi__sec--labels" hidden>
-  <div class="gg-pi__row">
-    <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">label</span>
-<div class="gg-pi__kicker">LABEL</div>
-    <div class="gg-pi__chips gg-pi__chips--labels" data-slot="labels" aria-label="Labels"></div>
-    
-  </div>
-</div>
-
-
-    <!-- TAGS (placeholder siap, ambil dari .gg-post-tags / #hashtag) -->
-    <div class="gg-pi__sec gg-pi__sec--tags" hidden>
-      <div class="gg-pi__sechead">
-        <span class="material-symbols-rounded gg-pi__sico" aria-hidden="true">sell</span>
-        <div class="gg-pi__kicker">Tags</div>
-      </div>
-      <div class="gg-pi__chips" data-slot="tags" data-gg-marker="panel-post-tags" aria-label="Tags"></div>
-    </div>
-
-    <div class="gg-pi__meta">
-      <div class="gg-pi__metaitem gg-pi__metaitem--date">
-        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">calendar_today</span>
-        <div class="gg-pi__kicker">DATE</div>
-        <span data-slot="date" data-gg-marker="panel-post-date">&#8212;</span>
-      </div>
-      <div class="gg-pi__metaitem gg-pi__metaitem--updated">
-        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">event_repeat</span>
-        <div class="gg-pi__kicker">UPDATED</div>
-        <span data-slot="updated" data-gg-marker="panel-post-updated">&#8212;</span>
-      </div>
-<div class="gg-pi__metaitem gg-pi__metaitem--readtime">
-        <span class="material-symbols-rounded gg-pi__mico" aria-hidden="true">schedule</span>
-        <div class="gg-pi__kicker">READ TIME</div>
-        <span data-slot="readtime" data-gg-marker="panel-post-reading-time">1 min read</span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- GAGA TABLE OF CONTENTS (POST/PAGE DETAIL) -->
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST/PAGE DETAIL) -->
 <nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h1,h2,h3,h4">
   <div class="gg-toc__head">
     <button class="gg-toc__headbtn" type="button" aria-expanded="true">
@@ -1971,6 +1895,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
       </b:if>
     </b:if>
+    <b:if cond='data:post.labels'>
+      <div class='gg-post__labels gg-visually-hidden'>
+        <b:loop values='data:post.labels' var='lab'>
+          <a class='gg-post__label-link' expr:href='data:lab.url' rel='tag'>
+            <data:lab.name/>
+          </a>
+        </b:loop>
+      </div>
+    </b:if>
     <!-- /GAGA HEADER -->
 <!-- GAGA BREADCRUMBS -->
 <b:if cond='data:view.isPost or data:view.isPage'>
@@ -2801,6 +2734,64 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <!-- GAGA SIDEBAR RIGHT -->
 <aside class='gg-blog-sidebar gg-blog-sidebar--right'>
   <div class='gg-info-panel' data-gg-panel='info'>
+    <div class='gg-info-panel__card gg-pi gg-panelcard' data-gg-panelmeta='post' data-wpm='200' hidden='hidden' id='gg-postinfo'>
+      <div class='gg-pi__head'>
+        <button aria-expanded='true' class='gg-pi__headbtn' type='button'>
+          <span aria-hidden='true' class='material-symbols-rounded gg-pi__ico'>info</span>
+          <span class='gg-pi__title'>Information</span>
+        </button>
+        <button aria-label='Collapse' class='gg-pi__toggle' type='button'>
+          <span aria-hidden='true' class='material-symbols-rounded'>collapse_content</span>
+        </button>
+      </div>
+      <div class='gg-pi__body'>
+        <div class='gg-pi__sec'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>person</span>
+            <div class='gg-pi__kicker'>Written by</div>
+          </div>
+          <div class='gg-pi__people' data-gg-marker='panel-post-author' data-slot='author'/>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--contributors' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>groups</span>
+            <div class='gg-pi__kicker'>Contributors</div>
+          </div>
+          <div class='gg-pi__people' data-gg-marker='panel-post-contributor' data-slot='contributors'/>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--labels' hidden='hidden'>
+          <div class='gg-pi__row'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>label</span>
+            <div class='gg-pi__kicker'>LABEL</div>
+            <div aria-label='Labels' class='gg-pi__chips gg-pi__chips--labels' data-slot='labels'/>
+          </div>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--tags' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>sell</span>
+            <div class='gg-pi__kicker'>Tags</div>
+          </div>
+          <div aria-label='Tags' class='gg-pi__chips' data-gg-marker='panel-post-tags' data-slot='tags'/>
+        </div>
+        <div class='gg-pi__meta'>
+          <div class='gg-pi__metaitem gg-pi__metaitem--date'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>calendar_today</span>
+            <div class='gg-pi__kicker'>DATE</div>
+            <span data-gg-marker='panel-post-date' data-slot='date'>&#8212;</span>
+          </div>
+          <div class='gg-pi__metaitem gg-pi__metaitem--updated'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>event_repeat</span>
+            <div class='gg-pi__kicker'>UPDATED</div>
+            <span data-gg-marker='panel-post-updated' data-slot='updated'>&#8212;</span>
+          </div>
+          <div class='gg-pi__metaitem gg-pi__metaitem--readtime'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>schedule</span>
+            <div class='gg-pi__kicker'>READ TIME</div>
+            <span data-gg-marker='panel-post-reading-time' data-slot='readtime'>1 min read</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class='gg-info-panel__card gg-editorial-preview gg-epanel'>
       <div class='gg-epanel__head'>
         <span class='gg-epanel__eyebrow'>Editorial Preview</span>
@@ -3166,7 +3157,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-toast__item'><span class='gg-toast__msg'/></div>
 </template>
 <!-- GAGA HOME OF JS -->
-<script defer='defer' src='/assets/v/c5d7b79/boot.js?v=20260203160035'></script>
+<script defer='defer' src='/assets/v/30bb743/boot.js?v=20260203160035'></script>
 <!-- /GAGA HOME OF JS -->
 
 </body>

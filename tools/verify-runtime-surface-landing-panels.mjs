@@ -78,19 +78,16 @@ function verifyPanelSurfaces() {
     );
   }
 
-  const postInfoLine = lineMatch(
-    core.output,
-    /RUNTIME post left info metadata panel: PASS :: ([^\n]+)/m
-  );
+  const postInfoLine = lineMatch(core.output, /RUNTIME post info metadata sheet: PASS :: ([^\n]+)/m);
   if (!postInfoLine) {
-    pushResult(false, "POST_LEFT_INFO_METADATA_POPULATED", "missing PASS marker in core runtime output");
+    pushResult(false, "POST_INFO_SHEET_METADATA_POPULATED", "missing PASS marker in core runtime output");
   } else {
-    pushResult(true, "POST_LEFT_INFO_METADATA_POPULATED", postInfoLine);
+    pushResult(true, "POST_INFO_SHEET_METADATA_POPULATED", postInfoLine);
   }
 
   const tocLine = lineMatch(core.output, /RUNTIME TOC: PASS :: ([^\n]+)/m);
   if (!tocLine) {
-    pushResult(false, "POST_LEFT_TOC_4_LEVEL", "missing TOC PASS marker in core runtime output");
+    pushResult(false, "POST_SIDEBAR_TOC_4_LEVEL", "missing TOC PASS marker in core runtime output");
   } else {
     const levelOk =
       /\bitems=4\b/.test(tocLine) &&
@@ -100,7 +97,7 @@ function verifyPanelSurfaces() {
       /\bh4=1\b/.test(tocLine);
     pushResult(
       levelOk,
-      "POST_LEFT_TOC_4_LEVEL",
+      "POST_SIDEBAR_TOC_4_LEVEL",
       levelOk
         ? tocLine
         : `expected items=4 and h1..h4=1 in TOC runtime detail :: ${tocLine}`
@@ -109,18 +106,21 @@ function verifyPanelSurfaces() {
 
   const toolbarLine = lineMatch(core.output, /RUNTIME toolbar: PASS :: ([^\n]+)/m);
   if (!toolbarLine) {
-    pushResult(false, "POST_TOOLBAR_COMMENTS_REVEAL_NATIVE", "missing toolbar PASS marker");
+    pushResult(false, "POST_TOOLBAR_INFO_COMMENTS_SHEETS", "missing toolbar PASS marker");
   } else {
-    const rightOk = /\bright=open\b/.test(toolbarLine);
-    const commentsOk = /\bmode=comments\b/.test(toolbarLine);
+    const commentsRightOk = /\bcommentsRight=open\b/.test(toolbarLine);
+    const commentsModeOk = /\bcommentsMode=comments\b/.test(toolbarLine);
+    const infoRightOk = /\binfoRight=open\b/.test(toolbarLine);
+    const infoModeOk = /\binfoMode=info\b/.test(toolbarLine);
+    const leftClosedOk = /\bleft=closed\b/.test(toolbarLine);
     const loadedOk = /\bloaded=1\b/.test(toolbarLine);
     const nativeOk = /\bnative=present\b/.test(toolbarLine);
     pushResult(
-      rightOk && commentsOk && loadedOk && nativeOk,
-      "POST_TOOLBAR_COMMENTS_REVEAL_NATIVE",
-      rightOk && commentsOk && loadedOk && nativeOk
+      commentsRightOk && commentsModeOk && infoRightOk && infoModeOk && leftClosedOk && loadedOk && nativeOk,
+      "POST_TOOLBAR_INFO_COMMENTS_SHEETS",
+      commentsRightOk && commentsModeOk && infoRightOk && infoModeOk && leftClosedOk && loadedOk && nativeOk
         ? toolbarLine
-        : `toolbar evidence must include right=open + mode=comments + loaded=1 + native=present :: ${toolbarLine}`
+        : `toolbar evidence must include commentsRight=open + commentsMode=comments + infoRight=open + infoMode=info + left=closed + loaded=1 + native=present :: ${toolbarLine}`
     );
   }
 
@@ -181,16 +181,27 @@ function verifySidebarIAContract() {
 
   const postComposite = `${postBody}\n${postBot}`;
   const postHasInfo = /id=["']gg-postinfo["']/i.test(postComposite);
+  const postHasToc = /id=["']gg-toc["']/i.test(postComposite);
   const postHasInterests = /id=["']gg-labeltree-post["']/i.test(postComposite);
   const postHasSocial = socialRe.test(postComposite);
   const postHasLegal = legalRe.test(postComposite);
   const postHasProfile = profileRe.test(postComposite);
   const postHasNavtree = navtreeRe.test(postComposite) || legacyTreeRe.test(postComposite);
-  const postOk = postHasInfo && postHasInterests && postHasSocial && postHasLegal && !postHasProfile && !postHasNavtree;
+  const postOk = !postHasInfo && postHasToc && postHasInterests && postHasSocial && postHasLegal && !postHasProfile && !postHasNavtree;
   pushResult(
     postOk,
     "POST_LEFT_SIDEBAR_STRUCTURE_FINAL",
-    `information=${postHasInfo} interests=${postHasInterests} social=${postHasSocial} copyright=${postHasLegal} profile=${postHasProfile} legacyNavtree=${postHasNavtree}`
+    `information=${postHasInfo} toc=${postHasToc} interests=${postHasInterests} social=${postHasSocial} copyright=${postHasLegal} profile=${postHasProfile} legacyNavtree=${postHasNavtree}`
+  );
+
+  const rightAside = String(
+    (template.match(/<aside\b[^>]*class=['"][^'"]*\bgg-blog-sidebar--right\b[^'"]*['"][\s\S]*?<\/aside>/i) || [])[0] || ""
+  );
+  const rightHasInfo = /id=["']gg-postinfo["']/i.test(rightAside);
+  pushResult(
+    rightHasInfo,
+    "POST_INFO_SHEET_STRUCTURE_FINAL",
+    `rightSidebarInfoSheet=${rightHasInfo}`
   );
 }
 
