@@ -6,6 +6,7 @@ const screenshotPath = String(
   process.env.GG_EPANEL_SCREENSHOT || "test-results/live-blog-epanel-before.png"
 ).trim();
 const browserMode = String(process.env.GG_EPANEL_BROWSER || "chrome").trim().toLowerCase();
+const clickInfo = String(process.env.GG_EPANEL_CLICK_INFO || "1").trim() !== "0";
 
 function clean(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -24,11 +25,21 @@ async function run() {
 
   try {
     await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 120000 });
+    await page
+      .waitForFunction(() => window.__GG_LISTING_LOADED === true, { timeout: 30000 })
+      .catch(() => null);
+    if (clickInfo) {
+      await page.waitForSelector('.gg-post-card [data-gg-action="info"]', { timeout: 20000 });
+      await page.click('.gg-post-card [data-gg-action="info"]', { timeout: 10000, force: true });
+      await page.waitForTimeout(350);
+    }
     await page.waitForTimeout(waitMs);
 
     const data = await page.evaluate(async () => {
       const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
       const panel = document.querySelector(".gg-info-panel .gg-editorial-preview");
+      const panelRoot = document.querySelector(".gg-info-panel");
+      const main = document.querySelector("main.gg-main");
       const pickRow = (name) => {
         const row = panel ? panel.querySelector(`[data-row="${name}"]`) : null;
         if (!row) return null;
@@ -127,6 +138,8 @@ async function run() {
       return {
         pageUrl: location.href,
         panelExists: !!panel,
+        panelHidden: panelRoot ? !!panelRoot.hidden : null,
+        mainInfoPanelState: main ? clean(main.getAttribute("data-gg-info-panel")) : "",
         rows,
         contributorsChips,
         tagsChips,
