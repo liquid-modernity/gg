@@ -70,7 +70,7 @@ const LISTING_ROW_ORDER = [
   "toc",
 ];
 
-const POST_LEFT_MARKERS = [
+const POST_INFO_MARKERS = [
   "panel-post-date",
   "panel-post-updated",
   "panel-post-reading-time",
@@ -417,6 +417,23 @@ function findTagBlockByClass(html, tagName, classToken) {
   return "";
 }
 
+function findTagBlockById(html, tagName, idToken) {
+  const source = String(html || "");
+  const tag = String(tagName || "").trim().toLowerCase();
+  const needle = String(idToken || "").trim();
+  if (!source || !tag || !needle) return "";
+  const openRe = new RegExp(
+    `<${tag}\\b[^>]*\\bid\\s*=\\s*(?:(['"])${needle}\\1|${needle})[^>]*>`,
+    "gi"
+  );
+  let match;
+  while ((match = openRe.exec(source))) {
+    const range = findElementRangeFromOpen(source, match.index, match[0], tag);
+    if (range && range.outerHtml) return range.outerHtml;
+  }
+  return "";
+}
+
 function verifyListingContract(url, html) {
   const src = String(html || "");
   addEvidence(`listing-scope: enforce metadata+toc on right editorial panel @ ${url}`);
@@ -488,23 +505,24 @@ function verifyListingContract(url, html) {
   }
 }
 
-function verifyPostLeftContract(url, html) {
+function verifyPostInfoSheetContract(url, html) {
   const src = String(html || "");
   addEvidence(
-    `post-scope: enforce metadata on left info panel only (right editorial not required) @ ${url}`
+    `post-scope: enforce metadata in right info sheet (left sidebar TOC/Interests only) @ ${url}`
   );
-  const leftScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--left");
-  if (!leftScope) {
-    addFunctional(`post: missing left sidebar .gg-blog-sidebar--left @ ${url}`);
+  const rightScope = findTagBlockByClass(src, "aside", "gg-blog-sidebar--right");
+  if (!rightScope) {
+    addFunctional(`post: missing right sidebar .gg-blog-sidebar--right @ ${url}`);
   }
-  const scope = leftScope || src;
+  const scope = rightScope || src;
   if (!/\bid\s*=\s*(["'])gg-postinfo\1/i.test(scope)) {
-    addFunctional(`post: missing left info hook id="gg-postinfo" @ ${url}`);
+    addFunctional(`post: missing right info sheet hook id="gg-postinfo" @ ${url}`);
   }
   if (!/\bdata-gg-panelmeta\s*=\s*(["'])post\1/i.test(scope)) {
-    addFunctional(`post: missing left panelmeta contract data-gg-panelmeta="post" @ ${url}`);
+    addFunctional(`post: missing info-sheet panelmeta contract data-gg-panelmeta="post" @ ${url}`);
   }
-  verifyMarkers("post-left", url, scope, POST_LEFT_MARKERS);
+  const infoScope = findTagBlockById(scope, "div", "gg-postinfo") || scope;
+  verifyMarkers("post-info", url, infoScope, POST_INFO_MARKERS);
 }
 
 function verifyPostDataSource(url, html) {
@@ -576,7 +594,7 @@ if (postUrl) {
   const post = await fetchTextWithRetry(`${postUrl}${sep}x=${Date.now()}`, "post");
   if (post.ok) {
     verifyTemplateHeaders("post", postUrl, post.headers);
-    verifyPostLeftContract(postUrl, post.text);
+    verifyPostInfoSheetContract(postUrl, post.text);
     verifyPostDataSource(postUrl, post.text);
   } else if (post.fatal) {
     addFunctional(`post: status ${post.status} ${postUrl}`);

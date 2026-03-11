@@ -237,6 +237,28 @@ const findElementRangeFromOpen = (source, openStart, openTag, tagName) => {
   };
 };
 
+const findTagBlockByClass = (html, tagName, classToken) => {
+  const source = String(html || "");
+  const tag = String(tagName || "").trim().toLowerCase();
+  const needle = String(classToken || "").trim();
+  if (!source || !tag || !needle) return "";
+  const openRe = new RegExp(
+    `<${tag}\\b[^>]*\\bclass\\s*=\\s*(?:(['"])([^'"]*)\\1|([^\\s"'=<>` + "`" + `]+))[^>]*>`,
+    "gi"
+  );
+  let match;
+  while ((match = openRe.exec(source))) {
+    const classes = String(match[2] || match[3] || "")
+      .split(/\s+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (!classes.includes(needle)) continue;
+    const range = findElementRangeFromOpen(source, match.index, match[0], tag);
+    if (range && range.innerHtml) return range.innerHtml;
+  }
+  return "";
+};
+
 const findPostBodyHtml = (html) => {
   const source = String(html || "");
   const openRe =
@@ -323,11 +345,25 @@ if (targetUrl) {
     if (/No content found/i.test(html)) {
       addFunctional(`forbidden text "No content found" present @ ${targetUrl}`);
     }
-    if (!/\bid\s*=\s*(["'])gg-postinfo\1/i.test(html)) {
-      addFunctional(`missing #gg-postinfo @ ${targetUrl}`);
+    const leftScope = findTagBlockByClass(html, "aside", "gg-blog-sidebar--left");
+    const rightScope = findTagBlockByClass(html, "aside", "gg-blog-sidebar--right");
+    if (!leftScope) {
+      addFunctional(`missing left sidebar .gg-blog-sidebar--left @ ${targetUrl}`);
+    } else {
+      if (!/\bid\s*=\s*(["'])gg-toc\1/i.test(leftScope)) {
+        addFunctional(`left sidebar missing #gg-toc @ ${targetUrl}`);
+      }
+      if (!/\bid\s*=\s*(["'])gg-labeltree-post\1/i.test(leftScope)) {
+        addFunctional(`left sidebar missing #gg-labeltree-post (Interests) @ ${targetUrl}`);
+      }
+      if (/\bid\s*=\s*(["'])gg-postinfo\1/i.test(leftScope)) {
+        addFunctional(`forbidden #gg-postinfo still present in left sidebar @ ${targetUrl}`);
+      }
     }
-    if (!/\bid\s*=\s*(["'])gg-toc\1/i.test(html)) {
-      addFunctional(`missing #gg-toc @ ${targetUrl}`);
+    if (!rightScope) {
+      addFunctional(`missing right sidebar .gg-blog-sidebar--right @ ${targetUrl}`);
+    } else if (!/\bid\s*=\s*(["'])gg-postinfo\1/i.test(rightScope)) {
+      addFunctional(`right sidebar missing #gg-postinfo info sheet @ ${targetUrl}`);
     }
     if (/\bid\s*=\s*(["'])gg-labeltree-detail\1/i.test(html)) {
       addFunctional(`forbidden #gg-labeltree-detail present @ ${targetUrl}`);
