@@ -3561,7 +3561,7 @@ root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){ try{ node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href}); }catch(_){ } }
 return out;
 }
 
@@ -3569,6 +3569,7 @@ function hasPreviewPayload(items){
 var m=items&&items._m||0;
 return !!(items&&items.length||m.t&&m.t.length||m.c&&m.c.length||cleanText(m.s));
 }
+function previewPayloadOk(html,abs){ try{ return hasPreviewPayload(parseHeadingItems(html,abs)); }catch(_){ return false; } }
 
 function postLikeHtml(raw){ return /(\bpost-body\b|\bentry-content\b|\bgg-postmeta\b|data-gg-module=['\"]post-detail['\"]|class=['\"][^'\"]*\bgg-post\b)/i.test(String(raw||'')); }
 function mobilePostUrl(raw){ try{ var u=new URL(String(raw||'')); u.searchParams.set('m','1'); return u.toString(); }catch(_){ return String(raw||''); } }
@@ -3580,13 +3581,13 @@ return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
     var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
-    if(postLikeHtml(txt)&&!moved&&hasPreviewPayload(parseHeadingItems(txt,abs))) return txt;
+    if(postLikeHtml(txt)&&!moved&&previewPayloadOk(txt,abs)) return txt;
     fallback=abs;
     return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
       return next.text().then(function(nextHtml){
         var out=String(nextHtml||'');
-        return postLikeHtml(out)&&hasPreviewPayload(parseHeadingItems(out,abs))?out:txt;
+        return postLikeHtml(out)&&previewPayloadOk(out,abs)?out:txt;
       });
     }).catch(function(){ return txt; });
   });
@@ -3631,7 +3632,6 @@ function prefetchToc(href){ return resolveTocItems(href, { abortOthers: false })
 
 function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var norm=normalizePostUrl(href),key=tocCacheKey(norm),abs=normalizePostUrl(norm),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(items===null) return []; if(panel&&(!panelKey||panelKey===key)){ applyPostMeta(key); renderTocItems(items||[]); } return Array.isArray(items)?items:[]; }).catch(function(){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(panel&&(!panelKey||panelKey===key)){ if(panel&&!panel.__iC){ setRow('contributors',false); fillChipsToSlot('contributors',[],12); } if(panel&&!panel.__iT){ setRow('tags',false); fillChipsToSlot('tags',[],14); } if(panel&&!panel.__iU){ setRow('updated',false); setS('updated',''); } if(panel&&!panel.__iR){ setRow('readtime',false); setS('readtime',''); } renderTocItems([]); } return []; }); }
 function updateTocForCard(card, href){ var norm=normalizePostUrl(href); if(!card||!norm){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(norm),cached; if(!key){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,TOC_HINT_LOCK); hydrateToc(card, norm); }
-function refreshPreviewData(href){ var abs=normalizePostUrl(href),key=tocCacheKey(abs),panelKey=panel&&panel.__gK?String(panel.__gK):''; if(!abs||!key||!panel||!panelKey||panelKey!==key) return; fetchPostHtml(abs,null).then(function(html){ var items=[],meta=null; try{ items=parseHeadingItems(html,abs); }catch(_){ items=[]; } meta=items&&items._m?items._m:null; if(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.r||meta.s)) postMetaCache.set(key,meta); else postMetaCache.delete(key); writeToc(key,Array.isArray(items)?items:[]); if(panel&&String(panel.__gK||'')===key){ applyPostMeta(key); renderTocItems(Array.isArray(items)?items:[]); } }).catch(function(){}); }
 
 function fillChipsToSlot(slot, items, max){
 var chipRow = qs('[data-gg-slot="' + slot + '"]', panel), list = items || [], i = 0, x = null, href = '', el = null, tx = null, n = Math.min(list.length, max || 12);
@@ -3763,8 +3763,8 @@ if(instTags.length) fillChipsToSlot('tags',instTags,14); else fillChipsToSlot('t
 if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);
 applyPostMeta(metaKey);
 if(panel) panel.hidden=false;
+if(opts.select&&metaKey){ abortToc(''); delete tocCache[metaKey]; postMetaCache.delete(metaKey); }
 updateTocForCard(card, hrefFetch);
-if(opts.select) refreshPreviewData(hrefFetch);
 if(!p){ setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel','open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
 }
 
@@ -3797,7 +3797,7 @@ if (!canHoverPreview()) return;
 if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey || (hoverIntentTimer && key === hoverIntentCardKey)) return;
 clearHoverIntent();
 hoverIntentCardKey = key;
@@ -3806,7 +3806,7 @@ hoverIntentTimer = w.setTimeout(function(){
 hoverIntentTimer = 0;
 if (!card) return;
 if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
-if (selectedCardKey && key !== selectedCardKey) return;
+if (selectedCardKey) return;
 prefetchToc(href);
 hoverCardKey = key;
 openWithCard(card, null, { focusPanel: false });
@@ -3827,7 +3827,7 @@ function handlePreviewFocus(evt){
 if (!canHoverPreview()) return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey) return;
 clearHoverIntent();
 prefetchToc(cardHref(card));

@@ -3569,6 +3569,7 @@ function hasPreviewPayload(items){
 var m=items&&items._m||0;
 return !!(items&&items.length||m.t&&m.t.length||m.c&&m.c.length||cleanText(m.s));
 }
+function previewPayloadOk(html,abs){ try{ return hasPreviewPayload(parseHeadingItems(html,abs)); }catch(_){ return false; } }
 
 function postLikeHtml(raw){ return /(\bpost-body\b|\bentry-content\b|\bgg-postmeta\b|data-gg-module=['\"]post-detail['\"]|class=['\"][^'\"]*\bgg-post\b)/i.test(String(raw||'')); }
 function mobilePostUrl(raw){ try{ var u=new URL(String(raw||'')); u.searchParams.set('m','1'); return u.toString(); }catch(_){ return String(raw||''); } }
@@ -3580,13 +3581,13 @@ return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
     var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
-    if(postLikeHtml(txt)&&!moved&&hasPreviewPayload(parseHeadingItems(txt,abs))) return txt;
+    if(postLikeHtml(txt)&&!moved&&previewPayloadOk(txt,abs)) return txt;
     fallback=abs;
     return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
       return next.text().then(function(nextHtml){
         var out=String(nextHtml||'');
-        return postLikeHtml(out)&&hasPreviewPayload(parseHeadingItems(out,abs))?out:txt;
+        return postLikeHtml(out)&&previewPayloadOk(out,abs)?out:txt;
       });
     }).catch(function(){ return txt; });
   });

@@ -3561,7 +3561,7 @@ root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){ try{ node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href}); }catch(_){ } }
 return out;
 }
 
@@ -3579,14 +3579,16 @@ if(!window.fetch) return Promise.reject(new Error('n'));
 return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
-    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
-    if(postLikeHtml(txt)&&!moved&&hasPreviewPayload(parseHeadingItems(txt,abs))) return txt;
+    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt),ok=false;
+    try{ ok=hasPreviewPayload(parseHeadingItems(txt,abs)); }catch(_){ ok=false; }
+    if(postLikeHtml(txt)&&!moved&&ok) return txt;
     fallback=abs;
     return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
       return next.text().then(function(nextHtml){
-        var out=String(nextHtml||'');
-        return postLikeHtml(out)&&hasPreviewPayload(parseHeadingItems(out,abs))?out:txt;
+        var out=String(nextHtml||''),nextOk=false;
+        try{ nextOk=hasPreviewPayload(parseHeadingItems(out,abs)); }catch(_){ nextOk=false; }
+        return postLikeHtml(out)&&nextOk?out:txt;
       });
     }).catch(function(){ return txt; });
   });
@@ -3796,7 +3798,7 @@ if (!canHoverPreview()) return;
 if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey || (hoverIntentTimer && key === hoverIntentCardKey)) return;
 clearHoverIntent();
 hoverIntentCardKey = key;
@@ -3805,7 +3807,7 @@ hoverIntentTimer = w.setTimeout(function(){
 hoverIntentTimer = 0;
 if (!card) return;
 if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
-if (selectedCardKey && key !== selectedCardKey) return;
+if (selectedCardKey) return;
 prefetchToc(href);
 hoverCardKey = key;
 openWithCard(card, null, { focusPanel: false });
@@ -3826,7 +3828,7 @@ function handlePreviewFocus(evt){
 if (!canHoverPreview()) return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey) return;
 clearHoverIntent();
 prefetchToc(cardHref(card));
