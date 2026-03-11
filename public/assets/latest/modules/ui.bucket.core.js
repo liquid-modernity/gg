@@ -1535,7 +1535,6 @@ return out;
 GG.services.postmeta = GG.services.postmeta || services.postmeta;
 
 services.comments = services.comments || (function(){
-var moved = false;
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function findBloggerCommentsRoot(){
   return qs('.gg-post__comments') ||
@@ -1586,13 +1585,12 @@ function mount(){
   } else {
     setLoading(slot, false);
   }
-  moved = true;
   return true;
 }
 
 function mountWithRetry(){
   var tries = 0;
-  var max = 10;          // ~5s total
+  var max = 20;          // ~10s total
   var delay = 500;
 
   var slot = ensureSlot();
@@ -2922,6 +2920,7 @@ setRightMode(useMode);
 setRightState('open');
 applyFromAttrs();
 if (useMode === 'comments') {
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
   if (GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
     GG.services.comments.mountWithRetry();
   }

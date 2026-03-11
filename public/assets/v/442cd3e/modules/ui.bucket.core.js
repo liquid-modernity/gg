@@ -1535,18 +1535,55 @@ return out;
 GG.services.postmeta = GG.services.postmeta || services.postmeta;
 
 services.comments = services.comments || (function(){
-var moved = false;
-function qs(sel, root){ return (root || document).querySelector(sel); }
-function findBloggerCommentsRoot(){
-  return qs('.gg-post__comments') ||
-         qs('#comments') ||
-         qs('.comments') ||
-         qs('.comment-thread') ||
-         qs('div[id*="comments"]');
-}
-function ensureSlot(){
-  return qs('.gg-comments-panel[data-gg-panel="comments"] [data-gg-slot="comments"]');
-}
+  var moved = false;
+  var retryTimer = null;
+  var retryObserver = null;
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function fromPostArticle(sel){
+    var article = qs('.gg-post[data-gg-module="post-detail"]') || qs('.gg-post');
+    if (!article || !article.querySelector) return null;
+    return article.querySelector(sel);
+  }
+  function normalizeSource(node){
+    var host = null;
+    if (!node) return null;
+    if (node.classList && node.classList.contains('gg-post__comments')) return node;
+    if (node.closest) {
+      host = node.closest('.gg-post__comments');
+      if (host) return host;
+    }
+    return node;
+  }
+  function findBloggerCommentsRoot(){
+    var slot = ensureSlot();
+    var candidate = null;
+    if (slot && slot.querySelector) {
+      candidate = slot.querySelector('.gg-post__comments[data-gg-comments-gate="1"]') ||
+                  slot.querySelector('.gg-post__comments') ||
+                  slot.querySelector('#comments') ||
+                  slot.querySelector('.gg-comments') ||
+                  slot.querySelector('.comment-thread');
+      candidate = normalizeSource(candidate);
+      if (candidate) return candidate;
+    }
+    candidate = fromPostArticle('.gg-post__comments[data-gg-comments-gate="1"]') ||
+                fromPostArticle('.gg-post__comments') ||
+                fromPostArticle('#comments') ||
+                fromPostArticle('.gg-comments') ||
+                fromPostArticle('.comment-thread');
+    candidate = normalizeSource(candidate);
+    if (candidate) return candidate;
+    candidate = qs('.gg-post__comments[data-gg-comments-gate="1"]') ||
+                qs('.gg-post__comments') ||
+                qs('#comments') ||
+                qs('.comments') ||
+                qs('.comment-thread') ||
+                qs('div[id*="comments"]');
+    return normalizeSource(candidate);
+  }
+  function ensureSlot(){
+    return qs('.gg-comments-panel[data-gg-panel="comments"] [data-gg-slot="comments"]');
+  }
 function setSlotStatus(slot, message){
   if (!slot) return;
   var text = String(message || '').trim();
@@ -1572,56 +1609,85 @@ function setLoading(slot, on){
   }
 }
 
-function mount(){
-  var slot = ensureSlot();
-  if (!slot) return false;
+  function mount(){
+    var slot = ensureSlot();
+    if (!slot) return false;
 
-  var src = findBloggerCommentsRoot();
-  if (!src) return false;
+    var src = normalizeSource(findBloggerCommentsRoot());
+    if (!src) return false;
 
-  if (src.parentNode !== slot){
-    setLoading(slot, false);
-    slot.textContent = '';
+    if (src.parentNode !== slot){
+      setLoading(slot, false);
+      slot.textContent = '';
     slot.appendChild(src);
   } else {
     setLoading(slot, false);
   }
   moved = true;
   return true;
-}
-
-function mountWithRetry(){
-  var tries = 0;
-  var max = 10;          // ~5s total
-  var delay = 500;
-
-  var slot = ensureSlot();
-  if (!slot) return;
-
-  if (mount()){
-    setLoading(ensureSlot(), false);
-    return;
   }
 
-  setLoading(slot, true);
+  function clearRetryState(){
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+    if (retryObserver) {
+      try { retryObserver.disconnect(); } catch(_) {}
+      retryObserver = null;
+    }
+  }
 
-  function tick(){
-    tries++;
+  function watchForSource(){
+    if (!window.MutationObserver || retryObserver) return;
+    var root = document.body || document.documentElement;
+    if (!root) return;
+    retryObserver = new MutationObserver(function(){
+      if (mount()){
+        clearRetryState();
+        setLoading(ensureSlot(), false);
+      }
+    });
+    retryObserver.observe(root, { childList: true, subtree: true });
+  }
+
+  function mountWithRetry(){
+    var tries = 0;
+    var max = 20;          // ~10s total
+    var delay = 500;
+
+    var slot = ensureSlot();
+    if (!slot) return;
+
     if (mount()){
+      clearRetryState();
       setLoading(ensureSlot(), false);
       return;
     }
-    if (tries >= max) {
-      var s = ensureSlot();
-      if (s){
-        setSlotStatus(s, 'Comments are not available right now.');
+
+    clearRetryState();
+    setLoading(slot, true);
+    watchForSource();
+
+    function tick(){
+      tries++;
+      if (mount()){
+        clearRetryState();
+        setLoading(ensureSlot(), false);
+        return;
       }
-      return;
+      if (tries >= max) {
+        clearRetryState();
+        var s = ensureSlot();
+        if (s){
+          setSlotStatus(s, 'Comments are not available right now.');
+        }
+        return;
+      }
+      retryTimer = setTimeout(tick, delay);
     }
-    setTimeout(tick, delay);
+    retryTimer = setTimeout(tick, delay);
   }
-  tick();
-}
 
 return { mountWithRetry: mountWithRetry };
 })();
@@ -2922,6 +2988,7 @@ setRightMode(useMode);
 setRightState('open');
 applyFromAttrs();
 if (useMode === 'comments') {
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,forceLoad:true,scroll:false});
   if (GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
     GG.services.comments.mountWithRetry();
   }
@@ -2990,6 +3057,7 @@ ensurePosterButton();
 
 var h = location.hash || '';
 if(h === '#comments' || /^#c\d+/.test(h)){
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,forceLoad:true,scroll:false});
   showRightPanel('comments');
 }
 })();
