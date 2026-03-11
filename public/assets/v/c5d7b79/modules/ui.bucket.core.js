@@ -3556,8 +3556,8 @@ var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? item
 if(!list) return;
 list.textContent = '';
 if(!rows.length){
-  setRow('toc', false);
-  setTocHint('');
+  setRow('toc', true);
+  setTocHint('Open post');
   return;
 }
 setRow('toc', true);
@@ -3766,8 +3766,8 @@ var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__gP=card;
-var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){var n=cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));return (n&&(!authorText||n.toLowerCase()!==authorText.toLowerCase()))?{text:n}:null;}).filter(Boolean);
-if(!quickSnippet) quickSnippet=cardMeta.snippet;
+var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),af=null,instTags=((Array.isArray(cardMeta.tags)&&cardMeta.tags.length)?cardMeta.tags:(labels.length?labels:['post'])).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=((Array.isArray(cardMeta.contributors)&&cardMeta.contributors.length)?cardMeta.contributors:[authorText]).map(function(x){var n=cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));return n?{text:n}:null;}).filter(Boolean);
+if(!quickSnippet) quickSnippet=cardMeta.snippet||clipText(title,180);
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'—');

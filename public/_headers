@@ -1,23 +1,23 @@
 /assets/latest/*
   Cache-Control: no-store, max-age=0
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
 
 /assets/v/*
   Cache-Control: public, max-age=31536000, immutable
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
 
 /sw.js
   Cache-Control: no-store
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
 
 /manifest.webmanifest
   Cache-Control: no-store
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
 
 /offline.html
   Cache-Control: no-store
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
 
 /gg-pwa-icon/*
   Cache-Control: public, max-age=31536000, immutable
-  X-GG-Assets: 5197ad0
+  X-GG-Assets: c5d7b79
