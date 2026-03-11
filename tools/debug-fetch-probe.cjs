@@ -14,6 +14,22 @@ async function run() {
     browser = await chromium.launch({ headless: true });
   }
   const page = await browser.newPage({ viewport: { width: 1440, height: 1700 } });
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (err) => {
+    if (pageErrors.length > 100) pageErrors.shift();
+    pageErrors.push(String(err && err.stack ? err.stack : err));
+  });
+  page.on("console", (msg) => {
+    const type = msg.type();
+    if (type !== "error" && type !== "warning") return;
+    if (consoleErrors.length > 150) consoleErrors.shift();
+    consoleErrors.push({
+      type,
+      text: msg.text(),
+      loc: msg.location()
+    });
+  });
 
   await page.addInitScript(() => {
     const mapSet = Map.prototype.set;
@@ -83,6 +99,7 @@ async function run() {
         if (/\/20\d{2}\/\d{2}\/[^/?#]+\.html\?m=1/i.test(url)) {
           try {
             const txt = await res.clone().text();
+            const htmlBytes = txt.length;
             const hCount = (txt.match(/<h[1-4]\b/gi) || []).length;
             const hasRoot = /class=['"][^'"]*\bpost-body\b[^'"]*\bentry-content\b/i.test(txt);
             const hasNonEmptyContrib = /\bdata-contributors\s*=\s*(['"])\s*[^'"]+\1/i.test(txt);
@@ -233,6 +250,7 @@ async function run() {
             })();
             probe = {
               hCount,
+              htmlBytes,
               hasRoot,
               hasNonEmptyContrib,
               hasNonEmptyTags,
@@ -341,9 +359,12 @@ async function run() {
       snippetText: snippetNode ? String(snippetNode.textContent || "").trim() : "",
       snippetHidden: snippetRow ? !!snippetRow.hidden : null,
       panelMutations: Array.isArray(window.__ggPanelMut) ? window.__ggPanelMut.slice(-25) : [],
-      mapLog: Array.isArray(window.__ggMapLog) ? window.__ggMapLog.slice(-40) : [],
+      mapLog: Array.isArray(window.__ggMapLog) ? window.__ggMapLog.slice() : [],
     };
   });
+
+  out.pageErrors = pageErrors.slice();
+  out.consoleErrors = consoleErrors.slice();
 
   process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
   await page.screenshot({ path: "test-results/live-blog-epanel-debug.png", fullPage: true });

@@ -3561,7 +3561,7 @@ root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){ try{ node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href}); }catch(_){ } }
 return out;
 }
 
@@ -3762,6 +3762,7 @@ if(instTags.length) fillChipsToSlot('tags',instTags,14); else fillChipsToSlot('t
 if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);
 applyPostMeta(metaKey);
 if(panel) panel.hidden=false;
+if(opts.select&&metaKey){ abortToc(''); delete tocCache[metaKey]; postMetaCache.delete(metaKey); }
 updateTocForCard(card, hrefFetch);
 if(!p){ setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel','open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
 }
@@ -3795,7 +3796,7 @@ if (!canHoverPreview()) return;
 if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey || (hoverIntentTimer && key === hoverIntentCardKey)) return;
 clearHoverIntent();
 hoverIntentCardKey = key;
@@ -3804,7 +3805,7 @@ hoverIntentTimer = w.setTimeout(function(){
 hoverIntentTimer = 0;
 if (!card) return;
 if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
-if (selectedCardKey && key !== selectedCardKey) return;
+if (selectedCardKey) return;
 prefetchToc(href);
 hoverCardKey = key;
 openWithCard(card, null, { focusPanel: false });
@@ -3825,7 +3826,7 @@ function handlePreviewFocus(evt){
 if (!canHoverPreview()) return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey) return;
 clearHoverIntent();
 prefetchToc(cardHref(card));

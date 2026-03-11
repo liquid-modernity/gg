@@ -3796,7 +3796,7 @@ if (!canHoverPreview()) return;
 if (evt.pointerType && evt.pointerType !== 'mouse' && evt.pointerType !== 'pen') return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey || (hoverIntentTimer && key === hoverIntentCardKey)) return;
 clearHoverIntent();
 hoverIntentCardKey = key;
@@ -3805,7 +3805,7 @@ hoverIntentTimer = w.setTimeout(function(){
 hoverIntentTimer = 0;
 if (!card) return;
 if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
-if (selectedCardKey && key !== selectedCardKey) return;
+if (selectedCardKey) return;
 prefetchToc(href);
 hoverCardKey = key;
 openWithCard(card, null, { focusPanel: false });
@@ -3826,7 +3826,7 @@ function handlePreviewFocus(evt){
 if (!canHoverPreview()) return;
 var card = closest(evt.target, '.gg-post-card'), key = cardKey(card);
 if (!card || !key) return;
-if (selectedCardKey && selectedCardKey !== key) return;
+if (selectedCardKey) return;
 if (key === hoverCardKey) return;
 clearHoverIntent();
 prefetchToc(cardHref(card));
