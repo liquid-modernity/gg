@@ -3568,8 +3568,8 @@ return out;
 }
 
 function hasPreviewPayload(items){
-var m=items&&items._m?items._m:0;
-return !!((items&&items.length)||((m&&m.t&&m.t.length)||(m&&m.c&&m.c.length)||cleanText(m&&m.s||'')));
+var m=items&&items._m||0;
+return !!((items&&items.length)||((m.t&&m.t.length)||(m.c&&m.c.length)||cleanText(m.s||'')));
 }
 
 function postLikeHtml(raw){ return /(\bpost-body\b|\bentry-content\b|\bgg-postmeta\b|data-gg-module=['\"]post-detail['\"]|class=['\"][^'\"]*\bgg-post\b)/i.test(String(raw||'')); }
@@ -3817,7 +3817,7 @@ var nextCard = closest(evt.relatedTarget, '.gg-post-card');
 if (nextCard && cardKey(nextCard) === cardKey(card)) return;
 if (selectedCardKey) return;
 clearHoverIntent();
-abortToc('');
+abortToc(panel&&panel.__gK?panel.__gK:'');
 }
 
 function handlePreviewFocus(evt){

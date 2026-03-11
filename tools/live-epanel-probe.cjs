@@ -1,17 +1,25 @@
-const { firefox } = require("playwright");
+const { chromium, firefox } = require("playwright");
 
 const waitMs = Number.parseInt(process.env.GG_EPANEL_WAIT_MS || "6500", 10) || 6500;
 const targetUrl = String(process.env.GG_EPANEL_URL || "https://www.pakrpp.com/blog").trim();
 const screenshotPath = String(
   process.env.GG_EPANEL_SCREENSHOT || "test-results/live-blog-epanel-before.png"
 ).trim();
+const browserMode = String(process.env.GG_EPANEL_BROWSER || "chrome").trim().toLowerCase();
 
 function clean(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
 async function run() {
-  const browser = await firefox.launch({ headless: true });
+  let browser;
+  if (browserMode === "firefox") {
+    browser = await firefox.launch({ headless: true });
+  } else if (browserMode === "chrome") {
+    browser = await chromium.launch({ channel: "chrome", headless: true });
+  } else {
+    browser = await chromium.launch({ headless: true });
+  }
   const page = await browser.newPage({ viewport: { width: 1440, height: 1900 } });
 
   try {
