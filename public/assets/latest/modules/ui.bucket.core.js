@@ -3817,7 +3817,6 @@ var nextCard = closest(evt.relatedTarget, '.gg-post-card');
 if (nextCard && cardKey(nextCard) === cardKey(card)) return;
 if (selectedCardKey) return;
 clearHoverIntent();
-abortToc(panel&&panel.__gK);
 }
 
 function handlePreviewFocus(evt){
