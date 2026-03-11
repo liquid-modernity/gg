@@ -3555,13 +3555,13 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }author=cleanText(pm&&pm.author||'');contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm&&pm.updated||'');readTime=readMinLabel(pm&&pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm&&pm.snippet||'');
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href});}
 return out;
 }
 
@@ -3606,12 +3606,14 @@ var controller = window.AbortController ? new window.AbortController() : null;
 tocAborters[key] = controller;
 infoDebug('InfoPanel fetch start', abs);
 tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
-  var items = parseHeadingItems(html, abs);
+  var items = [];
+  try{ items = parseHeadingItems(html, abs); }catch(_){ items = []; }
   var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),panelKey='';
   infoDebug('InfoPanel fetch meta', meta || {});
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
-  if (!Array.isArray(items) || (!items.length && !metaStrong)) throw new Error('p');
+  if (!Array.isArray(items)) items = [];
+  if (!items.length && !metaStrong){ writeToc(key, []); return []; }
   writeToc(key, items);
   panelKey=panel&&panel.__gK?String(panel.__gK):'';
   if(panel&&main&&main.getAttribute('data-gg-info-panel')==='open'&&panelKey&&panelKey===key){ applyPostMeta(key); renderTocItems(items||[]); }

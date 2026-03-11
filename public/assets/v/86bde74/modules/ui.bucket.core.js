@@ -3555,15 +3555,13 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
-if(!snippet&&root&&root.querySelectorAll){paras=root.querySelectorAll('p');for(pi=0;pi<paras.length;pi++){pnode=paras[pi];if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;ptxt=cleanText(pnode.textContent||'');if(!ptxt) continue;snippet=clipText(ptxt,180);if(snippet) break;}}
-if(!snippet&&root) snippet=clipText(cleanText(root.textContent||''),180);
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }author=cleanText(pm&&pm.author||'');contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm&&pm.updated||'');readTime=readMinLabel(pm&&pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm&&pm.snippet||'');
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href});}
 return out;
 }
 
@@ -3608,16 +3606,20 @@ var controller = window.AbortController ? new window.AbortController() : null;
 tocAborters[key] = controller;
 infoDebug('InfoPanel fetch start', abs);
 tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
-  var items = parseHeadingItems(html, abs);
-  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s));
+  var items = [];
+  try{ items = parseHeadingItems(html, abs); }catch(_){ items = []; }
+  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),panelKey='';
   infoDebug('InfoPanel fetch meta', meta || {});
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
-  if (!Array.isArray(items) || (!items.length && !metaStrong)) throw new Error('p');
+  if (!Array.isArray(items)) items = [];
+  if (!items.length && !metaStrong){ writeToc(key, []); return []; }
   writeToc(key, items);
+  panelKey=panel&&panel.__gK?String(panel.__gK):'';
+  if(panel&&main&&main.getAttribute('data-gg-info-panel')==='open'&&panelKey&&panelKey===key){ applyPostMeta(key); renderTocItems(items||[]); }
   return items;
 }).catch(function(err){
-  if (controller && controller.signal && controller.signal.aborted) return [];
+  if (controller && controller.signal && controller.signal.aborted) return null;
   infoDebug('InfoPanel fetch fail', err);
   throw err;
 }).finally(function(){ delete tocPending[key]; delete tocAborters[key]; });
@@ -3625,9 +3627,9 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
 return tocPending[key];
 }
 
-function prefetchToc(href){ return resolveTocItems(href, { abortOthers: true }).catch(function(){ return []; }); }
+function prefetchToc(href){ return resolveTocItems(href, { abortOthers: false }).catch(function(){ return []; }); }
 
-function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var norm=normalizePostUrl(href),key=tocCacheKey(norm),abs=normalizePostUrl(norm),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__gP?panel.__gP:null; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return items||[]; }).catch(function(){ var active=panel&&panel.__gP?panel.__gP:null; if(active&&cardKey(active)===cardKey(card)){ if(panel&&!panel.__iC){ setRow('contributors',false); fillChipsToSlot('contributors',[],12); } if(panel&&!panel.__iT){ setRow('tags',false); fillChipsToSlot('tags',[],14); } if(panel&&!panel.__iU){ setRow('updated',false); setS('updated',''); } if(panel&&!panel.__iR){ setRow('readtime',false); setS('readtime',''); } renderTocItems([]); } return []; }); }
+function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var norm=normalizePostUrl(href),key=tocCacheKey(norm),abs=normalizePostUrl(norm),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(items===null) return []; if(panel&&(!panelKey||panelKey===key)){ applyPostMeta(key); renderTocItems(items||[]); } return Array.isArray(items)?items:[]; }).catch(function(){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(panel&&(!panelKey||panelKey===key)){ if(panel&&!panel.__iC){ setRow('contributors',false); fillChipsToSlot('contributors',[],12); } if(panel&&!panel.__iT){ setRow('tags',false); fillChipsToSlot('tags',[],14); } if(panel&&!panel.__iU){ setRow('updated',false); setS('updated',''); } if(panel&&!panel.__iR){ setRow('readtime',false); setS('readtime',''); } renderTocItems([]); } return []; }); }
 function updateTocForCard(card, href){ var norm=normalizePostUrl(href); if(!card||!norm){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(norm),cached; if(!key){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,TOC_HINT_LOCK); hydrateToc(card, norm); }
 
 function fillChipsToSlot(slot, items, max){
@@ -3731,7 +3733,7 @@ var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__gP=card;
-var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),excerptText=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):excerptText,af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };});
+var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };});
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'—');
@@ -3817,7 +3819,6 @@ var nextCard = closest(evt.relatedTarget, '.gg-post-card');
 if (nextCard && cardKey(nextCard) === cardKey(card)) return;
 if (selectedCardKey) return;
 clearHoverIntent();
-abortToc(panel&&panel.__gK);
 }
 
 function handlePreviewFocus(evt){
