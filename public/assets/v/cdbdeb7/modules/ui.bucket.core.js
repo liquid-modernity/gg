@@ -3555,13 +3555,13 @@ function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }author=cleanText(pm&&pm.author||'');contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm&&pm.updated||'');readTime=readMinLabel(pm&&pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm&&pm.snippet||'');
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){ try{ node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId){ try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; } }out.push({text:text,level:level,href:href}); }catch(_){ } }
 return out;
 }
 
@@ -3606,19 +3606,17 @@ var controller = window.AbortController ? new window.AbortController() : null;
 tocAborters[key] = controller;
 infoDebug('InfoPanel fetch start', abs);
 tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
-  var items = parseHeadingItems(html, abs);
-  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),active=null,activeHref='',activeKey='';
+  var items = [];
+  try{ items = parseHeadingItems(html, abs); }catch(_){ items = []; }
+  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),panelKey='';
   infoDebug('InfoPanel fetch meta', meta || {});
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
-  if (!Array.isArray(items) || (!items.length && !metaStrong)) throw new Error('p');
+  if (!Array.isArray(items)) items = [];
+  if (!items.length && !metaStrong){ writeToc(key, []); return []; }
   writeToc(key, items);
-  active=panel&&panel.__gP?panel.__gP:null;
-  if(active&&main&&main.getAttribute('data-gg-info-panel')==='open'){
-    activeHref=normalizePostUrl(cardHref(active));
-    activeKey=tocCacheKey(activeHref);
-    if(activeKey&&activeKey===key){ applyPostMeta(key); renderTocItems(items||[]); }
-  }
+  panelKey=panel&&panel.__gK?String(panel.__gK):'';
+  if(panel&&main&&main.getAttribute('data-gg-info-panel')==='open'&&panelKey&&panelKey===key){ applyPostMeta(key); renderTocItems(items||[]); }
   return items;
 }).catch(function(err){
   if (controller && controller.signal && controller.signal.aborted) return null;
@@ -3631,7 +3629,7 @@ return tocPending[key];
 
 function prefetchToc(href){ return resolveTocItems(href, { abortOthers: false }).catch(function(){ return []; }); }
 
-function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var norm=normalizePostUrl(href),key=tocCacheKey(norm),abs=normalizePostUrl(norm),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var active=panel&&panel.__gP?panel.__gP:null; if(items===null) return []; if(active&&cardKey(active)===cardKey(card)){ applyPostMeta(key); renderTocItems(items||[]); } return Array.isArray(items)?items:[]; }).catch(function(){ var active=panel&&panel.__gP?panel.__gP:null; if(active&&cardKey(active)===cardKey(card)){ if(panel&&!panel.__iC){ setRow('contributors',false); fillChipsToSlot('contributors',[],12); } if(panel&&!panel.__iT){ setRow('tags',false); fillChipsToSlot('tags',[],14); } if(panel&&!panel.__iU){ setRow('updated',false); setS('updated',''); } if(panel&&!panel.__iR){ setRow('readtime',false); setS('readtime',''); } renderTocItems([]); } return []; }); }
+function hydrateToc(card, href){ if(!card) return Promise.resolve([]); var norm=normalizePostUrl(href),key=tocCacheKey(norm),abs=normalizePostUrl(norm),cached; if(!key||!abs){ renderTocSkeleton(6,TOC_HINT_LOCK); return Promise.resolve([]); } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return Promise.resolve(cached); } return resolveTocItems(abs,{ abortOthers:true }).then(function(items){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(items===null) return []; if(panel&&(!panelKey||panelKey===key)){ applyPostMeta(key); renderTocItems(items||[]); } return Array.isArray(items)?items:[]; }).catch(function(){ var panelKey=panel&&panel.__gK?String(panel.__gK):''; if(panel&&(!panelKey||panelKey===key)){ if(panel&&!panel.__iC){ setRow('contributors',false); fillChipsToSlot('contributors',[],12); } if(panel&&!panel.__iT){ setRow('tags',false); fillChipsToSlot('tags',[],14); } if(panel&&!panel.__iU){ setRow('updated',false); setS('updated',''); } if(panel&&!panel.__iR){ setRow('readtime',false); setS('readtime',''); } renderTocItems([]); } return []; }); }
 function updateTocForCard(card, href){ var norm=normalizePostUrl(href); if(!card||!norm){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } var key=tocCacheKey(norm),cached; if(!key){ abortToc(''); renderTocSkeleton(6,TOC_HINT_LOCK); return; } cached=readToc(key); if(Array.isArray(cached)){ applyPostMeta(key); renderTocItems(cached); return; } abortToc(key); renderTocSkeleton(6,TOC_HINT_LOCK); hydrateToc(card, norm); }
 
 function fillChipsToSlot(slot, items, max){
@@ -3764,6 +3762,7 @@ if(instTags.length) fillChipsToSlot('tags',instTags,14); else fillChipsToSlot('t
 if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);
 applyPostMeta(metaKey);
 if(panel) panel.hidden=false;
+if(opts.select&&metaKey){ abortToc(''); delete tocCache[metaKey]; postMetaCache.delete(metaKey); }
 updateTocForCard(card, hrefFetch);
 if(!p){ setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel','open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
 }

@@ -16,6 +16,50 @@ async function run() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1700 } });
 
   await page.addInitScript(() => {
+    const mapSet = Map.prototype.set;
+    const mapGet = Map.prototype.get;
+    const mapDelete = Map.prototype.delete;
+    window.__ggMapLog = [];
+    const keyHit = (key) => String(key || "").includes("/2026/02/todo.html");
+    const pushMapLog = (entry) => {
+      const log = window.__ggMapLog || (window.__ggMapLog = []);
+      if (log.length > 200) log.shift();
+      log.push(Object.assign({ t: Date.now() }, entry || {}));
+    };
+    Map.prototype.set = function patchedSet(key, value) {
+      if (keyHit(key)) {
+        pushMapLog({
+          op: "set",
+          key: String(key),
+          hasMeta: !!value,
+          metaTags: value && value.t && value.t.length ? value.t.length : 0,
+          metaContrib: value && value.c && value.c.length ? value.c.length : 0,
+          metaAuthor: value && value.a ? String(value.a) : "",
+        });
+      }
+      return mapSet.call(this, key, value);
+    };
+    Map.prototype.get = function patchedGet(key) {
+      const out = mapGet.call(this, key);
+      if (keyHit(key)) {
+        pushMapLog({
+          op: "get",
+          key: String(key),
+          hit: !!out,
+          metaTags: out && out.t && out.t.length ? out.t.length : 0,
+          metaContrib: out && out.c && out.c.length ? out.c.length : 0,
+          metaAuthor: out && out.a ? String(out.a) : "",
+        });
+      }
+      return out;
+    };
+    Map.prototype.delete = function patchedDelete(key) {
+      if (keyHit(key)) {
+        pushMapLog({ op: "delete", key: String(key) });
+      }
+      return mapDelete.call(this, key);
+    };
+
     const originalFetch = window.fetch;
     window.__ggFetchLog = [];
     window.fetch = async function patchedFetch(input, init) {
@@ -297,6 +341,7 @@ async function run() {
       snippetText: snippetNode ? String(snippetNode.textContent || "").trim() : "",
       snippetHidden: snippetRow ? !!snippetRow.hidden : null,
       panelMutations: Array.isArray(window.__ggPanelMut) ? window.__ggPanelMut.slice(-25) : [],
+      mapLog: Array.isArray(window.__ggMapLog) ? window.__ggMapLog.slice(-40) : [],
     };
   });
 
