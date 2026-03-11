@@ -1460,10 +1460,12 @@ GG.services.images.buildSrcset = GG.services.images.buildSrcset || services.imag
 GG.services.images.setIntrinsicDims = GG.services.images.setIntrinsicDims || services.images.setIntrinsicDims;
 
 services.postmeta = services.postmeta || {};
-services.postmeta.getFromContext = services.postmeta.getFromContext || function(ctxEl){
+services.postmeta.getFromContext = services.postmeta.getFromContext || function(ctxEl, opts){
 var root = ctxEl && ctxEl.querySelector ? ctxEl : d;
 var doc = root && root.nodeType === 9 ? root : ((root && root.ownerDocument) ? root.ownerDocument : d);
 var nodes = root && root.querySelectorAll ? root.querySelectorAll('.gg-postmeta,[data-gg-postmeta]') : null;
+var options = opts && typeof opts === 'object' ? opts : {};
+var allowLabelTagFallback = options.allowLabelTagFallback !== false;
 if(root&&root.querySelectorAll) root.querySelectorAll('.gg-postmeta');
 var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '' };
 var labels = [], i = 0, text = '', key = '', href = '', body = null, meta = null, seen = {}, parts = [], best = null, bestScore = -1, one = null, a = '', u = '', r = '', c = null, t = null, sc = 0;
@@ -1510,7 +1512,7 @@ if (best) {
 if (!out.author && root && root.getAttribute) {
   out.author = clean(root.getAttribute('data-author-name') || root.getAttribute('data-author') || '');
 }
-if (!out.tags.length && root && root.querySelectorAll) {
+if (allowLabelTagFallback && !out.tags.length && root && root.querySelectorAll) {
   labels = root.querySelectorAll('.gg-post-card__labels a[rel="tag"], .gg-post__labels a, .gg-post-tags__chip, a[rel="tag"]');
   for (i = 0; i < labels.length; i++) {
     text = clean(labels[i].textContent || '');
@@ -1535,7 +1537,6 @@ return out;
 GG.services.postmeta = GG.services.postmeta || services.postmeta;
 
 services.comments = services.comments || (function(){
-var moved = false;
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function findBloggerCommentsRoot(){
   return qs('.gg-post__comments') ||
@@ -1586,13 +1587,12 @@ function mount(){
   } else {
     setLoading(slot, false);
   }
-  moved = true;
   return true;
 }
 
 function mountWithRetry(){
   var tries = 0;
-  var max = 10;          // ~5s total
+  var max = 20;          // ~10s total
   var delay = 500;
 
   var slot = ensureSlot();
@@ -2827,20 +2827,9 @@ if(!main || !bar) return;
 if(bar.__ggBound) return;
 bar.__ggBound = true;
 
-var leftSidebar    = qs('.gg-blog-sidebar--left', main);
-var rightSidebar   = qs('.gg-blog-sidebar--right', main);
-var commentsPanel  = rightSidebar ? qs('[data-gg-panel="comments"]', rightSidebar) : null;
-var infoPanelRight = rightSidebar ? qs('[data-gg-panel="info"]', rightSidebar) : null;
-var infoCardPost   = infoPanelRight ? qs('#gg-postinfo', infoPanelRight) : null;
-var infoCardList   = infoPanelRight ? qs('.gg-editorial-preview', infoPanelRight) : null;
-var comments     = qs('.gg-post__comments', article);
-var commentsSlot = rightSidebar ? qs('[data-gg-panel="comments"] [data-gg-slot="comments"]', rightSidebar) : null;
-if(comments && commentsSlot && !comments.__ggMoved){
-commentsSlot.appendChild(comments);
-comments.__ggMoved = true;
-}
-if(infoCardPost) infoCardPost.hidden = false;
-if(infoCardList) infoCardList.hidden = true;
+var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null,infoPanelRight=rightSidebar?qs('[data-gg-panel="info"]',rightSidebar):null,infoCardPost=infoPanelRight?qs('#gg-postinfo',infoPanelRight):null,comments=qs('.gg-post__comments',article),commentsSlot=rightSidebar?qs('[data-gg-panel="comments"] [data-gg-slot="comments"]',rightSidebar):null;
+if(comments&&commentsSlot&&!comments.__ggMoved){commentsSlot.appendChild(comments);comments.__ggMoved=true;}
+if(infoCardPost) infoCardPost.hidden=false;
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
 }
@@ -2908,36 +2897,10 @@ else main.removeAttribute('data-gg-right-mode');
 }
 
 function applyFromAttrs(){
-var leftOpen = leftState() === 'open';
-var rightOpen = rightState() === 'open';
-var mode = rightMode();
-var focusOn = GG.core.state.has(document.body, 'focus-mode');
-
-setBtnActive('info', rightOpen && mode === 'info');
-setBtnActive('comments', rightOpen && mode === 'comments');
-setFocusIcon(focusOn);
-
-var showComments = rightOpen && mode === 'comments';
-var showInfo = rightOpen && mode === 'info';
-
-if(commentsPanel){
-  commentsPanel.hidden = !showComments;
-  commentsPanel.setAttribute('inert','');
-  commentsPanel.setAttribute('tabindex','-1');
-  if(showComments){
-    commentsPanel.removeAttribute('inert');
-    focusNoScroll(commentsPanel);
-  }
-}
-if(infoPanelRight){
-  infoPanelRight.hidden = !showInfo;
-  infoPanelRight.setAttribute('inert','');
-  infoPanelRight.setAttribute('tabindex','-1');
-  if(showInfo){
-    infoPanelRight.removeAttribute('inert');
-    focusNoScroll(infoPanelRight);
-  }
-}
+var rightOpen=rightState()==='open',mode=rightMode(),focusOn=GG.core.state.has(document.body,'focus-mode'),showComments=rightOpen&&mode==='comments',showInfo=rightOpen&&mode==='info';
+setBtnActive('info',showInfo);setBtnActive('comments',showComments);setFocusIcon(focusOn);
+if(commentsPanel){commentsPanel.hidden=!showComments;commentsPanel.setAttribute('inert','');commentsPanel.setAttribute('tabindex','-1');if(showComments){commentsPanel.removeAttribute('inert');focusNoScroll(commentsPanel);}}
+if(infoPanelRight){infoPanelRight.hidden=!showInfo;infoPanelRight.setAttribute('inert','');infoPanelRight.setAttribute('tabindex','-1');if(showInfo){infoPanelRight.removeAttribute('inert');focusNoScroll(infoPanelRight);}}
 }
 
 function clearCommentsHashIfAny(){
@@ -2959,6 +2922,7 @@ setRightMode(useMode);
 setRightState('open');
 applyFromAttrs();
 if (useMode === 'comments') {
+  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
   if (GG.services && GG.services.comments && GG.services.comments.mountWithRetry) {
     GG.services.comments.mountWithRetry();
   }
@@ -3524,7 +3488,7 @@ function splitList(raw, rx){ var src=cleanText(raw),parts=src?src.split(rx||/\s*
 function clipText(raw,max){ var txt=cleanText(raw),n=parseInt(max,10)||0; if(!txt||n<8||txt.length<=n) return txt; return txt.slice(0,n).replace(/[.,;:!?\s]+$/,'')+'...'; }
 function humanDate(raw){ var txt=cleanText(raw).replace(/februari/ig,'February'),m=txt.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/),y=0,mm=0,d=0,dt=null,opts={ weekday:'long', month:'long', day:'2-digit', year:'numeric' }; if(!txt) return ''; if(m){ y=parseInt(m[1],10)||0; mm=(parseInt(m[2],10)||1)-1; d=parseInt(m[3],10)||1; dt=new Date(Date.UTC(y,mm,d)); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric', timeZone:'UTC' }); } dt=new Date(txt); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',opts); return cleanText(raw); }
 function readMinLabel(raw){ var txt=cleanText(raw),m,mins; if(!txt) return ''; m=txt.match(/(\d+)/); if(!m) return ''; mins=Math.max(1,parseInt(m[1],10)||1); return mins+' min read'; }
-function parsePostMetaFromCard(card){ var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=svc&&card?svc.getFromContext(card):{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' },meta=card?qs('.gg-postmeta,[data-gg-postmeta]',card):null,raw=''; if(!card) return pm||{}; pm=pm&&typeof pm==='object'?pm:{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' }; if(meta&&meta.getAttribute){ raw=cleanText(meta.getAttribute('data-author')||meta.getAttribute('data-gg-author')||''); if(raw) pm.author=raw; raw=cleanText(meta.getAttribute('data-updated')||meta.getAttribute('data-gg-updated')||''); if(raw) pm.updated=raw; raw=cleanText(meta.getAttribute('data-read-min')||meta.getAttribute('data-readtime')||meta.getAttribute('data-gg-read-min')||meta.getAttribute('data-gg-readtime')||''); if(raw) pm.readMin=raw; raw=cleanText(meta.getAttribute('data-snippet')||meta.getAttribute('data-gg-snippet')||''); if(raw) pm.snippet=raw; pm.contributors=splitList(meta.getAttribute('data-contributors')||meta.getAttribute('data-gg-contributors')||'',/\s*;\s*/); pm.tags=splitList(meta.getAttribute('data-tags')||meta.getAttribute('data-gg-tags')||'',/\s*,\s*/); } if(!pm.author) pm.author=cardAttr(card,'data-author-name')||cardAttr(card,'data-author'); if(!pm.updated) pm.updated=cardAttr(card,'data-updated')||cardAttr(card,'data-gg-updated'); if(!pm.readMin) pm.readMin=cardAttr(card,'data-read-min')||cardAttr(card,'data-readtime'); if(!pm.snippet) pm.snippet=cardAttr(card,'data-snippet')||cardAttr(card,'data-gg-snippet'); if(!Array.isArray(pm.contributors)||!pm.contributors.length) pm.contributors=splitList(cardAttr(card,'data-contributors'),/\s*;\s*/); if(!Array.isArray(pm.tags)||!pm.tags.length) pm.tags=splitList(cardAttr(card,'data-tags'),/\s*,\s*/); return pm; }
+function parsePostMetaFromCard(card){ var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=svc&&card?svc.getFromContext(card,{ allowLabelTagFallback:false }):{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' },meta=card?qs('.gg-postmeta,[data-gg-postmeta]',card):null,raw=''; if(!card) return pm||{}; pm=pm&&typeof pm==='object'?pm:{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' }; if(meta&&meta.getAttribute){ raw=cleanText(meta.getAttribute('data-author')||meta.getAttribute('data-gg-author')||''); if(raw) pm.author=raw; raw=cleanText(meta.getAttribute('data-updated')||meta.getAttribute('data-gg-updated')||''); if(raw) pm.updated=raw; raw=cleanText(meta.getAttribute('data-read-min')||meta.getAttribute('data-readtime')||meta.getAttribute('data-gg-read-min')||meta.getAttribute('data-gg-readtime')||''); if(raw) pm.readMin=raw; raw=cleanText(meta.getAttribute('data-snippet')||meta.getAttribute('data-gg-snippet')||''); if(raw) pm.snippet=raw; pm.contributors=splitList(meta.getAttribute('data-contributors')||meta.getAttribute('data-gg-contributors')||'',/\s*;\s*/); pm.tags=splitList(meta.getAttribute('data-tags')||meta.getAttribute('data-gg-tags')||'',/\s*,\s*/); } if(!pm.author) pm.author=cardAttr(card,'data-author-name')||cardAttr(card,'data-author'); if(!pm.updated) pm.updated=cardAttr(card,'data-updated')||cardAttr(card,'data-gg-updated'); if(!pm.readMin) pm.readMin=cardAttr(card,'data-read-min')||cardAttr(card,'data-readtime'); if(!pm.snippet) pm.snippet=cardAttr(card,'data-snippet')||cardAttr(card,'data-gg-snippet'); if(!Array.isArray(pm.contributors)||!pm.contributors.length) pm.contributors=splitList(cardAttr(card,'data-contributors'),/\s*;\s*/); if(!Array.isArray(pm.tags)||!pm.tags.length) pm.tags=splitList(cardAttr(card,'data-tags'),/\s*,\s*/); return pm; }
 function calcReadTime(root){ if(!root) return ''; var clone=root.cloneNode(true),drop=clone.querySelectorAll('nav,footer'),i=0,text=''; for(;i<drop.length;i++) drop[i].remove(); text=cleanText(clone.textContent||''); if(!text) return ''; return Math.max(1,Math.ceil(text.split(/\s+/).length/200))+' min read'; }
 function authorDir(){ return GG.services&&GG.services.authorsDir ? GG.services.authorsDir : null; }
 function authorFallback(raw){ var svc=authorDir(),name=cleanText(raw),slug=''; if(svc&&svc.fallback) return svc.fallback(raw); slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); return { slug:slug, name:name||'Author', href:slug?('/p/'+slug+'.html'):'#', src:'fallback' }; }
@@ -3565,7 +3529,7 @@ if(!list) return;
 list.textContent = '';
 if(!rows.length){
   setRow('toc', true);
-  setTocHint('Open post');
+  setTocHint('No headings available');
   return;
 }
 setRow('toc', true);
@@ -3605,13 +3569,13 @@ function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepK
 function parseHeadingItems(html,sourceUrl){
 var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',paras=null,pi=0,pnode=null,ptxt='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');pm=svc?svc.getFromContext(doc,{ allowLabelTagFallback:false }):{};author=cleanText(pm.author||'');contributors=Array.isArray(pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm.updated||'');readTime=readMinLabel(pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm.snippet||'');
 if(!snippet&&root&&root.querySelectorAll){paras=root.querySelectorAll('p');for(pi=0;pi<paras.length;pi++){pnode=paras[pi];if(!pnode||!pnode.textContent||(pnode.closest&&pnode.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;ptxt=cleanText(pnode.textContent||'');if(!ptxt) continue;snippet=clipText(ptxt,180);if(snippet) break;}}
 if(!snippet&&root) snippet=clipText(cleanText(root.textContent||''),180);
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
-for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
+for(i=0;i<max;i++){node=headings[i];if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;level=parseInt((node.tagName||'').slice(1),10)||1;if(level>4) level=4;text=(node.textContent||'').replace(/\s+/g,' ').trim();if(!text) continue;headingId=(node.getAttribute('id')||'').trim();href=baseHref;if(headingId) href+='#'+encodeURIComponent(headingId);out.push({text:text,level:level,href:href});}
 return out;
 }
 
@@ -3742,7 +3706,7 @@ if(u){
 } else if(!(panel&&panel.__iU)){ setS('updated',''); setRow('updated',false); }
 if(!(panel&&panel.__iS)){
   if(s){ setS('snippet',s); setRow('snippet',true); }
-  else { setS('snippet',''); setRow('snippet',false); }
+  else if(!hasS('snippet')){ setS('snippet',''); setRow('snippet',false); }
 }
 }
 
@@ -3774,8 +3738,7 @@ var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__gP=card;
-var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),quickSnippet=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),af=null,instTags=((Array.isArray(cardMeta.tags)&&cardMeta.tags.length)?cardMeta.tags:(labels.length?labels:['post'])).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=((Array.isArray(cardMeta.contributors)&&cardMeta.contributors.length)?cardMeta.contributors:[authorText]).map(function(x){var n=cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));return n?{text:n}:null;}).filter(Boolean);
-if(!quickSnippet) quickSnippet=cardMeta.snippet||clipText(title,180);
+var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),excerptEl=qs('.gg-post-card__excerpt', card),excerptText=cleanText(excerptEl?(excerptEl.textContent||''):''),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):excerptText,af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };});
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'—');
@@ -3789,7 +3752,7 @@ setS('comments',commentsText);
 setS('readtime',readTimeText);
 setS('snippet',quickSnippet);
 setImg(imgSrc,title);
-if(panel){ panel.__iC=instContributors.length>0; panel.__iT=instTags.length>0; panel.__iU=!!updatedText; panel.__iR=!!readTimeText; panel.__iS=!!quickSnippet; }
+if(panel){ panel.__iC=instContributors.length>0; panel.__iT=instTags.length>0; panel.__iU=!!updatedText; panel.__iR=!!readTimeText; panel.__iS=hasCardSnippet; }
 setRow('author',!!authorText);
 setRow('contributors',instContributors.length>0);
 setRow('labels',!!labels.length);
