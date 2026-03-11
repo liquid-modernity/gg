@@ -33,13 +33,39 @@ async function run() {
             const hasNonEmptyTags = /\bdata-tags\s*=\s*(['"])\s*[^'"]+\1/i.test(txt);
             const hasNonEmptySnippet = /\bdata-snippet\s*=\s*(['"])\s*[^'"]+\1/i.test(txt);
             const doc = new DOMParser().parseFromString(txt, "text/html");
+            const root = doc.querySelector(
+              ".post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content"
+            );
+            const rootHeadings = root
+              ? Array.from(root.querySelectorAll("h1,h2,h3,h4"))
+                  .map((h) => String(h.textContent || "").replace(/\s+/g, " ").trim())
+                  .filter(Boolean)
+              : [];
             const pmNodes = Array.from(doc.querySelectorAll(".gg-postmeta,[data-gg-postmeta]")).slice(0, 6).map((el) => ({
               contrib: (el.getAttribute("data-contributors") || el.getAttribute("data-gg-contributors") || "").trim(),
               tags: (el.getAttribute("data-tags") || el.getAttribute("data-gg-tags") || "").trim(),
               snippet: (el.getAttribute("data-snippet") || el.getAttribute("data-gg-snippet") || "").trim(),
               updated: (el.getAttribute("data-updated") || el.getAttribute("data-gg-updated") || "").trim()
             }));
-            probe = { hCount, hasRoot, hasNonEmptyContrib, hasNonEmptyTags, hasNonEmptySnippet, pmNodes };
+            const svc =
+              window.GG &&
+              window.GG.services &&
+              window.GG.services.postmeta &&
+              typeof window.GG.services.postmeta.getFromContext === "function"
+                ? window.GG.services.postmeta
+                : null;
+            const pm = svc ? svc.getFromContext(doc) : null;
+            probe = {
+              hCount,
+              hasRoot,
+              hasNonEmptyContrib,
+              hasNonEmptyTags,
+              hasNonEmptySnippet,
+              rootHeadingsCount: rootHeadings.length,
+              rootHeadingsSample: rootHeadings.slice(0, 6),
+              pm,
+              pmNodes
+            };
           } catch (_) {}
         }
         window.__ggFetchLog.push({ url, ok: !!res.ok, status: res.status, ms: Date.now() - started, probe });

@@ -1,7 +1,6 @@
 {
   "name": "gg",
   "private": true,
-  "devDependencies": {},
   "scripts": {
     "build": "node tools/release.js",
     "build:xml": "node tools/validate-xml.js",
@@ -28,5 +27,8 @@
     "gate:release": "bash tools/gate-release.sh",
     "zip:audit": "bash tools/zip-audit.sh",
     "ship:1": "npm run ship && npm run zip:audit"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
   }
 }
