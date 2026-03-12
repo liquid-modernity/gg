@@ -27,6 +27,16 @@ jobs:
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
 
+      - name: CI scope truth
+        run: |
+          echo "CI scope: Worker deployability checks only (Wrangler dry-run)."
+          echo "CI does not publish Blogger template/theme."
+          {
+            echo "### CI Scope Truth"
+            echo "- This CI validates Worker syntax + Wrangler dry-run."
+            echo "- This CI does **not** publish Blogger template/theme."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Worker syntax check
         run: node --check src/worker.js
 

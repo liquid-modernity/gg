@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers
+name: Deploy Worker/Assets to Cloudflare
 
 on:
   workflow_run:
@@ -40,13 +40,24 @@ jobs:
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
 
+      - name: Deploy scope truth
+        run: |
+          echo "Deploy scope: Cloudflare Worker code + Cloudflare static assets from ./public."
+          echo "Not in scope here: Blogger template/theme publish (index.prod.xml) to Blogger admin."
+          {
+            echo "### Deploy Scope Truth"
+            echo "- This workflow deploys Cloudflare Worker + Cloudflare static assets."
+            echo "- This workflow does **not** publish Blogger template/theme."
+            echo "- Template changes in \`index.prod.xml\` require separate Blogger release."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Deploy via npm run gaga
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run gaga
 
-      - name: Live smoke (route + head truth)
+      - name: Live smoke (public-domain contract)
         env:
           GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
         run: bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"

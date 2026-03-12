@@ -13,6 +13,9 @@ trap 'rm -rf "$tmp_dir"' EXIT
 failures=0
 warnings=0
 
+printf 'SMOKE scope: public-domain contract check only.\n'
+printf 'SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blogger template publish.\n'
+
 log_fail() {
   failures=$((failures + 1))
   printf 'FAIL: %s\n' "$1" >&2
@@ -63,7 +66,21 @@ fetch_page() {
   else
     target="${BASE_URL}${path_or_url}"
   fi
-  meta="$(curl -sS -L --max-redirs 10 -A "$UA" -o "$out_file" -w '%{url_effective}|%{http_code}|%{num_redirects}' "$target")"
+  if ! meta="$(curl -sS -L \
+    --retry 3 \
+    --retry-delay 2 \
+    --connect-timeout 15 \
+    --max-time 60 \
+    --max-redirs 10 \
+    -A "$UA" \
+    -o "$out_file" \
+    -w '%{url_effective}|%{http_code}|%{num_redirects}' \
+    "$target")"; then
+    printf 'FAIL: fetch error for %s\n' "$target" >&2
+    : > "$out_file"
+    printf '%s|000|0\n' "$target"
+    return 0
+  fi
   printf '%s\n' "$meta"
 }
 
@@ -75,7 +92,9 @@ extract_attr_from_tag() {
 
 extract_title() {
   local file="$1"
-  grep -Eoi '<title>[^<]*</title>' "$file" | head -n 1 | sed -E 's#</?[Tt][Ii][Tt][Ll][Ee]>##g'
+  local tag
+  tag="$(grep -Eoi '<title>[^<]*</title>' "$file" | head -n 1 || true)"
+  printf '%s' "$tag" | sed -E 's#</?[Tt][Ii][Tt][Ll][Ee]>##g'
 }
 
 extract_canonical() {
@@ -339,9 +358,10 @@ check_surface() {
   local expected_surface="$6"
   local expected_page="$7"
   local expected_home_state="${8:-}"
+  local expected_edited="${9:-ignore}"
 
   local file="$tmp_dir/$(safe_file_name "$path").html"
-  local meta final status redirects canonical og title desc surface page home_state
+  local meta final status redirects canonical og title desc surface page home_state edited_present
   local meta_rest
   meta="$(fetch_page "$path" "$file")"
   final="${meta%%|*}"
@@ -356,9 +376,14 @@ check_surface() {
   surface="$(extract_body_attr "$file" "data-gg-surface")"
   page="$(extract_body_attr "$file" "data-gg-page")"
   home_state="$(extract_main_attr "$file" "data-gg-home-state")"
+  if grep -q "Edited by pakrpp\\." "$file"; then
+    edited_present="yes"
+  else
+    edited_present="no"
+  fi
 
-  printf 'SMOKE path=%s final=%s status=%s redirects=%s canonical=%s og=%s surface=%s page=%s home_state=%s title=%s desc=%s\n' \
-    "$path" "$final" "$status" "$redirects" "$canonical" "$og" "$surface" "$page" "$home_state" "$title" "$desc"
+  printf 'SMOKE path=%s final=%s status=%s redirects=%s canonical=%s og=%s surface=%s page=%s home_state=%s edited_by_pakrpp=%s title=%s desc=%s\n' \
+    "$path" "$final" "$status" "$redirects" "$canonical" "$og" "$surface" "$page" "$home_state" "$edited_present" "$title" "$desc"
 
   assert_equal "$status" "$expected_status" "$path status"
   assert_equal "$final" "$expected_final" "$path final URL"
@@ -368,6 +393,11 @@ check_surface() {
   assert_equal "$page" "$expected_page" "$path data-gg-page"
   if [[ -n "$expected_home_state" ]]; then
     assert_equal "$home_state" "$expected_home_state" "$path data-gg-home-state"
+  fi
+  if [[ "$expected_edited" == "present" ]]; then
+    assert_equal "$edited_present" "yes" "$path Edited by pakrpp marker"
+  elif [[ "$expected_edited" == "absent" ]]; then
+    assert_equal "$edited_present" "no" "$path Edited by pakrpp marker"
   fi
   assert_no_placeholder_strings "$file" "$path"
   check_info_panel_contract "$file" "$path"
@@ -410,7 +440,7 @@ check_discovered_detail_paths() {
     log_fail "unable to discover a real post URL from /"
   else
     printf 'SMOKE discovered post=%s\n' "$post_path"
-    check_surface "$post_path" "200" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "post" "post" "blog"
+    check_surface "$post_path" "200" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "post" "post" "blog" "ignore"
   fi
 
   page_path="$(discover_first_page_path "$listing_file" || true)"
@@ -418,18 +448,18 @@ check_discovered_detail_paths() {
     log_warn "no real page URL discovered from /; skipped page check"
   else
     printf 'SMOKE discovered page=%s\n' "$page_path"
-    check_surface "$page_path" "200" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "page" "page" "blog"
+    check_surface "$page_path" "200" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "page" "page" "blog" "ignore"
   fi
 
   check_listing_card_metadata "$listing_file"
 }
 
-check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog"
-check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing"
-check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog"
-check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing"
-check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog"
-check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing"
+check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
+check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
+check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
+check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
+check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
+check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
 check_dock_truth
 check_discovered_detail_paths
 
