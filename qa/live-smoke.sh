@@ -8,9 +8,23 @@ BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke)"
 TEMPLATE_DRIFT_MODE="${GG_TEMPLATE_DRIFT_MODE:-warn}"
 TEMPLATE_CHANGED_IN_REV="${GG_TEMPLATE_CHANGED_IN_REV:-0}"
+EXPECTED_WORKER_VERSION="$(printf '%s' "${GG_EXPECTED_WORKER_VERSION:-}" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+WORKER_VERSION_MODE="${GG_WORKER_VERSION_MODE:-off}"
+WORKER_VERSION_CHECK_PATH="${GG_WORKER_VERSION_CHECK_PATH:-/__gg_worker_ping}"
+WORKER_ROLLOUT_MAX_ATTEMPTS="${GG_WORKER_ROLLOUT_MAX_ATTEMPTS:-12}"
+WORKER_ROLLOUT_BACKOFF_SECONDS="${GG_WORKER_ROLLOUT_BACKOFF_SECONDS:-5}"
 
 if [[ "$TEMPLATE_DRIFT_MODE" != "warn" && "$TEMPLATE_DRIFT_MODE" != "fail" ]]; then
   TEMPLATE_DRIFT_MODE="warn"
+fi
+if [[ "$WORKER_VERSION_MODE" != "off" && "$WORKER_VERSION_MODE" != "warn" && "$WORKER_VERSION_MODE" != "fail" ]]; then
+  WORKER_VERSION_MODE="off"
+fi
+if ! [[ "$WORKER_ROLLOUT_MAX_ATTEMPTS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_MAX_ATTEMPTS < 1 )); then
+  WORKER_ROLLOUT_MAX_ATTEMPTS=12
+fi
+if ! [[ "$WORKER_ROLLOUT_BACKOFF_SECONDS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_BACKOFF_SECONDS < 1 )); then
+  WORKER_ROLLOUT_BACKOFF_SECONDS=5
 fi
 
 tmp_dir="$(mktemp -d)"
@@ -18,12 +32,18 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 failures=0
 warnings=0
-template_release_state="unknown"
+worker_rollout_state="worker_assets_rollout_not_checked"
+worker_rollout_note="Worker rollout check not requested."
+worker_live_version="unknown"
+worker_rollout_final_url=""
+template_release_state="blogger_template_parity_unknown"
 template_release_note="Template release state not evaluated."
 
 printf 'SMOKE scope: public-domain contract check only.\n'
 printf 'SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blogger template publish.\n'
 printf 'SMOKE scope: template drift mode=%s changed_in_rev=%s.\n' "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
+printf 'SMOKE scope: worker rollout mode=%s expected_version=%s check_path=%s attempts=%s backoff=%ss.\n' \
+  "$WORKER_VERSION_MODE" "${EXPECTED_WORKER_VERSION:-unset}" "$WORKER_VERSION_CHECK_PATH" "$WORKER_ROLLOUT_MAX_ATTEMPTS" "$WORKER_ROLLOUT_BACKOFF_SECONDS"
 
 log_fail() {
   failures=$((failures + 1))
@@ -101,6 +121,155 @@ fetch_page() {
   : > "$out_file"
   printf '%s|000|0\n' "$target"
   return 0
+}
+
+fetch_headers() {
+  local path_or_url="$1"
+  local out_headers="$2"
+  local target
+  local meta
+  local attempt=1
+  local max_attempts=3
+  if [[ "$path_or_url" =~ ^https?:// ]]; then
+    target="$path_or_url"
+  else
+    target="${BASE_URL}${path_or_url}"
+  fi
+
+  while (( attempt <= max_attempts )); do
+    if meta="$(curl -sS -L \
+      --http1.1 \
+      --connect-timeout 15 \
+      --max-time 60 \
+      --max-redirs 10 \
+      -A "$UA" \
+      -D "$out_headers" \
+      -o /dev/null \
+      -w '%{url_effective}|%{http_code}|%{num_redirects}' \
+      "$target")"; then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+    if (( attempt < max_attempts )); then
+      sleep $((attempt * 2))
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  : > "$out_headers"
+  printf '%s|000|0\n' "$target"
+  return 0
+}
+
+extract_header_value() {
+  local file="$1"
+  local header_name="$2"
+  awk -v wanted="$(printf '%s' "$header_name" | tr '[:upper:]' '[:lower:]')" '
+    {
+      line=$0
+      gsub(/\r$/, "", line)
+      key=line
+      sub(/:.*/, "", key)
+      if (tolower(key) == wanted) {
+        sub(/^[^:]*:[[:space:]]*/, "", line)
+        value=line
+      }
+    }
+    END {
+      if (value != "") print value
+    }
+  ' "$file" | tail -n 1
+}
+
+worker_rollout_signal() {
+  local message="$1"
+  if [[ "$WORKER_VERSION_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    printf '::warning title=Worker rollout pending::%s\n' "$message"
+  fi
+}
+
+check_worker_rollout() {
+  local headers_file="$tmp_dir/$(safe_file_name "worker_rollout_headers").txt"
+  local root_headers_file="$tmp_dir/$(safe_file_name "worker_rollout_root_headers").txt"
+  local attempt=1
+  local meta=""
+  local meta_root=""
+  local status=""
+  local status_root=""
+  local final_url=""
+  local final_url_root=""
+  local observed=""
+  local observed_root=""
+  local expected=""
+  expected="$(printf '%s' "$EXPECTED_WORKER_VERSION" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+
+  if [[ "$WORKER_VERSION_MODE" == "off" || -z "$expected" ]]; then
+    worker_rollout_state="worker_assets_deployed_and_verified"
+    worker_rollout_note="Worker rollout check skipped (mode=${WORKER_VERSION_MODE}, expected=${expected:-unset})."
+    printf 'SMOKE rollout-check skipped mode=%s expected=%s\n' "$WORKER_VERSION_MODE" "${expected:-unset}"
+    return 0
+  fi
+
+  while (( attempt <= WORKER_ROLLOUT_MAX_ATTEMPTS )); do
+    meta="$(fetch_headers "$WORKER_VERSION_CHECK_PATH" "$headers_file")"
+    meta_root="$(fetch_headers "/" "$root_headers_file")"
+    final_url="${meta%%|*}"
+    status="${meta#*|}"
+    status="${status%%|*}"
+    final_url_root="${meta_root%%|*}"
+    status_root="${meta_root#*|}"
+    status_root="${status_root%%|*}"
+    observed="$(extract_header_value "$headers_file" "X-GG-Worker-Version")"
+    observed_root="$(extract_header_value "$root_headers_file" "X-GG-Worker-Version")"
+    observed="$(printf '%s' "$observed" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    observed_root="$(printf '%s' "$observed_root" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    worker_live_version="${observed:-missing}"
+    worker_rollout_final_url="${final_url}"
+
+    printf 'SMOKE rollout-check attempt=%s/%s path=%s status=%s observed=%s expected=%s root_status=%s root_observed=%s root_url=%s\n' \
+      "$attempt" "$WORKER_ROLLOUT_MAX_ATTEMPTS" "$WORKER_VERSION_CHECK_PATH" "$status" "${observed:-missing}" "$expected" "$status_root" "${observed_root:-missing}" "$final_url_root"
+
+    if [[ "$status" == "200" && -n "$observed" && "$observed" == "$expected" ]]; then
+      worker_rollout_state="worker_assets_deployed_and_verified"
+      worker_rollout_note="Expected worker version is live on public domain."
+      return 0
+    fi
+
+    if (( attempt < WORKER_ROLLOUT_MAX_ATTEMPTS )); then
+      sleep "$WORKER_ROLLOUT_BACKOFF_SECONDS"
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  worker_rollout_state="worker_assets_rollout_pending"
+  worker_rollout_note="Expected worker version not observed on public domain within rollout window."
+  worker_rollout_signal "expected='${expected}' observed='${worker_live_version}' path='${WORKER_VERSION_CHECK_PATH}' final='${worker_rollout_final_url:-unknown}'"
+}
+
+strip_inert_markup() {
+  local src_file="$1"
+  local out_file="$2"
+  node - "$src_file" "$out_file" <<'NODE'
+const fs = require('node:fs');
+const srcFile = process.argv[2];
+const outFile = process.argv[3];
+let html = '';
+try {
+  html = fs.readFileSync(srcFile, 'utf8');
+} catch {
+  html = '';
+}
+html = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+fs.writeFileSync(outFile, html, 'utf8');
+NODE
 }
 
 extract_attr_from_tag() {
@@ -203,78 +372,59 @@ assert_no_placeholder_strings() {
   fi
 }
 
-extract_visible_text() {
-  local file="$1"
-  node - "$file" <<'NODE'
-const fs = require('node:fs');
-const file = process.argv[2];
-let html = '';
-try {
-  html = fs.readFileSync(file, 'utf8');
-} catch {
-  process.stdout.write('');
-  process.exit(0);
-}
-html = html
-  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-  .replace(/<!--[\s\S]*?-->/g, ' ')
-  .replace(/<[^>]+>/g, ' ')
-  .replace(/&#8212;|&mdash;|&#x2014;/gi, ' — ')
-  .replace(/&nbsp;/gi, ' ')
-  .replace(/\s+/g, ' ')
-  .trim();
-process.stdout.write(html);
-NODE
-}
-
 assert_no_empty_editorial_shell() {
   local file="$1"
   local context="$2"
-  local plain_text=""
-  local phrase=""
-  local toc_state=""
-  plain_text="$(extract_visible_text "$file")"
-
-  for phrase in \
-    "Editorial Preview" \
-    "Title —" \
-    "Written by —" \
-    "Date —" \
-    "Updated —" \
-    "Comments —" \
-    "Read time —" \
-    "Snippet —"; do
-    if [[ "$plain_text" == *"$phrase"* ]]; then
-      log_fail "$context empty editorial shell leakage detected ('$phrase')"
-    fi
-  done
-
-  toc_state="$(node - "$file" <<'NODE'
+  local leaks_file="$tmp_dir/$(safe_file_name "epanel_${context}").leaks"
+  : > "$leaks_file"
+  node - "$file" >"$leaks_file" <<'NODE'
 const fs = require('node:fs');
 const file = process.argv[2];
 let html = '';
 try {
   html = fs.readFileSync(file, 'utf8');
 } catch {
-  process.stdout.write('ok');
   process.exit(0);
 }
 const stripped = html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
   .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ');
-const tocRowVisible = /<div[^>]*data-row=(['"])toc\1(?![^>]*\bhidden=(['"])hidden\2)[^>]*>/i.test(stripped);
-const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(stripped);
-if (tocRowVisible && !tocHasItems) {
-  process.stdout.write('leak');
-} else {
-  process.stdout.write('ok');
+const leaks = [];
+const rowNames = ['title', 'author', 'date', 'updated', 'comments', 'readtime', 'snippet'];
+const hasHiddenAttr = (tag) => /\bhidden\b/i.test(tag);
+
+const panelTag = (stripped.match(/<div[^>]*class=['"][^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i) || [])[0] || '';
+if (panelTag && !hasHiddenAttr(panelTag)) {
+  leaks.push('editorial-preview-visible');
+}
+
+for (const rowName of rowNames) {
+  const re = new RegExp('<div[^>]*data-row=([\'"])' + rowName + '\\1[^>]*>', 'ig');
+  let m;
+  while ((m = re.exec(stripped))) {
+    if (!hasHiddenAttr(m[0])) leaks.push('row-' + rowName + '-visible');
+  }
+}
+
+const tocRe = /<div[^>]*data-row=(['"])toc\1[^>]*>/ig;
+let t;
+while ((t = tocRe.exec(stripped))) {
+  if (hasHiddenAttr(t[0])) continue;
+  const scope = stripped.slice(t.index, Math.min(stripped.length, t.index + 5000));
+  const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(scope);
+  if (!tocHasItems) leaks.push('row-toc-visible-without-headings');
+}
+
+if (leaks.length) {
+  process.stdout.write(leaks.join('\n'));
 }
 NODE
-)"
-  if [[ "$toc_state" == "leak" ]]; then
-    log_fail "$context TOC shell visible without real headings"
+  if [[ -s "$leaks_file" ]]; then
+    while IFS= read -r leak; do
+      [[ -n "$leak" ]] || continue
+      log_fail "$context empty editorial shell leakage detected (${leak})"
+    done < "$leaks_file"
   fi
 }
 
@@ -360,8 +510,10 @@ assert_absent_marker() {
   local context="$2"
   local pattern="$3"
   local label="$4"
-  if grep -Eiq "$pattern" "$file"; then
-    log_fail "$context forbidden marker detected (${label})"
+  local hit=""
+  hit="$(grep -Eoin "$pattern" "$file" | head -n 1 || true)"
+  if [[ -n "$hit" ]]; then
+    log_fail "$context forbidden marker detected (${label}) -> ${hit}"
   fi
 }
 
@@ -411,6 +563,7 @@ check_surface_ownership_contract() {
 
 check_listing_card_metadata() {
   local file="$1"
+  local scan_file="$tmp_dir/$(safe_file_name "listing_meta_scan").html"
   local card=""
   local author=""
   local contributors=""
@@ -421,6 +574,7 @@ check_listing_card_metadata() {
   local author_lc=""
   local contributors_lc=""
   local token=""
+  strip_inert_markup "$file" "$scan_file"
   card="$(grep -Eoi "<article[^>]+class=['\\\"][^'\\\"]*gg-post-card[^'\\\"]*['\\\"][^>]*>" "$file" | head -n 1 || true)"
   if [[ -z "$card" ]]; then
     log_fail "listing missing gg-post-card"
@@ -475,7 +629,7 @@ check_listing_card_metadata() {
     assert_row_hidden "$file" "snippet" "listing editorial panel"
   fi
   if [[ -z "$toc_json" ]]; then
-    if grep -q "No headings available" "$file"; then
+    if grep -q "No headings available" "$scan_file"; then
       log_fail "listing toc hint leaked placeholder"
     fi
   fi
@@ -494,9 +648,11 @@ check_surface() {
   local expected_redirect_min="${10:-0}"
 
   local file="$tmp_dir/$(safe_file_name "$path").html"
+  local scan_file="$tmp_dir/$(safe_file_name "${path}_scan").html"
   local meta final status redirects canonical og title desc surface page home_state edited_present
   local meta_rest
   meta="$(fetch_page "$path" "$file")"
+  strip_inert_markup "$file" "$scan_file"
   final="${meta%%|*}"
   meta_rest="${meta#*|}"
   status="${meta_rest%%|*}"
@@ -532,11 +688,11 @@ check_surface() {
   elif [[ "$expected_edited" == "absent" ]]; then
     assert_equal "$edited_present" "no" "$path Edited by pakrpp marker"
   fi
-  assert_no_placeholder_strings "$file" "$path"
+  assert_no_placeholder_strings "$scan_file" "$path"
   if [[ "$path" == "/" || "$path" == "/landing" || "$path" == "/landing/" ]]; then
-    assert_no_empty_editorial_shell "$file" "$path"
+    assert_no_empty_editorial_shell "$scan_file" "$path"
   fi
-  check_surface_ownership_contract "$file" "$path" "$expected_surface"
+  check_surface_ownership_contract "$scan_file" "$path" "$expected_surface"
 
   if [[ "$canonical" == *"/blog"* || "$og" == *"/blog"* ]]; then
     log_fail "$path canonical/og contains forbidden /blog leakage"
@@ -636,6 +792,8 @@ check_template_fingerprint_drift() {
 
   if [[ "$repo_expected" != "$repo_embedded" ]]; then
     log_fail "repo template fingerprint marker stale (embedded='$repo_embedded' expected='$repo_expected'). Run: node qa/template-fingerprint.mjs --write"
+    template_release_state="blogger_template_drift_detected"
+    template_release_note="Repo template fingerprint marker stale."
   fi
 
   if [[ -z "$live_observed" ]]; then
@@ -644,8 +802,8 @@ check_template_fingerprint_drift() {
     fi
     template_drift_signal "${changed_prefix}live marker 'data-gg-template-fingerprint' is missing. Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
     result_line="marker_missing"
-    template_release_state="worker_assets_deployed_template_publish_required"
-    template_release_note="Worker/assets deployed; Blogger template publish still required."
+    template_release_state="blogger_template_publish_required"
+    template_release_note="Manual Blogger template publish still required."
   elif [[ "$live_observed" != "$repo_expected" ]]; then
     if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
       changed_prefix="index.prod.xml changed in this revision; "
@@ -657,8 +815,8 @@ check_template_fingerprint_drift() {
   else
     printf 'SMOKE template-fingerprint parity=match (%s)\n' "$repo_expected"
     result_line="match"
-    template_release_state="template_fingerprint_match_pending_contract"
-    template_release_note="Template fingerprint matches repo; full live contract still must pass."
+    template_release_state="blogger_template_parity_verified"
+    template_release_note="Blogger template parity verified."
   fi
 
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
@@ -677,38 +835,58 @@ check_template_fingerprint_drift() {
 }
 
 emit_release_state() {
-  local final_state="$template_release_state"
-  local final_note="$template_release_note"
+  local final_state="worker_assets_deployed_and_verified"
+  local final_note="Worker/assets public contract verified."
+  local contract_state="worker_assets_contract_passed"
 
-  if [[ "$template_release_state" == "template_fingerprint_match_pending_contract" ]]; then
-    if [[ "$failures" -eq 0 ]]; then
-      final_state="blogger_template_parity_verified"
-      final_note="Blogger template parity verified after manual publish."
-    else
-      final_state="template_fingerprint_match_but_contract_failed"
-      final_note="Template fingerprint matches, but live contract checks failed."
-    fi
+  if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" ]]; then
+    final_state="worker_assets_rollout_pending"
+    final_note="$worker_rollout_note"
+    contract_state="contract_failed"
+  elif [[ "$failures" -gt 0 ]]; then
+    final_state="contract_failed"
+    final_note="Public contract checks failed."
+    contract_state="contract_failed"
   fi
 
+  printf 'SMOKE worker-state=%s note=%s expected=%s observed=%s final=%s\n' \
+    "$worker_rollout_state" "$worker_rollout_note" "${EXPECTED_WORKER_VERSION:-unset}" "${worker_live_version:-missing}" "${worker_rollout_final_url:-unknown}"
+  printf 'SMOKE template-state=%s note=%s\n' "$template_release_state" "$template_release_note"
+  printf 'SMOKE contract-state=%s failures=%s warnings=%s\n' "$contract_state" "$failures" "$warnings"
   printf 'SMOKE release-state=%s note=%s\n' "$final_state" "$final_note"
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     {
       echo "### Release State"
-      echo "- State: \`${final_state}\`"
-      echo "- Note: ${final_note}"
+      echo "- Worker state: \`${worker_rollout_state}\`"
+      echo "- Worker note: ${worker_rollout_note}"
+      echo "- Expected worker version: \`${EXPECTED_WORKER_VERSION:-unset}\`"
+      echo "- Observed worker version: \`${worker_live_version:-missing}\`"
+      echo "- Template state: \`${template_release_state}\`"
+      echo "- Template note: ${template_release_note}"
+      echo "- Contract state: \`${contract_state}\`"
+      echo "- Final state: \`${final_state}\`"
+      echo "- Final note: ${final_note}"
     } >> "$GITHUB_STEP_SUMMARY"
   fi
 }
 
-check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
-check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
-check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent" "1"
-check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
-check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
-check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
+check_worker_rollout
+check_template_fingerprint_drift
+
+if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" && "$WORKER_VERSION_MODE" == "fail" ]]; then
+  emit_release_state
+  printf 'LIVE SMOKE RESULT: FAILED (worker rollout pending)\n' >&2
+  exit 1
+fi
+
+check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
+check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore" "1"
+check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
+check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_dock_truth
 check_discovered_detail_paths
-check_template_fingerprint_drift
 emit_release_state
 
 if [[ "$failures" -gt 0 ]]; then

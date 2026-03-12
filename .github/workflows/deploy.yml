@@ -5,6 +5,12 @@ on:
     workflows: ["CI"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      strict_template_parity:
+        description: "Hard-fail deploy when Blogger template parity drifts/missing"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-main
@@ -39,6 +45,40 @@ jobs:
 
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
+
+      - name: Resolve deploy verification mode + expected worker version
+        env:
+          GG_DISPATCH_STRICT_TEMPLATE_PARITY: ${{ github.event.inputs.strict_template_parity || 'false' }}
+        run: |
+          expected_worker_version="$(node - <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync('src/worker.js', 'utf8');
+          const match = source.match(/const\s+WORKER_VERSION\s*=\s*(['"])([^'"]+)\1/);
+          if (!match || !match[2]) process.exit(2);
+          process.stdout.write(String(match[2]).trim());
+          NODE
+          )"
+          if [ -z "$expected_worker_version" ]; then
+            echo "Unable to resolve WORKER_VERSION from src/worker.js" >&2
+            exit 1
+          fi
+
+          template_mode="warn"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && [ "${GG_DISPATCH_STRICT_TEMPLATE_PARITY}" = "true" ]; then
+            template_mode="fail"
+          fi
+
+          echo "GG_EXPECTED_WORKER_VERSION=$expected_worker_version" >> "$GITHUB_ENV"
+          echo "GG_WORKER_VERSION_MODE=fail" >> "$GITHUB_ENV"
+          echo "GG_TEMPLATE_DRIFT_MODE=$template_mode" >> "$GITHUB_ENV"
+
+          {
+            echo "### Deploy Verification Mode"
+            echo "- Expected worker version: \`$expected_worker_version\`"
+            echo "- Worker rollout gate mode: \`fail\`"
+            echo "- Template drift mode: \`$template_mode\`"
+            echo "- Strict template parity input: \`${GG_DISPATCH_STRICT_TEMPLATE_PARITY}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy scope truth
         run: |
@@ -83,10 +123,15 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run gaga
 
-      - name: Live smoke (public-domain contract + template state)
+      - name: Live smoke (version-aware worker contract + template state)
         env:
           GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
-          GG_TEMPLATE_DRIFT_MODE: warn
+          GG_TEMPLATE_DRIFT_MODE: ${{ env.GG_TEMPLATE_DRIFT_MODE }}
+          GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
+          GG_WORKER_VERSION_MODE: ${{ env.GG_WORKER_VERSION_MODE }}
+          GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
+          GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
+          GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"
         run: bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
 
       - name: Manual Blogger publish reminder
@@ -101,4 +146,6 @@ jobs:
             echo "- Publish checklist: \`qa/template-release-playbook.md\`"
             echo "- Fingerprint status check: \`npm run gaga:template:status -- ${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\`"
             echo "- Full post-publish verification: \`npm run gaga:verify-template\`"
+            echo "- Deploy run template drift mode: \`${GG_TEMPLATE_DRIFT_MODE:-warn}\`"
+            echo "- Expected worker version for this deploy: \`${GG_EXPECTED_WORKER_VERSION:-unknown}\`"
           } >> "$GITHUB_STEP_SUMMARY"

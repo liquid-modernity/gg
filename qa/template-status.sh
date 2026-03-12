@@ -60,24 +60,29 @@ live_observed="${live_pair%%|*}"
 live_carrier="${live_pair##*|}"
 
 state="UNKNOWN"
+release_state="unknown"
 note="Template state unavailable."
 exit_code=2
 
 if [[ "$repo_expected" != "$repo_embedded" ]]; then
   state="REPO_STALE"
+  release_state="repo_template_marker_stale_blocking_release"
   note="Repo marker stale. Run: node qa/template-fingerprint.mjs --write"
   exit_code=2
 elif [[ -z "$live_observed" ]]; then
   state="MISSING"
-  note="Live template marker missing. Manual Blogger template publish required."
+  release_state="blogger_template_publish_required"
+  note="Worker/assets deployed only; Blogger template publish required."
   exit_code=2
 elif [[ "$live_observed" == "$repo_expected" ]]; then
   state="MATCH"
-  note="Blogger template fingerprint parity verified."
+  release_state="blogger_template_parity_verified"
+  note="Blogger template parity verified."
   exit_code=0
 else
   state="DRIFT"
-  note="Live template drift detected. Manual Blogger template publish required."
+  release_state="blogger_template_drift_detected"
+  note="Blogger template drift detected."
   exit_code=2
 fi
 
@@ -89,6 +94,7 @@ printf 'repo_embedded=%s\n' "$repo_embedded"
 printf 'live_observed=%s\n' "${live_observed:-missing}"
 printf 'live_carrier=%s\n' "$live_carrier"
 printf 'state=%s\n' "$state"
+printf 'release_state=%s\n' "$release_state"
 printf 'note=%s\n' "$note"
 
 exit "$exit_code"
