@@ -3457,8 +3457,6 @@ var card = null;
 if(!panel) return false;
 card = qs('.gg-editorial-preview',panel);
 if(!card) return false;
-card.hidden = false;
-renderTocSkeleton(6,TOC_HINT_LOCK);
 return true;
 }
 
@@ -3764,7 +3762,7 @@ if(panel){
   var previewCard = qs('.gg-editorial-preview', panel);
   if (previewCard) previewCard.hidden = false;
 }
-var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };});
+var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };}),hasPreviewPayload=!!(title||authorText||dateText||commentsText||readTimeText||quickSnippet||instTags.length||instContributors.length||labels.length||imgSrc);
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'—');
@@ -3779,6 +3777,9 @@ setS('readtime',readTimeText);
 setS('snippet',quickSnippet);
 setImg(imgSrc,title);
 if(panel){ panel.__iC=instContributors.length>0; panel.__iT=instTags.length>0; panel.__iU=!!updatedText; panel.__iR=!!readTimeText; panel.__iS=hasCardSnippet; }
+setRow('head',hasPreviewPayload);
+setRow('thumbnail',!!imgSrc);
+setRow('title',!!title);
 setRow('author',!!authorText);
 setRow('contributors',instContributors.length>0);
 setRow('labels',!!labels.length);
@@ -3788,6 +3789,7 @@ setRow('updated',!!updatedText);
 setRow('comments',!!commentsText);
 setRow('readtime',!!readTimeText);
 setRow('snippet',!!quickSnippet);
+setRow('cta',!!href&&href!=='#'&&hasPreviewPayload);
 if(instContributors.length) fillChipsToSlot('contributors',instContributors,12); else fillChipsToSlot('contributors',[],12);
 if(instTags.length) fillChipsToSlot('tags',instTags,14); else fillChipsToSlot('tags',[],14);
 if(labels.length) fillChipsToSlot('labels',labels,10); else fillChipsToSlot('labels',[],10);

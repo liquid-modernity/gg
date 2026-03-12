@@ -49,7 +49,33 @@ jobs:
             echo "- This workflow deploys Cloudflare Worker + Cloudflare static assets."
             echo "- This workflow does **not** publish Blogger template/theme."
             echo "- Template changes in \`index.prod.xml\` require separate Blogger release."
+            echo "- Manual publish checklist: \`qa/template-release-playbook.md\`"
+            echo "- Post-publish verification command: \`npm run gaga:verify-template\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Template release guard (index.prod.xml)
+        run: |
+          repo_template_fp="$(node qa/template-fingerprint.mjs --value 2>/dev/null || true)"
+          changed_files="$(git show --name-only --pretty='' HEAD || true)"
+          if printf '%s\n' "$changed_files" | grep -qx 'index.prod.xml'; then
+            echo "GG_TEMPLATE_CHANGED_IN_REV=1" >> "$GITHUB_ENV"
+            echo "::warning title=Blogger template not deployed::index.prod.xml changed in this revision, but this workflow deploys Worker/assets only."
+            {
+              echo "### Template Release Guard"
+              echo "- \`index.prod.xml\` changed in this deployed revision."
+              echo "- Repo template fingerprint (expected): \`${repo_template_fp:-unknown}\`"
+              echo "- No Blogger template/theme publish is performed by this workflow."
+              echo "- Template behavior on public production can remain out-of-band until Blogger publish is done."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "GG_TEMPLATE_CHANGED_IN_REV=0" >> "$GITHUB_ENV"
+            {
+              echo "### Template Release Guard"
+              echo "- \`index.prod.xml\` not changed in this revision."
+              echo "- Repo template fingerprint (expected): \`${repo_template_fp:-unknown}\`"
+              echo "- Workflow scope remains Worker/assets only."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Deploy via npm run gaga
         env:
@@ -57,7 +83,22 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run gaga
 
-      - name: Live smoke (public-domain contract)
+      - name: Live smoke (public-domain contract + template state)
         env:
           GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+          GG_TEMPLATE_DRIFT_MODE: warn
         run: bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
+
+      - name: Manual Blogger publish reminder
+        if: always()
+        env:
+          GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+        run: |
+          {
+            echo "### Manual Blogger Template Publish"
+            echo "- This pipeline has deployed Worker/assets only."
+            echo "- Template source of truth: \`index.prod.xml\`"
+            echo "- Publish checklist: \`qa/template-release-playbook.md\`"
+            echo "- Fingerprint status check: \`npm run gaga:template:status -- ${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\`"
+            echo "- Full post-publish verification: \`npm run gaga:verify-template\`"
+          } >> "$GITHUB_STEP_SUMMARY"

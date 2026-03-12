@@ -6,15 +6,24 @@ export LC_ALL=C
 BASE_URL="${1:-https://www.pakrpp.com}"
 BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke)"
+TEMPLATE_DRIFT_MODE="${GG_TEMPLATE_DRIFT_MODE:-warn}"
+TEMPLATE_CHANGED_IN_REV="${GG_TEMPLATE_CHANGED_IN_REV:-0}"
+
+if [[ "$TEMPLATE_DRIFT_MODE" != "warn" && "$TEMPLATE_DRIFT_MODE" != "fail" ]]; then
+  TEMPLATE_DRIFT_MODE="warn"
+fi
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
 failures=0
 warnings=0
+template_release_state="unknown"
+template_release_note="Template release state not evaluated."
 
 printf 'SMOKE scope: public-domain contract check only.\n'
 printf 'SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blogger template publish.\n'
+printf 'SMOKE scope: template drift mode=%s changed_in_rev=%s.\n' "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
 
 log_fail() {
   failures=$((failures + 1))
@@ -61,27 +70,37 @@ fetch_page() {
   local out_file="$2"
   local target
   local meta
+  local attempt=1
+  local max_attempts=3
   if [[ "$path_or_url" =~ ^https?:// ]]; then
     target="$path_or_url"
   else
     target="${BASE_URL}${path_or_url}"
   fi
-  if ! meta="$(curl -sS -L \
-    --retry 3 \
-    --retry-delay 2 \
-    --connect-timeout 15 \
-    --max-time 60 \
-    --max-redirs 10 \
-    -A "$UA" \
-    -o "$out_file" \
-    -w '%{url_effective}|%{http_code}|%{num_redirects}' \
-    "$target")"; then
-    printf 'FAIL: fetch error for %s\n' "$target" >&2
-    : > "$out_file"
-    printf '%s|000|0\n' "$target"
-    return 0
-  fi
-  printf '%s\n' "$meta"
+
+  while (( attempt <= max_attempts )); do
+    if meta="$(curl -sS -L \
+      --http1.1 \
+      --connect-timeout 15 \
+      --max-time 60 \
+      --max-redirs 10 \
+      -A "$UA" \
+      -o "$out_file" \
+      -w '%{url_effective}|%{http_code}|%{num_redirects}' \
+      "$target")"; then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+    if (( attempt < max_attempts )); then
+      sleep $((attempt * 2))
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  printf 'FAIL: fetch error for %s\n' "$target" >&2
+  : > "$out_file"
+  printf '%s|000|0\n' "$target"
+  return 0
 }
 
 extract_attr_from_tag() {
@@ -109,6 +128,27 @@ extract_og_url() {
   local tag
   tag="$(grep -Eoi "<meta[^>]+property=['\\\"]og:url['\\\"][^>]*>" "$file" | head -n 1 || true)"
   extract_attr_from_tag "$tag" "content"
+}
+
+extract_meta_content() {
+  local file="$1"
+  local name="$2"
+  local tag
+  tag="$(grep -Eoi "<meta[^>]+name=['\\\"]${name}['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "content"
+}
+
+extract_template_fingerprint() {
+  local file="$1"
+  local tag=""
+  local value=""
+  tag="$(grep -Eoi "<[^>]+id=['\\\"]gg-fingerprint['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  value="$(extract_attr_from_tag "$tag" "data-gg-template-fingerprint")"
+  if [[ -n "$value" ]]; then
+    printf '%s' "$value"
+    return 0
+  fi
+  extract_meta_content "$file" "gg-template-fingerprint"
 }
 
 extract_body_attr() {
@@ -275,6 +315,15 @@ check_info_panel_contract() {
   assert_row_hidden "$file" "contributors" "$context"
   assert_row_hidden "$file" "tags" "$context"
   assert_row_hidden "$file" "snippet" "$context"
+  assert_row_hidden "$file" "title" "$context"
+  assert_row_hidden "$file" "author" "$context"
+  assert_row_hidden "$file" "date" "$context"
+  assert_row_hidden "$file" "comments" "$context"
+  assert_row_hidden "$file" "readtime" "$context"
+  assert_row_hidden "$file" "toc" "$context"
+  assert_row_hidden "$file" "thumbnail" "$context"
+  assert_row_hidden "$file" "head" "$context"
+  assert_row_hidden "$file" "cta" "$context"
 }
 
 check_listing_card_metadata() {
@@ -359,6 +408,7 @@ check_surface() {
   local expected_page="$7"
   local expected_home_state="${8:-}"
   local expected_edited="${9:-ignore}"
+  local expected_redirect_min="${10:-0}"
 
   local file="$tmp_dir/$(safe_file_name "$path").html"
   local meta final status redirects canonical og title desc surface page home_state edited_present
@@ -404,6 +454,9 @@ check_surface() {
 
   if [[ "$canonical" == *"/blog"* || "$og" == *"/blog"* ]]; then
     log_fail "$path canonical/og contains forbidden /blog leakage"
+  fi
+  if [[ "$expected_redirect_min" =~ ^[0-9]+$ ]] && [[ "$redirects" =~ ^[0-9]+$ ]] && (( redirects < expected_redirect_min )); then
+    log_fail "$path redirect count below required minimum ($redirects < $expected_redirect_min)"
   fi
   if [[ -n "$redirects" ]] && [[ "$redirects" =~ ^[0-9]+$ ]] && (( redirects > 8 )); then
     log_fail "$path unexpected redirect depth ($redirects)"
@@ -454,14 +507,123 @@ check_discovered_detail_paths() {
   check_listing_card_metadata "$listing_file"
 }
 
+is_truthy() {
+  local value
+  value="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
+  [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" || "$value" == "on" ]]
+}
+
+template_drift_signal() {
+  local message="$1"
+  if [[ "$TEMPLATE_DRIFT_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    printf '::warning title=Template fingerprint drift::%s\n' "$message"
+  fi
+}
+
+check_template_fingerprint_drift() {
+  local file="$tmp_dir/$(safe_file_name "template_fp_root").html"
+  local repo_expected=""
+  local repo_embedded=""
+  local live_observed=""
+  local changed_prefix=""
+  local result_line=""
+
+  fetch_page "/" "$file" >/dev/null
+
+  if ! repo_expected="$(node qa/template-fingerprint.mjs --value 2>/dev/null)"; then
+    log_fail "unable to compute repo template fingerprint from index.prod.xml"
+    return
+  fi
+  if ! repo_embedded="$(node qa/template-fingerprint.mjs --embedded 2>/dev/null)"; then
+    log_fail "unable to read embedded template fingerprint marker from index.prod.xml"
+    return
+  fi
+  live_observed="$(extract_template_fingerprint "$file")"
+
+  printf 'SMOKE template-fingerprint repo_expected=%s repo_embedded=%s live_observed=%s mode=%s changed_in_rev=%s\n' \
+    "$repo_expected" "$repo_embedded" "${live_observed:-missing}" "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
+
+  if [[ "$repo_expected" != "$repo_embedded" ]]; then
+    log_fail "repo template fingerprint marker stale (embedded='$repo_embedded' expected='$repo_expected'). Run: node qa/template-fingerprint.mjs --write"
+  fi
+
+  if [[ -z "$live_observed" ]]; then
+    if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+      changed_prefix="index.prod.xml changed in this revision; "
+    fi
+    template_drift_signal "${changed_prefix}live marker 'data-gg-template-fingerprint' is missing. Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
+    result_line="marker_missing"
+    template_release_state="worker_assets_deployed_template_publish_required"
+    template_release_note="Worker/assets deployed; Blogger template publish still required."
+  elif [[ "$live_observed" != "$repo_expected" ]]; then
+    if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+      changed_prefix="index.prod.xml changed in this revision; "
+    fi
+    template_drift_signal "${changed_prefix}live template fingerprint drift (repo='${repo_expected}', live='${live_observed}'). Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
+    result_line="drift"
+    template_release_state="blogger_template_drift_detected"
+    template_release_note="Blogger template drift detected."
+  else
+    printf 'SMOKE template-fingerprint parity=match (%s)\n' "$repo_expected"
+    result_line="match"
+    template_release_state="template_fingerprint_match_pending_contract"
+    template_release_note="Template fingerprint matches repo; full live contract still must pass."
+  fi
+
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo "### Template Fingerprint Check"
+      echo "- Repo expected: \`${repo_expected}\`"
+      echo "- Repo embedded: \`${repo_embedded}\`"
+      echo "- Live observed: \`${live_observed:-missing}\`"
+      echo "- Result: \`${result_line}\`"
+      echo "- State candidate: \`${template_release_state}\`"
+      if [[ "$result_line" != "match" ]]; then
+        echo "- Manual Blogger template publish is required for full parity."
+      fi
+    } >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+
+emit_release_state() {
+  local final_state="$template_release_state"
+  local final_note="$template_release_note"
+
+  if [[ "$template_release_state" == "template_fingerprint_match_pending_contract" ]]; then
+    if [[ "$failures" -eq 0 ]]; then
+      final_state="blogger_template_parity_verified"
+      final_note="Blogger template parity verified after manual publish."
+    else
+      final_state="template_fingerprint_match_but_contract_failed"
+      final_note="Template fingerprint matches, but live contract checks failed."
+    fi
+  fi
+
+  printf 'SMOKE release-state=%s note=%s\n' "$final_state" "$final_note"
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo "### Release State"
+      echo "- State: \`${final_state}\`"
+      echo "- Note: ${final_note}"
+    } >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+
 check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
 check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
-check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
+check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent" "1"
 check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
 check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "absent"
 check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "present"
 check_dock_truth
 check_discovered_detail_paths
+check_template_fingerprint_drift
+emit_release_state
 
 if [[ "$failures" -gt 0 ]]; then
   printf 'LIVE SMOKE RESULT: FAILED (%s)\n' "$failures" >&2
