@@ -24,6 +24,9 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Template fingerprint contract
+        run: node qa/template-fingerprint.mjs --check
+
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
 

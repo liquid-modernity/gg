@@ -2256,12 +2256,34 @@ export default {
             });
         } else if (forceLanding) {
           rewritten
+            .on("section.gg-home-blog", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("section.gg-ads", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("aside.gg-blog-sidebar--right", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on(".gg-comments-panel", {
+              element(el) {
+                el.remove();
+              },
+            })
             .on("main#gg-main", {
               element(el) {
                 el.setAttribute("data-gg-surface", "landing");
                 el.setAttribute("data-gg-page", "home");
                 el.setAttribute("data-gg-view", "home");
                 el.setAttribute("data-gg-home-state", "landing");
+                el.removeAttribute("data-gg-home-root");
+                el.removeAttribute("data-gg-bloghome");
               },
             })
             .on("link[rel=\"canonical\"]", {

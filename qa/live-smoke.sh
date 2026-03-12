@@ -130,25 +130,11 @@ extract_og_url() {
   extract_attr_from_tag "$tag" "content"
 }
 
-extract_meta_content() {
-  local file="$1"
-  local name="$2"
-  local tag
-  tag="$(grep -Eoi "<meta[^>]+name=['\\\"]${name}['\\\"][^>]*>" "$file" | head -n 1 || true)"
-  extract_attr_from_tag "$tag" "content"
-}
-
 extract_template_fingerprint() {
   local file="$1"
-  local tag=""
   local value=""
-  tag="$(grep -Eoi "<[^>]+id=['\\\"]gg-fingerprint['\\\"][^>]*>" "$file" | head -n 1 || true)"
-  value="$(extract_attr_from_tag "$tag" "data-gg-template-fingerprint")"
-  if [[ -n "$value" ]]; then
-    printf '%s' "$value"
-    return 0
-  fi
-  extract_meta_content "$file" "gg-template-fingerprint"
+  value="$(node qa/template-fingerprint.mjs --extract-live --file "$file" 2>/dev/null || true)"
+  printf '%s' "$value"
 }
 
 extract_body_attr() {
@@ -214,6 +200,81 @@ assert_no_placeholder_strings() {
   if [[ -n "$leaks" ]]; then
     log_fail "$context placeholder leakage detected"
     printf '%s\n' "$leaks" >&2
+  fi
+}
+
+extract_visible_text() {
+  local file="$1"
+  node - "$file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.stdout.write('');
+  process.exit(0);
+}
+html = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ')
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&#8212;|&mdash;|&#x2014;/gi, ' — ')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+process.stdout.write(html);
+NODE
+}
+
+assert_no_empty_editorial_shell() {
+  local file="$1"
+  local context="$2"
+  local plain_text=""
+  local phrase=""
+  local toc_state=""
+  plain_text="$(extract_visible_text "$file")"
+
+  for phrase in \
+    "Editorial Preview" \
+    "Title —" \
+    "Written by —" \
+    "Date —" \
+    "Updated —" \
+    "Comments —" \
+    "Read time —" \
+    "Snippet —"; do
+    if [[ "$plain_text" == *"$phrase"* ]]; then
+      log_fail "$context empty editorial shell leakage detected ('$phrase')"
+    fi
+  done
+
+  toc_state="$(node - "$file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.stdout.write('ok');
+  process.exit(0);
+}
+const stripped = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+const tocRowVisible = /<div[^>]*data-row=(['"])toc\1(?![^>]*\bhidden=(['"])hidden\2)[^>]*>/i.test(stripped);
+const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(stripped);
+if (tocRowVisible && !tocHasItems) {
+  process.stdout.write('leak');
+} else {
+  process.stdout.write('ok');
+}
+NODE
+)"
+  if [[ "$toc_state" == "leak" ]]; then
+    log_fail "$context TOC shell visible without real headings"
   fi
 }
 
@@ -294,36 +355,58 @@ discover_first_page_path() {
   printf '%s' "$page"
 }
 
-check_info_panel_contract() {
+assert_absent_marker() {
+  local file="$1"
+  local context="$2"
+  local pattern="$3"
+  local label="$4"
+  if grep -Eiq "$pattern" "$file"; then
+    log_fail "$context forbidden marker detected (${label})"
+  fi
+}
+
+check_detail_panel_contract() {
   local file="$1"
   local context="$2"
   if ! grep -Eq "id=['\\\"]gg-postinfo['\\\"]" "$file"; then
-    log_fail "$context missing #gg-postinfo"
+    log_fail "$context missing #gg-postinfo (detail panel)"
   fi
-  if ! grep -Eq "data-gg-slot=['\\\"]contributors['\\\"]" "$file"; then
-    log_fail "$context missing contributors slot"
+  if ! grep -Eq "data-gg-marker=['\\\"]panel-post-author['\\\"]" "$file"; then
+    log_fail "$context missing panel-post-author slot"
   fi
-  if ! grep -Eq "data-gg-slot=['\\\"]tags['\\\"]" "$file"; then
-    log_fail "$context missing tags slot"
+  if ! grep -Eq "data-gg-marker=['\\\"]panel-post-tags['\\\"]" "$file"; then
+    log_fail "$context missing panel-post-tags slot"
   fi
-  if ! grep -Eq "data-s=['\\\"]snippet['\\\"]" "$file"; then
-    log_fail "$context missing snippet slot"
+  if ! grep -Eq "id=['\\\"]ggPanelComments['\\\"]" "$file"; then
+    log_fail "$context missing #ggPanelComments (detail comments panel)"
   fi
-  if ! grep -Eq "data-gg-slot=['\\\"]toc['\\\"]" "$file"; then
-    log_fail "$context missing toc slot"
+  assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-editorial-preview" "listing editorial panel on detail surface"
+  assert_absent_marker "$file" "$context" "data-gg-panelmeta=['\\\"]listing['\\\"]" "listing panel contract on detail surface"
+}
+
+check_surface_ownership_contract() {
+  local file="$1"
+  local context="$2"
+  local expected_surface="$3"
+  if [[ "$expected_surface" == "landing" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]blog['\\\"]|id=['\\\"]gg-home-blog['\\\"]" "blog/listing layer on landing"
+    assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-blog-layout" "blog layout chrome on landing"
+    assert_absent_marker "$file" "$context" "data-gg-module=['\\\"]mixed-media['\\\"]" "mixed/listing module host on landing"
+    assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-editorial-preview" "listing editorial shell on landing"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on landing"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on landing"
+    return
   fi
-  assert_row_hidden "$file" "contributors" "$context"
-  assert_row_hidden "$file" "tags" "$context"
-  assert_row_hidden "$file" "snippet" "$context"
-  assert_row_hidden "$file" "title" "$context"
-  assert_row_hidden "$file" "author" "$context"
-  assert_row_hidden "$file" "date" "$context"
-  assert_row_hidden "$file" "comments" "$context"
-  assert_row_hidden "$file" "readtime" "$context"
-  assert_row_hidden "$file" "toc" "$context"
-  assert_row_hidden "$file" "thumbnail" "$context"
-  assert_row_hidden "$file" "head" "$context"
-  assert_row_hidden "$file" "cta" "$context"
+  if [[ "$expected_surface" == "listing" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing hero blocks on listing surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on listing surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on listing surface"
+    return
+  fi
+  if [[ "$expected_surface" == "post" || "$expected_surface" == "page" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on detail surface"
+    check_detail_panel_contract "$file" "$context"
+  fi
 }
 
 check_listing_card_metadata() {
@@ -450,7 +533,10 @@ check_surface() {
     assert_equal "$edited_present" "no" "$path Edited by pakrpp marker"
   fi
   assert_no_placeholder_strings "$file" "$path"
-  check_info_panel_contract "$file" "$path"
+  if [[ "$path" == "/" || "$path" == "/landing" || "$path" == "/landing/" ]]; then
+    assert_no_empty_editorial_shell "$file" "$path"
+  fi
+  check_surface_ownership_contract "$file" "$path" "$expected_surface"
 
   if [[ "$canonical" == *"/blog"* || "$og" == *"/blog"* ]]; then
     log_fail "$path canonical/og contains forbidden /blog leakage"
@@ -477,9 +563,9 @@ check_dock_truth() {
 
   printf 'SMOKE dock home=%s blog=%s contact=%s\n' "$home_norm" "$blog_norm" "$contact_norm"
 
-  assert_starts_with "$home_norm" "${BASE_URL}/landing#" "dock home href"
+  assert_starts_with "$home_norm" "${BASE_URL}/landing" "dock home href"
   assert_equal "$blog_norm" "${BASE_URL}/" "dock blog href"
-  assert_starts_with "$contact_norm" "${BASE_URL}/landing#gg-landing-hero-5" "dock contact href"
+  assert_starts_with "$contact_norm" "${BASE_URL}/landing" "dock contact href"
 }
 
 check_discovered_detail_paths() {

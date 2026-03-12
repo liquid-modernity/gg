@@ -3745,7 +3745,7 @@ function estimateReadTime(card){ if(!card) return ''; var inline=qs('[data-slot=
 function canHoverPreview(){
 if (!main || !window.matchMedia) return false;
 var surface = main.getAttribute('data-gg-surface') || '';
-return (surface === 'home' || surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+return (surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
 function hasS(key){ var node=panel?qs('[data-s="'+key+'"]',panel):null,v=cleanText(node&&node.textContent?node.textContent:''); return !!v&&v!=='—'; }
@@ -3765,7 +3765,7 @@ if(panel){
 var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };}),hasPreviewPayload=!!(title||authorText||dateText||commentsText||readTimeText||quickSnippet||instTags.length||instContributors.length||labels.length||imgSrc);
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
-setS('title',title||'—');
+setS('title',title||'');
 setHref('[data-s="title"]',href);
 setHref('.gg-epanel__cta,.gg-info-panel__hero-cta',href);
 setS('author',authorText);
@@ -3893,12 +3893,27 @@ main = mainEl || qs('main.gg-main[data-gg-surface]');
 if (!main) return;
 
 panel = qs('.gg-info-panel', main);
+if (!panel) return;
+var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
+var isDetailSurface = surface === 'post' || surface === 'page';
+var isListingSurface = surface === 'listing' || surface === 'feed' || (surface === 'home' && homeState !== 'landing');
+var isLandingSurface = surface === 'landing' || homeState === 'landing';
 var isPostLayout = !!qs('.gg-blog-layout--post', main);
-if (isPostLayout){
-if (panel) panel.style.display = 'none';
+if (isPostLayout || isDetailSurface){
+panel.style.display = 'none';
 return;
 }
-if (!panel) return;
+if (isLandingSurface || !isListingSurface){
+if (main.getAttribute('data-gg-info-panel') !== 'closed') {
+  main.setAttribute('data-gg-info-panel', 'closed');
+}
+resetPanelState();
+panel.hidden = true;
+panel.style.display = 'none';
+return;
+}
+panel.style.display = '';
 
 if (!main.__gB){
 main.__gB = true;
@@ -3912,9 +3927,18 @@ if (!closeObserver && main && window.MutationObserver) {
 closeObserver = new MutationObserver(function (muts) {
   for (var i = 0; i < muts.length; i++) {
     if (muts[i].attributeName === 'data-gg-info-panel' && main.getAttribute('data-gg-info-panel') === 'closed') resetPanelState();
+    if (muts[i].attributeName === 'data-gg-surface' || muts[i].attributeName === 'data-gg-home-state') {
+      var nextSurface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+      var nextHomeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
+      if (nextSurface === 'landing' || nextHomeState === 'landing') {
+        resetPanelState();
+        panel.hidden = true;
+        panel.style.display = 'none';
+      }
+    }
   }
 });
-closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-panel'] });
+closeObserver.observe(main, { attributes: true, attributeFilter: ['data-gg-info-panel', 'data-gg-surface', 'data-gg-home-state'] });
 }
 ensurePanelSkeleton();
 seedInitialPreview();

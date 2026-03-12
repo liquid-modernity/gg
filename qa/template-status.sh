@@ -8,35 +8,15 @@ UA="Mozilla/5.0 (gg-template-status)"
 tmp_file="$(mktemp)"
 trap 'rm -f "$tmp_file"' EXIT
 
-extract_attr_from_tag() {
-  local tag="$1"
-  local attr="$2"
-  printf '%s' "$tag" | sed -nE "s/.*[[:space:]]${attr}=['\\\"]([^'\\\"]+)['\\\"].*/\\1/p" | head -n 1
-}
-
-extract_meta_content() {
-  local file="$1"
-  local name="$2"
-  local tag
-  tag="$(grep -Eoi "<meta[^>]+name=['\\\"]${name}['\\\"][^>]*>" "$file" | head -n 1 || true)"
-  extract_attr_from_tag "$tag" "content"
-}
-
 extract_template_fingerprint() {
   local file="$1"
-  local tag=""
   local value=""
-  local carrier=""
-  tag="$(grep -Eoi "<[^>]+id=['\\\"]gg-fingerprint['\\\"][^>]*>" "$file" | head -n 1 || true)"
-  value="$(extract_attr_from_tag "$tag" "data-gg-template-fingerprint")"
+  value="$(node qa/template-fingerprint.mjs --extract-live --file "$file" 2>/dev/null || true)"
   if [[ -n "$value" ]]; then
-    carrier="#gg-fingerprint[data-gg-template-fingerprint]"
-    printf '%s|%s' "$value" "$carrier"
+    printf '%s|%s' "$value" "#gg-fingerprint[data-gg-template-fingerprint]"
     return 0
   fi
-  value="$(extract_meta_content "$file" "gg-template-fingerprint")"
-  carrier="meta[name=gg-template-fingerprint]"
-  printf '%s|%s' "$value" "$carrier"
+  printf '%s|%s' "" "missing"
 }
 
 repo_expected="$(node qa/template-fingerprint.mjs --value 2>/dev/null || true)"

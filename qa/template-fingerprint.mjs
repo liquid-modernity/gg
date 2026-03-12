@@ -9,16 +9,22 @@ const CARRIER_ID = "gg-fingerprint";
 const CARRIER_ATTR = "data-gg-template-fingerprint";
 const FP_PLACEHOLDER = "__GG_TEMPLATE_FP__";
 const CARRIER_TAG_RE = /<[^>]*\bid=(['"])gg-fingerprint\1[^>]*>/i;
+const LIVE_CARRIER_TAG_RE = /<[^>]*\bid=(['"])gg-fingerprint\1[^>]*>/i;
 const META_TAG_RE = /<meta\b[^>]*\bname=(['"])gg-template-fingerprint\1[^>]*>/i;
+const STRIP_SCRIPT_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
+const STRIP_STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
+const STRIP_COMMENT_RE = /<!--[\s\S]*?-->/g;
 
 const USAGE = `Usage:
-  node qa/template-fingerprint.mjs [--file index.prod.xml] [--value|--embedded|--check|--write]
+  node qa/template-fingerprint.mjs [--file index.prod.xml] [--value|--embedded|--check|--write|--extract-live]
 
 Modes:
   --value     Print deterministic fingerprint derived from template content.
   --embedded  Print fingerprint embedded in #${CARRIER_ID}[${CARRIER_ATTR}].
   --check     Exit non-zero if embedded carrier does not match deterministic fingerprint.
   --write     Rewrite embedded carrier value (and legacy meta marker when present).
+  --extract-live
+              Extract live carrier value from fetched HTML file. Returns empty when absent/unreadable.
 `;
 
 function fail(message, code = 1) {
@@ -45,7 +51,13 @@ function parseArgs(argv) {
       file = path.resolve(next);
       continue;
     }
-    if (arg === "--value" || arg === "--embedded" || arg === "--check" || arg === "--write") {
+    if (
+      arg === "--value" ||
+      arg === "--embedded" ||
+      arg === "--check" ||
+      arg === "--write" ||
+      arg === "--extract-live"
+    ) {
       if (mode !== "summary") {
         fail(`Only one mode flag is allowed. Got '${mode}' and '${arg}'`);
       }
@@ -115,6 +127,22 @@ function canonicalizeMetaTag(tag) {
   return replaceAttr(tag, "content", FP_PLACEHOLDER);
 }
 
+function sanitizeLiveHtml(source) {
+  return normalizeText(source)
+    .replace(STRIP_SCRIPT_RE, " ")
+    .replace(STRIP_STYLE_RE, " ")
+    .replace(STRIP_COMMENT_RE, " ");
+}
+
+function extractLiveFingerprint(source) {
+  const sanitized = sanitizeLiveHtml(source);
+  const carrierMatch = sanitized.match(LIVE_CARRIER_TAG_RE);
+  if (!carrierMatch) return "";
+  const value = extractAttr(carrierMatch[0], CARRIER_ATTR).toLowerCase();
+  if (!/^[a-f0-9]{8,64}$/.test(value)) return "";
+  return value;
+}
+
 function computeFingerprint(source) {
   const normalized = normalizeText(source);
   const markers = parseMarkers(normalized);
@@ -165,6 +193,12 @@ function assertMarkerSync(markers, computed, file) {
 function main() {
   const { file, mode } = parseArgs(process.argv.slice(2));
   const source = readFileSync(file, "utf8");
+
+  if (mode === "extract-live") {
+    process.stdout.write(`${extractLiveFingerprint(source)}\n`);
+    return;
+  }
+
   const normalized = normalizeText(source);
   const markers = parseMarkers(normalized);
   const embedded = markers.carrierValue;
