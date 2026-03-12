@@ -34,18 +34,32 @@ GG.core.blogHomePath = GG.core.blogHomePath || function(basePath, hostname){
 var base = (typeof basePath === 'string' && basePath) ? basePath : '/';
 if (base.charAt(0) !== '/') base = '/' + base;
 if (base.charAt(base.length - 1) !== '/') base += '/';
-var useBlog = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
-if (useBlog) {
-  return base.replace(/\/$/, '') + '/blog';
+var useListingRoot = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
+if (useListingRoot) {
+  var root = base.replace(/\/+$/, '');
+  return root || '/';
 }
 return base + '?view=blog';
+};
+GG.core.landingPath = GG.core.landingPath || function(basePath, hostname){
+var base = (typeof basePath === 'string' && basePath) ? basePath : '/';
+if (base.charAt(0) !== '/') base = '/' + base;
+if (base.charAt(base.length - 1) !== '/') base += '/';
+var useLandingPath = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
+if (useLandingPath) {
+  var root = base.replace(/\/+$/, '');
+  if (!root) return '/landing';
+  return root + '/landing';
+}
+return base + '?view=landing';
 };
 GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, hostname){
 var path = (pathname || '').replace(/\/+$/, '') || '/';
 var view = '';
 try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
+if (path === '/landing') return false;
 if (path === '/blog') return true;
-if (path === '/' && view === 'blog') return true;
+if (path === '/' && view !== 'landing') return true;
 return false;
 };
 GG.core.normalizeBlogAlias = GG.core.normalizeBlogAlias || function(){
@@ -59,20 +73,27 @@ try {
   var path = (loc.pathname || '').replace(/\/+$/, '') || '/';
   var params = new URLSearchParams(loc.search || '');
   var view = (params.get('view') || '').toLowerCase();
+  var hasMobileParam = params.get('m') === '1';
+  var hash = loc.hash || '';
+  var dest = '';
   if (workerOk && isProd) {
-    if (path !== '/' || view !== 'blog') return;
-    var dest = '/blog';
-    if (params.get('m') === '1') dest += '?m=1';
-    if (loc.hash) dest += loc.hash;
-    if (w.history && w.history.replaceState) {
-      w.history.replaceState(w.history.state || {}, '', dest);
+    if (path === '/blog' || (path === '/' && view === 'blog')) {
+      dest = '/';
+    } else if (path === '/landing' || (path === '/' && view === 'landing')) {
+      dest = '/landing';
+    } else {
+      return;
     }
+    if (hasMobileParam) dest += '?m=1';
+    if (hash) dest += hash;
+    if (w.history && w.history.replaceState) w.history.replaceState(w.history.state || {}, '', dest);
     return;
   }
-  if (path !== '/blog') return;
-  params.set('view', 'blog');
+  if (path === '/blog') params.set('view', 'blog');
+  else if (path === '/landing') params.set('view', 'landing');
+  else return;
   var fallback = '/?' + params.toString();
-  if (loc.hash) fallback += loc.hash;
+  if (hash) fallback += hash;
   if (w.history && w.history.replaceState) {
     w.history.replaceState(w.history.state || {}, '', fallback);
   }
@@ -416,10 +437,10 @@ try {
   var u = new URL(href, w.location.href);
   var path = (u.pathname || '').replace(/\/+$/, '') || '/';
   var view = (u.searchParams.get('view') || '').toLowerCase();
-  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view === 'blog'));
+  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view !== 'landing'));
   if (isBlogHome) {
     surface = 'listing';
-  } else if (path === '/') {
+  } else if (path === '/landing') {
     surface = 'landing';
   } else if (path.indexOf('/search') !== -1) {
     surface = 'listing';
@@ -552,7 +573,7 @@ else GG.core.ensureWorker();
 try {
   var root = w.document && w.document.documentElement;
   if (!root || root.hasAttribute('data-gg-prehome')) return;
-  var pre = 'landing';
+  var pre = 'blog';
   var search = (w.location && w.location.search) ? w.location.search : '';
   var m = search.match(/[?&]prehome=(blog|landing)(?:&|$)/i);
   var view = '';
@@ -567,7 +588,7 @@ try {
       pre = hash;
     } else {
       var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
-      var isBlog = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(p, search, w.location ? w.location.hostname : '') : (p === '/blog');
+      var isBlog = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(p, search, w.location ? w.location.hostname : '') : (p === '/');
       if (isBlog) pre = 'blog';
     }
   }
@@ -710,8 +731,8 @@ function detectView(main, body, url){
       if (u.searchParams.get('label')) return 'label';
       return 'search';
     }
-    if (path === '/blog') return 'listing';
-    if (path === '/') return 'home';
+    if (path === '/landing') return 'home';
+    if (path === '/' || path === '/blog') return 'listing';
     if (path.indexOf('/p/') === 0) return 'page';
     if (/^\/\d{4}\/\d{2}\//.test(path)) return 'post';
   } catch (_) {}
@@ -789,7 +810,7 @@ return { read: read, refresh: refresh, current: current, matches: matches };
 })(window, document);
 
 GG.store.set({
-lang: 'id-ID',
+lang: 'en',
 timeZone: 'Asia/Jakarta',
 inputMode: 'touch', // or 'kbd'
 dockOpen: false,
@@ -1004,9 +1025,9 @@ try {
   var u = new URL(url || w.location.href, w.location.href);
   var path = (u.pathname || '').replace(/\/+$/, '') || '/';
   var view = (u.searchParams.get('view') || '').toLowerCase();
-  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view === 'blog'));
+  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view !== 'landing'));
   if (isBlogHome) return 'listing';
-  if (path === '/') {
+  if (path === '/landing') {
     return 'landing';
   }
   if (path.indexOf('/search') !== -1) return 'listing';
@@ -1884,10 +1905,12 @@ var path = stripBase(pathname || location.pathname || '/');
 var query = (typeof search === 'string') ? search : (location.search || '');
 var view = '';
 try { view = (new URLSearchParams(query).get('view') || '').toLowerCase(); } catch (_) {}
-if (path === '/' || path === '') {
-  if (view === 'blog') return 'blog';
-  if (view === 'landing') return 'landing';
+if (path === '/landing') {
   return 'landing';
+}
+if (path === '/' || path === '' || path === '/blog') {
+  if (view === 'landing') return 'landing';
+  return 'blog';
 }
 if (GG.core && GG.core.isBlogHomePath && GG.core.isBlogHomePath(path, query, location.hostname)) return 'blog';
 return null;
@@ -2013,7 +2036,7 @@ if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateF
 desired = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname, location.search);
 }
 var attr = root.getAttribute('data-gg-home-state');
-var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : 'landing';
+var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : 'blog';
 if (desired === 'landing' || desired === 'blog') initial = desired;
 
 setState(initial);
@@ -2034,7 +2057,7 @@ window.addEventListener('popstate', function(){
     next = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname, location.search);
   }
   if (!next || !root) return;
-  var cur = root.getAttribute('data-gg-home-state') || 'landing';
+  var cur = root.getAttribute('data-gg-home-state') || 'blog';
   if (next !== cur) setState(next);
 });
 }
@@ -2087,10 +2110,10 @@ window.location.href = url;
 }
 
 function blogHrefFromDock(){
-if (!dockEl) return '/blog';
+if (!dockEl) return '/';
 var blogLink = dockEl.querySelector('.gg-dock__item[data-gg-action="blog"]');
 var href = blogLink ? (blogLink.getAttribute('href') || '') : '';
-if (!href) href = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
+if (!href) href = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/';
 return href;
 }
 
@@ -2316,7 +2339,7 @@ scheduleWidthUpdate();
 }
 
 function currentHomeState() {
-if (!mainEl) return 'landing';
+if (!mainEl) return 'blog';
 var attr = mainEl.getAttribute('data-gg-home-state');
 return (attr === 'blog') ? 'blog' : 'landing';
 }
@@ -2436,9 +2459,9 @@ if (action === 'home') {
 if (isHomeCapable() && GG.modules.homeState) {
   GG.modules.homeState.setState('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-    GG.util.homeRouter.pushState('landing', '/');
+    GG.util.homeRouter.pushState('landing', '/landing');
   } else {
-    try { history.pushState({ ggHome:'landing' }, '', '/'); } catch (_) {}
+    try { history.pushState({ ggHome:'landing' }, '', '/landing'); } catch (_) {}
   }
   updateActive();
   scrollToAnchor(anchor || '#gg-landing-hero');
@@ -2451,7 +2474,7 @@ if (action === 'blog') {
 if (isHomeCapable() && GG.modules.homeState) {
   GG.modules.homeState.setState('blog');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-    GG.util.homeRouter.pushState('blog', '/blog');
+    GG.util.homeRouter.pushState('blog', '/');
   }
   updateActive();
   var homeAnchor = document.getElementById('gg-home-blog-anchor') || document.querySelector('#gg-home-blog-anchor');
@@ -2471,7 +2494,7 @@ if (action === 'contact') {
 if (isHomeCapable() && GG.modules.homeState) {
   GG.modules.homeState.setState('landing');
   if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-    GG.util.homeRouter.pushState('landing', '/');
+    GG.util.homeRouter.pushState('landing', '/landing');
   }
   updateActive();
   scrollToAnchor(anchor || '#gg-landing-hero-5');
@@ -3430,8 +3453,11 @@ GG.core.state.toggle(bd, 'visible', !!show && surface === 'post');
 }
 
 function ensurePanelSkeleton(){
+var card = null;
 if(!panel) return false;
-if(!qs('.gg-editorial-preview',panel)) return false;
+card = qs('.gg-editorial-preview',panel);
+if(!card) return false;
+card.hidden = false;
 renderTocSkeleton(6,TOC_HINT_LOCK);
 return true;
 }
@@ -3516,8 +3542,8 @@ var list = qs('[data-gg-slot="toc"]', panel), rows = Array.isArray(items) ? item
 if(!list) return;
 list.textContent = '';
 if(!rows.length){
-  setRow('toc', true);
-  setTocHint('No headings available');
+  setTocHint('');
+  setRow('toc', false);
   return;
 }
 setRow('toc', true);
@@ -3536,7 +3562,7 @@ for(; i < rows.length; i++){
   num.textContent = String(i + 1).padStart(2, '0');
   text = document.createElement('span');
   text.className = 'gg-info-panel__toctext';
-  text.textContent = item.text || 'Section';
+  text.textContent = item.text || '';
   link.appendChild(num);
   link.appendChild(text);
   li.appendChild(link);
@@ -3734,6 +3760,10 @@ var p = opts.p===1;
 ensurePanelSkeleton();
 if(trigger) lastTrigger=trigger;
 if(panel) panel.__gP=card;
+if(panel){
+  var previewCard = qs('.gg-editorial-preview', panel);
+  if (previewCard) previewCard.hidden = false;
+}
 var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };});
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
@@ -3773,6 +3803,8 @@ if (panel) {
 panel.hidden = true;
 panel.__gP = null;
 panel.__gK = '';
+var previewCard = qs('.gg-editorial-preview', panel);
+if (previewCard) previewCard.hidden = true;
 }
 selectedCardKey = null;
 syncSlotInfoSelected(null);
@@ -5342,8 +5374,9 @@ if (d.readyState === 'loading') {
   'use strict';
   var HOME_ANCHOR = '#gg-home-blog-anchor'; // target "mentok" utama
   var HOME_FALLBACK = '#gg-landing-hero';   // fallback kalau anchor utama gak ada
-  var HOME_LANDING_PATH = '/';
-  var HOME_BLOG_PATH = '/blog';
+  var HOME_CONTACT = '#gg-landing-hero-5';
+  var HOME_LANDING_PATH = '/landing';
+  var HOME_BLOG_PATH = '/';
   function homeRoot(){
     var raw = (window.homeUrl || '/');
     var path = '/';
@@ -5364,7 +5397,15 @@ if (d.readyState === 'loading') {
 
   function homeBlogPath(){
     if (GG.core && GG.core.blogHomePath) return GG.core.blogHomePath(homeRoot(), location.hostname);
-    return homeRoot().replace(/\/$/,'') + HOME_BLOG_PATH;
+    var base = homeRoot().replace(/\/$/,'');
+    return base || HOME_BLOG_PATH;
+  }
+
+  function homeLandingPath(){
+    if (GG.core && GG.core.landingPath) return GG.core.landingPath(homeRoot(), location.hostname);
+    var base = homeRoot().replace(/\/$/,'');
+    if (!base) return HOME_LANDING_PATH;
+    return base + HOME_LANDING_PATH;
   }
 
 function isSystemPath(pathname){
@@ -5408,36 +5449,36 @@ function isSystemPath(pathname){
 
     var path = (u.pathname || '/').replace(/\/$/,'');
     if(path === '') path = '/';
-    var landingPath = homeRoot().replace(/\/$/,'');
-    if(landingPath === '') landingPath = '/';
-    var isProdHost = (GG.core && GG.core.isProdHost) ? GG.core.isProdHost(u.hostname || location.hostname) : false;
-    var workerOk = (GG.core && GG.core.hasWorker) ? GG.core.hasWorker() : false;
-    var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname) : ((path === '/blog') || (path === '/' && view === 'blog'));
-    var blogKey = '';
-    if (isProdHost && workerOk) {
-      blogKey = homeRoot().replace(/\/$/,'') + '/blog' + u.search;
-    } else {
-      var blogParams = new URLSearchParams(u.search || '');
-      blogParams.set('view', 'blog');
-      blogKey = homeRoot() + '?' + blogParams.toString();
+    var listingPath = '/';
+    var landingPath = HOME_LANDING_PATH;
+    try {
+      listingPath = new URL(homeBlogPath(), location.origin).pathname.replace(/\/+$/,'') || '/';
+    } catch (_) {
+      listingPath = '/';
     }
+    try {
+      landingPath = new URL(homeLandingPath(), location.origin).pathname.replace(/\/+$/,'') || HOME_LANDING_PATH;
+    } catch (_) {
+      landingPath = HOME_LANDING_PATH;
+    }
+    var isBlogHome = (GG.core && GG.core.isBlogHomePath)
+      ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || location.hostname)
+      : ((path === '/blog') || (path === listingPath && view !== 'landing'));
+    var listingKey = listingPath + u.search;
+    var landingKey = landingPath + u.search;
 
-    if(path === landingPath && view === 'blog'){
-      return blogKey;
-    }
-    if(path === landingPath && view === 'landing'){
-      return landingPath + u.search;
-    }
-    if(path === landingPath && u.hash === HOME_ANCHOR){
-      return blogKey;
-    }
-    if(isBlogHome){
-      return blogKey;
-    }
+    if(path === '/blog') return listingKey;
+    if(path === listingPath && view === 'landing') return landingKey;
+    if(path === landingPath && view === 'blog') return listingKey;
+    if(path === listingPath && u.hash === HOME_ANCHOR) return listingKey;
+    if(path === listingPath && (u.hash === HOME_FALLBACK || u.hash === HOME_CONTACT)) return landingPath + u.search + u.hash;
+    if(path === landingPath && u.hash === HOME_ANCHOR) return listingKey;
+    if(isBlogHome) return listingKey;
     if(path === landingPath){
-      return landingPath + u.search;
+      if(u.hash !== HOME_FALLBACK && u.hash !== HOME_CONTACT) u.hash = '';
+      return landingPath + u.search + u.hash;
     }
-    if(u.hash !== HOME_ANCHOR && u.hash !== HOME_FALLBACK) u.hash = '';
+    if(u.hash !== HOME_ANCHOR && u.hash !== HOME_FALLBACK && u.hash !== HOME_CONTACT) u.hash = '';
     return path + u.search + u.hash;
   }
   function applyMobile(dest){
@@ -5479,7 +5520,7 @@ function isSystemPath(pathname){
     var blogPath = homeBlogPath();
     if(blogPath) return blogPath;
     var base = homeRoot();
-    return base + HOME_FALLBACK;
+    return (base || '/') + HOME_FALLBACK;
   }
   function track(){
     setEntryRefOnce();
@@ -5514,7 +5555,7 @@ function isSystemPath(pathname){
     if(pageGroup() !== 'listing') return;
     window.addEventListener('hashchange', function(){
       var h = location.hash;
-      if(h === HOME_ANCHOR || h === HOME_FALLBACK){
+      if(h === HOME_ANCHOR){
         sessionStorage.setItem('gg_last_listing', canonicalKey(location.href));
       }
     });
@@ -6425,8 +6466,15 @@ function updateBackdrop(){
       savedLang = window.localStorage ? localStorage.getItem(STORAGE_KEY) : null;
     } catch (e) {}
 
-    var htmlLang    = (doc.documentElement.getAttribute('lang') || 'id').toLowerCase();
-    var initialLang = savedLang || GG.config.lang || htmlLang;
+    function normalizeLangCode(raw) {
+      var v = String(raw || '').toLowerCase();
+      if (v.indexOf('id') === 0) return 'id';
+      if (v.indexOf('en') === 0) return 'en';
+      return 'en';
+    }
+
+    var htmlLang    = (doc.documentElement.getAttribute('lang') || 'en').toLowerCase();
+    var initialLang = normalizeLangCode(savedLang || GG.config.lang || htmlLang);
 
     GG.config.lang = initialLang;
     updateUI(initialLang);
@@ -6440,7 +6488,7 @@ function updateBackdrop(){
     });
     options.forEach(function (opt) {
       opt.addEventListener('click', function () {
-        var code = opt.getAttribute('data-lang-code');
+        var code = normalizeLangCode(opt.getAttribute('data-lang-code'));
         if (!code) return;
 
         GG.config.lang = code;
@@ -6480,22 +6528,37 @@ function updateBackdrop(){
     }
 
     function updateUI(langCode) {
+      var codeNorm = normalizeLangCode(langCode);
       var currentLabel = '';
+      var packs = GG.lang || {};
+      var active = packs[codeNorm] || packs.en || packs.id || {};
+      var activeUi = active.ui || {};
+      var fallbackUi = ((packs.en && packs.en.ui) || (packs.id && packs.id.ui) || {});
+      var optionNames = {
+        id: activeUi.languageBahasa || fallbackUi.languageBahasa || 'Bahasa Indonesia',
+        en: activeUi.languageEnglish || fallbackUi.languageEnglish || 'English'
+      };
 
       options.forEach(function (opt) {
         var code = opt.getAttribute('data-lang-code');
-        var selected = code === langCode;
+        var selected = code === codeNorm;
+        var nameEl = opt.querySelector('.gg-lang-switcher__option-name');
 
+        if (nameEl && optionNames[code]) {
+          nameEl.textContent = optionNames[code];
+        }
         opt.setAttribute('aria-selected', selected ? 'true' : 'false');
 
         if (selected && !currentLabel) {
-          var nameEl = opt.querySelector('.gg-lang-switcher__option-name');
-          currentLabel = nameEl ? nameEl.textContent : code;
+          currentLabel = optionNames[code] || (nameEl ? nameEl.textContent : code);
         }
       });
 
       if (currentSpan && currentLabel) {
         currentSpan.textContent = currentLabel;
+      }
+      if (GG.modules && GG.modules.uiCopy && typeof GG.modules.uiCopy.apply === 'function') {
+        GG.modules.uiCopy.apply(doc);
       }
     }
   }
@@ -6513,10 +6576,10 @@ function updateBackdrop(){
   GG.a11y = GG.a11y || {};
 
   GG.util.getLangPack = function (namespace) {
-    var langCode = (GG.config && GG.config.lang) || 'id';
+    var langCode = (GG.config && GG.config.lang) || 'en';
     var packs = GG.lang || {};
-    var active = packs[langCode] || packs.id || {};
-    var fallback = packs.id || {};
+    var active = packs[langCode] || packs.en || packs.id || {};
+    var fallback = packs.en || packs.id || {};
     return active[namespace] || fallback[namespace] || {};
   };
   GG.i18n = GG.i18n || {};
@@ -6525,7 +6588,7 @@ function updateBackdrop(){
     function tz(){ var s = (GG.store && GG.store.get && GG.store.get()); return i18n._timeZone || (s && s.timeZone) || (w.Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : '') || 'UTC'; }
     function rtl(l){ return /^(ar|fa|he|ur|ps|dv|ku|yi)(-|$)/.test((l || '').toLowerCase()); }
     function applyDir(l){ var root = d.documentElement; if(!root) return; var dir = rtl(l) ? 'rtl' : 'ltr'; if(!root.getAttribute('dir')) root.setAttribute('dir', dir); root.dataset.ggDir = dir; }
-    function pack(){ var lang = (GG.config && GG.config.lang) || loc(); var packs = GG.lang || {}; return packs[lang] || packs.id || {}; }
+    function pack(){ var lang = (GG.config && GG.config.lang) || loc(); var packs = GG.lang || {}; return packs[lang] || packs.en || packs.id || {}; }
     function get(obj, path){ if(!obj || !path) return null; var parts = String(path).split('.'); for(var i=0;i<parts.length;i++){ obj = obj[parts[i]]; if(obj == null) return null; } return obj; }
     i18n.dir = i18n.dir || function(l){ return rtl(l || loc()) ? 'rtl' : 'ltr'; };
     i18n.setLocale = i18n.setLocale || function(l){ if(!l) return loc(); i18n._locale = l; if(GG.config) GG.config.lang = l; if(GG.store && GG.store.set) GG.store.set({ lang: l }); applyDir(l); return l; };
@@ -6713,6 +6776,28 @@ function updateBackdrop(){
       errorMessage: 'Tag tidak dapat dimuat. Coba segarkan halaman.',
       breadcrumbTagsLabel: 'tags'
     },
+    ui: {
+      dockLanding: 'Landing',
+      dockHome: 'Home',
+      dockContact: 'Kontak',
+      dockSearch: 'Cari',
+      dockMore: 'Lainnya',
+      panelInformation: 'Informasi',
+      panelEditorialPreview: 'Pratinjau Editorial',
+      metaWrittenBy: 'Ditulis oleh',
+      metaContributors: 'Kontributor',
+      metaLabel: 'Label',
+      metaTags: 'Tag',
+      metaDate: 'Tanggal',
+      metaUpdated: 'Diperbarui',
+      metaComments: 'Komentar',
+      metaReadTime: 'Waktu baca',
+      metaSnippet: 'Ringkasan',
+      metaToc: 'Daftar Isi',
+      panelReadPost: 'Baca artikel ini',
+      languageBahasa: 'Bahasa Indonesia',
+      languageEnglish: 'English'
+    },
     toast: {
       default_message: 'Berhasil disimpan.',
       error_generic: 'Terjadi kesalahan. Coba lagi nanti.'
@@ -6758,6 +6843,28 @@ function updateBackdrop(){
       errorMessage: 'Tags could not be loaded. Please refresh the page.',
       breadcrumbTagsLabel: 'tags'
     },
+    ui: {
+      dockLanding: 'Landing',
+      dockHome: 'Home',
+      dockContact: 'Contact',
+      dockSearch: 'Search',
+      dockMore: 'More',
+      panelInformation: 'Information',
+      panelEditorialPreview: 'Editorial Preview',
+      metaWrittenBy: 'Written by',
+      metaContributors: 'Contributors',
+      metaLabel: 'Label',
+      metaTags: 'Tags',
+      metaDate: 'Date',
+      metaUpdated: 'Updated',
+      metaComments: 'Comments',
+      metaReadTime: 'Read time',
+      metaSnippet: 'Snippet',
+      metaToc: 'Table of Contents',
+      panelReadPost: 'Read this post',
+      languageBahasa: 'Bahasa Indonesia',
+      languageEnglish: 'English'
+    },
     toast: {
       default_message: 'Saved successfully.',
       error_generic: 'Something went wrong. Please try again later.'
@@ -6765,6 +6872,96 @@ function updateBackdrop(){
   };
 
 })(window.GG);
+
+(function (GG, doc) {
+  'use strict';
+  GG.modules = GG.modules || {};
+
+  function qsa(sel, root) {
+    return Array.prototype.slice.call((root || doc).querySelectorAll(sel));
+  }
+
+  function textAll(sel, value, root) {
+    if (value == null) return;
+    var nodes = qsa(sel, root);
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].textContent = String(value);
+    }
+  }
+
+  function attrAll(sel, name, value, root) {
+    if (!name || value == null) return;
+    var nodes = qsa(sel, root);
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].setAttribute(name, String(value));
+    }
+  }
+
+  function uiPack() {
+    var lang = (GG.config && GG.config.lang) || ((doc.documentElement && doc.documentElement.getAttribute('lang')) || 'en');
+    var packs = GG.lang || {};
+    var active = packs[lang] || packs.en || packs.id || {};
+    var fallback = packs.en || packs.id || {};
+    return active.ui || fallback.ui || {};
+  }
+
+  function t(pack, key, fallback) {
+    if (pack && pack[key] != null) return String(pack[key]);
+    return String(fallback || '');
+  }
+
+  function apply(root) {
+    var scope = root && root.querySelectorAll ? root : doc;
+    var pack = uiPack();
+    textAll('.gg-dock__item--home .gg-dock__label', t(pack, 'dockLanding', 'Landing'), scope);
+    textAll('.gg-dock__item--blog .gg-dock__label', t(pack, 'dockHome', 'Home'), scope);
+    textAll('.gg-dock__item--contact .gg-dock__label', t(pack, 'dockContact', 'Contact'), scope);
+    textAll('.gg-dock__item--search .gg-dock__label', t(pack, 'dockSearch', 'Search'), scope);
+    textAll('.gg-dock__item--more .gg-dock__label', t(pack, 'dockMore', 'More'), scope);
+    attrAll('.gg-dock__item--home', 'aria-label', t(pack, 'dockLanding', 'Landing'), scope);
+    attrAll('.gg-dock__item--blog', 'aria-label', t(pack, 'dockHome', 'Home'), scope);
+    attrAll('.gg-dock__item--contact', 'aria-label', t(pack, 'dockContact', 'Contact'), scope);
+    attrAll('.gg-dock__item--search', 'aria-label', t(pack, 'dockSearch', 'Search'), scope);
+    attrAll('.gg-dock__item--more', 'aria-label', t(pack, 'dockMore', 'More'), scope);
+
+    textAll('.gg-pi__title', t(pack, 'panelInformation', 'Information'), scope);
+    textAll('.gg-epanel__eyebrow', t(pack, 'panelEditorialPreview', 'Editorial Preview'), scope);
+    textAll('.gg-pi__sec:not(.gg-pi__sec--contributors):not(.gg-pi__sec--labels):not(.gg-pi__sec--tags) .gg-pi__kicker', t(pack, 'metaWrittenBy', 'Written by'), scope);
+    textAll('.gg-pi__sec--contributors .gg-pi__kicker', t(pack, 'metaContributors', 'Contributors'), scope);
+    textAll('.gg-pi__sec--labels .gg-pi__kicker', t(pack, 'metaLabel', 'Label'), scope);
+    textAll('.gg-pi__sec--tags .gg-pi__kicker', t(pack, 'metaTags', 'Tags'), scope);
+    textAll('.gg-pi__metaitem--date .gg-pi__kicker', t(pack, 'metaDate', 'Date'), scope);
+    textAll('.gg-pi__metaitem--updated .gg-pi__kicker', t(pack, 'metaUpdated', 'Updated'), scope);
+    textAll('.gg-pi__metaitem--readtime .gg-pi__kicker', t(pack, 'metaReadTime', 'Read time'), scope);
+
+    textAll('[data-row="author"] .gg-epanel__label', t(pack, 'metaWrittenBy', 'Written by'), scope);
+    textAll('[data-row="contributors"] .gg-epanel__label', t(pack, 'metaContributors', 'Contributors'), scope);
+    textAll('[data-row="labels"] .gg-epanel__label', t(pack, 'metaLabel', 'Label'), scope);
+    textAll('[data-row="tags"] .gg-epanel__label', t(pack, 'metaTags', 'Tags'), scope);
+    textAll('[data-row="date"] .gg-epanel__label', t(pack, 'metaDate', 'Date'), scope);
+    textAll('[data-row="updated"] .gg-epanel__label', t(pack, 'metaUpdated', 'Updated'), scope);
+    textAll('[data-row="comments"] .gg-epanel__label', t(pack, 'metaComments', 'Comments'), scope);
+    textAll('[data-row="readtime"] .gg-epanel__label', t(pack, 'metaReadTime', 'Read time'), scope);
+    textAll('[data-row="snippet"] .gg-epanel__label', t(pack, 'metaSnippet', 'Snippet'), scope);
+    textAll('[data-row="toc"] .gg-epanel__label', t(pack, 'metaToc', 'Table of Contents'), scope);
+    textAll('.gg-epanel__cta span:last-child', t(pack, 'panelReadPost', 'Read this post'), scope);
+  }
+
+  GG.modules.uiCopy = GG.modules.uiCopy || { apply: apply };
+})(window.GG = window.GG || {}, document);
+
+(function (GG, doc) {
+  'use strict';
+  function run() {
+    if (GG.modules && GG.modules.uiCopy && typeof GG.modules.uiCopy.apply === 'function') {
+      GG.modules.uiCopy.apply(doc);
+    }
+  }
+  if (GG.boot && typeof GG.boot.onReady === 'function') GG.boot.onReady(run);
+  else if (GG.boot && typeof GG.boot.defer === 'function') GG.boot.defer(run);
+  else if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', run, { once: true });
+  else run();
+})(window.GG = window.GG || {}, document);
 
 (function (w) {
   'use strict';
@@ -6777,8 +6974,8 @@ function updateBackdrop(){
   GG.a11y = GG.a11y || {};
   GG.lang = GG.lang || {};
   var doc = w.document;
-  var htmlLang = (doc && doc.documentElement && doc.documentElement.getAttribute('lang')) || 'id';
-  GG.config.lang = (GG.config.lang || htmlLang || 'id').toLowerCase();
+  var htmlLang = (doc && doc.documentElement && doc.documentElement.getAttribute('lang')) || 'en';
+  GG.config.lang = (GG.config.lang || htmlLang || 'en').toLowerCase();
 })(window);
 
 (function(){

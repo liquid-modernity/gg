@@ -293,7 +293,7 @@
 
   function buildSeeAllUrl(label) {
     var clean = String(label || '').trim();
-    if (!clean) return '/blog';
+    if (!clean) return '/';
     return '/search/label/' + encodeURIComponent(clean);
   }
 
@@ -354,7 +354,7 @@
   function setError(slot, msg) {
     var el = slot.querySelector('[data-role="error"]');
     if (!el) return;
-    el.textContent = String(msg || 'Content temporarily unavailable.');
+    el.textContent = String(msg || '');
     el.removeAttribute('hidden');
   }
 
@@ -362,6 +362,20 @@
     var el = slot.querySelector('[data-role="error"]');
     if (!el) return;
     el.setAttribute('hidden', 'hidden');
+  }
+
+  function collapseSlot(slot) {
+    var grid;
+    var rail;
+    if (!slot) return;
+    grid = slot.querySelector('[data-role="grid"]');
+    rail = slot.querySelector('[data-role="rail"]');
+    if (grid) clearNode(grid);
+    if (rail) clearNode(rail);
+    clearError(slot);
+    setState(slot, 'empty');
+    slot.hidden = true;
+    slot.setAttribute('data-gg-loaded', '0');
   }
 
   function skeletonCountFor(section) {
@@ -855,21 +869,21 @@
     slot.__ggMixedLoading = true;
     setState(slot, 'loading');
     clearError(slot);
+    slot.hidden = true;
 
     return resolveEntries(section, cfg)
       .then(function(items){
         var count = section.type === 'newsdeck' ? countNewsDeckItems(items) : (Array.isArray(items) ? items.length : 0);
         if (!count) {
-          setState(slot, 'error');
-          setError(slot, 'No posts yet.');
+          collapseSlot(slot);
           return;
         }
         render(slot, section, items);
         slot.setAttribute('data-gg-loaded', '1');
         setState(slot, 'loaded');
+        slot.hidden = false;
       }, function(){
-        setState(slot, 'error');
-        setError(slot, 'Content temporarily unavailable.');
+        collapseSlot(slot);
       })
       .then(function(){
         slot.__ggMixedLoading = false;

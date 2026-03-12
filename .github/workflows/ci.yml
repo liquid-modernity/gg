@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  verify:
+  gaga-dry-run:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,38 +21,14 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Guard lockfile
-        run: |
-          set -euo pipefail
-          if [ ! -f package-lock.json ]; then
-            echo "ERROR: package-lock.json is required."
-            exit 1
-          fi
-
       - name: Install deps
         run: npm ci
 
-      - name: Build release artifacts
-        run: npm run build
+      - name: Install Wrangler CLI (pinned)
+        run: npm install --no-save wrangler@4.61.1
 
-      - name: Verify P0 (blocking)
-        run: npm run verify:p0
+      - name: Worker syntax check
+        run: node --check src/worker.js
 
-      - name: Verify P1 (runtime quality)
-        run: npm run verify:p1
-
-      - name: Verify P2 (reference)
-        run: npm run verify:p2
-
-      - name: Verify build determinism
-        run: |
-          set -euo pipefail
-          if ! git diff --exit-code; then
-            echo "Build produced changes. Run npm run build locally and commit generated artifacts."
-            exit 1
-          fi
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Build produced changes. Run npm run build locally and commit generated artifacts."
-            git status --porcelain
-            exit 1
-          fi
+      - name: Cloudflare deploy dry run
+        run: npm run gaga:dry

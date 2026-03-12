@@ -39,7 +39,7 @@
         }
       }
       if (blogLink) {
-        var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/blog';
+        var blogHref = (GG.core && GG.core.blogHomePath) ? GG.core.blogHomePath('/') : '/';
         blogLink.setAttribute('href', blogHref);
         if (!blogLink.__ggBlogBound) {
           blogLink.__ggBlogBound = true;

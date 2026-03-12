@@ -36,8 +36,11 @@
         id:'home',title:'home',hint:'/',
         run:function(){closePanel();nav('/');}
       },{
-        id:'blog',title:'blog',hint:'/blog',
-        run:function(){closePanel();nav('/blog');}
+        id:'landing',title:'landing',hint:'/landing',
+        run:function(){closePanel();nav('/landing');}
+      },{
+        id:'blog',title:'blog',hint:'/',
+        run:function(){closePanel();nav('/');}
       },{
         id:'offline',title:'offline',hint:'/offline.html',
         run:function(){closePanel();nav('/offline.html');}

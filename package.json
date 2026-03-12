@@ -2,6 +2,8 @@
   "name": "gg",
   "private": true,
   "scripts": {
+    "gaga": "wrangler deploy --config wrangler.jsonc",
+    "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
     "build": "node tools/release.js",
     "build:xml": "node tools/validate-xml.js",
     "release": "node tools/release.js",

@@ -1,5 +1,5 @@
 /* src/worker.js — Cloudflare Worker (edge) */
-const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
+const cleanUrlForSchema = (inputUrl, { forceListing = false, forceLanding = false } = {}) => {
   const u = new URL(inputUrl);
   u.searchParams.delete("x");
   u.searchParams.delete("view");
@@ -12,8 +12,10 @@ const cleanUrlForSchema = (inputUrl, { forceBlog = false } = {}) => {
     }
   }
   u.hash = "";
-  if (forceBlog) {
-    u.pathname = "/blog";
+  if (forceLanding) {
+    u.pathname = "/landing";
+  } else if (forceListing) {
+    u.pathname = "/";
   }
   u.search = "";
   return `${u.origin}${u.pathname}`;
@@ -395,7 +397,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
       ? `<span class='gg-post-card__label'><a href='${safeLabelUrl}' rel='tag'>${safeLabel}</a></span><span class='gg-post-card__meta-sep'>&#8226;</span>`
       : "";
   const cardHtml = [
-    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-readtime='${safeReadLabel}' data-snippet='${safeExcerpt}' data-title='${safeTitle}' data-updated='${safeUpdatedText}' data-url='${safeUrl}' data-gg-author='${safeAuthorName}' data-gg-comments='${safeComments}' data-gg-contributors='' data-gg-date='${safeDateText}' data-gg-labels='${safeLabelsCsv}' data-gg-readtime='${safeReadLabel}' data-gg-snippet='${safeExcerpt}' data-gg-tags='${safeLabelsCsv}' data-gg-toc-json='' data-gg-updated='${safeUpdatedText}'>`,
+    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-readtime='${safeReadLabel}' data-snippet='${safeExcerpt}' data-title='${safeTitle}' data-updated='${safeUpdatedText}' data-url='${safeUrl}' data-gg-author='${safeAuthorName}' data-gg-comments='${safeComments}' data-gg-contributors='' data-gg-date='${safeDateText}' data-gg-labels='${safeLabelsCsv}' data-gg-readtime='${safeReadLabel}' data-gg-snippet='${safeExcerpt}' data-gg-tags='' data-gg-toc-json='' data-gg-updated='${safeUpdatedText}'>`,
     thumbHtml,
     "<div class='gg-post-card__body'>",
     "<div class='gg-post-card__meta'>",
@@ -1070,8 +1072,8 @@ const decoratePostCardDataset = (el) => {
   const readtime = firstCardValue(el, ["data-gg-readtime", "data-readtime", "data-read-time"]);
   const snippet = firstCardValue(el, ["data-gg-snippet", "data-snippet"]);
   const tocJson = firstCardValue(el, ["data-gg-toc-json"]);
-  const normalizedTags = tags || labels;
-  const normalizedLabels = labels || tags;
+  const normalizedTags = tags;
+  const normalizedLabels = labels;
   setCardAttr(el, "data-gg-author", author);
   setCardAttr(el, "data-gg-contributors", contributors);
   setCardAttr(el, "data-gg-tags", normalizedTags);
@@ -1725,10 +1727,10 @@ export default {
 
     // Reverse proxy Blogger untuk semua non-asset path.
     if (!shouldTryAssets) {
-      const viewParam = url.searchParams.get("view");
-      const redirectToBlog = () => {
+      const viewParam = String(url.searchParams.get("view") || "").trim().toLowerCase();
+      const redirectToSurface = (targetPathname) => {
         const dest = new URL(request.url);
-        dest.pathname = "/blog";
+        dest.pathname = targetPathname;
         dest.searchParams.delete("view");
         dest.searchParams.delete("max-results");
         dest.searchParams.delete("start-index");
@@ -1743,28 +1745,52 @@ export default {
         return stamp(r);
       };
 
-      if ((pathname === "/" || pathname === "") && viewParam === "blog") {
-        return redirectToBlog();
+      if (pathname === "/blog" || pathname === "/blog/") {
+        return redirectToSurface("/");
       }
-      if (pathname === "/blog/" || (pathname === "/blog" && viewParam === "blog")) {
-        return redirectToBlog();
+      if ((pathname === "/" || pathname === "") && viewParam === "blog") {
+        return redirectToSurface("/");
+      }
+      if ((pathname === "/" || pathname === "") && viewParam === "landing") {
+        return redirectToSurface("/landing");
+      }
+      if (pathname === "/landing/") {
+        return redirectToSurface("/landing");
+      }
+      if (pathname === "/landing" && viewParam === "landing") {
+        return redirectToSurface("/landing");
+      }
+      if (pathname === "/landing" && viewParam === "blog") {
+        return redirectToSurface("/");
       }
 
       let originRequest = request;
       let originUrl = new URL(request.url);
       let forceListing = false;
+      let forceLanding = false;
       const paginationListingFallback = shouldFallbackListingPagination(url);
 
-      if (pathname === "/blog" || pathname === "/blog/") {
+      if (pathname === "/" || pathname === "") {
         originUrl.pathname = "/";
         originUrl.searchParams.set("view", "blog");
         originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
         originRequest = new Request(originUrl.toString(), request);
         forceListing = true;
+      } else if (pathname === "/landing") {
+        originUrl.pathname = "/";
+        // Blogger may return an error document for unknown feed-view variants on GET.
+        // Fetch canonical home HTML and force landing surface in Worker rewrite instead.
+        originUrl.searchParams.delete("view");
+        originUrl.searchParams.delete("max-results");
+        originUrl.searchParams.delete("start-index");
+        originRequest = new Request(originUrl.toString(), request);
+        forceLanding = true;
       }
 
       try {
-        if (originUrl.searchParams.get("view") === "blog") forceListing = true;
+        const forcedView = String(originUrl.searchParams.get("view") || "").trim().toLowerCase();
+        if (forcedView === "blog") forceListing = true;
+        if (forcedView === "landing") forceLanding = true;
       } catch (e) {}
 
       let originRes;
@@ -1834,7 +1860,11 @@ export default {
           }
         }
         const publicUrl = new URL(request.url);
-        publicUrl.pathname = "/blog";
+        if (forceListing) {
+          publicUrl.pathname = "/";
+        } else if (forceLanding) {
+          publicUrl.pathname = "/landing";
+        }
         publicUrl.searchParams.delete("view");
         publicUrl.searchParams.delete("x");
         publicUrl.searchParams.delete("fbclid");
@@ -1847,7 +1877,7 @@ export default {
         }
         publicUrl.hash = "";
         const canonicalPublic = `${publicUrl.origin}${publicUrl.pathname}`;
-        const listingInject = [
+        const canonicalInject = [
           `<link rel="canonical" href="${canonicalPublic}">`,
           `<meta property="og:url" content="${canonicalPublic}">`,
           `<meta name="twitter:url" content="${canonicalPublic}">`,
@@ -1874,7 +1904,7 @@ export default {
         };
         const buildSchema = () => {
           const origin = new URL(request.url).origin;
-          const pageUrl = cleanUrlForSchema(request.url, { forceBlog: forceListing });
+          const pageUrl = cleanUrlForSchema(request.url, { forceListing, forceLanding });
           const siteName = (meta.ogSiteName || "").trim() || "pakrpp.com";
           const pageName =
             (meta.ogTitle || "").trim() ||
@@ -1971,6 +2001,8 @@ export default {
               }
               if (forceListing) {
                 el.setAttribute("data-gg-prehome", "blog");
+              } else if (forceLanding) {
+                el.setAttribute("data-gg-prehome", "landing");
               }
             },
           })
@@ -2121,9 +2153,13 @@ export default {
               meta.surface = (el.getAttribute("data-gg-surface") || "").trim();
               if (forceListing) {
                 el.setAttribute("data-gg-surface", "listing");
-                // Canonicalize router taxonomy for /blog SSR so runtime modules do not see "home".
+                // Canonicalize router taxonomy for listing SSR so runtime modules do not see "home".
                 el.setAttribute("data-gg-page", "listing");
                 el.setAttribute("data-gg-view", "listing");
+              } else if (forceLanding) {
+                el.setAttribute("data-gg-surface", "landing");
+                el.setAttribute("data-gg-page", "home");
+                el.setAttribute("data-gg-view", "home");
               }
               const schemaJson = buildSchema();
               el.prepend(
@@ -2215,7 +2251,37 @@ export default {
           })
             .on("head", {
               element(el) {
-                el.append(listingInject, { html: true });
+                el.append(canonicalInject, { html: true });
+              },
+            });
+        } else if (forceLanding) {
+          rewritten
+            .on("main#gg-main", {
+              element(el) {
+                el.setAttribute("data-gg-surface", "landing");
+                el.setAttribute("data-gg-page", "home");
+                el.setAttribute("data-gg-view", "home");
+                el.setAttribute("data-gg-home-state", "landing");
+              },
+            })
+            .on("link[rel=\"canonical\"]", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("meta[property=\"og:url\"]", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("meta[name=\"twitter:url\"]", {
+              element(el) {
+                el.remove();
+              },
+            })
+            .on("head", {
+              element(el) {
+                el.append(canonicalInject, { html: true });
               },
             });
         }
@@ -2236,6 +2302,7 @@ export default {
         if (
           request.method !== "HEAD" &&
           !forceListing &&
+          !forceLanding &&
           !paginationListingFallback &&
           isPostLikePath(pathname)
         ) {
