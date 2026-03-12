@@ -3763,6 +3763,14 @@ if(panel){
   if (previewCard) previewCard.hidden = false;
 }
 var titleLink=qs('.gg-post-card__title-link', card),href=cardHref(card),hrefFetch=normalizePostUrl(href)||href,title=cleanText(titleLink?titleLink.textContent:''),metaKey=tocCacheKey(hrefFetch),imgSrc=extractThumbSrc(card),dateNode=qs('.gg-post-card__date', card),commentsNode=qs('.gg-post-card__meta-item--comments', card),dateText=cleanText(dateNode&&dateNode.textContent?dateNode.textContent:'')||cardAttr(card,'data-date'),commentsText=cleanText(commentsNode&&commentsNode.textContent?commentsNode.textContent:''),author=extractAuthor(card),labels=extractLabels(card),cardMeta=parsePostMetaFromCard(card),authorText=cleanText(cardMeta.author||author.text),updatedText=humanDate(cardMeta.updated),readTimeText=readMinLabel(cardMeta.readMin||'')||estimateReadTime(card),hasCardSnippet=!!cleanText(cardMeta.snippet),quickSnippet=hasCardSnippet?cleanText(cardMeta.snippet):'',af=null,instTags=(Array.isArray(cardMeta.tags)?cardMeta.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;}),instContributors=(Array.isArray(cardMeta.contributors)?cardMeta.contributors:[]).map(function(x){return cleanText(typeof x==='string'?x:(x&&((x.name||x.text||x.slug)||'')));}).filter(function(x){return x&&(!authorText||x.toLowerCase()!==authorText.toLowerCase());}).map(function(x){return { text:x };}),hasPreviewPayload=!!(title||authorText||dateText||commentsText||readTimeText||quickSnippet||instTags.length||instContributors.length||labels.length||imgSrc);
+if(!hasPreviewPayload){
+if(!p){
+if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('closed');
+else if(main) main.setAttribute('data-gg-info-panel','closed');
+}
+resetPanelState();
+return false;
+}
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
 setS('title',title||'');
@@ -3798,6 +3806,7 @@ if(panel) panel.hidden=false;
 if(opts.select&&metaKey){ abortToc(''); delete tocCache[metaKey]; postMetaCache.delete(metaKey); }
 updateTocForCard(card, hrefFetch);
 if(!p){ setBackdropVisible(true); if(GG.modules.Panels&&GG.modules.Panels.setRight) GG.modules.Panels.setRight('open'); else if(main) main.setAttribute('data-gg-info-panel','open'); if(opts.select){ selectedCardKey=cardKey(card)||null; syncSlotInfoSelected(selectedCardKey); } if(opts.focusPanel!==false&&panel&&panel.focus){ panel.setAttribute('tabindex','-1'); try{ panel.focus({ preventScroll:true }); }catch(_){} } }
+return true;
 }
 
 function resetPanelState(){
@@ -3877,6 +3886,7 @@ if (typeof card.isConnected === 'boolean' && !card.isConnected) return;
 if (selectedCardKey) return;
 prefetchToc(href);
 hoverCardKey = key;
+if(!openWithCard(card, null, { focusPanel: false })) return;
 }, HOVER_INTENT_MS);
 }
 
@@ -3888,6 +3898,9 @@ var nextCard = closest(evt.relatedTarget, '.gg-post-card');
 if (nextCard && cardKey(nextCard) === cardKey(card)) return;
 if (selectedCardKey) return;
 clearHoverIntent();
+hoverCardKey = '';
+if (evt.relatedTarget && panel && panel.contains && panel.contains(evt.relatedTarget)) return;
+handleClose();
 }
 
 function handlePreviewFocus(evt){
@@ -3899,6 +3912,19 @@ if (key === hoverCardKey) return;
 clearHoverIntent();
 prefetchToc(cardHref(card));
 hoverCardKey = key;
+openWithCard(card, null, { focusPanel: false });
+}
+
+function handlePreviewBlur(evt){
+if (!canHoverPreview()) return;
+if (selectedCardKey) return;
+var card = closest(evt.target, '.gg-post-card');
+if (!card) return;
+var nextCard = closest(evt.relatedTarget, '.gg-post-card');
+if (nextCard) return;
+if (evt.relatedTarget && panel && panel.contains && panel.contains(evt.relatedTarget)) return;
+hoverCardKey = '';
+handleClose();
 }
 
 function handleClick(evt){
@@ -3911,13 +3937,18 @@ var key = cardKey(card);
 if (selectedCardKey && selectedCardKey === key) {
 selectedCardKey = null;
 syncSlotInfoSelected(null);
+hoverCardKey = '';
+handleClose();
 return;
 }
 selectedCardKey = key || null;
 syncSlotInfoSelected(selectedCardKey);
 clearHoverIntent();
 hoverCardKey = key;
-openWithCard(card, infoBtn, { focusPanel: true, select: true });
+if(!openWithCard(card, infoBtn, { focusPanel: true, select: true })){
+selectedCardKey = null;
+syncSlotInfoSelected(null);
+}
 }
 
 function init(mainEl){
@@ -3958,6 +3989,7 @@ main.addEventListener('click', handleClick, true);
 main.addEventListener('pointerover', handlePreviewHover, true);
 main.addEventListener('pointerout', handlePreviewOut, true);
 main.addEventListener('focusin', handlePreviewFocus, true);
+main.addEventListener('focusout', handlePreviewBlur, true);
 }
 if (!panel.__gB) panel.__gB = true;
 if (!closeObserver && main && window.MutationObserver) {

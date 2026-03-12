@@ -721,6 +721,67 @@ check_listing_card_metadata() {
   fi
 }
 
+check_listing_preview_runtime_contract() {
+  local root_file="$tmp_dir/$(safe_file_name "preview_contract_root").html"
+  local core_file="$tmp_dir/$(safe_file_name "preview_contract_core").js"
+  local report_file="$tmp_dir/$(safe_file_name "preview_contract_report").txt"
+  local meta=""
+  local status=""
+  local assets_version=""
+  fetch_page "/" "$root_file" >/dev/null
+
+  assets_version="$(node - "$root_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let src = '';
+try { src = fs.readFileSync(file, 'utf8'); } catch (_) { src = ''; }
+const m = src.match(/\/assets\/v\/([a-z0-9]+)\/boot\.js\b/i);
+if (m && m[1]) process.stdout.write(String(m[1]).trim());
+NODE
+)"
+  if [[ -z "$assets_version" ]]; then
+    log_fail "listing preview runtime contract unable to resolve versioned core asset path"
+    return
+  fi
+
+  meta="$(fetch_page "/assets/v/${assets_version}/modules/ui.bucket.core.js" "$core_file")"
+  status="${meta#*|}"
+  status="${status%%|*}"
+  if [[ "$status" != "200" ]]; then
+    log_fail "listing preview runtime contract failed to fetch core asset (status=${status})"
+    return
+  fi
+
+  node - "$core_file" >"$report_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let src = '';
+try { src = fs.readFileSync(file, 'utf8'); } catch (_) { src = ''; }
+const fails = [];
+const hasSeedDisabled = /function\s+seedInitialPreview\s*\(\)\s*\{\s*return\s+false;\s*\}/.test(src);
+const hoverOpens = /function\s+handlePreviewHover[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
+const focusOpens = /function\s+handlePreviewFocus[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
+const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true\s*,\s*select:\s*true\s*\}\s*\)/.test(src);
+if (!hasSeedDisabled) fails.push('idle-seed-not-disabled');
+if (!hoverOpens) fails.push('hover-preview-open-missing');
+if (!focusOpens) fails.push('focus-preview-open-missing');
+if (!clickOpens) fails.push('info-action-open-missing');
+console.log(`META|seed_disabled=${hasSeedDisabled ? '1' : '0'};hover_open=${hoverOpens ? '1' : '0'};focus_open=${focusOpens ? '1' : '0'};click_open=${clickOpens ? '1' : '0'}`);
+for (const f of fails) console.log(`FAIL|${f}`);
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE listing-preview-contract %s asset=v/%s/modules/ui.bucket.core.js\n' "${line#META|}" "$assets_version"
+      continue
+    fi
+    if [[ "$line" == FAIL\|* ]]; then
+      log_fail "listing preview runtime contract violation (${line#FAIL|})"
+    fi
+  done < "$report_file"
+}
+
 check_surface() {
   local path="$1"
   local expected_status="$2"
@@ -973,6 +1034,7 @@ check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "
 check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_dock_truth
 check_discovered_detail_paths
+check_listing_preview_runtime_contract
 emit_release_state
 
 if [[ "$failures" -gt 0 ]]; then
