@@ -541,6 +541,86 @@ check_detail_panel_contract() {
   assert_absent_marker "$file" "$context" "data-gg-panelmeta=['\\\"]listing['\\\"]" "listing panel contract on detail surface"
 }
 
+check_detail_postmeta_contract() {
+  local file="$1"
+  local context="$2"
+  local report_file="$tmp_dir/$(safe_file_name "detail_postmeta_${context}").report"
+  node - "$file" >"$report_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.exit(0);
+}
+const src = String(html || '')
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+const splitList = (raw, re) => clean(raw).split(re).map((x) => clean(x)).filter(Boolean);
+const toKey = (v) => clean(v).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, '');
+const attr = (tag, name) => {
+  const re = new RegExp(name + '\\s*=\\s*(?:(["\'])(.*?)\\1|([^\\s"\'>]+))', 'i');
+  const m = String(tag || '').match(re);
+  return clean(m ? (m[2] || m[3] || '') : '');
+};
+
+const metaTags = src.match(/<(?:div|span)[^>]*(?:class=['"][^'"]*\bgg-postmeta\b[^'"]*['"]|data-gg-postmeta(?:=['"][^'"]*['"])?)[^>]*>/gi) || [];
+let best = { score: -1, author: '', contributors: [], tags: [], readMin: '', updated: '' };
+for (const tag of metaTags) {
+  const author = clean(attr(tag, 'data-author') || attr(tag, 'data-gg-author') || attr(tag, 'author'));
+  const updated = clean(attr(tag, 'data-updated') || attr(tag, 'data-gg-updated'));
+  const readMin = clean(attr(tag, 'data-read-min') || attr(tag, 'data-readtime') || attr(tag, 'data-gg-read-min') || attr(tag, 'data-gg-readtime'));
+  const contributors = splitList(attr(tag, 'data-contributors') || attr(tag, 'data-gg-contributors'), /\s*;\s*/);
+  const tags = splitList(attr(tag, 'data-tags') || attr(tag, 'data-gg-tags'), /\s*,\s*/);
+  const score = (author ? 2 : 0) + (updated ? 2 : 0) + (readMin ? 1 : 0) + (contributors.length * 3) + (tags.length * 4);
+  if (score > best.score) best = { score, author, contributors, tags, readMin, updated };
+}
+
+const labelTexts = [];
+const labelRe = /<a[^>]*rel=['"]tag['"][^>]*>([\s\S]*?)<\/a>/gi;
+let lm;
+while ((lm = labelRe.exec(src))) {
+  const txt = clean(String(lm[1] || '').replace(/<[^>]+>/g, ' '));
+  if (txt) labelTexts.push(txt);
+}
+
+const contributors = best.contributors.map((x) => clean(x)).filter(Boolean);
+const tags = best.tags.map((x) => clean(x)).filter(Boolean);
+const labels = labelTexts.map((x) => clean(x)).filter(Boolean);
+const authorLc = clean(best.author).toLowerCase();
+const contribLc = contributors.map((x) => x.toLowerCase());
+const tagKey = tags.map(toKey).filter(Boolean).sort().join(',');
+const labelKey = labels.map(toKey).filter(Boolean).sort().join(',');
+const hasCustomPayload = contributors.length > 0 || tags.length > 0 || !!clean(best.readMin);
+
+const fails = [];
+if (!metaTags.length) fails.push('missing-gg-postmeta-node');
+if (authorLc && contribLc.length && contribLc.every((x) => x === authorLc)) fails.push('contributors-fallback-to-main-author');
+if (authorLc && contribLc.some((x) => x === authorLc)) fails.push('contributors-include-main-author');
+if (tagKey && labelKey && tagKey === labelKey) fails.push('tags-fallback-to-native-labels');
+
+console.log(
+  'META|' +
+  `nodes=${metaTags.length};author=${clean(best.author)};contributors=${contributors.join(',') || 'none'};tags=${tags.join(',') || 'none'};labels=${labels.join(',') || 'none'};read_min=${clean(best.readMin) || 'none'};has_custom=${hasCustomPayload ? '1' : '0'}`
+);
+for (const f of fails) console.log(`FAIL|${f}`);
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE %s postmeta %s\n' "$context" "${line#META|}"
+      continue
+    fi
+    if [[ "$line" == FAIL\|* ]]; then
+      log_fail "$context custom postmeta contract violation (${line#FAIL|})"
+    fi
+  done < "$report_file"
+}
+
 check_surface_ownership_contract() {
   local file="$1"
   local context="$2"
@@ -563,6 +643,7 @@ check_surface_ownership_contract() {
   if [[ "$expected_surface" == "post" || "$expected_surface" == "page" ]]; then
     assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on detail surface"
     check_detail_panel_contract "$file" "$context"
+    check_detail_postmeta_contract "$file" "$context"
   fi
 }
 
