@@ -390,11 +390,14 @@ const stripped = html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
   .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ');
+const visible = stripped
+  .replace(/<([a-z0-9]+)\b[^>]*class=['"][^'"]*\b(?:gg-visually-hidden|visually-hidden)\b[^'"]*['"][^>]*>[\s\S]*?<\/\1>/gi, ' ');
 const leaks = [];
-const rowNames = ['title', 'author', 'date', 'updated', 'comments', 'readtime', 'snippet'];
+const rowNames = ['title', 'author', 'contributors', 'labels', 'tags', 'date', 'updated', 'comments', 'readtime', 'snippet'];
 const hasHiddenAttr = (tag) => /\bhidden\b/i.test(tag);
+const isPanelRowTag = (tag) => /\bclass=['"][^'"]*\bgg-epanel__row\b[^'"]*['"]/i.test(tag);
 
-const panelTag = (stripped.match(/<div[^>]*class=['"][^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i) || [])[0] || '';
+const panelTag = (visible.match(/<div[^>]*class=['"][^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i) || [])[0] || '';
 if (panelTag && !hasHiddenAttr(panelTag)) {
   leaks.push('editorial-preview-visible');
 }
@@ -402,16 +405,18 @@ if (panelTag && !hasHiddenAttr(panelTag)) {
 for (const rowName of rowNames) {
   const re = new RegExp('<div[^>]*data-row=([\'"])' + rowName + '\\1[^>]*>', 'ig');
   let m;
-  while ((m = re.exec(stripped))) {
+  while ((m = re.exec(visible))) {
+    if (!isPanelRowTag(m[0])) continue;
     if (!hasHiddenAttr(m[0])) leaks.push('row-' + rowName + '-visible');
   }
 }
 
 const tocRe = /<div[^>]*data-row=(['"])toc\1[^>]*>/ig;
 let t;
-while ((t = tocRe.exec(stripped))) {
+while ((t = tocRe.exec(visible))) {
+  if (!isPanelRowTag(t[0])) continue;
   if (hasHiddenAttr(t[0])) continue;
-  const scope = stripped.slice(t.index, Math.min(stripped.length, t.index + 5000));
+  const scope = visible.slice(t.index, Math.min(visible.length, t.index + 5000));
   const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(scope);
   if (!tocHasItems) leaks.push('row-toc-visible-without-headings');
 }
