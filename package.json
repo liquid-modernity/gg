@@ -5,6 +5,8 @@
     "gaga": "wrangler deploy --config wrangler.jsonc",
     "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
     "gaga:audit": "node qa/gaga-audit.mjs",
+    "gaga:template:pack": "bash qa/template-pack.sh",
+    "gaga:template:proof": "bash qa/template-proof.sh",
     "gaga:template:status": "bash qa/template-status.sh",
     "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
   },

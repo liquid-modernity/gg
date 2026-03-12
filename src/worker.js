@@ -2156,10 +2156,12 @@ export default {
                 // Canonicalize router taxonomy for listing SSR so runtime modules do not see "home".
                 el.setAttribute("data-gg-page", "listing");
                 el.setAttribute("data-gg-view", "listing");
+                el.setAttribute("data-gg-bloghome", "1");
               } else if (forceLanding) {
                 el.setAttribute("data-gg-surface", "landing");
                 el.setAttribute("data-gg-page", "home");
                 el.setAttribute("data-gg-view", "home");
+                el.removeAttribute("data-gg-bloghome");
               }
               const schemaJson = buildSchema();
               el.prepend(
@@ -2256,7 +2258,7 @@ export default {
             });
         } else if (forceLanding) {
           rewritten
-            .on("section.gg-home-blog", {
+            .on(".gg-home-blog", {
               element(el) {
                 el.remove();
               },
