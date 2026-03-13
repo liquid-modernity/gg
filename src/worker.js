@@ -2236,6 +2236,21 @@ export default {
                 );
               },
             })
+            .on(".gg-editorial-preview .gg-epanel__label", {
+              element(el) {
+                el.setInnerContent("");
+              },
+            })
+            .on(".gg-editorial-preview .gg-epanel__cta-label", {
+              element(el) {
+                el.setInnerContent("");
+              },
+            })
+            .on("[data-gg-marker=\"panel-listing-cta\"]", {
+              element(el) {
+                el.setInnerContent("");
+              },
+            })
           .on("link[rel=\"canonical\"]", {
             element(el) {
               el.remove();

@@ -135,6 +135,19 @@ if (panelMatch && !/\bhidden=(['"])hidden\1/i.test(panelMatch[0])) {
   leaks.add('panel:gg-editorial-preview-visible');
 }
 
+const panelLabelChecks = [
+  ['Title', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Title\s*<\/dt>/i],
+  ['Written by', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Written by\s*<\/dt>/i],
+  ['Contributors', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Contributors\s*<\/dt>/i],
+  ['Label', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Label\s*<\/dt>/i],
+  ['Tags', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Tags\s*<\/dt>/i],
+  ['Date', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Date\s*<\/dt>/i],
+  ['Updated', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Updated\s*<\/dt>/i],
+  ['Comments', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Comments\s*<\/dt>/i],
+  ['Read time', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Read time\s*<\/dt>/i],
+  ['Snippet', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Snippet\s*<\/dt>/i],
+  ['Table of Contents', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Table of Contents\s*<\/dt>/i]
+];
 [
   'head',
   'thumbnail',
@@ -162,6 +175,15 @@ const stripped = html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
   .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ');
+for (const [name, re] of panelLabelChecks) {
+  if (re.test(stripped)) leaks.add(`idle-chrome-label:${name}`);
+}
+if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(stripped)) {
+  leaks.add('idle-chrome-cta:Read this post');
+}
+if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(stripped)) {
+  leaks.add('idle-chrome-store-cta:Read this post');
+}
 const tocRowVisible = /<div[^>]*data-row=(['"])toc\1(?![^>]*\bhidden=(['"])hidden\2)[^>]*>/i.test(stripped);
 const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(stripped);
 if (tocRowVisible && !tocHasItems) {

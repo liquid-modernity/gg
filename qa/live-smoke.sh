@@ -433,6 +433,59 @@ NODE
   fi
 }
 
+assert_listing_idle_chrome_not_readable() {
+  local file="$1"
+  local context="$2"
+  local leaks_file="$tmp_dir/$(safe_file_name "idle_chrome_${context}").leaks"
+  : > "$leaks_file"
+  node - "$file" >"$leaks_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.exit(0);
+}
+const src = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+const leaks = [];
+
+const labelChecks = [
+  ['Title', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Title\s*<\/dt>/i],
+  ['Written by', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Written by\s*<\/dt>/i],
+  ['Contributors', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Contributors\s*<\/dt>/i],
+  ['Label', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Label\s*<\/dt>/i],
+  ['Tags', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Tags\s*<\/dt>/i],
+  ['Date', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Date\s*<\/dt>/i],
+  ['Updated', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Updated\s*<\/dt>/i],
+  ['Comments', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Comments\s*<\/dt>/i],
+  ['Read time', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Read time\s*<\/dt>/i],
+  ['Snippet', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Snippet\s*<\/dt>/i],
+  ['Table of Contents', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Table of Contents\s*<\/dt>/i]
+];
+
+for (const [name, re] of labelChecks) {
+  if (re.test(src)) leaks.push(`label:${name}`);
+}
+if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(src)) {
+  leaks.push('cta:Read this post');
+}
+if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(src)) {
+  leaks.push('store-cta:Read this post');
+}
+if (leaks.length) process.stdout.write(leaks.join('\n'));
+NODE
+  if [[ -s "$leaks_file" ]]; then
+    while IFS= read -r leak; do
+      [[ -n "$leak" ]] || continue
+      log_fail "$context idle listing info chrome still publicly readable (${leak})"
+    done < "$leaks_file"
+  fi
+}
+
 assert_row_hidden() {
   local file="$1"
   local row="$2"
@@ -838,6 +891,9 @@ check_surface() {
   assert_no_placeholder_strings "$scan_file" "$path"
   if [[ "$path" == "/" || "$path" == "/landing" || "$path" == "/landing/" ]]; then
     assert_no_empty_editorial_shell "$scan_file" "$path"
+  fi
+  if [[ "$path" == "/" ]]; then
+    assert_listing_idle_chrome_not_readable "$scan_file" "$path"
   fi
   check_surface_ownership_contract "$scan_file" "$path" "$expected_surface"
 
