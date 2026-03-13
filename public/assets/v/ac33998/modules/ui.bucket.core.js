@@ -3703,7 +3703,9 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
   if (!items.length && !metaStrong){ writeToc(key, []); return []; }
   writeToc(key, items);
   panelKey=panel&&panel.__gK?String(panel.__gK):'';
-  if(panel&&main&&main.getAttribute('data-gg-info-panel')==='open'&&panelKey&&panelKey===key){ applyPostMeta(key); renderTocItems(items||[]); }
+  // Apply hydrated metadata/Toc as soon as the active card key matches.
+  // Relying on "panel open" introduces a race when fetch resolves before UI state flips.
+  if(panel&&panelKey&&panelKey===key){ applyPostMeta(key); renderTocItems(items||[]); }
   return items;
 }).catch(function(err){
   if (controller && controller.signal && controller.signal.aborted) return null;
