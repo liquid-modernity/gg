@@ -3651,6 +3651,43 @@ for(i=0;i<max;i++){ try{ node=headings[i];if(!node||(node.closest&&node.closest(
 return out;
 }
 
+function buildHydrationFallback(html,sourceUrl){
+var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+if(!doc) return { items: [], meta: null };
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content')||doc.querySelector('.post-body, .entry-content, article, main');
+try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }
+author=cleanText(pm&&pm.author||'');
+contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];
+tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});
+updated=cleanText(pm&&pm.updated||'');
+readTime=readMinLabel(pm&&pm.readMin||'');
+if(!readTime) readTime=calcReadTime(root);
+snippet=cleanText(pm&&pm.snippet||'');
+if(!snippet) snippet=extractPreviewSnippet(root);
+if(root){
+  headings=root.querySelectorAll('h1,h2,h3,h4');
+  max=Math.min(headings.length,TOC_CAP);
+  baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
+  for(i=0;i<max;i++){
+    try{
+      node=headings[i];
+      if(!node||(node.closest&&node.closest('pre,code,[hidden],[aria-hidden=\"true\"]'))) continue;
+      level=parseInt((node.tagName||'').slice(1),10)||1;
+      if(level>4) level=4;
+      text=(node.textContent||'').replace(/\s+/g,' ').trim();
+      if(!text) continue;
+      headingId=(node.getAttribute('id')||'').trim();
+      href=baseHref;
+      if(headingId){
+        try{ href+='#'+encodeURIComponent(headingId); }catch(_){ href+='#'+headingId; }
+      }
+      out.push({text:text,level:level,href:href});
+    }catch(_){}
+  }
+}
+return { items: out, meta: { t: tags, a: author, c: contributors, u: updated, r: readTime, s: snippet } };
+}
+
 function hasPreviewPayload(items){
 var m=items&&items._m||0;
 return !!(items&&items.length||m.t&&m.t.length||m.c&&m.c.length||cleanText(m.s)||cleanText(m.a)||cleanText(m.r)||cleanText(m.u));
@@ -3695,11 +3732,23 @@ infoDebug('InfoPanel fetch start', abs);
 tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then(function(html){
   var items = [];
   try{ items = parseHeadingItems(html, abs); }catch(_){ items = []; }
-  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),panelKey='';
+  if (!Array.isArray(items)) items = [];
+  var meta = items && items._m ? items._m : null,metaStrong=!!(meta&&((meta.t&&meta.t.length)||meta.a||(meta.c&&meta.c.length)||meta.u||meta.s)),panelKey='',fallback=null,fallbackItems=[],fallbackMeta=null,fallbackStrong=false;
+  if(!items.length||!metaStrong){
+    fallback=buildHydrationFallback(html, abs);
+    fallbackItems=fallback&&Array.isArray(fallback.items)?fallback.items:[];
+    fallbackMeta=fallback&&fallback.meta?fallback.meta:null;
+    fallbackStrong=!!(fallbackMeta&&((fallbackMeta.t&&fallbackMeta.t.length)||fallbackMeta.a||(fallbackMeta.c&&fallbackMeta.c.length)||fallbackMeta.u||fallbackMeta.s));
+    if(fallbackItems.length||fallbackStrong){
+      items=fallbackItems;
+      items._m=fallbackMeta;
+      meta=fallbackMeta;
+      metaStrong=fallbackStrong;
+    }
+  }
   infoDebug('InfoPanel fetch meta', meta || {});
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
-  if (!Array.isArray(items)) items = [];
   if (!items.length && !metaStrong){ writeToc(key, []); return []; }
   writeToc(key, items);
   panelKey=panel&&panel.__gK?String(panel.__gK):'';
