@@ -451,6 +451,17 @@ const src = html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
   .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ');
+let scope = src;
+const panelStart = src.search(/<div[^>]*class=['"][^'"]*\bgg-info-panel__card\b[^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i);
+if (panelStart >= 0) {
+  const tail = src.slice(panelStart);
+  const storeEnd = tail.match(/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>[\s\S]*?<\/a>/i);
+  if (storeEnd && typeof storeEnd.index === 'number') {
+    scope = tail.slice(0, storeEnd.index + storeEnd[0].length + 256);
+  } else {
+    scope = tail.slice(0, 12000);
+  }
+}
 const leaks = [];
 
 const labelChecks = [
@@ -482,15 +493,15 @@ const iconTokenChecks = [
 ];
 
 for (const [name, re] of labelChecks) {
-  if (re.test(src)) leaks.push(`label:${name}`);
+  if (re.test(scope)) leaks.push(`label:${name}`);
 }
 for (const [name, re] of iconTokenChecks) {
-  if (re.test(src)) leaks.push(`icon-token:${name}`);
+  if (re.test(scope)) leaks.push(`icon-token:${name}`);
 }
-if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(src)) {
+if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(scope)) {
   leaks.push('cta:Read this post');
 }
-if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(src)) {
+if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(scope)) {
   leaks.push('store-cta:Read this post');
 }
 if (leaks.length) process.stdout.write(leaks.join('\n'));

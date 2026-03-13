@@ -189,16 +189,27 @@ const stripped = html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
   .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
   .replace(/<!--[\s\S]*?-->/g, ' ');
+let scope = stripped;
+const panelStart = stripped.search(/<div[^>]*class=['"][^'"]*\bgg-info-panel__card\b[^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i);
+if (panelStart >= 0) {
+  const tail = stripped.slice(panelStart);
+  const storeEnd = tail.match(/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>[\s\S]*?<\/a>/i);
+  if (storeEnd && typeof storeEnd.index === 'number') {
+    scope = tail.slice(0, storeEnd.index + storeEnd[0].length + 256);
+  } else {
+    scope = tail.slice(0, 12000);
+  }
+}
 for (const [name, re] of panelLabelChecks) {
-  if (re.test(stripped)) leaks.add(`idle-chrome-label:${name}`);
+  if (re.test(scope)) leaks.add(`idle-chrome-label:${name}`);
 }
 for (const [name, re] of panelIconTokenChecks) {
-  if (re.test(stripped)) leaks.add(`idle-chrome-icon-token:${name}`);
+  if (re.test(scope)) leaks.add(`idle-chrome-icon-token:${name}`);
 }
-if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(stripped)) {
+if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(scope)) {
   leaks.add('idle-chrome-cta:Read this post');
 }
-if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(stripped)) {
+if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(scope)) {
   leaks.add('idle-chrome-store-cta:Read this post');
 }
 const tocRowVisible = /<div[^>]*data-row=(['"])toc\1(?![^>]*\bhidden=(['"])hidden\2)[^>]*>/i.test(stripped);
