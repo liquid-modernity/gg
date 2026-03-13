@@ -2246,6 +2246,14 @@ export default {
                 el.setInnerContent("");
               },
             })
+            .on(".gg-editorial-preview .gg-epanel__cta", {
+              element(el) {
+                el.setInnerContent(
+                  '<span aria-hidden="true" class="gg-icon material-symbols-rounded">visibility</span><span class="gg-epanel__cta-label"></span>',
+                  { html: true }
+                );
+              },
+            })
             .on("[data-gg-marker=\"panel-listing-cta\"]", {
               element(el) {
                 el.setInnerContent("");
