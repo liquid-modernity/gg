@@ -1485,9 +1485,8 @@ services.postmeta.getFromContext = services.postmeta.getFromContext || function(
 var root = ctxEl && ctxEl.querySelector ? ctxEl : d;
 var doc = root && root.nodeType === 9 ? root : ((root && root.ownerDocument) ? root.ownerDocument : d);
 var nodes = root && root.querySelectorAll ? root.querySelectorAll('.gg-postmeta,[data-gg-postmeta]') : null;
-if(root&&root.querySelectorAll) root.querySelectorAll('.gg-postmeta');
-var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '' };
-var i = 0, text = '', key = '', body = null, meta = null, seen = {}, parts = [], best = null, bestScore = -1, one = null, a = '', u = '', r = '', c = null, t = null, sc = 0;
+var out = { author: '', contributors: [], tags: [], updated: '', readMin: '', readLabel: '', snippet: '' };
+var i = 0, text = '', key = '', body = null, meta = null, seen = {}, parts = [], best = null, bestScore = -1, one = null, a = '', u = '', r = '', s = '', c = null, t = null, sc = 0;
 function clean(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function split(raw, rx){
   var src = clean(raw), list = src ? src.split(rx || /[;,]/) : [], outParts = [];
@@ -1501,19 +1500,37 @@ function split(raw, rx){
   return outParts;
 }
 function tagKey(raw){ return clean(raw).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, ''); }
+function excerptFromBody(node, maxLen){
+  var max = parseInt(maxLen, 10) || 220;
+  var clone = null, drops = null, txt = '';
+  if (!node || !node.cloneNode) return '';
+  clone = node.cloneNode(true);
+  if (clone && clone.querySelectorAll) {
+    drops = clone.querySelectorAll('script,style,noscript,svg,pre,code,figure,figcaption,blockquote,.gg-postmeta,[hidden],[aria-hidden=\"true\"]');
+    for (var j = 0; j < drops.length; j++) {
+      if (drops[j] && drops[j].remove) drops[j].remove();
+    }
+  }
+  txt = clean(clone && clone.textContent ? clone.textContent : '');
+  if (!txt) return '';
+  if (txt.length <= max) return txt;
+  return txt.slice(0, max).replace(/[.,;:!?\s]+$/g, '') + '...';
+}
 for(i=0;nodes&&i<nodes.length;i++){
   a=clean(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-author')||nodes[i].getAttribute('data-gg-author')||nodes[i].getAttribute('author')):'');
   u=clean(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-updated')||nodes[i].getAttribute('data-gg-updated')):'');
   r=clean(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-read-min')||nodes[i].getAttribute('data-readtime')||nodes[i].getAttribute('data-gg-read-min')||nodes[i].getAttribute('data-gg-readtime')):'');
-  c=split(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-contributors')||nodes[i].getAttribute('data-gg-contributors')):'',/\s*;\s*/);
-  t=split(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-tags')||nodes[i].getAttribute('data-gg-tags')):'',/\s*,\s*/);
-  sc=(a?2:0)+(u?2:0)+(r?1:0)+c.length*3+t.length*4;
-  if(sc>bestScore){ bestScore=sc; best={ author:a, updated:u, readMin:r, contributors:c, tags:t }; }
+  s=clean(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-snippet')||nodes[i].getAttribute('data-gg-snippet')):'');
+  c=split(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-contributors')||nodes[i].getAttribute('data-gg-contributors')):'',/\s*[;,]\s*/);
+  t=split(nodes[i]&&nodes[i].getAttribute?(nodes[i].getAttribute('data-tags')||nodes[i].getAttribute('data-gg-tags')):'',/\s*[;,]\s*/);
+  sc=(a?2:0)+(u?2:0)+(r?1:0)+(s?2:0)+c.length*3+t.length*4;
+  if(sc>bestScore){ bestScore=sc; best={ author:a, updated:u, readMin:r, snippet:s, contributors:c, tags:t }; }
 }
 if (best) {
   out.author = clean(best.author || '');
   out.updated = clean(best.updated || '');
   out.readMin = clean(best.readMin || '');
+  out.snippet = clean(best.snippet || '');
   parts = Array.isArray(best.contributors) ? best.contributors : [];
   for (i = 0; i < parts.length; i++) {
     if (out.author && parts[i].toLowerCase() === out.author.toLowerCase()) continue;
@@ -1536,9 +1553,13 @@ if (!out.updated) {
   out.updated = clean(meta ? meta.getAttribute('content') : '');
 }
 if (!out.readMin) {
-  body = root && root.querySelector ? (root.querySelector('.gg-post__content.post-body.entry-content') || root.querySelector('.post-body.entry-content') || root.querySelector('.entry-content') || root.querySelector('.post-body')) : null;
+  body = body || (root && root.querySelector ? (root.querySelector('.gg-post__content.post-body.entry-content') || root.querySelector('.post-body.entry-content') || root.querySelector('.entry-content') || root.querySelector('.post-body')) : null);
   text = clean((body && body.textContent) || (root && root.textContent) || '');
   if (text) out.readMin = String(Math.max(1, Math.ceil(text.split(/\s+/).length / 200)));
+}
+if (!out.snippet) {
+  body = body || (root && root.querySelector ? (root.querySelector('.gg-post__content.post-body.entry-content') || root.querySelector('.post-body.entry-content') || root.querySelector('.entry-content') || root.querySelector('.post-body')) : null);
+  out.snippet = excerptFromBody(body || root, 220);
 }
 if (out.readMin) out.readLabel = out.readMin + ' min read';
 return out;
@@ -3533,8 +3554,16 @@ function splitList(raw, rx){ var src=cleanText(raw),parts=src?src.split(rx||/\s*
 function clipText(raw,max){ var txt=cleanText(raw),n=parseInt(max,10)||0; if(!txt||n<8||txt.length<=n) return txt; return txt.slice(0,n).replace(/[.,;:!?\s]+$/,'')+'...'; }
 function humanDate(raw){ var txt=cleanText(raw).replace(/februari/ig,'February'),m=txt.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/),y=0,mm=0,d=0,dt=null,opts={ weekday:'long', month:'long', day:'2-digit', year:'numeric' }; if(!txt) return ''; if(m){ y=parseInt(m[1],10)||0; mm=(parseInt(m[2],10)||1)-1; d=parseInt(m[3],10)||1; dt=new Date(Date.UTC(y,mm,d)); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',{ weekday:'long', month:'long', day:'2-digit', year:'numeric', timeZone:'UTC' }); } dt=new Date(txt); if(isFinite(dt.getTime())) return dt.toLocaleDateString('en-US',opts); return cleanText(raw); }
 function readMinLabel(raw){ var txt=cleanText(raw),m,mins; if(!txt) return ''; m=txt.match(/(\d+)/); if(!m) return ''; mins=Math.max(1,parseInt(m[1],10)||1); return mins+' min read'; }
-function parsePostMetaFromCard(card){ var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=svc&&card?svc.getFromContext(card):{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' },meta=card?qs('.gg-postmeta,[data-gg-postmeta]',card):null,raw=''; if(!card) return pm||{}; pm=pm&&typeof pm==='object'?pm:{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' }; if(meta&&meta.getAttribute){ raw=cleanText(meta.getAttribute('data-author')||meta.getAttribute('data-gg-author')||''); if(raw) pm.author=raw; raw=cleanText(meta.getAttribute('data-updated')||meta.getAttribute('data-gg-updated')||''); if(raw) pm.updated=raw; raw=cleanText(meta.getAttribute('data-read-min')||meta.getAttribute('data-readtime')||meta.getAttribute('data-gg-read-min')||meta.getAttribute('data-gg-readtime')||''); if(raw) pm.readMin=raw; raw=cleanText(meta.getAttribute('data-snippet')||meta.getAttribute('data-gg-snippet')||''); if(raw) pm.snippet=raw; pm.contributors=splitList(meta.getAttribute('data-contributors')||meta.getAttribute('data-gg-contributors')||'',/\s*;\s*/); pm.tags=splitList(meta.getAttribute('data-tags')||meta.getAttribute('data-gg-tags')||'',/\s*,\s*/); } if(!pm.author) pm.author=cardAttr(card,'data-author-name')||cardAttr(card,'data-author'); if(!pm.updated) pm.updated=cardAttr(card,'data-updated')||cardAttr(card,'data-gg-updated'); if(!pm.readMin) pm.readMin=cardAttr(card,'data-read-min')||cardAttr(card,'data-readtime'); if(!pm.snippet) pm.snippet=cardAttr(card,'data-snippet')||cardAttr(card,'data-gg-snippet'); if(!Array.isArray(pm.contributors)||!pm.contributors.length) pm.contributors=splitList(cardAttr(card,'data-contributors'),/\s*;\s*/); if(!Array.isArray(pm.tags)||!pm.tags.length) pm.tags=splitList(cardAttr(card,'data-tags'),/\s*,\s*/); return pm; }
+function parsePostMetaFromCard(card){ var svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null,pm=svc&&card?svc.getFromContext(card):{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' },meta=card?qs('.gg-postmeta,[data-gg-postmeta]',card):null,raw=''; if(!card) return pm||{}; pm=pm&&typeof pm==='object'?pm:{ author:'',contributors:[],tags:[],updated:'',readMin:'',snippet:'' }; if(meta&&meta.getAttribute){ raw=cleanText(meta.getAttribute('data-author')||meta.getAttribute('data-gg-author')||''); if(raw) pm.author=raw; raw=cleanText(meta.getAttribute('data-updated')||meta.getAttribute('data-gg-updated')||''); if(raw) pm.updated=raw; raw=cleanText(meta.getAttribute('data-read-min')||meta.getAttribute('data-readtime')||meta.getAttribute('data-gg-read-min')||meta.getAttribute('data-gg-readtime')||''); if(raw) pm.readMin=raw; raw=cleanText(meta.getAttribute('data-snippet')||meta.getAttribute('data-gg-snippet')||''); if(raw) pm.snippet=raw; pm.contributors=splitList(meta.getAttribute('data-contributors')||meta.getAttribute('data-gg-contributors')||'',/\s*[;,]\s*/); pm.tags=splitList(meta.getAttribute('data-tags')||meta.getAttribute('data-gg-tags')||'',/\s*[;,]\s*/); } if(!pm.author) pm.author=cardAttr(card,'data-author-name')||cardAttr(card,'data-author'); if(!pm.updated) pm.updated=cardAttr(card,'data-updated')||cardAttr(card,'data-gg-updated'); if(!pm.readMin) pm.readMin=cardAttr(card,'data-read-min')||cardAttr(card,'data-readtime'); if(!pm.snippet) pm.snippet=cardAttr(card,'data-snippet')||cardAttr(card,'data-gg-snippet'); if(!Array.isArray(pm.contributors)||!pm.contributors.length) pm.contributors=splitList(cardAttr(card,'data-contributors'),/\s*[;,]\s*/); if(!Array.isArray(pm.tags)||!pm.tags.length) pm.tags=splitList(cardAttr(card,'data-tags'),/\s*[;,]\s*/); return pm; }
 function calcReadTime(root){ if(!root) return ''; var clone=root.cloneNode(true),drop=clone.querySelectorAll('nav,footer'),i=0,text=''; for(;i<drop.length;i++) drop[i].remove(); text=cleanText(clone.textContent||''); if(!text) return ''; return Math.max(1,Math.ceil(text.split(/\s+/).length/200))+' min read'; }
+function extractPreviewSnippet(root){
+if(!root||!root.cloneNode) return '';
+var clone=root.cloneNode(true),drop=clone.querySelectorAll('script,style,noscript,svg,pre,code,figure,figcaption,blockquote,.gg-postmeta,[hidden],[aria-hidden=\"true\"]'),i=0,text='';
+for(;i<drop.length;i++) if(drop[i]&&drop[i].remove) drop[i].remove();
+text=cleanText(clone.textContent||'');
+if(!text) return '';
+return clipText(text,220);
+}
 function authorDir(){ return GG.services&&GG.services.authorsDir ? GG.services.authorsDir : null; }
 function authorFallback(raw){ var svc=authorDir(),name=cleanText(raw),slug=''; if(svc&&svc.fallback) return svc.fallback(raw); slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); return { slug:slug, name:name||'Author', href:slug?('/p/'+slug+'.html'):'#', src:'fallback' }; }
 function tagDir(){ return GG.services&&GG.services.tagsDir ? GG.services.tagsDir : null; }
@@ -3614,7 +3643,7 @@ function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepK
 function parseHeadingItems(html,sourceUrl){
 var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }author=cleanText(pm&&pm.author||'');contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm&&pm.updated||'');readTime=readMinLabel(pm&&pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm&&pm.snippet||'');
+root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');try{ pm=svc?svc.getFromContext(doc):{}; }catch(_){ pm={}; }author=cleanText(pm&&pm.author||'');contributors=Array.isArray(pm&&pm.contributors)?pm.contributors:[];tags=(Array.isArray(pm&&pm.tags)?pm.tags:[]).map(tagFallback).filter(function(x){return x&&x.text;});updated=cleanText(pm&&pm.updated||'');readTime=readMinLabel(pm&&pm.readMin||'');if(!readTime) readTime=calcReadTime(root);snippet=cleanText(pm&&pm.snippet||'');if(!snippet) snippet=extractPreviewSnippet(root);
 out._m={t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet};
 if(!root) return out;
 headings=root.querySelectorAll('h1,h2,h3,h4');max=Math.min(headings.length,TOC_CAP);baseHref=normalizePostUrl(sourceUrl)||sourceUrl||'#';
@@ -3624,7 +3653,7 @@ return out;
 
 function hasPreviewPayload(items){
 var m=items&&items._m||0;
-return !!(items&&items.length||m.t&&m.t.length||m.c&&m.c.length||cleanText(m.s));
+return !!(items&&items.length||m.t&&m.t.length||m.c&&m.c.length||cleanText(m.s)||cleanText(m.a)||cleanText(m.r)||cleanText(m.u));
 }
 function previewPayloadOk(html,abs){ try{ return hasPreviewPayload(parseHeadingItems(html,abs)); }catch(_){ return false; } }
 
@@ -3757,10 +3786,8 @@ if(u){
   setS('updated',u);
   setRow('updated',true);
 } else if(!(panel&&panel.__iU)){ setS('updated',''); setRow('updated',false); }
-if(!(panel&&panel.__iS)){
-  if(s){ setS('snippet',s); setRow('snippet',true); }
-  else if(!hasS('snippet')){ setS('snippet',''); setRow('snippet',false); }
-}
+if(s){ setS('snippet',s); setRow('snippet',true); }
+else if(!(panel&&panel.__iS)||!hasS('snippet')){ setS('snippet',''); setRow('snippet',false); }
 }
 
 function extractLabels(card){ var seen={},tags=qsa('.gg-post-card__labels a[rel="tag"], .gg-post-card__label a[rel="tag"], a[rel="tag"]', card).map(function(a){ return { text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }; }).filter(function(x){ var k=x.text.toLowerCase(); return k&&!seen[k]&&(seen[k]=1); }),a; if(tags.length) return tags; a=qs('.gg-post-card__label a[rel="tag"]', card); return a?[{ text:cleanText(a.textContent), href:cleanText(a.getAttribute('href')||'') }]:[]; }
