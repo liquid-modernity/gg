@@ -3493,6 +3493,39 @@ img.src = src;
 img.alt = alt || '';
 }
 
+var PANEL_ICON_TOKENS = Object.freeze({
+title: 'article',
+author: 'person',
+contributors: 'groups',
+labels: 'label',
+tags: 'sell',
+date: 'calendar_today',
+updated: 'event_repeat',
+comments: 'comment',
+readtime: 'schedule',
+snippet: 'text_snippet',
+toc: 'toc'
+});
+
+function setPanelIcon(name, token){
+var row = qs('[data-row="'+name+'"]', panel), icon = row ? qs('.gg-epanel__icon', row) : null;
+if (icon) icon.textContent = token || '';
+}
+
+function setPanelCtaIcon(token){
+var icon = qs('.gg-epanel__cta .gg-icon', panel);
+if (icon) icon.textContent = token || '';
+}
+
+function syncPanelIconTokens(active){
+var key = '';
+for (key in PANEL_ICON_TOKENS){
+  if (!Object.prototype.hasOwnProperty.call(PANEL_ICON_TOKENS, key)) continue;
+  setPanelIcon(key, active ? PANEL_ICON_TOKENS[key] : '');
+}
+setPanelCtaIcon(active ? 'visibility' : '');
+}
+
 function setRow(name, visible){ var row = qs('[data-row="'+name+'"]', panel); if (row) row.hidden = !visible; }
 function cleanText(raw){ return String(raw || '').replace(/\s+/g, ' ').trim(); }
 function cardAttr(card, name){ return card ? cleanText(card.getAttribute(name) || '') : ''; }
@@ -3773,6 +3806,7 @@ return false;
 }
 af=authorText&&authorFallback(authorText);
 if(panel) panel.__gK=metaKey||'';
+syncPanelIconTokens(true);
 setS('title',title||'');
 setHref('[data-s="title"]',href);
 setHref('.gg-epanel__cta,.gg-info-panel__hero-cta',href);
@@ -3821,6 +3855,7 @@ panel.__iR = false;
 panel.__iS = false;
 var previewCard = qs('.gg-editorial-preview', panel);
 if (previewCard) previewCard.hidden = true;
+syncPanelIconTokens(false);
 setRow('head',false);
 setRow('thumbnail',false);
 setRow('title',false);

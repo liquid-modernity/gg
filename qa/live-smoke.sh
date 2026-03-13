@@ -466,9 +466,26 @@ const labelChecks = [
   ['Snippet', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Snippet\s*<\/dt>/i],
   ['Table of Contents', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Table of Contents\s*<\/dt>/i]
 ];
+const iconTokenChecks = [
+  ['article', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*article\s*<\/span>/i],
+  ['person', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*person\s*<\/span>/i],
+  ['groups', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*groups\s*<\/span>/i],
+  ['label', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*label\s*<\/span>/i],
+  ['sell', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*sell\s*<\/span>/i],
+  ['calendar_today', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*calendar_today\s*<\/span>/i],
+  ['event_repeat', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*event_repeat\s*<\/span>/i],
+  ['comment', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*comment\s*<\/span>/i],
+  ['schedule', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*schedule\s*<\/span>/i],
+  ['text_snippet', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*text_snippet\s*<\/span>/i],
+  ['toc', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*toc\s*<\/span>/i],
+  ['visibility', /<span[^>]*class=['"][^'"]*\bmaterial-symbols-rounded\b[^'"]*['"][^>]*>\s*visibility\s*<\/span>/i]
+];
 
 for (const [name, re] of labelChecks) {
   if (re.test(src)) leaks.push(`label:${name}`);
+}
+for (const [name, re] of iconTokenChecks) {
+  if (re.test(src)) leaks.push(`icon-token:${name}`);
 }
 if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(src)) {
   leaks.push('cta:Read this post');
@@ -815,11 +832,17 @@ const hasSeedDisabled = /function\s+seedInitialPreview\s*\(\)\s*\{\s*return\s+fa
 const hoverOpens = /function\s+handlePreviewHover[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
 const focusOpens = /function\s+handlePreviewFocus[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
 const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true\s*,\s*select:\s*true\s*\}\s*\)/.test(src);
+const hasIconSync = /function\s+syncPanelIconTokens\s*\(/.test(src);
+const openSetsIcons = /function\s+openWithCard[\s\S]*?syncPanelIconTokens\(\s*true\s*\)/.test(src);
+const resetClearsIcons = /function\s+resetPanelState[\s\S]*?syncPanelIconTokens\(\s*false\s*\)/.test(src);
 if (!hasSeedDisabled) fails.push('idle-seed-not-disabled');
 if (!hoverOpens) fails.push('hover-preview-open-missing');
 if (!focusOpens) fails.push('focus-preview-open-missing');
 if (!clickOpens) fails.push('info-action-open-missing');
-console.log(`META|seed_disabled=${hasSeedDisabled ? '1' : '0'};hover_open=${hoverOpens ? '1' : '0'};focus_open=${focusOpens ? '1' : '0'};click_open=${clickOpens ? '1' : '0'}`);
+if (!hasIconSync) fails.push('icon-sync-helper-missing');
+if (!openSetsIcons) fails.push('open-does-not-set-icons');
+if (!resetClearsIcons) fails.push('reset-does-not-clear-icons');
+console.log(`META|seed_disabled=${hasSeedDisabled ? '1' : '0'};hover_open=${hoverOpens ? '1' : '0'};focus_open=${focusOpens ? '1' : '0'};click_open=${clickOpens ? '1' : '0'};icon_sync=${hasIconSync ? '1' : '0'};open_sets_icons=${openSetsIcons ? '1' : '0'};reset_clears_icons=${resetClearsIcons ? '1' : '0'}`);
 for (const f of fails) console.log(`FAIL|${f}`);
 NODE
 

@@ -2241,6 +2241,11 @@ export default {
                 el.setInnerContent("");
               },
             })
+            .on(".gg-editorial-preview .gg-epanel__icon", {
+              element(el) {
+                el.setInnerContent("");
+              },
+            })
             .on(".gg-editorial-preview .gg-epanel__cta-label", {
               element(el) {
                 el.setInnerContent("");
@@ -2249,7 +2254,7 @@ export default {
             .on(".gg-editorial-preview .gg-epanel__cta", {
               element(el) {
                 el.setInnerContent(
-                  '<span aria-hidden="true" class="gg-icon material-symbols-rounded">visibility</span><span class="gg-epanel__cta-label"></span>',
+                  '<span aria-hidden="true" class="gg-icon material-symbols-rounded"></span><span class="gg-epanel__cta-label"></span>',
                   { html: true }
                 );
               },

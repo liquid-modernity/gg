@@ -148,6 +148,20 @@ const panelLabelChecks = [
   ['Snippet', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Snippet\s*<\/dt>/i],
   ['Table of Contents', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Table of Contents\s*<\/dt>/i]
 ];
+const panelIconTokenChecks = [
+  ['article', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*article\s*<\/span>/i],
+  ['person', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*person\s*<\/span>/i],
+  ['groups', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*groups\s*<\/span>/i],
+  ['label', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*label\s*<\/span>/i],
+  ['sell', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*sell\s*<\/span>/i],
+  ['calendar_today', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*calendar_today\s*<\/span>/i],
+  ['event_repeat', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*event_repeat\s*<\/span>/i],
+  ['comment', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*comment\s*<\/span>/i],
+  ['schedule', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*schedule\s*<\/span>/i],
+  ['text_snippet', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*text_snippet\s*<\/span>/i],
+  ['toc', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*toc\s*<\/span>/i],
+  ['visibility', /<span[^>]*class=['"][^'"]*\bmaterial-symbols-rounded\b[^'"]*['"][^>]*>\s*visibility\s*<\/span>/i]
+];
 [
   'head',
   'thumbnail',
@@ -177,6 +191,9 @@ const stripped = html
   .replace(/<!--[\s\S]*?-->/g, ' ');
 for (const [name, re] of panelLabelChecks) {
   if (re.test(stripped)) leaks.add(`idle-chrome-label:${name}`);
+}
+for (const [name, re] of panelIconTokenChecks) {
+  if (re.test(stripped)) leaks.add(`idle-chrome-icon-token:${name}`);
 }
 if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(stripped)) {
   leaks.add('idle-chrome-cta:Read this post');
