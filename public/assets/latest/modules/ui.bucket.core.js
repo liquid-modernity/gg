@@ -3683,7 +3683,8 @@ return out;
 function parseHeadingItems(html,sourceUrl){
 var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content');
+root=doc.querySelector('.gg-post__content.post-body.entry-content, .post-body.entry-content, .post-body.post-body-container, .post-outer .post-body, .post-body');
+if(!root) root=doc.querySelector('article .entry-content, .entry-content, article, main');
 try{ pm=parsePostmetaFromDoc(doc); }catch(_){ pm={}; }
 if((!pm||(!pm.author&&!(pm.contributors&&pm.contributors.length)&&!(pm.tags&&pm.tags.length)&&!pm.updated&&!pm.readMin&&!pm.snippet))&&svc){
   try{ pm=svc.getFromContext(doc)||pm; }catch(_){}
@@ -3699,7 +3700,8 @@ return out;
 function buildHydrationFallback(html,sourceUrl){
 var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return { items: [], meta: null };
-root=doc.querySelector('.post-body.entry-content, .post-body.post-body-container, .post-body, .entry-content, .post-outer .post-body, .gg-post__content.post-body.entry-content, .gg-post__content')||doc.querySelector('.post-body, .entry-content, article, main');
+root=doc.querySelector('.gg-post__content.post-body.entry-content, .post-body.entry-content, .post-body.post-body-container, .post-outer .post-body, .post-body');
+if(!root) root=doc.querySelector('article .entry-content, .entry-content, article, main');
 try{ pm=parsePostmetaFromDoc(doc); }catch(_){ pm={}; }
 if((!pm||(!pm.author&&!(pm.contributors&&pm.contributors.length)&&!(pm.tags&&pm.tags.length)&&!pm.updated&&!pm.readMin&&!pm.snippet))&&svc){
   try{ pm=svc.getFromContext(doc)||pm; }catch(_){}
