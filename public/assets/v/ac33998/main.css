@@ -2746,8 +2746,15 @@ color: color-mix(in srgb, var(--gg-ink) 90%, #617082);
 .gg-epanel__row[data-row="snippet"] [data-s="snippet"]{
 display:-webkit-box;
 -webkit-box-orient:vertical;
--webkit-line-clamp:5;
+-webkit-line-clamp:4;
 overflow:hidden;
+}
+.gg-epanel__row:is([data-row="contributors"],[data-row="labels"],[data-row="tags"],[data-row="date"],[data-row="updated"],[data-row="comments"],[data-row="readtime"]){
+padding-top: 7px;
+border-top: 1px solid color-mix(in srgb, var(--gg-border) 86%, #e8edf5);
+}
+.gg-epanel__row:is([data-row="labels"],[data-row="updated"],[data-row="comments"]) .gg-epanel__value{
+color: color-mix(in srgb, var(--gg-ink) 88%, #5f6f82);
 }
 .gg-epanel__value--toc{
 display:grid;
@@ -2755,7 +2762,7 @@ gap:5px;
 }
 .gg-editorial-preview .gg-info-panel__toclist{
 margin: 0;
-max-height: 108px;
+max-height: 96px;
 overflow: auto;
 list-style: none;
 padding: 0;
