@@ -3751,14 +3751,16 @@ if(!window.fetch) return Promise.reject(new Error('n'));
 return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
-    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt),brokenSubst=/Can't find substitution for tag\s*\[post\./i.test(txt);
-    if(postLikeHtml(txt)&&!moved&&!brokenSubst&&previewPayloadOk(txt,abs)) return txt;
+    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt),brokenSubst=/Can't find substitution for tag\s*\[post\./i.test(txt),mustFallback=(!postLikeHtml(txt)||moved||brokenSubst||!previewPayloadOk(txt,abs));
+    if(!mustFallback) return txt;
     fallback=abs;
     return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
       return next.text().then(function(nextHtml){
         var out=String(nextHtml||'');
-        return postLikeHtml(out)&&previewPayloadOk(out,abs)?out:txt;
+        if(!postLikeHtml(out)) return txt;
+        if(brokenSubst||moved) return out;
+        return previewPayloadOk(out,abs)?out:txt;
       });
     }).catch(function(){ return txt; });
   });
