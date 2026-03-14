@@ -3751,8 +3751,8 @@ if(!window.fetch) return Promise.reject(new Error('n'));
 return window.fetch(mobilePostUrl(abs),opts).then(function(res){
   if(!res||!res.ok) throw new Error('f');
   return res.text().then(function(html){
-    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt);
-    if(postLikeHtml(txt)&&!moved&&previewPayloadOk(txt,abs)) return txt;
+    var txt=String(html||''),moved=/(<title>\s*Moved Temporarily\s*<\/title>|<h1>\s*Moved Temporarily\s*<\/h1>)/i.test(txt),brokenSubst=/Can't find substitution for tag\s*\[post\./i.test(txt);
+    if(postLikeHtml(txt)&&!moved&&!brokenSubst&&previewPayloadOk(txt,abs)) return txt;
     fallback=abs;
     return window.fetch(fallback,opts).then(function(next){
       if(!next||!next.ok) return txt;
