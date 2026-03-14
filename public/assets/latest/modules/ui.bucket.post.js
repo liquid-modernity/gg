@@ -239,10 +239,9 @@
       if (GG.core && GG.core.state && typeof GG.core.state.toggle === 'function') {
         GG.core.state.toggle(root, 'collapsed', !!collapsed);
       }
-      var headBtn = root.querySelector('.gg-toc__headbtn');
       var toggleBtn = root.querySelector('.gg-toc__toggle');
-      if (headBtn) headBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       if (toggleBtn) {
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         toggleBtn.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
         var icon = toggleBtn.querySelector('.material-symbols-rounded');
         if (icon) icon.textContent = collapsed ? 'expand_content' : 'collapse_content';
@@ -253,7 +252,7 @@
       root.__ggTocBound = true;
       root.addEventListener('click', function(e){
         if (!e || !e.target || !e.target.closest) return;
-        if (e.target.closest('.gg-toc__headbtn,.gg-toc__toggle')) {
+        if (e.target.closest('.gg-toc__toggle')) {
           var collapsed = GG.core && GG.core.state && typeof GG.core.state.has === 'function' ? GG.core.state.has(root, 'collapsed') : false;
           setCollapsed(root, !collapsed);
           return;

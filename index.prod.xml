@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='274534458925' name='gg-template-fingerprint'/>
+    <meta content='4f957c39a260' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -234,7 +234,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='274534458925' data-release='ac33998' hidden='hidden' id='gg-fingerprint'></div>
+	    <div data-env='prod' data-gg-template-fingerprint='4f957c39a260' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and (data:view.url and (data:view.url contains &quot;/landing&quot; or data:view.url contains &quot;view=landing&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -666,17 +666,17 @@ text-align: center;
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
               <b:widget-setting name='content'><![CDATA[<!-- GAGA TABLE OF CONTENTS (POST/PAGE DETAIL) -->
-<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h1,h2,h3,h4">
+<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h1,h2,h3,h4" aria-labelledby="gg-toc-title">
   <div class="gg-toc__head">
-    <button class="gg-toc__headbtn" type="button" aria-expanded="true">
+    <div class="gg-toc__heading" id="gg-toc-title">
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
       <span class="gg-toc__title">Table of Contents</span>
-    </button>
-    <button class="gg-toc__toggle" type="button" aria-label="Collapse">
+    </div>
+    <button class="gg-toc__toggle" type="button" aria-controls="gg-toc-body" aria-expanded="true" aria-label="Collapse">
       <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
     </button>
   </div>
-  <div class="gg-toc__body">
+  <div class="gg-toc__body" id="gg-toc-body">
     <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
     <div class="gg-toc__empty" hidden></div>
   </div>
@@ -730,7 +730,7 @@ text-align: center;
                       <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-tt-line'/>        </use></svg>
                     </a>
                     <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-rd-line'/>        </use></svg>
                     </a>
                 </div>
               </div>
@@ -786,7 +786,7 @@ text-align: center;
                       <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-tt-line'/>        </use></svg>
                     </a>
                     <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-li-line'/>        </use></svg>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'>          <use href='#gg-ic-rd-line'/>        </use></svg>
                     </a>
                 </div>
               </div>
@@ -2799,7 +2799,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <b:if cond='data:view.isMultipleItems and (not data:view.isHomepage or data:ggIsBlogHome)'>
     <div class='gg-info-panel__card gg-editorial-preview gg-epanel' hidden='hidden'>
       <div class='gg-epanel__head' data-row='head' hidden='hidden'>
-        <span class='gg-epanel__eyebrow'></span>
+        <span class='gg-epanel__eyebrow'/>
       </div>
       <div class='gg-epanel__media' data-gg-marker='panel-listing-thumbnail' data-row='thumbnail' hidden='hidden'>
         <img alt='' class='gg-info-panel__thumb-img'/>
@@ -2808,101 +2808,101 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <div class='gg-epanel__body gg-info-panel__details'>
         <dl class='gg-epanel__rows'>
           <div class='gg-epanel__row' data-row='title' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <a data-s='title' href='#'></a>
+                <a data-s='title' href='#'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='author' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
                 <a data-s='author-link' href='#'>
-                  <span data-s='author'></span>
+                  <span data-s='author'/>
                 </a>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='contributors' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
                 <div class='gg-chip-row gg-epanel__chips' data-gg-slot='contributors'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='labels' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
                 <div class='gg-chip-row gg-epanel__chips' data-gg-slot='labels'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='tags' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
                 <div class='gg-chip-row gg-epanel__chips' data-gg-slot='tags'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='date' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <span data-s='date'></span>
+                <span data-s='date'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='updated' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <span data-s='updated'></span>
+                <span data-s='updated'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='comments' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <span data-s='comments'></span>
+                <span data-s='comments'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='readtime' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <span data-s='readtime'></span>
+                <span data-s='readtime'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='snippet' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
-                <span data-s='snippet'></span>
+                <span data-s='snippet'/>
               </dd>
             </div>
           </div>
           <div class='gg-epanel__row' data-row='toc' hidden='hidden'>
-            <span aria-hidden='true' class='gg-icon gg-epanel__icon'></span>
+            <span aria-hidden='true' class='gg-icon gg-epanel__icon'/>
             <div class='gg-epanel__cell'>
-              <dt class='gg-epanel__label'></dt>
+              <dt class='gg-epanel__label'/>
               <dd class='gg-epanel__value'>
                 <div class='gg-epanel__value--toc'>
                   <ol class='gg-info-panel__toclist' data-gg-slot='toc'/>
@@ -2915,8 +2915,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </div>
       <div class='gg-epanel__foot' data-row='cta' hidden='hidden'>
         <a class='gg-epanel__cta' href='#'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'></span>
-          <span class='gg-epanel__cta-label'></span>
+          <span aria-hidden='true' class='gg-icon material-symbols-rounded'/>
+          <span class='gg-epanel__cta-label'/>
         </a>
       </div>
     </div>
@@ -2937,7 +2937,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span data-gg-marker='panel-listing-reading-time' data-row='readtime' data-s='readtime'/>
     <span data-gg-marker='panel-listing-snippet' data-row='snippet' data-s='snippet'/>
     <ol data-gg-marker='panel-listing-toc' data-gg-slot='toc' data-row='toc'/>
-    <a data-gg-marker='panel-listing-cta' data-row='cta' href='#'></a>
+    <a data-gg-marker='panel-listing-cta' data-row='cta' href='#'/>
   </div>
     </b:if>
   </div>

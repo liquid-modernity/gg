@@ -6267,23 +6267,6 @@ function updateBackdrop(){
       updateBackdrop();
       if (opts.restoreFocus) restoreFocus();
     }
-    function injectLeftHeader(){
-      if (!left) return;
-      if (qs('.gg-left-panel__head', left)) return;
-
-      var head = document.createElement('div');
-      head.className = 'gg-left-panel__head';
-      var brand = document.createElement('div');
-      brand.className = 'gg-left-panel__brand';
-      var title = document.createElement('span');
-      title.className = 'gg-left-panel__brand-title';
-      brand.appendChild(title);
-      head.appendChild(brand);
-
-      var wrap = qs('.gg-blog-sidebar__section', left) || left;
-      wrap.insertBefore(head, wrap.firstChild);
-    }
-
     function injectLeftFab(){
       if (qs('.gg-left-fab')) return;
       var btn = document.createElement('button');
@@ -6420,7 +6403,6 @@ function updateBackdrop(){
 
       backdrop = ensureBackdrop();
 
-      injectLeftHeader();
       injectLeftFab();
       enhanceTree();
 
