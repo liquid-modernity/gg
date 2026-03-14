@@ -4303,7 +4303,7 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 gap:8px;
-padding:7px 10px;
+
 margin:0;
 border-bottom:1px solid var(--gg-border);
 }
@@ -4578,7 +4578,7 @@ background:transparent;
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left #gg-postinfo .gg-pi__head,
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left #gg-toc .gg-toc__head{
-padding:9px 12px;
+
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left #gg-postinfo .gg-pi__headbtn,
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left #gg-toc .gg-toc__heading,
