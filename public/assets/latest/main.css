@@ -7691,7 +7691,7 @@ border-bottom:1px solid color-mix(in srgb,var(--gg-border) 72%,transparent);
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__body{
 flex:1 1 auto;
-overflow:auto;
+overflow:hidden;
 overscroll-behavior:contain;
 -webkit-overflow-scrolling:touch;
 padding-top:10px;
@@ -7699,10 +7699,32 @@ padding-bottom:12px;
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__bot{
 flex:0 0 auto;
+flex-shrink:0;
 margin-top:auto;
 padding:10px 12px 12px;
 border-top:1px solid color-mix(in srgb,var(--gg-border) 72%,transparent);
 background:color-mix(in srgb, var(--gg-surface) 95%, #eef2f7);
+position:sticky;
+bottom:0;
+z-index:2;
+box-shadow:0 -12px 22px -24px rgba(11,13,16,.28);
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > :is(#gg-left-sb-top-list,#gg-left-sb-body-post){
+min-height:0;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="list"] > #gg-left-sb-top-list,
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="post"] > #gg-left-sb-body-post{
+flex:1 1 auto;
+overflow:auto;
+overscroll-behavior:contain;
+-webkit-overflow-scrolling:touch;
+scrollbar-gutter:stable;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="list"] > #gg-left-sb-top-list{
+padding-bottom:12px;
+}
+main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="post"] > #gg-left-sb-body-post{
+padding-bottom:14px;
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > :is(.gg-sb__top,.gg-sb__body,.gg-sb__bot).gg-panelcard{background:transparent;border:0;box-shadow:none;border-radius:0;}
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top[hidden],
@@ -7815,6 +7837,15 @@ display:block;
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-blog-sidebar--left .gg-leftnav.gg-sb{
 overflow:hidden;
+}
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="post"] > #gg-left-sb-body-post #gg-toc{
+max-height:none;
+overflow:visible;
+}
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="post"] > #gg-left-sb-body-post #gg-toc .gg-toc__body,
+main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb[data-gg-sb-mode="post"] > #gg-left-sb-body-post #gg-toc .gg-toc__list{
+overflow:visible;
+max-height:none;
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top #gg-toc{
 max-height:min(42dvh,420px);
