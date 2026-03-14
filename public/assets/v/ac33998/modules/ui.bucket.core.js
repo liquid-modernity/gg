@@ -3801,18 +3801,16 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
     }
   }
   infoDebug('InfoPanel fetch meta', meta || {});
-  if(PREVIEW_DEBUG){
-    try{
-      w.__GG_PREVIEW_LAST = {
-        key: key,
-        panelKey: panel&&panel.__gK?String(panel.__gK):'',
-        itemsLen: Array.isArray(items)?items.length:0,
-        meta: meta||null,
-        metaStrong: !!metaStrong,
-        at: Date.now()
-      };
-    }catch(_){}
-  }
+  try{
+    w.__GG_PREVIEW_LAST = {
+      key: key,
+      panelKey: panel&&panel.__gK?String(panel.__gK):'',
+      itemsLen: Array.isArray(items)?items.length:0,
+      meta: meta||null,
+      metaStrong: !!metaStrong,
+      at: Date.now()
+    };
+  }catch(_){}
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
   if (!items.length && !metaStrong){ writeToc(key, []); return []; }
