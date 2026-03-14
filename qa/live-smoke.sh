@@ -848,7 +848,7 @@ const openSetsIcons = /function\s+openWithCard[\s\S]*?syncPanelIconTokens\(\s*tr
 const resetClearsIcons = /function\s+resetPanelState[\s\S]*?syncPanelIconTokens\(\s*false\s*\)/.test(src);
 const hasSnippetExtractor = /function\s+extractPreviewSnippet\s*\(/.test(src);
 const headingReadsPostmeta = /function\s+parseHeadingItems[\s\S]*?getFromContext\(doc\)/.test(src);
-const headingSnippetFallback = /function\s+parseHeadingItems[\s\S]*?snippet=cleanText\(pm&&pm\.snippet\|\|''\);\s*if\(!snippet\)\s*snippet=extractPreviewSnippet\(root\);/.test(src);
+const headingSnippetFallback = /function\s+parseHeadingItems[\s\S]*?snippet=(?:cleanText|curateSnippet)\(pm&&pm\.snippet\|\|''(?:,\s*\d+)?\);\s*if\(!snippet\)\s*snippet=extractPreviewSnippet\(root\);/.test(src);
 const headingWritesMetaPayload = /function\s+parseHeadingItems[\s\S]*?out\._m=\{t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet\}/.test(src);
 const cardMetaFlexibleSplit = /function\s+parsePostMetaFromCard[\s\S]*?data-contributors[\s\S]*?\/\\s\*\[;,\]\\s\*\/[\s\S]*?data-tags[\s\S]*?\/\\s\*\[;,\]\\s\*\//.test(src);
 const payloadGuard = /if\(!hasPreviewPayload\)\{[\s\S]*?resetPanelState\(\);[\s\S]*?return false;/.test(src);
