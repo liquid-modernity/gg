@@ -3419,10 +3419,12 @@ var tocPending = Object.create(null);
 var tocAborters = Object.create(null);
 var postMetaCache = new Map();
 var INFO_DEBUG = false;
+var PREVIEW_DEBUG = false;
 
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 try{ var envMeta=qs('meta[name="gg-env"]'),envVal=String(envMeta&&envMeta.getAttribute?envMeta.getAttribute('content'):'').toLowerCase().trim(); INFO_DEBUG=envVal==='lab'; }catch(_){}
+try{ PREVIEW_DEBUG=!!(w&&w.__GG_PREVIEW_DEBUG); }catch(_){}
 function infoDebug(msg,val){ if(!INFO_DEBUG||!window.console||typeof console.debug!=='function') return; try{ console.debug(msg,val); }catch(_){} }
 function syncSlotInfoSelected(value){
 try {
@@ -3799,6 +3801,18 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
     }
   }
   infoDebug('InfoPanel fetch meta', meta || {});
+  if(PREVIEW_DEBUG){
+    try{
+      w.__GG_PREVIEW_LAST = {
+        key: key,
+        panelKey: panel&&panel.__gK?String(panel.__gK):'',
+        itemsLen: Array.isArray(items)?items.length:0,
+        meta: meta||null,
+        metaStrong: !!metaStrong,
+        at: Date.now()
+      };
+    }catch(_){}
+  }
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
   if (!items.length && !metaStrong){ writeToc(key, []); return []; }
