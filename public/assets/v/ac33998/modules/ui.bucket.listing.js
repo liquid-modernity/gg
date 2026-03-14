@@ -201,6 +201,10 @@
       for (var i = 0; i < current.length; i++) {
         GG.core.state.remove(current[i], 'current');
       }
+      var currentLinks = treeEl.querySelectorAll('a[aria-current="page"]');
+      for (var k = 0; k < currentLinks.length; k++) {
+        currentLinks[k].removeAttribute('aria-current');
+      }
       var actives = treeEl.querySelectorAll('[data-gg-state~="active"]');
       for (var j = 0; j < actives.length; j++) {
         GG.core.state.remove(actives[j], 'active');
@@ -244,13 +248,9 @@
         var link = d.createElement('a');
         link.href = p && p.url ? String(p.url) : '#';
         link.setAttribute('role', 'treeitem');
-        var icon = d.createElement('span');
-        icon.className = 'material-symbols-rounded gg-lt__doc';
-        icon.setAttribute('aria-hidden', 'true');
-        icon.textContent = 'article';
         var title = d.createElement('span');
+        title.className = 'gg-lt__posttxt';
         title.textContent = p && p.title ? String(p.title) : '';
-        link.appendChild(icon);
         link.appendChild(title);
         li.appendChild(link);
         ul.appendChild(li);
@@ -260,6 +260,7 @@
       for (var i = 0; i < links.length; i++) {
         if (normalizeUrl(links[i].href) === activeUrl) {
           GG.core.state.add(links[i], 'active');
+          links[i].setAttribute('aria-current', 'page');
         }
       }
     }
