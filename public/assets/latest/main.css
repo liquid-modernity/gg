@@ -4335,7 +4335,8 @@ font-size:var(--gg-panel-label-size,8px);
 letter-spacing:.14em;
 text-transform:uppercase;
 color:var(--gg-muted);
-
+padding-right: 10px;
+    padding-left: 10px;
 min-height:var(--gg-tap-min);
 text-align:left;
 flex:1 1 auto;

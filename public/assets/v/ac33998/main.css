@@ -8183,7 +8183,8 @@ color:var(--gg-leftnav-tone-muted) !important;
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb #gg-toc .gg-toc__heading{
 min-height:32px;
-
+padding-right: 10px;
+    padding-left: 10px;
 font-size:10.75px;
 line-height:1.25;
 font-weight:600;
