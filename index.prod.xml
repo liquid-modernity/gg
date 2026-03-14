@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='4f957c39a260' name='gg-template-fingerprint'/>
+    <meta content='b35c32ccda59' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -234,7 +234,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='4f957c39a260' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='b35c32ccda59' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and (data:view.url and (data:view.url contains &quot;/landing&quot; or data:view.url contains &quot;view=landing&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -3010,7 +3010,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='gg-dock__label'>Search</span>
   </a>
 
-  <a aria-label='More' class='gg-dock__item gg-dock__item--more' data-gg-action='more' data-gg-dock-action='1' data-gg-primary='1' href='#gg-dock-more'>
+  <a aria-controls='gg-dock-more' aria-expanded='false' aria-haspopup='dialog' aria-label='More' class='gg-dock__item gg-dock__item--more' data-gg-action='more' data-gg-dock-action='1' data-gg-primary='1' href='#gg-dock-more'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>more_horiz</span>
     </span>
@@ -3030,56 +3030,108 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </form>
   </div>
 </nav>
-<section aria-label='More shortcuts' class='gg-dock-more' id='gg-dock-more'>
-  <div aria-labelledby='gg-dock-more-title' class='gg-dock-more__sheet' role='dialog'>
+<section aria-hidden='true' aria-label='More actions' class='gg-dock-more' data-gg-state='hidden' hidden='hidden' id='gg-dock-more'>
+  <div aria-hidden='true' class='gg-dock-more__scrim' data-gg-action='more-close'/>
+  <div aria-describedby='gg-dock-more-desc' aria-labelledby='gg-dock-more-title' aria-modal='true' class='gg-dock-more__sheet' role='dialog' tabindex='-1'>
+    <div aria-hidden='true' class='gg-dock-more__handle'/>
     <div class='gg-dock-more__head'>
-      <p class='gg-dock-more__title' id='gg-dock-more-title'>More</p>
-      <a class='gg-dock-more__close' data-gg-action='more-close' href='#'>Close</a>
+      <div class='gg-dock-more__identity'>
+        <p class='gg-dock-more__eyebrow'>Command surface</p>
+        <h2 class='gg-dock-more__title' id='gg-dock-more-title'>More</h2>
+        <p class='gg-dock-more__summary' id='gg-dock-more-desc'>Quick actions, key pages, and external profiles.</p>
+      </div>
+      <button aria-label='Close more sheet' class='gg-dock-more__close' data-gg-action='more-close' type='button'>
+        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>close</span>
+      </button>
     </div>
-    <ul class='gg-dock-more__list'>
-      <li data-gg-more-origin='footer'>
-        <a href='#'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>auto_awesome</span>
-          <span>AI Summary &#183; ChatGPT</span>
-        </a>
-      </li>
-      <li data-gg-more-origin='footer'>
-        <a href='/p/pay.html#paypal'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>payments</span>
-          <span>Payment &#183; PayPal</span>
-        </a>
-      </li>
-      <li data-gg-more-origin='footer'>
-        <a data-gg-more-action='install' href='#'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>install_desktop</span>
-          <span>Install Web App to Device</span>
-        </a>
-      </li>
-      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
-        <a class='gg-navtree__link' href='/p/about.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>account_balance</span>
-          <span>About &amp; Philosophy</span>
-        </a>
-      </li>
-      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
-        <a class='gg-navtree__link' href='/p/tags.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>topic</span>
-          <span>Topic Index</span>
-        </a>
-      </li>
-      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
-        <a class='gg-navtree__link' href='/p/support.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>support_agent</span>
-          <span>Help Center</span>
-        </a>
-      </li>
-      <li class='gg-navtree__item' data-gg-more-origin='navtree'>
-        <a class='gg-navtree__link' href='/p/privacy-policy.html'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>policy</span>
-          <span>Privacy Policy</span>
-        </a>
-      </li>
-    </ul>
+    <div class='gg-dock-more__body'>
+      <section aria-labelledby='gg-dock-more-primary' class='gg-dock-more__section gg-dock-more__section--primary'>
+        <p class='gg-dock-more__section-label' id='gg-dock-more-primary'>Quick actions</p>
+        <ul class='gg-dock-more__list gg-dock-more__list--primary'>
+          <li data-gg-more-origin='static'>
+            <a class='gg-dock-more__action' data-gg-kind='external' data-gg-tone='strong' href='/p/pay.html#paypal'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>payments</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>Support via PayPal</span>
+                <span class='gg-dock-more__meta'>Contribute directly to the project.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>north_east</span>
+            </a>
+          </li>
+          <li data-gg-more-origin='static'>
+            <button class='gg-dock-more__action' data-gg-kind='action' data-gg-more-action='install' data-gg-tone='strong' type='button'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>install_desktop</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>Install web app</span>
+                <span class='gg-dock-more__meta'>Pin this site for faster return visits.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>download</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+      <section aria-labelledby='gg-dock-more-browse' class='gg-dock-more__section gg-dock-more__section--nav'>
+        <p class='gg-dock-more__section-label' id='gg-dock-more-browse'>Browse</p>
+        <ul class='gg-dock-more__list gg-dock-more__list--nav' data-gg-more-group='nav'>
+          <li data-gg-more-origin='navtree'>
+            <a class='gg-dock-more__action' data-gg-kind='internal' href='/p/about.html'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>account_balance</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>About &amp; Philosophy</span>
+                <span class='gg-dock-more__meta'>Editorial notes and guiding principles.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>arrow_forward</span>
+            </a>
+          </li>
+          <li data-gg-more-origin='navtree'>
+            <a class='gg-dock-more__action' data-gg-kind='internal' href='/p/tags.html'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>topic</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>Topic Index</span>
+                <span class='gg-dock-more__meta'>Browse topics, labels, and entry points.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>arrow_forward</span>
+            </a>
+          </li>
+          <li data-gg-more-origin='navtree'>
+            <a class='gg-dock-more__action' data-gg-kind='internal' href='/p/support.html'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>support_agent</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>Help Center</span>
+                <span class='gg-dock-more__meta'>Support answers and contact paths.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>arrow_forward</span>
+            </a>
+          </li>
+          <li data-gg-more-origin='navtree'>
+            <a class='gg-dock-more__action' data-gg-kind='internal' data-gg-tone='quiet' href='/p/privacy-policy.html'>
+              <span aria-hidden='true' class='gg-dock-more__badge'>
+                <span class='gg-icon material-symbols-rounded'>policy</span>
+              </span>
+              <span class='gg-dock-more__copy'>
+                <span class='gg-dock-more__label'>Privacy Policy</span>
+                <span class='gg-dock-more__meta'>Review privacy terms and data handling.</span>
+              </span>
+              <span aria-hidden='true' class='gg-dock-more__trail gg-icon material-symbols-rounded'>arrow_forward</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+      <section aria-labelledby='gg-dock-more-elsewhere' class='gg-dock-more__section gg-dock-more__section--footer' data-gg-more-section='footer' hidden='hidden'>
+        <p class='gg-dock-more__section-label' id='gg-dock-more-elsewhere'>Elsewhere</p>
+        <ul class='gg-dock-more__list gg-dock-more__list--footer' data-gg-more-group='footer'/>
+      </section>
+    </div>
   </div>
 </section>
 

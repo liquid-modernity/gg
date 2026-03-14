@@ -2107,7 +2107,12 @@ var lastScrollY = 0;
 var dockHidden = false;
 var autoHideBound = false;
 var morePanelEl = null;
+var morePanelSheetEl = null;
 var morePanelOpen = false;
+var morePanelTrapCleanup = null;
+var moreInertActive = false;
+var moreHideTimer = 0;
+var moreButtonEl = null;
 var escBound = false;
 var pendingBound = false;
 
@@ -2155,8 +2160,22 @@ if (!morePanelEl) morePanelEl = document.getElementById('gg-dock-more');
 return morePanelEl;
 }
 
+function ensureMoreSheet(){
+if (!morePanelSheetEl) {
+  var panel = ensureMorePanel();
+  morePanelSheetEl = panel ? panel.querySelector('.gg-dock-more__sheet') : null;
+}
+return morePanelSheetEl;
+}
+
 function textOf(el){
 return (el && el.textContent ? el.textContent : '').replace(/\s+/g, ' ').trim();
+}
+
+function focusNoScroll(el){
+if (!el || typeof el.focus !== 'function') return;
+try { el.focus({ preventScroll: true }); }
+catch (_) { try { el.focus(); } catch (__ ) {} }
 }
 
 function clearMoreFooterItems(list){
@@ -2175,20 +2194,162 @@ for (var i = 0; i < stale.length; i++) {
 }
 }
 
-function appendMoreFooterLinkItem(list, href, label, source){
+function setMoreSectionHidden(list, hidden){
+var section = list && list.closest ? list.closest('.gg-dock-more__section') : null;
+if (section) section.hidden = !!hidden;
+}
+
+function setMoreSurfaceLock(locked){
+var root = document.documentElement;
+if (root && root.classList) root.classList.toggle('gg-more-sheet-open', !!locked);
+if (document.body && document.body.classList) document.body.classList.toggle('gg-more-sheet-open', !!locked);
+}
+
+function cleanupMorePanelA11y(){
+if (morePanelTrapCleanup) {
+  try { morePanelTrapCleanup(); } catch (_) {}
+  morePanelTrapCleanup = null;
+}
+if (moreInertActive && GG.services && GG.services.a11y && GG.services.a11y.inertManager && typeof GG.services.a11y.inertManager.pop === 'function') {
+  try { GG.services.a11y.inertManager.pop(); } catch (_) {}
+}
+moreInertActive = false;
+}
+
+function setMoreButtonState(open){
+if (!moreButtonEl && dockEl) moreButtonEl = dockEl.querySelector('.gg-dock__item[data-gg-action="more"]');
+if (!moreButtonEl) return;
+moreButtonEl.setAttribute('aria-haspopup', 'dialog');
+moreButtonEl.setAttribute('aria-controls', 'gg-dock-more');
+moreButtonEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+if (GG.core && GG.core.state && typeof GG.core.state.toggle === 'function') {
+  GG.core.state.toggle(moreButtonEl, 'open', !!open);
+}
+}
+
+function guessMoreIcon(label, href){
+var key = ((label || '') + ' ' + (href || '')).toLowerCase();
+if (/paypal|payment|donat|support via pay/.test(key)) return 'payments';
+if (/install|pwa|web app|device/.test(key)) return 'install_desktop';
+if (/privacy|policy|terms|legal/.test(key)) return 'policy';
+if (/support|help|faq|contact/.test(key)) return 'support_agent';
+if (/about|philosophy|editorial|author/.test(key)) return 'account_balance';
+if (/topic|tags|index|sitemap|library/.test(key)) return 'topic';
+if (/linkedin/.test(key)) return 'work';
+if (/reddit/.test(key)) return 'forum';
+if (/tiktok/.test(key)) return 'music_note';
+if (/twitter|(^|[^a-z])x([^a-z]|$)/.test(key)) return 'alternate_email';
+if (/facebook/.test(key)) return 'public';
+if (/youtube/.test(key)) return 'play_circle';
+if (/instagram/.test(key)) return 'photo_camera';
+if (/telegram/.test(key)) return 'send';
+if (/github/.test(key)) return 'code';
+return 'link';
+}
+
+function resolveMoreItemMeta(label, href){
+var key = ((label || '') + ' ' + (href || '')).toLowerCase();
+if (/privacy|policy|terms|legal/.test(key)) return 'Review privacy terms and data handling.';
+if (/support|help|faq|contact/.test(key)) return 'Support answers and contact paths.';
+if (/about|philosophy|editorial|author/.test(key)) return 'Editorial notes and guiding principles.';
+if (/topic|tags|index|sitemap|library/.test(key)) return 'Browse topics, labels, and entry points.';
+if (/paypal|payment|donat|support via pay/.test(key)) return 'Contribute directly to the project.';
+return 'Open this page.';
+}
+
+function resolveFooterActionData(title, link){
+var titleText = textOf(title);
+var label = link ? String(link.getAttribute('aria-label') || '').trim() : '';
+var meta = '';
+var href = link ? (link.getAttribute('href') || '') : '';
+if (!label) label = textOf(link);
+var match = label.match(/^([^:]+):\s*(.+)$/);
+if (match) {
+  label = match[1].trim();
+  meta = match[2].trim();
+}
+if (!label) label = titleText || 'External link';
+if (!meta) meta = titleText || 'External profile';
+if (meta && !/external/i.test(meta)) meta += ' · External profile';
+return {
+  label: label,
+  meta: meta,
+  icon: guessMoreIcon(label, href),
+  href: href
+};
+}
+
+function createMoreActionNode(opts){
+if (!opts || !opts.label) return null;
+var kind = opts.kind || 'internal';
+var trailText = opts.trail || (kind === 'external' ? 'north_east' : (kind === 'action' ? 'download' : 'arrow_forward'));
+var node = document.createElement(opts.tag || 'a');
+node.className = 'gg-dock-more__action';
+node.setAttribute('data-gg-kind', kind);
+if (opts.tone) node.setAttribute('data-gg-tone', opts.tone);
+if (node.tagName === 'BUTTON') {
+  node.type = 'button';
+} else {
+  node.href = opts.href || '#';
+  if (opts.source) {
+    var rel = opts.source.getAttribute('rel');
+    var target = opts.source.getAttribute('target');
+    if (rel) node.setAttribute('rel', rel);
+    if (target) node.setAttribute('target', target);
+  }
+}
+if (opts.action) node.setAttribute('data-gg-more-action', opts.action);
+
+var badge = document.createElement('span');
+badge.className = 'gg-dock-more__badge';
+badge.setAttribute('aria-hidden', 'true');
+
+var iconNode = document.createElement('span');
+iconNode.className = 'gg-icon material-symbols-rounded';
+iconNode.textContent = opts.icon || guessMoreIcon(opts.label, opts.href);
+badge.appendChild(iconNode);
+
+var copy = document.createElement('span');
+copy.className = 'gg-dock-more__copy';
+
+var labelNode = document.createElement('span');
+labelNode.className = 'gg-dock-more__label';
+labelNode.textContent = opts.label;
+copy.appendChild(labelNode);
+
+if (opts.meta) {
+  var metaNode = document.createElement('span');
+  metaNode.className = 'gg-dock-more__meta';
+  metaNode.textContent = opts.meta;
+  copy.appendChild(metaNode);
+}
+
+var trail = document.createElement('span');
+trail.className = 'gg-dock-more__trail gg-icon material-symbols-rounded';
+trail.setAttribute('aria-hidden', 'true');
+trail.textContent = trailText;
+
+node.appendChild(badge);
+node.appendChild(copy);
+node.appendChild(trail);
+return node;
+}
+
+function appendMoreFooterLinkItem(list, href, label, meta, icon, source){
 if (!list || !label) return;
 var li = document.createElement('li');
 li.setAttribute('data-gg-more-origin', 'footer');
-var a = document.createElement('a');
-a.href = href || '#';
-a.textContent = label;
-if (source) {
-  var rel = source.getAttribute('rel');
-  var target = source.getAttribute('target');
-  if (rel) a.setAttribute('rel', rel);
-  if (target) a.setAttribute('target', target);
-}
-li.appendChild(a);
+var node = createMoreActionNode({
+  href: href,
+  label: label,
+  meta: meta,
+  icon: icon,
+  source: source,
+  kind: 'external',
+  tone: 'quiet'
+});
+if (!node) return;
+li.appendChild(node);
 list.appendChild(li);
 }
 
@@ -2196,36 +2357,18 @@ function appendMoreNavShortcutItem(list, item){
 if (!list || !item || !item.label) return;
 var li = document.createElement('li');
 li.setAttribute('data-gg-more-origin', 'navtree');
-var a = document.createElement('a');
-a.href = item.href || '#';
-if (item.source) {
-  var rel = item.source.getAttribute('rel');
-  var target = item.source.getAttribute('target');
-  if (rel) a.setAttribute('rel', rel);
-  if (target) a.setAttribute('target', target);
-}
-var iconText = (item.icon || '').trim() || 'link';
-var iconNode = document.createElement('span');
-iconNode.className = 'gg-icon material-symbols-rounded';
-iconNode.setAttribute('aria-hidden', 'true');
-iconNode.textContent = iconText;
-var labelNode = document.createElement('span');
-labelNode.textContent = item.label;
-a.appendChild(iconNode);
-a.appendChild(labelNode);
-li.appendChild(a);
+var node = createMoreActionNode({
+  href: item.href || '#',
+  label: item.label,
+  meta: item.meta || resolveMoreItemMeta(item.label, item.href),
+  icon: (item.icon || '').trim() || guessMoreIcon(item.label, item.href),
+  source: item.source,
+  kind: item.kind || 'internal',
+  tone: item.tone || ''
+});
+if (!node) return;
+li.appendChild(node);
 list.appendChild(li);
-}
-
-function resolveMoreItemLabel(title, link){
-var titleText = textOf(title);
-var aria = link ? (link.getAttribute('aria-label') || '').trim() : '';
-var sr = link ? textOf(link.querySelector('.gg-sr-only')) : '';
-var base = aria || sr || titleText || 'Action';
-if (titleText && base.toLowerCase().indexOf(titleText.toLowerCase()) === -1) {
-  return titleText + ' · ' + base;
-}
-return base;
 }
 
 function collectNavTreeShortcuts(){
@@ -2245,7 +2388,7 @@ for (var i = 0; i < links.length; i++) {
   var iconEl = link.querySelector ? link.querySelector('.material-symbols-rounded,.gg-icon.material-symbols-rounded') : null;
   var icon = iconEl ? textOf(iconEl) : '';
   if (!icon) icon = (link.getAttribute('data-gg-icon') || '').trim();
-  if (!icon) icon = 'link';
+  if (!icon) icon = guessMoreIcon(textOf(link), href);
   var label = textOf(link);
   if (icon && label.indexOf(icon) === 0) label = label.slice(icon.length).trim();
   if (!label) label = (link.getAttribute('aria-label') || '').trim() || 'Shortcut';
@@ -2257,23 +2400,26 @@ for (var i = 0; i < links.length; i++) {
     href: href,
     label: label,
     icon: icon,
+    meta: resolveMoreItemMeta(label, href),
+    kind: 'internal',
     source: link
   });
-  if (out.length >= 14) break;
+  if (out.length >= 8) break;
 }
 return out;
 }
 
 function syncMoreFooterActions(panel){
 if (!panel) return;
-var list = panel.querySelector('.gg-dock-more__list');
-if (!list) return;
+var footerList = panel.querySelector('[data-gg-more-group="footer"]');
+var navList = panel.querySelector('[data-gg-more-group="nav"]');
 var navShortcuts = collectNavTreeShortcuts();
-clearMoreFooterItems(list);
-clearMoreNavItems(list);
+clearMoreFooterItems(footerList);
+if (navShortcuts.length) clearMoreNavItems(navList);
 
+var footerCount = 0;
 var footerActions = document.querySelector('.gg-footer__social');
-if (footerActions) {
+if (footerActions && footerList) {
   var titles = footerActions.querySelectorAll('.gg-footer__social-title');
   for (var i = 0; i < titles.length; i++) {
     var title = titles[i];
@@ -2285,63 +2431,91 @@ if (footerActions) {
     var links = cluster.querySelectorAll('.gg-footer__social-links a.gg-footer__social-link');
     for (var j = 0; j < links.length; j++) {
       var link = links[j];
-      appendMoreFooterLinkItem(
-        list,
-        link.getAttribute('href') || '#',
-        resolveMoreItemLabel(title, link),
-        link
-      );
+      var item = resolveFooterActionData(title, link);
+      appendMoreFooterLinkItem(footerList, item.href || '#', item.label, item.meta, item.icon, link);
+      footerCount += 1;
+      if (footerCount >= 6) break;
     }
+    if (footerCount >= 6) break;
   }
 }
 
-var installButton = document.getElementById('install');
-if (installButton) {
-  var li = document.createElement('li');
-  li.setAttribute('data-gg-more-origin', 'footer');
-  var a = document.createElement('a');
-  a.href = '#';
-  a.setAttribute('data-gg-more-action', 'install');
-  a.textContent = 'Install Web App to Device';
-  li.appendChild(a);
-  list.appendChild(li);
+for (var n = 0; n < navShortcuts.length; n++) {
+  appendMoreNavShortcutItem(navList, navShortcuts[n]);
 }
 
-for (var n = 0; n < navShortcuts.length; n++) {
-  appendMoreNavShortcutItem(list, navShortcuts[n]);
-}
+setMoreSectionHidden(navList, !navList || !navList.children.length);
+setMoreSectionHidden(footerList, !footerList || !footerList.children.length);
 }
 
 function openMorePanel(){
 var panel = ensureMorePanel();
-if (!panel) return false;
+var sheet = ensureMoreSheet();
+if (!panel || !sheet) return false;
+if (moreHideTimer) {
+  window.clearTimeout(moreHideTimer);
+  moreHideTimer = 0;
+}
+syncMoreFooterActions(panel);
 morePanelOpen = true;
 panel.hidden = false;
+panel.removeAttribute('inert');
 panel.setAttribute('aria-hidden', 'false');
 GG.core.state.remove(panel, 'hidden');
-GG.core.state.add(panel, 'open');
-syncMoreFooterActions(panel);
+GG.core.state.remove(panel, 'closing');
 clearMoreHash();
 revealDock();
-var closeEl = panel.querySelector('[data-gg-action="more-close"]');
-if (closeEl && closeEl.focus) {
-try { closeEl.focus(); } catch (_){}
+setMoreSurfaceLock(true);
+setMoreButtonState(true);
+cleanupMorePanelA11y();
+if (!moreInertActive && GG.services && GG.services.a11y && GG.services.a11y.inertManager && typeof GG.services.a11y.inertManager.push === 'function') {
+  try {
+    GG.services.a11y.inertManager.push(document.body, panel);
+    moreInertActive = true;
+  } catch (_) {}
 }
+if (GG.services && GG.services.a11y && typeof GG.services.a11y.focusTrap === 'function') {
+  morePanelTrapCleanup = GG.services.a11y.focusTrap(sheet, { autofocus: false });
+}
+requestAnimationFrame(function(){
+  if (morePanelOpen) GG.core.state.add(panel, 'open');
+});
+var closeEl = panel.querySelector('[data-gg-action="more-close"]');
+focusNoScroll(closeEl || sheet);
 return true;
 }
 
-function closeMorePanel(){
+function closeMorePanel(opts){
+opts = opts || {};
 var panel = ensureMorePanel();
+var restoreFocus = opts.restoreFocus !== false;
 if (!panel) return;
+if (moreHideTimer) {
+  window.clearTimeout(moreHideTimer);
+  moreHideTimer = 0;
+}
 morePanelOpen = false;
 panel.setAttribute('aria-hidden', 'true');
+panel.setAttribute('inert', '');
 GG.core.state.remove(panel, 'open');
-GG.core.state.add(panel, 'hidden');
+GG.core.state.add(panel, 'closing');
 clearMoreHash();
+setMoreSurfaceLock(false);
+setMoreButtonState(false);
+cleanupMorePanelA11y();
+revealDock();
+moreHideTimer = window.setTimeout(function(){
+  if (morePanelOpen) return;
+  panel.hidden = true;
+  GG.core.state.remove(panel, 'closing');
+  GG.core.state.add(panel, 'hidden');
+}, 180);
+if (restoreFocus) focusNoScroll(moreButtonEl);
 }
 
 function enterSearch(){
 if (isSearchMode) return;
+if (morePanelOpen) closeMorePanel({ restoreFocus: false });
 isSearchMode = true;
 GG.core.state.add(dockEl, 'search');
 revealDock();
@@ -2395,7 +2569,7 @@ sizeRaf = requestAnimationFrame(updateDockWidth);
 
 function setDockHidden(hidden){
 if (!dockEl) return;
-var next = !!hidden && !isSearchMode;
+var next = !!hidden && !isSearchMode && !morePanelOpen;
 if (next === dockHidden) return;
 dockHidden = next;
 GG.core.state.toggle(dockEl, 'autohide-hidden', next);
@@ -2416,7 +2590,7 @@ var y = Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 
 var delta = y - lastScrollY;
 var absDelta = Math.abs(delta);
 lastScrollY = y;
-if (isSearchMode || y < 72 || absDelta < 6) {
+if (isSearchMode || morePanelOpen || y < 72 || absDelta < 6) {
   setDockHidden(false);
   return;
 }
@@ -2468,6 +2642,10 @@ return true;
 }
 
 if (action === 'more') {
+if (morePanelOpen) {
+  closeMorePanel();
+  return true;
+}
 return openMorePanel();
 }
 
@@ -2556,6 +2734,8 @@ panel.__gD = true;
 panel.addEventListener('click', function(evt){
 var closeLink = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-action="more-close"]') : null;
 var installLink = evt && evt.target && evt.target.closest ? evt.target.closest('[data-gg-more-action="install"]') : null;
+var actionLink = evt && evt.target && evt.target.closest ? evt.target.closest('.gg-dock-more__action[href]') : null;
+var scrim = evt && evt.target && evt.target.closest ? evt.target.closest('.gg-dock-more__scrim') : null;
 if (closeLink) {
   evt.preventDefault();
   closeMorePanel();
@@ -2570,7 +2750,11 @@ if (installLink) {
   }
   return;
 }
-if (evt && evt.target === panel) {
+if (actionLink) {
+  closeMorePanel({ restoreFocus: false });
+  return;
+}
+if (scrim || (evt && evt.target === panel)) {
   closeMorePanel();
 }
 }, true);
@@ -2614,6 +2798,7 @@ searchUrl = dockEl.getAttribute('data-search-url') || null;
 buttons = Array.prototype.slice.call(
   dockEl.querySelectorAll('.gg-dock__item[data-gg-action]')
 );
+moreButtonEl = dockEl.querySelector('.gg-dock__item[data-gg-action="more"]');
 
 searchForm  = dockEl.querySelector('.gg-dock__search form');
 searchInput = dockEl.querySelector('.gg-dock__search input');
@@ -2634,7 +2819,14 @@ if (e.key !== 'Escape') return;
 }
 bindMorePanel();
 var initMorePanel = ensureMorePanel();
-if (initMorePanel) syncMoreFooterActions(initMorePanel);
+if (initMorePanel) {
+  initMorePanel.hidden = true;
+  initMorePanel.setAttribute('aria-hidden', 'true');
+  initMorePanel.setAttribute('inert', '');
+  GG.core.state.add(initMorePanel, 'hidden');
+  syncMoreFooterActions(initMorePanel);
+}
+setMoreButtonState(false);
 if (((window.location && window.location.hash) || '') === '#gg-dock-more') openMorePanel();
 if (!pendingBound){
 pendingBound = true;
