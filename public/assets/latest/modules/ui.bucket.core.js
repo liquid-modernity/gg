@@ -3822,6 +3822,14 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
   return items;
 }).catch(function(err){
   if (controller && controller.signal && controller.signal.aborted) return null;
+  try{
+    w.__GG_PREVIEW_LAST = {
+      key: key,
+      panelKey: panel&&panel.__gK?String(panel.__gK):'',
+      error: err&&err.message?String(err.message):String(err||'error'),
+      at: Date.now()
+    };
+  }catch(_){}
   infoDebug('InfoPanel fetch fail', err);
   throw err;
 }).finally(function(){ delete tocPending[key]; delete tocAborters[key]; });
