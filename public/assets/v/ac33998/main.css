@@ -4335,7 +4335,6 @@ font-size:var(--gg-panel-label-size,8px);
 letter-spacing:.14em;
 text-transform:uppercase;
 color:var(--gg-muted);
-padding:3px 4px;
 min-height:var(--gg-tap-min);
 text-align:left;
 flex:1 1 auto;
@@ -7872,13 +7871,13 @@ background:color-mix(in srgb, var(--gg-surface) 96%, #eef2f7);
 box-shadow:var(--gg-shadow-sm);
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top #gg-toc .gg-toc__head{
-padding:10px 11px;
+
 border-bottom:1px solid color-mix(in srgb, var(--gg-border) 76%, transparent);
 background:linear-gradient(180deg, color-mix(in srgb, var(--gg-surface) 97%, #f2f6fc) 0%, color-mix(in srgb, var(--gg-surface) 94%, #ecf1f8) 100%);
 }
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-sidebar--left .gg-leftnav.gg-sb > .gg-sb__top #gg-toc .gg-toc__heading{
 min-height:34px;
-padding:4px 6px;
+
 font-size:11px;
 line-height:1.25;
 font-weight:600;
@@ -8184,7 +8183,7 @@ color:var(--gg-leftnav-tone-muted) !important;
 }
 main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb #gg-toc .gg-toc__heading{
 min-height:32px;
-padding:4px 6px;
+
 font-size:10.75px;
 line-height:1.25;
 font-weight:600;
