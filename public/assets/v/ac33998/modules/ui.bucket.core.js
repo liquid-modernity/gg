@@ -3419,12 +3419,10 @@ var tocPending = Object.create(null);
 var tocAborters = Object.create(null);
 var postMetaCache = new Map();
 var INFO_DEBUG = false;
-var PREVIEW_DEBUG = false;
 
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 try{ var envMeta=qs('meta[name="gg-env"]'),envVal=String(envMeta&&envMeta.getAttribute?envMeta.getAttribute('content'):'').toLowerCase().trim(); INFO_DEBUG=envVal==='lab'; }catch(_){}
-try{ PREVIEW_DEBUG=!!(w&&w.__GG_PREVIEW_DEBUG); }catch(_){}
 function infoDebug(msg,val){ if(!INFO_DEBUG||!window.console||typeof console.debug!=='function') return; try{ console.debug(msg,val); }catch(_){} }
 function syncSlotInfoSelected(value){
 try {
@@ -3641,6 +3639,7 @@ function pruneToc(now){ var keys=Object.keys(tocCache),i=0,key='',rows=null,ts=0
 function readToc(key){ var rows=tocCache[key],now=Date.now(); if(!rows||!Array.isArray(rows)) return null; if(TOC_TTL_MS>0&&rows._t&&now-rows._t>TOC_TTL_MS){ delete tocCache[key]; postMetaCache.delete(key); return null; } rows._t=now; delete tocCache[key]; tocCache[key]=rows; return rows; }
 function writeToc(key,rows){ var out=Array.isArray(rows)?rows.slice(0,TOC_CAP):[]; out._t=Date.now(); tocCache[key]=out; pruneToc(out._t); }
 function abortToc(keepKey){ for(var key in tocAborters){ if(keepKey&&key===keepKey) continue; try{ if(tocAborters[key]) tocAborters[key].abort(); }catch(_){} delete tocAborters[key]; delete tocPending[key]; } }
+function parseHtmlSafe(html,url){ var fn=GG&&GG.core&&typeof GG.core.parseHtmlDoc==='function'?GG.core.parseHtmlDoc:null; if(!fn&&typeof parseHtmlDoc==='function') fn=parseHtmlDoc; if(!fn) return null; try{ return fn(html,url); }catch(_){ return null; } }
 
 function parsePostmetaFromDoc(doc){
 var out={ author:'', contributors:[], tags:[], updated:'', readMin:'', snippet:'' },nodes=null,best=null,bestScore=-1,i=0,node=null,a='',u='',r='',s='',c=[],t=[],score=0,seen=null;
@@ -3683,7 +3682,7 @@ return out;
 }
 
 function parseHeadingItems(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlSafe(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return out;
 root=doc.querySelector('.gg-post__content.post-body.entry-content, .post-body.entry-content, .post-body.post-body-container, .post-outer .post-body, .post-body');
 if(!root) root=doc.querySelector('article .entry-content, .entry-content, article, main');
@@ -3700,7 +3699,7 @@ return out;
 }
 
 function buildHydrationFallback(html,sourceUrl){
-var doc=parseHtmlDoc(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
+var doc=parseHtmlSafe(html,sourceUrl),root=null,out=[],headings,max=0,pm=null,author='',contributors=[],tags=[],updated='',readTime='',snippet='',i=0,node=null,text='',headingId='',href='',baseHref='',level=2,svc=GG.services&&GG.services.postmeta&&typeof GG.services.postmeta.getFromContext==='function'?GG.services.postmeta:null;
 if(!doc) return { items: [], meta: null };
 root=doc.querySelector('.gg-post__content.post-body.entry-content, .post-body.entry-content, .post-body.post-body-container, .post-outer .post-body, .post-body');
 if(!root) root=doc.querySelector('article .entry-content, .entry-content, article, main');
@@ -3801,16 +3800,6 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
     }
   }
   infoDebug('InfoPanel fetch meta', meta || {});
-  try{
-    w.__GG_PREVIEW_LAST = {
-      key: key,
-      panelKey: panel&&panel.__gK?String(panel.__gK):'',
-      itemsLen: Array.isArray(items)?items.length:0,
-      meta: meta||null,
-      metaStrong: !!metaStrong,
-      at: Date.now()
-    };
-  }catch(_){}
   if (meta && ((meta.t && meta.t.length) || meta.a || (meta.c && meta.c.length) || meta.u || meta.r || meta.s)) postMetaCache.set(key, meta);
   else postMetaCache.delete(key);
   if (!items.length && !metaStrong){ writeToc(key, []); return []; }
@@ -3822,14 +3811,6 @@ tocPending[key] = fetchPostHtml(abs, controller ? controller.signal : null).then
   return items;
 }).catch(function(err){
   if (controller && controller.signal && controller.signal.aborted) return null;
-  try{
-    w.__GG_PREVIEW_LAST = {
-      key: key,
-      panelKey: panel&&panel.__gK?String(panel.__gK):'',
-      error: err&&err.message?String(err.message):String(err||'error'),
-      at: Date.now()
-    };
-  }catch(_){}
   infoDebug('InfoPanel fetch fail', err);
   throw err;
 }).finally(function(){ delete tocPending[key]; delete tocAborters[key]; });
