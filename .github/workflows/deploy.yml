@@ -34,6 +34,19 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
+      - name: Production branch guard
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "::error title=Production deploy guard::workflow_dispatch must run from main. Current ref: ${GITHUB_REF}."
+            exit 1
+          fi
+
+          {
+            echo "### Production Branch Guard"
+            echo "- Manual production deploy confirmed from \`${GITHUB_REF}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
@@ -80,6 +93,42 @@ jobs:
             echo "- Strict template parity input: \`${GG_DISPATCH_STRICT_TEMPLATE_PARITY}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Validate GitHub Actions deploy config
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+        run: |
+          missing=0
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error title=Missing GitHub secret::Set CLOUDFLARE_API_TOKEN before running deploy."
+            missing=1
+          fi
+
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error title=Missing GitHub secret::Set CLOUDFLARE_ACCOUNT_ID before running deploy."
+            missing=1
+          fi
+
+          if [ -z "${GG_LIVE_BASE_URL:-}" ]; then
+            GG_LIVE_BASE_URL="https://www.pakrpp.com"
+            echo "::notice title=Missing GitHub variable::GG_LIVE_BASE_URL not set; defaulting live smoke to ${GG_LIVE_BASE_URL}."
+          fi
+
+          echo "GG_LIVE_BASE_URL=${GG_LIVE_BASE_URL}" >> "$GITHUB_ENV"
+
+          {
+            echo "### GitHub Actions Deploy Config"
+            echo "- CLOUDFLARE_API_TOKEN configured: \`$([ -n "${CLOUDFLARE_API_TOKEN:-}" ] && echo yes || echo no)\`"
+            echo "- CLOUDFLARE_ACCOUNT_ID configured: \`$([ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] && echo yes || echo no)\`"
+            echo "- GG_LIVE_BASE_URL: \`${GG_LIVE_BASE_URL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: Deploy scope truth
         run: |
           echo "Deploy scope: Cloudflare Worker code + Cloudflare static assets from ./public."
@@ -125,7 +174,7 @@ jobs:
 
       - name: Live smoke (version-aware worker contract + template state)
         env:
-          GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+          GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
           GG_TEMPLATE_DRIFT_MODE: ${{ env.GG_TEMPLATE_DRIFT_MODE }}
           GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
           GG_WORKER_VERSION_MODE: ${{ env.GG_WORKER_VERSION_MODE }}
@@ -137,7 +186,7 @@ jobs:
       - name: Manual Blogger publish reminder
         if: always()
         env:
-          GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+          GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
         run: |
           {
             echo "### Manual Blogger Template Publish"
@@ -148,4 +197,5 @@ jobs:
             echo "- Full post-publish verification: \`npm run gaga:verify-template\`"
             echo "- Deploy run template drift mode: \`${GG_TEMPLATE_DRIFT_MODE:-warn}\`"
             echo "- Expected worker version for this deploy: \`${GG_EXPECTED_WORKER_VERSION:-unknown}\`"
+            echo "- GitHub Actions setup guide: \`docs/github-actions-cloudflare.md\`"
           } >> "$GITHUB_STEP_SUMMARY"
