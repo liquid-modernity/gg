@@ -5927,10 +5927,26 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!block) return null;
     return block.querySelector ? block.querySelector('.comment-actions') : null;
   }
+  function commentReplyLinks(comment){
+    var block = commentBlock(comment);
+    if (!block || !block.querySelectorAll) return [];
+    return toArray(block.querySelectorAll('a.comment-reply'));
+  }
+  function isRawReplyScaffold(link){
+    return !!(link && link.closest && link.closest('.continue, .comment-replybox-single, .comment-replybox-thread'));
+  }
+  function pickPrimaryReplyLink(comment){
+    var links = commentReplyLinks(comment);
+    var i = 0;
+    for (i = 0; i < links.length; i++) {
+      if (!isRawReplyScaffold(links[i])) return links[i];
+    }
+    return links[0] || null;
+  }
   function commentReplyLink(comment){
     var actions = commentActions(comment);
     return (actions && actions.querySelector ? actions.querySelector('a.comment-reply') : null) ||
-           (comment && comment.querySelector ? comment.querySelector('a.comment-reply') : null);
+           pickPrimaryReplyLink(comment);
   }
   function commentPermalink(comment){
     var block = commentBlock(comment);
@@ -6264,17 +6280,51 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     btn.textContent = (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')';
   }
+  function normalizeReplyLink(comment){
+    var actions = ensureActions(comment);
+    var links = commentReplyLinks(comment);
+    var primary = pickPrimaryReplyLink(comment);
+    var before = null;
+    var i = 0;
+    var parent = null;
+    if (!actions) return null;
+    before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx, .item-control.cmt2-native-more');
+    for (i = 0; i < links.length; i++) {
+      links[i].classList.remove('cmt2-reply-action');
+      if (links[i] !== primary) {
+        setSuppressed(links[i]);
+        parent = links[i].parentNode;
+        if (parent && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
+      }
+    }
+    if (!primary) return null;
+    primary.classList.add('cmt2-reply-action');
+    primary.removeAttribute('hidden');
+    primary.removeAttribute('aria-hidden');
+    primary.removeAttribute('data-gg-state');
+    primary.setAttribute('data-gg-comment-role', 'reply');
+    if (primary.parentNode !== actions) {
+      if (before) actions.insertBefore(primary, before);
+      else actions.appendChild(primary);
+    }
+    parent = primary.parentNode;
+    if (parent && parent !== actions && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
+    return primary;
+  }
   function suppressCommentScaffolding(comment){
     var actions = commentActions(comment);
     var hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more'));
     var deletePeers = null;
     var scaffolds = null;
+    var itemControls = null;
     var i = 0;
     if (!comment || !comment.querySelectorAll) return;
     deletePeers = comment.querySelectorAll('.comment-footer .comment-delete, .comment-footer .cmt2-del, .comment-actions .comment-delete, .comment-actions .cmt2-del, .gg-cmt2__del');
     if (hasMore) {
       for (i = 0; i < deletePeers.length; i++) setSuppressed(deletePeers[i]);
     }
+    itemControls = comment.querySelectorAll('.item-control:not(.cmt2-native-more)');
+    for (i = 0; i < itemControls.length; i++) setSuppressed(itemControls[i]);
     scaffolds = comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replies .continue, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue');
     for (i = 0; i < scaffolds.length; i++) setSuppressed(scaffolds[i]);
     suppressHelperCopy(commentReplyBox(comment));
@@ -6289,12 +6339,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var hasVisibleDelete = false;
     var visibleHelp = null;
     var helperNodes = null;
+    var rawReplys = null;
     if (!root || !root.querySelectorAll) return issues;
     visibleHelp = firstVisibleNode(toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')));
     if (visibleHelp) {
       issues.push('native-help-visible');
     }
-    if (root.querySelector('.cmt2-replying__eyebrow')) issues.push('reply-cue-heavy');
+    if (root.querySelector('.cmt2-replying__eyebrow, .cmt2-replying:not([data-gg-tone="inline"])')) issues.push('reply-cue-heavy');
     helperNodes = toArray(root.querySelectorAll('.comment-replybox-single p, .comment-replybox-single div, .comment-replybox-single span, .comment-replybox-thread p, .comment-replybox-thread div, .comment-replybox-thread span, #top-ce p, #top-ce div, #top-ce span')).filter(function(node){
       var txt = '';
       if (!isVisibleNode(node)) return false;
@@ -6313,6 +6364,16 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (actions && actions.querySelector && actions.querySelector('.cmt2-ctx') && actions.querySelector('.item-control.cmt2-native-more')) {
         issues.push('duplicate-more:' + commentId(comment));
       }
+      if (firstVisibleNode(toArray(comment.querySelectorAll('.item-control:not(.cmt2-native-more)')))) {
+        issues.push('item-control-visible:' + commentId(comment));
+      }
+      rawReplys = toArray(commentReplyLinks(comment)).filter(function(link){
+        if (!isVisibleNode(link)) return false;
+        if (link.classList && link.classList.contains('cmt2-reply-action')) return false;
+        if (link.getAttribute && link.getAttribute('data-gg-footer-cta') === '1') return false;
+        return true;
+      });
+      if (rawReplys.length) issues.push('reply-scaffold:' + commentId(comment));
       if (comment.querySelector('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count')) {
         if (firstVisibleNode(toArray(comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count')))) {
           issues.push('thread-scaffold:' + commentId(comment));
@@ -6475,6 +6536,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (banner) return banner;
     banner = d.createElement('div');
     banner.className = 'cmt2-replying';
+    banner.setAttribute('data-gg-tone', 'inline');
     body = d.createElement('div');
     body.className = 'cmt2-replying__body';
     title = d.createElement('strong');
@@ -6609,7 +6671,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     ensureModerationState(comment);
     ensureReplyContext(comment, root);
     actions = ensureActions(comment);
-    replyLink = commentReplyLink(comment);
+    replyLink = normalizeReplyLink(comment) || commentReplyLink(comment);
     if (replyLink) {
       replyLink.setAttribute('data-gg-comment-role', 'reply');
       if (!cleanText(replyLink.textContent)) replyLink.textContent = 'Reply';
