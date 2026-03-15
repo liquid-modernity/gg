@@ -5796,6 +5796,9 @@ GG.core.commentsGate = GG.core.commentsGate || (function(){
     if (tpl && tpl.parentNode) tpl.parentNode.removeChild(tpl);
     if (gate && gate.parentNode) gate.parentNode.removeChild(gate);
     if (frag) host.appendChild(frag);
+    if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.init === 'function') {
+      try { GG.modules.Comments.init(host); } catch (_) {}
+    }
 
     if (GG.core && GG.core.render && typeof GG.core.render.rehydrateComments === 'function') {
       GG.core.render.rehydrateComments(host);
@@ -5846,6 +5849,18 @@ GG.core.commentsGate = GG.core.commentsGate || (function(){
 
 GG.modules = GG.modules || {};
 GG.modules.Comments = GG.modules.Comments || (function(){
+  function toArray(nodes){
+    return Array.prototype.slice.call(nodes || []);
+  }
+  function cleanText(value){
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+  function commentsRoot(host){
+    if (!host) return d.getElementById('comments');
+    if (host.id === 'comments') return host;
+    if (host.querySelector) return host.querySelector('#comments') || host.querySelector('.gg-comments') || null;
+    return null;
+  }
   function hostRoot(){
     return d.querySelector('.gg-post__comments[data-gg-comments-gate="1"]') ||
            d.querySelector('.gg-post__comments') ||
@@ -5865,21 +5880,731 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     return host || null;
   }
-  function scrollToComments(host){
-    var anchor = commentAnchor(host);
-    var behavior = 'auto';
-    if (!anchor || typeof anchor.scrollIntoView !== 'function') return;
+  function scrollBehavior(){
     try {
       if (GG.services && GG.services.a11y && typeof GG.services.a11y.scrollBehavior === 'function') {
-        behavior = GG.services.a11y.scrollBehavior();
+        return GG.services.a11y.scrollBehavior();
       }
     } catch (_) {}
+    return 'auto';
+  }
+  function scrollToComments(host){
+    var anchor = commentAnchor(host);
+    if (!anchor || typeof anchor.scrollIntoView !== 'function') return;
     w.requestAnimationFrame(function(){
       w.requestAnimationFrame(function(){
-        try { anchor.scrollIntoView({ behavior: behavior, block: 'start' }); }
+        try { anchor.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }); }
         catch (_) { try { anchor.scrollIntoView(); } catch(__){} }
       });
     });
+  }
+  function directChildByClass(node, className){
+    if (!node || !node.children) return null;
+    var i = 0;
+    for (; i < node.children.length; i++) {
+      if (node.children[i] && node.children[i].classList && node.children[i].classList.contains(className)) {
+        return node.children[i];
+      }
+    }
+    return null;
+  }
+  function closestComment(node){
+    return node && node.closest ? node.closest('li.comment') : null;
+  }
+  function commentId(comment){
+    return cleanText(((comment && comment.id) || '').replace(/^c/, ''));
+  }
+  function commentBlock(comment){
+    return directChildByClass(comment, 'comment-block') || (comment && comment.querySelector ? comment.querySelector('.comment-block') : null);
+  }
+  function commentBody(comment){
+    var block = commentBlock(comment);
+    if (!block || !block.querySelector) return null;
+    return block.querySelector('.comment-content, .comment-body');
+  }
+  function commentActions(comment){
+    var block = commentBlock(comment);
+    if (!block) return null;
+    return block.querySelector ? block.querySelector('.comment-actions') : null;
+  }
+  function commentReplyLink(comment){
+    var actions = commentActions(comment);
+    return (actions && actions.querySelector ? actions.querySelector('a.comment-reply') : null) ||
+           (comment && comment.querySelector ? comment.querySelector('a.comment-reply') : null);
+  }
+  function commentPermalink(comment){
+    var block = commentBlock(comment);
+    if (!block || !block.querySelector) return '';
+    var link = block.querySelector('.datetime a, .comment-timestamp a, .comment-footer a[title="comment permalink"], .comment-footer a');
+    return cleanText(link && (link.getAttribute('href') || link.href));
+  }
+  function commentDeleteLink(comment){
+    var itemControl = commentItemControl(comment);
+    if (itemControl && itemControl.querySelector) {
+      return itemControl.querySelector('a.comment-delete, a[href]');
+    }
+    return comment && comment.querySelector ? comment.querySelector('a.comment-delete') : null;
+  }
+  function commentItemControl(comment){
+    return comment && comment.querySelector ? comment.querySelector('.item-control') : null;
+  }
+  function commentReplyBox(comment){
+    return directChildByClass(comment, 'comment-replybox-single') ||
+           directChildByClass(comment, 'comment-replybox-thread') ||
+           (comment && comment.querySelector ? comment.querySelector('.comment-replybox-single, .comment-replybox-thread') : null);
+  }
+  function commentReplies(comment){
+    return directChildByClass(comment, 'comment-replies') || (comment && comment.querySelector ? comment.querySelector('.comment-replies') : null);
+  }
+  function commentDepth(comment){
+    var depth = 0;
+    var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
+    while (parent) {
+      depth++;
+      parent = parent.parentElement ? parent.parentElement.closest('li.comment') : null;
+    }
+    return depth;
+  }
+  function replyChildrenCount(replies){
+    return replies && replies.querySelectorAll ? replies.querySelectorAll('li.comment').length : 0;
+  }
+  function commentAuthor(comment){
+    var block = commentBlock(comment);
+    if (!block || !block.querySelector) return '';
+    var author = block.querySelector('cite.user a, cite.user, .comment-author a, .comment-author');
+    return cleanText(author && author.textContent);
+  }
+  function isDeletedComment(comment){
+    var body = commentBody(comment);
+    var txt = '';
+    if (!body) return false;
+    if (/(^|\s)deleted(\s|$)/.test(body.className || '')) return true;
+    txt = cleanText(body.textContent);
+    return /comment (has been )?(removed|deleted)|deleted by the author|removed by a blog administrator|this comment has been removed/i.test(txt);
+  }
+  function notify(message){
+    if (!message) return;
+    try {
+      if (GG.util && typeof GG.util.showToast === 'function') {
+        GG.util.showToast(message);
+        return;
+      }
+    } catch (_) {}
+    try {
+      if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') {
+        GG.ui.toast.show(message);
+      }
+    } catch (_) {}
+  }
+  function fallbackCopy(text){
+    var ta = null;
+    var ok = false;
+    try {
+      ta = d.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.pointerEvents = 'none';
+      (d.body || d.documentElement).appendChild(ta);
+      ta.select();
+      ok = !!(d.execCommand && d.execCommand('copy'));
+    } catch (_) {
+      ok = false;
+    }
+    if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+    return ok;
+  }
+  function copyPermalink(url){
+    if (!url) return false;
+    if (w.navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function(){
+        notify('Link copied');
+      }).catch(function(){
+        if (fallbackCopy(url)) {
+          notify('Link copied');
+          return;
+        }
+        try { w.prompt('Copy link:', url); } catch (_) {}
+      });
+      return true;
+    }
+    if (fallbackCopy(url)) {
+      notify('Link copied');
+      return true;
+    }
+    try { w.prompt('Copy link:', url); } catch (_) {}
+    return false;
+  }
+  function markTarget(comment){
+    if (!comment || !comment.classList) return;
+    comment.classList.add('is-targeted');
+    clearTimeout(comment.__ggTargetTimer);
+    comment.__ggTargetTimer = w.setTimeout(function(){
+      if (comment && comment.classList) comment.classList.remove('is-targeted');
+    }, 1800);
+  }
+  function jumpToComment(root, rawId){
+    var id = cleanText(String(rawId || '').replace(/^#/, '').replace(/^c/, ''));
+    var target = null;
+    if (!id) return false;
+    target = d.getElementById('c' + id) ||
+             (root && root.querySelector ? root.querySelector('#c' + id) : null);
+    if (!target) return false;
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    try { target.focus({ preventScroll: true }); } catch (_) {}
+    try {
+      target.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+    } catch (_) {
+      try { target.scrollIntoView(); } catch(__) {}
+    }
+    markTarget(target);
+    return true;
+  }
+  function parseReplyToken(body){
+    var walker = null;
+    var node = null;
+    var raw = '';
+    var match = null;
+    var attrs = null;
+    if (!body) return null;
+    if (body.__ggReplyTokenParsed) return body.__ggReplyToken || null;
+    body.__ggReplyTokenParsed = true;
+    body.__ggReplyToken = null;
+    if (!d.createTreeWalker || typeof NodeFilter === 'undefined') return null;
+    walker = d.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
+    while ((node = walker.nextNode())) {
+      raw = String(node.nodeValue || '');
+      match = raw.match(/^\s*\[reply\s+([^\]]+)\]\s*/i);
+      if (!match) continue;
+      attrs = {};
+      String(match[1] || '').replace(/([a-z0-9_-]+)="([^"]*)"/gi, function(_, key, value){
+        attrs[String(key || '').toLowerCase()] = value;
+        return '';
+      });
+      node.nodeValue = raw.replace(match[0], '');
+      if (!cleanText(node.nodeValue || '') && node.parentNode) node.parentNode.removeChild(node);
+      body.__ggReplyToken = {
+        id: cleanText(attrs.commentid || attrs.comment || attrs.id || ''),
+        author: cleanText(attrs.author || ''),
+        url: cleanText(attrs.url || attrs.profile || '')
+      };
+      break;
+    }
+    return body.__ggReplyToken;
+  }
+  function resolveReplyContext(comment, root){
+    var body = commentBody(comment);
+    var token = parseReplyToken(body);
+    var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
+    var target = null;
+    if (token && token.id) {
+      target = d.getElementById('c' + token.id) || (root && root.querySelector ? root.querySelector('#c' + token.id) : null);
+      return {
+        id: cleanText(String(token.id).replace(/^c/, '')),
+        author: token.author || commentAuthor(target),
+        url: token.url || commentPermalink(target)
+      };
+    }
+    if (!parent) return null;
+    return {
+      id: commentId(parent),
+      author: commentAuthor(parent),
+      url: commentPermalink(parent)
+    };
+  }
+  function ensureReplyContext(comment, root){
+    var block = commentBlock(comment);
+    var body = commentBody(comment);
+    var ctx = resolveReplyContext(comment, root);
+    var meta = null;
+    var copy = null;
+    var icon = null;
+    var author = null;
+    if (!block || !body) return;
+    meta = block.querySelector('.cmt2-reply-meta');
+    if (!ctx || isDeletedComment(comment)) {
+      if (meta && meta.parentNode) meta.parentNode.removeChild(meta);
+      return;
+    }
+    if (!meta) {
+      meta = d.createElement('button');
+      meta.type = 'button';
+      meta.className = 'cmt2-reply-meta';
+      icon = d.createElement('span');
+      icon.className = 'ms cmt2-reply-meta__icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = 'reply';
+      copy = d.createElement('span');
+      copy.className = 'cmt2-reply-meta__copy';
+      author = d.createElement('span');
+      author.className = 'cmt2-reply-meta__author';
+      meta.appendChild(icon);
+      meta.appendChild(copy);
+      meta.appendChild(author);
+      block.insertBefore(meta, body);
+    } else {
+      copy = meta.querySelector('.cmt2-reply-meta__copy');
+      author = meta.querySelector('.cmt2-reply-meta__author');
+    }
+    meta.setAttribute('data-gg-comment-jump', ctx.id);
+    meta.setAttribute('aria-label', 'Replying to ' + (ctx.author ? '@' + ctx.author : 'parent comment'));
+    if (copy) copy.textContent = 'Replying to';
+    if (author) author.textContent = ctx.author ? '@' + ctx.author : 'parent comment';
+  }
+  function ensureModerationState(comment){
+    var block = commentBlock(comment);
+    var body = commentBody(comment);
+    var badge = null;
+    var deleted = isDeletedComment(comment);
+    if (!block || !body) return;
+    badge = block.querySelector('.cmt2-state');
+    if (!deleted) {
+      comment.setAttribute('data-gg-comment-state', 'active');
+      if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
+      return;
+    }
+    comment.setAttribute('data-gg-comment-state', 'deleted');
+    if (!badge) {
+      badge = d.createElement('p');
+      badge.className = 'cmt2-state';
+      block.insertBefore(badge, body);
+    }
+    badge.textContent = 'Moderation note';
+  }
+  function ensureActions(comment){
+    var block = commentBlock(comment);
+    var body = commentBody(comment);
+    var actions = commentActions(comment);
+    if (!block || !body) return null;
+    if (!actions) {
+      actions = d.createElement('div');
+      actions.className = 'comment-actions';
+      if (body.nextSibling) block.insertBefore(actions, body.nextSibling);
+      else block.appendChild(actions);
+    }
+    return actions;
+  }
+  function ensureToggleButton(comment){
+    var replies = commentReplies(comment);
+    var count = replyChildrenCount(replies);
+    var actions = ensureActions(comment);
+    var btn = null;
+    var before = null;
+    var isOpen = true;
+    if (!actions) return;
+    btn = actions.querySelector('.cmt2-thread-toggle');
+    before = actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more');
+    if (!replies || !count || isDeletedComment(comment)) {
+      if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+      if (replies) {
+        replies.hidden = false;
+        replies.removeAttribute('data-gg-state');
+      }
+      return;
+    }
+    if (!btn) {
+      btn = d.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cmt2-thread-toggle';
+      btn.setAttribute('data-gg-comment-toggle', commentId(comment));
+      if (before) actions.insertBefore(btn, before);
+      else actions.appendChild(btn);
+    }
+    isOpen = !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed';
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    btn.textContent = (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')';
+  }
+  function ensureMenuButton(comment){
+    var actions = ensureActions(comment);
+    var permalink = commentPermalink(comment);
+    var deleteLink = commentDeleteLink(comment);
+    var itemControl = commentItemControl(comment);
+    var hasNativePopup = !!(itemControl && itemControl.querySelector && itemControl.querySelector('.goog-toggle-button'));
+    var wrap = null;
+    var btn = null;
+    var pop = null;
+    var copyBtn = null;
+    var deleteBtn = null;
+    if (!actions || isDeletedComment(comment)) {
+      if (itemControl && itemControl.parentNode === actions) itemControl.parentNode.removeChild(itemControl);
+      return;
+    }
+    if (hasNativePopup) {
+      if (itemControl.parentNode !== actions) actions.appendChild(itemControl);
+      itemControl.classList.add('cmt2-native-more');
+      btn = itemControl.querySelector('.goog-toggle-button');
+      if (btn) {
+        btn.setAttribute('aria-label', 'More actions');
+        btn.setAttribute('title', 'More actions');
+      }
+      wrap = actions.querySelector('.cmt2-ctx');
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      return;
+    }
+    if (itemControl) {
+      itemControl.hidden = true;
+      itemControl.setAttribute('aria-hidden', 'true');
+      itemControl.setAttribute('data-gg-state', 'hidden');
+    }
+    if (!permalink && !deleteLink) {
+      wrap = actions.querySelector('.cmt2-ctx');
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      return;
+    }
+    wrap = actions.querySelector('.cmt2-ctx');
+    if (!wrap) {
+      wrap = d.createElement('div');
+      wrap.className = 'cmt2-ctx';
+      btn = d.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cmt2-ctx-btn';
+      btn.setAttribute('data-gg-comment-action', 'more');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-haspopup', 'menu');
+      btn.setAttribute('aria-label', 'More actions');
+      btn.appendChild((function(){
+        var icon = d.createElement('span');
+        icon.className = 'ms';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'more_horiz';
+        return icon;
+      })());
+      pop = d.createElement('div');
+      pop.className = 'cmt2-ctx-pop';
+      pop.setAttribute('role', 'menu');
+      wrap.appendChild(btn);
+      wrap.appendChild(pop);
+      actions.appendChild(wrap);
+    } else {
+      btn = wrap.querySelector('.cmt2-ctx-btn');
+      pop = wrap.querySelector('.cmt2-ctx-pop');
+    }
+    if (!btn || !pop) return;
+    copyBtn = pop.querySelector('[data-gg-comment-action="copy-link"]');
+    if (permalink && !copyBtn) {
+      copyBtn = d.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.setAttribute('data-gg-comment-action', 'copy-link');
+      copyBtn.appendChild((function(){
+        var icon = d.createElement('span');
+        icon.className = 'ms';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'link';
+        return icon;
+      })());
+      copyBtn.appendChild(d.createTextNode('Copy link'));
+      pop.appendChild(copyBtn);
+    } else if (!permalink && copyBtn && copyBtn.parentNode) {
+      copyBtn.parentNode.removeChild(copyBtn);
+    }
+    deleteBtn = pop.querySelector('[data-gg-comment-action="delete"]');
+    if (deleteLink && !deleteBtn) {
+      deleteBtn = d.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.setAttribute('data-gg-comment-action', 'delete');
+      deleteBtn.className = 'cmt2-ctx-pop__danger';
+      deleteBtn.appendChild((function(){
+        var icon = d.createElement('span');
+        icon.className = 'ms';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'delete';
+        return icon;
+      })());
+      deleteBtn.appendChild(d.createTextNode('Delete comment'));
+      pop.appendChild(deleteBtn);
+    } else if (!deleteLink && deleteBtn && deleteBtn.parentNode) {
+      deleteBtn.parentNode.removeChild(deleteBtn);
+    }
+  }
+  function closeMenus(root, keep){
+    var nodes = toArray((root && root.querySelectorAll) ? root.querySelectorAll('.cmt2-ctx') : []);
+    nodes.forEach(function(node){
+      var btn = node.querySelector('.cmt2-ctx-btn');
+      var pop = node.querySelector('.cmt2-ctx-pop');
+      if (!btn || !pop || node === keep) return;
+      btn.setAttribute('aria-expanded', 'false');
+      pop.setAttribute('data-gg-state', 'closed');
+    });
+  }
+  function toggleMenu(wrap){
+    var btn = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-btn') : null;
+    var pop = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-pop') : null;
+    var open = false;
+    if (!btn || !pop) return false;
+    open = pop.getAttribute('data-gg-state') === 'open';
+    closeMenus(commentsRoot(hostRoot()), wrap);
+    btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    pop.setAttribute('data-gg-state', open ? 'closed' : 'open');
+    return !open;
+  }
+  function replyState(root){
+    if (!root) return {};
+    root.__ggReplyState = root.__ggReplyState || {
+      comment: null,
+      commentId: '',
+      author: '',
+      link: null,
+      banner: null
+    };
+    return root.__ggReplyState;
+  }
+  function buildReplyBanner(root){
+    var state = replyState(root);
+    var banner = state.banner;
+    var body = null;
+    var eyebrow = null;
+    var title = null;
+    var cancel = null;
+    if (banner) return banner;
+    banner = d.createElement('div');
+    banner.className = 'cmt2-replying';
+    body = d.createElement('div');
+    body.className = 'cmt2-replying__body';
+    eyebrow = d.createElement('span');
+    eyebrow.className = 'cmt2-replying__eyebrow';
+    eyebrow.textContent = 'Reply mode';
+    title = d.createElement('strong');
+    title.className = 'cmt2-replying__title';
+    body.appendChild(eyebrow);
+    body.appendChild(title);
+    cancel = d.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'cmt2-replying__cancel';
+    cancel.setAttribute('data-gg-comment-action', 'cancel-reply');
+    cancel.setAttribute('aria-label', 'Cancel reply');
+    cancel.appendChild((function(){
+      var icon = d.createElement('span');
+      icon.className = 'ms';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = 'close';
+      return icon;
+    })());
+    banner.appendChild(body);
+    banner.appendChild(cancel);
+    state.banner = banner;
+    return banner;
+  }
+  function replySlot(root){
+    var state = replyState(root);
+    var box = state.comment ? commentReplyBox(state.comment) : null;
+    if (box) return box;
+    return root.querySelector('#gg-addslot') ||
+           root.querySelector('.gg-comments__addslot') ||
+           root.querySelector('.gg-comments__footer');
+  }
+  function mountReplyBanner(root){
+    var state = replyState(root);
+    var banner = buildReplyBanner(root);
+    var slot = replySlot(root);
+    var title = banner.querySelector('.cmt2-replying__title');
+    if (!slot || !state.commentId) return;
+    if (title) title.textContent = 'Replying to ' + (state.author ? '@' + state.author : 'comment');
+    if (banner.parentNode !== slot) slot.insertBefore(banner, slot.firstChild || null);
+  }
+  function clearReplyState(root){
+    var state = replyState(root);
+    if (state.comment && state.comment.removeAttribute) state.comment.removeAttribute('data-gg-replying');
+    if (state.banner && state.banner.parentNode) state.banner.parentNode.removeChild(state.banner);
+    root.classList.remove('gg-comments--replying');
+    state.comment = null;
+    state.commentId = '';
+    state.author = '';
+    state.link = null;
+  }
+  function focusComposer(root, comment){
+    var tries = 0;
+    var max = 14;
+    function attempt(){
+      var box = commentReplyBox(comment);
+      var field = (box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null) ||
+                  (root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null);
+      tries++;
+      if (field && typeof field.focus === 'function') {
+        try { field.focus(); } catch (_) {}
+        return;
+      }
+      if (tries < max) w.setTimeout(attempt, 120);
+    }
+    w.setTimeout(attempt, 60);
+  }
+  function setReplyState(root, comment, link){
+    var state = replyState(root);
+    if (!root || !comment) return;
+    if (state.comment && state.comment !== comment && state.comment.removeAttribute) {
+      state.comment.removeAttribute('data-gg-replying');
+    }
+    state.comment = comment;
+    state.commentId = commentId(comment);
+    state.author = commentAuthor(comment);
+    state.link = link || null;
+    comment.setAttribute('data-gg-replying', '1');
+    root.classList.add('gg-comments--replying');
+    mountReplyBanner(root);
+    focusComposer(root, comment);
+  }
+  function cancelReply(root){
+    var state = replyState(root);
+    var box = state.comment ? commentReplyBox(state.comment) : null;
+    var cancel = null;
+    if (box && box.querySelector) {
+      cancel = box.querySelector('[data-action*="cancel"], [aria-label*="Cancel"], a[href*="cancel"], button[name*="cancel"]');
+    }
+    if (cancel && typeof cancel.click === 'function') {
+      try { cancel.click(); } catch (_) {}
+    } else if (state.link && typeof state.link.click === 'function') {
+      try { state.link.click(); } catch (_) {}
+    }
+    clearReplyState(root);
+  }
+  function toggleReplies(comment){
+    var replies = commentReplies(comment);
+    var actions = ensureActions(comment);
+    var btn = actions ? actions.querySelector('.cmt2-thread-toggle') : null;
+    var open = true;
+    if (!replies || !btn) return false;
+    open = !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed';
+    replies.hidden = open;
+    replies.setAttribute('data-gg-state', open ? 'collapsed' : 'expanded');
+    btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    btn.textContent = (open ? 'View replies' : 'Hide replies') + ' (' + replyChildrenCount(replies) + ')';
+    return !open;
+  }
+  function triggerDelete(comment){
+    var link = commentDeleteLink(comment);
+    var href = '';
+    if (!link) return false;
+    try {
+      link.click();
+      return true;
+    } catch (_) {}
+    href = link.getAttribute('href') || link.href || '';
+    if (href) {
+      w.location.href = href;
+      return true;
+    }
+    return false;
+  }
+  function enhanceComment(comment, root){
+    var actions = null;
+    var replyLink = null;
+    var depth = commentDepth(comment);
+    if (!comment || !comment.querySelector) return;
+    comment.setAttribute('data-gg-comment-id', commentId(comment));
+    comment.setAttribute('data-gg-depth', String(depth));
+    if (depth > 0) comment.classList.add('is-reply');
+    else comment.classList.remove('is-reply');
+    ensureModerationState(comment);
+    ensureReplyContext(comment, root);
+    actions = ensureActions(comment);
+    replyLink = commentReplyLink(comment);
+    if (replyLink) {
+      replyLink.setAttribute('data-gg-comment-role', 'reply');
+      if (!cleanText(replyLink.textContent)) replyLink.textContent = 'Reply';
+    }
+    if (actions && isDeletedComment(comment)) actions.hidden = true;
+    else if (actions) actions.hidden = false;
+    ensureMenuButton(comment);
+    ensureToggleButton(comment);
+  }
+  function enhance(host){
+    var root = commentsRoot(host) || host;
+    var comments = null;
+    if (!root || !root.querySelectorAll) return false;
+    root.classList.add('gg-comments--enhanced');
+    comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
+    comments.forEach(function(comment){
+      enhanceComment(comment, root);
+    });
+    if (replyState(root).commentId) mountReplyBanner(root);
+    return !!comments.length;
+  }
+  function bindHost(host){
+    if (!host || host.__ggCommentsBound) return false;
+    host.__ggCommentsBound = true;
+    host.addEventListener('click', function(e){
+      var target = e && e.target && e.target.closest ? e.target.closest('[data-gg-comment-action], [data-gg-comment-jump], [data-gg-comment-toggle], a.comment-reply, #gg-top-continue .comment-reply, #top-continue .comment-reply, a.comment-reply[data-gg-footer-cta]') : null;
+      var root = commentsRoot(host) || host;
+      var comment = null;
+      var wrap = null;
+      var id = '';
+      if (!root) return;
+      if (!target || !target.closest || !target.closest('.cmt2-ctx')) closeMenus(root, null);
+      if (!target) return;
+      comment = closestComment(target);
+      if (target.matches && target.matches('[data-gg-comment-action="more"]')) {
+        e.preventDefault();
+        wrap = target.closest('.cmt2-ctx');
+        if (wrap) toggleMenu(wrap);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-action="copy-link"]')) {
+        e.preventDefault();
+        if (comment) copyPermalink(commentPermalink(comment));
+        closeMenus(root, null);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-action="delete"]')) {
+        e.preventDefault();
+        if (comment) triggerDelete(comment);
+        closeMenus(root, null);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-action="cancel-reply"]')) {
+        e.preventDefault();
+        cancelReply(root);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-jump]')) {
+        e.preventDefault();
+        id = target.getAttribute('data-gg-comment-jump') || '';
+        jumpToComment(root, id);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-toggle]')) {
+        e.preventDefault();
+        if (comment) toggleReplies(comment);
+        return;
+      }
+      if (target.matches && target.matches('a.comment-reply')) {
+        if (comment) setReplyState(root, comment, target);
+        else clearReplyState(root);
+      }
+    }, false);
+    host.addEventListener('keydown', function(e){
+      var root = commentsRoot(host) || host;
+      if (!e || e.key !== 'Escape' || !root) return;
+      closeMenus(root, null);
+    }, false);
+    if (w.MutationObserver) {
+      host.__ggCommentsObserver = new MutationObserver(function(){
+        clearTimeout(host.__ggCommentsEnhanceTimer);
+        host.__ggCommentsEnhanceTimer = w.setTimeout(function(){
+          enhance(host);
+        }, 40);
+      });
+      host.__ggCommentsObserver.observe(host, { childList: true, subtree: true });
+    }
+    return true;
+  }
+  function init(root){
+    var scope = root && root.querySelectorAll ? root : d;
+    var hosts = [];
+    var i = 0;
+    var host = null;
+    if (scope && scope.matches && (scope.matches('.gg-post__comments') || scope.matches('#comments') || scope.matches('.gg-comments'))) {
+      hosts.push(scope);
+    }
+    if (scope && scope.querySelectorAll) {
+      hosts = hosts.concat(toArray(scope.querySelectorAll('.gg-post__comments[data-gg-comments-gate="1"], .gg-post__comments, #comments')));
+    }
+    for (i = 0; i < hosts.length; i++) {
+      host = hosts[i];
+      if (!host) continue;
+      bindHost(host);
+      enhance(host);
+    }
+    return !!hosts.length;
   }
   function ensureLoaded(opts){
     var o = opts || {};
@@ -5888,6 +6613,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var forceLoad = fromPrimary || !!o.forceLoad;
     var shouldScroll = fromPrimary && o.scroll !== false;
     if (!host) return false;
+    init(host);
 
     if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
       GG.core.commentsGate.init();
@@ -5904,6 +6630,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
 
     if (host.__gC || !hasInternalLoadBtn(host)) markLoaded(host);
+    enhance(host);
 
     if (shouldScroll) {
       var tries = 0;
@@ -5912,6 +6639,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         tries++;
         if (host.__gC || !hasInternalLoadBtn(host) || tries >= max) {
           markLoaded(host);
+          enhance(host);
           scrollToComments(host);
           return;
         }
@@ -5949,9 +6677,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
       try { GG.core.commentsGate.init(); } catch (_) {}
     }
+    init(scope);
     return true;
   }
-  return { ensureLoaded: ensureLoaded, reset: reset };
+  return { ensureLoaded: ensureLoaded, reset: reset, init: init, enhance: enhance };
 })();
 
 function hookCommentsGate(){
@@ -5961,7 +6690,14 @@ function hookCommentsGate(){
       var prev = GG.app.rehydrate;
       GG.app.rehydrate = function(ctx){
         try { return prev ? prev.apply(this, arguments) : undefined; }
-        finally { try { GG.core.commentsGate.init(); } catch (_) {} }
+        finally {
+          try { GG.core.commentsGate.init(); } catch (_) {}
+          try {
+            if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.init === 'function') {
+              GG.modules.Comments.init();
+            }
+          } catch (_) {}
+        }
       };
       GG.app.__ggCommentsGateWrapped = true;
     }
@@ -5972,6 +6708,9 @@ function hookCommentsGate(){
 
 function boot(){
   if (GG.core && GG.core.commentsGate) GG.core.commentsGate.init();
+  if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.init === 'function') {
+    try { GG.modules.Comments.init(); } catch (_) {}
+  }
   if (hookCommentsGate()) return;
   var tries = 0;
   var t = w.setInterval(function(){
