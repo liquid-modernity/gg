@@ -6008,6 +6008,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var box = commentReplyBox(comment);
     return replyBoxHasComposer(box) ? box : null;
   }
+  function composerNodes(root){
+    var nodes = [];
+    var seen = [];
+    var top = topComposer(root);
+    function push(node){
+      if (!node || seen.indexOf(node) !== -1) return;
+      seen.push(node);
+      nodes.push(node);
+    }
+    push(top);
+    toArray(root && root.querySelectorAll ? root.querySelectorAll('#cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread') : []).forEach(push);
+    return nodes;
+  }
   function cacheNodeAnchor(node){
     if (!node || node.__ggAnchor) return;
     node.__ggAnchor = {
@@ -6027,8 +6040,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     node.setAttribute('aria-hidden', 'true');
     node.setAttribute('data-gg-state', 'hidden');
   }
-  function restoreNodeAnchor(node){
+  function restoreNodeAnchor(node, opts){
     var anchor = null;
+    var o = opts || {};
     if (!node) return;
     if (node.__ggOwnerComment && node.__ggOwnerComment.__ggReplyBoxOwner === node) {
       node.__ggOwnerComment.__ggReplyBoxOwner = null;
@@ -6039,48 +6053,45 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (anchor.next && anchor.next.parentNode === anchor.parent) anchor.parent.insertBefore(node, anchor.next);
       else anchor.parent.appendChild(node);
     }
-    showComposerNode(node);
+    if (o.hidden) hideComposerNode(node);
+    else showComposerNode(node);
   }
-  function mountTopComposer(root){
+  function parkComposerNode(node){
+    if (!node) return;
+    restoreNodeAnchor(node, { hidden: true });
+  }
+  function mountComposerNode(root, node, comment){
     var slot = composerSlot(root);
-    var node = topComposer(root);
+    var nodes = composerNodes(root);
+    var i = 0;
     if (!slot || !node) return null;
+    for (i = 0; i < nodes.length; i++) {
+      if (nodes[i] === node) continue;
+      parkComposerNode(nodes[i]);
+    }
     cacheNodeAnchor(node);
     if (node.parentNode !== slot) slot.insertBefore(node, slot.firstChild || null);
     showComposerNode(node);
+    node.__ggOwnerComment = comment || null;
+    if (comment) comment.__ggReplyBoxOwner = node;
     return node;
-  }
-  function restoreReplyComposer(root){
-    var node = root && root.__ggReplyComposerNode;
-    var top = mountTopComposer(root);
-    if (node) {
-      restoreNodeAnchor(node);
-      root.__ggReplyComposerNode = null;
-    }
-    if (top) showComposerNode(top);
-  }
-  function mountReplyComposer(root, comment){
-    var slot = composerSlot(root);
-    var box = activeReplyComposer(comment);
-    var top = mountTopComposer(root);
-    if (!slot || !box) return null;
-    cacheNodeAnchor(box);
-    if (box.parentNode !== slot) slot.appendChild(box);
-    showComposerNode(box);
-    box.__ggOwnerComment = comment || null;
-    if (comment) comment.__ggReplyBoxOwner = box;
-    root.__ggReplyComposerNode = box;
-    if (top && top !== box) hideComposerNode(top);
-    return box;
   }
   function syncComposerOwner(root){
     var reply = replyState(root);
+    var node = null;
+    var nodes = null;
+    var i = 0;
     if (!root || !isRightRailComments(root)) return null;
-    if (reply && reply.commentId && reply.comment) {
-      if (mountReplyComposer(root, reply.comment)) return root.__ggReplyComposerNode;
+    if (reply && reply.replyMode === 'reply' && reply.replyTargetId && reply.comment) {
+      node = activeReplyComposer(reply.comment) || commentReplyBox(reply.comment);
+      if (node) return mountComposerNode(root, node, reply.comment);
+      nodes = composerNodes(root);
+      for (i = 0; i < nodes.length; i++) parkComposerNode(nodes[i]);
+      return null;
     }
-    restoreReplyComposer(root);
-    return mountTopComposer(root);
+    node = topComposer(root);
+    if (!node) return null;
+    return mountComposerNode(root, node, null);
   }
   function footerState(root){
     if (!root) return {};
@@ -6105,17 +6116,16 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
     var state = footerState(root);
     var reply = replyState(root);
-    var inlineBox = reply && reply.comment ? activeReplyComposer(reply.comment) : null;
     var open = false;
     if (!root || !footer) return false;
     if (footer.getAttribute('data-gg-has-cta') === '0') open = true;
-    else if (reply && reply.commentId) open = true;
+    else if (reply && reply.replyMode === 'reply' && reply.replyTargetId) open = true;
     else open = !!state.manual;
     footer.setAttribute('data-gg-open', open ? '1' : '0');
     footer.setAttribute('data-gg-context', isRightRailComments(root) ? 'rail' : 'page');
     if (cta) {
       cta.setAttribute('aria-expanded', open ? 'true' : 'false');
-      cta.textContent = open ? 'Hide composer' : 'Add comment';
+      cta.textContent = open ? (reply && reply.replyMode === 'reply' ? 'Reply mode' : 'Close composer') : 'Add comment';
     }
     if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
     if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
@@ -6170,13 +6180,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var author = block.querySelector('cite.user a, cite.user, .comment-author a, .comment-author');
     return cleanText(author && author.textContent);
   }
-  function isDeletedComment(comment){
+  function commentStateInfo(comment){
     var body = commentBody(comment);
-    var txt = '';
-    if (!body) return false;
-    if (/(^|\s)deleted(\s|$)/.test(body.className || '')) return true;
-    txt = cleanText(body.textContent);
-    return /comment (has been )?(removed|deleted)|deleted by the author|removed by a blog administrator|this comment has been removed/i.test(txt);
+    var text = '';
+    if (!body) return { key: 'active', label: '', interactive: true };
+    text = cleanText(body.textContent).toLowerCase();
+    if (/awaiting moderation|held for moderation|pending moderation|visible after approval|comment will be visible after approval|after it has been approved/i.test(text)) {
+      return { key: 'pending', label: 'Awaiting moderation', interactive: false };
+    }
+    if (/removed by a blog administrator|removed by blog administrator|removed by admin/i.test(text)) {
+      return { key: 'removed-admin', label: 'Removed by admin', interactive: false };
+    }
+    if (/(^|\s)deleted(\s|$)/.test(body.className || '') || /comment (has been )?(removed|deleted)|deleted by the author|removed by the author|this comment has been removed/i.test(text)) {
+      return { key: 'deleted', label: 'Deleted', interactive: false };
+    }
+    return { key: 'active', label: '', interactive: true };
+  }
+  function isDeletedComment(comment){
+    return commentStateInfo(comment).key !== 'active';
   }
   function setSuppressed(node){
     if (!node || !node.setAttribute) return;
@@ -6221,8 +6242,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var scopes = null;
     var i = 0;
     if (!root || !root.querySelectorAll) return;
-    toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')).forEach(setSuppressed);
-    toArray(root.querySelectorAll('.comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue, .comment-replybox-single .comment-form-message, .comment-replybox-thread .comment-form-message, #top-ce .comment-form-message')).forEach(setSuppressed);
+    toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"], #cmt2-holder #top-continue, #cmt2-holder .continue, #cmt2-holder .thread-toggle, #cmt2-holder .thread-count, #cmt2-holder .item-control, .comment-replybox-single .comment-form-message, .comment-replybox-thread .comment-form-message, #top-ce .comment-form-message')).forEach(setSuppressed);
     scopes = root.querySelectorAll('.comment-replybox-single, .comment-replybox-thread, #top-ce');
     for (i = 0; i < scopes.length; i++) suppressHelperCopy(scopes[i]);
     if (d.body && d.body.classList) d.body.classList.remove('gg-comments-help-open');
@@ -6400,22 +6420,22 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function ensureModerationState(comment){
     var block = commentBlock(comment);
     var body = commentBody(comment);
+    var state = commentStateInfo(comment);
     var badge = null;
-    var deleted = isDeletedComment(comment);
     if (!block || !body) return;
     badge = block.querySelector('.cmt2-state');
-    if (!deleted) {
+    if (state.key === 'active') {
       comment.setAttribute('data-gg-comment-state', 'active');
       if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
       return;
     }
-    comment.setAttribute('data-gg-comment-state', 'deleted');
+    comment.setAttribute('data-gg-comment-state', state.key);
     if (!badge) {
       badge = d.createElement('p');
       badge.className = 'cmt2-state';
       block.insertBefore(badge, body);
     }
-    badge.textContent = 'Moderation note';
+    badge.textContent = state.label;
   }
   function ensureActions(comment){
     var block = commentBlock(comment);
@@ -6434,13 +6454,14 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var replies = commentReplies(comment);
     var count = replyChildrenCount(replies);
     var actions = ensureActions(comment);
+    var state = commentStateInfo(comment);
     var btn = null;
     var before = null;
     var isOpen = true;
     if (!actions) return;
     btn = actions.querySelector('.cmt2-thread-toggle');
-    before = actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more');
-    if (!replies || !count || isDeletedComment(comment)) {
+    before = actions.querySelector('.cmt2-ctx');
+    if (!replies || !count || !state.interactive) {
       if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
       if (replies) {
         replies.hidden = false;
@@ -6464,14 +6485,15 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var actions = ensureActions(comment);
     var links = commentReplyLinks(comment);
     var primary = pickPrimaryReplyLink(comment);
+    var state = commentStateInfo(comment);
     var action = null;
     var before = null;
     var i = 0;
     var parent = null;
     if (!actions) return null;
-    before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx, .item-control.cmt2-native-more');
+    before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx');
     action = actions.querySelector('.cmt2-reply-action');
-    if (isDeletedComment(comment) || !primary) {
+    if (!state.interactive || !primary) {
       if (action && action.parentNode) action.parentNode.removeChild(action);
       for (i = 0; i < links.length; i++) {
         setSuppressed(links[i]);
@@ -6506,7 +6528,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function suppressCommentScaffolding(comment){
     var actions = commentActions(comment);
-    var hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more'));
+    var hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx'));
     var deletePeers = null;
     var scaffolds = null;
     var itemControls = null;
@@ -6516,7 +6538,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (hasMore) {
       for (i = 0; i < deletePeers.length; i++) setSuppressed(deletePeers[i]);
     }
-    itemControls = comment.querySelectorAll('.item-control:not(.cmt2-native-more)');
+    itemControls = comment.querySelectorAll('.item-control');
     for (i = 0; i < itemControls.length; i++) setSuppressed(itemControls[i]);
     scaffolds = comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replies .continue, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue');
     for (i = 0; i < scaffolds.length; i++) setSuppressed(scaffolds[i]);
@@ -6528,6 +6550,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var i = 0;
     var comment = null;
     var actions = null;
+    var moderation = null;
     var hasMore = false;
     var hasVisibleDelete = false;
     var visibleHelp = null;
@@ -6544,6 +6567,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var visibleAddOwners = null;
     var hasNativeReply = false;
     var hasVisibleReply = false;
+    var moderationBadges = null;
     if (!root || !root.querySelectorAll) return issues;
     visibleHelp = firstVisibleNode(toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')));
     if (visibleHelp) {
@@ -6581,26 +6605,28 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         if (cta && !isVisibleNode(cta)) issues.push('rail-footer-cta-hidden');
         if (footerHeight > 0 && (paddingBottom + 8) < footerHeight) issues.push('rail-footer-space-low');
       }
+      if (cta && visibleAddOwners.length !== 1) issues.push('add-comment-owner-count:' + visibleAddOwners.length);
       if (root.querySelectorAll('#top-ce').length > 1) issues.push('duplicate-composer-id');
       if (visibleComposerOwners.length > 1) issues.push('composer-owner-duplicate');
       if (visibleAddOwners.length > 1) issues.push('add-comment-duplicate');
+      if (firstVisibleNode(toArray(root.querySelectorAll('#cmt2-holder #top-continue .comment-reply, #cmt2-holder .continue .comment-reply')))) {
+        issues.push('native-add-comment-visible');
+      }
     }
     comments = root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment');
     for (i = 0; i < comments.length; i++) {
       comment = comments[i];
+      moderation = commentStateInfo(comment);
       actions = commentActions(comment);
-      hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more'));
+      hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx'));
       hasVisibleDelete = !!firstVisibleNode(toArray(comment.querySelectorAll('.comment-footer .comment-delete, .comment-footer .cmt2-del, .comment-actions .comment-delete, .comment-actions .cmt2-del, .gg-cmt2__del')));
       if (hasMore && hasVisibleDelete) issues.push('delete-peer:' + commentId(comment));
-      if (actions && actions.querySelector && actions.querySelector('.cmt2-ctx') && actions.querySelector('.item-control.cmt2-native-more')) {
-        issues.push('duplicate-more:' + commentId(comment));
-      }
-      if (firstVisibleNode(toArray(comment.querySelectorAll('.item-control:not(.cmt2-native-more)')))) {
+      if (firstVisibleNode(toArray(comment.querySelectorAll('.item-control')))) {
         issues.push('item-control-visible:' + commentId(comment));
       }
       hasNativeReply = !!pickPrimaryReplyLink(comment);
       hasVisibleReply = !!(actions && actions.querySelector && firstVisibleNode(toArray(actions.querySelectorAll('.cmt2-reply-action'))));
-      if (!isDeletedComment(comment) && hasNativeReply && !hasVisibleReply) issues.push('reply-missing:' + commentId(comment));
+      if (moderation.interactive && hasNativeReply && !hasVisibleReply) issues.push('reply-missing:' + commentId(comment));
       rawReplys = toArray(commentReplyLinks(comment)).filter(function(link){
         if (!isVisibleNode(link)) return false;
         if (link.classList && link.classList.contains('cmt2-reply-action')) return false;
@@ -6612,6 +6638,11 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         if (firstVisibleNode(toArray(comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count')))) {
           issues.push('thread-scaffold:' + commentId(comment));
         }
+      }
+      moderationBadges = toArray(comment.querySelectorAll('.cmt2-state')).filter(isVisibleNode);
+      if (moderation.key !== 'active') {
+        if (moderationBadges.length !== 1) issues.push('moderation-owner:' + commentId(comment));
+        else if (cleanText(moderationBadges[0].textContent) !== moderation.label) issues.push('moderation-copy:' + commentId(comment));
       }
     }
     return issues;
@@ -6632,29 +6663,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var permalink = commentPermalink(comment);
     var deleteLink = commentDeleteLink(comment);
     var itemControl = commentItemControl(comment);
-    var hasNativePopup = !!(itemControl && itemControl.querySelector && itemControl.querySelector('.goog-toggle-button'));
     var wrap = null;
     var btn = null;
     var pop = null;
     var copyBtn = null;
     var deleteBtn = null;
     if (!actions || isDeletedComment(comment)) {
-      if (itemControl && itemControl.parentNode === actions) itemControl.parentNode.removeChild(itemControl);
-      return;
-    }
-    if (hasNativePopup) {
-      if (itemControl.parentNode !== actions) actions.appendChild(itemControl);
-      itemControl.classList.add('cmt2-native-more');
-      itemControl.hidden = false;
-      itemControl.removeAttribute('aria-hidden');
-      itemControl.removeAttribute('data-gg-state');
-      btn = itemControl.querySelector('.goog-toggle-button');
-      if (btn) {
-        btn.setAttribute('aria-label', 'More actions');
-        btn.setAttribute('title', 'More actions');
-      }
-      wrap = actions.querySelector('.cmt2-ctx');
-      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      if (itemControl) setSuppressed(itemControl);
       return;
     }
     if (itemControl) {
@@ -6756,10 +6771,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function replyState(root){
     if (!root) return {};
     root.__ggReplyState = root.__ggReplyState || {
+      replyMode: 'default',
+      replyTargetId: '',
+      replyTargetAuthor: '',
+      replyPermalink: '',
       comment: null,
-      commentId: '',
-      author: '',
-      link: null,
+      nativeReplyLink: null,
       banner: null
     };
     return root.__ggReplyState;
@@ -6797,14 +6814,6 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return banner;
   }
   function replySlot(root){
-    var state = replyState(root);
-    if (isRightRailComments(root)) {
-      return root.querySelector('#gg-addslot') ||
-             root.querySelector('.gg-comments__addslot') ||
-             root.querySelector('.gg-comments__footer');
-    }
-    var box = state.comment ? commentReplyBox(state.comment) : null;
-    if (box) return box;
     return root.querySelector('#gg-addslot') ||
            root.querySelector('.gg-comments__addslot') ||
            root.querySelector('.gg-comments__footer');
@@ -6814,8 +6823,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var banner = buildReplyBanner(root);
     var slot = replySlot(root);
     var title = banner.querySelector('.cmt2-replying__title');
-    if (!slot || !state.commentId) return;
-    if (title) title.textContent = 'Replying to ' + (state.author ? '@' + state.author : 'comment');
+    if (!slot || state.replyMode !== 'reply' || !state.replyTargetId) return;
+    if (title) title.textContent = 'Replying to ' + (state.replyTargetAuthor ? '@' + state.replyTargetAuthor : 'comment');
     if (banner.parentNode !== slot) slot.insertBefore(banner, slot.firstChild || null);
     syncFooterState(root);
   }
@@ -6824,11 +6833,39 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (state.comment && state.comment.removeAttribute) state.comment.removeAttribute('data-gg-replying');
     if (state.banner && state.banner.parentNode) state.banner.parentNode.removeChild(state.banner);
     root.classList.remove('gg-comments--replying');
+    if (root && root.setAttribute) root.setAttribute('data-gg-reply-mode', 'default');
+    state.replyMode = 'default';
+    state.replyTargetId = '';
+    state.replyTargetAuthor = '';
+    state.replyPermalink = '';
     state.comment = null;
-    state.commentId = '';
-    state.author = '';
-    state.link = null;
+    state.nativeReplyLink = null;
     syncFooterState(root);
+  }
+  function scheduleCommentSync(root, opts){
+    var o = opts || {};
+    var tries = 0;
+    var max = isFinite(o.maxAttempts) && o.maxAttempts > 0 ? o.maxAttempts : 10;
+    var delay = isFinite(o.delay) && o.delay > 0 ? o.delay : 120;
+    var initialDelay = isFinite(o.initialDelay) && o.initialDelay >= 0 ? o.initialDelay : 60;
+    if (!root) return false;
+    clearTimeout(root.__ggCommentsSyncTimer);
+    function ready(){
+      if (typeof o.until !== 'function') return true;
+      try { return !!o.until(); } catch (_) { return false; }
+    }
+    function tick(){
+      tries++;
+      enhance(root);
+      if (o.focus) focusComposer(root, o.comment || null);
+      if (!ready() && tries < max) {
+        root.__ggCommentsSyncTimer = w.setTimeout(tick, delay);
+        return;
+      }
+      root.__ggCommentsSyncTimer = 0;
+    }
+    root.__ggCommentsSyncTimer = w.setTimeout(tick, initialDelay);
+    return true;
   }
   function focusComposer(root, comment){
     var tries = 0;
@@ -6836,14 +6873,23 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     function attempt(){
       var box = null;
       var field = null;
+      var state = replyState(root);
       if (isRightRailComments(root)) {
-        if (comment) box = mountReplyComposer(root, comment);
-        if (!box) box = syncComposerOwner(root);
-        field = composerField(box);
+        if (comment && state.replyMode === 'reply' && state.replyTargetId) {
+          box = activeReplyComposer(comment);
+          if (box) box = mountComposerNode(root, box, comment);
+          field = composerField(box);
+        }
+        if (!field && (!comment || state.replyMode !== 'reply' || tries > 6)) {
+          box = syncComposerOwner(root);
+          field = composerField(box);
+        }
       } else {
         box = commentReplyBox(comment);
-        field = composerField(box) ||
-                (root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null);
+        field = composerField(box);
+        if (!field) {
+          field = root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null;
+        }
       }
       tries++;
       if (field && typeof field.focus === 'function') {
@@ -6862,15 +6908,17 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (state.comment && state.comment !== comment && state.comment.removeAttribute) {
       state.comment.removeAttribute('data-gg-replying');
     }
+    state.replyMode = 'reply';
+    state.replyTargetId = commentId(comment);
+    state.replyTargetAuthor = commentAuthor(comment);
+    state.replyPermalink = commentPermalink(comment);
     state.comment = comment;
-    state.commentId = commentId(comment);
-    state.author = commentAuthor(comment);
-    state.link = link || null;
+    state.nativeReplyLink = link || null;
     comment.setAttribute('data-gg-replying', '1');
     root.classList.add('gg-comments--replying');
+    if (root && root.setAttribute) root.setAttribute('data-gg-reply-mode', 'reply');
     syncFooterState(root);
     mountReplyBanner(root);
-    focusComposer(root, comment);
   }
   function cancelReply(root){
     var state = replyState(root);
@@ -6881,10 +6929,50 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     if (cancel && typeof cancel.click === 'function') {
       try { cancel.click(); } catch (_) {}
-    } else if (state.link && typeof state.link.click === 'function') {
-      try { state.link.click(); } catch (_) {}
+    } else if (state.nativeReplyLink && typeof state.nativeReplyLink.click === 'function') {
+      try { state.nativeReplyLink.click(); } catch (_) {}
     }
     clearReplyState(root);
+    scheduleCommentSync(root, {
+      initialDelay: 80,
+      maxAttempts: 8,
+      until: function(){ return !!composerField(syncComposerOwner(root)); }
+    });
+  }
+  function openComposerForRoot(root, opts){
+    var o = opts || {};
+    var nativeLink = null;
+    if (!root) return false;
+    if (replyState(root).replyMode === 'reply' && !o.preserveReply) clearReplyState(root);
+    setFooterOpen(root, true, { manual: true, focus: false });
+    nativeLink = nativeAddCommentLink(root);
+    if (nativeLink && o.useNative !== false && typeof nativeLink.click === 'function') {
+      try { nativeLink.click(); } catch (_) {}
+    }
+    scheduleCommentSync(root, {
+      comment: null,
+      focus: o.focus !== false,
+      initialDelay: 80,
+      maxAttempts: 10,
+      until: function(){ return !!composerField(syncComposerOwner(root)); }
+    });
+    return true;
+  }
+  function enterReplyMode(root, comment, nativeLink){
+    if (!root || !comment) return false;
+    setReplyState(root, comment, nativeLink || null);
+    setFooterOpen(root, true, { manual: true, focus: false });
+    if (nativeLink && typeof nativeLink.click === 'function') {
+      try { nativeLink.click(); } catch (_) {}
+    }
+    scheduleCommentSync(root, {
+      comment: comment,
+      focus: true,
+      initialDelay: 80,
+      maxAttempts: 12,
+      until: function(){ return !!activeReplyComposer(comment); }
+    });
+    return true;
   }
   function toggleReplies(comment){
     var replies = commentReplies(comment);
@@ -6917,6 +7005,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function enhanceComment(comment, root){
     var actions = null;
     var replyLink = null;
+    var state = null;
     var depth = commentDepth(comment);
     if (!comment || !comment.querySelector) return;
     comment.setAttribute('data-gg-comment-id', commentId(comment));
@@ -6927,11 +7016,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     ensureReplyContext(comment, root);
     actions = ensureActions(comment);
     replyLink = normalizeReplyLink(comment) || commentReplyLink(comment);
+    state = commentStateInfo(comment);
     if (replyLink) {
       replyLink.setAttribute('data-gg-comment-role', 'reply');
       if (!cleanText(replyLink.textContent)) replyLink.textContent = 'Reply';
     }
-    if (actions && isDeletedComment(comment)) actions.hidden = true;
+    if (actions && !state.interactive) actions.hidden = true;
     else if (actions) actions.hidden = false;
     ensureMenuButton(comment);
     ensureToggleButton(comment);
@@ -6943,13 +7033,15 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!root || !root.querySelectorAll) return false;
     root.classList.add('gg-comments--enhanced');
     root.setAttribute('data-gg-comment-owner', 'enhanced');
+    root.setAttribute('data-gg-visible-owner', 'enhanced-footer');
+    root.setAttribute('data-gg-comment-contract', 'single-visible-owner');
     bindFooterMetrics(root);
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
-    if (replyState(root).commentId) mountReplyBanner(root);
+    if (replyState(root).replyMode === 'reply' && replyState(root).replyTargetId) mountReplyBanner(root);
     syncFooterState(root);
     runProof(root);
     return !!comments.length;
@@ -6970,37 +7062,17 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       comment = closestComment(target);
       if (target.matches && target.matches('a.comment-reply[data-gg-footer-cta]')) {
         e.preventDefault();
-        if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1' && !replyState(root).commentId) {
+        if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1' && replyState(root).replyMode !== 'reply') {
           setFooterOpen(root, false, { manual: false });
           return;
         }
-        if (root.classList && root.classList.contains('gg-comments--replying')) clearReplyState(root);
-        setFooterOpen(root, true, { manual: true, focus: false });
-        nativeLink = nativeAddCommentLink(root);
-        if (nativeLink && typeof nativeLink.click === 'function') {
-          try { nativeLink.click(); } catch (_) {}
-        }
-        focusComposer(root, null);
-        w.setTimeout(function(){
-          syncComposerOwner(root);
-          syncFooterState(root);
-          runProof(root);
-        }, 180);
+        openComposerForRoot(root, { focus: true });
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="reply"]')) {
         e.preventDefault();
         nativeLink = target.__ggNativeReplyLink || pickPrimaryReplyLink(comment);
-        if (comment) setReplyState(root, comment, nativeLink);
-        if (nativeLink && typeof nativeLink.click === 'function') {
-          try { nativeLink.click(); } catch (_) {}
-        }
-        w.setTimeout(function(){
-          syncComposerOwner(root);
-          syncFooterState(root);
-          focusComposer(root, comment);
-          runProof(root);
-        }, 180);
+        if (comment) enterReplyMode(root, comment, nativeLink);
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="more"]')) {
@@ -7019,6 +7091,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         e.preventDefault();
         if (comment) triggerDelete(comment);
         closeMenus(root, null);
+        scheduleCommentSync(root, { initialDelay: 140, maxAttempts: 8 });
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="cancel-reply"]')) {
@@ -7042,7 +7115,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       var root = commentsRoot(host) || host;
       if (!e || e.key !== 'Escape' || !root) return;
       closeMenus(root, null);
-      if (replyState(root).commentId) {
+      if (replyState(root).replyMode === 'reply') {
         cancelReply(root);
         return;
       }
@@ -7050,15 +7123,6 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         setFooterOpen(root, false, { manual: false });
       }
     }, false);
-    if (w.MutationObserver) {
-      host.__ggCommentsObserver = new MutationObserver(function(){
-        clearTimeout(host.__ggCommentsEnhanceTimer);
-        host.__ggCommentsEnhanceTimer = w.setTimeout(function(){
-          enhance(host);
-        }, 40);
-      });
-      host.__ggCommentsObserver.observe(host, { childList: true, subtree: true });
-    }
     return true;
   }
   function init(root){
@@ -7154,7 +7218,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     init(scope);
     return true;
   }
-  return { ensureLoaded: ensureLoaded, reset: reset, init: init, enhance: enhance };
+  function openComposer(opts){
+    var o = opts || {};
+    var host = hostRoot();
+    if (!host) return false;
+    ensureLoaded({
+      fromPrimaryAction: !!o.fromPrimaryAction,
+      forceLoad: !!o.forceLoad || !!o.fromPrimaryAction,
+      scroll: o.scroll
+    });
+    host = hostRoot() || host;
+    return openComposerForRoot(host, o);
+  }
+  return { ensureLoaded: ensureLoaded, reset: reset, init: init, enhance: enhance, openComposer: openComposer, runProof: runProof };
 })();
 
 function hookCommentsGate(){

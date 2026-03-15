@@ -375,6 +375,11 @@
     var original = A.focusTrap;
     function trapComments(container, opts){
       if (!container) return function(){};
+      try {
+        if (GG.modules && GG.modules.Comments && typeof GG.modules.Comments.init === 'function') {
+          GG.modules.Comments.init(container);
+        }
+      } catch (_) {}
       var options = opts || {};
       var selector = options.selector || 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
       function visible(el){

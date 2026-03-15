@@ -5446,9 +5446,17 @@ height: 1px;
 pointer-events: none;
 }
 
-#comments .gg-comments__content #top-continue,
-#comments .gg-comments__content .continue {
-display: none;
+#comments[data-gg-comment-contract="single-visible-owner"] .gg-comments__content #top-continue,
+#comments[data-gg-comment-contract="single-visible-owner"] .gg-comments__content .continue,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder .thread-toggle,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder .thread-count,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder .item-control,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder a.comment-reply:not(.cmt2-reply-action),
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder > #top-ce,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder > .comment-replybox-thread,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder li.comment > .comment-replybox-single,
+#comments[data-gg-comment-contract="single-visible-owner"] #cmt2-holder li.comment > .comment-replybox-thread {
+display: none !important;
 }
 
 #comments .gg-comments__footer #gg-top-continue {
@@ -5539,8 +5547,7 @@ font-size: 12px;
 line-height: 1.5;
 color: color-mix(in srgb, var(--gg-muted) 92%, transparent);
 }
-#comments .gg-comments__footer .continue,
-#comments .gg-comments__footer #top-continue{
+#comments .gg-comments__footer #gg-top-continue{
 position: static;
 bottom: auto;
 padding: 0;
@@ -5548,7 +5555,7 @@ margin: 0;
 background: transparent;
 order: 0;
 }
-#comments .gg-comments__footer #top-continue .comment-reply{
+#comments .gg-comments__footer #gg-top-continue .comment-reply{
 width: 100%;
 justify-content: center;
 }
@@ -5630,6 +5637,7 @@ scroll-padding-top: 12px;
 scroll-padding-bottom: calc(var(--gg-comments-footer-h) + 14px);
 }
 main.gg-main[data-gg-right-mode="comments"] #comments .gg-comments__list #top-ce,
+main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder > .comment-replybox-thread,
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment > .comment-replybox-single,
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment > .comment-replybox-thread {
 display: none;
@@ -5741,7 +5749,7 @@ font-style: italic;
 
 .gg-comments :is(.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]),
 .gg-comments #cmt2-holder :is(.comment-footer .comment-delete, .comment-footer .cmt2-del, .comment-actions .comment-delete, .comment-actions .cmt2-del, .gg-cmt2__del),
-.gg-comments #cmt2-holder :is(.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replies .continue, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue, .comment-replybox-single .comment-form-message, .comment-replybox-thread .comment-form-message, .item-control:not(.cmt2-native-more)),
+.gg-comments #cmt2-holder :is(.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replies .continue, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue, .comment-replybox-single .comment-form-message, .comment-replybox-thread .comment-form-message, .item-control),
 .gg-comments #cmt2-holder a.comment-reply:not(.cmt2-reply-action),
 .gg-comments #top-ce .comment-form-message {
 display: none !important;
@@ -5755,7 +5763,6 @@ align-items: center;
 gap: 6px;
 margin-top: 0;
 }
-.gg-comments .btn-pill,
 .gg-comments #cmt2-holder .cmt2-thread-toggle {
 display: inline-flex;
 align-items: center;
@@ -5790,13 +5797,11 @@ text-decoration: none;
 box-shadow: inset 0 1px 0 rgba(255,255,255,.88);
 transition: background .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
 }
-.gg-comments .btn-pill:hover,
 .gg-comments #cmt2-holder .cmt2-thread-toggle:hover {
 background: color-mix(in srgb, var(--gg-hover) 86%, var(--gg-surface));
 border-color: transparent;
 color: color-mix(in srgb, var(--gg-ink) 84%, transparent);
 }
-.gg-comments .btn-pill:active,
 .gg-comments #cmt2-holder .cmt2-thread-toggle:active { transform: translateY(1px); }
 .gg-comments #cmt2-holder a.comment-reply:hover {
 background: color-mix(in srgb, var(--gg-hover) 86%, var(--gg-surface));
@@ -5806,13 +5811,6 @@ color: var(--gg-ink);
 .gg-comments #cmt2-holder a.comment-reply:active { transform: translateY(1px); }
 
 
-.gg-comments .btn-pill.is-liked {
-border-color: color-mix(in srgb, var(--gg-primary) 55%, var(--gg-border));
-background: color-mix(in srgb, var(--gg-primary) 10%, var(--gg-surface));
-color: var(--gg-primary);
-}
-
-
 .gg-comments #cmt2-holder .cmt2-thread-toggle {
 background: transparent;
 border-color: transparent;
@@ -5820,13 +5818,11 @@ box-shadow: none;
 padding-inline: 2px;
 color: var(--gg-muted);
 }
-.gg-comments #cmt2-holder .comment-actions > .cmt2-ctx,
-.gg-comments #cmt2-holder .comment-actions > .item-control.cmt2-native-more {
+.gg-comments #cmt2-holder .comment-actions > .cmt2-ctx {
 margin-left: auto;
 }
 
 
-.gg-comments .btn-pill:focus-visible,
 .gg-comments a.comment-reply:focus-visible,
 .gg-comments .cmt2-thread-toggle:focus-visible,
 .gg-comments .cmt2-ctx-btn:focus-visible,
@@ -5891,12 +5887,13 @@ gap: 6px;
 
 
 
-.gg-comments #top-continue,
+.gg-comments #top-continue {
+display: none !important;
+}
 .gg-comments #gg-top-continue {
 display: block;
 margin: 10px 0 0;
 }
-.gg-comments #top-continue a.comment-reply::before,
 .gg-comments #gg-top-continue a.comment-reply::before {
 content: "add_comment";
 font-family: "Material Symbols Rounded";
@@ -5930,35 +5927,6 @@ transition: background .16s ease, border-color .16s ease, color .16s ease;
 background: color-mix(in srgb, var(--gg-hover) 86%, var(--gg-surface));
 border-color: color-mix(in srgb, var(--gg-border) 62%, transparent);
 }
-.gg-comments .item-control.cmt2-native-more {
-display: inline-flex;
-align-items: center;
-}
-.gg-comments .item-control.cmt2-native-more .goog-toggle-button {
-border: 1px solid color-mix(in srgb, var(--gg-border) 76%, transparent);
-background: color-mix(in srgb, var(--gg-surface) 90%, var(--gg-surface-2));
-border-radius: 12px;
-width: 34px;
-height: 34px;
-display: inline-flex;
-align-items: center;
-justify-content: center;
-box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
-cursor: pointer;
-}
-.gg-comments .item-control.cmt2-native-more .comment-action-icon {
-width: 18px;
-height: 18px;
-background: none;
-position: relative;
-}
-.gg-comments .item-control.cmt2-native-more .comment-action-icon::before {
-content: "more_horiz";
-font-family: "Material Symbols Rounded";
-font-size: 18px;
-color: color-mix(in srgb, var(--gg-ink) 86%, transparent);
-}
-
 .gg-comments .cmt2-ctx-pop {
 position: absolute;
 top: calc(100% + 8px);
@@ -6022,7 +5990,6 @@ margin-bottom: -5px;
 }
 
 
-#comments #top-continue,
 #comments #gg-top-continue {
 position: static;
 bottom: auto;
@@ -6071,6 +6038,20 @@ font-weight: 700;
 letter-spacing: .08em;
 text-transform: uppercase;
 color: var(--gg-muted);
+}
+.gg-comments #cmt2-holder li.comment[data-gg-comment-state="deleted"] .cmt2-state {
+background: color-mix(in srgb, var(--gg-surface-2) 86%, rgba(255,255,255,.92));
+color: color-mix(in srgb, var(--gg-muted) 96%, transparent);
+}
+.gg-comments #cmt2-holder li.comment[data-gg-comment-state="removed-admin"] .cmt2-state {
+background: color-mix(in srgb, var(--gg-warning) 12%, var(--gg-surface));
+border-color: color-mix(in srgb, var(--gg-warning) 32%, var(--gg-border));
+color: color-mix(in srgb, var(--gg-warning) 84%, var(--gg-ink));
+}
+.gg-comments #cmt2-holder li.comment[data-gg-comment-state="pending"] .cmt2-state {
+background: color-mix(in srgb, var(--gg-primary) 10%, var(--gg-surface));
+border-color: color-mix(in srgb, var(--gg-primary) 24%, var(--gg-border));
+color: color-mix(in srgb, var(--gg-primary) 82%, var(--gg-ink));
 }
 
 
@@ -6278,7 +6259,6 @@ line-height: 1.56;
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder .comment-actions {
 gap: 5px;
 }
-main.gg-main[data-gg-right-mode="comments"] #comments .btn-pill,
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder a.comment-reply,
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder .cmt2-thread-toggle {
 min-height: 30px;
@@ -6293,13 +6273,11 @@ padding: 6px 10px;
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder .cmt2-thread-toggle {
 padding-inline: 0;
 }
-main.gg-main[data-gg-right-mode="comments"] #comments .cmt2-ctx-btn,
-main.gg-main[data-gg-right-mode="comments"] #comments .item-control.cmt2-native-more .goog-toggle-button {
+main.gg-main[data-gg-right-mode="comments"] #comments .cmt2-ctx-btn {
 width: 30px;
 height: 30px;
 border-radius: 11px;
 }
-main.gg-main[data-gg-right-mode="comments"] #comments .item-control.cmt2-native-more .comment-action-icon::before,
 main.gg-main[data-gg-right-mode="comments"] #comments .cmt2-ctx-btn .ms {
 font-size: 16px;
 }

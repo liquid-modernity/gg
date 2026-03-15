@@ -655,12 +655,26 @@ function collectSignals(index, zipPath, workflowSummary) {
 
   let indexProdRefersVersioned = false;
   let indexProdRefersLatest = false;
+  let qaLiveSmokeHasCommentsOwnerCheck = false;
+  let qaLiveSmokeTargetsCommentsPath = false;
   const indexEntry = firstEntryFor(index, "index.prod.xml");
+  const liveSmokeEntry = firstEntryFor(index, "qa/live-smoke.sh");
   if (indexEntry) {
     const xml = readZipFileText(zipPath, indexEntry);
     if (xml) {
       indexProdRefersVersioned = /\/assets\/v\//i.test(xml);
       indexProdRefersLatest = /\/assets\/latest\//i.test(xml);
+    }
+  }
+  if (liveSmokeEntry) {
+    const sh = readZipFileText(zipPath, liveSmokeEntry);
+    if (sh) {
+      qaLiveSmokeHasCommentsOwnerCheck =
+        /check_comments_owner_contract\s*\(\)/.test(sh) &&
+        /check_comments_owner_contract\b/.test(sh);
+      qaLiveSmokeTargetsCommentsPath =
+        /COMMENTS_TARGET_PATH=.*tes-2\.html/.test(sh) ||
+        /2025\/10\/tes-2\.html/.test(sh);
     }
   }
 
@@ -675,6 +689,8 @@ function collectSignals(index, zipPath, workflowSummary) {
     templateWorkerWorkflowCoexist,
     indexProdRefersVersioned,
     indexProdRefersLatest,
+    qaLiveSmokeHasCommentsOwnerCheck,
+    qaLiveSmokeTargetsCommentsPath,
     toolsEntriesCount: toolsEntries.length,
   };
 }
@@ -819,6 +835,12 @@ function buildFindings({
       "Both public/assets/latest and public/assets/v exist without clear version pin in index.prod.xml."
     );
   }
+  if (hasPath(index, "qa/live-smoke.sh") && !signals.qaLiveSmokeHasCommentsOwnerCheck) {
+    warnings.push("qa/live-smoke.sh is missing a rendered comments owner contract check.");
+  }
+  if (signals.qaLiveSmokeHasCommentsOwnerCheck && !signals.qaLiveSmokeTargetsCommentsPath) {
+    warnings.push("qa/live-smoke.sh does not target the threaded comments owner reset proof page.");
+  }
 
   return {
     warnings,
@@ -922,6 +944,12 @@ function renderMarkdown(report) {
     `- template + worker + workflows co-exist: ${yesNo(
       report.signals.templateWorkerWorkflowCoexist
     )}`
+  );
+  lines.push(
+    `- qa/live-smoke comments owner check: ${yesNo(report.signals.qaLiveSmokeHasCommentsOwnerCheck)}`
+  );
+  lines.push(
+    `- qa/live-smoke targets tes-2 comments page: ${yesNo(report.signals.qaLiveSmokeTargetsCommentsPath)}`
   );
   lines.push(
     `- index.prod.xml references /assets/v/: ${yesNo(report.signals.indexProdRefersVersioned)}`

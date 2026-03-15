@@ -13,12 +13,18 @@ WORKER_VERSION_MODE="${GG_WORKER_VERSION_MODE:-off}"
 WORKER_VERSION_CHECK_PATH="${GG_WORKER_VERSION_CHECK_PATH:-/__gg_worker_ping}"
 WORKER_ROLLOUT_MAX_ATTEMPTS="${GG_WORKER_ROLLOUT_MAX_ATTEMPTS:-12}"
 WORKER_ROLLOUT_BACKOFF_SECONDS="${GG_WORKER_ROLLOUT_BACKOFF_SECONDS:-5}"
+COMMENTS_TARGET_PATH="${GG_COMMENTS_TARGET_PATH:-/2025/10/tes-2.html}"
+COMMENTS_OWNER_BROWSER_MODE="${GG_COMMENTS_OWNER_BROWSER_MODE:-warn}"
+PLAYWRIGHT_EXECUTABLE_PATH="${GG_PLAYWRIGHT_EXECUTABLE_PATH:-}"
 
 if [[ "$TEMPLATE_DRIFT_MODE" != "warn" && "$TEMPLATE_DRIFT_MODE" != "fail" ]]; then
   TEMPLATE_DRIFT_MODE="warn"
 fi
 if [[ "$WORKER_VERSION_MODE" != "off" && "$WORKER_VERSION_MODE" != "warn" && "$WORKER_VERSION_MODE" != "fail" ]]; then
   WORKER_VERSION_MODE="off"
+fi
+if [[ "$COMMENTS_OWNER_BROWSER_MODE" != "off" && "$COMMENTS_OWNER_BROWSER_MODE" != "warn" && "$COMMENTS_OWNER_BROWSER_MODE" != "fail" ]]; then
+  COMMENTS_OWNER_BROWSER_MODE="warn"
 fi
 if ! [[ "$WORKER_ROLLOUT_MAX_ATTEMPTS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_MAX_ATTEMPTS < 1 )); then
   WORKER_ROLLOUT_MAX_ATTEMPTS=12
@@ -190,6 +196,15 @@ worker_rollout_signal() {
   fi
   if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     printf '::warning title=Worker rollout pending::%s\n' "$message"
+  fi
+}
+
+comments_owner_signal() {
+  local message="$1"
+  if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
   fi
 }
 
@@ -895,6 +910,260 @@ NODE
   done < "$report_file"
 }
 
+check_comments_owner_contract() {
+  local path="${COMMENTS_TARGET_PATH}"
+  local url
+  local report_file="$tmp_dir/$(safe_file_name "comments_owner_contract").txt"
+  local status=0
+  url="$(absolute_for_path "$path")"
+
+  if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "off" ]]; then
+    printf 'SMOKE comments-owner skipped mode=off target=%s\n' "$url"
+    return 0
+  fi
+
+  GG_COMMENTS_URL="$url" \
+  GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
+  node >"$report_file" <<'NODE'
+const { chromium } = require('playwright');
+
+const url = process.env.GG_COMMENTS_URL || '';
+const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
+
+function clean(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+async function main() {
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  if (executablePath) launchOptions.executablePath = executablePath;
+
+  const browser = await chromium.launch(launchOptions);
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1600 } });
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 45000 }); } catch (_) {}
+    await page.waitForTimeout(1200);
+
+    const commentsToggle = page.locator('[data-gg-postbar="comments"]');
+    const commentsRoot = page.locator('#comments');
+    if (!(await commentsRoot.count()) || !(await commentsRoot.first().isVisible().catch(() => false))) {
+      if (await commentsToggle.count()) {
+        await commentsToggle.first().click();
+        await page.waitForTimeout(1400);
+      }
+    }
+
+    const loadBtn = page.locator('#comments [data-gg-comments-load]');
+    if (await loadBtn.count()) {
+      if (await loadBtn.first().isVisible().catch(() => false)) {
+        await loadBtn.first().click();
+        await page.waitForTimeout(1600);
+      }
+    }
+
+    await page.waitForFunction(() => {
+      const root = document.querySelector('#comments');
+      if (!root) return false;
+      const style = window.getComputedStyle(root);
+      return style && style.display !== 'none' && style.visibility !== 'hidden';
+    }, { timeout: 20000 });
+    await page.waitForTimeout(1400);
+
+    const summary = await page.evaluate(async () => {
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const root = document.querySelector('#comments');
+      function cleanValue(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+      function visible(node) {
+        if (!node || node.hidden) return false;
+        if (node.getAttribute && (node.getAttribute('aria-hidden') === 'true' || node.getAttribute('data-gg-state') === 'hidden')) return false;
+        const style = window.getComputedStyle(node);
+        if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+        const rect = node.getBoundingClientRect();
+        return !!(rect.width || rect.height || node.getClientRects().length);
+      }
+      function visibleAll(selector, scope) {
+        return Array.from((scope || document).querySelectorAll(selector)).filter(visible);
+      }
+      function commentKey(comment) {
+        return cleanValue((comment && (comment.getAttribute('data-gg-comment-id') || comment.id || '') || '').replace(/^c/, ''));
+      }
+      function composerOwners() {
+        return visibleAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread, .gg-comments__list #top-ce, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root).filter((node) => {
+          if (node.id === 'top-ce') return true;
+          return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
+        });
+      }
+      function addOwners() {
+        return visibleAll('#gg-top-continue .comment-reply, #top-continue .comment-reply', root);
+      }
+      function nativeHelpers() {
+        return visibleAll('#cmt2-holder #top-continue, #cmt2-holder .continue, #cmt2-holder .item-control, #cmt2-holder .thread-toggle, #cmt2-holder .thread-count, #cmt2-holder a.comment-reply:not(.cmt2-reply-action), #cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root);
+      }
+      function activeComments() {
+        return visibleAll('#cmt2-holder li.comment', root);
+      }
+      function nestedEligibleComments() {
+        return activeComments().filter((comment) => Number(comment.getAttribute('data-gg-depth') || '0') > 0 && cleanValue(comment.getAttribute('data-gg-comment-state') || 'active') === 'active');
+      }
+      function moderationFailures() {
+        const allowed = new Set(['Deleted', 'Removed by admin', 'Awaiting moderation']);
+        const out = [];
+        activeComments().forEach((comment) => {
+          const state = cleanValue(comment.getAttribute('data-gg-comment-state') || 'active');
+          const badges = visibleAll('.cmt2-state', comment);
+          if (state === 'active') return;
+          if (badges.length !== 1) {
+            out.push(`${commentKey(comment)}:badge=${badges.length}`);
+            return;
+          }
+          if (!allowed.has(cleanValue(badges[0].textContent))) out.push(`${commentKey(comment)}:copy=${cleanValue(badges[0].textContent) || 'missing'}`);
+        });
+        return out;
+      }
+      function deletePeerFailures() {
+        const out = [];
+        activeComments().forEach((comment) => {
+          const hasMore = visibleAll('.comment-actions .cmt2-ctx', comment).length > 0;
+          const deletePeers = visibleAll('.comment-footer .comment-delete, .comment-actions .comment-delete, .comment-footer .cmt2-del, .comment-actions .cmt2-del, .gg-cmt2__del, .item-control', comment);
+          if (hasMore && deletePeers.length) out.push(commentKey(comment));
+        });
+        return out;
+      }
+      function nestedReplyFailures() {
+        const out = [];
+        nestedEligibleComments().forEach((comment) => {
+          const replies = visibleAll('.comment-actions .cmt2-reply-action', comment);
+          if (replies.length !== 1) out.push(`${commentKey(comment)}:${replies.length}`);
+        });
+        return out;
+      }
+      const results = [];
+      const initialAddOwners = addOwners();
+      const helperNodes = nativeHelpers();
+      const deletePeers = deletePeerFailures();
+      const nestedReplys = nestedReplyFailures();
+      const moderation = moderationFailures();
+      const proofState = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : '');
+      const proofCount = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : '');
+
+      results.push({ id: '1', pass: initialAddOwners.length === 1 && !!initialAddOwners[0].closest('#gg-top-continue'), detail: `visibleAddOwners=${initialAddOwners.length}` });
+      results.push({ id: '3', pass: helperNodes.length === 0, detail: `nativeHelpers=${helperNodes.length}` });
+      results.push({ id: '4', pass: deletePeers.length === 0, detail: deletePeers.length ? deletePeers.join(',') : 'ok' });
+      results.push({ id: '5', pass: nestedReplys.length === 0, detail: nestedReplys.length ? nestedReplys.join(',') : `nestedEligible=${nestedEligibleComments().length}` });
+      results.push({ id: '8', pass: moderation.length === 0, detail: moderation.length ? moderation.join(',') : 'ok' });
+      results.push({
+        id: '9',
+        pass: visibleAll('#comments', document).length === 1 && visibleAll('#comments-ssr', document).length === 0 && helperNodes.length === 0 && proofState === 'ok',
+        detail: `visibleComments=${visibleAll('#comments', document).length};ssr=${visibleAll('#comments-ssr', document).length};proof=${proofState || 'missing'}:${proofCount || 'missing'}`
+      });
+
+      const addBtn = initialAddOwners[0];
+      if (addBtn) {
+        addBtn.click();
+        await sleep(1800);
+      }
+      const addComposerOwners = composerOwners();
+      results.push({
+        id: '2',
+        pass: addComposerOwners.length === 1 && !!addComposerOwners[0].closest('.gg-comments__composerslot'),
+        detail: `composerOwners=${addComposerOwners.length};footerOpen=${cleanValue(root.getAttribute('data-gg-footer-open')) || '0'}`
+      });
+
+      let replyComposerOk = false;
+      const replyBtn = visibleAll('#cmt2-holder li.comment .comment-actions .cmt2-reply-action', root).find((node) => {
+        const comment = node.closest('li.comment');
+        return comment && cleanValue(comment.getAttribute('data-gg-comment-state') || 'active') === 'active';
+      });
+      if (replyBtn) {
+        replyBtn.click();
+        await sleep(2000);
+        replyComposerOk =
+          composerOwners().length === 1 &&
+          cleanValue(root.getAttribute('data-gg-reply-mode')) === 'reply' &&
+          visibleAll('.cmt2-replying', root).length === 1;
+      }
+      results.push({
+        id: '6',
+        pass: addComposerOwners.length === 1 && replyComposerOk,
+        detail: `addComposer=${addComposerOwners.length};replyComposer=${composerOwners().length};replyMode=${cleanValue(root.getAttribute('data-gg-reply-mode')) || 'default'}`
+      });
+
+      let jumpPass = false;
+      let jumpDetail = 'no-reply-meta';
+      const replyMeta = visibleAll('.cmt2-reply-meta', root).find((node) => {
+        const comment = node.closest('li.comment');
+        return comment && Number(comment.getAttribute('data-gg-depth') || '0') > 0;
+      }) || visibleAll('.cmt2-reply-meta', root)[0];
+      if (replyMeta) {
+        const targetId = cleanValue(replyMeta.getAttribute('data-gg-comment-jump') || '');
+        replyMeta.click();
+        await sleep(360);
+        const target = targetId ? document.getElementById(`c${targetId}`) : null;
+        jumpPass = !!(target && target.classList.contains('is-targeted'));
+        jumpDetail = targetId ? `target=${targetId};highlight=${jumpPass ? '1' : '0'}` : 'missing-target-id';
+      }
+      results.push({ id: '7', pass: jumpPass, detail: jumpDetail });
+
+      return {
+        url: location.href,
+        proofState,
+        proofCount,
+        results
+      };
+    });
+
+    console.log(`META|url=${summary.url};proof=${clean(summary.proofState) || 'missing'};proofCount=${clean(summary.proofCount) || 'missing'}`);
+    for (const row of summary.results) {
+      console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
+    }
+  } finally {
+    await page.close().catch(() => {});
+    await browser.close().catch(() => {});
+  }
+}
+
+main().catch((error) => {
+  console.log(`BROWSER|fail|${clean(error && error.message ? error.message : error)}`);
+  process.exit(0);
+});
+NODE
+  status=$?
+
+  if [[ "$status" -ne 0 ]]; then
+    comments_owner_signal "comments owner contract runner exited unexpectedly (status=${status})"
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE comments-owner %s target=%s\n' "${line#META|}" "$path"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|fail\|* ]]; then
+      comments_owner_signal "comments owner browser proof unavailable (${line#BROWSER|fail|})"
+      continue
+    fi
+    if [[ "$line" == CRITERION\|* ]]; then
+      local rest="${line#CRITERION|}"
+      local id="${rest%%|*}"
+      rest="${rest#*|}"
+      local state="${rest%%|*}"
+      local detail="${rest#*|}"
+      printf 'SMOKE comments-owner criterion=%s state=%s detail=%s\n' "$id" "$state" "$detail"
+      if [[ "$state" != "pass" ]]; then
+        comments_owner_signal "comments owner criterion ${id} failed (${detail})"
+      fi
+    fi
+  done < "$report_file"
+}
+
 check_surface() {
   local path="$1"
   local expected_status="$2"
@@ -1151,6 +1420,7 @@ check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing"
 check_dock_truth
 check_discovered_detail_paths
 check_listing_preview_runtime_contract
+check_comments_owner_contract
 emit_release_state
 
 if [[ "$failures" -gt 0 ]]; then

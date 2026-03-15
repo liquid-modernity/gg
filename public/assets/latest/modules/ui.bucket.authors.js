@@ -485,23 +485,19 @@ function commentsHost(){
 return d.querySelector('.gg-post__comments[data-gg-comments-gate="1"]')||d.querySelector('.gg-post__comments')||d.getElementById('comments');
 }
 function openComposer(host){
-if(!host||!host.querySelector) return;
-var footer=host.querySelector('.gg-comments__footer');
-var form=host.querySelector('#top-ce')||host.querySelector('.comment-form#top-ce');
-var srcNode=host.querySelector('#comment-editor-src');
-var iframe=host.querySelector('iframe#comment-editor');
-var cta=host.querySelector('#gg-top-continue .comment-reply, #top-continue .comment-reply, a.comment-reply[data-gg-footer-cta]');
-function prime(focus){
-  var src=srcNode&&srcNode.getAttribute?String(srcNode.getAttribute('href')||'').trim():'';
-  if(footer) footer.setAttribute('data-gg-open','1');
-  if(form){ form.hidden=false; form.removeAttribute('hidden'); form.style.removeProperty('display'); }
-  if(iframe&&src&&!String(iframe.getAttribute('src')||'').trim()) iframe.setAttribute('src',src);
-  if(focus&&iframe&&typeof iframe.focus==='function'){ try{ iframe.focus(); }catch(_){} }
+if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.openComposer==='function'){
+  GG.modules.Comments.openComposer({
+    fromPrimaryAction:true,
+    forceLoad:true,
+    scroll:false,
+    focus:true
+  });
+  return;
 }
-prime(false);
-if(cta&&!cta.__ggComposerBound){
-  cta.__ggComposerBound=true;
-  cta.addEventListener('click',function(e){ if(e)e.preventDefault(); prime(true); });
+if(!host||!host.querySelector) return;
+var cta=host.querySelector('#gg-top-continue .comment-reply, a.comment-reply[data-gg-footer-cta]');
+if(cta&&typeof cta.click==='function'){
+  try{ cta.click(); }catch(_){} 
 }
 }
 function bindCommentsComposer(){
