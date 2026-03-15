@@ -5972,6 +5972,78 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function commentReplies(comment){
     return directChildByClass(comment, 'comment-replies') || (comment && comment.querySelector ? comment.querySelector('.comment-replies') : null);
   }
+  function commentsContent(root){
+    return root && root.querySelector ? root.querySelector('.gg-comments__content') : null;
+  }
+  function commentsFooter(root){
+    return root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+  }
+  function footerState(root){
+    if (!root) return {};
+    root.__ggFooterState = root.__ggFooterState || { manual: false };
+    return root.__ggFooterState;
+  }
+  function isRightRailComments(root){
+    var main = root && root.closest ? root.closest('main.gg-main') : null;
+    var panel = root && root.closest ? root.closest('.gg-comments-panel, .gg-blog-sidebar--right') : null;
+    return !!(main && panel && main.getAttribute('data-gg-right-mode') === 'comments');
+  }
+  function syncFooterLayout(root){
+    var footer = commentsFooter(root);
+    var height = 0;
+    if (!root || !root.style || !footer) return 0;
+    height = Math.ceil((footer.getBoundingClientRect ? footer.getBoundingClientRect().height : footer.offsetHeight) || 0);
+    root.style.setProperty('--gg-comments-footer-h', Math.max(0, height) + 'px');
+    return height;
+  }
+  function syncFooterState(root){
+    var footer = commentsFooter(root);
+    var cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
+    var state = footerState(root);
+    var reply = replyState(root);
+    var inlineBox = reply && reply.comment ? commentReplyBox(reply.comment) : null;
+    var open = false;
+    if (!root || !footer) return false;
+    if (footer.getAttribute('data-gg-has-cta') === '0') open = true;
+    else if (reply && reply.commentId && !inlineBox) open = true;
+    else open = !!state.manual;
+    footer.setAttribute('data-gg-open', open ? '1' : '0');
+    footer.setAttribute('data-gg-context', isRightRailComments(root) ? 'rail' : 'page');
+    if (cta) cta.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
+    if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
+    syncFooterLayout(root);
+    return open;
+  }
+  function setFooterOpen(root, open, opts){
+    var state = footerState(root);
+    var o = opts || {};
+    if (!root) return false;
+    if (typeof o.manual === 'boolean') state.manual = !!(o.manual && open);
+    else if (!open) state.manual = false;
+    syncFooterState(root);
+    if (open && o.focus) focusComposer(root, null);
+    return open;
+  }
+  function bindFooterMetrics(root){
+    var footer = commentsFooter(root);
+    var form = root && root.querySelector ? root.querySelector('#top-ce') : null;
+    if (!root || !footer || root.__ggCommentsFooterMetricsBound) return false;
+    root.__ggCommentsFooterMetricsBound = true;
+    if (w.ResizeObserver) {
+      root.__ggCommentsFooterObserver = new ResizeObserver(function(){
+        syncFooterLayout(root);
+        runProof(root);
+      });
+      root.__ggCommentsFooterObserver.observe(footer);
+      if (form) root.__ggCommentsFooterObserver.observe(form);
+    } else {
+      root.__ggCommentsFooterSync = function(){ syncFooterLayout(root); runProof(root); };
+      w.addEventListener('resize', root.__ggCommentsFooterSync, { passive: true });
+    }
+    syncFooterLayout(root);
+    return true;
+  }
   function commentDepth(comment){
     var depth = 0;
     var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
@@ -6340,6 +6412,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var visibleHelp = null;
     var helperNodes = null;
     var rawReplys = null;
+    var footer = null;
+    var content = null;
+    var footerStyle = null;
+    var contentStyle = null;
+    var footerHeight = 0;
+    var paddingBottom = 0;
+    var cta = null;
     if (!root || !root.querySelectorAll) return issues;
     visibleHelp = firstVisibleNode(toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')));
     if (visibleHelp) {
@@ -6354,6 +6433,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       return !!txt && /rich comment tags|\[quote\][\s\S]*?\[\/quote\]|\[code\][\s\S]*?\[\/code\]|\[link\][\s\S]*?\[\/link\]|\[image\][\s\S]*?\[\/image\]/i.test(txt);
     });
     if (helperNodes.length) issues.push('helper-copy-visible');
+    if (isRightRailComments(root)) {
+      footer = commentsFooter(root);
+      content = commentsContent(root);
+      cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
+      if (!footer || !content) issues.push('rail-footer-missing');
+      else {
+        if (w.getComputedStyle) {
+          try { footerStyle = w.getComputedStyle(footer); } catch (_) { footerStyle = null; }
+          try { contentStyle = w.getComputedStyle(content); } catch (_) { contentStyle = null; }
+        }
+        footerHeight = (footer.getBoundingClientRect ? footer.getBoundingClientRect().height : footer.offsetHeight) || 0;
+        paddingBottom = contentStyle ? parseFloat(contentStyle.paddingBottom || '0') : 0;
+        if (!footerStyle || footerStyle.position !== 'sticky') issues.push('rail-footer-not-sticky');
+        if (!contentStyle || !/auto|scroll/i.test(contentStyle.overflowY || '')) issues.push('rail-content-not-scroll');
+        if (cta && !isVisibleNode(cta)) issues.push('rail-footer-cta-hidden');
+        if (footerHeight > 0 && paddingBottom < 8) issues.push('rail-footer-space-low');
+      }
+    }
     comments = root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment');
     for (i = 0; i < comments.length; i++) {
       comment = comments[i];
@@ -6578,6 +6675,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!slot || !state.commentId) return;
     if (title) title.textContent = 'Replying to ' + (state.author ? '@' + state.author : 'comment');
     if (banner.parentNode !== slot) slot.insertBefore(banner, slot.firstChild || null);
+    syncFooterState(root);
   }
   function clearReplyState(root){
     var state = replyState(root);
@@ -6588,6 +6686,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     state.commentId = '';
     state.author = '';
     state.link = null;
+    syncFooterState(root);
   }
   function focusComposer(root, comment){
     var tries = 0;
@@ -6617,6 +6716,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     state.link = link || null;
     comment.setAttribute('data-gg-replying', '1');
     root.classList.add('gg-comments--replying');
+    syncFooterState(root);
     mountReplyBanner(root);
     focusComposer(root, comment);
   }
@@ -6690,12 +6790,14 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var comments = null;
     if (!root || !root.querySelectorAll) return false;
     root.classList.add('gg-comments--enhanced');
+    bindFooterMetrics(root);
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
     if (replyState(root).commentId) mountReplyBanner(root);
+    syncFooterState(root);
     runProof(root);
     return !!comments.length;
   }
@@ -6712,6 +6814,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (!target || !target.closest || !target.closest('.cmt2-ctx')) closeMenus(root, null);
       if (!target) return;
       comment = closestComment(target);
+      if (target.matches && target.matches('a.comment-reply[data-gg-footer-cta], #gg-top-continue .comment-reply, #top-continue .comment-reply')) {
+        e.preventDefault();
+        if (root.classList && root.classList.contains('gg-comments--replying')) clearReplyState(root);
+        setFooterOpen(root, true, { manual: true, focus: true });
+        return;
+      }
       if (target.matches && target.matches('[data-gg-comment-action="more"]')) {
         e.preventDefault();
         wrap = target.closest('.cmt2-ctx');
