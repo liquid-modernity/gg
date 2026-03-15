@@ -275,8 +275,8 @@ font-size: 18px;
 line-height: 1;
 display: inline-flex;
 align-items: center;
-justify-content: center;
-vertical-align: middle;
+    justify-content: center;
+    vertical-align: text-top;
 color: currentColor;
 
 
@@ -3645,8 +3645,9 @@ font-size: 13px;
 
 .gg-post__breadcrumbs{
 display: flex;
-align-items: flex-end;
-justify-content: center;
+align-items: center;
+    justify-content: center;
+    vertical-align: text-top;
 gap: 2px;
 flex-wrap: wrap;
 margin: 10px 0;
