@@ -84,9 +84,11 @@ GG.modules.postInfoAuthors = GG.modules.postInfoAuthors || {};
 function qs(sel, root){ return (root||d).querySelector(sel); }
 function splitSlugs(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,s=''; if(!src) return out; parts=src.split(/\s*;\s*/); for(i=0;i<parts.length;i++){ s=slugify(parts[i]); if(!s||seen[s]) continue; seen[s]=1; out.push(s); } return out; }
 function initPostInfoRelated(scope){
+if(GG.modules&&GG.modules.postInfoIdentity&&typeof GG.modules.postInfoIdentity.init==='function') GG.modules.postInfoIdentity.init(scope||d);
 if(GG.modules&&GG.modules.postInfoTags&&typeof GG.modules.postInfoTags.init==='function') GG.modules.postInfoTags.init(scope||d);
 if(GG.modules&&GG.modules.postInfoLabels&&typeof GG.modules.postInfoLabels.init==='function') GG.modules.postInfoLabels.init(scope||d);
 if(GG.modules&&GG.modules.postInfoMeta&&typeof GG.modules.postInfoMeta.init==='function') GG.modules.postInfoMeta.init(scope||d);
+if(GG.modules&&GG.modules.postInfoStructure&&typeof GG.modules.postInfoStructure.init==='function') GG.modules.postInfoStructure.init(scope||d);
 }
 function splitList(raw,rx){
 var src=clean(raw),parts=[],out=[],seen={},i=0,one='',key='';
@@ -132,6 +134,103 @@ text=clean((body&&body.textContent)||'');
 if(!text) return '';
 words=text.split(/\s+/).length;
 return Math.max(1,Math.ceil(words/200))+' min read';
+}
+function clipText(raw,max){
+var txt=clean(raw),n=parseInt(max,10)||0;
+if(!txt||!n||txt.length<=n) return txt;
+return txt.slice(0,n).replace(/[.,;:!?\s]+$/,'')+'...';
+}
+function postBody(article){
+return article&&article.querySelector?article.querySelector('.gg-post__content.post-body.entry-content,.post-body.entry-content,.entry-content,.post-body'):null;
+}
+function titleTextFromArticle(article){
+var titleNode=article&&article.querySelector?article.querySelector('[data-gg-marker="panel-post-title"],.gg-post__title,h1'):null;
+return clean((titleNode&&titleNode.textContent)||d.title||'');
+}
+function summaryTextFromArticle(article){
+var body=postBody(article),paras=body&&body.querySelectorAll?body.querySelectorAll('p'):[],titleKey=titleTextFromArticle(article).toLowerCase(),i=0,node=null,text='',lower='';
+if(!body||!paras||!paras.length) return '';
+for(i=0;i<paras.length;i++){
+  node=paras[i];
+  if(!node||(node.closest&&node.closest('blockquote,figure,figcaption,pre,code,[hidden],[aria-hidden="true"]'))) continue;
+  text=clipText(node.textContent||'',220);
+  lower=text.toLowerCase();
+  if(!text||text.length<56) continue;
+  if(titleKey&&lower.indexOf(titleKey)===0&&text.length<(titleKey.length+42)) continue;
+  if(/^(written by|ditulis oleh|contributors?|kontributor|labels?|label|tags?|tag|date|tanggal|updated|diperbarui|read time|waktu baca|table of contents|toc|daftar isi)\b/i.test(text)) continue;
+  return text;
+}
+return '';
+}
+function headingLevel(node){
+var tag=node&&node.tagName?String(node.tagName).toLowerCase():'',m=String(node&&node.className||'').match(/\bgg-(?:toc|pi)__lvl-(\d)\b/),n=0;
+if(tag&&/^h[2-4]$/.test(tag)) return parseInt(tag.slice(1),10)||2;
+if(m&&m[1]){ n=parseInt(m[1],10)||2; if(n<2) n=2; if(n>4) n=4; return n; }
+return 2;
+}
+function ensureHeadingId(node,seen){
+var existing=clean(node&&node.getAttribute?node.getAttribute('id'):'');
+var base='',next='',idx=2;
+if(existing){
+  seen[existing]=1;
+  return existing;
+}
+base=slugify(node&&node.textContent||'')||'section';
+next=base;
+while(seen[next]||(d.getElementById&&d.getElementById(next))) next=base+'-'+(idx++);
+seen[next]=1;
+try{ node.id=next; }catch(_){}
+return next;
+}
+function extractStructureRows(scope,article){
+var host=scope&&scope.querySelector?scope:d,tocItems=host&&host.querySelectorAll?host.querySelectorAll('#gg-toc .gg-toc__item'):[],out=[],i=0,item=null,link=null,textNode=null,text='',href='',body=null,heads=null,seen=Object.create(null),level=2;
+for(i=0;i<tocItems.length&&out.length<5;i++){
+  item=tocItems[i];
+  link=item&&item.querySelector?item.querySelector('.gg-toc__link'):null;
+  textNode=link&&link.querySelector?link.querySelector('.gg-toc__txt'):null;
+  text=clipText((textNode&&textNode.textContent)||(link&&link.textContent)||'',88);
+  href=clean(link&&link.getAttribute?link.getAttribute('href'):'');
+  if(!text) continue;
+  level=headingLevel(item);
+  out.push({ text:text, href:href||'#', level:level });
+}
+if(out.length) return out;
+body=postBody(article);
+heads=body&&body.querySelectorAll?body.querySelectorAll('h2,h3,h4'):[];
+for(i=0;i<heads.length&&out.length<5;i++){
+  item=heads[i];
+  if(!item||(item.closest&&item.closest('pre,code,[hidden],[aria-hidden="true"]'))) continue;
+  text=clipText(item.textContent||'',88);
+  if(!text) continue;
+  href='#'+ensureHeadingId(item,seen);
+  level=headingLevel(item);
+  out.push({ text:text, href:href, level:level });
+}
+return out;
+}
+function renderStructure(slot,rows){
+var list=Array.isArray(rows)?rows:[],i=0,row=null,li=null,a=null,num=null,text=null;
+if(!slot) return;
+slot.textContent='';
+for(i=0;i<list.length;i++){
+  row=list[i]||{};
+  if(!clean(row.text||'')) continue;
+  li=d.createElement('li');
+  li.className='gg-pi__tocitem gg-pi__toclvl-'+String(Math.max(2,Math.min(4,parseInt(row.level,10)||2)));
+  a=d.createElement('a');
+  a.className='gg-pi__toclink';
+  a.href=clean(row.href||'#')||'#';
+  num=d.createElement('span');
+  num.className='gg-pi__tocnum';
+  num.textContent=String(i+1).padStart(2,'0');
+  text=d.createElement('span');
+  text.className='gg-pi__toctext';
+  text.textContent=clean(row.text||'');
+  a.appendChild(num);
+  a.appendChild(text);
+  li.appendChild(a);
+  slot.appendChild(li);
+}
 }
 function readUpdatedFromMeta(scope){
 var host=scope&&scope.querySelector?scope:d;
@@ -188,6 +287,21 @@ pr=d.createElement('span'); pr.className='gg-pi__prole'; pr.textContent=role||'C
 meta.appendChild(pn); meta.appendChild(pr); a.appendChild(av); a.appendChild(meta); slot.appendChild(a);
 }
 }
+GG.modules.postInfoIdentity = GG.modules.postInfoIdentity || {};
+GG.modules.postInfoIdentity.init = function(root){
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,titleSlot=null,summarySlot=null,title='',summary='';
+if(!info) return;
+article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
+titleSlot=qs('[data-slot="title"]',info);
+summarySlot=qs('[data-slot="summary"]',info);
+title=titleTextFromArticle(article);
+summary=summaryTextFromArticle(article);
+if(titleSlot) titleSlot.textContent=title||'—';
+if(summarySlot){
+  summarySlot.textContent=summary||'';
+  summarySlot.hidden=!summary;
+}
+};
 GG.modules.postInfoAuthors.init = function(root){
 var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null;
 var authorSlug='',contributors=[],authorSlot=null,contribSlot=null,contribSec=null,list=[],i=0,token=0,fb=[],svc=GG.services&&GG.services.authorsDir?GG.services.authorsDir:null;
@@ -348,6 +462,23 @@ if(updatedSlot){
   if(updatedRow) updatedRow.hidden=!updatedText;
 }
 if(readSlot&&readText) readSlot.textContent=readText;
+};
+GG.modules.postInfoStructure = GG.modules.postInfoStructure || {};
+GG.modules.postInfoStructure.init = function(root){
+var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,hint=null,rows=[];
+if(!info) return;
+article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
+slot=qs('[data-slot="toc"]',info);
+sec=qs('.gg-pi__sec--structure',info);
+hint=qs('[data-slot="toc-hint"]',info);
+if(!slot||!sec) return;
+rows=extractStructureRows(scope,article);
+renderStructure(slot,rows);
+sec.hidden=!rows.length;
+if(hint){
+  hint.textContent='';
+  hint.hidden=true;
+}
 };
 
 function commentsHost(){

@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='b35c32ccda59' name='gg-template-fingerprint'/>
+    <meta content='bce61e99783c' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -234,7 +234,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='b35c32ccda59' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='bce61e99783c' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and (data:view.url and (data:view.url contains &quot;/landing&quot; or data:view.url contains &quot;view=landing&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -672,9 +672,6 @@ text-align: center;
       <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
       <span class="gg-toc__title">Table of Contents</span>
     </div>
-    <button class="gg-toc__toggle" type="button" aria-controls="gg-toc-body" aria-expanded="true" aria-label="Collapse">
-      <span class="material-symbols-rounded" aria-hidden="true">collapse_content</span>
-    </button>
   </div>
   <div class="gg-toc__body" id="gg-toc-body">
     <ol class="gg-toc__list" aria-label="Table of contents" data-gg-marker="panel-post-toc"></ol>
@@ -750,9 +747,7 @@ text-align: center;
           </div>
         </div>
      
- <div class='gg-footer__legal'>
-        <span>Copyright © 2026 PakRPP. All rights reserved.</span>
-</div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
+ <div class="gg-footer__legal"><span>Copyright © 2026 PakRPP.</span><span> All rights reserved.</span></div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -806,9 +801,7 @@ text-align: center;
           </div>
         </div>
      
- <div class='gg-footer__legal'>
-        <span>Copyright © 2026 PakRPP. All rights reserved.</span>
-</div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
+ <div class="gg-footer__legal"><span>Copyright © 2026 PakRPP.</span><span> All rights reserved.</span></div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
   <b:include name='widget-title'/>
@@ -1912,9 +1905,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     <!-- HOME -->
     <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl'>
-      <svg aria-label='GAGA Logo' height='14' viewBox='0 0 600 600' width='14'>
-  <use href='#gg-logo-black'/>
-</svg>
+      <!-- <svg aria-label='GAGA Logo' height='14' viewBox='0 0 600 600' width='14'> <use href='#gg-logo-black'/> </svg> -->
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
+        <span class='gg-post__breadcrumbs-label'>Home</span>
     </a>
 
     <!-- ====================== POST MODE ====================== -->
@@ -1923,8 +1916,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
       <!-- BLOG -->
       <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
-        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
-        <span class='gg-post__breadcrumbs-label'>Home</span>
+        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
+        <span class='gg-post__breadcrumbs-label'>Blog</span>
       </a>
 
       <!-- LABEL PERTAMA (opsional) -->
@@ -1957,8 +1950,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
      <b:if cond='data:post.url contains &quot;blog-&quot;'>
     <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
         <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
-          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
-          <span class='gg-post__breadcrumbs-label'>Home</span>
+          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
+          <span class='gg-post__breadcrumbs-label'>blog</span>
         </a>
        </b:if> 
       
@@ -2737,17 +2730,25 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <div class='gg-info-panel' data-gg-panel='info'>
     <b:if cond='data:view.isSingleItem'>
     <div class='gg-info-panel__card gg-pi gg-panelcard' data-gg-panelmeta='post' data-wpm='200' hidden='hidden' id='gg-postinfo'>
-      <div class='gg-pi__head'>
-        <button aria-expanded='true' class='gg-pi__headbtn' type='button'>
-          <span aria-hidden='true' class='material-symbols-rounded gg-pi__ico'>info</span>
-          <span class='gg-pi__title'>Information</span>
-        </button>
-        <button aria-label='Collapse' class='gg-pi__toggle' type='button'>
-          <span aria-hidden='true' class='material-symbols-rounded'>collapse_content</span>
-        </button>
+      <div class='gg-pi__sheettop'>
+        <span aria-hidden='true' class='gg-pi__handle'/>
+        <div class='gg-pi__head'>
+          <div class='gg-pi__heading'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__ico'>info</span>
+            <h2 class='gg-pi__title'>Information</h2>
+          </div>
+          <button aria-label='Close information' class='gg-pi__close' data-gg-action='info-close' type='button'>
+            <span aria-hidden='true' class='material-symbols-rounded'>close</span>
+          </button>
+        </div>
       </div>
       <div class='gg-pi__body'>
-        <div class='gg-pi__sec'>
+        <div class='gg-pi__identity'>
+          <h3 class='gg-pi__headline' data-slot='title'>&#8212;</h3>
+          <p class='gg-pi__summary' data-slot='summary' hidden='hidden'/>
+        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--people'>
+        <div class='gg-pi__sec gg-pi__sec--author'>
           <div class='gg-pi__sechead'>
             <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>person</span>
             <div class='gg-pi__kicker'>Written by</div>
@@ -2761,20 +2762,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           </div>
           <div class='gg-pi__people' data-gg-marker='panel-post-contributor' data-slot='contributors'/>
         </div>
-        <div class='gg-pi__sec gg-pi__sec--labels' hidden='hidden'>
-          <div class='gg-pi__row'>
-            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>label</span>
-            <div class='gg-pi__kicker'>LABEL</div>
-            <div aria-label='Labels' class='gg-pi__chips gg-pi__chips--labels' data-slot='labels'/>
-          </div>
         </div>
-        <div class='gg-pi__sec gg-pi__sec--tags' hidden='hidden'>
-          <div class='gg-pi__sechead'>
-            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>sell</span>
-            <div class='gg-pi__kicker'>Tags</div>
-          </div>
-          <div aria-label='Tags' class='gg-pi__chips' data-gg-marker='panel-post-tags' data-slot='tags'/>
-        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--meta'>
         <div class='gg-pi__meta'>
           <div class='gg-pi__metaitem gg-pi__metaitem--date'>
             <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>calendar_today</span>
@@ -2792,7 +2781,32 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <span data-gg-marker='panel-post-reading-time' data-slot='readtime'>1 min read</span>
           </div>
         </div>
-      </div>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--structure' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>toc</span>
+            <div class='gg-pi__kicker'>Table of Contents</div>
+          </div>
+          <ol aria-label='Table of contents' class='gg-pi__toc' data-slot='toc'/>
+          <p class='gg-pi__hint' data-slot='toc-hint' hidden='hidden'/>
+        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--topics'>
+        <div class='gg-pi__sec gg-pi__sec--labels' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>label</span>
+            <div class='gg-pi__kicker'>LABEL</div>
+          </div>
+          <div aria-label='Labels' class='gg-pi__chips gg-pi__chips--labels' data-slot='labels'/>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--tags' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>sell</span>
+            <div class='gg-pi__kicker'>Tags</div>
+          </div>
+          <div aria-label='Tags' class='gg-pi__chips' data-gg-marker='panel-post-tags' data-slot='tags'/>
+        </div>
+        </div>
+        </div>
     </div>
     </b:if>
         <!-- GAGA SIDEBAR RIGHT HOME/BLOG -->

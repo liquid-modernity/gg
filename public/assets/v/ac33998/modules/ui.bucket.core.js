@@ -7527,10 +7527,11 @@ function updateBackdrop(){
 
     textAll('.gg-pi__title', t(pack, 'panelInformation', 'Information'), scope);
     textAll('.gg-epanel__eyebrow', t(pack, 'panelEditorialPreview', 'Editorial Preview'), scope);
-    textAll('.gg-pi__sec:not(.gg-pi__sec--contributors):not(.gg-pi__sec--labels):not(.gg-pi__sec--tags) .gg-pi__kicker', t(pack, 'metaWrittenBy', 'Written by'), scope);
+    textAll('.gg-pi__sec--author .gg-pi__kicker', t(pack, 'metaWrittenBy', 'Written by'), scope);
     textAll('.gg-pi__sec--contributors .gg-pi__kicker', t(pack, 'metaContributors', 'Contributors'), scope);
     textAll('.gg-pi__sec--labels .gg-pi__kicker', t(pack, 'metaLabel', 'Label'), scope);
     textAll('.gg-pi__sec--tags .gg-pi__kicker', t(pack, 'metaTags', 'Tags'), scope);
+    textAll('.gg-pi__sec--structure .gg-pi__kicker', t(pack, 'metaToc', 'Table of Contents'), scope);
     textAll('.gg-pi__metaitem--date .gg-pi__kicker', t(pack, 'metaDate', 'Date'), scope);
     textAll('.gg-pi__metaitem--updated .gg-pi__kicker', t(pack, 'metaUpdated', 'Updated'), scope);
     textAll('.gg-pi__metaitem--readtime .gg-pi__kicker', t(pack, 'metaReadTime', 'Read time'), scope);
