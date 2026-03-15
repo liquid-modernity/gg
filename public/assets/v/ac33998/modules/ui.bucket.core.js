@@ -5928,9 +5928,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return block.querySelector ? block.querySelector('.comment-actions') : null;
   }
   function commentReplyLinks(comment){
-    var block = commentBlock(comment);
-    if (!block || !block.querySelectorAll) return [];
-    return toArray(block.querySelectorAll('a.comment-reply'));
+    if (!comment || !comment.querySelectorAll) return [];
+    return toArray(comment.querySelectorAll('a.comment-reply')).filter(function(link){
+      if (!link) return false;
+      if (link.classList && link.classList.contains('cmt2-reply-action')) return false;
+      return !(link.closest && link.closest('.gg-comments__footer'));
+    });
   }
   function isRawReplyScaffold(link){
     return !!(link && link.closest && link.closest('.continue, .comment-replybox-single, .comment-replybox-thread'));
@@ -5945,7 +5948,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function commentReplyLink(comment){
     var actions = commentActions(comment);
-    return (actions && actions.querySelector ? actions.querySelector('a.comment-reply') : null) ||
+    return (actions && actions.querySelector ? actions.querySelector('.cmt2-reply-action, a.comment-reply') : null) ||
            pickPrimaryReplyLink(comment);
   }
   function commentPermalink(comment){
@@ -5965,6 +5968,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return comment && comment.querySelector ? comment.querySelector('.item-control') : null;
   }
   function commentReplyBox(comment){
+    var owned = comment && comment.__ggReplyBoxOwner;
+    if (owned && owned.isConnected) return owned;
     return directChildByClass(comment, 'comment-replybox-single') ||
            directChildByClass(comment, 'comment-replybox-thread') ||
            (comment && comment.querySelector ? comment.querySelector('.comment-replybox-single, .comment-replybox-thread') : null);
@@ -5977,6 +5982,105 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function commentsFooter(root){
     return root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+  }
+  function composerSlot(root){
+    return root && root.querySelector ? root.querySelector('#gg-composer-slot, [data-gg-composer-slot="1"], .gg-comments__composerslot') : null;
+  }
+  function nativeAddCommentLink(root){
+    if (!root || !root.querySelector) return null;
+    return root.querySelector('#cmt2-holder #top-continue .comment-reply, .gg-comments__list #top-continue .comment-reply');
+  }
+  function topComposer(root){
+    var node = root && root.__ggTopComposer;
+    if (node && node.isConnected) return node;
+    if (!root || !root.querySelector) return null;
+    node = root.querySelector('.gg-comments__list #top-ce, #cmt2-holder #top-ce, #top-ce');
+    if (node) root.__ggTopComposer = node;
+    return node;
+  }
+  function composerField(box){
+    return box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null;
+  }
+  function replyBoxHasComposer(box){
+    return !!composerField(box);
+  }
+  function activeReplyComposer(comment){
+    var box = commentReplyBox(comment);
+    return replyBoxHasComposer(box) ? box : null;
+  }
+  function cacheNodeAnchor(node){
+    if (!node || node.__ggAnchor) return;
+    node.__ggAnchor = {
+      parent: node.parentNode || null,
+      next: node.nextSibling || null
+    };
+  }
+  function showComposerNode(node){
+    if (!node || !node.removeAttribute) return;
+    node.hidden = false;
+    node.removeAttribute('aria-hidden');
+    node.removeAttribute('data-gg-state');
+  }
+  function hideComposerNode(node){
+    if (!node || !node.setAttribute) return;
+    node.hidden = true;
+    node.setAttribute('aria-hidden', 'true');
+    node.setAttribute('data-gg-state', 'hidden');
+  }
+  function restoreNodeAnchor(node){
+    var anchor = null;
+    if (!node) return;
+    if (node.__ggOwnerComment && node.__ggOwnerComment.__ggReplyBoxOwner === node) {
+      node.__ggOwnerComment.__ggReplyBoxOwner = null;
+    }
+    node.__ggOwnerComment = null;
+    anchor = node.__ggAnchor;
+    if (anchor && anchor.parent) {
+      if (anchor.next && anchor.next.parentNode === anchor.parent) anchor.parent.insertBefore(node, anchor.next);
+      else anchor.parent.appendChild(node);
+    }
+    showComposerNode(node);
+  }
+  function mountTopComposer(root){
+    var slot = composerSlot(root);
+    var node = topComposer(root);
+    if (!slot || !node) return null;
+    cacheNodeAnchor(node);
+    if (node.parentNode !== slot) slot.insertBefore(node, slot.firstChild || null);
+    showComposerNode(node);
+    return node;
+  }
+  function restoreReplyComposer(root){
+    var node = root && root.__ggReplyComposerNode;
+    var top = mountTopComposer(root);
+    if (node) {
+      restoreNodeAnchor(node);
+      root.__ggReplyComposerNode = null;
+    }
+    if (top) showComposerNode(top);
+  }
+  function mountReplyComposer(root, comment){
+    var slot = composerSlot(root);
+    var box = activeReplyComposer(comment);
+    var top = mountTopComposer(root);
+    if (!slot || !box) return null;
+    cacheNodeAnchor(box);
+    if (box.parentNode !== slot) slot.appendChild(box);
+    showComposerNode(box);
+    box.__ggOwnerComment = comment || null;
+    if (comment) comment.__ggReplyBoxOwner = box;
+    root.__ggReplyComposerNode = box;
+    if (top && top !== box) hideComposerNode(top);
+    return box;
+  }
+  function syncComposerOwner(root){
+    var reply = replyState(root);
+    if (!root || !isRightRailComments(root)) return null;
+    if (reply && reply.commentId && reply.comment) {
+      if (mountReplyComposer(root, reply.comment)) return root.__ggReplyComposerNode;
+    }
+    restoreReplyComposer(root);
+    return mountTopComposer(root);
   }
   function footerState(root){
     if (!root) return {};
@@ -6001,11 +6105,11 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
     var state = footerState(root);
     var reply = replyState(root);
-    var inlineBox = reply && reply.comment ? commentReplyBox(reply.comment) : null;
+    var inlineBox = reply && reply.comment ? activeReplyComposer(reply.comment) : null;
     var open = false;
     if (!root || !footer) return false;
     if (footer.getAttribute('data-gg-has-cta') === '0') open = true;
-    else if (reply && reply.commentId && !inlineBox) open = true;
+    else if (reply && reply.commentId) open = true;
     else open = !!state.manual;
     footer.setAttribute('data-gg-open', open ? '1' : '0');
     footer.setAttribute('data-gg-context', isRightRailComments(root) ? 'rail' : 'page');
@@ -6015,6 +6119,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
     if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
+    syncComposerOwner(root);
     syncFooterLayout(root);
     return open;
   }
@@ -6030,7 +6135,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function bindFooterMetrics(root){
     var footer = commentsFooter(root);
-    var form = root && root.querySelector ? root.querySelector('#top-ce') : null;
+    var slot = composerSlot(root);
     if (!root || !footer || root.__ggCommentsFooterMetricsBound) return false;
     root.__ggCommentsFooterMetricsBound = true;
     if (w.ResizeObserver) {
@@ -6039,7 +6144,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         runProof(root);
       });
       root.__ggCommentsFooterObserver.observe(footer);
-      if (form) root.__ggCommentsFooterObserver.observe(form);
+      if (slot) root.__ggCommentsFooterObserver.observe(slot);
     } else {
       root.__ggCommentsFooterSync = function(){ syncFooterLayout(root); runProof(root); };
       w.addEventListener('resize', root.__ggCommentsFooterSync, { passive: true });
@@ -6359,32 +6464,45 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var actions = ensureActions(comment);
     var links = commentReplyLinks(comment);
     var primary = pickPrimaryReplyLink(comment);
+    var action = null;
     var before = null;
     var i = 0;
     var parent = null;
     if (!actions) return null;
     before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx, .item-control.cmt2-native-more');
-    for (i = 0; i < links.length; i++) {
-      links[i].classList.remove('cmt2-reply-action');
-      if (links[i] !== primary) {
+    action = actions.querySelector('.cmt2-reply-action');
+    if (isDeletedComment(comment) || !primary) {
+      if (action && action.parentNode) action.parentNode.removeChild(action);
+      for (i = 0; i < links.length; i++) {
         setSuppressed(links[i]);
         parent = links[i].parentNode;
         if (parent && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
       }
+      return null;
     }
-    if (!primary) return null;
-    primary.classList.add('cmt2-reply-action');
-    primary.removeAttribute('hidden');
-    primary.removeAttribute('aria-hidden');
-    primary.removeAttribute('data-gg-state');
-    primary.setAttribute('data-gg-comment-role', 'reply');
-    if (primary.parentNode !== actions) {
-      if (before) actions.insertBefore(primary, before);
-      else actions.appendChild(primary);
+    for (i = 0; i < links.length; i++) {
+      setSuppressed(links[i]);
+      parent = links[i].parentNode;
+      if (parent && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
     }
-    parent = primary.parentNode;
-    if (parent && parent !== actions && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
-    return primary;
+    if (!action) {
+      action = d.createElement('a');
+      action.href = 'javascript:;';
+      action.rel = 'nofollow';
+      action.className = 'comment-reply cmt2-reply-action';
+      action.setAttribute('data-gg-comment-action', 'reply');
+    }
+    action.textContent = cleanText(primary.textContent) || 'Reply';
+    action.setAttribute('data-gg-comment-role', 'reply');
+    action.__ggNativeReplyLink = primary;
+    action.removeAttribute('hidden');
+    action.removeAttribute('aria-hidden');
+    action.removeAttribute('data-gg-state');
+    if (action.parentNode !== actions) {
+      if (before) actions.insertBefore(action, before);
+      else actions.appendChild(action);
+    }
+    return action;
   }
   function suppressCommentScaffolding(comment){
     var actions = commentActions(comment);
@@ -6422,6 +6540,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var footerHeight = 0;
     var paddingBottom = 0;
     var cta = null;
+    var visibleComposerOwners = null;
+    var visibleAddOwners = null;
+    var hasNativeReply = false;
+    var hasVisibleReply = false;
     if (!root || !root.querySelectorAll) return issues;
     visibleHelp = firstVisibleNode(toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')));
     if (visibleHelp) {
@@ -6440,6 +6562,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       footer = commentsFooter(root);
       content = commentsContent(root);
       cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
+      visibleComposerOwners = toArray(root.querySelectorAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread, .gg-comments__list #top-ce, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread')).filter(function(node){
+        if (!isVisibleNode(node)) return false;
+        if (node.id === 'top-ce') return true;
+        return replyBoxHasComposer(node);
+      });
+      visibleAddOwners = toArray(root.querySelectorAll('#gg-top-continue .comment-reply, #top-continue .comment-reply')).filter(isVisibleNode);
       if (!footer || !content) issues.push('rail-footer-missing');
       else {
         if (w.getComputedStyle) {
@@ -6453,6 +6581,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         if (cta && !isVisibleNode(cta)) issues.push('rail-footer-cta-hidden');
         if (footerHeight > 0 && (paddingBottom + 8) < footerHeight) issues.push('rail-footer-space-low');
       }
+      if (root.querySelectorAll('#top-ce').length > 1) issues.push('duplicate-composer-id');
+      if (visibleComposerOwners.length > 1) issues.push('composer-owner-duplicate');
+      if (visibleAddOwners.length > 1) issues.push('add-comment-duplicate');
     }
     comments = root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment');
     for (i = 0; i < comments.length; i++) {
@@ -6467,6 +6598,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (firstVisibleNode(toArray(comment.querySelectorAll('.item-control:not(.cmt2-native-more)')))) {
         issues.push('item-control-visible:' + commentId(comment));
       }
+      hasNativeReply = !!pickPrimaryReplyLink(comment);
+      hasVisibleReply = !!(actions && actions.querySelector && firstVisibleNode(toArray(actions.querySelectorAll('.cmt2-reply-action'))));
+      if (!isDeletedComment(comment) && hasNativeReply && !hasVisibleReply) issues.push('reply-missing:' + commentId(comment));
       rawReplys = toArray(commentReplyLinks(comment)).filter(function(link){
         if (!isVisibleNode(link)) return false;
         if (link.classList && link.classList.contains('cmt2-reply-action')) return false;
@@ -6664,6 +6798,11 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function replySlot(root){
     var state = replyState(root);
+    if (isRightRailComments(root)) {
+      return root.querySelector('#gg-addslot') ||
+             root.querySelector('.gg-comments__addslot') ||
+             root.querySelector('.gg-comments__footer');
+    }
     var box = state.comment ? commentReplyBox(state.comment) : null;
     if (box) return box;
     return root.querySelector('#gg-addslot') ||
@@ -6695,14 +6834,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var tries = 0;
     var max = 14;
     function attempt(){
-      var box = commentReplyBox(comment);
-      var field = (box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null) ||
-                  (root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null);
+      var box = null;
+      var field = null;
+      if (isRightRailComments(root)) {
+        if (comment) box = mountReplyComposer(root, comment);
+        if (!box) box = syncComposerOwner(root);
+        field = composerField(box);
+      } else {
+        box = commentReplyBox(comment);
+        field = composerField(box) ||
+                (root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null);
+      }
       tries++;
       if (field && typeof field.focus === 'function') {
         try { field.focus(); } catch (_) {}
+        if (root && root.setAttribute) root.setAttribute('data-gg-composer-focus', 'ok');
         return;
       }
+      if (root && root.setAttribute) root.setAttribute('data-gg-composer-focus', 'pending');
       if (tries < max) w.setTimeout(attempt, 120);
     }
     w.setTimeout(attempt, 60);
@@ -6809,23 +6958,49 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!host || host.__ggCommentsBound) return false;
     host.__ggCommentsBound = true;
     host.addEventListener('click', function(e){
-      var target = e && e.target && e.target.closest ? e.target.closest('[data-gg-comment-action], [data-gg-comment-jump], [data-gg-comment-toggle], a.comment-reply, #gg-top-continue .comment-reply, #top-continue .comment-reply, a.comment-reply[data-gg-footer-cta]') : null;
+      var target = e && e.target && e.target.closest ? e.target.closest('[data-gg-comment-action], [data-gg-comment-jump], [data-gg-comment-toggle], a.comment-reply[data-gg-footer-cta]') : null;
       var root = commentsRoot(host) || host;
       var comment = null;
       var wrap = null;
       var id = '';
+      var nativeLink = null;
       if (!root) return;
       if (!target || !target.closest || !target.closest('.cmt2-ctx')) closeMenus(root, null);
       if (!target) return;
       comment = closestComment(target);
-      if (target.matches && target.matches('a.comment-reply[data-gg-footer-cta], #gg-top-continue .comment-reply, #top-continue .comment-reply')) {
+      if (target.matches && target.matches('a.comment-reply[data-gg-footer-cta]')) {
         e.preventDefault();
         if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1' && !replyState(root).commentId) {
           setFooterOpen(root, false, { manual: false });
           return;
         }
         if (root.classList && root.classList.contains('gg-comments--replying')) clearReplyState(root);
-        setFooterOpen(root, true, { manual: true, focus: true });
+        setFooterOpen(root, true, { manual: true, focus: false });
+        nativeLink = nativeAddCommentLink(root);
+        if (nativeLink && typeof nativeLink.click === 'function') {
+          try { nativeLink.click(); } catch (_) {}
+        }
+        focusComposer(root, null);
+        w.setTimeout(function(){
+          syncComposerOwner(root);
+          syncFooterState(root);
+          runProof(root);
+        }, 180);
+        return;
+      }
+      if (target.matches && target.matches('[data-gg-comment-action="reply"]')) {
+        e.preventDefault();
+        nativeLink = target.__ggNativeReplyLink || pickPrimaryReplyLink(comment);
+        if (comment) setReplyState(root, comment, nativeLink);
+        if (nativeLink && typeof nativeLink.click === 'function') {
+          try { nativeLink.click(); } catch (_) {}
+        }
+        w.setTimeout(function(){
+          syncComposerOwner(root);
+          syncFooterState(root);
+          focusComposer(root, comment);
+          runProof(root);
+        }, 180);
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="more"]')) {
@@ -6861,10 +7036,6 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         e.preventDefault();
         if (comment) toggleReplies(comment);
         return;
-      }
-      if (target.matches && target.matches('a.comment-reply')) {
-        if (comment) setReplyState(root, comment, target);
-        else clearReplyState(root);
       }
     }, false);
     host.addEventListener('keydown', function(e){

@@ -5557,6 +5557,10 @@ justify-content: center;
 display: grid;
 gap: 10px;
 }
+#comments .gg-comments__composerslot > [data-gg-state="hidden"],
+#comments .gg-comments__composerslot > [hidden]{
+display: none !important;
+}
 #comments .gg-comments__footer[data-gg-open="0"][data-gg-has-cta="1"] .gg-comments__footer-main{
 display: none;
 }
@@ -5624,6 +5628,11 @@ padding: 0 10px calc(var(--gg-comments-footer-h) + 12px);
 gap: 8px;
 scroll-padding-top: 12px;
 scroll-padding-bottom: calc(var(--gg-comments-footer-h) + 14px);
+}
+main.gg-main[data-gg-right-mode="comments"] #comments .gg-comments__list #top-ce,
+main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment > .comment-replybox-single,
+main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment > .comment-replybox-thread {
+display: none;
 }
 
 
@@ -6355,6 +6364,11 @@ line-height: 1.24;
 main.gg-main[data-gg-right-mode="comments"] #comments .cmt2-replying__cancel {
 width: 18px;
 height: 18px;
+}
+main.gg-main[data-gg-right-mode="comments"] #comments .gg-comments__composerslot > .comment-replybox-thread,
+main.gg-main[data-gg-right-mode="comments"] #comments .gg-comments__composerslot > .comment-replybox-single {
+display: block;
+margin: 0;
 }
 main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[data-gg-comment-state="deleted"] {
 padding: 10px 0 11px;
