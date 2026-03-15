@@ -5982,6 +5982,55 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     txt = cleanText(body.textContent);
     return /comment (has been )?(removed|deleted)|deleted by the author|removed by a blog administrator|this comment has been removed/i.test(txt);
   }
+  function setSuppressed(node){
+    if (!node || !node.setAttribute) return;
+    node.hidden = true;
+    node.setAttribute('aria-hidden', 'true');
+    node.setAttribute('data-gg-state', 'hidden');
+  }
+  function isVisibleNode(node){
+    var style = null;
+    if (!node || !node.ownerDocument) return false;
+    if (node.hidden || node.getAttribute('aria-hidden') === 'true' || node.getAttribute('data-gg-state') === 'hidden') return false;
+    if (w.getComputedStyle) {
+      try { style = w.getComputedStyle(node); } catch (_) { style = null; }
+    }
+    if (style && (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse')) return false;
+    return true;
+  }
+  function firstVisibleNode(nodes){
+    var i = 0;
+    for (i = 0; i < nodes.length; i++) {
+      if (isVisibleNode(nodes[i])) return nodes[i];
+    }
+    return null;
+  }
+  function suppressHelperCopy(scope){
+    var nodes = null;
+    var i = 0;
+    var node = null;
+    var txt = '';
+    if (!scope || !scope.querySelectorAll) return;
+    nodes = scope.querySelectorAll('p, div, span, small, li, label');
+    for (i = 0; i < nodes.length; i++) {
+      node = nodes[i];
+      if (!node || node.querySelector && node.querySelector('iframe, textarea, input, button, select, form, [contenteditable="true"]')) continue;
+      txt = cleanText(node.textContent);
+      if (!txt) continue;
+      if (!/rich comment tags|\[quote\][\s\S]*?\[\/quote\]|\[code\][\s\S]*?\[\/code\]|\[link\][\s\S]*?\[\/link\]|\[image\][\s\S]*?\[\/image\]/i.test(txt)) continue;
+      setSuppressed(node);
+    }
+  }
+  function suppressRootScaffolding(root){
+    var scopes = null;
+    var i = 0;
+    if (!root || !root.querySelectorAll) return;
+    toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')).forEach(setSuppressed);
+    toArray(root.querySelectorAll('.comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue, .comment-replybox-single .comment-form-message, .comment-replybox-thread .comment-form-message, #top-ce .comment-form-message')).forEach(setSuppressed);
+    scopes = root.querySelectorAll('.comment-replybox-single, .comment-replybox-thread, #top-ce');
+    for (i = 0; i < scopes.length; i++) suppressHelperCopy(scopes[i]);
+    if (d.body && d.body.classList) d.body.classList.remove('gg-comments-help-open');
+  }
   function notify(message){
     if (!message) return;
     try {
@@ -6215,6 +6264,74 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     btn.textContent = (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')';
   }
+  function suppressCommentScaffolding(comment){
+    var actions = commentActions(comment);
+    var hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more'));
+    var deletePeers = null;
+    var scaffolds = null;
+    var i = 0;
+    if (!comment || !comment.querySelectorAll) return;
+    deletePeers = comment.querySelectorAll('.comment-footer .comment-delete, .comment-footer .cmt2-del, .comment-actions .comment-delete, .comment-actions .cmt2-del, .gg-cmt2__del');
+    if (hasMore) {
+      for (i = 0; i < deletePeers.length; i++) setSuppressed(deletePeers[i]);
+    }
+    scaffolds = comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replies .continue, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-single .continue, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count, .comment-replybox-thread .continue');
+    for (i = 0; i < scaffolds.length; i++) setSuppressed(scaffolds[i]);
+    suppressHelperCopy(commentReplyBox(comment));
+  }
+  function collectProofIssues(root){
+    var issues = [];
+    var comments = null;
+    var i = 0;
+    var comment = null;
+    var actions = null;
+    var hasMore = false;
+    var hasVisibleDelete = false;
+    var visibleHelp = null;
+    var helperNodes = null;
+    if (!root || !root.querySelectorAll) return issues;
+    visibleHelp = firstVisibleNode(toArray(root.querySelectorAll('.cmt2-help__btn, .cmt2-help__modal, [data-gg-modal="comments-help"]')));
+    if (visibleHelp) {
+      issues.push('native-help-visible');
+    }
+    if (root.querySelector('.cmt2-replying__eyebrow')) issues.push('reply-cue-heavy');
+    helperNodes = toArray(root.querySelectorAll('.comment-replybox-single p, .comment-replybox-single div, .comment-replybox-single span, .comment-replybox-thread p, .comment-replybox-thread div, .comment-replybox-thread span, #top-ce p, #top-ce div, #top-ce span')).filter(function(node){
+      var txt = '';
+      if (!isVisibleNode(node)) return false;
+      if (node.querySelector && node.querySelector('iframe, textarea, input, button, select, form, [contenteditable="true"]')) return false;
+      txt = cleanText(node.textContent);
+      return !!txt && /rich comment tags|\[quote\][\s\S]*?\[\/quote\]|\[code\][\s\S]*?\[\/code\]|\[link\][\s\S]*?\[\/link\]|\[image\][\s\S]*?\[\/image\]/i.test(txt);
+    });
+    if (helperNodes.length) issues.push('helper-copy-visible');
+    comments = root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment');
+    for (i = 0; i < comments.length; i++) {
+      comment = comments[i];
+      actions = commentActions(comment);
+      hasMore = !!(actions && actions.querySelector && actions.querySelector('.cmt2-ctx, .item-control.cmt2-native-more'));
+      hasVisibleDelete = !!firstVisibleNode(toArray(comment.querySelectorAll('.comment-footer .comment-delete, .comment-footer .cmt2-del, .comment-actions .comment-delete, .comment-actions .cmt2-del, .gg-cmt2__del')));
+      if (hasMore && hasVisibleDelete) issues.push('delete-peer:' + commentId(comment));
+      if (actions && actions.querySelector && actions.querySelector('.cmt2-ctx') && actions.querySelector('.item-control.cmt2-native-more')) {
+        issues.push('duplicate-more:' + commentId(comment));
+      }
+      if (comment.querySelector('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count')) {
+        if (firstVisibleNode(toArray(comment.querySelectorAll('.comment-replies .thread-toggle, .comment-replies .thread-count, .comment-replybox-single .thread-toggle, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-toggle, .comment-replybox-thread .thread-count')))) {
+          issues.push('thread-scaffold:' + commentId(comment));
+        }
+      }
+    }
+    return issues;
+  }
+  function runProof(root){
+    var issues = collectProofIssues(root);
+    if (!root || !root.setAttribute) return issues;
+    root.setAttribute('data-gg-comment-proof', issues.length ? 'fail' : 'ok');
+    root.setAttribute('data-gg-comment-proof-count', String(issues.length));
+    root.__ggCommentProofIssues = issues;
+    if (issues.length && w.console && typeof w.console.warn === 'function') {
+      try { w.console.warn('[GG.comments] proof failed:', issues.join(', ')); } catch (_) {}
+    }
+    return issues;
+  }
   function ensureMenuButton(comment){
     var actions = ensureActions(comment);
     var permalink = commentPermalink(comment);
@@ -6353,7 +6470,6 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var state = replyState(root);
     var banner = state.banner;
     var body = null;
-    var eyebrow = null;
     var title = null;
     var cancel = null;
     if (banner) return banner;
@@ -6361,12 +6477,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     banner.className = 'cmt2-replying';
     body = d.createElement('div');
     body.className = 'cmt2-replying__body';
-    eyebrow = d.createElement('span');
-    eyebrow.className = 'cmt2-replying__eyebrow';
-    eyebrow.textContent = 'Reply mode';
     title = d.createElement('strong');
     title.className = 'cmt2-replying__title';
-    body.appendChild(eyebrow);
     body.appendChild(title);
     cancel = d.createElement('button');
     cancel.type = 'button';
@@ -6506,17 +6618,20 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     else if (actions) actions.hidden = false;
     ensureMenuButton(comment);
     ensureToggleButton(comment);
+    suppressCommentScaffolding(comment);
   }
   function enhance(host){
     var root = commentsRoot(host) || host;
     var comments = null;
     if (!root || !root.querySelectorAll) return false;
     root.classList.add('gg-comments--enhanced');
+    suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
     if (replyState(root).commentId) mountReplyBanner(root);
+    runProof(root);
     return !!comments.length;
   }
   function bindHost(host){
