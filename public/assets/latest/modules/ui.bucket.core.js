@@ -6009,7 +6009,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     else open = !!state.manual;
     footer.setAttribute('data-gg-open', open ? '1' : '0');
     footer.setAttribute('data-gg-context', isRightRailComments(root) ? 'rail' : 'page');
-    if (cta) cta.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (cta) {
+      cta.setAttribute('aria-expanded', open ? 'true' : 'false');
+      cta.textContent = open ? 'Hide composer' : 'Add comment';
+    }
     if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
     if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
     syncFooterLayout(root);
@@ -6448,7 +6451,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         if (!footerStyle || footerStyle.position !== 'sticky') issues.push('rail-footer-not-sticky');
         if (!contentStyle || !/auto|scroll/i.test(contentStyle.overflowY || '')) issues.push('rail-content-not-scroll');
         if (cta && !isVisibleNode(cta)) issues.push('rail-footer-cta-hidden');
-        if (footerHeight > 0 && paddingBottom < 8) issues.push('rail-footer-space-low');
+        if (footerHeight > 0 && (paddingBottom + 8) < footerHeight) issues.push('rail-footer-space-low');
       }
     }
     comments = root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment');
@@ -6790,6 +6793,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var comments = null;
     if (!root || !root.querySelectorAll) return false;
     root.classList.add('gg-comments--enhanced');
+    root.setAttribute('data-gg-comment-owner', 'enhanced');
     bindFooterMetrics(root);
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
@@ -6816,6 +6820,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       comment = closestComment(target);
       if (target.matches && target.matches('a.comment-reply[data-gg-footer-cta], #gg-top-continue .comment-reply, #top-continue .comment-reply')) {
         e.preventDefault();
+        if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1' && !replyState(root).commentId) {
+          setFooterOpen(root, false, { manual: false });
+          return;
+        }
         if (root.classList && root.classList.contains('gg-comments--replying')) clearReplyState(root);
         setFooterOpen(root, true, { manual: true, focus: true });
         return;
@@ -6863,6 +6871,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       var root = commentsRoot(host) || host;
       if (!e || e.key !== 'Escape' || !root) return;
       closeMenus(root, null);
+      if (replyState(root).commentId) {
+        cancelReply(root);
+        return;
+      }
+      if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1') {
+        setFooterOpen(root, false, { manual: false });
+      }
     }, false);
     if (w.MutationObserver) {
       host.__ggCommentsObserver = new MutationObserver(function(){
