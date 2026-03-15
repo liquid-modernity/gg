@@ -5992,11 +5992,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function topComposer(root){
     var node = root && root.__ggTopComposer;
+    var nodes = null;
+    var i = 0;
     if (node && node.isConnected) return node;
     if (!root || !root.querySelector) return null;
-    node = root.querySelector('.gg-comments__list #top-ce, #cmt2-holder #top-ce, #top-ce');
-    if (node) root.__ggTopComposer = node;
-    return node;
+    nodes = toArray(root.querySelectorAll('.gg-comments__list #top-ce, #cmt2-holder #top-ce, #top-ce'));
+    for (i = 0; i < nodes.length; i++) {
+      node = nodes[i];
+      if (!node) continue;
+      if (node.classList && node.classList.contains('comment-form')) {
+        root.__ggTopComposer = node;
+        return node;
+      }
+      if (composerField(node) || (node.querySelector && node.querySelector('#comment-editor, #comment-editor-src'))) {
+        root.__ggTopComposer = node;
+        return node;
+      }
+    }
+    return null;
   }
   function composerField(box){
     return box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null;
@@ -6142,6 +6155,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     syncFooterState(root);
     if (open && o.focus) focusComposer(root, null);
     return open;
+  }
+  function bindFooterCta(root){
+    var footer = commentsFooter(root);
+    var cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
+    if (!root || !cta || cta.__ggFooterCtaBound) return false;
+    cta.__ggFooterCtaBound = true;
+    cta.addEventListener('click', function(e){
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      }
+      if (root.getAttribute && root.getAttribute('data-gg-footer-open') === '1' && replyState(root).replyMode !== 'reply') {
+        setFooterOpen(root, false, { manual: false });
+        return;
+      }
+      openComposerForRoot(root, { focus: true });
+    }, false);
+    return true;
   }
   function bindFooterMetrics(root){
     var footer = commentsFooter(root);
@@ -7035,6 +7066,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     root.setAttribute('data-gg-comment-owner', 'enhanced');
     root.setAttribute('data-gg-visible-owner', 'enhanced-footer');
     root.setAttribute('data-gg-comment-contract', 'single-visible-owner');
+    bindFooterCta(root);
     bindFooterMetrics(root);
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
