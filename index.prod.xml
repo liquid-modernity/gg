@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='5075582e493c' name='gg-template-fingerprint'/>
+    <meta content='394b34c4b261' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -234,7 +234,7 @@ text-align: center;
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='5075582e493c' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='394b34c4b261' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:view.isHomepage and data:ggIsHome and (data:view.url and (data:view.url contains &quot;/landing&quot; or data:view.url contains &quot;view=landing&quot;))'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1377,14 +1377,14 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </div>
 </b:includable>
               <b:includable id='commentDeleteIcon' var='comment'>
-  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+  <span aria-hidden='true' data-gg-native-action='item-control' data-gg-state='hidden' expr:class='&quot;item-control &quot; + data:comment.adminClass' hidden='hidden'>
     <b:if cond='data:showCmtPopup'>
-      <div class='goog-toggle-button'>
+      <div class='goog-toggle-button' data-gg-native-action='more'>
         <div class='goog-inline-block comment-action-icon'/>
       </div>
     <b:else/>
-      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
-        <img alt='Delete' decoding='async' height='13' src='https://resources.blogblog.com/img/icon_delete13.gif' width='13'/>
+      <a aria-hidden='true' class='comment-delete' data-gg-native-action='delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment' tabindex='-1'>
+        <img alt='' decoding='async' height='13' src='https://resources.blogblog.com/img/icon_delete13.gif' width='13'/>
       </a>
     </b:if>
   </span>
@@ -1457,29 +1457,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                     <div class='cmt2-headbar__left'>
                       <h3 class='cmt2-head'>Comments</h3>
                       <span class='cmt2-count'><data:post.numberOfComments/> comments</span>
-                    </div>
-                    <div class='gg-comments__actions'>
-                      <button aria-label='Rich comment tags' class='cmt2-help__btn' data-gg-action='comments-help' title='Rich comment tags' type='button'>
-                        <span aria-hidden='true' class='ms'>format_shapes</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div aria-hidden='true' class='cmt2-help__modal' data-gg-modal='comments-help' role='presentation'>
-                    <div class='cmt2-help__overlay' data-gg-action='comments-help-close'/>
-                    <div aria-labelledby='ggCommentHelpTitleClassic' class='cmt2-help__dialog' role='dialog'>
-                      <div class='cmt2-help__dialog-head'>
-                        <div class='cmt2-help__title' id='ggCommentHelpTitleClassic'>Rich comment tags</div>
-                        <button aria-label='Close formatting help' class='cmt2-help__close' data-gg-action='comments-help-close' type='button'>
-                          <span aria-hidden='true' class='ms'>close</span>
-                        </button>
-                      </div>
-                      <div class='cmt2-help__body'>
-                        <div class='cmt2-help__row'><code>[quote]your_quote[/quote]</code></div>
-                        <div class='cmt2-help__row'><code>[code]your_code[/code]</code></div>
-                        <div class='cmt2-help__row'><code>[link]Text | https://pakrpp.com[/link]</code></div>
-                        <div class='cmt2-help__row'><code>[image]https://pakrpp.com/pic.jpg[/image]</code></div>
-                        <div class='cmt2-help__note'>Only http/https URLs are rendered.</div>
-                      </div>
                     </div>
                   </div>
                   <b:if cond='data:post.allowComments'>
@@ -2334,31 +2311,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           </b:if>
         </h3>
       </div>
-      <div class='gg-comments__actions'>
-        <button aria-label='Rich comment tags' class='cmt2-help__btn' data-gg-action='comments-help' title='Rich comment tags' type='button'>
-          <span aria-hidden='true' class='ms'>format_shapes</span>
-        </button>
-      </div>
     </header>
-
-    <div aria-hidden='true' class='cmt2-help__modal' data-gg-modal='comments-help' role='presentation'>
-      <div class='cmt2-help__overlay' data-gg-action='comments-help-close'/>
-      <div aria-labelledby='ggCommentHelpTitlePanel' class='cmt2-help__dialog' role='dialog'>
-        <div class='cmt2-help__dialog-head'>
-          <div class='cmt2-help__title' id='ggCommentHelpTitlePanel'>Rich comment tags</div>
-          <button aria-label='Close formatting help' class='cmt2-help__close' data-gg-action='comments-help-close' type='button'>
-            <span aria-hidden='true' class='ms'>close</span>
-          </button>
-        </div>
-        <div class='cmt2-help__body'>
-          <div class='cmt2-help__row'><code>[quote]...[/quote]</code></div>
-          <div class='cmt2-help__row'><code>[code]...[/code]</code></div>
-          <div class='cmt2-help__row'><code>[link]Text | https://example.com[/link]</code></div>
-          <div class='cmt2-help__row'><code>[image]https://example.com/pic.jpg[/image]</code></div>
-          <div class='cmt2-help__note'>Only http/https URLs are rendered.</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Body -->
     <div class='gg-comments__content comments-content'>

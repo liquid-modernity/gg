@@ -6411,6 +6411,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (hasNativePopup) {
       if (itemControl.parentNode !== actions) actions.appendChild(itemControl);
       itemControl.classList.add('cmt2-native-more');
+      itemControl.hidden = false;
+      itemControl.removeAttribute('aria-hidden');
+      itemControl.removeAttribute('data-gg-state');
       btn = itemControl.querySelector('.goog-toggle-button');
       if (btn) {
         btn.setAttribute('aria-label', 'More actions');
