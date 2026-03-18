@@ -859,7 +859,7 @@ const fails = [];
 const hasSeedDisabled = /function\s+seedInitialPreview\s*\(\)\s*\{\s*return\s+false;\s*\}/.test(src);
 const hoverOpens = /function\s+handlePreviewHover[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
 const focusOpens = /function\s+handlePreviewFocus[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
-const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true\s*\}\s*\)/.test(src);
+const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true(?:\s*,[\s\S]*?)?\}\s*\)/.test(src);
 const hasIconSync = /function\s+syncPanelIconTokens\s*\(/.test(src);
 const openSetsIcons = /function\s+openWithCard[\s\S]*?syncPanelIconTokens\(\s*true\s*\)/.test(src);
 const resetClearsIcons = /function\s+resetPanelState[\s\S]*?syncPanelIconTokens\(\s*false\s*\)/.test(src);
@@ -913,6 +913,10 @@ NODE
 }
 
 check_comments_owner_contract() {
+  if template_contract_checks_deferred; then
+    log_warn "comments owner browser checks deferred until Blogger template parity is verified (state=${template_release_state})"
+    return 0
+  fi
   check_comments_owner_case "zero" "0" "$COMMENTS_TARGET_PATH_0"
   check_comments_owner_case "two" "2" "$COMMENTS_TARGET_PATH_2"
   check_comments_owner_case "sixteen" "16" "$COMMENTS_TARGET_PATH_16"
@@ -1365,6 +1369,12 @@ check_discovered_detail_paths() {
   local page_path=""
   fetch_page "/" "$listing_file" >/dev/null
 
+  if template_contract_checks_deferred; then
+    log_warn "detail surface checks deferred until Blogger template parity is verified (state=${template_release_state})"
+    check_listing_card_metadata "$listing_file"
+    return 0
+  fi
+
   post_path="$(discover_first_post_path "$listing_file" || true)"
   if [[ -z "$post_path" ]]; then
     log_fail "unable to discover a real post URL from /"
@@ -1388,6 +1398,16 @@ is_truthy() {
   local value
   value="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
   [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" || "$value" == "on" ]]
+}
+
+template_contract_checks_deferred() {
+  if [[ "$TEMPLATE_DRIFT_MODE" != "warn" ]]; then
+    return 1
+  fi
+  if [[ "$template_release_state" == "blogger_template_parity_verified" || "$template_release_state" == "blogger_template_parity_unknown" ]]; then
+    return 1
+  fi
+  return 0
 }
 
 template_drift_signal() {
@@ -1482,6 +1502,9 @@ emit_release_state() {
     final_state="contract_failed"
     final_note="Public contract checks failed."
     contract_state="contract_failed"
+  elif [[ "$template_release_state" != "blogger_template_parity_verified" && "$template_release_state" != "blogger_template_parity_unknown" ]]; then
+    final_state="worker_assets_deployed_only__blogger_template_publish_required"
+    final_note="$template_release_note"
   fi
 
   printf 'SMOKE worker-state=%s note=%s expected=%s observed=%s final=%s\n' \
