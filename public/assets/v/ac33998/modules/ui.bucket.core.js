@@ -6322,6 +6322,152 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function composerField(box){
     return box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null;
   }
+  function focusNoScroll(node){
+    if (!node || typeof node.focus !== 'function') return false;
+    try {
+      node.focus({ preventScroll: true });
+      return true;
+    } catch (_) {}
+    try {
+      node.focus();
+      return true;
+    } catch (__) {}
+    return false;
+  }
+  function composerFocusShell(root, box){
+    var slot = composerSlot(root) || ensureFooterSection(root, '#gg-composer-slot', 'gg-comments__composerslot', 'gg-composer-slot');
+    if (!slot || !slot.setAttribute) return null;
+    slot.setAttribute('data-gg-composer-focus-shell', '1');
+    slot.setAttribute('tabindex', '-1');
+    slot.setAttribute('role', slot.getAttribute('role') || 'group');
+    if (!slot.getAttribute('aria-label')) slot.setAttribute('aria-label', 'Comment composer');
+    if (box && box.setAttribute) box.setAttribute('data-gg-composer-focus-host', '1');
+    return slot;
+  }
+  function focusDebug(root){
+    if (!root) return { scrolled: false, fallback: false, nativeReady: false };
+    root.__ggComposerFocusDebug = root.__ggComposerFocusDebug || {
+      scrolled: false,
+      fallback: false,
+      nativeReady: false
+    };
+    return root.__ggComposerFocusDebug;
+  }
+  function syncFocusDebug(root){
+    var debug = focusDebug(root);
+    if (!root || !root.setAttribute) return debug;
+    root.setAttribute('data-gg-composer-focus-scrolled', debug.scrolled ? '1' : '0');
+    root.setAttribute('data-gg-composer-focus-fallback', debug.fallback ? '1' : '0');
+    root.setAttribute('data-gg-composer-focus-native-ready', debug.nativeReady ? '1' : '0');
+    return debug;
+  }
+  function resetFocusDebug(root){
+    if (!root) return focusDebug(root);
+    root.__ggComposerFocusDebug = {
+      scrolled: false,
+      fallback: false,
+      nativeReady: false
+    };
+    return syncFocusDebug(root);
+  }
+  function viewportVisible(node){
+    var rect = null;
+    var limit = 0;
+    if (!node || !node.getBoundingClientRect) return false;
+    rect = node.getBoundingClientRect();
+    limit = w.innerHeight || (d.documentElement && d.documentElement.clientHeight) || 0;
+    return rect.bottom > 0 && rect.top < limit;
+  }
+  function withinRect(node, container){
+    var inner = null;
+    var outer = null;
+    if (!node || !container || !node.getBoundingClientRect || !container.getBoundingClientRect) return false;
+    inner = node.getBoundingClientRect();
+    outer = container.getBoundingClientRect();
+    return inner.top >= (outer.top - 1) && inner.bottom <= (outer.bottom + 1);
+  }
+  function footerInView(root){
+    var footer = commentsFooter(root);
+    var panel = root && root.closest ? root.closest('#ggPanelComments, .gg-comments-panel') : null;
+    var body = panel && panel.querySelector ? panel.querySelector('.gg-comments-panel__body') : null;
+    if (!footer || !viewportVisible(footer)) return false;
+    return body ? withinRect(footer, body) : true;
+  }
+  function scrollComposerIntoView(root, target){
+    var footer = commentsFooter(root);
+    var content = commentsContent(root);
+    var node = target || footer || composerSlot(root) || root;
+    var debug = focusDebug(root);
+    var needsScroll = !footerInView(root);
+    if (content && content.scrollHeight > (content.clientHeight + 4)) {
+      if (needsScroll || (content.scrollTop + content.clientHeight + 4) < content.scrollHeight) {
+        content.scrollTop = Math.max(0, content.scrollHeight - content.clientHeight);
+        debug.scrolled = true;
+      }
+    }
+    if (needsScroll && footer && typeof footer.scrollIntoView === 'function') {
+      try {
+        footer.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+        debug.scrolled = true;
+      } catch (_) {
+        try {
+          footer.scrollIntoView(false);
+          debug.scrolled = true;
+        } catch (__) {}
+      }
+    } else if (node && typeof node.scrollIntoView === 'function' && !viewportVisible(node)) {
+      try {
+        node.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+        debug.scrolled = true;
+      } catch (_) {
+        try {
+          node.scrollIntoView(false);
+          debug.scrolled = true;
+        } catch (__) {}
+      }
+    }
+    syncFocusDebug(root);
+    return debug.scrolled;
+  }
+  function composerFocusInfo(root, comment){
+    var state = replyState(root);
+    var box = null;
+    var field = null;
+    var shell = null;
+    if (isRightRailComments(root)) {
+      if (comment && state.replyMode === 'reply' && state.replyTargetId) {
+        box = activeReplyComposer(comment);
+        if (box) box = mountComposerNode(root, box, comment);
+      }
+      if (!box) box = syncComposerOwner(root);
+      field = composerField(box);
+    } else {
+      box = commentReplyBox(comment) || topComposer(root);
+      field = composerField(box);
+      if (!field) {
+        field = root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null;
+      }
+    }
+    shell = composerFocusShell(root, box);
+    return {
+      box: box,
+      field: field && isVisibleNode(field) ? field : null,
+      shell: shell
+    };
+  }
+  function isComposerFocusTarget(root, node){
+    if (!node || !root) return false;
+    if (node.id === 'comment-editor') return true;
+    if (node.closest && node.closest('[data-gg-composer-focus-shell="1"]')) return true;
+    return !!(node.closest && node.closest('#gg-composer-slot') && node.closest('#comments') === root);
+  }
+  function focusTargetKind(root, node){
+    if (!isComposerFocusTarget(root, node)) return 'none';
+    if (node.id === 'comment-editor') return 'native';
+    if (node.matches && node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]')) return 'native';
+    if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') return 'fallback';
+    return 'native';
+  }
   function replyBoxHasComposer(box){
     return !!composerField(box);
   }
@@ -7211,37 +7357,70 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function focusComposer(root, comment){
     var tries = 0;
     var max = 14;
+    if (!root) return;
+    var timer = root && root.__ggComposerFocusTimer;
+    if (timer) clearTimeout(timer);
+    resetFocusDebug(root);
     function attempt(){
-      var box = null;
-      var field = null;
-      var state = replyState(root);
-      if (isRightRailComments(root)) {
-        if (comment && state.replyMode === 'reply' && state.replyTargetId) {
-          box = activeReplyComposer(comment);
-          if (box) box = mountComposerNode(root, box, comment);
-          field = composerField(box);
-        }
-        if (!field) {
-          box = syncComposerOwner(root);
-          field = composerField(box);
-        }
-      } else {
-        box = commentReplyBox(comment);
-        field = composerField(box);
-        if (!field) {
-          field = root && root.querySelector ? root.querySelector('#top-ce iframe, #top-ce textarea, #top-ce input:not([type="hidden"]), #top-ce [contenteditable="true"]') : null;
-        }
-      }
+      var info = composerFocusInfo(root, comment);
+      var debug = focusDebug(root);
+      var target = info.field || info.shell;
+      var active = null;
+      var kind = 'none';
       tries++;
-      if (field && typeof field.focus === 'function') {
-        try { field.focus(); } catch (_) {}
-        if (root && root.setAttribute) root.setAttribute('data-gg-composer-focus', 'ok');
+      debug.nativeReady = !!info.field || debug.nativeReady;
+      if (!info.field && info.shell) debug.fallback = true;
+      scrollComposerIntoView(root, target);
+      if (info.field) {
+        focusNoScroll(info.field);
+      } else if (info.shell) {
+        focusNoScroll(info.shell);
+      }
+      active = d.activeElement;
+      kind = focusTargetKind(root, active);
+      if (isComposerFocusTarget(root, active)) {
+        if (kind === 'native' || !info.field || tries >= max) {
+          if (root && root.setAttribute) {
+            root.setAttribute('data-gg-composer-focus', 'ok');
+            root.setAttribute('data-gg-composer-focus-target', kind);
+          }
+          syncFocusDebug(root);
+          if (kind === 'fallback' && !info.field && tries < max) {
+            root.__ggComposerFocusTimer = w.setTimeout(attempt, 120);
+          }
+          return;
+        }
+        if (root && root.setAttribute) {
+          root.setAttribute('data-gg-composer-focus', 'pending');
+          root.setAttribute('data-gg-composer-focus-target', kind);
+        }
+        syncFocusDebug(root);
+        root.__ggComposerFocusTimer = w.setTimeout(attempt, 80);
         return;
       }
-      if (root && root.setAttribute) root.setAttribute('data-gg-composer-focus', 'pending');
-      if (tries < max) w.setTimeout(attempt, 120);
+      if (root && root.setAttribute) {
+        root.setAttribute('data-gg-composer-focus', tries < max ? 'pending' : 'fallback');
+        root.setAttribute('data-gg-composer-focus-target', !info.field && info.shell ? 'fallback' : 'pending');
+      }
+      syncFocusDebug(root);
+      if (tries < max) {
+        root.__ggComposerFocusTimer = w.setTimeout(attempt, info.field ? 80 : 120);
+        return;
+      }
+      if (info.shell) {
+        focusNoScroll(info.shell);
+        if (root && root.setAttribute) {
+          root.setAttribute('data-gg-composer-focus', 'ok');
+          root.setAttribute('data-gg-composer-focus-target', 'fallback');
+        }
+        debug.fallback = true;
+      } else if (root && root.setAttribute) {
+        root.setAttribute('data-gg-composer-focus', 'failed');
+        root.setAttribute('data-gg-composer-focus-target', 'missing');
+      }
+      syncFocusDebug(root);
     }
-    w.setTimeout(attempt, 60);
+    root.__ggComposerFocusTimer = w.setTimeout(attempt, 40);
   }
   function setReplyState(root, comment, link){
     var state = replyState(root);

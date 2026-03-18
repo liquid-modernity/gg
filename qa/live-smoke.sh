@@ -1003,6 +1003,33 @@ async function captureState(page) {
       if (node.id === 'top-ce') return true;
       return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
     }
+    function describeNode(node) {
+      if (!node) return 'none';
+      if (node.nodeType !== 1) return cleanValue(node.nodeName || 'node').toLowerCase();
+      const bits = [cleanValue(node.tagName || node.nodeName || 'node').toLowerCase()];
+      if (node.id) bits.push(`#${node.id}`);
+      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') bits.push('[composer-shell]');
+      if (node.closest && node.closest('#gg-composer-slot')) bits.push('[composer-slot]');
+      return cleanValue(bits.join(''));
+    }
+    function focusKind(node) {
+      if (!node || !node.matches) return 'none';
+      if (node.id === 'comment-editor') return 'native';
+      if (node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]') && node.closest('#gg-composer-slot')) return 'native';
+      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') return 'fallback';
+      return 'other';
+    }
+    function footerInView(root) {
+      const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+      const panel = document.querySelector('#ggPanelComments');
+      const body = panel && panel.querySelector ? panel.querySelector('.gg-comments-panel__body') : null;
+      if (!footer || !body) return false;
+      const rect = footer.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (rect.bottom <= 0 || rect.top >= viewportH) return false;
+      return rect.top >= (bodyRect.top - 1) && rect.bottom <= (bodyRect.bottom + 1);
+    }
     function composerSignature(nodes) {
       return nodes.map((node) => node.id || cleanValue(node.className) || node.nodeName.toLowerCase()).join(',');
     }
@@ -1054,6 +1081,14 @@ async function captureState(page) {
       replyMode: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-reply-mode') : 'default') || 'default',
       footerOpen: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-footer-open') : '0') || '0',
       replyBannerCount: root ? visibleAll('.cmt2-replying', root).length : 0,
+      activeElement: describeNode(document.activeElement),
+      focusKind: focusKind(document.activeElement),
+      footerInView: root ? footerInView(root) : false,
+      focusScrolled: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-scrolled') : '0') || '0',
+      focusFallbackUsed: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-fallback') : '0') || '0',
+      nativeEditorReady: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-native-ready') : '0') || '0',
+      focusState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus') : '') || 'missing',
+      focusTarget: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-target') : '') || 'missing',
       nativePeerCount: nativePeers.length,
       deletePeerFailures: deletePeers,
       replyOwnerFailures,
@@ -1133,22 +1168,6 @@ async function main() {
       }
     }
 
-    let focusState = notApplicable('composer-not-available');
-    if (before.hasFooterCta) {
-      const panel = page.locator('#ggPanelComments').first();
-      let focusOk = false;
-      await panel.focus();
-      for (let i = 0; i < 18; i++) {
-        await page.keyboard.press('Tab');
-        focusOk = await page.evaluate(() => {
-          const active = document.activeElement;
-          return !!(active && (active.id === 'comment-editor' || (active.closest && active.closest('#gg-composer-slot'))));
-        });
-        if (focusOk) break;
-      }
-      focusState = state(focusOk, focusOk ? 'focus=footer-composer' : 'focus=not-reached');
-    }
-
     if (before.firstReplyId) {
       const replyBtn = page.locator(`#ggPanelComments #c${before.firstReplyId} .comment-actions .cmt2-reply-action`).first();
       if (await replyBtn.count()) {
@@ -1156,6 +1175,30 @@ async function main() {
         await page.waitForTimeout(2000);
         afterReply = await captureState(page);
       }
+    }
+
+    let focusState = notApplicable('composer-not-available');
+    if (before.hasFooterCta) {
+      const addFocusOk = afterAdd.footerOpen === '1' && (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'fallback');
+      const replyFocusOk = before.firstReplyId
+        ? afterReply.replyMode === 'reply' && (afterReply.focusKind === 'native' || afterReply.focusKind === 'fallback')
+        : true;
+      focusState = state(
+        addFocusOk && replyFocusOk,
+        [
+          `before=${before.activeElement}`,
+          `afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind}`,
+          `afterReply=${afterReply.activeElement}:${afterReply.focusKind}`,
+          `composer=${afterAdd.footerOpen}`,
+          `replyMode=${afterReply.replyMode}`,
+          `footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0}`,
+          `scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled}`,
+          `fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed}`,
+          `nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`,
+          `focusState=${afterAdd.focusState}/${afterReply.focusState}`,
+          `focusTarget=${afterAdd.focusTarget}/${afterReply.focusTarget}`
+        ].join(';')
+      );
     }
 
     const results = [];
@@ -1237,6 +1280,7 @@ async function main() {
     });
 
     console.log(`META|case=${caseName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
+    console.log(`DEBUG|case=${caseName};panel=${before.panelVisible ? 1 : 0};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
     for (const row of results) {
       const rowState = row.skip ? 'na' : (row.pass ? 'pass' : 'fail');
       console.log(`CRITERION|${row.id}|${rowState}|${row.detail}`);
@@ -1263,6 +1307,10 @@ NODE
     [[ -n "$line" ]] || continue
     if [[ "$line" == META\|* ]]; then
       printf 'SMOKE comments-owner %s target=%s\n' "${line#META|}" "$path"
+      continue
+    fi
+    if [[ "$line" == DEBUG\|* ]]; then
+      printf 'SMOKE comments-owner-debug %s target=%s\n' "${line#DEBUG|}" "$path"
       continue
     fi
     if [[ "$line" == BROWSER\|infra\|* ]]; then

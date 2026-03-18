@@ -5430,6 +5430,7 @@ backdrop-filter: blur(16px);
 display: grid;
 gap: 10px;
 min-width: 0;
+overflow: visible;
 }
 #comments .gg-comments__footer-note{
 margin: 0;
@@ -5453,6 +5454,17 @@ justify-content: center;
 #comments .gg-comments__composerslot{
 display: grid;
 gap: 10px;
+overflow: visible;
+scroll-margin-block-end: calc(env(safe-area-inset-bottom) + 12px);
+}
+#comments .gg-comments__composerslot[data-gg-composer-focus-shell="1"]{
+border-radius: 16px;
+outline: 0;
+}
+#comments .gg-comments__composerslot[data-gg-composer-focus-shell="1"]:focus,
+#comments .gg-comments__composerslot[data-gg-composer-focus-shell="1"]:focus-visible{
+outline: 2px solid currentColor;
+outline-offset: 3px;
 }
 #comments .gg-comments__composerslot > [data-gg-state="hidden"],
 #comments .gg-comments__composerslot > [hidden]{
@@ -6498,6 +6510,9 @@ max-width: 100%;
 padding: 0;
 border: 0;
 background: transparent;
+}
+#ggPanelComments #gg-composer-slot[data-gg-composer-focus-shell="1"]{
+scroll-margin-block-end: calc(env(safe-area-inset-bottom) + 12px);
 }
 
 #ggPanelComments #top-ce[data-gg-fallback="1"] {
