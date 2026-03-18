@@ -5882,26 +5882,28 @@ gap: 10px;
 }
 
 #comments #top-ce[data-gg-fallback="1"] {
-border: 1px solid color-mix(in srgb, var(--gg-border) 70%, transparent);
+border: 1px dashed color-mix(in srgb, #b45309 42%, var(--gg-border));
 border-radius: 18px;
 padding: 12px;
-background: linear-gradient(180deg, color-mix(in srgb, var(--gg-surface) 94%, rgba(255,255,255,.94)), color-mix(in srgb, var(--gg-surface-2) 92%, rgba(247,248,251,.96)));
-box-shadow: inset 0 1px 0 rgba(255,255,255,.88);
+background: linear-gradient(180deg, color-mix(in srgb, #fef3c7 78%, var(--gg-surface)), color-mix(in srgb, #fff7ed 84%, var(--gg-surface-2)));
+box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
 }
 
 #comments #top-ce .gg-comments__fallback-label {
 font-size: 12px;
 font-weight: 700;
-color: var(--gg-ink);
+letter-spacing: .08em;
+text-transform: uppercase;
+color: color-mix(in srgb, #92400e 84%, var(--gg-ink));
 }
 
 #comments #top-ce .gg-comments__fallback-field {
 width: 100%;
 min-height: 104px;
 padding: 10px 12px;
-border: 1px solid color-mix(in srgb, var(--gg-border) 76%, transparent);
+border: 1px solid color-mix(in srgb, #b45309 24%, var(--gg-border));
 border-radius: 14px;
-background: color-mix(in srgb, var(--gg-surface) 94%, white);
+background: color-mix(in srgb, var(--gg-surface) 94%, #fffdf6);
 color: var(--gg-ink);
 font: inherit;
 line-height: 1.55;
@@ -5916,7 +5918,7 @@ color: color-mix(in srgb, var(--gg-muted) 82%, transparent);
 margin: 0;
 font-size: 11px;
 line-height: 1.45;
-color: color-mix(in srgb, var(--gg-muted) 88%, transparent);
+color: color-mix(in srgb, #92400e 68%, var(--gg-muted));
 }
 
 #comments iframe#comment-editor {
@@ -6392,51 +6394,96 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
 }
 
 #ggPanelComments #cmt2-holder li.comment {
-  grid-template-columns: 28px 1fr;
-  column-gap: 8px;
-  padding: 8px 0 10px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 7px;
+  padding: 7px 0 8px;
 }
 
 #ggPanelComments #cmt2-holder li.comment > .avatar-image-container {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+}
+
+#ggPanelComments #cmt2-holder li.comment > .comment-block {
+  gap: 4px;
+}
+
+#ggPanelComments #cmt2-holder .comment-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
 }
 
 #ggPanelComments #cmt2-holder cite.user {
-  font-size: 11px;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
   font-weight: 700;
+  line-height: 1.25;
+  gap: 0;
+}
+
+#ggPanelComments #cmt2-holder .datetime {
+  min-width: 0;
+}
+
+#ggPanelComments #cmt2-holder .datetime a {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#ggPanelComments #cmt2-holder .comment-footer {
+  display: none !important;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-state {
+  padding: 2px 5px;
+  border-radius: 999px;
+  font-size: 8px;
+  letter-spacing: .06em;
 }
 
 #ggPanelComments #cmt2-holder .comment-content {
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 10px;
+  line-height: 1.48;
 }
 
 #ggPanelComments #cmt2-holder .comment-actions {
-  gap: 4px;
-  margin-top: 6px;
+  gap: 3px;
+  margin-top: 2px;
+  align-items: center;
 }
 
 #ggPanelComments #cmt2-holder a.comment-reply,
 #ggPanelComments #cmt2-holder .cmt2-thread-toggle {
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-  min-height: 26px;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
   padding: 0;
   justify-content: center;
   font-size: 0;
   color: transparent;
   border-radius: 999px;
-  border: 1px solid var(--gg-border);
+  border: 1px solid color-mix(in srgb, var(--gg-border) 76%, transparent);
   background: color-mix(in srgb, var(--gg-surface) 90%, #f0f4f8);
   overflow: hidden;
+  box-shadow: none;
 }
 
 #ggPanelComments #cmt2-holder a.comment-reply::before {
   content: "reply";
   font-family: "Material Symbols Rounded";
-  font-size: 13px;
+  font-size: 11px;
   font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
   margin: 0;
   color: color-mix(in srgb, var(--gg-ink) 88%, transparent);
@@ -6445,7 +6492,7 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
 #ggPanelComments #cmt2-holder .cmt2-thread-toggle::before {
   content: "unfold_more";
   font-family: "Material Symbols Rounded";
-  font-size: 13px;
+  font-size: 11px;
   font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
   color: color-mix(in srgb, var(--gg-ink) 88%, transparent);
 }
@@ -6455,44 +6502,86 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
 }
 
 #ggPanelComments #cmt2-holder .cmt2-ctx-btn {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  border-radius: 9px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  border-radius: 7px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 11px;
+  box-shadow: none;
 }
 
 #ggPanelComments #cmt2-holder .cmt2-ctx-btn .ms {
-  font-size: 14px;
+  font-size: 12px;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-ctx-pop {
+  top: auto;
+  bottom: calc(100% + 4px);
+  right: 0;
+  min-width: 118px;
+  max-width: min(132px, calc(100vw - 20px));
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-ctx-pop button {
+  padding: 7px 8px;
+  border-radius: 9px;
+  font-size: 10px;
+  gap: 6px;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-ctx-pop .ms {
+  font-size: 12px;
 }
 
 #ggPanelComments #cmt2-holder .comment-replies {
-  margin-top: 6px;
-  padding-left: 8px;
+  margin-top: 4px;
+  padding-left: 6px;
   margin-left: 0;
 }
 
+#ggPanelComments #cmt2-holder .comment-replies::before {
+  left: 2px;
+  top: 3px;
+  bottom: 4px;
+}
+
 #ggPanelComments #cmt2-holder .comment-replies li.comment {
-  grid-template-columns: 22px 1fr;
-  column-gap: 6px;
-  padding: 6px 0 8px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 5px;
+  padding: 5px 0 6px;
 }
 
 #ggPanelComments #cmt2-holder .comment-replies li.comment > .avatar-image-container {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 
 #ggPanelComments #cmt2-holder .cmt2-reply-meta {
-  min-height: 22px;
-  padding: 2px 6px;
+  min-height: 18px;
+  max-width: 100%;
+  padding: 2px 5px;
   font-size: 9px;
   border-radius: 999px;
+  gap: 4px;
+  line-height: 1.2;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-reply-meta__icon {
+  font-size: 10px;
+}
+
+#ggPanelComments #cmt2-holder .cmt2-reply-meta__copy,
+#ggPanelComments #cmt2-holder .cmt2-reply-meta__author {
+  min-width: 0;
+  max-width: 100%;
 }
 
 #ggPanelComments #comments > .gg-comments__footer {
@@ -6502,57 +6591,67 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
   z-index: var(--z-raise-6);
   border-top: 1px solid var(--gg-border);
   background: var(--gg-surface);
-  padding: 8px 10px;
+  padding: 7px 8px calc(env(safe-area-inset-bottom) + 7px);
+  overflow: visible;
+}
+
+#ggPanelComments #comments > .gg-comments__footer .gg-comments__footer-note {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--gg-muted) 92%, transparent);
 }
 
 #ggPanelComments #top-ce {
-max-width: 100%;
-padding: 0;
-border: 0;
-background: transparent;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
+
 #ggPanelComments #gg-composer-slot[data-gg-composer-focus-shell="1"]{
-scroll-margin-block-end: calc(env(safe-area-inset-bottom) + 12px);
+  scroll-margin-block-end: calc(env(safe-area-inset-bottom) + 12px);
 }
 
 #ggPanelComments #top-ce[data-gg-fallback="1"] {
-padding: 10px;
-border: 1px solid color-mix(in srgb, var(--gg-border) 72%, transparent);
-border-radius: 14px;
-background: color-mix(in srgb, var(--gg-surface) 96%, white);
+  padding: 9px;
+  border: 1px dashed color-mix(in srgb, #b45309 46%, var(--gg-border));
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, #fff7ed 84%, var(--gg-surface)), color-mix(in srgb, #fffbeb 88%, var(--gg-surface-2)));
 }
 
 #ggPanelComments #top-ce .gg-comments__fallback-label {
-font-size: 10px;
-font-weight: 700;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
 }
 
 #ggPanelComments #top-ce .gg-comments__fallback-field {
-min-height: 84px;
-padding: 8px 10px;
-border-radius: 12px;
-font-size: 12px;
-line-height: 1.45;
+  min-height: 72px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 #ggPanelComments #top-ce .gg-comments__fallback-help {
-font-size: 10px;
-line-height: 1.4;
+  font-size: 9px;
+  line-height: 1.35;
 }
 
 #ggPanelComments #top-ce .comment-reply {
   width: 100%;
-  min-height: 32px;
-  padding: 6px 10px;
-  font-size: 11px;
+  min-height: 28px;
+  padding: 5px 8px;
+  font-size: 10px;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 #ggPanelComments #gg-top-continue .comment-reply::before {
   content: "add_comment";
   font-family: "Material Symbols Rounded";
-  font-size: 14px;
+  font-size: 12px;
   font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
   margin-right: 4px;
 }

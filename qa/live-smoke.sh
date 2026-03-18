@@ -938,8 +938,9 @@ check_comments_owner_case() {
   GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
   node >"$report_file" <<'NODE'
 let chromium = null;
+let firefox = null;
 try {
-  ({ chromium } = require('playwright'));
+  ({ chromium, firefox } = require('playwright'));
 } catch (error) {
   const detail = String(error && error.message ? error.message : error || '').replace(/\s+/g, ' ').trim();
   console.log(`BROWSER|infra|playwright-module-unavailable:${detail || 'missing-module'}`);
@@ -999,9 +1000,32 @@ async function captureState(page) {
       return container ? Array.from(container.children || []).filter((node) => node.matches && node.matches('li.comment')).length : 0;
     }
     function hasComposerField(node) {
-      if (!node || !node.querySelector) return false;
-      if (node.id === 'top-ce') return true;
+      if (!node) return false;
+      if (node.matches && node.matches('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]')) return true;
+      if (!node.querySelector) return false;
       return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
+    }
+    function composerNodeKind(node, rootComposerKind) {
+      if (!node) return 'missing';
+      if (node.id === 'comment-editor') return 'native';
+      if (node.getAttribute && node.getAttribute('data-gg-fallback') === '1') return 'fallback';
+      if (node.getAttribute && node.getAttribute('data-gg-native-plumbing') === 'composer') return 'native';
+      if (node.closest && node.closest('#top-ce[data-gg-fallback="1"]')) return 'fallback';
+      if (node.matches && node.matches('[data-gg-fallback-field="1"]')) return 'fallback';
+      if (node.querySelector) {
+        if (node.querySelector('[data-gg-fallback-field="1"], #top-ce[data-gg-fallback="1"]')) return 'fallback';
+        if (node.querySelector('#comment-editor, #comment-editor-src, iframe#comment-editor')) return 'native';
+      }
+      if (node.matches && node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]')) {
+        return rootComposerKind === 'native' ? 'native' : 'fallback';
+      }
+      return rootComposerKind || 'missing';
+    }
+    function composerKinds(nodes, rootComposerKind) {
+      return nodes.map((node) => composerNodeKind(node, rootComposerKind)).join(',');
+    }
+    function composerCountByKind(nodes, expectedKind, rootComposerKind) {
+      return nodes.filter((node) => composerNodeKind(node, rootComposerKind) === expectedKind).length;
     }
     function describeNode(node) {
       if (!node) return 'none';
@@ -1012,11 +1036,17 @@ async function captureState(page) {
       if (node.closest && node.closest('#gg-composer-slot')) bits.push('[composer-slot]');
       return cleanValue(bits.join(''));
     }
-    function focusKind(node) {
+    function focusKind(node, rootComposerKind) {
       if (!node || !node.matches) return 'none';
       if (node.id === 'comment-editor') return 'native';
-      if (node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]') && node.closest('#gg-composer-slot')) return 'native';
-      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') return 'fallback';
+      if (node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]') && node.closest('#gg-composer-slot')) {
+        return composerNodeKind(node, rootComposerKind);
+      }
+      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') {
+        if (rootComposerKind === 'native') return 'native-shell';
+        if (rootComposerKind === 'fallback') return 'fallback-shell';
+        return 'missing-shell';
+      }
       return 'other';
     }
     function footerInView(root) {
@@ -1038,6 +1068,8 @@ async function captureState(page) {
     const panel = document.querySelector('#ggPanelComments');
     const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
     const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+    const composerKind = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-kind') : '') || 'missing';
+    const composerReason = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-reason') : '') || 'missing';
     const comments = root ? visibleAll('#cmt2-holder li.comment', root) : [];
     const interactive = root ? interactiveComments(root) : [];
     const footerAddOwners = root ? visibleAll('.gg-comments__footer #gg-top-continue .comment-reply', root) : [];
@@ -1074,15 +1106,23 @@ async function captureState(page) {
       interactiveCount: interactive.length,
       hasFooterCta: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
       footerAddOwnerCount: footerAddOwners.length,
+      composerKind,
+      composerReason,
       footerComposerCount: footerComposerOwners.length,
       footerComposerSignature: composerSignature(footerComposerOwners),
+      footerComposerKinds: composerKinds(footerComposerOwners, composerKind),
+      footerNativeComposerCount: composerCountByKind(footerComposerOwners, 'native', composerKind),
+      footerFallbackComposerCount: composerCountByKind(footerComposerOwners, 'fallback', composerKind),
       inlineComposerCount: inlineComposerOwners.length,
       inlineComposerSignature: composerSignature(inlineComposerOwners),
+      inlineComposerKinds: composerKinds(inlineComposerOwners, composerKind),
+      inlineNativeComposerCount: composerCountByKind(inlineComposerOwners, 'native', composerKind),
+      inlineFallbackComposerCount: composerCountByKind(inlineComposerOwners, 'fallback', composerKind),
       replyMode: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-reply-mode') : 'default') || 'default',
       footerOpen: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-footer-open') : '0') || '0',
       replyBannerCount: root ? visibleAll('.cmt2-replying', root).length : 0,
       activeElement: describeNode(document.activeElement),
-      focusKind: focusKind(document.activeElement),
+      focusKind: focusKind(document.activeElement, composerKind),
       footerInView: root ? footerInView(root) : false,
       focusScrolled: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-scrolled') : '0') || '0',
       focusFallbackUsed: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-fallback') : '0') || '0',
@@ -1110,15 +1150,23 @@ async function main() {
   };
   if (executablePath) launchOptions.executablePath = executablePath;
   let browser = null;
+  let browserName = 'chromium';
   try {
     browser = await chromium.launch(launchOptions);
   } catch (error) {
     const detail = clean(error && error.message ? error.message : error);
     if (/executable doesn't exist|please run the following command|playwright install|browserType\.launch|failed to launch/i.test(detail)) {
-      console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'}`);
-      return;
+      try {
+        browser = await firefox.launch({ headless: true });
+        browserName = 'firefox';
+      } catch (fallbackError) {
+        const fallbackDetail = clean(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+        console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'} || fallback=${fallbackDetail || 'firefox-launch-unavailable'}`);
+        return;
+      }
+    } else {
+      throw error;
     }
-    throw error;
   }
   const page = await browser.newPage({ viewport: { width: 1440, height: 1600 } });
   const runtimeErrors = [];
@@ -1179,9 +1227,13 @@ async function main() {
 
     let focusState = notApplicable('composer-not-available');
     if (before.hasFooterCta) {
-      const addFocusOk = afterAdd.footerOpen === '1' && (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'fallback');
+      const addFocusOk = afterAdd.footerOpen === '1' &&
+        afterAdd.composerKind === 'native' &&
+        (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'native-shell');
       const replyFocusOk = before.firstReplyId
-        ? afterReply.replyMode === 'reply' && (afterReply.focusKind === 'native' || afterReply.focusKind === 'fallback')
+        ? afterReply.replyMode === 'reply' &&
+          afterReply.composerKind === 'native' &&
+          (afterReply.focusKind === 'native' || afterReply.focusKind === 'native-shell')
         : true;
       focusState = state(
         addFocusOk && replyFocusOk,
@@ -1189,6 +1241,8 @@ async function main() {
           `before=${before.activeElement}`,
           `afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind}`,
           `afterReply=${afterReply.activeElement}:${afterReply.focusKind}`,
+          `kind=${afterAdd.composerKind}/${afterReply.composerKind}`,
+          `reason=${afterAdd.composerReason}/${afterReply.composerReason}`,
           `composer=${afterAdd.footerOpen}`,
           `replyMode=${afterReply.replyMode}`,
           `footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0}`,
@@ -1223,17 +1277,30 @@ async function main() {
     results.push({
       id: 'footer-add-owner',
       ...(before.hasFooterCta
-        ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount}`)
-        : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};cta=disabled`))
+        ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount};kind=${before.composerKind};reason=${before.composerReason}`)
+        : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};cta=disabled;kind=${before.composerKind};reason=${before.composerReason}`))
+    });
+    results.push({
+      id: 'composer-kind',
+      ...(before.hasFooterCta
+        ? state(
+            afterAdd.composerKind === 'native',
+            `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerKinds || 'none'}`
+          )
+        : notApplicable(`kind=${before.composerKind};reason=${before.composerReason};cta=disabled`))
     });
     results.push({
       id: 'footer-composer',
       ...(before.hasFooterCta
         ? state(
+            afterAdd.composerKind === 'native' &&
             afterAdd.footerComposerCount === 1 &&
+            afterAdd.footerNativeComposerCount === 1 &&
+            afterAdd.footerFallbackComposerCount === 0 &&
             afterAdd.inlineComposerCount === 0 &&
-            afterAdd.footerComposerSignature === 'top-ce',
-            `footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'};open=${afterAdd.footerOpen}`
+            afterAdd.inlineNativeComposerCount === 0 &&
+            afterAdd.inlineFallbackComposerCount === 0,
+            `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'}:${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'}:${afterAdd.inlineComposerKinds || 'none'};open=${afterAdd.footerOpen}`
           )
         : notApplicable('new-comments-disabled'))
     });
@@ -1241,12 +1308,16 @@ async function main() {
       id: 'reply-footer',
       ...(before.firstReplyId
         ? state(
+            afterReply.composerKind === 'native' &&
             afterReply.footerComposerCount === 1 &&
+            afterReply.footerNativeComposerCount === 1 &&
+            afterReply.footerFallbackComposerCount === 0 &&
             afterReply.inlineComposerCount === 0 &&
-            afterReply.footerComposerSignature === 'top-ce' &&
+            afterReply.inlineNativeComposerCount === 0 &&
+            afterReply.inlineFallbackComposerCount === 0 &&
             afterReply.replyMode === 'reply' &&
             afterReply.replyBannerCount === 1,
-            `footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
+            `kind=${afterReply.composerKind};reason=${afterReply.composerReason};footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'}:${afterReply.footerComposerKinds || 'none'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'}:${afterReply.inlineComposerKinds || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
           )
         : notApplicable('no-eligible-reply'))
     });
@@ -1279,8 +1350,8 @@ async function main() {
       ...focusState
     });
 
-    console.log(`META|case=${caseName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
-    console.log(`DEBUG|case=${caseName};panel=${before.panelVisible ? 1 : 0};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
+    console.log(`META|case=${caseName};browser=${browserName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};composerKind=${before.composerKind};composerReason=${before.composerReason};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
+    console.log(`DEBUG|case=${caseName};browser=${browserName};panel=${before.panelVisible ? 1 : 0};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};composerKind=${before.composerKind}/${afterAdd.composerKind}/${afterReply.composerKind};composerReason=${before.composerReason}/${afterAdd.composerReason}/${afterReply.composerReason};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
     for (const row of results) {
       const rowState = row.skip ? 'na' : (row.pass ? 'pass' : 'fail');
       console.log(`CRITERION|${row.id}|${rowState}|${row.detail}`);

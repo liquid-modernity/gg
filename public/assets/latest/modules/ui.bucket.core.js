@@ -6094,25 +6094,87 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     composer.setAttribute('aria-hidden', 'true');
     composer.setAttribute('data-gg-state', 'hidden');
     composer.setAttribute('data-gg-fallback', '1');
+    composer.setAttribute('data-gg-degraded', '1');
     composer.setAttribute('data-gg-owner', 'fallback-footer');
     label = d.createElement('label');
     label.className = 'gg-comments__fallback-label';
     label.setAttribute('for', fieldId);
-    label.textContent = 'Comment draft';
+    label.textContent = 'Fallback composer';
     textarea = d.createElement('textarea');
     textarea.id = fieldId;
     textarea.className = 'gg-comments__fallback-field';
     textarea.rows = 4;
-    textarea.placeholder = 'Write a comment draft...';
-    textarea.setAttribute('aria-label', 'Comment draft');
+    textarea.placeholder = 'Native composer unavailable. Draft only.';
+    textarea.setAttribute('aria-label', 'Fallback comment draft');
+    textarea.setAttribute('data-gg-fallback-field', '1');
     note = d.createElement('p');
     note.className = 'gg-comments__fallback-help';
-    note.textContent = 'Posting is temporarily unavailable in this view.';
+    note.textContent = 'Native Blogger composer is unavailable in this view. Draft only.';
     composer.appendChild(label);
     composer.appendChild(textarea);
     composer.appendChild(note);
     slot.insertBefore(composer, slot.firstChild || null);
     return composer;
+  }
+  function footerAllowsComposer(root){
+    var footer = commentsFooter(root);
+    return !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0');
+  }
+  function footerComposerHost(root){
+    var slot = composerSlot(root);
+    if (!slot || !slot.querySelectorAll) return null;
+    return toArray(slot.querySelectorAll('#top-ce, .comment-replybox-single, .comment-replybox-thread')).find(function(node){
+      if (!node) return false;
+      if (node.getAttribute && node.getAttribute('data-gg-fallback') === '1') return false;
+      if (node.getAttribute && node.getAttribute('data-gg-native-plumbing') === 'composer') return true;
+      return !!(node.querySelector && node.querySelector('#comment-editor, #comment-editor-src'));
+    }) || null;
+  }
+  function anyNativeComposerNode(root){
+    if (!root || !root.querySelectorAll) return null;
+    return toArray(root.querySelectorAll('#top-ce, .comment-replybox-single, .comment-replybox-thread, #comment-editor, #comment-editor-src')).find(function(node){
+      if (!node) return false;
+      if (node.id === 'comment-editor' || node.id === 'comment-editor-src') return true;
+      if (node.getAttribute && node.getAttribute('data-gg-fallback') === '1') return false;
+      if (node.getAttribute && node.getAttribute('data-gg-native-plumbing') === 'composer') return true;
+      return !!(node.querySelector && node.querySelector('#comment-editor, #comment-editor-src'));
+    }) || null;
+  }
+  function fallbackComposerNode(root){
+    var slot = composerSlot(root);
+    return slot && slot.querySelector ? slot.querySelector('#top-ce[data-gg-fallback="1"]') : null;
+  }
+  function removeFallbackComposer(root){
+    var fallback = fallbackComposerNode(root);
+    if (fallback && fallback.parentNode) fallback.parentNode.removeChild(fallback);
+    return null;
+  }
+  function syncComposerKind(root){
+    var kind = 'missing';
+    var reason = 'missing';
+    var nativeFooter = footerComposerHost(root);
+    var nativeAny = anyNativeComposerNode(root);
+    var fallback = fallbackComposerNode(root);
+    if (!root || !root.setAttribute) return { kind: kind, reason: reason };
+    if (nativeFooter) {
+      kind = 'native';
+      reason = 'footer-native';
+    } else if (fallback) {
+      kind = 'fallback';
+      reason = nativeAny ? 'native-not-mounted' : 'native-markup-missing';
+    } else if (nativeAny) {
+      kind = 'missing';
+      reason = 'native-outside-footer';
+    } else if (!footerAllowsComposer(root)) {
+      kind = 'missing';
+      reason = 'comments-disabled';
+    } else {
+      kind = 'missing';
+      reason = 'native-markup-missing';
+    }
+    root.setAttribute('data-gg-composer-kind', kind);
+    root.setAttribute('data-gg-composer-reason', reason);
+    return { kind: kind, reason: reason, native: nativeFooter, fallback: fallback };
   }
   function renderFallbackComments(root, feed){
     var list = root && root.querySelector ? root.querySelector('#cmt2-holder') : null;
@@ -6135,11 +6197,20 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     ensureFooterSection(root, '#gg-addslot', 'gg-comments__addslot', 'gg-addslot');
     ensureFooterSection(root, '#gg-composer-slot', 'gg-comments__composerslot', 'gg-composer-slot');
-    ensureFooterCta(root);
-    ensureFallbackComposer(root);
     if (note) {
-      note.textContent = '';
-      note.hidden = true;
+      if (footerAllowsComposer(root)) {
+        note.textContent = '';
+        note.hidden = true;
+      } else {
+        note.textContent = 'Native composer unavailable in this view.';
+        note.hidden = false;
+      }
+    }
+    if (footerAllowsComposer(root)) {
+      ensureFooterCta(root);
+      ensureFallbackComposer(root);
+    } else {
+      removeFallbackComposer(root);
     }
     if (root && root.setAttribute) {
       root.setAttribute('data-gg-comment-source', 'feed-fallback');
@@ -6455,6 +6526,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       shell: shell
     };
   }
+  function isFallbackComposerNode(node){
+    return !!(node && (
+      (node.getAttribute && node.getAttribute('data-gg-fallback') === '1') ||
+      (node.closest && node.closest('#top-ce[data-gg-fallback="1"]'))
+    ));
+  }
   function isComposerFocusTarget(root, node){
     if (!node || !root) return false;
     if (node.id === 'comment-editor') return true;
@@ -6462,11 +6539,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return !!(node.closest && node.closest('#gg-composer-slot') && node.closest('#comments') === root);
   }
   function focusTargetKind(root, node){
+    var state = syncComposerKind(root);
     if (!isComposerFocusTarget(root, node)) return 'none';
+    if (isFallbackComposerNode(node)) return 'fallback';
     if (node.id === 'comment-editor') return 'native';
-    if (node.matches && node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]')) return 'native';
-    if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') return 'fallback';
-    return 'native';
+    if (node.matches && node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]')) {
+      return state.kind === 'native' ? 'native' : 'fallback';
+    }
+    if ((node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') || (node.closest && node.closest('[data-gg-composer-focus-shell="1"]'))) {
+      return state.kind === 'native' ? 'native-shell' : 'fallback-shell';
+    }
+    if (state.kind === 'native') return 'native';
+    if (state.kind === 'fallback') return 'fallback';
+    return 'missing';
   }
   function replyBoxHasComposer(box){
     return !!composerField(box);
@@ -6599,6 +6684,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
     if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
     syncComposerOwner(root);
+    syncComposerKind(root);
     syncFooterLayout(root);
     return open;
   }
@@ -7073,6 +7159,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       footer = commentsFooter(root);
       content = commentsContent(root);
       cta = footer && footer.querySelector ? footer.querySelector('[data-gg-footer-cta="1"]') : null;
+      var composerState = syncComposerKind(root);
       visibleComposerOwners = toArray(root.querySelectorAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread, .gg-comments__list #top-ce, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread')).filter(function(node){
         if (!isVisibleNode(node)) return false;
         if (node.id === 'top-ce') return true;
@@ -7092,6 +7179,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         if (cta && !isVisibleNode(cta)) issues.push('rail-footer-cta-hidden');
         if (footerHeight > 0 && (paddingBottom + 8) < footerHeight) issues.push('rail-footer-space-low');
       }
+      if (cta && composerState.kind !== 'native') issues.push('composer-kind:' + composerState.kind + ':' + composerState.reason);
       if (cta && visibleAddOwners.length !== 1) issues.push('add-comment-owner-count:' + visibleAddOwners.length);
       if (root.querySelectorAll('#top-ce').length > 1) issues.push('duplicate-composer-id');
       if (visibleComposerOwners.length > 1) issues.push('composer-owner-duplicate');
@@ -7565,6 +7653,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       enhanceComment(comment, root);
     });
     if (replyState(root).replyMode === 'reply' && replyState(root).replyTargetId) mountReplyBanner(root);
+    syncComposerKind(root);
     syncFooterState(root);
     runProof(root);
     return !!comments.length;
