@@ -1189,7 +1189,7 @@ async function main() {
             afterReply.replyBannerCount === 1,
             `footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
           )
-        : notApplicable('no-eligible-reply')))
+        : notApplicable('no-eligible-reply'))
     });
     results.push({
       id: 'native-hidden',
