@@ -56,6 +56,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Build Blogger publish artifact
+        run: npm run gaga:template:pack
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Install Wrangler CLI (pinned)
         run: npm install --no-save wrangler@4.61.1
 
@@ -178,6 +184,7 @@ jobs:
           GG_TEMPLATE_DRIFT_MODE: ${{ env.GG_TEMPLATE_DRIFT_MODE }}
           GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
           GG_WORKER_VERSION_MODE: ${{ env.GG_WORKER_VERSION_MODE }}
+          GG_COMMENTS_OWNER_BROWSER_MODE: fail
           GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
           GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
           GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"

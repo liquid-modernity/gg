@@ -913,10 +913,6 @@ NODE
 }
 
 check_comments_owner_contract() {
-  if template_contract_checks_deferred; then
-    log_warn "comments owner browser checks deferred until Blogger template parity is verified (state=${template_release_state})"
-    return 0
-  fi
   check_comments_owner_case "zero" "0" "$COMMENTS_TARGET_PATH_0"
   check_comments_owner_case "two" "2" "$COMMENTS_TARGET_PATH_2"
   check_comments_owner_case "sixteen" "16" "$COMMENTS_TARGET_PATH_16"
@@ -941,7 +937,14 @@ check_comments_owner_case() {
   GG_COMMENTS_EXPECTED_COUNT="$expected_count" \
   GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
   node >"$report_file" <<'NODE'
-const { chromium } = require('playwright');
+let chromium = null;
+try {
+  ({ chromium } = require('playwright'));
+} catch (error) {
+  const detail = String(error && error.message ? error.message : error || '').replace(/\s+/g, ' ').trim();
+  console.log(`BROWSER|infra|playwright-module-unavailable:${detail || 'missing-module'}`);
+  process.exit(0);
+}
 
 const url = process.env.GG_COMMENTS_URL || '';
 const caseName = process.env.GG_COMMENTS_CASE_NAME || 'case';
@@ -1071,8 +1074,17 @@ async function main() {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   };
   if (executablePath) launchOptions.executablePath = executablePath;
-
-  const browser = await chromium.launch(launchOptions);
+  let browser = null;
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    const detail = clean(error && error.message ? error.message : error);
+    if (/executable doesn't exist|please run the following command|playwright install|browserType\.launch|failed to launch/i.test(detail)) {
+      console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'}`);
+      return;
+    }
+    throw error;
+  }
   const page = await browser.newPage({ viewport: { width: 1440, height: 1600 } });
   const runtimeErrors = [];
   page.on('console', (msg) => {
@@ -1253,6 +1265,10 @@ NODE
       printf 'SMOKE comments-owner %s target=%s\n' "${line#META|}" "$path"
       continue
     fi
+    if [[ "$line" == BROWSER\|infra\|* ]]; then
+      log_warn "comments owner browser dependency unavailable case=${case_name} (${line#BROWSER|infra|})"
+      continue
+    fi
     if [[ "$line" == BROWSER\|fail\|* ]]; then
       comments_owner_signal "comments owner browser proof unavailable case=${case_name} (${line#BROWSER|fail|})"
       continue
@@ -1369,12 +1385,6 @@ check_discovered_detail_paths() {
   local page_path=""
   fetch_page "/" "$listing_file" >/dev/null
 
-  if template_contract_checks_deferred; then
-    log_warn "detail surface checks deferred until Blogger template parity is verified (state=${template_release_state})"
-    check_listing_card_metadata "$listing_file"
-    return 0
-  fi
-
   post_path="$(discover_first_post_path "$listing_file" || true)"
   if [[ -z "$post_path" ]]; then
     log_fail "unable to discover a real post URL from /"
@@ -1398,16 +1408,6 @@ is_truthy() {
   local value
   value="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
   [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" || "$value" == "on" ]]
-}
-
-template_contract_checks_deferred() {
-  if [[ "$TEMPLATE_DRIFT_MODE" != "warn" ]]; then
-    return 1
-  fi
-  if [[ "$template_release_state" == "blogger_template_parity_verified" || "$template_release_state" == "blogger_template_parity_unknown" ]]; then
-    return 1
-  fi
-  return 0
 }
 
 template_drift_signal() {

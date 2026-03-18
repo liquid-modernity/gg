@@ -25,6 +25,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Build Blogger publish artifact
+        run: npm run gaga:template:pack
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Template fingerprint contract
         run: node qa/template-fingerprint.mjs --check
 
