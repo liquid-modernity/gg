@@ -673,8 +673,9 @@ function collectSignals(index, zipPath, workflowSummary) {
         /check_comments_owner_contract\s*\(\)/.test(sh) &&
         /check_comments_owner_contract\b/.test(sh);
       qaLiveSmokeTargetsCommentsPath =
-        /COMMENTS_TARGET_PATH=.*tes-2\.html/.test(sh) ||
-        /2025\/10\/tes-2\.html/.test(sh);
+        /COMMENTS_TARGET_PATH_0=.*\/2026\/02\/todo\.html/.test(sh) &&
+        /COMMENTS_TARGET_PATH_2=.*\/2025\/10\/in-night-we-stand-in-day-we-fight\.html/.test(sh) &&
+        /COMMENTS_TARGET_PATH_16=.*\/2025\/10\/tes-2\.html/.test(sh);
     }
   }
 
@@ -839,7 +840,7 @@ function buildFindings({
     warnings.push("qa/live-smoke.sh is missing a rendered comments owner contract check.");
   }
   if (signals.qaLiveSmokeHasCommentsOwnerCheck && !signals.qaLiveSmokeTargetsCommentsPath) {
-    warnings.push("qa/live-smoke.sh does not target the threaded comments owner reset proof page.");
+    warnings.push("qa/live-smoke.sh does not target the 0/2/16 comments owner proof matrix.");
   }
 
   return {
@@ -949,7 +950,7 @@ function renderMarkdown(report) {
     `- qa/live-smoke comments owner check: ${yesNo(report.signals.qaLiveSmokeHasCommentsOwnerCheck)}`
   );
   lines.push(
-    `- qa/live-smoke targets tes-2 comments page: ${yesNo(report.signals.qaLiveSmokeTargetsCommentsPath)}`
+    `- qa/live-smoke targets 0/2/16 comments matrix: ${yesNo(report.signals.qaLiveSmokeTargetsCommentsPath)}`
   );
   lines.push(
     `- index.prod.xml references /assets/v/: ${yesNo(report.signals.indexProdRefersVersioned)}`

@@ -482,7 +482,9 @@ if(hint){
 };
 
 function commentsHost(){
-return d.querySelector('.gg-post__comments[data-gg-comments-gate="1"]')||d.querySelector('.gg-post__comments')||d.getElementById('comments');
+var host = d.getElementById('comments');
+if(host&&host.closest&&host.closest('.gg-comments-panel,[data-gg-panel="comments"]')) return host;
+return d.querySelector('#ggPanelComments #comments, .gg-comments-panel[data-gg-panel="comments"] #comments');
 }
 function openComposer(host){
 if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.openComposer==='function'){
@@ -511,11 +513,44 @@ d.addEventListener('click',function(e){
     var host=commentsHost();
     tries++;
     if(host) openComposer(host);
-    if(tries<8&&host&&host.querySelector&&host.querySelector('[data-gg-comments-load]')) w.setTimeout(waitReady,120);
+    if(tries<8&&!host) w.setTimeout(waitReady,120);
   })();
 },true);
 }
 if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',bindCommentsComposer,{once:true});
 else bindCommentsComposer();
 })(window.GG=window.GG||{},window,document);
+
+/**
+ * AUTHORS MODULE
+ * - Minimal comments integration
+ * - Delegates to core panel manager
+ */
+
+(function() {
+  'use strict';
+
+  class AuthorsModule {
+    constructor() {
+      this.initialized = false;
+    }
+
+    init() {
+      // Ensure core comments manager exists
+      if (window.ggCommentsPanelMgr) {
+        this.initialized = true;
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.ggAuthorsModule = new AuthorsModule();
+      window.ggAuthorsModule.init();
+    });
+  } else {
+    window.ggAuthorsModule = new AuthorsModule();
+    window.ggAuthorsModule.init();
+  }
+})();
 })(window);

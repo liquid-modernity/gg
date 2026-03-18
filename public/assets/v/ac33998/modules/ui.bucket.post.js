@@ -420,8 +420,8 @@
     }
     A.focusTrap = function(container, opts){
       var panel = container && container.querySelector ? (
-        container.matches && (container.matches('[data-gg-panel="comments"]') || container.matches('.gg-comments-panel')) ? container :
-        container.querySelector('[data-gg-panel="comments"]:not([hidden])') || container.querySelector('.gg-comments-panel:not([hidden])')
+        container.matches && (container.matches('#ggPanelComments') || container.matches('[data-gg-panel="comments"]') || container.matches('.gg-comments-panel')) ? container :
+        container.querySelector('#ggPanelComments:not([hidden])') || container.querySelector('[data-gg-panel="comments"]:not([hidden])') || container.querySelector('.gg-comments-panel:not([hidden])')
       ) : null;
       return panel ? trapComments(panel, opts) : original(container, opts);
     };
@@ -514,5 +514,4 @@
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', initPostInfo, { once: true });
   else initPostInfo();
 })(window.GG = window.GG || {}, window, document);
-
 })(window);

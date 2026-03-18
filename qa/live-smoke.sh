@@ -13,7 +13,9 @@ WORKER_VERSION_MODE="${GG_WORKER_VERSION_MODE:-off}"
 WORKER_VERSION_CHECK_PATH="${GG_WORKER_VERSION_CHECK_PATH:-/__gg_worker_ping}"
 WORKER_ROLLOUT_MAX_ATTEMPTS="${GG_WORKER_ROLLOUT_MAX_ATTEMPTS:-12}"
 WORKER_ROLLOUT_BACKOFF_SECONDS="${GG_WORKER_ROLLOUT_BACKOFF_SECONDS:-5}"
-COMMENTS_TARGET_PATH="${GG_COMMENTS_TARGET_PATH:-/2025/10/tes-2.html}"
+COMMENTS_TARGET_PATH_0="${GG_COMMENTS_TARGET_PATH_0:-/2026/02/todo.html}"
+COMMENTS_TARGET_PATH_2="${GG_COMMENTS_TARGET_PATH_2:-/2025/10/in-night-we-stand-in-day-we-fight.html}"
+COMMENTS_TARGET_PATH_16="${GG_COMMENTS_TARGET_PATH_16:-/2025/10/tes-2.html}"
 COMMENTS_OWNER_BROWSER_MODE="${GG_COMMENTS_OWNER_BROWSER_MODE:-warn}"
 PLAYWRIGHT_EXECUTABLE_PATH="${GG_PLAYWRIGHT_EXECUTABLE_PATH:-}"
 
@@ -857,7 +859,7 @@ const fails = [];
 const hasSeedDisabled = /function\s+seedInitialPreview\s*\(\)\s*\{\s*return\s+false;\s*\}/.test(src);
 const hoverOpens = /function\s+handlePreviewHover[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
 const focusOpens = /function\s+handlePreviewFocus[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
-const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true\s*,\s*select:\s*true\s*\}\s*\)/.test(src);
+const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true\s*\}\s*\)/.test(src);
 const hasIconSync = /function\s+syncPanelIconTokens\s*\(/.test(src);
 const openSetsIcons = /function\s+openWithCard[\s\S]*?syncPanelIconTokens\(\s*true\s*\)/.test(src);
 const resetClearsIcons = /function\s+resetPanelState[\s\S]*?syncPanelIconTokens\(\s*false\s*\)/.test(src);
@@ -911,27 +913,152 @@ NODE
 }
 
 check_comments_owner_contract() {
-  local path="${COMMENTS_TARGET_PATH}"
+  check_comments_owner_case "zero" "0" "$COMMENTS_TARGET_PATH_0"
+  check_comments_owner_case "two" "2" "$COMMENTS_TARGET_PATH_2"
+  check_comments_owner_case "sixteen" "16" "$COMMENTS_TARGET_PATH_16"
+}
+
+check_comments_owner_case() {
+  local case_name="$1"
+  local expected_count="$2"
+  local path="$3"
   local url
-  local report_file="$tmp_dir/$(safe_file_name "comments_owner_contract").txt"
+  local report_file="$tmp_dir/$(safe_file_name "comments_owner_${case_name}").txt"
   local status=0
   url="$(absolute_for_path "$path")"
 
   if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "off" ]]; then
-    printf 'SMOKE comments-owner skipped mode=off target=%s\n' "$url"
+    printf 'SMOKE comments-owner skipped mode=off case=%s target=%s\n' "$case_name" "$url"
     return 0
   fi
 
   GG_COMMENTS_URL="$url" \
+  GG_COMMENTS_CASE_NAME="$case_name" \
+  GG_COMMENTS_EXPECTED_COUNT="$expected_count" \
   GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
   node >"$report_file" <<'NODE'
 const { chromium } = require('playwright');
 
 const url = process.env.GG_COMMENTS_URL || '';
+const caseName = process.env.GG_COMMENTS_CASE_NAME || 'case';
+const expectedCount = Number(process.env.GG_COMMENTS_EXPECTED_COUNT || '0');
 const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
 
 function clean(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isCommentRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  return /comment|comments|reply|composer|ggpanelcomments|ui\.bucket\.(core|post|authors)|#comments|gg-comments/.test(hay);
+}
+
+function state(pass, detail) {
+  return { pass: !!pass, detail: detail || 'ok' };
+}
+
+function notApplicable(detail) {
+  return { skip: true, detail: detail || 'n/a' };
+}
+
+async function captureState(page) {
+  return page.evaluate(() => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      if (node.getAttribute && (node.getAttribute('aria-hidden') === 'true' || node.getAttribute('data-gg-state') === 'hidden')) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    function visibleAll(selector, scope) {
+      return Array.from((scope || document).querySelectorAll(selector)).filter(visible);
+    }
+    function commentKey(comment) {
+      return cleanValue((comment && (comment.getAttribute('data-gg-comment-id') || comment.id || '') || '').replace(/^c/, ''));
+    }
+    function commentState(comment) {
+      return cleanValue(comment && comment.getAttribute ? comment.getAttribute('data-gg-comment-state') || 'active' : 'active');
+    }
+    function interactiveComments(root) {
+      return visibleAll('#cmt2-holder li.comment', root).filter((comment) => commentState(comment) === 'active');
+    }
+    function directReplyCount(comment) {
+      const replies = comment && comment.querySelector ? comment.querySelector(':scope > .comment-replies') : null;
+      const container = replies && replies.querySelector ? (replies.querySelector(':scope > .comments-content') || replies) : null;
+      return container ? Array.from(container.children || []).filter((node) => node.matches && node.matches('li.comment')).length : 0;
+    }
+    function hasComposerField(node) {
+      if (!node || !node.querySelector) return false;
+      if (node.id === 'top-ce') return true;
+      return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
+    }
+    function composerSignature(nodes) {
+      return nodes.map((node) => node.id || cleanValue(node.className) || node.nodeName.toLowerCase()).join(',');
+    }
+
+    const main = document.querySelector('main.gg-main');
+    const panel = document.querySelector('#ggPanelComments');
+    const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
+    const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+    const comments = root ? visibleAll('#cmt2-holder li.comment', root) : [];
+    const interactive = root ? interactiveComments(root) : [];
+    const footerAddOwners = root ? visibleAll('.gg-comments__footer #gg-top-continue .comment-reply', root) : [];
+    const footerComposerOwners = root ? visibleAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread', root).filter(hasComposerField) : [];
+    const inlineComposerOwners = root ? visibleAll('#cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root).filter(hasComposerField) : [];
+    const nativePeers = root ? visibleAll('#cmt2-holder #top-continue, #cmt2-holder .continue, #cmt2-holder .item-control, #cmt2-holder .thread-toggle, #cmt2-holder .thread-count, #cmt2-holder a.comment-reply:not(.cmt2-reply-action), #cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root) : [];
+    const deletePeers = [];
+    const replyOwnerFailures = [];
+    const moreOwnerFailures = [];
+    const toggleOwnerFailures = [];
+    let firstReplyId = '';
+
+    interactive.forEach((comment) => {
+      const key = commentKey(comment);
+      const replyOwners = visibleAll('.comment-actions .cmt2-reply-action', comment);
+      const moreOwners = visibleAll('.comment-actions .cmt2-ctx', comment);
+      const toggleOwners = visibleAll('.comment-actions .cmt2-thread-toggle', comment);
+      const deleteOwnerPeers = visibleAll('.comment-footer .comment-delete, .comment-actions .comment-delete, .comment-footer .cmt2-del, .comment-actions .cmt2-del, .gg-cmt2__del, .item-control', comment);
+      const childCount = directReplyCount(comment);
+      if (replyOwners.length !== 1) replyOwnerFailures.push(`${key}:${replyOwners.length}`);
+      if (moreOwners.length !== 1) moreOwnerFailures.push(`${key}:${moreOwners.length}`);
+      if (childCount > 0 && toggleOwners.length !== 1) toggleOwnerFailures.push(`${key}:expected1:${toggleOwners.length}`);
+      if (childCount === 0 && toggleOwners.length !== 0) toggleOwnerFailures.push(`${key}:expected0:${toggleOwners.length}`);
+      if (moreOwners.length > 0 && deleteOwnerPeers.length > 0) deletePeers.push(key);
+      if (!firstReplyId && replyOwners.length === 1) firstReplyId = key;
+    });
+
+    return {
+      url: location.href,
+      mainRightMode: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-right-mode') : ''),
+      panelVisible: visible(panel),
+      rootVisible: visible(root),
+      commentCount: comments.length,
+      interactiveCount: interactive.length,
+      hasFooterCta: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
+      footerAddOwnerCount: footerAddOwners.length,
+      footerComposerCount: footerComposerOwners.length,
+      footerComposerSignature: composerSignature(footerComposerOwners),
+      inlineComposerCount: inlineComposerOwners.length,
+      inlineComposerSignature: composerSignature(inlineComposerOwners),
+      replyMode: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-reply-mode') : 'default') || 'default',
+      footerOpen: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-footer-open') : '0') || '0',
+      replyBannerCount: root ? visibleAll('.cmt2-replying', root).length : 0,
+      nativePeerCount: nativePeers.length,
+      deletePeerFailures: deletePeers,
+      replyOwnerFailures,
+      moreOwnerFailures,
+      toggleOwnerFailures,
+      firstReplyId,
+      proofState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : ''),
+      proofCount: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : ''),
+      visibleCommentsSurfaces: visibleAll('#comments', document).length,
+      visibleOffPanelSurfaces: visibleAll('#comments', document).filter((node) => !node.closest('#ggPanelComments')).length
+    };
+  });
 }
 
 async function main() {
@@ -943,184 +1070,160 @@ async function main() {
 
   const browser = await chromium.launch(launchOptions);
   const page = await browser.newPage({ viewport: { width: 1440, height: 1600 } });
+  const runtimeErrors = [];
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const loc = msg.location ? msg.location() : {};
+    const payload = `${msg.text ? msg.text() : ''} ${(loc && loc.url) || ''}`;
+    if (isCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+  page.on('pageerror', (error) => {
+    const payload = `${error && error.message ? error.message : error} ${error && error.stack ? error.stack : ''}`;
+    if (isCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     try { await page.waitForLoadState('networkidle', { timeout: 45000 }); } catch (_) {}
     await page.waitForTimeout(1200);
 
     const commentsToggle = page.locator('[data-gg-postbar="comments"]');
-    const commentsRoot = page.locator('#comments');
-    if (!(await commentsRoot.count()) || !(await commentsRoot.first().isVisible().catch(() => false))) {
-      if (await commentsToggle.count()) {
-        await commentsToggle.first().click();
-        await page.waitForTimeout(1400);
-      }
+    if (await commentsToggle.count()) {
+      await commentsToggle.first().click();
     }
-
-    const loadBtn = page.locator('#comments [data-gg-comments-load]');
-    if (await loadBtn.count()) {
-      if (await loadBtn.first().isVisible().catch(() => false)) {
-        await loadBtn.first().click();
-        await page.waitForTimeout(1600);
-      }
-    }
-
     await page.waitForFunction(() => {
-      const root = document.querySelector('#comments');
-      if (!root) return false;
+      const panel = document.querySelector('#ggPanelComments');
+      const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
+      const main = document.querySelector('main.gg-main');
+      if (!panel || !root || !main) return false;
       const style = window.getComputedStyle(root);
-      return style && style.display !== 'none' && style.visibility !== 'hidden';
+      return !panel.hidden &&
+        main.getAttribute('data-gg-right-mode') === 'comments' &&
+        style &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden';
     }, { timeout: 20000 });
     await page.waitForTimeout(1400);
 
-    const summary = await page.evaluate(async () => {
-      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-      const root = document.querySelector('#comments');
-      function cleanValue(value) {
-        return String(value || '').replace(/\s+/g, ' ').trim();
+    const before = await captureState(page);
+    let afterAdd = before;
+    let afterReply = before;
+
+    if (before.hasFooterCta) {
+      const addBtn = page.locator('#ggPanelComments .gg-comments__footer #gg-top-continue .comment-reply').first();
+      if (await addBtn.count()) {
+        await addBtn.click();
+        await page.waitForTimeout(1800);
+        afterAdd = await captureState(page);
       }
-      function visible(node) {
-        if (!node || node.hidden) return false;
-        if (node.getAttribute && (node.getAttribute('aria-hidden') === 'true' || node.getAttribute('data-gg-state') === 'hidden')) return false;
-        const style = window.getComputedStyle(node);
-        if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
-        const rect = node.getBoundingClientRect();
-        return !!(rect.width || rect.height || node.getClientRects().length);
-      }
-      function visibleAll(selector, scope) {
-        return Array.from((scope || document).querySelectorAll(selector)).filter(visible);
-      }
-      function commentKey(comment) {
-        return cleanValue((comment && (comment.getAttribute('data-gg-comment-id') || comment.id || '') || '').replace(/^c/, ''));
-      }
-      function composerOwners() {
-        return visibleAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread, .gg-comments__list #top-ce, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root).filter((node) => {
-          if (node.id === 'top-ce') return true;
-          return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
+    }
+
+    let focusState = notApplicable('composer-not-available');
+    if (before.hasFooterCta) {
+      const panel = page.locator('#ggPanelComments').first();
+      let focusOk = false;
+      await panel.focus();
+      for (let i = 0; i < 18; i++) {
+        await page.keyboard.press('Tab');
+        focusOk = await page.evaluate(() => {
+          const active = document.activeElement;
+          return !!(active && (active.id === 'comment-editor' || (active.closest && active.closest('#gg-composer-slot'))));
         });
+        if (focusOk) break;
       }
-      function addOwners() {
-        return visibleAll('#gg-top-continue .comment-reply, #top-continue .comment-reply', root);
-      }
-      function nativeHelpers() {
-        return visibleAll('#cmt2-holder #top-continue, #cmt2-holder .continue, #cmt2-holder .item-control, #cmt2-holder .thread-toggle, #cmt2-holder .thread-count, #cmt2-holder a.comment-reply:not(.cmt2-reply-action), #cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root);
-      }
-      function activeComments() {
-        return visibleAll('#cmt2-holder li.comment', root);
-      }
-      function nestedEligibleComments() {
-        return activeComments().filter((comment) => Number(comment.getAttribute('data-gg-depth') || '0') > 0 && cleanValue(comment.getAttribute('data-gg-comment-state') || 'active') === 'active');
-      }
-      function moderationFailures() {
-        const allowed = new Set(['Deleted', 'Removed by admin', 'Awaiting moderation']);
-        const out = [];
-        activeComments().forEach((comment) => {
-          const state = cleanValue(comment.getAttribute('data-gg-comment-state') || 'active');
-          const badges = visibleAll('.cmt2-state', comment);
-          if (state === 'active') return;
-          if (badges.length !== 1) {
-            out.push(`${commentKey(comment)}:badge=${badges.length}`);
-            return;
-          }
-          if (!allowed.has(cleanValue(badges[0].textContent))) out.push(`${commentKey(comment)}:copy=${cleanValue(badges[0].textContent) || 'missing'}`);
-        });
-        return out;
-      }
-      function deletePeerFailures() {
-        const out = [];
-        activeComments().forEach((comment) => {
-          const hasMore = visibleAll('.comment-actions .cmt2-ctx', comment).length > 0;
-          const deletePeers = visibleAll('.comment-footer .comment-delete, .comment-actions .comment-delete, .comment-footer .cmt2-del, .comment-actions .cmt2-del, .gg-cmt2__del, .item-control', comment);
-          if (hasMore && deletePeers.length) out.push(commentKey(comment));
-        });
-        return out;
-      }
-      function nestedReplyFailures() {
-        const out = [];
-        nestedEligibleComments().forEach((comment) => {
-          const replies = visibleAll('.comment-actions .cmt2-reply-action', comment);
-          if (replies.length !== 1) out.push(`${commentKey(comment)}:${replies.length}`);
-        });
-        return out;
-      }
-      const results = [];
-      const initialAddOwners = addOwners();
-      const helperNodes = nativeHelpers();
-      const deletePeers = deletePeerFailures();
-      const nestedReplys = nestedReplyFailures();
-      const moderation = moderationFailures();
-      const proofState = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : '');
-      const proofCount = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : '');
+      focusState = state(focusOk, focusOk ? 'focus=footer-composer' : 'focus=not-reached');
+    }
 
-      results.push({ id: '1', pass: initialAddOwners.length === 1 && !!initialAddOwners[0].closest('#gg-top-continue'), detail: `visibleAddOwners=${initialAddOwners.length}` });
-      results.push({ id: '3', pass: helperNodes.length === 0, detail: `nativeHelpers=${helperNodes.length}` });
-      results.push({ id: '4', pass: deletePeers.length === 0, detail: deletePeers.length ? deletePeers.join(',') : 'ok' });
-      results.push({ id: '5', pass: nestedReplys.length === 0, detail: nestedReplys.length ? nestedReplys.join(',') : `nestedEligible=${nestedEligibleComments().length}` });
-      results.push({ id: '8', pass: moderation.length === 0, detail: moderation.length ? moderation.join(',') : 'ok' });
-      results.push({
-        id: '9',
-        pass: visibleAll('#comments', document).length === 1 && visibleAll('#comments-ssr', document).length === 0 && helperNodes.length === 0 && proofState === 'ok',
-        detail: `visibleComments=${visibleAll('#comments', document).length};ssr=${visibleAll('#comments-ssr', document).length};proof=${proofState || 'missing'}:${proofCount || 'missing'}`
-      });
-
-      const addBtn = initialAddOwners[0];
-      if (addBtn) {
-        addBtn.click();
-        await sleep(1800);
+    if (before.firstReplyId) {
+      const replyBtn = page.locator(`#ggPanelComments #c${before.firstReplyId} .comment-actions .cmt2-reply-action`).first();
+      if (await replyBtn.count()) {
+        await replyBtn.click();
+        await page.waitForTimeout(2000);
+        afterReply = await captureState(page);
       }
-      const addComposerOwners = composerOwners();
-      results.push({
-        id: '2',
-        pass: addComposerOwners.length === 1 && !!addComposerOwners[0].closest('.gg-comments__composerslot'),
-        detail: `composerOwners=${addComposerOwners.length};footerOpen=${cleanValue(root.getAttribute('data-gg-footer-open')) || '0'}`
-      });
+    }
 
-      let replyComposerOk = false;
-      const replyBtn = visibleAll('#cmt2-holder li.comment .comment-actions .cmt2-reply-action', root).find((node) => {
-        const comment = node.closest('li.comment');
-        return comment && cleanValue(comment.getAttribute('data-gg-comment-state') || 'active') === 'active';
-      });
-      if (replyBtn) {
-        replyBtn.click();
-        await sleep(2000);
-        replyComposerOk =
-          composerOwners().length === 1 &&
-          cleanValue(root.getAttribute('data-gg-reply-mode')) === 'reply' &&
-          visibleAll('.cmt2-replying', root).length === 1;
-      }
-      results.push({
-        id: '6',
-        pass: addComposerOwners.length === 1 && replyComposerOk,
-        detail: `addComposer=${addComposerOwners.length};replyComposer=${composerOwners().length};replyMode=${cleanValue(root.getAttribute('data-gg-reply-mode')) || 'default'}`
-      });
-
-      let jumpPass = false;
-      let jumpDetail = 'no-reply-meta';
-      const replyMeta = visibleAll('.cmt2-reply-meta', root).find((node) => {
-        const comment = node.closest('li.comment');
-        return comment && Number(comment.getAttribute('data-gg-depth') || '0') > 0;
-      }) || visibleAll('.cmt2-reply-meta', root)[0];
-      if (replyMeta) {
-        const targetId = cleanValue(replyMeta.getAttribute('data-gg-comment-jump') || '');
-        replyMeta.click();
-        await sleep(360);
-        const target = targetId ? document.getElementById(`c${targetId}`) : null;
-        jumpPass = !!(target && target.classList.contains('is-targeted'));
-        jumpDetail = targetId ? `target=${targetId};highlight=${jumpPass ? '1' : '0'}` : 'missing-target-id';
-      }
-      results.push({ id: '7', pass: jumpPass, detail: jumpDetail });
-
-      return {
-        url: location.href,
-        proofState,
-        proofCount,
-        results
-      };
+    const results = [];
+    results.push({
+      id: 'panel-open',
+      ...state(
+        before.panelVisible && before.rootVisible && before.mainRightMode === 'comments',
+        `panel=${before.panelVisible ? 1 : 0};root=${before.rootVisible ? 1 : 0};mode=${before.mainRightMode || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'comment-count',
+      ...state(before.commentCount === expectedCount, `expected=${expectedCount};actual=${before.commentCount}`)
+    });
+    results.push({
+      id: 'single-surface',
+      ...state(
+        before.visibleCommentsSurfaces === 1 && before.visibleOffPanelSurfaces === 0,
+        `visible=${before.visibleCommentsSurfaces};offPanel=${before.visibleOffPanelSurfaces}`
+      )
+    });
+    results.push({
+      id: 'footer-add-owner',
+      ...(before.hasFooterCta
+        ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount}`)
+        : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};cta=disabled`))
+    });
+    results.push({
+      id: 'footer-composer',
+      ...(before.hasFooterCta
+        ? state(
+            afterAdd.footerComposerCount === 1 &&
+            afterAdd.inlineComposerCount === 0 &&
+            afterAdd.footerComposerSignature === 'top-ce',
+            `footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'};open=${afterAdd.footerOpen}`
+          )
+        : notApplicable('new-comments-disabled'))
+    });
+    results.push({
+      id: 'reply-footer',
+      ...(before.firstReplyId
+        ? state(
+            afterReply.footerComposerCount === 1 &&
+            afterReply.inlineComposerCount === 0 &&
+            afterReply.footerComposerSignature === 'top-ce' &&
+            afterReply.replyMode === 'reply' &&
+            afterReply.replyBannerCount === 1,
+            `footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
+          )
+        : notApplicable('no-eligible-reply')))
+    });
+    results.push({
+      id: 'native-hidden',
+      ...state(
+        before.nativePeerCount === 0 && before.deletePeerFailures.length === 0,
+        `nativePeers=${before.nativePeerCount};deletePeers=${before.deletePeerFailures.join(',') || 'ok'}`
+      )
+    });
+    results.push({
+      id: 'unique-owners',
+      ...state(
+        before.replyOwnerFailures.length === 0 &&
+        before.moreOwnerFailures.length === 0 &&
+        before.toggleOwnerFailures.length === 0,
+        `reply=${before.replyOwnerFailures.join(',') || 'ok'};more=${before.moreOwnerFailures.join(',') || 'ok'};toggle=${before.toggleOwnerFailures.join(',') || 'ok'}`
+      )
+    });
+    results.push({
+      id: 'runtime-proof',
+      ...state(before.proofState === 'ok', `proof=${before.proofState || 'missing'}:${before.proofCount || 'missing'}`)
+    });
+    results.push({
+      id: 'runtime-errors',
+      ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
+    });
+    results.push({
+      id: 'focus-footer',
+      ...focusState
     });
 
-    console.log(`META|url=${summary.url};proof=${clean(summary.proofState) || 'missing'};proofCount=${clean(summary.proofCount) || 'missing'}`);
-    for (const row of summary.results) {
-      console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
+    console.log(`META|case=${caseName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
+    for (const row of results) {
+      const rowState = row.skip ? 'na' : (row.pass ? 'pass' : 'fail');
+      console.log(`CRITERION|${row.id}|${rowState}|${row.detail}`);
     }
   } finally {
     await page.close().catch(() => {});
@@ -1147,7 +1250,7 @@ NODE
       continue
     fi
     if [[ "$line" == BROWSER\|fail\|* ]]; then
-      comments_owner_signal "comments owner browser proof unavailable (${line#BROWSER|fail|})"
+      comments_owner_signal "comments owner browser proof unavailable case=${case_name} (${line#BROWSER|fail|})"
       continue
     fi
     if [[ "$line" == CRITERION\|* ]]; then
@@ -1156,9 +1259,9 @@ NODE
       rest="${rest#*|}"
       local state="${rest%%|*}"
       local detail="${rest#*|}"
-      printf 'SMOKE comments-owner criterion=%s state=%s detail=%s\n' "$id" "$state" "$detail"
-      if [[ "$state" != "pass" ]]; then
-        comments_owner_signal "comments owner criterion ${id} failed (${detail})"
+      printf 'SMOKE comments-owner case=%s criterion=%s state=%s detail=%s\n' "$case_name" "$id" "$state" "$detail"
+      if [[ "$state" == "fail" ]]; then
+        comments_owner_signal "comments owner case=${case_name} criterion=${id} failed (${detail})"
       fi
     fi
   done < "$report_file"
