@@ -505,17 +505,6 @@ if(cta&&typeof cta.click==='function'){
 function bindCommentsComposer(){
 if(d.__ggComposerBridgeBound) return;
 d.__ggComposerBridgeBound=true;
-d.addEventListener('click',function(e){
-  var btn=e&&e.target&&e.target.closest?e.target.closest('[data-gg-postbar="comments"]'):null;
-  var tries=0;
-  if(!btn) return;
-  (function waitReady(){
-    var host=commentsHost();
-    tries++;
-    if(host) openComposer(host);
-    if(tries<8&&!host) w.setTimeout(waitReady,120);
-  })();
-},true);
 }
 if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',bindCommentsComposer,{once:true});
 else bindCommentsComposer();

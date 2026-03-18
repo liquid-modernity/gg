@@ -3085,7 +3085,23 @@ else main.removeAttribute('data-gg-right-mode');
 function applyFromAttrs(){
 var rightOpen=rightState()==='open',mode=rightMode(),focusOn=GG.core.state.has(document.body,'focus-mode'),showComments=rightOpen&&mode==='comments',showInfo=rightOpen&&mode==='info';
 setBtnActive('info',showInfo);setBtnActive('comments',showComments);setFocusIcon(focusOn);
-if(commentsPanel){commentsPanel.hidden=!showComments;commentsPanel.setAttribute('inert','');commentsPanel.setAttribute('tabindex','-1');if(showComments){commentsPanel.removeAttribute('inert');focusNoScroll(commentsPanel);}}
+if(commentsPanel){
+commentsPanel.setAttribute('tabindex','-1');
+commentsPanel.setAttribute('aria-hidden', showComments ? 'false' : 'true');
+commentsPanel.setAttribute('inert','');
+GG.core.state.remove(commentsPanel,'closing');
+if(showComments){
+commentsPanel.hidden=false;
+commentsPanel.removeAttribute('inert');
+GG.core.state.remove(commentsPanel,'hidden');
+GG.core.state.add(commentsPanel,'open');
+focusNoScroll(commentsPanel);
+}else{
+GG.core.state.remove(commentsPanel,'open');
+GG.core.state.add(commentsPanel,'hidden');
+commentsPanel.hidden=true;
+}
+}
 if(infoPanelRight){infoPanelRight.hidden=!showInfo;infoPanelRight.setAttribute('inert','');infoPanelRight.setAttribute('tabindex','-1');if(showInfo){var infoFocus=qs('#gg-postinfo',infoPanelRight)||infoPanelRight;infoPanelRight.removeAttribute('inert');focusNoScroll(infoFocus);}}
 }
 
@@ -4501,6 +4517,8 @@ return { init: init };
 })();
 
 GG.modules.LeftNav=(function(){
+function qs(sel, root){ return (root || document).querySelector(sel); }
+function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 var CUSTOM_WIDGET_IDS=[];for(var i=17;i<=26;i++)CUSTOM_WIDGET_IDS.push('HTML'+i);
 var ICON_MAP = {
 'community': 'forum',
@@ -5743,11 +5761,407 @@ GG.core.commentsGate = GG.core.commentsGate || (function(){
 
 GG.modules = GG.modules || {};
 GG.modules.Comments = GG.modules.Comments || (function(){
+  var feedFallbackCache = Object.create(null);
   function toArray(nodes){
     return Array.prototype.slice.call(nodes || []);
   }
   function cleanText(value){
     return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+  function safeNumber(value){
+    var num = parseInt(String(value || '').trim(), 10);
+    return isFinite(num) ? num : 0;
+  }
+  function commentsFeedInfo(){
+    var link = d.querySelector('link[rel="alternate"][type="application/atom+xml"][href*="/feeds/"][href*="/comments/default"]');
+    var href = cleanText(link && (link.getAttribute('href') || link.href));
+    var match = href.match(/\/feeds\/([0-9]+)\/comments\/default/i);
+    var postId = match && match[1] ? cleanText(match[1]) : '';
+    if (!href && postId) {
+      href = (w.location && w.location.origin ? w.location.origin : '') + '/feeds/' + postId + '/comments/default';
+    }
+    return {
+      feedUrl: href ? href.replace(/[?#].*$/, '') : '',
+      postId: postId
+    };
+  }
+  function currentFeedKey(){
+    var info = commentsFeedInfo();
+    return cleanText(info.feedUrl || info.postId || (w.location && w.location.pathname) || '');
+  }
+  function fallbackHydrationNeeded(root){
+    var key = currentFeedKey();
+    var stored = cleanText(root && root.getAttribute ? root.getAttribute('data-gg-feed-source') : '');
+    var countAttr = cleanText(root && root.getAttribute ? root.getAttribute('data-num-comments') : '');
+    var list = root && root.querySelector ? root.querySelector('#cmt2-holder') : null;
+    var html = '';
+    if (!root || !root.querySelector) return false;
+    if (key && stored && key !== stored) return true;
+    if (!countAttr) return true;
+    html = String(root.innerHTML || '') + '\n' + String((list && list.innerHTML) || '');
+    if (/Can't find substitution for tag/i.test(html)) return true;
+    if (!root.querySelector('#cmt2-holder li.comment') && !root.querySelector('.gg-cmt-empty')) {
+      return true;
+    }
+    return false;
+  }
+  function commentsFeedJsonUrl(feedUrl){
+    var url = cleanText(feedUrl || '');
+    if (!url) return '';
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'alt=json&max-results=200';
+  }
+  function fetchJson(url){
+    if (!url || !w.fetch) return Promise.reject(new Error('comments-feed-unavailable'));
+    return w.fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    }).then(function(res){
+      if (!res || !res.ok) throw new Error('comments-feed-http-' + (res && res.status ? res.status : '0'));
+      return res.json();
+    });
+  }
+  function loadCommentsFeed(){
+    var info = commentsFeedInfo();
+    var key = cleanText(info.feedUrl || info.postId);
+    var url = commentsFeedJsonUrl(info.feedUrl);
+    if (!key || !url) return Promise.reject(new Error('comments-feed-missing'));
+    if (!feedFallbackCache[key]) {
+      feedFallbackCache[key] = fetchJson(url);
+    }
+    return feedFallbackCache[key];
+  }
+  function commentLink(entry, rel, type){
+    var links = Array.isArray(entry && entry.link) ? entry.link : [];
+    var i = 0;
+    var link = null;
+    for (i = 0; i < links.length; i++) {
+      link = links[i];
+      if (!link || link.rel !== rel) continue;
+      if (type && link.type !== type) continue;
+      return cleanText(link.href || '');
+    }
+    return '';
+  }
+  function commentProp(entry, name){
+    var props = Array.isArray(entry && entry['gd$extendedProperty']) ? entry['gd$extendedProperty'] : [];
+    var i = 0;
+    var one = null;
+    for (i = 0; i < props.length; i++) {
+      one = props[i];
+      if (!one || cleanText(one.name) !== name) continue;
+      return cleanText(one.value || '');
+    }
+    return '';
+  }
+  function commentIdFromValue(value){
+    var raw = cleanText(value || '');
+    var match = raw.match(/(?:comments\/default\/|post-)(\d+)(?:[^\d]*)$/i);
+    return match && match[1] ? cleanText(match[1]) : '';
+  }
+  function commentDisplayTime(entry){
+    var display = commentProp(entry, 'blogger.displayTime');
+    var iso = cleanText(entry && entry.published && entry.published.$t);
+    var parsed = iso ? Date.parse(iso) : NaN;
+    if (display) return display;
+    if (!isFinite(parsed)) return '';
+    try {
+      return new Date(parsed).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    } catch (_) {
+      return iso;
+    }
+  }
+  function normalizeFeedComments(feed){
+    var entries = Array.isArray(feed && feed.entry) ? feed.entry.slice() : [];
+    var items = [];
+    var i = 0;
+    var entry = null;
+    var item = null;
+    var byId = Object.create(null);
+    var cursor = null;
+    var guard = 0;
+    entries.sort(function(a, b){
+      var left = Date.parse(cleanText(a && a.published && a.published.$t)) || 0;
+      var right = Date.parse(cleanText(b && b.published && b.published.$t)) || 0;
+      return left - right;
+    });
+    for (i = 0; i < entries.length; i++) {
+      entry = entries[i];
+      item = {
+        id: commentIdFromValue(entry && entry.id && entry.id.$t),
+        parentId: commentIdFromValue(commentLink(entry, 'related')),
+        authorName: cleanText(entry && entry.author && entry.author[0] && entry.author[0].name && entry.author[0].name.$t) || 'Anonymous',
+        authorUrl: cleanText(entry && entry.author && entry.author[0] && entry.author[0].uri && entry.author[0].uri.$t),
+        avatar: cleanText(entry && entry.author && entry.author[0] && entry.author[0]['gd$image'] && entry.author[0]['gd$image'].src),
+        bodyHtml: String(entry && entry.content && entry.content.$t || ''),
+        permalink: commentLink(entry, 'alternate', 'text/html'),
+        timestamp: commentDisplayTime(entry),
+        deleted: commentProp(entry, 'blogger.contentRemoved') === 'true'
+      };
+      if (!item.id) continue;
+      item.children = [];
+      items.push(item);
+    }
+    for (i = 0; i < items.length; i++) {
+      byId[items[i].id] = items[i];
+    }
+    for (i = 0; i < items.length; i++) {
+      item = items[i];
+      item.depth = 0;
+      item.parentAuthor = '';
+      cursor = item.parentId ? byId[item.parentId] : null;
+      guard = 0;
+      while (cursor && guard < 12) {
+        item.depth += 1;
+        if (!item.parentAuthor) item.parentAuthor = cursor.authorName || '';
+        cursor = cursor.parentId ? byId[cursor.parentId] : null;
+        guard += 1;
+      }
+    }
+    return items;
+  }
+  function buildCommentTree(items){
+    var byId = Object.create(null);
+    var roots = [];
+    var i = 0;
+    var item = null;
+    for (i = 0; i < items.length; i++) {
+      byId[items[i].id] = items[i];
+    }
+    for (i = 0; i < items.length; i++) {
+      item = items[i];
+      if (item.parentId && byId[item.parentId] && item.parentId !== item.id) byId[item.parentId].children.push(item);
+      else roots.push(item);
+    }
+    return roots;
+  }
+  function createAvatar(item){
+    var box = d.createElement('div');
+    var img = null;
+    box.className = 'avatar-image-container gg-cmt2__avatar';
+    img = d.createElement('img');
+    img.className = 'author-avatar';
+    img.alt = '';
+    img.decoding = 'async';
+    img.loading = 'lazy';
+    img.width = 35;
+    img.height = 35;
+    img.src = item.avatar || 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+    box.appendChild(img);
+    return box;
+  }
+  function createHiddenReplyLink(){
+    var wrap = d.createElement('div');
+    var link = d.createElement('a');
+    wrap.className = 'continue';
+    wrap.hidden = true;
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.setAttribute('data-gg-state', 'hidden');
+    link.className = 'comment-reply';
+    link.href = 'javascript:;';
+    link.rel = 'nofollow';
+    link.hidden = true;
+    link.setAttribute('aria-hidden', 'true');
+    link.setAttribute('data-gg-state', 'hidden');
+    link.textContent = 'Reply';
+    wrap.appendChild(link);
+    return wrap;
+  }
+  function createCommentNode(item){
+    var li = d.createElement('li');
+    var block = d.createElement('div');
+    var header = d.createElement('div');
+    var author = d.createElement('cite');
+    var authorLink = null;
+    var datetime = d.createElement('span');
+    var datetimeLink = d.createElement('a');
+    var content = d.createElement('div');
+    var footer = d.createElement('div');
+    var stamp = d.createElement('span');
+    var stampLink = d.createElement('a');
+    var replies = null;
+    var repliesContent = null;
+    var i = 0;
+
+    li.className = 'comment';
+    li.id = 'c' + item.id;
+    li.setAttribute('data-gg-comment-id', item.id);
+    li.setAttribute('data-gg-depth', String(safeNumber(item.depth)));
+    li.appendChild(createAvatar(item));
+
+    block.className = 'comment-block';
+    header.className = 'comment-header';
+    author.className = 'user';
+    if (item.authorUrl) {
+      authorLink = d.createElement('a');
+      authorLink.href = item.authorUrl;
+      authorLink.rel = 'nofollow noopener';
+      authorLink.textContent = item.authorName;
+      author.appendChild(authorLink);
+    } else {
+      author.textContent = item.authorName;
+    }
+    datetime.className = 'datetime';
+    datetimeLink.href = item.permalink || ('#c' + item.id);
+    datetimeLink.title = 'comment permalink';
+    datetimeLink.textContent = item.timestamp || 'Comment';
+    datetime.appendChild(datetimeLink);
+    header.appendChild(author);
+    header.appendChild(datetime);
+    block.appendChild(header);
+
+    content.className = 'comment-content';
+    if (item.deleted) content.classList.add('deleted');
+    content.innerHTML = (item.parentId ? ('[reply commentId="' + item.parentId + '" author="' + String(item.parentAuthor || '').replace(/"/g, '&quot;') + '"] ') : '') + (item.bodyHtml || '');
+    block.appendChild(content);
+
+    footer.className = 'comment-footer';
+    stamp.className = 'comment-timestamp';
+    stampLink.href = datetimeLink.href;
+    stampLink.title = 'comment permalink';
+    stampLink.textContent = datetimeLink.textContent;
+    stamp.appendChild(stampLink);
+    footer.appendChild(stamp);
+    footer.appendChild(createHiddenReplyLink());
+    block.appendChild(footer);
+
+    li.appendChild(block);
+    return li;
+  }
+  function setCommentsHeading(root, total){
+    var heading = root && root.querySelector ? root.querySelector('.gg-comments__h') : null;
+    if (root && root.setAttribute) root.setAttribute('data-num-comments', String(total));
+    if (!heading) return;
+    heading.textContent = total === 1 ? '1 Comment' : total + ' Comments';
+  }
+  function ensureFooterSection(root, selector, className, id){
+    var footer = commentsFooter(root);
+    var main = footer && footer.querySelector ? footer.querySelector('.gg-comments__footer-main') : null;
+    var node = root && root.querySelector ? root.querySelector(selector) : null;
+    if (node || !main) return node;
+    node = d.createElement('div');
+    node.className = className;
+    if (id) node.id = id;
+    main.appendChild(node);
+    return node;
+  }
+  function ensureFooterCta(root){
+    var footer = commentsFooter(root);
+    var inner = footer && footer.querySelector ? footer.querySelector('.gg-comments__footer-inner') : null;
+    var wrap = footer && footer.querySelector ? footer.querySelector('#gg-top-continue') : null;
+    var link = null;
+    if (!footer || !inner) return null;
+    if (!wrap) {
+      wrap = d.createElement('div');
+      wrap.className = 'gg-comments__footer-cta';
+      wrap.id = 'gg-top-continue';
+      inner.insertBefore(wrap, inner.firstChild || null);
+    }
+    link = wrap.querySelector('.comment-reply');
+    if (!link) {
+      link = d.createElement('a');
+      link.href = 'javascript:;';
+      link.rel = 'nofollow';
+      link.className = 'comment-reply';
+      link.setAttribute('data-gg-footer-cta', '1');
+      link.setAttribute('aria-expanded', 'false');
+      link.textContent = 'Add comment';
+      wrap.appendChild(link);
+    }
+    footer.setAttribute('data-gg-has-cta', '1');
+    footer.setAttribute('data-gg-open', footer.getAttribute('data-gg-open') || '0');
+    return link;
+  }
+  function ensureFallbackComposer(root){
+    var slot = composerSlot(root) || ensureFooterSection(root, '#gg-composer-slot', 'gg-comments__composerslot', 'gg-composer-slot');
+    var composer = slot && slot.querySelector ? slot.querySelector('#top-ce') : null;
+    var fieldId = 'gg-comments-fallback-field';
+    var label = null;
+    var textarea = null;
+    var note = null;
+    if (!slot) return null;
+    if (composer && composerField(composer)) return composer;
+    if (composer && composer.parentNode) composer.parentNode.removeChild(composer);
+    composer = d.createElement('div');
+    composer.id = 'top-ce';
+    composer.className = 'comment-form';
+    composer.hidden = true;
+    composer.setAttribute('aria-hidden', 'true');
+    composer.setAttribute('data-gg-state', 'hidden');
+    composer.setAttribute('data-gg-fallback', '1');
+    composer.setAttribute('data-gg-owner', 'fallback-footer');
+    label = d.createElement('label');
+    label.className = 'gg-comments__fallback-label';
+    label.setAttribute('for', fieldId);
+    label.textContent = 'Comment draft';
+    textarea = d.createElement('textarea');
+    textarea.id = fieldId;
+    textarea.className = 'gg-comments__fallback-field';
+    textarea.rows = 4;
+    textarea.placeholder = 'Write a comment draft...';
+    textarea.setAttribute('aria-label', 'Comment draft');
+    note = d.createElement('p');
+    note.className = 'gg-comments__fallback-help';
+    note.textContent = 'Posting is temporarily unavailable in this view.';
+    composer.appendChild(label);
+    composer.appendChild(textarea);
+    composer.appendChild(note);
+    slot.insertBefore(composer, slot.firstChild || null);
+    return composer;
+  }
+  function renderFallbackComments(root, feed){
+    var list = root && root.querySelector ? root.querySelector('#cmt2-holder') : null;
+    var footer = commentsFooter(root);
+    var note = footer && footer.querySelector ? footer.querySelector('.gg-comments__footer-note') : null;
+    var items = normalizeFeedComments(feed);
+    var thread = d.createElement('ol');
+    var i = 0;
+    if (!list) return false;
+    setCommentsHeading(root, safeNumber(feed && feed['openSearch$totalResults'] && feed['openSearch$totalResults'].$t));
+    thread.className = 'comment-thread';
+    list.textContent = '';
+    if (!items.length) {
+      list.innerHTML = '<div class="gg-cmt-empty"><strong>No comments yet.</strong> Be the first to add one.</div>';
+    } else {
+      for (i = 0; i < items.length; i++) {
+        thread.appendChild(createCommentNode(items[i]));
+      }
+      list.appendChild(thread);
+    }
+    ensureFooterSection(root, '#gg-addslot', 'gg-comments__addslot', 'gg-addslot');
+    ensureFooterSection(root, '#gg-composer-slot', 'gg-comments__composerslot', 'gg-composer-slot');
+    ensureFooterCta(root);
+    ensureFallbackComposer(root);
+    if (note) {
+      note.textContent = '';
+      note.hidden = true;
+    }
+    if (root && root.setAttribute) {
+      root.setAttribute('data-gg-comment-source', 'feed-fallback');
+      root.setAttribute('data-gg-feed-source', currentFeedKey());
+    }
+    return true;
+  }
+  function ensureFallbackHydration(root){
+    var key = currentFeedKey();
+    if (!root || !fallbackHydrationNeeded(root)) return Promise.resolve(root);
+    if (root.__ggFallbackPromise && root.__ggFallbackKey === key) return root.__ggFallbackPromise;
+    root.__ggFallbackKey = key;
+    root.__ggFallbackPromise = loadCommentsFeed().then(function(payload){
+      var feed = payload && payload.feed ? payload.feed : {};
+      renderFallbackComments(root, feed);
+      root.__ggFallbackPromise = null;
+      return root;
+    }).catch(function(){
+      root.__ggFallbackPromise = null;
+      return root;
+    });
+    return root.__ggFallbackPromise;
   }
   function isPanelOwnedComments(node){
     return !!(node && node.closest && node.closest('.gg-comments-panel,[data-gg-panel="comments"]'));
@@ -5992,6 +6406,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (reply && reply.replyMode === 'reply' && reply.replyTargetId && reply.comment) {
       node = activeReplyComposer(reply.comment) || commentReplyBox(reply.comment);
       if (node) return mountComposerNode(root, node, reply.comment);
+      node = topComposer(root);
+      if (node) return mountComposerNode(root, node, null);
       nodes = composerNodes(root);
       for (i = 0; i < nodes.length; i++) parkComposerNode(nodes[i]);
       return null;
@@ -6088,8 +6504,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return true;
   }
   function commentDepth(comment){
+    var hinted = safeNumber(comment && comment.getAttribute ? comment.getAttribute('data-gg-depth') : '');
     var depth = 0;
     var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
+    if (hinted > 0) return hinted;
     while (parent) {
       depth++;
       parent = parent.parentElement ? parent.parentElement.closest('li.comment') : null;
@@ -6803,7 +7221,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
           if (box) box = mountComposerNode(root, box, comment);
           field = composerField(box);
         }
-        if (!field && (!comment || state.replyMode !== 'reply' || tries > 6)) {
+        if (!field) {
           box = syncComposerOwner(root);
           field = composerField(box);
         }
@@ -6893,7 +7311,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       focus: true,
       initialDelay: 80,
       maxAttempts: 12,
-      until: function(){ return !!activeReplyComposer(comment); }
+      until: function(){ return !!composerField(syncComposerOwner(root)); }
     });
     return true;
   }
@@ -7055,6 +7473,14 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var hosts = [];
     var host = null;
     var i = 0;
+    function hydrateAndEnhance(target){
+      ensureFallbackHydration(target).then(function(nextRoot){
+        var active = commentsRoot(nextRoot) || nextRoot;
+        if (!active) return;
+        bindHost(active);
+        enhance(active);
+      });
+    }
     if (root && root.nodeType === 1) {
       host = commentsRoot(root);
       if (host) hosts.push(host);
@@ -7066,6 +7492,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     for (i = 0; i < hosts.length; i++) {
       host = hosts[i];
       if (!host) continue;
+      if (fallbackHydrationNeeded(host)) {
+        hydrateAndEnhance(host);
+        continue;
+      }
       bindHost(host);
       enhance(host);
     }
@@ -7074,20 +7504,25 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function ensureLoaded(opts){
     var o = opts || {};
     var host = hostRoot();
+    function finish(target){
+      var active = commentsRoot(target) || target || host;
+      if (!active) return false;
+      init(active);
+      if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
+        GG.core.commentsGate.init();
+      }
+      markLoaded(active);
+      enhance(active);
+      if (shouldScroll) {
+        scrollToComments(active);
+      }
+      return true;
+    }
     var fromPrimary = !!o.fromPrimaryAction;
     var shouldScroll = fromPrimary && o.scroll !== false;
     if (!host) return false;
-    init(host);
-    if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
-      GG.core.commentsGate.init();
-    }
-    markLoaded(host);
-    enhance(host);
-
-    if (shouldScroll) {
-      scrollToComments(host);
-    }
-
+    ensureFallbackHydration(host).then(finish);
+    finish(host);
     return true;
   }
   function reset(root){
@@ -7112,14 +7547,23 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function openComposer(opts){
     var o = opts || {};
     var host = hostRoot();
+    function openFor(target){
+      var active = commentsRoot(target) || target || host;
+      if (!active) return false;
+      finishLoad(active);
+      return openComposerForRoot(active, o);
+    }
+    function finishLoad(target){
+      init(target);
+      if (GG.core && GG.core.commentsGate && typeof GG.core.commentsGate.init === 'function') {
+        GG.core.commentsGate.init();
+      }
+      markLoaded(target);
+      enhance(target);
+    }
     if (!host) return false;
-    ensureLoaded({
-      fromPrimaryAction: !!o.fromPrimaryAction,
-      forceLoad: !!o.forceLoad || !!o.fromPrimaryAction,
-      scroll: o.scroll
-    });
-    host = hostRoot() || host;
-    return openComposerForRoot(host, o);
+    ensureFallbackHydration(host).then(openFor);
+    return openFor(host);
   }
   return { ensureLoaded: ensureLoaded, reset: reset, init: init, enhance: enhance, openComposer: openComposer, runProof: runProof };
 })();
