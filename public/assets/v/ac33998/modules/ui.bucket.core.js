@@ -1093,10 +1093,48 @@ if (hero) {
   hero.setAttribute('aria-hidden', show ? 'false' : 'true');
 }
 };
+ui.layout._getCommentsPanel = ui.layout._getCommentsPanel || function(root){
+var scope = root && root.querySelector ? root : d;
+return scope.querySelector('#ggPanelComments') ||
+  scope.querySelector('.gg-comments-panel[data-gg-panel="comments"]') ||
+  scope.querySelector('.gg-comments-panel');
+};
+ui.layout._getCommentsSidebar = ui.layout._getCommentsSidebar || function(root){
+var scope = root && root.querySelector ? root : d;
+return scope.querySelector('.gg-blog-sidebar--right');
+};
+ui.layout._mountCommentsToSidebar = ui.layout._mountCommentsToSidebar || function(root){
+var scope = root && root.querySelector ? root : d;
+var main = scope.querySelector('main.gg-main[data-gg-surface]') || scope.querySelector('main.gg-main') || scope.querySelector('main');
+var panel = ui.layout._getCommentsPanel(scope);
+var sidebar = ui.layout._getCommentsSidebar(main || scope);
+var infoPanel = null;
+var comments = null;
+var parent = null;
+if (!main || !panel || !sidebar) return panel || null;
+if (main.getAttribute('data-gg-surface') !== 'post' && main.getAttribute('data-gg-surface') !== 'page') return panel;
+infoPanel = sidebar.querySelector('[data-gg-panel="info"]') || sidebar.querySelector('.gg-info-panel');
+parent = panel.parentNode || null;
+if (parent !== sidebar) {
+  if (infoPanel && infoPanel.parentNode === sidebar) {
+    if (infoPanel.nextSibling) sidebar.insertBefore(panel, infoPanel.nextSibling);
+    else sidebar.appendChild(panel);
+  } else {
+    sidebar.insertBefore(panel, sidebar.firstChild || null);
+  }
+}
+sidebar.setAttribute('data-gg-comments-host', '1');
+panel.setAttribute('data-gg-runtime-owner', 'sidebar-right');
+panel.setAttribute('data-gg-runtime-mount-target', '.gg-blog-sidebar--right');
+comments = panel.querySelector ? panel.querySelector('#comments') : null;
+if (comments) comments.__ggDocked = true;
+return panel;
+};
 ui.layout._dockComments = ui.layout._dockComments || function(){
-var panel = d.querySelector('#ggPanelComments [data-gg-slot="comments"], .gg-comments-panel[data-gg-panel="comments"] [data-gg-slot="comments"]');
-var comments = panel ? panel.querySelector('#comments') : null;
-if (!panel || !comments) return;
+var panel = ui.layout._mountCommentsToSidebar();
+var slot = panel && panel.querySelector ? panel.querySelector('[data-gg-slot="comments"]') : null;
+var comments = slot ? slot.querySelector('#comments') : null;
+if (!comments) return;
 comments.__ggDocked = true;
 };
 ui.layout._normalizeListingFlow = ui.layout._normalizeListingFlow || function(){
@@ -8424,10 +8462,7 @@ function isSystemPath(pathname){
       if (side === 'right' && main) {
         var mode = getAttr(main, 'data-gg-right-mode') || '';
         if (mode === 'comments') {
-          panel = qs('#ggPanelComments', main) ||
-            qs('[data-gg-panel="comments"]', main) ||
-            qs('.gg-comments-panel', main) ||
-            (right ? qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) : null) ||
+          panel = syncCommentsMount() ||
             right;
         } else if (mode) {
           panel = qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || qs('.gg-info-panel', right) || right;
@@ -8498,6 +8533,27 @@ function setLayoutInert(activeAside){
       var surface = getAttr(main, 'data-gg-surface') || '';
       return surface === 'post' || surface === 'page';
     }
+    function commentsPanel(){
+      var panel = null;
+      if (right) {
+        panel = qs('#ggPanelComments', right) ||
+          qs('[data-gg-panel="comments"]', right) ||
+          qs('.gg-comments-panel', right);
+      }
+      if (panel) return panel;
+      if (!main) return null;
+      return qs('#ggPanelComments', main) ||
+        qs('[data-gg-panel="comments"]', main) ||
+        qs('.gg-comments-panel', main);
+    }
+    function syncCommentsMount(){
+      var panel = null;
+      if (!main || !right || !isPostSurface()) return commentsPanel();
+      if (GG.ui && GG.ui.layout && typeof GG.ui.layout._mountCommentsToSidebar === 'function') {
+        panel = GG.ui.layout._mountCommentsToSidebar(main);
+      }
+      return panel || commentsPanel();
+    }
 
     function setLeft(state, opts){
       if (!main) return;
@@ -8547,12 +8603,7 @@ function updateBackdrop(){
   var rightMode = getAttr(main, 'data-gg-right-mode') || '';
   var showInfoSheet = isDetailSurface && rightOpen && rightMode === 'info';
   var showCommentsSheet = isDetailSurface && rightOpen && rightMode === 'comments';
-  var commentsHost = showCommentsSheet ? (
-    qs('#ggPanelComments', main) ||
-    qs('[data-gg-panel="comments"]', main) ||
-    qs('.gg-comments-panel', main) ||
-    (right ? qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) : null)
-  ) : null;
+  var commentsHost = showCommentsSheet ? syncCommentsMount() : null;
   var show = (mobileOverlay && isDetailSurface && (leftOpen || rightOpen)) || showInfoSheet;
   var activeAside = showInfoSheet ? (qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || right) : (rightOpen ? (commentsHost || right) : (leftOpen ? left : null));
   if (backdrop) {
@@ -8689,6 +8740,7 @@ function updateBackdrop(){
       layout = main && main.querySelector ? main.querySelector('.gg-blog-layout') : null;
       left = layout ? layout.querySelector('.gg-blog-sidebar--left') : qs('.gg-blog-sidebar--left', main);
       right = layout ? layout.querySelector('.gg-blog-sidebar--right') : qs('.gg-blog-sidebar--right', main);
+      if (isPostSurface) syncCommentsMount();
 
       if (isPostSurface){
         if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
