@@ -242,7 +242,48 @@ jobs:
           GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
           GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
           GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"
-        run: bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
+          GG_DEPLOY_SMOKE_MAX_ATTEMPTS: "3"
+          GG_DEPLOY_SMOKE_BACKOFF_SECONDS: "20"
+        run: |
+          max_attempts="${GG_DEPLOY_SMOKE_MAX_ATTEMPTS:-3}"
+          backoff_seconds="${GG_DEPLOY_SMOKE_BACKOFF_SECONDS:-20}"
+          attempt=1
+          smoke_ok=0
+          log_file_base="$(mktemp -u -t gg-live-smoke.XXXXXX)"
+
+          while [ "$attempt" -le "$max_attempts" ]; do
+            attempt_log="${log_file_base}.attempt-${attempt}.log"
+            echo "Deploy live-smoke attempt ${attempt}/${max_attempts}"
+
+            set +e
+            bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}" 2>&1 | tee "$attempt_log"
+            cmd_status=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$cmd_status" -eq 0 ]; then
+              smoke_ok=1
+              {
+                echo "### Live Smoke"
+                echo "- Public contract verification passed on attempt ${attempt}/${max_attempts}."
+              } >> "$GITHUB_STEP_SUMMARY"
+              break
+            fi
+
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "::error title=Live smoke failed::Public contract verification failed after ${max_attempts} attempts."
+              cat "$attempt_log"
+              exit "$cmd_status"
+            fi
+
+            echo "::warning title=Retrying live smoke::Public contract verification failed on attempt ${attempt}/${max_attempts}. Retrying in ${backoff_seconds}s."
+            sleep "$backoff_seconds"
+            attempt=$((attempt + 1))
+          done
+
+          if [ "$smoke_ok" -ne 1 ]; then
+            echo "::error title=Live smoke failed::Smoke loop exited without success."
+            exit 1
+          fi
 
       - name: Manual Blogger publish reminder
         if: always()
