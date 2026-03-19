@@ -5901,6 +5901,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         bodyHtml: String(entry && entry.content && entry.content.$t || ''),
         permalink: commentLink(entry, 'alternate', 'text/html'),
         timestamp: commentDisplayTime(entry),
+        publishedMs: Date.parse(cleanText(entry && entry.published && entry.published.$t)) || 0,
         deleted: commentProp(entry, 'blogger.contentRemoved') === 'true'
       };
       if (!item.id) continue;
@@ -6010,6 +6011,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     datetimeLink.href = item.permalink || ('#c' + item.id);
     datetimeLink.title = 'comment permalink';
     datetimeLink.textContent = item.timestamp || 'Comment';
+    if (item.publishedMs) datetimeLink.setAttribute('data-gg-comment-epoch', String(item.publishedMs));
     datetime.appendChild(datetimeLink);
     header.appendChild(author);
     header.appendChild(datetime);
@@ -6025,6 +6027,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     stampLink.href = datetimeLink.href;
     stampLink.title = 'comment permalink';
     stampLink.textContent = datetimeLink.textContent;
+    if (item.publishedMs) stampLink.setAttribute('data-gg-comment-epoch', String(item.publishedMs));
     stamp.appendChild(stampLink);
     footer.appendChild(stamp);
     footer.appendChild(createHiddenReplyLink());
@@ -6335,6 +6338,142 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!block || !block.querySelector) return '';
     var link = block.querySelector('.datetime a, .comment-timestamp a, .comment-footer a[title="comment permalink"], .comment-footer a');
     return cleanText(link && (link.getAttribute('href') || link.href));
+  }
+  function commentTimestampLinks(comment){
+    if (!comment || !comment.querySelectorAll) return [];
+    return toArray(comment.querySelectorAll('.datetime a, .comment-timestamp a'));
+  }
+  function commentTimestampLink(comment){
+    var links = commentTimestampLinks(comment);
+    return links[0] || null;
+  }
+  function parseCommentEpoch(link){
+    var cached = 0;
+    var source = '';
+    var queryMatch = null;
+    var parsed = NaN;
+    if (!link || !link.getAttribute) return NaN;
+    cached = safeNumber(link.getAttribute('data-gg-comment-epoch'));
+    if (cached > 0) return cached;
+    source = cleanText(link.getAttribute('href') || link.href || '');
+    queryMatch = source.match(/[?&]showComment=(\d{10,16})/);
+    if (queryMatch && queryMatch[1]) {
+      cached = safeNumber(queryMatch[1]);
+      if (cached > 0) {
+        link.setAttribute('data-gg-comment-epoch', String(cached));
+        return cached;
+      }
+    }
+    source = cleanText(
+      link.getAttribute('data-gg-absolute-datetime') ||
+      link.getAttribute('title') ||
+      link.textContent
+    ).replace(/\u202f/g, ' ').replace(/\bat\b/gi, ' ');
+    parsed = source ? Date.parse(source) : NaN;
+    if (isFinite(parsed) && parsed > 0) {
+      link.setAttribute('data-gg-comment-epoch', String(parsed));
+      return parsed;
+    }
+    return NaN;
+  }
+  function commentAbsoluteTime(epoch){
+    var date = null;
+    if (!isFinite(epoch) || epoch <= 0) return '';
+    date = new Date(epoch);
+    try {
+      if (GG.i18n && typeof GG.i18n.df === 'function') {
+        return GG.i18n.df(date, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        });
+      }
+    } catch (_) {}
+    try {
+      return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    } catch (_) {}
+    return date.toISOString();
+  }
+  function commentRelativeParts(ms){
+    var abs = Math.abs(ms);
+    var second = 1000;
+    var minute = second * 60;
+    var hour = minute * 60;
+    var day = hour * 24;
+    var week = day * 7;
+    var month = day * 30;
+    var year = day * 365;
+    if (abs < minute) return { value: Math.round(ms / second), unit: 'second' };
+    if (abs < hour) return { value: Math.round(ms / minute), unit: 'minute' };
+    if (abs < day) return { value: Math.round(ms / hour), unit: 'hour' };
+    if (abs < week) return { value: Math.round(ms / day), unit: 'day' };
+    if (abs < month) return { value: Math.round(ms / week), unit: 'week' };
+    if (abs < year) return { value: Math.round(ms / month), unit: 'month' };
+    return { value: Math.round(ms / year), unit: 'year' };
+  }
+  function commentRelativeTime(epoch){
+    var parts = null;
+    if (!isFinite(epoch) || epoch <= 0) return '';
+    parts = commentRelativeParts(epoch - Date.now());
+    try {
+      if (GG.i18n && typeof GG.i18n.rtf === 'function') {
+        return GG.i18n.rtf(parts.value, parts.unit, { numeric: 'always' });
+      }
+    } catch (_) {}
+    return parts.value + ' ' + parts.unit;
+  }
+  function hydrateCommentTimeLink(link){
+    var epoch = parseCommentEpoch(link);
+    var absolute = '';
+    var relative = '';
+    if (!link || !isFinite(epoch) || epoch <= 0) return false;
+    absolute = commentAbsoluteTime(epoch);
+    relative = commentRelativeTime(epoch);
+    if (!relative) return false;
+    if (absolute) {
+      link.setAttribute('data-gg-absolute-datetime', absolute);
+      link.setAttribute('title', absolute);
+      link.setAttribute('aria-label', absolute);
+    }
+    link.setAttribute('data-gg-time-style', 'relative');
+    link.textContent = relative;
+    return true;
+  }
+  function hydrateCommentTimes(root){
+    var comments = [];
+    if (!root || !root.querySelectorAll) return false;
+    comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
+    comments.forEach(function(comment){
+      commentTimestampLinks(comment).forEach(hydrateCommentTimeLink);
+    });
+    return !!comments.length;
+  }
+  function ensureCommentTimeRefresh(root){
+    if (!root || root.__ggCommentTimeRefreshTimer) return;
+    root.__ggCommentTimeRefreshTimer = w.setInterval(function(){
+      if (!root.isConnected) {
+        w.clearInterval(root.__ggCommentTimeRefreshTimer);
+        root.__ggCommentTimeRefreshTimer = 0;
+        return;
+      }
+      hydrateCommentTimes(root);
+    }, 60000);
+  }
+  function bindCommentTimeLocale(root){
+    if (!root || root.__ggCommentTimeLocaleBound) return;
+    root.__ggCommentTimeLocaleBound = true;
+    d.addEventListener('gg:langchange', function(){
+      if (!root.isConnected) return;
+      hydrateCommentTimes(root);
+    });
   }
   function commentDeleteLink(comment){
     var itemControl = commentItemControl(comment);
@@ -7659,6 +7798,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     ensureMenuButton(comment);
     ensureToggleButton(comment);
     suppressCommentScaffolding(comment);
+    hydrateCommentTimeLink(commentTimestampLink(comment));
   }
   function enhance(host){
     var root = commentsRoot(host) || host;
@@ -7675,6 +7815,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
+    hydrateCommentTimes(root);
+    ensureCommentTimeRefresh(root);
+    bindCommentTimeLocale(root);
     if (replyState(root).replyMode === 'reply' && replyState(root).replyTargetId) mountReplyBanner(root);
     syncComposerKind(root);
     syncFooterState(root);
@@ -9093,6 +9236,9 @@ function updateBackdrop(){
       if (GG.modules && GG.modules.uiCopy && typeof GG.modules.uiCopy.apply === 'function') {
         GG.modules.uiCopy.apply(doc);
       }
+      try {
+        doc.dispatchEvent(new CustomEvent('gg:langchange', { detail: { lang: codeNorm } }));
+      } catch (e) {}
     }
   }
 
