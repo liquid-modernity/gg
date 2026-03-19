@@ -6347,17 +6347,20 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
 #ggPanelComments {
   --gg-panel-w: 240px;
   display: none;
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: var(--gg-panel-w);
-  height: 100vh;
-  max-height: 100vh;
+  position: sticky;
+  top: 10px;
+  right: auto;
+  left: auto;
+  width: min(100%, var(--gg-panel-w));
+  max-width: var(--gg-panel-w);
+  height: calc(100dvh - 20px);
+  max-height: calc(100dvh - 20px);
   z-index: var(--z-panel);
-  border-left: 1px solid var(--gg-border);
+  border: 1px solid var(--gg-border);
   background: var(--gg-surface);
   flex-direction: column;
   overflow: hidden;
+  margin-left: auto;
 }
 
 #ggPanelComments[data-gg-state~="open"] {
@@ -6533,6 +6536,10 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
   border-radius: 12px;
   gap: 4px;
 }
+#ggPanelComments #cmt2-holder .cmt2-ctx-pop[data-gg-placement="down"] {
+  top: calc(100% + 4px);
+  bottom: auto;
+}
 
 #ggPanelComments #cmt2-holder .cmt2-ctx-pop button {
   padding: 7px 8px;
@@ -6666,8 +6673,14 @@ main.gg-main[data-gg-right-mode="comments"] #comments #cmt2-holder li.comment[da
     inset: 0;
     width: 100%;
     max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
     border-left: 0;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
     border-radius: 0;
+    margin-left: 0;
   }
 }
 
@@ -9553,16 +9566,20 @@ gap:3px;
 padding-right:18px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-header{
-display:grid;
-grid-template-columns:minmax(0, 1fr);
-gap:0;
+display:flex;
+flex-wrap:wrap;
+align-items:baseline;
+gap:1px 0;
+min-width:0;
 }
 #ggPanelComments #comments #cmt2-holder .comment-header .icon{
 display:none !important;
 }
 #ggPanelComments #comments #cmt2-holder cite.user{
-display:block;
+display:inline-block;
+flex:0 1 auto;
 min-width:0;
+max-width:100%;
 overflow:hidden;
 text-overflow:ellipsis;
 white-space:nowrap;
@@ -9572,15 +9589,26 @@ line-height:1.28;
 color:color-mix(in srgb, var(--gg-ink) 96%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .datetime{
+display:inline-flex;
+align-items:baseline;
 min-width:0;
+flex:0 0 auto;
+max-width:100%;
+white-space:nowrap;
+color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+}
+#ggPanelComments #comments #cmt2-holder .datetime::before{
+content:"•";
+margin:0 4px;
+color:color-mix(in srgb, var(--gg-muted) 52%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .datetime a{
 display:inline-block;
 max-width:100%;
-font-size:6.75px;
+font-size:6.55px;
 line-height:1.18;
 font-weight:490;
-color:color-mix(in srgb, var(--gg-muted) 68%, transparent);
+color:inherit;
 text-decoration:none;
 white-space:nowrap;
 overflow:hidden;
@@ -9649,10 +9677,10 @@ color:color-mix(in srgb, var(--gg-ink) 82%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle{
 order:2;
-font-size:7.4px;
-font-weight:500;
+font-size:7.15px;
+font-weight:490;
 letter-spacing:.01em;
-color:color-mix(in srgb, var(--gg-muted) 62%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 56%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder a.comment-reply::before,
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle::before{
@@ -9689,8 +9717,8 @@ color:color-mix(in srgb, var(--gg-ink) 84%, transparent);
  font-size:10px;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-pop{
-min-width:116px;
-max-width:min(136px, calc(100vw - 18px));
+min-width:132px;
+max-width:min(148px, calc(100vw - 18px));
 padding:2px;
 border-radius:12px;
 border-color:color-mix(in srgb, var(--gg-border) 62%, transparent);
@@ -9700,10 +9728,11 @@ backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-pop button{
-padding:5px 7px;
+padding:5px 8px;
 border-radius:8px;
-font-size:9px;
-font-weight:590;
+font-size:8.65px;
+font-weight:585;
+white-space:nowrap;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta{
 min-height:0;
@@ -9714,42 +9743,42 @@ border:0;
 border-left:1px solid color-mix(in srgb, var(--gg-border) 30%, transparent);
 border-radius:0;
 background:transparent;
-color:color-mix(in srgb, var(--gg-muted) 70%, transparent);
-font-size:6.25px;
+color:color-mix(in srgb, var(--gg-muted) 64%, transparent);
+font-size:6.05px;
 font-weight:510;
-line-height:1.24;
+line-height:1.22;
 box-shadow:none;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta__icon{
-font-size:6.5px;
+font-size:6.2px;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-replying{
 gap:3px;
 padding-top:0;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-replying__title{
-font-size:6.45px;
+font-size:6.2px;
 line-height:1.2;
-color:color-mix(in srgb, var(--gg-muted) 72%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies{
 margin-top:5px;
-padding-left:5px;
+padding-left:4px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies::before{
 left:1px;
 top:2px;
 bottom:4px;
-background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 32%, transparent), color-mix(in srgb, var(--gg-border) 6%, transparent));
+background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 24%, transparent), color-mix(in srgb, var(--gg-border) 4%, transparent));
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment{
-grid-template-columns:15px minmax(0, 1fr);
+grid-template-columns:14px minmax(0, 1fr);
 column-gap:4px;
 padding:6px 0 7px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment > .avatar-image-container{
-width:15px;
-height:15px;
+width:14px;
+height:14px;
 }
 #ggPanelComments #comments > .gg-comments__footer{
 border-top:1px solid color-mix(in srgb, var(--gg-border) 62%, transparent);
@@ -9831,7 +9860,7 @@ line-height:1.35;
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle:hover{
 background:transparent;
 border-color:transparent;
-color:color-mix(in srgb, var(--gg-muted) 76%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder a.comment-reply:focus-visible,
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle:focus-visible,

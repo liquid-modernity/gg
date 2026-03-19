@@ -7498,7 +7498,51 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     closeMenus(commentsRoot(hostRoot()), wrap);
     btn.setAttribute('aria-expanded', open ? 'false' : 'true');
     pop.setAttribute('data-gg-state', open ? 'closed' : 'open');
+    if (!open) positionMenu(wrap);
     return !open;
+  }
+  function menuViewportBounds(wrap){
+    var root = null;
+    var panel = null;
+    var head = null;
+    var footer = null;
+    var panelRect = null;
+    var top = 0;
+    var bottom = 0;
+    if (!wrap || !wrap.closest) return null;
+    root = wrap.closest('#comments') || commentsRoot(hostRoot());
+    panel = root && root.closest ? root.closest('#ggPanelComments, .gg-comments-panel') : null;
+    if (!root || !root.getBoundingClientRect) return null;
+    panelRect = (panel && panel.getBoundingClientRect) ? panel.getBoundingClientRect() : root.getBoundingClientRect();
+    top = panelRect.top + 6;
+    bottom = panelRect.bottom - 6;
+    head = root.querySelector ? root.querySelector('.gg-comments__head') : null;
+    footer = root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+    if (head && head.getBoundingClientRect) top = Math.max(top, head.getBoundingClientRect().bottom + 4);
+    if (footer && footer.getBoundingClientRect) bottom = Math.min(bottom, footer.getBoundingClientRect().top - 4);
+    return { top: top, bottom: bottom };
+  }
+  function positionMenu(wrap){
+    var btn = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-btn') : null;
+    var pop = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-pop') : null;
+    var bounds = null;
+    var wrapRect = null;
+    var popRect = null;
+    var availableAbove = 0;
+    var availableBelow = 0;
+    var placement = 'up';
+    if (!btn || !pop || pop.getAttribute('data-gg-state') !== 'open') return;
+    pop.setAttribute('data-gg-placement', 'up');
+    bounds = menuViewportBounds(wrap);
+    if (!bounds || !wrap.getBoundingClientRect || !pop.getBoundingClientRect) return;
+    wrapRect = wrap.getBoundingClientRect();
+    popRect = pop.getBoundingClientRect();
+    availableAbove = wrapRect.top - bounds.top;
+    availableBelow = bounds.bottom - wrapRect.bottom;
+    if (availableAbove < (popRect.height + 6) && availableBelow > availableAbove) {
+      placement = 'down';
+    }
+    pop.setAttribute('data-gg-placement', placement);
   }
   function replyState(root){
     if (!root) return {};
