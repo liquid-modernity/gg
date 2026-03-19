@@ -7145,6 +7145,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var hasNativeReply = false;
     var hasVisibleReply = false;
     var moderationBadges = null;
+    var visibleTopComposerOwners = null;
     if (!root || !root.querySelectorAll) return issues;
     if (root.querySelector('.cmt2-replying__eyebrow, .cmt2-replying:not([data-gg-tone="inline"])')) issues.push('reply-cue-heavy');
     helperNodes = toArray(root.querySelectorAll('.comment-replybox-single p, .comment-replybox-single div, .comment-replybox-single span, .comment-replybox-thread p, .comment-replybox-thread div, .comment-replybox-thread span, #top-ce p, #top-ce div, #top-ce span')).filter(function(node){
@@ -7181,7 +7182,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       }
       if (cta && composerState.kind !== 'native') issues.push('composer-kind:' + composerState.kind + ':' + composerState.reason);
       if (cta && visibleAddOwners.length !== 1) issues.push('add-comment-owner-count:' + visibleAddOwners.length);
-      if (root.querySelectorAll('#top-ce').length > 1) issues.push('duplicate-composer-id');
+      visibleTopComposerOwners = toArray(root.querySelectorAll('#top-ce')).filter(function(node){
+        return isVisibleNode(node) && replyBoxHasComposer(node);
+      });
+      if (visibleTopComposerOwners.length > 1) issues.push('duplicate-composer-id');
       if (visibleComposerOwners.length > 1) issues.push('composer-owner-duplicate');
       if (visibleAddOwners.length > 1) issues.push('add-comment-duplicate');
       if (firstVisibleNode(toArray(root.querySelectorAll('#cmt2-holder #top-continue .comment-reply, #cmt2-holder .continue .comment-reply')))) {

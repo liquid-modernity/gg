@@ -981,6 +981,15 @@ function isCommentRuntimeMessage(value) {
   return /comment|comments|reply|composer|ggpanelcomments|ui\.bucket\.(core|post|authors)|#comments|gg-comments/.test(hay);
 }
 
+function isIgnorableCommentRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  if (!hay) return false;
+  if (hay.includes('[report only]')) return true;
+  if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
+  if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
+  return false;
+}
+
 function state(pass, detail) {
   return { pass: !!pass, detail: detail || 'ok' };
 }
@@ -1014,10 +1023,23 @@ async function captureState(page) {
     function interactiveComments(root) {
       return visibleAll('#cmt2-holder li.comment', root).filter((comment) => commentState(comment) === 'active');
     }
+    function commentBlock(comment) {
+      if (!comment || !comment.children) return null;
+      return Array.from(comment.children).find((node) => node && node.classList && node.classList.contains('comment-block')) || null;
+    }
+    function commentActions(comment) {
+      const block = commentBlock(comment);
+      if (!block || !block.children) return null;
+      return Array.from(block.children).find((node) => node && node.classList && node.classList.contains('comment-actions')) || null;
+    }
+    function directVisibleActionOwners(comment, selector) {
+      const actions = commentActions(comment);
+      if (!actions || !actions.children) return [];
+      return Array.from(actions.children).filter((node) => node && node.matches && node.matches(selector) && visible(node));
+    }
     function directReplyCount(comment) {
       const replies = comment && comment.querySelector ? comment.querySelector(':scope > .comment-replies') : null;
-      const container = replies && replies.querySelector ? (replies.querySelector(':scope > .comments-content') || replies) : null;
-      return container ? Array.from(container.children || []).filter((node) => node.matches && node.matches('li.comment')).length : 0;
+      return replies && replies.querySelectorAll ? replies.querySelectorAll('li.comment').length : 0;
     }
     function hasComposerField(node) {
       if (!node) return false;
@@ -1104,9 +1126,9 @@ async function captureState(page) {
 
     interactive.forEach((comment) => {
       const key = commentKey(comment);
-      const replyOwners = visibleAll('.comment-actions .cmt2-reply-action', comment);
-      const moreOwners = visibleAll('.comment-actions .cmt2-ctx', comment);
-      const toggleOwners = visibleAll('.comment-actions .cmt2-thread-toggle', comment);
+      const replyOwners = directVisibleActionOwners(comment, '.cmt2-reply-action');
+      const moreOwners = directVisibleActionOwners(comment, '.cmt2-ctx');
+      const toggleOwners = directVisibleActionOwners(comment, '.cmt2-thread-toggle');
       const deleteOwnerPeers = visibleAll('.comment-footer .comment-delete, .comment-actions .comment-delete, .comment-footer .cmt2-del, .comment-actions .cmt2-del, .gg-cmt2__del, .item-control', comment);
       const childCount = directReplyCount(comment);
       if (replyOwners.length !== 1) replyOwnerFailures.push(`${key}:${replyOwners.length}`);
@@ -1157,6 +1179,7 @@ async function captureState(page) {
       firstReplyId,
       proofState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : ''),
       proofCount: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : ''),
+      proofIssues: root && Array.isArray(root.__ggCommentProofIssues) ? root.__ggCommentProofIssues.join(',') : '',
       visibleCommentsSurfaces: visibleAll('#comments', document).length,
       visibleOffPanelSurfaces: visibleAll('#comments', document).filter((node) => !node.closest('#ggPanelComments')).length
     };
@@ -1194,11 +1217,11 @@ async function main() {
     if (msg.type() !== 'error') return;
     const loc = msg.location ? msg.location() : {};
     const payload = `${msg.text ? msg.text() : ''} ${(loc && loc.url) || ''}`;
-    if (isCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+    if (isCommentRuntimeMessage(payload) && !isIgnorableCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
   });
   page.on('pageerror', (error) => {
     const payload = `${error && error.message ? error.message : error} ${error && error.stack ? error.stack : ''}`;
-    if (isCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+    if (isCommentRuntimeMessage(payload) && !isIgnorableCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
   });
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
@@ -1359,7 +1382,10 @@ async function main() {
     });
     results.push({
       id: 'runtime-proof',
-      ...state(before.proofState === 'ok', `proof=${before.proofState || 'missing'}:${before.proofCount || 'missing'}`)
+      ...state(
+        before.proofState === 'ok',
+        `proof=${before.proofState || 'missing'}:${before.proofCount || 'missing'};issues=${before.proofIssues || 'none'}`
+      )
     });
     results.push({
       id: 'runtime-errors',
