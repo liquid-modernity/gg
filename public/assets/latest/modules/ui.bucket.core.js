@@ -3014,7 +3014,7 @@ if(!main || !bar) return;
 if(bar.__ggBound) return;
 bar.__ggBound = true;
 
-var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null,infoPanelRight=rightSidebar?qs('[data-gg-panel="info"]',rightSidebar):null,infoCardPost=infoPanelRight?qs('#gg-postinfo',infoPanelRight):null;
+var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=qs('#ggPanelComments',main)||qs('[data-gg-panel="comments"]',main)||(rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null),infoPanelRight=rightSidebar?qs('[data-gg-panel="info"]',rightSidebar):null,infoCardPost=infoPanelRight?qs('#gg-postinfo',infoPanelRight):null;
 if(infoCardPost) infoCardPost.hidden=false;
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
@@ -8214,7 +8214,11 @@ function isSystemPath(pathname){
       if (side === 'right' && main) {
         var mode = getAttr(main, 'data-gg-right-mode') || '';
         if (mode === 'comments') {
-          panel = qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) || right;
+          panel = qs('#ggPanelComments', main) ||
+            qs('[data-gg-panel="comments"]', main) ||
+            qs('.gg-comments-panel', main) ||
+            (right ? qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) : null) ||
+            right;
         } else if (mode) {
           panel = qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || qs('.gg-info-panel', right) || right;
         }
@@ -8332,8 +8336,15 @@ function updateBackdrop(){
   var isDetailSurface = surface === 'post' || surface === 'page';
   var rightMode = getAttr(main, 'data-gg-right-mode') || '';
   var showInfoSheet = isDetailSurface && rightOpen && rightMode === 'info';
+  var showCommentsSheet = isDetailSurface && rightOpen && rightMode === 'comments';
+  var commentsHost = showCommentsSheet ? (
+    qs('#ggPanelComments', main) ||
+    qs('[data-gg-panel="comments"]', main) ||
+    qs('.gg-comments-panel', main) ||
+    (right ? qs('[data-gg-panel="comments"]', right) || qs('.gg-comments-panel', right) : null)
+  ) : null;
   var show = (mobileOverlay && isDetailSurface && (leftOpen || rightOpen)) || showInfoSheet;
-  var activeAside = showInfoSheet ? (qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || right) : (rightOpen ? right : (leftOpen ? left : null));
+  var activeAside = showInfoSheet ? (qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || right) : (rightOpen ? (commentsHost || right) : (leftOpen ? left : null));
   if (backdrop) {
     GG.core.state.toggle(backdrop, 'visible', show);
     if (showInfoSheet) backdrop.setAttribute('data-gg-tone', 'info');
