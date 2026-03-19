@@ -9552,19 +9552,19 @@ padding-bottom:0;
 grid-template-columns:20px minmax(0, 1fr);
 column-gap:6px;
 padding:7px 0 8px;
-border-bottom-color:color-mix(in srgb, var(--gg-border) 46%, transparent);
+border-bottom-color:color-mix(in srgb, var(--gg-border) 54%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder li.comment:last-child{
 border-bottom:0;
 }
 #ggPanelComments #comments #cmt2-holder li.comment > .avatar-image-container{
-width:20px;
-height:20px;
+width:19px;
+height:19px;
 margin-top:1px;
-border-color:color-mix(in srgb, var(--gg-border) 54%, transparent);
-background:color-mix(in srgb, var(--gg-surface) 98%, #f1eee8);
+border-color:color-mix(in srgb, var(--gg-border) 46%, transparent);
+background:color-mix(in srgb, var(--gg-surface) 98.6%, #f3efe8);
 box-shadow:none;
-opacity:.94;
+opacity:.89;
 }
 #ggPanelComments #comments #cmt2-holder li.comment > .comment-block{
 position:relative;
@@ -9601,19 +9601,19 @@ min-width:0;
 flex:0 0 auto;
 max-width:100%;
 white-space:nowrap;
-color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 74%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .datetime::before{
 content:"•";
 margin:0 4px;
-color:color-mix(in srgb, var(--gg-muted) 52%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 60%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .datetime a{
 display:inline-block;
 max-width:100%;
-font-size:6.55px;
+font-size:6.65px;
 line-height:1.18;
-font-weight:490;
+font-weight:500;
 color:inherit;
 text-decoration:none;
 white-space:nowrap;
@@ -9626,25 +9626,60 @@ letter-spacing:.02em;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-state{
 min-height:0;
-padding:0 0 0 4px;
+padding:0 0 0 3px;
 border:0;
-border-left:1px solid color-mix(in srgb, var(--gg-border) 34%, transparent);
+border-left:1px solid color-mix(in srgb, var(--gg-border) 28%, transparent);
 border-radius:0;
 background:transparent;
-font-size:5.9px;
-font-weight:600;
+font-size:5.7px;
+font-weight:540;
 line-height:1.35;
-letter-spacing:.08em;
-text-transform:uppercase;
-color:color-mix(in srgb, var(--gg-muted) 74%, transparent);
+letter-spacing:.05em;
+text-transform:none;
+color:color-mix(in srgb, var(--gg-muted) 70%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-content{
+display:block;
+min-width:0;
+max-width:100%;
 font-size:10px;
-line-height:1.5;
+line-height:1.52;
 color:color-mix(in srgb, var(--gg-ink) 93%, transparent);
+overflow-wrap:anywhere;
+word-break:break-word;
+hyphens:auto;
+white-space:normal;
+text-wrap:pretty;
 }
 #ggPanelComments #comments #cmt2-holder li.comment[data-gg-comment-state="deleted"] .comment-content{
-color:color-mix(in srgb, var(--gg-muted) 90%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 86%, transparent);
+font-style:italic;
+}
+#ggPanelComments #comments #cmt2-holder li.comment[data-gg-comment-state="deleted"] .cmt2-state{
+border-left-color:color-mix(in srgb, var(--gg-border) 22%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+}
+#ggPanelComments #comments #cmt2-holder .comment-content :is(a,span,em,strong,b,i,u,s,code,small){
+overflow-wrap:anywhere;
+word-break:break-word;
+max-width:100%;
+}
+#ggPanelComments #comments #cmt2-holder .comment-content :is(p,blockquote,figure,pre){
+max-width:100%;
+margin:0;
+}
+#ggPanelComments #comments #cmt2-holder .comment-content pre{
+white-space:pre-wrap;
+overflow-wrap:anywhere;
+word-break:break-word;
+}
+#ggPanelComments #comments #cmt2-holder .comment-content a{
+text-decoration-thickness:.06em;
+text-underline-offset:.12em;
+}
+#ggPanelComments #comments #cmt2-holder .comment-content img{
+max-width:100%;
+height:auto;
 }
 #ggPanelComments #comments #cmt2-holder .comment-actions{
 display:flex;
@@ -9686,7 +9721,7 @@ order:2;
 font-size:7.15px;
 font-weight:490;
 letter-spacing:.01em;
-color:color-mix(in srgb, var(--gg-muted) 56%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 63%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder a.comment-reply::before,
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle::before{
@@ -9743,29 +9778,34 @@ white-space:nowrap;
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta{
 min-height:0;
 max-width:100%;
-padding:0 0 0 5px;
-gap:3px;
+padding:0 0 0 4px;
+gap:2px;
 border:0;
-border-left:1px solid color-mix(in srgb, var(--gg-border) 30%, transparent);
+border-left:1px solid color-mix(in srgb, var(--gg-border) 24%, transparent);
 border-radius:0;
 background:transparent;
-color:color-mix(in srgb, var(--gg-muted) 64%, transparent);
-font-size:6.05px;
-font-weight:510;
+color:color-mix(in srgb, var(--gg-muted) 61%, transparent);
+font-size:5.9px;
+font-weight:500;
 line-height:1.22;
 box-shadow:none;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta__icon{
-font-size:6.2px;
+font-size:6px;
+opacity:.82;
+}
+#ggPanelComments #comments #cmt2-holder .cmt2-reply-meta__author{
+font-weight:540;
+color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-replying{
 gap:3px;
 padding-top:0;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-replying__title{
-font-size:6.2px;
+font-size:6px;
 line-height:1.2;
-color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 62%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies{
 margin-top:5px;
@@ -9775,7 +9815,7 @@ padding-left:4px;
 left:1px;
 top:2px;
 bottom:4px;
-background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 24%, transparent), color-mix(in srgb, var(--gg-border) 4%, transparent));
+background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 31%, transparent), color-mix(in srgb, var(--gg-border) 10%, transparent));
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment{
 grid-template-columns:14px minmax(0, 1fr);
@@ -9783,18 +9823,18 @@ column-gap:4px;
 padding:6px 0 7px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment > .avatar-image-container{
-width:14px;
-height:14px;
+width:13px;
+height:13px;
 }
 #ggPanelComments #comments > .gg-comments__footer{
-border-top:1px solid color-mix(in srgb, var(--gg-border) 62%, transparent);
+border-top:1px solid color-mix(in srgb, var(--gg-border) 58%, transparent);
 background:color-mix(in srgb, var(--gg-surface) 98.2%, #f5f3ee);
 backdrop-filter:blur(8px);
 -webkit-backdrop-filter:blur(8px);
 }
 #ggPanelComments #comments > .gg-comments__footer .gg-comments__footer-inner{
-gap:4px;
-padding:5px 7px calc(6px + env(safe-area-inset-bottom));
+gap:3px;
+padding:4px 6px calc(5px + env(safe-area-inset-bottom));
 border-top:0;
 background:transparent;
 box-shadow:none;
@@ -9802,7 +9842,7 @@ backdrop-filter:none;
 -webkit-backdrop-filter:none;
 }
 #ggPanelComments #comments > .gg-comments__footer .gg-comments__footer-note{
-font-size:7.5px;
+font-size:7.35px;
 line-height:1.28;
 }
 #ggPanelComments #comments > .gg-comments__footer #gg-top-continue .comment-reply{
@@ -9834,18 +9874,18 @@ margin-right:3px;
 max-width:100%;
 }
 #ggPanelComments #top-ce:not([data-gg-fallback="1"]){
-padding:2px;
-border:1px solid color-mix(in srgb, var(--gg-border) 48%, transparent);
-border-radius:10px;
-background:color-mix(in srgb, var(--gg-surface) 99.1%, #fbfaf7);
+padding:1px;
+border:1px solid color-mix(in srgb, var(--gg-border) 40%, transparent);
+border-radius:9px;
+background:color-mix(in srgb, var(--gg-surface) 99.3%, #fbfaf7);
 box-shadow:none;
 }
 #ggPanelComments iframe#comment-editor{
 display:block;
-min-height:152px;
+min-height:148px;
 margin-bottom:0;
 border:0;
-border-radius:7px;
+border-radius:6px;
 background:var(--gg-surface);
 box-shadow:none;
 }
@@ -9866,7 +9906,7 @@ line-height:1.35;
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle:hover{
 background:transparent;
 border-color:transparent;
-color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 72%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder a.comment-reply:focus-visible,
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle:focus-visible,
