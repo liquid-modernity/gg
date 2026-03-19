@@ -14,6 +14,7 @@ import path from "node:path";
 const USAGE = `Usage:
   npm run gaga:audit -- <path-to-zip>
   npm run gaga:audit -- --out qa/audit-output/custom-name <path-to-zip>
+  npm run gaga:audit -- --task task-p107ac <path-to-zip>
   npm run gaga:audit -- --json <path-to-zip>
   npm run gaga:audit -- --warn-only <path-to-zip>
 
@@ -76,6 +77,7 @@ function parseArgs(argv) {
   let outPrefix = path.resolve("qa/audit-output/zip-audit.latest");
   let jsonToStdout = false;
   let warnOnly = false;
+  let taskId = "";
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -89,6 +91,15 @@ function parseArgs(argv) {
     }
     if (arg === "--warn-only") {
       warnOnly = true;
+      continue;
+    }
+    if (arg === "--task") {
+      const next = argv[i + 1];
+      if (!next || next.startsWith("-")) {
+        fail("--task requires a value");
+      }
+      taskId = String(next).trim();
+      i += 1;
       continue;
     }
     if (arg === "--out") {
@@ -121,6 +132,7 @@ function parseArgs(argv) {
     outPrefix,
     jsonToStdout,
     warnOnly,
+    taskId,
   };
 }
 
@@ -231,6 +243,13 @@ function humanBytes(size) {
   }
   const fixed = idx === 0 ? String(Math.round(value)) : value.toFixed(2);
   return `${fixed} ${units[idx]}`;
+}
+
+function canonicalTaskToken(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function getTopLevelRoots(entries) {
@@ -673,9 +692,9 @@ function collectSignals(index, zipPath, workflowSummary) {
         /check_comments_owner_contract\s*\(\)/.test(sh) &&
         /check_comments_owner_contract\b/.test(sh);
       qaLiveSmokeTargetsCommentsPath =
-        /COMMENTS_TARGET_PATH_0=.*\/2026\/02\/todo\.html/.test(sh) &&
-        /COMMENTS_TARGET_PATH_2=.*\/2025\/10\/in-night-we-stand-in-day-we-fight\.html/.test(sh) &&
-        /COMMENTS_TARGET_PATH_16=.*\/2025\/10\/tes-2\.html/.test(sh);
+        /(COMMENTS_PANEL_TARGET_PATH_0|COMMENTS_TARGET_PATH_0)=.*\/2026\/02\/todo\.html/.test(sh) &&
+        /(COMMENTS_PANEL_TARGET_PATH_2|COMMENTS_TARGET_PATH_2)=.*\/2025\/10\/in-night-we-stand-in-day-we-fight\.html/.test(sh) &&
+        /(COMMENTS_PANEL_TARGET_PATH_16|COMMENTS_TARGET_PATH_16)=.*\/2025\/10\/tes-2\.html/.test(sh);
     }
   }
 
@@ -693,6 +712,97 @@ function collectSignals(index, zipPath, workflowSummary) {
     qaLiveSmokeHasCommentsOwnerCheck,
     qaLiveSmokeTargetsCommentsPath,
     toolsEntriesCount: toolsEntries.length,
+  };
+}
+
+function parseTaskArtifactSummary(zipPath, index, taskId) {
+  if (!taskId) {
+    return {
+      enabled: false,
+      taskId: "",
+      expected: {},
+      exists: {},
+      entries: {},
+      manifest: null,
+      manifestParseError: "",
+      manifestFields: {},
+      zipEntries: [],
+      zipEntryPresence: [],
+    };
+  }
+
+  const expected = {
+    md: `qa/audit-output/${taskId}.md`,
+    json: `qa/audit-output/${taskId}.json`,
+    liveSmoke: `qa/audit-output/${taskId}-live-smoke.txt`,
+  };
+
+  const entries = {
+    md: firstEntryFor(index, expected.md),
+    json: firstEntryFor(index, expected.json),
+    liveSmoke: firstEntryFor(index, expected.liveSmoke),
+  };
+
+  const exists = {
+    md: Boolean(entries.md),
+    json: Boolean(entries.json),
+    liveSmoke: Boolean(entries.liveSmoke),
+  };
+
+  let manifest = null;
+  let manifestParseError = "";
+  if (entries.json) {
+    const raw = readZipFileText(zipPath, entries.json);
+    if (!raw) {
+      manifestParseError = "empty task manifest json";
+    } else {
+      try {
+        manifest = JSON.parse(raw);
+      } catch (error) {
+        manifestParseError = `invalid task manifest json (${error?.message || "parse error"})`;
+      }
+    }
+  }
+
+  const zipEntries = Array.isArray(manifest?.zip_entries)
+    ? manifest.zip_entries
+        .map((entry) => normalizePathRef(entry))
+        .filter(Boolean)
+    : [];
+
+  const zipEntryPresence = zipEntries.map((entry) => ({
+    path: entry,
+    exists: hasPath(index, entry),
+    entry: firstEntryFor(index, entry),
+  }));
+
+  return {
+    enabled: true,
+    taskId,
+    expected,
+    exists,
+    entries,
+    manifest,
+    manifestParseError,
+    manifestFields: {
+      task: String(manifest?.task || ""),
+      commit:
+        String(manifest?.commit || "") ||
+        (Array.isArray(manifest?.commits) ? manifest.commits.join(",") : ""),
+      changedFilesCount: Array.isArray(manifest?.changed_files)
+        ? manifest.changed_files.length
+        : 0,
+      ciUrl: String(manifest?.workflows?.ci?.url || ""),
+      ciStatus: String(manifest?.workflows?.ci?.status || ""),
+      deployUrl: String(manifest?.workflows?.deploy?.url || ""),
+      deployStatus: String(manifest?.workflows?.deploy?.status || ""),
+      liveSmokeLog:
+        String(manifest?.live_smoke?.log || "") ||
+        String(manifest?.live_smoke?.path || ""),
+      liveSmokeStatus: String(manifest?.live_smoke?.status || ""),
+    },
+    zipEntries,
+    zipEntryPresence,
   };
 }
 
@@ -715,6 +825,7 @@ function buildFindings({
   workflowSummary,
   signals,
   index,
+  taskSummary,
 }) {
   const warnings = [];
   const criticalFailures = [];
@@ -843,6 +954,64 @@ function buildFindings({
     warnings.push("qa/live-smoke.sh does not target the 0/2/16 comments owner proof matrix.");
   }
 
+  if (taskSummary?.enabled) {
+    if (!taskSummary.exists.md) {
+      criticalFailures.push(`Missing required task artifact in ZIP: ${taskSummary.expected.md}`);
+    }
+    if (!taskSummary.exists.json) {
+      criticalFailures.push(`Missing required task artifact in ZIP: ${taskSummary.expected.json}`);
+    }
+    if (!taskSummary.exists.liveSmoke) {
+      criticalFailures.push(
+        `Missing required task artifact in ZIP: ${taskSummary.expected.liveSmoke}`
+      );
+    }
+    if (taskSummary.manifestParseError) {
+      criticalFailures.push(taskSummary.manifestParseError);
+    }
+    if (taskSummary.exists.json && !taskSummary.zipEntries.length) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing a non-empty zip_entries list`
+      );
+    }
+    if (
+      taskSummary.exists.json &&
+      taskSummary.manifestFields.task &&
+      canonicalTaskToken(taskSummary.manifestFields.task) !==
+        canonicalTaskToken(taskSummary.taskId)
+    ) {
+      criticalFailures.push(
+        `task manifest task id mismatch: expected '${taskSummary.taskId}', saw '${taskSummary.manifestFields.task}'`
+      );
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.commit) {
+      criticalFailures.push(`task manifest '${taskSummary.expected.json}' is missing commit hash data`);
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.changedFilesCount) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing changed_files entries`
+      );
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.ciUrl) {
+      criticalFailures.push(`task manifest '${taskSummary.expected.json}' is missing CI workflow URL`);
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.deployUrl) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing Deploy workflow URL`
+      );
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.liveSmokeLog) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing live smoke log path`
+      );
+    }
+    for (const row of taskSummary.zipEntryPresence) {
+      if (!row.exists) {
+        criticalFailures.push(`task manifest zip entry missing in archive: ${row.path}`);
+      }
+    }
+  }
+
   return {
     warnings,
     criticalFailures,
@@ -853,6 +1022,7 @@ function buildFindings({
       missingWorkflowScripts,
       missingWorkflowFiles,
       deadLegacyRefs,
+      taskSummary,
     },
   };
 }
@@ -966,6 +1136,62 @@ function renderMarkdown(report) {
   lines.push("## G. Critical Failures");
   if (!report.criticalFailures.length) lines.push("- none");
   else for (const failure of report.criticalFailures) lines.push(`- ${failure}`);
+  if (report.taskArtifacts?.enabled) {
+    lines.push("");
+    lines.push("## H. Task Artifact Chain");
+    lines.push(`- task id: \`${report.taskArtifacts.taskId}\``);
+    lines.push(
+      `- task markdown: ${report.taskArtifacts.exists.md ? "[ok]" : "[missing]"} \`${report.taskArtifacts.expected.md}\``
+    );
+    lines.push(
+      `- task json: ${report.taskArtifacts.exists.json ? "[ok]" : "[missing]"} \`${report.taskArtifacts.expected.json}\``
+    );
+    lines.push(
+      `- live smoke log: ${report.taskArtifacts.exists.liveSmoke ? "[ok]" : "[missing]"} \`${report.taskArtifacts.expected.liveSmoke}\``
+    );
+    lines.push(
+      `- manifest task field: ${
+        report.taskArtifacts.manifestFields.task
+          ? `\`${report.taskArtifacts.manifestFields.task}\``
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- manifest commit field: ${
+        report.taskArtifacts.manifestFields.commit
+          ? `\`${report.taskArtifacts.manifestFields.commit}\``
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- manifest CI: ${
+        report.taskArtifacts.manifestFields.ciUrl
+          ? `\`${report.taskArtifacts.manifestFields.ciStatus || "unknown"}\` ${report.taskArtifacts.manifestFields.ciUrl}`
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- manifest Deploy: ${
+        report.taskArtifacts.manifestFields.deployUrl
+          ? `\`${report.taskArtifacts.manifestFields.deployStatus || "unknown"}\` ${report.taskArtifacts.manifestFields.deployUrl}`
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- manifest live smoke: ${
+        report.taskArtifacts.manifestFields.liveSmokeLog
+          ? `\`${report.taskArtifacts.manifestFields.liveSmokeStatus || "unknown"}\` \`${report.taskArtifacts.manifestFields.liveSmokeLog}\``
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- task zip entries (${report.taskArtifacts.zipEntries.length}): ${
+        report.taskArtifacts.zipEntries.length
+          ? report.taskArtifacts.zipEntries.map((entry) => `\`${entry}\``).join(", ")
+          : "_missing_"
+      }`
+    );
+  }
   lines.push("");
   lines.push(`Report generated at: ${report.generatedAt}`);
   return `${lines.join("\n")}\n`;
@@ -983,6 +1209,10 @@ function printHumanSummary(report) {
   console.log(`- critical missing files: ${missing.length ? missing.join(", ") : "none"}`);
   console.log(`- workflows: ${report.workflows.entries.length}`);
   console.log(`- scripts: ${report.package.scriptCount}`);
+  if (report.taskArtifacts?.enabled) {
+    console.log(`- task: ${report.taskArtifacts.taskId}`);
+    console.log(`- task zip entries: ${report.taskArtifacts.zipEntries.length}`);
+  }
   console.log(`- warnings: ${report.warnings.length}`);
   if (report.warnings.length) {
     for (const warning of report.warnings) {
@@ -1033,6 +1263,7 @@ function main() {
     packageSummary.scripts
   );
   const signals = collectSignals(index, args.zipPath, workflowSummary);
+  const taskSummary = parseTaskArtifactSummary(args.zipPath, index, args.taskId);
 
   const findings = buildFindings({
     criticalMissing,
@@ -1041,6 +1272,7 @@ function main() {
     workflowSummary,
     signals,
     index,
+    taskSummary,
   });
 
   const outputPrefix = args.outPrefix;
@@ -1084,6 +1316,7 @@ function main() {
     },
     workflows: workflowSummary,
     signals,
+    taskArtifacts: taskSummary,
     warnings: findings.warnings,
     criticalFailures: findings.criticalFailures,
     contractFindings: findings.details,

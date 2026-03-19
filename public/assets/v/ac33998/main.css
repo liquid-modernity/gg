@@ -9718,10 +9718,10 @@ color:color-mix(in srgb, var(--gg-ink) 82%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle{
 order:2;
-font-size:7.15px;
+font-size:7.2px;
 font-weight:490;
 letter-spacing:.01em;
-color:color-mix(in srgb, var(--gg-muted) 63%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 67%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder a.comment-reply::before,
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle::before{
@@ -9758,10 +9758,10 @@ color:color-mix(in srgb, var(--gg-ink) 84%, transparent);
  font-size:10px;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-pop{
-min-width:132px;
-max-width:min(148px, calc(100vw - 18px));
-padding:2px;
-border-radius:12px;
+min-width:128px;
+max-width:min(144px, calc(100vw - 18px));
+padding:1px;
+border-radius:10px;
 border-color:color-mix(in srgb, var(--gg-border) 62%, transparent);
 background:color-mix(in srgb, var(--gg-surface) 98.4%, rgba(255,255,255,.96));
 box-shadow:0 7px 16px rgba(15,23,42,.07);
@@ -9769,8 +9769,8 @@ backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-pop button{
-padding:5px 8px;
-border-radius:8px;
+padding:4px 7px;
+border-radius:7px;
 font-size:8.65px;
 font-weight:585;
 white-space:nowrap;
@@ -9781,12 +9781,12 @@ max-width:100%;
 padding:0 0 0 4px;
 gap:2px;
 border:0;
-border-left:1px solid color-mix(in srgb, var(--gg-border) 24%, transparent);
+border-left:1px solid color-mix(in srgb, var(--gg-border) 18%, transparent);
 border-radius:0;
 background:transparent;
-color:color-mix(in srgb, var(--gg-muted) 61%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 58%, transparent);
 font-size:5.9px;
-font-weight:500;
+font-weight:480;
 line-height:1.22;
 box-shadow:none;
 }
@@ -9795,8 +9795,8 @@ font-size:6px;
 opacity:.82;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta__author{
-font-weight:540;
-color:color-mix(in srgb, var(--gg-muted) 66%, transparent);
+font-weight:530;
+color:color-mix(in srgb, var(--gg-muted) 62%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-replying{
 gap:3px;
@@ -9805,7 +9805,7 @@ padding-top:0;
 #ggPanelComments #comments #cmt2-holder .cmt2-replying__title{
 font-size:6px;
 line-height:1.2;
-color:color-mix(in srgb, var(--gg-muted) 62%, transparent);
+color:color-mix(in srgb, var(--gg-muted) 58%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies{
 margin-top:5px;
