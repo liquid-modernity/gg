@@ -203,10 +203,30 @@ worker_rollout_signal() {
 
 comments_owner_signal() {
   local message="$1"
+  if template_publish_pending; then
+    log_warn "$message"
+    return
+  fi
   if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "fail" ]]; then
     log_fail "$message"
   else
     log_warn "$message"
+  fi
+}
+
+template_publish_pending() {
+  if ! is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+    return 1
+  fi
+  [[ "$template_release_state" != "blogger_template_parity_verified" && "$template_release_state" != "blogger_template_parity_unknown" ]]
+}
+
+detail_contract_signal() {
+  local message="$1"
+  if template_publish_pending; then
+    log_warn "$message"
+  else
+    log_fail "$message"
   fi
 }
 
@@ -624,16 +644,16 @@ check_detail_panel_contract() {
   local file="$1"
   local context="$2"
   if ! grep -Eq "id=['\\\"]gg-postinfo['\\\"]" "$file"; then
-    log_fail "$context missing #gg-postinfo (detail panel)"
+    detail_contract_signal "$context missing #gg-postinfo (detail panel)"
   fi
   if ! grep -Eq "data-gg-marker=['\\\"]panel-post-author['\\\"]" "$file"; then
-    log_fail "$context missing panel-post-author slot"
+    detail_contract_signal "$context missing panel-post-author slot"
   fi
   if ! grep -Eq "data-gg-marker=['\\\"]panel-post-tags['\\\"]" "$file"; then
-    log_fail "$context missing panel-post-tags slot"
+    detail_contract_signal "$context missing panel-post-tags slot"
   fi
   if ! grep -Eq "id=['\\\"]ggPanelComments['\\\"]" "$file"; then
-    log_fail "$context missing #ggPanelComments (detail comments panel)"
+    detail_contract_signal "$context missing #ggPanelComments (detail comments panel)"
   fi
   assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-editorial-preview" "listing editorial panel on detail surface"
   assert_absent_marker "$file" "$context" "data-gg-panelmeta=['\\\"]listing['\\\"]" "listing panel contract on detail surface"
