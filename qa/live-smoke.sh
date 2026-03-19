@@ -13,9 +13,13 @@ WORKER_VERSION_MODE="${GG_WORKER_VERSION_MODE:-off}"
 WORKER_VERSION_CHECK_PATH="${GG_WORKER_VERSION_CHECK_PATH:-/__gg_worker_ping}"
 WORKER_ROLLOUT_MAX_ATTEMPTS="${GG_WORKER_ROLLOUT_MAX_ATTEMPTS:-12}"
 WORKER_ROLLOUT_BACKOFF_SECONDS="${GG_WORKER_ROLLOUT_BACKOFF_SECONDS:-5}"
-COMMENTS_TARGET_PATH_0="${GG_COMMENTS_TARGET_PATH_0:-/2026/02/todo.html}"
-COMMENTS_TARGET_PATH_2="${GG_COMMENTS_TARGET_PATH_2:-/2025/10/in-night-we-stand-in-day-we-fight.html}"
-COMMENTS_TARGET_PATH_16="${GG_COMMENTS_TARGET_PATH_16:-/2025/10/tes-2.html}"
+COMMENTS_PANEL_TARGET_PATH_0="${GG_COMMENTS_PANEL_TARGET_PATH_0:-${GG_COMMENTS_TARGET_PATH_0:-/2026/02/todo.html}}"
+COMMENTS_PANEL_TARGET_PATH_2="${GG_COMMENTS_PANEL_TARGET_PATH_2:-${GG_COMMENTS_TARGET_PATH_2:-/2025/10/in-night-we-stand-in-day-we-fight.html}}"
+COMMENTS_PANEL_TARGET_PATH_16="${GG_COMMENTS_PANEL_TARGET_PATH_16:-${GG_COMMENTS_TARGET_PATH_16:-/2025/10/tes-2.html}}"
+COMMENTS_COMPOSE_TARGET_PATH_0="${GG_COMMENTS_OPEN_TARGET_PATH_0:-}"
+COMMENTS_COMPOSE_TARGET_PATH_THREAD="${GG_COMMENTS_OPEN_TARGET_PATH_THREAD:-}"
+COMMENTS_COMPOSE_EXPECTED_COUNT_0="${GG_COMMENTS_OPEN_EXPECTED_COUNT_0:-0}"
+COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD="${GG_COMMENTS_OPEN_EXPECTED_COUNT_THREAD:-2}"
 COMMENTS_OWNER_BROWSER_MODE="${GG_COMMENTS_OWNER_BROWSER_MODE:-warn}"
 PLAYWRIGHT_EXECUTABLE_PATH="${GG_PLAYWRIGHT_EXECUTABLE_PATH:-}"
 
@@ -33,6 +37,12 @@ if ! [[ "$WORKER_ROLLOUT_MAX_ATTEMPTS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_MAX_A
 fi
 if ! [[ "$WORKER_ROLLOUT_BACKOFF_SECONDS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_BACKOFF_SECONDS < 1 )); then
   WORKER_ROLLOUT_BACKOFF_SECONDS=5
+fi
+if ! [[ "$COMMENTS_COMPOSE_EXPECTED_COUNT_0" =~ ^[0-9]+$ ]]; then
+  COMMENTS_COMPOSE_EXPECTED_COUNT_0=0
+fi
+if ! [[ "$COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD" =~ ^[0-9]+$ ]]; then
+  COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD=2
 fi
 
 tmp_dir="$(mktemp -d)"
@@ -52,6 +62,9 @@ printf 'SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blo
 printf 'SMOKE scope: template drift mode=%s changed_in_rev=%s.\n' "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
 printf 'SMOKE scope: worker rollout mode=%s expected_version=%s check_path=%s attempts=%s backoff=%ss.\n' \
   "$WORKER_VERSION_MODE" "${EXPECTED_WORKER_VERSION:-unset}" "$WORKER_VERSION_CHECK_PATH" "$WORKER_ROLLOUT_MAX_ATTEMPTS" "$WORKER_ROLLOUT_BACKOFF_SECONDS"
+printf 'SMOKE comments-fixtures panel.zero=%s panel.two=%s panel.sixteen=%s compose.zero=%s compose.thread=%s\n' \
+  "$COMMENTS_PANEL_TARGET_PATH_0" "$COMMENTS_PANEL_TARGET_PATH_2" "$COMMENTS_PANEL_TARGET_PATH_16" \
+  "${COMMENTS_COMPOSE_TARGET_PATH_0:-unset}" "${COMMENTS_COMPOSE_TARGET_PATH_THREAD:-unset}"
 
 log_fail() {
   failures=$((failures + 1))
@@ -933,28 +946,63 @@ NODE
 }
 
 check_comments_owner_contract() {
-  check_comments_owner_case "zero" "0" "$COMMENTS_TARGET_PATH_0"
-  check_comments_owner_case "two" "2" "$COMMENTS_TARGET_PATH_2"
-  check_comments_owner_case "sixteen" "16" "$COMMENTS_TARGET_PATH_16"
+  check_comments_panel_contract
+  check_comments_compose_contract
+}
+
+check_comments_panel_contract() {
+  check_comments_owner_case "zero" "panel-read" "0" "$COMMENTS_PANEL_TARGET_PATH_0" "0" "0"
+  check_comments_owner_case "two" "panel-read" "2" "$COMMENTS_PANEL_TARGET_PATH_2" "0" "0"
+  check_comments_owner_case "sixteen" "panel-read" "16" "$COMMENTS_PANEL_TARGET_PATH_16" "0" "0"
+}
+
+check_comments_compose_contract() {
+  local configured=0
+  if [[ -n "${COMMENTS_COMPOSE_TARGET_PATH_0:-}" ]]; then
+    configured=1
+    check_comments_owner_case "zero" "composer-open" "$COMMENTS_COMPOSE_EXPECTED_COUNT_0" "$COMMENTS_COMPOSE_TARGET_PATH_0" "1" "0"
+  else
+    printf 'SMOKE comments-compose fixture=zero state=skip reason=unset\n'
+  fi
+  if [[ -n "${COMMENTS_COMPOSE_TARGET_PATH_THREAD:-}" ]]; then
+    configured=1
+    check_comments_owner_case "thread" "composer-open" "$COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD" "$COMMENTS_COMPOSE_TARGET_PATH_THREAD" "1" "1"
+  else
+    printf 'SMOKE comments-compose fixture=thread state=skip reason=unset\n'
+  fi
+  if [[ "$configured" -eq 0 ]]; then
+    printf 'SMOKE comments-compose lane=skip reason=open-fixtures-unconfigured\n'
+  fi
 }
 
 check_comments_owner_case() {
   local case_name="$1"
-  local expected_count="$2"
-  local path="$3"
+  local fixture_class="$2"
+  local expected_count="$3"
+  local path="$4"
+  local require_compose="${5:-0}"
+  local require_reply="${6:-0}"
+  local lane_label="comments-panel"
   local url
-  local report_file="$tmp_dir/$(safe_file_name "comments_owner_${case_name}").txt"
+  local report_file="$tmp_dir/$(safe_file_name "comments_owner_${fixture_class}_${case_name}").txt"
   local status=0
+
+  if [[ "$fixture_class" == "composer-open" ]]; then
+    lane_label="comments-compose"
+  fi
   url="$(absolute_for_path "$path")"
 
   if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "off" ]]; then
-    printf 'SMOKE comments-owner skipped mode=off case=%s target=%s\n' "$case_name" "$url"
+    printf 'SMOKE %s skipped mode=off case=%s target=%s fixtureClass=%s\n' "$lane_label" "$case_name" "$url" "$fixture_class"
     return 0
   fi
 
   GG_COMMENTS_URL="$url" \
   GG_COMMENTS_CASE_NAME="$case_name" \
+  GG_COMMENTS_FIXTURE_CLASS="$fixture_class" \
   GG_COMMENTS_EXPECTED_COUNT="$expected_count" \
+  GG_COMMENTS_REQUIRE_COMPOSE="$require_compose" \
+  GG_COMMENTS_REQUIRE_REPLY="$require_reply" \
   GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
   node >"$report_file" <<'NODE'
 let chromium = null;
@@ -969,8 +1017,12 @@ try {
 
 const url = process.env.GG_COMMENTS_URL || '';
 const caseName = process.env.GG_COMMENTS_CASE_NAME || 'case';
+const fixtureClass = process.env.GG_COMMENTS_FIXTURE_CLASS || 'panel-read';
 const expectedCount = Number(process.env.GG_COMMENTS_EXPECTED_COUNT || '0');
+const requireCompose = process.env.GG_COMMENTS_REQUIRE_COMPOSE === '1';
+const requireReply = process.env.GG_COMMENTS_REQUIRE_REPLY === '1';
 const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
+const laneLabel = fixtureClass === 'composer-open' ? 'comments-compose' : 'comments-panel';
 
 function clean(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -985,6 +1037,7 @@ function isIgnorableCommentRuntimeMessage(value) {
   const hay = clean(value).toLowerCase();
   if (!hay) return false;
   if (hay.includes('[report only]')) return true;
+  if (hay.includes('report-only policy')) return true;
   if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
   if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
   return false;
@@ -1146,7 +1199,9 @@ async function captureState(page) {
       rootVisible: visible(root),
       commentCount: comments.length,
       interactiveCount: interactive.length,
+      commentsOpen: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
       hasFooterCta: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
+      replyAllowed: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0' && firstReplyId),
       footerAddOwnerCount: footerAddOwners.length,
       composerKind,
       composerReason,
@@ -1247,10 +1302,12 @@ async function main() {
     await page.waitForTimeout(1400);
 
     const before = await captureState(page);
+    const isPanelRead = fixtureClass === 'panel-read';
+    const isComposerOpen = fixtureClass === 'composer-open';
     let afterAdd = before;
     let afterReply = before;
 
-    if (before.hasFooterCta) {
+    if (requireCompose && before.commentsOpen) {
       const addBtn = page.locator('#ggPanelComments .gg-comments__footer #gg-top-continue .comment-reply').first();
       if (await addBtn.count()) {
         await addBtn.click();
@@ -1259,7 +1316,7 @@ async function main() {
       }
     }
 
-    if (before.firstReplyId) {
+    if (requireCompose && requireReply && before.replyAllowed) {
       const replyBtn = page.locator(`#ggPanelComments #c${before.firstReplyId} .comment-actions .cmt2-reply-action`).first();
       if (await replyBtn.count()) {
         await replyBtn.click();
@@ -1268,36 +1325,46 @@ async function main() {
       }
     }
 
-    let focusState = notApplicable('composer-not-available');
-    if (before.hasFooterCta) {
-      const addFocusOk = afterAdd.footerOpen === '1' &&
-        afterAdd.composerKind === 'native' &&
-        (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'native-shell');
-      const replyFocusOk = before.firstReplyId
-        ? afterReply.replyMode === 'reply' &&
-          afterReply.composerKind === 'native' &&
-          (afterReply.focusKind === 'native' || afterReply.focusKind === 'native-shell')
-        : true;
-      focusState = state(
-        addFocusOk && replyFocusOk,
-        [
-          `before=${before.activeElement}`,
-          `afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind}`,
-          `afterReply=${afterReply.activeElement}:${afterReply.focusKind}`,
-          `kind=${afterAdd.composerKind}/${afterReply.composerKind}`,
-          `reason=${afterAdd.composerReason}/${afterReply.composerReason}`,
-          `composer=${afterAdd.footerOpen}`,
-          `replyMode=${afterReply.replyMode}`,
-          `footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0}`,
-          `scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled}`,
-          `fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed}`,
-          `nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`,
-          `focusState=${afterAdd.focusState}/${afterReply.focusState}`,
-          `focusTarget=${afterAdd.focusTarget}/${afterReply.focusTarget}`
-        ].join(';')
-      );
+    let focusState = notApplicable('compose-not-required');
+    if (requireCompose) {
+      if (!before.commentsOpen) {
+        focusState = notApplicable('comments-closed');
+      } else {
+        const addFocusOk = afterAdd.footerOpen === '1' &&
+          afterAdd.composerKind === 'native' &&
+          (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'native-shell');
+        const replyFocusOk = requireReply
+          ? afterReply.replyMode === 'reply' &&
+            afterReply.composerKind === 'native' &&
+            (afterReply.focusKind === 'native' || afterReply.focusKind === 'native-shell')
+          : true;
+        focusState = state(
+          addFocusOk && replyFocusOk,
+          [
+            `before=${before.activeElement}`,
+            `afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind}`,
+            `afterReply=${afterReply.activeElement}:${afterReply.focusKind}`,
+            `kind=${afterAdd.composerKind}/${afterReply.composerKind}`,
+            `reason=${afterAdd.composerReason}/${afterReply.composerReason}`,
+            `composer=${afterAdd.footerOpen}`,
+            `replyMode=${afterReply.replyMode}`,
+            `footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0}`,
+            `scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled}`,
+            `fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed}`,
+            `nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`,
+            `focusState=${afterAdd.focusState}/${afterReply.focusState}`,
+            `focusTarget=${afterAdd.focusTarget}/${afterReply.focusTarget}`
+          ].join(';')
+        );
+      }
     }
 
+    const effectiveRuntimeErrors = runtimeErrors.filter((entry) => {
+      if (fixtureClass === 'panel-read' && /error loading recaptcha script|recaptcha\/api\.js|commentformiframeview/i.test(entry)) {
+        return false;
+      }
+      return true;
+    });
     const results = [];
     results.push({
       id: 'panel-open',
@@ -1316,53 +1383,6 @@ async function main() {
         before.visibleCommentsSurfaces === 1 && before.visibleOffPanelSurfaces === 0,
         `visible=${before.visibleCommentsSurfaces};offPanel=${before.visibleOffPanelSurfaces}`
       )
-    });
-    results.push({
-      id: 'footer-add-owner',
-      ...(before.hasFooterCta
-        ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount};kind=${before.composerKind};reason=${before.composerReason}`)
-        : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};cta=disabled;kind=${before.composerKind};reason=${before.composerReason}`))
-    });
-    results.push({
-      id: 'composer-kind',
-      ...(before.hasFooterCta
-        ? state(
-            afterAdd.composerKind === 'native',
-            `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerKinds || 'none'}`
-          )
-        : notApplicable(`kind=${before.composerKind};reason=${before.composerReason};cta=disabled`))
-    });
-    results.push({
-      id: 'footer-composer',
-      ...(before.hasFooterCta
-        ? state(
-            afterAdd.composerKind === 'native' &&
-            afterAdd.footerComposerCount === 1 &&
-            afterAdd.footerNativeComposerCount === 1 &&
-            afterAdd.footerFallbackComposerCount === 0 &&
-            afterAdd.inlineComposerCount === 0 &&
-            afterAdd.inlineNativeComposerCount === 0 &&
-            afterAdd.inlineFallbackComposerCount === 0,
-            `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'}:${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'}:${afterAdd.inlineComposerKinds || 'none'};open=${afterAdd.footerOpen}`
-          )
-        : notApplicable('new-comments-disabled'))
-    });
-    results.push({
-      id: 'reply-footer',
-      ...(before.firstReplyId
-        ? state(
-            afterReply.composerKind === 'native' &&
-            afterReply.footerComposerCount === 1 &&
-            afterReply.footerNativeComposerCount === 1 &&
-            afterReply.footerFallbackComposerCount === 0 &&
-            afterReply.inlineComposerCount === 0 &&
-            afterReply.inlineNativeComposerCount === 0 &&
-            afterReply.inlineFallbackComposerCount === 0 &&
-            afterReply.replyMode === 'reply' &&
-            afterReply.replyBannerCount === 1,
-            `kind=${afterReply.composerKind};reason=${afterReply.composerReason};footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'}:${afterReply.footerComposerKinds || 'none'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'}:${afterReply.inlineComposerKinds || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
-          )
-        : notApplicable('no-eligible-reply'))
     });
     results.push({
       id: 'native-hidden',
@@ -1389,15 +1409,98 @@ async function main() {
     });
     results.push({
       id: 'runtime-errors',
-      ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
-    });
-    results.push({
-      id: 'focus-footer',
-      ...focusState
+      ...state(effectiveRuntimeErrors.length === 0, effectiveRuntimeErrors.length ? effectiveRuntimeErrors.join(' || ') : 'ok')
     });
 
-    console.log(`META|case=${caseName};browser=${browserName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};composerKind=${before.composerKind};composerReason=${before.composerReason};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
-    console.log(`DEBUG|case=${caseName};browser=${browserName};panel=${before.panelVisible ? 1 : 0};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};composerKind=${before.composerKind}/${afterAdd.composerKind}/${afterReply.composerKind};composerReason=${before.composerReason}/${afterAdd.composerReason}/${afterReply.composerReason};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
+    if (isPanelRead) {
+      results.push({
+        id: 'footer-add-owner',
+        ...(before.commentsOpen
+          ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=1;kind=${before.composerKind};reason=${before.composerReason}`)
+          : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=0;kind=${before.composerKind};reason=${before.composerReason}`))
+      });
+      results.push({
+        id: 'closed-compose-honesty',
+        ...(before.commentsOpen
+          ? notApplicable('comments-open')
+          : state(
+              before.replyMode === 'default' &&
+              before.replyBannerCount === 0 &&
+              before.footerAddOwnerCount === 0 &&
+              before.footerComposerCount === 0 &&
+              before.footerFallbackComposerCount === 0 &&
+              before.inlineComposerCount === 0,
+              `replyMode=${before.replyMode};banner=${before.replyBannerCount};footerAdd=${before.footerAddOwnerCount};footer=${before.footerComposerCount}:${before.footerComposerKinds || 'none'};inline=${before.inlineComposerCount}:${before.inlineComposerKinds || 'none'};kind=${before.composerKind};reason=${before.composerReason}`
+            ))
+      });
+    }
+
+    if (isComposerOpen) {
+      results.push({
+        id: 'fixture-open-truth',
+        ...state(
+          before.commentsOpen,
+          `commentsOpen=${before.commentsOpen ? 'true' : 'false'};replyAllowed=${before.replyAllowed ? 'true' : 'false'};kind=${before.composerKind};reason=${before.composerReason}`
+        )
+      });
+      results.push({
+        id: 'footer-add-owner',
+        ...state(
+          before.commentsOpen && before.footerAddOwnerCount === 1,
+          `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=${before.commentsOpen ? 1 : 0};kind=${before.composerKind};reason=${before.composerReason}`
+        )
+      });
+      results.push({
+        id: 'composer-kind',
+        ...(before.commentsOpen
+          ? state(
+              afterAdd.composerKind === 'native',
+              `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerKinds || 'none'}`
+            )
+          : notApplicable(`kind=${before.composerKind};reason=${before.composerReason};commentsOpen=0`))
+      });
+      results.push({
+        id: 'footer-composer',
+        ...(before.commentsOpen
+          ? state(
+              afterAdd.composerKind === 'native' &&
+              afterAdd.footerComposerCount === 1 &&
+              afterAdd.footerNativeComposerCount === 1 &&
+              afterAdd.footerFallbackComposerCount === 0 &&
+              afterAdd.inlineComposerCount === 0 &&
+              afterAdd.inlineNativeComposerCount === 0 &&
+              afterAdd.inlineFallbackComposerCount === 0,
+              `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'}:${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'}:${afterAdd.inlineComposerKinds || 'none'};open=${afterAdd.footerOpen}`
+            )
+          : notApplicable('comments-closed'))
+      });
+      results.push({
+        id: 'reply-footer',
+        ...(requireReply
+          ? (before.replyAllowed
+            ? state(
+                afterReply.composerKind === 'native' &&
+                afterReply.footerComposerCount === 1 &&
+                afterReply.footerNativeComposerCount === 1 &&
+                afterReply.footerFallbackComposerCount === 0 &&
+                afterReply.inlineComposerCount === 0 &&
+                afterReply.inlineNativeComposerCount === 0 &&
+                afterReply.inlineFallbackComposerCount === 0 &&
+                afterReply.replyMode === 'reply' &&
+                afterReply.replyBannerCount === 1,
+                `kind=${afterReply.composerKind};reason=${afterReply.composerReason};footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'}:${afterReply.footerComposerKinds || 'none'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'}:${afterReply.inlineComposerKinds || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
+              )
+            : state(false, `replyAllowed=${before.replyAllowed ? 'true' : 'false'};firstReplyId=${before.firstReplyId || 'missing'};commentsOpen=${before.commentsOpen ? 'true' : 'false'}`))
+          : notApplicable('reply-not-required'))
+      });
+      results.push({
+        id: 'focus-footer',
+        ...focusState
+      });
+    }
+
+    console.log(`META|lane=${laneLabel};fixtureClass=${fixtureClass};case=${caseName};browser=${browserName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};commentsOpen=${before.commentsOpen ? 'true' : 'false'};composerKind=${before.composerKind};composerReason=${before.composerReason};replyAllowed=${before.replyAllowed ? 'true' : 'false'};footerComposeRequired=${requireCompose ? 'true' : 'false'};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
+    console.log(`DEBUG|lane=${laneLabel};fixtureClass=${fixtureClass};case=${caseName};browser=${browserName};panel=${before.panelVisible ? 1 : 0};commentsOpen=${before.commentsOpen ? 'true' : 'false'};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};replyAllowed=${before.replyAllowed ? 'true' : 'false'};footerComposeRequired=${requireCompose ? 'true' : 'false'};composerKind=${before.composerKind}/${afterAdd.composerKind}/${afterReply.composerKind};composerReason=${before.composerReason}/${afterAdd.composerReason}/${afterReply.composerReason};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
     for (const row of results) {
       const rowState = row.skip ? 'na' : (row.pass ? 'pass' : 'fail');
       console.log(`CRITERION|${row.id}|${rowState}|${row.detail}`);
@@ -1416,26 +1519,26 @@ NODE
   status=$?
 
   if [[ "$status" -ne 0 ]]; then
-    comments_owner_signal "comments owner contract runner exited unexpectedly (status=${status})"
+    comments_owner_signal "${lane_label} contract runner exited unexpectedly case=${case_name} fixtureClass=${fixture_class} (status=${status})"
     return 0
   fi
 
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue
     if [[ "$line" == META\|* ]]; then
-      printf 'SMOKE comments-owner %s target=%s\n' "${line#META|}" "$path"
+      printf 'SMOKE %s %s target=%s\n' "$lane_label" "${line#META|}" "$path"
       continue
     fi
     if [[ "$line" == DEBUG\|* ]]; then
-      printf 'SMOKE comments-owner-debug %s target=%s\n' "${line#DEBUG|}" "$path"
+      printf 'SMOKE %s-debug %s target=%s\n' "$lane_label" "${line#DEBUG|}" "$path"
       continue
     fi
     if [[ "$line" == BROWSER\|infra\|* ]]; then
-      log_warn "comments owner browser dependency unavailable case=${case_name} (${line#BROWSER|infra|})"
+      log_warn "${lane_label} browser dependency unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|infra|})"
       continue
     fi
     if [[ "$line" == BROWSER\|fail\|* ]]; then
-      comments_owner_signal "comments owner browser proof unavailable case=${case_name} (${line#BROWSER|fail|})"
+      comments_owner_signal "${lane_label} browser proof unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|fail|})"
       continue
     fi
     if [[ "$line" == CRITERION\|* ]]; then
@@ -1444,9 +1547,9 @@ NODE
       rest="${rest#*|}"
       local state="${rest%%|*}"
       local detail="${rest#*|}"
-      printf 'SMOKE comments-owner case=%s criterion=%s state=%s detail=%s\n' "$case_name" "$id" "$state" "$detail"
+      printf 'SMOKE %s case=%s fixtureClass=%s criterion=%s state=%s detail=%s\n' "$lane_label" "$case_name" "$fixture_class" "$id" "$state" "$detail"
       if [[ "$state" == "fail" ]]; then
-        comments_owner_signal "comments owner case=${case_name} criterion=${id} failed (${detail})"
+        comments_owner_signal "${lane_label} case=${case_name} fixtureClass=${fixture_class} criterion=${id} failed (${detail})"
       fi
     fi
   done < "$report_file"

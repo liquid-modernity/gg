@@ -6672,6 +6672,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var reply = replyState(root);
     var open = false;
     if (!root || !footer) return false;
+    if (!footerAllowsComposer(root) && reply && reply.replyMode === 'reply') {
+      if (reply.comment && reply.comment.removeAttribute) reply.comment.removeAttribute('data-gg-replying');
+      if (reply.banner && reply.banner.parentNode) reply.banner.parentNode.removeChild(reply.banner);
+      root.classList.remove('gg-comments--replying');
+      if (root && root.setAttribute) root.setAttribute('data-gg-reply-mode', 'default');
+      reply.replyMode = 'default';
+      reply.replyTargetId = '';
+      reply.replyTargetAuthor = '';
+      reply.replyPermalink = '';
+      reply.comment = null;
+      reply.nativeReplyLink = null;
+      state.manual = false;
+    }
     if (footer.getAttribute('data-gg-has-cta') === '0') open = true;
     else if (reply && reply.replyMode === 'reply' && reply.replyTargetId) open = true;
     else open = !!state.manual;
@@ -7057,11 +7070,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     btn.setAttribute('data-gg-comment-icon', isOpen ? 'unfold_less' : 'unfold_more');
     btn.textContent = (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')';
   }
-  function normalizeReplyLink(comment){
+  function normalizeReplyLink(comment, root){
     var actions = ensureActions(comment);
     var links = commentReplyLinks(comment);
     var primary = pickPrimaryReplyLink(comment);
     var state = commentStateInfo(comment);
+    var composerEnabled = !root || footerAllowsComposer(root);
     var action = null;
     var before = null;
     var i = 0;
@@ -7069,7 +7083,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!actions) return null;
     before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx');
     action = actions.querySelector('.cmt2-reply-action');
-    if (!state.interactive || !primary) {
+    if (!state.interactive || !primary || !composerEnabled) {
       if (action && action.parentNode) action.parentNode.removeChild(action);
       for (i = 0; i < links.length; i++) {
         setSuppressed(links[i]);
@@ -7402,7 +7416,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var banner = buildReplyBanner(root);
     var slot = replySlot(root);
     var title = banner.querySelector('.cmt2-replying__title');
-    if (!slot || state.replyMode !== 'reply' || !state.replyTargetId) return;
+    if (!slot || !footerAllowsComposer(root) || state.replyMode !== 'reply' || !state.replyTargetId) return;
     if (title) title.textContent = 'Replying to ' + (state.replyTargetAuthor ? '@' + state.replyTargetAuthor : 'comment');
     if (banner.parentNode !== slot) slot.insertBefore(banner, slot.firstChild || null);
     syncFooterState(root);
@@ -7555,6 +7569,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var o = opts || {};
     var nativeLink = null;
     if (!root) return false;
+    if (!footerAllowsComposer(root)) {
+      if (replyState(root).replyMode === 'reply' && !o.preserveReply) clearReplyState(root);
+      return false;
+    }
     if (replyState(root).replyMode === 'reply' && !o.preserveReply) clearReplyState(root);
     setFooterOpen(root, true, { manual: true, focus: false });
     nativeLink = nativeAddCommentLink(root);
@@ -7571,6 +7589,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return true;
   }
   function enterReplyMode(root, comment, nativeLink){
+    if (!footerAllowsComposer(root)) return false;
     if (!root || !comment) return false;
     setReplyState(root, comment, nativeLink || null);
     setFooterOpen(root, true, { manual: true, focus: false });
@@ -7629,7 +7648,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     ensureModerationState(comment);
     ensureReplyContext(comment, root);
     actions = ensureActions(comment);
-    replyLink = normalizeReplyLink(comment) || commentReplyLink(comment);
+    replyLink = normalizeReplyLink(comment, root) || commentReplyLink(comment);
     state = commentStateInfo(comment);
     if (replyLink) {
       replyLink.setAttribute('data-gg-comment-role', 'reply');
