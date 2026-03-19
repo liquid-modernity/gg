@@ -176,19 +176,19 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          GG_CF_DEPLOY_MAX_ATTEMPTS: "5"
-          GG_CF_DEPLOY_BACKOFF_SECONDS: "20"
+          GG_CF_DEPLOY_MAX_ATTEMPTS: "6"
+          GG_CF_DEPLOY_BACKOFF_SECONDS: "15"
         run: |
-          max_attempts="${GG_CF_DEPLOY_MAX_ATTEMPTS:-5}"
-          backoff_seconds="${GG_CF_DEPLOY_BACKOFF_SECONDS:-20}"
+          max_attempts="${GG_CF_DEPLOY_MAX_ATTEMPTS:-6}"
+          backoff_seconds="${GG_CF_DEPLOY_BACKOFF_SECONDS:-15}"
           attempt=1
           deploy_ok=0
           log_file_base="$(mktemp -u -t gg-wrangler-deploy.XXXXXX)"
 
-          is_transient_cf_error() {
+          is_permanent_cf_error() {
             local file="$1"
             grep -Eiq \
-              '503 Service Unavailable|502 Bad Gateway|504 Gateway Timeout|malformed response from the API|upstream connect error|disconnect/reset before headers|connection timeout|timed out|ETIMEDOUT|ECONNRESET|Internal Server Error|temporary unavailable' \
+              'Authentication error|authorization failed|not authorized|permission denied|Unknown argument|Unknown option|missing entry-point|No such file or directory|Cannot find module|Module not found|Failed to parse|Invalid value|Required.+not provided|is not a valid|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' \
               "$file"
           }
 
@@ -210,19 +210,19 @@ jobs:
               break
             fi
 
-            if ! is_transient_cf_error "$attempt_log"; then
+            if is_permanent_cf_error "$attempt_log"; then
               echo "::error title=Cloudflare deploy failed::Non-transient Wrangler deploy failure on attempt ${attempt}. See log below."
               cat "$attempt_log"
               exit "$cmd_status"
             fi
 
             if [ "$attempt" -ge "$max_attempts" ]; then
-              echo "::error title=Cloudflare deploy failed::Transient Cloudflare API failure persisted after ${max_attempts} attempts."
+              echo "::error title=Cloudflare deploy failed::Retryable Wrangler deploy failure persisted after ${max_attempts} attempts."
               cat "$attempt_log"
               exit "$cmd_status"
             fi
 
-            echo "::warning title=Transient Cloudflare API failure::Wrangler deploy hit a retryable Cloudflare/API error on attempt ${attempt}/${max_attempts}. Retrying in ${backoff_seconds}s."
+            echo "::warning title=Retrying Wrangler deploy::Wrangler deploy failed on attempt ${attempt}/${max_attempts}. The failure did not match a known permanent configuration/auth error, so retrying in ${backoff_seconds}s."
             sleep "$backoff_seconds"
             attempt=$((attempt + 1))
           done
