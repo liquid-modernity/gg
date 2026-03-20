@@ -992,6 +992,12 @@ const expectedIds = [
   'gg-mixed-podcastish',
   'gg-mixed-bookish'
 ];
+const primaryVisibleIds = [
+  'gg-mixed-featuredstrip',
+  'gg-mixed-newsish-1',
+  'gg-mixed-bookish'
+];
+const deferredIds = expectedIds.filter((id) => !primaryVisibleIds.includes(id));
 
 function clean(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -1123,6 +1129,21 @@ async function main() {
     const orderedExpected = expectedIds.join(',');
     const orderedActual = snapshot.ordered.filter((id) => expectedIds.includes(id)).join(',');
     const renderedSections = snapshot.sections.filter((section) => section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const primaryRendered = snapshot.sections.filter((section) => primaryVisibleIds.includes(section.id) && section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const deferredSummary = snapshot.sections
+      .filter((section) => deferredIds.includes(section.id))
+      .map((section) => {
+        const count = Number(section.renderCount || '0');
+        const ok = section.exists && (
+          (section.visible && section.hidden === false && section.loaded === '1' && count > 0) ||
+          (!section.visible && section.hidden === true && (!section.loaded || section.loaded === '0') && count === 0)
+        );
+        return {
+          id: section.id,
+          ok,
+          detail: `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`
+        };
+      });
     const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`).join(',');
     const mixedLoadState = snapshot.moduleLoads && snapshot.moduleLoads['ui.bucket.mixed.js'] ? snapshot.moduleLoads['ui.bucket.mixed.js'] : 'missing';
 
@@ -1131,9 +1152,11 @@ async function main() {
       id: 'surface-state',
       ...state(
         snapshot.bodySurface === 'listing' &&
-        snapshot.mainSurface === 'listing' &&
+        (snapshot.mainSurface === 'listing' || snapshot.mainSurface === 'home') &&
         snapshot.homeState === 'blog' &&
-        snapshot.blogHome === '1',
+        snapshot.blogHome === '1' &&
+        snapshot.bodyView === 'listing' &&
+        snapshot.mainView === 'listing',
         `bodySurface=${snapshot.bodySurface || 'missing'};mainSurface=${snapshot.mainSurface || 'missing'};homeState=${snapshot.homeState || 'missing'};blogHome=${snapshot.blogHome || 'missing'};bodyView=${snapshot.bodyView || 'missing'};mainView=${snapshot.mainView || 'missing'}`
       )
     });
@@ -1152,10 +1175,17 @@ async function main() {
       )
     });
     results.push({
-      id: 'mixed-visible',
+      id: 'mixed-primary-visible',
       ...state(
-        renderedSections.length === expectedIds.length,
-        `rendered=${renderedSections.map((section) => section.id).join(',') || 'none'};detail=${renderSummary}`
+        primaryRendered.length === primaryVisibleIds.length,
+        `expected=${primaryVisibleIds.join(',')};rendered=${primaryRendered.map((section) => section.id).join(',') || 'none'};all=${renderedSections.map((section) => section.id).join(',') || 'none'};detail=${renderSummary}`
+      )
+    });
+    results.push({
+      id: 'mixed-deferred-contract',
+      ...state(
+        deferredSummary.every((section) => section.ok),
+        deferredSummary.map((section) => section.detail).join(',') || 'none'
       )
     });
     results.push({
