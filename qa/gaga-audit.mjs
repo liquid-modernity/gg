@@ -14,7 +14,7 @@ import path from "node:path";
 const USAGE = `Usage:
   npm run gaga:audit -- <path-to-zip>
   npm run gaga:audit -- --out qa/audit-output/custom-name <path-to-zip>
-  npm run gaga:audit -- --task task-p107ac <path-to-zip>
+  npm run gaga:audit -- --task <task-id> <path-to-zip>
   npm run gaga:audit -- --json <path-to-zip>
   npm run gaga:audit -- --warn-only <path-to-zip>
 
@@ -800,6 +800,11 @@ function parseTaskArtifactSummary(zipPath, index, taskId) {
         String(manifest?.live_smoke?.log || "") ||
         String(manifest?.live_smoke?.path || ""),
       liveSmokeStatus: String(manifest?.live_smoke?.status || ""),
+      freezeEnabled: Boolean(manifest?.freeze_mode?.enabled),
+      freezeNote: String(manifest?.freeze_mode?.note || ""),
+      acceptedLimitationsCount: Array.isArray(manifest?.accepted_limitations)
+        ? manifest.accepted_limitations.filter((item) => String(item || "").trim()).length
+        : 0,
     },
     zipEntries,
     zipEntryPresence,
@@ -1005,6 +1010,21 @@ function buildFindings({
         `task manifest '${taskSummary.expected.json}' is missing live smoke log path`
       );
     }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.freezeEnabled) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing freeze_mode.enabled=true`
+      );
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.freezeNote) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing freeze_mode.note`
+      );
+    }
+    if (taskSummary.exists.json && !taskSummary.manifestFields.acceptedLimitationsCount) {
+      criticalFailures.push(
+        `task manifest '${taskSummary.expected.json}' is missing accepted_limitations entries`
+      );
+    }
     for (const row of taskSummary.zipEntryPresence) {
       if (!row.exists) {
         criticalFailures.push(`task manifest zip entry missing in archive: ${row.path}`);
@@ -1181,6 +1201,20 @@ function renderMarkdown(report) {
       `- manifest live smoke: ${
         report.taskArtifacts.manifestFields.liveSmokeLog
           ? `\`${report.taskArtifacts.manifestFields.liveSmokeStatus || "unknown"}\` \`${report.taskArtifacts.manifestFields.liveSmokeLog}\``
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- freeze mode: ${
+        report.taskArtifacts.manifestFields.freezeEnabled
+          ? `enabled (\`${report.taskArtifacts.manifestFields.freezeNote || "note-missing"}\`)`
+          : "_missing_"
+      }`
+    );
+    lines.push(
+      `- accepted limitations: ${
+        report.taskArtifacts.manifestFields.acceptedLimitationsCount
+          ? report.taskArtifacts.manifestFields.acceptedLimitationsCount
           : "_missing_"
       }`
     );

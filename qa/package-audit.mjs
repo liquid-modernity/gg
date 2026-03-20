@@ -10,7 +10,9 @@ const USAGE = `Usage:
 
 Requirements:
   - qa/audit-output/<task-id>.json must exist
+  - the JSON task field must match the requested task id
   - the JSON must include a non-empty "zip_entries" array
+  - the JSON must include workflow refs, live smoke refs, freeze note, and accepted limitations
   - every listed entry must exist locally
 `;
 
@@ -57,6 +59,13 @@ function normalizeEntries(entries) {
   return out;
 }
 
+function canonicalTaskToken(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 function listZipEntries(zipPath) {
   const out = execFileSync("unzip", ["-Z", "-1", zipPath], {
     encoding: "utf8",
@@ -83,9 +92,42 @@ function main() {
     fail(`Invalid JSON in ${taskJsonPath}: ${error?.message || "parse error"}`);
   }
 
+  const manifestTask = String(manifest?.task || "");
+  if (!manifestTask) {
+    fail(`Task manifest '${taskJsonPath}' is missing the 'task' field`);
+  }
+  if (canonicalTaskToken(manifestTask) !== canonicalTaskToken(args.taskId)) {
+    fail(
+      `Task manifest '${taskJsonPath}' mismatch: requested '${args.taskId}', saw '${manifestTask}'`
+    );
+  }
+
   const zipEntries = normalizeEntries(manifest?.zip_entries || []);
   if (!zipEntries.length) {
     fail(`Task manifest '${taskJsonPath}' is missing a non-empty zip_entries array`);
+  }
+
+  const changedFiles = Array.isArray(manifest?.changed_files) ? manifest.changed_files : [];
+  if (!changedFiles.length) {
+    fail(`Task manifest '${taskJsonPath}' is missing changed_files entries`);
+  }
+  if (!String(manifest?.workflows?.ci?.url || "") || !String(manifest?.workflows?.deploy?.url || "")) {
+    fail(`Task manifest '${taskJsonPath}' is missing CI/Deploy workflow URLs`);
+  }
+  if (!String(manifest?.live_smoke?.log || "")) {
+    fail(`Task manifest '${taskJsonPath}' is missing live smoke log path`);
+  }
+  if (!String(manifest?.live_smoke?.status || "")) {
+    fail(`Task manifest '${taskJsonPath}' is missing live smoke status`);
+  }
+  if (!manifest?.freeze_mode?.enabled || !String(manifest?.freeze_mode?.note || "").trim()) {
+    fail(`Task manifest '${taskJsonPath}' is missing freeze_mode confirmation`);
+  }
+  const acceptedLimitations = Array.isArray(manifest?.accepted_limitations)
+    ? manifest.accepted_limitations.filter((item) => String(item || "").trim())
+    : [];
+  if (!acceptedLimitations.length) {
+    fail(`Task manifest '${taskJsonPath}' is missing accepted_limitations entries`);
   }
 
   const missingLocal = zipEntries.filter((entry) => !existsSync(path.resolve(entry)));
