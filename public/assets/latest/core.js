@@ -29,9 +29,10 @@ GG.core.blogHomePath = GG.core.blogHomePath || function(basePath, hostname){
 var base = (typeof basePath === 'string' && basePath) ? basePath : '/';
 if (base.charAt(0) !== '/') base = '/' + base;
 if (base.charAt(base.length - 1) !== '/') base += '/';
-var useBlog = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
-if (useBlog) {
-return base.replace(/\/$/, '') + '/blog';
+var useListingRoot = GG.core.isProdHost(hostname) && GG.core.hasWorker && GG.core.hasWorker();
+if (useListingRoot) {
+var root = base.replace(/\/+$/, '');
+return root || '/';
 }
 return base + '?view=blog';
 };
@@ -39,8 +40,9 @@ GG.core.isBlogHomePath = GG.core.isBlogHomePath || function(pathname, search, ho
 var path = (pathname || '').replace(/\/+$/, '') || '/';
 var view = '';
 try { view = (new URLSearchParams(search || '').get('view') || '').toLowerCase(); } catch (_) {}
+if (path === '/landing') return false;
 if (path === '/blog') return true;
-if (path === '/' && view === 'blog') return true;
+if (path === '/' && view !== 'landing') return true;
 return false;
 };
 // Normalize blog home alias once worker state is known.
@@ -55,20 +57,29 @@ var isProd = GG.core && GG.core.isProdHost ? GG.core.isProdHost(loc.hostname) : 
 var path = (loc.pathname || '').replace(/\/+$/, '') || '/';
 var params = new URLSearchParams(loc.search || '');
 var view = (params.get('view') || '').toLowerCase();
+var hasMobileParam = params.get('m') === '1';
+var hash = loc.hash || '';
+var dest = '';
 if (workerOk && isProd) {
-if (path !== '/' || view !== 'blog') return;
-var dest = '/blog';
-if (params.get('m') === '1') dest += '?m=1';
-if (loc.hash) dest += loc.hash;
+if (path === '/blog' || (path === '/' && view === 'blog')) {
+dest = '/';
+} else if (path === '/landing' || (path === '/' && view === 'landing')) {
+dest = '/landing';
+} else {
+return;
+}
+if (hasMobileParam) dest += '?m=1';
+if (hash) dest += hash;
 if (w.history && w.history.replaceState) {
 w.history.replaceState(w.history.state || {}, '', dest);
 }
 return;
 }
-if (path !== '/blog') return;
-params.set('view', 'blog');
+if (path === '/blog') params.set('view', 'blog');
+else if (path === '/landing') params.set('view', 'landing');
+else return;
 var fallback = '/?' + params.toString();
-if (loc.hash) fallback += loc.hash;
+if (hash) fallback += hash;
 if (w.history && w.history.replaceState) {
 w.history.replaceState(w.history.state || {}, '', fallback);
 }
@@ -353,10 +364,10 @@ try {
 var u = new URL(href, w.location.href);
 var path = (u.pathname || '').replace(/\/+$/, '') || '/';
 var view = (u.searchParams.get('view') || '').toLowerCase();
-var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view === 'blog'));
+var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view !== 'landing'));
 if (isBlogHome) {
 surface = 'listing';
-} else if (path === '/') {
+} else if (path === '/landing') {
 surface = 'landing';
 } else if (path.indexOf('/search') !== -1) {
 surface = 'listing';
@@ -471,7 +482,7 @@ else GG.core.ensureWorker();
 try {
 var root = d && d.documentElement;
 if (!root || root.hasAttribute('data-gg-prehome')) return;
-var pre = 'landing';
+var pre = 'blog';
 var search = (w.location && w.location.search) ? w.location.search : '';
 var m = search.match(/[?&]prehome=(blog|landing)(?:&|$)/i);
 var view = '';
@@ -482,14 +493,14 @@ pre = (m[1] + '').toLowerCase();
 pre = view;
 } else {
 var hash = (w.location && w.location.hash ? w.location.hash : '').replace(/^#/, '').toLowerCase();
-if (hash === 'blog' || hash === 'landing') {
-pre = hash;
-} else {
-var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
-var isBlog = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(p, search, w.location ? w.location.hostname : '') : (p === '/blog');
-if (isBlog) pre = 'blog';
-}
-}
+    if (hash === 'blog' || hash === 'landing') {
+      pre = hash;
+    } else {
+      var p = (w.location && w.location.pathname ? w.location.pathname : '/').replace(/\/+$/, '') || '/';
+      var isBlog = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(p, search, w.location ? w.location.hostname : '') : (p === '/blog' || p === '/');
+      if (isBlog) pre = 'blog';
+    }
+  }
 root.setAttribute('data-gg-prehome', pre);
 } catch(_) {}
 })();

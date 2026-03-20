@@ -21,6 +21,7 @@ COMMENTS_COMPOSE_TARGET_PATH_THREAD="${GG_COMMENTS_OPEN_TARGET_PATH_THREAD:-}"
 COMMENTS_COMPOSE_EXPECTED_COUNT_0="${GG_COMMENTS_OPEN_EXPECTED_COUNT_0:-0}"
 COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD="${GG_COMMENTS_OPEN_EXPECTED_COUNT_THREAD:-2}"
 COMMENTS_OWNER_BROWSER_MODE="${GG_COMMENTS_OWNER_BROWSER_MODE:-warn}"
+HOMEPAGE_MIXED_BROWSER_MODE="${GG_HOMEPAGE_MIXED_BROWSER_MODE:-$COMMENTS_OWNER_BROWSER_MODE}"
 PLAYWRIGHT_EXECUTABLE_PATH="${GG_PLAYWRIGHT_EXECUTABLE_PATH:-}"
 
 if [[ "$TEMPLATE_DRIFT_MODE" != "warn" && "$TEMPLATE_DRIFT_MODE" != "fail" ]]; then
@@ -31,6 +32,9 @@ if [[ "$WORKER_VERSION_MODE" != "off" && "$WORKER_VERSION_MODE" != "warn" && "$W
 fi
 if [[ "$COMMENTS_OWNER_BROWSER_MODE" != "off" && "$COMMENTS_OWNER_BROWSER_MODE" != "warn" && "$COMMENTS_OWNER_BROWSER_MODE" != "fail" ]]; then
   COMMENTS_OWNER_BROWSER_MODE="warn"
+fi
+if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" != "off" && "$HOMEPAGE_MIXED_BROWSER_MODE" != "warn" && "$HOMEPAGE_MIXED_BROWSER_MODE" != "fail" ]]; then
+  HOMEPAGE_MIXED_BROWSER_MODE="$COMMENTS_OWNER_BROWSER_MODE"
 fi
 if ! [[ "$WORKER_ROLLOUT_MAX_ATTEMPTS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_MAX_ATTEMPTS < 1 )); then
   WORKER_ROLLOUT_MAX_ATTEMPTS=12
@@ -221,6 +225,15 @@ comments_owner_signal() {
     return
   fi
   if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+}
+
+homepage_mixed_signal() {
+  local message="$1"
+  if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" == "fail" ]]; then
     log_fail "$message"
   else
     log_warn "$message"
@@ -941,6 +954,260 @@ NODE
     fi
     if [[ "$line" == FAIL\|* ]]; then
       log_fail "listing preview runtime contract violation (${line#FAIL|})"
+    fi
+  done < "$report_file"
+}
+
+check_homepage_mixed_contract() {
+  local report_file="$tmp_dir/$(safe_file_name "homepage_mixed_contract").txt"
+  local url
+  url="$(absolute_for_path "/")"
+
+  if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" == "off" ]]; then
+    printf 'SMOKE homepage-mixed state=skip reason=mode-off target=/\n'
+    return 0
+  fi
+
+  GG_HOMEPAGE_MIXED_URL="$url" \
+  GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
+  node >"$report_file" <<'NODE'
+let chromium = null;
+let firefox = null;
+try {
+  ({ chromium, firefox } = require('playwright'));
+} catch (error) {
+  const detail = String(error && error.message ? error.message : error || '').replace(/\s+/g, ' ').trim();
+  console.log(`BROWSER|infra|playwright-module-unavailable:${detail || 'missing-module'}`);
+  process.exit(0);
+}
+
+const url = process.env.GG_HOMEPAGE_MIXED_URL || '';
+const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
+const expectedIds = [
+  'gg-mixed-featuredstrip',
+  'gg-mixed-newsish-1',
+  'gg-mixed-youtubeish',
+  'gg-mixed-shortish',
+  'gg-mixed-newsish-2',
+  'gg-mixed-podcastish',
+  'gg-mixed-bookish'
+];
+
+function clean(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isMixedRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  return /mixed|gg-mixed|ui\.bucket\.(core|listing|mixed)|home[- ]state|gg-home-blog|featuredstrip|newsish|podcastish|bookish|youtubeish|shortish/.test(hay);
+}
+
+function isIgnorableMixedRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  if (!hay) return false;
+  if (hay.includes('[report only]')) return true;
+  if (hay.includes('report-only policy')) return true;
+  if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
+  if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
+  return false;
+}
+
+function state(pass, detail) {
+  return { pass: !!pass, detail: detail || 'ok' };
+}
+
+async function captureState(page) {
+  return page.evaluate((ids) => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    const body = document.body;
+    const main = document.querySelector('main.gg-main');
+    const moduleLoads = (window.GG && GG.boot && GG.boot._moduleLoadResults) ? GG.boot._moduleLoadResults : {};
+    const sections = ids.map((id) => {
+      const el = document.getElementById(id);
+      return {
+        id,
+        exists: !!el,
+        visible: visible(el),
+        hidden: !!(el && el.hasAttribute('hidden')),
+        loaded: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-loaded') : ''),
+        state: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-state') : ''),
+        renderCount: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-render-count') : ''),
+      };
+    });
+    const ordered = Array.from(document.querySelectorAll('[data-gg-module="mixed-media"]'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    return {
+      bodySurface: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-surface') : ''),
+      bodyView: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-view') : ''),
+      mainSurface: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-surface') : ''),
+      mainView: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-view') : ''),
+      homeState: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-home-state') : ''),
+      blogHome: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-bloghome') : ''),
+      mixedModulePresent: !!(window.GG && GG.modules && GG.modules.mixedMedia),
+      mixedBucketLoaded: !!(window.GG && GG.__uiBuckets && GG.__uiBuckets.mixed),
+      moduleLoads,
+      ordered,
+      sections
+    };
+  }, expectedIds);
+}
+
+async function main() {
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  if (executablePath) launchOptions.executablePath = executablePath;
+  let browser = null;
+  let browserName = 'chromium';
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    const detail = clean(error && error.message ? error.message : error);
+    if (/executable doesn't exist|please run the following command|playwright install|browserType\.launch|failed to launch/i.test(detail)) {
+      try {
+        browser = await firefox.launch({ headless: true });
+        browserName = 'firefox';
+      } catch (fallbackError) {
+        const fallbackDetail = clean(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+        console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'} || fallback=${fallbackDetail || 'firefox-launch-unavailable'}`);
+        return;
+      }
+    } else {
+      throw error;
+    }
+  }
+
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1800 } });
+  const runtimeErrors = [];
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const loc = msg.location ? msg.location() : {};
+    const payload = `${msg.text ? msg.text() : ''} ${(loc && loc.url) || ''}`;
+    if (isMixedRuntimeMessage(payload) && !isIgnorableMixedRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+  page.on('pageerror', (error) => {
+    const payload = `${error && error.message ? error.message : error} ${error && error.stack ? error.stack : ''}`;
+    if (isMixedRuntimeMessage(payload) && !isIgnorableMixedRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 45000 }); } catch (_) {}
+    await page.waitForTimeout(1200);
+
+    await page.evaluate(async () => {
+      const max = Math.max(
+        document.documentElement ? document.documentElement.scrollHeight : 0,
+        document.body ? document.body.scrollHeight : 0
+      );
+      const steps = [0, 600, 1200, 1800, 2600, 3400, max];
+      for (const y of steps) {
+        window.scrollTo(0, Math.max(0, Math.min(y, max)));
+        await new Promise((resolve) => setTimeout(resolve, 280));
+      }
+    });
+    await page.waitForTimeout(900);
+
+    const snapshot = await captureState(page);
+    const orderedExpected = expectedIds.join(',');
+    const orderedActual = snapshot.ordered.filter((id) => expectedIds.includes(id)).join(',');
+    const renderedSections = snapshot.sections.filter((section) => section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`).join(',');
+    const mixedLoadState = snapshot.moduleLoads && snapshot.moduleLoads['ui.bucket.mixed.js'] ? snapshot.moduleLoads['ui.bucket.mixed.js'] : 'missing';
+
+    const results = [];
+    results.push({
+      id: 'surface-state',
+      ...state(
+        snapshot.bodySurface === 'listing' &&
+        snapshot.mainSurface === 'listing' &&
+        snapshot.homeState === 'blog' &&
+        snapshot.blogHome === '1',
+        `bodySurface=${snapshot.bodySurface || 'missing'};mainSurface=${snapshot.mainSurface || 'missing'};homeState=${snapshot.homeState || 'missing'};blogHome=${snapshot.blogHome || 'missing'};bodyView=${snapshot.bodyView || 'missing'};mainView=${snapshot.mainView || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'mixed-module-load',
+      ...state(
+        snapshot.mixedModulePresent && snapshot.mixedBucketLoaded && mixedLoadState === 'ok',
+        `present=${snapshot.mixedModulePresent ? 1 : 0};bucket=${snapshot.mixedBucketLoaded ? 1 : 0};load=${mixedLoadState}`
+      )
+    });
+    results.push({
+      id: 'mixed-order',
+      ...state(
+        orderedActual === orderedExpected,
+        `expected=${orderedExpected};actual=${orderedActual || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'mixed-visible',
+      ...state(
+        renderedSections.length === expectedIds.length,
+        `rendered=${renderedSections.map((section) => section.id).join(',') || 'none'};detail=${renderSummary}`
+      )
+    });
+    results.push({
+      id: 'runtime-errors',
+      ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
+    });
+
+    console.log(`META|browser=${browserName};url=${url};bodySurface=${snapshot.bodySurface};mainSurface=${snapshot.mainSurface};homeState=${snapshot.homeState};mixedLoad=${mixedLoadState};ordered=${orderedActual};rendered=${renderedSections.map((section) => section.id).join(',') || 'none'}`);
+    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary}`);
+    for (const row of results) {
+      console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
+    }
+  } finally {
+    await page.close().catch(() => {});
+    await browser.close().catch(() => {});
+  }
+}
+
+main().catch((error) => {
+  console.log(`BROWSER|fail|${clean(error && error.message ? error.message : error)}`);
+  process.exit(0);
+});
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE homepage-mixed %s target=/\n' "${line#META|}"
+      continue
+    fi
+    if [[ "$line" == DEBUG\|* ]]; then
+      printf 'SMOKE homepage-mixed-debug %s target=/\n' "${line#DEBUG|}"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|infra\|* ]]; then
+      homepage_mixed_signal "homepage mixed browser dependency unavailable (${line#BROWSER|infra|})"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|fail\|* ]]; then
+      homepage_mixed_signal "homepage mixed browser proof unavailable (${line#BROWSER|fail|})"
+      continue
+    fi
+    if [[ "$line" == CRITERION\|* ]]; then
+      local rest="${line#CRITERION|}"
+      local id="${rest%%|*}"
+      rest="${rest#*|}"
+      local state="${rest%%|*}"
+      local detail="${rest#*|}"
+      printf 'SMOKE homepage-mixed criterion=%s state=%s detail=%s\n' "$id" "$state" "$detail"
+      if [[ "$state" == "fail" ]]; then
+        homepage_mixed_signal "homepage mixed contract criterion=${id} failed (${detail})"
+      fi
     fi
   done < "$report_file"
 }
@@ -1811,6 +2078,7 @@ check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listin
 check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
 check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_homepage_mixed_contract
 check_dock_truth
 check_discovered_detail_paths
 check_listing_preview_runtime_contract
