@@ -986,11 +986,11 @@ const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
 const expectedIds = [
   'gg-mixed-featuredstrip',
   'gg-mixed-newsish-1',
+  'gg-mixed-bookish',
   'gg-mixed-youtubeish',
   'gg-mixed-shortish',
   'gg-mixed-newsish-2',
-  'gg-mixed-podcastish',
-  'gg-mixed-bookish'
+  'gg-mixed-podcastish'
 ];
 const primaryVisibleIds = [
   'gg-mixed-featuredstrip',
@@ -1005,7 +1005,7 @@ function clean(value) {
 
 function isMixedRuntimeMessage(value) {
   const hay = clean(value).toLowerCase();
-  return /mixed|gg-mixed|ui\.bucket\.(core|listing|mixed)|home[- ]state|gg-home-blog|featuredstrip|newsish|podcastish|bookish|youtubeish|shortish/.test(hay);
+  return /mixed|gg-mixed|ui\.bucket\.(core|listing|mixed)|home[- ]state|gg-home-blog|featuredstrip|newsish|podcastish|bookish|youtubeish|shortish|editorial preview|gg-epanel|gg-info-panel/.test(hay);
 }
 
 function isIgnorableMixedRuntimeMessage(value) {
@@ -1036,6 +1036,7 @@ async function captureState(page) {
     }
     const body = document.body;
     const main = document.querySelector('main.gg-main');
+    const blogMain = document.querySelector('.gg-blog-main');
     const moduleLoads = (window.GG && GG.boot && GG.boot._moduleLoadResults) ? GG.boot._moduleLoadResults : {};
     const sections = ids.map((id) => {
       const el = document.getElementById(id);
@@ -1052,6 +1053,15 @@ async function captureState(page) {
     const ordered = Array.from(document.querySelectorAll('[data-gg-module="mixed-media"]'))
       .map((el) => cleanValue(el.id))
       .filter(Boolean);
+    const primaryWidgets = Array.from(document.querySelectorAll('#gg-featuredpost1 > .widget'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    const deferredWidgets = Array.from(document.querySelectorAll('#gg-mixed-deferred > .widget'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    const mainFlow = Array.from(blogMain ? blogMain.children : [])
+      .map((el) => cleanValue(el.id || el.className || el.tagName))
+      .filter(Boolean);
     return {
       bodySurface: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-surface') : ''),
       bodyView: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-view') : ''),
@@ -1063,9 +1073,51 @@ async function captureState(page) {
       mixedBucketLoaded: !!(window.GG && GG.__uiBuckets && GG.__uiBuckets.mixed),
       moduleLoads,
       ordered,
-      sections
+      sections,
+      primaryWidgets,
+      deferredWidgets,
+      mainFlow
     };
   }, expectedIds);
+}
+
+async function capturePreviewState(page) {
+  return page.evaluate(() => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    const main = document.querySelector('main.gg-main');
+    const sidebar = document.querySelector('.gg-blog-layout--list .gg-blog-sidebar--right');
+    const panel = sidebar ? sidebar.querySelector('.gg-info-panel') : document.querySelector('.gg-info-panel');
+    const preview = panel ? panel.querySelector('.gg-editorial-preview') : null;
+    const rows = Array.from(preview ? preview.querySelectorAll('[data-row]') : [])
+      .filter((row) => !row.hidden)
+      .map((row) => cleanValue(row.getAttribute('data-row')));
+    return {
+      rightPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-right-panel') : ''),
+      infoPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-info-panel') : ''),
+      sidebarExists: !!sidebar,
+      sidebarVisible: visible(sidebar),
+      panelExists: !!panel,
+      panelVisible: visible(panel),
+      previewExists: !!preview,
+      previewVisible: visible(preview),
+      previewHidden: !!(preview && preview.hidden),
+      previewParent: cleanValue(preview && preview.parentElement ? preview.parentElement.className : ''),
+      title: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="title"]') && preview.querySelector('[data-s="title"]').textContent : ''),
+      author: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="author"]') && preview.querySelector('[data-s="author"]').textContent : ''),
+      snippet: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="snippet"]') && preview.querySelector('[data-s="snippet"]').textContent : ''),
+      cta: cleanValue(preview && preview.querySelector ? preview.querySelector('.gg-epanel__cta') && preview.querySelector('.gg-epanel__cta').getAttribute('href') : ''),
+      rows
+    };
+  });
 }
 
 async function main() {
@@ -1126,6 +1178,7 @@ async function main() {
     await page.waitForTimeout(900);
 
     const snapshot = await captureState(page);
+    const previewBefore = await capturePreviewState(page);
     const orderedExpected = expectedIds.join(',');
     const orderedActual = snapshot.ordered.filter((id) => expectedIds.includes(id)).join(',');
     const renderedSections = snapshot.sections.filter((section) => section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
@@ -1145,7 +1198,33 @@ async function main() {
         };
       });
     const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`).join(',');
+    const layoutSummary = `flow=${snapshot.mainFlow.join('>') || 'none'};primaryWidgets=${snapshot.primaryWidgets.join(',') || 'none'};deferredWidgets=${snapshot.deferredWidgets.join(',') || 'none'}`;
     const mixedLoadState = snapshot.moduleLoads && snapshot.moduleLoads['ui.bucket.mixed.js'] ? snapshot.moduleLoads['ui.bucket.mixed.js'] : 'missing';
+    const firstCard = page.locator('.gg-post-card').first();
+    const firstCardLink = page.locator('.gg-post-card .gg-post-card__title-link').first();
+    let previewAfterHover = previewBefore;
+    let previewAfterFocus = previewBefore;
+
+    if (await firstCard.count()) {
+      await firstCard.scrollIntoViewIfNeeded();
+      await firstCard.hover();
+      await page.waitForTimeout(700);
+      previewAfterHover = await capturePreviewState(page);
+      await page.evaluate(() => {
+        const main = document.querySelector('main.gg-main');
+        if (main) {
+          main.setAttribute('data-gg-info-panel', 'closed');
+          main.setAttribute('data-gg-right-panel', 'closed');
+        }
+      });
+      await page.waitForTimeout(400);
+    }
+    if (await firstCardLink.count()) {
+      await firstCardLink.scrollIntoViewIfNeeded();
+      await firstCardLink.focus();
+      await page.waitForTimeout(700);
+      previewAfterFocus = await capturePreviewState(page);
+    }
 
     const results = [];
     results.push({
@@ -1171,7 +1250,7 @@ async function main() {
       id: 'mixed-order',
       ...state(
         orderedActual === orderedExpected,
-        `expected=${orderedExpected};actual=${orderedActual || 'missing'}`
+        `expected=${orderedExpected};actual=${orderedActual || 'missing'};${layoutSummary}`
       )
     });
     results.push({
@@ -1189,12 +1268,52 @@ async function main() {
       )
     });
     results.push({
+      id: 'editorial-preview-shell',
+      ...state(
+        previewBefore.sidebarExists &&
+        previewBefore.panelExists &&
+        previewBefore.previewExists &&
+        /gg-info-panel/.test(previewBefore.previewParent),
+        `sidebar=${previewBefore.sidebarExists ? 1 : 0}:${previewBefore.sidebarVisible ? 1 : 0};panel=${previewBefore.panelExists ? 1 : 0}:${previewBefore.panelVisible ? 1 : 0};preview=${previewBefore.previewExists ? 1 : 0}:${previewBefore.previewVisible ? 1 : 0};parent=${previewBefore.previewParent || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-hover',
+      ...state(
+        previewAfterHover.previewVisible &&
+        previewAfterHover.infoPanel === 'open' &&
+        previewAfterHover.rightPanel === 'open' &&
+        !!previewAfterHover.title &&
+        previewAfterHover.cta !== '#',
+        `right=${previewAfterHover.rightPanel || 'missing'};info=${previewAfterHover.infoPanel || 'missing'};visible=${previewAfterHover.previewVisible ? 1 : 0};title=${previewAfterHover.title || 'missing'};cta=${previewAfterHover.cta || 'missing'};rows=${previewAfterHover.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-focus',
+      ...state(
+        previewAfterFocus.previewVisible &&
+        previewAfterFocus.infoPanel === 'open' &&
+        previewAfterFocus.rightPanel === 'open' &&
+        !!previewAfterFocus.title &&
+        previewAfterFocus.cta !== '#',
+        `right=${previewAfterFocus.rightPanel || 'missing'};info=${previewAfterFocus.infoPanel || 'missing'};visible=${previewAfterFocus.previewVisible ? 1 : 0};title=${previewAfterFocus.title || 'missing'};cta=${previewAfterFocus.cta || 'missing'};rows=${previewAfterFocus.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-content',
+      ...state(
+        !!previewAfterHover.author &&
+        (!!previewAfterHover.snippet || previewAfterHover.rows.includes('toc')),
+        `author=${previewAfterHover.author || 'missing'};snippet=${previewAfterHover.snippet || 'missing'};rows=${previewAfterHover.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
       id: 'runtime-errors',
       ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
     });
 
     console.log(`META|browser=${browserName};url=${url};bodySurface=${snapshot.bodySurface};mainSurface=${snapshot.mainSurface};homeState=${snapshot.homeState};mixedLoad=${mixedLoadState};ordered=${orderedActual};rendered=${renderedSections.map((section) => section.id).join(',') || 'none'}`);
-    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary}`);
+    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary};${layoutSummary};previewBefore=${previewBefore.previewVisible ? 1 : 0}:${previewBefore.title || 'missing'};previewHover=${previewAfterHover.previewVisible ? 1 : 0}:${previewAfterHover.title || 'missing'};previewFocus=${previewAfterFocus.previewVisible ? 1 : 0}:${previewAfterFocus.title || 'missing'}`);
     for (const row of results) {
       console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
     }

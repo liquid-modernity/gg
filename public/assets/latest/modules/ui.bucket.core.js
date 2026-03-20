@@ -3654,6 +3654,13 @@ e.preventDefault();
 handleClose();
 }
 
+function isListingLikeSurface(){
+if (!main) return false;
+var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
+return surface === 'feed' || surface === 'listing' || (surface === 'home' && homeState !== 'landing');
+}
+
 function ensureBackdrop(){
 if (backdrop) return backdrop;
 backdrop = document.querySelector('.gg-infopanel-backdrop');
@@ -4278,8 +4285,7 @@ function estimateReadTime(card){ if(!card) return ''; var inline=qs('[data-slot=
 
 function canHoverPreview(){
 if (!main || !window.matchMedia) return false;
-var surface = main.getAttribute('data-gg-surface') || '';
-return (surface === 'feed' || surface === 'listing') && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+return isListingLikeSurface() && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
 function hasS(key){ var node=panel?qs('[data-s="'+key+'"]',panel):null,v=cleanText(node&&node.textContent?node.textContent:''); return !!v&&v!=='—'; }
@@ -4499,7 +4505,7 @@ if (!panel) return;
 var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
 var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
 var isDetailSurface = surface === 'post' || surface === 'page';
-var isListingSurface = surface === 'listing' || surface === 'feed' || (surface === 'home' && homeState !== 'landing');
+var isListingSurface = isListingLikeSurface();
 var isLandingSurface = surface === 'landing' || homeState === 'landing';
 var isPostLayout = !!qs('.gg-blog-layout--post', main);
 if (isPostLayout || isDetailSurface){
@@ -5707,6 +5713,34 @@ for (var i = 0; i < GG.app.plan.length; i++) {
 	}
 };
 
+GG.app.normalizeHomepageMixedOrder = GG.app.normalizeHomepageMixedOrder || function(scope){
+function qs(sel, root){ return (root || document).querySelector(sel); }
+function matches(node, sel){ return !!(node && node.matches && node.matches(sel)); }
+var main = matches(scope, 'main.gg-main[data-gg-surface],main.gg-main') ? scope : qs('main.gg-main[data-gg-surface],main.gg-main', document);
+if (!main) return false;
+var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
+if (surface !== 'home' || homeState === 'landing') return false;
+var blogMain = qs('.gg-blog-main', main);
+var primarySection = blogMain ? qs('#gg-featuredpost1', blogMain) : null;
+var deferredSection = blogMain ? qs('#gg-mixed-deferred', blogMain) : null;
+var bookishWidget = deferredSection ? qs('#HTML5', deferredSection) : null;
+var newsishWidget = primarySection ? qs('#HTML6', primarySection) : null;
+var blogSection = blogMain ? qs('#blog', blogMain) : null;
+var nextAnchor = null;
+if (!blogMain || !primarySection || !bookishWidget || !blogSection) return false;
+if (bookishWidget.parentElement === primarySection && (!newsishWidget || bookishWidget.previousElementSibling === newsishWidget)) return true;
+nextAnchor = newsishWidget ? newsishWidget.nextElementSibling : null;
+primarySection.insertBefore(bookishWidget, nextAnchor || null);
+bookishWidget.setAttribute('data-gg-runtime-order', 'primary');
+primarySection.setAttribute('data-gg-runtime-mixed-order', 'featured,newsish-1,bookish');
+if (deferredSection) {
+  deferredSection.setAttribute('data-gg-runtime-mixed-order', 'youtubeish,shortish,newsish-2,podcastish');
+  deferredSection.hidden = !qs('.widget', deferredSection);
+}
+return true;
+};
+
 GG.app.ensureBuckets = GG.app.ensureBuckets || function(){
 var b = GG.__uiBuckets = GG.__uiBuckets || {};
 var loads = [];
@@ -5715,6 +5749,9 @@ var ctx = GG.core && GG.core.routerCtx && GG.core.routerCtx.current ? GG.core.ro
 var view = ctx ? (ctx.view || '') : '';
 var needPost = view === 'post' || view === 'page';
 var needListing = view === 'home' || view === 'listing' || view === 'label' || view === 'search' || view === 'archive';
+if (main && GG.app && typeof GG.app.normalizeHomepageMixedOrder === 'function') {
+  try { GG.app.normalizeHomepageMixedOrder(main); } catch (_) {}
+}
 var needMixed = !!document.querySelector('[data-gg-module="mixed-media"]');
 function initMixed(){
   if (!needMixed) return;
@@ -5763,6 +5800,9 @@ if (GG.ui && GG.ui.layout && typeof GG.ui.layout.refresh === 'function') {
 function runTasks(){
   var main = document.querySelector('main.gg-main[data-gg-surface]') || document.querySelector('main.gg-main');
   var ctx = GG.core && GG.core.routerCtx && GG.core.routerCtx.refresh ? GG.core.routerCtx.refresh((context && context.url) || (window.location && window.location.href ? window.location.href : ''), document) : null;
+  if (main && GG.app && typeof GG.app.normalizeHomepageMixedOrder === 'function') {
+    try { GG.app.normalizeHomepageMixedOrder(main); } catch (_) {}
+  }
   var tasks = [
     { name: 'homeState.reinit', when: { views:['home'] }, fn: function(){ if (GG.boot && GG.boot.initHomeState) GG.boot.initHomeState(); } },
     { name: 'Panels.reinit', fn: function(){ if (GG.modules.Panels) GG.modules.Panels.init(); } },
