@@ -5716,7 +5716,45 @@ for (var i = 0; i < GG.app.plan.length; i++) {
 GG.app.normalizeHomepageMixedOrder = GG.app.normalizeHomepageMixedOrder || function(scope){
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function matches(node, sel){ return !!(node && node.matches && node.matches(sel)); }
+function setAttr(node, name, value){
+  if (!node || !node.setAttribute) return;
+  node.setAttribute(name, String(value));
+}
+function applySlotContract(node, contract){
+  if (!node || !contract) return;
+  if (contract.kind) {
+    setAttr(node, 'data-gg-kind', contract.kind);
+  }
+  if (contract.type) {
+    setAttr(node, 'data-type', contract.type);
+  }
+  if (contract.max) {
+    setAttr(node, 'data-gg-max', contract.max);
+    setAttr(node, 'data-max', contract.max);
+  }
+  if (contract.cols) {
+    setAttr(node, 'data-gg-cols', contract.cols);
+    setAttr(node, 'data-cols', contract.cols);
+  }
+  if (contract.labels) {
+    setAttr(node, 'data-gg-labels', contract.labels);
+    setAttr(node, 'data-labels', contract.labels);
+  }
+  setAttr(node, 'data-gg-contract-structure', contract.structure || 'slider');
+  setAttr(node, 'data-gg-contract-total', contract.total || contract.max || '');
+  setAttr(node, 'data-gg-contract-visible', contract.visible || '');
+  setAttr(node, 'data-gg-contract-ratio', contract.ratio || '');
+}
 var main = matches(scope, 'main.gg-main[data-gg-surface],main.gg-main') ? scope : qs('main.gg-main[data-gg-surface],main.gg-main', document);
+var contracts = {
+  'gg-mixed-featuredstrip': { kind: 'featured', type: 'rail', max: '4', total: '4', visible: '1', ratio: '16:9', structure: 'slider' },
+  'gg-mixed-newsish-1': { kind: 'newsish', type: 'newsdeck', max: '3', cols: '3', labels: 'news,bookish,podcast', total: '9', visible: '3x3', ratio: 'composite', structure: 'newsdeck' },
+  'gg-mixed-youtubeish': { kind: 'youtubeish', type: 'youtube', max: '5', total: '5', visible: '3', ratio: '16:9', structure: 'slider' },
+  'gg-mixed-shortish': { kind: 'shortish', type: 'shorts', max: '6', total: '6', visible: '4', ratio: '9:16', structure: 'slider' },
+  'gg-mixed-newsish-2': { kind: 'newsish', type: 'newsdeck', max: '3', cols: '3', labels: 'news,youtube,shorts', total: '9', visible: '3x3', ratio: 'composite', structure: 'newsdeck' },
+  'gg-mixed-podcastish': { kind: 'podcastish', type: 'podcast', max: '7', total: '7', visible: '4', ratio: '1:1', structure: 'slider' },
+  'gg-mixed-bookish': { kind: 'bookish', type: 'rail', max: '6', total: '6', visible: '3', ratio: '1:1.48', structure: 'slider' }
+};
 if (!main) return false;
 var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
 var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
@@ -5724,21 +5762,35 @@ if (surface !== 'home' || homeState === 'landing') return false;
 var blogMain = qs('.gg-blog-main', main);
 var primarySection = blogMain ? qs('#gg-featuredpost1', blogMain) : null;
 var deferredSection = blogMain ? qs('#gg-mixed-deferred', blogMain) : null;
-var bookishWidget = deferredSection ? qs('#HTML5', deferredSection) : null;
-var newsishWidget = primarySection ? qs('#HTML6', primarySection) : null;
 var blogSection = blogMain ? qs('#blog', blogMain) : null;
-var nextAnchor = null;
-if (!blogMain || !primarySection || !bookishWidget || !blogSection) return false;
-if (bookishWidget.parentElement === primarySection && (!newsishWidget || bookishWidget.previousElementSibling === newsishWidget)) return true;
-nextAnchor = newsishWidget ? newsishWidget.nextElementSibling : null;
-primarySection.insertBefore(bookishWidget, nextAnchor || null);
-bookishWidget.setAttribute('data-gg-runtime-order', 'primary');
-primarySection.setAttribute('data-gg-runtime-mixed-order', 'featured,newsish-1,bookish');
-if (deferredSection) {
-  deferredSection.setAttribute('data-gg-runtime-mixed-order', 'youtubeish,shortish,newsish-2,podcastish');
-  deferredSection.hidden = !qs('.widget', deferredSection);
+var bookishWidget = blogMain ? qs('#HTML5', blogMain) : null;
+var orderChanged = false;
+var contractIds = Object.keys(contracts);
+var i = 0;
+var slot = null;
+if (!blogMain || !primarySection || !deferredSection || !blogSection) return false;
+for (i = 0; i < contractIds.length; i++) {
+  slot = qs('#' + contractIds[i], blogMain);
+  if (!slot) continue;
+  applySlotContract(slot, contracts[contractIds[i]]);
 }
-return true;
+if (bookishWidget && bookishWidget.parentElement !== deferredSection) {
+  deferredSection.appendChild(bookishWidget);
+  orderChanged = true;
+} else if (bookishWidget && bookishWidget.parentElement === deferredSection && bookishWidget !== deferredSection.lastElementChild) {
+  deferredSection.appendChild(bookishWidget);
+  orderChanged = true;
+}
+if (bookishWidget) {
+  bookishWidget.setAttribute('data-gg-runtime-order', 'deferred-tail');
+}
+primarySection.setAttribute('data-gg-runtime-mixed-order', 'featured,newsish-1');
+deferredSection.setAttribute('data-gg-runtime-mixed-order', 'youtubeish,shortish,newsish-2,podcastish,bookish');
+blogMain.setAttribute('data-gg-runtime-home-order', 'featured,newsish-1,listing,youtubeish,shortish,newsish-2,podcastish,bookish');
+blogMain.setAttribute('data-gg-runtime-primary-order', 'featured,newsish-1');
+blogMain.setAttribute('data-gg-runtime-deferred-order', 'youtubeish,shortish,newsish-2,podcastish,bookish');
+deferredSection.hidden = !qs('.widget', deferredSection);
+return orderChanged || true;
 };
 
 GG.app.ensureBuckets = GG.app.ensureBuckets || function(){

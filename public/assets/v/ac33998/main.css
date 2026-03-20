@@ -2324,6 +2324,7 @@ grid-template-columns: repeat(4, minmax(0, 1fr));
 .gg-mixed[data-type="bookish"],
 .gg-mixed[data-gg-kind="bookish"]{
 --gg-mixed-ratio: 1 / 1.48;
+--gg-mixed-rail-col: clamp(206px, calc((100% - (var(--gg-mixed-gap) * 2)) / 3.18), 286px);
 }
 .gg-mixed[data-type="rail"],
 .gg-mixed[data-gg-kind="featured"]{
@@ -2883,10 +2884,11 @@ gap: 2px;
 }
 .gg-epanel__row[data-row="author"] .gg-epanel__label{
 font-size: 8px;
-letter-spacing: .08em;
+letter-spacing: .1em;
 text-transform: uppercase;
-font-weight: 560;
-opacity: .74;
+font-weight: 600;
+color: color-mix(in srgb, var(--gg-muted) 58%, var(--gg-ink) 42%);
+opacity: .9;
 }
 .gg-epanel__row[data-row="author"] .gg-epanel__value{
 font-size: 12px;
@@ -2899,23 +2901,23 @@ display:none;
 }
 .gg-epanel__icon{
 margin-top: 2px;
-font-size: 14px;
+font-size: 13px;
 line-height: 1;
 color: var(--gg-muted);
-opacity: .72;
+opacity: .56;
 }
 .gg-epanel__cell{
 min-width:0;
 display:grid;
-gap:4px;
+gap:3px;
 }
 .gg-epanel__label{
 margin:0;
 font-size:9px;
-letter-spacing:.05em;
+letter-spacing:.08em;
 font-weight:600;
 text-transform:none;
-color:var(--gg-muted);
+color: color-mix(in srgb, var(--gg-muted) 62%, var(--gg-ink) 38%);
 }
 .gg-epanel__value{
 margin:0;
@@ -2927,13 +2929,13 @@ color:var(--gg-ink);
 }
 .gg-epanel__row:not([data-row="title"]):not([data-row="snippet"]) .gg-epanel__label{
 font-size: 8px;
-letter-spacing: .08em;
-font-weight: 560;
+letter-spacing: .1em;
+font-weight: 600;
 text-transform: uppercase;
-opacity: .78;
+opacity: .92;
 }
 .gg-epanel__row:not([data-row="title"]):not([data-row="snippet"]) .gg-epanel__value{
-color: color-mix(in srgb, var(--gg-ink) 82%, #667284);
+color: color-mix(in srgb, var(--gg-ink) 80%, #69788b);
 }
 .gg-epanel__value a{
 color:inherit;
@@ -2970,7 +2972,7 @@ border-top: 1px solid color-mix(in srgb, var(--gg-border) 86%, #e8edf5);
 }
 .gg-epanel__row:is([data-row="contributors"],[data-row="labels"],[data-row="tags"],[data-row="date"],[data-row="updated"],[data-row="comments"],[data-row="readtime"]) .gg-epanel__icon{
 font-size: 13px;
-opacity: .62;
+opacity: .48;
 }
 .gg-epanel__row:is([data-row="labels"],[data-row="updated"],[data-row="comments"]) .gg-epanel__value{
 color: color-mix(in srgb, var(--gg-ink) 88%, #5f6f82);

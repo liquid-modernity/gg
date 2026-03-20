@@ -986,18 +986,36 @@ const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
 const expectedIds = [
   'gg-mixed-featuredstrip',
   'gg-mixed-newsish-1',
-  'gg-mixed-bookish',
   'gg-mixed-youtubeish',
   'gg-mixed-shortish',
   'gg-mixed-newsish-2',
-  'gg-mixed-podcastish'
+  'gg-mixed-podcastish',
+  'gg-mixed-bookish'
 ];
 const primaryVisibleIds = [
   'gg-mixed-featuredstrip',
-  'gg-mixed-newsish-1',
-  'gg-mixed-bookish'
+  'gg-mixed-newsish-1'
 ];
 const deferredIds = expectedIds.filter((id) => !primaryVisibleIds.includes(id));
+const expectedMainFlow = ['gg-featuredpost1', 'blog', 'gg-mixed-deferred'];
+const expectedHomeOrder = 'featured,newsish-1,listing,youtubeish,shortish,newsish-2,podcastish,bookish';
+const requiredPreviewLabels = {
+  author: 'Written by',
+  labels: 'Label',
+  date: 'Date',
+  updated: 'Updated',
+  comments: 'Comments',
+  readtime: 'Read time'
+};
+const expectedSectionContracts = {
+  'gg-mixed-featuredstrip': { type: 'rail', structure: 'slider', total: '4', visible: '1', ratio: '16:9', cols: 1, layout: 'rail' },
+  'gg-mixed-newsish-1': { type: 'newsdeck', structure: 'newsdeck', total: '9', visible: '3x3', ratio: 'composite', cols: 3, layout: 'newsdeck', labels: ['News', 'Bookish', 'Podcast'] },
+  'gg-mixed-youtubeish': { type: 'youtube', structure: 'slider', total: '5', visible: '3', ratio: '16:9', cols: 1, layout: 'rail' },
+  'gg-mixed-shortish': { type: 'shorts', structure: 'slider', total: '6', visible: '4', ratio: '9:16', cols: 1, layout: 'rail' },
+  'gg-mixed-newsish-2': { type: 'newsdeck', structure: 'newsdeck', total: '9', visible: '3x3', ratio: 'composite', cols: 3, layout: 'newsdeck', labels: ['News', 'Youtube', 'Shorts'] },
+  'gg-mixed-podcastish': { type: 'podcast', structure: 'slider', total: '7', visible: '4', ratio: '1:1', cols: 1, layout: 'rail' },
+  'gg-mixed-bookish': { type: 'rail', structure: 'slider', total: '6', visible: '3', ratio: '1:1.48', cols: 1, layout: 'rail' }
+};
 
 function clean(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -1037,9 +1055,14 @@ async function captureState(page) {
     const body = document.body;
     const main = document.querySelector('main.gg-main');
     const blogMain = document.querySelector('.gg-blog-main');
+    const primarySection = blogMain ? blogMain.querySelector('#gg-featuredpost1') : null;
+    const deferredSection = blogMain ? blogMain.querySelector('#gg-mixed-deferred') : null;
     const moduleLoads = (window.GG && GG.boot && GG.boot._moduleLoadResults) ? GG.boot._moduleLoadResults : {};
     const sections = ids.map((id) => {
       const el = document.getElementById(id);
+      const grid = el ? el.querySelector('[data-role="grid"]') : null;
+      const rail = el ? el.querySelector('[data-role="rail"]') : null;
+      const newsdeckCols = Array.from(el ? el.querySelectorAll('.gg-newsdeck__col') : []);
       return {
         id,
         exists: !!el,
@@ -1048,6 +1071,19 @@ async function captureState(page) {
         loaded: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-loaded') : ''),
         state: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-state') : ''),
         renderCount: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-render-count') : ''),
+        type: cleanValue(el && el.getAttribute ? (el.getAttribute('data-type') || el.getAttribute('data-gg-kind')) : ''),
+        kind: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-kind') || el.getAttribute('data-type')) : ''),
+        max: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-max') || el.getAttribute('data-max')) : ''),
+        cols: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-cols') || el.getAttribute('data-cols')) : ''),
+        contractStructure: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-structure') : ''),
+        contractTotal: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-total') : ''),
+        contractVisible: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-visible') : ''),
+        contractRatio: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-ratio') : ''),
+        gridVisible: visible(grid),
+        railVisible: visible(rail),
+        newsdeckCols: newsdeckCols.length,
+        newsdeckLabels: newsdeckCols.map((col) => cleanValue(col.querySelector('.gg-newsdeck__col-label') && col.querySelector('.gg-newsdeck__col-label').textContent)).filter(Boolean),
+        moreHref: cleanValue(el && el.querySelector ? ((el.querySelector('[data-role="more"]') || el.querySelector('.gg-mixed__more')) && (el.querySelector('[data-role="more"]') || el.querySelector('.gg-mixed__more')).getAttribute('href')) : '')
       };
     });
     const ordered = Array.from(document.querySelectorAll('[data-gg-module="mixed-media"]'))
@@ -1076,7 +1112,10 @@ async function captureState(page) {
       sections,
       primaryWidgets,
       deferredWidgets,
-      mainFlow
+      mainFlow,
+      runtimeHomeOrder: cleanValue(blogMain && blogMain.getAttribute ? blogMain.getAttribute('data-gg-runtime-home-order') : ''),
+      runtimePrimaryOrder: cleanValue(primarySection && primarySection.getAttribute ? primarySection.getAttribute('data-gg-runtime-mixed-order') : ''),
+      runtimeDeferredOrder: cleanValue(deferredSection && deferredSection.getAttribute ? deferredSection.getAttribute('data-gg-runtime-mixed-order') : '')
     };
   }, expectedIds);
 }
@@ -1093,6 +1132,21 @@ async function capturePreviewState(page) {
       const rect = node.getBoundingClientRect();
       return !!(rect.width || rect.height || node.getClientRects().length);
     }
+    function labelState(preview, rowName) {
+      const row = preview ? preview.querySelector(`[data-row="${rowName}"]`) : null;
+      const label = row ? row.querySelector('.gg-epanel__label') : null;
+      const value = row ? row.querySelector('.gg-epanel__value,[data-s],[data-gg-slot]') : null;
+      const style = label ? window.getComputedStyle(label) : null;
+      return {
+        exists: !!label,
+        text: cleanValue(label && label.textContent),
+        rowVisible: visible(row),
+        labelVisible: visible(label),
+        display: cleanValue(style && style.display),
+        visibility: cleanValue(style && style.visibility),
+        value: cleanValue(value && value.textContent)
+      };
+    }
     const main = document.querySelector('main.gg-main');
     const sidebar = document.querySelector('.gg-blog-layout--list .gg-blog-sidebar--right');
     const panel = sidebar ? sidebar.querySelector('.gg-info-panel') : document.querySelector('.gg-info-panel');
@@ -1100,6 +1154,17 @@ async function capturePreviewState(page) {
     const rows = Array.from(preview ? preview.querySelectorAll('[data-row]') : [])
       .filter((row) => !row.hidden)
       .map((row) => cleanValue(row.getAttribute('data-row')));
+    const labelStates = {};
+    Object.keys({
+      author: 1,
+      labels: 1,
+      date: 1,
+      updated: 1,
+      comments: 1,
+      readtime: 1
+    }).forEach((key) => {
+      labelStates[key] = labelState(preview, key);
+    });
     return {
       rightPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-right-panel') : ''),
       infoPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-info-panel') : ''),
@@ -1115,9 +1180,73 @@ async function capturePreviewState(page) {
       author: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="author"]') && preview.querySelector('[data-s="author"]').textContent : ''),
       snippet: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="snippet"]') && preview.querySelector('[data-s="snippet"]').textContent : ''),
       cta: cleanValue(preview && preview.querySelector ? preview.querySelector('.gg-epanel__cta') && preview.querySelector('.gg-epanel__cta').getAttribute('href') : ''),
-      rows
+      rows,
+      labelStates
     };
   });
+}
+
+async function closePreview(page) {
+  await page.evaluate(() => {
+    const main = document.querySelector('main.gg-main');
+    if (main) {
+      main.setAttribute('data-gg-info-panel', 'closed');
+      main.setAttribute('data-gg-right-panel', 'closed');
+    }
+  });
+  await page.waitForTimeout(400);
+}
+
+function previewLabelSummary(preview) {
+  return Object.keys(requiredPreviewLabels).map((key) => {
+    const row = preview && preview.labelStates ? preview.labelStates[key] : null;
+    return `${key}:${row && row.text ? row.text : 'missing'}:${row && row.rowVisible ? 1 : 0}:${row && row.labelVisible ? 1 : 0}:${row && row.value ? row.value : 'missing'}`;
+  }).join(',');
+}
+
+function previewLabelsOk(preview) {
+  const requiredVisibleRows = ['author', 'labels', 'date'];
+  const conditionalRows = ['updated', 'comments', 'readtime'];
+  const labelStates = preview && preview.labelStates ? preview.labelStates : {};
+  const baseOk = Object.entries(requiredPreviewLabels).every(([key, expected]) => {
+    const row = labelStates[key];
+    return !!(row && row.exists && row.text === expected && row.display !== 'none' && row.visibility !== 'hidden');
+  });
+  if (!baseOk) return false;
+  if (!requiredVisibleRows.every((key) => {
+    const row = labelStates[key];
+    return !!(row && row.rowVisible && row.labelVisible && row.value);
+  })) {
+    return false;
+  }
+  return conditionalRows.every((key) => {
+    const row = labelStates[key];
+    return !!row && (!row.rowVisible || (row.labelVisible && row.value));
+  });
+}
+
+function sectionContractResult(section) {
+  const expected = expectedSectionContracts[section.id];
+  if (!expected) {
+    return { ok: false, detail: `${section.id}:missing-contract` };
+  }
+  const typeOk = section.type === expected.type;
+  const structureOk = section.contractStructure === expected.structure;
+  const totalOk = section.contractTotal === expected.total;
+  const visibleOk = section.contractVisible === expected.visible;
+  const ratioOk = section.contractRatio === expected.ratio;
+  const colsOk = String(section.cols || (section.newsdeckCols || '')) === String(expected.cols);
+  const layoutOk = expected.layout === 'newsdeck'
+    ? (section.gridVisible && !section.railVisible && section.newsdeckCols === expected.cols)
+    : (section.railVisible && !section.gridVisible);
+  const labelsOk = Array.isArray(expected.labels) && expected.labels.length
+    ? expected.labels.every((label) => section.newsdeckLabels.includes(label))
+    : true;
+  const renderOk = Number(section.renderCount || '0') > 0;
+  return {
+    ok: typeOk && structureOk && totalOk && visibleOk && ratioOk && colsOk && layoutOk && labelsOk && renderOk,
+    detail: `${section.id}:${typeOk ? 1 : 0}:${structureOk ? 1 : 0}:${totalOk ? 1 : 0}:${visibleOk ? 1 : 0}:${ratioOk ? 1 : 0}:${colsOk ? 1 : 0}:${layoutOk ? 1 : 0}:${labelsOk ? 1 : 0}:${renderOk ? 1 : 0}:${section.type || 'missing'}:${section.contractTotal || '0'}:${section.contractVisible || '0'}:${section.contractRatio || 'missing'}:${section.newsdeckLabels.join('+') || 'none'}`
+  };
 }
 
 async function main() {
@@ -1183,6 +1312,7 @@ async function main() {
     const orderedActual = snapshot.ordered.filter((id) => expectedIds.includes(id)).join(',');
     const renderedSections = snapshot.sections.filter((section) => section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
     const primaryRendered = snapshot.sections.filter((section) => primaryVisibleIds.includes(section.id) && section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const sectionContractSummary = snapshot.sections.map((section) => sectionContractResult(section));
     const deferredSummary = snapshot.sections
       .filter((section) => deferredIds.includes(section.id))
       .map((section) => {
@@ -1194,36 +1324,42 @@ async function main() {
         return {
           id: section.id,
           ok,
-          detail: `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`
+          detail: `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}:${section.type || 'missing'}:${section.contractTotal || '0'}`
         };
       });
-    const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}`).join(',');
-    const layoutSummary = `flow=${snapshot.mainFlow.join('>') || 'none'};primaryWidgets=${snapshot.primaryWidgets.join(',') || 'none'};deferredWidgets=${snapshot.deferredWidgets.join(',') || 'none'}`;
+    const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}:${section.type || 'missing'}:${section.contractTotal || '0'}:${section.contractVisible || '0'}:${section.contractRatio || 'missing'}`).join(',');
+    const flowExpected = expectedMainFlow.join('>');
+    const flowActual = snapshot.mainFlow.join('>');
+    const flowOk = flowActual === flowExpected;
+    const homeOrderOk = snapshot.runtimeHomeOrder === expectedHomeOrder;
+    const layoutSummary = `flow=${flowActual || 'none'};runtimeHome=${snapshot.runtimeHomeOrder || 'missing'};runtimePrimary=${snapshot.runtimePrimaryOrder || 'missing'};runtimeDeferred=${snapshot.runtimeDeferredOrder || 'missing'};primaryWidgets=${snapshot.primaryWidgets.join(',') || 'none'};deferredWidgets=${snapshot.deferredWidgets.join(',') || 'none'}`;
     const mixedLoadState = snapshot.moduleLoads && snapshot.moduleLoads['ui.bucket.mixed.js'] ? snapshot.moduleLoads['ui.bucket.mixed.js'] : 'missing';
     const firstCard = page.locator('.gg-post-card').first();
     const firstCardLink = page.locator('.gg-post-card .gg-post-card__title-link').first();
+    const firstMixedCard = page.locator('[data-gg-module="mixed-media"] .gg-mixed__card, [data-gg-module="mixed-media"] .gg-newsdeck__item').first();
     let previewAfterHover = previewBefore;
     let previewAfterFocus = previewBefore;
+    let previewAfterMixed = previewBefore;
 
     if (await firstCard.count()) {
       await firstCard.scrollIntoViewIfNeeded();
       await firstCard.hover();
       await page.waitForTimeout(700);
       previewAfterHover = await capturePreviewState(page);
-      await page.evaluate(() => {
-        const main = document.querySelector('main.gg-main');
-        if (main) {
-          main.setAttribute('data-gg-info-panel', 'closed');
-          main.setAttribute('data-gg-right-panel', 'closed');
-        }
-      });
-      await page.waitForTimeout(400);
+      await closePreview(page);
     }
     if (await firstCardLink.count()) {
       await firstCardLink.scrollIntoViewIfNeeded();
       await firstCardLink.focus();
       await page.waitForTimeout(700);
       previewAfterFocus = await capturePreviewState(page);
+      await closePreview(page);
+    }
+    if (await firstMixedCard.count()) {
+      await firstMixedCard.scrollIntoViewIfNeeded();
+      await firstMixedCard.hover();
+      await page.waitForTimeout(700);
+      previewAfterMixed = await capturePreviewState(page);
     }
 
     const results = [];
@@ -1249,7 +1385,7 @@ async function main() {
     results.push({
       id: 'mixed-order',
       ...state(
-        orderedActual === orderedExpected,
+        orderedActual === orderedExpected && flowOk && homeOrderOk,
         `expected=${orderedExpected};actual=${orderedActual || 'missing'};${layoutSummary}`
       )
     });
@@ -1265,6 +1401,13 @@ async function main() {
       ...state(
         deferredSummary.every((section) => section.ok),
         deferredSummary.map((section) => section.detail).join(',') || 'none'
+      )
+    });
+    results.push({
+      id: 'mixed-section-contract',
+      ...state(
+        sectionContractSummary.every((section) => section.ok),
+        sectionContractSummary.map((section) => section.detail).join(',') || 'none'
       )
     });
     results.push({
@@ -1308,12 +1451,28 @@ async function main() {
       )
     });
     results.push({
+      id: 'editorial-preview-meta-labels',
+      ...state(
+        previewLabelsOk(previewAfterHover),
+        previewLabelSummary(previewAfterHover)
+      )
+    });
+    results.push({
+      id: 'editorial-preview-boundary',
+      ...state(
+        !previewAfterMixed.previewVisible &&
+        previewAfterMixed.infoPanel !== 'open' &&
+        previewAfterMixed.rightPanel !== 'open',
+        `right=${previewAfterMixed.rightPanel || 'missing'};info=${previewAfterMixed.infoPanel || 'missing'};visible=${previewAfterMixed.previewVisible ? 1 : 0};rows=${previewAfterMixed.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
       id: 'runtime-errors',
       ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
     });
 
-    console.log(`META|browser=${browserName};url=${url};bodySurface=${snapshot.bodySurface};mainSurface=${snapshot.mainSurface};homeState=${snapshot.homeState};mixedLoad=${mixedLoadState};ordered=${orderedActual};rendered=${renderedSections.map((section) => section.id).join(',') || 'none'}`);
-    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary};${layoutSummary};previewBefore=${previewBefore.previewVisible ? 1 : 0}:${previewBefore.title || 'missing'};previewHover=${previewAfterHover.previewVisible ? 1 : 0}:${previewAfterHover.title || 'missing'};previewFocus=${previewAfterFocus.previewVisible ? 1 : 0}:${previewAfterFocus.title || 'missing'}`);
+    console.log(`META|browser=${browserName};url=${url};bodySurface=${snapshot.bodySurface};mainSurface=${snapshot.mainSurface};homeState=${snapshot.homeState};mixedLoad=${mixedLoadState};ordered=${orderedActual};rendered=${renderedSections.map((section) => section.id).join(',') || 'none'};homeOrder=${snapshot.runtimeHomeOrder || 'missing'}`);
+    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary};${layoutSummary};previewBefore=${previewBefore.previewVisible ? 1 : 0}:${previewBefore.title || 'missing'};previewHover=${previewAfterHover.previewVisible ? 1 : 0}:${previewAfterHover.title || 'missing'};previewFocus=${previewAfterFocus.previewVisible ? 1 : 0}:${previewAfterFocus.title || 'missing'};previewMixed=${previewAfterMixed.previewVisible ? 1 : 0}:${previewAfterMixed.title || 'missing'};previewLabels=${previewLabelSummary(previewAfterHover)}`);
     for (const row of results) {
       console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
     }
