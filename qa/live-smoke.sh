@@ -1337,6 +1337,7 @@ function isIgnorableCommentRuntimeMessage(value) {
   if (hay.includes('report-only policy')) return true;
   if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
   if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
+  if (hay.includes('sha384') && hay.includes('recaptcha__en.js') && hay.includes('gstatic.com/recaptcha/releases')) return true;
   return false;
 }
 
