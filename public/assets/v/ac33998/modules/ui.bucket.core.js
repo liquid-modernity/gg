@@ -1290,7 +1290,8 @@ return true;
 }
 if (navigator.clipboard && navigator.clipboard.writeText) {
 navigator.clipboard.writeText(url).then(function(){
-  if (GG.ui && typeof GG.ui.ggToast === 'function') GG.ui.ggToast('Link copied');
+  var msg = (GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.copied', 'Link copied') : 'Link copied';
+  if (GG.ui && typeof GG.ui.ggToast === 'function') GG.ui.ggToast(msg);
 });
 return true;
 }
@@ -1570,6 +1571,10 @@ if (out.readMin) out.readLabel = out.readMin + ' min read';
 return out;
 };
 GG.services.postmeta = GG.services.postmeta || services.postmeta;
+function copyText(key, fallback, vars){
+  if (GG.copy && typeof GG.copy.t === 'function') return GG.copy.t(key, fallback, vars);
+  return String(fallback == null ? '' : fallback);
+}
 
 services.comments = services.comments || (function(){
 function qs(sel, root){ return (root || document).querySelector(sel); }
@@ -1602,7 +1607,7 @@ function setLoading(slot, on){
   if (on){
     if (slot.__ggLoading) return;
     slot.__ggLoading = true;
-    setSlotStatus(slot, 'Loading comments...');
+    setSlotStatus(slot, copyText('global.loading', 'Loading...'));
   } else {
     slot.__ggLoading = false;
     var el = slot.querySelector('.gg-comments-loading');
@@ -1645,7 +1650,7 @@ function mountWithRetry(){
     if (tries >= max) {
       var s = ensureSlot();
       if (s){
-        setSlotStatus(s, 'Comments are not available right now.');
+        setSlotStatus(s, copyText('global.unavailable', 'Unavailable'));
       }
       return;
     }
@@ -1673,12 +1678,21 @@ function clipboardFallback(meta){
   meta = getMeta(meta);
   if (navigator.clipboard && navigator.clipboard.writeText) {
     return navigator.clipboard.writeText(meta.url).then(function(){
-      try{ if (GG.ui && typeof GG.ui.ggToast === 'function') GG.ui.ggToast('Link copied'); }catch(_){}
+      try {
+        if (GG.util && typeof GG.util.showToast === 'function') GG.util.showToast(copyText('share.status.copied', 'Link copied'));
+        else if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') GG.ui.toast.show(copyText('share.status.copied', 'Link copied'));
+      } catch (_) {}
     }).catch(function(){
-      try{ window.prompt('Copy link:', meta.url); }catch(_){}
+      try {
+        if (GG.util && typeof GG.util.showToast === 'function') GG.util.showToast(copyText('share.status.unavailable', 'Sharing is unavailable on this device'));
+        else if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') GG.ui.toast.show(copyText('share.status.unavailable', 'Sharing is unavailable on this device'));
+      } catch (_) {}
     });
   }
-  try{ window.prompt('Copy link:', meta.url); }catch(_){}
+  try {
+    if (GG.util && typeof GG.util.showToast === 'function') GG.util.showToast(copyText('share.status.unavailable', 'Sharing is unavailable on this device'));
+    else if (GG.ui && GG.ui.toast && typeof GG.ui.toast.show === 'function') GG.ui.toast.show(copyText('share.status.unavailable', 'Sharing is unavailable on this device'));
+  } catch (_) {}
   return Promise.resolve();
 }
 function nativeOrClipboard(meta){
@@ -2952,7 +2966,7 @@ function savePost(article){
     var already = existing.some(function(it){ return it.id === id || normalizeUrl(it.url) === url; });
     if(!already) existing.unshift(payload);
     localStorage.setItem(key, JSON.stringify(existing.slice(0,50)));
-    showToast('Post saved to Library');
+    showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('library.status.saved', 'Saved to library') : 'Saved to library');
   }catch(_){}
 }
 
@@ -2996,22 +3010,26 @@ function sharePost(article){
     if (navigator.share) {
       navigator.share({ title: title, url: url }).catch(function(){
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); }).catch(function(){
-            try{ window.prompt('Copy link:', url); }catch(_){}
+          navigator.clipboard.writeText(url).then(function(){
+            showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.copied', 'Link copied') : 'Link copied');
+          }).catch(function(){
+            showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.unavailable', 'Sharing is unavailable on this device') : 'Sharing is unavailable on this device');
           });
           return;
         }
-        try{ window.prompt('Copy link:', url); }catch(_){}
+        showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.unavailable', 'Sharing is unavailable on this device') : 'Sharing is unavailable on this device');
       });
       return;
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function(){ showToast('Link copied'); }).catch(function(){
-        try{ window.prompt('Copy link:', url); }catch(_){}
+      navigator.clipboard.writeText(url).then(function(){
+        showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.copied', 'Link copied') : 'Link copied');
+      }).catch(function(){
+        showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.unavailable', 'Sharing is unavailable on this device') : 'Sharing is unavailable on this device');
       });
       return;
     }
-    try{ window.prompt('Copy link:', url); }catch(_){}
+    showToast((GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t('share.status.unavailable', 'Sharing is unavailable on this device') : 'Sharing is unavailable on this device');
   };
   if (meta) {
     requestPosterShare(meta, fallback);
@@ -7147,6 +7165,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       }
     } catch (_) {}
   }
+  function copyLabel(key, fallback, vars){
+    if (GG.copy && typeof GG.copy.t === 'function') return GG.copy.t(key, fallback, vars);
+    return String(fallback == null ? '' : fallback);
+  }
   function fallbackCopy(text){
     var ta = null;
     var ok = false;
@@ -7170,21 +7192,21 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!url) return false;
     if (w.navigator && navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(function(){
-        notify('Link copied');
+        notify(copyLabel('comments.status.copied', 'Comment link copied'));
       }).catch(function(){
         if (fallbackCopy(url)) {
-          notify('Link copied');
+          notify(copyLabel('comments.status.copied', 'Comment link copied'));
           return;
         }
-        try { w.prompt('Copy link:', url); } catch (_) {}
+        notify(copyLabel('share.status.unavailable', 'Sharing is unavailable on this device'));
       });
       return true;
     }
     if (fallbackCopy(url)) {
-      notify('Link copied');
+      notify(copyLabel('comments.status.copied', 'Comment link copied'));
       return true;
     }
-    try { w.prompt('Copy link:', url); } catch (_) {}
+    notify(copyLabel('share.status.unavailable', 'Sharing is unavailable on this device'));
     return false;
   }
   function markTarget(comment){
@@ -7299,9 +7321,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       author = meta.querySelector('.cmt2-reply-meta__author');
     }
     meta.setAttribute('data-gg-comment-jump', ctx.id);
-    meta.setAttribute('aria-label', 'Replying to ' + (ctx.author ? '@' + ctx.author : 'parent comment'));
-    if (copy) copy.textContent = 'Replying to';
-    if (author) author.textContent = ctx.author ? '@' + ctx.author : 'parent comment';
+    meta.setAttribute('aria-label', copyLabel('comments.replyTo', 'Reply to {name}', { name: ctx.author ? '@' + ctx.author : copyLabel('comments.parentComment', 'parent comment') }));
+    if (copy) copy.textContent = copyLabel('comments.replyingTo', 'Replying to');
+    if (author) author.textContent = ctx.author ? '@' + ctx.author : copyLabel('comments.parentComment', 'parent comment');
   }
   function ensureModerationState(comment){
     var block = commentBlock(comment);
@@ -7365,9 +7387,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     isOpen = !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed';
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    btn.setAttribute('aria-label', (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')');
+    btn.setAttribute('aria-label', isOpen
+      ? copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: count })
+      : copyLabel('comments.replies.show', 'View replies ({count})', { count: count }));
     btn.setAttribute('data-gg-comment-icon', isOpen ? 'unfold_less' : 'unfold_more');
-    btn.textContent = (isOpen ? 'Hide replies' : 'View replies') + ' (' + count + ')';
+    btn.textContent = isOpen
+      ? copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: count })
+      : copyLabel('comments.replies.show', 'View replies ({count})', { count: count });
   }
   function normalizeReplyLink(comment, root){
     var actions = ensureActions(comment);
@@ -7403,9 +7429,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       action.className = 'comment-reply cmt2-reply-action';
       action.setAttribute('data-gg-comment-action', 'reply');
     }
-    action.textContent = cleanText(primary.textContent) || 'Reply';
+    action.textContent = cleanText(primary.textContent) || copyLabel('comments.action.reply', 'Reply');
     action.setAttribute('data-gg-comment-role', 'reply');
-    action.setAttribute('aria-label', 'Reply to ' + (commentAuthor(comment) ? '@' + commentAuthor(comment) : 'comment'));
+    action.setAttribute('aria-label', copyLabel('comments.replyTo', 'Reply to {name}', { name: commentAuthor(comment) ? '@' + commentAuthor(comment) : copyLabel('comments.parentComment', 'comment') }));
     action.setAttribute('data-gg-comment-icon', 'reply');
     action.__ggNativeReplyLink = primary;
     action.removeAttribute('hidden');
@@ -7584,7 +7610,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       btn.setAttribute('data-gg-comment-action', 'more');
       btn.setAttribute('aria-expanded', 'false');
       btn.setAttribute('aria-haspopup', 'menu');
-      btn.setAttribute('aria-label', 'More actions');
+      btn.setAttribute('aria-label', copyLabel('comments.action.more', 'More actions'));
       btn.appendChild((function(){
         var icon = d.createElement('span');
         icon.className = 'ms';
@@ -7615,7 +7641,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         icon.textContent = 'link';
         return icon;
       })());
-      copyBtn.appendChild(d.createTextNode('Copy link'));
+      copyBtn.appendChild(d.createTextNode(copyLabel('comments.action.copyLink', 'Copy link')));
       pop.appendChild(copyBtn);
     } else if (!permalink && copyBtn && copyBtn.parentNode) {
       copyBtn.parentNode.removeChild(copyBtn);
@@ -7633,7 +7659,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         icon.textContent = 'delete';
         return icon;
       })());
-      deleteBtn.appendChild(d.createTextNode('Delete comment'));
+      deleteBtn.appendChild(d.createTextNode(copyLabel('comments.action.delete', 'Delete comment')));
       pop.appendChild(deleteBtn);
     } else if (!deleteLink && deleteBtn && deleteBtn.parentNode) {
       deleteBtn.parentNode.removeChild(deleteBtn);
@@ -7760,7 +7786,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var slot = replySlot(root);
     var title = banner.querySelector('.cmt2-replying__title');
     if (!slot || !footerAllowsComposer(root) || state.replyMode !== 'reply' || !state.replyTargetId) return;
-    if (title) title.textContent = 'Replying to ' + (state.replyTargetAuthor ? '@' + state.replyTargetAuthor : 'comment');
+    if (title) title.textContent = copyLabel('comments.replyingTo', 'Replying to') + ' ' + (state.replyTargetAuthor ? '@' + state.replyTargetAuthor : copyLabel('comments.parentComment', 'comment'));
     if (banner.parentNode !== slot) slot.insertBefore(banner, slot.firstChild || null);
     syncFooterState(root);
   }
@@ -7958,9 +7984,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     replies.hidden = open;
     replies.setAttribute('data-gg-state', open ? 'collapsed' : 'expanded');
     btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-    btn.setAttribute('aria-label', (open ? 'View replies' : 'Hide replies') + ' (' + replyChildrenCount(replies) + ')');
+    btn.setAttribute('aria-label', open
+      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: replyChildrenCount(replies) })
+      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: replyChildrenCount(replies) }));
     btn.setAttribute('data-gg-comment-icon', open ? 'unfold_more' : 'unfold_less');
-    btn.textContent = (open ? 'View replies' : 'Hide replies') + ' (' + replyChildrenCount(replies) + ')';
+    btn.textContent = open
+      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: replyChildrenCount(replies) })
+      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: replyChildrenCount(replies) });
     return !open;
   }
   function triggerDelete(comment){
@@ -9025,13 +9055,17 @@ function updateBackdrop(){
     var libraryText = (GG.util && GG.util.getLangPack) ? GG.util.getLangPack('library') : {};
     var actionsText = (GG.util && GG.util.getLangPack) ? GG.util.getLangPack('actions') : {};
     var defaults = cfg.messages || {};
+    var copy = (GG.copy && typeof GG.copy.t === 'function') ? GG.copy.t : null;
+    function txt(key, fallback) {
+      return copy ? copy(key, fallback) : fallback;
+    }
     return {
-      add: defaults.add || libraryText.bookmark_add || actionsText.bookmark_add || 'Tambahkan ke Library',
-      in: defaults.in || libraryText.bookmark_inLibrary || actionsText.bookmark_inLibrary || 'Dalam Library',
-      saved: defaults.saved || libraryText.toast_saved || 'Disimpan ke Library',
-      removed: defaults.removed || libraryText.toast_removed || 'Dihapus dari Library',
-      empty: defaults.empty || libraryText.empty || 'Belum ada posting disimpan',
-      removeBtn: defaults.removeBtn || libraryText.remove_button || 'Hapus dari Library'
+      add: defaults.add || txt('library.action.add', libraryText.bookmark_add || actionsText.bookmark_add || 'Save to library'),
+      in: defaults.in || txt('library.action.in', libraryText.bookmark_inLibrary || actionsText.bookmark_inLibrary || 'In library'),
+      saved: defaults.saved || txt('library.status.saved', libraryText.toast_saved || 'Saved to library'),
+      removed: defaults.removed || txt('library.status.removed', libraryText.toast_removed || 'Removed from library'),
+      empty: defaults.empty || txt('library.empty.title', libraryText.empty || 'Your library is empty'),
+      removeBtn: defaults.removeBtn || txt('library.action.remove', libraryText.remove_button || 'Remove from library')
     };
   }
   var stateCache;
@@ -9333,8 +9367,207 @@ function updateBackdrop(){
   Library.init = init;
   Library.renderList = renderList;
   Library.remove = removeById;
-  Library.autoInit = boot;
+Library.autoInit = boot;
 })(window.GG, window, document);
+
+
+(function (GG, w, d) {
+  'use strict';
+
+  GG.modules = GG.modules || {};
+  GG.copy = GG.copy || {};
+  var state = GG.copy._state || (GG.copy._state = {
+    ready: false,
+    locale: '',
+    manifest: {},
+    dicts: { en: {}, id: {} },
+    langBound: false
+  });
+
+  function normalizeLocale(raw) {
+    var val = String(raw || '').toLowerCase();
+    if (val.indexOf('id') === 0) return 'id';
+    if (val.indexOf('en') === 0) return 'en';
+    return 'en';
+  }
+
+  function parseScriptJson(id) {
+    var node = d.getElementById(id);
+    var raw = '';
+    if (!node) return {};
+    raw = (node.textContent || node.innerText || '').trim();
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function readRegistry() {
+    var manifest = parseScriptJson('gg-copy-manifest');
+    var en = parseScriptJson('gg-copy-en');
+    var id = parseScriptJson('gg-copy-id');
+    state.manifest = manifest && typeof manifest === 'object' ? manifest : {};
+    state.dicts = {
+      en: en && typeof en === 'object' ? en : {},
+      id: id && typeof id === 'object' ? id : {}
+    };
+    state.ready = true;
+  }
+
+  function resolveLocaleChain(locale) {
+    var out = [];
+    var seen = {};
+    var manifest = state.manifest || {};
+    var chains = manifest.fallbackChain || {};
+    function push(code) {
+      var norm = normalizeLocale(code);
+      if (!norm || seen[norm]) return;
+      seen[norm] = true;
+      out.push(norm);
+    }
+    push(locale);
+    if (Array.isArray(chains[locale])) {
+      chains[locale].forEach(push);
+    }
+    push(manifest.defaultLocale || '');
+    push('en');
+    return out;
+  }
+
+  function interpolate(template, vars) {
+    var out = String(template == null ? '' : template);
+    var map = vars && typeof vars === 'object' ? vars : null;
+    if (!map) return out;
+    Object.keys(map).forEach(function (key) {
+      out = out.replace(new RegExp('\\{' + key + '\\}', 'g'), String(map[key]));
+    });
+    return out;
+  }
+
+  function readVars(el) {
+    var raw = el && el.getAttribute ? el.getAttribute('data-gg-copy-vars') : '';
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function setLocale(next) {
+    var fallback = '';
+    if (!state.ready) readRegistry();
+    fallback = normalizeLocale(
+      (state.manifest && state.manifest.defaultLocale) ||
+      (GG.config && GG.config.lang) ||
+      (d.documentElement && d.documentElement.getAttribute('lang')) ||
+      'en'
+    );
+    state.locale = normalizeLocale(next || state.locale || fallback);
+    if (GG.config) GG.config.lang = state.locale;
+    return state.locale;
+  }
+
+  function t(key, fallback, vars, localeOverride) {
+    var chain = [];
+    var value = null;
+    var keyName = String(key || '').trim();
+    var i = 0;
+    var loc = '';
+    var dict = null;
+    if (!state.ready) readRegistry();
+    if (!keyName) return interpolate(fallback == null ? '' : fallback, vars);
+    chain = resolveLocaleChain(normalizeLocale(localeOverride || setLocale()));
+    for (i = 0; i < chain.length; i++) {
+      loc = chain[i];
+      dict = state.dicts[loc];
+      if (!dict || typeof dict !== 'object') continue;
+      if (Object.prototype.hasOwnProperty.call(dict, keyName)) {
+        value = dict[keyName];
+        break;
+      }
+    }
+    if (value == null || value === keyName) value = fallback;
+    if (value == null || value === keyName) value = '';
+    return interpolate(value, vars);
+  }
+
+  function applyText(el, vars) {
+    var key = el.getAttribute('data-gg-copy');
+    var fallback = el.getAttribute('data-gg-copy-fallback');
+    var next = '';
+    if (!key) return;
+    if (fallback == null) {
+      fallback = el.textContent || '';
+      el.setAttribute('data-gg-copy-fallback', fallback);
+    }
+    next = t(key, fallback, vars);
+    if (!next || next === key) next = fallback;
+    if (next != null) el.textContent = String(next);
+  }
+
+  function applyAttr(el, keyAttr, targetAttr, fallbackAttr, vars) {
+    var key = el.getAttribute(keyAttr);
+    var fallback = el.getAttribute(fallbackAttr);
+    var current = '';
+    var next = '';
+    if (!key) return;
+    if (fallback == null) {
+      current = el.getAttribute(targetAttr);
+      fallback = current == null ? '' : current;
+      el.setAttribute(fallbackAttr, fallback);
+    }
+    next = t(key, fallback, vars);
+    if (!next || next === key) next = fallback;
+    if (next != null) el.setAttribute(targetAttr, String(next));
+  }
+
+  function refresh(root) {
+    var scope = root && root.querySelectorAll ? root : d;
+    var nodes = scope.querySelectorAll('[data-gg-copy],[data-gg-copy-aria],[data-gg-copy-title],[data-gg-copy-placeholder]');
+    var i = 0;
+    var node = null;
+    var vars = null;
+    if (!state.ready) readRegistry();
+    setLocale(state.locale || (GG.config && GG.config.lang));
+    for (i = 0; i < nodes.length; i++) {
+      node = nodes[i];
+      vars = readVars(node);
+      if (node.hasAttribute('data-gg-copy')) applyText(node, vars);
+      if (node.hasAttribute('data-gg-copy-aria')) applyAttr(node, 'data-gg-copy-aria', 'aria-label', 'data-gg-copy-fallback-aria', vars);
+      if (node.hasAttribute('data-gg-copy-title')) applyAttr(node, 'data-gg-copy-title', 'title', 'data-gg-copy-fallback-title', vars);
+      if (node.hasAttribute('data-gg-copy-placeholder')) applyAttr(node, 'data-gg-copy-placeholder', 'placeholder', 'data-gg-copy-fallback-placeholder', vars);
+    }
+  }
+
+  function init() {
+    if (!state.ready) readRegistry();
+    setLocale(state.locale || (GG.config && GG.config.lang));
+    refresh(d);
+    if (!state.langBound) {
+      state.langBound = true;
+      d.addEventListener('gg:langchange', function (evt) {
+        var code = evt && evt.detail ? evt.detail.lang : '';
+        setLocale(code || state.locale);
+        refresh(d);
+      });
+    }
+  }
+
+  GG.copy.t = t;
+  GG.copy.refresh = refresh;
+  GG.copy.setLocale = setLocale;
+  GG.copy.getLocale = function () { return setLocale(state.locale); };
+  GG.copy.init = init;
+  GG.modules.copyResolver = GG.modules.copyResolver || { init: init, refresh: refresh };
+
+  if (GG.boot && typeof GG.boot.onReady === 'function') GG.boot.onReady(init);
+  else if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+})(window.GG = window.GG || {}, window, document);
 
 
 (function (GG, w, doc) {
@@ -9366,6 +9599,10 @@ function updateBackdrop(){
       if (v.indexOf('en') === 0) return 'en';
       return 'en';
     }
+    function getOptionCode(opt) {
+      if (!opt || !opt.getAttribute) return 'en';
+      return normalizeLangCode(opt.getAttribute('data-gg-lang-code'));
+    }
 
     var htmlLang    = (doc.documentElement.getAttribute('lang') || 'en').toLowerCase();
     var initialLang = normalizeLangCode(savedLang || GG.config.lang || htmlLang);
@@ -9382,7 +9619,7 @@ function updateBackdrop(){
     });
     options.forEach(function (opt) {
       opt.addEventListener('click', function () {
-        var code = normalizeLangCode(opt.getAttribute('data-lang-code'));
+        var code = getOptionCode(opt);
         if (!code) return;
 
         GG.config.lang = code;
@@ -9434,7 +9671,7 @@ function updateBackdrop(){
       };
 
       options.forEach(function (opt) {
-        var code = opt.getAttribute('data-lang-code');
+        var code = getOptionCode(opt);
         var selected = code === codeNorm;
         var nameEl = opt.querySelector('.gg-lang-switcher__option-name');
 
@@ -9450,6 +9687,10 @@ function updateBackdrop(){
 
       if (currentSpan && currentLabel) {
         currentSpan.textContent = currentLabel;
+      }
+      if (GG.copy && typeof GG.copy.setLocale === 'function') {
+        GG.copy.setLocale(codeNorm);
+        if (typeof GG.copy.refresh === 'function') GG.copy.refresh(doc);
       }
       if (GG.modules && GG.modules.uiCopy && typeof GG.modules.uiCopy.apply === 'function') {
         GG.modules.uiCopy.apply(doc);

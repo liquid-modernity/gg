@@ -6916,7 +6916,7 @@ grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
 }
 }
 .gg-tags-page__results .gg-post-list[data-gg-state~="loading"]::before{
-content:"Memuat daftar tag...";
+content:"";
 display:block;
 font-size:var(--gg-text-size-sm);
 color:var(--gg-color-text-muted);

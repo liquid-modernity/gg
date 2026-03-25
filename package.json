@@ -5,6 +5,7 @@
     "gaga": "wrangler deploy --config wrangler.jsonc",
     "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
     "gaga:audit": "node qa/gaga-audit.mjs",
+    "gaga:verify-copy": "node qa/verify-copy-registry.mjs",
     "gaga:audit:pack": "node qa/package-audit.mjs",
     "gaga:template:pack": "bash qa/template-pack.sh",
     "gaga:template:proof": "bash qa/template-proof.sh",
