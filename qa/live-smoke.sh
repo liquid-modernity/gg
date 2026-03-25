@@ -240,6 +240,39 @@ homepage_mixed_signal() {
   fi
 }
 
+is_transient_browser_issue() {
+  local message
+  message="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  [[ "$message" == *"ns_error_unknown_host"* ]] \
+    || [[ "$message" == *"err_name_not_resolved"* ]] \
+    || [[ "$message" == *"error: getaddrinfo"* ]] \
+    || [[ "$message" == *"page.goto: timeout"* ]] \
+    || [[ "$message" == *"timeout "* && "$message" == *"exceeded"* ]] \
+    || [[ "$message" == *"navigation to"* && "$message" == *"timed out"* ]] \
+    || [[ "$message" == *"navigation failed because page crashed"* ]] \
+    || [[ "$message" == *"net::err_"* ]]
+}
+
+comments_owner_browser_signal() {
+  local detail="$1"
+  local message="$2"
+  if is_transient_browser_issue "$detail"; then
+    log_warn "${message} [transient-browser]"
+    return
+  fi
+  comments_owner_signal "$message"
+}
+
+homepage_mixed_browser_signal() {
+  local detail="$1"
+  local message="$2"
+  if is_transient_browser_issue "$detail"; then
+    log_warn "${message} [transient-browser]"
+    return
+  fi
+  homepage_mixed_signal "$message"
+}
+
 template_publish_pending() {
   if ! is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
     return 1
@@ -1503,7 +1536,7 @@ NODE
       continue
     fi
     if [[ "$line" == BROWSER\|fail\|* ]]; then
-      homepage_mixed_signal "homepage mixed browser proof unavailable (${line#BROWSER|fail|})"
+      homepage_mixed_browser_signal "${line#BROWSER|fail|}" "homepage mixed browser proof unavailable (${line#BROWSER|fail|})"
       continue
     fi
     if [[ "$line" == CRITERION\|* ]]; then
@@ -2114,7 +2147,7 @@ NODE
       continue
     fi
     if [[ "$line" == BROWSER\|fail\|* ]]; then
-      comments_owner_signal "${lane_label} browser proof unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|fail|})"
+      comments_owner_browser_signal "${line#BROWSER|fail|}" "${lane_label} browser proof unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|fail|})"
       continue
     fi
     if [[ "$line" == CRITERION\|* ]]; then
