@@ -5862,7 +5862,7 @@ var orderChanged = false;
 var contractIds = Object.keys(contracts);
 var i = 0;
 var slot = null;
-if (!blogMain || !primarySection || !deferredSection || !blogSection) return false;
+if (!blogMain || !deferredSection || !blogSection) return false;
 for (i = 0; i < contractIds.length; i++) {
   slot = qs('#' + contractIds[i], blogMain);
   if (!slot) continue;
@@ -5878,10 +5878,12 @@ if (bookishWidget && bookishWidget.parentElement !== deferredSection) {
 if (bookishWidget) {
   bookishWidget.setAttribute('data-gg-runtime-order', 'deferred-tail');
 }
-primarySection.setAttribute('data-gg-runtime-mixed-order', 'featured,newsish-1');
+if (primarySection) {
+  primarySection.setAttribute('data-gg-runtime-mixed-order', 'featured,newsish-1');
+}
 deferredSection.setAttribute('data-gg-runtime-mixed-order', 'youtubeish,shortish,newsish-2,podcastish,bookish');
-blogMain.setAttribute('data-gg-runtime-home-order', 'featured,newsish-1,listing,youtubeish,shortish,newsish-2,podcastish,bookish');
-blogMain.setAttribute('data-gg-runtime-primary-order', 'featured,newsish-1');
+blogMain.setAttribute('data-gg-runtime-home-order', 'listing,featured,newsish-1,youtubeish,shortish,newsish-2,podcastish,bookish');
+blogMain.setAttribute('data-gg-runtime-primary-order', 'listing,featured,newsish-1');
 blogMain.setAttribute('data-gg-runtime-deferred-order', 'youtubeish,shortish,newsish-2,podcastish,bookish');
 deferredSection.hidden = !qs('.widget', deferredSection);
 return orderChanged || true;

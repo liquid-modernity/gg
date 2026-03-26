@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='2d9f8b2760fc' name='gg-template-fingerprint'/>
+    <meta content='234e3630c3f0' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1069,7 +1069,7 @@ text-align: center;
     <b:attr cond='data:ggIsPortfolioPage' name='data-gg-special' value='portfolio'/>
     <b:attr cond='data:ggIsAuthorPage' name='data-gg-special' value='author'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='2d9f8b2760fc' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='234e3630c3f0' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1476,7 +1476,9 @@ text-align: center;
         <!-- Blog Layer: daftar posting, kategori, dll. -->
    <section class='gg-home-blog' data-gg-home-layer='blog' id='gg-home-blog'>
           
-  <h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>     
+  <b:if cond='data:view.isMultipleItems'>
+  <h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>
+  </b:if>
   <div class='gg-blog-layout' expr:class='data:view.isSingleItem ? &quot;gg-blog-layout gg-blog-layout--post&quot; : &quot;gg-blog-layout gg-blog-layout--list&quot;'>
     
     
@@ -1486,6 +1488,7 @@ text-align: center;
     
     
     <!-- SIDEBAR KIRI -->
+    <b:if cond='data:view.isMultipleItems or data:view.isPost'>
     <aside class='gg-blog-sidebar gg-blog-sidebar--left' id='gg-left-panel'>
       <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
         <b:if cond='data:view.isMultipleItems'>
@@ -1712,6 +1715,7 @@ text-align: center;
         
       </div>
     </aside>
+    </b:if>
     
         
 
@@ -1721,7 +1725,7 @@ text-align: center;
         <h1 class='gg-listing__title'>The PakRPP Unfiltered</h1>
       </b:if>
       <!-- GAGA FEATURED POST -->
-    <b:if cond='data:view.isMultipleItems'>
+    <b:if cond='data:view.isMultipleItems and not data:view.isHomepage'>
     <b:section class='gg-home-blog__body' id='gg-featuredpost1' name='gg-featuredpost1' showaddelement='true'>
       <b:widget id='HTML15' locked='false' title='Popular' type='HTML' version='2' visible='true'>
         <b:widget-settings>
