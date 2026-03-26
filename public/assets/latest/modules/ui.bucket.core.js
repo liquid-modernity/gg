@@ -6061,14 +6061,18 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var stored = cleanText(root && root.getAttribute ? root.getAttribute('data-gg-feed-source') : '');
     var countAttr = cleanText(root && root.getAttribute ? root.getAttribute('data-num-comments') : '');
     var list = root && root.querySelector ? root.querySelector('#cmt2-holder') : null;
+    var empty = root && root.querySelector ? root.querySelector('.gg-cmt-empty') : null;
+    var emptyText = '';
     var html = '';
     if (!root || !root.querySelector) return false;
     if (key && stored && key !== stored) return true;
     if (!countAttr) return true;
     html = String(root.innerHTML || '') + '\n' + String((list && list.innerHTML) || '');
     if (/Can't find substitution for tag/i.test(html)) return true;
-    if (!root.querySelector('#cmt2-holder li.comment') && !root.querySelector('.gg-cmt-empty')) {
-      return true;
+    if (!root.querySelector('#cmt2-holder li.comment')) {
+      if (!empty) return true;
+      emptyText = cleanText(empty.textContent || '');
+      if (/temporarily unavailable in fallback mode/i.test(emptyText)) return true;
     }
     return false;
   }
