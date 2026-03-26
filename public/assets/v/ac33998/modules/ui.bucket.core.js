@@ -6338,6 +6338,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     li.id = 'c' + item.id;
     li.setAttribute('data-gg-comment-id', item.id);
     li.setAttribute('data-gg-depth', String(safeNumber(item.depth)));
+    if (item.parentId) {
+      li.setAttribute('data-gg-parent-id', item.parentId);
+      if (item.parentAuthor) li.setAttribute('data-gg-parent-author', item.parentAuthor);
+    }
     li.appendChild(createAvatar(item));
 
     block.className = 'comment-block';
@@ -6658,6 +6662,39 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function commentId(comment){
     return cleanText(((comment && comment.id) || '').replace(/^c/, ''));
+  }
+  function normalizeCommentRef(value){
+    var raw = cleanText(value || '');
+    var id = '';
+    var match = null;
+    if (!raw) return '';
+    id = commentIdFromValue(raw);
+    if (id) return id;
+    raw = raw.replace(/^#/, '');
+    match = raw.match(/^c(\d+)$/i);
+    if (match && match[1]) return cleanText(match[1]);
+    match = raw.match(/(\d{6,})/);
+    if (match && match[1]) return cleanText(match[1]);
+    return '';
+  }
+  function commentParentRef(comment){
+    var attrNames = ['data-gg-parent-id', 'data-parent-id', 'data-comment-parent-id', 'data-reply-to', 'data-reply-to-id'];
+    var i = 0;
+    var raw = '';
+    var id = '';
+    if (!comment || !comment.getAttribute) return '';
+    for (i = 0; i < attrNames.length; i++) {
+      raw = comment.getAttribute(attrNames[i]);
+      id = normalizeCommentRef(raw);
+      if (id) return id;
+    }
+    return '';
+  }
+  function commentParentAuthorHint(comment){
+    var raw = '';
+    if (!comment || !comment.getAttribute) return '';
+    raw = comment.getAttribute('data-gg-parent-author') || comment.getAttribute('data-parent-author') || '';
+    return cleanText(raw);
   }
   function commentBlock(comment){
     return directChildByClass(comment, 'comment-block') || (comment && comment.querySelector ? comment.querySelector('.comment-block') : null);
@@ -7621,12 +7658,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var raw = '';
     var match = null;
     var attrs = null;
+    var showText = (typeof w.NodeFilter !== 'undefined' && w.NodeFilter && w.NodeFilter.SHOW_TEXT) ? w.NodeFilter.SHOW_TEXT : 4;
     if (!body) return null;
     if (body.__ggReplyTokenParsed) return body.__ggReplyToken || null;
     body.__ggReplyTokenParsed = true;
     body.__ggReplyToken = null;
-    if (!d.createTreeWalker || typeof NodeFilter === 'undefined') return null;
-    walker = d.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
+    if (!d.createTreeWalker) return null;
+    walker = d.createTreeWalker(body, showText, null);
     while ((node = walker.nextNode())) {
       raw = String(node.nodeValue || '');
       match = raw.match(/^\s*\[reply\s+([^\]]+)\]\s*/i);
@@ -7649,14 +7687,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function resolveReplyContext(comment, root){
     var body = commentBody(comment);
+    var parentRef = commentParentRef(comment);
+    var parentAuthorHint = commentParentAuthorHint(comment);
     var token = parseReplyToken(body);
     var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
     var target = null;
+    if (parentRef) {
+      target = d.getElementById('c' + parentRef) || (root && root.querySelector ? root.querySelector('#c' + parentRef) : null);
+      return {
+        id: cleanText(parentRef),
+        author: parentAuthorHint || commentAuthor(target),
+        url: commentPermalink(target)
+      };
+    }
     if (token && token.id) {
       target = d.getElementById('c' + token.id) || (root && root.querySelector ? root.querySelector('#c' + token.id) : null);
       return {
         id: cleanText(String(token.id).replace(/^c/, '')),
-        author: token.author || commentAuthor(target),
+        author: token.author || commentAuthor(target) || parentAuthorHint,
         url: token.url || commentPermalink(target)
       };
     }
