@@ -3162,6 +3162,9 @@ overflow: hidden;
 
 
 /* Sidebar state: comments mode */
+main.gg-main[data-gg-right-mode="comments"]{
+--gg-col-right: var(--gg-comments-rail-w, 240px);
+}
 main.gg-main[data-gg-right-mode="comments"] .gg-blog-sidebar--right{
 display: flex;
 flex-direction: column;
@@ -9537,9 +9540,41 @@ line-height:1.18;
 font-weight:610;
 letter-spacing:-.012em;
 }
-#ggPanelComments #comments .gg-comments__count,
-#ggPanelComments #comments .gg-comments__sortslot{
+#ggPanelComments #comments .gg-comments__count{
 display:none;
+}
+#ggPanelComments #comments .gg-comments__sortslot{
+display:flex;
+align-items:center;
+justify-content:flex-end;
+margin-left:auto;
+}
+#ggPanelComments #comments .cmt2-head-tools{
+display:flex;
+align-items:center;
+gap:4px;
+}
+#ggPanelComments #comments .cmt2-head-btn{
+appearance:none;
+-webkit-appearance:none;
+border:1px solid color-mix(in srgb, var(--gg-border) 66%, transparent);
+background:color-mix(in srgb, var(--gg-surface) 97.6%, #f8f6f1);
+color:color-mix(in srgb, var(--gg-ink) 78%, transparent);
+border-radius:9px;
+padding:3px 6px;
+font-size:7.4px;
+font-weight:600;
+line-height:1.25;
+letter-spacing:.01em;
+white-space:nowrap;
+cursor:pointer;
+box-shadow:none;
+}
+#ggPanelComments #comments .cmt2-head-btn:hover,
+#ggPanelComments #comments .cmt2-head-btn:focus-visible{
+border-color:color-mix(in srgb, var(--gg-border) 84%, transparent);
+background:color-mix(in srgb, var(--gg-hover) 88%, var(--gg-surface));
+color:color-mix(in srgb, var(--gg-ink) 88%, transparent);
 }
 #ggPanelComments #comments > .gg-comments__content{
 padding:4px 8px calc(var(--gg-comments-footer-h, 0px) + 6px);
