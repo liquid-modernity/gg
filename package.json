@@ -14,7 +14,7 @@
     "gaga:template:proof": "bash qa/template-proof.sh",
     "gaga:template:status": "bash qa/template-status.sh",
     "gaga:verify-worker": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
-    "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+    "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail GG_COMMENTS_OWNER_BROWSER_MODE=fail GG_HOMEPAGE_MIXED_BROWSER_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
   },
   "devDependencies": {
     "playwright": "^1.58.2",

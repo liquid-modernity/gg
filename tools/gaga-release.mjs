@@ -91,7 +91,7 @@ function parseGithubActionsUrl(remoteUrl) {
 
 function runPreflight() {
   console.log("Running lightweight preflight checks...");
-  run("node", ["--check", "src/worker.js"], { inherit: true });
+  run("node", ["qa/worker-syntax-check.mjs"], { inherit: true });
   run("node", ["qa/template-fingerprint.mjs", "--check"], { inherit: true });
   console.log("Preflight passed.");
 }

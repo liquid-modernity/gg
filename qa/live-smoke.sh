@@ -224,8 +224,16 @@ worker_rollout_signal() {
   fi
 }
 
+strict_template_mode() {
+  [[ "$TEMPLATE_DRIFT_MODE" == "fail" ]]
+}
+
 comments_owner_signal() {
   local message="$1"
+  if strict_template_mode; then
+    log_fail "$message"
+    return
+  fi
   if template_publish_pending; then
     log_warn "$message"
     return
@@ -262,7 +270,7 @@ is_transient_browser_issue() {
 comments_owner_browser_signal() {
   local detail="$1"
   local message="$2"
-  if is_transient_browser_issue "$detail"; then
+  if is_transient_browser_issue "$detail" && ! strict_template_mode; then
     log_warn "${message} [transient-browser]"
     return
   fi
@@ -272,7 +280,7 @@ comments_owner_browser_signal() {
 homepage_mixed_browser_signal() {
   local detail="$1"
   local message="$2"
-  if is_transient_browser_issue "$detail"; then
+  if is_transient_browser_issue "$detail" && ! strict_template_mode; then
     log_warn "${message} [transient-browser]"
     return
   fi
@@ -288,6 +296,10 @@ template_publish_pending() {
 
 detail_contract_signal() {
   local message="$1"
+  if strict_template_mode; then
+    log_fail "$message"
+    return
+  fi
   if template_publish_pending; then
     log_warn "$message"
   else

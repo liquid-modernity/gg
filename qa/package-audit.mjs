@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 
 const USAGE = `Usage:
+  npm run gaga:audit:pack
   npm run gaga:audit:pack -- <task-id>
   npm run gaga:audit:pack -- <task-id> --zip dist/gg-audit.zip
+  npm run gaga:audit:pack -- --latest
 
 Requirements:
   - qa/audit-output/<task-id>.json must exist
@@ -21,15 +23,78 @@ function fail(message, code = 1) {
   process.exit(code);
 }
 
+function parseManifestFile(jsonPath) {
+  try {
+    return JSON.parse(readFileSync(jsonPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function isPackableManifestCandidate(manifest) {
+  if (!manifest || typeof manifest !== "object") return false;
+  const task = String(manifest.task || "").trim();
+  const zipEntries = Array.isArray(manifest.zip_entries) ? manifest.zip_entries : [];
+  if (!task || !zipEntries.length) return false;
+  const changedFiles = Array.isArray(manifest.changed_files) ? manifest.changed_files : [];
+  if (!changedFiles.length) return false;
+  return true;
+}
+
+function detectLatestTaskId() {
+  const auditDir = path.resolve("qa/audit-output");
+  if (!existsSync(auditDir)) {
+    fail(`Missing audit output directory: ${auditDir}`);
+  }
+
+  const names = readdirSync(auditDir).filter((name) => name.endsWith(".json"));
+  const candidates = [];
+
+  for (const name of names) {
+    const jsonPath = path.join(auditDir, name);
+    const fileTaskId = name.replace(/\.json$/i, "").trim();
+    if (!fileTaskId) continue;
+    const st = statSync(jsonPath, { throwIfNoEntry: false });
+    if (!st || !st.isFile()) continue;
+
+    const manifest = parseManifestFile(jsonPath);
+    if (!isPackableManifestCandidate(manifest)) continue;
+
+    const taskId = String(manifest.task || "").trim();
+    if (!taskId) continue;
+
+    candidates.push({
+      taskId: fileTaskId,
+      manifestTask: taskId,
+      jsonPath,
+      mtimeMs: Number(st.mtimeMs || 0),
+    });
+  }
+
+  if (!candidates.length) {
+    fail(
+      "No packable task manifest found in qa/audit-output. Provide explicit task id, e.g. npm run gaga:audit:pack -- <task-id>."
+    );
+  }
+
+  candidates.sort((a, b) => b.mtimeMs - a.mtimeMs || a.taskId.localeCompare(b.taskId));
+  return candidates[0].taskId;
+}
+
 function parseArgs(argv) {
   let taskId = "";
   let zipPath = path.resolve("dist/gg-audit.zip");
+  let latest = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--help" || arg === "-h") {
       console.log(USAGE);
       process.exit(0);
+    }
+    if (arg === "--latest") {
+      latest = true;
+      continue;
     }
     if (arg === "--zip") {
       const next = argv[i + 1];
@@ -43,7 +108,15 @@ function parseArgs(argv) {
     taskId = arg.trim();
   }
 
-  if (!taskId) fail(`Task id is required.\n\n${USAGE}`);
+  if (!taskId) {
+    if (!latest) {
+      taskId = detectLatestTaskId();
+      console.log(`INFO: No task id provided, using latest manifest task '${taskId}'.`);
+    } else {
+      taskId = detectLatestTaskId();
+      console.log(`INFO: Using latest manifest task '${taskId}'.`);
+    }
+  }
   return { taskId, zipPath };
 }
 

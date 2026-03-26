@@ -317,3 +317,234 @@ OPERATOR INTENT NOTE
 The operator device is low-capability.
 Design for GitHub-first shipping.
 Local environment must not be treated as a full deploy workstation.
+# TASK-P0.RELEASE-PIPELINE.CLOSURE.10X
+GG RELEASE PIPELINE CLOSURE — COMPLETE THE MISSING ARTIFACTS, FIX PRELIGHT, MAKE STRICT MODE ACTUALLY STRICT
+
+MODE
+This is a closure task, not a redesign task.
+Do not reopen architecture debates.
+Do not rename contracts again.
+Do not add new abstractions unless strictly necessary.
+Finish the reset that was claimed but not completed.
+
+AUDIT FACTS THAT MUST BE TREATED AS TRUE
+The current implementation is incomplete and fails its own repo contract:
+1. `package.json` now points `gaga` and `gaga:preflight` to `tools/gaga-release.mjs`, but that file does not exist.
+2. `package.json` now points `gaga:verify-worker` to `qa/live-smoke-worker.sh`, but that file does not exist.
+3. workflow summaries reference:
+   - `qa/template-release-playbook.md`
+   - `docs/github-actions-cloudflare.md`
+   but both files do not exist.
+4. the intended local preflight command `node --check src/worker.js` is invalid for this repo because `src/worker.js` uses ESM syntax and the repo is not configured with `"type": "module"`.
+5. strict/full template verification is still diluted because template-sensitive checks can remain warning-level even when strict mode should hard-fail.
+6. the public repo must end in a state where the new contract is actually runnable, not just described.
+
+MANDATE
+Close the reset by implementing the missing artifacts and fixing the broken contract so that:
+- `npm run gaga:preflight` works
+- `npm run gaga` works as a GitHub-first ship command
+- `npm run gaga:verify-worker` works
+- workflow-referenced docs exist
+- strict template verification can truly hard-fail
+- no fake-complete state remains
+
+DO NOT CHANGE THESE HIGH-LEVEL DECISIONS
+Keep these decisions exactly as already chosen:
+- `npm run gaga` = GitHub-first ship command
+- `npm run gaga:cf:deploy` = local direct Wrangler deploy
+- `npm run gaga:cf:dry` = local direct Wrangler dry-run
+- Worker deploy and Blogger template parity remain decoupled
+- Worker-scope smoke remains hard gate
+- Full public/template-sensitive smoke remains a separate strict lane
+
+IMPLEMENTATION ORDER — FOLLOW EXACTLY
+
+PHASE 1 — CREATE THE MISSING FILES
+Create these files for real:
+1. `tools/gaga-release.mjs`
+2. `qa/live-smoke-worker.sh`
+3. `qa/template-release-playbook.md`
+4. `docs/github-actions-cloudflare.md`
+
+Do not leave stubs.
+Do not leave TODO placeholders.
+Each file must be minimally complete and usable.
+
+PHASE 2 — IMPLEMENT `tools/gaga-release.mjs`
+This script must support at least:
+- `preflight`
+- `ship`
+
+Required behavior for `preflight`:
+1. verify git exists
+2. verify repo is on branch `main`
+3. verify remote `origin` exists
+4. run lightweight local checks only
+5. exit non-zero on failure
+
+Required behavior for `ship`:
+1. perform the same preflight
+2. detect whether there are changes to ship
+3. if no changes, exit cleanly and truthfully
+4. auto-stage changes
+5. create deterministic commit message if none supplied:
+   `chore(release): ship latest GG changes`
+6. push to `origin main`
+7. print truthful next-step message that GitHub Actions will run CI + deploy
+8. do not invoke Wrangler
+9. do not invoke Playwright
+
+Required CLI contract:
+- `npm run gaga:preflight` must call `preflight`
+- `npm run gaga` and `npm run gaga:push` must call `ship`
+
+PHASE 3 — FIX THE PREFLIGHT CHECK FOR `src/worker.js`
+Do NOT keep `node --check src/worker.js` if it is invalid for the repo’s module mode.
+
+Replace it with one of these valid approaches:
+- a small Node script that parses/imports Worker syntax safely in ESM mode
+- a syntactic validation call that actually works with the current repo setup
+- another deterministic and cheap Worker syntax validation that does not require Wrangler
+
+Hard rule:
+The final preflight must be truthful and executable on this repo as it exists.
+Do not keep a check that is known to fail for structural reasons unrelated to code validity.
+
+PHASE 4 — IMPLEMENT `qa/live-smoke-worker.sh`
+This file must exist and run.
+
+It must verify only Worker-scope things that are valid immediately after Worker/assets deploy.
+At minimum include:
+1. base URL normalization
+2. `__gg_worker_ping`
+3. expected worker version check
+4. key static asset reachability
+5. failure on true Worker/runtime mismatch
+6. concise PASS/FAIL logging
+
+It must NOT depend on Blogger template parity.
+It must NOT run browser proof that belongs to template-sensitive full smoke.
+It must be safe as the default post-deploy hard gate.
+
+PHASE 5 — MAKE STRICT TEMPLATE MODE ACTUALLY STRICT
+Audit `qa/live-smoke.sh` and deploy workflow env wiring.
+
+Requirement:
+When full public smoke is enabled as a hard gate, template-sensitive checks must be able to hard-fail.
+Do not leave things like comments-owner or other template-sensitive proof in permanent `warn` mode during strict runs.
+
+Implement exact behavior:
+- default Worker deploy lane:
+  template-sensitive checks may be skipped or warning-level when Blogger publish is out of scope
+- strict full public lane:
+  template-sensitive checks must fail hard when broken
+
+Do not fake strictness.
+
+PHASE 6 — VERIFY PACKAGE SCRIPT CONTRACT AGAINST REAL FILES
+After creating the missing artifacts, ensure `package.json` script targets are real and runnable.
+
+At minimum the following must execute:
+- `npm run gaga:preflight`
+- `npm run gaga -- --dry-run` OR equivalent safe ship validation mode if you add one
+- `npm run gaga:verify-worker`
+- `npm run gaga:verify-template`
+
+If you add a dry-run mode to `tools/gaga-release.mjs`, wire it properly.
+If you do not add dry-run, state that clearly and verify `preflight` instead.
+
+PHASE 7 — WRITE THE MISSING DOCS HONESTLY
+Create the two missing docs and make them match the code, not fantasy.
+
+`qa/template-release-playbook.md` must explain:
+- when Blogger manual publish is required
+- when to run full public strict smoke
+- how to interpret template drift and post-publish verification
+
+`docs/github-actions-cloudflare.md` must explain:
+- what `npm run gaga` means now
+- what deploy workflow does
+- what deploy workflow does not do
+- what green means
+- what warning means
+- when a red deploy is real versus false-red now eliminated
+
+PHASE 8 — DO NOT LEAVE PUBLIC REPO CONTRACT HALF-MIGRATED
+Make sure the final committed repo state actually contains:
+- the new scripts
+- the new files
+- the fixed workflow/doc references
+- the corrected preflight logic
+
+This task is not complete if the branch only contains renamed scripts and missing targets.
+
+REQUIRED FILES TO CHANGE
+At minimum, expect to change:
+- `package.json`
+- `package-lock.json` if needed
+- `tools/gaga-release.mjs` (new)
+- `qa/live-smoke-worker.sh` (new)
+- `qa/live-smoke.sh`
+- `.github/workflows/deploy.yml`
+- `qa/template-release-playbook.md` (new)
+- `docs/github-actions-cloudflare.md` (new)
+
+You may add tiny helper files if justified.
+Do not create unnecessary framework sprawl.
+
+REQUIRED VERIFY MATRIX
+Report PASS/FAIL for each item with evidence.
+
+LOCAL CONTRACT VERIFY
+1. `npm ci`
+2. `npm run gaga:preflight`
+3. Worker syntax/preflight validation passes using the corrected method
+4. `node qa/template-fingerprint.mjs --check`
+5. `npm run gaga:verify-worker` executes the real worker-smoke entrypoint
+6. `npm run gaga:verify-template` still executes full public smoke
+
+SHIP CONTRACT VERIFY
+7. `npm run gaga` no longer calls Wrangler directly
+8. `npm run gaga:cf:deploy` remains the only local direct Worker deploy command
+9. `npm run gaga:cf:dry` remains the only local direct Worker dry-run command
+
+STRICTNESS VERIFY
+10. Default deploy lane does not hard-fail on known out-of-scope Blogger drift
+11. Strict full public lane can hard-fail template-sensitive checks
+12. Worker-scope failures still hard-fail
+
+ARTIFACT VERIFY
+13. `tools/gaga-release.mjs` exists
+14. `qa/live-smoke-worker.sh` exists
+15. `qa/template-release-playbook.md` exists
+16. `docs/github-actions-cloudflare.md` exists
+
+OUTPUT FORMAT — MANDATORY
+Return the implementation report exactly in this structure:
+
+1. Objective
+2. Remaining gaps from prior audit
+3. Files changed
+4. What was implemented in `tools/gaga-release.mjs`
+5. What was implemented in `qa/live-smoke-worker.sh`
+6. How preflight was corrected for ESM Worker syntax
+7. How strict full-smoke behavior was fixed
+8. Verify evidence with PASS/FAIL
+9. Residual risks
+10. Final operator instructions
+
+HARD RULES
+- Do not claim completion if any referenced file is still missing
+- Do not keep invalid `node --check src/worker.js` logic unless repo module mode was deliberately corrected and verified
+- Do not leave strict mode cosmetically strict but operationally warning-only
+- Do not change the high-level release model again
+- Do not widen scope into unrelated UI/template work
+
+SUCCESS CONDITION
+This closure task is successful only if the repo stops lying:
+- script targets exist
+- preflight is executable
+- worker-smoke entrypoint exists
+- strict mode is actually strict
+- docs referenced by workflow exist
+- the new release contract is runnable, not just described

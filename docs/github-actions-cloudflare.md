@@ -7,7 +7,7 @@
 What it does locally:
 - verifies git is installed and branch is `main`
 - verifies `origin` exists
-- runs lightweight preflight only (`node --check src/worker.js`, `node qa/template-fingerprint.mjs --check`)
+- runs lightweight preflight only (`node qa/worker-syntax-check.mjs`, `node qa/template-fingerprint.mjs --check`)
 - stages changes, creates release commit (default: `chore(release): ship latest GG changes`), pushes to `origin/main`
 
 What it does **not** do locally:

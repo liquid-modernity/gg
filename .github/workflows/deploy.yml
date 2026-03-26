@@ -317,7 +317,6 @@ jobs:
           GG_TEMPLATE_CHANGED_IN_REV: ${{ env.GG_TEMPLATE_CHANGED_IN_REV }}
           GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
           GG_WORKER_VERSION_MODE: fail
-          GG_COMMENTS_OWNER_BROWSER_MODE: warn
           GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
           GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
           GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"
@@ -338,6 +337,24 @@ jobs:
           attempt=1
           smoke_ok=0
           log_file_base="$(mktemp -u -t gg-live-smoke-full.XXXXXX)"
+          comments_owner_mode="warn"
+          homepage_mixed_mode="warn"
+
+          if [ "${GG_FULL_SMOKE_HARD_FAIL:-0}" = "1" ]; then
+            comments_owner_mode="fail"
+            homepage_mixed_mode="fail"
+          fi
+
+          export GG_COMMENTS_OWNER_BROWSER_MODE="${comments_owner_mode}"
+          export GG_HOMEPAGE_MIXED_BROWSER_MODE="${homepage_mixed_mode}"
+
+          {
+            echo "### Full Public Smoke Strictness"
+            echo "- Template drift mode: \`${GG_TEMPLATE_DRIFT_MODE:-warn}\`"
+            echo "- Comments-owner mode: \`${GG_COMMENTS_OWNER_BROWSER_MODE}\`"
+            echo "- Homepage-mixed mode: \`${GG_HOMEPAGE_MIXED_BROWSER_MODE}\`"
+            echo "- Hard gate mode: \`${GG_FULL_SMOKE_HARD_FAIL:-0}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
           while [ "$attempt" -le "$max_attempts" ]; do
             attempt_log="${log_file_base}.attempt-${attempt}.log"
