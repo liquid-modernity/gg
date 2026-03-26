@@ -1,0 +1,156 @@
+{
+  "task": "TASK-P1.08C",
+  "url": "https://www.pakrpp.com/",
+  "intended_contract": {
+    "surface": "Editorial preview in .gg-blog-sidebar--right .gg-info-panel on homepage blog state /",
+    "mount_target": ".gg-blog-sidebar--right .gg-info-panel .gg-editorial-preview",
+    "trigger_behavior": [
+      "hover on listing card",
+      "focus on listing title link"
+    ],
+    "required_state_on_open": {
+      "right_panel": "open",
+      "info_panel": "open",
+      "visible": true,
+      "content": [
+        "title",
+        "author",
+        "cta",
+        "snippet or toc row"
+      ]
+    }
+  },
+  "before": {
+    "idle": {
+      "bodySurface": "listing",
+      "mainSurface": "home",
+      "homeState": "blog",
+      "rightPanel": "closed",
+      "infoPanel": "closed",
+      "ordered": [
+        "gg-mixed-featuredstrip",
+        "gg-mixed-newsish-1",
+        "gg-mixed-youtubeish",
+        "gg-mixed-shortish",
+        "gg-mixed-newsish-2",
+        "gg-mixed-podcastish",
+        "gg-mixed-bookish"
+      ],
+      "primaryWidgets": [
+        "HTML15",
+        "HTML6"
+      ],
+      "deferredWidgets": [
+        "HTML10",
+        "HTML11",
+        "HTML7",
+        "HTML12",
+        "HTML5"
+      ],
+      "mainFlow": [
+        "gg-featuredpost1",
+        "blog",
+        "gg-mixed-deferred"
+      ],
+      "previewExists": true,
+      "previewVisible": false,
+      "previewTitle": "",
+      "previewAuthor": "",
+      "previewCta": "#",
+      "previewRows": [],
+      "panelVisible": false
+    },
+    "after_hover": {
+      "rightPanel": "closed",
+      "infoPanel": "closed",
+      "previewExists": true,
+      "previewVisible": false,
+      "previewTitle": "",
+      "previewAuthor": "",
+      "previewSnippet": "",
+      "previewCta": "#",
+      "previewRows": []
+    },
+    "screenshot_idle": "qa/audit-output/screenshots/task-p108c-before-home.png",
+    "screenshot_hover": "qa/audit-output/screenshots/task-p108c-before-preview.png",
+    "runtime_errors": [
+      "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+      "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "_WidgetManager is not defined",
+      "[Report Only] Refused to load the script 'https://instant.page/5.2.0' because it violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.blogger.com https://www.gstatic.com\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.",
+      "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    ]
+  },
+  "after": {
+    "idle": {
+      "bodySurface": "listing",
+      "mainSurface": "home",
+      "homeState": "blog",
+      "rightPanel": "closed",
+      "infoPanel": "closed",
+      "ordered": [
+        "gg-mixed-featuredstrip",
+        "gg-mixed-newsish-1",
+        "gg-mixed-bookish",
+        "gg-mixed-youtubeish",
+        "gg-mixed-shortish",
+        "gg-mixed-newsish-2",
+        "gg-mixed-podcastish"
+      ],
+      "primaryWidgets": [
+        "HTML15",
+        "HTML6",
+        "HTML5"
+      ],
+      "deferredWidgets": [
+        "HTML10",
+        "HTML11",
+        "HTML7",
+        "HTML12"
+      ],
+      "mainFlow": [
+        "gg-featuredpost1",
+        "blog",
+        "gg-mixed-deferred"
+      ],
+      "previewExists": true,
+      "previewVisible": false,
+      "previewTitle": "",
+      "previewAuthor": "",
+      "previewCta": "#",
+      "previewRows": [],
+      "panelVisible": false
+    },
+    "after_hover": {
+      "rightPanel": "open",
+      "infoPanel": "open",
+      "previewExists": true,
+      "previewVisible": true,
+      "previewTitle": "todo",
+      "previewAuthor": "pakrpp",
+      "previewSnippet": "Untuk mencegah proyek ini jatuh ke “neraka CSS/JS” (spaghetti code), saya menempatkan arsitektur berbasis komponen—bahkan menuju micro-frontends—sebagai pagar utama agar sistem tet...",
+      "previewCta": "https://www.pakrpp.com/2026/02/todo.html",
+      "previewRows": [
+        "thumbnail",
+        "title",
+        "author",
+        "contributors",
+        "labels",
+        "tags",
+        "date",
+        "updated",
+        "comments",
+        "readtime",
+        "snippet",
+        "toc",
+        "cta"
+      ]
+    },
+    "screenshot_idle": "qa/audit-output/screenshots/task-p108c-after-home.png",
+    "screenshot_hover": "qa/audit-output/screenshots/task-p108c-after-preview.png",
+    "runtime_errors": [
+      "The Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy.",
+      "[Report Only] Refused to load the script 'https://instant.page/5.2.0' because it violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.blogger.com https://www.gstatic.com\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback."
+    ]
+  }
+}

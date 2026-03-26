@@ -69,6 +69,12 @@ printf 'SMOKE scope: worker rollout mode=%s expected_version=%s check_path=%s at
 printf 'SMOKE comments-fixtures panel.zero=%s panel.two=%s panel.sixteen=%s compose.zero=%s compose.thread=%s\n' \
   "$COMMENTS_PANEL_TARGET_PATH_0" "$COMMENTS_PANEL_TARGET_PATH_2" "$COMMENTS_PANEL_TARGET_PATH_16" \
   "${COMMENTS_COMPOSE_TARGET_PATH_0:-unset}" "${COMMENTS_COMPOSE_TARGET_PATH_THREAD:-unset}"
+printf 'SMOKE lane=FULL_PUBLIC_TEMPLATE_SENSITIVE\n'
+printf 'SMOKE classify=WORKER_SCOPE check=worker_rollout_version_headers\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=template_fingerprint_parity\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=surface_routes_listing_landing_detail\n'
+printf 'SMOKE classify=MIXED_SCOPE check=homepage_mixed_runtime_contract\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=dock_truth_listing_preview_comments_owner\n'
 
 log_fail() {
   failures=$((failures + 1))
@@ -2405,7 +2411,9 @@ emit_release_state() {
   fi
 }
 
+printf 'SMOKE classify=WORKER_SCOPE run=check_worker_rollout\n'
 check_worker_rollout
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_template_fingerprint_drift\n'
 check_template_fingerprint_drift
 
 if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" && "$WORKER_VERSION_MODE" == "fail" ]]; then
@@ -2414,16 +2422,22 @@ if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" && "$WORKER_VER
   exit 1
 fi
 
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_surface_routes\n'
 check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
 check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore" "1"
 check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
 check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+printf 'SMOKE classify=MIXED_SCOPE run=check_homepage_mixed_contract\n'
 check_homepage_mixed_contract
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_dock_truth\n'
 check_dock_truth
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_discovered_detail_paths\n'
 check_discovered_detail_paths
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_listing_preview_runtime_contract\n'
 check_listing_preview_runtime_contract
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_comments_owner_contract\n'
 check_comments_owner_contract
 emit_release_state
 

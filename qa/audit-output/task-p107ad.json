@@ -1,0 +1,69 @@
+{
+  "task": "TASK-P1.07AD",
+  "title": "Evidence-Only Repair + Freeze Confirmation",
+  "commit": "b6817545f2349ad03671a9fb64b4f1db0e3d75dd",
+  "changed_files": [
+    "qa/gaga-audit.mjs",
+    "qa/package-audit.mjs"
+  ],
+  "workflows": {
+    "ci": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23331318597"
+    },
+    "deploy": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23331342965"
+    }
+  },
+  "live_smoke": {
+    "status": "PASS",
+    "log": "qa/audit-output/task-p107ad-live-smoke.txt",
+    "summary": {
+      "zero": "PASS",
+      "two": "PASS",
+      "sixteen": "PASS",
+      "compose_lane": "SKIP",
+      "compose_reason": "open-comment fixtures unset",
+      "worker_version": "PASS",
+      "template_parity": "PASS"
+    }
+  },
+  "tiny_calibration": {
+    "made": false,
+    "note": "No UI calibration was made in this task."
+  },
+  "freeze_mode": {
+    "enabled": true,
+    "note": "Comments rail is now in freeze mode. Follow-ups should be limited to bug fixes, evidence fixes, and critical robustness fixes."
+  },
+  "accepted_limitations": [
+    "Comments rail is runtime-owned over native Blogger plumbing.",
+    "Raw source remains hybrid/native.",
+    "Compose lane remains SKIP until open-comment fixtures are defined.",
+    "This is accepted for the current product scope."
+  ],
+  "zip_entries": [
+    "package.json",
+    "package-lock.json",
+    "wrangler.jsonc",
+    "index.prod.xml",
+    "src/worker.js",
+    "public/manifest.webmanifest",
+    "public/_headers",
+    "public/robots.txt",
+    "public/llms.txt",
+    "qa/live-smoke.sh",
+    "qa/gaga-audit.mjs",
+    "qa/package-audit.mjs",
+    "qa/template-pack.sh",
+    "qa/template-proof.sh",
+    "qa/template-status.sh",
+    "qa/template-fingerprint.mjs",
+    ".github/workflows/ci.yml",
+    ".github/workflows/deploy.yml",
+    "qa/audit-output/task-p107ad.md",
+    "qa/audit-output/task-p107ad.json",
+    "qa/audit-output/task-p107ad-live-smoke.txt"
+  ]
+}

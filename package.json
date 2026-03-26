@@ -2,17 +2,22 @@
   "name": "gg",
   "private": true,
   "scripts": {
-    "gaga": "wrangler deploy --config wrangler.jsonc",
-    "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
+    "gaga": "node tools/gaga-release.mjs ship",
+    "gaga:preflight": "node tools/gaga-release.mjs preflight",
+    "gaga:push": "node tools/gaga-release.mjs ship",
+    "gaga:cf:deploy": "wrangler deploy --config wrangler.jsonc",
+    "gaga:cf:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
     "gaga:audit": "node qa/gaga-audit.mjs",
     "gaga:verify-copy": "node qa/verify-copy-registry.mjs",
     "gaga:audit:pack": "node qa/package-audit.mjs",
     "gaga:template:pack": "bash qa/template-pack.sh",
     "gaga:template:proof": "bash qa/template-proof.sh",
     "gaga:template:status": "bash qa/template-status.sh",
+    "gaga:verify-worker": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
     "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
   },
-  "dependencies": {
-    "playwright": "^1.58.2"
+  "devDependencies": {
+    "playwright": "^1.58.2",
+    "wrangler": "4.61.1"
   }
 }

@@ -1,0 +1,70 @@
+{
+  "fixtures": {
+    "zero": {
+      "surface": "post",
+      "rightMode": "comments",
+      "inSidebar": true,
+      "inPostcards": false,
+      "afterInfo": true,
+      "panelChain": "div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "sidebarChain": "aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "rootChain": "section#comments.gg-comments.comments2.threaded <- div.gg-comments-panel__body <- div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell",
+      "panelPosition": "relative",
+      "panelTop": "0px",
+      "panelHeight": "880px",
+      "sidebarPosition": "sticky",
+      "sidebarTop": "0px",
+      "sidebarHeight": "900px",
+      "panelOwner": "sidebar-right",
+      "mountTarget": ".gg-blog-sidebar--right",
+      "commentsHost": "1"
+    },
+    "two": {
+      "surface": "post",
+      "rightMode": "comments",
+      "inSidebar": true,
+      "inPostcards": false,
+      "afterInfo": true,
+      "panelChain": "div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "sidebarChain": "aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "rootChain": "section#comments.gg-comments.comments2.threaded <- div.gg-comments-panel__body <- div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell",
+      "panelPosition": "relative",
+      "panelTop": "0px",
+      "panelHeight": "880px",
+      "sidebarPosition": "sticky",
+      "sidebarTop": "0px",
+      "sidebarHeight": "900px",
+      "panelOwner": "sidebar-right",
+      "mountTarget": ".gg-blog-sidebar--right",
+      "commentsHost": "1"
+    },
+    "sixteen": {
+      "surface": "post",
+      "rightMode": "comments",
+      "inSidebar": true,
+      "inPostcards": false,
+      "afterInfo": true,
+      "panelChain": "div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "sidebarChain": "aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading <- html",
+      "rootChain": "section#comments.gg-comments.comments2.threaded <- div.gg-comments-panel__body <- div#ggPanelComments.gg-comments-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--post <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell",
+      "panelPosition": "relative",
+      "panelTop": "0px",
+      "panelHeight": "880px",
+      "sidebarPosition": "sticky",
+      "sidebarTop": "0px",
+      "sidebarHeight": "900px",
+      "panelOwner": "sidebar-right",
+      "mountTarget": ".gg-blog-sidebar--right",
+      "commentsHost": "1"
+    }
+  },
+  "editorialPreview": {
+    "surface": "home",
+    "sidebarChain": "aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--list <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading.gg-is-landing <- html",
+    "infoPanelChain": "div.gg-info-panel <- aside.gg-blog-sidebar.gg-blog-sidebar--right <- div.gg-blog-layout.gg-blog-layout--list <- section#gg-home-blog.gg-home-blog <- main#gg-main.gg-main <- div.gg-page-shell <- body.loading.gg-is-landing <- html",
+    "sidebarPosition": "sticky",
+    "sidebarTop": "0px",
+    "infoPosition": "static",
+    "relationToBlogMain": true
+  }
+}

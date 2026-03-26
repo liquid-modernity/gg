@@ -1,0 +1,152 @@
+{
+  "task": "TASK-P1.08C",
+  "title": "Homepage Mixed Order Contract + Editorial Preview Restore + Safeguard",
+  "commit": "95d5fbda0a9a8a6ce542ca39652478e3249c0b7e",
+  "commits": [
+    "95d5fbda0a9a8a6ce542ca39652478e3249c0b7e"
+  ],
+  "changed_files": [
+    "public/assets/latest/modules/ui.bucket.core.js",
+    "public/assets/v/ac33998/modules/ui.bucket.core.js",
+    "qa/live-smoke.sh"
+  ],
+  "homepage_contract": {
+    "expected_order": [
+      "gg-mixed-featuredstrip",
+      "gg-mixed-newsish-1",
+      "gg-mixed-bookish",
+      "gg-mixed-youtubeish",
+      "gg-mixed-shortish",
+      "gg-mixed-newsish-2",
+      "gg-mixed-podcastish"
+    ],
+    "primary_sections": [
+      "gg-mixed-featuredstrip",
+      "gg-mixed-newsish-1",
+      "gg-mixed-bookish"
+    ],
+    "deferred_sections": [
+      "gg-mixed-youtubeish",
+      "gg-mixed-shortish",
+      "gg-mixed-newsish-2",
+      "gg-mixed-podcastish"
+    ],
+    "collapse_rule": "Deferred sections may collapse when their feed is empty, but the relative order of rendered sections must still follow the intended order contract.",
+    "proof": "qa/audit-output/task-p108c-homepage-order-proof.json"
+  },
+  "editorial_preview_contract": {
+    "surface": "Homepage editorial preview in .gg-blog-sidebar--right .gg-info-panel .gg-editorial-preview",
+    "mount_target": ".gg-blog-sidebar--right .gg-info-panel .gg-editorial-preview",
+    "data_behavior": [
+      "opens from listing-card hover",
+      "opens from listing title-link focus",
+      "keeps right panel and info panel in open state",
+      "shows title, author, CTA, and snippet or TOC row"
+    ],
+    "must_not_regress": [
+      "preview shell presence",
+      "preview visibility on hover",
+      "preview visibility on focus",
+      "hydrated preview content",
+      "right-sidebar mount ownership"
+    ],
+    "proof": "qa/audit-output/task-p108c-editorial-preview-proof.json"
+  },
+  "root_cause": {
+    "mixed_order_mismatch": "Homepage runtime never normalized bookish into the primary mixed group, so bookish remained in #gg-mixed-deferred after the blog listing.",
+    "editorial_preview_regression": "InfoPanel hover-preview gating ignored homepage blog state because canHoverPreview only accepted feed/listing surfaces, leaving homepage / with a preview shell that never opened on hover or focus."
+  },
+  "restored_before_safeguard": [
+    "Editorial preview on / now opens again from hover and focus inside the right sidebar info panel.",
+    "Homepage mixed order on / now places bookish in the primary mixed group before deferred mixed sections."
+  ],
+  "safeguard_added": [
+    "Added listing-like homepage surface detection for editorial preview behavior.",
+    "Added homepage mixed order normalization in both GG.app.ensureBuckets() and GG.app.rehydrate().",
+    "Extended live-smoke to assert true homepage mixed order and homepage editorial preview shell/hover/focus/content."
+  ],
+  "workflows": {
+    "ci": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23334847997"
+    },
+    "deploy": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23334871845"
+    }
+  },
+  "live_smoke": {
+    "status": "PASS",
+    "log": "qa/audit-output/task-p108c-live-smoke.txt",
+    "source": "Successful CI/deploy workflow results plus current local before/after proof artifacts for /.",
+    "summary": {
+      "homepage_surface_state": "PASS",
+      "homepage_mixed_module_load": "PASS",
+      "homepage_mixed_order": "PASS",
+      "homepage_mixed_primary_visible": "PASS",
+      "homepage_mixed_deferred_contract": "PASS",
+      "homepage_editorial_preview_shell": "PASS",
+      "homepage_editorial_preview_hover": "PASS",
+      "homepage_editorial_preview_focus": "PASS",
+      "homepage_editorial_preview_content": "PASS",
+      "zero": "PASS",
+      "two": "PASS",
+      "sixteen": "PASS",
+      "compose_lane": "SKIP",
+      "compose_reason": "open-comment fixtures unset",
+      "worker_version": "PASS",
+      "template_parity": "PASS"
+    }
+  },
+  "proof": {
+    "homepage_order": "qa/audit-output/task-p108c-homepage-order-proof.json",
+    "editorial_preview": "qa/audit-output/task-p108c-editorial-preview-proof.json",
+    "screenshots": {
+      "before_home": "qa/audit-output/screenshots/task-p108c-before-home.png",
+      "after_home": "qa/audit-output/screenshots/task-p108c-after-home.png",
+      "before_preview": "qa/audit-output/screenshots/task-p108c-before-preview.png",
+      "after_preview": "qa/audit-output/screenshots/task-p108c-after-preview.png"
+    }
+  },
+  "freeze_mode": {
+    "enabled": true,
+    "note": "Comments rail freeze remains in effect; TASK-P1.08C is limited to homepage mixed order and homepage editorial preview runtime repair plus smoke safeguarding."
+  },
+  "accepted_limitations": [
+    "Homepage mixed order on / is runtime-normalized over Blogger-emitted widget containers.",
+    "Deferred homepage mixed sections may stay collapsed when their feeds are empty.",
+    "Homepage editorial preview remains runtime-owned in the right sidebar info panel rather than source-pure HTML state.",
+    "Comments compose lane remains SKIP until open-comment fixtures are configured."
+  ],
+  "zip_entries": [
+    "package.json",
+    "package-lock.json",
+    "wrangler.jsonc",
+    "index.prod.xml",
+    "src/worker.js",
+    "public/manifest.webmanifest",
+    "public/_headers",
+    "public/robots.txt",
+    "public/llms.txt",
+    "public/assets/latest/modules/ui.bucket.core.js",
+    "public/assets/v/ac33998/modules/ui.bucket.core.js",
+    "qa/live-smoke.sh",
+    "qa/gaga-audit.mjs",
+    "qa/package-audit.mjs",
+    "qa/template-pack.sh",
+    "qa/template-proof.sh",
+    "qa/template-status.sh",
+    "qa/template-fingerprint.mjs",
+    ".github/workflows/ci.yml",
+    ".github/workflows/deploy.yml",
+    "qa/audit-output/task-p108c.md",
+    "qa/audit-output/task-p108c.json",
+    "qa/audit-output/task-p108c-live-smoke.txt",
+    "qa/audit-output/task-p108c-homepage-order-proof.json",
+    "qa/audit-output/task-p108c-editorial-preview-proof.json",
+    "qa/audit-output/screenshots/task-p108c-before-home.png",
+    "qa/audit-output/screenshots/task-p108c-after-home.png",
+    "qa/audit-output/screenshots/task-p108c-before-preview.png",
+    "qa/audit-output/screenshots/task-p108c-after-preview.png"
+  ]
+}

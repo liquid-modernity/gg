@@ -1,0 +1,90 @@
+{
+  "task": "TASK-P1.07AC",
+  "title": "Audit Chain Repair + Final Micro-Polish Freeze",
+  "commit": "f21e7abc05879fa9e5936b041249f87eb981f806",
+  "changed_files": [
+    "package.json",
+    "public/assets/latest/main.css",
+    "public/assets/v/ac33998/main.css",
+    "qa/gaga-audit.mjs",
+    "qa/package-audit.mjs"
+  ],
+  "workflows": {
+    "ci": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23322066305"
+    },
+    "deploy": {
+      "status": "PASS",
+      "url": "https://github.com/liquid-modernity/gg/actions/runs/23322089661"
+    }
+  },
+  "live_smoke": {
+    "status": "PASS",
+    "log": "qa/audit-output/task-p107ac-live-smoke.txt",
+    "summary": {
+      "zero": "PASS",
+      "two": "PASS",
+      "sixteen": "PASS",
+      "compose_lane": "SKIP",
+      "compose_reason": "open-comment fixtures unset",
+      "worker_version": "PASS",
+      "template_parity": "PASS"
+    }
+  },
+  "micro_polish": {
+    "thread_toggle_readability": "slightly increased",
+    "reply_context_weight": "slightly reduced",
+    "utility_menu_sizing": "slightly tightened",
+    "new_controls_added": false,
+    "sorting_added": false
+  },
+  "freeze_mode": {
+    "enabled": true,
+    "note": "Comments rail is freeze-ready. Follow-ups should be limited to bug fixes, evidence fixes, or critical robustness work.",
+    "oldest_newer_added": false
+  },
+  "screenshots": {
+    "before": {
+      "zero": "qa/audit-output/screenshots/task-p107ac-before-zero.png",
+      "two": "qa/audit-output/screenshots/task-p107ac-before-two.png",
+      "sixteen": "qa/audit-output/screenshots/task-p107ac-before-sixteen.png"
+    },
+    "after": {
+      "zero": "qa/audit-output/screenshots/task-p107ac-after-zero.png",
+      "two": "qa/audit-output/screenshots/task-p107ac-after-two.png",
+      "sixteen": "qa/audit-output/screenshots/task-p107ac-after-sixteen.png"
+    }
+  },
+  "zip_entries": [
+    "package.json",
+    "package-lock.json",
+    "wrangler.jsonc",
+    "index.prod.xml",
+    "src/worker.js",
+    "public/manifest.webmanifest",
+    "public/_headers",
+    "public/robots.txt",
+    "public/llms.txt",
+    "public/assets/latest/main.css",
+    "public/assets/v/ac33998/main.css",
+    "qa/live-smoke.sh",
+    "qa/gaga-audit.mjs",
+    "qa/package-audit.mjs",
+    "qa/template-pack.sh",
+    "qa/template-proof.sh",
+    "qa/template-status.sh",
+    "qa/template-fingerprint.mjs",
+    ".github/workflows/ci.yml",
+    ".github/workflows/deploy.yml",
+    "qa/audit-output/task-p107ac.md",
+    "qa/audit-output/task-p107ac.json",
+    "qa/audit-output/task-p107ac-live-smoke.txt",
+    "qa/audit-output/screenshots/task-p107ac-before-zero.png",
+    "qa/audit-output/screenshots/task-p107ac-before-two.png",
+    "qa/audit-output/screenshots/task-p107ac-before-sixteen.png",
+    "qa/audit-output/screenshots/task-p107ac-after-zero.png",
+    "qa/audit-output/screenshots/task-p107ac-after-two.png",
+    "qa/audit-output/screenshots/task-p107ac-after-sixteen.png"
+  ]
+}

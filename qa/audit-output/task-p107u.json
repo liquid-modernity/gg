@@ -1,0 +1,74 @@
+{
+  "task": "TASK-P1.07U",
+  "commit": "0a518eb468ebe4a6a86182f8604d9b2d251e1173",
+  "branch": "main",
+  "workflows": {
+    "ci": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23290559144"
+    },
+    "deployWorkerAssets": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23290591309"
+    }
+  },
+  "liveSmoke": {
+    "status": "pass",
+    "summary": "LIVE SMOKE RESULT: PASS",
+    "logPath": "qa/audit-output/task-p107u-live-smoke.txt"
+  },
+  "filesChanged": [
+    "public/assets/latest/modules/ui.bucket.core.js",
+    "public/assets/v/ac33998/modules/ui.bucket.core.js",
+    "qa/live-smoke.sh"
+  ],
+  "fixtures": [
+    {
+      "url": "https://www.pakrpp.com/2026/02/todo.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/tes-2.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.zero"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.thread"
+    }
+  ],
+  "screenshots": [
+    "qa/audit-output/screenshots/task-p107u-panel-zero.png",
+    "qa/audit-output/screenshots/task-p107u-panel-two.png",
+    "qa/audit-output/screenshots/task-p107u-panel-sixteen.png"
+  ],
+  "acceptedNativeBloggerLimitations": [
+    "Native composer verification is skipped until dedicated open-comment fixtures are configured.",
+    "Blogger native composer depends on external reCAPTCHA and third-party script availability.",
+    "Panel-read fixtures prove right-rail thread behavior only and do not masquerade as compose proof."
+  ]
+}

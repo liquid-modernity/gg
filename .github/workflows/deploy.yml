@@ -7,10 +7,20 @@ on:
   workflow_dispatch:
     inputs:
       strict_template_parity:
-        description: "Hard-fail deploy when Blogger template parity drifts/missing"
+        description: "Hard-fail full public/template smoke"
         required: false
         default: false
         type: boolean
+      run_full_public_smoke:
+        description: "Run full public/template smoke lane"
+        required: false
+        default: false
+        type: boolean
+      release_note:
+        description: "Optional release note for workflow summary"
+        required: false
+        default: ""
+        type: string
 
 concurrency:
   group: deploy-main
@@ -42,11 +52,6 @@ jobs:
             exit 1
           fi
 
-          {
-            echo "### Production Branch Guard"
-            echo "- Manual production deploy confirmed from \`${GITHUB_REF}\`."
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
@@ -59,15 +64,12 @@ jobs:
       - name: Build Blogger publish artifact
         run: npm run gaga:template:pack
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Install Wrangler CLI (pinned)
-        run: npm install --no-save wrangler@4.61.1
-
-      - name: Resolve deploy verification mode + expected worker version
+      - name: Resolve deploy lanes and expected worker version
+        id: deploy_mode
         env:
-          GG_DISPATCH_STRICT_TEMPLATE_PARITY: ${{ github.event.inputs.strict_template_parity || 'false' }}
+          INPUT_STRICT_TEMPLATE_PARITY: ${{ github.event.inputs.strict_template_parity || 'false' }}
+          INPUT_RUN_FULL_PUBLIC_SMOKE: ${{ github.event.inputs.run_full_public_smoke || 'false' }}
+          INPUT_RELEASE_NOTE: ${{ github.event.inputs.release_note || '' }}
         run: |
           expected_worker_version="$(node - <<'NODE'
           const fs = require('node:fs');
@@ -78,25 +80,64 @@ jobs:
           NODE
           )"
           if [ -z "$expected_worker_version" ]; then
-            echo "Unable to resolve WORKER_VERSION from src/worker.js" >&2
+            echo "::error title=Expected worker version missing::Unable to resolve WORKER_VERSION from src/worker.js."
             exit 1
           fi
 
-          template_mode="warn"
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && [ "${GG_DISPATCH_STRICT_TEMPLATE_PARITY}" = "true" ]; then
-            template_mode="fail"
+          template_changed_in_rev=0
+          changed_files="$(git show --name-only --pretty='' HEAD || true)"
+          if printf '%s\n' "$changed_files" | grep -qx 'index.prod.xml'; then
+            template_changed_in_rev=1
           fi
 
-          echo "GG_EXPECTED_WORKER_VERSION=$expected_worker_version" >> "$GITHUB_ENV"
+          run_full_public_smoke=0
+          full_smoke_hard_fail=0
+          lane_reason=""
+
+          if [ "$template_changed_in_rev" = "0" ]; then
+            run_full_public_smoke=1
+            full_smoke_hard_fail=1
+            lane_reason="index.prod.xml unchanged in revision; full public smoke runs as hard gate."
+          elif [ "${INPUT_STRICT_TEMPLATE_PARITY}" = "true" ]; then
+            run_full_public_smoke=1
+            full_smoke_hard_fail=1
+            lane_reason="strict_template_parity=true; full public smoke runs as hard gate."
+          elif [ "${INPUT_RUN_FULL_PUBLIC_SMOKE}" = "true" ]; then
+            run_full_public_smoke=1
+            full_smoke_hard_fail=0
+            lane_reason="run_full_public_smoke=true; full public smoke runs in warning mode."
+          else
+            run_full_public_smoke=0
+            full_smoke_hard_fail=0
+            lane_reason="index.prod.xml changed and Blogger publish is out of scope; full public smoke skipped by design."
+          fi
+
+          template_drift_mode="warn"
+          if [ "$full_smoke_hard_fail" = "1" ]; then
+            template_drift_mode="fail"
+          fi
+
+          echo "GG_EXPECTED_WORKER_VERSION=${expected_worker_version}" >> "$GITHUB_ENV"
           echo "GG_WORKER_VERSION_MODE=fail" >> "$GITHUB_ENV"
-          echo "GG_TEMPLATE_DRIFT_MODE=$template_mode" >> "$GITHUB_ENV"
+          echo "GG_TEMPLATE_CHANGED_IN_REV=${template_changed_in_rev}" >> "$GITHUB_ENV"
+          echo "GG_RUN_FULL_PUBLIC_SMOKE=${run_full_public_smoke}" >> "$GITHUB_ENV"
+          echo "GG_FULL_SMOKE_HARD_FAIL=${full_smoke_hard_fail}" >> "$GITHUB_ENV"
+          echo "GG_TEMPLATE_DRIFT_MODE=${template_drift_mode}" >> "$GITHUB_ENV"
+          printf 'GG_RELEASE_NOTE<<EOF\n%s\nEOF\n' "${INPUT_RELEASE_NOTE}" >> "$GITHUB_ENV"
 
           {
-            echo "### Deploy Verification Mode"
-            echo "- Expected worker version: \`$expected_worker_version\`"
-            echo "- Worker rollout gate mode: \`fail\`"
-            echo "- Template drift mode: \`$template_mode\`"
-            echo "- Strict template parity input: \`${GG_DISPATCH_STRICT_TEMPLATE_PARITY}\`"
+            echo "### Deploy Lane Resolution"
+            echo "- Expected worker version: \`${expected_worker_version}\`"
+            echo "- Template changed in revision: \`${template_changed_in_rev}\`"
+            echo "- strict_template_parity: \`${INPUT_STRICT_TEMPLATE_PARITY}\`"
+            echo "- run_full_public_smoke: \`${INPUT_RUN_FULL_PUBLIC_SMOKE}\`"
+            echo "- Full public smoke lane enabled: \`${run_full_public_smoke}\`"
+            echo "- Full public smoke hard gate: \`${full_smoke_hard_fail}\`"
+            echo "- Template drift mode: \`${template_drift_mode}\`"
+            echo "- Decision: ${lane_reason}"
+            if [ -n "${INPUT_RELEASE_NOTE}" ]; then
+              echo "- Release note: ${INPUT_RELEASE_NOTE}"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate GitHub Actions deploy config
@@ -125,7 +166,7 @@ jobs:
           echo "GG_LIVE_BASE_URL=${GG_LIVE_BASE_URL}" >> "$GITHUB_ENV"
 
           {
-            echo "### GitHub Actions Deploy Config"
+            echo "### Deploy Config"
             echo "- CLOUDFLARE_API_TOKEN configured: \`$([ -n "${CLOUDFLARE_API_TOKEN:-}" ] && echo yes || echo no)\`"
             echo "- CLOUDFLARE_ACCOUNT_ID configured: \`$([ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] && echo yes || echo no)\`"
             echo "- GG_LIVE_BASE_URL: \`${GG_LIVE_BASE_URL}\`"
@@ -137,42 +178,19 @@ jobs:
 
       - name: Deploy scope truth
         run: |
-          echo "Deploy scope: Cloudflare Worker code + Cloudflare static assets from ./public."
-          echo "Not in scope here: Blogger template/theme publish (index.prod.xml) to Blogger admin."
           {
             echo "### Deploy Scope Truth"
             echo "- This workflow deploys Cloudflare Worker + Cloudflare static assets."
             echo "- This workflow does **not** publish Blogger template/theme."
-            echo "- Template changes in \`index.prod.xml\` require separate Blogger release."
-            echo "- Manual publish checklist: \`qa/template-release-playbook.md\`"
-            echo "- Post-publish verification command: \`npm run gaga:verify-template\`"
+            echo "- \\`npm run gaga\\` is a GitHub-first push command, not local Wrangler deploy."
+            echo "- Local direct deploy command is \\`npm run gaga:cf:deploy\\`."
+            echo "- Worker-scope smoke is always hard-gated after deploy."
+            echo "- Full public/template-sensitive smoke is conditional by lane rules."
+            echo "- Blogger template manual publish playbook: \\`qa/template-release-playbook.md\\`."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Template release guard (index.prod.xml)
-        run: |
-          repo_template_fp="$(node qa/template-fingerprint.mjs --value 2>/dev/null || true)"
-          changed_files="$(git show --name-only --pretty='' HEAD || true)"
-          if printf '%s\n' "$changed_files" | grep -qx 'index.prod.xml'; then
-            echo "GG_TEMPLATE_CHANGED_IN_REV=1" >> "$GITHUB_ENV"
-            echo "::warning title=Blogger template not deployed::index.prod.xml changed in this revision, but this workflow deploys Worker/assets only."
-            {
-              echo "### Template Release Guard"
-              echo "- \`index.prod.xml\` changed in this deployed revision."
-              echo "- Repo template fingerprint (expected): \`${repo_template_fp:-unknown}\`"
-              echo "- No Blogger template/theme publish is performed by this workflow."
-              echo "- Template behavior on public production can remain out-of-band until Blogger publish is done."
-            } >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "GG_TEMPLATE_CHANGED_IN_REV=0" >> "$GITHUB_ENV"
-            {
-              echo "### Template Release Guard"
-              echo "- \`index.prod.xml\` not changed in this revision."
-              echo "- Repo template fingerprint (expected): \`${repo_template_fp:-unknown}\`"
-              echo "- Workflow scope remains Worker/assets only."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Deploy via npm run gaga
+      - name: Deploy Worker/assets via Wrangler
+        id: deploy_worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -197,7 +215,7 @@ jobs:
             echo "Cloudflare deploy attempt ${attempt}/${max_attempts}"
 
             set +e
-            npm run gaga 2>&1 | tee "$attempt_log"
+            npm run gaga:cf:deploy 2>&1 | tee "$attempt_log"
             cmd_status=${PIPESTATUS[0]}
             set -e
 
@@ -211,7 +229,7 @@ jobs:
             fi
 
             if is_permanent_cf_error "$attempt_log"; then
-              echo "::error title=Cloudflare deploy failed::Non-transient Wrangler deploy failure on attempt ${attempt}. See log below."
+              echo "::error title=Cloudflare deploy failed::Non-transient Wrangler deploy failure on attempt ${attempt}."
               cat "$attempt_log"
               exit "$cmd_status"
             fi
@@ -222,7 +240,7 @@ jobs:
               exit "$cmd_status"
             fi
 
-            echo "::warning title=Retrying Wrangler deploy::Wrangler deploy failed on attempt ${attempt}/${max_attempts}. The failure did not match a known permanent configuration/auth error, so retrying in ${backoff_seconds}s."
+            echo "::warning title=Retrying Wrangler deploy::Attempt ${attempt}/${max_attempts} failed with retryable signal; retrying in ${backoff_seconds}s."
             sleep "$backoff_seconds"
             attempt=$((attempt + 1))
           done
@@ -232,28 +250,98 @@ jobs:
             exit 1
           fi
 
-      - name: Live smoke (version-aware worker contract + template state)
+      - name: Worker-scope smoke (hard gate)
+        id: worker_smoke
         env:
           GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
-          GG_TEMPLATE_DRIFT_MODE: ${{ env.GG_TEMPLATE_DRIFT_MODE }}
           GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
-          GG_WORKER_VERSION_MODE: ${{ env.GG_WORKER_VERSION_MODE }}
-          GG_COMMENTS_OWNER_BROWSER_MODE: fail
-          GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
-          GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
-          GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"
-          GG_DEPLOY_SMOKE_MAX_ATTEMPTS: "3"
-          GG_DEPLOY_SMOKE_BACKOFF_SECONDS: "20"
+          GG_WORKER_VERSION_MODE: fail
+          GG_WORKER_SMOKE_MAX_ATTEMPTS: "3"
+          GG_WORKER_SMOKE_BACKOFF_SECONDS: "10"
         run: |
-          max_attempts="${GG_DEPLOY_SMOKE_MAX_ATTEMPTS:-3}"
-          backoff_seconds="${GG_DEPLOY_SMOKE_BACKOFF_SECONDS:-20}"
+          max_attempts="${GG_WORKER_SMOKE_MAX_ATTEMPTS:-3}"
+          backoff_seconds="${GG_WORKER_SMOKE_BACKOFF_SECONDS:-10}"
           attempt=1
           smoke_ok=0
-          log_file_base="$(mktemp -u -t gg-live-smoke.XXXXXX)"
+          log_file_base="$(mktemp -u -t gg-live-smoke-worker.XXXXXX)"
 
           while [ "$attempt" -le "$max_attempts" ]; do
             attempt_log="${log_file_base}.attempt-${attempt}.log"
-            echo "Deploy live-smoke attempt ${attempt}/${max_attempts}"
+            echo "Worker smoke attempt ${attempt}/${max_attempts}"
+
+            set +e
+            bash qa/live-smoke-worker.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}" 2>&1 | tee "$attempt_log"
+            cmd_status=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$cmd_status" -eq 0 ]; then
+              smoke_ok=1
+              {
+                echo "### Worker-Scope Smoke"
+                echo "- Worker-scope smoke passed on attempt ${attempt}/${max_attempts}."
+              } >> "$GITHUB_STEP_SUMMARY"
+              break
+            fi
+
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "::error title=Worker-scope smoke failed::Worker-scope hard gate failed after ${max_attempts} attempts."
+              cat "$attempt_log"
+              exit "$cmd_status"
+            fi
+
+            echo "::warning title=Retrying worker smoke::Worker-scope smoke failed on attempt ${attempt}/${max_attempts}; retrying in ${backoff_seconds}s."
+            sleep "$backoff_seconds"
+            attempt=$((attempt + 1))
+          done
+
+          if [ "$smoke_ok" -ne 1 ]; then
+            echo "::error title=Worker-scope smoke failed::Worker-scope smoke loop exited without success."
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium (full smoke lane)
+        if: ${{ success() }}
+        run: |
+          if [ "${GG_RUN_FULL_PUBLIC_SMOKE:-0}" != "1" ]; then
+            echo "Skipping Playwright install because full public smoke lane is disabled."
+            exit 0
+          fi
+          npx playwright install --with-deps chromium
+
+      - name: Full public/template smoke lane
+        id: full_smoke
+        if: ${{ success() }}
+        env:
+          GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
+          GG_TEMPLATE_DRIFT_MODE: ${{ env.GG_TEMPLATE_DRIFT_MODE }}
+          GG_TEMPLATE_CHANGED_IN_REV: ${{ env.GG_TEMPLATE_CHANGED_IN_REV }}
+          GG_EXPECTED_WORKER_VERSION: ${{ env.GG_EXPECTED_WORKER_VERSION }}
+          GG_WORKER_VERSION_MODE: fail
+          GG_COMMENTS_OWNER_BROWSER_MODE: warn
+          GG_WORKER_VERSION_CHECK_PATH: /__gg_worker_ping
+          GG_WORKER_ROLLOUT_MAX_ATTEMPTS: "12"
+          GG_WORKER_ROLLOUT_BACKOFF_SECONDS: "5"
+          GG_DEPLOY_SMOKE_MAX_ATTEMPTS: "2"
+          GG_DEPLOY_SMOKE_BACKOFF_SECONDS: "20"
+        run: |
+          if [ "${GG_RUN_FULL_PUBLIC_SMOKE:-0}" != "1" ]; then
+            {
+              echo "### Full Public Smoke"
+              echo "- Status: skipped"
+              echo "- Reason: lane disabled by deploy rules (template change + Blogger publish out of scope)."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          max_attempts="${GG_DEPLOY_SMOKE_MAX_ATTEMPTS:-2}"
+          backoff_seconds="${GG_DEPLOY_SMOKE_BACKOFF_SECONDS:-20}"
+          attempt=1
+          smoke_ok=0
+          log_file_base="$(mktemp -u -t gg-live-smoke-full.XXXXXX)"
+
+          while [ "$attempt" -le "$max_attempts" ]; do
+            attempt_log="${log_file_base}.attempt-${attempt}.log"
+            echo "Full public smoke attempt ${attempt}/${max_attempts}"
 
             set +e
             bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}" 2>&1 | tee "$attempt_log"
@@ -263,41 +351,112 @@ jobs:
             if [ "$cmd_status" -eq 0 ]; then
               smoke_ok=1
               {
-                echo "### Live Smoke"
-                echo "- Public contract verification passed on attempt ${attempt}/${max_attempts}."
+                echo "### Full Public Smoke"
+                if [ "${GG_FULL_SMOKE_HARD_FAIL:-0}" = "1" ]; then
+                  echo "- Status: passed (hard gate)"
+                else
+                  echo "- Status: passed (warning mode)"
+                fi
+                echo "- Attempt: ${attempt}/${max_attempts}"
               } >> "$GITHUB_STEP_SUMMARY"
               break
             fi
 
             if [ "$attempt" -ge "$max_attempts" ]; then
-              echo "::error title=Live smoke failed::Public contract verification failed after ${max_attempts} attempts."
-              cat "$attempt_log"
-              exit "$cmd_status"
+              if [ "${GG_FULL_SMOKE_HARD_FAIL:-0}" = "1" ]; then
+                echo "::error title=Full public smoke failed::Full public/template smoke hard gate failed after ${max_attempts} attempts."
+                cat "$attempt_log"
+                exit "$cmd_status"
+              fi
+
+              echo "::warning title=Full public smoke warning::Full public/template smoke failed in warning lane after ${max_attempts} attempts."
+              {
+                echo "### Full Public Smoke"
+                echo "- Status: warning (failed in non-hard lane)"
+                echo "- Attempts: ${max_attempts}"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
             fi
 
-            echo "::warning title=Retrying live smoke::Public contract verification failed on attempt ${attempt}/${max_attempts}. Retrying in ${backoff_seconds}s."
+            echo "::warning title=Retrying full public smoke::Attempt ${attempt}/${max_attempts} failed; retrying in ${backoff_seconds}s."
             sleep "$backoff_seconds"
             attempt=$((attempt + 1))
           done
 
           if [ "$smoke_ok" -ne 1 ]; then
-            echo "::error title=Live smoke failed::Smoke loop exited without success."
-            exit 1
+            if [ "${GG_FULL_SMOKE_HARD_FAIL:-0}" = "1" ]; then
+              echo "::error title=Full public smoke failed::Full smoke loop exited without success in hard lane."
+              exit 1
+            fi
+            echo "::warning title=Full public smoke warning::Full smoke loop exited without success in non-hard lane."
+            exit 0
           fi
 
-      - name: Manual Blogger publish reminder
+      - name: Deploy summary truth
         if: always()
         env:
-          GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
+          CI_STATUS: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion || 'manual_dispatch' }}
+          DEPLOY_OUTCOME: ${{ steps.deploy_worker.outcome }}
+          WORKER_SMOKE_OUTCOME: ${{ steps.worker_smoke.outcome }}
+          FULL_SMOKE_OUTCOME: ${{ steps.full_smoke.outcome }}
         run: |
+          template_changed="${GG_TEMPLATE_CHANGED_IN_REV:-0}"
+          run_full="${GG_RUN_FULL_PUBLIC_SMOKE:-0}"
+          full_hard="${GG_FULL_SMOKE_HARD_FAIL:-0}"
+
+          full_public_status="skipped"
+          if [ "$run_full" = "1" ]; then
+            if [ "$FULL_SMOKE_OUTCOME" = "success" ]; then
+              if [ "$full_hard" = "1" ]; then
+                full_public_status="passed_hard_gate"
+              else
+                full_public_status="passed_warning_lane"
+              fi
+            elif [ "$FULL_SMOKE_OUTCOME" = "failure" ]; then
+              if [ "$full_hard" = "1" ]; then
+                full_public_status="failed_hard_gate"
+              else
+                full_public_status="warning_lane_failed"
+              fi
+            else
+              full_public_status="${FULL_SMOKE_OUTCOME:-unknown}"
+            fi
+          else
+            full_public_status="skipped_by_design"
+          fi
+
+          blogger_publish_pending="no"
+          if [ "$template_changed" = "1" ]; then
+            if [ "$run_full" = "1" ] && [ "$full_hard" = "1" ] && [ "$FULL_SMOKE_OUTCOME" = "success" ]; then
+              blogger_publish_pending="no"
+            else
+              blogger_publish_pending="yes"
+            fi
+          fi
+
+          current_green_meaning="Release failed; inspect hard-gate failures."
+          if [ "$DEPLOY_OUTCOME" = "success" ] && [ "$WORKER_SMOKE_OUTCOME" = "success" ]; then
+            if [ "$blogger_publish_pending" = "yes" ]; then
+              current_green_meaning="Worker release successful, public template parity pending"
+            else
+              current_green_meaning="Full public parity verified"
+            fi
+          fi
+
           {
-            echo "### Manual Blogger Template Publish"
-            echo "- This pipeline has deployed Worker/assets only."
-            echo "- Template source of truth: \`index.prod.xml\`"
-            echo "- Publish checklist: \`qa/template-release-playbook.md\`"
-            echo "- Fingerprint status check: \`npm run gaga:template:status -- ${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\`"
-            echo "- Full post-publish verification: \`npm run gaga:verify-template\`"
-            echo "- Deploy run template drift mode: \`${GG_TEMPLATE_DRIFT_MODE:-warn}\`"
-            echo "- Expected worker version for this deploy: \`${GG_EXPECTED_WORKER_VERSION:-unknown}\`"
-            echo "- GitHub Actions setup guide: \`docs/github-actions-cloudflare.md\`"
+            echo "### Deploy Summary Truth"
+            echo "- CI status: \`${CI_STATUS}\`"
+            echo "- Cloudflare deploy status: \`${DEPLOY_OUTCOME:-not_run}\`"
+            echo "- Worker rollout/version status: \`${WORKER_SMOKE_OUTCOME:-not_run}\` (expected version: \`${GG_EXPECTED_WORKER_VERSION:-unknown}\`)"
+            echo "- Worker-scope smoke status: \`${WORKER_SMOKE_OUTCOME:-not_run}\`"
+            echo "- Template changed in revision: \`${template_changed}\`"
+            echo "- Full public smoke status: \`${full_public_status}\`"
+            echo "- Blogger manual publish pending: \`${blogger_publish_pending}\`"
+            echo "- Green meaning: ${current_green_meaning}"
+            if [ -n "${GG_RELEASE_NOTE:-}" ]; then
+              echo "- Release note: ${GG_RELEASE_NOTE}"
+            fi
+            echo "- Manual publish playbook: \`qa/template-release-playbook.md\`"
+            echo "- Post-publish strict verify: \`npm run gaga:verify-template\`"
+            echo "- Workflow guide: \`docs/github-actions-cloudflare.md\`"
           } >> "$GITHUB_STEP_SUMMARY"

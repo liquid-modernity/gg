@@ -1,0 +1,550 @@
+{
+  "generatedAt": "2026-03-19T23:27:33.877Z",
+  "input": {
+    "path": "/Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/dist/gg-audit.zip",
+    "sizeBytes": 369547,
+    "sizeHuman": "360.89 KB"
+  },
+  "archive": {
+    "topLevelRoots": [
+      ".github",
+      "index.prod.xml",
+      "package-lock.json",
+      "package.json",
+      "public",
+      "qa",
+      "src",
+      "wrangler.jsonc"
+    ],
+    "fileCount": 30,
+    "totalEntries": 30,
+    "junkEntries": []
+  },
+  "criticalFiles": [
+    {
+      "path": "package.json",
+      "exists": true,
+      "entry": "package.json"
+    },
+    {
+      "path": "package-lock.json",
+      "exists": true,
+      "entry": "package-lock.json"
+    },
+    {
+      "path": "wrangler.jsonc",
+      "exists": true,
+      "entry": "wrangler.jsonc"
+    },
+    {
+      "path": "index.prod.xml",
+      "exists": true,
+      "entry": "index.prod.xml"
+    },
+    {
+      "path": "src/worker.js",
+      "exists": true,
+      "entry": "src/worker.js"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "exists": true,
+      "entry": "public/manifest.webmanifest"
+    },
+    {
+      "path": "public/_headers",
+      "exists": true,
+      "entry": "public/_headers"
+    },
+    {
+      "path": "public/robots.txt",
+      "exists": true,
+      "entry": "public/robots.txt"
+    },
+    {
+      "path": "public/llms.txt",
+      "exists": true,
+      "entry": "public/llms.txt"
+    },
+    {
+      "path": ".github/workflows/*",
+      "exists": true,
+      "entry": ".github/workflows/ci.yml"
+    }
+  ],
+  "package": {
+    "exists": true,
+    "name": "gg",
+    "parseError": "",
+    "scriptCount": 7,
+    "scriptPresence": {
+      "gaga": true,
+      "gaga:dry": true,
+      "gaga:audit": true,
+      "build": false,
+      "ship": false
+    },
+    "verifyScripts": [],
+    "scripts": {
+      "gaga": "wrangler deploy --config wrangler.jsonc",
+      "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
+      "gaga:audit": "node qa/gaga-audit.mjs",
+      "gaga:template:pack": "bash qa/template-pack.sh",
+      "gaga:template:proof": "bash qa/template-proof.sh",
+      "gaga:template:status": "bash qa/template-status.sh",
+      "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+    },
+    "scriptFileRefs": [
+      {
+        "script": "gaga",
+        "runner": "flag",
+        "path": "wrangler.jsonc",
+        "source": "wrangler deploy --config wrangler.jsonc"
+      },
+      {
+        "script": "gaga:dry",
+        "runner": "flag",
+        "path": "wrangler.jsonc",
+        "source": "wrangler deploy --dry-run --config wrangler.jsonc"
+      },
+      {
+        "script": "gaga:audit",
+        "runner": "node",
+        "path": "qa/gaga-audit.mjs",
+        "source": "node qa/gaga-audit.mjs"
+      },
+      {
+        "script": "gaga:template:pack",
+        "runner": "bash",
+        "path": "qa/template-pack.sh",
+        "source": "bash qa/template-pack.sh"
+      },
+      {
+        "script": "gaga:template:proof",
+        "runner": "bash",
+        "path": "qa/template-proof.sh",
+        "source": "bash qa/template-proof.sh"
+      },
+      {
+        "script": "gaga:template:status",
+        "runner": "bash",
+        "path": "qa/template-status.sh",
+        "source": "bash qa/template-status.sh"
+      },
+      {
+        "script": "gaga:verify-template",
+        "runner": "bash",
+        "path": "qa/live-smoke.sh",
+        "source": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+      }
+    ],
+    "scriptNpmRunRefs": []
+  },
+  "workflows": {
+    "entries": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/deploy.yml"
+    ],
+    "files": [
+      {
+        "entry": ".github/workflows/ci.yml",
+        "runCi": true,
+        "deployCloudflare": true,
+        "callWrangler": true,
+        "callGaga": true,
+        "lineCount": 55,
+        "runBlockCount": 8
+      },
+      {
+        "entry": ".github/workflows/deploy.yml",
+        "runCi": false,
+        "deployCloudflare": true,
+        "callWrangler": true,
+        "callGaga": true,
+        "lineCount": 304,
+        "runBlockCount": 12
+      }
+    ],
+    "anyCi": true,
+    "anyDeployCloudflare": true,
+    "anyWrangler": true,
+    "anyNpmGaga": true,
+    "npmRunCalls": [
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "script": "gaga:template:pack",
+        "source": "npm run gaga:template:pack"
+      },
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "script": "gaga:dry",
+        "source": "npm run gaga:dry"
+      },
+      {
+        "workflow": ".github/workflows/deploy.yml",
+        "script": "gaga:template:pack",
+        "source": "npm run gaga:template:pack"
+      },
+      {
+        "workflow": ".github/workflows/deploy.yml",
+        "script": "gaga",
+        "source": "max_attempts=\"${GG_CF_DEPLOY_MAX_ATTEMPTS:-6}\"\nbackoff_seconds=\"${GG_CF_DEPLOY_BACKOFF_SECONDS:-15}\"\nattempt=1\ndeploy_ok=0\nlog_file_base=\"$(mktemp -u -t gg-wrangler-deploy.XXXXXX)\"\n\nis_permanent_cf_error() {\n  local file=\"$1\"\n  grep -Eiq \\\n    'Authentication error|authorization failed|not authorized|permission denied|Unknown argument|Unknown option|missing entry-point|No such file or directory|Cannot find module|Module not found|Failed to parse|Invalid value|Required.+not provided|is not a valid|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' \\\n    \"$file\"\n}\n\nwhile [ \"$attempt\" -le \"$max_attempts\" ]; do\n  attempt_log=\"${log_file_base}.attempt-${attempt}.log\"\n  echo \"Cloudflare deploy attempt ${attempt}/${max_attempts}\"\n\n  set +e\n  npm run gaga 2>&1 | tee \"$attempt_log\"\n  cmd_status=${PIPESTATUS[0]}\n  set -e\n\n  if [ \"$cmd_status\" -eq 0 ]; then\n    deploy_ok=1\n    {\n      echo \"### Cloudflare Deploy\"\n      echo \"- Deploy succeeded on attempt ${attempt}/${max_attempts}.\"\n    } >> \"$GITHUB_STEP_SUMMARY\"\n    break\n  fi\n\n  if is_permanent_cf_error \"$attempt_log\"; then\n    echo \"::error title=Cloudflare deploy failed::Non-transient Wrangler deploy failure on attempt ${attempt}. See log below.\"\n    cat \"$attempt_log\"\n    exit \"$cmd_status\"\n  fi\n\n  if [ \"$attempt\" -ge \"$max_attempts\" ]; then\n    echo \"::error title=Cloudflare deploy failed::Retryable Wrangler deploy failure persisted after ${max_attempts} attempts.\"\n    cat \"$attempt_log\"\n    exit \"$cmd_status\"\n  fi\n\n  echo \"::warning title=Retrying Wrangler deploy::Wrangler deploy failed on attempt ${attempt}/${max_attempts}. The failure did not match a known permanent configuration/auth error, so retrying in ${backoff_seconds}s.\"\n  sleep \"$backoff_seconds\"\n  attempt=$((attempt + 1))\ndone\n\nif [ \"$deploy_ok\" -ne 1 ]; then\n  echo \"::error title=Cloudflare deploy failed::Deploy loop exited without success.\"\n  exit 1\nfi\n"
+      }
+    ],
+    "missingScriptCalls": [],
+    "workflowFileRefs": [
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "runner": "node",
+        "path": "qa/template-fingerprint.mjs",
+        "source": "node qa/template-fingerprint.mjs --check"
+      },
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "runner": "node",
+        "path": "src/worker.js",
+        "source": "node --check src/worker.js"
+      },
+      {
+        "workflow": ".github/workflows/deploy.yml",
+        "runner": "bash",
+        "path": "qa/live-smoke.sh",
+        "source": "bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\" 2>&1"
+      }
+    ]
+  },
+  "signals": {
+    "hasVersionedAssets": true,
+    "hasLatestAssets": true,
+    "hasTemplate": true,
+    "hasWorker": true,
+    "hasWorkflows": true,
+    "hasQaFiles": true,
+    "qaEntriesCount": 17,
+    "templateWorkerWorkflowCoexist": true,
+    "indexProdRefersVersioned": true,
+    "indexProdRefersLatest": false,
+    "qaLiveSmokeHasCommentsOwnerCheck": true,
+    "qaLiveSmokeTargetsCommentsPath": false,
+    "toolsEntriesCount": 0
+  },
+  "taskArtifacts": {
+    "enabled": true,
+    "taskId": "task-p107ab",
+    "expected": {
+      "md": "qa/audit-output/task-p107ab.md",
+      "json": "qa/audit-output/task-p107ab.json",
+      "liveSmoke": "qa/audit-output/task-p107ab-live-smoke.txt"
+    },
+    "exists": {
+      "md": true,
+      "json": true,
+      "liveSmoke": true
+    },
+    "entries": {
+      "md": "qa/audit-output/task-p107ab.md",
+      "json": "qa/audit-output/task-p107ab.json",
+      "liveSmoke": "qa/audit-output/task-p107ab-live-smoke.txt"
+    },
+    "manifest": {
+      "task": "TASK-P1.07AB",
+      "title": "Final Polish + Content Robustness for Comments Rail",
+      "commit": "6f2c2f5b2af87753ea2aa52245e60537cb7d6daa",
+      "workflows": {
+        "ci": {
+          "status": "PASS",
+          "url": "https://github.com/liquid-modernity/gg/actions/runs/23320510371"
+        },
+        "deploy": {
+          "status": "PASS",
+          "url": "https://github.com/liquid-modernity/gg/actions/runs/23320537139"
+        }
+      },
+      "changed_files": [
+        "public/assets/latest/main.css",
+        "public/assets/v/ac33998/main.css"
+      ],
+      "scope": {
+        "xml_changed": false,
+        "js_changed": false,
+        "css_only": true,
+        "ownership_model_changed": false
+      },
+      "adjustments": {
+        "contrast": [
+          "Raised relative timestamp contrast slightly.",
+          "Raised thread toggle contrast slightly.",
+          "Raised subtle divider and nested rail visibility slightly."
+        ],
+        "deleted_reply_meta": [
+          "Deleted state is softer and less badge-like.",
+          "Reply context is quieter and more editorial."
+        ],
+        "avatar": [
+          "Avatar size and border/background density reduced slightly."
+        ],
+        "open_composer": [
+          "Footer dock spacing tightened.",
+          "Native composer host wrapper made lighter.",
+          "Native Blogger controls/legal content remain visible."
+        ],
+        "content_robustness": [
+          "Long URLs wrap safely.",
+          "Long unbroken tokens wrap safely.",
+          "Shortcode-like text is treated as plain text and wraps safely.",
+          "Awkward multiline content remains readable without horizontal overflow."
+        ]
+      },
+      "tiny_js_hooks_added": [],
+      "live_smoke": {
+        "status": "PASS",
+        "log": "qa/audit-output/task-p107ab-live-smoke.txt",
+        "fixtures": [
+          {
+            "url": "https://www.pakrpp.com/2026/02/todo.html",
+            "fixtureClass": "panel-read",
+            "commentsOpen": true,
+            "composerKind": "native",
+            "result": "PASS"
+          },
+          {
+            "url": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+            "fixtureClass": "panel-read",
+            "commentsOpen": true,
+            "composerKind": "native",
+            "result": "PASS"
+          },
+          {
+            "url": "https://www.pakrpp.com/2025/10/tes-2.html",
+            "fixtureClass": "panel-read",
+            "commentsOpen": true,
+            "composerKind": "native",
+            "result": "PASS"
+          }
+        ],
+        "compose_lane": {
+          "status": "SKIP",
+          "reason": "open-comment fixtures unset"
+        }
+      },
+      "robustness_proof": {
+        "json": "qa/audit-output/task-p107ab-robustness.json",
+        "screenshot": "qa/audit-output/screenshots/task-p107ab-robustness-two.png",
+        "metrics": {
+          "panelClientWidth": 218,
+          "panelScrollWidth": 218,
+          "listClientWidth": 202,
+          "listScrollWidth": 202,
+          "firstClientWidth": 158,
+          "firstScrollWidth": 158,
+          "secondClientWidth": 136,
+          "secondScrollWidth": 136,
+          "firstWrapped": true,
+          "secondWrapped": true
+        }
+      },
+      "screenshots": {
+        "before": {
+          "zero": "qa/audit-output/screenshots/task-p107ab-before-zero.png",
+          "two": "qa/audit-output/screenshots/task-p107ab-before-two.png",
+          "sixteen": "qa/audit-output/screenshots/task-p107ab-before-sixteen.png"
+        },
+        "after": {
+          "zero": "qa/audit-output/screenshots/task-p107ab-after-zero.png",
+          "two": "qa/audit-output/screenshots/task-p107ab-after-two.png",
+          "sixteen": "qa/audit-output/screenshots/task-p107ab-after-sixteen.png"
+        }
+      },
+      "stability": {
+        "desktop_right_rail_ownership_preserved": true,
+        "desktop_model_layout_owned": true,
+        "mobile_overlay_path_changed": false
+      }
+    },
+    "manifestParseError": "",
+    "manifestFields": {
+      "task": "TASK-P1.07AB",
+      "commit": "6f2c2f5b2af87753ea2aa52245e60537cb7d6daa",
+      "changedFilesCount": 2,
+      "ciUrl": "https://github.com/liquid-modernity/gg/actions/runs/23320510371",
+      "ciStatus": "PASS",
+      "deployUrl": "https://github.com/liquid-modernity/gg/actions/runs/23320537139",
+      "deployStatus": "PASS",
+      "liveSmokeLog": "qa/audit-output/task-p107ab-live-smoke.txt",
+      "liveSmokeStatus": "PASS"
+    },
+    "zipEntries": [],
+    "zipEntryPresence": []
+  },
+  "warnings": [
+    "qa/live-smoke.sh does not target the 0/2/16 comments owner proof matrix."
+  ],
+  "criticalFailures": [
+    "task manifest 'qa/audit-output/task-p107ab.json' is missing a non-empty zip_entries list"
+  ],
+  "contractFindings": {
+    "missingCriticalFiles": [],
+    "missingScriptFiles": [],
+    "missingScriptTargets": [],
+    "missingWorkflowScripts": [],
+    "missingWorkflowFiles": [],
+    "deadLegacyRefs": [],
+    "taskSummary": {
+      "enabled": true,
+      "taskId": "task-p107ab",
+      "expected": {
+        "md": "qa/audit-output/task-p107ab.md",
+        "json": "qa/audit-output/task-p107ab.json",
+        "liveSmoke": "qa/audit-output/task-p107ab-live-smoke.txt"
+      },
+      "exists": {
+        "md": true,
+        "json": true,
+        "liveSmoke": true
+      },
+      "entries": {
+        "md": "qa/audit-output/task-p107ab.md",
+        "json": "qa/audit-output/task-p107ab.json",
+        "liveSmoke": "qa/audit-output/task-p107ab-live-smoke.txt"
+      },
+      "manifest": {
+        "task": "TASK-P1.07AB",
+        "title": "Final Polish + Content Robustness for Comments Rail",
+        "commit": "6f2c2f5b2af87753ea2aa52245e60537cb7d6daa",
+        "workflows": {
+          "ci": {
+            "status": "PASS",
+            "url": "https://github.com/liquid-modernity/gg/actions/runs/23320510371"
+          },
+          "deploy": {
+            "status": "PASS",
+            "url": "https://github.com/liquid-modernity/gg/actions/runs/23320537139"
+          }
+        },
+        "changed_files": [
+          "public/assets/latest/main.css",
+          "public/assets/v/ac33998/main.css"
+        ],
+        "scope": {
+          "xml_changed": false,
+          "js_changed": false,
+          "css_only": true,
+          "ownership_model_changed": false
+        },
+        "adjustments": {
+          "contrast": [
+            "Raised relative timestamp contrast slightly.",
+            "Raised thread toggle contrast slightly.",
+            "Raised subtle divider and nested rail visibility slightly."
+          ],
+          "deleted_reply_meta": [
+            "Deleted state is softer and less badge-like.",
+            "Reply context is quieter and more editorial."
+          ],
+          "avatar": [
+            "Avatar size and border/background density reduced slightly."
+          ],
+          "open_composer": [
+            "Footer dock spacing tightened.",
+            "Native composer host wrapper made lighter.",
+            "Native Blogger controls/legal content remain visible."
+          ],
+          "content_robustness": [
+            "Long URLs wrap safely.",
+            "Long unbroken tokens wrap safely.",
+            "Shortcode-like text is treated as plain text and wraps safely.",
+            "Awkward multiline content remains readable without horizontal overflow."
+          ]
+        },
+        "tiny_js_hooks_added": [],
+        "live_smoke": {
+          "status": "PASS",
+          "log": "qa/audit-output/task-p107ab-live-smoke.txt",
+          "fixtures": [
+            {
+              "url": "https://www.pakrpp.com/2026/02/todo.html",
+              "fixtureClass": "panel-read",
+              "commentsOpen": true,
+              "composerKind": "native",
+              "result": "PASS"
+            },
+            {
+              "url": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+              "fixtureClass": "panel-read",
+              "commentsOpen": true,
+              "composerKind": "native",
+              "result": "PASS"
+            },
+            {
+              "url": "https://www.pakrpp.com/2025/10/tes-2.html",
+              "fixtureClass": "panel-read",
+              "commentsOpen": true,
+              "composerKind": "native",
+              "result": "PASS"
+            }
+          ],
+          "compose_lane": {
+            "status": "SKIP",
+            "reason": "open-comment fixtures unset"
+          }
+        },
+        "robustness_proof": {
+          "json": "qa/audit-output/task-p107ab-robustness.json",
+          "screenshot": "qa/audit-output/screenshots/task-p107ab-robustness-two.png",
+          "metrics": {
+            "panelClientWidth": 218,
+            "panelScrollWidth": 218,
+            "listClientWidth": 202,
+            "listScrollWidth": 202,
+            "firstClientWidth": 158,
+            "firstScrollWidth": 158,
+            "secondClientWidth": 136,
+            "secondScrollWidth": 136,
+            "firstWrapped": true,
+            "secondWrapped": true
+          }
+        },
+        "screenshots": {
+          "before": {
+            "zero": "qa/audit-output/screenshots/task-p107ab-before-zero.png",
+            "two": "qa/audit-output/screenshots/task-p107ab-before-two.png",
+            "sixteen": "qa/audit-output/screenshots/task-p107ab-before-sixteen.png"
+          },
+          "after": {
+            "zero": "qa/audit-output/screenshots/task-p107ab-after-zero.png",
+            "two": "qa/audit-output/screenshots/task-p107ab-after-two.png",
+            "sixteen": "qa/audit-output/screenshots/task-p107ab-after-sixteen.png"
+          }
+        },
+        "stability": {
+          "desktop_right_rail_ownership_preserved": true,
+          "desktop_model_layout_owned": true,
+          "mobile_overlay_path_changed": false
+        }
+      },
+      "manifestParseError": "",
+      "manifestFields": {
+        "task": "TASK-P1.07AB",
+        "commit": "6f2c2f5b2af87753ea2aa52245e60537cb7d6daa",
+        "changedFilesCount": 2,
+        "ciUrl": "https://github.com/liquid-modernity/gg/actions/runs/23320510371",
+        "ciStatus": "PASS",
+        "deployUrl": "https://github.com/liquid-modernity/gg/actions/runs/23320537139",
+        "deployStatus": "PASS",
+        "liveSmokeLog": "qa/audit-output/task-p107ab-live-smoke.txt",
+        "liveSmokeStatus": "PASS"
+      },
+      "zipEntries": [],
+      "zipEntryPresence": []
+    }
+  },
+  "enforcement": {
+    "mode": "fail-on-critical",
+    "result": "FAIL",
+    "failed": true
+  },
+  "output": {
+    "mdPath": "/Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/qa/audit-output/task-p107ab-audit-check.md",
+    "jsonPath": "/Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/qa/audit-output/task-p107ab-audit-check.json"
+  }
+}

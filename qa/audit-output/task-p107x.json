@@ -1,0 +1,94 @@
+{
+  "task": "TASK-P1.07X",
+  "commit": "04fa2cb2e6c47ada0e3517f7bcb6842791e4a791",
+  "branch": "main",
+  "workflows": {
+    "ci": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23296237541"
+    },
+    "deployWorkerAssets": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23296273220"
+    }
+  },
+  "liveSmoke": {
+    "status": "pass",
+    "summary": "LIVE SMOKE RESULT: PASS",
+    "logPath": "qa/audit-output/task-p107x-live-smoke.txt"
+  },
+  "filesChanged": [
+    "public/assets/latest/main.css",
+    "public/assets/v/ac33998/main.css"
+  ],
+  "visualSystem": {
+    "floatingRail": [
+      "Right rail shell inset by 10px from the viewport to match the floating sidebar family.",
+      "Shell now uses full border, controlled radius, and light shadow separation rather than edge-glued presentation.",
+      "Sticky head, scrollable body, and sticky footer are unified inside the same floating shell."
+    ],
+    "composerDock": [
+      "Closed footer CTA spacing was tightened so the dock stays slim when idle.",
+      "Open-state native composer host uses calmer containment around #top-ce and #comment-editor without clipping native controls.",
+      "Footer border, backdrop, and radius language now aligns with the rest of the rail family."
+    ],
+    "actionHierarchy": [
+      "Reply remains the primary bottom action and More stays as a quieter top-right utility.",
+      "Timestamp and contextual meta were softened to keep body copy visually primary.",
+      "Nested thread rail and state treatments were reduced to avoid a forum-widget feel."
+    ],
+    "tinyJsHooksAdded": []
+  },
+  "fixtures": [
+    {
+      "url": "https://www.pakrpp.com/2026/02/todo.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/tes-2.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.zero"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.thread"
+    }
+  ],
+  "screenshots": [
+    "qa/audit-output/screenshots/task-p107x-before-zero.png",
+    "qa/audit-output/screenshots/task-p107x-before-two.png",
+    "qa/audit-output/screenshots/task-p107x-before-sixteen.png",
+    "qa/audit-output/screenshots/task-p107x-after-zero.png",
+    "qa/audit-output/screenshots/task-p107x-after-two.png",
+    "qa/audit-output/screenshots/task-p107x-after-sixteen.png"
+  ],
+  "acceptedNativeBloggerLimitations": [
+    "The rail remains a visual/runtime enhancement over Blogger-native comments markup.",
+    "Open-comment compose fixtures remain unset, so compose-lane proof is explicit skip.",
+    "Native Blogger iframe internals remain treated as cross-origin UI; only the host shell and dock are minimized."
+  ]
+}

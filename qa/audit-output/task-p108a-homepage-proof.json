@@ -1,0 +1,164 @@
+{
+  "task": "task-p108a",
+  "url": "https://www.pakrpp.com/",
+  "before": {
+    "bodySurface": "listing",
+    "mainSurface": "home",
+    "homeState": "blog",
+    "loadedScripts": [
+      "https://www.pakrpp.com/assets/v/ac33998/main.js",
+      "https://www.pakrpp.com/assets/v/ac33998/core.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.core.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.listing.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.mixed.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/pwa.js",
+      "https://www.pakrpp.com/assets/v/ac33998/boot.js"
+    ],
+    "sections": [
+      {
+        "id": "gg-mixed-featuredstrip",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-newsish-1",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-youtubeish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-shortish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-newsish-2",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-podcastish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-bookish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      }
+    ]
+  },
+  "after": {
+    "bodySurface": "listing",
+    "mainSurface": "home",
+    "homeState": "blog",
+    "loadedScripts": [
+      "https://www.pakrpp.com/assets/v/ac33998/main.js",
+      "https://www.pakrpp.com/assets/v/ac33998/core.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.core.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.listing.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/ui.bucket.mixed.js",
+      "https://www.pakrpp.com/assets/v/ac33998/modules/pwa.js",
+      "https://www.pakrpp.com/assets/v/ac33998/boot.js"
+    ],
+    "sections": [
+      {
+        "id": "gg-mixed-featuredstrip",
+        "exists": true,
+        "visible": true,
+        "hidden": false,
+        "loaded": "1",
+        "renderCount": "5",
+        "height": 538
+      },
+      {
+        "id": "gg-mixed-newsish-1",
+        "exists": true,
+        "visible": true,
+        "hidden": false,
+        "loaded": "1",
+        "renderCount": "9",
+        "height": 352
+      },
+      {
+        "id": "gg-mixed-youtubeish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-shortish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-newsish-2",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-podcastish",
+        "exists": true,
+        "visible": false,
+        "hidden": true,
+        "loaded": "",
+        "renderCount": "",
+        "height": 0
+      },
+      {
+        "id": "gg-mixed-bookish",
+        "exists": true,
+        "visible": true,
+        "hidden": false,
+        "loaded": "1",
+        "renderCount": "4",
+        "height": 458
+      }
+    ]
+  }
+}

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  gaga-dry-run:
+  gaga-preflight-and-dry-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,27 +28,19 @@ jobs:
       - name: Build Blogger publish artifact
         run: npm run gaga:template:pack
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Template fingerprint contract
-        run: node qa/template-fingerprint.mjs --check
-
-      - name: Install Wrangler CLI (pinned)
-        run: npm install --no-save wrangler@4.61.1
-
       - name: CI scope truth
         run: |
-          echo "CI scope: Worker deployability checks only (Wrangler dry-run)."
+          echo "CI scope: lightweight preflight + Worker deployability checks."
           echo "CI does not publish Blogger template/theme."
           {
             echo "### CI Scope Truth"
-            echo "- This CI validates Worker syntax + Wrangler dry-run."
+            echo "- This CI runs gaga preflight (worker syntax + template fingerprint contract)."
+            echo "- This CI runs Wrangler dry-run via npm run gaga:cf:dry."
             echo "- This CI does **not** publish Blogger template/theme."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Worker syntax check
-        run: node --check src/worker.js
+      - name: Lightweight preflight
+        run: npm run gaga:preflight
 
       - name: Cloudflare deploy dry run
-        run: npm run gaga:dry
+        run: npm run gaga:cf:dry

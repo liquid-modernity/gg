@@ -1,0 +1,128 @@
+{
+  "task": "TASK-P1.07Z",
+  "commits": [
+    "ad6774586e9fa6a4be7ff51a94098572b74b19cf",
+    "5747a99dfbe4ee2617f4b23cc5960a114644e2a0"
+  ],
+  "branch": "main",
+  "workflows": {
+    "ci": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23314857513"
+    },
+    "deployWorkerAssets": {
+      "status": "pass",
+      "runUrl": "https://github.com/liquid-modernity/gg/actions/runs/23314892913"
+    }
+  },
+  "liveSmoke": {
+    "status": "pass",
+    "summary": "LIVE SMOKE RESULT: PASS",
+    "logPath": "qa/audit-output/task-p107z-live-smoke.txt"
+  },
+  "filesChanged": [
+    "public/assets/latest/main.css",
+    "public/assets/v/ac33998/main.css",
+    "public/assets/latest/modules/ui.bucket.core.js",
+    "public/assets/v/ac33998/modules/ui.bucket.core.js",
+    ".github/workflows/deploy.yml"
+  ],
+  "refinement": {
+    "stickyStabilization": [
+      "Older desktop fixed ownership and newer sticky layout-bound ownership were fighting in the cascade.",
+      "Desktop rail now uses one sticky model inside the sidebar column, while narrow layouts keep the explicit overlay path only in the mobile media query.",
+      "Internal sticky head/footer behavior remained intact."
+    ],
+    "inlineMetaRow": [
+      "Author and relative timestamp now share one inline row where width allows.",
+      "Author remains primary; timestamp is quieter and secondary.",
+      "Wrapping remains allowed as a safe fallback."
+    ],
+    "utilityMenuSizing": [
+      "Utility menu width was increased slightly so Copy link and Delete comment stay on one line.",
+      "Menu buttons remain compact and calm rather than dialog-like."
+    ],
+    "popoverCollision": [
+      "Runtime now measures available space inside the comments panel and flips the utility menu downward when the sticky header would clip upward placement."
+    ],
+    "nestedIndent": [
+      "Nested replies use slightly less horizontal space and a softer thread rail."
+    ],
+    "tinyJsHooksAdded": [
+      "Menu placement measurement with data-gg-placement=up/down for the comment utility popover."
+    ]
+  },
+  "popoverProof": {
+    "fixture": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+    "placement": "down",
+    "popoverTop": 811,
+    "popoverBottom": 865,
+    "headerBottom": 781,
+    "buttons": [
+      {
+        "text": "Copy link",
+        "clientHeight": 22,
+        "scrollHeight": 22,
+        "whiteSpace": "nowrap"
+      },
+      {
+        "text": "Delete comment",
+        "clientHeight": 22,
+        "scrollHeight": 22,
+        "whiteSpace": "nowrap"
+      }
+    ]
+  },
+  "fixtures": [
+    {
+      "url": "https://www.pakrpp.com/2026/02/todo.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/in-night-we-stand-in-day-we-fight.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "https://www.pakrpp.com/2025/10/tes-2.html",
+      "fixtureClass": "panel-read",
+      "commentsOpen": true,
+      "composerKind": "native",
+      "result": "pass"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.zero"
+    },
+    {
+      "url": "",
+      "fixtureClass": "composer-open",
+      "commentsOpen": null,
+      "composerKind": null,
+      "result": "skip: fixture unset",
+      "slot": "compose.thread"
+    }
+  ],
+  "screenshots": [
+    "qa/audit-output/screenshots/task-p107z-before-zero.png",
+    "qa/audit-output/screenshots/task-p107z-before-two.png",
+    "qa/audit-output/screenshots/task-p107z-before-sixteen.png",
+    "qa/audit-output/screenshots/task-p107z-after-zero.png",
+    "qa/audit-output/screenshots/task-p107z-after-two.png",
+    "qa/audit-output/screenshots/task-p107z-after-sixteen.png"
+  ],
+  "acceptedNativeBloggerLimitations": [
+    "The rail remains a visual/runtime enhancement over Blogger-native comments markup.",
+    "Open-comment compose fixtures remain unset, so compose-lane proof is explicit skip.",
+    "Native Blogger iframe internals remain treated as cross-origin UI; only the host shell, dock, and runtime-owned rail behavior were refined."
+  ]
+}
