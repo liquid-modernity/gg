@@ -1,0 +1,128 @@
+TASK: TASK-P0.RELEASE-PIPELINE.CLOSURE.10X
+DATE_UTC: 2026-03-26T10:39:56Z
+
+=== REQUIRED CLOSURE FILE EXISTENCE ===
+EXISTS PASS: tools/gaga-release.mjs
+EXISTS PASS: qa/live-smoke-worker.sh
+EXISTS PASS: qa/worker-syntax-check.mjs
+EXISTS PASS: qa/template-release-playbook.md
+EXISTS PASS: docs/github-actions-cloudflare.md
+
+=== 1) npm run gaga:preflight ===
+$ npm run gaga:preflight
+
+> gaga:preflight
+> node tools/gaga-release.mjs preflight
+
+Running lightweight preflight checks...
+WORKER SYNTAX OK: src/worker.js
+OK: c0e114fc7a0a
+Preflight passed.
+RESULT: PASS (0)
+
+=== 2) node qa/worker-syntax-check.mjs ===
+$ node qa/worker-syntax-check.mjs
+WORKER SYNTAX OK: src/worker.js
+RESULT: PASS (0)
+
+=== 3) node qa/template-fingerprint.mjs --check ===
+$ node qa/template-fingerprint.mjs --check
+OK: c0e114fc7a0a
+RESULT: PASS (0)
+
+=== 4) npm run gaga -- --dry-run ===
+$ npm run gaga -- --dry-run
+
+> gaga
+> node tools/gaga-release.mjs ship --dry-run
+
+Running lightweight preflight checks...
+WORKER SYNTAX OK: src/worker.js
+OK: c0e114fc7a0a
+Preflight passed.
+Dry run complete. Changes are ready to ship but were not committed/pushed.
+Pending changes:
+M package.json
+ M qa/package-audit.mjs
+ M task-deploy.md
+?? qa/audit-output/task-p0-release-pipeline-closure-10x-verify.txt
+RESULT: PASS (0)
+
+=== 5) npm run gaga:verify-worker ===
+$ npm run gaga:verify-worker
+
+> gaga:verify-worker
+> bash qa/live-smoke-worker.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
+
+SMOKE-WORKER lane=WORKER_SCOPE base=https://www.pakrpp.com
+SMOKE-WORKER expected-worker-version=ac33998
+SMOKE-WORKER classify=WORKER_SCOPE check=worker_ping
+SMOKE-WORKER classify=WORKER_SCOPE check=edge_headers_on_root
+SMOKE-WORKER classify=WORKER_SCOPE check=versioned_assets
+SMOKE-WORKER classify=WORKER_SCOPE check=worker_static_endpoints
+SMOKE-WORKER ping status=200 worker=proxy version=ac33998
+SMOKE-WORKER root status=200 version=ac33998
+SMOKE-WORKER assets release=ac33998 boot=200 app=200
+SMOKE-WORKER endpoints route_test=200 flags=200
+SMOKE-WORKER state=worker_scope_passed note=Worker-scope hard gate passed. failures=0 warnings=0
+LIVE SMOKE WORKER RESULT: PASS
+RESULT: PASS (0)
+
+=== 6) npm run gaga:verify-template ===
+$ npm run gaga:verify-template
+
+> gaga:verify-template
+> GG_TEMPLATE_DRIFT_MODE=fail GG_COMMENTS_OWNER_BROWSER_MODE=fail GG_HOMEPAGE_MIXED_BROWSER_MODE=fail bash qa/live-smoke.sh "${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
+
+SMOKE scope: public-domain contract check only.
+SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blogger template publish.
+SMOKE scope: template drift mode=fail changed_in_rev=0.
+SMOKE scope: worker rollout mode=off expected_version=unset check_path=/__gg_worker_ping attempts=12 backoff=5s.
+SMOKE comments-fixtures panel.zero=/2026/02/todo.html panel.two=/2025/10/in-night-we-stand-in-day-we-fight.html panel.sixteen=/2025/10/tes-2.html compose.zero=unset compose.thread=unset
+SMOKE lane=FULL_PUBLIC_TEMPLATE_SENSITIVE
+SMOKE classify=WORKER_SCOPE check=worker_rollout_version_headers
+SMOKE classify=TEMPLATE_SCOPE check=template_fingerprint_parity
+SMOKE classify=TEMPLATE_SCOPE check=surface_routes_listing_landing_detail
+SMOKE classify=MIXED_SCOPE check=homepage_mixed_runtime_contract
+SMOKE classify=TEMPLATE_SCOPE check=dock_truth_listing_preview_comments_owner
+SMOKE classify=WORKER_SCOPE run=check_worker_rollout
+SMOKE rollout-check skipped mode=off expected=unset
+SMOKE classify=TEMPLATE_SCOPE run=check_template_fingerprint_drift
+SMOKE template-fingerprint repo_expected=c0e114fc7a0a repo_embedded=c0e114fc7a0a live_observed=c0e114fc7a0a mode=fail changed_in_rev=0
+SMOKE template-fingerprint parity=match (c0e114fc7a0a)
+SMOKE classify=TEMPLATE_SCOPE run=check_surface_routes
+SMOKE path=/ final=https://www.pakrpp.com/ status=200 redirects=0 canonical=https://www.pakrpp.com/ og=https://www.pakrpp.com/ surface=listing page=listing home_state=blog edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE path=/landing final=https://www.pakrpp.com/landing status=200 redirects=0 canonical=https://www.pakrpp.com/landing og=https://www.pakrpp.com/landing surface=landing page=home home_state=landing edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE path=/blog final=https://www.pakrpp.com/ status=200 redirects=1 canonical=https://www.pakrpp.com/ og=https://www.pakrpp.com/ surface=listing page=listing home_state=blog edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE path=/landing/ final=https://www.pakrpp.com/landing status=200 redirects=1 canonical=https://www.pakrpp.com/landing og=https://www.pakrpp.com/landing surface=landing page=home home_state=landing edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE path=/?view=blog final=https://www.pakrpp.com/ status=200 redirects=1 canonical=https://www.pakrpp.com/ og=https://www.pakrpp.com/ surface=listing page=listing home_state=blog edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE path=/?view=landing final=https://www.pakrpp.com/landing status=200 redirects=1 canonical=https://www.pakrpp.com/landing og=https://www.pakrpp.com/landing surface=landing page=home home_state=landing edited_by_pakrpp=no title=PakRPP desc=PakRPP
+SMOKE classify=MIXED_SCOPE run=check_homepage_mixed_contract
+FAIL: homepage mixed browser dependency unavailable (playwright-module-unavailable:Cannot find module 'playwright' Require stack: - /Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/[stdin])
+SMOKE classify=TEMPLATE_SCOPE run=check_dock_truth
+SMOKE dock home=https://www.pakrpp.com/landing blog=https://www.pakrpp.com/ contact=https://www.pakrpp.com/landing#gg-landing-hero-5
+SMOKE classify=TEMPLATE_SCOPE run=check_discovered_detail_paths
+SMOKE discovered post=/2026/02/todo.html
+SMOKE path=/2026/02/todo.html final=https://www.pakrpp.com/2026/02/todo.html status=200 redirects=0 canonical=https://www.pakrpp.com/2026/02/todo.html og=https://www.pakrpp.com/2026/02/todo.html surface=post page=post home_state=blog edited_by_pakrpp=no title=todo desc=
+SMOKE /2026/02/todo.html postmeta nodes=2;author=pakrpp;contributors=masrpp,kangrpp;tags=logi,win,marlboro;labels=bookish,shortish;read_min=none;has_custom=1
+SMOKE discovered page=/p/library.html
+SMOKE path=/p/library.html final=https://www.pakrpp.com/p/library.html status=200 redirects=0 canonical=https://www.pakrpp.com/p/library.html og=https://www.pakrpp.com/p/library.html surface=page page=page home_state=blog edited_by_pakrpp=no title=Library desc=PakRPP
+SMOKE /p/library.html postmeta nodes=1;author=Pak RPP;contributors=none;tags=none;labels=none;read_min=none;has_custom=0
+SMOKE listing-card author=Pak RPP contributors= tags= labels= snippet_len=0 toc_len=0
+SMOKE classify=TEMPLATE_SCOPE run=check_listing_preview_runtime_contract
+SMOKE listing-preview-contract seed_disabled=1;hover_open=1;focus_open=1;click_open=1;icon_sync=1;open_sets_icons=1;reset_clears_icons=1;snippet_extractor=1;heading_postmeta=1;heading_snippet_fallback=1;heading_meta_payload=1;card_meta_split=1;payload_guard=1;hydration_fetch=1;meta_cache=1;apply_snippet=1;apply_tags=1;apply_contributors=1;contributors_filter=1;toc_hydration_gate=1 asset=v/ac33998/modules/ui.bucket.core.js
+SMOKE classify=TEMPLATE_SCOPE run=check_comments_owner_contract
+WARN: comments-panel browser dependency unavailable case=zero fixtureClass=panel-read (playwright-module-unavailable:Cannot find module 'playwright' Require stack: - /Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/[stdin])
+WARN: comments-panel browser dependency unavailable case=two fixtureClass=panel-read (playwright-module-unavailable:Cannot find module 'playwright' Require stack: - /Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/[stdin])
+WARN: comments-panel browser dependency unavailable case=sixteen fixtureClass=panel-read (playwright-module-unavailable:Cannot find module 'playwright' Require stack: - /Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/[stdin])
+SMOKE comments-compose fixture=zero state=skip reason=unset
+SMOKE comments-compose fixture=thread state=skip reason=unset
+SMOKE comments-compose lane=skip reason=open-fixtures-unconfigured
+SMOKE worker-state=worker_assets_deployed_and_verified note=Worker rollout check skipped (mode=off, expected=unset). expected=unset observed=unknown final=unknown
+SMOKE template-state=blogger_template_parity_verified note=Blogger template parity verified.
+SMOKE contract-state=contract_failed failures=1 warnings=3
+SMOKE release-state=contract_failed note=Public contract checks failed.
+LIVE SMOKE RESULT: FAILED (1)
+RESULT: FAIL (1)
+
+VERIFY_LOG_DONE: qa/audit-output/task-p0-release-pipeline-closure-10x-verify.txt

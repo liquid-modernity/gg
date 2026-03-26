@@ -548,3 +548,177 @@ This closure task is successful only if the repo stops lying:
 - strict mode is actually strict
 - docs referenced by workflow exist
 - the new release contract is runnable, not just described
+
+# TASK-P0.AUDIT-EVIDENCE.CLOSURE.10X
+GG AUDIT EVIDENCE CLOSURE — PRODUCE THE CORRECT PROOF PACK FOR RELEASE PIPELINE CLOSURE
+
+MODE
+This is not another pipeline redesign task.
+Do not touch unrelated UI, template, routing, or feature work.
+Do not rename the release model again.
+Do not reopen architecture debates.
+Your only job is to produce truthful, auditable evidence for the already-implemented closure work.
+
+PROBLEM TO SOLVE
+The closure implementation may exist, but the audit evidence is wrong.
+The current audit ZIP packaged the wrong task manifest (`TASK-P1.08C`) and did not prove the actual closure artifacts.
+That makes the audit unusable.
+
+MANDATE
+Produce a correct, self-contained audit pack for:
+`TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+
+The new audit pack must prove, not merely claim, that the closure task exists and is runnable.
+
+NON-NEGOTIABLE OUTCOME
+After this task:
+1. There is a dedicated closure audit manifest for `TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`.
+2. The audit ZIP includes the actual closure files.
+3. The audit pack is generated from the closure manifest, not from some older task.
+4. The audit report shows exact PASS/FAIL evidence for the closure contract.
+5. If commit/push to `main` really happened, the output must state the exact commit and branch truthfully.
+
+DO NOT
+- do not modify release architecture again
+- do not create a new task family
+- do not package the “latest available manifest” blindly
+- do not claim success if the ZIP contents do not match the closure task
+- do not hide missing files behind “environment issue” language
+
+IMPLEMENTATION ORDER
+
+PHASE 1 — CREATE A DEDICATED CLOSURE AUDIT MANIFEST
+Create a new manifest file under `qa/audit-output/` specifically for:
+`TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+
+Suggested filename:
+`qa/audit-output/task-p0-release-pipeline-closure-10x.json`
+
+The manifest must identify the correct task id and must list the exact files that prove the closure work.
+
+At minimum, the manifest must include these files if they truly exist:
+- `package.json`
+- `.github/workflows/deploy.yml`
+- `qa/live-smoke.sh`
+- `qa/worker-syntax-check.mjs`
+- `tools/gaga-release.mjs`
+- `qa/live-smoke-worker.sh`
+- `qa/template-release-playbook.md`
+- `docs/github-actions-cloudflare.md`
+
+If any of these files do not exist, do not fake the manifest.
+Fix that first or fail honestly.
+
+PHASE 2 — FIX AUDIT PACK SELECTION LOGIC
+Audit the packer logic in `qa/package-audit.mjs`.
+
+Current behavior is unacceptable if it silently packages the wrong task manifest.
+Change it so that one of these must be true:
+A. it requires an explicit task id / manifest path for packing, or
+B. it deterministically prefers the closure manifest when that task is requested, or
+C. it hard-fails if multiple unrelated manifests exist and no explicit task is provided.
+
+Hard rule:
+It must become impossible for `TASK-P0.RELEASE-PIPELINE.CLOSURE.10X` evidence packing to silently export `TASK-P1.08C` again.
+
+PHASE 3 — ADD AN EXPLICIT AUDIT PACK ENTRYPOINT
+Create or update a script so the closure audit can be packed explicitly and repeatably.
+
+Preferred result:
+- `npm run gaga:audit:pack -- TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+or
+- `node qa/package-audit.mjs TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+
+The exact interface may vary, but it must support explicit closure-task packing.
+Do not rely on “latest manifest wins”.
+
+PHASE 4 — VERIFY FILE EXISTENCE BEFORE PACKING
+Before generating the ZIP, verify that the closure proof files actually exist in the working tree.
+
+At minimum, verify existence of:
+- `tools/gaga-release.mjs`
+- `qa/live-smoke-worker.sh`
+- `qa/worker-syntax-check.mjs`
+- `qa/template-release-playbook.md`
+- `docs/github-actions-cloudflare.md`
+
+If any are missing, fail before packing.
+Do not generate a misleading ZIP.
+
+PHASE 5 — RUN THE CLOSURE VERIFY SET
+Run and capture evidence for these commands, with truthful PASS/FAIL:
+1. `npm run gaga:preflight`
+2. `node qa/worker-syntax-check.mjs`
+3. `node qa/template-fingerprint.mjs --check`
+4. `npm run gaga -- --dry-run` if supported, otherwise explain and use the safe equivalent
+5. `npm run gaga:verify-worker`
+6. `npm run gaga:verify-template`
+
+Important:
+If environment limitations cause a command to fail, record the failure honestly.
+But the audit pack must still prove that the correct entrypoints and files exist.
+Do not confuse “environment runtime failure” with “file missing”.
+
+PHASE 6 — PROVE GIT STATE TRUTHFULLY
+Capture and include:
+- current branch
+- current HEAD commit
+- whether working tree is clean or dirty
+- whether the closure files are tracked by git
+
+At minimum gather evidence with commands equivalent to:
+- `git branch --show-current`
+- `git rev-parse HEAD`
+- `git status --short`
+- `git ls-files` for the closure artifact paths
+
+If the claim is that closure was pushed to `main`, show the exact commit hash in the report.
+Do not claim public GitHub visibility unless it is actually confirmed by the repo state you have.
+
+PHASE 7 — GENERATE THE CORRECT ZIP
+Produce a new ZIP whose manifest and contents are explicitly tied to:
+`TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+
+The ZIP must include:
+- the closure manifest
+- the changed closure files
+- the verify report/evidence
+- no misleading primary manifest for unrelated tasks
+
+The ZIP filename should make the task obvious.
+Suggested:
+`dist/gg-audit-task-p0-release-pipeline-closure-10x.zip`
+
+PHASE 8 — OUTPUT A TRUTHFUL IMPLEMENTATION REPORT
+Return the implementation report exactly in this structure:
+
+1. Objective
+2. Why the previous audit pack was invalid
+3. Files added or changed
+4. How audit pack selection was fixed
+5. Closure proof files included in the new ZIP
+6. Verify evidence with PASS/FAIL
+7. Git state evidence
+8. ZIP output path
+9. Residual limitations
+10. Final audit command to reproduce the pack
+
+REQUIRED ACCEPTANCE CRITERIA
+This task is successful only if all of the following are true:
+1. A dedicated manifest exists for `TASK-P0.RELEASE-PIPELINE.CLOSURE.10X`
+2. Audit packing no longer silently selects an unrelated task
+3. The generated ZIP contains the actual closure proof files
+4. The report includes truthful PASS/FAIL results for closure verification commands
+5. The report includes truthful git branch and commit evidence
+6. No unrelated task manifest is presented as the primary proof for closure
+
+HARD RULES
+- no fake “AUDIT PACK OK” if the wrong task is packed
+- no fake completion if required proof files are missing
+- no architecture drift
+- no widening into unrelated code
+- no hiding behind generic environment excuses when the real issue is wrong evidence selection
+
+SUCCESS CONDITION
+The repo stops lying about evidence.
+The closure task is proven with the correct manifest, the correct files, and the correct ZIP.

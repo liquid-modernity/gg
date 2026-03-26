@@ -5,9 +5,10 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } fr
 import path from "node:path";
 
 const USAGE = `Usage:
-  npm run gaga:audit:pack
   npm run gaga:audit:pack -- <task-id>
   npm run gaga:audit:pack -- <task-id> --zip dist/gg-audit.zip
+  node qa/package-audit.mjs <task-id>
+  node qa/package-audit.mjs <task-id> --zip dist/gg-audit.zip
   npm run gaga:audit:pack -- --latest
 
 Requirements:
@@ -108,16 +109,16 @@ function parseArgs(argv) {
     taskId = arg.trim();
   }
 
-  if (!taskId) {
-    if (!latest) {
-      taskId = detectLatestTaskId();
-      console.log(`INFO: No task id provided, using latest manifest task '${taskId}'.`);
-    } else {
-      taskId = detectLatestTaskId();
-      console.log(`INFO: Using latest manifest task '${taskId}'.`);
-    }
+  if (!taskId && !latest) {
+    fail(
+      `Task id is required. Refusing implicit latest-manifest packing.\n\n${USAGE}`
+    );
   }
-  return { taskId, zipPath };
+  if (!taskId && latest) {
+    taskId = detectLatestTaskId();
+    console.log(`INFO: Using latest manifest task '${taskId}' (--latest explicit).`);
+  }
+  return { taskId, zipPath, latest };
 }
 
 function normalizeEntries(entries) {
@@ -151,9 +152,77 @@ function listZipEntries(zipPath) {
     .sort();
 }
 
+function collectPackableManifests() {
+  const auditDir = path.resolve("qa/audit-output");
+  if (!existsSync(auditDir)) return [];
+
+  const names = readdirSync(auditDir).filter((name) => name.endsWith(".json"));
+  const out = [];
+  for (const name of names) {
+    const jsonPath = path.join(auditDir, name);
+    const st = statSync(jsonPath, { throwIfNoEntry: false });
+    if (!st || !st.isFile()) continue;
+
+    const manifest = parseManifestFile(jsonPath);
+    if (!isPackableManifestCandidate(manifest)) continue;
+
+    const fileTaskId = name.replace(/\.json$/i, "").trim();
+    const manifestTask = String(manifest.task || "").trim();
+    if (!fileTaskId || !manifestTask) continue;
+
+    out.push({
+      fileTaskId,
+      manifestTask,
+      jsonPath,
+    });
+  }
+  return out;
+}
+
+function resolveManifestPath(taskArg) {
+  const raw = String(taskArg || "").trim();
+  if (!raw) fail("Task id cannot be empty.");
+
+  const directCandidates = [
+    path.resolve(raw),
+    path.resolve(`${raw}.json`),
+    path.resolve("qa/audit-output", raw),
+    path.resolve("qa/audit-output", `${raw}.json`),
+  ];
+
+  for (const candidate of directCandidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  const token = canonicalTaskToken(raw);
+  const matches = collectPackableManifests().filter((item) => {
+    return (
+      canonicalTaskToken(item.fileTaskId) === token ||
+      canonicalTaskToken(item.manifestTask) === token
+    );
+  });
+
+  if (matches.length === 1) {
+    return matches[0].jsonPath;
+  }
+  if (matches.length > 1) {
+    fail(
+      `Ambiguous task id '${raw}'. Multiple manifests match: ${matches
+        .map((m) => path.relative(process.cwd(), m.jsonPath))
+        .join(", ")}`
+    );
+  }
+
+  fail(
+    `No manifest found for '${raw}'. Use explicit task id, e.g. TASK-P0.RELEASE-PIPELINE.CLOSURE.10X.`
+  );
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const taskJsonPath = path.resolve(`qa/audit-output/${args.taskId}.json`);
+  const taskJsonPath = resolveManifestPath(args.taskId);
   if (!existsSync(taskJsonPath)) {
     fail(`Missing task manifest JSON: ${taskJsonPath}`);
   }
@@ -169,7 +238,9 @@ function main() {
   if (!manifestTask) {
     fail(`Task manifest '${taskJsonPath}' is missing the 'task' field`);
   }
-  if (canonicalTaskToken(manifestTask) !== canonicalTaskToken(args.taskId)) {
+  const requestedToken = canonicalTaskToken(args.taskId);
+  const manifestFileToken = canonicalTaskToken(path.basename(taskJsonPath, ".json"));
+  if (requestedToken !== canonicalTaskToken(manifestTask) && requestedToken !== manifestFileToken) {
     fail(
       `Task manifest '${taskJsonPath}' mismatch: requested '${args.taskId}', saw '${manifestTask}'`
     );
@@ -236,7 +307,8 @@ function main() {
   }
 
   console.log(`AUDIT PACK OK`);
-  console.log(`- task: ${args.taskId}`);
+  console.log(`- task: ${manifestTask}`);
+  console.log(`- manifest: ${path.relative(process.cwd(), taskJsonPath)}`);
   console.log(`- zip: ${args.zipPath}`);
   console.log(`- entries: ${expectedEntries.length}`);
   for (const entry of expectedEntries) {

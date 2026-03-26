@@ -9,7 +9,7 @@
     "gaga:cf:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
     "gaga:audit": "node qa/gaga-audit.mjs",
     "gaga:verify-copy": "node qa/verify-copy-registry.mjs",
-    "gaga:audit:pack": "node qa/package-audit.mjs",
+    "gaga:audit:pack": "node qa/package-audit.mjs TASK-P0.RELEASE-PIPELINE.CLOSURE.10X --zip dist/gg-audit-task-p0-release-pipeline-closure-10x.zip",
     "gaga:template:pack": "bash qa/template-pack.sh",
     "gaga:template:proof": "bash qa/template-proof.sh",
     "gaga:template:status": "bash qa/template-status.sh",
