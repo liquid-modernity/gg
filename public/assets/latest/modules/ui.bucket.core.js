@@ -62,6 +62,71 @@ if (path === '/blog') return true;
 if (path === '/' && view !== 'landing') return true;
 return false;
 };
+GG.core.detectSpecialKind = GG.core.detectSpecialKind || function(pathname){
+var path = String(pathname || '').toLowerCase();
+if (!path) return '';
+if (path.indexOf('/p/tags.html') === 0) return 'tags';
+if (path.indexOf('/p/sitemap.html') === 0) return 'sitemap';
+if (path.indexOf('/p/library.html') === 0) return 'library';
+if (path.indexOf('/p/store.html') === 0) return 'store';
+if (path.indexOf('/p/portfolio.html') === 0) return 'portfolio';
+if (path.indexOf('/p/author.html') === 0) return 'author';
+return '';
+};
+GG.core.isOfflinePath = GG.core.isOfflinePath || function(pathname, view){
+var path = (pathname || '').replace(/\/+$/, '') || '/';
+var mode = String(view || '').toLowerCase();
+return path === '/offline' || mode === 'offline';
+};
+GG.core.inferRoute = GG.core.inferRoute || function(url, fallback){
+var out = { surface: 'post', page: 'post', view: 'post', special: '' };
+if (fallback && typeof fallback === 'object') {
+  if (fallback.surface) out.surface = String(fallback.surface);
+  if (fallback.page) out.page = String(fallback.page);
+  if (fallback.view) out.view = String(fallback.view);
+  if (fallback.special) out.special = String(fallback.special);
+}
+try {
+  var u = new URL(url || (w.location ? w.location.href : '/'), w.location ? w.location.href : undefined);
+  var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+  var viewParam = (u.searchParams.get('view') || '').toLowerCase();
+  var isBlogHome = (GG.core && GG.core.isBlogHomePath)
+    ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || (w.location ? w.location.hostname : ''))
+    : (path === '/blog' || (path === '/' && viewParam !== 'landing'));
+  var isOffline = (GG.core && GG.core.isOfflinePath) ? GG.core.isOfflinePath(path, viewParam) : (path === '/offline');
+  var special = (GG.core && GG.core.detectSpecialKind) ? GG.core.detectSpecialKind(path) : '';
+  if (isOffline) out.surface = 'offline';
+  else if (path === '/404' || path === '/404.html') out.surface = 'error';
+  else if (isBlogHome) out.surface = 'listing';
+  else if (path === '/landing' || (path === '/' && viewParam === 'landing')) out.surface = 'landing';
+  else if (path.indexOf('/search') === 0) out.surface = 'listing';
+  else if (special) out.surface = 'special';
+  else if (path.indexOf('/p/') === 0) out.surface = 'page';
+  else if (/^\/\d{4}\/\d{2}\//.test(path)) out.surface = 'post';
+  out.special = special || '';
+  if (out.surface === 'landing') out.page = 'home';
+  else if (out.surface === 'listing') out.page = 'listing';
+  else if (out.surface === 'special') out.page = 'special';
+  else if (out.surface === 'error') out.page = 'error';
+  else if (out.surface === 'offline') out.page = 'offline';
+  else if (out.surface === 'page') out.page = 'page';
+  else out.page = 'post';
+  if (out.surface === 'error') out.view = 'error';
+  else if (out.surface === 'offline') out.view = 'offline';
+  else if (out.surface === 'landing') out.view = 'home';
+  else if (out.surface === 'special') out.view = 'special';
+  else if (out.surface === 'page') out.view = 'page';
+  else if (out.surface === 'post') out.view = 'post';
+  else if (out.surface === 'listing') {
+    if (isBlogHome) out.view = 'listing';
+    else if (path.indexOf('/search/label/') === 0 || (path.indexOf('/search') === 0 && u.searchParams.get('label'))) out.view = 'label';
+    else if (path.indexOf('/search') === 0 && (u.searchParams.get('updated-max') || u.searchParams.get('updated-min'))) out.view = 'archive';
+    else if (path.indexOf('/search') === 0) out.view = 'search';
+    else out.view = 'listing';
+  }
+} catch (_) {}
+return out;
+};
 GG.core.normalizeBlogAlias = GG.core.normalizeBlogAlias || function(){
 try {
   var loc = w.location;
@@ -428,32 +493,35 @@ return { apply: apply, findTarget: findTarget, rehydrateComments: rehydrateComme
 GG.core.surface = GG.core.surface || {};
 GG.core.surface.update = GG.core.surface.update || function(url){
 var body = w.document && w.document.body;
-if (!body) return '';
-if (body.classList) body.classList.remove('gg-is-landing');
-else body.className = body.className.replace(/\bgg-is-landing\b/g, '').trim();
+var main = w.document && w.document.querySelector ? w.document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main') : null;
+if (!body && !main) return '';
 var href = url || w.location.href;
-var surface = 'post';
-try {
-  var u = new URL(href, w.location.href);
-  var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-  var view = (u.searchParams.get('view') || '').toLowerCase();
-  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view !== 'landing'));
-  if (isBlogHome) {
-    surface = 'listing';
-  } else if (path === '/landing') {
-    surface = 'landing';
-  } else if (path.indexOf('/search') !== -1) {
-    surface = 'listing';
-  } else if (path.indexOf('/p/') !== -1) {
-    surface = 'page';
-  } else {
-    surface = 'post';
+var route = (GG.core && GG.core.inferRoute)
+  ? GG.core.inferRoute(href, { surface: 'post', page: 'post', view: 'post', special: '' })
+  : { surface: 'post', page: 'post', view: 'post', special: '' };
+var surface = route.surface || 'post';
+var page = route.page || (surface === 'landing' ? 'home' : surface);
+var view = route.view || (surface === 'landing' ? 'home' : surface);
+var special = route.special || '';
+if (body) {
+  if (body.classList) body.classList.remove('gg-is-landing');
+  else body.className = body.className.replace(/\bgg-is-landing\b/g, '').trim();
+  body.setAttribute('data-gg-surface', surface);
+  body.setAttribute('data-gg-page', page);
+  body.setAttribute('data-gg-view', view);
+  if (special) body.setAttribute('data-gg-special', special);
+  else body.removeAttribute('data-gg-special');
+  if (surface === 'landing') {
+    if (body.classList) body.classList.add('gg-is-landing');
+    else if (!/\bgg-is-landing\b/.test(body.className)) body.className = (body.className + ' gg-is-landing').trim();
   }
-} catch (_) {}
-body.setAttribute('data-gg-surface', surface);
-if (surface === 'landing') {
-  if (body.classList) body.classList.add('gg-is-landing');
-  else if (!/\bgg-is-landing\b/.test(body.className)) body.className = (body.className + ' gg-is-landing').trim();
+}
+if (main) {
+  main.setAttribute('data-gg-surface', surface);
+  main.setAttribute('data-gg-page', page);
+  main.setAttribute('data-gg-view', view);
+  if (special) main.setAttribute('data-gg-special', special);
+  else main.removeAttribute('data-gg-special');
 }
 if (GG.ui && GG.ui.layout && typeof GG.ui.layout.applySurface === 'function') {
 try { GG.ui.layout.applySurface(surface, null, href); } catch (_) {}
@@ -700,7 +768,7 @@ GG.view = GG.ui.view;
 
 GG.core.routerCtx = GG.core.routerCtx || (function(){
 var cache = null;
-var VIEW_SET = { error:1, home:1, label:1, search:1, archive:1, listing:1, post:1, page:1 };
+var VIEW_SET = { error:1, offline:1, home:1, label:1, search:1, archive:1, listing:1, post:1, page:1, special:1 };
 function low(v){ return String(v || '').toLowerCase().trim(); }
 function attr(el, name){
   if (!el || !el.getAttribute) return '';
@@ -719,18 +787,24 @@ function detectView(main, body, url){
   if (VIEW_SET[view]) return view;
   var surface = attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface');
   if (surface === 'error') return 'error';
+  if (surface === 'offline') return 'offline';
   if (surface === 'landing' || surface === 'home') return 'home';
   if (surface === 'listing' || surface === 'feed') return 'listing';
+  if (surface === 'special') return 'special';
   if (surface === 'post') return 'post';
   if (surface === 'page') return 'page';
   try {
     var u = new URL(url || (w.location ? w.location.href : '/'), w.location ? w.location.href : undefined);
     var path = low(u.pathname || '/');
+    if (path === '/offline') return 'offline';
+    if (path === '/404' || path === '/404.html') return 'error';
     if (path.indexOf('/search/label/') === 0) return 'label';
     if (path.indexOf('/search') === 0) {
       if (u.searchParams.get('label')) return 'label';
+      if (u.searchParams.get('updated-max') || u.searchParams.get('updated-min')) return 'archive';
       return 'search';
     }
+    if (GG.core && GG.core.detectSpecialKind && GG.core.detectSpecialKind(path)) return 'special';
     if (path === '/landing') return 'home';
     if (path === '/' || path === '/blog') return 'listing';
     if (path.indexOf('/p/') === 0) return 'page';
@@ -1022,16 +1096,10 @@ target.appendChild(wrap);
 ui.layout = ui.layout || {};
 ui.layout._inferSurfaceFromUrl = ui.layout._inferSurfaceFromUrl || function(url){
 try {
-  var u = new URL(url || w.location.href, w.location.href);
-  var path = (u.pathname || '').replace(/\/+$/, '') || '/';
-  var view = (u.searchParams.get('view') || '').toLowerCase();
-  var isBlogHome = (GG.core && GG.core.isBlogHomePath) ? GG.core.isBlogHomePath(path, u.search || '', u.hostname || w.location.hostname) : (path === '/blog' || (path === '/' && view !== 'landing'));
-  if (isBlogHome) return 'listing';
-  if (path === '/landing') {
-    return 'landing';
+  if (GG.core && GG.core.inferRoute) {
+    var route = GG.core.inferRoute(url || w.location.href, { surface: 'post' });
+    if (route && route.surface) return route.surface;
   }
-  if (path.indexOf('/search') !== -1) return 'listing';
-  if (path.indexOf('/p/') !== -1) return 'page';
 } catch (_) {}
 return 'post';
 };
