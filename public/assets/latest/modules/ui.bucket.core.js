@@ -9583,7 +9583,13 @@ Library.autoInit = boot;
     if (!root) return;
 
     var toggleBtn   = root.querySelector('[data-gg-lang-toggle]');
-    var menu        = root.querySelector('#gg-lang-switcher-menu');
+    var menuId      = toggleBtn ? toggleBtn.getAttribute('aria-controls') : '';
+    var menu        = null;
+    if (menuId) {
+      try { menu = root.querySelector('#' + menuId); } catch (e) {}
+      if (!menu) menu = doc.getElementById(menuId);
+    }
+    if (!menu) menu = root.querySelector('.gg-lang-switcher__menu');
     var options     = root.querySelectorAll('[data-gg-lang-option]');
     var currentSpan = root.querySelector('[data-gg-lang-current]');
 

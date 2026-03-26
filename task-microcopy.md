@@ -595,3 +595,386 @@ Goal is one coherent microcopy system that is operationally stable, auditable, a
 - commit hash(es),
 - CI run URL/status passes,
 - Deploy run URL/status passes.
+
+# TASK-P1.COPY.CLOSURE.10X — GG MICROCOPY CLOSURE & MARKUP SANITY PATCH
+
+## Status
+This task is a closure task.
+It must run only after the main microcopy migration task has been applied.
+
+Purpose:
+close the remaining copy/markup leaks so the microcopy layer becomes clean enough to stop contaminating the final template-freeze task.
+
+This task is not a new rewrite.
+It is a targeted cleanup and closure patch.
+
+---
+
+## Core objective
+Finish the remaining unresolved microcopy/markup debt that still prevents the GG copy layer from being considered final-grade.
+
+After this task:
+- no invalid `a > button` remains in the migrated GG quick-link/footer twin blocks
+- no duplicate `gg-lang-switcher-menu` risk remains
+- remaining obvious GG-controlled literal copy in panel/editorial/mixed-media utility zones is migrated to registry or intentionally documented
+- icon semantic mismatch in the social block is corrected
+- SVG `<use>` syntax is made consistent in touched zones
+- no leftover old `data-lang-code` remains in touched zones
+- task output becomes clean enough to proceed safely to template final-freeze
+
+---
+
+## What this task includes
+### A. Footer / quick-link / lang-switcher twin-block cleanup
+The duplicated “look at me on” blocks under:
+- `data:view.isSingleItem`
+- `data:view.isMultipleItems`
+
+must be cleaned without breaking Blogger compatibility.
+
+Required:
+1. remove invalid nested interactive pattern:
+   - no `a > button`
+   - no `button > a`
+2. keep the same visual language as the current `gg-lang-switcher`
+3. preserve existing navigation destinations
+4. preserve existing CSS compatibility as much as possible
+5. document list/post twin blocks as controlled sync-pairs if duplication remains
+
+### B. Duplicate ID / switcher cleanup
+Resolve duplicate ID risk for:
+- `gg-lang-switcher-menu`
+
+Allowed options:
+- unique IDs per surface branch, or
+- a safer structurally shared approach if Blogger permits without new fragility
+
+Must also ensure:
+- `aria-controls` points to the correct menu
+- language-switcher still works
+- `data-gg-lang-code` remains the only approved lang option hook in touched zones
+
+### C. Panel/editorial/info microcopy closure
+Migrate remaining obvious GG-controlled literal panel copy to registry in touched scope, including where applicable:
+- `Written by`
+- `Contributors`
+- `DATE`
+- `UPDATED`
+- `READ TIME`
+- `LABEL`
+- `Tags`
+- `Interests`
+- any related visible kicker/headline/helper text in the same panel family
+
+Use the existing copy registry architecture.
+Keep EN literal fallback in XML.
+
+Do not migrate editorial content.
+Only migrate GG-controlled system/panel labels.
+
+### D. Mixed-media microcopy closure
+Migrate remaining obvious visible mixed-media literals still acting as primary source, including where applicable:
+- `FEATURED`
+- `See all`
+- equivalent visible mixed-media section labels in touched scope
+
+This task is not allowed to redesign mixed-media structure.
+It only closes copy ownership in visible mixed-media UI.
+
+### E. Icon semantic cleanup
+Fix the social icon mismatch where:
+- LinkedIn currently points to the Reddit icon reference (`#gg-ic-rd-line`)
+
+Must point LinkedIn to the correct LinkedIn icon symbol if available.
+If missing, document the missing symbol clearly and implement the least risky correct fix.
+
+### F. SVG `<use>` consistency in touched zones
+Standardize touched-zone SVG `<use>` syntax to one Blogger-safe consistent form.
+No mixed pattern.
+No malformed hybrid pattern.
+
+### G. Residual legacy hook cleanup in touched scope
+Remove any remaining old:
+- `data-lang-code`
+
+from touched zones.
+Use only:
+- `data-gg-lang-code`
+
+Do not do speculative large-scale hook rewrites outside touched scope.
+
+---
+
+## What this task explicitly does NOT include
+Do not expand into:
+- route classifier rewrite
+- `/landing` render-path rewrite
+- mixed-media structural redesign
+- schema/SEO overhaul
+- full comment system rewrite
+- major CSS redesign
+- global template freeze
+- full XML architecture cleanup outside closure scope
+
+This is a closure patch, not the final template-freeze task.
+
+---
+
+## Touched files (expected)
+Primary:
+- `index.prod.xml`
+
+Possible secondary only if strictly needed:
+- `public/assets/latest/modules/ui.bucket.core.js`
+- `public/assets/v/ac33998/modules/ui.bucket.core.js`
+
+QA:
+- existing copy verification script if it must be extended
+
+Do not touch CSS unless required to preserve markup compatibility after removing invalid nested interactive markup.
+Prefer structural HTML cleanup over CSS churn.
+
+---
+
+## High-risk constraints
+### 1. Blogger twin-block constraint
+The list/post duplicated quick-link blocks may remain duplicated if reuse is riskier.
+If duplication remains:
+- both blocks must be kept in sync
+- add explicit sync comments
+- no silent copy drift
+- no duplicate IDs
+
+### 2. Visual compatibility
+The quick-link block must stay visually aligned with current language-switcher language.
+Do not redesign the visual system.
+Only remove invalid HTML structure and preserve expected styling hooks.
+
+### 3. Comments safety
+Do not accidentally disturb comments panel or surrounding sidebar structure.
+
+### 4. Mixed-media safety
+Do not break current mixed-media visibility/runtime behavior while migrating copy ownership.
+
+---
+
+## Exact required fixes
+
+### FIX 1 — remove invalid nested interactive markup
+In both list and post footer/quick-link blocks:
+- replace `a > button` patterns with valid markup
+- navigation items must become either:
+  - pure `<a>` styled like quick-links, or
+  - another valid pattern that preserves semantics and style
+- language switcher remains a true interactive control (`button` + menu), not a navigation link
+
+Acceptance:
+- no nested interactive invalid markup remains in the touched blocks
+
+### FIX 2 — remove duplicate `gg-lang-switcher-menu`
+Either:
+- `gg-lang-switcher-menu--list`
+- `gg-lang-switcher-menu--post`
+
+or an equivalent safe naming pattern
+
+Then update:
+- `aria-controls`
+- toggle targeting
+- any runtime lookup relying on the old ID
+
+Acceptance:
+- no duplicate ID remains in those twin blocks
+
+### FIX 3 — migrate remaining panel literals
+Add registry-backed attributes to visible GG-controlled panel labels in touched scope.
+Use:
+- `data-gg-copy`
+- `data-gg-copy-aria`
+- `data-gg-copy-title`
+where appropriate
+
+Keep EN literal fallback in markup.
+
+Acceptance:
+- panel/editorial labels listed above no longer depend primarily on raw literals
+
+### FIX 4 — migrate remaining mixed-media literals
+Apply registry-backed attributes to visible mixed-media labels still leaking raw literals in touched scope.
+
+Acceptance:
+- `FEATURED` and `See all` in touched scope are registry-driven with EN fallback
+
+### FIX 5 — correct LinkedIn icon mapping
+Replace incorrect LinkedIn icon symbol reference with the correct one.
+
+Acceptance:
+- LinkedIn no longer points to Reddit icon symbol
+
+### FIX 6 — normalize touched-zone SVG `<use>`
+Use one consistent Blogger-safe `<use>` pattern only in touched zones.
+
+Acceptance:
+- no mixed malformed `<use>` syntax remains in touched blocks
+
+### FIX 7 — eliminate remaining `data-lang-code` in touched scope
+Use only `data-gg-lang-code`.
+
+Acceptance:
+- zero `data-lang-code` remains in touched scope
+
+---
+
+## Registry key guidance
+If needed, extend existing registry with closure keys for panel/editorial labels using disciplined namespaces.
+
+Examples (illustrative, reuse existing if already present):
+- `panel.post.author`
+- `panel.post.contributors`
+- `panel.post.date`
+- `panel.post.updated`
+- `panel.post.readTime`
+- `panel.post.labels`
+- `panel.post.tags`
+- `panel.post.interests`
+- `mixed.featured.kicker`
+- `mixed.action.seeAll`
+
+Do not invent messy new namespaces.
+If an equivalent key already exists, reuse it.
+
+---
+
+## Migration strategy
+### Phase 0 — inspect touched zones only
+Before editing:
+- locate exact list/post quick-link twin blocks
+- locate exact panel literals still remaining
+- locate exact mixed-media literals still remaining
+- locate exact LinkedIn icon symbol mismatch
+- locate exact remaining `data-lang-code` in touched scope
+
+### Phase 1 — structural sanity first
+First fix:
+- `a > button`
+- duplicate switcher IDs
+- `aria-controls`
+
+Do this before mass copy edits so runtime targeting is not unstable.
+
+### Phase 2 — copy closure
+Then migrate:
+- panel/editorial literals
+- mixed-media literals
+
+### Phase 3 — icon and SVG consistency
+Then fix:
+- LinkedIn symbol mismatch
+- touched-zone `<use>` consistency
+
+### Phase 4 — verify
+Run closure-focused verification.
+
+---
+
+## Acceptance criteria
+This task is accepted only if ALL are true:
+
+### Structural
+- no invalid `a > button` remains in the touched quick-link/footer twin blocks
+- no duplicate switcher menu ID remains there
+- switcher `aria-controls` is valid
+- touched-zone SVG `<use>` syntax is consistent
+
+### Copy closure
+- listed panel/editorial literals are registry-backed in touched scope
+- mixed-media literals targeted by this task are registry-backed in touched scope
+- EN fallback remains in markup
+- no raw registry key appears in UI
+
+### Hook hygiene
+- no remaining `data-lang-code` in touched scope
+- `data-gg-lang-code` is used consistently in touched scope
+
+### Icon correctness
+- LinkedIn icon no longer references Reddit symbol
+
+### Runtime safety
+- lang switcher still functions
+- no new console errors from touched areas
+- no comments/sidebar regression caused by structural cleanup
+
+### Visual safety
+- quick-link block still matches current visual language closely enough
+- no obvious visual break from removing invalid nested interactive markup
+
+---
+
+## Verification steps Codex must run
+Minimum:
+1. grep touched scope for `data-lang-code`
+2. grep touched scope for nested `a` + `button` pattern
+3. grep touched scope for `gg-lang-switcher-menu`
+4. grep touched scope for `FEATURED`
+5. grep touched scope for `See all`
+6. grep touched scope for `Written by|Contributors|DATE|UPDATED|READ TIME|LABEL|Tags|Interests`
+7. grep touched scope for `gg-ic-rd-line` under LinkedIn link
+8. verify switcher IDs are unique
+9. verify runtime references still match new IDs if changed
+10. run copy verification script if present
+11. optional local smoke on list/post sidebar behavior
+
+---
+
+## Output shape required from Codex
+Codex must return:
+1. objective
+2. touched files
+3. assumptions
+4. risks
+5. exact touched closure zones
+6. exact remaining deferred zones
+7. verification steps run
+8. rollback note
+
+No vague “cleanup done” statement.
+
+---
+
+## Deferred items after this task
+These remain for the final template-freeze task, not this closure task:
+- `/landing` route/render correctness
+- global classifier SSOT freeze
+- mixed-media structural/finality contract
+- landmark finalization
+- schema/SEO final hardening
+- broader hook normalization outside touched closure scope
+- global route/surface verification
+
+---
+
+## Rollback plan
+Rollback must be possible by reverting the closure patch commit.
+
+If regressions appear in:
+- sidebar rendering
+- lang switcher
+- comments wrapper
+- mixed-media labels
+- quick-link visuals
+- runtime console behavior
+
+then revert the closure patch and keep the already-embedded registry system intact.
+
+---
+
+## Strong rejection criteria
+Reject any output that:
+- expands into a broad architecture rewrite
+- breaks current working sidebar/lang-switcher behavior
+- leaves `a > button` alive in touched twin blocks
+- leaves duplicate switcher ID alive
+- ignores panel/mixed-media copy leaks while claiming closure is complete
+- changes CSS/visual language unnecessarily
+- introduces new naming dialects
+- skips verification evidence
