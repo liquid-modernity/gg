@@ -2335,7 +2335,15 @@
       syncButton(state);
     }
     function resolveParser(){
-      return G.core && typeof G.core.parseHtmlDoc === 'function' ? G.core.parseHtmlDoc : null;
+      if (G.core && typeof G.core.parseHtmlDoc === 'function') return G.core.parseHtmlDoc;
+      if (typeof DOMParser !== 'function') return null;
+      return function(html){
+        try {
+          return new DOMParser().parseFromString(String(html || ''), 'text/html');
+        } catch(_) {
+          return null;
+        }
+      };
     }
     function loadNext(state, opts){
       opts = opts || {};

@@ -269,6 +269,22 @@ const stripHtml = (value) =>
       .replace(/<[^>]+>/g, " ")
   );
 
+const extractFirstImageFromMarkup = (value) => {
+  const source = String(value || "");
+  if (!source) return "";
+  const quoted = source.match(/<img\b[^>]*\bsrc=(["'])(.*?)\1/i);
+  if (quoted && quoted[2]) {
+    const url = cleanText(quoted[2]);
+    if (url) return url.startsWith("//") ? `https:${url}` : url;
+  }
+  const bare = source.match(/<img\b[^>]*\bsrc=([^\s>"']+)/i);
+  if (bare && bare[1]) {
+    const url = cleanText(bare[1]);
+    if (url) return url.startsWith("//") ? `https:${url}` : url;
+  }
+  return "";
+};
+
 const truncateText = (value, maxLen) => {
   const input = cleanText(value);
   if (!input) return "";
@@ -311,6 +327,12 @@ const pickFeedThumb = (entry) => {
     const url = cleanText(item && item.url);
     if (url) return url;
   }
+  const summaryHtml = String(entry && entry.summary && entry.summary.$t ? entry.summary.$t : "");
+  const contentHtml = String(entry && entry.content && entry.content.$t ? entry.content.$t : "");
+  const fromSummary = extractFirstImageFromMarkup(summaryHtml);
+  if (fromSummary) return fromSummary;
+  const fromContent = extractFirstImageFromMarkup(contentHtml);
+  if (fromContent) return fromContent;
   return "";
 };
 
@@ -362,6 +384,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
     220
   );
   const author = pickFeedAuthor(entry);
+  const authorName = cleanText(author.name) || "PakRPP";
   const thumb = pickFeedThumb(entry);
   const categories = Array.isArray(entry && entry.category) ? entry.category : [];
   const labels = categories
@@ -380,7 +403,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const safeDateText = escapeHtml(publishedText);
   const safeUpdatedText = escapeHtml(updatedText);
   const safeComments = escapeHtml(commentsText);
-  const safeAuthorName = escapeHtml(author.name);
+  const safeAuthorName = escapeHtml(authorName);
   const safeAuthorUrl = escapeHtml(author.url);
   const safeAuthorAvatar = escapeHtml(author.avatar);
   const safePostId = escapeHtml(postId);
@@ -389,15 +412,54 @@ const buildFeedPostCard = (entry, requestUrl) => {
   const safeLabel = escapeHtml(label);
   const safeLabelUrl = escapeHtml(labelUrl);
   const safeThumb = escapeHtml(thumb);
+  const safeCommentsHref = `${safeUrl}#comments`;
+  const safeUpdatedIso = escapeHtml(updatedIso || publishedRaw);
   const thumbHtml = safeThumb
-    ? `<a class='gg-post-card__thumb' href='${safeUrl}'><img alt='${safeTitle}' class='gg-post-card__thumb-img' decoding='async' loading='lazy' src='${safeThumb}'/></a>`
-    : `<a class='gg-post-card__thumb' href='${safeUrl}' aria-label='${safeTitle}'></a>`;
+    ? `<a class='gg-post-card__thumb' href='${safeUrl}'><figure><img alt='${safeTitle}' class='gg-post-card__thumb-img' decoding='async' loading='lazy' src='${safeThumb}'/></figure></a>`
+    : `<a class='gg-post-card__thumb' href='${safeUrl}' aria-label='${safeTitle}'><figure><div aria-hidden='true' class='gg-post-card__thumb-placeholder'></div></figure></a>`;
   const labelHtml =
     safeLabel && safeLabelUrl
       ? `<span class='gg-post-card__label'><a href='${safeLabelUrl}' rel='tag'>${safeLabel}</a></span><span class='gg-post-card__meta-sep'>&#8226;</span>`
       : "";
+  const labelsHiddenHtml = labels.length
+    ? `<div class='gg-post-card__labels' hidden='hidden'>${labels
+        .map((name) => {
+          const text = escapeHtml(name);
+          const href = escapeHtml(buildFeedLabelUrl(name, origin || postUrl));
+          return `<a href='${href || "#"}' rel='tag'>${text}</a>`;
+        })
+        .join("")}</div>`
+    : "";
+  const postMetaHtml = `<div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='${safeReadLabel}' data-tags='' data-author='${safeAuthorName}' data-updated='${safeUpdatedIso || safeDateIso}'></div>`;
+  const toolbarHtml = [
+    "<div aria-label='Post actions' class='gg-post-card__toolbar' data-gg-copy-aria='post.action.comments' role='group'>",
+    `<a class='gg-post-card__tool' data-gg-copy-title='post.action.comments' href='${safeCommentsHref}' title='Comments'>`,
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>comment</span>",
+    "<span class='gg-visually-hidden' data-gg-copy='post.action.comments'>Comments</span>",
+    `<span aria-hidden='true' class='gg-post-card__badge'>${safeComments}</span>`,
+    "</a>",
+    "<button aria-label='Save to library' class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' data-gg-copy-aria='library.action.add' data-gg-copy-title='library.action.add' title='Save to library' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>",
+    "<span class='gg-visually-hidden' data-gg-copy='library.action.add'>Save to library</span>",
+    "</button>",
+    "<button aria-label='Like' class='gg-post-card__tool' data-gg-action='like' data-gg-copy-aria='post.action.like' data-gg-copy-title='post.action.like' title='Like' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>",
+    "<span class='gg-visually-hidden' data-gg-copy='post.action.like'>Like</span>",
+    "</button>",
+    "<button aria-label='Share' class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' data-gg-copy-aria='post.action.share' data-gg-copy-title='post.action.share' title='Share' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>",
+    "<span class='gg-visually-hidden' data-gg-copy='post.action.share'>Share</span>",
+    "</button>",
+    "<button aria-label='Information' class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' data-gg-copy-aria='post.action.info' data-gg-copy-title='post.action.info' title='Information' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>",
+    "<span class='gg-visually-hidden' data-gg-copy='post.action.info'>Information</span>",
+    "</button>",
+    "</div>",
+  ].join("");
   const cardHtml = [
     `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-readtime='${safeReadLabel}' data-snippet='${safeExcerpt}' data-title='${safeTitle}' data-updated='${safeUpdatedText}' data-url='${safeUrl}' data-gg-author='${safeAuthorName}' data-gg-comments='${safeComments}' data-gg-contributors='' data-gg-date='${safeDateText}' data-gg-labels='${safeLabelsCsv}' data-gg-readtime='${safeReadLabel}' data-gg-snippet='${safeExcerpt}' data-gg-tags='' data-gg-toc-json='' data-gg-updated='${safeUpdatedText}'>`,
+    labelsHiddenHtml,
+    postMetaHtml,
     thumbHtml,
     "<div class='gg-post-card__body'>",
     "<div class='gg-post-card__meta'>",
@@ -409,6 +471,7 @@ const buildFeedPostCard = (entry, requestUrl) => {
     `<h2 class='gg-post-card__title'><a class='gg-post-card__title-link' href='${safeUrl}'>${safeTitle}</a></h2>`,
     `<p class='gg-post-card__excerpt'>${safeExcerpt}</p>`,
     "</div>",
+    toolbarHtml,
     "</article>",
   ].join("");
   return {
@@ -2234,34 +2297,6 @@ export default {
                   '<div data-gg-worker-toc-fallback="1" hidden><ol data-gg-slot="toc"></ol><p data-gg-slot="toc-hint"></p></div>',
                   { html: true }
                 );
-              },
-            })
-            .on(".gg-editorial-preview .gg-epanel__label", {
-              element(el) {
-                el.setInnerContent("");
-              },
-            })
-            .on(".gg-editorial-preview .gg-epanel__icon", {
-              element(el) {
-                el.setInnerContent("");
-              },
-            })
-            .on(".gg-editorial-preview .gg-epanel__cta-label", {
-              element(el) {
-                el.setInnerContent("");
-              },
-            })
-            .on(".gg-editorial-preview .gg-epanel__cta", {
-              element(el) {
-                el.setInnerContent(
-                  '<span aria-hidden="true" class="gg-icon material-symbols-rounded"></span><span class="gg-epanel__cta-label"></span>',
-                  { html: true }
-                );
-              },
-            })
-            .on("[data-gg-marker=\"panel-listing-cta\"]", {
-              element(el) {
-                el.setInnerContent("");
               },
             })
           .on("link[rel=\"canonical\"]", {

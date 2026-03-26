@@ -2745,20 +2745,23 @@ closeMorePanel();
 return true;
 }
 
-if (action === 'home') {
-if (isHomeCapable() && GG.modules.homeState) {
-  GG.modules.homeState.setState('landing');
-  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-    GG.util.homeRouter.pushState('landing', '/landing');
-  } else {
-    try { history.pushState({ ggHome:'landing' }, '', '/landing'); } catch (_) {}
-  }
-  updateActive();
-  scrollToAnchor(anchor || '#gg-landing-hero');
-  return true;
-}
-return false;
-}
+	if (action === 'home') {
+	if (isHomeCapable() && GG.modules.homeState) {
+	  var alreadyLanding = effectiveDockState() === 'landing';
+	  GG.modules.homeState.setState('landing');
+	  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+	    GG.util.homeRouter.pushState('landing', '/landing');
+	  } else {
+	    try { history.pushState({ ggHome:'landing' }, '', '/landing'); } catch (_) {}
+	  }
+	  updateActive();
+	  if (!(alreadyLanding && (!anchor || anchor === '#gg-landing-hero'))) {
+	    scrollToAnchor(anchor || '#gg-landing-hero');
+	  }
+	  return true;
+	}
+	return false;
+	}
 
 if (action === 'blog') {
 if (isHomeCapable() && GG.modules.homeState) {
