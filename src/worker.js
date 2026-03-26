@@ -310,6 +310,42 @@ const extractFeedPostId = (entry) => {
   return cleanText(tail);
 };
 
+const extractFeedBlogId = (entry) => {
+  const raw = cleanText(entry && entry.id && entry.id.$t ? entry.id.$t : "");
+  if (!raw) return "";
+  const m = raw.match(/blog-(\d+)/i);
+  return m && m[1] ? m[1] : "";
+};
+
+const pickFeedRepliesLink = (entry, type) => {
+  const expectedType = cleanText(type).toLowerCase();
+  const links = Array.isArray(entry && entry.link) ? entry.link : [];
+  for (const link of links) {
+    if (!link || cleanText(link.rel).toLowerCase() !== "replies" || !link.href) continue;
+    if (expectedType && cleanText(link.type).toLowerCase() !== expectedType) continue;
+    return cleanText(link.href);
+  }
+  return "";
+};
+
+const buildFallbackCommentFormIframeSrc = (entry, requestUrl, options = {}) => {
+  const opt = options || {};
+  const blogId = cleanText(opt.blogId || extractFeedBlogId(entry));
+  const postId = cleanText(opt.postId || extractFeedPostId(entry));
+  if (!blogId || !postId) return "";
+  const paramKey = opt.isPage ? "pa" : "po";
+  const frameUrl = new URL(`/comment/frame/${encodeURIComponent(blogId)}`, "https://www.blogger.com");
+  frameUrl.searchParams.set(paramKey, postId);
+  frameUrl.searchParams.set("hl", "en");
+  try {
+    const req = new URL(requestUrl);
+    frameUrl.searchParams.set("origin", req.origin);
+  } catch (e) {
+    // Keep deterministic fallback when request origin is unavailable.
+  }
+  return frameUrl.toString();
+};
+
 const pickFeedAlternateUrl = (entry) => {
   const links = Array.isArray(entry && entry.link) ? entry.link : [];
   for (const link of links) {
@@ -1524,12 +1560,19 @@ const buildFallbackPostToolbarHtml = (safeComments, hasCommentBadge) => {
   ].join("");
 };
 
-const buildFallbackCommentsPanelHtml = (safeComments, commentsCount) => {
+const buildFallbackCommentsPanelHtml = (safeComments, commentsCount, options = {}) => {
+  const opt = options || {};
   const heading = commentsCount === 1 ? "1 Comment" : `${safeComments} Comments`;
   const message =
     commentsCount > 0
       ? "Comments are temporarily unavailable in fallback mode."
       : "No comments yet.";
+  const formSrc = cleanText(opt.commentFormIframeSrc);
+  const allowNewComments = opt.allowNewComments !== false && !!formSrc;
+  const relayPath = cleanText(opt.appRpcRelayPath) || "https://www.blogger.com/rpc_relay.html";
+  const relayLiteral = JSON.stringify(relayPath);
+  const noNewCommentsText = escapeHtml(cleanText(opt.noNewCommentsText) || "Comments are closed.");
+  const safeFormSrc = escapeHtml(formSrc);
   return [
     "<div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>",
     "<div class='gg-comments-panel__body' data-gg-slot='comments'>",
@@ -1552,11 +1595,19 @@ const buildFallbackCommentsPanelHtml = (safeComments, commentsCount) => {
     "</div>",
     "</div>",
     "<div aria-hidden='true' class='gg-comments__footer-spacer'></div>",
-    "<div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-open='0' data-gg-has-cta='0'>",
+    `<div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-open='0' data-gg-has-cta='${allowNewComments ? "1" : "0"}'>`,
     "<div class='gg-comments__footer-inner'>",
+    allowNewComments
+      ? "<div class='gg-comments__footer-cta' id='gg-top-continue'><a aria-expanded='false' class='comment-reply' data-gg-copy='comments.action.add' data-gg-footer-cta='1' href='javascript:;' rel='nofollow'>Add comment</a></div>"
+      : "",
     "<div class='gg-comments__footer-main'>",
+    allowNewComments ? "" : `<div class='gg-comments__footer-note'>${noNewCommentsText}</div>`,
     "<div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'></div>",
-    "<div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'></div>",
+    "<div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'>",
+    allowNewComments
+      ? `<div class='comment-form' data-gg-native-plumbing='composer' data-gg-owner='native-hidden' id='top-ce'><a name='comment-form'></a><a href='${safeFormSrc}' id='comment-editor-src' rel='noopener noreferrer' title='Comment Form Link'></a><iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' frameborder='0' height='90px' id='comment-editor' name='comment-editor' src='' width='100%'></iframe><script type='text/javascript'>(function(){if(typeof BLOG_CMT_createIframe==='function'){BLOG_CMT_createIframe(${relayLiteral});}})();</script></div>`
+      : "",
+    "</div>",
     "</div>",
     "</div>",
     "</div>",
@@ -1610,8 +1661,21 @@ const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
   const safeReadMin = escapeHtml(readMin);
   const surface = opt.isPage ? "page" : "post";
   const hasCommentBadge = commentsCount > 0;
+  const hasRepliesHtml = !!pickFeedRepliesLink(entry, "text/html");
+  const commentFormIframeSrc = hasRepliesHtml
+    ? buildFallbackCommentFormIframeSrc(entry, requestUrl, {
+        blogId: extractFeedBlogId(entry),
+        postId,
+        isPage: opt.isPage,
+      })
+    : "";
   const toolbarHtml = buildFallbackPostToolbarHtml(safeComments, hasCommentBadge);
-  const commentsPanelHtml = buildFallbackCommentsPanelHtml(safeComments, commentsCount);
+  const commentsPanelHtml = buildFallbackCommentsPanelHtml(safeComments, commentsCount, {
+    allowNewComments: hasRepliesHtml,
+    commentFormIframeSrc,
+    appRpcRelayPath: "https://www.blogger.com/rpc_relay.html",
+    noNewCommentsText: "Comments are closed.",
+  });
   return [
     `<article class='gg-post' data-gg-module='post-detail' data-gg-surface='${surface}' data-author='${safeAuthor}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safePostUrl}'>`,
     toolbarHtml,
