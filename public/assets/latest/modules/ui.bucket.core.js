@@ -503,6 +503,7 @@ var surface = route.surface || 'post';
 var page = route.page || (surface === 'landing' ? 'home' : surface);
 var view = route.view || (surface === 'landing' ? 'home' : surface);
 var special = route.special || '';
+var isHomeSurface = (surface === 'landing' || surface === 'listing');
 if (body) {
   if (body.classList) body.classList.remove('gg-is-landing');
   else body.className = body.className.replace(/\bgg-is-landing\b/g, '').trim();
@@ -520,6 +521,9 @@ if (main) {
   main.setAttribute('data-gg-surface', surface);
   main.setAttribute('data-gg-page', page);
   main.setAttribute('data-gg-view', view);
+  main.setAttribute('data-gg-home-state', surface === 'landing' ? 'landing' : 'blog');
+  if (isHomeSurface) main.setAttribute('data-gg-home-root', '1');
+  else main.removeAttribute('data-gg-home-root');
   if (special) main.setAttribute('data-gg-special', special);
   else main.removeAttribute('data-gg-special');
 }

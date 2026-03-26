@@ -518,3 +518,354 @@ It is accepted as final only when:
 - routes are correct,
 - machine/human readability are aligned,
 - and the touched copy layer exits with 10/10 discipline.
+
+# TASK-P2.TEMPLATE.FINAL.10X.CLOSURE — GG FINAL RELEASE CLOSURE (LAST 5 BLOCKERS ONLY)
+
+## Status
+This task is a narrow closure task.
+It runs only after `TASK-P2.TEMPLATE.FINAL.10X.REVISION`.
+
+Purpose:
+close the remaining blockers that still prevent the GG Blogger template from being honestly called final-release-ready.
+
+This is not a redesign.
+This is not another broad refactor.
+This is a targeted final closure patch.
+
+---
+
+## Core objective
+Close the last 5 material blockers still alive in the latest template state:
+
+1. `/landing` is still not fully route-correct and still tied too closely to homepage conditional logic
+2. mixed-media root contract is still hidden-first where product intent requires visible-first discovery
+3. special pages (`Tags`, `Sitemap`, and related special utility surfaces) are not yet copy-clean and final enough in touched scope
+4. schema / metadata / robots contract is still not consistent enough for final-release quality
+5. final acceptance is still being claimed too loosely
+
+After this task, the template must be able to survive a serious final public presentation review without obvious architectural embarrassment.
+
+---
+
+## What this task includes
+
+### A. Landing route/render closure
+Make `/landing` a real first-class landing surface.
+
+Must:
+- stop relying on fragile homepage-only conditional behavior as the practical source of truth
+- ensure `/landing` has an intentional render path
+- ensure `/` remains listing
+- ensure landing-specific content does not leak into listing/post/page/special surfaces
+- ensure listing/blog content does not leak into landing
+- preserve current CTA/contact anchor behavior
+
+Acceptance:
+- landing route meaning is explicit and stable
+- route meaning is not dependent on accidental homepage semantics
+
+---
+
+### B. Mixed-media root contract closure
+Mixed media is part of listing discovery and must stop contradicting that intent.
+
+Must:
+- review all first-class mixed-media root sections on listing
+- remove root-level hidden-first contradiction where product intent requires visible-first presence
+- keep placeholders/subparts hidden only where appropriate
+- preserve current feed/render behavior
+- preserve current CSS/JS behavior as much as possible
+- keep visible labels registry-backed
+
+At minimum review:
+- featured strip
+- newsdeck
+- youtube rail
+- shorts rail
+- podcast rail
+- bookish rail
+
+Acceptance:
+- no required listing mixed-media root remains hidden purely as legacy contradiction
+- listing behaves like a real mixed-media discovery surface
+
+---
+
+### C. Special pages finalization (touched scope)
+Close the copy/UX contract for special pages touched by this task.
+
+Priority surfaces:
+- `/p/tags.html`
+- `/p/sitemap.html`
+
+Must:
+- ensure visible GG-controlled labels are registry-backed
+- ensure placeholders / aria labels / filter labels are registry-backed
+- ensure no raw literal is left as primary source in touched scope
+- preserve EN fallback in markup
+- preserve current search/filter/load-more behavior
+- preserve current CSS hooks
+
+Examples of copy that must be registry-owned in touched scope:
+- Tags
+- description text
+- Sort
+- Newest / Oldest
+- Search sitemap
+- Reset
+- All
+- All years
+- All months
+- All labels
+- Load more
+- title-sort options
+- any visible special-page utility control labels in touched scope
+
+Acceptance:
+- touched special surfaces exit with copy layer 10/10 discipline
+
+---
+
+### D. Schema / metadata / robots closure
+Raise machine-readable quality to honest final-release grade.
+
+Must review and fix where justified:
+- BlogPosting completeness:
+  - `dateModified`
+  - `description`
+- Organization completeness:
+  - `logo` if part of final contract
+- WebPage / special page handling where needed
+- canonical/indexability rules
+- explicit `noindex` handling for `error` and `offline` where appropriate
+- visible IA vs machine-readable IA consistency where practical
+
+Do not add schema noise.
+Add only what makes the contract clearer and more trustworthy.
+
+Acceptance:
+- schema/metadata no longer feel half-finished
+- error/offline indexing posture is intentional
+- post schema is not obviously missing critical expected fields
+
+---
+
+### E. Final acceptance tightening
+This task must explicitly close the honesty gap between “works” and “final.”
+
+Must:
+- remove any remaining touched-scope claim inflation
+- verify only against actual current artifacts
+- fail honestly if any of the 5 blocker families remain open
+- document deferred items explicitly if anything still survives
+
+---
+
+## What this task does NOT include
+Do not expand into:
+- full visual redesign
+- complete copy rewrite outside touched closure scope
+- service worker redesign
+- Cloudflare Worker redesign
+- total JS modular rewrite
+- unrelated page copy polish
+- replacing Blogger comments
+- speculative performance experiments
+
+This is a last-mile closure task only.
+
+---
+
+## Touched files (expected)
+
+Primary:
+- `index.prod.xml`
+- `public/assets/latest/modules/ui.bucket.core.js`
+- `public/assets/v/ac33998/modules/ui.bucket.core.js`
+
+Secondary / QA:
+- copy verify script if special-page keys need parity extension
+- one schema/route verifier if current scripts do not cover these blockers
+
+Do not touch CSS unless a minimal compatibility adjustment is truly required.
+
+---
+
+## Execution phases
+
+### PHASE 0 — Map only the remaining 5 blockers
+Before editing:
+- confirm exact `/landing` render branch
+- confirm exact mixed-media roots still hidden
+- confirm exact special pages labels still literal
+- confirm exact schema/robots gaps
+- confirm touched runtime dependencies
+
+No broad audit again.
+No reopening already closed areas.
+
+---
+
+### PHASE 1 — Landing closure
+Fix `/landing` route/render correctness first.
+
+Must:
+- make route meaning explicit
+- keep `/` as listing
+- keep anchors and CTA paths intact
+- keep landing isolated from blog/listing leakage
+
+Do not:
+- casually invent a new route model
+- break existing homepage/listing behavior
+
+---
+
+### PHASE 2 — Mixed-media root visibility closure
+Fix root-level contradiction next.
+
+Must:
+- remove root `hidden='hidden'` from mixed-media sections that are required to appear as listing discovery content
+- keep internal placeholder items hidden where needed
+- preserve runtime hooks and CSS hooks
+
+Do not:
+- redesign layout
+- hide required sections again through new hacks
+- remove feed hooks
+
+---
+
+### PHASE 3 — Special page copy closure
+Fix `Tags` and `Sitemap` touched scope thoroughly.
+
+Must:
+- finish registry-backed visible labels
+- finish registry-backed aria/placeholder labels
+- finish registry-backed options/filter labels
+- keep EN fallback
+- keep current behavior
+
+No “mostly done.”
+It must exit cleanly.
+
+---
+
+### PHASE 4 — Schema / robots closure
+Finalize machine-readable quality.
+
+Must:
+- add missing justified fields
+- set error/offline robots/indexability posture intentionally
+- avoid noise
+- preserve canonical safety
+
+---
+
+### PHASE 5 — Final verification
+Run verification only against these blockers.
+
+Must verify:
+- `/` vs `/landing` route behavior
+- mixed-media required roots visible
+- special pages copy registry parity
+- schema completeness in touched scope
+- noindex handling where intended
+- no regressions to search/filter/load-more on special pages
+- no new console errors from touched areas
+
+---
+
+## Acceptance criteria
+
+This task passes only if ALL are true:
+
+### Landing
+- `/landing` is route-correct and intentional
+- `/` remains listing
+- no landing/blog leakage remains in touched logic
+- no empty landmark regression remains in touched landing structure
+
+### Mixed media
+- required mixed-media roots on listing are no longer hidden-first contradictions
+- visible mixed-media labels stay registry-backed
+- no runtime regression is introduced
+
+### Special pages
+- `Tags` and `Sitemap` touched scope are copy-clean
+- no touched visible GG-controlled label remains literal-only
+- aria/placeholder/filter labels are registry-backed
+- EN fallback remains intact
+
+### Schema / robots
+- BlogPosting touched schema is no longer obviously missing expected fields
+- Organization/logo posture is intentional
+- error/offline indexing posture is intentional
+- no schema contradiction is introduced
+
+### Safety
+- no comments regression
+- no search/palette regression
+- no share regression
+- no meaningful performance cliff
+- rollback remains simple
+
+---
+
+## Verification steps Codex must run
+
+Minimum:
+1. verify landing render branch logic
+2. verify `/` remains listing and `/landing` remains landing
+3. grep listing mixed-media roots for remaining root `hidden='hidden'`
+4. verify special tags/sitemap visible labels and controls are registry-backed
+5. run `node qa/verify-copy-registry.mjs`
+6. grep touched scope for remaining literal labels in special pages
+7. inspect schema output for:
+   - BlogPosting `dateModified`
+   - BlogPosting `description`
+   - Organization `logo` if chosen
+8. verify intended robots posture for `error` / `offline`
+9. run existing smoke/verify scripts available in repo
+10. report any surviving deferred item explicitly
+
+---
+
+## Output shape required from Codex
+Codex must return:
+1. objective
+2. touched files
+3. assumptions
+4. risks
+5. exact blocker status before/after
+6. verification steps run
+7. acceptance result by blocker family
+8. rollback note
+
+No vague “final done” statement.
+
+---
+
+## Rollback plan
+Rollback must be possible by reverting the closure patch commit.
+
+If regressions appear in:
+- landing
+- listing
+- mixed media
+- tags/sitemap
+- schema/indexability
+- special-page filters/search
+then revert the closure commit and stop.
+
+---
+
+## Strong rejection criteria
+Reject any output that:
+- leaves `/landing` effectively homepage-fragile
+- leaves required mixed-media roots hidden-first
+- leaves touched special-page labels literal-only
+- claims schema closure without actual field completion
+- invents new architecture outside scope
+- breaks listing/search/comments/share
+- claims final-release-ready without proving these 5 blockers are closed
