@@ -1,28 +1,24 @@
 {
-  "generatedAt": "2026-03-15T20:09:31.068Z",
+  "generatedAt": "2026-03-26T15:06:55.846Z",
   "input": {
     "path": "/Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/dist/gg-audit.zip",
-    "sizeBytes": 2059349,
-    "sizeHuman": "1.96 MB"
+    "sizeBytes": 38303444,
+    "sizeHuman": "36.53 MB"
   },
   "archive": {
     "topLevelRoots": [
       ".github",
-      ".gitignore",
-      ".vscode",
-      "docs",
-      "index.dev.xml",
       "index.prod.xml",
-      "lighthouse",
       "package-lock.json",
       "package.json",
       "public",
       "qa",
       "src",
+      "tools",
       "wrangler.jsonc"
     ],
-    "fileCount": 161,
-    "totalEntries": 186,
+    "fileCount": 171,
+    "totalEntries": 176,
     "junkEntries": []
   },
   "criticalFiles": [
@@ -81,33 +77,57 @@
     "exists": true,
     "name": "gg",
     "parseError": "",
-    "scriptCount": 7,
+    "scriptCount": 13,
     "scriptPresence": {
       "gaga": true,
-      "gaga:dry": true,
+      "gaga:dry": false,
       "gaga:audit": true,
       "build": false,
       "ship": false
     },
     "verifyScripts": [],
     "scripts": {
-      "gaga": "wrangler deploy --config wrangler.jsonc",
-      "gaga:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
+      "gaga": "node tools/gaga-release.mjs ship",
+      "gaga:preflight": "node tools/gaga-release.mjs preflight",
+      "gaga:push": "node tools/gaga-release.mjs ship",
+      "gaga:cf:deploy": "wrangler deploy --config wrangler.jsonc",
+      "gaga:cf:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
       "gaga:audit": "node qa/gaga-audit.mjs",
+      "gaga:verify-copy": "node qa/verify-copy-registry.mjs",
+      "gaga:audit:pack": "node qa/package-audit.mjs TASK-P0.RELEASE-PIPELINE.CLOSURE.10X --zip dist/gg-audit-task-p0-release-pipeline-closure-10x.zip",
       "gaga:template:pack": "bash qa/template-pack.sh",
       "gaga:template:proof": "bash qa/template-proof.sh",
       "gaga:template:status": "bash qa/template-status.sh",
-      "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+      "gaga:verify-worker": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
+      "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail GG_COMMENTS_OWNER_BROWSER_MODE=fail GG_HOMEPAGE_MIXED_BROWSER_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
     },
     "scriptFileRefs": [
       {
         "script": "gaga",
+        "runner": "node",
+        "path": "tools/gaga-release.mjs",
+        "source": "node tools/gaga-release.mjs ship"
+      },
+      {
+        "script": "gaga:preflight",
+        "runner": "node",
+        "path": "tools/gaga-release.mjs",
+        "source": "node tools/gaga-release.mjs preflight"
+      },
+      {
+        "script": "gaga:push",
+        "runner": "node",
+        "path": "tools/gaga-release.mjs",
+        "source": "node tools/gaga-release.mjs ship"
+      },
+      {
+        "script": "gaga:cf:deploy",
         "runner": "flag",
         "path": "wrangler.jsonc",
         "source": "wrangler deploy --config wrangler.jsonc"
       },
       {
-        "script": "gaga:dry",
+        "script": "gaga:cf:dry",
         "runner": "flag",
         "path": "wrangler.jsonc",
         "source": "wrangler deploy --dry-run --config wrangler.jsonc"
@@ -117,6 +137,18 @@
         "runner": "node",
         "path": "qa/gaga-audit.mjs",
         "source": "node qa/gaga-audit.mjs"
+      },
+      {
+        "script": "gaga:verify-copy",
+        "runner": "node",
+        "path": "qa/verify-copy-registry.mjs",
+        "source": "node qa/verify-copy-registry.mjs"
+      },
+      {
+        "script": "gaga:audit:pack",
+        "runner": "node",
+        "path": "qa/package-audit.mjs",
+        "source": "node qa/package-audit.mjs TASK-P0.RELEASE-PIPELINE.CLOSURE.10X --zip dist/gg-audit-task-p0-release-pipeline-closure-10x.zip"
       },
       {
         "script": "gaga:template:pack",
@@ -137,10 +169,16 @@
         "source": "bash qa/template-status.sh"
       },
       {
+        "script": "gaga:verify-worker",
+        "runner": "bash",
+        "path": "qa/live-smoke-worker.sh",
+        "source": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+      },
+      {
         "script": "gaga:verify-template",
         "runner": "bash",
         "path": "qa/live-smoke.sh",
-        "source": "GG_TEMPLATE_DRIFT_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+        "source": "GG_TEMPLATE_DRIFT_MODE=fail GG_COMMENTS_OWNER_BROWSER_MODE=fail GG_HOMEPAGE_MIXED_BROWSER_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
       }
     ],
     "scriptNpmRunRefs": []
@@ -157,8 +195,8 @@
         "deployCloudflare": true,
         "callWrangler": true,
         "callGaga": true,
-        "lineCount": 49,
-        "runBlockCount": 6
+        "lineCount": 47,
+        "runBlockCount": 5
       },
       {
         "entry": ".github/workflows/deploy.yml",
@@ -166,8 +204,8 @@
         "deployCloudflare": true,
         "callWrangler": true,
         "callGaga": true,
-        "lineCount": 202,
-        "runBlockCount": 10
+        "lineCount": 480,
+        "runBlockCount": 11
       }
     ],
     "anyCi": true,
@@ -177,51 +215,76 @@
     "npmRunCalls": [
       {
         "workflow": ".github/workflows/ci.yml",
-        "script": "gaga:dry",
-        "source": "npm run gaga:dry"
+        "script": "gaga:template:pack",
+        "source": "npm run gaga:template:pack"
+      },
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "script": "gaga:preflight",
+        "source": "npm run gaga:preflight"
+      },
+      {
+        "workflow": ".github/workflows/ci.yml",
+        "script": "gaga:cf:dry",
+        "source": "npm run gaga:cf:dry"
       },
       {
         "workflow": ".github/workflows/deploy.yml",
-        "script": "gaga",
-        "source": "npm run gaga"
+        "script": "gaga:template:pack",
+        "source": "npm run gaga:template:pack"
+      },
+      {
+        "workflow": ".github/workflows/deploy.yml",
+        "script": "gaga:cf:deploy",
+        "source": "max_attempts=\"${GG_CF_DEPLOY_MAX_ATTEMPTS:-6}\"\nbackoff_seconds=\"${GG_CF_DEPLOY_BACKOFF_SECONDS:-15}\"\nattempt=1\ndeploy_ok=0\nlog_file_base=\"$(mktemp -u -t gg-wrangler-deploy.XXXXXX)\"\n\nis_permanent_cf_error() {\n  local file=\"$1\"\n  grep -Eiq \\\n    'Authentication error|authorization failed|not authorized|permission denied|Unknown argument|Unknown option|missing entry-point|No such file or directory|Cannot find module|Module not found|Failed to parse|Invalid value|Required.+not provided|is not a valid|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' \\\n    \"$file\"\n}\n\nwhile [ \"$attempt\" -le \"$max_attempts\" ]; do\n  attempt_log=\"${log_file_base}.attempt-${attempt}.log\"\n  echo \"Cloudflare deploy attempt ${attempt}/${max_attempts}\"\n\n  set +e\n  npm run gaga:cf:deploy 2>&1 | tee \"$attempt_log\"\n  cmd_status=${PIPESTATUS[0]}\n  set -e\n\n  if [ \"$cmd_status\" -eq 0 ]; then\n    deploy_ok=1\n    {\n      echo \"### Cloudflare Deploy\"\n      echo \"- Deploy succeeded on attempt ${attempt}/${max_attempts}.\"\n    } >> \"$GITHUB_STEP_SUMMARY\"\n    break\n  fi\n\n  if is_permanent_cf_error \"$attempt_log\"; then\n    echo \"::error title=Cloudflare deploy failed::Non-transient Wrangler deploy failure on attempt ${attempt}.\"\n    cat \"$attempt_log\"\n    exit \"$cmd_status\"\n  fi\n\n  if [ \"$attempt\" -ge \"$max_attempts\" ]; then\n    echo \"::error title=Cloudflare deploy failed::Retryable Wrangler deploy failure persisted after ${max_attempts} attempts.\"\n    cat \"$attempt_log\"\n    exit \"$cmd_status\"\n  fi\n\n  echo \"::warning title=Retrying Wrangler deploy::Attempt ${attempt}/${max_attempts} failed with retryable signal; retrying in ${backoff_seconds}s.\"\n  sleep \"$backoff_seconds\"\n  attempt=$((attempt + 1))\ndone\n\nif [ \"$deploy_ok\" -ne 1 ]; then\n  echo \"::error title=Cloudflare deploy failed::Deploy loop exited without success.\"\n  exit 1\nfi\n"
       }
     ],
     "missingScriptCalls": [],
     "workflowFileRefs": [
       {
-        "workflow": ".github/workflows/ci.yml",
-        "runner": "node",
-        "path": "qa/template-fingerprint.mjs",
-        "source": "node qa/template-fingerprint.mjs --check"
-      },
-      {
-        "workflow": ".github/workflows/ci.yml",
-        "runner": "node",
-        "path": "src/worker.js",
-        "source": "node --check src/worker.js"
+        "workflow": ".github/workflows/deploy.yml",
+        "runner": "bash",
+        "path": "qa/live-smoke-worker.sh",
+        "source": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\" 2>&1"
       },
       {
         "workflow": ".github/workflows/deploy.yml",
         "runner": "bash",
         "path": "qa/live-smoke.sh",
-        "source": "bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+        "source": "bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\" 2>&1"
       }
     ]
   },
   "signals": {
-    "hasVersionedAssets": true,
-    "hasLatestAssets": true,
+    "hasVersionedAssets": false,
+    "hasLatestAssets": false,
     "hasTemplate": true,
     "hasWorker": true,
     "hasWorkflows": true,
     "hasQaFiles": true,
-    "qaEntriesCount": 7,
+    "qaEntriesCount": 159,
     "templateWorkerWorkflowCoexist": true,
     "indexProdRefersVersioned": true,
     "indexProdRefersLatest": false,
-    "toolsEntriesCount": 0
+    "qaLiveSmokeHasCommentsOwnerCheck": true,
+    "qaLiveSmokeTargetsCommentsPath": true,
+    "toolsEntriesCount": 1
   },
-  "warnings": [],
+  "taskArtifacts": {
+    "enabled": false,
+    "taskId": "",
+    "expected": {},
+    "exists": {},
+    "entries": {},
+    "manifest": null,
+    "manifestParseError": "",
+    "manifestFields": {},
+    "zipEntries": [],
+    "zipEntryPresence": []
+  },
+  "warnings": [
+    "Archive contains legacy tools/* files (1 entries)."
+  ],
   "criticalFailures": [],
   "contractFindings": {
     "missingCriticalFiles": [],
@@ -229,7 +292,19 @@
     "missingScriptTargets": [],
     "missingWorkflowScripts": [],
     "missingWorkflowFiles": [],
-    "deadLegacyRefs": []
+    "deadLegacyRefs": [],
+    "taskSummary": {
+      "enabled": false,
+      "taskId": "",
+      "expected": {},
+      "exists": {},
+      "entries": {},
+      "manifest": null,
+      "manifestParseError": "",
+      "manifestFields": {},
+      "zipEntries": [],
+      "zipEntryPresence": []
+    }
   },
   "enforcement": {
     "mode": "fail-on-critical",

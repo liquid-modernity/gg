@@ -2347,7 +2347,7 @@ export default {
             targetCount: forceListing
               ? BLOG_LISTING_MIN_POSTCARDS
               : listingTargetCountFromUrl(url, BLOG_LISTING_MIN_POSTCARDS),
-            allowCreateContainer: paginationListingFallback,
+            allowCreateContainer: forceListing || paginationListingFallback,
             useHtmlBackfill: forceListing,
           });
         }

@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='234e3630c3f0' name='gg-template-fingerprint'/>
+    <meta content='90e1e411c0ae' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -838,16 +838,24 @@
       &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
     },
     &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
+    <b:if cond='data:post.date and data:post.date.iso8601'>
     &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,
-    <b:if cond='data:post.lastUpdated'>
-    &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,
+    <b:elseif cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'/>
+    &quot;datePublished&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,
     <b:else/>
+    &quot;datePublished&quot;: &quot;&quot;,
+    </b:if>
+    <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
+    &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,
+    <b:elseif cond='data:post.date and data:post.date.iso8601'/>
     &quot;dateModified&quot;: &quot;<data:post.date.iso8601/>&quot;,
+    <b:else/>
+    &quot;dateModified&quot;: &quot;&quot;,
     </b:if>
     &quot;description&quot;: &quot;<data:post.snippet.escaped/>&quot;,
     &quot;author&quot;: {
       &quot;@type&quot;: &quot;Person&quot;,
-      &quot;name&quot;: &quot;<data:post.author.name.escaped/>&quot;
+      &quot;name&quot;: &quot;<b:if cond='data:post.author and data:post.author.name'><data:post.author.name.escaped/><b:else/>PakRPP</b:if>&quot;
     },
     &quot;publisher&quot;: {
       &quot;@type&quot;: &quot;Organization&quot;,
@@ -1069,7 +1077,7 @@ text-align: center;
     <b:attr cond='data:ggIsPortfolioPage' name='data-gg-special' value='portfolio'/>
     <b:attr cond='data:ggIsAuthorPage' name='data-gg-special' value='author'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='234e3630c3f0' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='90e1e411c0ae' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1307,7 +1315,7 @@ text-align: center;
 
         <!-- Landing Layer: pertama kali terlihat ketika visitor masuk / tekan ikon Home -->
       <!-- Landing Layer: pertama kali terlihat ketika visitor masuk / tekan ikon Home -->
-        <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
+        <b:if cond='data:ggSurfaceKind == &quot;landing&quot; or data:ggIsBlogHome'>
           <section class='gg-home-landing' data-gg-home-layer='landing'>
 <!-- GAGA LANDING PAGE: DUMMY 5-SECTION -->
 
@@ -1938,7 +1946,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               <b:includable id='commentsLink'>
          <!-- GAGA commentsLink -->
   <b:if cond='data:post.allowComments'>
-    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='data:post.url + &quot;#comments&quot;'>
+    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;'>
 
       <span aria-hidden='true' class='material-symbols-rounded'>comment</span>
 
@@ -2030,12 +2038,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='post-author-label'>
       <data:byline.label/>
     </span>
-    <span class='fn'>
-      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+  <span class='fn'>
+      <b:if cond='data:post.author and data:post.author.profileUrl'>
+        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
-      <b:else/>
+      <b:elseif cond='data:post.author and data:post.author.name'/>
         <span><data:post.author.name/></span>
+      <b:else/>
+        <span>PakRPP</span>
       </b:if>
     </span>
   </span>
@@ -2085,7 +2096,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <span class='byline post-timestamp'>
     <data:byline.label/>
     <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
-        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+        <time class='published' expr:datetime='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:title='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'>
           <data:post.date/>
         </time>
       </a>
@@ -2225,15 +2236,17 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               </b:includable>
               <b:includable id='aboutPostAuthor'>
                 <div class='author-name'>
-                  <b:if cond='data:post.author and data:post.author.profileUrl'>
+                  <b:if cond='data:post.author and data:post.author.profileUrl and data:post.author.name'>
                     <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
                       <span><data:post.author.name/></span>
                     </a>
-                  <b:else/>
+                  <b:elseif cond='data:post.author and data:post.author.name'/>
                     <span><data:post.author.name/></span>
+                  <b:else/>
+                    <span>PakRPP</span>
                   </b:if>
                 </div>
-                <div><span class='author-desc'><data:post.author.aboutMe/></span></div>
+                <div><span class='author-desc'><b:if cond='data:post.author and data:post.author.aboutMe'><data:post.author.aboutMe/></b:if></span></div>
               </b:includable>
               <b:includable id='addComments'>
   <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
@@ -2338,7 +2351,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
               </b:includable>
               <b:includable id='commentsLink'>
   <b:if cond='data:post.allowComments'>
-    <a class='gg-post__meta-item meta-comments' expr:href='data:post.url + &quot;#comments&quot;'>
+    <a class='gg-post__meta-item meta-comments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;'>
       <span aria-hidden='true' class='ms'>comment</span>
       <b:if cond='data:post.numberOfComments &gt; 0'>
         <data:post.numberOfComments/>
@@ -2488,11 +2501,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <data:byline.label/>
     </span>
     <span class='fn'>
-      <b:if cond='data:post.author and data:post.author.profileUrl'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <b:if cond='data:post.author and data:post.author.profileUrl and data:post.author.name'>        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
           <span><data:post.author.name/></span>
         </a>
-      <b:else/>
+      <b:elseif cond='data:post.author and data:post.author.name'/>
         <span><data:post.author.name/></span>
+      <b:else/>
+        <span>PakRPP</span>
       </b:if>
     </span>
   </span>
@@ -2508,8 +2523,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postCard' var='post'>
   <!-- GAGA MODULE: POST CARD (HTML) v1 &#8211; ACTIVE IMPLEMENTATION -->
-  <article class='gg-post-card' data-author-avatar='' data-author-url='' data-gg-module='post-card' expr:data-author='data:post.author.name' expr:data-author-name='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-contributors='&quot;&quot;' expr:data-date='data:post.date' expr:data-gg-author='data:post.author.name' expr:data-gg-comments='data:post.numberOfComments' expr:data-gg-contributors='&quot;&quot;' expr:data-gg-date='data:post.date' expr:data-gg-labels='&quot;&quot;' expr:data-gg-readtime='&quot;&quot;' expr:data-gg-snippet='data:post.snippet' expr:data-gg-tags='&quot;&quot;' expr:data-gg-toc-json='&quot;&quot;' expr:data-gg-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-id='data:post.id' expr:data-readtime='&quot;&quot;' expr:data-snippet='data:post.snippet' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title' expr:data-updated='data:post.lastUpdated ? data:post.lastUpdated.iso8601 : data:post.date.iso8601' expr:data-url='data:post.url'>
-<b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
+  <article class='gg-post-card' data-author-avatar='' data-author-url='' data-gg-module='post-card' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-author-name='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-comments='data:post.numberOfComments ? data:post.numberOfComments : 0' expr:data-contributors='&quot;&quot;' expr:data-date='data:post.date ? data:post.date : &quot;&quot;' expr:data-gg-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-gg-comments='data:post.numberOfComments ? data:post.numberOfComments : 0' expr:data-gg-contributors='&quot;&quot;' expr:data-gg-date='data:post.date ? data:post.date : &quot;&quot;' expr:data-gg-labels='&quot;&quot;' expr:data-gg-readtime='&quot;&quot;' expr:data-gg-snippet='data:post.snippet ? data:post.snippet : &quot;&quot;' expr:data-gg-tags='&quot;&quot;' expr:data-gg-toc-json='&quot;&quot;' expr:data-gg-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 ? data:post.lastUpdated.iso8601 : (data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;)' expr:data-id='data:post.id' expr:data-readtime='&quot;&quot;' expr:data-snippet='data:post.snippet ? data:post.snippet : &quot;&quot;' expr:data-tags='&quot;&quot;' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 ? data:post.lastUpdated.iso8601 : (data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;)' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
+<b:if cond='data:post.author and data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
   <b:attr expr:value='data:post.author.authorPhoto.url' name='data-author-avatar'/>
 </b:if>
 <b:if cond='data:post.author and data:post.author.profileUrl'>
@@ -2524,19 +2539,19 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:if>
 <b:if cond='data:post.labels'>
   <b:if cond='data:post.lastUpdated'>
-    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
   <b:else/>
-    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
   </b:if>
 <b:else/>
   <b:if cond='data:post.lastUpdated'>
-    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
   <b:else/>
-    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
+    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
   </b:if>
 </b:if>
 
-    <a class='gg-post-card__thumb' expr:href='data:post.url'>
+    <a class='gg-post-card__thumb' expr:href='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
       <figure>
         <b:if cond='data:post.featuredImage'>
           <b:if cond='data:post.featuredImage and data:post.featuredImage.isResizable'>
@@ -2573,7 +2588,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <span class='gg-post-card__meta-sep'>&#8226;</span>
 
         <span class='gg-post-card__meta-item gg-post-card__meta-item--date'>
-          <time class='gg-post-card__date' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <time class='gg-post-card__date' expr:datetime='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:title='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'>
             <data:post.date/>
           </time>
         </span>
@@ -2586,7 +2601,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </div>
 
       <h2 class='gg-post-card__title'>
-        <a class='gg-post-card__title-link' expr:href='data:post.url'>
+        <a class='gg-post-card__title-link' expr:href='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
           <data:post.title/>
         </a>
       </h2>
@@ -2597,7 +2612,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </div>
 
 <div aria-label='Post actions' class='gg-post-card__toolbar' data-gg-copy-aria='post.action.comments' role='group'>
-  <a class='gg-post-card__tool' data-gg-copy-title='post.action.comments' expr:href='data:post.url + &quot;#comments&quot;' title='Comments'>
+  <a class='gg-post-card__tool' data-gg-copy-title='post.action.comments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;' title='Comments'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>comment</span>
     <span class='gg-visually-hidden' data-gg-copy='post.action.comments'>Comments</span>
     <span aria-hidden='true' class='gg-post-card__badge'><data:post.numberOfComments/></span>
@@ -2650,7 +2665,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </b:if>
 </b:includable>
               <b:includable id='postDetail' var='post'>
-  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-date='data:post.date' expr:data-id='data:post.id' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-comments='data:post.numberOfComments ? data:post.numberOfComments : 0' expr:data-date='data:post.date ? data:post.date : &quot;&quot;' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
     <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
     <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
     
@@ -2696,15 +2711,15 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </header>
     <b:if cond='data:post.labels'>
       <b:if cond='data:post.lastUpdated'>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
       </b:if>
     <b:else/>
       <b:if cond='data:post.lastUpdated'>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.lastUpdated.iso8601'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author.name' expr:data-updated='data:post.date.iso8601'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
       </b:if>
     </b:if>
     <b:if cond='data:post.labels'>
@@ -2950,7 +2965,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <b:if cond='data:post.author and data:post.author.aboutMe and data:view.isPost'>
     <div class='author-profile'>
       <b:if cond='data:post.author.authorPhoto and data:post.author.authorPhoto.url'>
-        <img class='author-image' decoding='async' expr:alt='data:post.author.name + &quot; photo&quot;' expr:src='data:post.author.authorPhoto.url' height='50' loading='lazy' width='50'/>
+        <img class='author-image' decoding='async' expr:alt='(data:post.author and data:post.author.name ? data:post.author.name : &quot;Author&quot;) + &quot; photo&quot;' expr:src='data:post.author.authorPhoto.url' height='50' loading='lazy' width='50'/>
         <div class='author-about'>
           <b:include data='post' name='aboutPostAuthor'/>
         </div>
@@ -3045,7 +3060,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <span class='byline post-timestamp'>
     <data:byline.label/>
     <b:if cond='data:post.url'>      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
-        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+        <time class='published' expr:datetime='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:title='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'>
           <data:post.date/>
         </time>
       </a>
