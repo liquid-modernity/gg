@@ -547,20 +547,6 @@ const parseFeedNextStartIndex = (feed, fallback) => {
   return toPositiveInt(fallback, 0, 1000000);
 };
 
-const buildSearchNextUrlFromPublished = (requestUrl, published, maxResults) => {
-  const raw = cleanText(published);
-  if (!raw) return "";
-  try {
-    const req = new URL(requestUrl);
-    const out = new URL("/search", req.origin);
-    out.searchParams.set("updated-max", raw);
-    out.searchParams.set("max-results", String(toPositiveInt(maxResults, BLOG_LISTING_MIN_POSTCARDS)));
-    return out.toString();
-  } catch (e) {
-    return "";
-  }
-};
-
 const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
   const needed = toPositiveInt(neededCount, BLOG_LISTING_MIN_POSTCARDS, BLOG_LISTING_FEED_MAX_RESULTS);
   if (needed <= 0) return { cards: [], nextUrl: "" };
@@ -569,12 +555,11 @@ const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
   let nextStartIndex = query.startIndex;
   const cards = [];
   let fallbackNextUrl = "";
-  let lastPublished = "";
   let pages = 0;
 
   while (cards.length < needed && pages < BLOG_LISTING_FEED_MAX_PAGES) {
     pages += 1;
-    const { url: feedUrl, maxResults } = buildListingFeedUrl(requestUrl, needed, nextStartIndex);
+    const { url: feedUrl } = buildListingFeedUrl(requestUrl, needed, nextStartIndex);
     let feedRes;
     try {
       feedRes = await fetch(feedUrl, {
@@ -597,9 +582,7 @@ const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
     }
     const feed = json && json.feed ? json.feed : null;
     const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
-    if (!fallbackNextUrl) {
-      fallbackNextUrl = mapFeedNextToSearchUrl(feed, requestUrl, maxResults);
-    }
+    fallbackNextUrl = mapFeedNextToSearchUrl(feed, requestUrl, query.maxResults) || "";
 
     let addedThisPage = 0;
     for (const entry of entries) {
@@ -609,15 +592,9 @@ const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
       seen.add(card.key);
       cards.push(card);
       addedThisPage += 1;
-      if (card.published) {
-        lastPublished = card.published;
-      }
       if (cards.length >= needed) break;
     }
-    if (cards.length >= needed) {
-      fallbackNextUrl = buildSearchNextUrlFromPublished(requestUrl, lastPublished, maxResults) || fallbackNextUrl;
-      break;
-    }
+    if (cards.length >= needed) break;
 
     const nextFromFeed = parseFeedNextStartIndex(feed, 0);
     if (!nextFromFeed || nextFromFeed <= nextStartIndex) {
@@ -629,8 +606,7 @@ const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
     nextStartIndex = nextFromFeed;
   }
 
-  const nextUrl =
-    buildSearchNextUrlFromPublished(requestUrl, lastPublished, query.maxResults) || fallbackNextUrl;
+  const nextUrl = fallbackNextUrl;
   return {
     cards,
     nextUrl,
@@ -1430,7 +1406,254 @@ const ensureListingResponse = async (response, requestUrl, opts = {}) => {
   return ensureBlogListingPostcards(response, requestUrl, opts);
 };
 
-const ensurePostTocResponse = async (response) => {
+const POST_DETAIL_FALLBACK_MAX_RESULTS = 150;
+
+const normalizePathKey = (rawPath) => {
+  const value = String(rawPath || "").trim();
+  if (!value) return "";
+  const noQuery = value.split("?")[0].split("#")[0];
+  if (!noQuery) return "/";
+  const normalized = noQuery.startsWith("/") ? noQuery : `/${noQuery}`;
+  const trimmed = normalized.replace(/\/+$/, "");
+  return trimmed || "/";
+};
+
+const entryPathname = (entry) => {
+  const alt = pickFeedAlternateUrl(entry);
+  if (!alt) return "";
+  try {
+    const parsed = new URL(alt);
+    return normalizePathKey(parsed.pathname);
+  } catch (e) {
+    return normalizePathKey(alt);
+  }
+};
+
+const findFeedEntryByPath = (feed, pathname) => {
+  const targetPath = normalizePathKey(pathname);
+  if (!targetPath) return null;
+  const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
+  for (const entry of entries) {
+    if (!entry) continue;
+    if (entryPathname(entry) === targetPath) {
+      return entry;
+    }
+  }
+  return null;
+};
+
+const fetchFeedEntryByPath = async (requestUrl, pathname) => {
+  const targetPath = normalizePathKey(pathname);
+  if (!targetPath) return null;
+  let req;
+  try {
+    req = new URL(requestUrl);
+  } catch (e) {
+    return null;
+  }
+  const lookups = targetPath.startsWith("/p/")
+    ? [
+        { feedPath: "/feeds/pages/default", isPageFeed: true },
+        { feedPath: "/feeds/posts/default", isPageFeed: false },
+      ]
+    : [
+        { feedPath: "/feeds/posts/default", isPageFeed: false },
+        { feedPath: "/feeds/pages/default", isPageFeed: true },
+      ];
+  for (const lookup of lookups) {
+    const feedUrl = new URL(lookup.feedPath, req.origin);
+    feedUrl.searchParams.set("alt", "json");
+    feedUrl.searchParams.set("max-results", String(POST_DETAIL_FALLBACK_MAX_RESULTS));
+    let feedRes;
+    try {
+      feedRes = await fetch(feedUrl.toString(), {
+        headers: {
+          Accept: "application/json",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+    } catch (e) {
+      continue;
+    }
+    if (!feedRes || !feedRes.ok) continue;
+    let json;
+    try {
+      json = await feedRes.json();
+    } catch (e) {
+      continue;
+    }
+    const feed = json && json.feed ? json.feed : null;
+    const match = findFeedEntryByPath(feed, targetPath);
+    if (match) {
+      return { entry: match, isPageFeed: lookup.isPageFeed };
+    }
+  }
+  return null;
+};
+
+const buildFallbackPostToolbarHtml = (safeComments, hasCommentBadge) => {
+  return [
+    "<div class='gg-post__toolbar' data-gg-module='post-toolbar'>",
+    "<div class='gg-post__toolbar-group'>",
+    "<button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>",
+    "</button>",
+    "</div>",
+    "<div class='gg-post__toolbar-group'>",
+    "<button aria-expanded='false' aria-label='Information' class='gg-post__tool' data-gg-copy-aria='post.action.info' data-gg-postbar='info' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>",
+    "</button>",
+    "<button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-copy-aria='post.action.focus' data-gg-postbar='focus' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>",
+    "</button>",
+    "<button aria-label='Save to library' class='gg-post__tool gg-post__action--bookmark' data-gg-copy-aria='post.action.save' data-gg-postbar='save' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>",
+    "</button>",
+    "<button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>",
+    hasCommentBadge
+      ? `<span aria-hidden='true' class='gg-post__tool-badge'>${safeComments}</span>`
+      : "",
+    "</button>",
+    "<button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>",
+    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>",
+    "</button>",
+    "</div>",
+    "</div>",
+  ].join("");
+};
+
+const buildFallbackCommentsPanelHtml = (safeComments, commentsCount) => {
+  const heading = commentsCount === 1 ? "1 Comment" : `${safeComments} Comments`;
+  const message =
+    commentsCount > 0
+      ? "Comments are temporarily unavailable in fallback mode."
+      : "No comments yet.";
+  return [
+    "<div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>",
+    "<div class='gg-comments-panel__body' data-gg-slot='comments'>",
+    `<section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' data-num-comments='${safeComments}' id='comments'>`,
+    "<a name='comments'></a>",
+    "<div aria-hidden='true' class='gg-comments__head-spacer'></div>",
+    "<header class='gg-comments__head'>",
+    "<div class='gg-comments__title'>",
+    "<span aria-hidden='true' class='ms'>comment</span>",
+    `<h3 class='gg-comments__h'>${heading}</h3>`,
+    "</div>",
+    "<div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'></div>",
+    "</header>",
+    "<div class='gg-comments__content comments-content'>",
+    "<div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>",
+    "<div class='gg-cmt-empty'>",
+    "<strong data-gg-copy='comments.empty.title'>Comments</strong>",
+    `<span>${escapeHtml(message)}</span>`,
+    "</div>",
+    "</div>",
+    "</div>",
+    "<div aria-hidden='true' class='gg-comments__footer-spacer'></div>",
+    "<div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-open='0' data-gg-has-cta='0'>",
+    "<div class='gg-comments__footer-inner'>",
+    "<div class='gg-comments__footer-main'>",
+    "<div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'></div>",
+    "<div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'></div>",
+    "</div>",
+    "</div>",
+    "</div>",
+    "</section>",
+    "</div>",
+    "</div>",
+  ].join("");
+};
+
+const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
+  if (!entry) return "";
+  const opt = options || {};
+  const title = cleanText(entry && entry.title && entry.title.$t) || "Untitled";
+  const postId = extractFeedPostId(entry);
+  const postUrl = pickFeedAlternateUrl(entry) || String(requestUrl || "");
+  const contentHtml = String(
+    (entry && entry.content && entry.content.$t) ||
+      (entry && entry.summary && entry.summary.$t) ||
+      ""
+  );
+  const publishedIso = cleanText(entry && entry.published && entry.published.$t);
+  const updatedIso = cleanText(entry && entry.updated && entry.updated.$t) || publishedIso;
+  const publishedText = formatIsoDate(publishedIso || updatedIso);
+  const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t) || "0";
+  const commentsCount = toPositiveInt(commentsRaw, 0, 1000000);
+  const commentsText = String(commentsCount);
+  const author = pickFeedAuthor(entry);
+  const authorName = cleanText(author.name) || "PakRPP";
+  const categories = Array.isArray(entry && entry.category) ? entry.category : [];
+  const labels = categories
+    .map((item) => cleanText(item && item.term))
+    .filter(Boolean);
+  const labelsHtml = labels.length
+    ? `<div class='gg-post__labels gg-visually-hidden'>${labels
+        .map((name) => {
+          const text = escapeHtml(name);
+          const href = escapeHtml(buildFeedLabelUrl(name, postUrl));
+          return `<a class='gg-post__label-link' href='${href || "#"}' rel='tag'>${text}</a>`;
+        })
+        .join("")}</div>`
+    : "";
+  const words = stripHtml(contentHtml).split(/\s+/).filter(Boolean).length;
+  const readMin = words ? `${Math.max(1, Math.ceil(words / 200))} min read` : "";
+  const safeTitle = escapeHtml(title);
+  const safePostId = escapeHtml(postId || "fallback");
+  const safePostUrl = escapeHtml(postUrl || String(requestUrl || ""));
+  const safeAuthor = escapeHtml(authorName);
+  const safeDateText = escapeHtml(publishedText);
+  const safeUpdated = escapeHtml(updatedIso || publishedIso || "");
+  const safeComments = escapeHtml(commentsText);
+  const safeReadMin = escapeHtml(readMin);
+  const surface = opt.isPage ? "page" : "post";
+  const hasCommentBadge = commentsCount > 0;
+  const toolbarHtml = buildFallbackPostToolbarHtml(safeComments, hasCommentBadge);
+  const commentsPanelHtml = buildFallbackCommentsPanelHtml(safeComments, commentsCount);
+  return [
+    `<article class='gg-post' data-gg-module='post-detail' data-gg-surface='${surface}' data-author='${safeAuthor}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safePostUrl}'>`,
+    toolbarHtml,
+    "<header class='gg-post__header'>",
+    `<h1 class='gg-post__title' data-gg-marker='panel-post-title'>${safeTitle}</h1>`,
+    "</header>",
+    `<div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='${safeReadMin}' data-tags='' data-author='${safeAuthor}' data-updated='${safeUpdated}'></div>`,
+    labelsHtml,
+    "<div class='gg-post__body'>",
+    `<section class='gg-post__content post-body entry-content' data-gg-module='post-content' id='post-body-${safePostId}'>`,
+    contentHtml,
+    "</section>",
+    "<div class='gg-post__footer'>",
+    "<div aria-label='Tags' class='gg-post__footer-tags' data-gg-slot='footer-tags' hidden='true'></div>",
+    "</div>",
+    "<div aria-hidden='true' class='gg-post__comments-anchor' data-gg-comments-owner='panel' hidden='hidden'></div>",
+    "</div>",
+    "</article>",
+    commentsPanelHtml,
+  ].join("");
+};
+
+const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
+  const source = String(html || "");
+  if (!source) return source;
+  const hasBlog1Failure = /Failed to render gadget\s+'Blog1'/i.test(source);
+  const hasPostDetail = /data-gg-module\s*=\s*['"]post-detail['"]/i.test(source);
+  if (!hasBlog1Failure && hasPostDetail) {
+    return source;
+  }
+  const blogRange = findElementByIdRange(source, "div", "blog");
+  if (!blogRange) return source;
+  const matched = await fetchFeedEntryByPath(requestUrl, pathname);
+  if (!matched || !matched.entry) return source;
+  const fallbackHtml = buildFallbackPostDetailHtml(matched.entry, requestUrl, {
+    isPage: !!matched.isPageFeed || /^\/p\//i.test(String(pathname || "")),
+  });
+  if (!fallbackHtml) return source;
+  return `${source.slice(0, blogRange.innerStart)}${fallbackHtml}${source.slice(blogRange.innerEnd)}`;
+};
+
+const ensurePostDetailResponse = async (response, requestUrl, pathname) => {
   let html = "";
   try {
     html = await response.clone().text();
@@ -1438,7 +1661,13 @@ const ensurePostTocResponse = async (response) => {
     return response;
   }
   if (!html) return response;
-  const patched = cleanPostTocHtml(html);
+  let patched = html;
+  try {
+    patched = await ensurePostDetailFallbackHtml(patched, requestUrl, pathname);
+  } catch (e) {
+    patched = html;
+  }
+  patched = cleanPostTocHtml(patched);
   if (patched === html) return response;
   return responseFromHtml(response, patched);
 };
@@ -2393,7 +2622,7 @@ export default {
           !paginationListingFallback &&
           isPostLikePath(pathname)
         ) {
-          htmlResponse = await ensurePostTocResponse(htmlResponse);
+          htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
         if (templateReleaseDrift) {

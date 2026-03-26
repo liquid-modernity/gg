@@ -2785,12 +2785,18 @@ return false;
 
 if (action === 'contact') {
 if (isHomeCapable() && GG.modules.homeState) {
+  var alreadyLanding = effectiveDockState() === 'landing';
+  var targetAnchor = anchor || '#contact';
   GG.modules.homeState.setState('landing');
-  if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
-    GG.util.homeRouter.pushState('landing', '/landing');
+  if (!alreadyLanding) {
+    if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
+      GG.util.homeRouter.pushState('landing', '/landing');
+    } else {
+      try { history.pushState({ ggHome:'landing' }, '', '/landing'); } catch (_) {}
+    }
   }
   updateActive();
-  scrollToAnchor(anchor || '#gg-landing-hero-5');
+  scrollToAnchor(targetAnchor);
   return true;
 }
 return false;
@@ -8366,7 +8372,7 @@ if (d.readyState === 'loading') {
   'use strict';
   var HOME_ANCHOR = '#gg-home-blog-anchor'; // target "mentok" utama
   var HOME_FALLBACK = '#gg-landing-hero';   // fallback kalau anchor utama gak ada
-  var HOME_CONTACT = '#gg-landing-hero-5';
+  var HOME_CONTACT = '#contact';
   var HOME_LANDING_PATH = '/landing';
   var HOME_BLOG_PATH = '/';
   function homeRoot(){
