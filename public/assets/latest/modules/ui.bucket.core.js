@@ -2787,6 +2787,8 @@ if (action === 'contact') {
 if (isHomeCapable() && GG.modules.homeState) {
   var alreadyLanding = effectiveDockState() === 'landing';
   var targetAnchor = anchor || '#contact';
+  if (targetAnchor === '#gg-landing-hero-5') targetAnchor = '#contact';
+  if (targetAnchor === '#contact' && !document.querySelector(targetAnchor)) targetAnchor = '#gg-landing-hero-5';
   GG.modules.homeState.setState('landing');
   if (!alreadyLanding) {
     if (GG.util && GG.util.homeRouter && GG.util.homeRouter.pushState) {
@@ -8373,6 +8375,7 @@ if (d.readyState === 'loading') {
   var HOME_ANCHOR = '#gg-home-blog-anchor'; // target "mentok" utama
   var HOME_FALLBACK = '#gg-landing-hero';   // fallback kalau anchor utama gak ada
   var HOME_CONTACT = '#contact';
+  var HOME_CONTACT_LEGACY = '#gg-landing-hero-5';
   var HOME_LANDING_PATH = '/landing';
   var HOME_BLOG_PATH = '/';
   function homeRoot(){
@@ -8469,13 +8472,16 @@ function isSystemPath(pathname){
     if(path === listingPath && view === 'landing') return landingKey;
     if(path === landingPath && view === 'blog') return listingKey;
     if(path === listingPath && u.hash === HOME_ANCHOR) return listingKey;
+    if(path === listingPath && u.hash === HOME_CONTACT_LEGACY) return landingPath + u.search + HOME_CONTACT;
     if(path === listingPath && (u.hash === HOME_FALLBACK || u.hash === HOME_CONTACT)) return landingPath + u.search + u.hash;
     if(path === landingPath && u.hash === HOME_ANCHOR) return listingKey;
     if(isBlogHome) return listingKey;
     if(path === landingPath){
+      if(u.hash === HOME_CONTACT_LEGACY) u.hash = HOME_CONTACT;
       if(u.hash !== HOME_FALLBACK && u.hash !== HOME_CONTACT) u.hash = '';
       return landingPath + u.search + u.hash;
     }
+    if(u.hash === HOME_CONTACT_LEGACY) u.hash = HOME_CONTACT;
     if(u.hash !== HOME_ANCHOR && u.hash !== HOME_FALLBACK && u.hash !== HOME_CONTACT) u.hash = '';
     return path + u.search + u.hash;
   }

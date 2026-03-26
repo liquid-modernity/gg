@@ -1672,6 +1672,46 @@ const ensurePostDetailResponse = async (response, requestUrl, pathname) => {
   return responseFromHtml(response, patched);
 };
 
+const LEGACY_LANDING_CONTACT_ID = "gg-landing-hero-5";
+const LEGACY_LANDING_CONTACT_HASH = `#${LEGACY_LANDING_CONTACT_ID}`;
+const CANONICAL_LANDING_CONTACT_ID = "contact";
+const CANONICAL_LANDING_CONTACT_HASH = `#${CANONICAL_LANDING_CONTACT_ID}`;
+
+const normalizeLandingContactHtml = (html) => {
+  const source = String(html || "");
+  if (!source) return source;
+  const hasLegacyHash = source.includes(LEGACY_LANDING_CONTACT_HASH);
+  const legacyIdRe = new RegExp(
+    `\\bid\\s*=\\s*(['"])${LEGACY_LANDING_CONTACT_ID}\\1`,
+    "i"
+  );
+  if (!hasLegacyHash && !legacyIdRe.test(source)) {
+    return source;
+  }
+  let out = source;
+  if (hasLegacyHash) {
+    out = out.split(LEGACY_LANDING_CONTACT_HASH).join(CANONICAL_LANDING_CONTACT_HASH);
+  }
+  out = out.replace(
+    new RegExp(`\\bid\\s*=\\s*(['"])${LEGACY_LANDING_CONTACT_ID}\\1`, "gi"),
+    `id='${CANONICAL_LANDING_CONTACT_ID}'`
+  );
+  return out;
+};
+
+const ensureLandingContactResponse = async (response) => {
+  let html = "";
+  try {
+    html = await response.clone().text();
+  } catch (e) {
+    return response;
+  }
+  if (!html) return response;
+  const patched = normalizeLandingContactHtml(html);
+  if (patched === html) return response;
+  return responseFromHtml(response, patched);
+};
+
 const CSP_REPORT_BUCKET = new Map();
 const CSP_REPORT_MAX = 500;
 const CSP_REPORT_TRIM = 100;
@@ -2623,6 +2663,9 @@ export default {
           isPostLikePath(pathname)
         ) {
           htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
+        }
+        if (request.method !== "HEAD") {
+          htmlResponse = await ensureLandingContactResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
         if (templateReleaseDrift) {
