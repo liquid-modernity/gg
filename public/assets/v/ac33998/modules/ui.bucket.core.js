@@ -521,9 +521,13 @@ if (main) {
   main.setAttribute('data-gg-surface', surface);
   main.setAttribute('data-gg-page', page);
   main.setAttribute('data-gg-view', view);
-  main.setAttribute('data-gg-home-state', surface === 'landing' ? 'landing' : 'blog');
-  if (isHomeSurface) main.setAttribute('data-gg-home-root', '1');
-  else main.removeAttribute('data-gg-home-root');
+  if (isHomeSurface) {
+    main.setAttribute('data-gg-home-state', surface === 'landing' ? 'landing' : 'blog');
+    main.setAttribute('data-gg-home-root', '1');
+  } else {
+    main.removeAttribute('data-gg-home-state');
+    main.removeAttribute('data-gg-home-root');
+  }
   if (special) main.setAttribute('data-gg-special', special);
   else main.removeAttribute('data-gg-special');
 }

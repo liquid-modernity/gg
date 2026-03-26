@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='1281d454abde' name='gg-template-fingerprint'/>
+    <meta content='2d9f8b2760fc' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -970,10 +970,6 @@ body[data-gg-surface="post"] .gg-home-landing{
   display:none !important;
 }
 body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
-html[data-gg-prehome="blog"] [data-gg-home-root="1"] [data-gg-home-layer="landing"],
-html[data-gg-prehome="blog"] [data-gg-home-root="1"] .gg-home-landing{display:none !important;}
-html[data-gg-prehome="landing"] [data-gg-home-root="1"] [data-gg-home-layer="blog"],
-html[data-gg-prehome="landing"] [data-gg-home-root="1"] .gg-home-blog{display:none !important;}
 
 :where(a, button, input, textarea, select, summary, [role="button"], [tabindex]):focus-visible{
   outline:2px solid currentColor;
@@ -1073,7 +1069,7 @@ text-align: center;
     <b:attr cond='data:ggIsPortfolioPage' name='data-gg-special' value='portfolio'/>
     <b:attr cond='data:ggIsAuthorPage' name='data-gg-special' value='author'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='1281d454abde' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='2d9f8b2760fc' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1253,8 +1249,10 @@ text-align: center;
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-home-state='data:ggSurfaceKind == &quot;landing&quot; ? &quot;landing&quot; : &quot;blog&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
-    <b:attr cond='data:view.isHomepage or data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-root' value='1'/>
+  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
+    <b:attr cond='data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-state' value='landing'/>
+    <b:attr cond='data:ggSurfaceKind == &quot;listing&quot;' name='data-gg-home-state' value='blog'/>
+    <b:attr cond='data:ggSurfaceKind == &quot;listing&quot; or data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-root' value='1'/>
     <b:attr cond='data:ggIsLabel and data:view.search and data:view.search.label' expr:value='data:view.search.label' name='data-gg-label'/>
     <b:attr cond='data:ggIsSearch and not data:ggIsLabel and data:view.search and data:view.search.query' expr:value='data:view.search.query' name='data-gg-query'/>
     <b:attr cond='data:ggIsBlogHome' name='data-gg-bloghome' value='1'/>
@@ -1515,7 +1513,7 @@ text-align: center;
           </b:if>
         
       <!-- Versi POST DETAIL -->
-      <b:if cond='data:view.isSingleItem'>
+      <b:if cond='data:view.isPost'>
         <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
@@ -1634,7 +1632,7 @@ text-align: center;
         </b:section>
           </b:if>
         
-        <b:if cond='data:view.isSingleItem'>
+        <b:if cond='data:view.isPost'>
         <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-post' name='Left SB Bot (Post)' showaddelement='true'>
           <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
             <b:widget-settings>
@@ -2634,7 +2632,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <!-- Comments are rendered in #ggPanelComments. -->
 
     <!-- Show ad inside post container, after comments, if single item. -->
-    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+    <b:include cond='data:view.isPost and data:post.includeAd' data='post' name='inlineAd'/>
   </article>
 
   <!-- Show ad outside post container (between posts) for feed pages. -->
@@ -2649,8 +2647,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
               <b:includable id='postDetail' var='post'>
   <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author.name' expr:data-comments='data:post.numberOfComments' expr:data-date='data:post.date' expr:data-id='data:post.id' expr:data-title='data:post.title' expr:data-url='data:post.url'>
+    <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
+    <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
     
     <!-- GAGA TOOLBAR POST DETAIL -->
+    <b:if cond='data:view.isPost'>
     <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
       <div class='gg-post__toolbar-group'>
                <button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>
@@ -2679,6 +2680,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         </button>
       </div>
     </div>
+    </b:if>
     <!-- /GAGA TOOLBAR POST DETAIL -->
 
    
@@ -2926,11 +2928,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     </div>
   </article>
-  <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
-    <div class='gg-comments-panel__body' data-gg-slot='comments'>
-      <b:include data='post' name='threadedComments'/>
+  <b:if cond='data:view.isPost'>
+    <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
+      <div class='gg-comments-panel__body' data-gg-slot='comments'>
+        <b:include data='post' name='threadedComments'/>
+      </div>
     </div>
-  </div>
+  </b:if>
 </b:includable>
               <b:includable id='postFooter' var='post'>
   <div class='post-footer'>
@@ -3175,6 +3179,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
             </b:widget>
           </b:section>
+    <b:if cond='data:view.isMultipleItems'>
     <b:section class='gg-home-blog__body' id='gg-mixed-deferred' name='gg-mixed-deferred' showaddelement='true'>
       <b:widget id='HTML10' locked='false' title='Youtube' type='HTML' version='2' visible='true'>
         <b:widget-settings>
@@ -3494,12 +3499,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
       </b:widget>
     </b:section>
+    </b:if>
     </div>
 
     <!-- GAGA TOP SHEET POST/PAGE DETAIL -->
 <aside class='gg-blog-sidebar gg-blog-sidebar--right'>
   <div class='gg-info-panel' data-gg-panel='info'>
-    <b:if cond='data:view.isSingleItem'>
+    <b:if cond='data:view.isPost'>
     <div aria-labelledby='gg-postinfo-title' aria-modal='true' class='gg-info-panel__card gg-pi gg-panelcard gg-sheet gg-sheet--info' data-gg-panelmeta='post' data-gg-sheet='info' data-wpm='200' hidden='hidden' id='gg-postinfo' role='dialog'>
       <div class='gg-pi__body'>
         <div class='gg-pi__identity'>
