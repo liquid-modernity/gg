@@ -1605,7 +1605,7 @@ const buildFallbackCommentsPanelHtml = (safeComments, commentsCount, options = {
     "<div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'></div>",
     "<div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'>",
     allowNewComments
-      ? `<div class='comment-form' data-gg-native-plumbing='composer' data-gg-owner='native-hidden' id='top-ce'><a name='comment-form'></a><a href='${safeFormSrc}' id='comment-editor-src' rel='noopener noreferrer' title='Comment Form Link'></a><iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' frameborder='0' height='90px' id='comment-editor' name='comment-editor' src='' width='100%'></iframe><script type='text/javascript'>(function(){if(typeof BLOG_CMT_createIframe==='function'){BLOG_CMT_createIframe(${relayLiteral});}})();</script></div>`
+      ? `<div class='comment-form' data-gg-native-plumbing='composer' data-gg-owner='native-hidden' id='top-ce'><a name='comment-form'></a><a href='${safeFormSrc}' id='comment-editor-src' rel='noopener noreferrer' title='Comment Form Link'></a><iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' frameborder='0' height='90px' id='comment-editor' name='comment-editor' src='${safeFormSrc}' width='100%'></iframe><script type='text/javascript'>(function(){var relay=${relayLiteral};var done=false;var tries=0;function init(){if(done)return;if(typeof BLOG_CMT_createIframe==='function'){done=true;BLOG_CMT_createIframe(relay);}}init();var timer=setInterval(function(){tries+=1;init();if(done||tries&gt;=20){clearInterval(timer);}},200);})();</script></div>`
       : "",
     "</div>",
     "</div>",
