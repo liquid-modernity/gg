@@ -6756,6 +6756,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function commentItemControl(comment){
     return comment && comment.querySelector ? comment.querySelector('.item-control') : null;
   }
+  function commentNativeMoreControl(comment){
+    var itemControl = commentItemControl(comment);
+    if (!itemControl || !itemControl.querySelector) return null;
+    return itemControl.querySelector('[data-gg-native-action="more"], .goog-toggle-button, [role="button"]');
+  }
+  function commentDeleteInvoker(comment){
+    var link = commentDeleteLink(comment);
+    var nativeMore = null;
+    if (link) return { kind: 'link', node: link };
+    nativeMore = commentNativeMoreControl(comment);
+    if (nativeMore) return { kind: 'native-more', node: nativeMore };
+    return null;
+  }
   function commentReplyBox(comment){
     var owned = comment && comment.__ggReplyBoxOwner;
     if (owned && owned.isConnected) return owned;
@@ -6765,6 +6778,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function commentReplies(comment){
     return directChildByClass(comment, 'comment-replies') || (comment && comment.querySelector ? comment.querySelector('.comment-replies') : null);
+  }
+  function commentNativeThreadToggle(comment){
+    return comment && comment.querySelector
+      ? comment.querySelector('.comment-replies .thread-toggle, .comment-replybox-single .thread-toggle, .comment-replybox-thread .thread-toggle')
+      : null;
+  }
+  function commentNativeThreadCount(comment){
+    var node = comment && comment.querySelector
+      ? comment.querySelector('.comment-replies .thread-count, .comment-replybox-single .thread-count, .comment-replybox-thread .thread-count')
+      : null;
+    var txt = cleanText(node && node.textContent);
+    var match = txt.match(/(\d+)/);
+    return match ? safeNumber(match[1]) : 0;
   }
   function commentsContent(root){
     return root && root.querySelector ? root.querySelector('.gg-comments__content') : null;
@@ -7453,7 +7479,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   }
   function ensureToggleButton(comment){
     var replies = commentReplies(comment);
-    var count = replyChildrenCount(replies);
+    var renderedCount = replyChildrenCount(replies);
+    var nativeToggle = commentNativeThreadToggle(comment);
+    var nativeCount = commentNativeThreadCount(comment);
+    var count = renderedCount || nativeCount;
     var actions = ensureActions(comment);
     var state = commentStateInfo(comment);
     var btn = null;
@@ -7462,7 +7491,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!actions) return;
     btn = actions.querySelector('.cmt2-thread-toggle');
     before = actions.querySelector('.cmt2-ctx');
-    if (!replies || !count || !state.interactive) {
+    if ((!replies && !nativeToggle) || !count || !state.interactive) {
       if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
       if (replies) {
         replies.hidden = false;
@@ -7478,7 +7507,15 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (before) actions.insertBefore(btn, before);
       else actions.appendChild(btn);
     }
-    isOpen = !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed';
+    isOpen = !!(replies && !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed');
+    if ((!replies || renderedCount <= 0) && nativeToggle) {
+      var nativeExpanded = cleanText(nativeToggle.getAttribute && nativeToggle.getAttribute('aria-expanded')).toLowerCase();
+      var nativeText = cleanText(nativeToggle.textContent).toLowerCase();
+      if (nativeExpanded === 'true' || /hide|sembuny|tutup/i.test(nativeText)) isOpen = true;
+      if (nativeExpanded === 'false' || /view|show|lihat|buka/i.test(nativeText)) isOpen = false;
+    }
+    btn.__ggNativeThreadToggle = nativeToggle && nativeToggle.isConnected ? nativeToggle : null;
+    btn.setAttribute('data-gg-thread-count', String(count));
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     btn.setAttribute('aria-label', isOpen
       ? copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: count })
@@ -7672,7 +7709,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function ensureMenuButton(comment){
     var actions = ensureActions(comment);
     var permalink = commentPermalink(comment);
-    var deleteLink = commentDeleteLink(comment);
+    var deleteInvoker = commentDeleteInvoker(comment);
     var itemControl = commentItemControl(comment);
     var wrap = null;
     var btn = null;
@@ -7688,7 +7725,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       itemControl.setAttribute('aria-hidden', 'true');
       itemControl.setAttribute('data-gg-state', 'hidden');
     }
-    if (!permalink && !deleteLink) {
+    if (!permalink && !deleteInvoker) {
       wrap = actions.querySelector('.cmt2-ctx');
       if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
       return;
@@ -7740,7 +7777,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       copyBtn.parentNode.removeChild(copyBtn);
     }
     deleteBtn = pop.querySelector('[data-gg-comment-action="delete"]');
-    if (deleteLink && !deleteBtn) {
+    if (deleteInvoker && !deleteBtn) {
       deleteBtn = d.createElement('button');
       deleteBtn.type = 'button';
       deleteBtn.setAttribute('data-gg-comment-action', 'delete');
@@ -7754,8 +7791,11 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       })());
       deleteBtn.appendChild(d.createTextNode(copyLabel('comments.action.delete', 'Delete comment')));
       pop.appendChild(deleteBtn);
-    } else if (!deleteLink && deleteBtn && deleteBtn.parentNode) {
+    } else if (!deleteInvoker && deleteBtn && deleteBtn.parentNode) {
       deleteBtn.parentNode.removeChild(deleteBtn);
+    }
+    if (deleteBtn && deleteInvoker) {
+      deleteBtn.setAttribute('data-gg-delete-kind', deleteInvoker.kind || 'link');
     }
   }
   function closeMenus(root, keep){
@@ -8067,36 +8107,100 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     });
     return true;
   }
-  function toggleReplies(comment){
+  function toggleReplies(root, comment){
     var replies = commentReplies(comment);
     var actions = ensureActions(comment);
     var btn = actions ? actions.querySelector('.cmt2-thread-toggle') : null;
+    var nativeToggle = null;
+    var renderedCount = replyChildrenCount(replies);
+    var count = renderedCount;
     var open = true;
-    if (!replies || !btn) return false;
+    if (!btn) return false;
+    nativeToggle = (btn.__ggNativeThreadToggle && btn.__ggNativeThreadToggle.isConnected)
+      ? btn.__ggNativeThreadToggle
+      : commentNativeThreadToggle(comment);
+    if (count <= 0) {
+      count = commentNativeThreadCount(comment) || safeNumber(btn.getAttribute('data-gg-thread-count'));
+    }
+    if (!count) return false;
+    if ((!replies || renderedCount <= 0) && nativeToggle && typeof nativeToggle.click === 'function') {
+      try { nativeToggle.click(); } catch (_) {}
+      if (root) {
+        scheduleCommentSync(root, {
+          initialDelay: 90,
+          maxAttempts: 8,
+          until: function(){
+            var latestReplies = commentReplies(comment);
+            return replyChildrenCount(latestReplies) > 0;
+          }
+        });
+      }
+      return true;
+    }
+    if (!replies) return false;
     open = !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed';
     replies.hidden = open;
     replies.setAttribute('data-gg-state', open ? 'collapsed' : 'expanded');
     btn.setAttribute('aria-expanded', open ? 'false' : 'true');
     btn.setAttribute('aria-label', open
-      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: replyChildrenCount(replies) })
-      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: replyChildrenCount(replies) }));
+      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: count })
+      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: count }));
     btn.setAttribute('data-gg-comment-icon', open ? 'unfold_more' : 'unfold_less');
     btn.textContent = open
-      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: replyChildrenCount(replies) })
-      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: replyChildrenCount(replies) });
+      ? copyLabel('comments.replies.show', 'View replies ({count})', { count: count })
+      : copyLabel('comments.replies.hide', 'Hide replies ({count})', { count: count });
     return !open;
   }
   function triggerDelete(comment){
-    var link = commentDeleteLink(comment);
+    var invoker = commentDeleteInvoker(comment);
+    var link = invoker && invoker.kind === 'link' ? invoker.node : null;
+    var nativeMore = invoker && invoker.kind === 'native-more' ? invoker.node : null;
+    var menuRoots = null;
+    var menuItems = null;
+    var deleteItem = null;
     var href = '';
-    if (!link) return false;
+    if (!invoker) return false;
+    if (link) {
+      try {
+        link.click();
+        return true;
+      } catch (_) {}
+      href = link.getAttribute('href') || link.href || '';
+      if (href) {
+        w.location.href = href;
+        return true;
+      }
+      return false;
+    }
+    if (!nativeMore) return false;
     try {
-      link.click();
-      return true;
+      nativeMore.click();
     } catch (_) {}
-    href = link.getAttribute('href') || link.href || '';
-    if (href) {
-      w.location.href = href;
+    w.setTimeout(function(){
+      menuRoots = toArray(d.querySelectorAll('.goog-menu, [role="menu"]')).filter(isVisibleNode);
+      if (!menuRoots.length) menuRoots = [d];
+      menuItems = [];
+      menuRoots.forEach(function(root){
+        toArray(root.querySelectorAll('.goog-menuitem, [role="menuitem"], a, button')).forEach(function(node){
+          if (menuItems.indexOf(node) === -1) menuItems.push(node);
+        });
+      });
+      deleteItem = menuItems.find(function(node){
+        var aria = cleanText(node && node.getAttribute ? node.getAttribute('aria-label') : '');
+        var txt = cleanText(node && node.textContent);
+        return /delete|hapus/i.test(aria) || /delete|hapus/i.test(txt);
+      }) || null;
+      if (!deleteItem) return;
+      try {
+        deleteItem.click();
+      } catch (_) {
+        var target = deleteItem && deleteItem.querySelector ? deleteItem.querySelector('a,button') : null;
+        if (target && typeof target.click === 'function') {
+          try { target.click(); } catch (__) {}
+        }
+      }
+    }, 40);
+    if (nativeMore) {
       return true;
     }
     return false;
@@ -8212,7 +8316,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       }
       if (target.matches && target.matches('[data-gg-comment-toggle]')) {
         e.preventDefault();
-        if (comment) toggleReplies(comment);
+        if (comment) toggleReplies(root, comment);
         return;
       }
     }, false);
