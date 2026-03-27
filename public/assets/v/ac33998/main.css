@@ -9508,7 +9508,7 @@ isolation:isolate;
 --gg-cmt-font-reply-meta:11px;
 --gg-cmt-font-action:11px;
 --gg-cmt-font-body:12.5px;
---gg-cmt-reply-indent:14px;
+--gg-cmt-reply-indent:12px;
 }
 #ggPanelComments .gg-comments-panel__body,
 #ggPanelComments #comments{
@@ -9627,7 +9627,7 @@ opacity:.89;
 #ggPanelComments #comments #cmt2-holder li.comment > .comment-block{
 position:relative;
 gap:4px;
-padding-right:30px;
+padding-right:0;
 }
 #ggPanelComments #comments #cmt2-holder .comment-header{
 display:flex;
@@ -9748,7 +9748,7 @@ height:auto;
 display:flex;
 align-items:center;
 flex-wrap:wrap;
-gap:6px;
+gap:4px;
 min-height:var(--gg-cmt-hit-target);
 margin-top:0;
 }
@@ -9795,11 +9795,13 @@ line-height:1;
 color:currentColor;
 }
 #ggPanelComments #comments #cmt2-holder .comment-actions > .cmt2-ctx{
-position:absolute;
-top:0;
-right:0;
-margin-left:0;
+position:relative;
+top:auto;
+right:auto;
+margin-left:1px;
 order:3;
+display:inline-flex;
+align-items:center;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-btn{
 width:var(--gg-cmt-hit-target);
@@ -9861,20 +9863,21 @@ line-height:1.25;
 color:color-mix(in srgb, var(--gg-muted) 58%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies{
-margin-top:6px;
+margin-top:4px;
 padding-left:var(--gg-cmt-reply-indent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies::before{
-left:4px;
-top:3px;
-bottom:5px;
+left:3px;
+top:2px;
+bottom:4px;
 width:1px;
-background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 41%, transparent), color-mix(in srgb, var(--gg-border) 14%, transparent));
+background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 33%, transparent), color-mix(in srgb, var(--gg-border) 10%, transparent));
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment{
 grid-template-columns:24px minmax(0, 1fr);
 column-gap:6px;
-padding:7px 0 8px;
+padding:6px 0 7px;
+border-bottom-color:color-mix(in srgb, var(--gg-border) 22%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment > .avatar-image-container{
 width:24px;
