@@ -6970,6 +6970,82 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   function composerField(box){
     return box && box.querySelector ? box.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]') : null;
   }
+  function commentEditorLink(box){
+    return box && box.querySelector ? box.querySelector('#comment-editor-src') : null;
+  }
+  function commentEditorFrame(box){
+    return box && box.querySelector ? box.querySelector('#comment-editor') : null;
+  }
+  function splitUrlHash(url){
+    var raw = cleanText(url || '');
+    var idx = -1;
+    if (!raw) return { base: '', hash: '' };
+    idx = raw.indexOf('#');
+    if (idx < 0) return { base: raw, hash: '' };
+    return {
+      base: raw.slice(0, idx),
+      hash: raw.slice(idx)
+    };
+  }
+  function dropUrlParam(url, param){
+    var raw = cleanText(url || '');
+    var re = null;
+    if (!raw || !param) return raw;
+    re = new RegExp('([?&])' + param + '=[^&#]*', 'ig');
+    raw = raw.replace(re, '$1');
+    raw = raw.replace(/\?&/g, '?');
+    raw = raw.replace(/&&+/g, '&');
+    raw = raw.replace(/([?&])(?=#|$)/g, '');
+    return raw;
+  }
+  function appendUrlParam(url, param, value){
+    var parts = splitUrlHash(url);
+    var base = parts.base;
+    var hash = parts.hash;
+    var joiner = '';
+    if (!base || !param) return cleanText(url || '');
+    joiner = base.indexOf('?') >= 0 ? '&' : '?';
+    base += joiner + param + '=' + encodeURIComponent(String(value == null ? '' : value));
+    return base + hash;
+  }
+  function composeNativeCommentUrl(baseUrl, parentId){
+    var next = cleanText(baseUrl || '');
+    if (!next) return '';
+    next = dropUrlParam(next, 'parentID');
+    next = dropUrlParam(next, 'parentid');
+    next = dropUrlParam(next, 'isReply');
+    next = dropUrlParam(next, 'isreply');
+    if (parentId) next = appendUrlParam(next, 'parentID', parentId);
+    return next;
+  }
+  function syncNativeComposerTarget(root, parentId){
+    var box = topComposer(root);
+    var anchor = commentEditorLink(box) || (root && root.querySelector ? root.querySelector('#comment-editor-src') : null);
+    var frame = commentEditorFrame(box) || (root && root.querySelector ? root.querySelector('#comment-editor') : null);
+    var base = '';
+    var target = '';
+    var anchorHref = '';
+    var frameSrc = '';
+    if (!anchor && !frame) return false;
+    base = cleanText(anchor && (anchor.getAttribute('data-gg-native-base') || anchor.getAttribute('href') || anchor.href));
+    if (!base) base = cleanText(frame && (frame.getAttribute('data-gg-native-base') || frame.getAttribute('src') || frame.src));
+    if (!base) return false;
+    base = composeNativeCommentUrl(base, '');
+    target = composeNativeCommentUrl(base, parentId || '');
+    if (!target) return false;
+    if (anchor && anchor.setAttribute) {
+      anchorHref = cleanText(anchor.getAttribute('href') || anchor.href);
+      anchor.setAttribute('data-gg-native-base', base);
+      if (anchorHref !== target) anchor.setAttribute('href', target);
+    }
+    if (frame && frame.setAttribute) {
+      frameSrc = cleanText(frame.getAttribute('src') || frame.src);
+      frame.setAttribute('data-gg-native-base', base);
+      if (frameSrc !== target) frame.setAttribute('src', target);
+    }
+    if (root && root.setAttribute) root.setAttribute('data-gg-native-parent-id', parentId ? String(parentId) : '');
+    return true;
+  }
   function focusNoScroll(node){
     if (!node || typeof node.focus !== 'function') return false;
     try {
@@ -7274,6 +7350,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (root.classList) root.classList.toggle('gg-comments--footer-open', open);
     if (root.setAttribute) root.setAttribute('data-gg-footer-open', open ? '1' : '0');
     syncComposerOwner(root);
+    syncNativeComposerTarget(root, (reply && reply.replyMode === 'reply' && reply.replyTargetId) ? reply.replyTargetId : '');
     syncComposerKind(root);
     syncFooterLayout(root);
     return open;
@@ -7941,10 +8018,6 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!actions) return null;
     before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx');
     action = actions.querySelector('.cmt2-reply-action');
-    if (action && action !== primary && action.parentNode) {
-      action.parentNode.removeChild(action);
-      action = null;
-    }
     if (!state.interactive || !primary || !composerEnabled) {
       if (action && action.parentNode) action.parentNode.removeChild(action);
       for (i = 0; i < links.length; i++) {
@@ -7955,22 +8028,22 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       return null;
     }
     for (i = 0; i < links.length; i++) {
-      if (links[i] === primary) continue;
       setSuppressed(links[i]);
       parent = links[i].parentNode;
       if (parent && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
     }
-    action = primary;
-    if (!action) return null;
-    if (action.classList) action.classList.add('cmt2-reply-action');
+    if (!action) {
+      action = d.createElement('a');
+      action.href = 'javascript:;';
+      action.rel = 'nofollow';
+      action.className = 'comment-reply cmt2-reply-action';
+      action.setAttribute('data-gg-comment-action', 'reply');
+    }
     action.textContent = cleanText(primary.textContent) || copyLabel('comments.action.reply', 'Reply');
-    action.setAttribute('data-gg-comment-action', 'reply');
-    action.setAttribute('data-gg-native-reply', '1');
     action.setAttribute('data-gg-comment-role', 'reply');
     action.setAttribute('aria-label', copyLabel('comments.replyTo', 'Reply to {name}', { name: commentAuthor(comment) ? '@' + commentAuthor(comment) : copyLabel('comments.parentComment', 'comment') }));
     action.setAttribute('data-gg-comment-icon', 'reply');
-    action.__ggNativeReplyLink = action;
-    action.__ggNativeReplyDirect = true;
+    action.__ggNativeReplyLink = primary;
     action.removeAttribute('hidden');
     action.removeAttribute('aria-hidden');
     action.removeAttribute('data-gg-state');
@@ -8386,6 +8459,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     state.comment = null;
     state.nativeReplyLink = null;
     state.knownCommentIds = null;
+    syncNativeComposerTarget(root, '');
     syncFooterState(root);
   }
   function scheduleCommentSync(root, opts){
@@ -8497,6 +8571,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     comment.setAttribute('data-gg-replying', '1');
     root.classList.add('gg-comments--replying');
     if (root && root.setAttribute) root.setAttribute('data-gg-reply-mode', 'reply');
+    syncNativeComposerTarget(root, state.replyTargetId);
     syncFooterState(root);
     mountReplyBanner(root);
   }
@@ -8529,6 +8604,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     if (replyState(root).replyMode === 'reply' && !o.preserveReply) clearReplyState(root);
     setFooterOpen(root, true, { manual: true, focus: false });
+    syncNativeComposerTarget(root, '');
     nativeLink = nativeAddCommentLink(root);
     if (nativeLink && o.useNative !== false && typeof nativeLink.click === 'function') {
       try { nativeLink.click(); } catch (_) {}
@@ -8808,18 +8884,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="reply"]')) {
-        var nativeDirect = !!(target.getAttribute && target.getAttribute('data-gg-native-reply') === '1' && target.__ggNativeReplyDirect);
-        if (!nativeDirect) e.preventDefault();
+        e.preventDefault();
         nativeLink = target.__ggNativeReplyLink || pickPrimaryReplyLink(comment);
         if (comment) {
-          if (nativeDirect) {
-            w.setTimeout(function(){
-              if (!root || !root.isConnected || !comment.isConnected) return;
-              enterReplyMode(root, comment, null);
-            }, 0);
-          } else {
-            enterReplyMode(root, comment, nativeLink);
-          }
+          enterReplyMode(root, comment, nativeLink);
         }
         return;
       }
