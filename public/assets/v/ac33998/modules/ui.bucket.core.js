@@ -7678,6 +7678,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!options.skipStore) writeStoredChoice(COMMENTS_PANEL_WIDTH_KEY, next);
     return next;
   }
+  function renderHeadIconButton(btn, iconName, currentLabel, toggleLabel){
+    var icon = null;
+    var sr = null;
+    if (!btn || !d || !d.createElement) return;
+    while (btn.firstChild) btn.removeChild(btn.firstChild);
+    icon = d.createElement('span');
+    icon.className = 'ms';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = iconName || 'settings';
+    sr = d.createElement('span');
+    sr.className = 'gg-visually-hidden cmt2-head-btn__sr';
+    sr.textContent = currentLabel || '';
+    btn.appendChild(icon);
+    btn.appendChild(sr);
+    if (currentLabel) btn.setAttribute('title', currentLabel);
+    else btn.removeAttribute('title');
+    btn.setAttribute('aria-label', toggleLabel || currentLabel || '');
+  }
   function updateHeadControls(root){
     var state = commentsUiState(root);
     var slot = commentsHeadSlot(root);
@@ -7686,26 +7704,36 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var sortBtn = tools && tools.querySelector ? tools.querySelector('[data-gg-comment-action="sort-order"]') : null;
     var widthMode = applyPanelWidth(root, state.panelWidth, { skipStore: true });
     var sortMode = state.sortOrder === 'oldest' ? 'oldest' : 'newest';
+    var widthLabel = '';
+    var widthToggle = '';
+    var widthIcon = '';
+    var sortLabel = '';
+    var sortToggle = '';
+    var sortIcon = '';
     applyCommentSort(root, sortMode, { skipStore: true });
     state.panelWidth = widthMode;
     state.sortOrder = sortMode;
     if (widthBtn) {
-      widthBtn.setAttribute('data-gg-mode', widthMode);
-      widthBtn.textContent = widthMode === 'wide'
+      widthLabel = widthMode === 'wide'
         ? copyLabel('comments.toolbar.width.wide', 'Wide (440px)')
         : copyLabel('comments.toolbar.width.sidebar', 'Sidebar (240px)');
-      widthBtn.setAttribute('aria-label', widthMode === 'wide'
+      widthToggle = widthMode === 'wide'
         ? copyLabel('comments.toolbar.width.toggleToSidebar', 'Switch to sidebar width (240px)')
-        : copyLabel('comments.toolbar.width.toggleToWide', 'Switch to wide width (440px)'));
+        : copyLabel('comments.toolbar.width.toggleToWide', 'Switch to wide width (440px)');
+      widthIcon = widthMode === 'wide' ? 'close_fullscreen' : 'open_in_full';
+      widthBtn.setAttribute('data-gg-mode', widthMode);
+      renderHeadIconButton(widthBtn, widthIcon, widthLabel, widthToggle);
     }
     if (sortBtn) {
-      sortBtn.setAttribute('data-gg-mode', sortMode);
-      sortBtn.textContent = sortMode === 'oldest'
+      sortLabel = sortMode === 'oldest'
         ? copyLabel('comments.toolbar.sort.oldest', 'Oldest comments')
         : copyLabel('comments.toolbar.sort.newest', 'Newest comments');
-      sortBtn.setAttribute('aria-label', sortMode === 'oldest'
+      sortToggle = sortMode === 'oldest'
         ? copyLabel('comments.toolbar.sort.toggleToNewest', 'Sort comments by newest')
-        : copyLabel('comments.toolbar.sort.toggleToOldest', 'Sort comments by oldest'));
+        : copyLabel('comments.toolbar.sort.toggleToOldest', 'Sort comments by oldest');
+      sortIcon = sortMode === 'oldest' ? 'arrow_upward' : 'arrow_downward';
+      sortBtn.setAttribute('data-gg-mode', sortMode);
+      renderHeadIconButton(sortBtn, sortIcon, sortLabel, sortToggle);
     }
     return !!tools;
   }
@@ -9708,10 +9736,10 @@ function updateBackdrop(){
         if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
           setAttr(main, 'data-gg-left-panel', 'closed');
         }
-        if (surfaceChanged || !main.hasAttribute('data-gg-right-panel')){
-          setRightAttr('closed');
+        if (surfaceChanged || !main.hasAttribute('data-gg-right-panel') || getRightState() !== 'open'){
+          setRightAttr('open');
         }
-        if (surfaceChanged || !main.hasAttribute('data-gg-right-mode')){
+        if (surfaceChanged || !main.hasAttribute('data-gg-right-mode') || (main.getAttribute('data-gg-right-mode') || '') !== 'comments'){
           setAttr(main, 'data-gg-right-mode', 'comments');
         }
       } else {

@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='76e792c3f028' name='gg-template-fingerprint'/>
+    <meta content='186d9f007378' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1093,7 +1093,7 @@ text-align: center;
     <b:attr cond='data:ggIsPortfolioPage' name='data-gg-special' value='portfolio'/>
     <b:attr cond='data:ggIsAuthorPage' name='data-gg-special' value='author'/>
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='76e792c3f028' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='186d9f007378' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -3169,8 +3169,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </div>
       <div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'>
         <div class='cmt2-head-tools'>
-          <button class='cmt2-head-btn cmt2-head-btn--width' data-gg-comment-action='panel-width' data-gg-copy='comments.toolbar.width.sidebar' type='button'>Sidebar (240px)</button>
-          <button class='cmt2-head-btn cmt2-head-btn--sort' data-gg-comment-action='sort-order' data-gg-copy='comments.toolbar.sort.newest' type='button'>Newest comments</button>
+          <button aria-label='Switch to wide width (440px)' class='cmt2-head-btn cmt2-head-btn--width' data-gg-comment-action='panel-width' data-gg-copy='comments.toolbar.width.sidebar' title='Sidebar (240px)' type='button'><span aria-hidden='true' class='ms'>open_in_full</span><span class='gg-visually-hidden'>Sidebar (240px)</span></button>
+          <button aria-label='Sort comments by oldest' class='cmt2-head-btn cmt2-head-btn--sort' data-gg-comment-action='sort-order' data-gg-copy='comments.toolbar.sort.newest' title='Newest comments' type='button'><span aria-hidden='true' class='ms'>arrow_downward</span><span class='gg-visually-hidden'>Newest comments</span></button>
         </div>
       </div>
     </header>
