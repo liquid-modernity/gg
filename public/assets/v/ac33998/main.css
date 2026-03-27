@@ -9508,7 +9508,7 @@ isolation:isolate;
 --gg-cmt-font-reply-meta:11px;
 --gg-cmt-font-action:11px;
 --gg-cmt-font-body:12.5px;
---gg-cmt-reply-indent:10px;
+--gg-cmt-reply-indent:14px;
 }
 #ggPanelComments .gg-comments-panel__body,
 #ggPanelComments #comments{
@@ -9607,7 +9607,7 @@ padding-bottom:calc(var(--gg-comments-footer-h, 0px) + 2px);
 padding-bottom:0;
 }
 #ggPanelComments #comments #cmt2-holder li.comment{
-grid-template-columns:24px minmax(0, 1fr);
+grid-template-columns:30px minmax(0, 1fr);
 column-gap:8px;
 padding:8px 0 9px;
 border-bottom-color:color-mix(in srgb, var(--gg-border) 54%, transparent);
@@ -9616,8 +9616,8 @@ border-bottom-color:color-mix(in srgb, var(--gg-border) 54%, transparent);
 border-bottom:0;
 }
 #ggPanelComments #comments #cmt2-holder li.comment > .avatar-image-container{
-width:22px;
-height:22px;
+width:28px;
+height:28px;
 margin-top:1px;
 border-color:color-mix(in srgb, var(--gg-border) 46%, transparent);
 background:color-mix(in srgb, var(--gg-surface) 98.6%, #f3efe8);
@@ -9631,9 +9631,9 @@ padding-right:30px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-header{
 display:flex;
-flex-wrap:wrap;
+flex-wrap:nowrap;
 align-items:baseline;
-gap:2px 0;
+gap:0;
 min-width:0;
 }
 #ggPanelComments #comments #cmt2-holder .comment-header .icon{
@@ -9643,7 +9643,7 @@ display:none !important;
 display:inline-block;
 flex:0 1 auto;
 min-width:0;
-max-width:100%;
+max-width:calc(100% - 44px);
 overflow:hidden;
 text-overflow:ellipsis;
 white-space:nowrap;
@@ -9656,7 +9656,7 @@ color:color-mix(in srgb, var(--gg-ink) 96%, transparent);
 display:inline-flex;
 align-items:baseline;
 min-width:0;
-flex:0 0 auto;
+flex:0 1 auto;
 max-width:100%;
 white-space:nowrap;
 color:color-mix(in srgb, var(--gg-muted) 74%, transparent);
@@ -9708,6 +9708,11 @@ word-break:break-word;
 hyphens:auto;
 white-space:normal;
 text-wrap:pretty;
+}
+#ggPanelComments #comments #cmt2-holder .comment-content[data-gg-reply-author]::before{
+content:attr(data-gg-reply-author) " ";
+font-weight:560;
+color:color-mix(in srgb, var(--gg-muted) 78%, transparent);
 }
 #ggPanelComments #comments #cmt2-holder li.comment[data-gg-comment-state="deleted"] .comment-content{
 color:color-mix(in srgb, var(--gg-muted) 86%, transparent);
@@ -9836,20 +9841,7 @@ white-space:nowrap;
 min-height:var(--gg-cmt-hit-target);
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta{
-min-height:0;
-max-width:100%;
-padding:1px 0 1px 6px;
-gap:3px;
-border:0;
-border-left:1px solid color-mix(in srgb, var(--gg-border) 26%, transparent);
-border-radius:0;
-background:transparent;
-color:color-mix(in srgb, var(--gg-muted) 58%, transparent);
-font-size:var(--gg-cmt-font-reply-meta);
-font-weight:480;
-line-height:1.28;
-box-shadow:none;
-text-align:left;
+display:none !important;
 }
 #ggPanelComments #comments #cmt2-holder .cmt2-reply-meta__icon{
 font-size:12px;
@@ -9880,13 +9872,13 @@ width:1px;
 background:linear-gradient(180deg, color-mix(in srgb, var(--gg-border) 41%, transparent), color-mix(in srgb, var(--gg-border) 14%, transparent));
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment{
-grid-template-columns:18px minmax(0, 1fr);
+grid-template-columns:24px minmax(0, 1fr);
 column-gap:6px;
 padding:7px 0 8px;
 }
 #ggPanelComments #comments #cmt2-holder .comment-replies li.comment > .avatar-image-container{
-width:17px;
-height:17px;
+width:24px;
+height:24px;
 }
 #ggPanelComments #comments > .gg-comments__footer{
 border-top:1px solid color-mix(in srgb, var(--gg-border) 58%, transparent);
@@ -9974,6 +9966,15 @@ color:color-mix(in srgb, var(--gg-muted) 72%, transparent);
 #ggPanelComments #comments #cmt2-holder .cmt2-thread-toggle:focus-visible,
 #ggPanelComments #comments #cmt2-holder .cmt2-ctx-btn:focus-visible{
 box-shadow:0 0 0 2px color-mix(in srgb, var(--gg-ink) 14%, transparent);
+}
+@media (max-width: 360px){
+#ggPanelComments #comments #cmt2-holder .comment-header{
+flex-wrap:wrap;
+gap:1px 0;
+}
+#ggPanelComments #comments #cmt2-holder cite.user{
+max-width:100%;
+}
 }
 
 @media (max-width: 1023px){

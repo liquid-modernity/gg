@@ -7954,39 +7954,16 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var body = commentBody(comment);
     var ctx = resolveReplyContext(comment, root);
     var meta = null;
-    var copy = null;
-    var icon = null;
-    var author = null;
+    var authorText = '';
     if (!block || !body) return;
     meta = block.querySelector('.cmt2-reply-meta');
-    if (!ctx || isDeletedComment(comment)) {
-      if (meta && meta.parentNode) meta.parentNode.removeChild(meta);
-      return;
-    }
-    if (!meta) {
-      meta = d.createElement('button');
-      meta.type = 'button';
-      meta.className = 'cmt2-reply-meta';
-      icon = d.createElement('span');
-      icon.className = 'ms cmt2-reply-meta__icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = 'reply';
-      copy = d.createElement('span');
-      copy.className = 'cmt2-reply-meta__copy';
-      author = d.createElement('span');
-      author.className = 'cmt2-reply-meta__author';
-      meta.appendChild(icon);
-      meta.appendChild(copy);
-      meta.appendChild(author);
-      block.insertBefore(meta, body);
-    } else {
-      copy = meta.querySelector('.cmt2-reply-meta__copy');
-      author = meta.querySelector('.cmt2-reply-meta__author');
-    }
-    meta.setAttribute('data-gg-comment-jump', ctx.id);
-    meta.setAttribute('aria-label', copyLabel('comments.replyTo', 'Reply to {name}', { name: ctx.author ? '@' + ctx.author : copyLabel('comments.parentComment', 'parent comment') }));
-    if (copy) copy.textContent = copyLabel('comments.replyingTo', 'Replying to');
-    if (author) author.textContent = ctx.author ? '@' + ctx.author : copyLabel('comments.parentComment', 'parent comment');
+    if (meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    body.removeAttribute('data-gg-reply-author');
+    body.removeAttribute('data-gg-reply-jump');
+    if (!ctx || isDeletedComment(comment)) return;
+    authorText = ctx.author ? '@' + ctx.author : copyLabel('comments.parentComment', 'parent comment');
+    body.setAttribute('data-gg-reply-author', authorText);
+    if (ctx.id) body.setAttribute('data-gg-reply-jump', cleanText(ctx.id));
   }
   function ensureModerationState(comment){
     var block = commentBlock(comment);
