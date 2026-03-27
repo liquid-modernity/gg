@@ -7941,6 +7941,10 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     if (!actions) return null;
     before = actions.querySelector('.cmt2-thread-toggle, .cmt2-ctx');
     action = actions.querySelector('.cmt2-reply-action');
+    if (action && action !== primary && action.parentNode) {
+      action.parentNode.removeChild(action);
+      action = null;
+    }
     if (!state.interactive || !primary || !composerEnabled) {
       if (action && action.parentNode) action.parentNode.removeChild(action);
       for (i = 0; i < links.length; i++) {
@@ -7951,22 +7955,22 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       return null;
     }
     for (i = 0; i < links.length; i++) {
+      if (links[i] === primary) continue;
       setSuppressed(links[i]);
       parent = links[i].parentNode;
       if (parent && parent.classList && parent.classList.contains('continue')) setSuppressed(parent);
     }
-    if (!action) {
-      action = d.createElement('a');
-      action.href = 'javascript:;';
-      action.rel = 'nofollow';
-      action.className = 'comment-reply cmt2-reply-action';
-      action.setAttribute('data-gg-comment-action', 'reply');
-    }
+    action = primary;
+    if (!action) return null;
+    if (action.classList) action.classList.add('cmt2-reply-action');
     action.textContent = cleanText(primary.textContent) || copyLabel('comments.action.reply', 'Reply');
+    action.setAttribute('data-gg-comment-action', 'reply');
+    action.setAttribute('data-gg-native-reply', '1');
     action.setAttribute('data-gg-comment-role', 'reply');
     action.setAttribute('aria-label', copyLabel('comments.replyTo', 'Reply to {name}', { name: commentAuthor(comment) ? '@' + commentAuthor(comment) : copyLabel('comments.parentComment', 'comment') }));
     action.setAttribute('data-gg-comment-icon', 'reply');
-    action.__ggNativeReplyLink = primary;
+    action.__ggNativeReplyLink = action;
+    action.__ggNativeReplyDirect = true;
     action.removeAttribute('hidden');
     action.removeAttribute('aria-hidden');
     action.removeAttribute('data-gg-state');
@@ -8804,9 +8808,19 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="reply"]')) {
-        e.preventDefault();
+        var nativeDirect = !!(target.getAttribute && target.getAttribute('data-gg-native-reply') === '1' && target.__ggNativeReplyDirect);
+        if (!nativeDirect) e.preventDefault();
         nativeLink = target.__ggNativeReplyLink || pickPrimaryReplyLink(comment);
-        if (comment) enterReplyMode(root, comment, nativeLink);
+        if (comment) {
+          if (nativeDirect) {
+            w.setTimeout(function(){
+              if (!root || !root.isConnected || !comment.isConnected) return;
+              enterReplyMode(root, comment, null);
+            }, 0);
+          } else {
+            enterReplyMode(root, comment, nativeLink);
+          }
+        }
         return;
       }
       if (target.matches && target.matches('[data-gg-comment-action="more"]')) {
