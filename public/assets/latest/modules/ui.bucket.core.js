@@ -7336,6 +7336,83 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     return depth;
   }
+  function commentDepthFromDom(comment){
+    var depth = 0;
+    var parent = comment && comment.parentElement ? comment.parentElement.closest('li.comment') : null;
+    while (parent) {
+      depth++;
+      parent = parent.parentElement ? parent.parentElement.closest('li.comment') : null;
+    }
+    return depth;
+  }
+  function ensureReplyThreadContainer(parent){
+    var replies = commentReplies(parent);
+    var list = null;
+    var wrap = null;
+    var scaffold = null;
+    var count = 0;
+    if (!parent) return null;
+    if (!replies) {
+      replies = d.createElement('div');
+      replies.className = 'comment-replies';
+      parent.appendChild(replies);
+    }
+    list = replies.querySelector(':scope > div > ol') ||
+           replies.querySelector(':scope > ol') ||
+           replies.querySelector('ol');
+    if (!list) {
+      wrap = d.createElement('div');
+      list = d.createElement('ol');
+      wrap.appendChild(list);
+      replies.appendChild(wrap);
+    }
+    if (!replies.querySelector(':scope > .thread-toggle') || !replies.querySelector(':scope > .thread-count')) {
+      count = replyChildrenCount(replies);
+      scaffold = createHiddenThreadScaffold(count);
+      if (!replies.querySelector(':scope > .thread-toggle')) {
+        replies.insertBefore(scaffold.toggle, replies.firstChild || null);
+      }
+      if (!replies.querySelector(':scope > .thread-count')) {
+        replies.insertBefore(scaffold.count, replies.firstChild ? replies.firstChild.nextSibling : null);
+      }
+    }
+    return { replies: replies, list: list };
+  }
+  function commentRootParentRef(comment, root){
+    var id = commentParentRef(comment);
+    var ctx = null;
+    if (id) return id;
+    ctx = resolveReplyContext(comment, root);
+    return cleanText(ctx && ctx.id);
+  }
+  function rethreadCommentIfNeeded(comment, root){
+    var parentId = '';
+    var parent = null;
+    var thread = null;
+    var depth = 0;
+    if (!comment || !root || !comment.parentElement) return false;
+    if (comment.parentElement.closest('li.comment')) return false;
+    parentId = commentRootParentRef(comment, root);
+    if (!parentId) return false;
+    parent = d.getElementById('c' + parentId) || (root.querySelector ? root.querySelector('#c' + parentId) : null);
+    if (!parent || parent === comment || parent.contains(comment) || comment.contains(parent)) return false;
+    thread = ensureReplyThreadContainer(parent);
+    if (!thread || !thread.list) return false;
+    thread.list.appendChild(comment);
+    depth = commentDepthFromDom(comment);
+    comment.setAttribute('data-gg-depth', String(depth));
+    if (depth > 0) comment.classList.add('is-reply');
+    return true;
+  }
+  function rethreadDanglingComments(root, comments){
+    var list = Array.isArray(comments) ? comments : [];
+    var changed = false;
+    var i = 0;
+    for (i = 0; i < list.length; i++) {
+      if (rethreadCommentIfNeeded(list[i], root)) changed = true;
+    }
+    return changed;
+  }
   function replyChildrenCount(replies){
     return replies && replies.querySelectorAll ? replies.querySelectorAll('li.comment').length : 0;
   }
@@ -7667,11 +7744,17 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var raw = '';
     var match = null;
     var attrs = null;
+    var scan = '';
     var showText = (typeof w.NodeFilter !== 'undefined' && w.NodeFilter && w.NodeFilter.SHOW_TEXT) ? w.NodeFilter.SHOW_TEXT : 4;
     if (!body) return null;
-    if (body.__ggReplyTokenParsed) return body.__ggReplyToken || null;
+    scan = cleanText(body.textContent || '');
+    if (body.__ggReplyTokenParsed) {
+      if (body.__ggReplyToken) return body.__ggReplyToken;
+      if (body.__ggReplyTokenScan === scan) return null;
+    }
     body.__ggReplyTokenParsed = true;
     body.__ggReplyToken = null;
+    body.__ggReplyTokenScan = scan;
     if (!d.createTreeWalker) return null;
     walker = d.createTreeWalker(body, showText, null);
     while ((node = walker.nextNode())) {
@@ -7690,6 +7773,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         author: cleanText(attrs.author || ''),
         url: cleanText(attrs.url || attrs.profile || '')
       };
+      body.__ggReplyTokenScan = cleanText(body.textContent || '');
       break;
     }
     return body.__ggReplyToken;
@@ -8232,6 +8316,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (ctx && ctx.id) continue;
       comment.setAttribute('data-gg-parent-id', state.replyTargetId);
       if (state.replyTargetAuthor) comment.setAttribute('data-gg-parent-author', state.replyTargetAuthor);
+      rethreadCommentIfNeeded(comment, root);
       ensureReplyContext(comment, root);
       attached++;
     }
@@ -8626,6 +8711,9 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
     syncPendingReplyContext(root, comments);
+    if (rethreadDanglingComments(root, comments)) {
+      comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
+    }
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
