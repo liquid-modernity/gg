@@ -6033,11 +6033,22 @@ GG.modules.Comments = GG.modules.Comments || (function(){
   var COMMENTS_SORT_KEY = 'gg.comments.sortOrder';
   var PANEL_WIDTH_MODES = ['sidebar', 'wide'];
   var COMMENT_SORT_MODES = ['newest', 'oldest'];
+  var commentUiSeq = 0;
   function toArray(nodes){
     return Array.prototype.slice.call(nodes || []);
   }
   function cleanText(value){
     return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+  function ensureNodeId(node, prefix){
+    var id = '';
+    if (!node || !node.setAttribute) return '';
+    id = cleanText(node.getAttribute('id') || node.id);
+    if (id) return id;
+    commentUiSeq += 1;
+    id = 'gg-cmt2-' + cleanText(prefix || 'node').replace(/[^a-z0-9_-]/gi, '').toLowerCase() + '-' + commentUiSeq;
+    node.setAttribute('id', id);
+    return id;
   }
   function safeNumber(value){
     var num = parseInt(String(value || '').trim(), 10);
@@ -6884,6 +6895,23 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }
     return comment && comment.querySelector ? comment.querySelector('a.comment-delete, .comment-delete a, a[data-gg-native-action="delete"], button.comment-delete') : null;
   }
+  function isDeleteCandidateNode(node){
+    var action = '';
+    var href = '';
+    var cls = '';
+    var aria = '';
+    var txt = '';
+    if (!node || !node.getAttribute) return false;
+    action = cleanText(node.getAttribute('data-comment-action') || node.getAttribute('data-gg-comment-action') || node.getAttribute('data-action') || '').toLowerCase();
+    href = cleanText(node.getAttribute('href') || '').toLowerCase();
+    cls = cleanText(node.className || '').toLowerCase();
+    if (/delete|hapus/.test(action)) return true;
+    if (/comment-delete|delete-comment|commentremove/.test(cls)) return true;
+    if (/\/comment\/delete|\/comments\/default\/|delete/.test(href)) return true;
+    aria = cleanText(node.getAttribute('aria-label') || node.getAttribute('title') || '').toLowerCase();
+    txt = cleanText(node.textContent || '').toLowerCase();
+    return /delete|hapus/.test(aria) || /delete|hapus/.test(txt);
+  }
   function commentItemControl(comment){
     return comment && comment.querySelector ? comment.querySelector('.item-control') : null;
   }
@@ -7702,6 +7730,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var tools = slot && slot.querySelector ? slot.querySelector('.cmt2-head-tools') : null;
     var widthBtn = tools && tools.querySelector ? tools.querySelector('[data-gg-comment-action="panel-width"]') : null;
     var sortBtn = tools && tools.querySelector ? tools.querySelector('[data-gg-comment-action="sort-order"]') : null;
+    var panel = root && root.closest ? root.closest('#ggPanelComments, .gg-comments-panel') : null;
+    var list = root && root.querySelector ? root.querySelector('#cmt2-holder') : null;
     var widthMode = applyPanelWidth(root, state.panelWidth, { skipStore: true });
     var sortMode = state.sortOrder === 'oldest' ? 'oldest' : 'newest';
     var widthLabel = '';
@@ -7722,6 +7752,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         : copyLabel('comments.toolbar.width.toggleToWide', 'Switch to wide width (440px)');
       widthIcon = widthMode === 'wide' ? 'close_fullscreen' : 'open_in_full';
       widthBtn.setAttribute('data-gg-mode', widthMode);
+      widthBtn.setAttribute('aria-pressed', widthMode === 'wide' ? 'true' : 'false');
+      if (panel) widthBtn.setAttribute('aria-controls', ensureNodeId(panel, 'panel'));
       renderHeadIconButton(widthBtn, widthIcon, widthLabel, widthToggle);
     }
     if (sortBtn) {
@@ -7733,6 +7765,8 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         : copyLabel('comments.toolbar.sort.toggleToOldest', 'Sort comments by oldest');
       sortIcon = sortMode === 'oldest' ? 'arrow_upward' : 'arrow_downward';
       sortBtn.setAttribute('data-gg-mode', sortMode);
+      sortBtn.setAttribute('aria-pressed', sortMode === 'oldest' ? 'true' : 'false');
+      if (list) sortBtn.setAttribute('aria-controls', ensureNodeId(list, 'thread'));
       renderHeadIconButton(sortBtn, sortIcon, sortLabel, sortToggle);
     }
     return !!tools;
@@ -7751,10 +7785,12 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       widthBtn.type = 'button';
       widthBtn.className = 'cmt2-head-btn cmt2-head-btn--width';
       widthBtn.setAttribute('data-gg-comment-action', 'panel-width');
+      widthBtn.setAttribute('aria-pressed', 'false');
       sortBtn = d.createElement('button');
       sortBtn.type = 'button';
       sortBtn.className = 'cmt2-head-btn cmt2-head-btn--sort';
       sortBtn.setAttribute('data-gg-comment-action', 'sort-order');
+      sortBtn.setAttribute('aria-pressed', 'false');
       tools.appendChild(widthBtn);
       tools.appendChild(sortBtn);
       slot.appendChild(tools);
@@ -8022,6 +8058,11 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (nativeExpanded === 'true' || /hide|sembuny|tutup/i.test(nativeText)) isOpen = true;
       if (nativeExpanded === 'false' || /view|show|lihat|buka/i.test(nativeText)) isOpen = false;
     }
+    if (replies) {
+      btn.setAttribute('aria-controls', ensureNodeId(replies, 'replies'));
+    } else {
+      btn.removeAttribute('aria-controls');
+    }
     btn.__ggNativeThreadToggle = nativeToggle && nativeToggle.isConnected ? nativeToggle : null;
     btn.setAttribute('data-gg-thread-count', String(count));
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -8267,11 +8308,15 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       pop = wrap.querySelector('.cmt2-ctx-pop');
     }
     if (!btn || !pop) return;
+    pop.setAttribute('role', 'menu');
+    pop.setAttribute('aria-hidden', pop.getAttribute('data-gg-state') === 'open' ? 'false' : 'true');
+    btn.setAttribute('aria-controls', ensureNodeId(pop, 'menu'));
     copyBtn = pop.querySelector('[data-gg-comment-action="copy-link"]');
     if (permalink && !copyBtn) {
       copyBtn = d.createElement('button');
       copyBtn.type = 'button';
       copyBtn.setAttribute('data-gg-comment-action', 'copy-link');
+      copyBtn.setAttribute('role', 'menuitem');
       copyBtn.appendChild((function(){
         var icon = d.createElement('span');
         icon.className = 'ms';
@@ -8284,11 +8329,13 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     } else if (!permalink && copyBtn && copyBtn.parentNode) {
       copyBtn.parentNode.removeChild(copyBtn);
     }
+    if (copyBtn) copyBtn.setAttribute('role', 'menuitem');
     deleteBtn = pop.querySelector('[data-gg-comment-action="delete"]');
     if (deleteInvoker && !deleteBtn) {
       deleteBtn = d.createElement('button');
       deleteBtn.type = 'button';
       deleteBtn.setAttribute('data-gg-comment-action', 'delete');
+      deleteBtn.setAttribute('role', 'menuitem');
       deleteBtn.className = 'cmt2-ctx-pop__danger';
       deleteBtn.appendChild((function(){
         var icon = d.createElement('span');
@@ -8303,6 +8350,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       deleteBtn.parentNode.removeChild(deleteBtn);
     }
     if (deleteBtn && deleteInvoker) {
+      deleteBtn.setAttribute('role', 'menuitem');
       deleteBtn.setAttribute('data-gg-delete-kind', deleteInvoker.kind || 'link');
     }
   }
@@ -8314,7 +8362,24 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       if (!btn || !pop || node === keep) return;
       btn.setAttribute('aria-expanded', 'false');
       pop.setAttribute('data-gg-state', 'closed');
+      pop.setAttribute('aria-hidden', 'true');
     });
+  }
+  function menuActionItems(pop){
+    return toArray((pop && pop.querySelectorAll) ? pop.querySelectorAll('[data-gg-comment-action="copy-link"], [data-gg-comment-action="delete"], [role="menuitem"]') : [])
+      .filter(function(node){
+        return !!node && isVisibleNode(node);
+      });
+  }
+  function focusMenuItem(wrap, nextIndex){
+    var pop = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-pop') : null;
+    var items = menuActionItems(pop);
+    var idx = safeNumber(nextIndex);
+    if (!items.length) return false;
+    if (idx < 0) idx = 0;
+    if (idx > items.length - 1) idx = items.length - 1;
+    try { items[idx].focus({ preventScroll: true }); } catch (_) { try { items[idx].focus(); } catch(__) {} }
+    return true;
   }
   function toggleMenu(wrap){
     var btn = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-btn') : null;
@@ -8325,6 +8390,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     closeMenus(commentsRoot(hostRoot()), wrap);
     btn.setAttribute('aria-expanded', open ? 'false' : 'true');
     pop.setAttribute('data-gg-state', open ? 'closed' : 'open');
+    pop.setAttribute('aria-hidden', open ? 'true' : 'false');
     if (!open) positionMenu(wrap);
     return !open;
   }
@@ -8761,9 +8827,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         });
       });
       deleteItem = menuItems.find(function(node){
-        var aria = cleanText(node && node.getAttribute ? node.getAttribute('aria-label') : '');
-        var txt = cleanText(node && node.textContent);
-        return /delete|hapus/i.test(aria) || /delete|hapus/i.test(txt);
+        return isDeleteCandidateNode(node);
       }) || null;
       if (!deleteItem) return;
       try {
@@ -8958,7 +9022,70 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     }, false);
     host.addEventListener('keydown', function(e){
       var root = commentsRoot(host) || host;
-      if (!e || e.key !== 'Escape' || !root) return;
+      var target = null;
+      var wrap = null;
+      var pop = null;
+      var items = null;
+      var idx = -1;
+      var key = '';
+      if (!e || !root) return;
+      key = cleanText(e.key || '');
+      target = e.target && e.target.closest
+        ? e.target.closest('.cmt2-ctx-btn, .cmt2-ctx-pop [data-gg-comment-action]')
+        : null;
+      if (target && target.matches && target.matches('.cmt2-ctx-btn') && (key === 'ArrowDown' || key === 'ArrowUp')) {
+        e.preventDefault();
+        wrap = target.closest('.cmt2-ctx');
+        pop = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-pop') : null;
+        if (!wrap || !pop) return;
+        if (pop.getAttribute('data-gg-state') !== 'open') toggleMenu(wrap);
+        items = menuActionItems(pop);
+        if (!items.length) return;
+        focusMenuItem(wrap, key === 'ArrowUp' ? items.length - 1 : 0);
+        return;
+      }
+      if (target && target.matches && target.matches('.cmt2-ctx-pop [data-gg-comment-action]')) {
+        wrap = target.closest('.cmt2-ctx');
+        pop = wrap && wrap.querySelector ? wrap.querySelector('.cmt2-ctx-pop') : null;
+        items = menuActionItems(pop);
+        idx = items.indexOf(target);
+        if (key === 'ArrowDown' && items.length) {
+          e.preventDefault();
+          focusMenuItem(wrap, idx < 0 ? 0 : (idx + 1) % items.length);
+          return;
+        }
+        if (key === 'ArrowUp' && items.length) {
+          e.preventDefault();
+          focusMenuItem(wrap, idx < 0 ? items.length - 1 : (idx - 1 + items.length) % items.length);
+          return;
+        }
+        if (key === 'Home' && items.length) {
+          e.preventDefault();
+          focusMenuItem(wrap, 0);
+          return;
+        }
+        if (key === 'End' && items.length) {
+          e.preventDefault();
+          focusMenuItem(wrap, items.length - 1);
+          return;
+        }
+        if (key === 'Escape') {
+          e.preventDefault();
+          closeMenus(root, null);
+          if (wrap && wrap.querySelector) {
+            var btn = wrap.querySelector('.cmt2-ctx-btn');
+            if (btn) {
+              try { btn.focus({ preventScroll: true }); } catch (_) { try { btn.focus(); } catch(__) {} }
+            }
+          }
+          return;
+        }
+        if (key === 'Tab') {
+          closeMenus(root, null);
+          return;
+        }
+      }
+      if (key !== 'Escape') return;
       closeMenus(root, null);
       if (replyState(root).replyMode === 'reply') {
         cancelReply(root);

@@ -1785,11 +1785,52 @@ async function captureState(page) {
     function composerSignature(nodes) {
       return nodes.map((node) => node.id || cleanValue(node.className) || node.nodeName.toLowerCase()).join(',');
     }
+    function px(value) {
+      const parsed = parseFloat(String(value || '0'));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    function nodeFontSize(node) {
+      if (!node) return 0;
+      const style = window.getComputedStyle(node);
+      return style ? px(style.fontSize) : 0;
+    }
+    function minFontSize(selector, scope) {
+      const nodes = visibleAll(selector, scope);
+      if (!nodes.length) return 0;
+      let min = Number.POSITIVE_INFINITY;
+      nodes.forEach((node) => {
+        const size = nodeFontSize(node);
+        if (size > 0 && size < min) min = size;
+      });
+      return Number.isFinite(min) ? min : 0;
+    }
+    function minControlEdge(selector, scope) {
+      const nodes = visibleAll(selector, scope);
+      if (!nodes.length) return 0;
+      let min = Number.POSITIVE_INFINITY;
+      nodes.forEach((node) => {
+        const rect = node.getBoundingClientRect();
+        const edge = Math.min(rect.width || 0, rect.height || 0);
+        if (edge > 0 && edge < min) min = edge;
+      });
+      return Number.isFinite(min) ? min : 0;
+    }
+    function countControlsBelow(selector, scope, floorPx) {
+      return visibleAll(selector, scope).filter((node) => {
+        const rect = node.getBoundingClientRect();
+        return Math.min(rect.width || 0, rect.height || 0) > 0 && Math.min(rect.width || 0, rect.height || 0) < floorPx;
+      }).length;
+    }
 
     const main = document.querySelector('main.gg-main');
     const panel = document.querySelector('#ggPanelComments');
     const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
     const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+    const widthBtn = root && root.querySelector ? root.querySelector('[data-gg-comment-action="panel-width"]') : null;
+    const sortBtn = root && root.querySelector ? root.querySelector('[data-gg-comment-action="sort-order"]') : null;
+    const threadToggles = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-thread-toggle')) : [];
+    const menuRoots = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-ctx-pop')) : [];
+    const menuItems = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-ctx-pop [data-gg-comment-action]')) : [];
     const composerKind = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-kind') : '') || 'missing';
     const composerReason = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-reason') : '') || 'missing';
     const comments = root ? visibleAll('#cmt2-holder li.comment', root) : [];
@@ -1862,6 +1903,29 @@ async function captureState(page) {
       proofState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : ''),
       proofCount: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : ''),
       proofIssues: root && Array.isArray(root.__ggCommentProofIssues) ? root.__ggCommentProofIssues.join(',') : '',
+      minAuthorFontPx: minFontSize('#cmt2-holder li.comment cite.user', root),
+      minMetaFontPx: minFontSize('#cmt2-holder li.comment .datetime a, #cmt2-holder li.comment .cmt2-state', root),
+      minReplyMetaFontPx: minFontSize('#cmt2-holder li.comment .cmt2-reply-meta, #cmt2-holder li.comment .cmt2-replying__title', root),
+      minActionHitPx: minControlEdge('#comments .cmt2-head-btn, #cmt2-holder li.comment .comment-actions .cmt2-reply-action, #cmt2-holder li.comment .comment-actions .cmt2-thread-toggle, #cmt2-holder li.comment .comment-actions .cmt2-ctx-btn, .gg-comments__footer #gg-top-continue .comment-reply', root),
+      controlsBelow24Px: countControlsBelow('#comments .cmt2-head-btn, #cmt2-holder li.comment .comment-actions .cmt2-reply-action, #cmt2-holder li.comment .comment-actions .cmt2-thread-toggle, #cmt2-holder li.comment .comment-actions .cmt2-ctx-btn, .gg-comments__footer #gg-top-continue .comment-reply', root, 24),
+      footerHeightPx: footer && footer.getBoundingClientRect ? footer.getBoundingClientRect().height : 0,
+      composerHeightPx: root && root.querySelector ? (() => {
+        const composer = root.querySelector('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread');
+        if (!composer || !visible(composer) || !composer.getBoundingClientRect) return 0;
+        return composer.getBoundingClientRect().height || 0;
+      })() : 0,
+      widthPressed: cleanValue(widthBtn && widthBtn.getAttribute ? widthBtn.getAttribute('aria-pressed') : ''),
+      sortPressed: cleanValue(sortBtn && sortBtn.getAttribute ? sortBtn.getAttribute('aria-pressed') : ''),
+      widthControls: cleanValue(widthBtn && widthBtn.getAttribute ? widthBtn.getAttribute('aria-controls') : ''),
+      sortControls: cleanValue(sortBtn && sortBtn.getAttribute ? sortBtn.getAttribute('aria-controls') : ''),
+      threadToggleCount: threadToggles.length,
+      threadToggleA11yMissing: threadToggles.filter((btn) => {
+        const expanded = cleanValue(btn && btn.getAttribute ? btn.getAttribute('aria-expanded') : '');
+        const controls = cleanValue(btn && btn.getAttribute ? btn.getAttribute('aria-controls') : '');
+        return !/^(true|false)$/.test(expanded) || !controls;
+      }).length,
+      menuRoleMissing: menuRoots.filter((node) => cleanValue(node && node.getAttribute ? node.getAttribute('role') : '') !== 'menu').length,
+      menuItemRoleMissing: menuItems.filter((node) => cleanValue(node && node.getAttribute ? node.getAttribute('role') : '') !== 'menuitem').length,
       visibleCommentsSurfaces: visibleAll('#comments', document).length,
       visibleOffPanelSurfaces: visibleAll('#comments', document).filter((node) => !node.closest('#ggPanelComments')).length
     };
@@ -2035,6 +2099,46 @@ async function main() {
       )
     });
     results.push({
+      id: 'density-floors',
+      ...(before.commentCount > 0
+        ? state(
+            before.minAuthorFontPx >= 12 &&
+            before.minMetaFontPx >= 11 &&
+            before.minReplyMetaFontPx >= 11,
+            `author=${before.minAuthorFontPx.toFixed(2)};meta=${before.minMetaFontPx.toFixed(2)};replyMeta=${before.minReplyMetaFontPx.toFixed(2)}`
+          )
+        : notApplicable('no-comments'))
+    });
+    results.push({
+      id: 'tap-target-floors',
+      ...(before.commentCount > 0
+        ? state(
+            before.minActionHitPx >= 24 && before.controlsBelow24Px === 0,
+            `minHit=${before.minActionHitPx.toFixed(2)};below24=${before.controlsBelow24Px}`
+          )
+        : notApplicable('no-comments'))
+    });
+    results.push({
+      id: 'controls-a11y',
+      ...state(
+        /^(true|false)$/.test(before.widthPressed) &&
+        /^(true|false)$/.test(before.sortPressed) &&
+        !!before.widthControls &&
+        !!before.sortControls &&
+        before.threadToggleA11yMissing === 0 &&
+        before.menuRoleMissing === 0 &&
+        before.menuItemRoleMissing === 0,
+        `widthPressed=${before.widthPressed || 'missing'};sortPressed=${before.sortPressed || 'missing'};widthControls=${before.widthControls || 'missing'};sortControls=${before.sortControls || 'missing'};toggleMissing=${before.threadToggleA11yMissing}/${before.threadToggleCount};menuRoleMissing=${before.menuRoleMissing};menuItemRoleMissing=${before.menuItemRoleMissing}`
+      )
+    });
+    results.push({
+      id: 'footer-budget-baseline',
+      ...state(
+        before.footerHeightPx <= (before.footerOpen === '1' ? 260 : 130),
+        `beforeFooter=${before.footerHeightPx.toFixed(2)};footerOpen=${before.footerOpen}`
+      )
+    });
+    results.push({
       id: 'runtime-errors',
       ...state(effectiveRuntimeErrors.length === 0, effectiveRuntimeErrors.length ? effectiveRuntimeErrors.join(' || ') : 'ok')
     });
@@ -2123,6 +2227,18 @@ async function main() {
       results.push({
         id: 'focus-footer',
         ...focusState
+      });
+      results.push({
+        id: 'footer-budget',
+        ...(before.commentsOpen
+          ? state(
+              before.footerHeightPx <= 130 &&
+              afterAdd.footerHeightPx <= 260 &&
+              afterAdd.composerHeightPx <= 220 &&
+              (!requireReply || afterReply.footerHeightPx <= 260),
+              `beforeFooter=${before.footerHeightPx.toFixed(2)};afterOpenFooter=${afterAdd.footerHeightPx.toFixed(2)};afterOpenComposer=${afterAdd.composerHeightPx.toFixed(2)};afterReplyFooter=${afterReply.footerHeightPx.toFixed(2)}`
+            )
+          : notApplicable('comments-closed'))
       });
     }
 
