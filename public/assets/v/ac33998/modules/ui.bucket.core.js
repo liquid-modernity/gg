@@ -7487,16 +7487,25 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     var options = opts || {};
     var container = commentsTopThreadContainer(root);
     var rows = commentsTopLevelRows(container);
+    var sorted = [];
+    var changed = false;
+    var i = 0;
     if (!root || !container) return false;
     if (rows.length > 1) {
       rows.forEach(function(node, index){ node.__ggSortIndex = index; });
-      rows.sort(function(left, right){
+      sorted = rows.slice().sort(function(left, right){
         var diff = commentSortEpoch(left) - commentSortEpoch(right);
         if (mode === 'newest') diff *= -1;
         if (diff !== 0) return diff;
         return safeNumber(left.__ggSortIndex) - safeNumber(right.__ggSortIndex);
       });
-      rows.forEach(function(node){ container.appendChild(node); });
+      for (i = 0; i < rows.length; i++) {
+        if (rows[i] !== sorted[i]) {
+          changed = true;
+          break;
+        }
+      }
+      if (changed) sorted.forEach(function(node){ container.appendChild(node); });
     }
     if (root.setAttribute) root.setAttribute('data-gg-comment-sort', mode);
     if (!options.skipStore) writeStoredChoice(COMMENTS_SORT_KEY, mode);
@@ -7667,17 +7676,17 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     walker = d.createTreeWalker(body, showText, null);
     while ((node = walker.nextNode())) {
       raw = String(node.nodeValue || '');
-      match = raw.match(/^\s*\[reply\s+([^\]]+)\]\s*/i);
+      match = raw.match(/\[reply\s+([^\]]+)\]/i);
       if (!match) continue;
       attrs = {};
-      String(match[1] || '').replace(/([a-z0-9_-]+)="([^"]*)"/gi, function(_, key, value){
-        attrs[String(key || '').toLowerCase()] = value;
+      String(match[1] || '').replace(/([a-z0-9_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi, function(_, key, valueDq, valueSq, valueBare){
+        attrs[String(key || '').toLowerCase()] = cleanText(valueDq || valueSq || valueBare || '');
         return '';
       });
-      node.nodeValue = raw.replace(match[0], '');
+      node.nodeValue = raw.replace(match[0], ' ');
       if (!cleanText(node.nodeValue || '') && node.parentNode) node.parentNode.removeChild(node);
       body.__ggReplyToken = {
-        id: cleanText(attrs.commentid || attrs.comment || attrs.id || ''),
+        id: cleanText(attrs.commentid || attrs.comment || attrs.id || attrs.parentid || ''),
         author: cleanText(attrs.author || ''),
         url: cleanText(attrs.url || attrs.profile || '')
       };
@@ -8182,9 +8191,51 @@ GG.modules.Comments = GG.modules.Comments || (function(){
       replyPermalink: '',
       comment: null,
       nativeReplyLink: null,
-      banner: null
+      banner: null,
+      knownCommentIds: null
     };
     return root.__ggReplyState;
+  }
+  function snapshotCommentIds(root){
+    var map = Object.create(null);
+    var comments = toArray(root && root.querySelectorAll ? root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment') : []);
+    var i = 0;
+    var id = '';
+    for (i = 0; i < comments.length; i++) {
+      id = commentId(comments[i]);
+      if (id) map[id] = 1;
+    }
+    return map;
+  }
+  function syncPendingReplyContext(root, comments){
+    var state = replyState(root);
+    var list = Array.isArray(comments) ? comments : [];
+    var known = null;
+    var i = 0;
+    var id = '';
+    var comment = null;
+    var ctx = null;
+    var attached = 0;
+    if (!root || !state || state.replyMode !== 'reply' || !state.replyTargetId || !list.length) return false;
+    known = state.knownCommentIds;
+    if (!known) {
+      state.knownCommentIds = snapshotCommentIds(root);
+      return false;
+    }
+    for (i = 0; i < list.length; i++) {
+      comment = list[i];
+      id = commentId(comment);
+      if (!id || known[id]) continue;
+      known[id] = 1;
+      if (attached > 0 || isDeletedComment(comment)) continue;
+      ctx = resolveReplyContext(comment, root);
+      if (ctx && ctx.id) continue;
+      comment.setAttribute('data-gg-parent-id', state.replyTargetId);
+      if (state.replyTargetAuthor) comment.setAttribute('data-gg-parent-author', state.replyTargetAuthor);
+      ensureReplyContext(comment, root);
+      attached++;
+    }
+    return attached > 0;
   }
   function buildReplyBanner(root){
     var state = replyState(root);
@@ -8245,6 +8296,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     state.replyPermalink = '';
     state.comment = null;
     state.nativeReplyLink = null;
+    state.knownCommentIds = null;
     syncFooterState(root);
   }
   function scheduleCommentSync(root, opts){
@@ -8352,6 +8404,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     state.replyPermalink = commentPermalink(comment);
     state.comment = comment;
     state.nativeReplyLink = link || null;
+    state.knownCommentIds = snapshotCommentIds(root);
     comment.setAttribute('data-gg-replying', '1');
     root.classList.add('gg-comments--replying');
     if (root && root.setAttribute) root.setAttribute('data-gg-reply-mode', 'reply');
@@ -8572,6 +8625,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     bindFooterMetrics(root);
     suppressRootScaffolding(root);
     comments = toArray(root.querySelectorAll('#cmt2-holder li.comment, .comment-thread li.comment'));
+    syncPendingReplyContext(root, comments);
     comments.forEach(function(comment){
       enhanceComment(comment, root);
     });
@@ -8584,6 +8638,49 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     syncFooterState(root);
     runProof(root);
     return !!comments.length;
+  }
+  function nodeContainsCommentRow(node){
+    if (!node || node.nodeType !== 1) return false;
+    if (node.matches && node.matches('li.comment')) return true;
+    return !!(node.querySelector && node.querySelector('li.comment'));
+  }
+  function mutationTouchesCommentRows(mutations){
+    var i = 0;
+    var j = 0;
+    var mutation = null;
+    var node = null;
+    for (i = 0; i < mutations.length; i++) {
+      mutation = mutations[i];
+      if (!mutation || mutation.type !== 'childList') continue;
+      for (j = 0; j < mutation.addedNodes.length; j++) {
+        node = mutation.addedNodes[j];
+        if (nodeContainsCommentRow(node)) return true;
+      }
+      for (j = 0; j < mutation.removedNodes.length; j++) {
+        node = mutation.removedNodes[j];
+        if (nodeContainsCommentRow(node)) return true;
+      }
+    }
+    return false;
+  }
+  function scheduleHostEnhance(host){
+    if (!host || host.__ggCommentsMutationTimer) return false;
+    host.__ggCommentsMutationTimer = w.setTimeout(function(){
+      var root = commentsRoot(host) || host;
+      host.__ggCommentsMutationTimer = 0;
+      if (!root || !root.isConnected) return;
+      enhance(root);
+    }, 120);
+    return true;
+  }
+  function bindHostObserver(host){
+    if (!host || host.__ggCommentsMutationObserver || !w.MutationObserver) return false;
+    host.__ggCommentsMutationObserver = new MutationObserver(function(mutations){
+      if (!mutationTouchesCommentRows(mutations)) return;
+      scheduleHostEnhance(host);
+    });
+    host.__ggCommentsMutationObserver.observe(host, { childList: true, subtree: true });
+    return true;
   }
   function bindHost(host){
     if (!host || host.__ggCommentsBound) return false;
@@ -8673,6 +8770,7 @@ GG.modules.Comments = GG.modules.Comments || (function(){
         setFooterOpen(root, false, { manual: false });
       }
     }, false);
+    bindHostObserver(host);
     return true;
   }
   function init(root){
