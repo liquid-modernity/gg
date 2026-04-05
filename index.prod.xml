@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='743e9232e219' name='gg-template-fingerprint'/>
+    <meta content='09cc8d1d4228' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1136,7 +1136,7 @@ text-align: center;
         <b:attr cond='data:ggIsInohongApp' name='data-gg-special' value='inohong'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='743e9232e219' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='09cc8d1d4228' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2556,7 +2556,17 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </a>
 </b:includable>
               <b:includable id='post' var='post'>
-                <b:include data='post' name='postDetail'/>
+                <b:with value='(data:post and data:post.url and data:post.url contains &quot;/p/inohong.html&quot;) or (data:view and data:view.url and data:view.url contains &quot;/p/inohong.html&quot;)' var='ggPostIsSpecialApp'>
+                  <b:if cond='data:ggPostIsSpecialApp'>
+                    <article class='gg-kbms-page' data-gg-module='gg-kbms-page' data-gg-special='inohong' data-gg-surface='special' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;INOHONG&quot;'>
+                      <div class='gg-kbms-page__body'>
+                        <b:include data='post' name='postBody'/>
+                      </div>
+                    </article>
+                  <b:else/>
+                    <b:include data='post' name='postDetail'/>
+                  </b:if>
+                </b:with>
 </b:includable>
               <b:includable id='postAuthor'>
   <span class='byline post-author vcard'>
