@@ -1379,6 +1379,20 @@ const isPostLikePath = (pathname) => {
   return false;
 };
 
+const SPECIAL_APP_PATHS = new Set(["/p/inohong.html"]);
+
+const normalizePathname = (pathname) => {
+  const path = String(pathname || "").trim().toLowerCase();
+  if (!path) return "";
+  if (path === "/") return "/";
+  return path.replace(/\/+$/, "");
+};
+
+const isSpecialAppPath = (pathname) => {
+  const normalized = normalizePathname(pathname);
+  return !!normalized && SPECIAL_APP_PATHS.has(normalized);
+};
+
 const LEGAL_PAGE_PATHS = new Set([
   "/p/editorial-policy.html",
   "/p/privacy-policy.html",
@@ -1701,6 +1715,7 @@ const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
 const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
   const source = String(html || "");
   if (!source) return source;
+  if (isSpecialAppPath(pathname)) return source;
   const isSpecialSurface = /data-gg-surface\s*=\s*['"]special['"]/i.test(source);
   const isSpecialApp =
     /data-gg-special-app\s*=\s*['"][^'"]+['"]/i.test(source) ||
@@ -2731,7 +2746,8 @@ export default {
           !forceListing &&
           !forceLanding &&
           !paginationListingFallback &&
-          isPostLikePath(pathname)
+          isPostLikePath(pathname) &&
+          !isSpecialAppPath(pathname)
         ) {
           htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
         }
