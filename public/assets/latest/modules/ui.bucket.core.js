@@ -9619,16 +9619,6 @@ function updateBackdrop(){
       updateBackdrop();
       if (opts.restoreFocus) restoreFocus();
     }
-    function injectLeftFab(){
-      if (qs('.gg-left-fab')) return;
-      var btn = document.createElement('button');
-      btn.className = 'gg-left-fab';
-      btn.type = 'button';
-      btn.setAttribute('data-gg-action', 'left-toggle');
-      btn.setAttribute('aria-label', 'Toggle sidebar');
-      document.body.appendChild(btn);
-    }
-
     function enhanceTree(){
       if (!left) return;
       var roots = qsa('.LinkList ul, .PageList ul, .Label ul, .widget ul', left)
@@ -9663,10 +9653,6 @@ function updateBackdrop(){
     function handleClick(evt){
       var t = evt.target;
 
-      if (closest(t, '[data-gg-action="left-toggle"]')){
-        var isOpen = main && main.getAttribute('data-gg-left-panel') === 'open';
-        setLeft(isOpen ? 'closed' : 'open', { restoreFocus: isOpen }); evt.preventDefault(); return;
-      }
       if (closest(t, '[data-gg-toggle="left-panel"]')){
         var isOpenL = main && main.getAttribute('data-gg-left-panel') === 'open';
         setLeft(isOpenL ? 'closed' : 'open', { restoreFocus: isOpenL }); evt.preventDefault(); return;
@@ -9756,7 +9742,6 @@ function updateBackdrop(){
 
       backdrop = ensureBackdrop();
 
-      injectLeftFab();
       enhanceTree();
 
       bindEvents();
