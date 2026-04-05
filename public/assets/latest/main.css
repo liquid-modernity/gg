@@ -912,11 +912,40 @@ margin: 0;
 main.gg-main[data-gg-surface="special"] .gg-special-surface,
 main.gg-main[data-gg-surface="special"] .gg-special-layout{
 display: block;
+padding: 0;
 }
 
 main.gg-main[data-gg-surface="special"] .gg-special-main{
 display: block;
 min-width: 0;
+padding: 0;
+}
+
+body[data-gg-special-app] main.gg-main[data-gg-surface="special"] .post-outer-container,
+body[data-gg-special-app] main.gg-main[data-gg-surface="special"] .post-outer{
+width: 100%;
+max-width: none;
+margin: 0;
+padding: 0;
+border: 0;
+background: transparent;
+box-shadow: none;
+}
+
+body[data-gg-special-app] main.gg-main[data-gg-surface="special"] .gg-special-app-page{
+width: 100%;
+max-width: none;
+margin: 0;
+padding: 0;
+border: 0;
+background: transparent;
+box-shadow: none;
+}
+
+body[data-gg-special-app] main.gg-main[data-gg-surface="special"] .gg-special-app-body{
+width: 100%;
+max-width: none;
+margin: 0;
 padding: 0;
 }
 
