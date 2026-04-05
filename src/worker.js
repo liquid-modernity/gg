@@ -1823,7 +1823,7 @@ const CSP_REPORT_ONLY = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.blogger.com https://www.gstatic.com",
-  "connect-src 'self'",
+  "connect-src 'self' https://inohong-kbms-api.ratriatra.workers.dev",
   "frame-src 'self' https://www.blogger.com https://accounts.google.com https://www.google.com",
   "form-action 'self' https://www.blogger.com",
   "upgrade-insecure-requests",
