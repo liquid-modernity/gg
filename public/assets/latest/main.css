@@ -901,6 +901,25 @@ width: 100%;
 overflow: visible;
 }
 
+main.gg-main[data-gg-surface="special"] .gg-special-surface,
+main.gg-main[data-gg-surface="special"] .gg-special-layout,
+main.gg-main[data-gg-surface="special"] .gg-special-main{
+width: 100%;
+max-width: none;
+margin: 0;
+}
+
+main.gg-main[data-gg-surface="special"] .gg-special-surface,
+main.gg-main[data-gg-surface="special"] .gg-special-layout{
+display: block;
+}
+
+main.gg-main[data-gg-surface="special"] .gg-special-main{
+display: block;
+min-width: 0;
+padding: 0;
+}
+
 @media (min-width: 1920px){
 .gg-blog-layout{
 grid-template-columns: var(--gg-col-left) var(--gg-col-main) var(--gg-col-right);

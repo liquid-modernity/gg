@@ -1,0 +1,1499 @@
+<div id="gg-kbms-app" class="gg-kbms-app" data-gg-module="gg-kbms-app" data-gg-state="booting">
+    <section class="gg-kbms-auth" id="gg-kbms-auth" aria-labelledby="gg-kbms-auth-title">
+      <div class="gg-kbms-auth__card">
+        <p class="gg-kbms-auth__eyebrow">INOHONG KBMS</p>
+        <h1 class="gg-kbms-auth__title" id="gg-kbms-auth-title">Private knowledge, immediate access.</h1>
+        <p class="gg-kbms-auth__body">Masuk dengan email yang sudah diizinkan. Cepat, tenang, tanpa noise.</p>
+  
+        <form class="gg-kbms-auth__form" id="gg-kbms-login-form" novalidate>
+          <label class="gg-kbms-auth__label" for="gg-kbms-email">Email</label>
+          <div class="gg-kbms-auth__row">
+            <input
+              id="gg-kbms-email"
+              class="gg-kbms-auth__input"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="nama@domain.com"
+              required
+            />
+            <button class="gg-kbms-auth__submit" id="gg-kbms-login-submit" type="submit">
+              <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+            </button>
+          </div>
+          <p class="gg-kbms-auth__hint">Shortcut: tekan <kbd>Enter</kbd> untuk masuk.</p>
+          <p class="gg-kbms-auth__message" id="gg-kbms-auth-message" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  
+    <section class="gg-kbms-shell" id="gg-kbms-shell" hidden aria-label="INOHONG workspace">
+      <header class="gg-kbms-shell__header">
+        <div class="gg-kbms-shell__brand">
+          <div class="gg-kbms-shell__brand-mark">I</div>
+          <div>
+            <p class="gg-kbms-shell__eyebrow">INOHONG KBMS</p>
+            <h2 class="gg-kbms-shell__headline" id="gg-kbms-greeting">Halo</h2>
+          </div>
+        </div>
+  
+        <div class="gg-kbms-shell__actions">
+          <button class="gg-kbms-shell__action" id="gg-kbms-refresh" type="button" title="Muat ulang katalog">
+            <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+          </button>
+          <button class="gg-kbms-shell__action" id="gg-kbms-logout" type="button" title="Keluar">
+            <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+          </button>
+        </div>
+      </header>
+  
+      <div class="gg-kbms-search-surface" data-gg-module="gg-search-surface">
+        <label class="gg-kbms-search-surface__label" for="gg-kbms-search">Search</label>
+        <div class="gg-kbms-search-surface__row">
+          <span class="material-symbols-rounded gg-kbms-search-surface__icon" aria-hidden="true">search</span>
+          <input
+            id="gg-kbms-search"
+            class="gg-kbms-search-surface__input"
+            type="search"
+            placeholder="Cari judul, ringkasan, kata kunci, kategori…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="gg-kbms-search-surface__clear" id="gg-kbms-search-clear" type="button" hidden>
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <p class="gg-kbms-search-surface__hint">Shortcut: <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> atau <kbd>/</kbd>.</p>
+      </div>
+  
+      <div class="gg-kbms-shell__body">
+        <aside class="gg-kbms-nav" aria-label="Catalog navigation">
+          <section class="gg-kbms-panel">
+            <div class="gg-kbms-panel__head">
+              <p class="gg-kbms-panel__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span><span>Featured</span></p>
+              <h3 class="gg-kbms-panel__title">Priority documents</h3>
+            </div>
+            <div class="gg-kbms-list" id="gg-kbms-featured"></div>
+          </section>
+  
+          <section class="gg-kbms-panel">
+            <div class="gg-kbms-panel__head">
+              <p class="gg-kbms-panel__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">history</span><span>Recent</span></p>
+              <h3 class="gg-kbms-panel__title">Opened on this device</h3>
+            </div>
+            <div class="gg-kbms-list" id="gg-kbms-recent"></div>
+          </section>
+  
+          <section class="gg-kbms-panel">
+            <div class="gg-kbms-panel__head">
+              <p class="gg-kbms-panel__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">account_tree</span><span>Categories</span></p>
+              <h3 class="gg-kbms-panel__title">Structured access</h3>
+            </div>
+            <div class="gg-kbms-tree" id="gg-kbms-tree"></div>
+          </section>
+        </aside>
+  
+        <main class="gg-kbms-main" aria-live="polite">
+          <section class="gg-kbms-strip" id="gg-kbms-strip">
+            <div>
+              <p class="gg-kbms-strip__eyebrow"><span class="material-symbols-rounded" aria-hidden="true">view_list</span><span>Catalog</span></p>
+              <h3 class="gg-kbms-strip__title" id="gg-kbms-result-title">All documents</h3>
+            </div>
+            <p class="gg-kbms-strip__meta" id="gg-kbms-result-meta">Memuat…</p>
+          </section>
+  
+          <section class="gg-kbms-chipbar" id="gg-kbms-chipbar" hidden></section>
+  
+          <section class="gg-kbms-results" id="gg-kbms-results"></section>
+        </main>
+      </div>
+    </section>
+  
+    <section class="gg-kbms-reader" id="gg-kbms-reader" hidden aria-label="Document reader">
+      <header class="gg-kbms-reader__header">
+        <div class="gg-kbms-reader__titlewrap">
+          <button class="gg-kbms-reader__back" id="gg-kbms-reader-back" type="button">
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+            <span>Kembali</span>
+          </button>
+          <div>
+            <p class="gg-kbms-reader__eyebrow" id="gg-kbms-reader-kicker">Document</p>
+            <h3 class="gg-kbms-reader__title" id="gg-kbms-reader-title">Judul dokumen</h3>
+          </div>
+        </div>
+        <a class="gg-kbms-reader__open" id="gg-kbms-reader-open" href="#" target="_blank" rel="noopener">
+          <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
+          <span>Buka asli</span>
+        </a>
+      </header>
+  
+      <div class="gg-kbms-reader__framewrap">
+        <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="Document preview" loading="lazy"></iframe>
+      </div>
+    </section>
+  </div>
+  
+  <style>
+    #gg-kbms-app {
+      --gg-kbms-bg: var(--gg-bg, #fbfbfa);
+      --gg-kbms-surface: var(--gg-surface, #ffffff);
+      --gg-kbms-surface-solid: var(--gg-surface, #ffffff);
+      --gg-kbms-surface-soft: color-mix(in srgb, var(--gg-kbms-surface-solid) 92%, #f3f4f6);
+      --gg-kbms-line: var(--gg-line, rgba(17, 24, 39, 0.10));
+      --gg-kbms-line-strong: var(--gg-line-strong, rgba(17, 24, 39, 0.16));
+      --gg-kbms-ink: var(--gg-ink, #0b0d10);
+      --gg-kbms-ink-soft: var(--gg-muted, #6b7280);
+      --gg-kbms-ink-faint: var(--gg-muted, #6b7280);
+      --gg-kbms-accent: var(--gg-ink, #0b0d10);
+      --gg-kbms-chip: var(--gg-pill, rgba(17, 24, 39, 0.06));
+      --gg-kbms-chip-hover: var(--gg-pill-hover, rgba(17, 24, 39, 0.10));
+      --gg-kbms-shadow-sm: var(--gg-shadow-sm, 0 1px 2px rgba(11, 13, 16, 0.08));
+      --gg-kbms-shadow-lg: var(--gg-shadow-md, 0 8px 24px rgba(11, 13, 16, 0.10));
+      --gg-kbms-radius-lg: var(--gg-radius-lg, 16px);
+      --gg-kbms-radius-md: var(--gg-radius-md, 16px);
+      --gg-kbms-radius-sm: var(--gg-radius-sm, 16px);
+      --gg-kbms-space-1: 0.5rem;
+      --gg-kbms-space-2: 0.75rem;
+      --gg-kbms-space-3: 1rem;
+      --gg-kbms-space-4: 1.25rem;
+      color: var(--gg-kbms-ink);
+      background: var(--gg-kbms-bg);
+      font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+      line-height: 1.45;
+    }
+  
+    #gg-kbms-app *,
+    #gg-kbms-app *::before,
+    #gg-kbms-app *::after {
+      box-sizing: border-box;
+    }
+  
+    #gg-kbms-app [hidden] {
+      display: none !important;
+    }
+  
+    .gg-kbms-auth,
+    .gg-kbms-shell,
+    .gg-kbms-reader {
+      min-height: min(84vh, 960px);
+    }
+  
+    .gg-kbms-auth {
+      display: grid;
+      place-items: center;
+      padding: 3.5rem 1rem;
+    }
+  
+    .gg-kbms-auth__card {
+      width: min(100%, 34rem);
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      border: 1px solid var(--gg-kbms-line);
+      border-radius: var(--gg-kbms-radius-lg);
+      background: var(--gg-kbms-surface-solid);
+      backdrop-filter: none;
+      box-shadow: var(--gg-kbms-shadow-lg);
+    }
+  
+    .gg-kbms-auth__eyebrow,
+    .gg-kbms-panel__eyebrow,
+    .gg-kbms-strip__eyebrow,
+    .gg-kbms-reader__eyebrow,
+    .gg-kbms-shell__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0 0 0.35rem;
+      font-size: 0.73rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gg-kbms-ink-faint);
+      font-weight: 700;
+    }
+
+    .gg-kbms-auth__eyebrow .material-symbols-rounded,
+    .gg-kbms-panel__eyebrow .material-symbols-rounded,
+    .gg-kbms-strip__eyebrow .material-symbols-rounded,
+    .gg-kbms-reader__eyebrow .material-symbols-rounded,
+    .gg-kbms-shell__eyebrow .material-symbols-rounded {
+      font-size: 1rem;
+      font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 20;
+      letter-spacing: 0;
+    }
+  
+    .gg-kbms-auth__title,
+    .gg-kbms-reader__title,
+    .gg-kbms-shell__headline,
+    .gg-kbms-strip__title,
+    .gg-kbms-panel__title {
+      margin: 0;
+      font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+      letter-spacing: -0.015em;
+      line-height: 1.08;
+      font-weight: 700;
+    }
+  
+    .gg-kbms-auth__title {
+      font-size: clamp(1.9rem, 4.2vw, 2.85rem);
+    }
+  
+    .gg-kbms-auth__body,
+    .gg-kbms-auth__hint,
+    .gg-kbms-search-surface__hint,
+    .gg-kbms-strip__meta,
+    .gg-kbms-result-card__summary,
+    .gg-kbms-result-card__meta,
+    .gg-kbms-empty__body,
+    .gg-kbms-auth__message {
+      color: var(--gg-kbms-ink-soft);
+    }
+  
+    .gg-kbms-auth__body {
+      margin: 1rem 0 1.35rem;
+      line-height: 1.65;
+    }
+  
+    .gg-kbms-auth__label {
+      display: block;
+      margin: 0 0 0.45rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+  
+    .gg-kbms-auth__row,
+    .gg-kbms-search-surface__row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-height: 3.3rem;
+      border: 1px solid var(--gg-kbms-line-strong);
+      border-radius: var(--gg-kbms-radius-sm);
+      background: var(--gg-kbms-surface-solid);
+      padding: 0.3rem 0.4rem 0.3rem 0.9rem;
+      box-shadow: var(--gg-kbms-shadow-sm);
+    }
+  
+    .gg-kbms-auth__input,
+    .gg-kbms-search-surface__input {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--gg-kbms-ink);
+      outline: none;
+      font-size: 1rem;
+      min-height: 2.6rem;
+    }
+  
+    .gg-kbms-auth__input::placeholder,
+    .gg-kbms-search-surface__input::placeholder {
+      color: var(--gg-kbms-ink-faint);
+    }
+  
+    .gg-kbms-auth__submit,
+    .gg-kbms-search-surface__clear,
+    .gg-kbms-shell__action,
+    .gg-kbms-reader__back,
+    .gg-kbms-reader__open,
+    .gg-kbms-chip,
+    .gg-kbms-tree__button,
+    .gg-kbms-list__button,
+    .gg-kbms-result-card__cta {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    #gg-kbms-app .material-symbols-rounded {
+      font-variation-settings: "FILL" 0, "wght" 350, "GRAD" 0, "opsz" 24;
+    }
+  
+    .gg-kbms-auth__submit {
+      display: inline-grid;
+      place-items: center;
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: calc(var(--gg-kbms-radius-sm) - 2px);
+      background: var(--gg-kbms-accent);
+      color: white;
+      flex: 0 0 auto;
+      box-shadow: var(--gg-kbms-shadow-sm);
+    }
+  
+    .gg-kbms-auth__hint,
+    .gg-kbms-search-surface__hint {
+      margin: 0.75rem 0 0;
+      font-size: 0.88rem;
+    }
+  
+    .gg-kbms-auth__message {
+      min-height: 1.5rem;
+      margin: 0.9rem 0 0;
+      font-size: 0.95rem;
+    }
+  
+    .gg-kbms-shell {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gg-kbms-space-3);
+      padding: var(--gg-kbms-space-3);
+      border-radius: var(--gg-kbms-radius-lg);
+      background:
+        radial-gradient(120% 110% at 100% -10%, rgba(15, 23, 42, 0.04), transparent 58%),
+        radial-gradient(120% 110% at -10% 0%, rgba(15, 23, 42, 0.03), transparent 52%);
+    }
+  
+    .gg-kbms-shell__header,
+    .gg-kbms-search-surface,
+    .gg-kbms-panel,
+    .gg-kbms-strip,
+    .gg-kbms-result-card,
+    .gg-kbms-reader__header,
+    .gg-kbms-reader__framewrap {
+      border: 1px solid var(--gg-kbms-line);
+      background: color-mix(in srgb, var(--gg-kbms-surface) 94%, #f8fafc);
+      backdrop-filter: none;
+      box-shadow: var(--gg-kbms-shadow-sm);
+    }
+  
+    .gg-kbms-shell__header,
+    .gg-kbms-reader__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-radius: var(--gg-kbms-radius-lg);
+      padding: 0.95rem 1rem;
+    }
+  
+    .gg-kbms-shell__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+  
+    .gg-kbms-shell__brand-mark {
+      display: inline-grid;
+      place-items: center;
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: 999px;
+      background: var(--gg-kbms-accent);
+      color: white;
+      font-weight: 700;
+    }
+  
+    .gg-kbms-shell__actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+  
+    .gg-kbms-shell__action,
+    .gg-kbms-search-surface__clear,
+    .gg-kbms-reader__back,
+    .gg-kbms-reader__open,
+    .gg-kbms-result-card__cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 2.7rem;
+      border-radius: var(--gg-kbms-radius-sm);
+      padding: 0 0.95rem;
+      border: 1px solid var(--gg-kbms-line);
+      background: var(--gg-kbms-surface-solid);
+      transition: transform var(--gg-dur-fast, .16s) ease, border-color var(--gg-dur-fast, .16s) ease, background var(--gg-dur-fast, .16s) ease;
+    }
+  
+    .gg-kbms-search-surface {
+      padding: 0.95rem;
+      border-radius: var(--gg-kbms-radius-lg);
+    }
+  
+    .gg-kbms-search-surface__label {
+      display: block;
+      margin-bottom: 0.45rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--gg-kbms-ink-soft);
+    }
+  
+    .gg-kbms-search-surface__icon {
+      color: var(--gg-kbms-ink-faint);
+    }
+  
+    .gg-kbms-shell__body {
+      display: grid;
+      grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+      gap: 1.1rem;
+      align-items: start;
+    }
+  
+    .gg-kbms-nav {
+      display: grid;
+      gap: 0.9rem;
+      position: sticky;
+      top: 1rem;
+    }
+  
+    .gg-kbms-panel,
+    .gg-kbms-strip,
+    .gg-kbms-result-card,
+    .gg-kbms-reader__framewrap {
+      border-radius: var(--gg-kbms-radius-md);
+    }
+  
+    .gg-kbms-panel {
+      padding: 0.9rem;
+      background: var(--gg-kbms-surface-soft);
+    }
+  
+    .gg-kbms-panel__head {
+      margin-bottom: 0.65rem;
+      padding: 0.1rem 0.15rem;
+    }
+  
+    .gg-kbms-panel__title {
+      font-size: 1.03rem;
+      line-height: 1.28;
+    }
+  
+    .gg-kbms-list,
+    .gg-kbms-tree,
+    .gg-kbms-results {
+      display: grid;
+      gap: 0.65rem;
+    }
+  
+    .gg-kbms-list__button,
+    .gg-kbms-tree__button {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.25rem minmax(0, 1fr);
+      column-gap: 0.62rem;
+      row-gap: 0.16rem;
+      align-items: start;
+      width: 100%;
+      text-align: left;
+      padding: 0.74rem 0.8rem;
+      border-radius: var(--gg-kbms-radius-sm);
+      background: var(--gg-kbms-surface-solid);
+      border: 1px solid var(--gg-kbms-line);
+      transition: transform var(--gg-dur-fast, .16s) ease, border-color var(--gg-dur-fast, .16s) ease, background var(--gg-dur-fast, .16s) ease;
+    }
+
+    .gg-kbms-list__button::before,
+    .gg-kbms-tree__button::before {
+      font-family: "Material Symbols Rounded";
+      font-size: 1.05rem;
+      line-height: 1;
+      margin-top: 0.14rem;
+      color: color-mix(in srgb, var(--gg-kbms-ink) 68%, transparent);
+      font-variation-settings: "FILL" 0, "wght" 350, "GRAD" 0, "opsz" 20;
+    }
+
+    .gg-kbms-list__button::before {
+      content: "description";
+    }
+
+    .gg-kbms-tree__button::before {
+      content: "folder";
+    }
+
+    .gg-kbms-tree__button.gg-is-active::before {
+      content: "folder_open";
+    }
+
+    .gg-kbms-tree__sub .gg-kbms-tree__button::before {
+      content: "subdirectory_arrow_right";
+      font-size: 0.98rem;
+    }
+
+    .gg-kbms-list__button.gg-is-active,
+    .gg-kbms-tree__button.gg-is-active {
+      border-color: color-mix(in srgb, var(--gg-kbms-accent) 28%, var(--gg-kbms-line));
+      background: color-mix(in srgb, var(--gg-kbms-accent) 7%, var(--gg-kbms-surface-solid));
+    }
+  
+    .gg-kbms-list__button:hover,
+    .gg-kbms-tree__button:hover,
+    .gg-kbms-chip:hover,
+    .gg-kbms-shell__action:hover,
+    .gg-kbms-reader__back:hover,
+    .gg-kbms-reader__open:hover,
+    .gg-kbms-result-card__cta:hover {
+      transform: translateY(-1px);
+      border-color: var(--gg-kbms-line-strong);
+      background: var(--gg-kbms-chip-hover);
+    }
+  
+    .gg-kbms-list__title,
+    .gg-kbms-tree__title,
+    .gg-kbms-result-card__title {
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .gg-kbms-list__title,
+    .gg-kbms-tree__title {
+      grid-column: 2;
+      font-size: 0.93rem;
+      font-weight: 640;
+    }
+  
+    .gg-kbms-list__meta,
+    .gg-kbms-tree__meta {
+      grid-column: 2;
+      margin-top: 0;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--gg-kbms-ink-faint);
+    }
+  
+    .gg-kbms-tree__group {
+      display: grid;
+      gap: 0.45rem;
+    }
+  
+    .gg-kbms-tree__group > summary {
+      list-style: none;
+      cursor: pointer;
+    }
+  
+    .gg-kbms-tree__group > summary::-webkit-details-marker {
+      display: none;
+    }
+  
+    .gg-kbms-tree__sub {
+      display: grid;
+      gap: 0.35rem;
+      margin: 0.42rem 0 0 0.92rem;
+      padding-left: 0.58rem;
+      border-left: 1px solid var(--gg-kbms-line);
+    }
+  
+    .gg-kbms-main {
+      display: grid;
+      gap: 0.9rem;
+      min-width: 0;
+    }
+  
+    .gg-kbms-strip {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--gg-kbms-surface-solid) 96%, #f8fafc), var(--gg-kbms-surface-soft));
+    }
+  
+    .gg-kbms-strip__title {
+      font-size: clamp(1.28rem, 2.8vw, 1.95rem);
+      letter-spacing: -0.018em;
+    }
+  
+    .gg-kbms-strip__meta {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--gg-kbms-ink-soft);
+      text-align: right;
+    }
+  
+    .gg-kbms-chipbar {
+      display: flex;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+  
+    .gg-kbms-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-height: 2.1rem;
+      padding: 0 0.85rem;
+      border-radius: 999px;
+      background: var(--gg-kbms-chip);
+      border: 1px solid var(--gg-kbms-line);
+      color: var(--gg-kbms-ink-soft);
+      font-size: 0.84rem;
+    }
+  
+    .gg-kbms-chip.gg-is-active {
+      background: var(--gg-kbms-accent);
+      color: white;
+      border-color: transparent;
+    }
+  
+    .gg-kbms-results {
+      align-content: start;
+    }
+  
+    .gg-kbms-result-card {
+      position: relative;
+      overflow: hidden;
+      padding: 0.95rem 1rem;
+      transition: transform var(--gg-dur-fast, .16s) ease, border-color var(--gg-dur-fast, .16s) ease, box-shadow var(--gg-dur-fast, .16s) ease;
+    }
+
+    .gg-kbms-result-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--gg-kbms-accent) 52%, #ffffff), transparent 72%);
+      opacity: 0.4;
+    }
+
+    .gg-kbms-result-card:hover {
+      transform: translateY(-1px);
+      border-color: var(--gg-kbms-line-strong);
+      box-shadow: var(--gg-kbms-shadow-lg);
+    }
+  
+    .gg-kbms-result-card__row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: start;
+    }
+  
+    .gg-kbms-result-card__left {
+      display: flex;
+      gap: 0.9rem;
+      min-width: 0;
+    }
+  
+    .gg-kbms-result-card__icon {
+      display: inline-grid;
+      place-items: center;
+      width: 2.7rem;
+      height: 2.7rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--gg-kbms-chip) 90%, #ffffff);
+      color: var(--gg-kbms-accent);
+      flex: 0 0 auto;
+    }
+  
+    .gg-kbms-result-card__body {
+      min-width: 0;
+    }
+  
+    .gg-kbms-result-card__title {
+      font-size: 1.02rem;
+      letter-spacing: -0.008em;
+    }
+  
+    .gg-kbms-result-card__summary {
+      margin: 0.45rem 0 0;
+      line-height: 1.55;
+      color: var(--gg-kbms-ink-soft);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  
+    .gg-kbms-result-card__meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+      font-size: 0.84rem;
+    }
+  
+    .gg-kbms-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.78rem;
+      padding: 0 0.72rem;
+      border-radius: 999px;
+      background: var(--gg-kbms-chip);
+      border: 1px solid color-mix(in srgb, var(--gg-kbms-line) 80%, transparent);
+      color: var(--gg-kbms-ink-soft);
+      font-size: 0.79rem;
+    }
+  
+    .gg-kbms-empty {
+      padding: 2.4rem 1.3rem;
+      text-align: center;
+      border: 1px dashed var(--gg-kbms-line-strong);
+      border-radius: var(--gg-kbms-radius-md);
+      background: var(--gg-kbms-surface-solid);
+    }
+  
+    .gg-kbms-empty__title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+  
+    .gg-kbms-empty__body {
+      margin: 0.45rem 0 0;
+      line-height: 1.6;
+    }
+  
+    .gg-kbms-reader {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+    }
+  
+    .gg-kbms-reader__title {
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      text-wrap: balance;
+    }
+  
+    .gg-kbms-reader__titlewrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+  
+    .gg-kbms-reader__framewrap {
+      min-height: 70vh;
+      overflow: hidden;
+      background: var(--gg-kbms-surface-solid);
+    }
+  
+    .gg-kbms-reader__frame {
+      display: block;
+      width: 100%;
+      min-height: 70vh;
+      border: 0;
+      background: white;
+    }
+  
+    #gg-kbms-app kbd {
+      border: 1px solid var(--gg-kbms-line-strong);
+      border-bottom-width: 2px;
+      border-radius: 8px;
+      padding: 0.1rem 0.42rem;
+      background: var(--gg-kbms-surface-solid);
+      font-size: 0.78rem;
+      font-family: inherit;
+    }
+  
+    #gg-kbms-app :where(button, input, a, summary):focus-visible {
+      outline: var(--gg-focus-ring, 2px solid currentColor);
+      outline-offset: var(--gg-focus-offset, 3px);
+    }
+  
+    @media (max-width: 980px) {
+      .gg-kbms-shell__body {
+        grid-template-columns: 1fr;
+      }
+  
+      .gg-kbms-nav {
+        position: static;
+      }
+  
+      .gg-kbms-strip {
+        flex-direction: column;
+        align-items: start;
+      }
+  
+      .gg-kbms-strip__meta {
+        text-align: left;
+      }
+    }
+  
+    @media (max-width: 720px) {
+      .gg-kbms-shell,
+      .gg-kbms-reader,
+      .gg-kbms-auth {
+        padding: 0.75rem;
+      }
+  
+      .gg-kbms-auth__card,
+      .gg-kbms-shell__header,
+      .gg-kbms-search-surface,
+      .gg-kbms-panel,
+      .gg-kbms-strip,
+      .gg-kbms-result-card,
+      .gg-kbms-reader__header,
+      .gg-kbms-reader__framewrap {
+        border-radius: var(--gg-kbms-radius-md);
+      }
+  
+      .gg-kbms-result-card__row,
+      .gg-kbms-reader__header {
+        flex-direction: column;
+        align-items: start;
+      }
+  
+      .gg-kbms-reader__titlewrap {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+  
+    @media (prefers-reduced-motion: reduce) {
+      .gg-kbms-list__button,
+      .gg-kbms-tree__button,
+      .gg-kbms-chip,
+      .gg-kbms-shell__action,
+      .gg-kbms-reader__back,
+      .gg-kbms-reader__open,
+      .gg-kbms-result-card__cta {
+        transition: none;
+      }
+    }
+  </style>
+  
+  <script>
+  (() => {
+    const GG = window.GG = window.GG || {};
+    if (GG.kbms && GG.kbms.__booted) return;
+  
+    GG.kbms = {
+      __booted: false,
+      state: {
+        apiBase: 'https://inohong-kbms-api.ratriatra.workers.dev',
+        token: '',
+        user: null,
+        catalog: [],
+        filtered: [],
+        query: '',
+        activeCategory: '',
+        activeSubcategory: '',
+        currentDocUid: '',
+        recents: []
+      },
+      els: {},
+      init,
+      login,
+      logout,
+      loadCatalog,
+      render,
+      openReader,
+      closeReader
+    };
+  
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+      init();
+    }
+  
+    function init() {
+      const root = document.getElementById('gg-kbms-app');
+      if (!root || GG.kbms.__booted) return;
+  
+      GG.kbms.__booted = true;
+      GG.kbms.els.root = root;
+      GG.kbms.els.auth = document.getElementById('gg-kbms-auth');
+      GG.kbms.els.shell = document.getElementById('gg-kbms-shell');
+      GG.kbms.els.reader = document.getElementById('gg-kbms-reader');
+      GG.kbms.els.message = document.getElementById('gg-kbms-auth-message');
+      GG.kbms.els.form = document.getElementById('gg-kbms-login-form');
+      GG.kbms.els.email = document.getElementById('gg-kbms-email');
+      GG.kbms.els.search = document.getElementById('gg-kbms-search');
+      GG.kbms.els.searchClear = document.getElementById('gg-kbms-search-clear');
+      GG.kbms.els.resultTitle = document.getElementById('gg-kbms-result-title');
+      GG.kbms.els.resultMeta = document.getElementById('gg-kbms-result-meta');
+      GG.kbms.els.results = document.getElementById('gg-kbms-results');
+      GG.kbms.els.featured = document.getElementById('gg-kbms-featured');
+      GG.kbms.els.recent = document.getElementById('gg-kbms-recent');
+      GG.kbms.els.tree = document.getElementById('gg-kbms-tree');
+      GG.kbms.els.chipbar = document.getElementById('gg-kbms-chipbar');
+      GG.kbms.els.greeting = document.getElementById('gg-kbms-greeting');
+      GG.kbms.els.readerFrame = document.getElementById('gg-kbms-reader-frame');
+      GG.kbms.els.readerTitle = document.getElementById('gg-kbms-reader-title');
+      GG.kbms.els.readerKicker = document.getElementById('gg-kbms-reader-kicker');
+      GG.kbms.els.readerOpen = document.getElementById('gg-kbms-reader-open');
+  
+      GG.kbms.els.form.addEventListener('submit', onSubmitLogin);
+      GG.kbms.els.search.addEventListener('input', onSearchInput);
+      GG.kbms.els.searchClear.addEventListener('click', clearSearch);
+      document.getElementById('gg-kbms-refresh').addEventListener('click', () => loadCatalog(true));
+      document.getElementById('gg-kbms-logout').addEventListener('click', logout);
+      document.getElementById('gg-kbms-reader-back').addEventListener('click', closeReader);
+      document.addEventListener('keydown', onGlobalKeydown);
+  
+      restoreSession();
+    }
+  
+    async function onSubmitLogin(event) {
+      event.preventDefault();
+      await login();
+    }
+  
+    async function login() {
+      const email = (GG.kbms.els.email.value || '').trim().toLowerCase();
+      if (!email) {
+        setAuthMessage('Masukkan email terlebih dahulu.', true);
+        GG.kbms.els.email.focus();
+        return;
+      }
+  
+      setAuthMessage('Memverifikasi akses…', false);
+      setAppState('authenticating');
+  
+      try {
+        const response = await apiRequest('login', { email });
+        if (response.status !== 'success' || !response.session || !response.session.token) {
+          throw new Error(response.message || 'Login gagal.');
+        }
+  
+        GG.kbms.state.token = response.session.token;
+        GG.kbms.state.user = response.user || null;
+  
+        sessionStorage.setItem('gg:kbms:token', GG.kbms.state.token);
+        sessionStorage.setItem('gg:kbms:user', JSON.stringify(GG.kbms.state.user || {}));
+  
+        setAuthMessage('', false);
+        await loadCatalog(false);
+      } catch (error) {
+        setAppState('idle');
+        setAuthMessage(error.message || 'Gagal terhubung ke server.', true);
+      }
+    }
+  
+    async function logout() {
+      const token = GG.kbms.state.token;
+      GG.kbms.state.token = '';
+      GG.kbms.state.user = null;
+      GG.kbms.state.catalog = [];
+      GG.kbms.state.filtered = [];
+      GG.kbms.state.query = '';
+      GG.kbms.state.activeCategory = '';
+      GG.kbms.state.activeSubcategory = '';
+      GG.kbms.state.currentDocUid = '';
+  
+      sessionStorage.removeItem('gg:kbms:token');
+      sessionStorage.removeItem('gg:kbms:user');
+  
+      try {
+        if (token) await apiRequest('logout', { token });
+      } catch (error) {
+        // Ignore logout transport errors.
+      }
+  
+      GG.kbms.els.readerFrame.src = 'about:blank';
+      GG.kbms.els.reader.hidden = true;
+      GG.kbms.els.shell.hidden = true;
+      GG.kbms.els.auth.hidden = false;
+      GG.kbms.els.email.value = '';
+      GG.kbms.els.search.value = '';
+      setAuthMessage('', false);
+      setAppState('idle');
+    }
+  
+    async function loadCatalog(forceRefresh) {
+      if (!GG.kbms.state.token) return;
+  
+      setAppState('loading');
+      GG.kbms.els.resultMeta.textContent = 'Memuat katalog…';
+  
+      try {
+        const response = await apiRequest('getCatalog', {
+          token: GG.kbms.state.token,
+          ts: forceRefresh ? Date.now() : undefined
+        });
+  
+        if (response.status !== 'success' || !Array.isArray(response.data)) {
+          throw new Error(response.message || 'Gagal memuat katalog.');
+        }
+  
+        GG.kbms.state.user = response.user || GG.kbms.state.user;
+        GG.kbms.state.catalog = response.data;
+        GG.kbms.state.recents = readRecents();
+  
+        GG.kbms.els.greeting.textContent = 'Halo, ' + ((GG.kbms.state.user && GG.kbms.state.user.name) || 'User');
+        GG.kbms.els.auth.hidden = true;
+        GG.kbms.els.reader.hidden = true;
+        GG.kbms.els.shell.hidden = false;
+  
+        applyFilters();
+        setAppState('ready');
+        requestAnimationFrame(() => GG.kbms.els.search.focus());
+      } catch (error) {
+        setAppState('idle');
+        sessionStorage.removeItem('gg:kbms:token');
+        sessionStorage.removeItem('gg:kbms:user');
+        GG.kbms.state.token = '';
+        GG.kbms.state.user = null;
+        GG.kbms.els.shell.hidden = true;
+        GG.kbms.els.auth.hidden = false;
+        setAuthMessage(error.message || 'Katalog gagal dimuat.', true);
+      }
+    }
+  
+    function restoreSession() {
+      const token = sessionStorage.getItem('gg:kbms:token') || '';
+      const rawUser = sessionStorage.getItem('gg:kbms:user') || '{}';
+      GG.kbms.state.recents = readRecents();
+  
+      try {
+        GG.kbms.state.user = JSON.parse(rawUser);
+      } catch (error) {
+        GG.kbms.state.user = null;
+      }
+  
+      if (!token) {
+        setAppState('idle');
+        return;
+      }
+  
+      GG.kbms.state.token = token;
+      loadCatalog(false);
+    }
+  
+    function onSearchInput(event) {
+      GG.kbms.state.query = event.target.value.trim().toLowerCase();
+      GG.kbms.els.searchClear.hidden = !GG.kbms.state.query;
+      applyFilters();
+    }
+  
+    function clearSearch() {
+      GG.kbms.state.query = '';
+      GG.kbms.els.search.value = '';
+      GG.kbms.els.searchClear.hidden = true;
+      applyFilters();
+      GG.kbms.els.search.focus();
+    }
+  
+    function onGlobalKeydown(event) {
+      const isTyping = /input|textarea|select/i.test((event.target && event.target.tagName) || '');
+      const modK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+  
+      if (modK) {
+        event.preventDefault();
+        if (!GG.kbms.els.shell.hidden) GG.kbms.els.search.focus();
+        return;
+      }
+  
+      if (event.key === '/' && !isTyping && !GG.kbms.els.shell.hidden) {
+        event.preventDefault();
+        GG.kbms.els.search.focus();
+        return;
+      }
+  
+      if (event.key === 'Escape' && !GG.kbms.els.reader.hidden) {
+        event.preventDefault();
+        closeReader();
+      }
+    }
+  
+    function applyFilters() {
+      const query = GG.kbms.state.query;
+      const activeCategory = GG.kbms.state.activeCategory;
+      const activeSubcategory = GG.kbms.state.activeSubcategory;
+  
+      GG.kbms.state.filtered = GG.kbms.state.catalog.filter((item) => {
+        if (activeCategory && item.category !== activeCategory) return false;
+        if (activeSubcategory && item.subcategory !== activeSubcategory) return false;
+        if (!query) return true;
+        return String(item.search_text || '').includes(query);
+      });
+  
+      render();
+    }
+  
+    function render() {
+      renderFeatured();
+      renderRecents();
+      renderTree();
+      renderChipbar();
+      renderResults();
+    }
+  
+    function renderFeatured() {
+      const list = GG.kbms.state.catalog.filter((item) => item.featured).slice(0, 6);
+      renderMiniList(GG.kbms.els.featured, list, 'Belum ada dokumen unggulan.');
+    }
+  
+    function renderRecents() {
+      const map = new Map(GG.kbms.state.catalog.map((item) => [item.doc_uid, item]));
+      const list = GG.kbms.state.recents
+        .map((docUid) => map.get(docUid))
+        .filter(Boolean)
+        .slice(0, 6);
+  
+      renderMiniList(GG.kbms.els.recent, list, 'Belum ada dokumen yang dibuka di perangkat ini.');
+    }
+  
+    function renderMiniList(container, items, emptyMessage) {
+      container.innerHTML = '';
+      if (!items.length) {
+        container.appendChild(createEmptyBlock(emptyMessage, 'Mulai dari pencarian atau pilih kategori di bawah.'));
+        return;
+      }
+  
+      items.forEach((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gg-kbms-list__button';
+        button.addEventListener('click', () => openReader(item.doc_uid));
+  
+        const title = document.createElement('p');
+        title.className = 'gg-kbms-list__title';
+        title.textContent = item.title;
+  
+        const meta = document.createElement('p');
+        meta.className = 'gg-kbms-list__meta';
+        meta.textContent = compactMeta(item);
+  
+        button.appendChild(title);
+        button.appendChild(meta);
+        container.appendChild(button);
+      });
+    }
+  
+    function renderTree() {
+      const container = GG.kbms.els.tree;
+      container.innerHTML = '';
+  
+      const grouped = new Map();
+      GG.kbms.state.catalog.forEach((item) => {
+        if (!grouped.has(item.category)) grouped.set(item.category, new Map());
+        const subMap = grouped.get(item.category);
+        const sub = item.subcategory || '';
+        if (!subMap.has(sub)) subMap.set(sub, []);
+        subMap.get(sub).push(item);
+      });
+  
+      if (!grouped.size) {
+        container.appendChild(createEmptyBlock('Katalog kosong.', 'Jalankan sinkronisasi atau isi data terlebih dahulu.'));
+        return;
+      }
+  
+      Array.from(grouped.keys()).sort(localeSort).forEach((category) => {
+        const details = document.createElement('details');
+        details.className = 'gg-kbms-tree__group';
+        details.open = GG.kbms.state.activeCategory === category || !GG.kbms.state.activeCategory;
+  
+        const summary = document.createElement('summary');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gg-kbms-tree__button' + (GG.kbms.state.activeCategory === category && !GG.kbms.state.activeSubcategory ? ' gg-is-active' : '');
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          GG.kbms.state.activeCategory = category;
+          GG.kbms.state.activeSubcategory = '';
+          applyFilters();
+        });
+  
+        const title = document.createElement('p');
+        title.className = 'gg-kbms-tree__title';
+        title.textContent = category;
+  
+        const meta = document.createElement('p');
+        meta.className = 'gg-kbms-tree__meta';
+        meta.textContent = String(countDocsInCategory(category)) + ' dokumen';
+  
+        button.appendChild(title);
+        button.appendChild(meta);
+        summary.appendChild(button);
+        details.appendChild(summary);
+  
+        const subMap = grouped.get(category);
+        const subs = Array.from(subMap.keys()).filter(Boolean).sort(localeSort);
+        if (subs.length) {
+          const subWrap = document.createElement('div');
+          subWrap.className = 'gg-kbms-tree__sub';
+          subs.forEach((subcategory) => {
+            const subButton = document.createElement('button');
+            subButton.type = 'button';
+            subButton.className = 'gg-kbms-tree__button' + (GG.kbms.state.activeSubcategory === subcategory ? ' gg-is-active' : '');
+            subButton.addEventListener('click', () => {
+              GG.kbms.state.activeCategory = category;
+              GG.kbms.state.activeSubcategory = subcategory;
+              applyFilters();
+            });
+  
+            const subTitle = document.createElement('p');
+            subTitle.className = 'gg-kbms-tree__title';
+            subTitle.textContent = subcategory;
+  
+            const subMeta = document.createElement('p');
+            subMeta.className = 'gg-kbms-tree__meta';
+            subMeta.textContent = String(subMap.get(subcategory).length) + ' dokumen';
+  
+            subButton.appendChild(subTitle);
+            subButton.appendChild(subMeta);
+            subWrap.appendChild(subButton);
+          });
+          details.appendChild(subWrap);
+        }
+  
+        container.appendChild(details);
+      });
+    }
+  
+    function renderChipbar() {
+      const chipbar = GG.kbms.els.chipbar;
+      chipbar.innerHTML = '';
+  
+      const chips = [];
+      chips.push({ label: 'All', category: '', subcategory: '' });
+  
+      Array.from(new Set(GG.kbms.state.catalog.map((item) => item.category)))
+        .sort(localeSort)
+        .slice(0, 8)
+        .forEach((category) => chips.push({ label: category, category: category, subcategory: '' }));
+  
+      chips.forEach((chip) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'gg-kbms-chip';
+  
+        if (chip.category === GG.kbms.state.activeCategory && chip.subcategory === GG.kbms.state.activeSubcategory) {
+          button.classList.add('gg-is-active');
+        }
+  
+        button.textContent = chip.label;
+        button.addEventListener('click', () => {
+          GG.kbms.state.activeCategory = chip.category;
+          GG.kbms.state.activeSubcategory = chip.subcategory;
+          applyFilters();
+        });
+        chipbar.appendChild(button);
+      });
+  
+      chipbar.hidden = chips.length <= 1;
+    }
+  
+    function renderResults() {
+      const container = GG.kbms.els.results;
+      container.innerHTML = '';
+  
+      const total = GG.kbms.state.catalog.length;
+      const visible = GG.kbms.state.filtered.length;
+      const hasFilter = !!(GG.kbms.state.query || GG.kbms.state.activeCategory || GG.kbms.state.activeSubcategory);
+  
+      if (GG.kbms.state.activeSubcategory) {
+        GG.kbms.els.resultTitle.textContent = GG.kbms.state.activeSubcategory;
+      } else if (GG.kbms.state.activeCategory) {
+        GG.kbms.els.resultTitle.textContent = GG.kbms.state.activeCategory;
+      } else if (GG.kbms.state.query) {
+        GG.kbms.els.resultTitle.textContent = 'Search results';
+      } else {
+        GG.kbms.els.resultTitle.textContent = 'All documents';
+      }
+  
+      GG.kbms.els.resultMeta.textContent = hasFilter
+        ? visible + ' dari ' + total + ' dokumen'
+        : total + ' dokumen tersedia';
+  
+      if (!visible) {
+        container.appendChild(createEmptyBlock(
+          'Tidak ada dokumen yang cocok.',
+          'Ubah kata kunci, lepaskan filter, atau pilih kategori lain.'
+        ));
+        return;
+      }
+  
+      GG.kbms.state.filtered.forEach((item) => {
+        const card = document.createElement('article');
+        card.className = 'gg-kbms-result-card';
+  
+        const row = document.createElement('div');
+        row.className = 'gg-kbms-result-card__row';
+  
+        const left = document.createElement('div');
+        left.className = 'gg-kbms-result-card__left';
+  
+        const icon = document.createElement('div');
+        icon.className = 'gg-kbms-result-card__icon';
+        icon.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">' + escapeHtml(item.icon || 'description') + '</span>';
+  
+        const body = document.createElement('div');
+        body.className = 'gg-kbms-result-card__body';
+  
+        const title = document.createElement('p');
+        title.className = 'gg-kbms-result-card__title';
+        title.textContent = item.title;
+  
+        const summary = document.createElement('p');
+        summary.className = 'gg-kbms-result-card__summary';
+        summary.textContent = item.summary || fallbackSummary(item);
+  
+        const meta = document.createElement('div');
+        meta.className = 'gg-kbms-result-card__meta';
+        [
+          item.category,
+          item.subcategory,
+          item.owner ? 'Owner: ' + item.owner : '',
+          item.lang ? item.lang.toUpperCase() : '',
+          item.updated_at ? formatDateLabel(item.updated_at) : ''
+        ].filter(Boolean).forEach((label) => {
+          const pill = document.createElement('span');
+          pill.className = 'gg-kbms-pill';
+          pill.textContent = label;
+          meta.appendChild(pill);
+        });
+  
+        body.appendChild(title);
+        body.appendChild(summary);
+        body.appendChild(meta);
+        left.appendChild(icon);
+        left.appendChild(body);
+  
+        const cta = document.createElement('button');
+        cta.type = 'button';
+        cta.className = 'gg-kbms-result-card__cta';
+        cta.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">visibility</span><span>Buka</span>';
+        cta.addEventListener('click', () => openReader(item.doc_uid));
+  
+        row.appendChild(left);
+        row.appendChild(cta);
+        card.appendChild(row);
+        container.appendChild(card);
+      });
+    }
+  
+    function openReader(docUid) {
+      const item = GG.kbms.state.catalog.find((entry) => entry.doc_uid === docUid);
+      if (!item) return;
+  
+      GG.kbms.state.currentDocUid = docUid;
+      GG.kbms.els.readerTitle.textContent = item.title;
+      GG.kbms.els.readerKicker.textContent = [item.category, item.subcategory].filter(Boolean).join(' • ') || 'Document';
+      GG.kbms.els.readerOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
+      GG.kbms.els.readerFrame.src = buildDocPreviewUrl(item.doc_id, item.doc_type);
+  
+      GG.kbms.els.shell.hidden = true;
+      GG.kbms.els.reader.hidden = false;
+      writeRecent(docUid);
+    }
+  
+    function closeReader() {
+      GG.kbms.els.readerFrame.src = 'about:blank';
+      GG.kbms.els.reader.hidden = true;
+      GG.kbms.els.shell.hidden = false;
+      requestAnimationFrame(() => GG.kbms.els.search.focus());
+    }
+  
+    async function apiRequest(action, payload) {
+      const base = String(GG.kbms.state.apiBase || '').trim();
+      if (!base || /YOUR-INOHONG-WORKER/i.test(base)) {
+        throw new Error('API base belum diisi. Isi GG.kbms.state.apiBase pada script inline.');
+      }
+  
+      const response = await fetch(base, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(Object.assign({ action }, payload || {})),
+        credentials: 'omit'
+      });
+  
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        throw new Error('Respons server tidak valid.');
+      }
+  
+      if (!response.ok && data && data.message) {
+        throw new Error(data.message);
+      }
+  
+      return data;
+    }
+  
+    function setAppState(state) {
+      GG.kbms.els.root.dataset.ggState = state;
+    }
+  
+    function setAuthMessage(message, isError) {
+      GG.kbms.els.message.textContent = message || '';
+      GG.kbms.els.message.style.color = isError ? '#a11d2d' : '';
+    }
+  
+    function readRecents() {
+      try {
+        const raw = localStorage.getItem('gg:kbms:recent:v1') || '[]';
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+  
+    function writeRecent(docUid) {
+      const next = [docUid].concat(readRecents().filter((item) => item !== docUid)).slice(0, 12);
+      GG.kbms.state.recents = next;
+      localStorage.setItem('gg:kbms:recent:v1', JSON.stringify(next));
+      renderRecents();
+    }
+  
+    function countDocsInCategory(category) {
+      return GG.kbms.state.catalog.filter((item) => item.category === category).length;
+    }
+  
+    function fallbackSummary(item) {
+      const pieces = [item.category, item.subcategory, item.keywords].filter(Boolean);
+      if (!pieces.length) return 'Dokumen internal siap dibuka di dalam workspace.';
+      return pieces.join(' • ');
+    }
+  
+    function compactMeta(item) {
+      return [item.category, item.subcategory, item.doc_type && item.doc_type.toUpperCase()].filter(Boolean).join(' • ');
+    }
+  
+    function formatDateLabel(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }).format(date);
+    }
+  
+    function buildDocPreviewUrl(docId, docType) {
+      switch ((docType || '').toLowerCase()) {
+        case 'sheet': return 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(docId) + '/preview';
+        case 'slide': return 'https://docs.google.com/presentation/d/' + encodeURIComponent(docId) + '/preview';
+        case 'pdf': return 'https://drive.google.com/file/d/' + encodeURIComponent(docId) + '/preview';
+        default: return 'https://docs.google.com/document/d/' + encodeURIComponent(docId) + '/preview';
+      }
+    }
+  
+    function buildDocOpenUrl(docId, docType) {
+      switch ((docType || '').toLowerCase()) {
+        case 'sheet': return 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(docId) + '/edit';
+        case 'slide': return 'https://docs.google.com/presentation/d/' + encodeURIComponent(docId) + '/edit';
+        case 'pdf': return 'https://drive.google.com/file/d/' + encodeURIComponent(docId) + '/view';
+        default: return 'https://docs.google.com/document/d/' + encodeURIComponent(docId) + '/edit';
+      }
+    }
+  
+    function createEmptyBlock(titleText, bodyText) {
+      const wrap = document.createElement('div');
+      wrap.className = 'gg-kbms-empty';
+  
+      const title = document.createElement('p');
+      title.className = 'gg-kbms-empty__title';
+      title.textContent = titleText;
+  
+      const body = document.createElement('p');
+      body.className = 'gg-kbms-empty__body';
+      body.textContent = bodyText;
+  
+      wrap.appendChild(title);
+      wrap.appendChild(body);
+      return wrap;
+    }
+  
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  
+    function localeSort(a, b) {
+      return String(a || '').localeCompare(String(b || ''), 'id', { sensitivity: 'base' });
+    }
+  })();
+  </script>
+  
