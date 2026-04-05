@@ -210,9 +210,23 @@
           </a>
         </div>
 
-        <div class="gg-kbms-preview__framewrap">
-          <p class="gg-kbms-preview__empty" id="gg-kbms-preview-empty">Belum ada dokumen dipilih.</p>
-          <iframe id="gg-kbms-preview-frame" class="gg-kbms-preview__frame" title="Document preview" loading="lazy" hidden></iframe>
+        <div class="gg-kbms-preview__body">
+          <section class="gg-kbms-preview__context" aria-labelledby="gg-kbms-preview-context-title">
+            <h4 class="gg-kbms-preview__context-title" id="gg-kbms-preview-context-title">Ringkasan internal</h4>
+            <p class="gg-kbms-preview__context-body" id="gg-kbms-preview-context-body">Pilih dokumen untuk melihat ringkasan internal yang stabil di workspace ini.</p>
+          </section>
+
+          <section class="gg-kbms-preview__source" aria-labelledby="gg-kbms-preview-source-title">
+            <h4 class="gg-kbms-preview__source-title" id="gg-kbms-preview-source-title">Preview sumber (opsional)</h4>
+            <p class="gg-kbms-preview__source-note" id="gg-kbms-preview-source-note">Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.</p>
+            <button class="gg-kbms-button gg-kbms-button--quiet gg-kbms-preview__toggle" id="gg-kbms-preview-toggle" type="button">
+              <span class="material-symbols-rounded" aria-hidden="true">preview</span>
+              <span>Tampilkan preview sumber</span>
+            </button>
+            <div class="gg-kbms-preview__framewrap" id="gg-kbms-preview-framewrap" hidden>
+              <iframe id="gg-kbms-preview-frame" class="gg-kbms-preview__frame" title="Document source preview" loading="lazy"></iframe>
+            </div>
+          </section>
         </div>
       </aside>
     </div>
@@ -243,9 +257,63 @@
         </div>
       </header>
 
-      <div class="gg-kbms-reader__framewrap">
-        <p class="gg-kbms-reader__empty" id="gg-kbms-reader-empty">Dokumen belum dipilih.</p>
-        <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="INOHONG internal reader" loading="lazy" hidden></iframe>
+      <div class="gg-kbms-reader__shell">
+        <article class="gg-kbms-reader__article" id="gg-kbms-reader-article" aria-live="polite">
+          <div class="gg-kbms-reader__mode" id="gg-kbms-reader-mode" data-mode="reader-internal">reader-internal</div>
+          <p class="gg-kbms-reader__lede" id="gg-kbms-reader-lede">Ringkasan internal tersedia di workspace ini.</p>
+
+          <section class="gg-kbms-reader__section" aria-labelledby="gg-kbms-reader-summary-title">
+            <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-summary-title">Ringkasan internal</h4>
+            <p class="gg-kbms-reader__body" id="gg-kbms-reader-summary">Pilih dokumen untuk menampilkan ringkasan.</p>
+          </section>
+
+          <section class="gg-kbms-reader__section" id="gg-kbms-reader-context-block" aria-labelledby="gg-kbms-reader-context-title">
+            <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-context-title">Konteks penggunaan</h4>
+            <p class="gg-kbms-reader__body" id="gg-kbms-reader-context">Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.</p>
+          </section>
+
+          <section class="gg-kbms-reader__section" id="gg-kbms-reader-notes-block" aria-labelledby="gg-kbms-reader-notes-title" hidden>
+            <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-notes-title">Poin penting</h4>
+            <ul class="gg-kbms-reader__notes" id="gg-kbms-reader-notes"></ul>
+          </section>
+
+          <section class="gg-kbms-reader__section" aria-labelledby="gg-kbms-reader-facts-title">
+            <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-facts-title">Metadata</h4>
+            <dl class="gg-kbms-reader__facts" id="gg-kbms-reader-facts">
+              <div class="gg-kbms-reader__fact">
+                <dt>Collection</dt>
+                <dd id="gg-kbms-reader-collection">-</dd>
+              </div>
+              <div class="gg-kbms-reader__fact">
+                <dt>Status</dt>
+                <dd id="gg-kbms-reader-status">-</dd>
+              </div>
+              <div class="gg-kbms-reader__fact">
+                <dt>Owner</dt>
+                <dd id="gg-kbms-reader-owner">-</dd>
+              </div>
+              <div class="gg-kbms-reader__fact">
+                <dt>Updated</dt>
+                <dd id="gg-kbms-reader-updated">-</dd>
+              </div>
+            </dl>
+          </section>
+        </article>
+
+        <aside class="gg-kbms-reader__source" aria-labelledby="gg-kbms-reader-source-title">
+          <h4 class="gg-kbms-reader__source-title" id="gg-kbms-reader-source-title">Preview sumber (opsional)</h4>
+          <p class="gg-kbms-reader__source-note" id="gg-kbms-reader-source-note">Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.</p>
+          <button class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-reader-preview-toggle" type="button">
+            <span class="material-symbols-rounded" aria-hidden="true">preview</span>
+            <span>Tampilkan preview sumber</span>
+          </button>
+          <div class="gg-kbms-reader__embed" id="gg-kbms-reader-embed" hidden>
+            <p class="gg-kbms-reader__embed-note" id="gg-kbms-reader-embed-note">Jika preview eksternal meminta login, lanjutkan lewat tombol Buka asli.</p>
+            <div class="gg-kbms-reader__framewrap">
+              <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="INOHONG source preview" loading="lazy"></iframe>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   </section>
@@ -661,8 +729,8 @@
 
   .gg-kbms-workspace {
     display: grid;
-    grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr) minmax(18rem, 23rem);
-    gap: 0.95rem;
+    grid-template-columns: minmax(13.6rem, 16.4rem) minmax(0, 1fr) minmax(15.8rem, 19.5rem);
+    gap: 0.78rem;
     align-items: start;
   }
 
@@ -681,17 +749,17 @@
   .gg-kbms-nav {
     border: 1px solid var(--gg-kbms-border);
     border-radius: var(--gg-kbms-radius-lg);
-    padding: 0.44rem;
+    padding: 0.36rem;
     background: color-mix(in srgb, var(--gg-kbms-surface) 96%, #f9fafb);
     box-shadow: var(--gg-kbms-shadow-sm);
     display: grid;
-    gap: 0.36rem;
+    gap: 0.28rem;
   }
 
   .gg-kbms-nav__item {
     width: 100%;
-    min-height: 2.55rem;
-    padding: 0.3rem 0.62rem;
+    min-height: 2.38rem;
+    padding: 0.26rem 0.56rem;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
@@ -721,7 +789,7 @@
 
   .gg-kbms-card {
     border-radius: var(--gg-kbms-radius-lg);
-    padding: 0.84rem;
+    padding: 0.72rem;
   }
 
   .gg-kbms-card__head {
@@ -744,14 +812,14 @@
 
   .gg-kbms-collection {
     width: 100%;
-    min-height: 2.36rem;
+    min-height: 2.2rem;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 0.45rem;
     text-align: left;
-    padding: 0.45rem 0.62rem;
-    font-size: 0.85rem;
+    padding: 0.38rem 0.56rem;
+    font-size: 0.82rem;
   }
 
   .gg-kbms-collection.gg-is-active {
@@ -767,7 +835,7 @@
   .gg-kbms-mini {
     width: 100%;
     text-align: left;
-    padding: 0.68rem;
+    padding: 0.56rem;
     display: grid;
     gap: 0.2rem;
   }
@@ -815,10 +883,10 @@
   .gg-kbms-docrow {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.45rem;
+    gap: 0.34rem;
     border: 1px solid var(--gg-kbms-border);
     border-radius: 12px;
-    padding: 0.42rem;
+    padding: 0.34rem;
     background: color-mix(in srgb, var(--gg-kbms-surface) 95%, #f8fafc);
   }
 
@@ -832,7 +900,7 @@
     width: 100%;
     border: 0;
     background: transparent;
-    padding: 0.25rem 0.34rem;
+    padding: 0.2rem 0.3rem;
     text-align: left;
     border-radius: 9px;
   }
@@ -852,8 +920,8 @@
 
   .gg-kbms-docrow__title {
     margin: 0;
-    font-size: 0.94rem;
-    line-height: 1.25;
+    font-size: 0.9rem;
+    line-height: 1.22;
     letter-spacing: -0.008em;
     font-weight: 660;
   }
@@ -867,9 +935,9 @@
   }
 
   .gg-kbms-docrow__summary {
-    margin: 0.26rem 0 0;
+    margin: 0.2rem 0 0;
     color: var(--gg-kbms-muted);
-    font-size: 0.82rem;
+    font-size: 0.79rem;
     line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -878,9 +946,9 @@
   }
 
   .gg-kbms-docrow__meta {
-    margin: 0.35rem 0 0;
+    margin: 0.28rem 0 0;
     color: var(--gg-kbms-muted);
-    font-size: 0.76rem;
+    font-size: 0.73rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -893,8 +961,8 @@
   }
 
   .gg-kbms-docrow__action {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.04rem;
+    height: 2.04rem;
     display: inline-grid;
     place-items: center;
     text-decoration: none;
@@ -951,24 +1019,29 @@
   .gg-kbms-preview {
     position: sticky;
     top: 0.75rem;
-    padding: 0.92rem;
+    padding: 0.78rem;
     display: grid;
-    gap: 0.76rem;
-    min-height: 34rem;
+    gap: 0.58rem;
+    min-height: 0;
+    align-content: start;
   }
 
   .gg-kbms-preview__title {
     margin: 0;
-    font-size: 1.12rem;
-    letter-spacing: -0.012em;
+    font-size: 1.04rem;
+    letter-spacing: -0.01em;
     line-height: 1.2;
   }
 
   .gg-kbms-preview__summary {
-    margin: 0.38rem 0 0;
+    margin: 0.3rem 0 0;
     color: var(--gg-kbms-muted);
-    font-size: 0.84rem;
+    font-size: 0.81rem;
     line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .gg-kbms-preview__badges {
@@ -1017,6 +1090,43 @@
     flex-wrap: wrap;
   }
 
+  .gg-kbms-preview__body {
+    display: grid;
+    gap: 0.56rem;
+  }
+
+  .gg-kbms-preview__context,
+  .gg-kbms-preview__source {
+    border: 1px solid var(--gg-kbms-border);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--gg-kbms-surface) 94%, #f8fafc);
+    padding: 0.62rem 0.68rem;
+  }
+
+  .gg-kbms-preview__context-title,
+  .gg-kbms-preview__source-title {
+    margin: 0;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    color: var(--gg-kbms-muted-2);
+    font-weight: 700;
+  }
+
+  .gg-kbms-preview__context-body,
+  .gg-kbms-preview__source-note {
+    margin: 0.32rem 0 0;
+    color: var(--gg-kbms-muted);
+    font-size: 0.8rem;
+    line-height: 1.42;
+  }
+
+  .gg-kbms-preview__toggle {
+    margin-top: 0.48rem;
+    width: 100%;
+    justify-content: center;
+  }
+
   .gg-kbms-button {
     min-height: 2.4rem;
     padding: 0 0.78rem;
@@ -1052,25 +1162,15 @@
     border: 1px solid var(--gg-kbms-border);
     border-radius: 12px;
     overflow: hidden;
-    background: color-mix(in srgb, var(--gg-kbms-surface) 94%, #f8fafc);
-    min-height: 20rem;
+    background: #ffffff;
+    min-height: 14rem;
     position: relative;
-  }
-
-  .gg-kbms-preview__empty {
-    margin: 0;
-    min-height: 20rem;
-    padding: 1rem;
-    display: grid;
-    place-items: center;
-    text-align: center;
-    color: var(--gg-kbms-muted);
-    font-size: 0.84rem;
+    margin-top: 0.5rem;
   }
 
   .gg-kbms-preview__frame {
     width: 100%;
-    min-height: 20rem;
+    min-height: 14rem;
     border: 0;
     background: #fff;
     display: block;
@@ -1083,7 +1183,8 @@
   }
 
   .gg-kbms-reader__bar,
-  .gg-kbms-reader__framewrap {
+  .gg-kbms-reader__article,
+  .gg-kbms-reader__source {
     border: 1px solid var(--gg-kbms-border);
     border-radius: var(--gg-kbms-radius-lg);
     background: color-mix(in srgb, var(--gg-kbms-surface) 96%, #f9fafb);
@@ -1135,27 +1236,158 @@
     line-height: 1.42;
   }
 
-  .gg-kbms-reader__framewrap {
-    overflow: hidden;
-    min-height: min(74vh, 940px);
-    position: relative;
+  .gg-kbms-reader__shell {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
+    gap: 0.8rem;
+    align-items: start;
   }
 
-  .gg-kbms-reader__empty {
-    margin: 0;
-    min-height: min(74vh, 940px);
-    padding: 1rem;
-    display: grid;
-    place-items: center;
-    text-align: center;
+  .gg-kbms-reader__article {
+    padding: 1rem 1.05rem;
+  }
+
+  .gg-kbms-reader__mode {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.7rem;
+    padding: 0 0.58rem;
+    border-radius: 999px;
+    border: 1px solid var(--gg-kbms-border);
+    background: color-mix(in srgb, var(--gg-kbms-surface) 92%, #eff3f7);
     color: var(--gg-kbms-muted);
-    font-size: 0.88rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .gg-kbms-reader__lede {
+    margin: 0.72rem 0 0;
+    max-width: 72ch;
+    color: var(--gg-kbms-ink);
+    font-size: 1rem;
+    line-height: 1.58;
+    font-weight: 560;
+  }
+
+  .gg-kbms-reader__section + .gg-kbms-reader__section {
+    margin-top: 1rem;
+  }
+
+  .gg-kbms-reader__section-title {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.74rem;
+    color: var(--gg-kbms-muted-2);
+    font-weight: 700;
+  }
+
+  .gg-kbms-reader__body {
+    margin: 0.42rem 0 0;
+    max-width: 72ch;
+    color: color-mix(in srgb, var(--gg-kbms-ink) 92%, #334155);
+    font-size: 0.95rem;
+    line-height: 1.74;
+  }
+
+  .gg-kbms-reader__notes {
+    margin: 0.45rem 0 0 1rem;
+    padding: 0;
+    max-width: 72ch;
+    display: grid;
+    gap: 0.36rem;
+    color: color-mix(in srgb, var(--gg-kbms-ink) 90%, #475569);
+    font-size: 0.9rem;
+    line-height: 1.62;
+  }
+
+  .gg-kbms-reader__facts {
+    margin: 0.48rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.48rem;
+    max-width: 72ch;
+  }
+
+  .gg-kbms-reader__fact {
+    margin: 0;
+    border: 1px solid var(--gg-kbms-border);
+    border-radius: 10px;
+    padding: 0.48rem 0.6rem;
+    background: color-mix(in srgb, var(--gg-kbms-surface) 92%, #f1f5f9);
+  }
+
+  .gg-kbms-reader__fact dt {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+    color: var(--gg-kbms-muted-2);
+    font-weight: 700;
+  }
+
+  .gg-kbms-reader__fact dd {
+    margin: 0.26rem 0 0;
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--gg-kbms-ink) 90%, #334155);
+    font-weight: 560;
+  }
+
+  .gg-kbms-reader__source {
+    position: sticky;
+    top: 0.75rem;
+    padding: 0.8rem;
+    display: grid;
+    gap: 0.52rem;
+    align-content: start;
+  }
+
+  .gg-kbms-reader__source-title {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.74rem;
+    color: var(--gg-kbms-muted-2);
+    font-weight: 700;
+  }
+
+  .gg-kbms-reader__source-note {
+    margin: 0;
+    color: var(--gg-kbms-muted);
+    font-size: 0.82rem;
+    line-height: 1.44;
+  }
+
+  .gg-kbms-reader__embed {
+    margin-top: 0.2rem;
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  .gg-kbms-reader__embed-note {
+    margin: 0;
+    color: var(--gg-kbms-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .gg-kbms-reader__framewrap {
+    border: 1px solid var(--gg-kbms-border);
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 18rem;
+    background: #ffffff;
   }
 
   .gg-kbms-reader__frame {
     display: block;
     width: 100%;
-    min-height: min(74vh, 940px);
+    min-height: 18rem;
     border: 0;
     background: #fff;
   }
@@ -1236,9 +1468,16 @@
     }
 
     .gg-kbms-preview__framewrap,
-    .gg-kbms-preview__empty,
     .gg-kbms-preview__frame {
-      min-height: 17rem;
+      min-height: 13rem;
+    }
+
+    .gg-kbms-reader__shell {
+      grid-template-columns: 1fr;
+    }
+
+    .gg-kbms-reader__source {
+      position: static;
     }
   }
 
@@ -1293,6 +1532,10 @@
       width: 100%;
       justify-content: flex-start;
     }
+
+    .gg-kbms-reader__facts {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 760px) {
@@ -1308,6 +1551,8 @@
     .gg-kbms-preview,
     .gg-kbms-nav,
     .gg-kbms-reader__bar,
+    .gg-kbms-reader__article,
+    .gg-kbms-reader__source,
     .gg-kbms-reader__framewrap {
       border-radius: 14px;
     }
@@ -1339,10 +1584,15 @@
       justify-content: center;
     }
 
+    .gg-kbms-reader__body,
+    .gg-kbms-reader__notes,
+    .gg-kbms-reader__facts {
+      max-width: none;
+    }
+
     .gg-kbms-reader__framewrap,
-    .gg-kbms-reader__empty,
     .gg-kbms-reader__frame {
-      min-height: 68vh;
+      min-height: 56vh;
     }
   }
 
@@ -1399,7 +1649,14 @@
       recentQueries: [],
       pinned: [],
       commandOpen: false,
-      viewPoolCount: 0
+      viewPoolCount: 0,
+      previewSourceVisible: false,
+      readerSourceVisible: false,
+      previewEmbedStatus: 'idle',
+      readerEmbedStatus: 'idle',
+      previewEmbedTimer: 0,
+      readerEmbedTimer: 0,
+      readerMode: 'reader-internal'
     },
     els: {},
     init,
@@ -1473,7 +1730,10 @@
     els.previewReader = document.getElementById('gg-kbms-preview-reader');
     els.previewPin = document.getElementById('gg-kbms-preview-pin');
     els.previewOpen = document.getElementById('gg-kbms-preview-open');
-    els.previewEmpty = document.getElementById('gg-kbms-preview-empty');
+    els.previewContextBody = document.getElementById('gg-kbms-preview-context-body');
+    els.previewSourceNote = document.getElementById('gg-kbms-preview-source-note');
+    els.previewToggle = document.getElementById('gg-kbms-preview-toggle');
+    els.previewFrameWrap = document.getElementById('gg-kbms-preview-framewrap');
     els.previewFrame = document.getElementById('gg-kbms-preview-frame');
 
     els.readerBack = document.getElementById('gg-kbms-reader-back');
@@ -1481,7 +1741,20 @@
     els.readerMeta = document.getElementById('gg-kbms-reader-meta');
     els.readerPin = document.getElementById('gg-kbms-reader-pin');
     els.readerOpen = document.getElementById('gg-kbms-reader-open');
-    els.readerEmpty = document.getElementById('gg-kbms-reader-empty');
+    els.readerMode = document.getElementById('gg-kbms-reader-mode');
+    els.readerLede = document.getElementById('gg-kbms-reader-lede');
+    els.readerSummary = document.getElementById('gg-kbms-reader-summary');
+    els.readerContext = document.getElementById('gg-kbms-reader-context');
+    els.readerNotesBlock = document.getElementById('gg-kbms-reader-notes-block');
+    els.readerNotes = document.getElementById('gg-kbms-reader-notes');
+    els.readerCollection = document.getElementById('gg-kbms-reader-collection');
+    els.readerStatus = document.getElementById('gg-kbms-reader-status');
+    els.readerOwner = document.getElementById('gg-kbms-reader-owner');
+    els.readerUpdated = document.getElementById('gg-kbms-reader-updated');
+    els.readerSourceNote = document.getElementById('gg-kbms-reader-source-note');
+    els.readerPreviewToggle = document.getElementById('gg-kbms-reader-preview-toggle');
+    els.readerEmbed = document.getElementById('gg-kbms-reader-embed');
+    els.readerEmbedNote = document.getElementById('gg-kbms-reader-embed-note');
     els.readerFrame = document.getElementById('gg-kbms-reader-frame');
 
     bindEvents();
@@ -1524,8 +1797,14 @@
 
     els.previewReader.addEventListener('click', () => openReader(GG.kbms.state.currentDocUid, { trackRecent: true, push: true, focusReader: true }));
     els.previewPin.addEventListener('click', toggleCurrentPin);
+    els.previewToggle.addEventListener('click', togglePreviewSource);
     els.readerBack.addEventListener('click', () => closeReader({ replace: true, focusWorkspace: true }));
     els.readerPin.addEventListener('click', toggleCurrentPin);
+    els.readerPreviewToggle.addEventListener('click', toggleReaderSourcePreview);
+    els.previewFrame.addEventListener('load', onPreviewFrameLoad);
+    els.previewFrame.addEventListener('error', onPreviewFrameError);
+    els.readerFrame.addEventListener('load', onReaderFrameLoad);
+    els.readerFrame.addEventListener('error', onReaderFrameError);
 
     document.addEventListener('keydown', onGlobalKeydown);
     document.addEventListener('click', (event) => {
@@ -1592,6 +1871,11 @@
     GG.kbms.state.currentDocUid = '';
     GG.kbms.state.previewDocUid = '';
     GG.kbms.state.commandOpen = false;
+    GG.kbms.state.previewSourceVisible = false;
+    GG.kbms.state.readerSourceVisible = false;
+    GG.kbms.state.previewEmbedStatus = 'idle';
+    GG.kbms.state.readerEmbedStatus = 'idle';
+    GG.kbms.state.readerMode = 'reader-internal';
 
     sessionStorage.removeItem(STORAGE.token);
     sessionStorage.removeItem(STORAGE.user);
@@ -1603,13 +1887,21 @@
     }
 
     const els = GG.kbms.els;
-    els.previewFrame.src = 'about:blank';
-    els.previewFrame.hidden = true;
-    els.previewEmpty.hidden = false;
-    els.readerFrame.src = 'about:blank';
-    delete els.readerFrame.dataset.docUid;
-    els.readerFrame.hidden = true;
-    els.readerEmpty.hidden = false;
+    resetPreviewEmbed(true);
+    resetReaderEmbed(true);
+    els.previewContextBody.textContent = 'Pilih dokumen untuk melihat ringkasan internal yang stabil di workspace ini.';
+    els.previewSourceNote.textContent = 'Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.';
+    els.previewToggle.querySelector('span:last-child').textContent = 'Tampilkan preview sumber';
+    els.previewToggle.setAttribute('aria-disabled', 'true');
+    els.readerMode.dataset.mode = 'reader-internal';
+    els.readerMode.textContent = getReaderModeLabel('reader-internal');
+    els.readerSummary.textContent = 'Pilih dokumen untuk menampilkan ringkasan.';
+    els.readerContext.textContent = 'Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.';
+    els.readerNotes.innerHTML = '';
+    els.readerNotesBlock.hidden = true;
+    els.readerSourceNote.textContent = 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
+    els.readerPreviewToggle.querySelector('span:last-child').textContent = 'Tampilkan preview sumber';
+    els.readerPreviewToggle.setAttribute('aria-disabled', 'true');
     els.shell.hidden = true;
     els.auth.hidden = false;
     els.email.value = '';
@@ -2005,6 +2297,7 @@
   function renderPreview() {
     const item = getCurrentDoc();
     const els = GG.kbms.els;
+    const state = GG.kbms.state;
 
     if (!item) {
       els.previewTitle.textContent = 'Pilih dokumen';
@@ -2013,34 +2306,38 @@
       els.previewOwner.textContent = '-';
       els.previewUpdated.textContent = '-';
       els.previewLang.textContent = '-';
+      els.previewContextBody.textContent = 'Pilih dokumen untuk melihat ringkasan internal yang stabil di workspace ini.';
       els.previewBadges.innerHTML = '';
-      GG.kbms.els.previewReader.setAttribute('aria-disabled', 'true');
+      els.previewReader.setAttribute('aria-disabled', 'true');
+      els.previewReader.disabled = true;
       els.previewOpen.href = '#';
       els.previewOpen.setAttribute('aria-disabled', 'true');
+      els.previewPin.disabled = true;
       els.previewPin.classList.remove('gg-is-active');
       els.previewPin.querySelector('span:last-child').textContent = 'Pin';
-
-      if (!els.previewFrame.hidden) {
-        els.previewFrame.src = 'about:blank';
-      }
-      els.previewFrame.hidden = true;
-      els.previewEmpty.hidden = false;
-      GG.kbms.state.previewDocUid = '';
+      state.previewDocUid = '';
+      state.previewSourceVisible = false;
+      state.previewEmbedStatus = 'idle';
+      syncPreviewSourceUI(null);
       return;
     }
 
     const status = deriveStatus(item);
     const pinned = isPinned(item);
+    const content = composeReaderContent(item, status);
 
     els.previewTitle.textContent = item.title;
     els.previewSummary.textContent = item.summary || fallbackSummary(item);
+    els.previewContextBody.textContent = content.summary;
     els.previewCollection.textContent = [item.category, item.subcategory].filter(Boolean).join(' / ') || '-';
     els.previewOwner.textContent = item.owner || '-';
     els.previewUpdated.textContent = item.updated_at ? formatDateLabel(item.updated_at) : '-';
     els.previewLang.textContent = item.lang ? String(item.lang).toUpperCase() : '-';
-    GG.kbms.els.previewReader.removeAttribute('aria-disabled');
+    els.previewReader.removeAttribute('aria-disabled');
+    els.previewReader.disabled = false;
     els.previewOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
     els.previewOpen.removeAttribute('aria-disabled');
+    els.previewPin.disabled = false;
 
     els.previewPin.classList.toggle('gg-is-active', pinned);
     els.previewPin.querySelector('span:last-child').textContent = pinned ? 'Unpin' : 'Pin';
@@ -2051,13 +2348,15 @@
       els.previewBadges.appendChild(createBadge('archived', String(item.lang).toUpperCase()));
     }
 
-    if (GG.kbms.state.previewDocUid !== item.doc_uid) {
-      els.previewFrame.src = buildDocPreviewUrl(item.doc_id, item.doc_type);
-      GG.kbms.state.previewDocUid = item.doc_uid;
+    if (state.previewDocUid !== item.doc_uid) {
+      state.previewDocUid = item.doc_uid;
+      if (state.previewSourceVisible) {
+        state.previewEmbedStatus = 'loading';
+      } else {
+        resetPreviewEmbed(true);
+      }
     }
-
-    els.previewEmpty.hidden = true;
-    els.previewFrame.hidden = false;
+    syncPreviewSourceUI(item);
   }
 
   function renderReader() {
@@ -2070,18 +2369,29 @@
       els.readerMeta.textContent = 'Pilih dokumen dari workspace.';
       els.readerOpen.href = '#';
       els.readerOpen.setAttribute('aria-disabled', 'true');
+      els.readerPin.disabled = true;
       els.readerPin.classList.remove('gg-is-active');
       els.readerPin.querySelector('span:last-child').textContent = 'Pin';
-      if (!els.readerFrame.hidden) {
-        els.readerFrame.src = 'about:blank';
-      }
-      delete els.readerFrame.dataset.docUid;
-      els.readerFrame.hidden = true;
-      els.readerEmpty.hidden = false;
+      GG.kbms.state.readerMode = 'reader-internal';
+      els.readerMode.dataset.mode = 'reader-internal';
+      els.readerMode.textContent = getReaderModeLabel('reader-internal');
+      els.readerLede.textContent = 'Ringkasan internal tersedia di workspace ini.';
+      els.readerSummary.textContent = 'Pilih dokumen untuk menampilkan ringkasan.';
+      els.readerContext.textContent = 'Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.';
+      els.readerCollection.textContent = '-';
+      els.readerStatus.textContent = '-';
+      els.readerOwner.textContent = '-';
+      els.readerUpdated.textContent = '-';
+      els.readerNotes.innerHTML = '';
+      els.readerNotesBlock.hidden = true;
+      GG.kbms.state.readerSourceVisible = false;
+      GG.kbms.state.readerEmbedStatus = 'idle';
+      syncReaderSourceUI(null);
       return;
     }
 
     const pinned = isPinned(item);
+    const content = composeReaderContent(item, status);
     const metaBits = [
       [item.category, item.subcategory].filter(Boolean).join(' / '),
       status ? status.label : '',
@@ -2090,18 +2400,35 @@
 
     els.readerTitle.textContent = item.title;
     els.readerMeta.textContent = metaBits.join(' • ') || 'Dokumen internal';
+    els.readerLede.textContent = content.lede;
+    els.readerSummary.textContent = content.summary;
+    els.readerContext.textContent = content.context;
+    els.readerCollection.textContent = [item.category, item.subcategory].filter(Boolean).join(' / ') || '-';
+    els.readerStatus.textContent = status ? status.label : '-';
+    els.readerOwner.textContent = item.owner || '-';
+    els.readerUpdated.textContent = item.updated_at ? formatDateLabel(item.updated_at) : '-';
     els.readerOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
     els.readerOpen.removeAttribute('aria-disabled');
+    els.readerPin.disabled = false;
     els.readerPin.classList.toggle('gg-is-active', pinned);
     els.readerPin.querySelector('span:last-child').textContent = pinned ? 'Unpin' : 'Pin';
 
-    if (els.readerFrame.dataset.docUid !== item.doc_uid) {
-      els.readerFrame.src = buildDocPreviewUrl(item.doc_id, item.doc_type);
-      els.readerFrame.dataset.docUid = item.doc_uid;
+    els.readerNotes.innerHTML = '';
+    if (content.notes.length) {
+      content.notes.forEach((note) => {
+        const li = document.createElement('li');
+        li.textContent = note;
+        els.readerNotes.appendChild(li);
+      });
+      els.readerNotesBlock.hidden = false;
+    } else {
+      els.readerNotesBlock.hidden = true;
     }
 
-    els.readerEmpty.hidden = true;
-    els.readerFrame.hidden = false;
+    GG.kbms.state.readerMode = resolveReaderMode(content.hasInternal, GG.kbms.state.readerSourceVisible);
+    els.readerMode.dataset.mode = GG.kbms.state.readerMode;
+    els.readerMode.textContent = getReaderModeLabel(GG.kbms.state.readerMode);
+    syncReaderSourceUI(item);
   }
 
   function renderShellMode() {
@@ -2265,11 +2592,20 @@
     const opts = Object.assign({ trackRecent: false, fromRoute: false, push: false, replace: false, focusReader: false }, options || {});
     const item = GG.kbms.state.catalog.find((entry) => entry.doc_uid === docUid);
     if (!item) return;
+    const prevDocUid = GG.kbms.state.currentDocUid;
 
     if (GG.kbms.state.activeView !== 'reader') {
       GG.kbms.state.workspaceView = getActiveWorkspaceView();
     }
     GG.kbms.state.currentDocUid = item.doc_uid;
+    if (prevDocUid !== item.doc_uid) {
+      GG.kbms.state.previewSourceVisible = false;
+      GG.kbms.state.readerSourceVisible = false;
+      GG.kbms.state.previewEmbedStatus = 'idle';
+      GG.kbms.state.readerEmbedStatus = 'idle';
+      resetPreviewEmbed(true);
+      resetReaderEmbed(true);
+    }
     GG.kbms.state.previousWorkspaceView = GG.kbms.state.workspaceView || getActiveWorkspaceView() || 'home';
     GG.kbms.state.activeView = 'reader';
 
@@ -2321,8 +2657,17 @@
     const opts = Object.assign({ trackRecent: false, closeCommand: true, focusPreview: false, skipRender: false, openReaderOnMobile: false }, options || {});
     const item = GG.kbms.state.catalog.find((entry) => entry.doc_uid === docUid);
     if (!item) return;
+    const prevDocUid = GG.kbms.state.currentDocUid;
 
     GG.kbms.state.currentDocUid = docUid;
+    if (prevDocUid !== docUid) {
+      GG.kbms.state.previewSourceVisible = false;
+      GG.kbms.state.readerSourceVisible = false;
+      GG.kbms.state.previewEmbedStatus = 'idle';
+      GG.kbms.state.readerEmbedStatus = 'idle';
+      resetPreviewEmbed(true);
+      resetReaderEmbed(true);
+    }
     if (opts.trackRecent) writeRecent(docUid);
     if (opts.closeCommand) closeCommandPanel();
 
@@ -2361,6 +2706,377 @@
     renderResults();
     renderPreview();
     renderReader();
+  }
+
+  function togglePreviewSource() {
+    const item = getCurrentDoc();
+    if (!item) return;
+    GG.kbms.state.previewSourceVisible = !GG.kbms.state.previewSourceVisible;
+    if (!GG.kbms.state.previewSourceVisible) {
+      resetPreviewEmbed(true);
+    }
+    renderPreview();
+  }
+
+  function toggleReaderSourcePreview() {
+    const item = getCurrentDoc();
+    if (!item) return;
+    GG.kbms.state.readerSourceVisible = !GG.kbms.state.readerSourceVisible;
+    if (!GG.kbms.state.readerSourceVisible) {
+      GG.kbms.state.readerMode = resolveReaderMode(composeReaderContent(item, deriveStatus(item)).hasInternal, false);
+      resetReaderEmbed(true);
+    }
+    renderReader();
+  }
+
+  function onPreviewFrameLoad() {
+    if (!GG.kbms.state.previewSourceVisible) return;
+    clearPreviewEmbedTimer();
+    GG.kbms.state.previewEmbedStatus = 'loaded';
+    GG.kbms.els.previewSourceNote.textContent = describePreviewSourceStatus('loaded');
+  }
+
+  function onPreviewFrameError() {
+    if (!GG.kbms.state.previewSourceVisible) return;
+    clearPreviewEmbedTimer();
+    GG.kbms.state.previewEmbedStatus = 'blocked';
+    GG.kbms.els.previewSourceNote.textContent = describePreviewSourceStatus('blocked');
+  }
+
+  function onReaderFrameLoad() {
+    if (!GG.kbms.state.readerSourceVisible) return;
+    clearReaderEmbedTimer();
+    GG.kbms.state.readerEmbedStatus = 'loaded';
+    GG.kbms.els.readerEmbedNote.textContent = describeReaderSourceStatus('loaded');
+  }
+
+  function onReaderFrameError() {
+    if (!GG.kbms.state.readerSourceVisible) return;
+    clearReaderEmbedTimer();
+    GG.kbms.state.readerEmbedStatus = 'blocked';
+    GG.kbms.els.readerEmbedNote.textContent = describeReaderSourceStatus('blocked');
+  }
+
+  function syncPreviewSourceUI(item) {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    const label = els.previewToggle.querySelector('span:last-child');
+
+    if (!item) {
+      state.previewSourceVisible = false;
+      resetPreviewEmbed(true);
+      els.previewToggle.setAttribute('aria-disabled', 'true');
+      if (label) label.textContent = 'Pilih dokumen terlebih dahulu';
+      els.previewSourceNote.textContent = 'Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.';
+      return;
+    }
+
+    els.previewToggle.removeAttribute('aria-disabled');
+    if (label) {
+      label.textContent = state.previewSourceVisible
+        ? 'Sembunyikan preview sumber'
+        : 'Tampilkan preview sumber';
+    }
+
+    if (!state.previewSourceVisible) {
+      resetPreviewEmbed(true);
+      els.previewSourceNote.textContent = describePreviewSourceStatus('idle');
+      return;
+    }
+
+    els.previewFrameWrap.hidden = false;
+    startPreviewEmbedLoad(item);
+    els.previewSourceNote.textContent = describePreviewSourceStatus(state.previewEmbedStatus);
+  }
+
+  function syncReaderSourceUI(item) {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    const label = els.readerPreviewToggle.querySelector('span:last-child');
+
+    if (!item) {
+      state.readerSourceVisible = false;
+      resetReaderEmbed(true);
+      els.readerPreviewToggle.setAttribute('aria-disabled', 'true');
+      if (label) label.textContent = 'Pilih dokumen terlebih dahulu';
+      els.readerSourceNote.textContent = 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
+      return;
+    }
+
+    els.readerPreviewToggle.removeAttribute('aria-disabled');
+    if (label) {
+      label.textContent = state.readerSourceVisible
+        ? 'Sembunyikan preview sumber'
+        : 'Tampilkan preview sumber';
+    }
+
+    if (!state.readerSourceVisible) {
+      resetReaderEmbed(true);
+      els.readerSourceNote.textContent = describeReaderSourceStatus('idle');
+      return;
+    }
+
+    els.readerEmbed.hidden = false;
+    startReaderEmbedLoad(item);
+    els.readerSourceNote.textContent = describeReaderSourceStatus(state.readerEmbedStatus);
+    els.readerEmbedNote.textContent = describeReaderSourceStatus(state.readerEmbedStatus);
+  }
+
+  function startPreviewEmbedLoad(item) {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    const nextUid = item.doc_uid;
+    const nextSrc = buildDocPreviewUrl(item.doc_id, item.doc_type);
+    const isSameDoc = els.previewFrame.dataset.docUid === nextUid;
+    const canReuse = isSameDoc && state.previewEmbedStatus !== 'idle';
+
+    if (canReuse) return;
+
+    clearPreviewEmbedTimer();
+    state.previewEmbedStatus = 'loading';
+    els.previewFrame.dataset.docUid = nextUid;
+    els.previewFrame.src = nextSrc;
+    state.previewEmbedTimer = window.setTimeout(() => {
+      if (!state.previewSourceVisible) return;
+      if (state.previewEmbedStatus === 'loading') {
+        state.previewEmbedStatus = 'timeout';
+        els.previewSourceNote.textContent = describePreviewSourceStatus('timeout');
+      }
+    }, 4200);
+  }
+
+  function startReaderEmbedLoad(item) {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    const nextUid = item.doc_uid;
+    const nextSrc = buildDocPreviewUrl(item.doc_id, item.doc_type);
+    const isSameDoc = els.readerFrame.dataset.docUid === nextUid;
+    const canReuse = isSameDoc && state.readerEmbedStatus !== 'idle';
+
+    if (canReuse) return;
+
+    clearReaderEmbedTimer();
+    state.readerEmbedStatus = 'loading';
+    els.readerFrame.dataset.docUid = nextUid;
+    els.readerFrame.src = nextSrc;
+    state.readerEmbedTimer = window.setTimeout(() => {
+      if (!state.readerSourceVisible) return;
+      if (state.readerEmbedStatus === 'loading') {
+        state.readerEmbedStatus = 'timeout';
+        els.readerSourceNote.textContent = describeReaderSourceStatus('timeout');
+        els.readerEmbedNote.textContent = describeReaderSourceStatus('timeout');
+      }
+    }, 4200);
+  }
+
+  function clearPreviewEmbedTimer() {
+    if (GG.kbms.state.previewEmbedTimer) {
+      window.clearTimeout(GG.kbms.state.previewEmbedTimer);
+      GG.kbms.state.previewEmbedTimer = 0;
+    }
+  }
+
+  function clearReaderEmbedTimer() {
+    if (GG.kbms.state.readerEmbedTimer) {
+      window.clearTimeout(GG.kbms.state.readerEmbedTimer);
+      GG.kbms.state.readerEmbedTimer = 0;
+    }
+  }
+
+  function resetPreviewEmbed() {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    clearPreviewEmbedTimer();
+    state.previewEmbedStatus = 'idle';
+    if (els.previewFrame) {
+      if (els.previewFrame.src !== 'about:blank') {
+        els.previewFrame.src = 'about:blank';
+      }
+      delete els.previewFrame.dataset.docUid;
+    }
+    if (els.previewFrameWrap) {
+      els.previewFrameWrap.hidden = true;
+    }
+  }
+
+  function resetReaderEmbed() {
+    const state = GG.kbms.state;
+    const els = GG.kbms.els;
+    clearReaderEmbedTimer();
+    state.readerEmbedStatus = 'idle';
+    if (els.readerFrame) {
+      if (els.readerFrame.src !== 'about:blank') {
+        els.readerFrame.src = 'about:blank';
+      }
+      delete els.readerFrame.dataset.docUid;
+    }
+    if (els.readerEmbed) {
+      els.readerEmbed.hidden = true;
+    }
+  }
+
+  function describePreviewSourceStatus(status) {
+    switch (status) {
+      case 'loading':
+        return 'Memuat preview sumber secara opsional. Jika tidak stabil, lanjutkan dari ringkasan internal.';
+      case 'loaded':
+        return 'Preview sumber aktif sebagai referensi tambahan. Tampilan utama tetap ringkasan internal.';
+      case 'timeout':
+        return 'Preview sumber belum stabil di browser ini. Jika muncul login/blank, gunakan tombol Buka asli.';
+      case 'blocked':
+        return 'Preview sumber tidak tersedia pada sesi ini. Gunakan tombol Buka asli untuk dokumen lengkap.';
+      case 'idle':
+      default:
+        return 'Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.';
+    }
+  }
+
+  function describeReaderSourceStatus(status) {
+    switch (status) {
+      case 'loading':
+        return 'Memuat preview sumber sebagai referensi tambahan.';
+      case 'loaded':
+        return 'Preview sumber tersedia sebagai lapisan tambahan. Reader internal tetap utama.';
+      case 'timeout':
+        return 'Preview sumber belum stabil. Gunakan Buka asli jika membutuhkan dokumen penuh.';
+      case 'blocked':
+        return 'Preview sumber tidak bisa ditampilkan pada lingkungan ini. Buka dokumen dari sumber asli.';
+      case 'idle':
+      default:
+        return 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
+    }
+  }
+
+  function composeReaderContent(item, status) {
+    const summary = firstNonEmptyText([
+      item.summary,
+      item.description,
+      item.overview,
+      item.abstract,
+      item.intro,
+      item.excerpt,
+      item.preview_text,
+      item.body_summary
+    ]);
+    const context = firstNonEmptyText([
+      item.context,
+      item.purpose,
+      item.scope,
+      item.audience,
+      item.use_case,
+      item.usage_note,
+      item.notes_context
+    ]);
+    const notes = collectReaderNotes(item);
+    const hasInternal = !!(summary || context || notes.length);
+
+    return {
+      hasInternal,
+      summary: summary || fallbackSummary(item),
+      context: context || buildReaderFallbackContext(item, status),
+      notes: notes,
+      lede: hasInternal
+        ? 'Ringkasan internal tersedia di workspace ini. Gunakan sumber asli hanya bila memerlukan dokumen penuh.'
+        : 'Konten internal lengkap belum tersedia. Workspace tetap menampilkan konteks utama agar keputusan tetap cepat.'
+    };
+  }
+
+  function resolveReaderMode(hasInternal, sourceVisible) {
+    if (sourceVisible) return 'reader-internal-plus-preview';
+    return hasInternal ? 'reader-internal' : 'reader-fallback';
+  }
+
+  function getReaderModeLabel(mode) {
+    switch (mode) {
+      case 'reader-internal-plus-preview':
+        return 'internal + preview';
+      case 'reader-fallback':
+        return 'internal fallback';
+      case 'reader-internal':
+      default:
+        return 'internal first';
+    }
+  }
+
+  function buildReaderFallbackContext(item, status) {
+    const collection = [item.category, item.subcategory].filter(Boolean).join(' / ');
+    const parts = [];
+    if (collection) parts.push('Koleksi: ' + collection + '.');
+    if (status && status.label) parts.push('Status: ' + status.label + '.');
+    if (item.owner) parts.push('Owner: ' + item.owner + '.');
+    parts.push('Dokumen lengkap tersedia melalui tombol Buka asli.');
+    return parts.join(' ');
+  }
+
+  function collectReaderNotes(item) {
+    const out = [];
+    const seen = new Set();
+    const candidates = [
+      item.key_points,
+      item.highlights,
+      item.notes,
+      item.action_points,
+      item.checklist,
+      item.bullets,
+      item.keywords,
+      item.tags
+    ];
+
+    candidates.forEach((value) => {
+      splitToNoteItems(value).forEach((entry) => {
+        const note = clampText(entry, 180);
+        if (!note || note.length < 4) return;
+        if (seen.has(note)) return;
+        seen.add(note);
+        out.push(note);
+      });
+    });
+
+    return out.slice(0, 6);
+  }
+
+  function splitToNoteItems(value) {
+    if (Array.isArray(value)) {
+      return value.map((entry) => firstNonEmptyText([entry])).filter(Boolean);
+    }
+
+    if (value && typeof value === 'object') {
+      return Object.keys(value).map((key) => firstNonEmptyText([value[key]])).filter(Boolean);
+    }
+
+    const raw = firstNonEmptyText([value]);
+    if (!raw) return [];
+
+    let parts = raw.split(/\r?\n|•|;|\|/).map((entry) => entry.trim()).filter(Boolean);
+    if (parts.length < 2 && raw.indexOf(',') !== -1 && raw.length <= 220) {
+      parts = raw.split(',').map((entry) => entry.trim()).filter(Boolean);
+    }
+    return parts;
+  }
+
+  function firstNonEmptyText(values) {
+    for (let i = 0; i < values.length; i += 1) {
+      const clean = normalizeText(values[i]);
+      if (clean) return clean;
+    }
+    return '';
+  }
+
+  function normalizeText(value) {
+    if (Array.isArray(value)) {
+      value = value.map((entry) => normalizeText(entry)).filter(Boolean).join(' ');
+    } else if (value && typeof value === 'object') {
+      value = value.text || value.summary || value.description || '';
+    }
+
+    const text = String(value || '').replace(/\s+/g, ' ').trim();
+    return text ? clampText(text, 720) : '';
+  }
+
+  function clampText(text, maxLength) {
+    const max = maxLength || 240;
+    if (text.length <= max) return text;
+    return text.slice(0, max - 1).trimEnd() + '…';
   }
 
   async function apiRequest(action, payload) {
