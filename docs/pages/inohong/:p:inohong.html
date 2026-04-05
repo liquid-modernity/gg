@@ -1,5 +1,5 @@
-<div id="gg-kbms-app" class="gg-kbms-app" data-gg-module="gg-kbms-app" data-gg-state="booting">
-  <section class="gg-kbms-auth" id="gg-kbms-auth" aria-labelledby="gg-kbms-auth-title">
+<div id="gg-kbms-app" class="gg-kbms-app" data-gg-module="gg-kbms-app" data-gg-state="booting" data-gg-auth-state="boot">
+  <section class="gg-kbms-auth" id="gg-kbms-auth" hidden aria-labelledby="gg-kbms-auth-title">
     <div class="gg-kbms-auth__card">
       <p class="gg-kbms-auth__eyebrow">INOHONG KBMS</p>
       <h1 class="gg-kbms-auth__title" id="gg-kbms-auth-title">Workspace pengetahuan privat untuk keputusan cepat.</h1>
@@ -200,66 +200,20 @@
           </section>
 
           <section class="gg-kbms-reader" id="gg-kbms-reader" hidden aria-label="INOHONG reader mode">
-            <div class="gg-kbms-reader__shell">
-              <article class="gg-kbms-reader__article" id="gg-kbms-reader-article" aria-live="polite" tabindex="-1">
-                <p class="gg-kbms-reader__eyebrow">Reader</p>
-                <h3 class="gg-kbms-reader__title" id="gg-kbms-reader-title">Dokumen</h3>
-                <p class="gg-kbms-reader__meta" id="gg-kbms-reader-meta">Pilih dokumen dari workspace.</p>
-                <div class="gg-kbms-reader__mode" id="gg-kbms-reader-mode" data-mode="reader-internal">reader-internal</div>
-                <p class="gg-kbms-reader__lede" id="gg-kbms-reader-lede">Ringkasan internal tersedia di workspace ini.</p>
-
-                <section class="gg-kbms-reader__section" aria-labelledby="gg-kbms-reader-summary-title">
-                  <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-summary-title">Ringkasan</h4>
-                  <p class="gg-kbms-reader__body" id="gg-kbms-reader-summary">Pilih dokumen untuk menampilkan ringkasan.</p>
-                </section>
-
-                <section class="gg-kbms-reader__section" id="gg-kbms-reader-context-block" aria-labelledby="gg-kbms-reader-context-title">
-                  <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-context-title">Konteks</h4>
-                  <p class="gg-kbms-reader__body" id="gg-kbms-reader-context">Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.</p>
-                </section>
-
-                <section class="gg-kbms-reader__section" id="gg-kbms-reader-notes-block" aria-labelledby="gg-kbms-reader-notes-title" hidden>
-                  <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-notes-title">Poin</h4>
-                  <ul class="gg-kbms-reader__notes" id="gg-kbms-reader-notes"></ul>
-                </section>
-
-                <section class="gg-kbms-reader__section" aria-labelledby="gg-kbms-reader-facts-title">
-                  <h4 class="gg-kbms-reader__section-title" id="gg-kbms-reader-facts-title">Metadata</h4>
-                  <dl class="gg-kbms-reader__facts" id="gg-kbms-reader-facts">
-                    <div class="gg-kbms-reader__fact">
-                      <dt>Collection</dt>
-                      <dd id="gg-kbms-reader-collection">-</dd>
-                    </div>
-                    <div class="gg-kbms-reader__fact">
-                      <dt>Status</dt>
-                      <dd id="gg-kbms-reader-status">-</dd>
-                    </div>
-                    <div class="gg-kbms-reader__fact">
-                      <dt>Owner</dt>
-                      <dd id="gg-kbms-reader-owner">-</dd>
-                    </div>
-                    <div class="gg-kbms-reader__fact">
-                      <dt>Updated</dt>
-                      <dd id="gg-kbms-reader-updated">-</dd>
-                    </div>
-                  </dl>
-                </section>
-              </article>
-
-              <aside class="gg-kbms-reader__source" aria-labelledby="gg-kbms-reader-source-title">
-                <h4 class="gg-kbms-reader__source-title" id="gg-kbms-reader-source-title">Sumber opsional</h4>
-                <p class="gg-kbms-reader__source-note" id="gg-kbms-reader-source-note">Reader internal tetap utama.</p>
-                <button class="gg-kbms-button gg-kbms-button--secondary" id="gg-kbms-reader-preview-toggle" type="button" title="Toggle preview sumber">
-                  <span class="material-symbols-rounded" aria-hidden="true">preview</span>
-                  <span>Tampilkan preview sumber</span>
-                </button>
-                <div class="gg-kbms-reader__embed" id="gg-kbms-reader-embed" hidden>
-                  <p class="gg-kbms-reader__embed-note" id="gg-kbms-reader-embed-note">Jika preview sumber tidak stabil, lanjutkan lewat Buka asli.</p>
-                  <div class="gg-kbms-reader__framewrap">
-                    <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="INOHONG source preview" loading="lazy"></iframe>
-                  </div>
-                </div>
-              </aside>
+            <div class="gg-kbms-reader__surface">
+              <p class="gg-kbms-reader__status" id="gg-kbms-reader-statusline">Memuat preview dokumen…</p>
+              <div class="gg-kbms-reader__framewrap" id="gg-kbms-reader-framewrap" tabindex="-1">
+                <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="INOHONG source preview" loading="lazy"></iframe>
+              </div>
+              <div class="gg-kbms-reader__fallback" id="gg-kbms-reader-fallback" hidden>
+                <p class="gg-kbms-reader__fallback-text" id="gg-kbms-reader-fallback-text">
+                  Preview internal tidak tersedia untuk dokumen ini.
+                </p>
+                <a class="gg-kbms-button gg-kbms-button--link" id="gg-kbms-reader-open" href="#" target="_blank" rel="noopener">
+                  <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
+                  <span>Buka asli</span>
+                </a>
+              </div>
             </div>
           </section>
         </main>
@@ -363,6 +317,24 @@
 
   #gg-kbms-app [hidden] {
     display: none;
+  }
+
+  #gg-kbms-app[data-gg-auth-state="boot"],
+  #gg-kbms-app[data-gg-auth-state="restoring-session"] {
+    min-height: min(86vh, 1080px);
+    position: relative;
+  }
+
+  #gg-kbms-app[data-gg-auth-state="boot"]::before,
+  #gg-kbms-app[data-gg-auth-state="restoring-session"]::before {
+    content: "Menyiapkan workspace…";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--gg-kbms-muted);
+    font-size: 0.84rem;
+    letter-spacing: 0.02em;
   }
 
   #gg-kbms-app :where(button, input, a):focus-visible {
@@ -1273,196 +1245,59 @@
 
   .gg-kbms-reader {
     display: grid;
-    gap: 0.62rem;
+    gap: 0.56rem;
     min-height: 0;
   }
 
-  .gg-kbms-reader__article,
-  .gg-kbms-reader__source {
+  .gg-kbms-reader__surface {
     border: 1px solid var(--gg-kbms-border);
     border-radius: var(--gg-kbms-radius-lg);
-    background: color-mix(in srgb, var(--gg-kbms-surface) 96%, #f9fafb);
+    background: color-mix(in srgb, var(--gg-kbms-surface) 97%, #f9fafb);
     box-shadow: var(--gg-kbms-shadow-sm);
-  }
-
-  .gg-kbms-reader__eyebrow {
-    margin: 0 0 0.18rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.66rem;
-    color: var(--gg-kbms-muted-2);
-    font-weight: 700;
-  }
-
-  .gg-kbms-reader__title {
-    margin: 0 0 0.08rem;
-    font-size: clamp(1.08rem, 2.1vw, 1.42rem);
-    line-height: 1.18;
-    letter-spacing: -0.014em;
-  }
-
-  .gg-kbms-reader__meta {
-    margin: 0;
-    color: var(--gg-kbms-muted);
-    font-size: 0.82rem;
-    line-height: 1.42;
-  }
-
-  .gg-kbms-reader__shell {
-    width: min(100%, 1020px);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.56rem;
-    align-items: start;
-  }
-
-  .gg-kbms-reader__article {
-    padding: 0.82rem 0.9rem;
-  }
-
-  .gg-kbms-reader__mode {
-    display: inline-flex;
-    align-items: center;
-    min-height: 1.7rem;
-    padding: 0 0.58rem;
-    border-radius: 999px;
-    border: 1px solid var(--gg-kbms-border);
-    background: color-mix(in srgb, var(--gg-kbms-surface) 92%, #eff3f7);
-    color: var(--gg-kbms-muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 700;
-  }
-
-  .gg-kbms-reader__lede {
-    margin: 0.72rem 0 0;
-    max-width: 72ch;
-    color: var(--gg-kbms-ink);
-    font-size: 1rem;
-    line-height: 1.58;
-    font-weight: 560;
-  }
-
-  .gg-kbms-reader__section + .gg-kbms-reader__section {
-    margin-top: 1rem;
-  }
-
-  .gg-kbms-reader__section-title {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.74rem;
-    color: var(--gg-kbms-muted-2);
-    font-weight: 700;
-  }
-
-  .gg-kbms-reader__body {
-    margin: 0.42rem 0 0;
-    max-width: 72ch;
-    color: color-mix(in srgb, var(--gg-kbms-ink) 92%, #334155);
-    font-size: 0.95rem;
-    line-height: 1.74;
-  }
-
-  .gg-kbms-reader__notes {
-    margin: 0.45rem 0 0 1rem;
-    padding: 0;
-    max-width: 72ch;
-    display: grid;
-    gap: 0.36rem;
-    color: color-mix(in srgb, var(--gg-kbms-ink) 90%, #475569);
-    font-size: 0.9rem;
-    line-height: 1.62;
-  }
-
-  .gg-kbms-reader__facts {
-    margin: 0.48rem 0 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.48rem;
-    max-width: 72ch;
-  }
-
-  .gg-kbms-reader__fact {
-    margin: 0;
-    border: 1px solid var(--gg-kbms-border);
-    border-radius: 10px;
-    padding: 0.48rem 0.6rem;
-    background: color-mix(in srgb, var(--gg-kbms-surface) 92%, #f1f5f9);
-  }
-
-  .gg-kbms-reader__fact dt {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.68rem;
-    color: var(--gg-kbms-muted-2);
-    font-weight: 700;
-  }
-
-  .gg-kbms-reader__fact dd {
-    margin: 0.26rem 0 0;
-    font-size: 0.84rem;
-    color: color-mix(in srgb, var(--gg-kbms-ink) 90%, #334155);
-    font-weight: 560;
-  }
-
-  .gg-kbms-reader__source {
-    position: static;
-    padding: 0.72rem;
-    display: grid;
-    gap: 0.42rem;
-    align-content: start;
-    width: min(100%, 72ch);
-    justify-self: center;
-  }
-
-  .gg-kbms-reader__source-title {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.74rem;
-    color: var(--gg-kbms-muted-2);
-    font-weight: 700;
-  }
-
-  .gg-kbms-reader__source-note {
-    margin: 0;
-    color: var(--gg-kbms-muted);
-    font-size: 0.82rem;
-    line-height: 1.44;
-  }
-
-  .gg-kbms-reader__embed {
-    margin-top: 0.2rem;
+    padding: 0.56rem;
     display: grid;
     gap: 0.42rem;
   }
 
-  .gg-kbms-reader__embed-note {
+  .gg-kbms-reader__status {
     margin: 0;
+    font-size: 0.8rem;
     color: var(--gg-kbms-muted);
-    font-size: 0.78rem;
-    line-height: 1.4;
   }
 
   .gg-kbms-reader__framewrap {
     border: 1px solid var(--gg-kbms-border);
     border-radius: 12px;
     overflow: hidden;
-    min-height: 18rem;
+    min-height: min(74vh, 880px);
     background: #ffffff;
   }
 
   .gg-kbms-reader__frame {
     display: block;
     width: 100%;
-    min-height: 18rem;
+    min-height: min(74vh, 880px);
     border: 0;
     background: #fff;
+  }
+
+  .gg-kbms-reader__fallback {
+    border: 1px dashed var(--gg-kbms-border-strong);
+    border-radius: 11px;
+    padding: 0.62rem 0.7rem;
+    background: color-mix(in srgb, var(--gg-kbms-surface) 94%, #f8fafc);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.52rem;
+    flex-wrap: wrap;
+  }
+
+  .gg-kbms-reader__fallback-text {
+    margin: 0;
+    color: var(--gg-kbms-muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
   }
 
   .gg-kbms-empty {
@@ -1632,12 +1467,8 @@
       min-height: 13rem;
     }
 
-    .gg-kbms-reader__shell {
+    .gg-kbms-reader__surface {
       width: 100%;
-    }
-
-    .gg-kbms-reader__source {
-      position: static;
     }
   }
 
@@ -1680,8 +1511,8 @@
       text-align: left;
     }
 
-    .gg-kbms-reader__facts {
-      grid-template-columns: 1fr;
+    .gg-kbms-reader__fallback {
+      align-items: flex-start;
     }
   }
 
@@ -1697,8 +1528,8 @@
     .gg-kbms-card,
     .gg-kbms-preview,
     .gg-kbms-nav,
-    .gg-kbms-reader__article,
-    .gg-kbms-reader__source,
+    .gg-kbms-reader__surface,
+    .gg-kbms-reader__fallback,
     .gg-kbms-reader__framewrap {
       border-radius: 14px;
     }
@@ -1757,10 +1588,9 @@
       padding-inline: 0.64rem;
     }
 
-    .gg-kbms-reader__body,
-    .gg-kbms-reader__notes,
-    .gg-kbms-reader__facts {
-      max-width: none;
+    .gg-kbms-reader__fallback {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .gg-kbms-reader__framewrap,
@@ -1808,10 +1638,20 @@
     pinned: 'gg:kbms:pinned:v1'
   };
 
+  const AUTH_VIEW_STATES = new Set([
+    'boot',
+    'restoring-session',
+    'unauthenticated',
+    'authenticated',
+    'auth-expired',
+    'app-error'
+  ]);
+
   GG.kbms = {
     __booted: false,
     state: {
       apiBase: 'https://inohong-kbms-api.ratriatra.workers.dev',
+      authState: 'boot',
       token: '',
       user: null,
       catalog: [],
@@ -1830,12 +1670,10 @@
       commandOpen: false,
       viewPoolCount: 0,
       previewSourceVisible: false,
-      readerSourceVisible: false,
       previewEmbedStatus: 'idle',
       readerEmbedStatus: 'idle',
       previewEmbedTimer: 0,
       readerEmbedTimer: 0,
-      readerMode: 'reader-internal',
       mobileLeftSheetOpen: false,
       mobileRightSheetOpen: false,
       touchSession: null
@@ -1926,25 +1764,14 @@
     els.previewFrameWrap = document.getElementById('gg-kbms-preview-framewrap');
     els.previewFrame = document.getElementById('gg-kbms-preview-frame');
 
-    els.readerTitle = document.getElementById('gg-kbms-reader-title');
-    els.readerMeta = document.getElementById('gg-kbms-reader-meta');
-    els.readerArticle = document.getElementById('gg-kbms-reader-article');
-    els.readerMode = document.getElementById('gg-kbms-reader-mode');
-    els.readerLede = document.getElementById('gg-kbms-reader-lede');
-    els.readerSummary = document.getElementById('gg-kbms-reader-summary');
-    els.readerContext = document.getElementById('gg-kbms-reader-context');
-    els.readerNotesBlock = document.getElementById('gg-kbms-reader-notes-block');
-    els.readerNotes = document.getElementById('gg-kbms-reader-notes');
-    els.readerCollection = document.getElementById('gg-kbms-reader-collection');
-    els.readerStatus = document.getElementById('gg-kbms-reader-status');
-    els.readerOwner = document.getElementById('gg-kbms-reader-owner');
-    els.readerUpdated = document.getElementById('gg-kbms-reader-updated');
-    els.readerSourceNote = document.getElementById('gg-kbms-reader-source-note');
-    els.readerPreviewToggle = document.getElementById('gg-kbms-reader-preview-toggle');
-    els.readerEmbed = document.getElementById('gg-kbms-reader-embed');
-    els.readerEmbedNote = document.getElementById('gg-kbms-reader-embed-note');
+    els.readerStatusline = document.getElementById('gg-kbms-reader-statusline');
+    els.readerFrameWrap = document.getElementById('gg-kbms-reader-framewrap');
     els.readerFrame = document.getElementById('gg-kbms-reader-frame');
+    els.readerFallback = document.getElementById('gg-kbms-reader-fallback');
+    els.readerFallbackText = document.getElementById('gg-kbms-reader-fallback-text');
+    els.readerOpen = document.getElementById('gg-kbms-reader-open');
 
+    enterBootState();
     bindEvents();
     syncSheetViewportState();
     restoreSession();
@@ -1992,7 +1819,6 @@
     });
     els.previewPin.addEventListener('click', toggleCurrentPin);
     els.previewToggle.addEventListener('click', togglePreviewSource);
-    els.readerPreviewToggle.addEventListener('click', toggleReaderSourcePreview);
     els.previewFrame.addEventListener('load', onPreviewFrameLoad);
     els.previewFrame.addEventListener('error', onPreviewFrameError);
     els.readerFrame.addEventListener('load', onReaderFrameLoad);
@@ -2029,6 +1855,7 @@
     }
 
     setAuthPending(true);
+    enterUnauthenticatedState();
     setAuthMessage('Memverifikasi akses…', false);
     setAppState('authenticating');
 
@@ -2044,9 +1871,11 @@
       sessionStorage.setItem(STORAGE.token, GG.kbms.state.token);
       sessionStorage.setItem(STORAGE.user, JSON.stringify(GG.kbms.state.user || {}));
 
+      enterAuthenticatedState();
       setAuthMessage('', false);
       await loadCatalog(false);
     } catch (error) {
+      enterUnauthenticatedState();
       setAppState('idle');
       setAuthMessage(error.message || 'Gagal terhubung ke server.', true);
     } finally {
@@ -2071,10 +1900,8 @@
     GG.kbms.state.previewDocUid = '';
     GG.kbms.state.commandOpen = false;
     GG.kbms.state.previewSourceVisible = false;
-    GG.kbms.state.readerSourceVisible = false;
     GG.kbms.state.previewEmbedStatus = 'idle';
     GG.kbms.state.readerEmbedStatus = 'idle';
-    GG.kbms.state.readerMode = 'reader-internal';
     GG.kbms.state.mobileLeftSheetOpen = false;
     GG.kbms.state.mobileRightSheetOpen = false;
     GG.kbms.state.touchSession = null;
@@ -2095,18 +1922,13 @@
     els.previewSourceNote.textContent = 'Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.';
     els.previewToggle.querySelector('span:last-child').textContent = 'Tampilkan preview sumber';
     els.previewToggle.setAttribute('aria-disabled', 'true');
-    els.readerMode.dataset.mode = 'reader-internal';
-    els.readerMode.textContent = getReaderModeLabel('reader-internal');
-    els.readerSummary.textContent = 'Pilih dokumen untuk menampilkan ringkasan.';
-    els.readerContext.textContent = 'Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.';
-    els.readerNotes.innerHTML = '';
-    els.readerNotesBlock.hidden = true;
-    els.readerSourceNote.textContent = 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
-    els.readerPreviewToggle.querySelector('span:last-child').textContent = 'Tampilkan preview sumber';
-    els.readerPreviewToggle.setAttribute('aria-disabled', 'true');
+    els.readerStatusline.textContent = 'Pilih dokumen untuk membuka preview.';
+    els.readerFallbackText.textContent = 'Preview internal tidak tersedia untuk dokumen ini.';
+    els.readerFallback.hidden = true;
+    els.readerOpen.href = '#';
+    els.readerOpen.setAttribute('aria-disabled', 'true');
     closeMobileSheets();
-    els.shell.hidden = true;
-    els.auth.hidden = false;
+    enterUnauthenticatedState();
     els.email.value = '';
     els.search.value = '';
     els.searchClear.hidden = true;
@@ -2117,12 +1939,24 @@
     setAppState('idle');
   }
 
-  async function loadCatalog(forceRefresh) {
-    if (!GG.kbms.state.token) return;
+  async function loadCatalog(forceRefresh, options) {
+    const opts = Object.assign({ fromRestore: false }, options || {});
+    if (!GG.kbms.state.token) {
+      enterUnauthenticatedState();
+      setAppState('idle');
+      return;
+    }
+
+    if (opts.fromRestore || GG.kbms.state.authState === 'boot') {
+      enterRestoringSessionState();
+    } else {
+      enterAuthenticatedState();
+    }
 
     setAppState('loading');
     setShellMessage('Sinkronisasi katalog…', false);
-    renderLoadingSkeleton();
+    const shouldRenderSkeleton = GG.kbms.state.catalog.length === 0;
+    if (shouldRenderSkeleton) renderLoadingSkeleton();
 
     try {
       const response = await apiRequest('getCatalog', {
@@ -2130,8 +1964,16 @@
         ts: forceRefresh ? Date.now() : undefined
       });
 
-      if (response.status !== 'success' || !Array.isArray(response.data)) {
-        throw new Error(response.message || 'Gagal memuat katalog.');
+      if (response.status !== 'success') {
+        throw buildApiError(response.message || 'Gagal memuat katalog.', {
+          payload: response
+        });
+      }
+
+      if (!Array.isArray(response.data)) {
+        throw buildApiError('Format data katalog tidak valid.', {
+          payload: response
+        });
       }
 
       GG.kbms.state.user = response.user || GG.kbms.state.user;
@@ -2139,10 +1981,9 @@
       GG.kbms.state.recents = readRecents();
       GG.kbms.state.recentQueries = readRecentQueries();
       GG.kbms.state.pinned = readPinned();
+      enterAuthenticatedState();
 
       GG.kbms.els.greeting.textContent = 'Halo, ' + ((GG.kbms.state.user && GG.kbms.state.user.name) || 'User');
-      GG.kbms.els.auth.hidden = true;
-      GG.kbms.els.shell.hidden = false;
 
       if (!docExists(GG.kbms.state.currentDocUid)) {
         const fromRecent = getRecentDocs()[0];
@@ -2161,18 +2002,25 @@
         if (GG.kbms.state.activeView !== 'reader') GG.kbms.els.search.focus();
       });
     } catch (error) {
-      setAppState('idle');
-      sessionStorage.removeItem(STORAGE.token);
-      sessionStorage.removeItem(STORAGE.user);
-      GG.kbms.state.token = '';
-      GG.kbms.state.user = null;
-      GG.kbms.els.shell.hidden = true;
-      GG.kbms.els.auth.hidden = false;
-      setAuthMessage(error.message || 'Katalog gagal dimuat.', true);
+      if (isAuthFailure(error)) {
+        clearAuthSession();
+        enterAuthExpiredState(error.message || 'Sesi berakhir. Silakan masuk kembali.');
+        setAppState('idle');
+        return;
+      }
+
+      enterAppErrorState(error.message || 'Katalog belum dapat dimuat. Coba lagi.');
+      setAppState('app-error');
+      if (shouldRenderSkeleton) {
+        GG.kbms.state.filtered = [];
+        render();
+      }
     }
   }
 
   function restoreSession() {
+    enterRestoringSessionState();
+    setAppState('restoring-session');
     GG.kbms.state.recents = readRecents();
     GG.kbms.state.recentQueries = readRecentQueries();
     GG.kbms.state.pinned = readPinned();
@@ -2187,12 +2035,14 @@
     }
 
     if (!token) {
+      clearAuthSession({ preserveData: true, preserveView: true });
+      enterUnauthenticatedState();
       setAppState('idle');
       return;
     }
 
     GG.kbms.state.token = token;
-    loadCatalog(false);
+    loadCatalog(false, { fromRestore: true });
   }
 
   function onSearchInput(event) {
@@ -2700,11 +2550,17 @@
 
     const status = deriveStatus(item);
     const pinned = isPinned(item);
-    const content = composeReaderContent(item, status);
+    const contextText = String(
+      item.context ||
+      item.description ||
+      item.overview ||
+      item.summary ||
+      fallbackSummary(item)
+    );
 
     els.previewTitle.textContent = item.title;
     els.previewSummary.textContent = item.summary || fallbackSummary(item);
-    els.previewContextBody.textContent = content.summary;
+    els.previewContextBody.textContent = contextText;
     els.previewCollection.textContent = [item.category, item.subcategory].filter(Boolean).join(' / ') || '-';
     els.previewOwner.textContent = item.owner || '-';
     els.previewUpdated.textContent = item.updated_at ? formatDateLabel(item.updated_at) : '-';
@@ -2747,62 +2603,23 @@
   function renderReader() {
     const item = getCurrentDoc();
     const els = GG.kbms.els;
-    const status = item ? deriveStatus(item) : null;
 
     if (!item) {
-      els.readerTitle.textContent = 'Dokumen';
-      els.readerMeta.textContent = 'Pilih dokumen dari workspace.';
-      GG.kbms.state.readerMode = 'reader-internal';
-      els.readerMode.dataset.mode = 'reader-internal';
-      els.readerMode.textContent = getReaderModeLabel('reader-internal');
-      els.readerLede.textContent = 'Ringkasan internal tersedia di workspace ini.';
-      els.readerSummary.textContent = 'Pilih dokumen untuk menampilkan ringkasan.';
-      els.readerContext.textContent = 'Dokumen lengkap dapat dibuka dari sumber asli jika diperlukan.';
-      els.readerCollection.textContent = '-';
-      els.readerStatus.textContent = '-';
-      els.readerOwner.textContent = '-';
-      els.readerUpdated.textContent = '-';
-      els.readerNotes.innerHTML = '';
-      els.readerNotesBlock.hidden = true;
-      GG.kbms.state.readerSourceVisible = false;
       GG.kbms.state.readerEmbedStatus = 'idle';
-      syncReaderSourceUI(null);
+      resetReaderEmbed(true);
+      els.readerStatusline.textContent = 'Pilih dokumen untuk membuka preview.';
+      els.readerFallbackText.textContent = 'Preview internal tidak tersedia untuk dokumen ini.';
+      els.readerFallback.hidden = true;
+      els.readerOpen.href = '#';
+      els.readerOpen.setAttribute('aria-disabled', 'true');
       return;
     }
 
-    const content = composeReaderContent(item, status);
-    const metaBits = [
-      [item.category, item.subcategory].filter(Boolean).join(' / '),
-      status ? status.label : '',
-      item.updated_at ? formatDateLabel(item.updated_at) : ''
-    ].filter(Boolean);
-
-    els.readerTitle.textContent = item.title;
-    els.readerMeta.textContent = metaBits.join(' • ') || 'Dokumen internal';
-    els.readerLede.textContent = content.lede;
-    els.readerSummary.textContent = content.summary;
-    els.readerContext.textContent = content.context;
-    els.readerCollection.textContent = [item.category, item.subcategory].filter(Boolean).join(' / ') || '-';
-    els.readerStatus.textContent = status ? status.label : '-';
-    els.readerOwner.textContent = item.owner || '-';
-    els.readerUpdated.textContent = item.updated_at ? formatDateLabel(item.updated_at) : '-';
-
-    els.readerNotes.innerHTML = '';
-    if (content.notes.length) {
-      content.notes.forEach((note) => {
-        const li = document.createElement('li');
-        li.textContent = note;
-        els.readerNotes.appendChild(li);
-      });
-      els.readerNotesBlock.hidden = false;
-    } else {
-      els.readerNotesBlock.hidden = true;
-    }
-
-    GG.kbms.state.readerMode = resolveReaderMode(content.hasInternal, GG.kbms.state.readerSourceVisible);
-    els.readerMode.dataset.mode = GG.kbms.state.readerMode;
-    els.readerMode.textContent = getReaderModeLabel(GG.kbms.state.readerMode);
-    syncReaderSourceUI(item);
+    els.readerOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
+    els.readerOpen.removeAttribute('aria-disabled');
+    els.readerFallback.hidden = true;
+    els.readerStatusline.textContent = 'Memuat preview dokumen…';
+    startReaderEmbedLoad(item);
   }
 
   function renderShellMode() {
@@ -2976,7 +2793,6 @@
     GG.kbms.state.currentDocUid = item.doc_uid;
     if (prevDocUid !== item.doc_uid) {
       GG.kbms.state.previewSourceVisible = false;
-      GG.kbms.state.readerSourceVisible = false;
       GG.kbms.state.previewEmbedStatus = 'idle';
       GG.kbms.state.readerEmbedStatus = 'idle';
       resetPreviewEmbed(true);
@@ -2996,7 +2812,7 @@
 
     if (opts.focusReader) {
       requestAnimationFrame(() => {
-        if (GG.kbms.els.readerArticle) GG.kbms.els.readerArticle.focus();
+        if (GG.kbms.els.readerFrameWrap) GG.kbms.els.readerFrameWrap.focus();
       });
     }
   }
@@ -3039,7 +2855,6 @@
     GG.kbms.state.currentDocUid = docUid;
     if (prevDocUid !== docUid) {
       GG.kbms.state.previewSourceVisible = false;
-      GG.kbms.state.readerSourceVisible = false;
       GG.kbms.state.previewEmbedStatus = 'idle';
       GG.kbms.state.readerEmbedStatus = 'idle';
       resetPreviewEmbed(true);
@@ -3095,17 +2910,6 @@
     renderPreview();
   }
 
-  function toggleReaderSourcePreview() {
-    const item = getCurrentDoc();
-    if (!item) return;
-    GG.kbms.state.readerSourceVisible = !GG.kbms.state.readerSourceVisible;
-    if (!GG.kbms.state.readerSourceVisible) {
-      GG.kbms.state.readerMode = resolveReaderMode(composeReaderContent(item, deriveStatus(item)).hasInternal, false);
-      resetReaderEmbed(true);
-    }
-    renderReader();
-  }
-
   function onPreviewFrameLoad() {
     if (!GG.kbms.state.previewSourceVisible) return;
     clearPreviewEmbedTimer();
@@ -3121,17 +2925,17 @@
   }
 
   function onReaderFrameLoad() {
-    if (!GG.kbms.state.readerSourceVisible) return;
     clearReaderEmbedTimer();
     GG.kbms.state.readerEmbedStatus = 'loaded';
-    GG.kbms.els.readerEmbedNote.textContent = describeReaderSourceStatus('loaded');
+    GG.kbms.els.readerFallback.hidden = true;
+    GG.kbms.els.readerFrameWrap.hidden = false;
+    GG.kbms.els.readerStatusline.textContent = 'Preview dokumen aktif.';
   }
 
   function onReaderFrameError() {
-    if (!GG.kbms.state.readerSourceVisible) return;
     clearReaderEmbedTimer();
     GG.kbms.state.readerEmbedStatus = 'blocked';
-    GG.kbms.els.readerEmbedNote.textContent = describeReaderSourceStatus('blocked');
+    showReaderFallback('Preview internal tidak tersedia untuk dokumen ini. Buka sumber asli untuk melanjutkan.');
   }
 
   function syncPreviewSourceUI(item) {
@@ -3166,37 +2970,24 @@
     els.previewSourceNote.textContent = describePreviewSourceStatus(state.previewEmbedStatus);
   }
 
-  function syncReaderSourceUI(item) {
-    const state = GG.kbms.state;
+  function showReaderFallback(message) {
+    const item = getCurrentDoc();
     const els = GG.kbms.els;
-    const label = els.readerPreviewToggle.querySelector('span:last-child');
+    const fallbackMessage = message || 'Preview internal tidak tersedia untuk dokumen ini.';
 
-    if (!item) {
-      state.readerSourceVisible = false;
-      resetReaderEmbed(true);
-      els.readerPreviewToggle.setAttribute('aria-disabled', 'true');
-      if (label) label.textContent = 'Pilih dokumen terlebih dahulu';
-      els.readerSourceNote.textContent = 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
-      return;
+    GG.kbms.state.readerEmbedStatus = 'blocked';
+    els.readerStatusline.textContent = fallbackMessage;
+    els.readerFallbackText.textContent = fallbackMessage;
+    els.readerFallback.hidden = false;
+    els.readerFrameWrap.hidden = true;
+
+    if (item) {
+      els.readerOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
+      els.readerOpen.removeAttribute('aria-disabled');
+    } else {
+      els.readerOpen.href = '#';
+      els.readerOpen.setAttribute('aria-disabled', 'true');
     }
-
-    els.readerPreviewToggle.removeAttribute('aria-disabled');
-    if (label) {
-      label.textContent = state.readerSourceVisible
-        ? 'Sembunyikan preview sumber'
-        : 'Tampilkan preview sumber';
-    }
-
-    if (!state.readerSourceVisible) {
-      resetReaderEmbed(true);
-      els.readerSourceNote.textContent = describeReaderSourceStatus('idle');
-      return;
-    }
-
-    els.readerEmbed.hidden = false;
-    startReaderEmbedLoad(item);
-    els.readerSourceNote.textContent = describeReaderSourceStatus(state.readerEmbedStatus);
-    els.readerEmbedNote.textContent = describeReaderSourceStatus(state.readerEmbedStatus);
   }
 
   function startPreviewEmbedLoad(item) {
@@ -3227,6 +3018,10 @@
     const els = GG.kbms.els;
     const nextUid = item.doc_uid;
     const nextSrc = buildDocPreviewUrl(item.doc_id, item.doc_type);
+    if (nextSrc === 'about:blank') {
+      showReaderFallback('Dokumen ini belum memiliki preview yang bisa ditampilkan.');
+      return;
+    }
     const isSameDoc = els.readerFrame.dataset.docUid === nextUid;
     const canReuse = isSameDoc && state.readerEmbedStatus !== 'idle';
 
@@ -3234,14 +3029,15 @@
 
     clearReaderEmbedTimer();
     state.readerEmbedStatus = 'loading';
+    els.readerFallback.hidden = true;
+    els.readerFrameWrap.hidden = false;
+    els.readerStatusline.textContent = 'Memuat preview dokumen…';
     els.readerFrame.dataset.docUid = nextUid;
     els.readerFrame.src = nextSrc;
     state.readerEmbedTimer = window.setTimeout(() => {
-      if (!state.readerSourceVisible) return;
       if (state.readerEmbedStatus === 'loading') {
         state.readerEmbedStatus = 'timeout';
-        els.readerSourceNote.textContent = describeReaderSourceStatus('timeout');
-        els.readerEmbedNote.textContent = describeReaderSourceStatus('timeout');
+        showReaderFallback('Preview internal belum stabil pada browser ini. Gunakan Buka asli.');
       }
     }, 4200);
   }
@@ -3287,203 +3083,210 @@
       }
       delete els.readerFrame.dataset.docUid;
     }
-    if (els.readerEmbed) {
-      els.readerEmbed.hidden = true;
+    if (els.readerFrameWrap) {
+      els.readerFrameWrap.hidden = false;
+    }
+    if (els.readerFallback) {
+      els.readerFallback.hidden = true;
+    }
+    if (els.readerStatusline) {
+      els.readerStatusline.textContent = 'Memuat preview dokumen…';
     }
   }
 
   function describePreviewSourceStatus(status) {
     switch (status) {
       case 'loading':
-        return 'Memuat preview sumber secara opsional. Jika tidak stabil, lanjutkan dari ringkasan internal.';
+        return 'Memuat preview sumber opsional untuk referensi cepat.';
       case 'loaded':
-        return 'Preview sumber aktif sebagai referensi tambahan. Tampilan utama tetap ringkasan internal.';
+        return 'Preview sumber aktif sebagai referensi tambahan.';
       case 'timeout':
         return 'Preview sumber belum stabil di browser ini. Jika muncul login/blank, gunakan tombol Buka asli.';
       case 'blocked':
         return 'Preview sumber tidak tersedia pada sesi ini. Gunakan tombol Buka asli untuk dokumen lengkap.';
       case 'idle':
       default:
-        return 'Preview eksternal tidak digunakan sebagai tampilan utama agar akses tetap stabil.';
+        return 'Preview sumber bersifat opsional dan tidak selalu tersedia.';
     }
-  }
-
-  function describeReaderSourceStatus(status) {
-    switch (status) {
-      case 'loading':
-        return 'Memuat preview sumber sebagai referensi tambahan.';
-      case 'loaded':
-        return 'Preview sumber tersedia sebagai lapisan tambahan. Reader internal tetap utama.';
-      case 'timeout':
-        return 'Preview sumber belum stabil. Gunakan Buka asli jika membutuhkan dokumen penuh.';
-      case 'blocked':
-        return 'Preview sumber tidak bisa ditampilkan pada lingkungan ini. Buka dokumen dari sumber asli.';
-      case 'idle':
-      default:
-        return 'Reader internal menjadi tampilan utama. Preview eksternal hanya enhancement tambahan.';
-    }
-  }
-
-  function composeReaderContent(item, status) {
-    const summary = firstNonEmptyText([
-      item.summary,
-      item.description,
-      item.overview,
-      item.abstract,
-      item.intro,
-      item.excerpt,
-      item.preview_text,
-      item.body_summary
-    ]);
-    const context = firstNonEmptyText([
-      item.context,
-      item.purpose,
-      item.scope,
-      item.audience,
-      item.use_case,
-      item.usage_note,
-      item.notes_context
-    ]);
-    const notes = collectReaderNotes(item);
-    const hasInternal = !!(summary || context || notes.length);
-
-    return {
-      hasInternal,
-      summary: summary || fallbackSummary(item),
-      context: context || buildReaderFallbackContext(item, status),
-      notes: notes,
-      lede: hasInternal
-        ? 'Ringkasan internal tersedia di workspace ini. Gunakan sumber asli hanya bila memerlukan dokumen penuh.'
-        : 'Konten internal lengkap belum tersedia. Workspace tetap menampilkan konteks utama agar keputusan tetap cepat.'
-    };
-  }
-
-  function resolveReaderMode(hasInternal, sourceVisible) {
-    if (sourceVisible) return 'reader-internal-plus-preview';
-    return hasInternal ? 'reader-internal' : 'reader-fallback';
-  }
-
-  function getReaderModeLabel(mode) {
-    switch (mode) {
-      case 'reader-internal-plus-preview':
-        return 'internal + preview';
-      case 'reader-fallback':
-        return 'internal fallback';
-      case 'reader-internal':
-      default:
-        return 'internal first';
-    }
-  }
-
-  function buildReaderFallbackContext(item, status) {
-    const collection = [item.category, item.subcategory].filter(Boolean).join(' / ');
-    const parts = [];
-    if (collection) parts.push('Koleksi: ' + collection + '.');
-    if (status && status.label) parts.push('Status: ' + status.label + '.');
-    if (item.owner) parts.push('Owner: ' + item.owner + '.');
-    parts.push('Dokumen lengkap tersedia melalui tombol Buka asli.');
-    return parts.join(' ');
-  }
-
-  function collectReaderNotes(item) {
-    const out = [];
-    const seen = new Set();
-    const candidates = [
-      item.key_points,
-      item.highlights,
-      item.notes,
-      item.action_points,
-      item.checklist,
-      item.bullets,
-      item.keywords,
-      item.tags
-    ];
-
-    candidates.forEach((value) => {
-      splitToNoteItems(value).forEach((entry) => {
-        const note = clampText(entry, 180);
-        if (!note || note.length < 4) return;
-        if (seen.has(note)) return;
-        seen.add(note);
-        out.push(note);
-      });
-    });
-
-    return out.slice(0, 6);
-  }
-
-  function splitToNoteItems(value) {
-    if (Array.isArray(value)) {
-      return value.map((entry) => firstNonEmptyText([entry])).filter(Boolean);
-    }
-
-    if (value && typeof value === 'object') {
-      return Object.keys(value).map((key) => firstNonEmptyText([value[key]])).filter(Boolean);
-    }
-
-    const raw = firstNonEmptyText([value]);
-    if (!raw) return [];
-
-    let parts = raw.split(/\r?\n|•|;|\|/).map((entry) => entry.trim()).filter(Boolean);
-    if (parts.length < 2 && raw.indexOf(',') !== -1 && raw.length <= 220) {
-      parts = raw.split(',').map((entry) => entry.trim()).filter(Boolean);
-    }
-    return parts;
-  }
-
-  function firstNonEmptyText(values) {
-    for (let i = 0; i < values.length; i += 1) {
-      const clean = normalizeText(values[i]);
-      if (clean) return clean;
-    }
-    return '';
-  }
-
-  function normalizeText(value) {
-    if (Array.isArray(value)) {
-      value = value.map((entry) => normalizeText(entry)).filter(Boolean).join(' ');
-    } else if (value && typeof value === 'object') {
-      value = value.text || value.summary || value.description || '';
-    }
-
-    const text = String(value || '').replace(/\s+/g, ' ').trim();
-    return text ? clampText(text, 720) : '';
-  }
-
-  function clampText(text, maxLength) {
-    const max = maxLength || 240;
-    if (text.length <= max) return text;
-    return text.slice(0, max - 1).trimEnd() + '…';
   }
 
   async function apiRequest(action, payload) {
     const base = String(GG.kbms.state.apiBase || '').trim();
     if (!base || /YOUR-INOHONG-WORKER/i.test(base)) {
-      throw new Error('API base belum diisi. Isi GG.kbms.state.apiBase pada script inline.');
+      throw buildApiError('API base belum diisi. Isi GG.kbms.state.apiBase pada script inline.', {
+        code: 'config_missing'
+      });
     }
 
-    const response = await fetch(base, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(Object.assign({ action }, payload || {})),
-      credentials: 'omit'
-    });
+    let response;
+    try {
+      response = await fetch(base, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(Object.assign({ action }, payload || {})),
+        credentials: 'omit'
+      });
+    } catch (error) {
+      throw buildApiError('Jaringan tidak tersedia. Coba lagi.', {
+        code: 'network_error',
+        cause: error
+      });
+    }
 
     const text = await response.text();
     let data;
     try {
       data = JSON.parse(text);
     } catch (error) {
-      throw new Error('Respons server tidak valid.');
+      throw buildApiError('Respons server tidak valid.', {
+        code: 'invalid_response',
+        httpStatus: response.status
+      });
     }
 
-    if (!response.ok && data && data.message) {
-      throw new Error(data.message);
+    if (!response.ok) {
+      throw buildApiError((data && data.message) || ('Server merespons ' + response.status + '.'), {
+        httpStatus: response.status,
+        payload: data
+      });
     }
 
+    if (data && typeof data === 'object' && !Object.prototype.hasOwnProperty.call(data, 'httpStatus')) {
+      data.httpStatus = response.status;
+    }
     return data;
+  }
+
+  function buildApiError(message, details) {
+    const error = new Error(String(message || 'Terjadi kesalahan.'));
+    if (details && typeof details === 'object') {
+      Object.keys(details).forEach((key) => {
+        error[key] = details[key];
+      });
+    }
+    return error;
+  }
+
+  function isAuthFailure(candidate) {
+    if (!candidate) return false;
+    const httpStatus = Number(candidate.httpStatus || candidate.statusCode || 0);
+    if (httpStatus === 401 || httpStatus === 403) return true;
+
+    const payload = (candidate.payload && typeof candidate.payload === 'object')
+      ? candidate.payload
+      : (typeof candidate === 'object' ? candidate : null);
+    const payloadStatus = Number(payload && (payload.httpStatus || payload.statusCode || payload.http_status) || 0);
+    if (payloadStatus === 401 || payloadStatus === 403) return true;
+
+    const rawCodes = [
+      candidate.code,
+      payload && payload.code,
+      payload && payload.error,
+      payload && payload.error_code,
+      payload && payload.errorCode,
+      payload && payload.reason,
+      payload && payload.status
+    ].filter(Boolean).map((value) => String(value).toLowerCase());
+
+    const codePattern = /(unauth|forbid|auth[_-]?expired|auth[_-]?required|invalid[_-]?(token|session)|token[_-]?expired|session[_-]?expired|not[_-]?authorized)/;
+    if (rawCodes.some((value) => codePattern.test(value))) return true;
+
+    const message = String(candidate.message || (payload && payload.message) || '').toLowerCase();
+    const messagePattern = /(unauthori[sz]ed|forbidden|invalid (token|session)|token (expired|invalid|missing)|session (expired|invalid|not found)|auth(entication)? (required|failed|expired)|akses ditolak|sesi (berakhir|kedaluwarsa|tidak valid)|token (tidak valid|kedaluwarsa))/;
+    return messagePattern.test(message);
+  }
+
+  function clearAuthSession(options) {
+    const opts = Object.assign({ preserveData: false, preserveView: false }, options || {});
+    const state = GG.kbms.state;
+
+    state.token = '';
+    state.user = null;
+    state.commandOpen = false;
+    state.previewSourceVisible = false;
+    state.previewEmbedStatus = 'idle';
+    state.readerEmbedStatus = 'idle';
+    state.mobileLeftSheetOpen = false;
+    state.mobileRightSheetOpen = false;
+    state.touchSession = null;
+
+    if (!opts.preserveData) {
+      state.catalog = [];
+      state.filtered = [];
+      state.currentDocUid = '';
+      state.previewDocUid = '';
+      state.query = '';
+      state.activeCategory = '';
+      state.selectedCollection = '';
+    }
+
+    if (!opts.preserveView) {
+      state.activeView = 'home';
+      state.workspaceView = 'home';
+      state.previousWorkspaceView = 'home';
+    }
+
+    sessionStorage.removeItem(STORAGE.token);
+    sessionStorage.removeItem(STORAGE.user);
+    closeCommandPanel();
+    closeMobileSheets();
+    resetPreviewEmbed(true);
+    resetReaderEmbed(true);
+  }
+
+  function setAuthViewState(nextState) {
+    const normalized = AUTH_VIEW_STATES.has(nextState) ? nextState : 'boot';
+    GG.kbms.state.authState = normalized;
+    GG.kbms.els.root.dataset.ggAuthState = normalized;
+
+    const showAuth = normalized === 'unauthenticated' || normalized === 'auth-expired';
+    const showShell = normalized === 'authenticated' || normalized === 'app-error';
+
+    GG.kbms.els.auth.hidden = !showAuth;
+    GG.kbms.els.shell.hidden = !showShell;
+
+    if (!showShell) {
+      closeCommandPanel();
+      closeMobileSheets();
+    }
+  }
+
+  function enterBootState() {
+    setAuthViewState('boot');
+    setAuthMessage('', false);
+    setShellMessage('', false);
+  }
+
+  function enterRestoringSessionState() {
+    setAuthViewState('restoring-session');
+    setAuthMessage('', false);
+    setShellMessage('Memulihkan sesi…', false);
+  }
+
+  function enterUnauthenticatedState() {
+    setAuthViewState('unauthenticated');
+    setAuthPending(false);
+    setAuthMessage('', false);
+    setShellMessage('', false);
+  }
+
+  function enterAuthenticatedState() {
+    setAuthViewState('authenticated');
+    setAuthMessage('', false);
+  }
+
+  function enterAuthExpiredState(message) {
+    setAuthViewState('auth-expired');
+    setAuthPending(false);
+    setShellMessage('', false);
+    setAuthMessage(message || 'Sesi berakhir. Silakan masuk kembali.', true);
+  }
+
+  function enterAppErrorState(message) {
+    setAuthViewState('app-error');
+    setShellMessage(message || 'Terjadi kendala sementara.', true);
   }
 
   function setAppState(state) {
