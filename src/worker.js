@@ -1712,29 +1712,71 @@ const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
   ].join("");
 };
 
+const buildFallbackSpecialSurfaceHtml = (entry, options = {}) => {
+  const opt = options || {};
+  const contentHtml = String(
+    (entry && entry.content && entry.content.$t) ||
+      (entry && entry.summary && entry.summary.$t) ||
+      ""
+  );
+  if (!contentHtml) return "";
+  if (!opt.isSpecialApp) {
+    return contentHtml;
+  }
+  const title = cleanText(entry && entry.title && entry.title.$t) || "Special App";
+  const postId = extractFeedPostId(entry) || "fallback";
+  const specialKey = cleanText(opt.specialKey);
+  const attrs = [
+    "class='gg-special-app-page'",
+    "data-gg-module='special-app-page'",
+    "data-gg-special-app='1'",
+    "data-gg-surface='special'",
+    `data-id='${escapeHtml(postId)}'`,
+    `data-title='${escapeHtml(title)}'`,
+  ];
+  if (specialKey) {
+    attrs.push(`data-gg-special-key='${escapeHtml(specialKey)}'`);
+  }
+  return [
+    `<article ${attrs.join(" ")}>`,
+    "<div class='gg-special-app-body'>",
+    contentHtml,
+    "</div>",
+    "</article>",
+  ].join("");
+};
+
 const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
   const source = String(html || "");
   if (!source) return source;
-  if (isSpecialAppPath(pathname)) return source;
-  const isSpecialSurface = /data-gg-surface\s*=\s*['"]special['"]/i.test(source);
+  const specialAppMatch = source.match(/data-gg-special-app\s*=\s*['"]([^'"]+)['"]/i);
+  const specialMatch = source.match(/data-gg-special\s*=\s*['"]([^'"]+)['"]/i);
+  const specialAppKey = cleanText(specialAppMatch && specialAppMatch[1]);
+  const specialKey = specialAppKey || cleanText(specialMatch && specialMatch[1]);
   const isSpecialApp =
-    /data-gg-special-app\s*=\s*['"][^'"]+['"]/i.test(source) ||
-    /class\s*=\s*['"][^'"]*\bgg-special-app-page\b/i.test(source);
-  if (isSpecialSurface || isSpecialApp) {
-    return source;
-  }
+    !!specialAppKey ||
+    /class\s*=\s*['"][^'"]*\bgg-special-app-page\b/i.test(source) ||
+    isSpecialAppPath(pathname);
+  const isSpecialSurface =
+    /data-gg-surface\s*=\s*['"]special['"]/i.test(source) || !!specialKey || isSpecialApp;
   const hasBlog1Failure = /Failed to render gadget\s+'Blog1'/i.test(source);
   const hasPostDetail = /data-gg-module\s*=\s*['"]post-detail['"]/i.test(source);
-  if (!hasBlog1Failure && hasPostDetail) {
-    return source;
+  if (!hasBlog1Failure) {
+    if (isSpecialSurface) return source;
+    if (hasPostDetail) return source;
   }
   const blogRange = findElementByIdRange(source, "div", "blog");
   if (!blogRange) return source;
   const matched = await fetchFeedEntryByPath(requestUrl, pathname);
   if (!matched || !matched.entry) return source;
-  const fallbackHtml = buildFallbackPostDetailHtml(matched.entry, requestUrl, {
-    isPage: !!matched.isPageFeed || /^\/p\//i.test(String(pathname || "")),
-  });
+  const fallbackHtml = isSpecialSurface
+    ? buildFallbackSpecialSurfaceHtml(matched.entry, {
+        isSpecialApp,
+        specialKey,
+      })
+    : buildFallbackPostDetailHtml(matched.entry, requestUrl, {
+        isPage: !!matched.isPageFeed || /^\/p\//i.test(String(pathname || "")),
+      });
   if (!fallbackHtml) return source;
   return `${source.slice(0, blogRange.innerStart)}${fallbackHtml}${source.slice(blogRange.innerEnd)}`;
 };
@@ -2746,8 +2788,7 @@ export default {
           !forceListing &&
           !forceLanding &&
           !paginationListingFallback &&
-          isPostLikePath(pathname) &&
-          !isSpecialAppPath(pathname)
+          isPostLikePath(pathname)
         ) {
           htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
         }
