@@ -1701,6 +1701,13 @@ const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
 const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
   const source = String(html || "");
   if (!source) return source;
+  const isSpecialSurface = /data-gg-surface\s*=\s*['"]special['"]/i.test(source);
+  const isSpecialApp =
+    /data-gg-special-app\s*=\s*['"][^'"]+['"]/i.test(source) ||
+    /class\s*=\s*['"][^'"]*\bgg-special-app-page\b/i.test(source);
+  if (isSpecialSurface || isSpecialApp) {
+    return source;
+  }
   const hasBlog1Failure = /Failed to render gadget\s+'Blog1'/i.test(source);
   const hasPostDetail = /data-gg-module\s*=\s*['"]post-detail['"]/i.test(source);
   if (!hasBlog1Failure && hasPostDetail) {

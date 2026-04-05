@@ -91,7 +91,7 @@
       <p class="gg-kbms-command__hint">Shortcut: <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> atau <kbd>/</kbd>.</p>
     </section>
 
-    <div class="gg-kbms-workspace">
+    <div class="gg-kbms-workspace" id="gg-kbms-workspace">
       <aside class="gg-kbms-sidebar" aria-label="Workspace navigation">
         <nav class="gg-kbms-nav" id="gg-kbms-nav">
           <button class="gg-kbms-nav__item" data-kbms-view="home" type="button">
@@ -196,11 +196,15 @@
         </dl>
 
         <div class="gg-kbms-preview__actions">
+          <button class="gg-kbms-button" id="gg-kbms-preview-reader" type="button">
+            <span class="material-symbols-rounded" aria-hidden="true">menu_book</span>
+            <span>Buka Reader</span>
+          </button>
           <button class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-preview-pin" type="button">
             <span class="material-symbols-rounded" aria-hidden="true">keep</span>
             <span>Pin</span>
           </button>
-          <a class="gg-kbms-button" id="gg-kbms-preview-open" href="#" target="_blank" rel="noopener">
+          <a class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-preview-open" href="#" target="_blank" rel="noopener">
             <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
             <span>Buka asli</span>
           </a>
@@ -212,6 +216,38 @@
         </div>
       </aside>
     </div>
+
+    <section class="gg-kbms-reader" id="gg-kbms-reader" hidden aria-label="INOHONG reader mode">
+      <header class="gg-kbms-reader__bar">
+        <div class="gg-kbms-reader__identity">
+          <button class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-reader-back" type="button">
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+            <span>Kembali</span>
+          </button>
+          <div>
+            <p class="gg-kbms-reader__eyebrow">Internal reader</p>
+            <h3 class="gg-kbms-reader__title" id="gg-kbms-reader-title">Dokumen</h3>
+            <p class="gg-kbms-reader__meta" id="gg-kbms-reader-meta">Pilih dokumen dari workspace.</p>
+          </div>
+        </div>
+
+        <div class="gg-kbms-reader__actions">
+          <button class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-reader-pin" type="button">
+            <span class="material-symbols-rounded" aria-hidden="true">keep</span>
+            <span>Pin</span>
+          </button>
+          <a class="gg-kbms-button gg-kbms-button--quiet" id="gg-kbms-reader-open" href="#" target="_blank" rel="noopener">
+            <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
+            <span>Buka asli</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="gg-kbms-reader__framewrap">
+        <p class="gg-kbms-reader__empty" id="gg-kbms-reader-empty">Dokumen belum dipilih.</p>
+        <iframe id="gg-kbms-reader-frame" class="gg-kbms-reader__frame" title="INOHONG internal reader" loading="lazy" hidden></iframe>
+      </div>
+    </section>
   </section>
 </div>
 
@@ -632,7 +668,7 @@
   .gg-kbms-sidebar,
   .gg-kbms-main {
     display: grid;
-    gap: 0.88rem;
+    gap: 0.78rem;
     min-width: 0;
   }
 
@@ -644,7 +680,7 @@
   .gg-kbms-nav {
     border: 1px solid var(--gg-kbms-border);
     border-radius: var(--gg-kbms-radius-lg);
-    padding: 0.52rem;
+    padding: 0.44rem;
     background: color-mix(in srgb, var(--gg-kbms-surface) 96%, #f9fafb);
     box-shadow: var(--gg-kbms-shadow-sm);
     display: grid;
@@ -684,11 +720,11 @@
 
   .gg-kbms-card {
     border-radius: var(--gg-kbms-radius-lg);
-    padding: 0.9rem;
+    padding: 0.84rem;
   }
 
   .gg-kbms-card__head {
-    margin-bottom: 0.62rem;
+    margin-bottom: 0.5rem;
   }
 
   .gg-kbms-card__title {
@@ -1005,6 +1041,12 @@
     box-shadow: none;
   }
 
+  .gg-kbms-button[aria-disabled="true"],
+  .gg-kbms-button:disabled {
+    opacity: 0.62;
+    pointer-events: none;
+  }
+
   .gg-kbms-preview__framewrap {
     border: 1px solid var(--gg-kbms-border);
     border-radius: 12px;
@@ -1031,6 +1073,90 @@
     border: 0;
     background: #fff;
     display: block;
+  }
+
+  .gg-kbms-reader {
+    display: grid;
+    gap: 0.8rem;
+    min-height: min(82vh, 980px);
+  }
+
+  .gg-kbms-reader__bar,
+  .gg-kbms-reader__framewrap {
+    border: 1px solid var(--gg-kbms-border);
+    border-radius: var(--gg-kbms-radius-lg);
+    background: color-mix(in srgb, var(--gg-kbms-surface) 96%, #f9fafb);
+    box-shadow: var(--gg-kbms-shadow-sm);
+  }
+
+  .gg-kbms-reader__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.84rem;
+  }
+
+  .gg-kbms-reader__identity {
+    display: flex;
+    gap: 0.72rem;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .gg-kbms-reader__actions {
+    display: inline-flex;
+    gap: 0.42rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .gg-kbms-reader__eyebrow {
+    margin: 0 0 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
+    color: var(--gg-kbms-muted-2);
+    font-weight: 700;
+  }
+
+  .gg-kbms-reader__title {
+    margin: 0;
+    font-size: clamp(1.02rem, 2vw, 1.32rem);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+  }
+
+  .gg-kbms-reader__meta {
+    margin: 0.3rem 0 0;
+    color: var(--gg-kbms-muted);
+    font-size: 0.82rem;
+    line-height: 1.42;
+  }
+
+  .gg-kbms-reader__framewrap {
+    overflow: hidden;
+    min-height: min(74vh, 940px);
+    position: relative;
+  }
+
+  .gg-kbms-reader__empty {
+    margin: 0;
+    min-height: min(74vh, 940px);
+    padding: 1rem;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: var(--gg-kbms-muted);
+    font-size: 0.88rem;
+  }
+
+  .gg-kbms-reader__frame {
+    display: block;
+    width: 100%;
+    min-height: min(74vh, 940px);
+    border: 0;
+    background: #fff;
   }
 
   .gg-kbms-empty {
@@ -1157,6 +1283,15 @@
     .gg-kbms-result-strip__meta {
       text-align: left;
     }
+
+    .gg-kbms-reader__bar {
+      flex-direction: column;
+    }
+
+    .gg-kbms-reader__actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
   }
 
   @media (max-width: 760px) {
@@ -1170,7 +1305,9 @@
     .gg-kbms-command,
     .gg-kbms-card,
     .gg-kbms-preview,
-    .gg-kbms-nav {
+    .gg-kbms-nav,
+    .gg-kbms-reader__bar,
+    .gg-kbms-reader__framewrap {
       border-radius: 14px;
     }
 
@@ -1189,6 +1326,22 @@
 
     .gg-kbms-preview__meta {
       grid-template-columns: 1fr;
+    }
+
+    .gg-kbms-reader__identity {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .gg-kbms-reader__actions .gg-kbms-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .gg-kbms-reader__framewrap,
+    .gg-kbms-reader__empty,
+    .gg-kbms-reader__frame {
+      min-height: 68vh;
     }
   }
 
@@ -1235,7 +1388,10 @@
       filtered: [],
       query: '',
       activeView: 'home',
+      workspaceView: 'home',
+      previousWorkspaceView: 'home',
       activeCategory: '',
+      selectedCollection: '',
       currentDocUid: '',
       previewDocUid: '',
       recents: [],
@@ -1251,7 +1407,8 @@
     loadCatalog,
     render,
     selectDocument,
-    openReader: (docUid) => selectDocument(docUid, { trackRecent: true, closeCommand: true })
+    openReader,
+    closeReader
   };
 
   if (document.readyState === 'loading') {
@@ -1270,6 +1427,8 @@
     els.root = root;
     els.auth = document.getElementById('gg-kbms-auth');
     els.shell = document.getElementById('gg-kbms-shell');
+    els.workspace = document.getElementById('gg-kbms-workspace');
+    els.reader = document.getElementById('gg-kbms-reader');
     els.authMessage = document.getElementById('gg-kbms-auth-message');
     els.shellMessage = document.getElementById('gg-kbms-shell-message');
     els.form = document.getElementById('gg-kbms-login-form');
@@ -1310,10 +1469,19 @@
     els.previewOwner = document.getElementById('gg-kbms-preview-owner');
     els.previewUpdated = document.getElementById('gg-kbms-preview-updated');
     els.previewLang = document.getElementById('gg-kbms-preview-lang');
+    els.previewReader = document.getElementById('gg-kbms-preview-reader');
     els.previewPin = document.getElementById('gg-kbms-preview-pin');
     els.previewOpen = document.getElementById('gg-kbms-preview-open');
     els.previewEmpty = document.getElementById('gg-kbms-preview-empty');
     els.previewFrame = document.getElementById('gg-kbms-preview-frame');
+
+    els.readerBack = document.getElementById('gg-kbms-reader-back');
+    els.readerTitle = document.getElementById('gg-kbms-reader-title');
+    els.readerMeta = document.getElementById('gg-kbms-reader-meta');
+    els.readerPin = document.getElementById('gg-kbms-reader-pin');
+    els.readerOpen = document.getElementById('gg-kbms-reader-open');
+    els.readerEmpty = document.getElementById('gg-kbms-reader-empty');
+    els.readerFrame = document.getElementById('gg-kbms-reader-frame');
 
     bindEvents();
     restoreSession();
@@ -1340,21 +1508,23 @@
       button.addEventListener('click', () => {
         const view = button.getAttribute('data-kbms-view');
         if (!view || view === 'admin') return;
-        GG.kbms.state.activeView = view;
-        if (view !== 'collections') GG.kbms.state.activeCategory = '';
-        applyFilters();
+        navigateToView(view, { push: true, preserveCategory: view === 'collections' });
       });
     });
 
     els.collections.addEventListener('click', (event) => {
       const button = event.target.closest('[data-kbms-category]');
       if (!button) return;
-      GG.kbms.state.activeCategory = button.getAttribute('data-kbms-category') || '';
-      GG.kbms.state.activeView = 'collections';
-      applyFilters();
+      const category = button.getAttribute('data-kbms-category') || '';
+      GG.kbms.state.activeCategory = category;
+      GG.kbms.state.selectedCollection = category;
+      navigateToView('collections', { push: true, preserveCategory: true });
     });
 
+    els.previewReader.addEventListener('click', () => openReader(GG.kbms.state.currentDocUid, { trackRecent: true, push: true, focusReader: true }));
     els.previewPin.addEventListener('click', toggleCurrentPin);
+    els.readerBack.addEventListener('click', () => closeReader({ replace: true, focusWorkspace: true }));
+    els.readerPin.addEventListener('click', toggleCurrentPin);
 
     document.addEventListener('keydown', onGlobalKeydown);
     document.addEventListener('click', (event) => {
@@ -1363,6 +1533,7 @@
         closeCommandPanel();
       }
     });
+    window.addEventListener('hashchange', onHashChange);
   }
 
   async function onSubmitLogin(event) {
@@ -1413,7 +1584,10 @@
     GG.kbms.state.filtered = [];
     GG.kbms.state.query = '';
     GG.kbms.state.activeCategory = '';
+    GG.kbms.state.selectedCollection = '';
     GG.kbms.state.activeView = 'home';
+    GG.kbms.state.workspaceView = 'home';
+    GG.kbms.state.previousWorkspaceView = 'home';
     GG.kbms.state.currentDocUid = '';
     GG.kbms.state.previewDocUid = '';
     GG.kbms.state.commandOpen = false;
@@ -1431,6 +1605,10 @@
     els.previewFrame.src = 'about:blank';
     els.previewFrame.hidden = true;
     els.previewEmpty.hidden = false;
+    els.readerFrame.src = 'about:blank';
+    delete els.readerFrame.dataset.docUid;
+    els.readerFrame.hidden = true;
+    els.readerEmpty.hidden = false;
     els.shell.hidden = true;
     els.auth.hidden = false;
     els.email.value = '';
@@ -1439,6 +1617,7 @@
 
     setShellMessage('', false);
     setAuthMessage('', false);
+    setHashRoute('home', { replace: true });
     setAppState('idle');
   }
 
@@ -1478,11 +1657,13 @@
       const role = String((GG.kbms.state.user && GG.kbms.state.user.role) || '').toLowerCase();
       GG.kbms.els.adminEntry.hidden = role.indexOf('admin') === -1;
 
-      applyFilters();
+      applyRouteFromHash({ replaceIfMissing: true, replaceInvalid: true });
       setShellMessage('', false);
       setAppState('ready');
 
-      requestAnimationFrame(() => GG.kbms.els.search.focus());
+      requestAnimationFrame(() => {
+        if (GG.kbms.state.activeView !== 'reader') GG.kbms.els.search.focus();
+      });
     } catch (error) {
       setAppState('idle');
       sessionStorage.removeItem(STORAGE.token);
@@ -1539,7 +1720,7 @@
 
       const firstResult = findQuickResults(query, 1)[0];
       if (firstResult) {
-        selectDocument(firstResult.doc_uid, { trackRecent: true, closeCommand: true, focusPreview: true });
+        openReader(firstResult.doc_uid, { trackRecent: true, push: true, focusReader: true });
       } else {
         closeCommandPanel();
       }
@@ -1566,7 +1747,7 @@
     const docTarget = event.target.closest('[data-cmd-doc]');
     if (docTarget) {
       const docUid = docTarget.getAttribute('data-cmd-doc');
-      selectDocument(docUid, { trackRecent: true, closeCommand: true, focusPreview: true });
+      openReader(docUid, { trackRecent: true, push: true, focusReader: true });
     }
   }
 
@@ -1577,13 +1758,16 @@
 
     if (modK) {
       event.preventDefault();
+      if (GG.kbms.state.activeView === 'reader') {
+        closeReader({ replace: true, focusWorkspace: false });
+      }
       GG.kbms.els.search.focus();
       openCommandPanel();
       renderCommandPanel();
       return;
     }
 
-    if (event.key === '/' && !isTyping && !GG.kbms.els.shell.hidden) {
+    if (event.key === '/' && !isTyping && !GG.kbms.els.shell.hidden && GG.kbms.state.activeView !== 'reader') {
       event.preventDefault();
       GG.kbms.els.search.focus();
       openCommandPanel();
@@ -1594,6 +1778,21 @@
     if (event.key === 'Escape' && GG.kbms.state.commandOpen) {
       event.preventDefault();
       closeCommandPanel();
+      return;
+    }
+
+    if (event.key === 'Escape' && GG.kbms.state.activeView === 'reader') {
+      event.preventDefault();
+      closeReader({ replace: true, focusWorkspace: true });
+      return;
+    }
+
+    if (event.key === 'Enter' && !isTyping && GG.kbms.state.activeView !== 'reader' && GG.kbms.state.currentDocUid) {
+      const focusInResults = GG.kbms.els.results.contains(document.activeElement);
+      if (focusInResults) {
+        event.preventDefault();
+        openReader(GG.kbms.state.currentDocUid, { trackRecent: true, push: true, focusReader: true });
+      }
     }
   }
 
@@ -1628,10 +1827,14 @@
   function applyFilters() {
     const state = GG.kbms.state;
     const query = state.query;
+    const workspaceView = getActiveWorkspaceView();
+    const selectedCollection = state.selectedCollection || state.activeCategory;
+    state.selectedCollection = selectedCollection;
+    state.activeCategory = selectedCollection;
 
-    let pool = getViewPool(state.activeView);
-    if (state.activeCategory) {
-      pool = pool.filter((item) => String(item.category || '') === state.activeCategory);
+    let pool = getViewPool(workspaceView);
+    if (selectedCollection) {
+      pool = pool.filter((item) => String(item.category || '') === selectedCollection);
     }
 
     state.viewPoolCount = pool.length;
@@ -1651,12 +1854,15 @@
     renderPriority();
     renderResults();
     renderPreview();
+    renderReader();
     renderCommandPanel();
     toggleHomeSections();
+    renderShellMode();
   }
 
   function renderNav() {
     const state = GG.kbms.state;
+    const workspaceView = getActiveWorkspaceView();
     const recentCount = getRecentDocs().length;
     const pinnedCount = getPinnedDocs().length;
     const attentionCount = getAttentionDocs().length;
@@ -1672,8 +1878,8 @@
 
     GG.kbms.els.navButtons.forEach((button) => {
       const view = button.getAttribute('data-kbms-view') || '';
-      button.classList.toggle('gg-is-active', view === state.activeView);
-      button.setAttribute('aria-pressed', view === state.activeView ? 'true' : 'false');
+      button.classList.toggle('gg-is-active', view === workspaceView);
+      button.setAttribute('aria-pressed', view === workspaceView ? 'true' : 'false');
     });
 
     GG.kbms.els.navCounts.forEach((node) => {
@@ -1695,7 +1901,7 @@
     categories.forEach((entry) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'gg-kbms-collection' + (GG.kbms.state.activeCategory === entry.name ? ' gg-is-active' : '');
+      button.className = 'gg-kbms-collection' + (GG.kbms.state.selectedCollection === entry.name ? ' gg-is-active' : '');
       button.setAttribute('data-kbms-category', entry.name);
 
       const label = document.createElement('span');
@@ -1750,10 +1956,7 @@
       list = getPinnedDocs().slice(0, 4);
     }
 
-    if (!list.length) {
-      container.appendChild(createEmptyBlock('Tidak ada item prioritas.', 'Semua dokumen terlihat stabil. Gunakan pin untuk menandai prioritas manual.'));
-      return;
-    }
+    if (!list.length) return;
 
     list.forEach((item) => {
       const button = document.createElement('button');
@@ -1810,6 +2013,7 @@
       els.previewUpdated.textContent = '-';
       els.previewLang.textContent = '-';
       els.previewBadges.innerHTML = '';
+      GG.kbms.els.previewReader.setAttribute('aria-disabled', 'true');
       els.previewOpen.href = '#';
       els.previewOpen.setAttribute('aria-disabled', 'true');
       els.previewPin.classList.remove('gg-is-active');
@@ -1833,6 +2037,7 @@
     els.previewOwner.textContent = item.owner || '-';
     els.previewUpdated.textContent = item.updated_at ? formatDateLabel(item.updated_at) : '-';
     els.previewLang.textContent = item.lang ? String(item.lang).toUpperCase() : '-';
+    GG.kbms.els.previewReader.removeAttribute('aria-disabled');
     els.previewOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
     els.previewOpen.removeAttribute('aria-disabled');
 
@@ -1852,6 +2057,60 @@
 
     els.previewEmpty.hidden = true;
     els.previewFrame.hidden = false;
+  }
+
+  function renderReader() {
+    const item = getCurrentDoc();
+    const els = GG.kbms.els;
+    const status = item ? deriveStatus(item) : null;
+
+    if (!item) {
+      els.readerTitle.textContent = 'Dokumen';
+      els.readerMeta.textContent = 'Pilih dokumen dari workspace.';
+      els.readerOpen.href = '#';
+      els.readerOpen.setAttribute('aria-disabled', 'true');
+      els.readerPin.classList.remove('gg-is-active');
+      els.readerPin.querySelector('span:last-child').textContent = 'Pin';
+      if (!els.readerFrame.hidden) {
+        els.readerFrame.src = 'about:blank';
+      }
+      delete els.readerFrame.dataset.docUid;
+      els.readerFrame.hidden = true;
+      els.readerEmpty.hidden = false;
+      return;
+    }
+
+    const pinned = isPinned(item);
+    const metaBits = [
+      [item.category, item.subcategory].filter(Boolean).join(' / '),
+      status ? status.label : '',
+      item.updated_at ? formatDateLabel(item.updated_at) : ''
+    ].filter(Boolean);
+
+    els.readerTitle.textContent = item.title;
+    els.readerMeta.textContent = metaBits.join(' • ') || 'Dokumen internal';
+    els.readerOpen.href = buildDocOpenUrl(item.doc_id, item.doc_type);
+    els.readerOpen.removeAttribute('aria-disabled');
+    els.readerPin.classList.toggle('gg-is-active', pinned);
+    els.readerPin.querySelector('span:last-child').textContent = pinned ? 'Unpin' : 'Pin';
+
+    if (els.readerFrame.dataset.docUid !== item.doc_uid) {
+      els.readerFrame.src = buildDocPreviewUrl(item.doc_id, item.doc_type);
+      els.readerFrame.dataset.docUid = item.doc_uid;
+    }
+
+    els.readerEmpty.hidden = true;
+    els.readerFrame.hidden = false;
+  }
+
+  function renderShellMode() {
+    const isReader = GG.kbms.state.activeView === 'reader';
+    const els = GG.kbms.els;
+    els.shell.dataset.kbmsMode = isReader ? 'reader' : 'workspace';
+    els.command.hidden = isReader;
+    els.workspace.hidden = isReader;
+    els.reader.hidden = !isReader;
+    if (isReader) closeCommandPanel();
   }
 
   function renderCommandPanel() {
@@ -1920,13 +2179,145 @@
 
   function toggleHomeSections() {
     const state = GG.kbms.state;
-    const showHighlights = state.activeView === 'home' && !state.query && !state.activeCategory;
+    const showHighlights = getActiveWorkspaceView() === 'home' && !state.query && !state.selectedCollection;
+    const hasPriority = getAttentionDocs().length > 0 || getPinnedDocs().length > 0;
     GG.kbms.els.resumeSection.hidden = !showHighlights;
-    GG.kbms.els.prioritySection.hidden = !showHighlights;
+    GG.kbms.els.prioritySection.hidden = !showHighlights || !hasPriority;
+  }
+
+  function getActiveWorkspaceView() {
+    return GG.kbms.state.activeView === 'reader'
+      ? (GG.kbms.state.workspaceView || GG.kbms.state.previousWorkspaceView || 'home')
+      : GG.kbms.state.activeView;
+  }
+
+  function onHashChange() {
+    if (GG.kbms.state.token) {
+      applyRouteFromHash({ replaceInvalid: true });
+    }
+  }
+
+  function applyRouteFromHash(options) {
+    const opts = Object.assign({ replaceIfMissing: false, replaceInvalid: false }, options || {});
+    const route = parseHashRoute(window.location.hash);
+
+    if (route.type === 'missing') {
+      const fallback = GG.kbms.state.workspaceView || 'home';
+      navigateToView(fallback, { fromRoute: true, preserveCategory: true });
+      if (opts.replaceIfMissing) setHashRoute(fallback, { replace: true });
+      return;
+    }
+
+    if (route.type === 'doc') {
+      if (docExists(route.docUid)) {
+        openReader(route.docUid, { fromRoute: true, focusReader: false, trackRecent: false });
+      } else {
+        const fallbackView = GG.kbms.state.workspaceView || 'home';
+        navigateToView(fallbackView, { fromRoute: true, preserveCategory: true });
+        if (opts.replaceInvalid) setHashRoute(fallbackView, { replace: true });
+      }
+      return;
+    }
+
+    navigateToView(route.view, { fromRoute: true, preserveCategory: route.view === 'collections' });
+    if (route.type === 'invalid' && opts.replaceInvalid) {
+      setHashRoute(route.view, { replace: true });
+    }
+  }
+
+  function parseHashRoute(rawHash) {
+    const raw = String(rawHash || '').replace(/^#/, '').trim();
+    if (!raw) return { type: 'missing', view: 'home' };
+
+    if (raw.indexOf('doc=') === 0) {
+      const docUid = decodeURIComponent(raw.slice(4)).trim();
+      return docUid ? { type: 'doc', docUid } : { type: 'invalid', view: 'home' };
+    }
+
+    const view = raw.toLowerCase();
+    const allowed = new Set(['home', 'all', 'recent', 'pinned', 'attention', 'collections', 'admin']);
+    if (!allowed.has(view)) return { type: 'invalid', view: 'home' };
+    return { type: 'view', view };
+  }
+
+  function navigateToView(view, options) {
+    const opts = Object.assign({ push: false, replace: false, fromRoute: false, preserveCategory: false }, options || {});
+    const nextView = String(view || '').toLowerCase();
+    const allowed = new Set(['home', 'all', 'recent', 'pinned', 'attention', 'collections', 'admin']);
+    const targetView = allowed.has(nextView) ? nextView : 'home';
+
+    GG.kbms.state.activeView = targetView;
+    GG.kbms.state.workspaceView = targetView;
+    if (!opts.preserveCategory) {
+      GG.kbms.state.activeCategory = '';
+      GG.kbms.state.selectedCollection = '';
+    }
+
+    applyFilters();
+
+    if (!opts.fromRoute) {
+      setHashRoute(targetView, { replace: !!opts.replace });
+    }
+  }
+
+  function openReader(docUid, options) {
+    const opts = Object.assign({ trackRecent: false, fromRoute: false, push: false, replace: false, focusReader: false }, options || {});
+    const item = GG.kbms.state.catalog.find((entry) => entry.doc_uid === docUid);
+    if (!item) return;
+
+    if (GG.kbms.state.activeView !== 'reader') {
+      GG.kbms.state.workspaceView = getActiveWorkspaceView();
+    }
+    GG.kbms.state.currentDocUid = item.doc_uid;
+    GG.kbms.state.previousWorkspaceView = GG.kbms.state.workspaceView || getActiveWorkspaceView() || 'home';
+    GG.kbms.state.activeView = 'reader';
+
+    if (opts.trackRecent) writeRecent(item.doc_uid);
+    closeCommandPanel();
+    render();
+
+    if (!opts.fromRoute) {
+      setHashRoute('doc=' + encodeURIComponent(item.doc_uid), { replace: !!opts.replace && !opts.push });
+    }
+
+    if (opts.focusReader) {
+      requestAnimationFrame(() => {
+        if (!GG.kbms.els.readerBack.hidden) GG.kbms.els.readerBack.focus();
+      });
+    }
+  }
+
+  function closeReader(options) {
+    const opts = Object.assign({ push: false, replace: false, fromRoute: false, focusWorkspace: false }, options || {});
+    const fallbackView = GG.kbms.state.workspaceView || GG.kbms.state.previousWorkspaceView || 'home';
+    navigateToView(fallbackView, {
+      fromRoute: opts.fromRoute,
+      preserveCategory: fallbackView === 'collections',
+      replace: !!opts.replace && !opts.push
+    });
+
+    if (opts.focusWorkspace) {
+      requestAnimationFrame(() => GG.kbms.els.search.focus());
+    }
+  }
+
+  function setHashRoute(value, options) {
+    const opts = Object.assign({ replace: false }, options || {});
+    const clean = String(value || '').replace(/^#/, '');
+    const nextHash = '#' + (clean || 'home');
+
+    if (window.location.hash === nextHash) return;
+
+    if (opts.replace && window.history && typeof window.history.replaceState === 'function') {
+      window.history.replaceState(null, '', nextHash);
+      return;
+    }
+
+    window.location.hash = nextHash;
   }
 
   function selectDocument(docUid, options) {
-    const opts = Object.assign({ trackRecent: false, closeCommand: true, focusPreview: false }, options || {});
+    const opts = Object.assign({ trackRecent: false, closeCommand: true, focusPreview: false, skipRender: false, openReaderOnMobile: false }, options || {});
     const item = GG.kbms.state.catalog.find((entry) => entry.doc_uid === docUid);
     if (!item) return;
 
@@ -1934,12 +2325,20 @@
     if (opts.trackRecent) writeRecent(docUid);
     if (opts.closeCommand) closeCommandPanel();
 
-    renderResults();
-    renderResume();
-    renderPreview();
+    if (!opts.skipRender) {
+      renderResults();
+      renderResume();
+      renderPreview();
+      renderReader();
+    }
+
+    if (opts.openReaderOnMobile && window.matchMedia('(max-width: 980px)').matches) {
+      openReader(docUid, { trackRecent: false, push: true, focusReader: false });
+      return;
+    }
 
     if (opts.focusPreview) {
-      requestAnimationFrame(() => GG.kbms.els.previewOpen.focus());
+      requestAnimationFrame(() => GG.kbms.els.previewReader.focus());
     }
   }
 
@@ -1960,6 +2359,7 @@
     renderPriority();
     renderResults();
     renderPreview();
+    renderReader();
   }
 
   async function apiRequest(action, payload) {
@@ -2117,15 +2517,17 @@
 
   function buildResultTitle() {
     const state = GG.kbms.state;
+    const workspaceView = getActiveWorkspaceView();
 
     if (state.query) return 'Hasil pencarian';
-    if (state.activeCategory) return state.activeCategory;
+    if (state.selectedCollection) return state.selectedCollection;
 
-    switch (state.activeView) {
+    switch (workspaceView) {
       case 'recent': return 'Recent documents';
       case 'pinned': return 'Starred / Pinned';
       case 'attention': return 'Needs attention';
       case 'collections': return 'Collections';
+      case 'admin': return 'Admin';
       case 'home': return 'Workspace overview';
       case 'all':
       default: return 'All documents';
@@ -2142,7 +2544,14 @@
     const main = document.createElement('button');
     main.type = 'button';
     main.className = 'gg-kbms-docrow__main';
-    main.addEventListener('click', () => selectDocument(item.doc_uid, { trackRecent: true, closeCommand: true }));
+    main.addEventListener('click', () => selectDocument(item.doc_uid, { trackRecent: true, closeCommand: true, openReaderOnMobile: true }));
+    main.addEventListener('dblclick', () => openReader(item.doc_uid, { trackRecent: true, push: true, focusReader: true }));
+    main.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && GG.kbms.state.currentDocUid === item.doc_uid) {
+        event.preventDefault();
+        openReader(item.doc_uid, { trackRecent: true, push: true, focusReader: true });
+      }
+    });
 
     const head = document.createElement('div');
     head.className = 'gg-kbms-docrow__head';
@@ -2184,9 +2593,18 @@
     const preview = document.createElement('button');
     preview.type = 'button';
     preview.className = 'gg-kbms-docrow__action';
-    preview.title = 'Preview';
+    preview.title = 'Pilih dokumen';
+    preview.setAttribute('aria-label', 'Pilih dokumen');
     preview.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">visibility</span>';
     preview.addEventListener('click', () => selectDocument(item.doc_uid, { trackRecent: true, closeCommand: true, focusPreview: true }));
+
+    const read = document.createElement('button');
+    read.type = 'button';
+    read.className = 'gg-kbms-docrow__action';
+    read.title = 'Buka di reader';
+    read.setAttribute('aria-label', 'Buka di reader');
+    read.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">menu_book</span>';
+    read.addEventListener('click', () => openReader(item.doc_uid, { trackRecent: true, push: true, focusReader: true }));
 
     const pin = document.createElement('button');
     pin.type = 'button';
@@ -2198,17 +2616,9 @@
       toggleCurrentPin();
     });
 
-    const open = document.createElement('a');
-    open.className = 'gg-kbms-docrow__action';
-    open.title = 'Buka asli';
-    open.target = '_blank';
-    open.rel = 'noopener';
-    open.href = buildDocOpenUrl(item.doc_id, item.doc_type);
-    open.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>';
-
     actions.appendChild(preview);
+    actions.appendChild(read);
     actions.appendChild(pin);
-    actions.appendChild(open);
 
     row.appendChild(main);
     row.appendChild(actions);
