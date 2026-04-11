@@ -3156,12 +3156,11 @@ function posterPost(article){
 }
 
 /* @GG_PATCH: X-015+X-016 (dev) */
-function init(){
-var article = qs('.gg-post[data-gg-module="post-detail"]');
-if(!article) return;
-
-var main = qs('main.gg-main[data-gg-surface]');
-var bar  = queryDetailToolbar(article);
+function init(root){
+var scope = (root && root.querySelector) ? root : document;
+var main = (scope.matches && scope.matches('main.gg-main[data-gg-surface]')) ? scope : (qs('main.gg-main[data-gg-surface]', scope) || qs('main.gg-main[data-gg-surface]'));
+var article = qs('.gg-post[data-gg-module="post-detail"]', scope) || qs('.gg-post[data-gg-module="post-detail"]') || (main ? (qs('.gg-post', main) || qs('article', main) || main) : null);
+var bar  = (article ? queryDetailToolbar(article) : null) || (main ? queryDetailToolbar(main) : null) || queryDetailToolbar(scope);
 if(!main || !bar) return;
 upgradeDetailToolbar(bar);
 if(bar.__ggBound) return;
