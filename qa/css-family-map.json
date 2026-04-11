@@ -1,0 +1,804 @@
+{
+  "schema": 1,
+  "title": "CSS family/section ownership map",
+  "sourceMode": "temporary-runtime-bridge",
+  "activeCss": "public/assets/v/ac33998/main.css",
+  "latestCss": "public/assets/latest/main.css",
+  "sourceOfTruthDoc": "docs/css-source-of-truth.md",
+  "generatedCssPipeline": "absent",
+  "categoryVocabulary": [
+    "tokens/settings",
+    "base",
+    "primitive",
+    "layout",
+    "component",
+    "card",
+    "surface-specific",
+    "legacy bridge debt",
+    "ambiguous/unresolved debt"
+  ],
+  "statusVocabulary": [
+    "stable",
+    "legacy_bridge",
+    "ambiguous_debt"
+  ],
+  "requiredFamilies": [
+    "gg-dock",
+    "gg-skeleton",
+    "gg-labeltree",
+    "gg-editorial-preview",
+    "gg-detail-info-sheet",
+    "gg-comments",
+    "gg-comments-panel",
+    "gg-toc",
+    "gg-post-card",
+    "gg-featured-card",
+    "gg-panel-card",
+    "gg-mixed-media",
+    "gg-landing-card",
+    "gg-landing-shell",
+    "gg-search-surface",
+    "gg-command-palette",
+    "gg-share-sheet",
+    "gg-info-panel",
+    "gg-detail-toolbar"
+  ],
+  "entries": [
+    {
+      "id": "tokens-settings-root",
+      "family": "tokens/settings-root",
+      "category": "tokens/settings",
+      "ownerType": "global CSS settings",
+      "surfaces": [
+        "global"
+      ],
+      "anchors": [
+        ":root{",
+        "--gg-bg:",
+        "--z-dock:"
+      ],
+      "startAnchor": ":root{",
+      "endAnchor": "@supports (color: color-mix(in srgb, black 50%, white)){",
+      "status": "stable",
+      "lineHints": {
+        "start": 3,
+        "end": 151
+      },
+      "notes": "Global token/root settings for color, spacing, layout columns, z-index, and dock variables. This is mapped as settings, not a component family."
+    },
+    {
+      "id": "base-reset-focus",
+      "family": "base/reset-focus",
+      "category": "base",
+      "ownerType": "global CSS base",
+      "surfaces": [
+        "global"
+      ],
+      "anchors": [
+        "*::after{ box-sizing: border-box; }",
+        "html, body{",
+        ":where(a, button, input, textarea, select, summary, [role=\"button\"], [tabindex]):focus-visible{"
+      ],
+      "startAnchor": "*::after{ box-sizing: border-box; }",
+      "endAnchor": ":where(a, button, input, textarea, select, summary, [role=\"button\"], [tabindex]):focus-visible{",
+      "status": "stable",
+      "lineHints": {
+        "start": 192,
+        "end": 245
+      },
+      "notes": "Global reset and keyboard focus-visible rules. Must remain cross-surface and not become a route router."
+    },
+    {
+      "id": "primitive-icon-chip",
+      "family": "gg-icon/gg-chip primitives",
+      "category": "primitive",
+      "ownerType": "shared primitive CSS",
+      "surfaces": [
+        "global"
+      ],
+      "anchors": [
+        ".gg-visually-hidden{",
+        ".gg-icon{",
+        ".gg-chip{"
+      ],
+      "startAnchor": ".gg-visually-hidden{",
+      "endAnchor": ".gg-chip{",
+      "status": "stable",
+      "lineHints": {
+        "start": 250,
+        "end": 334
+      },
+      "notes": "Small shared primitive cluster for visually hidden text, icons, icon buttons, and chips. Contains one legacy touch selector for info-panel icon meta."
+    },
+    {
+      "id": "gg-dock",
+      "family": "gg-dock",
+      "category": "component",
+      "ownerType": "global dock component",
+      "surfaces": [
+        "global",
+        "listing",
+        "post",
+        "page",
+        "landing"
+      ],
+      "anchors": [
+        "nav.gg-dock[data-gg-module=\"dock\"]{",
+        "nav.gg-dock[data-gg-state~=\"search\"]{",
+        "nav.gg-dock .gg-dock__progress{"
+      ],
+      "startAnchor": "nav.gg-dock[data-gg-module=\"dock\"]{",
+      "endAnchor": "nav.gg-dock .gg-dock__progress{",
+      "status": "stable",
+      "lineHints": {
+        "start": 358,
+        "end": 4388
+      },
+      "notes": "Global dock family, including search/autohide state and later progress bar rules. Later progress rules are separated in file order but still dock-owned."
+    },
+    {
+      "id": "dock-more-sheet",
+      "family": "gg-drawer-more",
+      "category": "component",
+      "ownerType": "dock more sheet component",
+      "surfaces": [
+        "global",
+        "listing",
+        "post",
+        "page",
+        "landing"
+      ],
+      "anchors": [
+        "#gg-dock-more{",
+        "#gg-dock-more .gg-dock-more__sheet{",
+        "#gg-dock-more .gg-dock-more__action{"
+      ],
+      "startAnchor": "#gg-dock-more{",
+      "endAnchor": "#gg-dock-more .gg-dock-more__list--footer .gg-dock-more__action{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 514,
+        "end": 805
+      },
+      "notes": "Dock-owned more sheet. It behaves like the intended gg-drawer-more family but is still anchored by #gg-dock-more and dock-more element names."
+    },
+    {
+      "id": "home-shell-routing",
+      "family": "gg-home-shell",
+      "category": "layout",
+      "ownerType": "home shell layout",
+      "surfaces": [
+        "landing",
+        "home",
+        "listing"
+      ],
+      "anchors": [
+        "html[data-gg-prehome=\"blog\"] [data-gg-home-root=\"1\"] [data-gg-home-layer=\"landing\"]",
+        ".gg-home-landing",
+        ".gg-home-blog"
+      ],
+      "startAnchor": "html[data-gg-prehome=\"blog\"] [data-gg-home-root=\"1\"] [data-gg-home-layer=\"landing\"]",
+      "endAnchor": "main.gg-main:is([data-gg-view=\"post\"],[data-gg-surface=\"post\"]) .gg-home-blog{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 873,
+        "end": 889
+      },
+      "notes": "Home/landing/blog visibility bridge. It is CSS state plumbing over XML-owned surfaces, so keep it visible as debt before split work."
+    },
+    {
+      "id": "blog-layout-shell",
+      "family": "gg-blog-layout",
+      "category": "layout",
+      "ownerType": "shared layout shell",
+      "surfaces": [
+        "listing",
+        "home",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-blog-layout{",
+        ".gg-blog-layout--list{",
+        "main.gg-main[data-gg-info-panel=\"open\"] .gg-blog-layout--list .gg-blog-sidebar--right"
+      ],
+      "startAnchor": ".gg-blog-layout{",
+      "endAnchor": "main.gg-main[data-gg-info-panel=\"open\"] .gg-blog-layout--list .gg-blog-sidebar--right",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 894,
+        "end": 968
+      },
+      "notes": "Shared listing/post layout shell with right-panel state coupling. It is layout-owned but mixed across surfaces."
+    },
+    {
+      "id": "leftnav-navtree",
+      "family": "gg-leftnav/gg-navtree",
+      "category": "component",
+      "ownerType": "left navigation component",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-leftnav{",
+        ".gg-leftnav .gg-navtree{",
+        ".gg-navtree__summary{"
+      ],
+      "startAnchor": ".gg-leftnav{",
+      "endAnchor": ".gg-leftnav__note{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 995,
+        "end": 1290
+      },
+      "notes": "Left navigation and navtree base. Later editorial-unification rules restyle this same ownership area, so it is not split-ready."
+    },
+    {
+      "id": "search-assist",
+      "family": "gg-search-surface",
+      "category": "surface-specific",
+      "ownerType": "search/listing assist surface",
+      "surfaces": [
+        "listing",
+        "search"
+      ],
+      "anchors": [
+        "#gg-search-assist.gg-search-assist{",
+        "a.gg-search-assist__item{",
+        "#gg-search-assist .e{"
+      ],
+      "startAnchor": "#gg-search-assist.gg-search-assist{",
+      "endAnchor": "#gg-search-assist .f{",
+      "status": "stable",
+      "lineHints": {
+        "start": 1314,
+        "end": 1387
+      },
+      "notes": "Inline search-assist surface. It is separate from the command palette search-result surface mapped later."
+    },
+    {
+      "id": "featured-card-legacy",
+      "family": "gg-featured-card",
+      "category": "card",
+      "ownerType": "listing featured card bridge",
+      "surfaces": [
+        "listing",
+        "home"
+      ],
+      "anchors": [
+        "#gg-featuredpost1{",
+        "#gg-featuredpost1 article.post{",
+        "#gg-featuredpost1 .post-title{"
+      ],
+      "startAnchor": "#gg-featuredpost1{",
+      "endAnchor": "#gg-featuredpost1 article.post{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 1443,
+        "end": 1508
+      },
+      "notes": "Featured card styling is still anchored to Blogger FeaturedPost widget IDs and article.post. Treat as gg-featured-card bridge, not final naming."
+    },
+    {
+      "id": "gg-post-card",
+      "family": "gg-post-card",
+      "category": "card",
+      "ownerType": "listing post card component",
+      "surfaces": [
+        "listing",
+        "home",
+        "search",
+        "label"
+      ],
+      "anchors": [
+        ".gg-post-card{",
+        ".gg-post-card__toolbar{",
+        ".gg-post-card__tool--info{"
+      ],
+      "startAnchor": ".gg-post-card{",
+      "endAnchor": ".gg-post-card__tool--info{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 1512,
+        "end": 8643
+      },
+      "notes": "Official post-card family exists, but late repeated thumb/tool refinements make this family not cleanly split-ready yet."
+    },
+    {
+      "id": "panel-card-legacy",
+      "family": "gg-panel-card",
+      "category": "card",
+      "ownerType": "sidebar panel card bridge",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-panelcard{",
+        "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > :is(.gg-sb__top,.gg-sb__body,.gg-sb__bot).gg-panelcard"
+      ],
+      "startAnchor": ".gg-panelcard{",
+      "endAnchor": "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb > :is(.gg-sb__top,.gg-sb__body,.gg-sb__bot).gg-panelcard",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 1882,
+        "end": 8931
+      },
+      "notes": "Panel card is currently spelled .gg-panelcard. Map it as the intended gg-panel-card bridge and do not treat the old spelling as final family law."
+    },
+    {
+      "id": "gg-labeltree",
+      "family": "gg-labeltree",
+      "category": "component",
+      "ownerType": "label tree navigation component",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        "#gg-left-sb-body-list .gg-lt[data-gg-module=\"labeltree\"] .gg-lt__head{",
+        ".gg-lt[data-gg-module=\"labeltree\"]{",
+        "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-lt[data-gg-module=\"labeltree\"] .gg-lt__muted"
+      ],
+      "startAnchor": "#gg-left-sb-body-list .gg-lt[data-gg-module=\"labeltree\"] .gg-lt__head{",
+      "endAnchor": "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb .gg-lt[data-gg-module=\"labeltree\"] .gg-lt__muted",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 2029,
+        "end": 9371
+      },
+      "notes": "Labeltree exists but has duplicate base blocks, panel-specific overrides, and later leftnav unification with !important debt inherited from the bridge."
+    },
+    {
+      "id": "gg-mixed-media",
+      "family": "gg-mixed-media",
+      "category": "component",
+      "ownerType": "listing mixed media rail component",
+      "surfaces": [
+        "listing",
+        "home"
+      ],
+      "anchors": [
+        ".gg-mixed{",
+        ".gg-mixed__rail{",
+        ".gg-mixed[data-type=\"newsdeck\"]"
+      ],
+      "startAnchor": ".gg-mixed{",
+      "endAnchor": ".gg-newsdeck{",
+      "status": "stable",
+      "lineHints": {
+        "start": 2102,
+        "end": 2524
+      },
+      "notes": "Mixed-media rails, including bookish/featured/instagram/youtube/shorts/podcast/popular/newsdeck variants."
+    },
+    {
+      "id": "listing-surface-grid",
+      "family": "gg-listing-surface",
+      "category": "surface-specific",
+      "ownerType": "listing surface layout",
+      "surfaces": [
+        "listing",
+        "home",
+        "label",
+        "search"
+      ],
+      "anchors": [
+        "main.gg-main[data-gg-surface=\"listing\"]{",
+        "main.gg-main[data-gg-surface=\"listing\"] .gg-blog-main #postcards{",
+        "main.gg-main[data-gg-surface=\"listing\"] .gg-loadmore-wrap{"
+      ],
+      "startAnchor": "main.gg-main[data-gg-surface=\"listing\"]{",
+      "endAnchor": "main.gg-main[data-gg-surface=\"listing\"] .gg-loadmore-wrap{",
+      "status": "stable",
+      "lineHints": {
+        "start": 2530,
+        "end": 2598
+      },
+      "notes": "Listing surface placement and post-card/mixed-widget flow. Surface-owned context only; it should not own card internals."
+    },
+    {
+      "id": "label-channel",
+      "family": "gg-label-channel",
+      "category": "surface-specific",
+      "ownerType": "label/search channel surface",
+      "surfaces": [
+        "listing",
+        "label",
+        "search"
+      ],
+      "anchors": [
+        "#gg-label-channel{",
+        "#gg-label-channel .gg-label-channel__rail{",
+        "#gg-label-channel .gg-label-channel__error{"
+      ],
+      "startAnchor": "#gg-label-channel{",
+      "endAnchor": "#gg-label-channel .gg-label-channel__error{",
+      "status": "stable",
+      "lineHints": {
+        "start": 2602,
+        "end": 2759
+      },
+      "notes": "Label channel rail/masonry surface block."
+    },
+    {
+      "id": "gg-editorial-preview",
+      "family": "gg-editorial-preview",
+      "category": "component",
+      "ownerType": "listing editorial preview component",
+      "surfaces": [
+        "listing",
+        "home"
+      ],
+      "anchors": [
+        ".gg-blog-layout--list .gg-info-panel{",
+        ".gg-editorial-preview{",
+        ".gg-editorial-preview .gg-info-panel__toclist{"
+      ],
+      "startAnchor": ".gg-blog-layout--list .gg-info-panel{",
+      "endAnchor": ".gg-editorial-preview .gg-info-panel__tochint{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 2768,
+        "end": 3071
+      },
+      "notes": "Listing-owned editorial preview exists, but its selector cluster still bridges through .gg-info-panel and .gg-info-panel__* descendants."
+    },
+    {
+      "id": "gg-info-panel-legacy",
+      "family": "gg-info-panel",
+      "category": "legacy bridge debt",
+      "ownerType": "legacy right-panel bridge",
+      "surfaces": [
+        "listing",
+        "home",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-blog-sidebar--right > .gg-info-panel",
+        ".gg-info-panel__fallback{",
+        "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post .gg-info-panel{"
+      ],
+      "startAnchor": ".gg-blog-sidebar--right > .gg-info-panel",
+      "endAnchor": "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post .gg-info-panel{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 1860,
+        "end": 3268
+      },
+      "notes": "Master-level debt: gg-info-panel must split into listing gg-editorial-preview and detail gg-detail-info-sheet. It remains bridge-only."
+    },
+    {
+      "id": "sidebar-panel-state",
+      "family": "gg-sidebar-panel-state",
+      "category": "layout",
+      "ownerType": "right sidebar state layout",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        "/* Sidebar state: layout mode */",
+        ".gg-infopanel-backdrop,",
+        "/* Sidebar state: comments mode */"
+      ],
+      "startAnchor": "/* Sidebar state: layout mode */",
+      "endAnchor": "/* Sidebar state: comments mode */",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 3102,
+        "end": 3192
+      },
+      "notes": "Right-panel and backdrop state wiring spans info/comments modes. It is layout state, not a final component family."
+    },
+    {
+      "id": "detail-layout-shell",
+      "family": "gg-detail-layout",
+      "category": "layout",
+      "ownerType": "post/page detail layout shell",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-blog-layout--post{",
+        ".gg-blog-layout--post .gg-blog-main{",
+        ".gg-blog-layout--post #postcards{"
+      ],
+      "startAnchor": ".gg-blog-layout--post{",
+      "endAnchor": ".gg-blog-layout--post #postcards{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 3227,
+        "end": 3333
+      },
+      "notes": "Detail shell for post/page. Mixed with legacy right-panel and info-sheet bridge nearby."
+    },
+    {
+      "id": "detail-toolbar-legacy",
+      "family": "gg-detail-toolbar",
+      "category": "legacy bridge debt",
+      "ownerType": "post/page detail toolbar bridge",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-post__toolbar{",
+        ".gg-post__tool{",
+        ".gg-post__toolbar{ display: none; }"
+      ],
+      "startAnchor": ".gg-post__toolbar{",
+      "endAnchor": ".gg-post__tool[data-gg-state~=\"active\"] .gg-icon.material-symbols-rounded{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 3337,
+        "end": 3530
+      },
+      "notes": "Master-level bridge: .gg-post__toolbar should converge to gg-detail-toolbar. Current selectors are legacy contract selectors."
+    },
+    {
+      "id": "detail-info-sheet-legacy",
+      "family": "gg-detail-info-sheet",
+      "category": "legacy bridge debt",
+      "ownerType": "post/page detail metadata bridge",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        "#gg-postinfo,",
+        "#gg-postinfo .gg-pi__body{",
+        "#gg-postinfo .gg-pi__hint{"
+      ],
+      "startAnchor": "#gg-postinfo,",
+      "endAnchor": "#gg-postinfo .gg-pi__hint{",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 4543,
+        "end": 4884
+      },
+      "notes": "Detail metadata family is intended to be gg-detail-info-sheet, but the active bridge still uses #gg-postinfo and gg-pi selectors."
+    },
+    {
+      "id": "gg-toc",
+      "family": "gg-toc",
+      "category": "component",
+      "ownerType": "detail table-of-contents component",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        "#gg-toc{",
+        "#gg-toc .gg-toc__body{",
+        "#gg-toc [data-gg-state~=\"active\"] > .gg-toc__link{"
+      ],
+      "startAnchor": "#gg-toc{",
+      "endAnchor": "#gg-toc [data-gg-state~=\"active\"] > .gg-toc__link{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 4885,
+        "end": 9432
+      },
+      "notes": "Detail TOC family exists, but it is later restyled inside left-sidebar editorial unification, so ownership is not cleanly isolated."
+    },
+    {
+      "id": "gg-comments",
+      "family": "gg-comments",
+      "category": "component",
+      "ownerType": "comments component",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-comments {",
+        "#comments > .gg-comments__head {",
+        ".gg-comments #cmt2-holder li.comment {"
+      ],
+      "startAnchor": ".gg-comments {",
+      "endAnchor": "#comments .gg-comments__footer{",
+      "status": "stable",
+      "lineHints": {
+        "start": 5175,
+        "end": 6338
+      },
+      "notes": "Main comments contract, including Blogger/CMT2 normalized comment list and footer composer support."
+    },
+    {
+      "id": "gg-comments-panel",
+      "family": "gg-comments-panel",
+      "category": "component",
+      "ownerType": "comments side panel component",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-comments-panel {",
+        "/* COMMENTS PANEL RAIL",
+        "#ggPanelComments{"
+      ],
+      "startAnchor": ".gg-comments-panel {",
+      "endAnchor": "#ggPanelComments{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 5310,
+        "end": 10000
+      },
+      "notes": "Comments panel has base panel rules, compact rail rules, and late visual reset rules. It is real but not split-clean yet."
+    },
+    {
+      "id": "landing-shell",
+      "family": "gg-landing-shell",
+      "category": "surface-specific",
+      "ownerType": "landing/home surface shell",
+      "surfaces": [
+        "landing",
+        "home"
+      ],
+      "anchors": [
+        "#gg-landing{",
+        ".gg-topbar{",
+        ".gg-hero{"
+      ],
+      "startAnchor": "#gg-landing{",
+      "endAnchor": ".gg-hero__stats{",
+      "status": "stable",
+      "lineHints": {
+        "start": 3839,
+        "end": 4269
+      },
+      "notes": "Landing surface shell, topbar, hero, sections, and CTA structure."
+    },
+    {
+      "id": "landing-card-legacy",
+      "family": "gg-landing-card",
+      "category": "card",
+      "ownerType": "landing card bridge",
+      "surfaces": [
+        "landing",
+        "home"
+      ],
+      "anchors": [
+        ".gg-card{",
+        ".gg-card--featured{",
+        ".gg-card--contact{ box-shadow: none; }"
+      ],
+      "startAnchor": ".gg-card{",
+      "endAnchor": ".gg-card--contact{ box-shadow: none; }",
+      "status": "legacy_bridge",
+      "lineHints": {
+        "start": 4042,
+        "end": 4124
+      },
+      "notes": "Landing cards use .gg-card, .gg-card--featured, and hero-card selectors. There is no explicit gg-landing-card selector yet."
+    },
+    {
+      "id": "gg-skeleton",
+      "family": "gg-skeleton",
+      "category": "primitive",
+      "ownerType": "shared loading skeleton primitive",
+      "surfaces": [
+        "global",
+        "listing",
+        "special"
+      ],
+      "anchors": [
+        ".gg-skeleton-grid{",
+        ".gg-skeleton{",
+        ".gg-skeleton__hero{ height:180px; }"
+      ],
+      "startAnchor": ".gg-skeleton-grid{",
+      "endAnchor": ".gg-skeleton__hero{ height:180px; }",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 4272,
+        "end": 7268
+      },
+      "notes": "Skeleton family is split between grid/card skeleton and a later generic .gg-skeleton block; map as one primitive with debt."
+    },
+    {
+      "id": "special-pages-legacy",
+      "family": "gg-special-pages",
+      "category": "surface-specific",
+      "ownerType": "special page surface cluster",
+      "surfaces": [
+        "special",
+        "page"
+      ],
+      "anchors": [
+        "#gg-sitemap",
+        "#gg-feed",
+        ".gg-library {",
+        ".gg-authorpage-grid{"
+      ],
+      "startAnchor": "#gg-sitemap",
+      "endAnchor": ".gg-authorpage-card{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 6711,
+        "end": 7366
+      },
+      "notes": "Sitemap, feed, tags, library, and author-page CSS are clustered together and should remain visible as future split debt."
+    },
+    {
+      "id": "share-sheet",
+      "family": "gg-share-sheet",
+      "category": "component",
+      "ownerType": "share sheet and poster card component",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-share-card {",
+        "#gg-share-sheet{",
+        "#gg-share-sheet .gg-share-sheet__hint{"
+      ],
+      "startAnchor": ".gg-share-card {",
+      "endAnchor": ".gg-share-sheet__hint{",
+      "status": "stable",
+      "lineHints": {
+        "start": 8001,
+        "end": 8450
+      },
+      "notes": "Share-card preview plus share-sheet modal/panel rules, including poster-sheet compatibility selectors."
+    },
+    {
+      "id": "command-search-surface",
+      "family": "gg-command-palette",
+      "category": "component",
+      "ownerType": "command palette search component",
+      "surfaces": [
+        "global",
+        "search"
+      ],
+      "anchors": [
+        ".gg-dialog {",
+        "#gg-palette-list{",
+        "#gg-palette-list .gg-search__result{"
+      ],
+      "startAnchor": ".gg-dialog {",
+      "endAnchor": "#gg-palette-list > .gg-search__hint:last-child{",
+      "status": "stable",
+      "lineHints": {
+        "start": 8698,
+        "end": 8852
+      },
+      "notes": "Command palette/search result surface. This covers the overlay search result list, not inline search assist."
+    },
+    {
+      "id": "left-sidebar-editorial-unification",
+      "family": "gg-left-sidebar-editorial-unification",
+      "category": "ambiguous/unresolved debt",
+      "ownerType": "mixed left-sidebar unification bridge",
+      "surfaces": [
+        "listing",
+        "post",
+        "page"
+      ],
+      "anchors": [
+        "/* Editorial unification for left sidebar tree, page nav, and TOC. */",
+        "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb{",
+        "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb #gg-toc .gg-toc__heading{"
+      ],
+      "startAnchor": "/* Editorial unification for left sidebar tree, page nav, and TOC. */",
+      "endAnchor": "main.gg-main .gg-blog-sidebar--left .gg-leftnav.gg-sb #gg-toc [data-gg-state~=\"active\"] > .gg-toc__link .gg-toc__num{",
+      "status": "ambiguous_debt",
+      "lineHints": {
+        "start": 9132,
+        "end": 9432
+      },
+      "notes": "Explicit mixed bridge over leftnav, navtree, labeltree, page nav, and TOC. This must be untangled before any clean CSS split."
+    }
+  ]
+}
