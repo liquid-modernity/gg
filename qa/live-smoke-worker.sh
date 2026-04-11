@@ -26,6 +26,7 @@ printf 'SMOKE-WORKER lane=WORKER_SCOPE base=%s\n' "$BASE_URL"
 printf 'SMOKE-WORKER expected-worker-version=%s\n' "${EXPECTED_WORKER_VERSION:-unset}"
 printf 'SMOKE-WORKER classify=WORKER_SCOPE check=worker_ping\n'
 printf 'SMOKE-WORKER classify=WORKER_SCOPE check=edge_headers_on_root\n'
+printf 'SMOKE-WORKER classify=WORKER_SCOPE check=representative_html_routes\n'
 printf 'SMOKE-WORKER classify=WORKER_SCOPE check=versioned_assets\n'
 printf 'SMOKE-WORKER classify=WORKER_SCOPE check=worker_static_endpoints\n'
 
@@ -156,6 +157,36 @@ check_root_headers() {
   fi
 }
 
+check_html_routes() {
+  local routes=(
+    "/landing"
+    "/search"
+    "/search/label/Store"
+    "/2026/02/todo.html"
+    "/p/library.html"
+  )
+  local route headers_file meta status version_header safe_name
+
+  for route in "${routes[@]}"; do
+    safe_name="$(printf '%s' "$route" | tr -c '[:alnum:]' '_')"
+    headers_file="$tmp_dir/html_${safe_name}_headers.txt"
+    meta="$(fetch_headers "$route" "$headers_file")"
+    status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+    version_header="$(extract_header_value "$headers_file" "x-gg-worker-version" | tr '[:upper:]' '[:lower:]')"
+
+    printf 'SMOKE-WORKER html path=%s status=%s version=%s\n' "$route" "${status:-000}" "${version_header:-missing}"
+
+    if [[ "$status" != "200" ]]; then
+      log_fail "${route} expected status 200 (got ${status:-000})"
+    fi
+    if [[ -z "$version_header" ]]; then
+      log_fail "${route} missing x-gg-worker-version header"
+    elif [[ -n "$worker_ping_version" && "$worker_ping_version" != "missing" && "$worker_ping_version" != "$version_header" ]]; then
+      log_fail "worker version header mismatch between /__gg_worker_ping and ${route}"
+    fi
+  done
+}
+
 check_versioned_assets() {
   local release="${EXPECTED_WORKER_VERSION:-}"
   if [[ -z "$release" || "$release" == "missing" ]]; then
@@ -215,6 +246,7 @@ check_worker_endpoints() {
 
 check_worker_ping
 check_root_headers
+check_html_routes
 check_versioned_assets
 check_worker_endpoints
 

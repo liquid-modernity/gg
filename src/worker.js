@@ -2661,25 +2661,9 @@ export default {
         }
 
         if (forceListing) {
+          // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
+          // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
           rewritten
-            .on("section.gg-home-landing", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("main#gg-main h1", {
-              element(el) {
-                const className = el.getAttribute("class") || "";
-                const isDisplay = className.split(/\s+/).includes("gg-display");
-                if (isDisplay) {
-                  el.replace('<p class="gg-display">Edited by pakrpp.</p>', {
-                    html: true,
-                  });
-                  return;
-                }
-                el.remove();
-              },
-            })
             .on("main#gg-main", {
               element(el) {
                 el.setAttribute("data-gg-surface", "listing");
@@ -2719,27 +2703,9 @@ export default {
               },
             });
         } else if (forceLanding) {
+          // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
+          // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
           rewritten
-            .on(".gg-home-blog", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("section.gg-ads", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("aside.gg-blog-sidebar--right", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on(".gg-comments-panel", {
-              element(el) {
-                el.remove();
-              },
-            })
             .on("main#gg-main", {
               element(el) {
                 el.setAttribute("data-gg-surface", "landing");
