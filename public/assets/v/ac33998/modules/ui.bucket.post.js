@@ -228,7 +228,7 @@
         parseFloat(style.getPropertyValue('--gg-sticky-top')) || 0,
         parseFloat(style.getPropertyValue('scroll-padding-top')) || 0
       );
-      var toolbar = d.querySelector('.gg-post__toolbar');
+      var toolbar = d.querySelector('.gg-detail-toolbar') || d.querySelector('.gg-post__toolbar');
       if (toolbar && toolbar.getBoundingClientRect) {
         computed = Math.max(computed, (toolbar.getBoundingClientRect().height || 0) + 8);
       }

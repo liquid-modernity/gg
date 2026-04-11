@@ -545,6 +545,41 @@
       "notes": "Detail shell for post/page. Mixed with legacy right-panel and info-sheet bridge nearby."
     },
     {
+      "id": "gg-detail-toolbar",
+      "family": "gg-detail-toolbar",
+      "category": "component",
+      "ownerType": "post/page detail toolbar official runtime family",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-detail-toolbar,",
+        ".gg-detail-toolbar__group,",
+        ".gg-detail-toolbar__button,",
+        ".gg-detail-toolbar__badge,"
+      ],
+      "startAnchor": ".gg-detail-toolbar,",
+      "endAnchor": ":is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~=\"active\"] .gg-icon.material-symbols-rounded{",
+      "status": "stable_official",
+      "lineHints": {
+        "start": 3337,
+        "end": 3541
+      },
+      "notes": "Official runtime family for post/page detail toolbar. It is currently dual-supported with .gg-post__toolbar bridge selectors for migration parity.",
+      "owner_context": "detail-owned official runtime family for post and page surfaces",
+      "target_family": "gg-detail-toolbar",
+      "bridge_from": [
+        ".gg-post__toolbar",
+        ".gg-post__tool"
+      ],
+      "followup_task_class": "css-xml-contract-migration",
+      "reason": "The official family is now present in active runtime CSS/JS while legacy gg-post selectors remain bridge-only.",
+      "migrationLedgerIds": [
+        "post-toolbar-to-detail-toolbar"
+      ]
+    },
+    {
       "id": "detail-toolbar-legacy",
       "family": "gg-post__toolbar",
       "category": "legacy bridge debt",
@@ -559,21 +594,21 @@
         ".gg-post__toolbar{ display: none; }"
       ],
       "startAnchor": ".gg-post__toolbar{",
-      "endAnchor": ".gg-post__tool[data-gg-state~=\"active\"] .gg-icon.material-symbols-rounded{",
+      "endAnchor": ".gg-post__tool{",
       "status": "legacy_bridge",
       "lineHints": {
         "start": 3337,
         "end": 3530
       },
-      "notes": "Legacy detail toolbar bridge from .gg-post__toolbar and .gg-post__tool toward the final gg-detail-toolbar family. Do not treat .gg-post__toolbar as final architecture.",
-      "owner_context": "detail-owned bridge-only toolbar area",
+      "notes": "Legacy detail toolbar bridge retained beside gg-detail-toolbar for migration parity. Do not treat .gg-post__toolbar or .gg-post__tool as final architecture.",
+      "owner_context": "detail-owned bridge-only toolbar area; official runtime family is gg-detail-toolbar",
       "target_family": "gg-detail-toolbar",
       "bridge_from": [
         ".gg-post__toolbar",
         ".gg-post__tool"
       ],
       "followup_task_class": "css-xml-contract-migration",
-      "reason": ".gg-post__toolbar is legacy detail toolbar language; the final family is gg-detail-toolbar.",
+      "reason": ".gg-post__toolbar and .gg-post__tool remain only as temporary bridge selectors while gg-detail-toolbar is the official runtime family.",
       "migrationLedgerIds": [
         "post-toolbar-to-detail-toolbar"
       ]
@@ -903,11 +938,12 @@
         ".gg-post__tool"
       ],
       "target_family": "gg-detail-toolbar",
-      "owner_context": "detail-owned bridge-only toolbar area",
+      "owner_context": "detail-owned bridge-only toolbar area; official runtime family is gg-detail-toolbar",
       "status": "legacy_bridge",
-      "reason": ".gg-post__toolbar is legacy selector language for the post/page detail toolbar; the final family is gg-detail-toolbar.",
+      "reason": ".gg-post__toolbar and .gg-post__tool are retained only as bridge selectors after introducing the official gg-detail-toolbar runtime family.",
       "followup_task_class": "css-xml-contract-migration",
       "manifest_entries": [
+        "gg-detail-toolbar",
         "detail-toolbar-legacy"
       ]
     }

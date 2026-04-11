@@ -2981,6 +2981,15 @@ GG.modules = GG.modules || {};
 
 function qs(sel, root){ return (root || document).querySelector(sel); }
 function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function addClass(el, name){ if(el && el.classList && !el.classList.contains(name)) el.classList.add(name); }
+function queryDetailToolbar(root){ return qs('[data-gg-module="gg-detail-toolbar"]', root) || qs('.gg-detail-toolbar', root) || qs('[data-gg-module="post-toolbar"]', root) || qs('.gg-post__toolbar', root); }
+function upgradeDetailToolbar(bar){
+if(!bar) return;
+addClass(bar, 'gg-detail-toolbar');
+qsa('.gg-post__toolbar-group,.gg-detail-toolbar__group', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__group'); });
+qsa('[data-gg-postbar],.gg-post__tool,.gg-detail-toolbar__button', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__button'); });
+qsa('.gg-post__tool-badge,.gg-detail-toolbar__badge', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__badge'); });
+}
 function text(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
 
 function showToast(msg){
@@ -3152,8 +3161,9 @@ var article = qs('.gg-post[data-gg-module="post-detail"]');
 if(!article) return;
 
 var main = qs('main.gg-main[data-gg-surface]');
-var bar  = qs('[data-gg-module="post-toolbar"]', article);
+var bar  = queryDetailToolbar(article);
 if(!main || !bar) return;
+upgradeDetailToolbar(bar);
 if(bar.__ggBound) return;
 bar.__ggBound = true;
 
@@ -3168,7 +3178,7 @@ if (btnByAct('poster')) return;
 var shareBtn = btnByAct('share');
 var btn = document.createElement('button');
 btn.type = 'button';
-btn.className = 'gg-post__tool gg-post__action--poster';
+btn.className = 'gg-detail-toolbar__button gg-post__tool gg-post__action--poster';
 btn.setAttribute('data-gg-postbar', 'poster');
 btn.setAttribute('aria-label', 'Share as Poster');
 var icon = document.createElement('span');

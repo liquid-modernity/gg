@@ -6,7 +6,7 @@ CSS_MAP_SOURCE: public/assets/v/ac33998/main.css
 CSS_MAP_MIRROR: public/assets/latest/main.css
 CSS_MAP_MANIFEST: qa/css-family-map.json
 CSS_MAP_VERIFIER: qa/verify-css-map.mjs
-CSS_MAP_ENTRY_COUNT: 32
+CSS_MAP_ENTRY_COUNT: 33
 CSS_MAP_SOURCE_MODE: temporary-runtime-bridge
 
 ## Purpose
@@ -22,8 +22,8 @@ This file does not authorize runtime CSS edits, selector renames, visual changes
 - Pipeline classification: absent.
 - Current manual authoring bridge: `public/assets/v/ac33998/main.css`.
 - Runtime mirror: `public/assets/latest/main.css`.
-- Families/sections mapped: 32.
-- Stable official entries: 13.
+- Families/sections mapped: 33.
+- Stable official entries: 14.
 - Legacy bridge entries: 7.
 - Ambiguous debt entries: 12.
 - Status vocabulary: `stable_official`, `legacy_bridge`, `ambiguous_debt`.
@@ -52,7 +52,8 @@ This file does not authorize runtime CSS edits, selector renames, visual changes
 | gg-info-panel-legacy | gg-info-panel | legacy bridge debt | bridge-only right-panel legacy family | listing, home, post, page | `.gg-blog-sidebar--right > .gg-info-panel`<br>`.gg-info-panel__fallback{`<br>`main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-info-panel{` | start: `.gg-blog-sidebar--right > .gg-info-panel`<br>end: `main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"]) .gg-blog-layout--post .gg-info-panel{` | legacy_bridge | Bridge-only legacy family. Listing wrapper usage must resolve to gg-editorial-preview; detail/right-panel metadata usage must resolve to gg-detail-info-sheet. |
 | sidebar-panel-state | gg-sidebar-panel-state | layout | right sidebar state layout | listing, post, page | `/* Sidebar state: layout mode */`<br>`.gg-infopanel-backdrop,`<br>`/* Sidebar state: comments mode */` | start: `/* Sidebar state: layout mode */`<br>end: `/* Sidebar state: comments mode */` | ambiguous_debt | Right-panel and backdrop state wiring spans info/comments modes. It is layout state, not a final component family. |
 | detail-layout-shell | gg-detail-layout | layout | post/page detail layout shell | post, page | `.gg-blog-layout--post{`<br>`.gg-blog-layout--post .gg-blog-main{`<br>`.gg-blog-layout--post #postcards{` | start: `.gg-blog-layout--post{`<br>end: `.gg-blog-layout--post #postcards{` | ambiguous_debt | Detail shell for post/page. Mixed with legacy right-panel and info-sheet bridge nearby. |
-| detail-toolbar-legacy | gg-post__toolbar | legacy bridge debt | post/page detail toolbar bridge | post, page | `.gg-post__toolbar{`<br>`.gg-post__tool{`<br>`.gg-post__toolbar{ display: none; }` | start: `.gg-post__toolbar{`<br>end: `.gg-post__tool[data-gg-state~="active"] .gg-icon.material-symbols-rounded{` | legacy_bridge | Legacy detail toolbar bridge from .gg-post__toolbar and .gg-post__tool toward the final gg-detail-toolbar family. Do not treat .gg-post__toolbar as final architecture. |
+| gg-detail-toolbar | gg-detail-toolbar | component | post/page detail toolbar official runtime family | post, page | `.gg-detail-toolbar,`<br>`.gg-detail-toolbar__group,`<br>`.gg-detail-toolbar__button,`<br>`.gg-detail-toolbar__badge,` | start: `.gg-detail-toolbar,`<br>end: `:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"] .gg-icon.material-symbols-rounded{` | stable_official | Official runtime family for post/page detail toolbar. It is currently dual-supported with .gg-post__toolbar bridge selectors for migration parity. |
+| detail-toolbar-legacy | gg-post__toolbar | legacy bridge debt | post/page detail toolbar bridge | post, page | `.gg-post__toolbar{`<br>`.gg-post__tool{`<br>`.gg-post__toolbar{ display: none; }` | start: `.gg-post__toolbar{`<br>end: `.gg-post__tool{` | legacy_bridge | Legacy detail toolbar bridge retained beside gg-detail-toolbar for migration parity. Do not treat .gg-post__toolbar or .gg-post__tool as final architecture. |
 | detail-info-sheet-legacy | gg-postinfo | legacy bridge debt | post/page detail metadata bridge | post, page | `#gg-postinfo,`<br>`#gg-postinfo .gg-pi__body{`<br>`#gg-postinfo .gg-pi__hint{` | start: `#gg-postinfo,`<br>end: `#gg-postinfo .gg-pi__hint{` | legacy_bridge | Legacy detail metadata bridge from #gg-postinfo and gg-pi selectors toward the final gg-detail-info-sheet family. Do not treat gg-postinfo as final family law. |
 | gg-toc | gg-toc | component | detail table-of-contents component | post, page | `#gg-toc{`<br>`#gg-toc .gg-toc__body{`<br>`#gg-toc [data-gg-state~="active"] > .gg-toc__link{` | start: `#gg-toc{`<br>end: `#gg-toc [data-gg-state~="active"] > .gg-toc__link{` | ambiguous_debt | Detail TOC family exists, but it is later restyled inside left-sidebar editorial unification, so ownership is not cleanly isolated. |
 | gg-comments | gg-comments | component | comments component | post, page | `.gg-comments {`<br>`#comments > .gg-comments__head {`<br>`.gg-comments #cmt2-holder li.comment {` | start: `.gg-comments {`<br>end: `#comments .gg-comments__footer{` | stable_official | Main comments contract, including Blogger/CMT2 normalized comment list and footer composer support. |
@@ -72,7 +73,7 @@ This file does not authorize runtime CSS edits, selector renames, visual changes
 | gg-editorial-preview-official | `none: gg-editorial-preview is already the official family` | `gg-editorial-preview` | listing-owned official family | stable_official | gg_master.md defines gg-editorial-preview as a listing-owned family; it must not be marked legacy because wrapper selector debt exists nearby. | css-source-split-or-selector-bridge-cleanup |
 | gg-info-panel-bridge | `.gg-info-panel`<br>`.gg-info-panel__*` | `gg-editorial-preview`<br>`gg-detail-info-sheet` | bridge-only; listing-owned pieces target gg-editorial-preview, detail metadata pieces target gg-detail-info-sheet | legacy_bridge | gg-info-panel is not final family law and must split by surface ownership instead of remaining an active family identity. | css-naming-migration |
 | gg-postinfo-to-detail-info-sheet | `#gg-postinfo`<br>`.gg-pi__*` | `gg-detail-info-sheet` | detail-owned bridge-only metadata area | legacy_bridge | gg-postinfo is the legacy host ID for detail metadata; the final post/page metadata family is gg-detail-info-sheet. | css-xml-contract-migration |
-| post-toolbar-to-detail-toolbar | `.gg-post__toolbar`<br>`.gg-post__tool` | `gg-detail-toolbar` | detail-owned bridge-only toolbar area | legacy_bridge | .gg-post__toolbar is legacy selector language for the post/page detail toolbar; the final family is gg-detail-toolbar. | css-xml-contract-migration |
+| post-toolbar-to-detail-toolbar | `.gg-post__toolbar`<br>`.gg-post__tool` | `gg-detail-toolbar` | detail-owned bridge-only toolbar area; official runtime family is gg-detail-toolbar | legacy_bridge | .gg-post__toolbar and .gg-post__tool are retained only as bridge selectors after introducing the official gg-detail-toolbar runtime family. | css-xml-contract-migration |
 
 ## Legacy Bridge Areas
 

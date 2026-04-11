@@ -174,8 +174,8 @@ direction: ltr;
 }
 
 
-main.gg-main[data-gg-surface="post"] .gg-post__toolbar,
-main.gg-main[data-gg-surface="page"] .gg-post__toolbar{
+main.gg-main[data-gg-surface="post"] :is(.gg-detail-toolbar, .gg-post__toolbar),
+main.gg-main[data-gg-surface="page"] :is(.gg-detail-toolbar, .gg-post__toolbar){
 --gg-glass-bg: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.44));
 --gg-glass-border: rgba(0,0,0,.10);
 --gg-glass-ink: rgba(15,23,42,.92);
@@ -3334,6 +3334,7 @@ padding-top:18px;
 grid-template-columns: minmax(0, 1fr);
 }
 
+.gg-detail-toolbar,
 .gg-post__toolbar{
 position: sticky;
 top: 10px;
@@ -3352,9 +3353,11 @@ max-width: 1180px;
 pointer-events: none;
 }
 @media (max-width: 960px){
+.gg-detail-toolbar,
 .gg-post__toolbar{ display: none; }
 }
 
+.gg-detail-toolbar__group,
 .gg-post__toolbar-group{
 
 display: inline-flex;
@@ -3369,6 +3372,7 @@ border-radius: 0;
 }
 
 
+.gg-detail-toolbar__button,
 .gg-post__tool{
 appearance: none;
 width: var(--gg-tap-min);
@@ -3407,9 +3411,9 @@ opacity .16s ease;
 }
 
 
-.gg-post__tool .gg-icon{ color: currentColor; }
+:is(.gg-detail-toolbar__button, .gg-post__tool) .gg-icon{ color: currentColor; }
 
-.gg-post__tool:hover{
+:is(.gg-detail-toolbar__button, .gg-post__tool):hover{
 background: rgba(0,0,0,.72);
 border-color: rgba(255,255,255,.32);
 box-shadow:
@@ -3418,17 +3422,17 @@ inset 0 1px 0 rgba(255,255,255,.18);
 transform: translateY(-1px);
 }
 
-.gg-post__tool:active{
+:is(.gg-detail-toolbar__button, .gg-post__tool):active{
 transform: translateY(0) scale(.98);
 }
 
-.gg-post__tool:focus-visible{
+:is(.gg-detail-toolbar__button, .gg-post__tool):focus-visible{
 outline: 2px solid rgba(255,255,255,.55);
 outline-offset: 3px;
 }
 
 
-.gg-post__tool[data-gg-postbar="back"]{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-postbar="back"]{
 }
 
 .gg-post__tool-label{
@@ -3437,6 +3441,7 @@ font-weight: 700;
 letter-spacing: .01em;
 color: currentColor;
 }
+.gg-detail-toolbar__badge,
 .gg-post__tool-badge{
 position: absolute;
 top: -4px;
@@ -3459,6 +3464,7 @@ line-height: 1;
 
 
 @media (max-width: 720px){
+.gg-detail-toolbar,
 .gg-post__toolbar{
 flex-wrap: wrap;
 justify-content: flex-start;
@@ -3467,12 +3473,15 @@ justify-content: flex-start;
 
 
 @media (prefers-reduced-motion: reduce){
+.gg-detail-toolbar__button,
 .gg-post__tool{ transition: none !important; }
 }
 
+.gg-detail-toolbar__badge,
 .gg-post__tool-badge{ pointer-events: none; }
 
 
+.gg-detail-toolbar__button,
 .gg-post__tool{
 -webkit-tap-highlight-color: transparent;
 touch-action: manipulation;
@@ -3480,17 +3489,17 @@ user-select: none;
 }
 
 
-.gg-post__tool .material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool) .material-symbols-rounded{
 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 
-.gg-post__tool[data-gg-state~="active"] .material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"] .material-symbols-rounded{
 font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 
-.gg-post__tool[data-gg-state~="active"]{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"]{
 border-color: rgba(255,255,255,.45);
 box-shadow:
 0 12px 28px rgba(0,0,0,.18),
@@ -3498,9 +3507,11 @@ inset 0 1px 0 rgba(255,255,255,.22);
 }
 
 
+.gg-detail-toolbar__badge,
 .gg-post__tool-badge{ pointer-events: none; }
 
 
+.gg-detail-toolbar__button,
 .gg-post__tool{
 -webkit-tap-highlight-color: transparent;
 touch-action: manipulation;
@@ -3508,26 +3519,26 @@ user-select: none;
 }
 
 
-.gg-post__tool .gg-icon.material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool) .gg-icon.material-symbols-rounded{
 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 
-.gg-post__tool[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
 font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 
-.gg-post__tool .gg-icon.material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool) .gg-icon.material-symbols-rounded{
 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 
-.gg-post__tool[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
 font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.gg-post__tool[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
+:is(.gg-detail-toolbar__button, .gg-post__tool)[data-gg-state~="active"] .gg-icon.material-symbols-rounded{
 font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 

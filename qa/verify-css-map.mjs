@@ -214,6 +214,14 @@ const main = () => {
   assert(bridgeIncludes(postinfoLedger, "#gg-postinfo"), "gg-postinfo ledger must bridge from #gg-postinfo");
   assert(postinfoLedger.owner_context.includes("detail-owned"), "gg-postinfo ledger must be detail-owned bridge-only");
 
+  const officialToolbar = entryById.get("gg-detail-toolbar");
+  assert(officialToolbar, "gg-detail-toolbar official entry is required after runtime migration");
+  assert(officialToolbar.status === "stable_official", "gg-detail-toolbar official entry must be stable_official");
+  assert(officialToolbar.family === "gg-detail-toolbar", "gg-detail-toolbar official entry must keep official family name");
+  assert(targetIncludes(officialToolbar, "gg-detail-toolbar"), "gg-detail-toolbar official entry must target itself");
+  assertString(officialToolbar.owner_context, "gg-detail-toolbar.owner_context");
+  assert(officialToolbar.owner_context.includes("detail-owned"), "gg-detail-toolbar official entry must be detail-owned");
+
   const toolbar = entryById.get("detail-toolbar-legacy");
   const toolbarLedger = ledgerById.get("post-toolbar-to-detail-toolbar");
   assert(toolbar.status === "legacy_bridge", ".gg-post__toolbar bridge must be legacy_bridge");
@@ -222,6 +230,10 @@ const main = () => {
   assert(targetIncludes(toolbarLedger, "gg-detail-toolbar"), ".gg-post__toolbar ledger must target gg-detail-toolbar");
   assert(bridgeIncludes(toolbarLedger, ".gg-post__toolbar"), ".gg-post__toolbar ledger must bridge from .gg-post__toolbar");
   assert(toolbarLedger.owner_context.includes("detail-owned"), ".gg-post__toolbar ledger must be detail-owned bridge-only");
+  assert(
+    asArray(toolbarLedger.manifest_entries).includes("gg-detail-toolbar"),
+    ".gg-post__toolbar ledger must reference official gg-detail-toolbar entry"
+  );
 
   for (const family of REQUIRED_FAMILIES) {
     assert(representedFamilies.has(family), `required family missing from manifest or migration ledger: ${family}`);
