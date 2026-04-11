@@ -1,27 +1,52 @@
+# OS / filesystem junk
+.DS_Store
+__MACOSX/
+._*
+Thumbs.db
+desktop.ini
+
+# Editor / local workspace
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
 # Node / JS
 node_modules/
 .npm-cache/
 pnpm-lock.yaml
 yarn.lock
-.DS_Store
-.env
-.env.*
+
+# Generated build, audit, and test output
 .cache/
+.tmp/
+.audit-report/
 dist/
 build/
 coverage/
-.tmp/
+# New generated audit reports belong here. Existing qa/custom-audit.*
+# and qa/zip-audit.latest.* are tracked legacy snapshots, not new output paths.
+qa/audit-output/
+qa/audit-input/
 test-results/
 playwright-report/
+.lighthouseci/
+
+# Generated archives and logs
 *.log
 *.pid
 *.seed
 *.tgz
-*.swp
-*.swo
+*.tar
+*.tar.gz
+*.zip
+
 # Wrangler
 .wrangler/
-# Editor
-.vscode/*
-!.vscode/extensions.json
-.idea/

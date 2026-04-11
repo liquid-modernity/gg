@@ -133,6 +133,22 @@ function normalizeEntries(entries) {
   return out;
 }
 
+function isJunkEntry(entry) {
+  const value = String(entry || "").trim();
+  if (!value) return false;
+  const parts = value.split(/[\\/]+/).filter(Boolean);
+  return parts.some((part) => {
+    const lower = part.toLowerCase();
+    return (
+      lower === "__macosx" ||
+      part === ".DS_Store" ||
+      part.startsWith("._") ||
+      lower === "thumbs.db" ||
+      lower === "desktop.ini"
+    );
+  });
+}
+
 function canonicalTaskToken(value) {
   return String(value || "")
     .trim()
@@ -250,6 +266,10 @@ function main() {
   if (!zipEntries.length) {
     fail(`Task manifest '${taskJsonPath}' is missing a non-empty zip_entries array`);
   }
+  const junkEntries = zipEntries.filter(isJunkEntry);
+  if (junkEntries.length) {
+    fail(`Task manifest '${taskJsonPath}' includes junk ZIP entries: ${junkEntries.join(", ")}`);
+  }
 
   const changedFiles = Array.isArray(manifest?.changed_files) ? manifest.changed_files : [];
   if (!changedFiles.length) {
@@ -297,6 +317,7 @@ function main() {
 
   const missingInZip = expectedEntries.filter((entry) => !actualEntries.includes(entry));
   const extraInZip = actualEntries.filter((entry) => !expectedEntries.includes(entry));
+  const junkInZip = actualEntries.filter(isJunkEntry);
 
   if (missingInZip.length || extraInZip.length) {
     fail(
@@ -304,6 +325,9 @@ function main() {
         extraInZip.join(", ") || "none"
       }`
     );
+  }
+  if (junkInZip.length) {
+    fail(`ZIP contains junk entries: ${junkInZip.join(", ")}`);
   }
 
   console.log(`AUDIT PACK OK`);

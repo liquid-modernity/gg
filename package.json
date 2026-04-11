@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "gaga": "node tools/gaga-release.mjs ship",
+    "gaga:dry": "node tools/gaga-release.mjs ship --dry-run",
     "gaga:preflight": "node tools/gaga-release.mjs preflight",
     "gaga:push": "node tools/gaga-release.mjs ship",
     "gaga:cf:deploy": "wrangler deploy --config wrangler.jsonc",
