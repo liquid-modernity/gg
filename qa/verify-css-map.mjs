@@ -21,7 +21,7 @@ const ALLOWED_CATEGORIES = new Set([
   "legacy bridge debt",
   "ambiguous/unresolved debt",
 ]);
-const ALLOWED_STATUSES = new Set(["stable", "legacy_bridge", "ambiguous_debt"]);
+const ALLOWED_STATUSES = new Set(["stable_official", "legacy_bridge", "ambiguous_debt"]);
 const REQUIRED_FAMILIES = [
   "gg-dock",
   "gg-skeleton",
@@ -42,6 +42,13 @@ const REQUIRED_FAMILIES = [
   "gg-share-sheet",
   "gg-info-panel",
   "gg-detail-toolbar",
+];
+
+const REQUIRED_LEDGER = [
+  "gg-editorial-preview-official",
+  "gg-info-panel-bridge",
+  "gg-postinfo-to-detail-info-sheet",
+  "post-toolbar-to-detail-toolbar",
 ];
 
 const fail = (message) => {
@@ -65,10 +72,22 @@ const marker = (text, name) => {
 const assert = (condition, message) => {
   if (!condition) fail(message);
 };
+const asArray = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 
 const assertString = (value, label) => {
   assert(typeof value === "string" && value.trim(), `${label} must be a non-empty string`);
 };
+
+const assertStringList = (value, label) => {
+  const list = asArray(value);
+  assert(list.length > 0, `${label} must be a non-empty string or string array`);
+  for (const item of list) assertString(item, label);
+  return list;
+};
+
+const targetIncludes = (entry, target) => assertStringList(entry.target_family, `${entry.id}.target_family`).includes(target);
+const bridgeIncludes = (entry, fragment) =>
+  assertStringList(entry.bridge_from, `${entry.id}.bridge_from`).some((item) => item.includes(fragment));
 
 const main = () => {
   assert(existsSync(MANIFEST_PATH), "missing qa/css-family-map.json");
@@ -84,6 +103,12 @@ const main = () => {
   assert(manifest.latestCss === EXPECTED_LATEST, `latestCss must be ${EXPECTED_LATEST}`);
   assert(manifest.activeCss !== manifest.latestCss, "activeCss and latestCss must remain distinct paths");
   assert(!manifest.activeCss.includes("/latest/"), "activeCss must not point at latest");
+  assert(Array.isArray(manifest.statusVocabulary), "manifest.statusVocabulary must be an array");
+  assert(
+    manifest.statusVocabulary.length === ALLOWED_STATUSES.size &&
+      manifest.statusVocabulary.every((status) => ALLOWED_STATUSES.has(status)),
+    "manifest.statusVocabulary must be stable_official, legacy_bridge, ambiguous_debt"
+  );
 
   const activePath = path.join(ROOT, manifest.activeCss);
   const latestPath = path.join(ROOT, manifest.latestCss);
@@ -101,10 +126,12 @@ const main = () => {
   assert(marker(doc, "CSS_MAP_VERIFIER") === "qa/verify-css-map.mjs", "doc CSS_MAP_VERIFIER marker mismatch");
   assert(Number(marker(doc, "CSS_MAP_ENTRY_COUNT")) === manifest.entries.length, "doc entry count marker mismatch");
   assert(marker(doc, "CSS_MAP_SOURCE_MODE") === EXPECTED_SOURCE_MODE, "doc source mode marker mismatch");
+  assert(doc.includes("## Migration Ledger"), "docs/css-family-map.md must include a Migration Ledger section");
 
   const ids = new Set();
-  const families = new Set();
-  let stableCount = 0;
+  const entryById = new Map();
+  const representedFamilies = new Set();
+  let stableOfficialCount = 0;
   let legacyCount = 0;
   let ambiguousCount = 0;
 
@@ -112,11 +139,13 @@ const main = () => {
     assertString(entry.id, "entry.id");
     assert(!ids.has(entry.id), `duplicate entry id: ${entry.id}`);
     ids.add(entry.id);
+    entryById.set(entry.id, entry);
     assertString(entry.family, `${entry.id}.family`);
-    families.add(entry.family);
+    representedFamilies.add(entry.family);
+    for (const target of asArray(entry.target_family)) representedFamilies.add(target);
     assert(ALLOWED_CATEGORIES.has(entry.category), `${entry.id}.category is not allowed: ${entry.category}`);
     assert(ALLOWED_STATUSES.has(entry.status), `${entry.id}.status is not allowed: ${entry.status}`);
-    if (entry.status === "stable") stableCount += 1;
+    if (entry.status === "stable_official") stableOfficialCount += 1;
     if (entry.status === "legacy_bridge") legacyCount += 1;
     if (entry.status === "ambiguous_debt") ambiguousCount += 1;
     assertString(entry.ownerType, `${entry.id}.ownerType`);
@@ -137,9 +166,67 @@ const main = () => {
     }
   }
 
-  for (const family of REQUIRED_FAMILIES) {
-    assert(families.has(family), `required family missing from manifest: ${family}`);
+  assert(Array.isArray(manifest.migrationLedger), "manifest.migrationLedger must be an array");
+  const ledgerById = new Map();
+  for (const ledger of manifest.migrationLedger) {
+    assertString(ledger.id, "migrationLedger.id");
+    assert(!ledgerById.has(ledger.id), `duplicate migration ledger id: ${ledger.id}`);
+    ledgerById.set(ledger.id, ledger);
+    assertStringList(ledger.bridge_from, `${ledger.id}.bridge_from`);
+    for (const target of assertStringList(ledger.target_family, `${ledger.id}.target_family`)) {
+      representedFamilies.add(target);
+    }
+    assertString(ledger.owner_context, `${ledger.id}.owner_context`);
+    assert(ALLOWED_STATUSES.has(ledger.status), `${ledger.id}.status is not allowed: ${ledger.status}`);
+    assertString(ledger.reason, `${ledger.id}.reason`);
+    assertString(ledger.followup_task_class, `${ledger.id}.followup_task_class`);
+    assert(Array.isArray(ledger.manifest_entries) && ledger.manifest_entries.length > 0, `${ledger.id}.manifest_entries must be non-empty`);
+    for (const entryId of ledger.manifest_entries) assert(entryById.has(entryId), `${ledger.id} references missing entry ${entryId}`);
+    assert(doc.includes(ledger.id), `docs/css-family-map.md does not mention ledger ${ledger.id}`);
   }
+  for (const id of REQUIRED_LEDGER) assert(ledgerById.has(id), `required migration ledger missing: ${id}`);
+
+  const editorial = entryById.get("gg-editorial-preview");
+  const editorialLedger = ledgerById.get("gg-editorial-preview-official");
+  assert(editorial.status === "stable_official", "gg-editorial-preview must be stable_official");
+  assert(editorial.family === "gg-editorial-preview", "gg-editorial-preview entry must keep official family name");
+  assertString(editorial.owner_context, "gg-editorial-preview.owner_context");
+  assert(editorial.owner_context.includes("listing-owned"), "gg-editorial-preview must be listing-owned");
+  assert(targetIncludes(editorial, "gg-editorial-preview"), "gg-editorial-preview must target itself as official family");
+  assert(editorialLedger.status === "stable_official", "gg-editorial-preview ledger must be stable_official");
+  assert(targetIncludes(editorialLedger, "gg-editorial-preview"), "gg-editorial-preview ledger target must be gg-editorial-preview");
+
+  const infoPanel = entryById.get("gg-info-panel-legacy");
+  const infoPanelLedger = ledgerById.get("gg-info-panel-bridge");
+  assert(infoPanel.status === "legacy_bridge", "gg-info-panel must be legacy_bridge");
+  assert(infoPanel.family === "gg-info-panel", "gg-info-panel bridge entry must use old bridge family name");
+  assert(targetIncludes(infoPanelLedger, "gg-detail-info-sheet"), "gg-info-panel bridge must target gg-detail-info-sheet");
+  assert(targetIncludes(infoPanelLedger, "gg-editorial-preview"), "gg-info-panel bridge must record listing target gg-editorial-preview");
+  assert(bridgeIncludes(infoPanelLedger, ".gg-info-panel"), "gg-info-panel ledger must bridge from .gg-info-panel");
+  assert(infoPanelLedger.owner_context.includes("bridge-only"), "gg-info-panel ledger must be bridge-only");
+
+  const detailInfo = entryById.get("detail-info-sheet-legacy");
+  const postinfoLedger = ledgerById.get("gg-postinfo-to-detail-info-sheet");
+  assert(detailInfo.status === "legacy_bridge", "gg-postinfo bridge must be legacy_bridge");
+  assert(detailInfo.family === "gg-postinfo", "detail-info-sheet-legacy entry must identify bridge family gg-postinfo");
+  assert(targetIncludes(detailInfo, "gg-detail-info-sheet"), "gg-postinfo bridge entry must target gg-detail-info-sheet");
+  assert(targetIncludes(postinfoLedger, "gg-detail-info-sheet"), "gg-postinfo ledger must target gg-detail-info-sheet");
+  assert(bridgeIncludes(postinfoLedger, "#gg-postinfo"), "gg-postinfo ledger must bridge from #gg-postinfo");
+  assert(postinfoLedger.owner_context.includes("detail-owned"), "gg-postinfo ledger must be detail-owned bridge-only");
+
+  const toolbar = entryById.get("detail-toolbar-legacy");
+  const toolbarLedger = ledgerById.get("post-toolbar-to-detail-toolbar");
+  assert(toolbar.status === "legacy_bridge", ".gg-post__toolbar bridge must be legacy_bridge");
+  assert(toolbar.family === "gg-post__toolbar", "detail-toolbar-legacy entry must identify bridge family .gg-post__toolbar");
+  assert(targetIncludes(toolbar, "gg-detail-toolbar"), ".gg-post__toolbar bridge entry must target gg-detail-toolbar");
+  assert(targetIncludes(toolbarLedger, "gg-detail-toolbar"), ".gg-post__toolbar ledger must target gg-detail-toolbar");
+  assert(bridgeIncludes(toolbarLedger, ".gg-post__toolbar"), ".gg-post__toolbar ledger must bridge from .gg-post__toolbar");
+  assert(toolbarLedger.owner_context.includes("detail-owned"), ".gg-post__toolbar ledger must be detail-owned bridge-only");
+
+  for (const family of REQUIRED_FAMILIES) {
+    assert(representedFamilies.has(family), `required family missing from manifest or migration ledger: ${family}`);
+  }
+  assert(stableOfficialCount > 0, "manifest must identify at least one stable official area");
   assert(legacyCount > 0, "manifest must identify at least one legacy bridge area");
   assert(ambiguousCount > 0, "manifest must identify at least one ambiguous debt area");
 
@@ -149,9 +236,10 @@ const main = () => {
   console.log(`- mirror_css: ${manifest.latestCss}`);
   console.log(`- active_sha256: ${activeHash}`);
   console.log(`- entries: ${manifest.entries.length}`);
-  console.log(`- stable: ${stableCount}`);
+  console.log(`- stable_official: ${stableOfficialCount}`);
   console.log(`- legacy_bridge: ${legacyCount}`);
   console.log(`- ambiguous_debt: ${ambiguousCount}`);
+  console.log(`- migration_ledger: ${manifest.migrationLedger.length}`);
   console.log(`- required_families: ${REQUIRED_FAMILIES.length}`);
 };
 
