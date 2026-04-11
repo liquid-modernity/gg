@@ -3405,7 +3405,47 @@ applyFromAttrs();
 renderFooterTags(article);
 }
 
-return { init: init };
+var upgradeScheduled = false;
+function scheduleUpgrade(root){
+if(upgradeScheduled) return;
+upgradeScheduled = true;
+var run = function(){
+upgradeScheduled = false;
+init(root || document);
+};
+if(window.requestAnimationFrame) window.requestAnimationFrame(run);
+else window.setTimeout(run, 0);
+}
+function hasToolbar(node){
+if(!node || node.nodeType !== 1) return false;
+if(node.matches && node.matches('.gg-detail-toolbar,.gg-post__toolbar,[data-gg-module="gg-detail-toolbar"],[data-gg-module="post-toolbar"]')) return true;
+return !!(node.querySelector && node.querySelector('.gg-detail-toolbar,.gg-post__toolbar,[data-gg-module="gg-detail-toolbar"],[data-gg-module="post-toolbar"]'));
+}
+function bindRouteUpgradeObserver(){
+if(GG.modules.__ggDetailToolbarRouteObserver) return;
+GG.modules.__ggDetailToolbarRouteObserver = true;
+scheduleUpgrade(document);
+if(window.MutationObserver){
+var obs = new MutationObserver(function(records){
+for(var i=0;i<records.length;i++){
+var nodes = records[i].addedNodes || [];
+for(var j=0;j<nodes.length;j++){
+if(hasToolbar(nodes[j])){
+scheduleUpgrade(nodes[j]);
+return;
+}
+}
+}
+});
+var start = function(){ if(document.body) obs.observe(document.body,{childList:true,subtree:true}); };
+if(document.body) start();
+else document.addEventListener('DOMContentLoaded', start, {once:true});
+}
+window.addEventListener('popstate', function(){ scheduleUpgrade(document); }, true);
+}
+bindRouteUpgradeObserver();
+
+return { init: init, upgradeDetailToolbar: function(root){ scheduleUpgrade(root || document); } };
 
 
 
