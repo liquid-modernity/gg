@@ -1,5 +1,7 @@
 /* public/sw.js — deterministic updates + offline fallback */
 const VERSION = "ac33998";
+const LATEST_ASSET_PREFIX = "/assets/latest/";
+const ACTIVE_ASSET_PREFIX = `/assets/v/${VERSION}/`;
 const CACHE_STATIC = `gg-static-${VERSION}`;
 const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
 
@@ -194,9 +196,11 @@ self.addEventListener("fetch", (event) => {
       return fetch(req, { cache: "no-store" });
     }
 
-    if (path.startsWith("/assets/latest/")) {
-      log(url, "assets/latest network-only", path);
-      return fetch(req, { cache: "no-store" });
+    if (path.startsWith(LATEST_ASSET_PREFIX)) {
+      const activeUrl = new URL(url.href);
+      activeUrl.pathname = `${ACTIVE_ASSET_PREFIX}${path.slice(LATEST_ASSET_PREFIX.length)}`;
+      log(url, "assets/latest active-release alias", activeUrl.pathname);
+      return fetch(new Request(activeUrl.toString(), req), { cache: "no-store" });
     }
 
     if (path.startsWith("/assets/v/") || path.startsWith("/gg-pwa-icon/")) {

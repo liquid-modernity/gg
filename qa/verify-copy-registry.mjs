@@ -1,17 +1,23 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
+const ACTIVE_RELEASE = 'ac33998';
 const INDEX_PATH = path.join(ROOT, 'index.prod.xml');
+const WORKER_PATH = path.join(ROOT, 'src/worker.js');
+const SW_PATH = path.join(ROOT, 'public/sw.js');
+const HEADERS_PATH = path.join(ROOT, 'public/_headers');
+const LATEST_ASSET_DIR = path.join(ROOT, 'public/assets/latest');
+const ACTIVE_ASSET_DIR = path.join(ROOT, 'public/assets/v', ACTIVE_RELEASE);
 const JS_PATHS = [
   path.join(ROOT, 'public/assets/latest/modules/ui.bucket.core.js'),
-  path.join(ROOT, 'public/assets/v/ac33998/modules/ui.bucket.core.js'),
+  path.join(ACTIVE_ASSET_DIR, 'modules/ui.bucket.core.js'),
 ];
 const CSS_PATHS = [
   path.join(ROOT, 'public/assets/latest/main.css'),
-  path.join(ROOT, 'public/assets/v/ac33998/main.css'),
+  path.join(ACTIVE_ASSET_DIR, 'main.css'),
 ];
 
 function readText(file) {
@@ -46,6 +52,108 @@ function keySet(obj) {
 
 function diffSet(a, b) {
   return [...a].filter((k) => !b.has(k)).sort();
+}
+
+function relPath(file) {
+  return path.relative(ROOT, file);
+}
+
+function listFiles(dir, prefix = '') {
+  const files = [];
+  if (!existsSync(dir)) return files;
+  const entries = readdirSync(dir, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of entries) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listFiles(full, rel));
+    } else if (entry.isFile()) {
+      files.push(rel);
+    }
+  }
+  return files;
+}
+
+function verifyActiveReleaseParity(issues) {
+  const latestFiles = listFiles(LATEST_ASSET_DIR);
+  const activeFiles = listFiles(ACTIVE_ASSET_DIR);
+  const latestSet = new Set(latestFiles);
+  const activeSet = new Set(activeFiles);
+  const missingFromLatest = diffSet(activeSet, latestSet);
+  const extraInLatest = diffSet(latestSet, activeSet);
+
+  if (!latestFiles.length) {
+    issues.push(`${relPath(LATEST_ASSET_DIR)} has no files to compare`);
+  }
+  if (!activeFiles.length) {
+    issues.push(`${relPath(ACTIVE_ASSET_DIR)} has no files to compare`);
+  }
+  if (missingFromLatest.length) {
+    issues.push(`active release files missing from latest (${missingFromLatest.length}): ${missingFromLatest.slice(0, 20).join(', ')}`);
+  }
+  if (extraInLatest.length) {
+    issues.push(`latest has files outside active release (${extraInLatest.length}): ${extraInLatest.slice(0, 20).join(', ')}`);
+  }
+
+  for (const rel of latestFiles.filter((item) => activeSet.has(item))) {
+    const latestFile = path.join(LATEST_ASSET_DIR, rel);
+    const activeFile = path.join(ACTIVE_ASSET_DIR, rel);
+    if (!readFileSync(latestFile).equals(readFileSync(activeFile))) {
+      issues.push(`active release asset drift: ${relPath(latestFile)} differs from ${relPath(activeFile)}`);
+    }
+  }
+}
+
+function hasReleaseMeta(indexText) {
+  const release = ACTIVE_RELEASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const before = new RegExp(`<meta\\b(?=[^>]*\\bname=['"]gg-release['"])(?=[^>]*\\bcontent=['"]${release}['"])[^>]*>`, 'i');
+  return before.test(indexText);
+}
+
+function verifyReleasePins(issues, indexText) {
+  const workerText = readText(WORKER_PATH);
+  const swText = readText(SW_PATH);
+  const headersText = readText(HEADERS_PATH);
+  const headerAssetPins = [...headersText.matchAll(/^\s*X-GG-Assets:\s*([^\s#]+)/gmi)].map((m) => m[1]);
+
+  if (!hasReleaseMeta(indexText)) {
+    issues.push(`index.prod.xml missing gg-release=${ACTIVE_RELEASE}`);
+  }
+  if (!indexText.includes(`/assets/v/${ACTIVE_RELEASE}/main.css`)) {
+    issues.push(`index.prod.xml does not reference /assets/v/${ACTIVE_RELEASE}/main.css`);
+  }
+  if (!indexText.includes(`/assets/v/${ACTIVE_RELEASE}/boot.js`)) {
+    issues.push(`index.prod.xml does not reference /assets/v/${ACTIVE_RELEASE}/boot.js`);
+  }
+  if (/\/assets\/latest\//.test(indexText)) {
+    issues.push('index.prod.xml references /assets/latest/');
+  }
+  if (!new RegExp(`const\\s+WORKER_VERSION\\s*=\\s*['"]${ACTIVE_RELEASE}['"]`).test(workerText)) {
+    issues.push(`src/worker.js WORKER_VERSION is not ${ACTIVE_RELEASE}`);
+  }
+  if (!new RegExp(`const\\s+TEMPLATE_ALLOWED_RELEASES\\s*=\\s*\\[\\s*['"]${ACTIVE_RELEASE}['"]\\s*\\]`).test(workerText)) {
+    issues.push(`src/worker.js TEMPLATE_ALLOWED_RELEASES does not match ${ACTIVE_RELEASE}`);
+  }
+  if (!new RegExp(`const\\s+VERSION\\s*=\\s*['"]${ACTIVE_RELEASE}['"]`).test(swText)) {
+    issues.push(`public/sw.js VERSION is not ${ACTIVE_RELEASE}`);
+  }
+  if (!headerAssetPins.length) {
+    issues.push('public/_headers has no X-GG-Assets pins');
+  } else if (headerAssetPins.some((pin) => pin !== ACTIVE_RELEASE)) {
+    issues.push(`public/_headers X-GG-Assets pins do not all match ${ACTIVE_RELEASE}: ${headerAssetPins.join(', ')}`);
+  }
+}
+
+function verifyNoVersionedLatestFallback(issues) {
+  const files = listFiles(ACTIVE_ASSET_DIR).filter((file) => /\.js$/i.test(file));
+  for (const rel of files) {
+    const file = path.join(ACTIVE_ASSET_DIR, rel);
+    const text = readText(file);
+    if (/\/assets\/latest|assets\/latest|latest\//.test(text)) {
+      issues.push(`versioned active runtime still references latest: ${relPath(file)}`);
+    }
+  }
 }
 
 function placeholders(value) {
@@ -95,6 +203,10 @@ function main() {
   const indexText = readText(INDEX_PATH);
   const jsTexts = JS_PATHS.map((p) => ({ path: p, text: readText(p) }));
   const cssTexts = CSS_PATHS.map((p) => ({ path: p, text: readText(p) }));
+
+  verifyActiveReleaseParity(issues);
+  verifyReleasePins(issues, indexText);
+  verifyNoVersionedLatestFallback(issues);
 
   const en = extractScriptJson(indexText, 'gg-copy-en');
   const id = extractScriptJson(indexText, 'gg-copy-id');

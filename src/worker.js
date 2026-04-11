@@ -1930,6 +1930,8 @@ export default {
     const legalPage = isLegalPage(pathname);
     const WORKER_VERSION = "ac33998";
     const TEMPLATE_ALLOWED_RELEASES = ["ac33998"];
+    const LATEST_ASSET_PREFIX = "/assets/latest/";
+    const ACTIVE_ASSET_PREFIX = `/assets/v/${WORKER_VERSION}/`;
     const stamp = (res, opts = {}) => {
       const h = new Headers(res.headers);
       h.set("X-GG-Worker", "proxy");
@@ -2835,9 +2837,16 @@ export default {
       return stamp(new Response("ASSETS binding missing", { status: 502 }));
     }
 
+    let assetRequest = request;
+    if (pathname.startsWith(LATEST_ASSET_PREFIX)) {
+      const assetUrl = new URL(request.url);
+      assetUrl.pathname = `${ACTIVE_ASSET_PREFIX}${pathname.slice(LATEST_ASSET_PREFIX.length)}`;
+      assetRequest = new Request(assetUrl.toString(), request);
+    }
+
     let assetRes;
     try {
-      assetRes = await env.ASSETS.fetch(request);
+      assetRes = await env.ASSETS.fetch(assetRequest);
     } catch (e) {
       return stamp(new Response("ASSETS fetch failed", { status: 502 }));
     }

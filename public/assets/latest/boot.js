@@ -40,16 +40,14 @@ for (var l = d.getElementsByTagName('script'), i = l.length - 1; i >= 0; i--) {
 }
 }
 
-var base = '/assets/latest';
+var base = '/assets/v/ac33998';
 var search = '';
 try {
 if (src) {
   var u = new URL(src, w.location.href);
   search = u.search || '';
-  if (u.pathname.indexOf('/assets/latest/boot.js') === -1) {
-    var m = u.pathname.match(/\/assets\/v\/([^/]+)\/boot\.js/);
-    if (m && m[1]) base = '/assets/v/' + m[1];
-  }
+  var m = u.pathname.match(/\/assets\/v\/([^/]+)\/boot\.js/);
+  if (m && m[1]) base = '/assets/v/' + m[1];
 }
 } catch (_) {}
 

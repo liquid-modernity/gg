@@ -944,7 +944,7 @@ return '';
 function moduleUrl(name){
 var src = getCoreSrc();
 if (src) return src.replace(/core\.js(?=\?|#|$)/, 'modules/' + name);
-var base = (GG.env && GG.env.assetBase) ? GG.env.assetBase : '/assets/latest';
+var base = (GG.env && GG.env.assetBase) ? GG.env.assetBase : '/assets/v/ac33998';
 if (base && base.charAt(base.length - 1) === '/') base = base.slice(0, -1);
 return base + '/modules/' + name;
 }
