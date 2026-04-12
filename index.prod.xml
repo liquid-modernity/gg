@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='0ad83b4549e7' name='gg-template-fingerprint'/>
+    <meta content='4f58f4941d45' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1102,7 +1102,7 @@ text-align: center;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='0ad83b4549e7' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='4f58f4941d45' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1505,7 +1505,7 @@ text-align: center;
           </section>
         </b:if>
 
-<b:if cond='data:ggSurfaceKind != &quot;landing&quot;'>
+<b:if cond='not data:ggIsLandingRoute'>
 <!-- GAGA ADS LEADERBOARD -->
       <b:if cond='not data:ggIsSpecialApp'>
       <b:section class='gg-ads' id='gg-ads' name='gg-ads' showaddelement='true'/>     
