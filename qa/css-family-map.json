@@ -472,16 +472,16 @@
       "anchors": [
         ".gg-blog-sidebar--right > .gg-info-panel",
         ".gg-info-panel__fallback{",
-        "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post .gg-info-panel{"
+        "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post :is(.gg-detail-info-sheet,.gg-info-panel){"
       ],
       "startAnchor": ".gg-blog-sidebar--right > .gg-info-panel",
-      "endAnchor": "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post .gg-info-panel{",
+      "endAnchor": "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post :is(.gg-detail-info-sheet,.gg-info-panel){",
       "status": "legacy_bridge",
       "lineHints": {
-        "start": 1860,
+        "start": 218,
         "end": 3268
       },
-      "notes": "Bridge-only legacy family. Listing wrapper usage must resolve to gg-editorial-preview; detail/right-panel metadata usage must resolve to gg-detail-info-sheet.",
+      "notes": "Bridge-only legacy family. Listing wrapper usage must resolve to gg-editorial-preview; detail/right-panel metadata usage now resolves through the official gg-detail-info-sheet family.",
       "owner_context": "bridge-only; listing wrappers target gg-editorial-preview and detail metadata contexts target gg-detail-info-sheet",
       "target_family": [
         "gg-editorial-preview",
@@ -492,7 +492,7 @@
         ".gg-info-panel__*"
       ],
       "followup_task_class": "css-naming-migration",
-      "reason": "gg-info-panel is explicitly rejected as final family law; it must split into listing editorial preview and detail info sheet ownership.",
+      "reason": "gg-info-panel is explicitly rejected as final family law; it is now a bridge beside the official gg-detail-info-sheet runtime family for detail and gg-editorial-preview for listing.",
       "migrationLedgerIds": [
         "gg-info-panel-bridge"
       ]
@@ -614,6 +614,42 @@
       ]
     },
     {
+      "id": "gg-detail-info-sheet",
+      "family": "gg-detail-info-sheet",
+      "category": "component",
+      "ownerType": "post/page detail metadata official runtime family",
+      "surfaces": [
+        "post",
+        "page"
+      ],
+      "anchors": [
+        ".gg-detail-info-sheet__card,",
+        "main.gg-main:is([data-gg-surface=\"post\"],[data-gg-surface=\"page\"]) .gg-blog-layout--post :is(.gg-detail-info-sheet,.gg-info-panel){",
+        ":is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__hint{"
+      ],
+      "startAnchor": ".gg-detail-info-sheet__card,",
+      "endAnchor": ":is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__hint{",
+      "status": "stable_official",
+      "lineHints": {
+        "start": 3268,
+        "end": 4890
+      },
+      "notes": "Official runtime family for post/page detail metadata. It is currently dual-supported with #gg-postinfo and .gg-info-panel bridge selectors for migration parity; gg-editorial-preview remains listing-owned only.",
+      "owner_context": "detail-owned official runtime family for post and page metadata surfaces",
+      "target_family": "gg-detail-info-sheet",
+      "bridge_from": [
+        "#gg-postinfo",
+        ".gg-info-panel",
+        ".gg-pi__*"
+      ],
+      "followup_task_class": "css-xml-contract-migration",
+      "reason": "The official family is now present in active runtime CSS/JS while legacy #gg-postinfo and .gg-info-panel selectors remain bridge-only.",
+      "migrationLedgerIds": [
+        "gg-postinfo-to-detail-info-sheet",
+        "gg-info-panel-bridge"
+      ]
+    },
+    {
       "id": "detail-info-sheet-legacy",
       "family": "gg-postinfo",
       "category": "legacy bridge debt",
@@ -624,17 +660,17 @@
       ],
       "anchors": [
         "#gg-postinfo,",
-        "#gg-postinfo .gg-pi__body{",
-        "#gg-postinfo .gg-pi__hint{"
+        ":is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__body{",
+        ":is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__hint{"
       ],
       "startAnchor": "#gg-postinfo,",
-      "endAnchor": "#gg-postinfo .gg-pi__hint{",
+      "endAnchor": ":is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__hint{",
       "status": "legacy_bridge",
       "lineHints": {
-        "start": 4543,
-        "end": 4884
+        "start": 4555,
+        "end": 4890
       },
-      "notes": "Legacy detail metadata bridge from #gg-postinfo and gg-pi selectors toward the final gg-detail-info-sheet family. Do not treat gg-postinfo as final family law.",
+      "notes": "Legacy detail metadata bridge from #gg-postinfo and gg-pi selectors toward the official gg-detail-info-sheet family. Do not treat gg-postinfo as final family law.",
       "owner_context": "detail-owned bridge-only metadata area",
       "target_family": "gg-detail-info-sheet",
       "bridge_from": [
@@ -642,7 +678,7 @@
         ".gg-pi__*"
       ],
       "followup_task_class": "css-xml-contract-migration",
-      "reason": "gg-postinfo is the legacy host and gg-pi is bridge selector language; the final detail metadata family is gg-detail-info-sheet.",
+      "reason": "#gg-postinfo is the legacy host and .gg-pi__* is bridge selector language; the official detail metadata runtime family is gg-detail-info-sheet.",
       "migrationLedgerIds": [
         "gg-postinfo-to-detail-info-sheet"
       ]
@@ -909,11 +945,12 @@
       ],
       "owner_context": "bridge-only; listing-owned pieces target gg-editorial-preview, detail metadata pieces target gg-detail-info-sheet",
       "status": "legacy_bridge",
-      "reason": "gg-info-panel is not final family law and must split by surface ownership instead of remaining an active family identity.",
+      "reason": "gg-info-panel is not final family law; detail metadata now has an official gg-detail-info-sheet runtime family while listing-owned pieces remain gg-editorial-preview.",
       "followup_task_class": "css-naming-migration",
       "manifest_entries": [
         "gg-info-panel-legacy",
-        "gg-editorial-preview"
+        "gg-editorial-preview",
+        "gg-detail-info-sheet"
       ]
     },
     {
@@ -923,12 +960,13 @@
         ".gg-pi__*"
       ],
       "target_family": "gg-detail-info-sheet",
-      "owner_context": "detail-owned bridge-only metadata area",
+      "owner_context": "detail-owned bridge-only metadata area; official runtime family is gg-detail-info-sheet",
       "status": "legacy_bridge",
-      "reason": "gg-postinfo is the legacy host ID for detail metadata; the final post/page metadata family is gg-detail-info-sheet.",
+      "reason": "#gg-postinfo remains a legacy host ID bridge after introducing the official gg-detail-info-sheet runtime family.",
       "followup_task_class": "css-xml-contract-migration",
       "manifest_entries": [
-        "detail-info-sheet-legacy"
+        "detail-info-sheet-legacy",
+        "gg-detail-info-sheet"
       ]
     },
     {

@@ -206,13 +206,31 @@ const main = () => {
   assert(infoPanelLedger.owner_context.includes("bridge-only"), "gg-info-panel ledger must be bridge-only");
 
   const detailInfo = entryById.get("detail-info-sheet-legacy");
+  const officialDetailInfo = entryById.get("gg-detail-info-sheet");
   const postinfoLedger = ledgerById.get("gg-postinfo-to-detail-info-sheet");
+  assert(officialDetailInfo, "gg-detail-info-sheet official entry is required after runtime migration");
+  assert(officialDetailInfo.status === "stable_official", "gg-detail-info-sheet official entry must be stable_official");
+  assert(officialDetailInfo.family === "gg-detail-info-sheet", "gg-detail-info-sheet official entry must keep official family name");
+  assert(targetIncludes(officialDetailInfo, "gg-detail-info-sheet"), "gg-detail-info-sheet official entry must target itself");
+  assertString(officialDetailInfo.owner_context, "gg-detail-info-sheet.owner_context");
+  assert(officialDetailInfo.owner_context.includes("detail-owned"), "gg-detail-info-sheet official entry must be detail-owned");
+  assert(bridgeIncludes(officialDetailInfo, "#gg-postinfo"), "gg-detail-info-sheet official entry must record #gg-postinfo bridge fallback");
+  assert(bridgeIncludes(officialDetailInfo, ".gg-info-panel"), "gg-detail-info-sheet official entry must record .gg-info-panel bridge fallback");
+  assert(!bridgeIncludes(officialDetailInfo, "gg-editorial-preview"), "gg-detail-info-sheet official entry must not bridge from listing-owned gg-editorial-preview");
   assert(detailInfo.status === "legacy_bridge", "gg-postinfo bridge must be legacy_bridge");
   assert(detailInfo.family === "gg-postinfo", "detail-info-sheet-legacy entry must identify bridge family gg-postinfo");
   assert(targetIncludes(detailInfo, "gg-detail-info-sheet"), "gg-postinfo bridge entry must target gg-detail-info-sheet");
   assert(targetIncludes(postinfoLedger, "gg-detail-info-sheet"), "gg-postinfo ledger must target gg-detail-info-sheet");
   assert(bridgeIncludes(postinfoLedger, "#gg-postinfo"), "gg-postinfo ledger must bridge from #gg-postinfo");
   assert(postinfoLedger.owner_context.includes("detail-owned"), "gg-postinfo ledger must be detail-owned bridge-only");
+  assert(
+    asArray(infoPanelLedger.manifest_entries).includes("gg-detail-info-sheet"),
+    "gg-info-panel ledger must reference official gg-detail-info-sheet entry"
+  );
+  assert(
+    asArray(postinfoLedger.manifest_entries).includes("gg-detail-info-sheet"),
+    "gg-postinfo ledger must reference official gg-detail-info-sheet entry"
+  );
 
   const officialToolbar = entryById.get("gg-detail-toolbar");
   assert(officialToolbar, "gg-detail-toolbar official entry is required after runtime migration");

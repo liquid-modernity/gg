@@ -2983,12 +2983,18 @@ function qs(sel, root){ return (root || document).querySelector(sel); }
 function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 function addClass(el, name){ if(el && el.classList && !el.classList.contains(name)) el.classList.add(name); }
 function queryDetailToolbar(root){ return qs('[data-gg-module="gg-detail-toolbar"]', root) || qs('.gg-detail-toolbar', root) || qs('[data-gg-module="post-toolbar"]', root) || qs('.gg-post__toolbar', root); }
+function queryDetailInfoShell(root){ return qs('.gg-detail-info-sheet[data-gg-panel="info"]', root) || qs('[data-gg-panel="info"].gg-detail-info-sheet', root) || qs('[data-gg-panel="info"].gg-info-panel', root) || qs('.gg-info-panel[data-gg-panel="info"]', root); }
+function queryDetailInfoSheet(root){ if(root&&root.matches&&root.matches('.gg-detail-info-sheet__card,#gg-postinfo,[data-gg-panelmeta="post"][data-gg-sheet="info"]')) return root; return qs('.gg-detail-info-sheet__card', root) || qs('.gg-detail-info-sheet[data-gg-panelmeta="post"]', root) || qs('#gg-postinfo', root) || qs('[data-gg-panelmeta="post"][data-gg-sheet="info"]', root); }
 function upgradeDetailToolbar(bar){
 if(!bar) return;
 addClass(bar, 'gg-detail-toolbar');
 qsa('.gg-post__toolbar-group,.gg-detail-toolbar__group', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__group'); });
 qsa('[data-gg-postbar],.gg-post__tool,.gg-detail-toolbar__button', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__button'); });
 qsa('.gg-post__tool-badge,.gg-detail-toolbar__badge', bar).forEach(function(el){ addClass(el, 'gg-detail-toolbar__badge'); });
+}
+function upgradeDetailInfoSheet(shell, sheet){
+if(shell) addClass(shell, 'gg-detail-info-sheet');
+if(sheet) addClass(sheet, 'gg-detail-info-sheet__card');
 }
 function text(el){ return (el && el.textContent || '').replace(/\s+/g,' ').trim(); }
 
@@ -3161,12 +3167,17 @@ var scope = (root && root.querySelector) ? root : document;
 var main = (scope.matches && scope.matches('main.gg-main[data-gg-surface]')) ? scope : (qs('main.gg-main[data-gg-surface]', scope) || qs('main.gg-main[data-gg-surface]'));
 var article = qs('.gg-post[data-gg-module="post-detail"]', scope) || qs('.gg-post[data-gg-module="post-detail"]') || (main ? (qs('.gg-post', main) || qs('article', main) || main) : null);
 var bar  = (article ? queryDetailToolbar(article) : null) || (main ? queryDetailToolbar(main) : null) || queryDetailToolbar(scope);
+var isDetailSurface = main && /^(post|page)$/.test(main.getAttribute('data-gg-surface') || '');
+var infoShell = isDetailSurface ? queryDetailInfoShell(main) : null;
+var infoSheet = infoShell ? queryDetailInfoSheet(infoShell) : (main ? queryDetailInfoSheet(main) : queryDetailInfoSheet(scope));
+if(isDetailSurface) upgradeDetailInfoSheet(infoShell, infoSheet);
 if(!main || !bar) return;
 upgradeDetailToolbar(bar);
+if(isDetailSurface) upgradeDetailInfoSheet(infoShell, infoSheet);
 if(bar.__ggBound) return;
 bar.__ggBound = true;
 
-var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=qs('#ggPanelComments',main)||qs('[data-gg-panel="comments"]',main)||(rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null),infoPanelRight=rightSidebar?qs('[data-gg-panel="info"]',rightSidebar):null,infoCardPost=infoPanelRight?qs('#gg-postinfo',infoPanelRight):null;
+var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=qs('#ggPanelComments',main)||qs('[data-gg-panel="comments"]',main)||(rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null),infoPanelRight=rightSidebar?queryDetailInfoShell(rightSidebar):null,infoCardPost=infoPanelRight?queryDetailInfoSheet(infoPanelRight):null;
 if(infoCardPost) infoCardPost.hidden=false;
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
@@ -3254,7 +3265,7 @@ GG.core.state.add(commentsPanel,'hidden');
 commentsPanel.hidden=true;
 }
 }
-if(infoPanelRight){infoPanelRight.hidden=!showInfo;infoPanelRight.setAttribute('inert','');infoPanelRight.setAttribute('tabindex','-1');if(showInfo){var infoFocus=qs('#gg-postinfo',infoPanelRight)||infoPanelRight;infoPanelRight.removeAttribute('inert');focusNoScroll(infoFocus);}}
+if(infoPanelRight){infoPanelRight.hidden=!showInfo;infoPanelRight.setAttribute('inert','');infoPanelRight.setAttribute('tabindex','-1');if(showInfo){var infoFocus=queryDetailInfoSheet(infoPanelRight)||infoPanelRight;infoPanelRight.removeAttribute('inert');focusNoScroll(infoFocus);}}
 }
 
 function clearCommentsHashIfAny(){
@@ -9527,6 +9538,13 @@ function isSystemPath(pathname){
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function detailInfoSheet(root){
+    if (root && root.matches && root.matches('.gg-detail-info-sheet__card,#gg-postinfo,[data-gg-panelmeta="post"][data-gg-sheet="info"]')) return root;
+    return qs('.gg-detail-info-sheet__card', root) ||
+      qs('.gg-detail-info-sheet[data-gg-panelmeta="post"]', root) ||
+      qs('#gg-postinfo', root) ||
+      qs('[data-gg-panelmeta="post"][data-gg-sheet="info"]', root);
+  }
   function closest(el, sel){
     if (!el) return null;
     if (el.closest) return el.closest(sel);
@@ -9608,7 +9626,7 @@ function isSystemPath(pathname){
           panel = syncCommentsMount() ||
             right;
         } else if (mode) {
-          panel = qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || qs('.gg-info-panel', right) || right;
+          panel = detailInfoSheet(right) || qs('.gg-detail-info-sheet[data-gg-panel="info"]', right) || qs('[data-gg-panel="info"]', right) || qs('.gg-info-panel', right) || right;
         }
       }
       if (!panel) return;
@@ -9748,7 +9766,7 @@ function updateBackdrop(){
   var showCommentsSheet = isDetailSurface && rightOpen && rightMode === 'comments';
   var commentsHost = showCommentsSheet ? syncCommentsMount() : null;
   var show = (mobileOverlay && isDetailSurface && (leftOpen || rightOpen)) || showInfoSheet;
-  var activeAside = showInfoSheet ? (qs('#gg-postinfo', right) || qs('[data-gg-panel="info"]', right) || right) : (rightOpen ? (commentsHost || right) : (leftOpen ? left : null));
+  var activeAside = showInfoSheet ? (detailInfoSheet(right) || qs('.gg-detail-info-sheet[data-gg-panel="info"]', right) || qs('[data-gg-panel="info"]', right) || right) : (rightOpen ? (commentsHost || right) : (leftOpen ? left : null));
   if (backdrop) {
     GG.core.state.toggle(backdrop, 'visible', show);
     if (showInfoSheet) backdrop.setAttribute('data-gg-tone', 'info');

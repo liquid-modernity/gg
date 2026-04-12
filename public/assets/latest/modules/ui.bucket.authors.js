@@ -82,6 +82,7 @@ return { key:KEY, url:URL, slugify:tagSlugify, fallback:function(raw){ return re
 
 GG.modules.postInfoAuthors = GG.modules.postInfoAuthors || {};
 function qs(sel, root){ return (root||d).querySelector(sel); }
+function detailInfo(root){ var scope=root||d; if(scope&&scope.matches&&scope.matches('.gg-detail-info-sheet__card,#gg-postinfo,[data-gg-panelmeta="post"][data-gg-sheet="info"]')) return scope; return qs('.gg-detail-info-sheet__card',scope)||qs('.gg-detail-info-sheet[data-gg-panelmeta="post"]',scope)||qs('#gg-postinfo',scope)||qs('[data-gg-panelmeta="post"][data-gg-sheet="info"]',scope); }
 function splitSlugs(raw){ var src=clean(raw),parts=[],out=[],seen={},i=0,s=''; if(!src) return out; parts=src.split(/\s*;\s*/); for(i=0;i<parts.length;i++){ s=slugify(parts[i]); if(!s||seen[s]) continue; seen[s]=1; out.push(s); } return out; }
 function initPostInfoRelated(scope){
 if(GG.modules&&GG.modules.postInfoIdentity&&typeof GG.modules.postInfoIdentity.init==='function') GG.modules.postInfoIdentity.init(scope||d);
@@ -289,7 +290,7 @@ meta.appendChild(pn); meta.appendChild(pr); a.appendChild(av); a.appendChild(met
 }
 GG.modules.postInfoIdentity = GG.modules.postInfoIdentity || {};
 GG.modules.postInfoIdentity.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,titleSlot=null,summarySlot=null,title='',summary='';
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,titleSlot=null,summarySlot=null,title='',summary='';
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
 titleSlot=qs('[data-slot="title"]',info);
@@ -303,7 +304,7 @@ if(summarySlot){
 }
 };
 GG.modules.postInfoAuthors.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null;
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,pm=null;
 var authorSlug='',contributors=[],authorSlot=null,contribSlot=null,contribSec=null,list=[],i=0,token=0,fb=[],svc=GG.services&&GG.services.authorsDir?GG.services.authorsDir:null;
 if(!info) return;
 if(!svc){ initPostInfoRelated(scope); return; }
@@ -356,7 +357,7 @@ for(i=0;i<links.length;i++){
 return out;
 }
 GG.modules.postInfoTags.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,svc=GG.services&&GG.services.tagsDir?GG.services.tagsDir:null,pm=null;
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,slot=null,sec=null,svc=GG.services&&GG.services.tagsDir?GG.services.tagsDir:null,pm=null;
 var tags=[],token=0;
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
@@ -409,7 +410,7 @@ for(i=0;i<list.length;i++){
 }
 }
 GG.modules.postInfoLabels.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,labels=[];
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,slot=null,sec=null,labels=[];
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
 slot=qs('[data-slot="labels"]',info);
@@ -441,7 +442,7 @@ metaWrap.appendChild(row);
 return text;
 }
 GG.modules.postInfoMeta.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,pm=null,dateSlot=null,updatedSlot=null,readSlot=null,dateNode=null,dateText='',updatedText='',readText='',publishedText='',updatedRow=null;
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,pm=null,dateSlot=null,updatedSlot=null,readSlot=null,dateNode=null,dateText='',updatedText='',readText='',publishedText='',updatedRow=null;
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
 pm=postMetaFromScope(scope,article);
@@ -465,7 +466,7 @@ if(readSlot&&readText) readSlot.textContent=readText;
 };
 GG.modules.postInfoStructure = GG.modules.postInfoStructure || {};
 GG.modules.postInfoStructure.init = function(root){
-var scope=root&&root.querySelector?root:d,info=qs('#gg-postinfo',scope),article=null,slot=null,sec=null,hint=null,rows=[];
+var scope=root&&root.querySelector?root:d,info=detailInfo(scope),article=null,slot=null,sec=null,hint=null,rows=[];
 if(!info) return;
 article=qs('.gg-post[data-gg-module="post-detail"]',scope)||qs('.gg-post',scope);
 slot=qs('[data-slot="toc"]',info);
