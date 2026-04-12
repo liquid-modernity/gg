@@ -2233,8 +2233,11 @@ export default {
       const paginationListingFallback = shouldFallbackListingPagination(url);
 
       if (pathname === "/" || pathname === "") {
-        originUrl.pathname = "/";
-        originUrl.searchParams.set("view", "blog");
+        // Blogger does not expose the `view=blog` query to XML route logic on
+        // canonical home. Use a listing-owned origin path as route intent, then
+        // keep the public response canonicalized to `/` below.
+        originUrl.pathname = "/search";
+        originUrl.searchParams.delete("view");
         originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
         originRequest = new Request(originUrl.toString(), request);
         forceListing = true;
