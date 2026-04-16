@@ -2238,7 +2238,6 @@ export default {
         // keep the public response canonicalized to `/` below.
         originUrl.pathname = "/search";
         originUrl.searchParams.delete("view");
-        originUrl.searchParams.set("gg-home", "blog");
         originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
         originRequest = new Request(originUrl.toString(), request);
         forceListing = true;
