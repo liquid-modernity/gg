@@ -208,6 +208,7 @@ const isAppJsAsset = (value) => {
 };
 
 const RELEASE_MISMATCH_REASON = "release_mismatch";
+const ASSET_CACHE_BUST = "20260418030500";
 
 const isReleaseDriftOnly = (reasons) => {
   if (!Array.isArray(reasons) || !reasons.length) return false;
@@ -217,7 +218,7 @@ const isReleaseDriftOnly = (reasons) => {
   return true;
 };
 
-const rewriteVersionedAssetRef = (value, expectedRelease, origin) => {
+const rewriteVersionedAssetRef = (value, expectedRelease, origin, cacheBust = "") => {
   const raw = String(value || "").trim();
   const release = String(expectedRelease || "").trim();
   if (!raw || !release) return raw;
@@ -230,8 +231,18 @@ const rewriteVersionedAssetRef = (value, expectedRelease, origin) => {
   if (!origin || parsed.origin !== origin) return raw;
   const match = parsed.pathname.match(/^\/assets\/v\/([^/]+)\/(.+)$/i);
   if (!match) return raw;
-  if (String(match[1] || "").trim().toLowerCase() === release.toLowerCase()) return raw;
-  parsed.pathname = `/assets/v/${release}/${match[2]}`;
+  const currentRelease = String(match[1] || "").trim().toLowerCase();
+  let changed = false;
+  if (currentRelease !== release.toLowerCase()) {
+    parsed.pathname = `/assets/v/${release}/${match[2]}`;
+    changed = true;
+  }
+  const version = String(cacheBust || "").trim();
+  if (version && parsed.searchParams.get("v") !== version) {
+    parsed.searchParams.set("v", version);
+    changed = true;
+  }
+  if (!changed) return raw;
   if (/^(?:https?:)?\/\//i.test(raw)) {
     return parsed.toString();
   }
@@ -2584,7 +2595,7 @@ export default {
             element(el) {
               const href = (el.getAttribute("href") || "").trim();
               if (!href) return;
-              const rewrittenHref = rewriteVersionedAssetRef(href, expectedRelease, url.origin);
+              const rewrittenHref = rewriteVersionedAssetRef(href, expectedRelease, url.origin, ASSET_CACHE_BUST);
               if (rewrittenHref && rewrittenHref !== href) {
                 el.setAttribute("href", rewrittenHref);
               }
@@ -2594,7 +2605,7 @@ export default {
             element(el) {
               const src = (el.getAttribute("src") || "").trim();
               if (!src) return;
-              const rewrittenSrc = rewriteVersionedAssetRef(src, expectedRelease, url.origin);
+              const rewrittenSrc = rewriteVersionedAssetRef(src, expectedRelease, url.origin, ASSET_CACHE_BUST);
               if (rewrittenSrc && rewrittenSrc !== src) {
                 el.setAttribute("src", rewrittenSrc);
               }
