@@ -3140,27 +3140,6 @@ function sharePost(article){
   fallback();
 }
 
-function posterPost(article){
-  if (GG.modules && GG.modules.poster && typeof GG.modules.poster.shareFromArticle === 'function') {
-    GG.modules.poster.shareFromArticle(article);
-    return;
-  }
-  if (GG.boot && typeof GG.boot.loadModule === 'function') {
-    GG.boot.loadModule('ui.bucket.poster.js').then(function(){
-      if (GG.ui && typeof GG.ui._initPosterModules === 'function') GG.ui._initPosterModules();
-      if (GG.modules && GG.modules.poster && typeof GG.modules.poster.shareFromArticle === 'function') {
-        GG.modules.poster.shareFromArticle(article);
-        return;
-      }
-      sharePost(article);
-    }).catch(function(){
-      sharePost(article);
-    });
-    return;
-  }
-  sharePost(article);
-}
-
 /* @GG_PATCH: X-015+X-016 (dev) */
 function init(root){
 var scope = (root && root.querySelector) ? root : document;
@@ -3181,26 +3160,6 @@ var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=qs('#ggPanelCo
 if(infoCardPost) infoCardPost.hidden=false;
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
-}
-
-function ensurePosterButton(){
-if (btnByAct('poster')) return;
-var shareBtn = btnByAct('share');
-var btn = document.createElement('button');
-btn.type = 'button';
-btn.className = 'gg-detail-toolbar__button gg-post__tool gg-post__action--poster';
-btn.setAttribute('data-gg-postbar', 'poster');
-btn.setAttribute('aria-label', 'Share as Poster');
-var icon = document.createElement('span');
-icon.setAttribute('aria-hidden', 'true');
-icon.className = 'gg-icon material-symbols-rounded';
-icon.textContent = 'image';
-btn.appendChild(icon);
-if (shareBtn && shareBtn.parentNode) {
-  shareBtn.parentNode.insertBefore(btn, shareBtn.nextSibling);
-} else {
-  bar.appendChild(btn);
-}
 }
 
 function setBtnActive(act, on){
@@ -3349,7 +3308,6 @@ if(on){
 (function(){
 hideRightPanel();
 setLeft(leftState() === 'open');
-ensurePosterButton();
 
 var h = location.hash || '';
 if(h === '#comments' || /^#c\d+/.test(h)){
@@ -3389,7 +3347,6 @@ if(act === 'comments'){
 }
 
 if(act === 'share'){ sharePost(article); return; }
-if(act === 'poster'){ posterPost(article); return; }
 }, true);
 
 if(!bar.__ggEscBound){
