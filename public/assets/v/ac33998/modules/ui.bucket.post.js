@@ -234,6 +234,26 @@
       }
       return Math.ceil(computed);
     }
+    function scrollToHash(root){
+      var raw = clean((w.location && w.location.hash) || '').replace(/^#/, '');
+      var target = raw ? d.getElementById(raw) : null;
+      if (!target) return false;
+    
+      w.requestAnimationFrame(function(){
+        w.requestAnimationFrame(function(){
+          try {
+            w.scrollTo({
+              top: target.getBoundingClientRect().top + (w.pageYOffset || 0) - getOffset(root),
+              behavior: 'auto'
+            });
+          } catch (_) {
+            try { target.scrollIntoView(true); } catch(__) {}
+          }
+        });
+      });
+    
+      return true;
+    }
     function setCollapsed(root, collapsed){
       if (!root) return;
       if (GG.core && GG.core.state && typeof GG.core.state.toggle === 'function') {
@@ -250,6 +270,7 @@
     function bind(root){
       if (!root || root.__ggTocBound) return;
       root.__ggTocBound = true;
+    
       root.addEventListener('click', function(e){
         if (!e || !e.target || !e.target.closest) return;
         if (e.target.closest('.gg-toc__toggle')) {
@@ -263,9 +284,18 @@
         var target = id ? d.getElementById(id) : null;
         if (!target) return;
         e.preventDefault();
-        w.scrollTo({ top: target.getBoundingClientRect().top + (w.pageYOffset || 0) - getOffset(root), behavior: 'smooth' });
-        try { if (w.history && w.history.replaceState) w.history.replaceState(w.history.state || null, '', '#' + id); } catch (_) {}
+        try {
+          if (w.history && w.history.replaceState) w.history.replaceState(w.history.state || null, '', '#' + id);
+        } catch (_) {}
+        scrollToHash(root);
       });
+    
+      if (!root.__ggTocHashBound) {
+        root.__ggTocHashBound = true;
+        w.addEventListener('hashchange', function(){
+          scrollToHash(root);
+        });
+      }
     }
     function reset(scope){
       var root = resolveRoot(scope);
@@ -336,6 +366,7 @@
         list.appendChild(li);
       }
       setCollapsed(root, false);
+      scrollToHash(root);
       return true;
     }
     function init(scope, opts){

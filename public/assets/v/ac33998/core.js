@@ -762,8 +762,25 @@ if (!(GG.core&&GG.core.render&&GG.core.render.apply&&GG.core.render.apply(html, 
 if (router && typeof router._applySurface === 'function') {
 router._applySurface(url);
 }
-if (typeof scrollY === 'number') w.scrollTo(0, scrollY);
-else w.scrollTo(0, 0);
+var u = new URL(url, w.location.href);
+var hash = u.hash ? decodeURIComponent(u.hash.slice(1)) : '';
+var target = hash ? d.getElementById(hash) : null;
+
+if (target) {
+  w.requestAnimationFrame(function(){
+    w.requestAnimationFrame(function(){
+      try {
+        target.scrollIntoView({ block: 'start', behavior: 'auto' });
+      } catch (_) {
+        try { target.scrollIntoView(true); } catch(__) {}
+      }
+    });
+  });
+} else if (typeof scrollY === 'number') {
+  w.scrollTo(0, scrollY);
+} else {
+  w.scrollTo(0, 0);
+}
 if (options.pop && typeof router.onPopState === 'function') router.onPopState(url, w.history ? w.history.state : null);
 if (!options.pop && typeof router.onNavigate === 'function') router.onNavigate(url);
 finish();

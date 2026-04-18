@@ -6102,13 +6102,31 @@ GG.modules.Comments = GG.modules.Comments || (function(){
     return false;
   }
   function commentsFeedInfo(){
-    var link = d.querySelector('link[rel="alternate"][type="application/atom+xml"][href*="/feeds/"][href*="/comments/default"]');
-    var href = cleanText(link && (link.getAttribute('href') || link.href));
-    var match = href.match(/\/feeds\/([0-9]+)\/comments\/default/i);
-    var postId = match && match[1] ? cleanText(match[1]) : '';
-    if (!href && postId) {
-      href = (w.location && w.location.origin ? w.location.origin : '') + '/feeds/' + postId + '/comments/default';
+    var postRoot =
+      d.querySelector('.gg-post[data-id]') ||
+      d.querySelector('[data-gg-module="post-detail"][data-id]') ||
+      d.querySelector('article.gg-post[data-id]');
+  
+    var postId = cleanText(
+      postRoot && (postRoot.getAttribute('data-id') || postRoot.getAttribute('data-post-id'))
+    );
+  
+    var href = '';
+    var link = d.querySelector(
+      'link[rel="alternate"][type="application/atom+xml"][href*="/feeds/"][href*="/comments/default"]'
+    );
+  
+    if (!postId) {
+      href = cleanText(link && (link.getAttribute('href') || link.href));
+      var match = href.match(/\/feeds\/([0-9]+)\/comments\/default/i);
+      postId = match && match[1] ? cleanText(match[1]) : '';
     }
+  
+    if (!href && postId) {
+      href = (w.location && w.location.origin ? w.location.origin : '') +
+        '/feeds/' + postId + '/comments/default';
+    }
+  
     return {
       feedUrl: href ? href.replace(/[?#].*$/, '') : '',
       postId: postId
