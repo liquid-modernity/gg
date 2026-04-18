@@ -2243,7 +2243,24 @@ export default {
       let forceLanding = false;
       const paginationListingFallback = shouldFallbackListingPagination(url);
 
-      if (pathname === "/" || pathname === "") {
+      const rootHomeProbe =
+      (pathname === "/" || pathname === "") &&
+      String(url.searchParams.get("x") || "").trim().toLowerCase() === "home-origin";
+    
+    if (pathname === "/" || pathname === "") {
+      if (rootHomeProbe) {
+        // PROBE ONLY:
+        // fetch canonical home HTML as upstream source,
+        // but keep the rest of the worker pipeline in listing mode
+        // so the only changed variable is the upstream source document.
+        originUrl.pathname = "/";
+        originUrl.searchParams.delete("view");
+        originUrl.searchParams.delete("max-results");
+        originUrl.searchParams.delete("start-index");
+        originUrl.searchParams.delete("updated-max");
+        originRequest = new Request(originUrl.toString(), request);
+        forceListing = true;
+      } else {
         // Blogger does not expose the `view=blog` query to XML route logic on
         // canonical home. Use a listing-owned origin path as route intent, then
         // keep the public response canonicalized to `/` below.
@@ -2252,16 +2269,17 @@ export default {
         originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
         originRequest = new Request(originUrl.toString(), request);
         forceListing = true;
-      } else if (pathname === "/landing") {
-        originUrl.pathname = "/";
-        // Blogger may return an error document for unknown feed-view variants on GET.
-        // Fetch canonical home HTML and force landing surface in Worker rewrite instead.
-        originUrl.searchParams.delete("view");
-        originUrl.searchParams.delete("max-results");
-        originUrl.searchParams.delete("start-index");
-        originRequest = new Request(originUrl.toString(), request);
-        forceLanding = true;
       }
+    } else if (pathname === "/landing") {
+      originUrl.pathname = "/";
+      // Blogger may return an error document for unknown feed-view variants on GET.
+      // Fetch canonical home HTML and force landing surface in Worker rewrite instead.
+      originUrl.searchParams.delete("view");
+      originUrl.searchParams.delete("max-results");
+      originUrl.searchParams.delete("start-index");
+      originRequest = new Request(originUrl.toString(), request);
+      forceLanding = true;
+    }
 
       try {
         const forcedView = String(originUrl.searchParams.get("view") || "").trim().toLowerCase();
