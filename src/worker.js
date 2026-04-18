@@ -2493,7 +2493,10 @@ export default {
             String(url.searchParams.get("x") || "").trim().toLowerCase() === "probe-left"
           ) {
             try {
-              const upstreamHtml = await originResponse.clone().text();
+              const upstreamHtml =
+  shouldEnhanceHtml && originRes
+    ? await originRes.clone().text()
+    : "";
           
               upstreamSidebarProbe = {
                 hasTopList: /id=['"]gg-left-sb-top-list['"]/i.test(upstreamHtml),
