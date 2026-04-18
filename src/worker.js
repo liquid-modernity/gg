@@ -2827,6 +2827,12 @@ export default {
           htmlResponse = await ensureLandingContactResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
+        if (pathname === "/" || pathname === "") {
+          out.headers.set(
+            "x-gg-root-origin-source",
+            rootHomeProbe ? "home" : "search"
+          );
+        }
         if (upstreamSidebarProbe) {
           out.headers.set("x-gg-upstream-top-list", upstreamSidebarProbe.hasTopList ? "1" : "0");
           out.headers.set("x-gg-upstream-bot-list", upstreamSidebarProbe.hasBotList ? "1" : "0");
