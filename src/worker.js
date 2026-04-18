@@ -2358,7 +2358,7 @@ export default {
           `<meta property="og:url" content="${canonicalPublic}">`,
           `<meta name="twitter:url" content="${canonicalPublic}">`,
         ].join("");
-        const listingH1 = `<h1 class="gg-listing__title">Blog</h1>`;
+        const listingH1 = `<h1 class="gg-listing__title">The PakRPP Unfiltered</h1>`;
         const meta = {
           ogType: "",
           ogTitle: "",
