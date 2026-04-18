@@ -2376,7 +2376,6 @@ export default {
           `<meta property="og:url" content="${canonicalPublic}">`,
           `<meta name="twitter:url" content="${canonicalPublic}">`,
         ].join("");
-        const listingH1 = `<h1 class="gg-listing__title">The PakRPP Unfiltered</h1>`;
         const meta = {
           ogType: "",
           ogTitle: "",
@@ -2727,16 +2726,15 @@ export default {
           // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
           // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
           rewritten
-            .on("main#gg-main", {
-              element(el) {
-                el.setAttribute("data-gg-surface", "listing");
-                el.setAttribute("data-gg-page", "listing");
-                el.setAttribute("data-gg-view", "listing");
-                // Keep home-root contract but force blog state for listing alias.
-                el.setAttribute("data-gg-home-state", "blog");
-                el.prepend(listingH1, { html: true });
-              },
-            })
+          .on("main#gg-main", {
+            element(el) {
+              el.setAttribute("data-gg-surface", "listing");
+              el.setAttribute("data-gg-page", "listing");
+              el.setAttribute("data-gg-view", "listing");
+              // Keep home-root contract but force blog state for listing alias.
+              el.setAttribute("data-gg-home-state", "blog");
+            },
+          })
             .on(".gg-info-panel", {
               element(el) {
                 el.append(
