@@ -2483,6 +2483,37 @@ export default {
           '<div id="gg-template-mismatch" style="position:sticky;top:0;z-index:2147483647;background:#b91c1c;color:#fff;padding:8px 12px;font:14px/1.4 system-ui;text-align:center;">' +
           "Template mismatch detected. Enhancements disabled." +
           "</div>";
+          let upstreamSidebarProbe = null;
+          
+          if (
+            request.method === "GET" &&
+            (
+              pathname === "/" ||
+              pathname === "/search"
+            ) &&
+            String(url.searchParams.get("x") || "").trim().toLowerCase() === "probe-left"
+          ) {
+            try {
+              const upstreamHtml = await originResponse.clone().text();
+          
+              upstreamSidebarProbe = {
+                hasTopList: /id=['"]gg-left-sb-top-list['"]/i.test(upstreamHtml),
+                hasBotList: /id=['"]gg-left-sb-bot-list['"]/i.test(upstreamHtml),
+                hasHomeLabelTree: /id=['"]gg-labeltree-home['"]/i.test(upstreamHtml),
+                failedHtml1: /Failed to render gadget ['"]HTML1['"]/i.test(upstreamHtml),
+                failedHtml28: /Failed to render gadget ['"]HTML28['"]/i.test(upstreamHtml)
+              };
+            } catch (_) {
+              upstreamSidebarProbe = {
+                hasTopList: false,
+                hasBotList: false,
+                hasHomeLabelTree: false,
+                failedHtml1: false,
+                failedHtml28: false,
+                probeError: true
+              };
+            }
+          }
         const rewritten = new HTMLRewriter()
           .on("html", {
             element(el) {
@@ -2796,11 +2827,15 @@ export default {
           htmlResponse = await ensureLandingContactResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
-        if (pathname === "/" || pathname === "") {
-          out.headers.set(
-            "x-gg-root-origin-source",
-            rootHomeProbe ? "home" : "search"
-          );
+        if (upstreamSidebarProbe) {
+          out.headers.set("x-gg-upstream-top-list", upstreamSidebarProbe.hasTopList ? "1" : "0");
+          out.headers.set("x-gg-upstream-bot-list", upstreamSidebarProbe.hasBotList ? "1" : "0");
+          out.headers.set("x-gg-upstream-home-labeltree", upstreamSidebarProbe.hasHomeLabelTree ? "1" : "0");
+          out.headers.set("x-gg-upstream-failed-html1", upstreamSidebarProbe.failedHtml1 ? "1" : "0");
+          out.headers.set("x-gg-upstream-failed-html28", upstreamSidebarProbe.failedHtml28 ? "1" : "0");
+          if (upstreamSidebarProbe.probeError) {
+            out.headers.set("x-gg-upstream-probe-error", "1");
+          }
         }
         if (templateReleaseDrift) {
           out.headers.set("x-gg-template-release-drift", "1");
