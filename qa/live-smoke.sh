@@ -2416,7 +2416,7 @@ check_discovered_detail_paths() {
     log_warn "no real page URL discovered from /; skipped page check"
   else
     printf 'SMOKE discovered page=%s\n' "$page_path"
-    check_surface "$page_path" "200" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "page" "page" "blog" "ignore"
+    check_surface "$page_path" "200" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "page" "page" "" "ignore"
   fi
 
   check_listing_card_metadata "$listing_file"
