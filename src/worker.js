@@ -2796,6 +2796,12 @@ export default {
           htmlResponse = await ensureLandingContactResponse(htmlResponse);
         }
         let out = stamp(htmlResponse, { cspReportEnabled, robotsMode });
+        if (pathname === "/" || pathname === "") {
+          out.headers.set(
+            "x-gg-root-origin-source",
+            rootHomeProbe ? "home" : "search"
+          );
+        }
         if (templateReleaseDrift) {
           out.headers.set("x-gg-template-release-drift", "1");
           out.headers.set(
