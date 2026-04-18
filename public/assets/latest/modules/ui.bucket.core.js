@@ -1334,9 +1334,12 @@ if (GG.modules.shareMotion && typeof GG.modules.shareMotion.init === 'function')
 GG.ui.toggleCommentsHelp = GG.ui.toggleCommentsHelp || function(open, triggerEl){
 return false;
 };
-GG.actions.register('like', function(){
+function ggSupportComingSoon(){
 GG.ui.ggToast('Coming soon');
-});
+}
+GG.actions.register('support', ggSupportComingSoon);
+// Temporary bridge for legacy/generated post-card markup during this hook migration.
+GG.actions.register('like', ggSupportComingSoon);
 GG.actions.register('bookmark', function(ctx){
 var event = ctx && ctx.event;
 var element = ctx && ctx.element;

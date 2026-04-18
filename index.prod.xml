@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='7e57a15ffdb6' name='gg-template-fingerprint'/>
+    <meta content='a45d042d65d5' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -182,6 +182,8 @@
   &quot;post.action.focus&quot;: &quot;Focus mode&quot;,
   &quot;post.action.save&quot;: &quot;Save to library&quot;,
   &quot;post.action.unsave&quot;: &quot;Remove from library&quot;,
+  &quot;post.action.support&quot;: &quot;Support&quot;,
+  &quot;post.action.unsupport&quot;: &quot;Remove support&quot;,
   &quot;post.action.like&quot;: &quot;Like&quot;,
   &quot;post.action.unlike&quot;: &quot;Remove like&quot;,
   &quot;post.action.share&quot;: &quot;Share&quot;,
@@ -433,6 +435,8 @@
   &quot;post.action.focus&quot;: &quot;Mode fokus&quot;,
   &quot;post.action.save&quot;: &quot;Simpan ke pustaka&quot;,
   &quot;post.action.unsave&quot;: &quot;Hapus dari pustaka&quot;,
+  &quot;post.action.support&quot;: &quot;Dukung&quot;,
+  &quot;post.action.unsupport&quot;: &quot;Batalkan dukungan&quot;,
   &quot;post.action.like&quot;: &quot;Suka&quot;,
   &quot;post.action.unlike&quot;: &quot;Batalkan suka&quot;,
   &quot;post.action.share&quot;: &quot;Bagikan&quot;,
@@ -1102,7 +1106,7 @@ text-align: center;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='7e57a15ffdb6' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='a45d042d65d5' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2791,9 +2795,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='gg-visually-hidden' data-gg-copy='library.action.add'>Save to library</span>
   </button>
 
-  <button aria-label='Like' class='gg-post-card__tool' data-gg-action='like' data-gg-copy-aria='post.action.like' data-gg-copy-title='post.action.like' title='Like' type='button'>
+  <button aria-label='Support' class='gg-post-card__tool' data-gg-action='support' data-gg-copy-aria='post.action.support' data-gg-copy-title='post.action.support' title='Support' type='button'>
     <span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>
-    <span class='gg-visually-hidden' data-gg-copy='post.action.like'>Like</span>
+    <span class='gg-visually-hidden' data-gg-copy='post.action.support'>Support</span>
   </button>
 
   <button aria-label='Share' class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' data-gg-copy-aria='post.action.share' data-gg-copy-title='post.action.share' title='Share' type='button'>
