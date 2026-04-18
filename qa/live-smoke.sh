@@ -2408,7 +2408,7 @@ check_discovered_detail_paths() {
     log_fail "unable to discover a real post URL from /"
   else
     printf 'SMOKE discovered post=%s\n' "$post_path"
-    check_surface "$post_path" "200" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "post" "post" "blog" "ignore"
+    check_surface "$post_path" "200" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "post" "post" "" "ignore"
   fi
 
   page_path="$(discover_first_page_path "$listing_file" || true)"
