@@ -402,14 +402,14 @@ extract_title() {
 extract_canonical() {
   local file="$1"
   local tag
-  tag="$(grep -Eoi "<link[^>]+rel=['\\\"]canonical['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  tag="$(grep -Eoi "<link[^>]+>" "$file" | grep -Ei "rel=['\\\"]canonical['\\\"]" | head -n 1 || true)"
   extract_attr_from_tag "$tag" "href"
 }
 
 extract_og_url() {
   local file="$1"
   local tag
-  tag="$(grep -Eoi "<meta[^>]+property=['\\\"]og:url['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  tag="$(grep -Eoi "<meta[^>]+>" "$file" | grep -Ei "property=['\\\"]og:url['\\\"]" | head -n 1 || true)"
   extract_attr_from_tag "$tag" "content"
 }
 
@@ -665,7 +665,7 @@ discover_page_candidates() {
     url="$(printf '%s' "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
     [[ -n "$url" ]] || continue
     path="$(to_path "$url")"
-    if [[ "$path" =~ ^/p/(tags|author|sitemap|pay|support|privacy-policy)\.html$ ]]; then
+    if [[ "$path" =~ ^/p/(tags|author|sitemap|library|pay|support|privacy-policy)\.html$ ]]; then
       continue
     fi
     printf '%s\n' "$path"
@@ -839,6 +839,13 @@ check_surface_ownership_contract() {
     assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on detail surface"
     check_detail_panel_contract "$file" "$context"
     check_detail_postmeta_contract "$file" "$context"
+    return
+  fi
+  if [[ "$expected_surface" == "special" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on special surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on special surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on special surface"
+    assert_absent_marker "$file" "$context" "data-gg-module=['\\\"]post-toolbar['\\\"]" "detail toolbar on special surface"
   fi
 }
 
@@ -2557,6 +2564,7 @@ check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listin
 check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
 check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
 check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/p/library.html" "200" "${BASE_URL}/p/library.html" "${BASE_URL}/p/library.html" "${BASE_URL}/p/library.html" "special" "special" "" "ignore"
 printf 'SMOKE classify=MIXED_SCOPE run=check_homepage_mixed_contract\n'
 check_homepage_mixed_contract
 printf 'SMOKE classify=TEMPLATE_SCOPE run=check_dock_truth\n'
