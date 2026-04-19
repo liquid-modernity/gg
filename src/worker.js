@@ -2236,7 +2236,26 @@ export default {
       if (pathname === "/landing" && viewParam === "blog") {
         return redirectToSurface("/");
       }
-
+      function buildOriginHtmlRequest(baseRequest, originUrl) {
+        const headers = new Headers(baseRequest.headers);
+      
+        headers.set(
+          "accept",
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        );
+        headers.set("cache-control", "no-cache");
+        headers.set("pragma", "no-cache");
+      
+        headers.delete("if-none-match");
+        headers.delete("if-modified-since");
+        headers.delete("x-requested-with");
+      
+        return new Request(originUrl.toString(), {
+          method: "GET",
+          headers,
+          redirect: "follow"
+        });
+      }
       let originRequest = request;
       let originUrl = new URL(request.url);
       let forceListing = false;
@@ -2286,7 +2305,16 @@ export default {
         if (forcedView === "blog") forceListing = true;
         if (forcedView === "landing") forceLanding = true;
       } catch (e) {}
-
+      const isDocumentProxyRequest =
+      request.method === "GET" &&
+      !pathname.startsWith("/assets/") &&
+      !pathname.startsWith("/feeds/") &&
+      !pathname.startsWith("/api/") &&
+      !/\.(?:css|js|mjs|json|xml|txt|map|png|jpe?g|webp|gif|svg|ico|woff2?|ttf)$/i.test(pathname);
+    
+    if (isDocumentProxyRequest) {
+      originRequest = buildOriginHtmlRequest(request, originUrl);
+    }
       let originRes;
       try {
         originRes = await fetch(originRequest);
