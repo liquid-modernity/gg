@@ -5404,23 +5404,33 @@
   
     function ensureBar(dock){
       if (!dock) return null;
-  
-      if (barEl && barEl.isConnected) return barEl;
-  
-      var existing = qs('.gg-dock__progress-bar', dock);
-      if (existing) {
-        barEl = existing;
+    
+      var tracks = qsa('.gg-dock__progress', dock);
+      for (var i = 1; i < tracks.length; i++) {
+        try { tracks[i].remove(); } catch (_) {}
+      }
+    
+      var track = qs('.gg-dock__progress', dock);
+      var bar = track ? qs('.gg-dock__progress-bar', track) : null;
+    
+      if (barEl && barEl.isConnected && dock.contains(barEl) && bar) {
+        barEl = bar;
         return barEl;
       }
-  
-      var track = document.createElement('div');
-      track.className = 'gg-dock__progress';
-  
-      var bar = document.createElement('span');
-      bar.className = 'gg-dock__progress-bar';
-  
-      track.appendChild(bar);
-      dock.appendChild(track);
+    
+      if (!track) {
+        track = document.createElement('div');
+        track.className = 'gg-dock__progress';
+        dock.appendChild(track);
+      }
+    
+      if (!bar) {
+        track.textContent = '';
+        bar = document.createElement('span');
+        bar.className = 'gg-dock__progress-bar';
+        track.appendChild(bar);
+      }
+    
       barEl = bar;
       return barEl;
     }
@@ -5520,7 +5530,7 @@
     }
   
     function init(dock, main){
-      dockEl = dock || dockEl || qs('nav.gg-dock[data-gg-module="dock"]');
+      dockEl = dock || qs('nav.gg-dock[data-gg-module="dock"]');
       mainEl = main || mainEl || qs('main.gg-main[data-gg-surface]') || qs('main.gg-main');
   
       ensureBar(dockEl);
@@ -5545,21 +5555,45 @@
     var SVG_NS = 'http://www.w3.org/2000/svg';
   
     function ensureSvg(){
-      if(svgWrap) return svgWrap;
-      if(!dock) return null;
+      if (!dock) return null;
+    
+      var wraps = qsa('.gg-dock__perimeter', dock);
+      for (var i = 1; i < wraps.length; i++) {
+        try { wraps[i].remove(); } catch (_) {}
+      }
+    
+      var existing = qs('.gg-dock__perimeter', dock);
+      if (existing) {
+        svgWrap = existing;
+        svg = qs('svg', svgWrap);
+        trackPath = qs('.gg-dock__perimeter-track', svgWrap);
+        progPath = qs('.gg-dock__perimeter-progress', svgWrap);
+    
+        if (svg && trackPath && progPath) return svgWrap;
+    
+        try { existing.remove(); } catch (_) {}
+        svgWrap = null;
+        svg = null;
+        trackPath = null;
+        progPath = null;
+      }
+    
       svgWrap = document.createElement('div');
       svgWrap.className = 'gg-dock__perimeter';
       svgWrap.setAttribute('aria-hidden', 'true');
-  
+    
       svg = document.createElementNS(SVG_NS, 'svg');
       trackPath = document.createElementNS(SVG_NS, 'path');
       progPath = document.createElementNS(SVG_NS, 'path');
+    
       trackPath.classList.add('gg-dock__perimeter-track');
       progPath.classList.add('gg-dock__perimeter-progress');
+    
       svg.appendChild(trackPath);
       svg.appendChild(progPath);
       svgWrap.appendChild(svg);
       dock.appendChild(svgWrap);
+    
       return svgWrap;
     }
   
