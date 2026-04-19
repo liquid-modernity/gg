@@ -3306,35 +3306,9 @@
   function showRightPanel(mode){
     var useMode = mode || 'comments';
   
+    refreshDetailPanelRefs();
     setRightMode(useMode);
     setRightState('open');
-  
-    function showRightPanel(mode){
-      var useMode = mode || 'comments';
-    
-      setRightMode(useMode);
-      setRightState('open');
-    
-      refreshDetailPanelRefs();
-    
-      if (useMode === 'info') {
-        forceInfoSheetOpen();
-      }
-    
-      applyFromAttrs();
-    
-      if (useMode === 'comments') {
-        if (
-          GG.modules &&
-          GG.modules.Comments &&
-          typeof GG.modules.Comments.ensureLoaded === 'function'
-        ) {
-          GG.modules.Comments.ensureLoaded({ fromPrimaryAction: true, scroll: false });
-        }
-      }
-    }
-  
-    refreshDetailPanelRefs();
   
     if (useMode === 'info') {
       forceInfoSheetOpen();
@@ -3389,19 +3363,23 @@
   }
   
   function restorePanels(){
-    var pl = prevLeft || (isDetailSurface ? 'open' : 'closed');
+    if (isDetailSurface) {
+      setLeftState('open');
+      setRightMode('');
+      setRightState('closed');
+      prevLeft = prevRight = prevMode = null;
+      return;
+    }
+  
+    var pl = prevLeft || 'closed';
     var pr = prevRight || 'closed';
-    var pm = prevMode || 'comments';
+    var pm = prevMode || '';
   
     setLeftState(pl);
   
     if (pr === 'open') {
       setRightMode(pm);
       setRightState('open');
-  
-      if (pm === 'info') {
-        forceInfoSheetOpen();
-      }
     } else {
       setRightMode('');
       setRightState('closed');
@@ -4754,18 +4732,22 @@
   main = mainEl || qs('main.gg-main[data-gg-surface]');
   if (!main) return;
   
-  panel = qs('.gg-info-panel', main);
-  if (!panel) return;
-  var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
-  var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
-  var isDetailSurface = surface === 'post' || surface === 'page';
-  var isListingSurface = isListingLikeSurface();
-  var isLandingSurface = surface === 'landing' || homeState === 'landing';
-  var isPostLayout = !!qs('.gg-blog-layout--post', main);
-  if (isPostLayout || isDetailSurface){
-  panel.style.display = 'none';
+  panel =
+  qs('.gg-blog-layout--list .gg-info-panel', main) ||
+  qs('.gg-blog-layout--list [data-gg-panel="info"]', main);
+
+if (!panel) return;
+
+var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
+var isDetailSurface = surface === 'post' || surface === 'page';
+var isListingSurface = isListingLikeSurface();
+var isLandingSurface = surface === 'landing' || homeState === 'landing';
+var isPostLayout = !!qs('.gg-blog-layout--post', main);
+
+if (isPostLayout || isDetailSurface){
   return;
-  }
+}
   if (isLandingSurface || !isListingSurface){
   if (main.getAttribute('data-gg-info-panel') !== 'closed') {
     main.setAttribute('data-gg-info-panel', 'closed');
