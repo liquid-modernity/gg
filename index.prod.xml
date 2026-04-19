@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='16167b18dfc0' name='gg-template-fingerprint'/>
+    <meta content='49c0074097d1' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -40,7 +40,7 @@
       &quot;listing&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;dock&quot;, &quot;search&quot;, &quot;mixed&quot;],
       &quot;landing&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;drawer&quot;, &quot;install&quot;],
       &quot;post&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;dock&quot;, &quot;post&quot;, &quot;share&quot;, &quot;comments&quot;, &quot;toc&quot;],
-      &quot;page&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;],
+      &quot;page&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;dock&quot;, &quot;post&quot;, &quot;share&quot;, &quot;comments&quot;, &quot;toc&quot;],
       &quot;special&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;drawer&quot;],
       &quot;error&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;notfound&quot;, &quot;search&quot;],
       &quot;offline&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;offline&quot;]
@@ -1119,7 +1119,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='16167b18dfc0' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='49c0074097d1' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1299,7 +1299,7 @@ font-size: medium;
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-<main class='gg-main' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-left-panel='data:view.isMultipleItems ? &quot;open&quot; : &quot;closed&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
+<main class='gg-main' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-left-panel='data:view.isMultipleItems or data:view.isPost or (data:view.isPage and not data:ggIsSystemPage) ? &quot;open&quot; : &quot;closed&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
     <b:attr cond='data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-state' value='landing'/>
     <b:attr cond='data:ggSurfaceKind == &quot;listing&quot;' name='data-gg-home-state' value='blog'/>
     <b:attr cond='data:ggSurfaceKind == &quot;listing&quot; or data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-root' value='1'/>
@@ -1551,9 +1551,9 @@ font-size: medium;
     
     
     <!-- SIDEBAR KIRI -->
-    <b:if cond='(data:view.isMultipleItems or data:view.isPost) and not data:ggIsSpecialApp'>
+    <b:if cond='(data:view.isMultipleItems or data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)) and not data:ggIsSpecialApp'>
     <aside class='gg-blog-sidebar gg-blog-sidebar--left' id='gg-left-panel'>
-      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
+      <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost or (data:ggIsPage and not data:ggIsSystemPage) ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
         <b:if cond='data:view.isMultipleItems'>
   <div class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list'>
     <div class='widget-content'>
@@ -1572,7 +1572,7 @@ font-size: medium;
 </b:if>
         
       <!-- Versi POST DETAIL -->
-      <b:if cond='data:view.isPost'>
+      <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
         <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
             <b:widget-settings>
@@ -1680,7 +1680,7 @@ font-size: medium;
   </div>
 </b:if>
         
-        <b:if cond='data:view.isPost'>
+        <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
         <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-post' name='Left SB Bot (Post)' showaddelement='true'>
           <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' version='2' visible='true'>
             <b:widget-settings>
@@ -2452,28 +2452,32 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <b:widget-setting name='showReactions'>false</b:widget-setting>
               </b:widget-settings>
               <b:includable id='main'>
-                <div class='gg-stack' id='postcards'>
-                  <b:loop index='i' values='data:posts' var='post'>
-                    <b:if cond='data:view.isSingleItem or data:i &lt; 9'>
-                      <b:if cond='data:view.isSingleItem'>
-                        <b:include data='post' name='post'/>
-                      <b:else/>
+                <b:if cond='data:view.isSingleItem'>
+                  <div class='gg-detail-stack' data-gg-detail-flow='1'>
+                    <b:loop values='data:posts' var='post'>
+                      <b:include data='post' name='post'/>
+                    </b:loop>
+                  </div>
+                <b:else/>
+                  <div class='gg-stack' id='postcards'>
+                    <b:loop index='i' values='data:posts' var='post'>
+                      <b:if cond='data:i &lt; 9'>
                         <b:include data='post' name='postCard'/>
                       </b:if>
+                    </b:loop>
+                  </div>
+
+    <!-- LOAD MORE -->
+                <div class='gg-loadmore-wrap' data-gg-module='loadmore'>
+                    <b:if cond='data:view.isMultipleItems and not data:view.isSearch and not data:view.isLabelSearch and not data:view.isArchive and data:olderPageUrl'>
+                      <button class='gg-loadmore' expr:data-next='data:olderPageUrl' id='loadmore' type='button'>
+                        <span aria-hidden='true' class='gg-icon material-symbols-rounded'>article</span>
+                        <span class='gg-loadmore__label'>Load More Articles</span>
+                        <span aria-hidden='true' class='gg-loadmore__spinner'/>
+                      </button>
                     </b:if>
-                  </b:loop>
-                </div>
-                
-  <!-- LOAD MORE -->
-              <div class='gg-loadmore-wrap' data-gg-module='loadmore'>
-                  <b:if cond='data:view.isMultipleItems and not data:view.isSearch and not data:view.isLabelSearch and not data:view.isArchive and data:olderPageUrl'>
-                    <button class='gg-loadmore' expr:data-next='data:olderPageUrl' id='loadmore' type='button'>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>article</span>
-                      <span class='gg-loadmore__label'>Load More Articles</span>
-                      <span aria-hidden='true' class='gg-loadmore__spinner'/>
-                    </button>
-                  </b:if>
-                </div>
+                  </div>
+                </b:if>
               </b:includable>
               <b:includable id='aboutPostAuthor'>
                 <div class='author-name'>
@@ -2924,11 +2928,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
   <b:else/>
   <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-comments='data:post.numberOfComments ? data:post.numberOfComments : 0' expr:data-date='data:post.date ? data:post.date : &quot;&quot;' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
-    <b:attr cond='data:view.isPage and not data:ggIsSpecialApp' name='data-gg-surface' value='page'/>
-    <b:attr cond='data:ggIsSpecialApp' name='data-gg-surface' value='special'/>
+    <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
+    <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
     
     <!-- GAGA TOOLBAR POST DETAIL -->
-    <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSpecialApp)'>
+    <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
     <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
       <div class='gg-post__toolbar-group'>
                <button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>
@@ -3205,7 +3209,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     </div>
   </article>
-  <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSpecialApp)'>
+  <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
     <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
       <div class='gg-comments-panel__body' data-gg-slot='comments'>
         <b:include data='post' name='threadedComments'/>
