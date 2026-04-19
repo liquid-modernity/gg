@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='a45d042d65d5' name='gg-template-fingerprint'/>
+    <meta content='0c97c6202ae2' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -964,8 +964,10 @@
     <b:include data='blog' name='all-head-content'/>
 <link href='/manifest.webmanifest' rel='manifest'/>
 <!-- GAGA HOME OF CSS -->
+     <link href='https://fonts.googleapis.com' rel='preconnect'/>
         <link crossorigin='' href='https://fonts.gstatic.com' rel='preconnect'/>
 <link as='font' crossorigin='' href='https://fonts.gstatic.com/s/materialsymbolsrounded/v317/syl7-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvDmUSVOK7BDB_Qb9vUSzq3wzLK-P0J-V_Zs-obHph2-jOcZTKPq8a9A5M.woff2' rel='preload' type='font/woff2'/>
+    <link href='https://fonts.googleapis.com/css2?family=Caesar+Dressing&amp;display=swap' rel='stylesheet'/>
 
 <b:skin><![CDATA[
 /* GG_CRITICAL_CSS v1 */
@@ -1031,14 +1033,29 @@ body[data-gg-surface="landing"] .gg-home-landing{ display:block; }
 }
 
 .gg-listing__title{
-  font-family: var(--gg-font-ed);
+  font-family: 'Caesar Dressing', cursive;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.06;
   text-wrap: balance;
-text-align: center;
+  text-align: center;
+font-size: xxx-large;
+margin-top: 10px;
+margin-bottom: 25px;
 }
 
+.gg-listing__subtitle{
+  font-family: var(--gg-font-ed);
+  font-weight: 450;
+  letter-spacing: 0.200em;
+  line-height: 0;
+  text-wrap: balance;
+font-size: medium;
+    text-align: center;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    margin-top: -15px;
+}
 
 ]]></b:skin>
     
@@ -1106,7 +1123,7 @@ text-align: center;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='a45d042d65d5' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='0c97c6202ae2' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1286,7 +1303,7 @@ text-align: center;
 
 <!-- GAGA HOME SURFACE (HTML) -->
 
-  <main class='gg-main' data-gg-left-panel='closed' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
+<main class='gg-main' data-gg-right-panel='closed' expr:data-gg-device='data:ggIsMobile ? &quot;mobile&quot; : &quot;desktop&quot;' expr:data-gg-layout='data:ggIsLayout ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-left-panel='data:view.isMultipleItems ? &quot;open&quot; : &quot;closed&quot;' expr:data-gg-page='data:ggPageKind' expr:data-gg-preview='data:view.isPreview ? &quot;1&quot; : &quot;0&quot;' expr:data-gg-surface='data:ggSurfaceKind' expr:data-gg-view='data:ggViewKind' id='gg-main' tabindex='-1'>
     <b:attr cond='data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-state' value='landing'/>
     <b:attr cond='data:ggSurfaceKind == &quot;listing&quot;' name='data-gg-home-state' value='blog'/>
     <b:attr cond='data:ggSurfaceKind == &quot;listing&quot; or data:ggSurfaceKind == &quot;landing&quot;' name='data-gg-home-root' value='1'/>
@@ -1517,7 +1534,15 @@ text-align: center;
      <!-- /GAGA ADS LEADERBOARD -->
         <!-- Blog Layer: daftar posting, kategori, dll. -->
    <section data-gg-home-layer='blog' expr:class='data:ggIsSpecialApp ? &quot;gg-special-surface&quot; : &quot;gg-home-blog&quot;' expr:id='data:ggIsSpecialApp ? &quot;gg-special-surface&quot; : &quot;gg-home-blog&quot;'>
-          
+     <b:if cond='data:view.isMultipleItems and not data:view.isHomepage'>
+     
+    <hr align='center' color='black' noshade='noshade' size='5' width='98.5%'/>
+        <hr align='center' color='black' noshade='noshade' size='3' width='98.5%'/>
+     <h1 class='gg-listing__title'>The PakRPP Unfiltered</h1>  
+      <h2 class='gg-listing__subtitle'>Minggu, 1 Januari 2023</h2>
+           <hr align='center' color='black' noshade='noshade' size='3' width='98.5%'/>
+        <hr align='center' color='black' noshade='noshade' size='5' width='98.5%'/>
+        </b:if>
   <b:if cond='data:view.isMultipleItems'>
   <h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>
   </b:if>
@@ -1534,30 +1559,41 @@ text-align: center;
     <aside class='gg-blog-sidebar gg-blog-sidebar--left' id='gg-left-panel'>
       <div class='gg-leftnav gg-sb gg-sb--left' data-gg-sb='left' data-gg-sb-native='1' data-gg-sb-ready='1' expr:data-gg-sb-mode='data:ggIsPost ? &quot;post&quot; : (data:ggIsSystemPage ? &quot;system&quot; : &quot;list&quot;)'>
         <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list' name='Left SB Top (List)' showaddelement='true'>
-          <b:widget id='HTML1' locked='false' title='Interests' type='HTML' version='2' visible='true'>
-            <b:includable id='main'>
-              <div class='widget-content'>
-                <div class='gg-epanel__head'>
-                  <span class='gg-epanel__eyebrow' data-gg-copy='panel.post.interests'>Interests</span>
-                </div>
-                <div>
-                  <span aria-hidden='true' class='material-symbols-rounded'>interests</span>
-                  <span data-gg-copy='panel.post.interests'>Interests</span>
-                </div>
-                <div class='gg-lt gg-labeltree' data-gg-labeltree='home' data-gg-module='labeltree' data-max-posts='10' id='gg-labeltree-home'>
-                  <ul aria-label='Label tree' class='gg-lt__tree' role='tree'/>
-                </div>
-              </div>
-            </b:includable>
-          </b:widget>
-        </b:section>
-          </b:if>
+  <div class='gg-sb__top gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-top-list'>
+    <div class='widget-content'>
+      <div class='gg-epanel__head'>
+        <span class='gg-epanel__eyebrow' data-gg-copy='panel.post.interests'>Interests</span>
+      </div>
+      <div>
+        <span aria-hidden='true' class='material-symbols-rounded'>interests</span>
+        <span data-gg-copy='panel.post.interests'>Interests</span>
+      </div>
+      <div class='gg-lt gg-labeltree' data-gg-labeltree='home' data-gg-module='labeltree' data-max-posts='10' id='gg-labeltree-home'>
+        <ul aria-label='Label tree' class='gg-lt__tree' role='tree'/>
+      </div>
+    </div>
+  </div>
+</b:if>
         
       <!-- Versi POST DETAIL -->
       <b:if cond='data:view.isPost'>
         <b:section class='gg-sb__body gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-body-post' name='Left SB Body (Post)' showaddelement='true'>
           <b:widget id='HTML4' locked='false' title='' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA sS (POST/PAGE DETAIL) -->
+<nav id="gg-toc" class="gg-toc gg-panelcard" data-headings="h1,h2,h3,h4" aria-labelledby="gg-toc-title">
+  <div class="gg-toc__head">
+    <div class="gg-toc__heading" id="gg-toc-title">
+      <span class="material-symbols-rounded gg-toc__ico" aria-hidden="true">format_list_bulleted</span>
+      <span class="gg-toc__title" data-gg-copy="toc.title">Table of Contents</span>
+    </div>
+  </div>
+  <div class="gg-toc__body" id="gg-toc-body">
+    <ol class="gg-toc__list" aria-label="Table of contents" data-gg-copy-aria="toc.title" data-gg-marker="panel-post-toc"></ol>
+    <div class="gg-toc__empty" hidden></div>
+  </div>
+</nav>]]></b:widget-setting>
+            </b:widget-settings>
             <b:includable id='main'>
               <div class='widget-content'>
                 <nav aria-labelledby='gg-toc-title' class='gg-toc gg-panelcard' data-headings='h1,h2,h3,h4' id='gg-toc'>
@@ -1576,6 +1612,15 @@ text-align: center;
             </b:includable>
           </b:widget>
           <b:widget id='HTML30' locked='false' title='Interests' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<div class='gg-epanel__head'><span class='gg-epanel__eyebrow' data-gg-copy='panel.post.interests'>Interests</span>  </div>
+<div class=""><span class="material-symbols-rounded" aria-hidden="true">interests</span><span class="" data-gg-copy='panel.post.interests'>Interests</span></div>
+
+<div id="gg-labeltree-post" class="gg-lt gg-labeltree" data-gg-module="labeltree" data-gg-labeltree="post" data-max-posts="10">
+  
+  <ul class="gg-lt__tree" role="tree" aria-label="Label tree"></ul>
+</div>]]></b:widget-setting>
+            </b:widget-settings>
             <b:includable id='main'>
               <div class='widget-content'>
                 <div class='gg-epanel__head'>
@@ -1594,77 +1639,115 @@ text-align: center;
         </b:section>
         
       </b:if>
-  <b:if cond='data:view.isMultipleItems'>
-        <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-list' name='Left SB Bot (List)' showaddelement='true'>
-          <b:widget id='HTML28' locked='false' title='look at me on' type='HTML' visible='true'>
-            <b:includable id='main'>
-              <div class='widget-content'>
-                <footer>
-                  <div>
-                    <a aria-label='Library' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.library' href='/p/library.html'>
-                      <span class='gg-lang-switcher__current' data-gg-copy='nav.library'>Library</span>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmarks</span>
-                    </a>
-                  </div>
-                  <div>
-                    <a aria-label='Portfolio' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.portfolio' href='/search/label/Portfolio'>
-                      <span class='gg-lang-switcher__current' data-gg-copy='nav.portfolio'>Portfolio</span>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>work</span>
-                    </a>
-                  </div>
-                  <div>
-                    <a aria-label='Online Store' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.store' href='/search/label/Store'>
-                      <span class='gg-lang-switcher__current' data-gg-copy='nav.store'>Online Store</span>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>shopping_bag</span>
-                    </a>
-                  </div>
-                  <div aria-label='Select language' class='gg-lang-switcher' data-gg-copy-aria='lang.switcher.open'>
-                    <button aria-controls='gg-lang-switcher-menu--list' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
-                      <span class='gg-lang-switcher__current' data-gg-copy='lang.current' data-gg-lang-current='true'>English</span>
-                      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
-                    </button>
-                    <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu--list' role='listbox'>
-                      <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-code='id' data-gg-lang-option='true' role='option' type='button'>
-                        <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.id'>Bahasa Indonesia</span>
-                      </button>
-                      <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-code='en' data-gg-lang-option='true' role='option' type='button'>
-                        <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.en'>English</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div aria-label='Follow PakRPP' class='gg-leftnav__socialbar' role='region'>
-                    <div aria-label='Social links' class='gg-leftnav__sociallinks' role='list'>
-                      <a aria-label='Facebook: pakrpp' class='gg-leftnav__sociallink' href='https://www.facebook.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z'/></svg>
-                      </a>
-                      <a aria-label='X: pakrpp' class='gg-leftnav__sociallink' href='https://x.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z'/></svg>
-                      </a>
-                      <a aria-label='Instagram: pakrpp' class='gg-leftnav__sociallink' href='https://www.instagram.com/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'/></svg>
-                      </a>
-                      <a aria-label='YouTube: pakrpp' class='gg-leftnav__sociallink' href='https://www.youtube.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z'/></svg>
-                      </a>
-                      <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></svg>
-                      </a>
-                      <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                        <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div class='gg-footer__legal'><span>Copyright © 2026 PakRPP.</span><span> All rights reserved.</span></div>
-                </footer>
-              </div>
-            </b:includable>
-          </b:widget>
-        </b:section>
-          </b:if>
+ <b:if cond='data:view.isMultipleItems'>
+  <div class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-list'>
+    <div class='widget-content'>
+      <footer>
+        <div>
+          <a aria-label='Library' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.library' href='/p/library.html'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.library'>Library</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmarks</span>
+          </a>
+        </div>
+
+        <div>
+          <a aria-label='Portfolio' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.portfolio' href='/search/label/Portfolio'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.portfolio'>Portfolio</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>work</span>
+          </a>
+        </div>
+
+        <div>
+          <a aria-label='Online Store' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.store' href='/search/label/Store'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.store'>Online Store</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>shopping_bag</span>
+          </a>
+        </div>
+
+        <div aria-label='Select language' class='gg-lang-switcher' data-gg-copy-aria='lang.switcher.open'>
+          <button aria-controls='gg-lang-switcher-menu--list' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
+            <span class='gg-lang-switcher__current' data-gg-copy='lang.current' data-gg-lang-current='true'>English</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
+          </button>
+
+          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu--list' role='listbox'>
+            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-code='id' data-gg-lang-option='true' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.id'>Bahasa Indonesia</span>
+            </button>
+            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-code='en' data-gg-lang-option='true' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.en'>English</span>
+            </button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+</b:if>
         
         <b:if cond='data:view.isPost'>
         <b:section class='gg-sb__bot gg-blog-sidebar__section gg-panelcard' id='gg-left-sb-bot-post' name='Left SB Bot (Post)' showaddelement='true'>
-          <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' visible='true'>
+          <b:widget id='HTML36' locked='false' title='look at me on' type='HTML' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='content'><![CDATA[<!-- GAGA FOOTER --><footer>
+<!-- GG SYNC-PAIR: keep list/post quick-link + switcher blocks in lockstep -->
+<div><a aria-label='Library' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.library' href='/p/library.html'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.library'>Library</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmarks</span>
+          </a>
+</div>
+<div><a aria-label='Portfolio' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.portfolio' href='/search/label/Portfolio'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.portfolio'>Portfolio</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>work</span>
+          </a>
+</div>
+<div><a aria-label='Online Store' class='gg-lang-switcher__toggle' data-gg-copy-aria='nav.store' href='/search/label/Store'>
+            <span class='gg-lang-switcher__current' data-gg-copy='nav.store'>Online Store</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>shopping_bag</span>
+          </a>
+</div>
+
+<div aria-label='Select language' class='gg-lang-switcher' data-gg-copy-aria='lang.switcher.open'>
+          <button aria-controls='gg-lang-switcher-menu--post' aria-expanded='false' class='gg-lang-switcher__toggle' data-gg-lang-toggle='true' type='button'>
+            <span class='gg-lang-switcher__current' data-gg-copy='lang.current' data-gg-lang-current='true'>English</span>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>language</span>
+          </button>
+          <div class='gg-lang-switcher__menu' hidden='hidden' id='gg-lang-switcher-menu--post' role='listbox'>
+            <button aria-selected='true' class='gg-lang-switcher__option' data-gg-lang-code='id' data-gg-lang-option='true' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.id'>Bahasa Indonesia</span>
+            </button>
+            <button aria-selected='false' class='gg-lang-switcher__option' data-gg-lang-code='en' data-gg-lang-option='true' role='option' type='button'>
+              <span class='gg-lang-switcher__option-name' data-gg-copy='lang.option.en'>English</span>
+            </button>
+          </div>
+        </div>
+     
+
+<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
+                <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
+                  <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
+                  </a>
+                  <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></path></svg>
+                  </a>
+                  <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></path></svg>
+                  </a>
+                  <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
+                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></path></svg>
+                  </a>
+               <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></use></svg>
+                    </a>
+                    <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></use></svg>
+                    </a>
+                </div>
+              </div>
+  
+
+ <div class="gg-footer__legal"><span>Copyright © 2026 PakRPP.</span><span> All rights reserved.</span></div> </footer><!-- /GAGA FOOTER -->]]></b:widget-setting>
+            </b:widget-settings>
             <b:includable id='main'>
               <div class='widget-content'>
                 <footer>
@@ -1722,7 +1805,7 @@ text-align: center;
                       </a>
                     </div>
                   </div>
-                  <div class='gg-footer__legal'><span>Copyright © 2026 PakRPP.</span><span> All rights reserved.</span></div>
+                  <div class='gg-footer__legal'><span>Copyright &#169; 2026 PakRPP.</span><span> All rights reserved.</span></div>
                 </footer>
               </div>
             </b:includable>
@@ -1738,20 +1821,18 @@ text-align: center;
     </aside>
     </b:if>
     
-        
 
     <!-- KONTEN UTAMA: Blog1 (JANGAN DIUTAK-ATIK DALAMNYA) -->
     <div data-gg-listing-flow-ssr='1' expr:class='data:ggIsSpecialApp ? &quot;gg-special-main&quot; : &quot;gg-blog-main&quot;'>
-      <b:if cond='data:view.isMultipleItems and not data:view.isHomepage'>
-        <h1 class='gg-listing__title'>The PakRPP Unfiltered</h1>
-      </b:if>
+   <!--   <b:if cond='data:view.isMultipleItems and not data:view.isHomepage'>
+      </b:if> -->
       <!-- GAGA FEATURED POST -->
     <b:if cond='data:ggIsBlogHome'>
       <section class='gg-home-blog__body gg-home-blog__body--primary-mixed' data-gg-home-primary-mixed='1' id='gg-featuredpost1'>
         <section class='gg-mixed' data-gg-kind='featured' data-gg-label='blog' data-gg-max='5' data-gg-mixed='1' data-gg-module='mixed-media' data-label='blog' data-max='5' data-order='published' data-type='rail' id='gg-mixed-featuredstrip'>
           <header class='gg-mixed__hd'>
             <p class='gg-mixed__kicker' data-gg-copy='mixed.featured.kicker' data-role='kicker'>FEATURED</p>
-            <h2 class='gg-mixed__title' hidden='hidden'>Featured</h2>
+           <!-- <h2 class='gg-mixed__title' hidden='hidden'>Featured</h2> -->
             <a class='gg-mixed__more' data-gg-copy='mixed.action.seeAll' data-role='more' href='#'>See all</a>
           </header>
           <div class='gg-mixed__bd'>
@@ -1801,7 +1882,7 @@ text-align: center;
         <section class='gg-mixed' data-cols='3' data-gg-cols='3' data-gg-kind='newsish' data-gg-label='news' data-gg-labels='news,bookish,podcast' data-gg-max='3' data-gg-mixed='1' data-gg-module='mixed-media' data-label='news' data-labels='news,bookish,podcast' data-max='3' data-order='published' data-type='newsdeck' id='gg-mixed-newsish-1'>
           <header class='gg-mixed__hd'>
             <p class='gg-mixed__kicker' data-gg-copy='mixed.newsdeck.kicker' data-role='kicker'>NEWSDECK</p>
-            <h2 class='gg-mixed__title' hidden='hidden'>Newsdeck 1</h2>
+           <!-- <h2 class='gg-mixed__title' hidden='hidden'>Newsdeck 1</h2> -->
             <a class='gg-mixed__more' data-gg-copy='mixed.action.seeAll' data-role='more' href='#'>See all</a>
           </header>
           <div class='gg-mixed__bd'>
