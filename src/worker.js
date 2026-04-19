@@ -1570,95 +1570,6 @@ const fetchFeedEntryByPath = async (requestUrl, pathname) => {
   return null;
 };
 
-const buildFallbackPostToolbarHtml = (safeComments, hasCommentBadge) => {
-  return [
-    "<div class='gg-post__toolbar' data-gg-module='post-toolbar'>",
-    "<div class='gg-post__toolbar-group'>",
-    "<button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>",
-    "</button>",
-    "</div>",
-    "<div class='gg-post__toolbar-group'>",
-    "<button aria-expanded='false' aria-label='Information' class='gg-post__tool' data-gg-copy-aria='post.action.info' data-gg-postbar='info' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>",
-    "</button>",
-    "<button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-copy-aria='post.action.focus' data-gg-postbar='focus' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>",
-    "</button>",
-    "<button aria-label='Save to library' class='gg-post__tool gg-post__action--bookmark' data-gg-copy-aria='post.action.save' data-gg-postbar='save' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>",
-    "</button>",
-    "<button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>",
-    hasCommentBadge
-      ? `<span aria-hidden='true' class='gg-post__tool-badge'>${safeComments}</span>`
-      : "",
-    "</button>",
-    "<button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>",
-    "</button>",
-    "</div>",
-    "</div>",
-  ].join("");
-};
-
-const buildFallbackCommentsPanelHtml = (safeComments, commentsCount, options = {}) => {
-  const opt = options || {};
-  const heading = commentsCount === 1 ? "1 Comment" : `${safeComments} Comments`;
-  const message =
-    commentsCount > 0
-      ? "Comments are temporarily unavailable in fallback mode."
-      : "No comments yet.";
-  const formSrc = cleanText(opt.commentFormIframeSrc);
-  const allowNewComments = opt.allowNewComments !== false && !!formSrc;
-  const relayPath = cleanText(opt.appRpcRelayPath) || "https://www.blogger.com/rpc_relay.html";
-  const relayLiteral = JSON.stringify(relayPath);
-  const noNewCommentsText = escapeHtml(cleanText(opt.noNewCommentsText) || "Comments are closed.");
-  const safeFormSrc = escapeHtml(formSrc);
-  return [
-    "<div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>",
-    "<div class='gg-comments-panel__body' data-gg-slot='comments'>",
-    `<section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' data-num-comments='${safeComments}' id='comments'>`,
-    "<a name='comments'></a>",
-    "<div aria-hidden='true' class='gg-comments__head-spacer'></div>",
-    "<header class='gg-comments__head'>",
-    "<div class='gg-comments__title'>",
-    "<span aria-hidden='true' class='ms'>comment</span>",
-    `<h3 class='gg-comments__h'>${heading}</h3>`,
-    "</div>",
-    "<div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'></div>",
-    "</header>",
-    "<div class='gg-comments__content comments-content'>",
-    "<div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>",
-    "<div class='gg-cmt-empty'>",
-    "<strong data-gg-copy='comments.empty.title'>Comments</strong>",
-    `<span>${escapeHtml(message)}</span>`,
-    "</div>",
-    "</div>",
-    "</div>",
-    "<div aria-hidden='true' class='gg-comments__footer-spacer'></div>",
-    `<div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-open='0' data-gg-has-cta='${allowNewComments ? "1" : "0"}'>`,
-    "<div class='gg-comments__footer-inner'>",
-    allowNewComments
-      ? "<div class='gg-comments__footer-cta' id='gg-top-continue'><a aria-expanded='false' class='comment-reply' data-gg-copy='comments.action.add' data-gg-footer-cta='1' href='javascript:;' rel='nofollow'>Add comment</a></div>"
-      : "",
-    "<div class='gg-comments__footer-main'>",
-    allowNewComments ? "" : `<div class='gg-comments__footer-note'>${noNewCommentsText}</div>`,
-    "<div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'></div>",
-    "<div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'>",
-    allowNewComments
-      ? `<div class='comment-form' data-gg-native-plumbing='composer' data-gg-owner='native-hidden' id='top-ce'><a name='comment-form'></a><a href='${safeFormSrc}' id='comment-editor-src' rel='noopener noreferrer' title='Comment Form Link'></a><iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' frameborder='0' height='90px' id='comment-editor' name='comment-editor' src='${safeFormSrc}' width='100%'></iframe><script type='text/javascript'>(function(){var relay=${relayLiteral};var done=false;var tries=0;function init(){if(done)return;if(typeof BLOG_CMT_createIframe==='function'){done=true;BLOG_CMT_createIframe(relay);}}init();var timer=setInterval(function(){tries+=1;init();if(done||tries&gt;=20){clearInterval(timer);}},200);})();</script></div>`
-      : "",
-    "</div>",
-    "</div>",
-    "</div>",
-    "</div>",
-    "</section>",
-    "</div>",
-    "</div>",
-  ].join("");
-};
-
 const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
   if (!entry) return "";
   const opt = options || {};
@@ -1670,73 +1581,22 @@ const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
       (entry && entry.summary && entry.summary.$t) ||
       ""
   );
-  const publishedIso = cleanText(entry && entry.published && entry.published.$t);
-  const updatedIso = cleanText(entry && entry.updated && entry.updated.$t) || publishedIso;
-  const publishedText = formatIsoDate(publishedIso || updatedIso);
-  const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t) || "0";
-  const commentsCount = toPositiveInt(commentsRaw, 0, 1000000);
-  const commentsText = String(commentsCount);
-  const author = pickFeedAuthor(entry);
-  const authorName = cleanText(author.name) || "PakRPP";
-  const categories = Array.isArray(entry && entry.category) ? entry.category : [];
-  const labels = categories
-    .map((item) => cleanText(item && item.term))
-    .filter(Boolean);
-  const labelsHtml = labels.length
-    ? `<div class='gg-post__labels gg-visually-hidden'>${labels
-        .map((name) => {
-          const text = escapeHtml(name);
-          const href = escapeHtml(buildFeedLabelUrl(name, postUrl));
-          return `<a class='gg-post__label-link' href='${href || "#"}' rel='tag'>${text}</a>`;
-        })
-        .join("")}</div>`
-    : "";
-  const words = stripHtml(contentHtml).split(/\s+/).filter(Boolean).length;
-  const readMin = words ? `${Math.max(1, Math.ceil(words / 200))} min read` : "";
+  if (!contentHtml) return "";
   const safeTitle = escapeHtml(title);
   const safePostId = escapeHtml(postId || "fallback");
   const safePostUrl = escapeHtml(postUrl || String(requestUrl || ""));
-  const safeAuthor = escapeHtml(authorName);
-  const safeDateText = escapeHtml(publishedText);
-  const safeUpdated = escapeHtml(updatedIso || publishedIso || "");
-  const safeComments = escapeHtml(commentsText);
-  const safeReadMin = escapeHtml(readMin);
   const surface = opt.isPage ? "page" : "post";
-  const hasCommentBadge = commentsCount > 0;
-  const hasRepliesHtml = !!pickFeedRepliesLink(entry, "text/html");
-  const commentFormIframeSrc = hasRepliesHtml
-    ? buildFallbackCommentFormIframeSrc(entry, requestUrl, {
-        blogId: extractFeedBlogId(entry),
-        postId,
-        isPage: opt.isPage,
-      })
-    : "";
-  const toolbarHtml = buildFallbackPostToolbarHtml(safeComments, hasCommentBadge);
-  const commentsPanelHtml = buildFallbackCommentsPanelHtml(safeComments, commentsCount, {
-    allowNewComments: hasRepliesHtml,
-    commentFormIframeSrc,
-    appRpcRelayPath: "https://www.blogger.com/rpc_relay.html",
-    noNewCommentsText: "Comments are closed.",
-  });
   return [
-    `<article class='gg-post' data-gg-module='post-detail' data-gg-surface='${surface}' data-author='${safeAuthor}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safePostUrl}'>`,
-    toolbarHtml,
+    `<article class='gg-post' data-gg-emergency-fallback='post-detail' data-gg-surface='${surface}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safePostUrl}'>`,
     "<header class='gg-post__header'>",
     `<h1 class='gg-post__title' data-gg-marker='panel-post-title'>${safeTitle}</h1>`,
     "</header>",
-    `<div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='${safeReadMin}' data-tags='' data-author='${safeAuthor}' data-updated='${safeUpdated}'></div>`,
-    labelsHtml,
     "<div class='gg-post__body'>",
     `<section class='gg-post__content post-body entry-content' data-gg-module='post-content' id='post-body-${safePostId}'>`,
     contentHtml,
     "</section>",
-    "<div class='gg-post__footer'>",
-    "<div aria-label='Tags' class='gg-post__footer-tags' data-gg-slot='footer-tags' hidden='true'></div>",
-    "</div>",
-    "<div aria-hidden='true' class='gg-post__comments-anchor' data-gg-comments-owner='panel' hidden='hidden'></div>",
     "</div>",
     "</article>",
-    commentsPanelHtml,
   ].join("");
 };
 
