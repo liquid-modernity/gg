@@ -3791,7 +3791,22 @@ gap:17px;
 main.gg-main:is([data-gg-surface="post"],[data-gg-surface="page"])[data-gg-right-mode="info"]:is([data-gg-right-panel="open"],[data-gg-info-panel="open"]) .gg-blog-layout--post :is(.gg-detail-info-sheet,.gg-info-panel) :is(.gg-detail-info-sheet__card,#gg-postinfo) .gg-pi__meta{
 grid-template-columns:minmax(0,1fr);
 }
+/* LEFT PANEL STATE — unified contract */
+main.gg-main[data-gg-left-panel="closed"] .gg-blog-sidebar--left{
+  display: none !important;
+}
 
+main.gg-main[data-gg-left-panel="open"] .gg-blog-sidebar--left{
+  display: flex !important;
+}
+
+main.gg-main:is([data-gg-surface="post"], [data-gg-surface="page"])[data-gg-left-panel="closed"] .gg-blog-layout--post .gg-blog-sidebar--left{
+  display: none !important;
+}
+
+main.gg-main:is([data-gg-surface="post"], [data-gg-surface="page"])[data-gg-left-panel="open"] .gg-blog-layout--post .gg-blog-sidebar--left{
+  display: flex !important;
+}
 
 .gg-lt{font-family:inherit;color:#0f172a;}
 .gg-lt__card{
@@ -4390,7 +4405,9 @@ stroke:#ff4ca0;
 filter:drop-shadow(0 6px 14px rgba(255,44,146,.3));
 transition:stroke-dashoffset .12s ease;
 }
-
+nav.gg-dock .gg-dock__progress{
+  display: none !important;
+}
 
 .gg-related-inline{
 margin:18px 0;

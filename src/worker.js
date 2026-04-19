@@ -2237,18 +2237,20 @@ export default {
         return redirectToSurface("/");
       }
       function buildOriginHtmlRequest(baseRequest, originUrl) {
-        const headers = new Headers(baseRequest.headers);
+        const headers = new Headers();
       
         headers.set(
           "accept",
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         );
+      
+        const acceptLanguage = baseRequest.headers.get("accept-language");
+        if (acceptLanguage) {
+          headers.set("accept-language", acceptLanguage);
+        }
+      
         headers.set("cache-control", "no-cache");
         headers.set("pragma", "no-cache");
-      
-        headers.delete("if-none-match");
-        headers.delete("if-modified-since");
-        headers.delete("x-requested-with");
       
         return new Request(originUrl.toString(), {
           method: "GET",

@@ -3348,29 +3348,29 @@
   prevLeft = prevRight = prevMode = null;
   }
   
-  function setFocus(on){
-    GG.core.state.toggle(document.body, 'focus-mode', !!on);
-    setFocusIcon(!!on);
-    refreshDetailPanelRefs();
-  
-    if(on){
-      rememberPanels();
-      setLeft(false);
-      hideRightPanel();
-      return;
-    }
-  
-    // Focus OFF on detail surface:
-    // reopen left sidebar and comments panel deterministically.
-    if (isDetailSurface) {
-      setLeft(true);
-      showRightPanel('comments');
-      applyFromAttrs();
-      return;
-    }
-  
-    restorePanels();
+ function setFocus(on){
+  var isOn = !!on;
+
+  GG.core.state.toggle(document.body, 'focus-mode', isOn);
+  setFocusIcon(isOn);
+  refreshDetailPanelRefs();
+
+  if (isOn) {
+    setLeft(false);
+    hideRightPanel();
+    applyFromAttrs();
+    return;
   }
+
+  if (isDetailSurface) {
+    setLeft(true);
+    showRightPanel('comments');
+    applyFromAttrs();
+    return;
+  }
+
+  restorePanels();
+}
   (function(){
   hideRightPanel();
   setLeft(leftState() === 'open');
@@ -5406,44 +5406,19 @@
       if (!dock) return null;
     
       var tracks = qsa('.gg-dock__progress', dock);
-      for (var i = 1; i < tracks.length; i++) {
+      for (var i = 0; i < tracks.length; i++) {
         try { tracks[i].remove(); } catch (_) {}
       }
     
-      var track = qs('.gg-dock__progress', dock);
-      var bar = track ? qs('.gg-dock__progress-bar', track) : null;
-    
-      if (barEl && barEl.isConnected && dock.contains(barEl) && bar) {
-        barEl = bar;
-        return barEl;
-      }
-    
-      if (!track) {
-        track = document.createElement('div');
-        track.className = 'gg-dock__progress';
-        dock.appendChild(track);
-      }
-    
-      if (!bar) {
-        track.textContent = '';
-        bar = document.createElement('span');
-        bar.className = 'gg-dock__progress-bar';
-        track.appendChild(bar);
-      }
-    
-      barEl = bar;
-      return barEl;
+      barEl = null;
+      return null;
     }
   
     function setVisible(on){
-      var track = barEl && barEl.parentNode ? barEl.parentNode : null;
-      if (track) {
-        track.style.opacity = on ? '1' : '0';
-        track.style.pointerEvents = 'none';
+      if (barEl && barEl.parentNode) {
+        try { barEl.parentNode.remove(); } catch (_) {}
       }
-      if (barEl) {
-        barEl.style.opacity = on ? '1' : '0';
-      }
+      barEl = null;
     }
   
     function resolveCurrent(){
@@ -5504,7 +5479,7 @@
       var end = start + article.offsetHeight - window.innerHeight;
       var pct = clamp((window.pageYOffset - start) / Math.max(120, end - start));
   
-      barEl.style.width = (pct * 100).toFixed(2) + '%';
+     
   
       if (GG.modules && GG.modules.DockPerimeter && typeof GG.modules.DockPerimeter.init === 'function') {
         GG.modules.DockPerimeter.init(dockEl);
