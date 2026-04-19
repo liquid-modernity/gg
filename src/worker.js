@@ -1254,6 +1254,19 @@ const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount
   return out;
 };
 
+const hasExplicitBlog1RenderFailure = (html) =>
+  /Failed to render gadget\s+['"]Blog1['"]/i.test(String(html || ""));
+
+const hasUsablePostDetailShell = (html) => {
+  const source = String(html || "");
+  if (!source) return false;
+  if (/data-gg-module\s*=\s*['"]post-detail['"]/i.test(source)) return true;
+  return (
+    /class\s*=\s*['"][^'"]*\bgg-post\b[^'"]*['"]/i.test(source) &&
+    /class\s*=\s*['"][^'"]*\bpost-body\b[^'"]*\bentry-content\b[^'"]*['"]/i.test(source)
+  );
+};
+
 const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
   const options = opts || {};
   const targetCount = toPositiveInt(
@@ -1272,10 +1285,11 @@ const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
   if (!html) {
     return responseFromHtml(response, html);
   }
+  const hardFallbackEvidence = hasExplicitBlog1RenderFailure(html);
 
   const range = findElementByIdRange(html, "div", "postcards");
   if (!range) {
-    if (!allowCreateContainer) {
+    if (!allowCreateContainer || !hardFallbackEvidence) {
       return responseFromHtml(response, html);
     }
     const feedFill = await fetchFeedCards(requestUrl, targetCount, new Set());
@@ -1311,6 +1325,9 @@ const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
     const out = responseFromHtml(response, html);
     out.headers.set("x-gg-ssr-postcards", String(existing.length));
     return out;
+  }
+  if (!hardFallbackEvidence) {
+    return responseFromHtml(response, html);
   }
 
   const seen = new Set(existing.map((card) => card.key));
@@ -1770,12 +1787,9 @@ const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
     isSpecialAppPath(pathname);
   const isSpecialSurface =
     /data-gg-surface\s*=\s*['"]special['"]/i.test(source) || !!specialKey || isSpecialApp;
-  const hasBlog1Failure = /Failed to render gadget\s+'Blog1'/i.test(source);
-  const hasPostDetail = /data-gg-module\s*=\s*['"]post-detail['"]/i.test(source);
-  if (!hasBlog1Failure) {
-    if (isSpecialSurface) return source;
-    if (hasPostDetail) return source;
-  }
+  const hasBlog1Failure = hasExplicitBlog1RenderFailure(source);
+  if (!hasBlog1Failure) return source;
+  if (!isSpecialSurface && hasUsablePostDetailShell(source)) return source;
   const blogRange = findElementByIdRange(source, "div", "blog");
   if (!blogRange) return source;
   const matched = await fetchFeedEntryByPath(requestUrl, pathname);
@@ -2759,23 +2773,27 @@ export default {
           // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
           // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
           rewritten
-          .on("main#gg-main", {
-            element(el) {
-              el.setAttribute("data-gg-surface", "listing");
-              el.setAttribute("data-gg-page", "listing");
-              el.setAttribute("data-gg-view", "listing");
-              // Keep home-root contract but force blog state for listing alias.
-              el.setAttribute("data-gg-home-state", "blog");
-            },
-          })
-            .on(".gg-info-panel", {
+            .on("main#gg-main", {
+              element(el) {
+                el.setAttribute("data-gg-surface", "listing");
+                el.setAttribute("data-gg-page", "listing");
+                el.setAttribute("data-gg-view", "listing");
+                // Keep home-root contract but force blog state for listing alias.
+                el.setAttribute("data-gg-home-state", "blog");
+              },
+            });
+          if (templateMismatch || templateContract) {
+            // Emergency-only hidden host for drift/mismatch containment.
+            rewritten.on(".gg-info-panel", {
               element(el) {
                 el.append(
                   '<div data-gg-worker-toc-fallback="1" hidden><ol data-gg-slot="toc"></ol><p data-gg-slot="toc-hint"></p></div>',
                   { html: true }
                 );
               },
-            })
+            });
+          }
+          rewritten
           .on("link[rel=\"canonical\"]", {
             element(el) {
               el.remove();
