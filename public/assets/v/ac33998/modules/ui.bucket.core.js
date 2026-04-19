@@ -3309,8 +3309,29 @@
     setRightMode(useMode);
     setRightState('open');
   
-    if (isDetailSurface && useMode === 'info') {
-      setLeftState('closed');
+    function showRightPanel(mode){
+      var useMode = mode || 'comments';
+    
+      setRightMode(useMode);
+      setRightState('open');
+    
+      refreshDetailPanelRefs();
+    
+      if (useMode === 'info') {
+        forceInfoSheetOpen();
+      }
+    
+      applyFromAttrs();
+    
+      if (useMode === 'comments') {
+        if (
+          GG.modules &&
+          GG.modules.Comments &&
+          typeof GG.modules.Comments.ensureLoaded === 'function'
+        ) {
+          GG.modules.Comments.ensureLoaded({ fromPrimaryAction: true, scroll: false });
+        }
+      }
     }
   
     refreshDetailPanelRefs();
@@ -5450,20 +5471,30 @@
     function ensureBar(dock){
       if (!dock) return null;
     
-      var tracks = qsa('.gg-dock__progress', dock);
-      for (var i = 0; i < tracks.length; i++) {
-        try { tracks[i].remove(); } catch (_) {}
+      var track = qs('.gg-dock__progress', dock);
+      var bar = track ? qs('.gg-dock__progress-bar', track) : null;
+    
+      if (!track) {
+        track = document.createElement('div');
+        track.className = 'gg-dock__progress';
+        dock.appendChild(track);
       }
     
-      barEl = null;
-      return null;
+      if (!bar) {
+        track.textContent = '';
+        bar = document.createElement('span');
+        bar.className = 'gg-dock__progress-bar';
+        track.appendChild(bar);
+      }
+    
+      barEl = bar;
+      return barEl;
     }
   
     function setVisible(on){
       if (barEl && barEl.parentNode) {
-        try { barEl.parentNode.remove(); } catch (_) {}
+        barEl.parentNode.style.display = 'none';
       }
-      barEl = null;
     }
   
     function resolveCurrent(){
@@ -5523,7 +5554,12 @@
       var start = rect.top + window.pageYOffset;
       var end = start + article.offsetHeight - window.innerHeight;
       var pct = clamp((window.pageYOffset - start) / Math.max(120, end - start));
-  
+
+      barEl.style.width = (pct * 100).toFixed(2) + '%';
+      
+      if (GG.modules && GG.modules.DockPerimeter && typeof GG.modules.DockPerimeter.init === 'function') {
+        GG.modules.DockPerimeter.init(dockEl);
+      }
      
   
       if (GG.modules && GG.modules.DockPerimeter && typeof GG.modules.DockPerimeter.init === 'function') {
@@ -9929,9 +9965,8 @@
         if (state === 'open' && prev !== 'open') {
           rememberFocus(opts.from || document.activeElement);
           pendingFocus = 'right';
-          if (isPostSurface() && getAttr(main, 'data-gg-left-panel') === 'open') {
-            setLeft('closed', { skipUpdate: true });
-          } else if (shouldMobile() && getAttr(main, 'data-gg-left-panel') === 'open') {
+        
+          if (shouldMobile() && getAttr(main, 'data-gg-left-panel') === 'open') {
             setAttr(main, 'data-gg-left-panel', 'closed');
           }
         }
@@ -10073,8 +10108,16 @@
         if (surfaceChanged) main.__ggPanelsSurface = surface;
   
         layout = main && main.querySelector ? main.querySelector('.gg-blog-layout') : null;
-        left = layout ? layout.querySelector('.gg-blog-sidebar--left') : qs('.gg-blog-sidebar--left', main);
-        right = layout ? layout.querySelector('.gg-blog-sidebar--right') : qs('.gg-blog-sidebar--right', main);
+
+        left =
+          (layout ? layout.querySelector('.gg-blog-sidebar--left') : null) ||
+          qs('.gg-blog-sidebar--left', main) ||
+          qs('.gg-blog-sidebar--left');
+        
+        right =
+          (layout ? layout.querySelector('.gg-blog-sidebar--right') : null) ||
+          qs('.gg-blog-sidebar--right', main) ||
+          qs('.gg-blog-sidebar--right');
         if (isPostSurface) syncCommentsMount();
   
         if (isPostSurface){
