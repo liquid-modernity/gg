@@ -3159,8 +3159,30 @@ if(isDetailSurface) upgradeDetailInfoSheet(infoShell, infoSheet);
 if(bar.__ggBound) return;
 bar.__ggBound = true;
 
-var rightSidebar=qs('.gg-blog-sidebar--right',main),commentsPanel=qs('#ggPanelComments',main)||qs('[data-gg-panel="comments"]',main)||(rightSidebar?qs('[data-gg-panel="comments"]',rightSidebar):null),infoPanelRight=rightSidebar?queryDetailInfoShell(rightSidebar):null,infoCardPost=infoPanelRight?queryDetailInfoSheet(infoPanelRight):null;
-if(infoCardPost) infoCardPost.hidden=false;
+var rightSidebar = null, commentsPanel = null, infoPanelRight = null, infoCardPost = null;
+
+function refreshDetailPanelRefs(){
+  rightSidebar =
+    qs('.gg-blog-sidebar--right', main) ||
+    qs('.gg-blog-sidebar--right');
+
+  commentsPanel =
+    (rightSidebar ? qs('#ggPanelComments', rightSidebar) : null) ||
+    qs('#ggPanelComments', main) ||
+    qs('[data-gg-panel="comments"]', main) ||
+    (rightSidebar ? qs('[data-gg-panel="comments"]', rightSidebar) : null);
+
+  infoPanelRight =
+    rightSidebar ? queryDetailInfoShell(rightSidebar) : null;
+
+  infoCardPost =
+    infoPanelRight ? queryDetailInfoSheet(infoPanelRight) : null;
+
+  if (infoPanelRight) infoPanelRight.hidden = false;
+  if (infoCardPost) infoCardPost.hidden = false;
+}
+
+refreshDetailPanelRefs();
 function btnByAct(act){
 return bar.querySelector('[data-gg-postbar="'+act+'"]');
 }
@@ -3208,26 +3230,50 @@ else main.removeAttribute('data-gg-right-mode');
 }
 
 function applyFromAttrs(){
-var rightOpen=rightState()==='open',mode=rightMode(),focusOn=GG.core.state.has(document.body,'focus-mode'),showComments=rightOpen&&mode==='comments',showInfo=rightOpen&&mode==='info';
-setBtnActive('info',showInfo);setBtnActive('comments',showComments);setFocusIcon(focusOn);
-if(commentsPanel){
-commentsPanel.setAttribute('tabindex','-1');
-commentsPanel.setAttribute('aria-hidden', showComments ? 'false' : 'true');
-commentsPanel.setAttribute('inert','');
-GG.core.state.remove(commentsPanel,'closing');
-if(showComments){
-commentsPanel.hidden=false;
-commentsPanel.removeAttribute('inert');
-GG.core.state.remove(commentsPanel,'hidden');
-GG.core.state.add(commentsPanel,'open');
-focusNoScroll(commentsPanel);
-}else{
-GG.core.state.remove(commentsPanel,'open');
-GG.core.state.add(commentsPanel,'hidden');
-commentsPanel.hidden=true;
-}
-}
-if(infoPanelRight){infoPanelRight.hidden=!showInfo;infoPanelRight.setAttribute('inert','');infoPanelRight.setAttribute('tabindex','-1');if(showInfo){var infoFocus=queryDetailInfoSheet(infoPanelRight)||infoPanelRight;infoPanelRight.removeAttribute('inert');focusNoScroll(infoFocus);}}
+  refreshDetailPanelRefs();
+
+  var rightOpen=rightState()==='open',
+      mode=rightMode(),
+      focusOn=GG.core.state.has(document.body,'focus-mode'),
+      showComments=rightOpen&&mode==='comments',
+      showInfo=rightOpen&&mode==='info';
+
+  setBtnActive('info',showInfo);
+  setBtnActive('comments',showComments);
+  setFocusIcon(focusOn);
+
+  if(commentsPanel){
+    commentsPanel.setAttribute('tabindex','-1');
+    commentsPanel.setAttribute('aria-hidden', showComments ? 'false' : 'true');
+    commentsPanel.setAttribute('inert','');
+    GG.core.state.remove(commentsPanel,'closing');
+
+    if(showComments){
+      commentsPanel.hidden=false;
+      commentsPanel.removeAttribute('inert');
+      GG.core.state.remove(commentsPanel,'hidden');
+      GG.core.state.add(commentsPanel,'open');
+      focusNoScroll(commentsPanel);
+    }else{
+      GG.core.state.remove(commentsPanel,'open');
+      GG.core.state.add(commentsPanel,'hidden');
+      commentsPanel.hidden=true;
+    }
+  }
+
+  if(infoPanelRight){
+    infoPanelRight.hidden=!showInfo;
+    infoPanelRight.setAttribute('inert','');
+    infoPanelRight.setAttribute('tabindex','-1');
+
+    if(infoCardPost) infoCardPost.hidden = false;
+
+    if(showInfo){
+      var infoFocus=queryDetailInfoSheet(infoPanelRight)||infoPanelRight;
+      infoPanelRight.removeAttribute('inert');
+      focusNoScroll(infoFocus);
+    }
+  }
 }
 
 function clearCommentsHashIfAny(){
@@ -3244,22 +3290,28 @@ if (!open && triggerBtn && typeof triggerBtn.focus === 'function') {
 }
 }
 function showRightPanel(mode){
-var useMode = mode || 'comments';
-setRightMode(useMode);
-setRightState('open');
-applyFromAttrs();
-if (useMode === 'comments') {
-  if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
-}
+  var useMode = mode || 'comments';
+  refreshDetailPanelRefs();
+  setRightMode(useMode);
+  setRightState('open');
+  applyFromAttrs();
+  if (useMode === 'comments') {
+    if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') {
+      GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
+    }
+  }
 }
 
 function hideRightPanel(focusBackBtn){
-setRightMode('');
-setRightState('closed');
-applyFromAttrs();
-clearCommentsHashIfAny();
+  refreshDetailPanelRefs();
+  setRightMode('');
+  setRightState('closed');
+  applyFromAttrs();
+  clearCommentsHashIfAny();
 
-if(focusBackBtn) focusBackBtn.focus({ preventScroll:true });
+  if(focusBackBtn) {
+    try { focusBackBtn.focus({ preventScroll:true }); } catch(_) {}
+  }
 }
 
 function isCommentsOpen(){
@@ -3297,16 +3349,27 @@ prevLeft = prevRight = prevMode = null;
 }
 
 function setFocus(on){
-GG.core.state.toggle(document.body, 'focus-mode', !!on);
-setFocusIcon(!!on);
+  GG.core.state.toggle(document.body, 'focus-mode', !!on);
+  setFocusIcon(!!on);
+  refreshDetailPanelRefs();
 
-if(on){
-  rememberPanels();
-  setLeft(false);
-  hideRightPanel();
-} else {
+  if(on){
+    rememberPanels();
+    setLeft(false);
+    hideRightPanel();
+    return;
+  }
+
+  // Focus OFF on detail surface:
+  // reopen left sidebar and comments panel deterministically.
+  if (isDetailSurface) {
+    setLeft(true);
+    showRightPanel('comments');
+    applyFromAttrs();
+    return;
+  }
+
   restorePanels();
-}
 }
 (function(){
 hideRightPanel();
@@ -5330,52 +5393,145 @@ GG.modules.Skeleton = (function(){
 /* ========== READING PROGRESS ========== */
 GG.modules.ReadingProgress = (function(){
   var barEl = null;
+  var dockEl = null;
   var mainEl = null;
   var article = null;
+  var bound = false;
+  var rafId = 0;
+  var mainObs = null;
 
   function clamp(n){ return Math.min(1, Math.max(0, n)); }
 
   function ensureBar(dock){
-    if(barEl) return barEl;
-    if(!dock) return null;
+    if (!dock) return null;
+
+    if (barEl && barEl.isConnected) return barEl;
+
+    var existing = qs('.gg-dock__progress-bar', dock);
+    if (existing) {
+      barEl = existing;
+      return barEl;
+    }
+
     var track = document.createElement('div');
     track.className = 'gg-dock__progress';
+
     var bar = document.createElement('span');
     bar.className = 'gg-dock__progress-bar';
+
     track.appendChild(bar);
     dock.appendChild(track);
     barEl = bar;
     return barEl;
   }
 
+  function setVisible(on){
+    var track = barEl && barEl.parentNode ? barEl.parentNode : null;
+    if (track) {
+      track.style.opacity = on ? '1' : '0';
+      track.style.pointerEvents = 'none';
+    }
+    if (barEl) {
+      barEl.style.opacity = on ? '1' : '0';
+    }
+  }
+
+  function resolveCurrent(){
+    dockEl = (dockEl && dockEl.isConnected) ? dockEl : qs('nav.gg-dock[data-gg-module="dock"]');
+    mainEl = qs('main.gg-main[data-gg-surface]') || qs('main.gg-main');
+
+    var surface = mainEl ? (mainEl.getAttribute('data-gg-surface') || '') : '';
+
+    if (surface === 'post' || surface === 'page') {
+      article =
+        qs('.gg-post__content.post-body.entry-content', mainEl) ||
+        qs('.post-body.entry-content', mainEl) ||
+        qs('.entry-content', mainEl);
+    } else {
+      article = null;
+    }
+
+    return surface;
+  }
+
+  function observeMain(){
+    var target = qs('main.gg-main') || document.body;
+    if (!target || !window.MutationObserver) return;
+
+    if (mainObs && mainObs.__ggTarget === target) return;
+
+    if (mainObs) {
+      try { mainObs.disconnect(); } catch (_) {}
+    }
+
+    mainObs = new MutationObserver(schedule);
+    mainObs.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-gg-surface', 'data-gg-view', 'data-gg-page']
+    });
+    mainObs.__ggTarget = target;
+  }
+
   function update(){
-    if(!barEl || !article) return;
+    var surface = resolveCurrent();
+    observeMain();
+
+    ensureBar(dockEl || qs('nav.gg-dock[data-gg-module="dock"]'));
+    if (!barEl) return;
+
+    if ((surface !== 'post' && surface !== 'page') || !article || !article.isConnected) {
+      barEl.style.width = '0%';
+      setVisible(false);
+      return;
+    }
+
+    setVisible(true);
+
     var rect = article.getBoundingClientRect();
     var start = rect.top + window.pageYOffset;
     var end = start + article.offsetHeight - window.innerHeight;
     var pct = clamp((window.pageYOffset - start) / Math.max(120, end - start));
+
     barEl.style.width = (pct * 100).toFixed(2) + '%';
+
+    if (GG.modules && GG.modules.DockPerimeter && typeof GG.modules.DockPerimeter.init === 'function') {
+      GG.modules.DockPerimeter.init(dockEl);
+    }
+  }
+
+  function schedule(){
+    if (rafId) return;
+    rafId = requestAnimationFrame(function(){
+      rafId = 0;
+      update();
+    });
+  }
+
+  function bind(){
+    if (bound) return;
+    bound = true;
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    window.addEventListener('popstate', schedule);
+    document.addEventListener('visibilitychange', schedule);
   }
 
   function init(dock, main){
-    mainEl = main || qs('main.gg-main[data-gg-surface]');
-    var surface = mainEl ? mainEl.getAttribute('data-gg-surface') : '';
-    if(surface !== 'post' && surface !== 'page') return;
+    dockEl = dock || dockEl || qs('nav.gg-dock[data-gg-module="dock"]');
+    mainEl = main || mainEl || qs('main.gg-main[data-gg-surface]') || qs('main.gg-main');
 
-    article = qs('.gg-post__content.post-body.entry-content') ||
-              qs('.post-body.entry-content') ||
-              qs('.entry-content');
-    if(!article) return;
-
-    ensureBar(dock || qs('nav.gg-dock[data-gg-module="dock"]'));
-    if(!barEl) return;
-
-    update();
-    window.addEventListener('scroll', update, { passive:true });
-    window.addEventListener('resize', update);
+    ensureBar(dockEl);
+    bind();
+    schedule();
   }
 
-  return { init:init };
+  return {
+    init: init,
+    update: schedule
+  };
 })();
 
 /* ========== DOCK PERIMETER PROGRESS ========== */
