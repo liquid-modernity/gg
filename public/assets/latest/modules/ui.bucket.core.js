@@ -3180,6 +3180,22 @@
     if (infoCardPost) infoCardPost.hidden = false;
   }
   
+  function forceInfoSheetOpen(){
+    refreshDetailPanelRefs();
+  
+    if (infoPanelRight) {
+      infoPanelRight.hidden = false;
+      infoPanelRight.removeAttribute('hidden');
+      infoPanelRight.removeAttribute('inert');
+      infoPanelRight.setAttribute('tabindex', '-1');
+    }
+  
+    if (infoCardPost) {
+      infoCardPost.hidden = false;
+      infoCardPost.removeAttribute('hidden');
+    }
+  }
+  
   refreshDetailPanelRefs();
   function btnByAct(act){
   return bar.querySelector('[data-gg-postbar="'+act+'"]');
@@ -3289,25 +3305,42 @@
   }
   function showRightPanel(mode){
     var useMode = mode || 'comments';
-    refreshDetailPanelRefs();
+  
     setRightMode(useMode);
     setRightState('open');
+  
+    if (isDetailSurface && useMode === 'info') {
+      setLeftState('closed');
+    }
+  
+    refreshDetailPanelRefs();
+  
+    if (useMode === 'info') {
+      forceInfoSheetOpen();
+    }
+  
     applyFromAttrs();
+  
     if (useMode === 'comments') {
-      if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') {
-        GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
+      if (
+        GG.modules &&
+        GG.modules.Comments &&
+        typeof GG.modules.Comments.ensureLoaded === 'function'
+      ) {
+        GG.modules.Comments.ensureLoaded({ fromPrimaryAction: true, scroll: false });
       }
     }
   }
   
   function hideRightPanel(focusBackBtn){
-    refreshDetailPanelRefs();
     setRightMode('');
     setRightState('closed');
+  
+    refreshDetailPanelRefs();
     applyFromAttrs();
     clearCommentsHashIfAny();
   
-    if(focusBackBtn) {
+    if (focusBackBtn) {
       try { focusBackBtn.focus({ preventScroll:true }); } catch(_) {}
     }
   }
@@ -3335,40 +3368,54 @@
   }
   
   function restorePanels(){
-  var pl = prevLeft || 'closed';
-  var pr = prevRight || 'closed';
-  var pm = prevMode || 'comments';
+    var pl = prevLeft || (isDetailSurface ? 'open' : 'closed');
+    var pr = prevRight || 'closed';
+    var pm = prevMode || 'comments';
   
-  setLeftState(pl);
-  if(pr === 'open') showRightPanel(pm);
-  else hideRightPanel();
+    setLeftState(pl);
   
-  prevLeft = prevRight = prevMode = null;
+    if (pr === 'open') {
+      setRightMode(pm);
+      setRightState('open');
+  
+      if (pm === 'info') {
+        forceInfoSheetOpen();
+      }
+    } else {
+      setRightMode('');
+      setRightState('closed');
+    }
+  
+    prevLeft = prevRight = prevMode = null;
   }
   
- function setFocus(on){
-  var isOn = !!on;
-
-  GG.core.state.toggle(document.body, 'focus-mode', isOn);
-  setFocusIcon(isOn);
-  refreshDetailPanelRefs();
-
-  if (isOn) {
-    setLeft(false);
-    hideRightPanel();
+  function setFocus(on){
+    var isOn = !!on;
+    var wasOn = GG.core.state.has(document.body, 'focus-mode');
+  
+    if (isOn === wasOn) {
+      setFocusIcon(isOn);
+      applyFromAttrs();
+      return;
+    }
+  
+    if (isOn) rememberPanels();
+  
+    GG.core.state.toggle(document.body, 'focus-mode', isOn);
+    setFocusIcon(isOn);
+    refreshDetailPanelRefs();
+  
+    if (isOn) {
+      setLeftState('closed');
+      setRightMode('');
+      setRightState('closed');
+      applyFromAttrs();
+      return;
+    }
+  
+    restorePanels();
     applyFromAttrs();
-    return;
   }
-
-  if (isDetailSurface) {
-    setLeft(true);
-    showRightPanel('comments');
-    applyFromAttrs();
-    return;
-  }
-
-  restorePanels();
-}
   (function(){
   hideRightPanel();
   setLeft(leftState() === 'open');
@@ -10032,13 +10079,13 @@
   
         if (isPostSurface){
           if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
-            setAttr(main, 'data-gg-left-panel', 'closed');
+            setAttr(main, 'data-gg-left-panel', shouldMobile() ? 'closed' : 'open');
           }
-          if (surfaceChanged || !main.hasAttribute('data-gg-right-panel') || getRightState() !== 'open'){
-            setRightAttr('open');
+          if (surfaceChanged || !main.hasAttribute('data-gg-right-panel')){
+            setRightAttr('closed');
           }
-          if (surfaceChanged || !main.hasAttribute('data-gg-right-mode') || (main.getAttribute('data-gg-right-mode') || '') !== 'comments'){
-            setAttr(main, 'data-gg-right-mode', 'comments');
+          if (surfaceChanged && main.hasAttribute('data-gg-right-mode')){
+            main.removeAttribute('data-gg-right-mode');
           }
         } else {
           if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){

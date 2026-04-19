@@ -3180,6 +3180,22 @@
     if (infoCardPost) infoCardPost.hidden = false;
   }
   
+  function forceInfoSheetOpen(){
+    refreshDetailPanelRefs();
+  
+    if (infoPanelRight) {
+      infoPanelRight.hidden = false;
+      infoPanelRight.removeAttribute('hidden');
+      infoPanelRight.removeAttribute('inert');
+      infoPanelRight.setAttribute('tabindex', '-1');
+    }
+  
+    if (infoCardPost) {
+      infoCardPost.hidden = false;
+      infoCardPost.removeAttribute('hidden');
+    }
+  }
+  
   refreshDetailPanelRefs();
   function btnByAct(act){
   return bar.querySelector('[data-gg-postbar="'+act+'"]');
@@ -3214,19 +3230,16 @@
   function rightMode(){ return main.getAttribute('data-gg-right-mode') || ''; }
   
   function setLeftState(state){
+  main.setAttribute('data-gg-left-panel', state);
   if(GG.modules.Panels && GG.modules.Panels.setLeft) GG.modules.Panels.setLeft(state);
-  else main.setAttribute('data-gg-left-panel', state);
   }
   function setRightState(state){
+  main.setAttribute('data-gg-right-panel', state);
+  main.setAttribute('data-gg-info-panel', state);
   if(GG.modules.Panels && GG.modules.Panels.setRight) GG.modules.Panels.setRight(state);
-  else {
-    main.setAttribute('data-gg-right-panel', state);
-    main.setAttribute('data-gg-info-panel', state);
-  }
   }
   function setRightMode(mode){
-  if(GG.modules.Panels && GG.modules.Panels.setRightMode) GG.modules.Panels.setRightMode(mode);
-  else if(mode) main.setAttribute('data-gg-right-mode', mode);
+  if(mode) main.setAttribute('data-gg-right-mode', mode);
   else main.removeAttribute('data-gg-right-mode');
   }
   
@@ -3292,31 +3305,42 @@
   }
   function showRightPanel(mode){
     var useMode = mode || 'comments';
-    refreshDetailPanelRefs();
-    if(GG.modules.Panels && GG.modules.Panels.openRight) GG.modules.Panels.openRight(useMode);
-    else {
-      setRightMode(useMode);
-      setRightState('open');
+  
+    setRightMode(useMode);
+    setRightState('open');
+  
+    if (isDetailSurface && useMode === 'info') {
+      setLeftState('closed');
     }
+  
+    refreshDetailPanelRefs();
+  
+    if (useMode === 'info') {
+      forceInfoSheetOpen();
+    }
+  
     applyFromAttrs();
+  
     if (useMode === 'comments') {
-      if(GG.modules&&GG.modules.Comments&&typeof GG.modules.Comments.ensureLoaded==='function') {
-        GG.modules.Comments.ensureLoaded({fromPrimaryAction:true,scroll:false});
+      if (
+        GG.modules &&
+        GG.modules.Comments &&
+        typeof GG.modules.Comments.ensureLoaded === 'function'
+      ) {
+        GG.modules.Comments.ensureLoaded({ fromPrimaryAction: true, scroll: false });
       }
     }
   }
   
   function hideRightPanel(focusBackBtn){
+    setRightMode('');
+    setRightState('closed');
+  
     refreshDetailPanelRefs();
-    if(GG.modules.Panels && GG.modules.Panels.closeRight) GG.modules.Panels.closeRight();
-    else {
-      setRightMode('');
-      setRightState('closed');
-    }
     applyFromAttrs();
     clearCommentsHashIfAny();
   
-    if(focusBackBtn) {
+    if (focusBackBtn) {
       try { focusBackBtn.focus({ preventScroll:true }); } catch(_) {}
     }
   }
@@ -3344,20 +3368,31 @@
   }
   
   function restorePanels(){
-  var pl = prevLeft || 'closed';
-  var pr = prevRight || 'closed';
-  var pm = prevMode || 'comments';
+    var pl = prevLeft || (isDetailSurface ? 'open' : 'closed');
+    var pr = prevRight || 'closed';
+    var pm = prevMode || 'comments';
   
-  setLeftState(pl);
-  if(pr === 'open') showRightPanel(pm);
-  else hideRightPanel();
+    setLeftState(pl);
   
-  prevLeft = prevRight = prevMode = null;
+    if (pr === 'open') {
+      setRightMode(pm);
+      setRightState('open');
+  
+      if (pm === 'info') {
+        forceInfoSheetOpen();
+      }
+    } else {
+      setRightMode('');
+      setRightState('closed');
+    }
+  
+    prevLeft = prevRight = prevMode = null;
   }
   
   function setFocus(on){
     var isOn = !!on;
     var wasOn = GG.core.state.has(document.body, 'focus-mode');
+  
     if (isOn === wasOn) {
       setFocusIcon(isOn);
       applyFromAttrs();
@@ -3365,13 +3400,15 @@
     }
   
     if (isOn) rememberPanels();
+  
     GG.core.state.toggle(document.body, 'focus-mode', isOn);
     setFocusIcon(isOn);
     refreshDetailPanelRefs();
   
     if (isOn) {
       setLeftState('closed');
-      hideRightPanel();
+      setRightMode('');
+      setRightState('closed');
       applyFromAttrs();
       return;
     }
@@ -3380,15 +3417,12 @@
     applyFromAttrs();
   }
   (function(){
-  if (GG.core.state.has(document.body, 'focus-mode')) {
-    GG.core.state.remove(document.body, 'focus-mode');
-  }
+  hideRightPanel();
+  setLeft(leftState() === 'open');
   
   var h = location.hash || '';
   if(h === '#comments' || /^#c\d+/.test(h)){
     showRightPanel('comments');
-  } else {
-    applyFromAttrs();
   }
   })();
   bar.addEventListener('click', function(e){
@@ -5489,6 +5523,12 @@
       var start = rect.top + window.pageYOffset;
       var end = start + article.offsetHeight - window.innerHeight;
       var pct = clamp((window.pageYOffset - start) / Math.max(120, end - start));
+  
+     
+  
+      if (GG.modules && GG.modules.DockPerimeter && typeof GG.modules.DockPerimeter.init === 'function') {
+        GG.modules.DockPerimeter.init(dockEl);
+      }
     }
   
     function schedule(){
@@ -5526,11 +5566,11 @@
   
   /* ========== DOCK PERIMETER PROGRESS ========== */
   GG.modules.DockPerimeter = (function(){
-    var dock, svgWrap, svg, trackPath, progPath;
+    var dock, bar, svgWrap, svg, trackPath, progPath;
     var pathLen = 0;
     var rafId = null;
     var resizeObs = null;
-    var bound = false;
+    var mutObs = null;
     var SW = 2;
     var SVG_NS = 'http://www.w3.org/2000/svg';
   
@@ -5621,21 +5661,10 @@
     }
   
     function readProgress(){
-      var main = qs('main.gg-main[data-gg-surface]') || qs('main.gg-main');
-      var surface = main ? (main.getAttribute('data-gg-surface') || '') : '';
-      var article = null;
-      var rect, start, end, pct;
-      if (surface !== 'post' && surface !== 'page') return 0;
-      article =
-        qs('.gg-post__content.post-body.entry-content', main) ||
-        qs('.post-body.entry-content', main) ||
-        qs('.entry-content', main);
-      if (!article || !article.isConnected) return 0;
-      rect = article.getBoundingClientRect();
-      start = rect.top + window.pageYOffset;
-      end = start + article.offsetHeight - window.innerHeight;
-      pct = (window.pageYOffset - start) / Math.max(120, end - start);
-      return Math.min(1, Math.max(0, pct));
+      if(!bar || !bar.style || !bar.style.width) return 0;
+      var pct = parseFloat(bar.style.width);
+      if(isNaN(pct)) return 0;
+      return Math.min(1, Math.max(0, pct / 100));
     }
   
     function applyProgress(){
@@ -5654,23 +5683,22 @@
     }
   
     function observe(){
+      if(window.MutationObserver && bar && !mutObs){
+        mutObs = new MutationObserver(scheduleProgress);
+        mutObs.observe(bar, { attributes:true, attributeFilter:['style'] });
+      }
       if(window.ResizeObserver && dock && !resizeObs){
         resizeObs = new ResizeObserver(function(){ syncPath(); });
         resizeObs.observe(dock);
-      } else if (!resizeObs) {
+      } else {
         window.addEventListener('resize', syncPath);
       }
-      if (bound) return;
-      bound = true;
-      window.addEventListener('scroll', scheduleProgress, { passive: true });
-      window.addEventListener('resize', syncPath);
-      window.addEventListener('popstate', scheduleProgress);
-      document.addEventListener('visibilitychange', scheduleProgress);
     }
   
     function init(dockEl){
       dock = dockEl || qs('nav.gg-dock[data-gg-module="dock"]');
-      if(!dock) return;
+      bar = qs('.gg-dock__progress-bar', dock);
+      if(!dock || !bar) return;
       ensureSvg();
       syncPath();
       applyProgress();
@@ -5972,6 +6000,7 @@
   { name: 'readTime.init', selector: '[data-slot="readtime"]', when: { views:['post','page'] }, init: function(){ if (GG.modules.readTime) GG.modules.readTime.init(document); } },
   {name:'LeftNav.init',selector:'.gg-blog-sidebar--left',init:function(){var m=document.querySelector('main.gg-main')||document;GG.modules.LeftNav&&GG.modules.LeftNav.init(m);}},
   { name: 'Dock.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.Dock) GG.modules.Dock.init(dock, main); } },
+  { name: 'ReadingProgress.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); var main = document.querySelector('main.gg-main[data-gg-surface]'); if (dock && GG.modules.ReadingProgress) GG.modules.ReadingProgress.init(dock, main); } },
   { name: 'DockPerimeter.init', selector: 'nav.gg-dock[data-gg-module="dock"]', init: function(){ var dock = document.querySelector('nav.gg-dock[data-gg-module="dock"]'); if (dock && GG.modules.DockPerimeter) GG.modules.DockPerimeter.init(dock); } },
   { name: 'LoadMore.init', selector: '[data-gg-module="loadmore"]', when: { views:['home','listing','label','search','archive'] }, init: function(){ if (GG.modules.LoadMore) GG.modules.LoadMore.init(); } },
   { name: 'RelatedInline.init', selector: '.gg-post__content.post-body.entry-content, .post-body.entry-content, .entry-content', when: { views:['post','page'] }, init: function(){ if (GG.modules.RelatedInline) GG.modules.RelatedInline.init(); } },
@@ -9765,18 +9794,6 @@
         setAttr(main, 'data-gg-right-panel', state);
         setAttr(main, 'data-gg-info-panel', state);
       }
-      function setRightMode(mode){
-        if (!main) return;
-        if (mode) setAttr(main, 'data-gg-right-mode', mode);
-        else main.removeAttribute('data-gg-right-mode');
-      }
-      function getState(){
-        return {
-          left: getAttr(main, 'data-gg-left-panel') || 'closed',
-          right: getRightState(),
-          mode: getAttr(main, 'data-gg-right-mode') || ''
-        };
-      }
       function rememberFocus(el){
         if (!el || el === document.body || el === document.documentElement) return;
         if (!document.contains(el)) return;
@@ -9925,16 +9942,6 @@
         if (!opts.skipUpdate) updateBackdrop();
         if (state === 'closed' && prev === 'open' && opts.restoreFocus) restoreFocus();
       }
-      function openRight(mode, opts){
-        opts = opts || {};
-        setRightMode(mode || 'comments');
-        setRight('open', opts);
-      }
-      function closeRight(opts){
-        opts = opts || {};
-        opts.clearMode = true;
-        setRight('closed', opts);
-      }
   
   function updateBackdrop(){
     var surface = getAttr(main, 'data-gg-surface') || '';
@@ -10072,7 +10079,7 @@
   
         if (isPostSurface){
           if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
-            setAttr(main, 'data-gg-left-panel', 'closed');
+            setAttr(main, 'data-gg-left-panel', shouldMobile() ? 'closed' : 'open');
           }
           if (surfaceChanged || !main.hasAttribute('data-gg-right-panel')){
             setRightAttr('closed');
@@ -10081,9 +10088,6 @@
             main.removeAttribute('data-gg-right-mode');
           }
         } else {
-          if (GG.core && GG.core.state && document.body) {
-            GG.core.state.remove(document.body, 'focus-mode');
-          }
           if (surfaceChanged || !main.hasAttribute('data-gg-left-panel')){
             setAttr(main, 'data-gg-left-panel', shouldMobile() ? 'closed' : 'open');
           }
@@ -10103,16 +10107,7 @@
         updateBackdrop();
       }
   
-      return {
-        init: init,
-        setLeft: setLeft,
-        setRight: setRight,
-        setRightMode: setRightMode,
-        openRight: openRight,
-        closeRight: closeRight,
-        getState: getState,
-        update: updateBackdrop
-      };
+      return { init: init, setLeft: setLeft, setRight: setRight };
     })();
   })();
   
