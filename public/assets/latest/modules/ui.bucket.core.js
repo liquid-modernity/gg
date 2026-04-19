@@ -1338,8 +1338,6 @@
   GG.ui.ggToast('Coming soon');
   }
   GG.actions.register('support', ggSupportComingSoon);
-  // Temporary bridge for legacy/generated post-card markup during this hook migration.
-  GG.actions.register('like', ggSupportComingSoon);
   GG.actions.register('bookmark', function(ctx){
   var event = ctx && ctx.event;
   var element = ctx && ctx.element;
