@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='85fdfbc96806' name='gg-template-fingerprint'/>
+    <meta content='37f035841c0f' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1119,7 +1119,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='85fdfbc96806' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='37f035841c0f' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2977,7 +2977,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
       </b:if>
     <b:else/>
-      <b:if cond='data:post.lastUpdated'>
+      <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
@@ -3211,7 +3211,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
     <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
       <div class='gg-comments-panel__body' data-gg-slot='comments'>
-        <b:include data='post' name='threadedComments'/>
+        <b:include cond='data:post.allowComments' data='post' name='threadedComments'/>
       </div>
     </div>
   </b:if>
