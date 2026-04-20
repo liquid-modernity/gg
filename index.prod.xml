@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='37f035841c0f' name='gg-template-fingerprint'/>
+    <meta content='68f6d4106303' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1119,7 +1119,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='37f035841c0f' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='68f6d4106303' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2926,7 +2926,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </article>
 
   <b:else/>
-  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-comments='data:post.numberOfComments ? data:post.numberOfComments : 0' expr:data-date='data:post.date ? data:post.date : &quot;&quot;' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
+  <article class='gg-post' data-comments='0' data-date='' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
     <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
     <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
     
@@ -2950,9 +2950,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
         </button>
     <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>
   <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
-  <b:if cond='data:post.numberOfComments &gt; 0'>
-    <span aria-hidden='true' class='gg-post__tool-badge'><data:post.numberOfComments/></span>
-  </b:if>
 </button>
 
         <button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>
@@ -2974,13 +2971,13 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' data-updated='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;'/>
       </b:if>
     <b:else/>
       <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
         <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.lastUpdated.iso8601'/>
       <b:else/>
-        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-updated='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;'/>
+        <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' data-updated='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;'/>
       </b:if>
     </b:if>
     <b:if cond='data:post.labels'>
@@ -3396,7 +3393,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <!-- 1) Blogger native threaded engine (WAJIB) -->
 </b:includable>
               <b:includable id='threadedComments' var='post'>
-  <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+  <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' data-num-comments='0' expr:data-embed='data:post.embedCommentForm' id='comments'>
 
     <a name='comments'/>
 
@@ -3406,11 +3403,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <div class='gg-comments__title'>
         <span aria-hidden='true' class='ms'>comment</span>
         <h3 class='gg-comments__h'>
-          <b:if cond='data:post.numberOfComments == 1'>
-            1 Comment
-          <b:else/>
-            <data:post.numberOfComments/> Comments
-          </b:if>
+          Comments
         </h3>
       </div>
       <div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'>
@@ -3423,12 +3416,6 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     <div class='gg-comments__content comments-content'>
       <div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>
-        <b:if cond='data:post.numberOfComments == 0'>
-          <div class='gg-cmt-empty'>
-            <strong data-gg-copy='comments.empty.title'>No comments yet</strong>
-            <span data-gg-copy='comments.empty.body'>Be the first to add one.</span>
-          </div>
-        </b:if>
         <data:post.commentHtml/>
       </div>
     </div>
