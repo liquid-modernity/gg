@@ -1257,6 +1257,61 @@ const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount
 const hasExplicitBlog1RenderFailure = (html) =>
   /Failed to render gadget\s+['"]Blog1['"]/i.test(String(html || ""));
 
+const hasListingRenderFailure = (html) => {
+  const source = String(html || "");
+  if (!source) return false;
+  return (
+    hasExplicitBlog1RenderFailure(source) ||
+    /Failed to render theme node\s+['"]section['"]/i.test(source) ||
+    (/There was an error processing the markup/i.test(source) &&
+      /(?:\bdata-gg-bloghome\b|\bdata-gg-surface\s*=\s*['"]listing['"]|\bdata-gg-view\s*=\s*['"]listing['"])/i.test(
+        source
+      ))
+  );
+};
+
+const buildListingPostcardsHtml = (cardsHtml, nextUrl) =>
+  `<div class='gg-stack' data-gg-worker-fallback='listing' id='postcards'>${cardsHtml}</div>${buildLoadMoreWrapHtml(
+    nextUrl
+  )}`;
+
+const buildListingFallbackShellHtml = (listingHtml) =>
+  [
+    "<section class='gg-home-blog' data-gg-home-layer='blog' data-gg-worker-fallback='listing' id='gg-home-blog'>",
+    "<h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>",
+    "<div class='gg-blog-layout gg-blog-layout--list'>",
+    "<div class='gg-blog-main' data-gg-listing-flow-ssr='1'>",
+    listingHtml,
+    "</div>",
+    "</div>",
+    "</section>",
+  ].join("");
+
+const insertListingFallbackHtml = (html, listingHtml) => {
+  const source = String(html || "");
+  if (!source || !listingHtml) return source;
+
+  const blogRange = findElementByIdRange(source, "div", "blog");
+  if (blogRange) {
+    return `${source.slice(0, blogRange.innerStart)}${listingHtml}${source.slice(blogRange.innerStart)}`;
+  }
+
+  const blogMainRange = findElementByClassRange(source, "gg-blog-main");
+  if (blogMainRange) {
+    return `${source.slice(0, blogMainRange.innerStart)}${listingHtml}${source.slice(
+      blogMainRange.innerStart
+    )}`;
+  }
+
+  const mainRange = findElementByIdRange(source, "main", "gg-main");
+  if (mainRange) {
+    const shellHtml = buildListingFallbackShellHtml(listingHtml);
+    return `${source.slice(0, mainRange.innerStart)}${shellHtml}${source.slice(mainRange.innerStart)}`;
+  }
+
+  return `${listingHtml}${source}`;
+};
+
 const hasUsablePostDetailShell = (html) => {
   const source = String(html || "");
   if (!source) return false;
@@ -1285,11 +1340,11 @@ const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
   if (!html) {
     return responseFromHtml(response, html);
   }
-  const hardFallbackEvidence = hasExplicitBlog1RenderFailure(html);
+  const hardFallbackEvidence = hasListingRenderFailure(html);
 
   const range = findElementByIdRange(html, "div", "postcards");
   if (!range) {
-    if (!allowCreateContainer || !hardFallbackEvidence) {
+    if (!allowCreateContainer && !hardFallbackEvidence) {
       return responseFromHtml(response, html);
     }
     const feedFill = await fetchFeedCards(requestUrl, targetCount, new Set());
@@ -1297,20 +1352,8 @@ const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
       return responseFromHtml(response, html);
     }
     const cardsHtml = feedFill.cards.map((card) => card.html).join("");
-    const listingHtml = `<div class='gg-stack' id='postcards'>${cardsHtml}</div>${buildLoadMoreWrapHtml(
-      feedFill.nextUrl
-    )}`;
-    const blogRange = findElementByIdRange(html, "div", "blog");
-    if (blogRange) {
-      html = `${html.slice(0, blogRange.innerStart)}${listingHtml}${html.slice(blogRange.innerStart)}`;
-    } else {
-      const mainRange = findElementByIdRange(html, "main", "gg-main");
-      if (mainRange) {
-        html = `${html.slice(0, mainRange.innerStart)}${listingHtml}${html.slice(mainRange.innerStart)}`;
-      } else {
-        html = `${listingHtml}${html}`;
-      }
-    }
+    const listingHtml = buildListingPostcardsHtml(cardsHtml, feedFill.nextUrl);
+    html = insertListingFallbackHtml(html, listingHtml);
     const out = responseFromHtml(response, html);
     out.headers.set("x-gg-ssr-postcards", String(feedFill.cards.length));
     out.headers.set("x-gg-ssr-backfill", String(feedFill.cards.length));
@@ -1326,7 +1369,7 @@ const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
     out.headers.set("x-gg-ssr-postcards", String(existing.length));
     return out;
   }
-  if (!hardFallbackEvidence) {
+  if (!allowCreateContainer && !hardFallbackEvidence) {
     return responseFromHtml(response, html);
   }
 
@@ -1387,9 +1430,11 @@ const listingTargetCountFromUrl = (url, fallback = BLOG_LISTING_MIN_POSTCARDS) =
   return toPositiveInt(url.searchParams.get("max-results"), fallback, BLOG_LISTING_FEED_MAX_RESULTS);
 };
 
-const shouldSkipListingFallback = (html) => {
+const shouldSkipListingFallback = (html, opts = {}) => {
   const source = String(html || "");
   if (!source) return true;
+  if (opts && opts.allowCreateContainer === true) return false;
+  if (hasListingRenderFailure(source)) return false;
   return !/id\s*=\s*['"]blog['"]/i.test(source);
 };
 
@@ -1478,10 +1523,82 @@ const ensureListingResponse = async (response, requestUrl, opts = {}) => {
   } catch (e) {
     return ensureBlogListingPostcards(response, requestUrl, opts);
   }
-  if (shouldSkipListingFallback(html)) {
+  if (shouldSkipListingFallback(html, opts)) {
     return responseFromHtml(response, html);
   }
   return ensureBlogListingPostcards(response, requestUrl, opts);
+};
+
+const hasLandingSurfaceHtml = (html) => {
+  const source = String(html || "");
+  return /id\s*=\s*['"]gg-landing['"]/i.test(source) || /class\s*=\s*['"][^'"]*\bgg-home-landing\b/i.test(source);
+};
+
+const buildLandingFallbackHtml = () =>
+  [
+    "<section class='gg-home-landing' data-gg-home-layer='landing' data-gg-worker-fallback='landing'>",
+    "<div class='gg-landing' id='gg-landing'>",
+    "<div id='hero'>",
+    "<section aria-label='Hero' class='gg-section gg-hero' data-surface='dark' id='gg-landing-hero' role='region'>",
+    "<div aria-hidden='true' class='gg-hero__scrim'></div>",
+    "<div class='gg-wrap gg-hero__in'>",
+    "<div class='gg-hero__card'>",
+    "<p class='gg-kicker'>&middot; Intelligence by Creator &middot; Performance through Story &middot;</p>",
+    "<h1 class='gg-display'>Edited by pakrpp.</h1>",
+    "<p class='gg-lead'>We cut for retention: hooks, pacing, sound, and clarity. One second decides whether viewers stay. We edit for the stay.</p>",
+    "<div class='gg-ctaRow'>",
+    "<a class='gg-btn gg-btn--accent wa-track' data-section='hero' href='https://wa.me/628999999999?text=Hi%20pakrpp%2C%20I%20need%20a%20quote%20(EN).%20Source%3A%20Hero' rel='noopener'>Get a Quote</a>",
+    "<a class='gg-btn gg-btn--ghost' href='#gg-landing-pillars-4'>See Packages</a>",
+    "</div>",
+    "<p class='gg-micro'>Confidential by default &middot; NDA available &middot; First response &le; 1 business hour</p>",
+    "</div>",
+    "<div aria-label='Quick proof points' class='gg-hero__stats'>",
+    "<div class='gg-stat'><div class='gg-stat__n'>0-3s</div><div class='gg-stat__t'>Hook engineering</div></div>",
+    "<div class='gg-stat'><div class='gg-stat__n'>1-2d</div><div class='gg-stat__t'>First cut (typical)</div></div>",
+    "<div class='gg-stat'><div class='gg-stat__n'>Clean</div><div class='gg-stat__t'>Sound + captions ready</div></div>",
+    "</div>",
+    "</div>",
+    "</section>",
+    "</div>",
+    "<section aria-label='Why pakrpp' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars' role='region'>",
+    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Why it works</p><h2 class='gg-h2'>Retention-first editing, not pretty cuts.</h2><p class='gg-sub'>Disciplined pacing, intentional audio, and ruthless clarity.</p></header>",
+    "<div class='gg-grid3' role='list'><article class='gg-card' role='listitem'><h3 class='gg-h3'>Hook &amp; pacing</h3><p class='gg-p'>Cut dead air, tighten intent, front-load value.</p></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Sound design</h3><p class='gg-p'>Noise, leveling, music bed, and tasteful SFX.</p></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Clarity to action</h3><p class='gg-p'>Structure, emphasis, and captions that stay readable.</p></article></div></div>",
+    "</section>",
+    "<section aria-label='Workflow' class='gg-section gg-darkband' data-surface='dark' id='gg-landing-hero-3' role='region'>",
+    "<div class='gg-wrap'><header class='gg-head gg-head--dark'><p class='gg-kicker'>Workflow</p><h2 class='gg-h2 gg-h2--light'>Fast, predictable, no drama.</h2><p class='gg-sub gg-sub--light'>You always know what is happening and when you will get it.</p></header>",
+    "<ol aria-label='Editing steps' class='gg-steps'><li class='gg-step'><div class='gg-step__n'>01</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Brief</h3><p class='gg-p gg-p--light'>Goal, references, and raw footage.</p></div></li><li class='gg-step'><div class='gg-step__n'>02</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>First cut</h3><p class='gg-p gg-p--light'>Hook, pacing, structure, then polish.</p></div></li><li class='gg-step'><div class='gg-step__n'>03</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Delivery</h3><p class='gg-p gg-p--light'>Exports for platform and caption-safe framing.</p></div></li></ol></div>",
+    "</section>",
+    "<section aria-label='Packages' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars-4' role='region'>",
+    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Packages</p><h2 class='gg-h2'>Pick a lane. Ship faster.</h2><p class='gg-sub'>Simple packages. Custom quotes for campaigns and volume.</p></header>",
+    "<div class='gg-grid3' role='list'><article class='gg-card' role='listitem'><h3 class='gg-h3'>Starter</h3><p class='gg-p'>1 main edit &middot; 2 revisions &middot; clean captions</p><a class='gg-btn gg-btn--ghost' href='#contact'>Ask price</a></article><article class='gg-card gg-card--featured' role='listitem'><h3 class='gg-h3'>Growth</h3><p class='gg-p'>Hook/pacing &middot; sound design &middot; cutdowns</p><a class='gg-btn gg-btn--accent' href='#contact'>Start here</a></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Studio</h3><p class='gg-p'>Campaign &middot; multi-version exports &middot; priority</p><a class='gg-btn gg-btn--ghost' href='#contact'>Book consult</a></article></div></div>",
+    "</section>",
+    "<section aria-label='Contact' class='gg-section gg-contact' data-surface='light' id='contact' role='region'>",
+    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Contact</p><h2 class='gg-h2'>Send the footage. Get the plan.</h2><p class='gg-sub'>Tell us your goal, platform, and deadline.</p></header>",
+    "<div class='gg-contactGrid'><div class='gg-card'><h3 class='gg-h3'>WhatsApp</h3><p class='gg-p'>Fastest route. Include references and deadline.</p><a class='gg-btn gg-btn--accent' href='https://wa.me/62999999999?text=Hi%20pakrpp%2C%20I%20want%20video%20editing.%20Goal%3A%20____.%20Platform%3A%20____.%20Deadline%3A%20____.' rel='noopener'>Chat on WhatsApp</a></div><div class='gg-card'><h3 class='gg-h3'>Quick brief</h3><p class='gg-p'>Contact shortcut via WhatsApp for now.</p></div></div></div>",
+    "</section>",
+    "</div>",
+    "</section>",
+  ].join("");
+
+const ensureLandingSurfaceResponse = async (response) => {
+  let html = "";
+  try {
+    html = await response.text();
+  } catch (e) {
+    return response;
+  }
+  if (!html || hasLandingSurfaceHtml(html)) {
+    return responseFromHtml(response, html);
+  }
+  const mainRange = findElementByIdRange(html, "main", "gg-main");
+  if (!mainRange) {
+    return responseFromHtml(response, html);
+  }
+  const landingHtml = buildLandingFallbackHtml();
+  html = `${html.slice(0, mainRange.innerStart)}${landingHtml}${html.slice(mainRange.innerStart)}`;
+  const out = responseFromHtml(response, html);
+  out.headers.set("x-gg-landing-fallback", "1");
+  return out;
 };
 
 const POST_DETAIL_FALLBACK_MAX_RESULTS = 150;
@@ -2689,6 +2806,9 @@ export default {
           isPostLikePath(pathname)
         ) {
           htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
+        }
+        if (request.method !== "HEAD" && forceLanding) {
+          htmlResponse = await ensureLandingSurfaceResponse(htmlResponse);
         }
         if (request.method !== "HEAD") {
           htmlResponse = await ensureLandingContactResponse(htmlResponse);
