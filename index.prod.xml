@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='26303eb4b718' name='gg-template-fingerprint'/>
+    <meta content='47ba1a81e56e' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -896,11 +896,17 @@
         &quot;@type&quot;: &quot;ListItem&quot;,
         &quot;position&quot;: 1,
         &quot;name&quot;: &quot;Home&quot;,
-        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>landing&quot;
       },
       {
         &quot;@type&quot;: &quot;ListItem&quot;,
         &quot;position&quot;: 2,
+        &quot;name&quot;: &quot;Blog&quot;,
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 3,
         &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
         &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
       }
@@ -919,7 +925,7 @@
         &quot;@type&quot;: &quot;ListItem&quot;,
         &quot;position&quot;: 1,
         &quot;name&quot;: &quot;Home&quot;,
-        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>landing&quot;
       },
       {
         &quot;@type&quot;: &quot;ListItem&quot;,
@@ -1070,8 +1076,8 @@ font-size: medium;
 <b:with value='data:view.isPost' var='ggIsPost'>
 <b:with value='data:view.isPage' var='ggIsPage'>
 <b:with value='data:view.url' var='ggUrl'>
-<b:with value='data:ggUrl and ((data:ggUrl contains &quot;/landing&quot; or data:ggUrl contains &quot;view=landing&quot;) or (data:ggIsHome and not (data:ggUrl contains &quot;/blog&quot; or data:ggUrl contains &quot;view=blog&quot;)))' var='ggIsLandingRoute'>
-<b:with value='data:ggUrl and (data:ggUrl contains &quot;/blog&quot; or data:ggUrl contains &quot;view=blog&quot; or (data:ggUrl contains &quot;/search?max-results=9&quot; and not (data:ggUrl contains &quot;start-index&quot;) and not (data:ggUrl contains &quot;updated-max&quot;) and not (data:ggUrl contains &quot;q=&quot;)))' var='ggIsBlogHome'>
+<b:with value='data:ggUrl and (data:ggUrl contains (data:blog.homepageUrl + &quot;landing&quot;) or data:ggUrl contains &quot;view=landing&quot;)' var='ggIsLandingRoute'>
+<b:with value='(data:ggIsHome and not data:ggIsLandingRoute) or (data:ggUrl and (data:ggUrl contains (data:blog.homepageUrl + &quot;blog&quot;) or data:ggUrl contains &quot;view=blog&quot; or (data:ggUrl contains &quot;/search?max-results=9&quot; and not (data:ggUrl contains &quot;start-index&quot;) and not (data:ggUrl contains &quot;updated-max&quot;) and not (data:ggUrl contains &quot;q=&quot;))))' var='ggIsBlogHome'>
 <b:with value='data:view.isSearch' var='ggIsSearch'>
 <b:with value='data:view.isLabelSearch' var='ggIsLabel'>
 <b:with value='data:view.isArchive' var='ggIsArchive'>
@@ -1096,6 +1102,8 @@ font-size: medium;
 <b:with value='data:ggIsLandingRoute ? &quot;landing&quot; : data:ggSurfaceFromBlogHome' var='ggSurfaceFromLanding'>
 <b:with value='data:ggIsError ? &quot;error&quot; : data:ggSurfaceFromLanding' var='ggSurfaceFromError'>
 <b:with value='data:ggIsOffline ? &quot;offline&quot; : data:ggSurfaceFromError' var='ggSurfaceKind'>
+<!-- ROUTE-02A compatibility debt: data-gg-surface is the route truth.
+     Landing keeps page/view="home" temporarily for existing JS/CSS gates. -->
 <b:with value='data:ggSurfaceKind == &quot;landing&quot; ? &quot;home&quot; : data:ggSurfaceKind' var='ggPageKind'>
 <b:with value='data:ggIsPage ? &quot;page&quot; : &quot;listing&quot;' var='ggViewFromPage'>
 <b:with value='data:ggIsPost ? &quot;post&quot; : data:ggViewFromPage' var='ggViewFromPost'>
@@ -1121,7 +1129,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='26303eb4b718' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='47ba1a81e56e' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1335,7 +1343,7 @@ font-size: medium;
         </p>
 
         <div class='gg-error__actions'>
-          <a class='gg-btn gg-btn--primary' data-gg-copy='notfound.action.home' href='/'>
+          <a class='gg-btn gg-btn--primary' data-gg-copy='notfound.action.home' href='/landing'>
             Back to Home
           </a>
           <a class='gg-btn gg-btn--ghost' data-gg-copy='notfound.action.search' href='#gg-search'>
@@ -2197,7 +2205,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <!-- HOME = /landing -->
     <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
       <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
-    <!--   <span class='gg-post__breadcrumbs-label'>Home</span> -->
+      <span class='gg-post__breadcrumbs-label'>Home</span>
     </a>
 
     <!-- POST MODE -->
@@ -2207,7 +2215,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       <!-- BLOG = / -->
       <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
         <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
-     <!--   <span class='gg-post__breadcrumbs-label'>Blog</span> -->
+        <span class='gg-post__breadcrumbs-label'>Blog</span>
       </a>
 
       <!-- FIRST LABEL (optional) -->
@@ -2871,7 +2879,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   </b:if>
 </b:includable>
               <b:includable id='homePageLink'>
-  <a class='home-link' expr:href='data:blog.homepageUrl'>
+  <a class='home-link' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
     <data:messages.home/>
   </a>
 </b:includable>
@@ -3956,18 +3964,18 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 <nav aria-label='Primary' class='gg-dock' data-gg-dock='1' data-gg-module='dock' expr:data-home-url='data:blog.homepageUrl' expr:data-search-url='data:blog.searchUrl' id='gg-dock'>
 
    <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
-  <a aria-label='Landing' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#hero' data-gg-copy-aria='nav.landing' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;landing#hero&quot;'>
+  <a aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#hero' data-gg-copy-aria='nav.home' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
-    <span class='gg-dock__label' data-gg-copy='nav.landing'>Landing</span>
+    <span class='gg-dock__label' data-gg-copy='nav.home'>Home</span>
   </a>
 <b:else/>
-  <a aria-label='Landing' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#hero' data-gg-copy-aria='nav.landing' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
+  <a aria-label='Home' class='gg-dock__item gg-dock__item--home' data-gg-action='home' data-gg-anchor='#hero' data-gg-copy-aria='nav.home' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>home_app_logo</span>
     </span>
-    <span class='gg-dock__label' data-gg-copy='nav.landing'>Landing</span>
+    <span class='gg-dock__label' data-gg-copy='nav.home'>Home</span>
   </a>
 </b:if>
    <a aria-label='Contact' class='gg-dock__item gg-dock__item--contact' data-gg-action='contact' data-gg-anchor='#contact' data-gg-copy-aria='nav.contact' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl + &quot;landing#contact&quot;'>
@@ -3977,11 +3985,11 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     <span class='gg-dock__label' data-gg-copy='nav.contact'>Contact</span>
   </a>
 
-  <a aria-label='Home' class='gg-dock__item gg-dock__item--blog' data-gg-action='blog' data-gg-copy-aria='dock.home' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl'>
+  <a aria-label='Blog' class='gg-dock__item gg-dock__item--blog' data-gg-action='blog' data-gg-copy-aria='nav.blog' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.homepageUrl'>
     <span aria-hidden='true' class='gg-dock__icon'>
       <span aria-hidden='true' class='gg-icon material-symbols-rounded'>newsmode</span>
     </span>
-    <span class='gg-dock__label' data-gg-copy='dock.home'>Home</span>
+    <span class='gg-dock__label' data-gg-copy='nav.blog'>Blog</span>
   </a>
   
   <a aria-label='Search' class='gg-dock__item gg-dock__item--search' data-gg-action='search' data-gg-copy-aria='dock.search' data-gg-dock-action='1' data-gg-primary='1' expr:href='data:blog.searchUrl'>
