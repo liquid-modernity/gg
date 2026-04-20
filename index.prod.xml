@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='75c1e25dc946' name='gg-template-fingerprint'/>
+    <meta content='423c915637c6' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1121,7 +1121,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='75c1e25dc946' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='423c915637c6' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2951,261 +2951,21 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </article>
 
   <b:else/>
-  <article class='gg-post' data-comments='0' data-date='' data-gg-module='post-detail' data-gg-surface='post' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
+  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
     <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
     <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
-    
-    <!-- GAGA TOOLBAR POST DETAIL -->
-    <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
-    <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
-      <div class='gg-post__toolbar-group'>
-               <button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>
-        </button>
-      </div>
-      <div class='gg-post__toolbar-group'>
-        <button aria-expanded='false' aria-label='Information' class='gg-post__tool' data-gg-copy-aria='post.action.info' data-gg-postbar='info' type='button'>
-  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
-</button>
-        <button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-copy-aria='post.action.focus' data-gg-postbar='focus' type='button'>
-  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>
-</button>
-        <button aria-label='Save to library' class='gg-post__tool gg-post__action--bookmark' data-gg-copy-aria='post.action.save' data-gg-postbar='save' type='button'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
-        </button>
-    <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>
-  <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
-</button>
-
-        <button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>
-          <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
-        </button>
-      </div>
-    </div>
-    </b:if>
-    <!-- /GAGA TOOLBAR POST DETAIL -->
-
-   
- <!-- GAGA HEADER -->
     <header class='gg-post__header'>
       <h1 class='gg-post__title' data-gg-marker='panel-post-title'>
         <data:post.title/>
-      </h1>      
+      </h1>
     </header>
-    <div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='' data-tags='' data-updated='' expr:data-author='data:post.author and data:post.author.name ? data:post.author.name : &quot;PakRPP&quot;'/>
-    <b:if cond='data:post.labels'>
-      <div class='gg-post__labels gg-visually-hidden'>
-        <b:loop values='data:post.labels' var='lab'>
-          <a class='gg-post__label-link' expr:href='data:lab.url' rel='tag'>
-            <data:lab.name/>
-          </a>
-        </b:loop>
-      </div>
-    </b:if>
-    <!-- /GAGA HEADER -->
-<!-- GAGA BREADCRUMBS -->
-<b:if cond='data:view.isPost or data:view.isPage'>
-  <nav aria-label='Breadcrumb' class='gg-post__breadcrumbs'>
-
-    <!-- HOME -->
-    <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl'>
-      <!-- <svg aria-label='GAGA Logo' height='14' viewBox='0 0 600 600' width='14'> <use href='#gg-logo-black'/> </svg> -->
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
-        <span class='gg-post__breadcrumbs-label'>Home</span>
-    </a>
-
-    <!-- ====================== POST MODE ====================== -->
-    <b:if cond='data:view.isPost'>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-
-      <!-- BLOG -->
-      <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
-        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
-        <span class='gg-post__breadcrumbs-label'>Blog</span>
-      </a>
-
-      <!-- LABEL PERTAMA (opsional) -->
-      <b:if cond='data:post.labels'>
-        <b:loop index='i' values='data:post.labels' var='lab'>
-          <b:if cond='data:i == 0'>
-            <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-            <a class='gg-post__breadcrumbs-link' expr:href='data:lab.url'>
-              <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
-              <span class='gg-post__breadcrumbs-label'>
-                <b:eval expr='data:lab.name'/>
-              </span>
-            </a>
-          </b:if>
-        </b:loop>
-      </b:if>
-
-      <!-- TITLE POST (current) -->
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>article</span>
-      <span aria-current='page' class='gg-post__breadcrumbs-current'>
-        <data:post.title/>
-      </span>
-    </b:if>
-
-    <!-- ====================== PAGE MODE ====================== -->
-    
-    <b:if cond='data:view.isPage'>
-      <!-- "Blog-system pages": slug diawali /p/blog- -->
-     <b:if cond='data:post.url contains &quot;blog-&quot;'>
-    <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-        <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
-          <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
-          <span class='gg-post__breadcrumbs-label'>blog</span>
-        </a>
-       </b:if> 
-      
-      <!-- TITLE PAGE (current) -->
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-      <span aria-current='page' class='gg-post__breadcrumbs-current'>
-        
-          
-          <data:post.title/>
-       
-        
-      </span>
-    </b:if>
-
-
-  </nav>
-</b:if>
-<!-- /GAGA BREADCRUMBS -->
-
-    <div class='gg-post__body'>     
-
-      <!-- KONTEN POST -->
+    <div class='gg-post__body'>
       <section class='gg-post__content post-body entry-content' data-gg-module='post-content' expr:id='&quot;post-body-&quot; + data:post.id'>
         <data:post.body/>
-
-        <!-- GAGA TAGS DIRECTORY / TAG HUB (PAGE: /p/tags.html) -->
-        <b:if cond='data:view.isPage and data:post.url contains &quot;tags.html&quot;'>
-          <section class='gg-tags-page'>
-            <header class='gg-tags-page__head'>
-              <h2 class='gg-tags-page__title' data-gg-copy='nav.tags'>Tags</h2>
-              <p class='gg-tags-page__description' data-gg-copy='special.tags.description'>Browse articles by topic.</p>
-            </header>
-
-            <div class='gg-tags-page__controls'>
-              <label class='gg-tags-page__sort-label' data-gg-copy='special.tags.sort' for='ggTagsSort'>Sort</label>
-              <select class='gg-tags-page__sort' id='ggTagsSort'>
-                <option data-gg-copy='special.tags.sort.newest' value='newest'>Newest</option>
-                <option data-gg-copy='special.tags.sort.oldest' value='oldest'>Oldest</option>
-              </select>
-            </div>
-
-            <section class='gg-tags-page__results'>
-              <div class='gg-post-list' data-gg-state='loading'/>
-            </section>
-
-            <section class='gg-tags-page__directory'>
-              <div class='gg-tags-directory'/>
-            </section>
-          </section>
-        </b:if>
-
-        <!-- GAGA LIBRARY PAGE (PAGE: /p/library.html) -->
-        <b:if cond='data:view.isPage and data:post.url contains &quot;library.html&quot;'>
-          <section class='gg-library'>
-            <header class='gg-library__head'>
-              <h2 class='gg-library__title' data-gg-copy='library.title'>Library</h2>
-              <p class='gg-library__description' data-gg-copy='library.subtitle'>Saved posts and collected reading.</p>
-            </header>
-            <div class='gg-library__body'>
-              <div class='gg-library__empty' data-gg-copy='library.empty.title' id='gg-library-empty'>Your library is empty.</div>
-              <div class='gg-library-list' id='gg-library-list'/>
-            </div>
-          </section>
-        </b:if>
-
-        <!-- GAGA FEEDS PAGE (PAGE: /p/feeds.html) -->
-        <b:if cond='data:view.isPage and data:post.url contains &quot;feeds.html&quot;'>
-          <section data-api='/feeds/posts/default?alt=json' id='gg-feed'>
-            <div class='bar'>
-              <input aria-label='Search feeds' class='q' placeholder='Cari konten...' type='search'/>
-              <button class='active' data-type='all' type='button'>All</button>
-              <button data-type='youtube' type='button'>YouTube</button>
-              <button data-type='image' type='button'>Image</button>
-            </div>
-            <div class='grid'/>
-            <div class='loader'>Loading...</div>
-          </section>
-        </b:if>
-
-        <!-- GAGA SITEMAP PAGE (PAGE: /p/sitemap.html) -->
-        <b:if cond='data:view.isPage and data:post.url contains &quot;sitemap.html&quot;'>
-          <section data-api='/feeds/posts/summary?alt=json&amp;max-results=500' id='gg-sitemap'>
-            <div class='gg-head'>
-              <div class='gg-title'>
-                <h2 data-gg-copy='nav.sitemap'>Sitemap</h2>
-                <p class='gg-sub' data-gg-copy='special.sitemap.description'>Browse posts by date, label, or type.</p>
-              </div>
-              <div class='gg-controls'>
-                <div class='gg-row'>
-                  <input aria-label='Search sitemap' class='gg-q' data-gg-copy-aria='special.sitemap.search' data-gg-copy-placeholder='special.sitemap.search.placeholder' placeholder='Search...' type='search'/>
-                  <button class='gg-reset' data-gg-copy='special.sitemap.reset' type='button'>Reset</button>
-                </div>
-                <div class='gg-row'>
-                  <div class='gg-tabs' role='tablist'>
-                    <button class='gg-tab' data-gg-copy='special.sitemap.filter.all' data-gg-state='active' data-type='all' type='button'>All</button>
-                    <button class='gg-tab' data-gg-copy='special.sitemap.filter.youtube' data-type='youtube' type='button'>YouTube</button>
-                    <button class='gg-tab' data-gg-copy='special.sitemap.filter.image' data-type='image' type='button'>Image</button>
-                  </div>
-                </div>
-                <div class='gg-row'>
-                  <select aria-label='Year' class='gg-year' data-gg-copy-aria='special.sitemap.year'>
-                    <option data-gg-copy='special.sitemap.year.all' value=''>All years</option>
-                  </select>
-                  <select aria-label='Month' class='gg-month' data-gg-copy-aria='special.sitemap.month' disabled='disabled'>
-                    <option data-gg-copy='special.sitemap.month.all' value=''>All months</option>
-                  </select>
-                  <select aria-label='Label' class='gg-label' data-gg-copy-aria='special.sitemap.label'>
-                    <option data-gg-copy='special.sitemap.label.all' value=''>All labels</option>
-                  </select>
-                  <select aria-label='Sort' class='gg-sort' data-gg-copy-aria='special.sitemap.sort'>
-                    <option data-gg-copy='special.tags.sort.newest' value='newest'>Newest</option>
-                    <option data-gg-copy='special.tags.sort.oldest' value='oldest'>Oldest</option>
-                    <option data-gg-copy='special.sitemap.sort.titleAsc' value='title_asc'>Title A-Z</option>
-                    <option data-gg-copy='special.sitemap.sort.titleDesc' value='title_desc'>Title Z-A</option>
-                  </select>
-                </div>
-                <div class='gg-row'>
-                  <div class='gg-stats' id='gg-stats'/>
-                  <div class='gg-meta' id='gg-meta'/>
-                </div>
-              </div>
-            </div>
-            <div id='gg-groups'/>
-            <div class='gg-foot'>
-              <button class='gg-more' data-gg-copy='special.sitemap.loadMore' type='button'>Load more</button>
-              <div class='gg-loader' data-gg-copy='global.loading' id='gg-loader'>Loading...</div>
-            </div>
-          </section>
-        </b:if>
       </section>
-
-      <div class='gg-post__footer'>
-        <div aria-label='Tags' class='gg-post__footer-tags' data-gg-slot='footer-tags' hidden='true'/>
-
-   
-
-   
-        
-      </div>
-
-      <div aria-hidden='true' class='gg-post__comments-anchor' data-gg-comments-owner='panel' hidden='hidden'/>
-
     </div>
   </article>
-  <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
-    <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
-      <div class='gg-comments-panel__body' data-gg-slot='comments'/>
-    </div>
   </b:if>
-                   </b:if>
 </b:includable>
               <b:includable id='postFooter' var='post'>
   <div class='post-footer'>
