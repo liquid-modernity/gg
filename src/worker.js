@@ -2159,9 +2159,9 @@ export default {
         forceListing = true;
       } else if (pathname === "/landing") {
         originUrl.pathname = "/";
-        // Blogger may return an error document for unknown feed-view variants on GET.
-        // Fetch canonical home HTML and force landing surface in Worker rewrite instead.
-        originUrl.searchParams.delete("view");
+        // Public /landing must be backed by XML's landing route branch, not
+        // bare / listing DOM relabeled at the edge.
+        originUrl.searchParams.set("view", "landing");
         originUrl.searchParams.delete("max-results");
         originUrl.searchParams.delete("start-index");
         originRequest = new Request(originUrl.toString(), request);
