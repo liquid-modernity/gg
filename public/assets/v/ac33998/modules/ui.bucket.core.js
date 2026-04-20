@@ -8477,14 +8477,29 @@ if (isPostLayout || isDetailSurface){
       }
       badge.textContent = state.label;
     }
+    function cloneCommentActionsTemplate(){
+      var tpl = d.getElementById('gg-comment-actions-template');
+      var source = null;
+      if (!tpl || !tpl.content || !tpl.content.querySelector) return null;
+      source = tpl.content.querySelector('.comment-actions');
+      return source && source.cloneNode ? source.cloneNode(true) : null;
+    }
+    function cloneCommentActionPart(selector){
+      var actions = cloneCommentActionsTemplate();
+      var node = actions && actions.querySelector ? actions.querySelector(selector) : null;
+      return node || null;
+    }
     function ensureActions(comment){
       var block = commentBlock(comment);
       var body = commentBody(comment);
       var actions = commentActions(comment);
       if (!block || !body) return null;
       if (!actions) {
-        actions = d.createElement('div');
-        actions.className = 'comment-actions';
+        actions = cloneCommentActionsTemplate();
+        if (!actions) {
+          actions = d.createElement('div');
+          actions.className = 'comment-actions';
+        }
         if (body.nextSibling) block.insertBefore(actions, body.nextSibling);
         else block.appendChild(actions);
       }
@@ -8520,6 +8535,9 @@ if (isPostLayout || isDetailSurface){
         if (before) actions.insertBefore(btn, before);
         else actions.appendChild(btn);
       }
+      btn.removeAttribute('hidden');
+      btn.removeAttribute('aria-hidden');
+      btn.removeAttribute('data-gg-state');
       isOpen = !!(replies && !replies.hidden && replies.getAttribute('data-gg-state') !== 'collapsed');
       if ((!replies || renderedCount <= 0) && nativeToggle) {
         var nativeExpanded = cleanText(nativeToggle.getAttribute && nativeToggle.getAttribute('aria-expanded')).toLowerCase();
@@ -8750,28 +8768,33 @@ if (isPostLayout || isDetailSurface){
       }
       wrap = actions.querySelector('.cmt2-ctx');
       if (!wrap) {
-        wrap = d.createElement('div');
-        wrap.className = 'cmt2-ctx';
-        btn = d.createElement('button');
-        btn.type = 'button';
-        btn.className = 'cmt2-ctx-btn';
-        btn.setAttribute('data-gg-comment-action', 'more');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.setAttribute('aria-haspopup', 'menu');
-        btn.setAttribute('aria-label', copyLabel('comments.action.more', 'More actions'));
-        btn.appendChild((function(){
-          var icon = d.createElement('span');
-          icon.className = 'ms';
-          icon.setAttribute('aria-hidden', 'true');
-          icon.textContent = 'more_horiz';
-          return icon;
-        })());
-        pop = d.createElement('div');
-        pop.className = 'cmt2-ctx-pop';
-        pop.setAttribute('role', 'menu');
-        wrap.appendChild(btn);
-        wrap.appendChild(pop);
-        actions.appendChild(wrap);
+        wrap = cloneCommentActionPart('.cmt2-ctx');
+        if (wrap) {
+          actions.appendChild(wrap);
+        } else {
+          wrap = d.createElement('div');
+          wrap.className = 'cmt2-ctx';
+          btn = d.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cmt2-ctx-btn';
+          btn.setAttribute('data-gg-comment-action', 'more');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.setAttribute('aria-haspopup', 'menu');
+          btn.setAttribute('aria-label', copyLabel('comments.action.more', 'More actions'));
+          btn.appendChild((function(){
+            var icon = d.createElement('span');
+            icon.className = 'ms';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = 'more_horiz';
+            return icon;
+          })());
+          pop = d.createElement('div');
+          pop.className = 'cmt2-ctx-pop';
+          pop.setAttribute('role', 'menu');
+          wrap.appendChild(btn);
+          wrap.appendChild(pop);
+          actions.appendChild(wrap);
+        }
       } else {
         btn = wrap.querySelector('.cmt2-ctx-btn');
         pop = wrap.querySelector('.cmt2-ctx-pop');
@@ -8781,6 +8804,10 @@ if (isPostLayout || isDetailSurface){
       pop.setAttribute('aria-hidden', pop.getAttribute('data-gg-state') === 'open' ? 'false' : 'true');
       btn.setAttribute('aria-controls', ensureNodeId(pop, 'menu'));
       copyBtn = pop.querySelector('[data-gg-comment-action="copy-link"]');
+      if (permalink && !copyBtn) {
+        copyBtn = cloneCommentActionPart('[data-gg-comment-action="copy-link"]');
+        if (copyBtn) pop.appendChild(copyBtn);
+      }
       if (permalink && !copyBtn) {
         copyBtn = d.createElement('button');
         copyBtn.type = 'button';
@@ -8800,6 +8827,10 @@ if (isPostLayout || isDetailSurface){
       }
       if (copyBtn) copyBtn.setAttribute('role', 'menuitem');
       deleteBtn = pop.querySelector('[data-gg-comment-action="delete"]');
+      if (deleteInvoker && !deleteBtn) {
+        deleteBtn = cloneCommentActionPart('[data-gg-comment-action="delete"]');
+        if (deleteBtn) pop.appendChild(deleteBtn);
+      }
       if (deleteInvoker && !deleteBtn) {
         deleteBtn = d.createElement('button');
         deleteBtn.type = 'button';

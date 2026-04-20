@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='423c915637c6' name='gg-template-fingerprint'/>
+    <meta content='8b05f7faa8f3' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1121,7 +1121,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='423c915637c6' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='8b05f7faa8f3' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2165,6 +2165,93 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </b:section>
     </b:if>
     <!-- /GAGA FEATURED POST -->
+    <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
+      <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
+        <div class='gg-post__toolbar-group'>
+          <button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>
+          </button>
+        </div>
+        <div class='gg-post__toolbar-group'>
+          <button aria-expanded='false' aria-label='Information' class='gg-post__tool' data-gg-copy-aria='post.action.info' data-gg-postbar='info' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+          </button>
+          <button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-copy-aria='post.action.focus' data-gg-postbar='focus' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>
+          </button>
+          <button aria-label='Save to library' class='gg-post__tool gg-post__action--bookmark' data-gg-copy-aria='post.action.save' data-gg-postbar='save' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
+          </button>
+          <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
+          </button>
+          <button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>
+            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
+          </button>
+        </div>
+      </div>
+      <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
+        <div class='gg-comments-panel__body' data-gg-slot='comments'>
+          <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' id='comments'>
+            <a name='comments'/>
+            <div aria-hidden='true' class='gg-comments__head-spacer'/>
+            <header class='gg-comments__head'>
+              <div class='gg-comments__title'>
+                <span aria-hidden='true' class='ms'>comment</span>
+                <h3 class='gg-comments__h'>Comments</h3>
+              </div>
+              <div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'>
+                <div class='cmt2-head-tools'>
+                  <button aria-label='Switch to wide width (440px)' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--width' data-gg-comment-action='panel-width' data-gg-copy='comments.toolbar.width.sidebar' title='Sidebar (240px)' type='button'><span aria-hidden='true' class='ms'>open_in_full</span><span class='gg-visually-hidden'>Sidebar (240px)</span></button>
+                  <button aria-label='Sort comments by oldest' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--sort' data-gg-comment-action='sort-order' data-gg-copy='comments.toolbar.sort.newest' title='Newest comments' type='button'><span aria-hidden='true' class='ms'>arrow_downward</span><span class='gg-visually-hidden'>Newest comments</span></button>
+                </div>
+              </div>
+            </header>
+            <div class='gg-comments__content comments-content'>
+              <div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>
+                <div class='gg-cmt-empty'>
+                  <strong data-gg-copy='comments.empty.title'>No comments yet</strong>
+                  <span data-gg-copy='comments.empty.body'>Be the first to add one.</span>
+                </div>
+              </div>
+            </div>
+            <div aria-hidden='true' class='gg-comments__footer-spacer'/>
+            <div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-has-cta='1' data-gg-open='0'>
+              <div class='gg-comments__footer-inner'>
+                <div class='gg-comments__footer-cta' id='gg-top-continue'>
+                  <a aria-controls='gg-composer-slot' aria-expanded='false' class='comment-reply' data-gg-copy='comments.action.add' data-gg-footer-cta='1' href='javascript:;' rel='nofollow' role='button'>Add comment</a>
+                </div>
+                <div class='gg-comments__footer-main'>
+                  <div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'/>
+                  <div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'/>
+                </div>
+              </div>
+            </div>
+            <template id='gg-comment-actions-template'>
+              <div class='comment-actions' data-gg-comment-actions='1'>
+                <a aria-hidden='true' class='comment-reply cmt2-reply-action' data-gg-comment-action='reply' data-gg-comment-icon='reply' data-gg-comment-role='reply' data-gg-state='hidden' hidden='hidden' href='javascript:;' rel='nofollow'>Reply</a>
+                <button aria-expanded='false' aria-hidden='true' class='cmt2-thread-toggle' data-gg-comment-icon='unfold_more' data-gg-comment-toggle='' data-gg-state='hidden' hidden='hidden' type='button'>View replies</button>
+                <div class='cmt2-ctx' data-gg-comment-menu='1'>
+                  <button aria-expanded='false' aria-haspopup='menu' aria-label='More actions' class='cmt2-ctx-btn' data-gg-comment-action='more' data-gg-copy-aria='comments.action.more' type='button'>
+                    <span aria-hidden='true' class='ms'>more_horiz</span>
+                  </button>
+                  <div aria-hidden='true' class='cmt2-ctx-pop' data-gg-state='closed' role='menu'>
+                    <button data-gg-comment-action='copy-link' data-gg-copy='comments.action.copyLink' role='menuitem' type='button'>
+                      <span aria-hidden='true' class='ms'>link</span>
+                      <span>Copy link</span>
+                    </button>
+                    <button class='cmt2-ctx-pop__danger' data-gg-comment-action='delete' data-gg-copy='comments.action.delete' data-gg-delete-kind='link' role='menuitem' type='button'>
+                      <span aria-hidden='true' class='ms'>delete</span>
+                      <span>Delete comment</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </section>
+        </div>
+      </div>
+    </b:if>
           <b:section class='gg-home-blog__body' id='blog' name='gg-page-body' showaddelement='true'>
             <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='false'>
               <b:widget-settings>
@@ -2575,7 +2662,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
   <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
 </b:includable>
               <b:includable id='commentItem' var='comment'>
-  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+  <li class='comment' expr:data-gg-comment-id='data:comment.id' expr:data-gg-comment-state='data:comment.isDeleted ? &quot;deleted&quot; : &quot;active&quot;' expr:id='&quot;c&quot; + data:comment.id'>
     <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
 
     <div class='comment-block'>
@@ -2596,21 +2683,44 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </div>
       <div class='comment-footer'>
         <span class='comment-timestamp'>
-          <a expr:href='data:comment.url' title='comment permalink'>
+          <a expr:href='data:comment.url' rel='bookmark' title='comment permalink'>
             <data:comment.timestamp/>
           </a>
           <b:include data='comment' name='commentDeleteIcon'/>
         </span>
       </div>
+      <div class='comment-actions' data-gg-comment-actions='1'>
+        <a aria-hidden='true' class='comment-reply cmt2-reply-action' data-gg-comment-action='reply' data-gg-comment-icon='reply' data-gg-comment-role='reply' data-gg-state='hidden' hidden='hidden' href='javascript:;' rel='nofollow'>Reply</a>
+        <button aria-expanded='false' aria-hidden='true' class='cmt2-thread-toggle' data-gg-comment-icon='unfold_more' data-gg-comment-toggle='' data-gg-state='hidden' hidden='hidden' type='button'>View replies</button>
+        <div class='cmt2-ctx' data-gg-comment-menu='1'>
+          <button aria-expanded='false' aria-haspopup='menu' aria-label='More actions' class='cmt2-ctx-btn' data-gg-comment-action='more' data-gg-copy-aria='comments.action.more' type='button'>
+            <span aria-hidden='true' class='ms'>more_horiz</span>
+          </button>
+          <div aria-hidden='true' class='cmt2-ctx-pop' data-gg-state='closed' role='menu'>
+            <b:if cond='data:comment.url'>
+              <button data-gg-comment-action='copy-link' data-gg-copy='comments.action.copyLink' role='menuitem' type='button'>
+                <span aria-hidden='true' class='ms'>link</span>
+                <span>Copy link</span>
+              </button>
+            </b:if>
+            <b:if cond='data:comment.deleteUrl'>
+              <button class='cmt2-ctx-pop__danger' data-gg-comment-action='delete' data-gg-copy='comments.action.delete' data-gg-delete-kind='link' role='menuitem' type='button'>
+                <span aria-hidden='true' class='ms'>delete</span>
+                <span>Delete comment</span>
+              </button>
+            </b:if>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </li>
 </b:includable>
               <b:includable id='commentList' var='comments'>
-  <div id='comments-block'>
+  <ol class='comment-thread' id='comments-block'>
     <b:loop values='data:comments' var='comment'>
       <b:include data='comment' name='commentItem'/>
     </b:loop>
-  </div>
+  </ol>
 </b:includable>
               <b:includable id='commentPicker' var='post'>
   <!-- Comments surface is panel-owned via #ggPanelComments. -->
@@ -2927,12 +3037,10 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 
     <!-- Comments are rendered in #ggPanelComments. -->
 
-    <!-- Show ad inside post container, after comments, if single item. -->
-    <b:include cond='data:view.isPost and data:post.includeAd' data='post' name='inlineAd'/>
+    <!-- Inline ads are disabled in the detail shell to avoid optional post-field failures. -->
   </article>
 
-  <!-- Show ad outside post container (between posts) for feed pages. -->
-  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+  <!-- Feed inline ads are disabled; listing cards own the visible list surface. -->
 </b:includable>
               <b:includable id='postCommentsLink'>
   <b:if cond='data:view.isMultipleItems'>
@@ -2951,7 +3059,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
     </article>
 
   <b:else/>
-  <article class='gg-post' data-gg-module='post-detail' data-gg-surface='post' expr:data-id='data:post.id' expr:data-title='data:post.title ? data:post.title : &quot;Untitled&quot;' expr:data-url='data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)'>
+  <article class='gg-post' data-comments='0' data-date='' data-gg-module='post-detail' data-gg-surface='post'>
     <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-surface' value='page'/>
     <b:attr cond='data:ggIsSystemPage' name='data-gg-surface' value='special'/>
     <header class='gg-post__header'>
@@ -2960,7 +3068,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
       </h1>
     </header>
     <div class='gg-post__body'>
-      <section class='gg-post__content post-body entry-content' data-gg-module='post-content' expr:id='&quot;post-body-&quot; + data:post.id'>
+      <section class='gg-post__content post-body entry-content' data-gg-module='post-content' id='post-body'>
         <data:post.body/>
       </section>
     </div>
