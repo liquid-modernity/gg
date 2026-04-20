@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='8b05f7faa8f3' name='gg-template-fingerprint'/>
+    <meta content='26303eb4b718' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1121,7 +1121,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='8b05f7faa8f3' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='26303eb4b718' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -2190,6 +2190,58 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           </button>
         </div>
       </div>
+ <!-- GAGA BREADCRUMBS -->
+<b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
+  <nav aria-label='Breadcrumb' class='gg-post__breadcrumbs'>
+
+    <!-- HOME = /landing -->
+    <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
+    <!--   <span class='gg-post__breadcrumbs-label'>Home</span> -->
+    </a>
+
+    <!-- POST MODE -->
+    <b:if cond='data:view.isPost'>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+
+      <!-- BLOG = / -->
+      <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
+        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
+     <!--   <span class='gg-post__breadcrumbs-label'>Blog</span> -->
+      </a>
+
+      <!-- FIRST LABEL (optional) -->
+      <b:if cond='data:post.labels'>
+        <b:loop index='i' values='data:post.labels' var='lab'>
+          <b:if cond='data:i == 0'>
+            <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+            <a class='gg-post__breadcrumbs-link' expr:href='data:lab.url'>
+              <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
+              <span class='gg-post__breadcrumbs-label'><b:eval expr='data:lab.name'/></span>
+            </a>
+          </b:if>
+        </b:loop>
+      </b:if>
+
+      <!-- CURRENT POST -->
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>article</span>
+      <span aria-current='page' class='gg-post__breadcrumbs-current'>
+        <data:post.title/>
+      </span>
+    </b:if>
+
+    <!-- PAGE MODE -->
+    <b:if cond='data:view.isPage and not data:ggIsSystemPage'>
+      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
+      <span aria-current='page' class='gg-post__breadcrumbs-current'>
+        <data:post.title/>
+      </span>
+    </b:if>
+
+  </nav>
+</b:if>
+<!-- /GAGA BREADCRUMBS -->
       <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
         <div class='gg-comments-panel__body' data-gg-slot='comments'>
           <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' id='comments'>
