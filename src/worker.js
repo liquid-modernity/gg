@@ -1,6 +1,7 @@
 /* src/worker.js — Cloudflare Worker (edge) */
-const cleanUrlForSchema = (inputUrl, { forceListing = false, forceLanding = false } = {}) => {
+const cleanUrlForSchema = (inputUrl) => {
   const u = new URL(inputUrl);
+  u.searchParams.delete("m");
   u.searchParams.delete("x");
   u.searchParams.delete("view");
   u.searchParams.delete("fbclid");
@@ -12,11 +13,6 @@ const cleanUrlForSchema = (inputUrl, { forceListing = false, forceLanding = fals
     }
   }
   u.hash = "";
-  if (forceLanding) {
-    u.pathname = "/landing";
-  } else if (forceListing) {
-    u.pathname = "/";
-  }
   u.search = "";
   return `${u.origin}${u.pathname}`;
 };
@@ -249,12 +245,7 @@ const rewriteVersionedAssetRef = (value, expectedRelease, origin, cacheBust = ""
   return `${parsed.pathname}${parsed.search}${parsed.hash}`;
 };
 
-const BLOG_LISTING_MIN_POSTCARDS = 9;
-const BLOG_LISTING_BACKFILL_HOPS = 3;
-const BLOG_LISTING_FEED_MAX_RESULTS = 30;
-const BLOG_LISTING_FEED_MAX_PAGES = 4;
-
-const toPositiveInt = (value, fallback, max = BLOG_LISTING_FEED_MAX_RESULTS) => {
+const toPositiveInt = (value, fallback, max) => {
   const parsed = parseInt(String(value || ""), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   if (Number.isFinite(max) && max > 0 && parsed > max) return max;
@@ -394,304 +385,6 @@ const pickFeedAuthor = (entry) => {
   };
 };
 
-const buildFeedLabelUrl = (label, origin) => {
-  const normalized = cleanText(label);
-  if (!normalized) return "";
-  try {
-    return new URL(`/search/label/${encodeURIComponent(normalized)}`, origin).toString();
-  } catch (e) {
-    return `/search/label/${encodeURIComponent(normalized)}`;
-  }
-};
-
-const buildFeedPostCard = (entry, requestUrl) => {
-  const origin = (() => {
-    try {
-      return new URL(requestUrl).origin;
-    } catch (e) {
-      return "";
-    }
-  })();
-  const postUrl = pickFeedAlternateUrl(entry);
-  if (!postUrl) return null;
-  const title = cleanText(entry && entry.title && entry.title.$t) || "Untitled";
-  const postId = extractFeedPostId(entry);
-  const publishedIso = cleanText(entry && entry.published && entry.published.$t);
-  const updatedIso = cleanText(entry && entry.updated && entry.updated.$t);
-  const publishedRaw = publishedIso || updatedIso;
-  const publishedText = formatIsoDate(publishedRaw);
-  const updatedText = formatIsoDate(updatedIso || publishedRaw);
-  const commentsRaw = cleanText(entry && entry["thr$total"] && entry["thr$total"].$t);
-  const commentsText = commentsRaw || "0";
-  const excerpt = truncateText(
-    stripHtml(
-      cleanText(entry && entry.summary && entry.summary.$t) ||
-        cleanText(entry && entry.content && entry.content.$t)
-    ),
-    220
-  );
-  const author = pickFeedAuthor(entry);
-  const authorName = cleanText(author.name) || "PakRPP";
-  const thumb = pickFeedThumb(entry);
-  const categories = Array.isArray(entry && entry.category) ? entry.category : [];
-  const labels = categories
-    .map((item) => cleanText(item && item.term))
-    .filter(Boolean);
-  const labelsCsv = labels.join(",");
-  const label = labels.length ? labels[0] : "";
-  const labelUrl = buildFeedLabelUrl(label, origin || postUrl);
-  const excerptWords = excerpt ? excerpt.split(/\s+/).filter(Boolean).length : 0;
-  const readMin = excerptWords ? String(Math.max(1, Math.ceil(excerptWords / 200))) : "";
-  const readLabel = readMin ? `${readMin} min read` : "";
-  const safeUrl = escapeHtml(postUrl);
-  const safeTitle = escapeHtml(title);
-  const safeExcerpt = escapeHtml(excerpt);
-  const safeDateIso = escapeHtml(publishedRaw);
-  const safeDateText = escapeHtml(publishedText);
-  const safeUpdatedText = escapeHtml(updatedText);
-  const safeComments = escapeHtml(commentsText);
-  const safeAuthorName = escapeHtml(authorName);
-  const safeAuthorUrl = escapeHtml(author.url);
-  const safeAuthorAvatar = escapeHtml(author.avatar);
-  const safePostId = escapeHtml(postId);
-  const safeLabelsCsv = escapeHtml(labelsCsv);
-  const safeReadLabel = escapeHtml(readLabel);
-  const safeLabel = escapeHtml(label);
-  const safeLabelUrl = escapeHtml(labelUrl);
-  const safeThumb = escapeHtml(thumb);
-  const safeCommentsHref = `${safeUrl}#comments`;
-  const safeUpdatedIso = escapeHtml(updatedIso || publishedRaw);
-  const thumbHtml = safeThumb
-    ? `<a class='gg-post-card__thumb' href='${safeUrl}'><figure><img alt='${safeTitle}' class='gg-post-card__thumb-img' decoding='async' loading='lazy' src='${safeThumb}'/></figure></a>`
-    : `<a class='gg-post-card__thumb' href='${safeUrl}' aria-label='${safeTitle}'><figure><div aria-hidden='true' class='gg-post-card__thumb-placeholder'></div></figure></a>`;
-  const labelHtml =
-    safeLabel && safeLabelUrl
-      ? `<span class='gg-post-card__label'><a href='${safeLabelUrl}' rel='tag'>${safeLabel}</a></span><span class='gg-post-card__meta-sep'>&#8226;</span>`
-      : "";
-  const labelsHiddenHtml = labels.length
-    ? `<div class='gg-post-card__labels' hidden='hidden'>${labels
-        .map((name) => {
-          const text = escapeHtml(name);
-          const href = escapeHtml(buildFeedLabelUrl(name, origin || postUrl));
-          return `<a href='${href || "#"}' rel='tag'>${text}</a>`;
-        })
-        .join("")}</div>`
-    : "";
-  const postMetaHtml = `<div class='gg-postmeta gg-visually-hidden' data-contributors='' data-read-min='${safeReadLabel}' data-tags='' data-author='${safeAuthorName}' data-updated='${safeUpdatedIso || safeDateIso}'></div>`;
-  const toolbarHtml = [
-    "<div aria-label='Post actions' class='gg-post-card__toolbar' data-gg-copy-aria='post.action.comments' role='group'>",
-    `<a class='gg-post-card__tool' data-gg-copy-title='post.action.comments' href='${safeCommentsHref}' title='Comments'>`,
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>comment</span>",
-    "<span class='gg-visually-hidden' data-gg-copy='post.action.comments'>Comments</span>",
-    `<span aria-hidden='true' class='gg-post-card__badge'>${safeComments}</span>`,
-    "</a>",
-    "<button aria-label='Save to library' class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' data-gg-copy-aria='library.action.add' data-gg-copy-title='library.action.add' title='Save to library' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>",
-    "<span class='gg-visually-hidden' data-gg-copy='library.action.add'>Save to library</span>",
-    "</button>",
-    "<button aria-label='Support' class='gg-post-card__tool' data-gg-action='support' data-gg-copy-aria='post.action.support' data-gg-copy-title='post.action.support' title='Support' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>",
-    "<span class='gg-visually-hidden' data-gg-copy='post.action.support'>Support</span>",
-    "</button>",
-    "<button aria-label='Share' class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' data-gg-copy-aria='post.action.share' data-gg-copy-title='post.action.share' title='Share' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>",
-    "<span class='gg-visually-hidden' data-gg-copy='post.action.share'>Share</span>",
-    "</button>",
-    "<button aria-label='Information' class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' data-gg-copy-aria='post.action.info' data-gg-copy-title='post.action.info' title='Information' type='button'>",
-    "<span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>",
-    "<span class='gg-visually-hidden' data-gg-copy='post.action.info'>Information</span>",
-    "</button>",
-    "</div>",
-  ].join("");
-  const cardHtml = [
-    `<article class='gg-post-card' data-author-avatar='${safeAuthorAvatar}' data-author-name='${safeAuthorName}' data-author-url='${safeAuthorUrl}' data-comments='${safeComments}' data-date='${safeDateText}' data-id='${safePostId}' data-readtime='${safeReadLabel}' data-snippet='${safeExcerpt}' data-title='${safeTitle}' data-updated='${safeUpdatedText}' data-url='${safeUrl}' data-gg-author='${safeAuthorName}' data-gg-comments='${safeComments}' data-gg-contributors='' data-gg-date='${safeDateText}' data-gg-labels='${safeLabelsCsv}' data-gg-readtime='${safeReadLabel}' data-gg-snippet='${safeExcerpt}' data-gg-tags='' data-gg-toc-json='' data-gg-updated='${safeUpdatedText}'>`,
-    labelsHiddenHtml,
-    postMetaHtml,
-    thumbHtml,
-    "<div class='gg-post-card__body'>",
-    "<div class='gg-post-card__meta'>",
-    labelHtml,
-    `<span class='gg-post-card__meta-item gg-post-card__meta-item--date'><time class='gg-post-card__date' datetime='${safeDateIso}' title='${safeDateIso}'>${safeDateText}</time></span>`,
-    "<span class='gg-post-card__meta-sep'>&#8226;</span>",
-    `<span class='gg-post-card__meta-item gg-post-card__meta-item--comments'>${safeComments}</span>`,
-    "</div>",
-    `<h2 class='gg-post-card__title'><a class='gg-post-card__title-link' href='${safeUrl}'>${safeTitle}</a></h2>`,
-    `<p class='gg-post-card__excerpt'>${safeExcerpt}</p>`,
-    "</div>",
-    toolbarHtml,
-    "</article>",
-  ].join("");
-  return {
-    key: postId ? `id:${postId}` : `data-url:${postUrl}`,
-    html: cardHtml,
-    published: publishedRaw,
-  };
-};
-
-const buildListingFeedQuery = (requestUrl, targetCount) => {
-  const req = new URL(requestUrl);
-  const maxResults = toPositiveInt(
-    req.searchParams.get("max-results"),
-    toPositiveInt(targetCount, BLOG_LISTING_MIN_POSTCARDS),
-    BLOG_LISTING_FEED_MAX_RESULTS
-  );
-  const updatedMax = cleanText(req.searchParams.get("updated-max"));
-  const startIndex = toPositiveInt(req.searchParams.get("start-index"), 1, 1000000);
-  return { maxResults, updatedMax, startIndex };
-};
-
-const buildListingFeedUrl = (requestUrl, targetCount, startIndex) => {
-  const req = new URL(requestUrl);
-  const feed = new URL("/feeds/posts/default", req.origin);
-  const query = buildListingFeedQuery(requestUrl, targetCount);
-  feed.searchParams.set("alt", "json");
-  feed.searchParams.set("max-results", String(query.maxResults));
-  if (query.updatedMax) feed.searchParams.set("updated-max", query.updatedMax);
-  const cursor = toPositiveInt(startIndex, query.startIndex, 1000000);
-  if (cursor > 1) feed.searchParams.set("start-index", String(cursor));
-  return { url: feed.toString(), maxResults: query.maxResults };
-};
-
-const mapFeedNextToSearchUrl = (feed, requestUrl, fallbackMaxResults) => {
-  const req = new URL(requestUrl);
-  const links = Array.isArray(feed && feed.link) ? feed.link : [];
-  for (const link of links) {
-    if (!link || link.rel !== "next" || !link.href) continue;
-    let next;
-    try {
-      next = new URL(link.href, req.origin);
-    } catch (e) {
-      continue;
-    }
-    const out = new URL("/search", req.origin);
-    const updatedMax = cleanText(next.searchParams.get("updated-max"));
-    const startIndex = cleanText(next.searchParams.get("start-index"));
-    const maxResults = cleanText(next.searchParams.get("max-results")) || String(fallbackMaxResults);
-    if (updatedMax) out.searchParams.set("updated-max", updatedMax);
-    if (startIndex) out.searchParams.set("start-index", startIndex);
-    if (maxResults) out.searchParams.set("max-results", maxResults);
-    if (!out.searchParams.has("updated-max") && !out.searchParams.has("start-index")) {
-      continue;
-    }
-    return out.toString();
-  }
-  return "";
-};
-
-const parseFeedNextStartIndex = (feed, fallback) => {
-  const links = Array.isArray(feed && feed.link) ? feed.link : [];
-  for (const link of links) {
-    if (!link || link.rel !== "next" || !link.href) continue;
-    let next;
-    try {
-      next = new URL(link.href);
-    } catch (e) {
-      continue;
-    }
-    const parsed = toPositiveInt(next.searchParams.get("start-index"), 0, 1000000);
-    if (parsed > 0) return parsed;
-  }
-  return toPositiveInt(fallback, 0, 1000000);
-};
-
-const fetchFeedCards = async (requestUrl, neededCount, seenKeys) => {
-  const needed = toPositiveInt(neededCount, BLOG_LISTING_MIN_POSTCARDS, BLOG_LISTING_FEED_MAX_RESULTS);
-  if (needed <= 0) return { cards: [], nextUrl: "" };
-  const seen = seenKeys || new Set();
-  const query = buildListingFeedQuery(requestUrl, needed);
-  let nextStartIndex = query.startIndex;
-  const cards = [];
-  let fallbackNextUrl = "";
-  let pages = 0;
-
-  while (cards.length < needed && pages < BLOG_LISTING_FEED_MAX_PAGES) {
-    pages += 1;
-    const { url: feedUrl } = buildListingFeedUrl(requestUrl, needed, nextStartIndex);
-    let feedRes;
-    try {
-      feedRes = await fetch(feedUrl, {
-        headers: {
-          Accept: "application/json",
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
-    } catch (e) {
-      break;
-    }
-    if (!feedRes || !feedRes.ok) break;
-
-    let json;
-    try {
-      json = await feedRes.json();
-    } catch (e) {
-      break;
-    }
-    const feed = json && json.feed ? json.feed : null;
-    const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
-    fallbackNextUrl = mapFeedNextToSearchUrl(feed, requestUrl, query.maxResults) || "";
-
-    let addedThisPage = 0;
-    for (const entry of entries) {
-      const card = buildFeedPostCard(entry, requestUrl);
-      if (!card || !card.html) continue;
-      if (seen.has(card.key)) continue;
-      seen.add(card.key);
-      cards.push(card);
-      addedThisPage += 1;
-      if (cards.length >= needed) break;
-    }
-    if (cards.length >= needed) break;
-
-    const nextFromFeed = parseFeedNextStartIndex(feed, 0);
-    if (!nextFromFeed || nextFromFeed <= nextStartIndex) {
-      break;
-    }
-    if (entries.length === 0 && addedThisPage === 0) {
-      break;
-    }
-    nextStartIndex = nextFromFeed;
-  }
-
-  const nextUrl = fallbackNextUrl;
-  return {
-    cards,
-    nextUrl,
-  };
-};
-
-const buildLoadMoreWrapHtml = (nextUrl) => {
-  const normalized = cleanText(nextUrl);
-  if (!normalized) return "";
-  const safeNext = escapeHtml(normalized);
-  return [
-    "<div class='gg-loadmore-wrap' data-gg-module='loadmore'>",
-    `<button class='gg-loadmore' data-next='${safeNext}' id='loadmore' type='button'>`,
-    "<span class='gg-loadmore__label'>Load More Articles</span>",
-    "<span aria-hidden='true' class='gg-loadmore__spinner'></span>",
-    "</button>",
-    "</div>",
-  ].join("");
-};
-
-const patchLoadMoreNextUrl = (html, nextUrl) => {
-  const source = String(html || "");
-  const normalized = cleanText(nextUrl);
-  if (!source || !normalized) return source;
-  const buttonRe = /<button\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-loadmore\b[^'"]*\1[^>]*>/i;
-  const match = buttonRe.exec(source);
-  if (!match) return source;
-  const tag = match[0];
-  const safeNext = escapeHtml(normalized);
-  let patched = tag;
-  if (/\bdata-next\s*=/.test(tag)) {
-    patched = tag.replace(/\bdata-next\s*=\s*(['"])[^'"]*\1/i, `data-next='${safeNext}'`);
-  } else {
-    patched = tag.replace(/>$/, ` data-next='${safeNext}'>`);
-  }
-  return `${source.slice(0, match.index)}${patched}${source.slice(match.index + tag.length)}`;
-};
-
 const responseFromHtml = (response, html) => {
   const headers = new Headers(response.headers);
   headers.delete("content-length");
@@ -700,423 +393,6 @@ const responseFromHtml = (response, html) => {
     statusText: response.statusText,
     headers,
   });
-};
-
-const findElementByIdRange = (html, tagName, id) => {
-  const source = String(html || "");
-  if (!source) return null;
-  const name = String(tagName || "").trim();
-  const wantedId = String(id || "").trim();
-  if (!name || !wantedId) return null;
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const escapedId = wantedId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const openRe = new RegExp(
-    `<${escapedName}\\b[^>]*\\bid\\s*=\\s*(['"])${escapedId}\\1[^>]*>`,
-    "i"
-  );
-  const openMatch = openRe.exec(source);
-  if (!openMatch) return null;
-
-  const openStart = openMatch.index;
-  const openEnd = openStart + openMatch[0].length;
-  const tokenRe = new RegExp(`<\\/?${escapedName}\\b[^>]*>`, "gi");
-  tokenRe.lastIndex = openEnd;
-  let depth = 1;
-  let closeStart = -1;
-  let closeEnd = -1;
-  let token;
-
-  while ((token = tokenRe.exec(source))) {
-    const tag = token[0];
-    const isClose = /^<\//.test(tag);
-    const selfClose = /\/>\s*$/.test(tag);
-    if (isClose) depth -= 1;
-    else if (!selfClose) depth += 1;
-    if (depth === 0) {
-      closeStart = token.index;
-      closeEnd = tokenRe.lastIndex;
-      break;
-    }
-  }
-
-  if (closeStart < 0 || closeEnd < 0) return null;
-  return {
-    openStart,
-    openEnd,
-    closeStart,
-    closeEnd,
-    innerStart: openEnd,
-    innerEnd: closeStart,
-    openTag: openMatch[0],
-    innerHtml: source.slice(openEnd, closeStart),
-  };
-};
-
-const findElementRangeFromOpenTag = (source, tagName, openStart, openTag) => {
-  const html = String(source || "");
-  const name = String(tagName || "").trim().toLowerCase();
-  const tag = String(openTag || "");
-  if (!html || !name || !tag) return null;
-  const openEnd = openStart + tag.length;
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const tokenRe = new RegExp(`<\\/?${escapedName}\\b[^>]*>`, "gi");
-  tokenRe.lastIndex = openEnd;
-  let depth = 1;
-  let closeStart = -1;
-  let closeEnd = -1;
-  let token;
-  while ((token = tokenRe.exec(html))) {
-    const tokenTag = token[0];
-    const isClose = /^<\//.test(tokenTag);
-    const selfClose = /\/>\s*$/.test(tokenTag);
-    if (isClose) depth -= 1;
-    else if (!selfClose) depth += 1;
-    if (depth === 0) {
-      closeStart = token.index;
-      closeEnd = tokenRe.lastIndex;
-      break;
-    }
-  }
-  if (closeStart < 0 || closeEnd < 0) return null;
-  return {
-    openStart,
-    openEnd,
-    closeStart,
-    closeEnd,
-    innerStart: openEnd,
-    innerEnd: closeStart,
-    openTag: tag,
-    innerHtml: html.slice(openEnd, closeStart),
-  };
-};
-
-const classListHasToken = (className, token) => {
-  if (!className || !token) return false;
-  const wanted = String(token || "").trim();
-  if (!wanted) return false;
-  return String(className || "")
-    .split(/\s+/)
-    .map((part) => String(part || "").trim())
-    .filter(Boolean)
-    .includes(wanted);
-};
-
-const findElementByClassRange = (html, classToken, opts = {}) => {
-  const source = String(html || "");
-  if (!source) return null;
-  const wanted = String(classToken || "").trim();
-  if (!wanted) return null;
-  const requiredClassTokens = Array.isArray(opts.requiredClassTokens)
-    ? opts.requiredClassTokens.map((token) => String(token || "").trim()).filter(Boolean)
-    : [];
-  const openRe =
-    /<([a-z0-9:-]+)\b[^>]*\bclass\s*=\s*(?:(['"])([^'"]*)\2|([^\s"'=<>`]+))[^>]*>/gi;
-  let match;
-  while ((match = openRe.exec(source))) {
-    const tagName = String(match[1] || "").trim().toLowerCase();
-    const className = String(match[3] || match[4] || "");
-    if (!classListHasToken(className, wanted)) continue;
-    let allRequired = true;
-    for (const token of requiredClassTokens) {
-      if (!classListHasToken(className, token)) {
-        allRequired = false;
-        break;
-      }
-    }
-    if (!allRequired) continue;
-    const openTag = match[0];
-    const openStart = match.index;
-    const range = findElementRangeFromOpenTag(source, tagName, openStart, openTag);
-    if (range) return range;
-  }
-  return null;
-};
-
-const decodeHtmlEntities = (input) => {
-  return String(input || "").replace(
-    /&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi,
-    (m, code) => {
-      const token = String(code || "").toLowerCase();
-      if (token === "amp") return "&";
-      if (token === "lt") return "<";
-      if (token === "gt") return ">";
-      if (token === "quot") return '"';
-      if (token === "apos") return "'";
-      if (token === "nbsp") return " ";
-      if (token.startsWith("#x")) {
-        const cp = Number.parseInt(token.slice(2), 16);
-        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
-        return m;
-      }
-      if (token.startsWith("#")) {
-        const cp = Number.parseInt(token.slice(1), 10);
-        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
-      }
-      return m;
-    }
-  );
-};
-
-const stripHtmlTags = (html) => {
-  return String(html || "").replace(/<[^>]*>/g, " ");
-};
-
-const slugifyHeadingId = (raw) => {
-  const source = decodeHtmlEntities(stripHtmlTags(raw))
-    .toLowerCase()
-    .trim();
-  if (!source) return "section";
-  let normalized = source;
-  try {
-    normalized = source.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
-  } catch (e) {
-    normalized = source;
-  }
-  const slug = normalized
-    .replace(/[^a-z0-9\s-]/g, " ")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return slug || "section";
-};
-
-const collectIdSetFromHtml = (html) => {
-  const set = new Set();
-  const source = String(html || "");
-  const idRe = /\bid\s*=\s*(?:(['"])([^'"]+)\1|([^\s"'=<>`]+))/gi;
-  let match;
-  while ((match = idRe.exec(source))) {
-    const id = String(match[2] || match[3] || "").trim();
-    if (!id) continue;
-    set.add(id);
-  }
-  return set;
-};
-
-const collectBlockedRanges = (html) => {
-  const source = String(html || "");
-  const ranges = [];
-  const patterns = [
-    /<pre\b[\s\S]*?<\/pre>/gi,
-    /<code\b[\s\S]*?<\/code>/gi,
-    /<script\b[\s\S]*?<\/script>/gi,
-    /<style\b[\s\S]*?<\/style>/gi,
-    /<template\b[\s\S]*?<\/template>/gi,
-    /<([a-z0-9:-]+)\b[^>]*\bhidden\b[^>]*>[\s\S]*?<\/\1>/gi,
-    /<([a-z0-9:-]+)\b[^>]*\baria-hidden\s*=\s*(['"])true\2[^>]*>[\s\S]*?<\/\1>/gi,
-  ];
-  for (const re of patterns) {
-    let match;
-    while ((match = re.exec(source))) {
-      ranges.push([match.index, re.lastIndex]);
-      if (!match[0]) break;
-    }
-  }
-  ranges.sort((a, b) => a[0] - b[0]);
-  return ranges;
-};
-
-const isIndexInsideRanges = (index, ranges) => {
-  const point = Number(index);
-  if (!Number.isFinite(point) || point < 0) return false;
-  const list = Array.isArray(ranges) ? ranges : [];
-  for (const range of list) {
-    const start = Array.isArray(range) ? Number(range[0]) : -1;
-    const end = Array.isArray(range) ? Number(range[1]) : -1;
-    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
-    if (point >= start && point < end) return true;
-  }
-  return false;
-};
-
-const extractIdFromAttrs = (attrs) => {
-  const source = String(attrs || "");
-  const match = source.match(/\bid\s*=\s*(?:(['"])([^'"]*)\1|([^\s"'=<>`]+))/i);
-  return match ? String(match[2] || match[3] || "").trim() : "";
-};
-
-const createUniqueHeadingId = (text, usedIds, slugCounts) => {
-  const base = slugifyHeadingId(text);
-  const ids = usedIds || new Set();
-  const counts = slugCounts || new Map();
-  let n = Number(counts.get(base) || 0);
-  let id = "";
-  do {
-    n += 1;
-    id = n === 1 ? base : `${base}-${n}`;
-  } while (ids.has(id));
-  counts.set(base, n);
-  ids.add(id);
-  return id;
-};
-
-const buildTocFromPostBodyHtml = (bodyHtml, usedIds) => {
-  const source = String(bodyHtml || "");
-  const headingRe = /<h([1-4])\b([^>]*)>([\s\S]*?)<\/h\1>/gi;
-  const blocked = collectBlockedRanges(source);
-  const ids = usedIds || new Set();
-  const slugCounts = new Map();
-  const items = [];
-  let out = "";
-  let last = 0;
-  let match;
-  while ((match = headingRe.exec(source))) {
-    const start = match.index;
-    const end = headingRe.lastIndex;
-    const level = Number.parseInt(String(match[1] || ""), 10) || 1;
-    const attrs = String(match[2] || "");
-    const inner = String(match[3] || "");
-    const full = String(match[0] || "");
-    out += source.slice(last, start);
-    let replacement = full;
-    if (!isIndexInsideRanges(start, blocked)) {
-      const isHiddenHeading =
-        /\bhidden\b/i.test(attrs) || /\baria-hidden\s*=\s*(['"])true\1/i.test(attrs);
-      const text = decodeHtmlEntities(stripHtmlTags(inner)).replace(/\s+/g, " ").trim();
-      if (!isHiddenHeading && text) {
-        let id = extractIdFromAttrs(attrs);
-        if (!id) {
-          id = createUniqueHeadingId(text, ids, slugCounts);
-          replacement = `<h${level}${attrs} id="${escapeHtml(id)}">${inner}</h${level}>`;
-        } else {
-          ids.add(id);
-        }
-        items.push({
-          id,
-          text,
-          level,
-        });
-      }
-    }
-    out += replacement;
-    last = end;
-  }
-  out += source.slice(last);
-  return { html: out, items };
-};
-
-const buildPostTocListHtml = (items) => {
-  const rows = Array.isArray(items) ? items : [];
-  if (!rows.length) return "";
-  const cap = rows.slice(0, 12);
-  return cap
-    .map((item, index) => {
-      const id = String((item && item.id) || "").trim();
-      const text = String((item && item.text) || "").trim();
-      let level = Number.parseInt(String((item && item.level) || ""), 10);
-      if (!Number.isFinite(level) || level < 1) level = 1;
-      if (level > 4) level = 4;
-      if (!id || !text) return "";
-      return [
-        `<li class="gg-toc__item gg-toc__lvl-${level}">`,
-        `<a class="gg-toc__link" href="#${escapeHtml(id)}">`,
-        `<span class="gg-toc__num">${index + 1}.</span>`,
-        `<span class="gg-toc__txt">${escapeHtml(text)}</span>`,
-        "</a>",
-        "</li>",
-      ].join("");
-    })
-    .join("");
-};
-
-const buildInfoPanelTocListHtml = (items) => {
-  const rows = Array.isArray(items) ? items : [];
-  if (!rows.length) return "";
-  const cap = rows.slice(0, 12);
-  return cap
-    .map((item, index) => {
-      const id = String((item && item.id) || "").trim();
-      const text = String((item && item.text) || "").trim();
-      let level = Number.parseInt(String((item && item.level) || ""), 10);
-      const number = index + 1;
-      const numberText = number < 10 ? `0${number}` : String(number);
-      if (!Number.isFinite(level) || level < 1) level = 1;
-      if (level > 4) level = 4;
-      if (!id || !text) return "";
-      return [
-        `<li class="gg-info-panel__tocitem gg-info-panel__toclvl-${level}">`,
-        `<a class="gg-info-panel__toclink" href="#${escapeHtml(id)}">`,
-        `<span class="gg-info-panel__tocnum">${numberText}</span>`,
-        `<span class="gg-info-panel__toctext">${escapeHtml(text)}</span>`,
-        "</a>",
-        "</li>",
-      ].join("");
-    })
-    .join("");
-};
-
-const cleanPostTocHtml = (html) => {
-  const source = String(html || "");
-  if (!source) return source;
-  if (!/id\s*=\s*(['"])gg-toc\1/i.test(source)) return source;
-  const bodyRange =
-    findElementByClassRange(source, "post-body", {
-      requiredClassTokens: ["post-body", "entry-content"],
-    }) || findElementByClassRange(source, "post-body");
-  if (!bodyRange) {
-    return source.replace(/No content found/gi, "");
-  }
-  const usedIds = collectIdSetFromHtml(source);
-  const toc = buildTocFromPostBodyHtml(bodyRange.innerHtml, usedIds);
-  let out = `${source.slice(0, bodyRange.innerStart)}${toc.html}${source.slice(bodyRange.innerEnd)}`;
-  const listRange = findElementByClassRange(out, "gg-toc__list");
-  if (listRange) {
-    const listHtml = buildPostTocListHtml(toc.items);
-    out = `${out.slice(0, listRange.innerStart)}${listHtml}${out.slice(listRange.innerEnd)}`;
-  }
-  const infoListRange = findElementByClassRange(out, "gg-info-panel__toclist");
-  if (infoListRange) {
-    // Final IA contract: post/page TOC lives on left Information panel only.
-    // Keep right Editorial Preview TOC for listing/blog runtime, not post/page HTML rewrite.
-    out = `${out.slice(0, infoListRange.innerStart)}${out.slice(infoListRange.innerEnd)}`;
-  }
-  return out.replace(/No content found/gi, "");
-};
-
-const normalizeCardKey = (cardHtml, fallback) => {
-  const id = extractAttrValue(cardHtml, "data-id");
-  if (id) return `id:${id}`;
-  const dataUrl = extractAttrValue(cardHtml, "data-url");
-  if (dataUrl) return `data-url:${dataUrl}`;
-  const hrefMatch = String(cardHtml || "").match(/<a\b[^>]*\bhref\s*=\s*(['"])([^'"]+)\1/i);
-  if (hrefMatch && hrefMatch[2]) return `href:${hrefMatch[2]}`;
-  return `idx:${fallback}`;
-};
-
-const extractPostCards = (fragment) => {
-  const out = [];
-  const re =
-    /<article\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-post-card\b[^'"]*\1[^>]*>[\s\S]*?<\/article>/gi;
-  let match;
-  while ((match = re.exec(String(fragment || "")))) {
-    const cardHtml = match[0];
-    out.push({
-      key: normalizeCardKey(cardHtml, match.index),
-      html: cardHtml,
-    });
-  }
-  return out;
-};
-
-const normalizeListingNextUrl = (rawUrl, baseUrl) => {
-  if (!rawUrl || !baseUrl) return "";
-  try {
-    const base = new URL(baseUrl);
-    const next = new URL(String(rawUrl), base.href);
-    if (next.origin !== base.origin) {
-      return new URL(`${next.pathname}${next.search}${next.hash}`, base.origin).toString();
-    }
-    return next.toString();
-  } catch (e) {
-    return "";
-  }
-};
-
-const hasClassToken = (className, token) => {
-  if (!className || !token) return false;
-  return String(className)
-    .split(/\s+/)
-    .some((part) => String(part || "").trim() === token);
 };
 
 const addClassToken = (className, token) => {
@@ -1172,298 +448,10 @@ const decoratePostCardDataset = (el) => {
   setCardAttr(el, "data-gg-toc-json", tocJson);
 };
 
-const extractListingNextUrl = (html, baseUrl) => {
-  const buttonRe = /<button\b[^>]*\bclass\s*=\s*(['"])[^'"]*\bgg-loadmore\b[^'"]*\1[^>]*>/gi;
-  let match;
-  while ((match = buttonRe.exec(String(html || "")))) {
-    const tag = match[0];
-    const dataNext = extractAttrValue(tag, "data-next");
-    if (!dataNext) continue;
-    const normalized = normalizeListingNextUrl(dataNext, baseUrl);
-    if (normalized) return normalized;
-  }
-
-  const anchorRe = /<a\b[^>]*>/gi;
-  while ((match = anchorRe.exec(String(html || "")))) {
-    const tag = match[0];
-    const className = extractAttrValue(tag, "class");
-    const id = extractAttrValue(tag, "id");
-    const isOlderPager =
-      hasClassToken(className, "blog-pager-older-link") ||
-      /blog-pager-older-link/i.test(String(id || ""));
-    if (!isOlderPager) continue;
-    const href = extractAttrValue(tag, "href");
-    if (!href) continue;
-    const normalized = normalizeListingNextUrl(href, baseUrl);
-    if (normalized) return normalized;
-  }
-  return "";
-};
-
-const collectBackfillPostCards = async (seedHtml, seedUrl, seenKeys, neededCount) => {
-  const out = [];
-  const seen = seenKeys || new Set();
-  const visited = new Set();
-  let hops = 0;
-  let nextUrl = extractListingNextUrl(seedHtml, seedUrl);
-
-  while (nextUrl && out.length < neededCount && hops < BLOG_LISTING_BACKFILL_HOPS) {
-    if (visited.has(nextUrl)) break;
-    visited.add(nextUrl);
-
-    let nextRes;
-    try {
-      nextRes = await fetch(nextUrl, {
-        headers: {
-          Accept: "text/html",
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
-    } catch (e) {
-      break;
-    }
-    if (!nextRes || !nextRes.ok) break;
-
-    const contentType = (nextRes.headers.get("content-type") || "").toLowerCase();
-    if (contentType && !contentType.includes("text/html")) break;
-
-    let nextHtml = "";
-    try {
-      nextHtml = await nextRes.text();
-    } catch (e) {
-      break;
-    }
-
-    const range = findElementByIdRange(nextHtml, "div", "postcards");
-    if (range) {
-      const cards = extractPostCards(range.innerHtml);
-      for (const card of cards) {
-        if (!card || !card.html) continue;
-        if (seen.has(card.key)) continue;
-        seen.add(card.key);
-        out.push(card);
-        if (out.length >= neededCount) break;
-      }
-    }
-
-    nextUrl = extractListingNextUrl(nextHtml, nextUrl);
-    hops += 1;
-  }
-
-  return out;
-};
-
-const hasExplicitBlog1RenderFailure = (html) =>
-  /Failed to render gadget\s+['"]Blog1['"]/i.test(String(html || ""));
-
-const hasListingRenderFailure = (html) => {
-  const source = String(html || "");
-  if (!source) return false;
-  return (
-    hasExplicitBlog1RenderFailure(source) ||
-    /Failed to render theme node\s+['"]section['"]/i.test(source) ||
-    (/There was an error processing the markup/i.test(source) &&
-      /(?:\bdata-gg-bloghome\b|\bdata-gg-surface\s*=\s*['"]listing['"]|\bdata-gg-view\s*=\s*['"]listing['"])/i.test(
-        source
-      ))
-  );
-};
-
-const buildListingPostcardsHtml = (cardsHtml, nextUrl) =>
-  `<div class='gg-stack' data-gg-worker-fallback='listing' id='postcards'>${cardsHtml}</div>${buildLoadMoreWrapHtml(
-    nextUrl
-  )}`;
-
-const buildListingFallbackShellHtml = (listingHtml) =>
-  [
-    "<section class='gg-home-blog' data-gg-home-layer='blog' data-gg-worker-fallback='listing' id='gg-home-blog'>",
-    "<h2 class='gg-visually-hidden' id='gg-home-blog-anchor'>Blog posts</h2>",
-    "<div class='gg-blog-layout gg-blog-layout--list'>",
-    "<div class='gg-blog-main' data-gg-listing-flow-ssr='1'>",
-    listingHtml,
-    "</div>",
-    "</div>",
-    "</section>",
-  ].join("");
-
-const insertListingFallbackHtml = (html, listingHtml) => {
-  const source = String(html || "");
-  if (!source || !listingHtml) return source;
-
-  const blogRange = findElementByIdRange(source, "div", "blog");
-  if (blogRange) {
-    return `${source.slice(0, blogRange.innerStart)}${listingHtml}${source.slice(blogRange.innerStart)}`;
-  }
-
-  const blogMainRange = findElementByClassRange(source, "gg-blog-main");
-  if (blogMainRange) {
-    return `${source.slice(0, blogMainRange.innerStart)}${listingHtml}${source.slice(
-      blogMainRange.innerStart
-    )}`;
-  }
-
-  const mainRange = findElementByIdRange(source, "main", "gg-main");
-  if (mainRange) {
-    const shellHtml = buildListingFallbackShellHtml(listingHtml);
-    return `${source.slice(0, mainRange.innerStart)}${shellHtml}${source.slice(mainRange.innerStart)}`;
-  }
-
-  return `${listingHtml}${source}`;
-};
-
-const hasUsablePostDetailShell = (html) => {
-  const source = String(html || "");
-  if (!source) return false;
-  if (/data-gg-module\s*=\s*['"]post-detail['"]/i.test(source)) return true;
-  return (
-    /class\s*=\s*['"][^'"]*\bgg-post\b[^'"]*['"]/i.test(source) &&
-    /class\s*=\s*['"][^'"]*\bpost-body\b[^'"]*\bentry-content\b[^'"]*['"]/i.test(source)
-  );
-};
-
-const ensureBlogListingPostcards = async (response, requestUrl, opts = {}) => {
-  const options = opts || {};
-  const targetCount = toPositiveInt(
-    options.targetCount,
-    BLOG_LISTING_MIN_POSTCARDS,
-    BLOG_LISTING_FEED_MAX_RESULTS
-  );
-  const allowCreateContainer = options.allowCreateContainer === true;
-  const useHtmlBackfill = options.useHtmlBackfill !== false;
-  let html = "";
-  try {
-    html = await response.text();
-  } catch (e) {
-    return response;
-  }
-  if (!html) {
-    return responseFromHtml(response, html);
-  }
-  const hardFallbackEvidence = hasListingRenderFailure(html);
-
-  const range = findElementByIdRange(html, "div", "postcards");
-  if (!range) {
-    if (!allowCreateContainer && !hardFallbackEvidence) {
-      return responseFromHtml(response, html);
-    }
-    const feedFill = await fetchFeedCards(requestUrl, targetCount, new Set());
-    if (!feedFill.cards.length) {
-      return responseFromHtml(response, html);
-    }
-    const cardsHtml = feedFill.cards.map((card) => card.html).join("");
-    const listingHtml = buildListingPostcardsHtml(cardsHtml, feedFill.nextUrl);
-    html = insertListingFallbackHtml(html, listingHtml);
-    const out = responseFromHtml(response, html);
-    out.headers.set("x-gg-ssr-postcards", String(feedFill.cards.length));
-    out.headers.set("x-gg-ssr-backfill", String(feedFill.cards.length));
-    if (feedFill.nextUrl) {
-      out.headers.set("x-gg-ssr-next", feedFill.nextUrl);
-    }
-    return out;
-  }
-
-  const existing = extractPostCards(range.innerHtml);
-  if (existing.length >= targetCount) {
-    const out = responseFromHtml(response, html);
-    out.headers.set("x-gg-ssr-postcards", String(existing.length));
-    return out;
-  }
-  if (!allowCreateContainer && !hardFallbackEvidence) {
-    return responseFromHtml(response, html);
-  }
-
-  const seen = new Set(existing.map((card) => card.key));
-  const extras = [];
-  let loadMoreNext = "";
-  if (useHtmlBackfill) {
-    const htmlNeeded = targetCount - existing.length;
-    const htmlExtras = await collectBackfillPostCards(html, requestUrl, seen, htmlNeeded);
-    for (const extra of htmlExtras) {
-      if (!extra || !extra.html) continue;
-      extras.push(extra);
-    }
-  }
-
-  const remaining = targetCount - (existing.length + extras.length);
-  if (remaining > 0) {
-    const feedFill = await fetchFeedCards(requestUrl, remaining, seen);
-    if (feedFill.cards.length) {
-      extras.push(...feedFill.cards);
-    }
-    if (feedFill.nextUrl) {
-      loadMoreNext = feedFill.nextUrl;
-    }
-  }
-
-  if (extras.length > 0) {
-    const extraHtml = extras.map((card) => card.html).join("");
-    html = `${html.slice(0, range.innerEnd)}${extraHtml}${html.slice(range.innerEnd)}`;
-  }
-  if (loadMoreNext) {
-    html = patchLoadMoreNextUrl(html, loadMoreNext);
-  }
-
-  const out = responseFromHtml(response, html);
-  out.headers.set("x-gg-ssr-postcards", String(existing.length + extras.length));
-  if (extras.length > 0) {
-    out.headers.set("x-gg-ssr-backfill", String(extras.length));
-  }
-  if (loadMoreNext) {
-    out.headers.set("x-gg-ssr-next", loadMoreNext);
-  }
-  return out;
-};
-
-const shouldFallbackListingPagination = (url) => {
-  if (!url) return false;
-  if (url.pathname !== "/search") return false;
-  return (
-    url.searchParams.has("updated-max") ||
-    url.searchParams.has("start-index") ||
-    url.searchParams.has("max-results")
-  );
-};
-
-const listingTargetCountFromUrl = (url, fallback = BLOG_LISTING_MIN_POSTCARDS) => {
-  if (!url) return fallback;
-  return toPositiveInt(url.searchParams.get("max-results"), fallback, BLOG_LISTING_FEED_MAX_RESULTS);
-};
-
-const shouldSkipListingFallback = (html, opts = {}) => {
-  const source = String(html || "");
-  if (!source) return true;
-  if (opts && opts.allowCreateContainer === true) return false;
-  if (hasListingRenderFailure(source)) return false;
-  return !/id\s*=\s*['"]blog['"]/i.test(source);
-};
-
 const isBypassEnhancementPath = (pathname) => {
   const path = String(pathname || "");
   if (!path) return false;
   return /\.txt$/i.test(path) || path.startsWith("/.well-known/");
-};
-
-const isPostLikePath = (pathname) => {
-  const path = String(pathname || "");
-  if (!path) return false;
-  if (/^\/20\d{2}\/\d{2}\/[^/?#]+\.html$/i.test(path)) return true;
-  if (/^\/p\/[^/?#]+\.html$/i.test(path)) return true;
-  return false;
-};
-
-const SPECIAL_APP_PATHS = new Set(["/p/inohong.html"]);
-
-const normalizePathname = (pathname) => {
-  const path = String(pathname || "").trim().toLowerCase();
-  if (!path) return "";
-  if (path === "/") return "/";
-  return path.replace(/\/+$/, "");
-};
-
-const isSpecialAppPath = (pathname) => {
-  const normalized = normalizePathname(pathname);
-  return !!normalized && SPECIAL_APP_PATHS.has(normalized);
 };
 
 const LEGAL_PAGE_PATHS = new Set([
@@ -1514,292 +502,6 @@ const applyLegalCleanRoomRewrites = (rewriter) => {
     rewriter.on(selector, removeElement);
   }
   return rewriter;
-};
-
-const ensureListingResponse = async (response, requestUrl, opts = {}) => {
-  let html = "";
-  try {
-    html = await response.clone().text();
-  } catch (e) {
-    return ensureBlogListingPostcards(response, requestUrl, opts);
-  }
-  if (shouldSkipListingFallback(html, opts)) {
-    return responseFromHtml(response, html);
-  }
-  return ensureBlogListingPostcards(response, requestUrl, opts);
-};
-
-const hasLandingSurfaceHtml = (html) => {
-  const source = String(html || "");
-  return /id\s*=\s*['"]gg-landing['"]/i.test(source) || /class\s*=\s*['"][^'"]*\bgg-home-landing\b/i.test(source);
-};
-
-const buildLandingFallbackHtml = () =>
-  [
-    "<section class='gg-home-landing' data-gg-home-layer='landing' data-gg-worker-fallback='landing'>",
-    "<div class='gg-landing' id='gg-landing'>",
-    "<div id='hero'>",
-    "<section aria-label='Hero' class='gg-section gg-hero' data-surface='dark' id='gg-landing-hero' role='region'>",
-    "<div aria-hidden='true' class='gg-hero__scrim'></div>",
-    "<div class='gg-wrap gg-hero__in'>",
-    "<div class='gg-hero__card'>",
-    "<p class='gg-kicker'>&middot; Intelligence by Creator &middot; Performance through Story &middot;</p>",
-    "<h1 class='gg-display'>Edited by pakrpp.</h1>",
-    "<p class='gg-lead'>We cut for retention: hooks, pacing, sound, and clarity. One second decides whether viewers stay. We edit for the stay.</p>",
-    "<div class='gg-ctaRow'>",
-    "<a class='gg-btn gg-btn--accent wa-track' data-section='hero' href='https://wa.me/628999999999?text=Hi%20pakrpp%2C%20I%20need%20a%20quote%20(EN).%20Source%3A%20Hero' rel='noopener'>Get a Quote</a>",
-    "<a class='gg-btn gg-btn--ghost' href='#gg-landing-pillars-4'>See Packages</a>",
-    "</div>",
-    "<p class='gg-micro'>Confidential by default &middot; NDA available &middot; First response &le; 1 business hour</p>",
-    "</div>",
-    "<div aria-label='Quick proof points' class='gg-hero__stats'>",
-    "<div class='gg-stat'><div class='gg-stat__n'>0-3s</div><div class='gg-stat__t'>Hook engineering</div></div>",
-    "<div class='gg-stat'><div class='gg-stat__n'>1-2d</div><div class='gg-stat__t'>First cut (typical)</div></div>",
-    "<div class='gg-stat'><div class='gg-stat__n'>Clean</div><div class='gg-stat__t'>Sound + captions ready</div></div>",
-    "</div>",
-    "</div>",
-    "</section>",
-    "</div>",
-    "<section aria-label='Why pakrpp' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars' role='region'>",
-    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Why it works</p><h2 class='gg-h2'>Retention-first editing, not pretty cuts.</h2><p class='gg-sub'>Disciplined pacing, intentional audio, and ruthless clarity.</p></header>",
-    "<div class='gg-grid3' role='list'><article class='gg-card' role='listitem'><h3 class='gg-h3'>Hook &amp; pacing</h3><p class='gg-p'>Cut dead air, tighten intent, front-load value.</p></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Sound design</h3><p class='gg-p'>Noise, leveling, music bed, and tasteful SFX.</p></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Clarity to action</h3><p class='gg-p'>Structure, emphasis, and captions that stay readable.</p></article></div></div>",
-    "</section>",
-    "<section aria-label='Workflow' class='gg-section gg-darkband' data-surface='dark' id='gg-landing-hero-3' role='region'>",
-    "<div class='gg-wrap'><header class='gg-head gg-head--dark'><p class='gg-kicker'>Workflow</p><h2 class='gg-h2 gg-h2--light'>Fast, predictable, no drama.</h2><p class='gg-sub gg-sub--light'>You always know what is happening and when you will get it.</p></header>",
-    "<ol aria-label='Editing steps' class='gg-steps'><li class='gg-step'><div class='gg-step__n'>01</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Brief</h3><p class='gg-p gg-p--light'>Goal, references, and raw footage.</p></div></li><li class='gg-step'><div class='gg-step__n'>02</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>First cut</h3><p class='gg-p gg-p--light'>Hook, pacing, structure, then polish.</p></div></li><li class='gg-step'><div class='gg-step__n'>03</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Delivery</h3><p class='gg-p gg-p--light'>Exports for platform and caption-safe framing.</p></div></li></ol></div>",
-    "</section>",
-    "<section aria-label='Packages' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars-4' role='region'>",
-    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Packages</p><h2 class='gg-h2'>Pick a lane. Ship faster.</h2><p class='gg-sub'>Simple packages. Custom quotes for campaigns and volume.</p></header>",
-    "<div class='gg-grid3' role='list'><article class='gg-card' role='listitem'><h3 class='gg-h3'>Starter</h3><p class='gg-p'>1 main edit &middot; 2 revisions &middot; clean captions</p><a class='gg-btn gg-btn--ghost' href='#contact'>Ask price</a></article><article class='gg-card gg-card--featured' role='listitem'><h3 class='gg-h3'>Growth</h3><p class='gg-p'>Hook/pacing &middot; sound design &middot; cutdowns</p><a class='gg-btn gg-btn--accent' href='#contact'>Start here</a></article><article class='gg-card' role='listitem'><h3 class='gg-h3'>Studio</h3><p class='gg-p'>Campaign &middot; multi-version exports &middot; priority</p><a class='gg-btn gg-btn--ghost' href='#contact'>Book consult</a></article></div></div>",
-    "</section>",
-    "<section aria-label='Contact' class='gg-section gg-contact' data-surface='light' id='contact' role='region'>",
-    "<div class='gg-wrap'><header class='gg-head'><p class='gg-kicker gg-kicker--dark'>Contact</p><h2 class='gg-h2'>Send the footage. Get the plan.</h2><p class='gg-sub'>Tell us your goal, platform, and deadline.</p></header>",
-    "<div class='gg-contactGrid'><div class='gg-card'><h3 class='gg-h3'>WhatsApp</h3><p class='gg-p'>Fastest route. Include references and deadline.</p><a class='gg-btn gg-btn--accent' href='https://wa.me/62999999999?text=Hi%20pakrpp%2C%20I%20want%20video%20editing.%20Goal%3A%20____.%20Platform%3A%20____.%20Deadline%3A%20____.' rel='noopener'>Chat on WhatsApp</a></div><div class='gg-card'><h3 class='gg-h3'>Quick brief</h3><p class='gg-p'>Contact shortcut via WhatsApp for now.</p></div></div></div>",
-    "</section>",
-    "</div>",
-    "</section>",
-  ].join("");
-
-const ensureLandingSurfaceResponse = async (response) => {
-  let html = "";
-  try {
-    html = await response.text();
-  } catch (e) {
-    return response;
-  }
-  if (!html || hasLandingSurfaceHtml(html)) {
-    return responseFromHtml(response, html);
-  }
-  const mainRange = findElementByIdRange(html, "main", "gg-main");
-  if (!mainRange) {
-    return responseFromHtml(response, html);
-  }
-  const landingHtml = buildLandingFallbackHtml();
-  html = `${html.slice(0, mainRange.innerStart)}${landingHtml}${html.slice(mainRange.innerStart)}`;
-  const out = responseFromHtml(response, html);
-  out.headers.set("x-gg-landing-fallback", "1");
-  return out;
-};
-
-const POST_DETAIL_FALLBACK_MAX_RESULTS = 150;
-
-const normalizePathKey = (rawPath) => {
-  const value = String(rawPath || "").trim();
-  if (!value) return "";
-  const noQuery = value.split("?")[0].split("#")[0];
-  if (!noQuery) return "/";
-  const normalized = noQuery.startsWith("/") ? noQuery : `/${noQuery}`;
-  const trimmed = normalized.replace(/\/+$/, "");
-  return trimmed || "/";
-};
-
-const entryPathname = (entry) => {
-  const alt = pickFeedAlternateUrl(entry);
-  if (!alt) return "";
-  try {
-    const parsed = new URL(alt);
-    return normalizePathKey(parsed.pathname);
-  } catch (e) {
-    return normalizePathKey(alt);
-  }
-};
-
-const findFeedEntryByPath = (feed, pathname) => {
-  const targetPath = normalizePathKey(pathname);
-  if (!targetPath) return null;
-  const entries = Array.isArray(feed && feed.entry) ? feed.entry : [];
-  for (const entry of entries) {
-    if (!entry) continue;
-    if (entryPathname(entry) === targetPath) {
-      return entry;
-    }
-  }
-  return null;
-};
-
-const fetchFeedEntryByPath = async (requestUrl, pathname) => {
-  const targetPath = normalizePathKey(pathname);
-  if (!targetPath) return null;
-  let req;
-  try {
-    req = new URL(requestUrl);
-  } catch (e) {
-    return null;
-  }
-  const lookups = targetPath.startsWith("/p/")
-    ? [
-        { feedPath: "/feeds/pages/default", isPageFeed: true },
-        { feedPath: "/feeds/posts/default", isPageFeed: false },
-      ]
-    : [
-        { feedPath: "/feeds/posts/default", isPageFeed: false },
-        { feedPath: "/feeds/pages/default", isPageFeed: true },
-      ];
-  for (const lookup of lookups) {
-    const feedUrl = new URL(lookup.feedPath, req.origin);
-    feedUrl.searchParams.set("alt", "json");
-    feedUrl.searchParams.set("max-results", String(POST_DETAIL_FALLBACK_MAX_RESULTS));
-    let feedRes;
-    try {
-      feedRes = await fetch(feedUrl.toString(), {
-        headers: {
-          Accept: "application/json",
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
-    } catch (e) {
-      continue;
-    }
-    if (!feedRes || !feedRes.ok) continue;
-    let json;
-    try {
-      json = await feedRes.json();
-    } catch (e) {
-      continue;
-    }
-    const feed = json && json.feed ? json.feed : null;
-    const match = findFeedEntryByPath(feed, targetPath);
-    if (match) {
-      return { entry: match, isPageFeed: lookup.isPageFeed };
-    }
-  }
-  return null;
-};
-
-const buildFallbackPostDetailHtml = (entry, requestUrl, options = {}) => {
-  if (!entry) return "";
-  const opt = options || {};
-  const title = cleanText(entry && entry.title && entry.title.$t) || "Untitled";
-  const postId = extractFeedPostId(entry);
-  const postUrl = pickFeedAlternateUrl(entry) || String(requestUrl || "");
-  const contentHtml = String(
-    (entry && entry.content && entry.content.$t) ||
-      (entry && entry.summary && entry.summary.$t) ||
-      ""
-  );
-  if (!contentHtml) return "";
-  const safeTitle = escapeHtml(title);
-  const safePostId = escapeHtml(postId || "fallback");
-  const safePostUrl = escapeHtml(postUrl || String(requestUrl || ""));
-  const surface = opt.isPage ? "page" : "post";
-  return [
-    `<article class='gg-post' data-gg-emergency-fallback='post-detail' data-gg-surface='${surface}' data-id='${safePostId}' data-title='${safeTitle}' data-url='${safePostUrl}'>`,
-    "<header class='gg-post__header'>",
-    `<h1 class='gg-post__title' data-gg-marker='panel-post-title'>${safeTitle}</h1>`,
-    "</header>",
-    "<div class='gg-post__body'>",
-    `<section class='gg-post__content post-body entry-content' data-gg-module='post-content' id='post-body-${safePostId}'>`,
-    contentHtml,
-    "</section>",
-    "</div>",
-    "</article>",
-  ].join("");
-};
-
-const buildFallbackSpecialSurfaceHtml = (entry, options = {}) => {
-  const opt = options || {};
-  const contentHtml = String(
-    (entry && entry.content && entry.content.$t) ||
-      (entry && entry.summary && entry.summary.$t) ||
-      ""
-  );
-  if (!contentHtml) return "";
-  if (!opt.isSpecialApp) {
-    return contentHtml;
-  }
-  const title = cleanText(entry && entry.title && entry.title.$t) || "Special App";
-  const postId = extractFeedPostId(entry) || "fallback";
-  const specialKey = cleanText(opt.specialKey);
-  const attrs = [
-    "class='gg-special-app-page'",
-    "data-gg-module='special-app-page'",
-    "data-gg-special-app='1'",
-    "data-gg-surface='special'",
-    `data-id='${escapeHtml(postId)}'`,
-    `data-title='${escapeHtml(title)}'`,
-  ];
-  if (specialKey) {
-    attrs.push(`data-gg-special-key='${escapeHtml(specialKey)}'`);
-  }
-  return [
-    `<article ${attrs.join(" ")}>`,
-    "<div class='gg-special-app-body'>",
-    contentHtml,
-    "</div>",
-    "</article>",
-  ].join("");
-};
-
-const ensurePostDetailFallbackHtml = async (html, requestUrl, pathname) => {
-  const source = String(html || "");
-  if (!source) return source;
-  const specialAppMatch = source.match(/data-gg-special-app\s*=\s*['"]([^'"]+)['"]/i);
-  const specialMatch = source.match(/data-gg-special\s*=\s*['"]([^'"]+)['"]/i);
-  const specialAppKey = cleanText(specialAppMatch && specialAppMatch[1]);
-  const specialKey = specialAppKey || cleanText(specialMatch && specialMatch[1]);
-  const isSpecialApp =
-    !!specialAppKey ||
-    /class\s*=\s*['"][^'"]*\bgg-special-app-page\b/i.test(source) ||
-    isSpecialAppPath(pathname);
-  const isSpecialSurface =
-    /data-gg-surface\s*=\s*['"]special['"]/i.test(source) || !!specialKey || isSpecialApp;
-  const hasBlog1Failure = hasExplicitBlog1RenderFailure(source);
-  if (!hasBlog1Failure) return source;
-  if (!isSpecialSurface && hasUsablePostDetailShell(source)) return source;
-  const blogRange = findElementByIdRange(source, "div", "blog");
-  if (!blogRange) return source;
-  const matched = await fetchFeedEntryByPath(requestUrl, pathname);
-  if (!matched || !matched.entry) return source;
-  const fallbackHtml = isSpecialSurface
-    ? buildFallbackSpecialSurfaceHtml(matched.entry, {
-        isSpecialApp,
-        specialKey,
-      })
-    : buildFallbackPostDetailHtml(matched.entry, requestUrl, {
-        isPage: !!matched.isPageFeed || /^\/p\//i.test(String(pathname || "")),
-      });
-  if (!fallbackHtml) return source;
-  return `${source.slice(0, blogRange.innerStart)}${fallbackHtml}${source.slice(blogRange.innerEnd)}`;
-};
-
-const ensurePostDetailResponse = async (response, requestUrl, pathname) => {
-  let html = "";
-  try {
-    html = await response.clone().text();
-  } catch (e) {
-    return response;
-  }
-  if (!html) return response;
-  let patched = html;
-  try {
-    patched = await ensurePostDetailFallbackHtml(patched, requestUrl, pathname);
-  } catch (e) {
-    patched = html;
-  }
-  patched = cleanPostTocHtml(patched);
-  if (patched === html) return response;
-  return responseFromHtml(response, patched);
 };
 
 const LEGACY_LANDING_CONTACT_ID = "gg-landing-hero-5";
@@ -2257,39 +959,22 @@ export default {
       }
       let originRequest = request;
       let originUrl = new URL(request.url);
-      let forceListing = false;
-      let forceLanding = false;
-      const paginationListingFallback = shouldFallbackListingPagination(url);
+      const isListingSurfaceRequest = pathname === "/" || pathname === "";
+      const isLandingSurfaceRequest = pathname === "/landing";
       const oldDebugProbeParam = String(originUrl.searchParams.get("x") || "").trim().toLowerCase();
       if (oldDebugProbeParam === "home-origin" || oldDebugProbeParam === "probe-left") {
         originUrl.searchParams.delete("x");
       }
     
-      if (pathname === "/" || pathname === "") {
-        // Blogger does not expose the `view=blog` query to XML route logic on
-        // canonical home. Use a listing-owned origin path as route intent, then
-        // keep the public response canonicalized to `/` below.
-        originUrl.pathname = "/search";
-        originUrl.searchParams.delete("view");
-        originUrl.searchParams.set("max-results", String(BLOG_LISTING_MIN_POSTCARDS));
-        originRequest = new Request(originUrl.toString(), request);
-        forceListing = true;
-      } else if (pathname === "/landing") {
+      if (isLandingSurfaceRequest) {
         originUrl.pathname = "/";
-        // Public /landing must be backed by XML's landing route branch, not
-        // bare / listing DOM relabeled at the edge.
+        // `/landing` remains an explicit origin bridge until XML can branch
+        // landing SSR without Blogger's legacy `view=landing` signal.
         originUrl.searchParams.set("view", "landing");
         originUrl.searchParams.delete("max-results");
         originUrl.searchParams.delete("start-index");
         originRequest = new Request(originUrl.toString(), request);
-        forceLanding = true;
       }
-
-      try {
-        const forcedView = String(originUrl.searchParams.get("view") || "").trim().toLowerCase();
-        if (forcedView === "blog") forceListing = true;
-        if (forcedView === "landing") forceLanding = true;
-      } catch (e) {}
       const isDocumentProxyRequest =
       request.method === "GET" &&
       !pathname.startsWith("/assets/") &&
@@ -2367,11 +1052,7 @@ export default {
           }
         }
         const publicUrl = new URL(request.url);
-        if (forceListing) {
-          publicUrl.pathname = "/";
-        } else if (forceLanding) {
-          publicUrl.pathname = "/landing";
-        }
+        publicUrl.searchParams.delete("m");
         publicUrl.searchParams.delete("view");
         publicUrl.searchParams.delete("x");
         publicUrl.searchParams.delete("fbclid");
@@ -2410,7 +1091,9 @@ export default {
         };
         const buildSchema = () => {
           const origin = new URL(request.url).origin;
-          const pageUrl = cleanUrlForSchema(request.url, { forceListing, forceLanding });
+          const pageUrl = cleanUrlForSchema(request.url);
+          const isListingSurface =
+            isListingSurfaceRequest || meta.surface === "listing" || meta.surface === "global";
           const siteName = (meta.ogSiteName || "").trim() || "pakrpp.com";
           const pageName =
             (meta.ogTitle || "").trim() ||
@@ -2447,7 +1130,7 @@ export default {
               url: `${origin}/`,
             },
             {
-              "@type": forceListing ? "CollectionPage" : "WebPage",
+              "@type": isListingSurface ? "CollectionPage" : "WebPage",
               "@id": `${pageUrl}#webpage`,
               url: pageUrl,
               name: pageName,
@@ -2463,7 +1146,7 @@ export default {
             isPostSurface ||
             ogType === "article" ||
             !!meta.pub ||
-            (!forceListing && meta.hasArticle);
+            (!isListingSurface && meta.hasArticle);
           if (isArticle) {
             const blogPosting = {
               "@type": "BlogPosting",
@@ -2504,11 +1187,6 @@ export default {
                 if (className) {
                   el.setAttribute("class", className);
                 }
-              }
-              if (forceListing) {
-                el.setAttribute("data-gg-prehome", "blog");
-              } else if (forceLanding) {
-                el.setAttribute("data-gg-prehome", "landing");
               }
             },
           })
@@ -2647,6 +1325,26 @@ export default {
               el.setInnerContent("");
             },
           })
+          .on("link[rel=\"canonical\"]", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("meta[property=\"og:url\"]", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("meta[name=\"twitter:url\"]", {
+            element(el) {
+              el.remove();
+            },
+          })
+          .on("head", {
+            element(el) {
+              el.append(canonicalInject, { html: true });
+            },
+          })
           .on("body", {
             element(el) {
               if (legalPage) {
@@ -2657,18 +1355,6 @@ export default {
                 }
               }
               meta.surface = (el.getAttribute("data-gg-surface") || "").trim();
-              if (forceListing) {
-                el.setAttribute("data-gg-surface", "listing");
-                // Canonicalize router taxonomy for listing SSR so runtime modules do not see "home".
-                el.setAttribute("data-gg-page", "listing");
-                el.setAttribute("data-gg-view", "listing");
-                el.setAttribute("data-gg-bloghome", "1");
-              } else if (forceLanding) {
-                el.setAttribute("data-gg-surface", "landing");
-                el.setAttribute("data-gg-page", "home");
-                el.setAttribute("data-gg-view", "home");
-                el.removeAttribute("data-gg-bloghome");
-              }
               const schemaJson = buildSchema();
               el.prepend(
                 `<script id="gg-schema" type="application/ld+json">${schemaJson}</script>`,
@@ -2704,112 +1390,11 @@ export default {
           });
         }
 
-        if (forceListing) {
-          // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
-          // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
-          rewritten
-            .on("main#gg-main", {
-              element(el) {
-                el.setAttribute("data-gg-surface", "listing");
-                el.setAttribute("data-gg-page", "listing");
-                el.setAttribute("data-gg-view", "listing");
-                // Keep home-root contract but force blog state for listing alias.
-                el.setAttribute("data-gg-home-state", "blog");
-              },
-            });
-          if (templateMismatch || templateContract) {
-            // Emergency-only hidden host for drift/mismatch containment.
-            rewritten.on(".gg-info-panel", {
-              element(el) {
-                el.append(
-                  '<div data-gg-worker-toc-fallback="1" hidden><ol data-gg-slot="toc"></ol><p data-gg-slot="toc-hint"></p></div>',
-                  { html: true }
-                );
-              },
-            });
-          }
-          rewritten
-          .on("link[rel=\"canonical\"]", {
-            element(el) {
-              el.remove();
-            },
-          })
-          .on("meta[property=\"og:url\"]", {
-            element(el) {
-              el.remove();
-            },
-          })
-          .on("meta[name=\"twitter:url\"]", {
-            element(el) {
-              el.remove();
-            },
-          })
-            .on("head", {
-              element(el) {
-                el.append(canonicalInject, { html: true });
-              },
-            });
-        } else if (forceLanding) {
-          // Keep both home layers in the streamed rewrite; the home-state CSS/JS contract
-          // hides the inactive layer without making HTMLRewriter remove overlapping subtrees.
-          rewritten
-            .on("main#gg-main", {
-              element(el) {
-                el.setAttribute("data-gg-surface", "landing");
-                el.setAttribute("data-gg-page", "home");
-                el.setAttribute("data-gg-view", "home");
-                el.setAttribute("data-gg-home-state", "landing");
-                el.removeAttribute("data-gg-home-root");
-                el.removeAttribute("data-gg-bloghome");
-              },
-            })
-            .on("link[rel=\"canonical\"]", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("meta[property=\"og:url\"]", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("meta[name=\"twitter:url\"]", {
-              element(el) {
-                el.remove();
-              },
-            })
-            .on("head", {
-              element(el) {
-                el.append(canonicalInject, { html: true });
-              },
-            });
-        }
         if (legalPage) {
           applyLegalCleanRoomRewrites(rewritten);
         }
         const transformed = rewritten.transform(originRes);
         let htmlResponse = transformed;
-        if (request.method !== "HEAD" && (forceListing || paginationListingFallback)) {
-          htmlResponse = await ensureListingResponse(transformed, request.url, {
-            targetCount: forceListing
-              ? BLOG_LISTING_MIN_POSTCARDS
-              : listingTargetCountFromUrl(url, BLOG_LISTING_MIN_POSTCARDS),
-            allowCreateContainer: forceListing || paginationListingFallback,
-            useHtmlBackfill: forceListing,
-          });
-        }
-        if (
-          request.method !== "HEAD" &&
-          !forceListing &&
-          !forceLanding &&
-          !paginationListingFallback &&
-          isPostLikePath(pathname)
-        ) {
-          htmlResponse = await ensurePostDetailResponse(htmlResponse, request.url, pathname);
-        }
-        if (request.method !== "HEAD" && forceLanding) {
-          htmlResponse = await ensureLandingSurfaceResponse(htmlResponse);
-        }
         if (request.method !== "HEAD") {
           htmlResponse = await ensureLandingContactResponse(htmlResponse);
         }
@@ -2837,11 +1422,6 @@ export default {
           }
           out.headers.set("x-gg-template-contract", "1");
           out.headers.set("x-gg-template-contract-reason", templateContractReason);
-        }
-        if (forceListing || paginationListingFallback) {
-          out.headers.set("Cache-Control", "no-store, max-age=0");
-          out.headers.set("Pragma", "no-cache");
-          out.headers.set("Expires", "0");
         }
         return out;
       }
