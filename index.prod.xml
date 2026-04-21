@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='9355b423bfed' name='gg-template-fingerprint'/>
+    <meta content='b6d22ff77c9e' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1126,7 +1126,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='9355b423bfed' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='b6d22ff77c9e' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -3382,7 +3382,9 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
             </b:widget>
           </b:section>
     <b:if cond='data:view.isMultipleItems'>
-    <b:section class='gg-home-blog__body' id='gg-mixed-deferred' name='gg-mixed-deferred' showaddelement='true'>
+    <!-- Keep the published #gg-mixed-deferred host, but give the editable Blogger zone its own unique id. -->
+    <section class='gg-home-blog__body' id='gg-mixed-deferred'>
+    <b:section class='gg-zone-mixed-deferred' id='gg-zone-mixed-deferred' name='gg-zone-mixed-deferred' showaddelement='true'>
       <b:widget id='HTML10' locked='false' title='Youtube' type='HTML' version='2' visible='true'>
         <b:widget-settings>
           <b:widget-setting name='content'>(Landscape 16:9, Rail Horizontal) memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-setting>
@@ -3701,6 +3703,7 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
 </b:includable>
       </b:widget>
     </b:section>
+    </section>
     </b:if>
     </div>
 

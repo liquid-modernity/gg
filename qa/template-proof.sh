@@ -337,7 +337,7 @@ evaluate_surface_route "/" \
 
 evaluate_surface_route "/landing" \
   "$landing_status" "$landing_final" "$landing_canonical" "$landing_og" "$landing_surface" "$landing_page" \
-  "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home"
+  "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "landing"
 
 blog_redirect_truth="PASS"
 if [[ "$blog_status" != "200" || "$blog_final" != "${BASE_URL}/" || ! "$blog_redirects" =~ ^[0-9]+$ || "$blog_redirects" -lt 1 ]]; then
