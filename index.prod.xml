@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='910c02ace891' name='gg-template-fingerprint'/>
+    <meta content='e051c743c346' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1126,7 +1126,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='910c02ace891' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='e051c743c346' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1597,6 +1597,8 @@ font-size: medium;
   <div class="gg-toc__body" id="gg-toc-body">
     <ol class="gg-toc__list" aria-label="Table of contents" data-gg-copy-aria="toc.title" data-gg-marker="panel-post-toc"></ol>
     <div class="gg-toc__empty" hidden></div>
+<ol data-gg-slot="toc"></ol>
+<p data-gg-slot="toc-hint"></p>
   </div>
 </nav>]]></b:widget-setting>
             </b:widget-settings>
@@ -1612,6 +1614,8 @@ font-size: medium;
                   <div class='gg-toc__body' id='gg-toc-body'>
                     <ol aria-label='Table of contents' class='gg-toc__list' data-gg-copy-aria='toc.title' data-gg-marker='panel-post-toc'/>
                     <div class='gg-toc__empty' hidden='hidden'/>
+                    <ol data-gg-slot='toc'/>
+<p data-gg-slot='toc-hint'/>
                   </div>
                 </nav>
               </div>
@@ -3752,6 +3756,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
           </div>
           <ol aria-label='Table of contents' class='gg-pi__toc' data-gg-copy-aria='toc.title' data-slot='toc'/>
           <p class='gg-pi__hint' data-slot='toc-hint' hidden='hidden'/>
+          <ol data-gg-slot='toc'/>
+<p data-gg-slot='toc-hint'/>
         </div>
         <div class='gg-pi__cluster gg-pi__cluster--topics'>
         <div class='gg-pi__sec gg-pi__sec--labels' hidden='hidden'>
@@ -3896,6 +3902,8 @@ memanggil API Blogger (/feeds/posts/summary) based on spesific label</b:widget-s
                 <div class='gg-epanel__value--toc'>
                   <ol class='gg-info-panel__toclist' data-gg-slot='toc'/>
                   <p class='gg-info-panel__tochint' data-gg-slot='toc-hint'/>
+                  <ol data-gg-slot='toc'/>
+<p data-gg-slot='toc-hint'/>
                 </div>
               </dd>
             </div>

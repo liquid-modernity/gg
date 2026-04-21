@@ -125,6 +125,9 @@
       else out.view = 'listing';
     }
   } catch (_) {}
+  if (GG.core && GG.core.normalizeSurface) out.surface = GG.core.normalizeSurface(out.surface);
+  if (GG.core && GG.core.normalizePage) out.page = GG.core.normalizePage(out.page, out.surface);
+  if (GG.core && GG.core.normalizeView) out.view = GG.core.normalizeView(out.view, out.surface);
   return out;
   };
   GG.core.normalizeBlogAlias = GG.core.normalizeBlogAlias || function(){
@@ -493,43 +496,67 @@
   GG.core.surface = GG.core.surface || {};
   GG.core.surface.update = GG.core.surface.update || function(url){
   var body = w.document && w.document.body;
-  var main = w.document && w.document.querySelector ? w.document.querySelector('main.gg-main[data-gg-surface],main.gg-main,#gg-main') : null;
+  var main = w.document && w.document.querySelector ? w.document.querySelector('main.gg-main[data-gg-surface],main.gg-main[data-gg-view],main.gg-main,#gg-main') : null;
   if (!body && !main) return '';
   var href = url || w.location.href;
+  function readAttr(name){
+    var v = '';
+    if (main && main.getAttribute) v = main.getAttribute(name) || '';
+    if (!v && body && body.getAttribute) v = body.getAttribute(name) || '';
+    return v;
+  }
+  function setAttr(el, name, value){
+    if (!el || !el.setAttribute) return;
+    if (value === null || value === undefined || value === '') el.removeAttribute(name);
+    else el.setAttribute(name, String(value));
+  }
   var route = (GG.core && GG.core.inferRoute)
-    ? GG.core.inferRoute(href, { surface: 'post', page: 'post', view: 'post', special: '' })
+    ? (GG.core.inferRoute(href, { surface: 'post', page: 'post', view: 'post', special: '' }) || { surface: 'post', page: 'post', view: 'post', special: '' })
     : { surface: 'post', page: 'post', view: 'post', special: '' };
-  var surface = route.surface || 'post';
-  var page = route.page || (surface === 'landing' ? 'home' : surface);
-  var view = route.view || (surface === 'landing' ? 'home' : surface);
-  var special = route.special || '';
-  var isHomeSurface = (surface === 'landing' || surface === 'listing');
+  var surface = (GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(readAttr('data-gg-surface')) : String(readAttr('data-gg-surface') || '').toLowerCase()) || (GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(route.surface) : String(route.surface || '').toLowerCase()) || 'post';
+  var page = (GG.core && GG.core.normalizePage ? GG.core.normalizePage(readAttr('data-gg-page'), surface) : String(readAttr('data-gg-page') || surface || '').toLowerCase()) || (GG.core && GG.core.normalizePage ? GG.core.normalizePage(route.page, surface) : String(route.page || surface || '').toLowerCase()) || surface;
+  var view = (GG.core && GG.core.normalizeView ? GG.core.normalizeView(readAttr('data-gg-view'), surface) : String(readAttr('data-gg-view') || surface || '').toLowerCase()) || (GG.core && GG.core.normalizeView ? GG.core.normalizeView(route.view, surface) : String(route.view || surface || '').toLowerCase()) || surface;
+  var special = readAttr('data-gg-special') || route.special || '';
+  var specialApp = readAttr('data-gg-special-app') || '';
+  var listingHome = readAttr('data-gg-listing-home') || '';
+  var blogHome = readAttr('data-gg-bloghome') || '';
+  var homeState = readAttr('data-gg-home-state') || '';
+  var homeRoot = readAttr('data-gg-home-root') || '';
+  var label = readAttr('data-gg-label') || '';
+  var query = readAttr('data-gg-query') || '';
+  if (!blogHome && listingHome === '1') blogHome = '1';
+  if (!homeState && surface === 'landing') homeState = 'landing';
+  if (!homeState && surface === 'listing' && (listingHome === '1' || blogHome === '1' || homeRoot === '1')) homeState = 'blog';
+  if (!homeRoot && (surface === 'landing' || listingHome === '1' || blogHome === '1' || homeState === 'landing' || homeState === 'blog')) homeRoot = '1';
   if (body) {
     if (body.classList) body.classList.remove('gg-is-landing');
     else body.className = body.className.replace(/\bgg-is-landing\b/g, '').trim();
     body.setAttribute('data-gg-surface', surface);
-    body.setAttribute('data-gg-page', page);
-    body.setAttribute('data-gg-view', view);
-    if (special) body.setAttribute('data-gg-special', special);
-    else body.removeAttribute('data-gg-special');
+    setAttr(body, 'data-gg-page', page);
+    setAttr(body, 'data-gg-view', view);
+    setAttr(body, 'data-gg-listing-home', listingHome);
+    setAttr(body, 'data-gg-bloghome', blogHome);
+    setAttr(body, 'data-gg-special', special);
+    setAttr(body, 'data-gg-special-app', specialApp);
+    setAttr(body, 'data-gg-label', label);
+    setAttr(body, 'data-gg-query', query);
     if (surface === 'landing') {
       if (body.classList) body.classList.add('gg-is-landing');
       else if (!/\bgg-is-landing\b/.test(body.className)) body.className = (body.className + ' gg-is-landing').trim();
     }
   }
   if (main) {
-    main.setAttribute('data-gg-surface', surface);
-    main.setAttribute('data-gg-page', page);
-    main.setAttribute('data-gg-view', view);
-    if (isHomeSurface) {
-      main.setAttribute('data-gg-home-state', surface === 'landing' ? 'landing' : 'blog');
-      main.setAttribute('data-gg-home-root', '1');
-    } else {
-      main.removeAttribute('data-gg-home-state');
-      main.removeAttribute('data-gg-home-root');
-    }
-    if (special) main.setAttribute('data-gg-special', special);
-    else main.removeAttribute('data-gg-special');
+    setAttr(main, 'data-gg-surface', surface);
+    setAttr(main, 'data-gg-page', page);
+    setAttr(main, 'data-gg-view', view);
+    setAttr(main, 'data-gg-home-state', homeState);
+    setAttr(main, 'data-gg-home-root', homeRoot);
+    setAttr(main, 'data-gg-listing-home', listingHome);
+    setAttr(main, 'data-gg-bloghome', blogHome);
+    setAttr(main, 'data-gg-special', special);
+    setAttr(main, 'data-gg-special-app', specialApp);
+    setAttr(main, 'data-gg-label', label);
+    setAttr(main, 'data-gg-query', query);
   }
   if (GG.ui && GG.ui.layout && typeof GG.ui.layout.applySurface === 'function') {
   try { GG.ui.layout.applySurface(surface, null, href); } catch (_) {}
@@ -776,11 +803,26 @@
   
   GG.core.routerCtx = GG.core.routerCtx || (function(){
   var cache = null;
-  var VIEW_SET = { error:1, offline:1, home:1, label:1, search:1, archive:1, listing:1, post:1, page:1, special:1 };
+  var VIEW_SET = { error:1, offline:1, home:1, landing:1, label:1, search:1, archive:1, listing:1, post:1, page:1, special:1 };
   function low(v){ return String(v || '').toLowerCase().trim(); }
   function attr(el, name){
     if (!el || !el.getAttribute) return '';
     return low(el.getAttribute(name) || '');
+  }
+  function normalizeSurface(v){
+    if (GG.core && GG.core.normalizeSurface) return GG.core.normalizeSurface(v);
+    return low(v);
+  }
+  function normalizeView(v, surface){
+    if (GG.core && GG.core.normalizeView) return GG.core.normalizeView(v, surface);
+    return low(v);
+  }
+  function viewMatches(actual, expected){
+    var a = normalizeView(actual, '');
+    var e = normalizeView(expected, '');
+    if (a === e) return true;
+    if ((a === 'landing' && e === 'home') || (a === 'home' && e === 'landing')) return true;
+    return false;
   }
   function boolish(v){
     var s = low(v);
@@ -791,12 +833,12 @@
     return doc.querySelector('main.gg-main[data-gg-view],main.gg-main[data-gg-surface],main.gg-main,#gg-main');
   }
   function detectView(main, body, url){
-    var view = attr(main, 'data-gg-view') || attr(body, 'data-gg-view');
+    var view = normalizeView(attr(main, 'data-gg-view') || attr(body, 'data-gg-view'), attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface'));
     if (VIEW_SET[view]) return view;
-    var surface = attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface');
+    var surface = normalizeSurface(attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface'));
     if (surface === 'error') return 'error';
     if (surface === 'offline') return 'offline';
-    if (surface === 'landing' || surface === 'home') return 'home';
+    if (surface === 'landing' || surface === 'home') return 'landing';
     if (surface === 'listing' || surface === 'feed') return 'listing';
     if (surface === 'special') return 'special';
     if (surface === 'post') return 'post';
@@ -813,7 +855,7 @@
         return 'search';
       }
       if (GG.core && GG.core.detectSpecialKind && GG.core.detectSpecialKind(path)) return 'special';
-      if (path === '/landing') return 'home';
+      if (path === '/landing') return 'landing';
       if (path === '/' || path === '/blog') return 'listing';
       if (path.indexOf('/p/') === 0) return 'page';
       if (/^\/\d{4}\/\d{2}\//.test(path)) return 'post';
@@ -850,12 +892,12 @@
       sbMode: detectSbMode(main, ref),
       label: (main && main.getAttribute ? (main.getAttribute('data-gg-label') || '') : '') || (body && body.getAttribute ? (body.getAttribute('data-gg-label') || '') : ''),
       query: (main && main.getAttribute ? (main.getAttribute('data-gg-query') || '') : '') || (body && body.getAttribute ? (body.getAttribute('data-gg-query') || '') : ''),
-      page: attr(main, 'data-gg-page') || attr(body, 'data-gg-page'),
-      surface: attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface'),
+      page: (GG.core && GG.core.normalizePage) ? GG.core.normalizePage(attr(main, 'data-gg-page') || attr(body, 'data-gg-page'), attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface')) : (attr(main, 'data-gg-page') || attr(body, 'data-gg-page')),
+      surface: normalizeSurface(attr(main, 'data-gg-surface') || attr(body, 'data-gg-surface')),
     };
     ctx.isDetail = ctx.view === 'post' || ctx.view === 'page';
     ctx.isListing = ctx.view === 'listing' || ctx.view === 'label' || ctx.view === 'search' || ctx.view === 'archive';
-    ctx.isHome = ctx.view === 'home';
+    ctx.isHome = ctx.view === 'landing';
     ctx.isSystem = ctx.sbMode === 'system';
     return ctx;
   }
@@ -868,7 +910,16 @@
     if (!rule) return true;
     var c = ctx || cache || read();
     var views = arr(rule.views);
-    if (views.length && views.indexOf(c.view) === -1) return false;
+    if (views.length) {
+      var viewOk = false;
+      for (var i = 0; i < views.length; i++) {
+        if (viewMatches(c.view, views[i])) {
+          viewOk = true;
+          break;
+        }
+      }
+      if (!viewOk) return false;
+    }
     var devices = arr(rule.devices);
     if (devices.length && devices.indexOf(c.device) === -1) return false;
     var sbModes = arr(rule.sbModes);
@@ -1106,30 +1157,27 @@
   try {
     if (GG.core && GG.core.inferRoute) {
       var route = GG.core.inferRoute(url || w.location.href, { surface: 'post' });
-      if (route && route.surface) return route.surface;
+      if (route && route.surface) return GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(route.surface) : route.surface;
     }
   } catch (_) {}
   return 'post';
   };
   ui.layout.detectSurface = ui.layout.detectSurface || function(doc, url){
   var ref = doc || d;
-  var inferred = ui.layout._inferSurfaceFromUrl(url || w.location.href);
-  if (inferred === 'listing') return 'listing';
   var body = ref && ref.body ? ref.body : null;
   var attr = body ? (body.getAttribute('data-gg-surface') || (body.dataset && body.dataset.ggSurface)) : '';
-  if (attr) return attr;
+  if (attr) return GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(attr) : attr;
   var main = ref && ref.querySelector ? ref.querySelector('main.gg-main[data-gg-surface]') : null;
   if (main) {
     var m = main.getAttribute('data-gg-surface') || '';
-    if (m === 'home') return 'landing';
-    if (m === 'feed') return 'listing';
-    if (m === 'page') return 'page';
-    if (m === 'post') return 'post';
+    if (m) return GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(m) : m;
   }
-  return ui.layout._inferSurfaceFromUrl(url || w.location.href);
+  var inferred = ui.layout._inferSurfaceFromUrl(url || w.location.href);
+  return inferred;
   };
   ui.layout.setSurface = ui.layout.setSurface || function(surface){
   if (!surface) return;
+  if (GG.core && GG.core.normalizeSurface) surface = GG.core.normalizeSurface(surface);
   if (d.body) {
     d.body.setAttribute('data-gg-surface', surface);
   }
@@ -1220,6 +1268,7 @@
   };
   ui.layout.applySurface = ui.layout.applySurface || function(surface, doc, url){
   var next = surface || ui.layout.detectSurface(doc, url);
+  if (GG.core && GG.core.normalizeSurface) next = GG.core.normalizeSurface(next);
   ui.layout.setSurface(next);
   
   if (GG.core && GG.core.state && d.body) {
@@ -1239,13 +1288,15 @@
   
   ui.layout._setHeroVisible(next === 'landing');
   
+  var isDetailSurface = next === 'post' || next === 'page';
   if (next === 'listing') {
     ui.layout._normalizeListingFlow();
-  } else if (next === 'post') {
+  } else if (isDetailSurface) {
     ui.layout._clearLandingProfile();
     ui.layout._dockComments();
   } else {
-    ui.layout._ensureLandingProfile();
+    ui.layout._clearLandingProfile();
+    if (next === 'landing') ui.layout._ensureLandingProfile();
     if (main) main.removeAttribute('data-gg-right-mode');
     var commentsPanel = d.querySelector('.gg-comments-panel');
     if (commentsPanel) {
@@ -1263,32 +1314,40 @@
     if (!ref || !ref.querySelector) return null;
     return ref.querySelector('main.gg-main') || ref.querySelector('main');
   }
+  function syncAttrs(target, primary, fallback){
+    var attrs = (GG.core && GG.core.routeAttrNames) || ['data-gg-surface', 'data-gg-page', 'data-gg-view', 'data-gg-home-state', 'data-gg-home-root', 'data-gg-listing-home', 'data-gg-bloghome', 'data-gg-special', 'data-gg-special-app', 'data-gg-label', 'data-gg-query'];
+    if (!target || !target.setAttribute) return;
+    for (var i = 0; i < attrs.length; i++) {
+      var name = attrs[i];
+      var value = null;
+      if (primary && primary.getAttribute) value = primary.getAttribute(name);
+      if ((value === null || value === '') && fallback && fallback.getAttribute) value = fallback.getAttribute(name);
+      if (value === null || value === '') target.removeAttribute(name);
+      else target.setAttribute(name, value);
+    }
+  }
   function inferSurface(mainEl){
     if (!mainEl || !mainEl.querySelector) return '';
     var surfaceEl = mainEl.querySelector('[data-gg-surface]');
     if (surfaceEl && surfaceEl.getAttribute('data-gg-surface')) {
-      return surfaceEl.getAttribute('data-gg-surface');
+      return GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(surfaceEl.getAttribute('data-gg-surface')) : surfaceEl.getAttribute('data-gg-surface');
     }
     if (mainEl.querySelector('.gg-blog-layout--post')) return 'post';
-    if (mainEl.querySelector('.gg-blog-layout--list')) return 'home';
+    if (mainEl.querySelector('.gg-blog-layout--list')) return 'listing';
     return '';
   }
   var targetMain = pickMain(d);
   if (!targetMain) return null;
   var sourceMain = pickMain(doc);
-  var attrs = ['data-gg-surface', 'data-gg-home-state', 'data-gg-home-root'];
+  var sourceBody = doc && doc.body ? doc.body : null;
   if (sourceMain) {
-    for (var i = 0; i < attrs.length; i++) {
-      var name = attrs[i];
-      if (sourceMain.hasAttribute(name)) {
-        targetMain.setAttribute(name, sourceMain.getAttribute(name));
-      } else {
-        targetMain.removeAttribute(name);
-      }
-    }
+    syncAttrs(targetMain, sourceMain, sourceBody);
   } else {
     var surface = inferSurface(targetMain);
     if (surface) targetMain.setAttribute('data-gg-surface', surface);
+  }
+  if (d.body && (sourceBody || sourceMain)) {
+    syncAttrs(d.body, sourceBody, sourceMain);
   }
   ui.layout.applySurface(ui.layout.detectSurface(doc, url), doc, url);
   return targetMain;
@@ -2007,11 +2066,13 @@
   }
   function isHomeRoute(main){
   if(!main) return false;
-  var surface = main.getAttribute('data-gg-surface') || '';
-  if(surface === 'post') return false;
-  var hasLanding = !!main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing');
-  var hasBlog = !!main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog');
-  return hasLanding && hasBlog;
+  var surface = GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(main.getAttribute('data-gg-surface') || '') : (main.getAttribute('data-gg-surface') || '');
+  if(surface === 'post' || surface === 'page' || surface === 'special' || surface === 'error' || surface === 'offline') return false;
+  if (main.hasAttribute('data-gg-home-root')) return true;
+  var listingHome = (main.getAttribute('data-gg-listing-home') || (document.body && document.body.getAttribute('data-gg-listing-home')) || '');
+  var blogHome = (main.getAttribute('data-gg-bloghome') || (document.body && document.body.getAttribute('data-gg-bloghome')) || '');
+  if (listingHome === '1' || blogHome === '1') return true;
+  return surface === 'landing';
   }
   function desiredHomeStateFromPath(pathname, search){
   var path = stripBase(pathname || location.pathname || '/');
@@ -2142,27 +2203,27 @@
   if (!root) return;
   if (!root.hasAttribute('data-gg-home-root')) return;
   findLayers();
-  if (!landingLayer || !blogLayer) return;
+  if (!landingLayer && !blogLayer) return;
   
   var desired = null;
   if (GG.util && GG.util.homeRouter && typeof GG.util.homeRouter.desiredHomeStateFromPath === 'function') {
   desired = GG.util.homeRouter.desiredHomeStateFromPath(location.pathname, location.search);
   }
   var attr = root.getAttribute('data-gg-home-state');
-  var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : 'blog';
+  var initial = (ALLOWED.indexOf(attr) !== -1) ? attr : (landingLayer && !blogLayer ? 'landing' : 'blog');
   if (desired === 'landing' || desired === 'blog') initial = desired;
   
   setState(initial);
   if (GG.homePrepaint && GG.homePrepaint.disarm) {
   GG.homePrepaint.disarm();
   }
-  if (initial === 'blog') {
+  if (initial === 'blog' && blogLayer) {
   requestAnimationFrame(function(){
     var anchor = document.getElementById('gg-home-blog-anchor') || document.querySelector('#gg-home-blog-anchor');
     if (anchor && anchor.scrollIntoView) anchor.scrollIntoView({ block:'start', behavior:'auto' });
   });
   }
-  if (!popBound) {
+  if (!popBound && landingLayer && blogLayer) {
   popBound = true;
   window.addEventListener('popstate', function(){
     var next = null;
@@ -4105,8 +4166,7 @@
   }
   
   function onBackdropClick(e){
-  var surface = main ? main.getAttribute('data-gg-surface') : '';
-  if (surface !== 'home' && surface !== 'feed') return;
+  if (!isListingLikeSurface()) return;
   if (!main || main.getAttribute('data-gg-info-panel') !== 'open') return;
   e.preventDefault();
   handleClose();
@@ -4114,9 +4174,11 @@
   
   function isListingLikeSurface(){
   if (!main) return false;
-  var surface = String(main.getAttribute('data-gg-surface') || '').toLowerCase();
+  var surface = GG.core && GG.core.normalizeSurface ? GG.core.normalizeSurface(main.getAttribute('data-gg-surface') || '') : String(main.getAttribute('data-gg-surface') || '').toLowerCase();
   var homeState = String(main.getAttribute('data-gg-home-state') || '').toLowerCase();
-  return surface === 'feed' || surface === 'listing' || (surface === 'home' && homeState !== 'landing');
+  var listingHome = String((main.getAttribute('data-gg-listing-home') || (document.body && document.body.getAttribute('data-gg-listing-home')) || '')).toLowerCase();
+  var blogHome = String((main.getAttribute('data-gg-bloghome') || (document.body && document.body.getAttribute('data-gg-bloghome')) || '')).toLowerCase();
+  return surface === 'listing' || listingHome === '1' || blogHome === '1' || (surface === 'landing' && homeState === 'blog');
   }
   
   function ensureBackdrop(){
@@ -6199,7 +6261,7 @@ if (isPostLayout || isDetailSurface){
   var hasHomeRoot = !!document.querySelector('[data-gg-home-root="1"]');
   var hasLanding = !!(main && main.querySelector('[data-gg-home-layer="landing"], .gg-home-landing'));
   var hasBlog = !!(main && main.querySelector('[data-gg-home-layer="blog"], .gg-home-blog'));
-  if (!main || !hasHomeRoot || !hasLanding || !hasBlog || !GG.modules || !GG.modules.homeState) return;
+  if (!main || !hasHomeRoot || (!hasLanding && !hasBlog) || !GG.modules || !GG.modules.homeState) return;
   if (GG.util && GG.util.initOnce) {
     GG.util.initOnce('homeState.init', function(){
       GG.modules.homeState.init(main);
