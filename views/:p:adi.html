@@ -1,0 +1,182 @@
+<!-- ===================== AUTHOR PROFILE – FINAL ===================== -->
+<article id="pro-profile" class="pro pro--sidebar"
+  data-name="Adi Putra"
+  data-role="Principal Consultant — Urban & Infrastructure"
+  data-about="Konsultan dengan pengalaman >10 tahun di perencanaan kota & infrastruktur. Fokus pada ESG & tata kelola proyek."
+  data-photo="https://picsum.photos/seed/adi/800/1000"
+  data-email="mailto:adi@example.com"
+  data-linkedin="https://www.linkedin.com/in/adi-putra/"
+  data-location="Jakarta, Indonesia"
+  data-expertise="ESG, Infrastruktur, Kebijakan Perkotaan"
+  data-certs="PMP, LEED AP"
+  data-languages="Indonesia, English"
+  data-education="M.URP — Urban & Regional Planning"
+  data-availability="Open for advisory"
+  data-label="author-adi">
+
+  <!-- Header -->
+  <header class="pro-head">
+    <aside class="pro-aside">
+      <div class="pro-media">
+        <img class="pro-photo" alt="" loading="lazy">
+      </div>
+      <!-- CTA di bawah foto -->
+      <div class="pro-contacts" role="group" aria-label="Kontak">
+        <a class="btn primary" id="pro-mail"></a>
+        <a class="btn outline" id="pro-linkedin" target="_blank" rel="me noopener nofollow">LinkedIn</a>
+      </div>
+    </aside>
+
+    <div class="pro-main">
+      <!-- Tidak render nama (hindari duplikasi dengan Title Page) -->
+      <p class="pro-role"></p>
+      <div class="pro-badges" id="pro-badges"></div>
+      <p class="pro-about"></p>
+    </div>
+  </header>
+
+  <!-- ABOUT -->
+  <section class="pro-section">
+    <h2>About</h2>
+    <p class="pro-about-full"></p>
+  </section>
+
+  <!-- PROFILE DETAILS -->
+  <section class="pro-section">
+    <h2>Profile Details</h2>
+    <dl class="pro-details" id="pro-details"></dl>
+  </section>
+
+  <!-- ARTICLES (ROW CARDS) -->
+  <section class="pro-section" id="pro-articles">
+    <div class="pro-section-head">
+      <h2>Articles by <span class="pro-first"></span></h2>
+    </div>
+    <div id="author-rows" class="rows"></div>
+    <div class="ap-actions">
+      <button id="load-more" class="btn" type="button">Load More Posts</button>
+    </div>
+  </section>
+</article>
+<script>
+(() => {
+  const root = document.getElementById('pro-profile');
+  if (!root) return;
+  const get = k => (root.dataset[k] || '').trim();
+
+  // ===== hydrate text & CTA
+  const name = get('name');
+  const first = (name.split(' ')[0] || name).trim();
+  const role  = get('role');
+  const about = get('about');
+  const photo = get('photo');
+  const email = get('email');            // 'mailto:...' atau 'user@...'
+  const linkedin = get('linkedin');
+
+  // foto, role, about
+  const img = root.querySelector('.pro-photo'); img.src = photo; img.alt = `Foto profil ${name}`;
+  root.querySelector('.pro-role').textContent = role;
+  root.querySelector('.pro-about').textContent = about;
+  root.querySelector('.pro-about-full').textContent = about;
+  root.querySelector('.pro-first').textContent = first;
+
+  // email literal di tombol
+  const mailBtn = root.querySelector('#pro-mail');
+  if (email){
+    const literal = email.replace(/^mailto:/i,'');
+    mailBtn.href = email.startsWith('mailto:') ? email : `mailto:${email}`;
+    mailBtn.textContent = literal;
+  } else { mailBtn.remove(); }
+  const inBtn = root.querySelector('#pro-linkedin');
+  if (linkedin){ inBtn.href = linkedin; } else { inBtn.remove(); }
+
+  // badges (expertise + certs)
+  const badgesWrap = document.getElementById('pro-badges');
+  const mk = (str) => (str||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const badges = [...mk(get('expertise')), ...mk(get('certs'))];
+  if (badges.length) badgesWrap.innerHTML = badges.map(x=>`<span class="badge">${x}</span>`).join('');
+  else badgesWrap.style.display='none';
+
+  // details
+  const details = [
+    ['Location', get('location')],
+    ['Expertise', get('expertise')],
+    ['Certifications', get('certs')],
+    ['Languages', get('languages')],
+    ['Education', get('education')],
+    ['Availability', get('availability')],
+  ].filter(([,v]) => v);
+  const dl = document.getElementById('pro-details');
+  if (details.length){ details.forEach(([k,v])=>{ const dt=document.createElement('dt'); dt.textContent=k; const dd=document.createElement('dd'); dd.textContent=v; dl.append(dt,dd); }); }
+  else dl.closest('.pro-section').style.display='none';
+
+  // ===== Articles: row cards with Load More
+  const authorLabel = (root.dataset.label || `author-${first.toLowerCase()}`).trim();
+  const rows   = document.getElementById('author-rows');
+  const btnMore= document.getElementById('load-more');
+  if (!authorLabel){ document.getElementById('pro-articles').style.display='none'; return; }
+
+  const FIRST_BATCH = 3;
+  const NEXT_BATCH  = 3;
+  let start  = 1;     // Blogger 1-based
+  let total  = 0;
+  let loaded = 0;
+
+  const fmtDate = new Intl.DateTimeFormat('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const linkOf = e => (e.link||[]).find(l=>l.rel==='alternate')?.href || '#';
+  function nonAuthorLabel(entry){
+    if (!entry.category) return null;
+    for (let i=0;i<entry.category.length;i++){
+      const term = (entry.category[i].term||'').trim();
+      if (term && !/^author-/i.test(term)) return term;
+    }
+    return null;
+  }
+  function thumbOf(e){
+    if (e.media$thumbnail?.url) return e.media$thumbnail.url.replace(/=s\d+(-c)?(\b|$)/,'=s400');
+    const html = e.content?.$t || e.summary?.$t || '';
+    const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    return m ? m[1] : 'https://via.placeholder.com/300x180?text=%20';
+  }
+  function rowCard(e){
+    const a = document.createElement('a'); a.className = 'row'; a.href = linkOf(e);
+    const k = nonAuthorLabel(e); const day = e.published?.$t ? fmtDate.format(new Date(e.published.$t)) : '';
+    a.innerHTML = `
+      <div>
+        <h3 class="row-title">${e.title?.$t || '(Tanpa judul)'}</h3>
+        <div class="row-meta">
+          ${k ? `<span class="pill">${k}</span>` : ''}
+          <span>${day}</span>
+        </div>
+      </div>
+      <div class="row-thumb"><img src="${thumbOf(e)}" alt=""></div>`;
+    return a;
+  }
+  function setMoreLabel(){
+    btnMore.textContent = (loaded >= total && total>0)
+      ? `All posts loaded (${loaded}/${total})`
+      : `Load More Posts by ${first}` + (total?` (${loaded}/${total})`:'');
+  }
+  async function fetchBatch(size){
+    const url = `${location.origin}/feeds/posts/summary/-/${encodeURIComponent(authorLabel)}?alt=json&max-results=${size}&start-index=${start}`;
+    try{
+      const r = await fetch(url); const j = await r.json();
+      total = Number(j.feed?.openSearch$totalResults?.$t || 0);
+      const entries = j.feed?.entry || [];
+      entries.forEach(e => rows.appendChild(rowCard(e)));
+      loaded = Math.min(loaded + entries.length, total);
+      start += size;
+      setMoreLabel();
+      btnMore.style.display = loaded >= total ? 'none' : '';
+      if (total === 0){ rows.innerHTML = '<p class="muted">Belum ada artikel.</p>'; btnMore.style.display='none'; }
+    }catch(e){
+      if (loaded === 0) rows.innerHTML = '<p class="muted">Gagal memuat artikel.</p>';
+      btnMore.style.display = 'none';
+    }
+  }
+  setMoreLabel();
+  fetchBatch(FIRST_BATCH);
+  btnMore?.addEventListener('click', () => fetchBatch(NEXT_BATCH));
+})();
+</script>
+<!-- ================== /AUTHOR PROFILE – FINAL ================== -->

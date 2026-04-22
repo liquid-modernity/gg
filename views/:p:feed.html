@@ -1,0 +1,54 @@
+<div id="gg-feed" data-api="https://script.google.com/macros/s/AKfycbx1EOK0BGbts-5Xy7OEcBpNQdwm7gjT5hCylS7m8uxyeapgMyJgJu_NIbqT5DphRXWuKw/exec">
+  <div class="bar">
+    <button data-type="all" class="active">All</button>
+    <button data-type="image">Images</button>
+    <button data-type="youtube">YouTube</button>
+    <input class="q" placeholder="Search title/labels…">
+  </div>
+
+  <div class="grid"></div>
+  <div class="loader">Loading...</div>
+</div>
+
+
+
+<style>
+  #gg-feed{max-width:1100px;margin:24px auto;padding:0 14px}
+  #gg-feed .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+  #gg-feed input{flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:1px solid #ddd}
+  #gg-feed button{padding:10px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer}
+  #gg-feed button.active{border-color:#111}
+
+  /* Manual masonry columns (Pinterest-ish rapat) */
+  #gg-feed .grid{display:flex;gap:12px}
+  #gg-feed .col{flex:1;display:flex;flex-direction:column;gap:12px}
+
+  #gg-feed .tile{
+    width:100%;
+    border-radius:16px;
+    overflow:hidden;
+    background:#111;
+    position:relative;
+  }
+
+  /* Thumb ratio via padding trick */
+  #gg-feed .thumb{position:relative;width:100%}
+  #gg-feed .thumb::before{content:"";display:block;padding-top:56.25%} /* default 16:9 */
+  #gg-feed .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+
+  /* ratio variants */
+  #gg-feed .tile.ar-4x3  .thumb::before{padding-top:75%}
+  #gg-feed .tile.ar-1x1  .thumb::before{padding-top:100%}
+  #gg-feed .tile.ar-3x4  .thumb::before{padding-top:133.33%}
+  #gg-feed .tile.ar-9x16 .thumb::before{padding-top:177.78%}
+  #gg-feed .tile.featured .thumb::before{padding-top:120%}
+
+  #gg-feed .shade{position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 60%);pointer-events:none}
+  #gg-feed .meta{position:absolute;left:12px;right:12px;bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.65);font:600 12px/1.2 system-ui}
+  #gg-feed .badge{padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15)}
+  #gg-feed .title{font-weight:700;opacity:.95}
+  #gg-feed .tile a{position:absolute;inset:0}
+  #gg-feed .loader{margin:16px 0;color:#666;font:500 14px system-ui;text-align:center}
+</style>
+
+

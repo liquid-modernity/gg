@@ -1,3 +1,172 @@
+    <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
+      <div class='gg-comments-panel__body' data-gg-slot='comments'>
+        <b:include data='post' name='threadedComments'/>
+      </div>
+    </div>
+    
+      <b:includable id='commentsLink'>
+         <!-- GAGA commentsLink -->
+  <b:if cond='data:post.allowComments'>
+    <a aria-label='Comments' class='gg-post__meta-item gg-post__meta-item--comments item item--comments meta-comments' expr:data-count='data:post.numberOfComments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;'>
+
+      <span aria-hidden='true' class='material-symbols-rounded'>comment</span>
+
+      <span class='meta-count'>
+        <b:if cond='data:post.numberOfComments &gt; 0'>
+          <b:if cond='data:post.numberOfComments == 1'>
+            1 <span class='meta-comments__short'>Cmt</span>
+            <span class='meta-comments__long'>Comment</span>
+          <b:else/>
+            <data:post.numberOfComments/>
+            <span class='meta-comments__short'>Cmts</span>
+            <span class='meta-comments__long'>Comments</span>
+          </b:if>
+        <b:else/>
+          <data:messages.postAComment/>
+        </b:if>
+      </span>
+
+    </a>
+  </b:if>
+           <!-- /GAGA commentsLink -->
+</b:includable>
+              <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:aria-label='data:messages.emailPost' expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+  
+  
+     <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+              <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+              <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+              <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+              <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container gg-cmt2__avatar'>
+    <img alt='' class='author-avatar' decoding='async' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+              <b:includable id='commentDeleteIcon' var='comment'>
+  <span aria-hidden='true' data-gg-native-action='item-control' data-gg-state='hidden' expr:class='&quot;item-control &quot; + data:comment.adminClass' hidden='hidden'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button' data-gg-native-action='more'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a aria-hidden='true' class='comment-delete' data-gg-native-action='delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment' tabindex='-1'>
+        <img alt='' decoding='async' height='13' src='https://resources.blogblog.com/img/icon_delete13.gif' width='13'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+              <b:includable id='commentForm' var='post'>
+  <!-- Composer is structurally owned by #ggPanelComments. -->
+</b:includable>
+              <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+              <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+              <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+              <b:includable id='commentPicker' var='post'>
+  <!-- Comments surface is panel-owned via #ggPanelComments. -->
+</b:includable>
+              <b:includable id='comments' var='post'>
+  <!-- Comments surface is panel-owned via #ggPanelComments. -->
+              </b:includable>
+              <b:includable id='commentsLink'>
+  <b:if cond='data:post.allowComments'>
+    <a class='gg-post__meta-item meta-comments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;'>
+      <span aria-hidden='true' class='ms'>comment</span>
+      <b:if cond='data:post.numberOfComments &gt; 0'>
+        <data:post.numberOfComments/>
+      <b:else/>
+        <data:messages.postAComment/>
+      </b:if>
+    </a>
+  </b:if>
+</b:includable>
+              <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+              <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+ 
+ 
+ 
  <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
         <div class='gg-comments-panel__body' data-gg-slot='comments'>
           <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' id='comments'>

@@ -32,3 +32,79 @@
     </main>
   </body>
 </html>
+
+
+<br>
+<!-- icons -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="ic-mail" viewBox="0 0 24 24">
+    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5Z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<section id="author-grid" class="a2-grid"></section>
+<div class="a2-more" id="author-more" hidden>
+  <button id="author-loadmore" type="button">Load more</button>
+</div>
+<script>
+/* 13 dummy author unik */
+const AUTHORS = [
+  {name:"Adi Putra",slug:"adi",role:"Editor • Urban & Infra",   email:"adi@example.com",    photo:"https://picsum.photos/seed/adi/800/1000"},
+  {name:"Bella Putri",slug:"bella",role:"Editor • Urban & Infra", email:"bella@example.com", photo:"https://picsum.photos/seed/bella/800/1000"},
+  {name:"Cahyo Pradana",slug:"cahyo",role:"Editor • Ekonomi",   email:"cahyo@example.com",  photo:"https://picsum.photos/seed/cahyo/800/1000"},
+  {name:"Diandra Sari",slug:"diandra",role:"Penulis • Sejarah", email:"diandra@example.com",photo:"https://picsum.photos/seed/diandra/800/1000"},
+  {name:"Eko Nugroho",slug:"eko",role:"Kontributor • ESG",      email:"eko@example.com",    photo:"https://picsum.photos/seed/eko/800/1000"},
+  {name:"Fara Nabila",slug:"fara",role:"Editor • Urban",        email:"fara@example.com",   photo:"https://picsum.photos/seed/fara/800/1000"},
+  {name:"Gusti Ramadhan",slug:"gusti",role:"Kontributor • Infra",email:"gusti@example.com", photo:"https://picsum.photos/seed/gusti/800/1000"},
+  {name:"Hana Lestari",slug:"hana",role:"Penulis • ESG",        email:"hana@example.com",   photo:"https://picsum.photos/seed/hana/800/1000"},
+  {name:"Iqbal Maulana",slug:"iqbal",role:"Editor • Kebijakan", email:"iqbal@example.com",  photo:"https://picsum.photos/seed/iqbal/800/1000"},
+  {name:"Jasmine Ayu",slug:"jasmine",role:"Penulis • Urban",    email:"jasmine@example.com",photo:"https://picsum.photos/seed/jasmine/800/1000"},
+  {name:"Kelvin Hartono",slug:"kelvin",role:"Editor • Data",    email:"kelvin@example.com", photo:"https://picsum.photos/seed/kelvin/800/1000"},
+  {name:"Larasati Dewi",slug:"laras",role:"Penulis • Budaya",   email:"laras@example.com",  photo:"https://picsum.photos/seed/laras/800/1000"},
+  {name:"Mahesa Aditya",slug:"mahesa",role:"Kontributor • Infrastruktur", email:"mahesa@example.com", photo:"https://picsum.photos/seed/mahesa/800/1000"}
+];
+
+const BATCH = 12; let cursor = 0;
+
+function el(tag, cls, html){ const n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; }
+
+function makeCard(a){
+  const url = `/p/${a.slug}.html`;
+
+  const card  = el('a','a2-card'); card.href=url; card.setAttribute('aria-label',`Profil ${a.name}`);
+  const media = el('div','a2-media');
+  const img   = el('img'); img.src=a.photo; img.alt=`Foto ${a.name}`; img.loading='lazy';
+  media.appendChild(img);
+  media.appendChild(el('div','a2-grad'));
+
+  const ov = el('div','a2-ov');
+  ov.appendChild(el('h3','a2-name', a.name));
+  if (a.role)  ov.appendChild(el('p','a2-role', a.role));
+  if (a.email) ov.appendChild(el('p','a2-email', `<svg width="16" height="16" style="vertical-align:-2px"><use href="#ic-mail"/></svg><a href="mailto:${a.email}">${a.email}</a>`));
+  media.appendChild(ov);
+
+  card.appendChild(media);
+  return card;
+}
+
+function renderBatch(){
+  const grid = document.getElementById('author-grid');
+  const more = document.getElementById('author-more');
+  const btn  = document.getElementById('author-loadmore');
+  if(!grid) return;
+  const end = Math.min(cursor + BATCH, AUTHORS.length);
+
+  for(let i=cursor; i<end; i++) grid.appendChild(makeCard(AUTHORS[i]));
+  cursor = end;
+
+  more.hidden = cursor >= AUTHORS.length;
+  if (cursor >= AUTHORS.length && btn){ btn.setAttribute('disabled',''); btn.textContent='No more'; }
+}
+
+(function init(){
+  AUTHORS.sort((a,b)=>a.name.localeCompare(b.name,'id'));
+  renderBatch();
+  const btn = document.getElementById('author-loadmore');
+  if (btn) btn.addEventListener('click', renderBatch);
+})();
+</script>
