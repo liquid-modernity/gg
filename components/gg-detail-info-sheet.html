@@ -1,0 +1,85 @@
+ <!-- DETAIL-INFO-01 bridge: #gg-detail-info-sheet is the final host. #gg-postinfo survives temporarily for shipped CSS/JS. -->
+ <div class='gg-detail-info-sheet gg-info-panel' data-gg-panel='info' id='gg-detail-info-sheet'>
+    <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
+    <div aria-labelledby='gg-postinfo-title' aria-modal='true' class='gg-detail-info-sheet__card gg-info-panel__card gg-pi gg-panelcard gg-sheet gg-sheet--info' data-gg-panelmeta='post' data-gg-sheet='info' data-wpm='200' hidden='hidden' id='gg-postinfo' role='dialog'>
+      <b:attr cond='data:view.isPage and not data:ggIsSystemPage' name='data-gg-panelmeta' value='page'/>
+      <div class='gg-pi__body'>
+        <div class='gg-pi__identity'>
+          <h3 class='gg-pi__headline' data-slot='title'>&#8212;</h3>
+          <p class='gg-pi__summary' data-slot='summary' hidden='hidden'/>
+        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--people'>
+        <div class='gg-pi__sec gg-pi__sec--author'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>person</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.author'>Written by</div>
+          </div>
+          <div class='gg-pi__people' data-gg-marker='panel-post-author' data-slot='author'/>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--contributors' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>groups</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.contributors'>Contributors</div>
+          </div>
+          <div class='gg-pi__people' data-gg-marker='panel-post-contributor' data-slot='contributors'/>
+        </div>
+        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--meta'>
+        <div class='gg-pi__meta'>
+          <div class='gg-pi__metaitem gg-pi__metaitem--date'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>calendar_today</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.date'>DATE</div>
+            <span data-gg-marker='panel-post-date' data-slot='date'>&#8212;</span>
+          </div>
+          <div class='gg-pi__metaitem gg-pi__metaitem--updated'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>event_repeat</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.updated'>UPDATED</div>
+            <span data-gg-marker='panel-post-updated' data-slot='updated'>&#8212;</span>
+          </div>
+          <div class='gg-pi__metaitem gg-pi__metaitem--readtime'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__mico'>schedule</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.readTime'>READ TIME</div>
+            <span data-gg-marker='panel-post-reading-time' data-slot='readtime'>1 min read</span>
+          </div>
+        </div>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--structure' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>toc</span>
+            <div class='gg-pi__kicker' data-gg-copy='toc.title'>Table of Contents</div>
+          </div>
+          <ol aria-label='Table of contents' class='gg-pi__toc' data-gg-copy-aria='toc.title' data-slot='toc'/>
+          <p class='gg-pi__hint' data-slot='toc-hint' hidden='hidden'/>
+          <ol data-gg-slot='toc'/>
+<p data-gg-slot='toc-hint'/>
+        </div>
+        <div class='gg-pi__cluster gg-pi__cluster--topics'>
+        <div class='gg-pi__sec gg-pi__sec--labels' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>label</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.label'>LABEL</div>
+          </div>
+          <div aria-label='Labels' class='gg-pi__chips gg-pi__chips--labels' data-gg-copy-aria='panel.post.label' data-slot='labels'/>
+        </div>
+        <div class='gg-pi__sec gg-pi__sec--tags' hidden='hidden'>
+          <div class='gg-pi__sechead'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__sico'>sell</span>
+            <div class='gg-pi__kicker' data-gg-copy='panel.post.tags'>Tags</div>
+          </div>
+          <div aria-label='Tags' class='gg-pi__chips' data-gg-copy-aria='panel.post.tags' data-gg-marker='panel-post-tags' data-slot='tags'/>
+        </div>
+        </div>
+        </div>
+         <div class='gg-pi__sheettop'>
+        <div class='gg-pi__head'>
+          <div class='gg-pi__heading'>
+            <span aria-hidden='true' class='material-symbols-rounded gg-pi__ico'>info</span>
+            <h2 class='gg-pi__title' id='gg-postinfo-title'>Information</h2>
+          </div>
+          <button aria-label='Close information' class='gg-pi__close' data-gg-action='info-close' type='button'>
+            <span aria-hidden='true' class='material-symbols-rounded'>close</span>
+          </button>
+        </div>
+      </div>
+      <span aria-hidden='true' class='gg-pi__handle'/>
+    </div>

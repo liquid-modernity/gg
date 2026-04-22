@@ -1,0 +1,27 @@
+<div aria-label='Post actions' class='gg-post-card__toolbar' data-gg-copy-aria='post.action.comments' role='group'>
+    <a class='gg-post-card__tool' data-gg-copy-title='post.action.comments' expr:href='(data:post.url ? data:post.url : (data:view.url ? data:view.url : data:blog.homepageUrl)) + &quot;#comments&quot;' title='Comments'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>comment</span>
+      <span class='gg-visually-hidden' data-gg-copy='post.action.comments'>Comments</span>
+      <span aria-hidden='true' class='gg-post-card__badge'><data:post.numberOfComments/></span>
+    </a>
+  
+    <button aria-label='Save to library' class='gg-post-card__tool gg-post-card__action--bookmark' data-gg-action='bookmark' data-gg-copy-aria='library.action.add' data-gg-copy-title='library.action.add' title='Save to library' type='button'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
+      <span class='gg-visually-hidden' data-gg-copy='library.action.add'>Save to library</span>
+    </button>
+  
+    <button aria-label='Support' class='gg-post-card__tool' data-gg-action='support' data-gg-copy-aria='post.action.support' data-gg-copy-title='post.action.support' title='Support' type='button'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>featured_seasonal_and_gifts</span>
+      <span class='gg-visually-hidden' data-gg-copy='post.action.support'>Support</span>
+    </button>
+  
+    <button aria-label='Share' class='gg-post-card__tool gg-post-card__action--share' data-gg-action='share' data-gg-copy-aria='post.action.share' data-gg-copy-title='post.action.share' title='Share' type='button'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
+      <span class='gg-visually-hidden' data-gg-copy='post.action.share'>Share</span>
+    </button>
+  
+    <button aria-label='Information' class='gg-post-card__tool gg-post-card__tool--info' data-gg-action='info' data-gg-copy-aria='post.action.info' data-gg-copy-title='post.action.info' title='Information' type='button'>
+      <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
+      <span class='gg-visually-hidden' data-gg-copy='post.action.info'>Information</span>
+    </button>
+  </div>
