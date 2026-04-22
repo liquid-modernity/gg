@@ -1,0 +1,73 @@
+ <script id='gg-copy-manifest' type='application/json'>
+{
+  &quot;schemaVersion&quot;: &quot;1.0.0&quot;,
+  &quot;registryVersion&quot;: &quot;1.0.0&quot;,
+  &quot;sourceLocale&quot;: &quot;en&quot;,
+  &quot;supportedLocales&quot;: [&quot;en&quot;, &quot;id&quot;],
+  &quot;defaultLocale&quot;: &quot;en&quot;,
+  &quot;fallbackChain&quot;: {
+    &quot;en&quot;: [&quot;en&quot;],
+    &quot;id&quot;: [&quot;id&quot;, &quot;en&quot;]
+  },
+  &quot;interpolation&quot;: {
+    &quot;syntax&quot;: &quot;brace&quot;,
+    &quot;escapeHtml&quot;: true,
+    &quot;allowedPlaceholders&quot;: [&quot;count&quot;, &quot;title&quot;, &quot;name&quot;, &quot;label&quot;, &quot;device&quot;]
+  },
+  &quot;pluralization&quot;: {
+    &quot;strategy&quot;: &quot;key-suffix&quot;,
+    &quot;supportedSuffixes&quot;: [&quot;one&quot;, &quot;many&quot;, &quot;short.one&quot;, &quot;short.many&quot;],
+    &quot;recommendedFuture&quot;: &quot;icu-messageformat&quot;
+  },
+  &quot;delivery&quot;: {
+    &quot;currentMode&quot;: &quot;inline-two-locales-workspace&quot;,
+    &quot;recommendedProductionMode&quot;: &quot;inline-active-locale-plus-lazy-namespaces&quot;,
+    &quot;criticalNamespacesBySurface&quot;: {
+      &quot;listing&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;dock&quot;, &quot;search&quot;, &quot;mixed&quot;],
+      &quot;landing&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;drawer&quot;, &quot;install&quot;],
+      &quot;post&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;dock&quot;, &quot;post&quot;, &quot;share&quot;, &quot;comments&quot;, &quot;toc&quot;],
+      &quot;page&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;],
+      &quot;special&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;nav&quot;, &quot;drawer&quot;],
+      &quot;error&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;notfound&quot;, &quot;search&quot;],
+      &quot;offline&quot;: [&quot;global&quot;, &quot;lang&quot;, &quot;offline&quot;]
+    }
+  },
+  &quot;nativeSources&quot;: {
+    &quot;blogger&quot;: &quot;passthrough-allowed&quot;,
+    &quot;browser&quot;: &quot;unstyleable-do-not-brand&quot;,
+    &quot;editorial&quot;: &quot;outside-registry&quot;
+  },
+  &quot;lint&quot;: {
+    &quot;requireKeyParityAcrossLocales&quot;: true,
+    &quot;requirePlaceholderParityAcrossLocales&quot;: true,
+    &quot;forbidRawKeyRendering&quot;: true,
+    &quot;forbidPublicUiLiteralsInJs&quot;: true,
+    &quot;forbidPublicUiCopyInCssContent&quot;: true,
+    &quot;forbidNativeAlertConfirmPromptForProductUi&quot;: true
+  },
+  &quot;namespaces&quot;: [
+    &quot;global&quot;,
+    &quot;lang&quot;,
+    &quot;nav&quot;,
+    &quot;special&quot;,
+    &quot;dock&quot;,
+    &quot;drawer.more&quot;,
+    &quot;search&quot;,
+    &quot;palette&quot;,
+    &quot;post.action&quot;,
+    &quot;library&quot;,
+    &quot;share&quot;,
+    &quot;comments&quot;,
+    &quot;toc&quot;,
+    &quot;mixed&quot;,
+    &quot;dialog.confirm&quot;,
+    &quot;dialog.delete&quot;,
+    &quot;toast&quot;,
+    &quot;banner&quot;,
+    &quot;update&quot;,
+    &quot;offline&quot;,
+    &quot;notfound&quot;,
+    &quot;install&quot;
+  ]
+}
+</script>
