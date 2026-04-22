@@ -1,0 +1,61 @@
+ <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
+        <div class='gg-comments-panel__body' data-gg-slot='comments'>
+          <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' id='comments'>
+            <a name='comments'/>
+            <div aria-hidden='true' class='gg-comments__head-spacer'/>
+            <header class='gg-comments__head'>
+              <div class='gg-comments__title'>
+                <span aria-hidden='true' class='ms'>comment</span>
+                <h3 class='gg-comments__h'>Comments</h3>
+              </div>
+              <div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'>
+                <div class='cmt2-head-tools'>
+                  <button aria-label='Switch to wide width (440px)' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--width' data-gg-comment-action='panel-width' data-gg-copy='comments.toolbar.width.sidebar' title='Sidebar (240px)' type='button'><span aria-hidden='true' class='ms'>open_in_full</span><span class='gg-visually-hidden'>Sidebar (240px)</span></button>
+                  <button aria-label='Sort comments by oldest' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--sort' data-gg-comment-action='sort-order' data-gg-copy='comments.toolbar.sort.newest' title='Newest comments' type='button'><span aria-hidden='true' class='ms'>arrow_downward</span><span class='gg-visually-hidden'>Newest comments</span></button>
+                </div>
+              </div>
+            </header>
+            <div class='gg-comments__content comments-content'>
+              <div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>
+                <div class='gg-cmt-empty'>
+                  <strong data-gg-copy='comments.empty.title'>No comments yet</strong>
+                  <span data-gg-copy='comments.empty.body'>Be the first to add one.</span>
+                </div>
+              </div>
+            </div>
+            <div aria-hidden='true' class='gg-comments__footer-spacer'/>
+            <div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-has-cta='1' data-gg-open='0'>
+              <div class='gg-comments__footer-inner'>
+                <div class='gg-comments__footer-cta' id='gg-top-continue'>
+                  <a aria-controls='gg-composer-slot' aria-expanded='false' class='comment-reply' data-gg-copy='comments.action.add' data-gg-footer-cta='1' href='javascript:;' rel='nofollow' role='button'>Add comment</a>
+                </div>
+                <div class='gg-comments__footer-main'>
+                  <div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'/>
+                  <div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'/>
+                </div>
+              </div>
+            </div>
+            <template id='gg-comment-actions-template'>
+              <div class='comment-actions' data-gg-comment-actions='1'>
+                <a aria-hidden='true' class='comment-reply cmt2-reply-action' data-gg-comment-action='reply' data-gg-comment-icon='reply' data-gg-comment-role='reply' data-gg-state='hidden' hidden='hidden' href='javascript:;' rel='nofollow'>Reply</a>
+                <button aria-expanded='false' aria-hidden='true' class='cmt2-thread-toggle' data-gg-comment-icon='unfold_more' data-gg-comment-toggle='' data-gg-state='hidden' hidden='hidden' type='button'>View replies</button>
+                <div class='cmt2-ctx' data-gg-comment-menu='1'>
+                  <button aria-expanded='false' aria-haspopup='menu' aria-label='More actions' class='cmt2-ctx-btn' data-gg-comment-action='more' data-gg-copy-aria='comments.action.more' type='button'>
+                    <span aria-hidden='true' class='ms'>more_horiz</span>
+                  </button>
+                  <div aria-hidden='true' class='cmt2-ctx-pop' data-gg-state='closed' role='menu'>
+                    <button data-gg-comment-action='copy-link' data-gg-copy='comments.action.copyLink' role='menuitem' type='button'>
+                      <span aria-hidden='true' class='ms'>link</span>
+                      <span>Copy link</span>
+                    </button>
+                    <button class='cmt2-ctx-pop__danger' data-gg-comment-action='delete' data-gg-copy='comments.action.delete' data-gg-delete-kind='link' role='menuitem' type='button'>
+                      <span aria-hidden='true' class='ms'>delete</span>
+                      <span>Delete comment</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </section>
+        </div>
+      </div>

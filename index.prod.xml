@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='906d4fad38f8' name='gg-template-fingerprint'/>
+    <meta content='7efce1d3acf1' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1126,7 +1126,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='906d4fad38f8' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='7efce1d3acf1' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1758,22 +1758,22 @@ font-size: medium;
 <div aria-label='Follow PakRPP' class='gg-leftnav__socialbar' role='region'>
                 <div aria-label='Social links' class='gg-leftnav__sociallinks' role='list'>
                   <a aria-label='Facebook: pakrpp' class='gg-leftnav__sociallink' href='https://www.facebook.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z'/></svg>
+                    <svg aria-hidden='true' focusable='false' viewbox='0 0 24 24'><path d='M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z'/></path></svg>
                   </a>
                   <a aria-label='X: pakrpp' class='gg-leftnav__sociallink' href='https://x.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z'/></svg>
+                    <svg aria-hidden='true' focusable='false' viewbox='0 0 24 24'><path d='M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z'/></path></svg>
                   </a>
                   <a aria-label='Instagram: pakrpp' class='gg-leftnav__sociallink' href='https://www.instagram.com/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'/></svg>
+                    <svg aria-hidden='true' focusable='false' viewbox='0 0 24 24'><path d='M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'/></path></svg>
                   </a>
                   <a aria-label='YouTube: pakrpp' class='gg-leftnav__sociallink' href='https://www.youtube.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z'/></svg>
+                    <svg aria-hidden='true' focusable='false' viewbox='0 0 24 24'><path d='M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z'/></path></svg>
                   </a>
                   <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></svg>
+                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></use></svg>
                   </a>
                   <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></svg>
+                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></use></svg>
                   </a>
                 </div>
               </div>
@@ -2016,143 +2016,7 @@ font-size: medium;
     </b:if>
     <!-- /GAGA FEATURED POST -->
     <b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
-      <div class='gg-post__toolbar' data-gg-module='post-toolbar'>
-        <div class='gg-post__toolbar-group'>
-          <button aria-label='Back to blog' class='gg-post__tool' data-gg-copy-aria='post.action.back' data-gg-postbar='back' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>arrow_back_ios_new</span>
-          </button>
-        </div>
-        <div class='gg-post__toolbar-group'>
-          <button aria-expanded='false' aria-label='Information' class='gg-post__tool' data-gg-copy-aria='post.action.info' data-gg-postbar='info' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>info</span>
-          </button>
-          <button aria-label='Focus mode' aria-pressed='false' class='gg-post__tool' data-gg-copy-aria='post.action.focus' data-gg-postbar='focus' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>center_focus_strong</span>
-          </button>
-          <button aria-label='Save to library' class='gg-post__tool gg-post__action--bookmark' data-gg-copy-aria='post.action.save' data-gg-postbar='save' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>bookmark_add</span>
-          </button>
-          <button aria-controls='ggPanelComments' aria-expanded='false' aria-label='Toggle comments panel' class='gg-post__tool' data-gg-copy-aria='post.action.toggleComments' data-gg-postbar='comments' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>forum</span>
-          </button>
-          <button aria-label='Share' class='gg-post__tool gg-post__action--share' data-gg-copy-aria='post.action.share' data-gg-postbar='share' type='button'>
-            <span aria-hidden='true' class='gg-icon material-symbols-rounded'>ios_share</span>
-          </button>
-        </div>
-      </div>
- <!-- GAGA BREADCRUMBS -->
-<b:if cond='data:view.isPost or (data:view.isPage and not data:ggIsSystemPage)'>
-  <nav aria-label='Breadcrumb' class='gg-post__breadcrumbs'>
-
-    <!-- HOME = /landing -->
-    <a aria-label='Home' class='gg-post__breadcrumbs-link gg-post__breadcrumbs-link--home' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>home_app_logo</span>
-      <span class='gg-post__breadcrumbs-label'>Home</span>
-    </a>
-
-    <!-- POST MODE -->
-    <b:if cond='data:view.isPost'>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-
-      <!-- BLOG = / -->
-      <a class='gg-post__breadcrumbs-link' expr:href='&quot;/&quot;'>
-        <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>newsmode</span>
-        <span class='gg-post__breadcrumbs-label'>Blog</span>
-      </a>
-
-      <!-- FIRST LABEL (optional) -->
-      <b:if cond='data:post.labels'>
-        <b:loop index='i' values='data:post.labels' var='lab'>
-          <b:if cond='data:i == 0'>
-            <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-            <a class='gg-post__breadcrumbs-link' expr:href='data:lab.url'>
-              <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>folder_open</span>
-              <span class='gg-post__breadcrumbs-label'><b:eval expr='data:lab.name'/></span>
-            </a>
-          </b:if>
-        </b:loop>
-      </b:if>
-
-      <!-- CURRENT POST -->
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded'>article</span>
-      <span aria-current='page' class='gg-post__breadcrumbs-current'>
-        <data:post.title/>
-      </span>
-    </b:if>
-
-    <!-- PAGE MODE -->
-    <b:if cond='data:view.isPage and not data:ggIsSystemPage'>
-      <span aria-hidden='true' class='gg-icon gg-icon--sm material-symbols-rounded gg-post__breadcrumbs-sep'>chevron_right</span>
-      <span aria-current='page' class='gg-post__breadcrumbs-current'>
-        <data:post.title/>
-      </span>
-    </b:if>
-
-  </nav>
-</b:if>
-<!-- /GAGA BREADCRUMBS -->
-      <div class='gg-comments-panel' data-gg-panel='comments' hidden='' id='ggPanelComments' inert='' tabindex='-1'>
-        <div class='gg-comments-panel__body' data-gg-slot='comments'>
-          <section class='gg-comments comments2 threaded' data-gg-comment-contract='single-visible-owner' data-gg-visible-owner='enhanced-footer' id='comments'>
-            <a name='comments'/>
-            <div aria-hidden='true' class='gg-comments__head-spacer'/>
-            <header class='gg-comments__head'>
-              <div class='gg-comments__title'>
-                <span aria-hidden='true' class='ms'>comment</span>
-                <h3 class='gg-comments__h'>Comments</h3>
-              </div>
-              <div class='gg-comments__sortslot' data-gg-comments-sort-slot='1'>
-                <div class='cmt2-head-tools'>
-                  <button aria-label='Switch to wide width (440px)' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--width' data-gg-comment-action='panel-width' data-gg-copy='comments.toolbar.width.sidebar' title='Sidebar (240px)' type='button'><span aria-hidden='true' class='ms'>open_in_full</span><span class='gg-visually-hidden'>Sidebar (240px)</span></button>
-                  <button aria-label='Sort comments by oldest' aria-pressed='false' class='cmt2-head-btn cmt2-head-btn--sort' data-gg-comment-action='sort-order' data-gg-copy='comments.toolbar.sort.newest' title='Newest comments' type='button'><span aria-hidden='true' class='ms'>arrow_downward</span><span class='gg-visually-hidden'>Newest comments</span></button>
-                </div>
-              </div>
-            </header>
-            <div class='gg-comments__content comments-content'>
-              <div class='gg-comments__list' data-gg-owner='enhanced-thread' id='cmt2-holder'>
-                <div class='gg-cmt-empty'>
-                  <strong data-gg-copy='comments.empty.title'>No comments yet</strong>
-                  <span data-gg-copy='comments.empty.body'>Be the first to add one.</span>
-                </div>
-              </div>
-            </div>
-            <div aria-hidden='true' class='gg-comments__footer-spacer'/>
-            <div class='gg-comments__footer' data-gg-add-owner='footer-cta' data-gg-composer-owner='footer' data-gg-has-cta='1' data-gg-open='0'>
-              <div class='gg-comments__footer-inner'>
-                <div class='gg-comments__footer-cta' id='gg-top-continue'>
-                  <a aria-controls='gg-composer-slot' aria-expanded='false' class='comment-reply' data-gg-copy='comments.action.add' data-gg-footer-cta='1' href='javascript:;' rel='nofollow' role='button'>Add comment</a>
-                </div>
-                <div class='gg-comments__footer-main'>
-                  <div class='gg-comments__addslot' data-gg-reply-owner='footer' id='gg-addslot'/>
-                  <div class='gg-comments__composerslot' data-gg-composer-slot='1' data-gg-owner='enhanced-footer' id='gg-composer-slot'/>
-                </div>
-              </div>
-            </div>
-            <template id='gg-comment-actions-template'>
-              <div class='comment-actions' data-gg-comment-actions='1'>
-                <a aria-hidden='true' class='comment-reply cmt2-reply-action' data-gg-comment-action='reply' data-gg-comment-icon='reply' data-gg-comment-role='reply' data-gg-state='hidden' hidden='hidden' href='javascript:;' rel='nofollow'>Reply</a>
-                <button aria-expanded='false' aria-hidden='true' class='cmt2-thread-toggle' data-gg-comment-icon='unfold_more' data-gg-comment-toggle='' data-gg-state='hidden' hidden='hidden' type='button'>View replies</button>
-                <div class='cmt2-ctx' data-gg-comment-menu='1'>
-                  <button aria-expanded='false' aria-haspopup='menu' aria-label='More actions' class='cmt2-ctx-btn' data-gg-comment-action='more' data-gg-copy-aria='comments.action.more' type='button'>
-                    <span aria-hidden='true' class='ms'>more_horiz</span>
-                  </button>
-                  <div aria-hidden='true' class='cmt2-ctx-pop' data-gg-state='closed' role='menu'>
-                    <button data-gg-comment-action='copy-link' data-gg-copy='comments.action.copyLink' role='menuitem' type='button'>
-                      <span aria-hidden='true' class='ms'>link</span>
-                      <span>Copy link</span>
-                    </button>
-                    <button class='cmt2-ctx-pop__danger' data-gg-comment-action='delete' data-gg-copy='comments.action.delete' data-gg-delete-kind='link' role='menuitem' type='button'>
-                      <span aria-hidden='true' class='ms'>delete</span>
-                      <span>Delete comment</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </section>
-        </div>
-      </div>
+     
     </b:if>
           <b:section class='gg-home-blog__body' id='blog' name='gg-page-body' showaddelement='true'>
             <b:widget id='FeaturedPost1' locked='false' title='Featured Post' type='FeaturedPost' version='2' visible='false'>
