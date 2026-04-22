@@ -5,7 +5,7 @@
   <head>
     <meta content='prod' name='gg-env'/>
     <meta content='ac33998' name='gg-release'/>
-    <meta content='b6d22ff77c9e' name='gg-template-fingerprint'/>
+    <meta content='9b97847312fb' name='gg-template-fingerprint'/>
 
     <!-- GG_ASSET_VER: 20260203160035 (bump on major JS/CSS change) -->
     <link as='style' href='/assets/v/ac33998/main.css?v=20260203160035' onload='this.onload=null;this.rel=&quot;stylesheet&quot;' rel='preload'/>
@@ -1126,7 +1126,7 @@ font-size: medium;
     <b:attr cond='data:ggIsSpecialApp' expr:value='data:ggSpecialAppKey' name='data-gg-special-app'/>
 
 	    <a class='gg-skip-link gg-skiplink' href='#gg-main'>Lewati ke konten utama</a>
-	    <div data-env='prod' data-gg-template-fingerprint='b6d22ff77c9e' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+	    <div data-env='prod' data-gg-template-fingerprint='9b97847312fb' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:if cond='data:ggSurfaceKind == &quot;landing&quot;'>
 	    <template id='gg-mixed-config'><![CDATA[
 	{
@@ -1755,26 +1755,26 @@ font-size: medium;
         </div>
      
 
-<div aria-label="Follow PakRPP" class="gg-leftnav__socialbar" role="region">
-                <div aria-label="Social links" class="gg-leftnav__sociallinks" role="list">
-                  <a aria-label="Facebook: pakrpp" class="gg-leftnav__sociallink" href="https://www.facebook.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z"/></path></svg>
+<div aria-label='Follow PakRPP' class='gg-leftnav__socialbar' role='region'>
+                <div aria-label='Social links' class='gg-leftnav__sociallinks' role='list'>
+                  <a aria-label='Facebook: pakrpp' class='gg-leftnav__sociallink' href='https://www.facebook.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M14 8h3V5h-3c-2.2 0-4 1.8-4 4v2H8v3h2v5h3v-5h3l1-3h-4V9c0-.55.45-1 1-1z'/></svg>
                   </a>
-                  <a aria-label="X: pakrpp" class="gg-leftnav__sociallink" href="https://x.com/pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z"/></path></svg>
+                  <a aria-label='X: pakrpp' class='gg-leftnav__sociallink' href='https://x.com/pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M18.9 3H22l-6.9 7.9L23 21h-6.2l-4.9-6.2L6.4 21H3.3l7.4-8.5L3 3h6.3l4.4 5.7L18.9 3zm-1.1 16h1.7L8.3 4.9H6.5L17.8 19z'/></svg>
                   </a>
-                  <a aria-label="Instagram: pakrpp" class="gg-leftnav__sociallink" href="https://www.instagram.com/pakrpp/" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></path></svg>
+                  <a aria-label='Instagram: pakrpp' class='gg-leftnav__sociallink' href='https://www.instagram.com/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4h-8.5zm8.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'/></svg>
                   </a>
-                  <a aria-label="YouTube: pakrpp" class="gg-leftnav__sociallink" href="https://www.youtube.com/@pakrpp" rel="noopener noreferrer me" role="listitem" target="_blank">
-                    <svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z"/></path></svg>
+                  <a aria-label='YouTube: pakrpp' class='gg-leftnav__sociallink' href='https://www.youtube.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' focusable='false' viewBox='0 0 24 24'><path d='M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1.9 12c0 1.6.2 3.2.5 4.8a2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2c.3-1.6.5-3.2.5-4.8 0-1.6-.2-3.2-.5-4.8zM10 15.3V8.7l5.7 3.3-5.7 3.3z'/></svg>
                   </a>
-               <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></use></svg>
-                    </a>
-                    <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
-                      <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></use></svg>
-                    </a>
+                  <a aria-label='TikTok: pakrpp' class='gg-leftnav__sociallink' href='https://www.tiktok.com/@pakrpp' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-tt-line'/></svg>
+                  </a>
+                  <a aria-label='LinkedIn: pakrpp' class='gg-leftnav__sociallink' href='https://www.linkedin.com/in/pakrpp/' rel='noopener noreferrer me' role='listitem' target='_blank'>
+                    <svg aria-hidden='true' class='gg-ic' focusable='false' height='18' width='18'><use href='#gg-ic-li-line'/></svg>
+                  </a>
                 </div>
               </div>
   
