@@ -1,0 +1,32 @@
+   <section aria-labelledby='gg-error-title' class='gg-error'>
+      <div class='gg-error__inner'>
+        <p class='gg-error__code'>404</p>
+        <h1 class='gg-error__title' data-gg-copy='notfound.title' id='gg-error-title'>
+          Not found
+        </h1>
+        <p class='gg-error__body' data-gg-copy='notfound.body'>
+          The link is inactive, moved, or typed incorrectly.
+        </p>
+
+        <div class='gg-error__actions'>
+          <a class='gg-btn gg-btn--primary' data-gg-copy='notfound.action.home' href='/landing'>
+            Back to Home
+          </a>
+          <a class='gg-btn gg-btn--ghost' data-gg-copy='notfound.action.search' href='#gg-search'>
+            Search articles
+          </a>
+        </div>
+
+        <form class='gg-error__search' expr:action='data:blog.searchUrl' id='gg-search' method='get' role='search'>
+          <label class='gg-error__search-label' data-gg-copy='notfound.search.label' for='gg-search-input'>
+            Search this blog
+          </label>
+          <div class='gg-error__search-row'>
+            <input class='gg-error__search-input' data-gg-copy-placeholder='notfound.search.placeholder' id='gg-search-input' name='q' placeholder='Type a keyword...' type='search'/>
+            <button class='gg-error__search-btn' data-gg-copy='notfound.search.submit' type='submit'>
+              Search
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
