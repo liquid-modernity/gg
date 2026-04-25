@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Production branch guard
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -29,10 +29,10 @@ jobs:
             exit 1
           fi
 
-      - name: Use Node 20
-        uses: actions/setup-node@v4
+      - name: Use Node 24
+        uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install deps
