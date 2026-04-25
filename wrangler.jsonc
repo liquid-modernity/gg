@@ -1,12 +1,12 @@
 {
   "name": "gg",
-  "main": "src/worker.js",
+  "main": ".cloudflare-build/worker.js",
   "compatibility_date": "2026-01-27",
 
   "workers_dev": false,
 
   "assets": {
-    "directory": "./public",
+    "directory": "./.cloudflare-build/public",
     "binding": "ASSETS",
     "html_handling": "none"
   },

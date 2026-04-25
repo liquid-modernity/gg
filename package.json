@@ -4,23 +4,15 @@
   "scripts": {
     "gaga": "node tools/gaga-release.mjs ship",
     "gaga:dry": "node tools/gaga-release.mjs ship --dry-run",
-    "gaga:preflight": "node tools/gaga-release.mjs preflight",
     "gaga:push": "node tools/gaga-release.mjs ship",
-    "gaga:cf:deploy": "wrangler deploy --config wrangler.jsonc",
-    "gaga:cf:dry": "wrangler deploy --dry-run --config wrangler.jsonc",
-    "gaga:audit": "node qa/gaga-audit.mjs",
-    "gaga:verify-copy": "node qa/verify-copy-registry.mjs",
-    "gaga:verify-css-sot": "node qa/verify-css-sot.mjs",
-    "gaga:verify-css-map": "node qa/verify-css-map.mjs",
-    "gaga:audit:pack": "node qa/package-audit.mjs TASK-P0.RELEASE-PIPELINE.CLOSURE.10X --zip dist/gg-audit-task-p0-release-pipeline-closure-10x.zip",
-    "gaga:template:pack": "bash qa/template-pack.sh",
-    "gaga:template:proof": "bash qa/template-proof.sh",
-    "gaga:template:status": "bash qa/template-status.sh",
-    "gaga:verify-worker": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
-    "gaga:verify-template": "GG_TEMPLATE_DRIFT_MODE=fail GG_COMMENTS_OWNER_BROWSER_MODE=fail GG_HOMEPAGE_MIXED_BROWSER_MODE=fail bash qa/live-smoke.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+    "gaga:preflight": "node tools/preflight.mjs",
+    "gaga:template:pack": "node tools/template-pack.mjs",
+    "gaga:cf:prepare": "node tools/cloudflare-prepare.mjs",
+    "gaga:cf:dry": "node tools/cloudflare-deploy.mjs dry-run",
+    "gaga:cf:deploy": "node tools/cloudflare-deploy.mjs deploy",
+    "gaga:verify-worker": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
   },
   "devDependencies": {
-    "playwright": "^1.58.2",
     "wrangler": "4.61.1"
   }
 }

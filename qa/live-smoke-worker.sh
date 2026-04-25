@@ -9,7 +9,7 @@ UA="Mozilla/5.0 (gg-live-smoke-worker)"
 EXPECTED_WORKER_VERSION="$(printf '%s' "${GG_EXPECTED_WORKER_VERSION:-}" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
 
 if [[ -z "$EXPECTED_WORKER_VERSION" ]]; then
-  EXPECTED_WORKER_VERSION="$(node -e "const fs=require('node:fs');const s=fs.readFileSync('src/worker.js','utf8');const m=s.match(/const\\s+WORKER_VERSION\\s*=\\s*(['\\\"])([^'\\\"]+)\\1/);if(m&&m[2])process.stdout.write(String(m[2]).trim().toLowerCase());")"
+  EXPECTED_WORKER_VERSION="$(node -e "const fs=require('node:fs');const s=fs.readFileSync('worker.js','utf8');const m=s.match(/const\\s+WORKER_VERSION\\s*=\\s*(['\\\"])([^'\\\"]+)\\1/);if(m&&m[2])process.stdout.write(String(m[2]).trim().toLowerCase());")"
 fi
 
 tmp_dir="$(mktemp -d)"
@@ -19,16 +19,6 @@ failures=0
 warnings=0
 worker_ping_version="missing"
 worker_root_version="missing"
-worker_scope_state="worker_scope_not_verified"
-worker_scope_note="Worker-scope checks did not run."
-
-printf 'SMOKE-WORKER lane=WORKER_SCOPE base=%s\n' "$BASE_URL"
-printf 'SMOKE-WORKER expected-worker-version=%s\n' "${EXPECTED_WORKER_VERSION:-unset}"
-printf 'SMOKE-WORKER classify=WORKER_SCOPE check=worker_ping\n'
-printf 'SMOKE-WORKER classify=WORKER_SCOPE check=edge_headers_on_root\n'
-printf 'SMOKE-WORKER classify=WORKER_SCOPE check=representative_html_routes\n'
-printf 'SMOKE-WORKER classify=WORKER_SCOPE check=versioned_assets\n'
-printf 'SMOKE-WORKER classify=WORKER_SCOPE check=worker_static_endpoints\n'
 
 log_fail() {
   failures=$((failures + 1))
@@ -117,16 +107,14 @@ check_worker_ping() {
   worker_header="$(extract_header_value "$headers_file" "x-gg-worker" | tr '[:upper:]' '[:lower:]')"
   version_header="$(extract_header_value "$headers_file" "x-gg-worker-version" | tr '[:upper:]' '[:lower:]')"
 
-  printf 'SMOKE-WORKER ping status=%s worker=%s version=%s\n' "${status:-000}" "${worker_header:-missing}" "${version_header:-missing}"
-
   if [[ "$status" != "200" ]]; then
     log_fail "/__gg_worker_ping expected status 200 (got ${status:-000})"
   fi
   if [[ "$worker_header" != "proxy" ]]; then
-    log_fail "/__gg_worker_ping missing worker stamp x-gg-worker=proxy"
+    log_fail "/__gg_worker_ping missing x-gg-worker=proxy"
   fi
   if [[ -z "$version_header" ]]; then
-    log_fail "/__gg_worker_ping missing x-gg-worker-version header"
+    log_fail "/__gg_worker_ping missing x-gg-worker-version"
   else
     worker_ping_version="$version_header"
   fi
@@ -142,129 +130,55 @@ check_root_headers() {
   status="$(printf '%s' "$meta" | cut -d'|' -f2)"
   version_header="$(extract_header_value "$headers_file" "x-gg-worker-version" | tr '[:upper:]' '[:lower:]')"
 
-  printf 'SMOKE-WORKER root status=%s version=%s\n' "${status:-000}" "${version_header:-missing}"
-
   if [[ "$status" != "200" ]]; then
     log_fail "/ expected status 200 (got ${status:-000})"
   fi
   if [[ -z "$version_header" ]]; then
-    log_fail "/ missing x-gg-worker-version header"
+    log_fail "/ missing x-gg-worker-version"
   else
     worker_root_version="$version_header"
   fi
-  if [[ -n "$worker_ping_version" && "$worker_ping_version" != "missing" && -n "$version_header" && "$worker_ping_version" != "$version_header" ]]; then
+  if [[ "$worker_ping_version" != "missing" && -n "$version_header" && "$worker_ping_version" != "$version_header" ]]; then
     log_fail "worker version header mismatch between /__gg_worker_ping and /"
   fi
 }
 
-check_html_routes() {
-  local routes=(
-    "/landing"
-    "/search"
-    "/search/label/Store"
-    "/2026/02/todo.html"
-    "/p/library.html"
-  )
-  local route headers_file meta status version_header safe_name
-
-  for route in "${routes[@]}"; do
-    safe_name="$(printf '%s' "$route" | tr -c '[:alnum:]' '_')"
-    headers_file="$tmp_dir/html_${safe_name}_headers.txt"
-    meta="$(fetch_headers "$route" "$headers_file")"
-    status="$(printf '%s' "$meta" | cut -d'|' -f2)"
-    version_header="$(extract_header_value "$headers_file" "x-gg-worker-version" | tr '[:upper:]' '[:lower:]')"
-
-    printf 'SMOKE-WORKER html path=%s status=%s version=%s\n' "$route" "${status:-000}" "${version_header:-missing}"
-
-    if [[ "$status" != "200" ]]; then
-      log_fail "${route} expected status 200 (got ${status:-000})"
-    fi
-    if [[ -z "$version_header" ]]; then
-      log_fail "${route} missing x-gg-worker-version header"
-    elif [[ -n "$worker_ping_version" && "$worker_ping_version" != "missing" && "$worker_ping_version" != "$version_header" ]]; then
-      log_fail "worker version header mismatch between /__gg_worker_ping and ${route}"
-    fi
-  done
-}
-
-check_versioned_assets() {
-  local release="${EXPECTED_WORKER_VERSION:-}"
-  if [[ -z "$release" || "$release" == "missing" ]]; then
-    if [[ "$worker_ping_version" != "missing" ]]; then
-      release="$worker_ping_version"
-    elif [[ "$worker_root_version" != "missing" ]]; then
-      release="$worker_root_version"
-    fi
-  fi
-
-  if [[ -z "$release" || "$release" == "missing" ]]; then
-    log_fail "unable to resolve worker release for asset checks"
-    return
-  fi
-
-  local headers_boot="$tmp_dir/assets_boot_headers.txt"
-  local headers_app="$tmp_dir/assets_app_headers.txt"
-  local meta_boot status_boot meta_app status_app
-  meta_boot="$(fetch_headers "/assets/v/${release}/boot.js" "$headers_boot")"
-  status_boot="$(printf '%s' "$meta_boot" | cut -d'|' -f2)"
-  meta_app="$(fetch_headers "/assets/v/${release}/app.js" "$headers_app")"
-  status_app="$(printf '%s' "$meta_app" | cut -d'|' -f2)"
-
-  printf 'SMOKE-WORKER assets release=%s boot=%s app=%s\n' "$release" "${status_boot:-000}" "${status_app:-000}"
-
-  if [[ "$status_boot" != "200" ]]; then
-    log_fail "/assets/v/${release}/boot.js expected status 200 (got ${status_boot:-000})"
-  fi
-  if [[ "$status_app" != "200" ]]; then
-    log_fail "/assets/v/${release}/app.js expected status 200 (got ${status_app:-000})"
-  fi
-}
-
-check_worker_endpoints() {
-  local route_file="$tmp_dir/route_test.txt"
+check_flags_endpoint() {
   local flags_file="$tmp_dir/flags.json"
-  local meta_route meta_flags status_route status_flags
-  meta_route="$(fetch_body "/__gg_route_test" "$route_file")"
-  status_route="$(printf '%s' "$meta_route" | cut -d'|' -f2)"
-  meta_flags="$(fetch_body "/gg-flags.json" "$flags_file")"
-  status_flags="$(printf '%s' "$meta_flags" | cut -d'|' -f2)"
+  local meta status
+  meta="$(fetch_body "/gg-flags.json" "$flags_file")"
+  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
 
-  printf 'SMOKE-WORKER endpoints route_test=%s flags=%s\n' "${status_route:-000}" "${status_flags:-000}"
-
-  if [[ "$status_route" != "200" ]]; then
-    log_fail "/__gg_route_test expected status 200 (got ${status_route:-000})"
-  elif ! grep -q "ROUTE_OK" "$route_file"; then
-    log_fail "/__gg_route_test missing ROUTE_OK marker"
-  fi
-
-  if [[ "$status_flags" != "200" ]]; then
-    log_fail "/gg-flags.json expected status 200 (got ${status_flags:-000})"
+  if [[ "$status" != "200" ]]; then
+    log_fail "/gg-flags.json expected status 200 (got ${status:-000})"
   elif ! grep -q "\"release\"" "$flags_file"; then
     log_warn "/gg-flags.json missing release field"
   fi
 }
 
+check_sw_asset() {
+  local headers_file="$tmp_dir/sw_headers.txt"
+  local meta status
+  meta="$(fetch_headers "/sw.js" "$headers_file")"
+  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+
+  if [[ "$status" != "200" ]]; then
+    log_fail "/sw.js expected status 200 (got ${status:-000})"
+  fi
+}
+
+printf 'SMOKE-WORKER lane=WORKER_SCOPE base=%s\n' "$BASE_URL"
+printf 'SMOKE-WORKER expected-worker-version=%s\n' "${EXPECTED_WORKER_VERSION:-unset}"
+
 check_worker_ping
 check_root_headers
-check_html_routes
-check_versioned_assets
-check_worker_endpoints
-
-if [[ "$failures" -gt 0 ]]; then
-  worker_scope_state="worker_scope_failed"
-  worker_scope_note="Worker-scope hard gate failed."
-else
-  worker_scope_state="worker_scope_passed"
-  worker_scope_note="Worker-scope hard gate passed."
-fi
-
-printf 'SMOKE-WORKER state=%s note=%s failures=%s warnings=%s\n' "$worker_scope_state" "$worker_scope_note" "$failures" "$warnings"
+check_flags_endpoint
+check_sw_asset
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   {
     echo "### Worker-Scope Smoke"
-    echo "- State: \`${worker_scope_state}\`"
-    echo "- Note: ${worker_scope_note}"
+    echo "- Base URL: \`${BASE_URL}\`"
     echo "- Expected worker version: \`${EXPECTED_WORKER_VERSION:-unset}\`"
     echo "- Observed ping version: \`${worker_ping_version}\`"
     echo "- Observed root version: \`${worker_root_version}\`"

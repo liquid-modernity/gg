@@ -50,3 +50,4 @@ playwright-report/
 
 # Wrangler
 .wrangler/
+.cloudflare-build/

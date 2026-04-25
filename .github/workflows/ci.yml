@@ -1,13 +1,13 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 
 jobs:
-  gaga-preflight-and-dry-deploy:
+  validate:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,19 +25,19 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Build Blogger publish artifact
-        run: npm run gaga:template:pack
-
       - name: CI scope truth
         run: |
-          echo "CI scope: lightweight preflight + Worker deployability checks."
-          echo "CI does not publish Blogger template/theme."
           {
             echo "### CI Scope Truth"
-            echo "- This CI runs gaga preflight (worker syntax + template fingerprint contract)."
-            echo "- This CI runs Wrangler dry-run via npm run gaga:cf:dry."
-            echo "- This CI does **not** publish Blogger template/theme."
+            echo "- GitHub Actions handles build, preflight, and Cloudflare dry-run."
+            echo "- Local machine stays edit, small npm scripts, Chrome DevTools, commit, and push."
+            echo "- This workflow validates build, preflight, and deployability only."
+            echo "- This workflow does **not** publish Blogger template."
+            echo "- This workflow does **not** deploy production."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build Blogger publish artifact
+        run: npm run gaga:template:pack
 
       - name: Lightweight preflight
         run: npm run gaga:preflight

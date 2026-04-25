@@ -1,0 +1,99 @@
+name: Deploy Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cloudflare-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Production branch guard
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "::error title=Production deploy guard::workflow_dispatch must run from main. Current ref: ${GITHUB_REF}."
+            exit 1
+          fi
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Resolve live base URL
+        run: |
+          echo "GG_LIVE_BASE_URL=${GG_LIVE_BASE_URL:-https://www.pakrpp.com}" >> "$GITHUB_ENV"
+
+      - name: Validate deploy config
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=0
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error title=Missing GitHub secret::Set CLOUDFLARE_API_TOKEN before running deploy."
+            missing=1
+          fi
+
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error title=Missing GitHub secret::Set CLOUDFLARE_ACCOUNT_ID before running deploy."
+            missing=1
+          fi
+
+          {
+            echo "### Deploy Config"
+            echo "- CLOUDFLARE_API_TOKEN configured: \`$([ -n "${CLOUDFLARE_API_TOKEN:-}" ] && echo yes || echo no)\`"
+            echo "- CLOUDFLARE_ACCOUNT_ID configured: \`$([ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] && echo yes || echo no)\`"
+            echo "- GG_LIVE_BASE_URL: \`${GG_LIVE_BASE_URL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Deploy scope truth
+        run: |
+          {
+            echo "### Deploy Scope Truth"
+            echo "- GitHub Actions handles Cloudflare Worker/assets deployment."
+            echo "- Local machine stays edit, small npm scripts, Chrome DevTools, commit, and push."
+            echo "- This workflow deploys Cloudflare Worker/assets only."
+            echo "- This workflow does **not** publish Blogger template."
+            echo "- This workflow does **not** run Playwright or full browser smoke."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build Blogger publish artifact
+        run: npm run gaga:template:pack
+
+      - name: Lightweight preflight
+        run: npm run gaga:preflight
+
+      - name: Deploy Worker/assets to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run gaga:cf:deploy
+
+      - name: Lightweight worker-scope smoke
+        env:
+          GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
+        run: npm run gaga:verify-worker

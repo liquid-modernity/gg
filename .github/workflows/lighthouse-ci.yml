@@ -1,0 +1,48 @@
+name: Lighthouse CI
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Lighthouse routes
+        run: |
+          base_url="${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
+          {
+            echo "### Lighthouse Scope Truth"
+            echo "- This workflow checks performance only."
+            echo "- This workflow does **not** deploy anything."
+            echo "- This workflow does **not** publish Blogger template."
+            echo "- Fixed route set:"
+            echo "  - ${base_url}/"
+            echo "  - ${base_url}/landing"
+            echo "  - ${base_url}/search"
+          } >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "GG_LIGHTHOUSE_URL_1=${base_url}/"
+            echo "GG_LIGHTHOUSE_URL_2=${base_url}/landing"
+            echo "GG_LIGHTHOUSE_URL_3=${base_url}/search"
+          } >> "$GITHUB_ENV"
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            ${{ env.GG_LIGHTHOUSE_URL_1 }}
+            ${{ env.GG_LIGHTHOUSE_URL_2 }}
+            ${{ env.GG_LIGHTHOUSE_URL_3 }}
+          runs: 1
+          uploadArtifacts: true
+          temporaryPublicStorage: true
