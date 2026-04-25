@@ -1,159 +1,1660 @@
-<section class='gg-home-landing' data-gg-home-layer='landing'>
-    <!-- GAGA LANDING PAGE: DUMMY 5-SECTION -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Elara Voss — Model, KOL, Sustainability Consultant</title>
+  <meta name="description" content="A quiet-luxury personal landing page for a model, KOL, and sustainability consultant with Apple-ish restraint, mobile-first full-height sections, and dock/sheet behavior aligned to the main GG system." />
+  <meta name="theme-color" content="#f4eeef" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&icon_names=calendar_add_on,explore,home_app_logo,menu,newsmode&display=block" />
+  <style>
+    :root {
+      --gg-surface-page: #f4eeef;
+      --gg-surface-panel: #f5efec;
+      --gg-surface-quiet: rgba(255, 255, 255, .28);
+      --gg-surface-interactive: rgba(255, 255, 255, .48);
+      --gg-surface-interactive-strong: rgba(255, 255, 255, .66);
+      --gg-divider: rgba(32, 26, 28, .12);
+      --gg-divider-strong: rgba(32, 26, 28, .18);
+      --gg-border-interactive: rgba(32, 26, 28, .18);
+      --gg-ink: #201a1c;
+      --gg-ink-soft: #5f565b;
+      --gg-line: var(--gg-divider);
+      --gg-line-strong: var(--gg-divider-strong);
+      --gg-accent: #2d2529;
+      --gg-accent-soft: #6a5f66;
+      --gg-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      --gg-shadow-soft: 0 12px 34px rgba(32, 26, 28, .10);
+      --gg-ease: cubic-bezier(.2, 0, 0, 1);
 
-    <!-- GAGA LANDING PAGE &#8212; VIDEO EDITING SERVICES (5 SECTIONS, ANCHOR IDS PRESERVED) -->
-    <div class='gg-landing' id='gg-landing'>
-      <div aria-hidden='true' class='gg-topbar'/>
+      --gg-toolbar-gap: 6px;
+      --gg-toolbar-pad: 8px;
+      --gg-toolbar-border: var(--gg-line-strong);
+      --gg-toolbar-radius: 999px;
+      --gg-toolbar-surface: rgba(255,255,255,.86);
+      --gg-toolbar-item-min-height: 52px;
+      --gg-toolbar-item-pad-x: 10px;
+      --gg-toolbar-item-radius: 999px;
+      --gg-toolbar-item-weight: 600;
+      --gg-toolbar-item-size: 13px;
+      --gg-toolbar-item-hover-bg: #f4edf1;
+      --gg-dock-offset-bottom: max(12px, env(safe-area-inset-bottom));
 
-      <!-- ANCHOR TARGET FOR /landing#hero -->
-      <div id='hero'>
-        <!-- SECTION 1 &#8212; HERO -->
-        <section aria-label='Hero' class='gg-section gg-hero' data-surface='dark' id='gg-landing-hero' role='region'>
-          <div aria-hidden='true' class='gg-hero__media'>
-            <video class='gg-hero__video' id='ggHeroVideo' loop='' muted='' playsinline='' poster='https://picsum.photos/200' preload='metadata'>
-              <source src='https://www.pakrpp.com/' type='video/mp4'/>
-            </video>
-            <noscript>
-              <img alt='Editorial reel teaser' height='900' src='https://picsum.photos/200' width='1600'/>
-            </noscript>
+      --gg-panel-handle-width: 46px;
+      --gg-panel-handle-height: 4px;
+      --gg-panel-handle-tone: rgba(32, 26, 28, .16);
+      --gg-panel-pad-x: 18px;
+      --gg-panel-pad-y: 18px;
+      --gg-panel-max-height: min(92dvh, 820px);
+
+      --gg-landing-max: 1160px;
+      --gg-landing-gutter: 12px;
+      --gg-landing-radius: 30px;
+      --gg-landing-radius-soft: 22px;
+      --gg-landing-hero-display: clamp(2.85rem, 11vw, 6.4rem);
+      --gg-landing-h2: clamp(2rem, 6vw, 3.7rem);
+      --gg-landing-h3: clamp(1.05rem, 2vw, 1.28rem);
+      --gg-landing-body: clamp(1rem, 1.4vw, 1.08rem);
+      --gg-landing-shell-bottom: calc(104px + env(safe-area-inset-bottom));
+      --gg-landing-motion-quick: .28s var(--gg-ease);
+      --gg-landing-motion-soft: .58s var(--gg-ease);
+      --gg-landing-card-bg: linear-gradient(180deg, rgba(255,255,255,.60), rgba(255,255,255,.34));
+      --gg-landing-panel-bg: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.62));
+      --gg-landing-hero-ink: #171314;
+      --gg-landing-muted: #6e6469;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 700px at 100% 0%, rgba(205, 196, 201, .24), transparent 58%),
+        radial-gradient(900px 480px at 0% 24%, rgba(255,255,255,.55), transparent 60%),
+        linear-gradient(180deg, #f8f4f3 0%, var(--gg-surface-page) 100%);
+      color: var(--gg-ink);
+      font: 15px/1.58 var(--gg-font-sans);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: var(--gg-landing-shell-bottom);
+    }
+    body[data-gg-scroll-lock="true"] { overflow: hidden; }
+
+    a { color: inherit; text-decoration: none; }
+    a:hover { color: var(--gg-accent); }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--gg-accent);
+      outline-offset: 2px;
+    }
+
+    .skip-navigation {
+      position: absolute;
+      top: 0;
+      left: 12px;
+      z-index: 120;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--gg-surface-interactive);
+      box-shadow: var(--gg-shadow-soft);
+      color: var(--gg-ink);
+      transform: translateY(calc(-100% - 8px));
+      transition: transform var(--gg-ease), color var(--gg-ease);
+    }
+    .skip-navigation:focus,
+    .skip-navigation:focus-visible {
+      transform: translateY(12px);
+    }
+
+    .gg-visually-hidden {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .gg-icon {
+      font-family: "Material Symbols Outlined";
+      font-weight: 500;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      direction: ltr;
+      font-feature-settings: "liga";
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .gg-landing-shell {
+      min-height: 100vh;
+      padding: var(--gg-landing-gutter) var(--gg-landing-gutter) var(--gg-landing-shell-bottom);
+    }
+
+    .gg-landing-frame {
+      max-width: var(--gg-landing-max);
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .gg-landing-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 18;
+      display: grid;
+      align-items: center;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      padding: 12px 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.62);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--gg-shadow-soft);
+    }
+
+    .gg-landing-topbar__brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .gg-landing-topbar__mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--gg-line-strong);
+      background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.58));
+      font: 700 12px/1 var(--gg-font-sans);
+      letter-spacing: .10em;
+    }
+    .gg-landing-topbar__identity {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+    .gg-landing-topbar__name {
+      margin: 0;
+      font: 700 13px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .gg-landing-topbar__meta {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 500 11px/1.3 var(--gg-font-sans);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gg-landing-topbar__nav {
+      display: none;
+      justify-content: center;
+      gap: 18px;
+      min-width: 0;
+    }
+    .gg-landing-topbar__nav a {
+      color: var(--gg-ink-soft);
+      font: 600 12px/1.2 var(--gg-font-sans);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: color var(--gg-landing-motion-quick);
+    }
+    .gg-landing-topbar__nav a:hover { color: var(--gg-accent); }
+
+    .gg-landing-topbar__cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--gg-line-strong);
+      border-radius: 999px;
+      background: rgba(255,255,255,.52);
+      color: var(--gg-ink);
+      font: 600 12px/1.2 var(--gg-font-sans);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: transform var(--gg-landing-motion-quick), background-color var(--gg-landing-motion-quick);
+    }
+    .gg-landing-topbar__cta:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.72);
+    }
+
+    .gg-landing-section {
+      position: relative;
+      display: grid;
+      align-items: center;
+      min-height: 100svh;
+      padding: 18px 0;
+      scroll-margin-top: 90px;
+    }
+
+    .gg-landing-card {
+      width: 100%;
+      border: 1px solid var(--gg-line);
+      border-radius: var(--gg-landing-radius);
+      background: var(--gg-landing-card-bg);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--gg-shadow-soft);
+      overflow: hidden;
+    }
+
+    .gg-landing-hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: calc(100svh - 104px);
+      background:
+        radial-gradient(900px 420px at 100% 0%, rgba(255,255,255,.45), transparent 58%),
+        linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.38));
+    }
+    .gg-landing-hero__copy,
+    .gg-landing-hero__visual {
+      padding: 22px;
+    }
+    .gg-landing-hero__copy {
+      display: grid;
+      align-content: space-between;
+      gap: 24px;
+      color: var(--gg-landing-hero-ink);
+    }
+    .gg-landing-kicker {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 600 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .gg-landing-display {
+      margin: 0;
+      font: 700 var(--gg-landing-hero-display)/.9 var(--gg-font-sans);
+      letter-spacing: -.055em;
+      text-wrap: balance;
+      max-width: 9ch;
+    }
+    .gg-landing-display strong { color: #5a4d53; }
+    .gg-landing-lead {
+      max-width: 56ch;
+      margin: 0;
+      color: var(--gg-landing-muted);
+      font-size: var(--gg-landing-body);
+      line-height: 1.55;
+    }
+    .gg-landing-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .gg-landing-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 1px solid var(--gg-line-strong);
+      border-radius: 999px;
+      font: 600 13px/1.2 var(--gg-font-sans);
+      letter-spacing: .02em;
+      transition: transform var(--gg-landing-motion-quick), background-color var(--gg-landing-motion-quick), border-color var(--gg-landing-motion-quick);
+    }
+    .gg-landing-btn:hover { transform: translateY(-1px); }
+    .gg-landing-btn--primary {
+      background: #201a1c;
+      border-color: #201a1c;
+      color: #f5efec;
+    }
+    .gg-landing-btn--ghost {
+      background: rgba(255,255,255,.44);
+      color: var(--gg-ink);
+    }
+
+    .gg-landing-hero__micro {
+      display: grid;
+      gap: 12px;
+    }
+    .gg-landing-hero__proof {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .gg-landing-proof {
+      padding: 14px;
+      border: 1px solid var(--gg-line);
+      border-radius: var(--gg-landing-radius-soft);
+      background: rgba(255,255,255,.46);
+    }
+    .gg-landing-proof__value {
+      display: block;
+      margin: 0 0 6px;
+      font: 700 clamp(1.3rem, 4vw, 1.6rem)/1 var(--gg-font-sans);
+      letter-spacing: -.04em;
+    }
+    .gg-landing-proof__label {
+      display: block;
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.4 var(--gg-font-sans);
+    }
+
+    .gg-landing-hero__visual {
+      display: grid;
+      gap: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+        linear-gradient(140deg, #efe7e6 0%, #e4d8d8 28%, #d8d1d2 100%);
+      border-top: 1px solid var(--gg-line);
+    }
+    .gg-landing-portrait {
+      position: relative;
+      min-height: 52svh;
+      border-radius: calc(var(--gg-landing-radius) - 10px);
+      overflow: hidden;
+      background:
+        radial-gradient(580px 320px at 72% 18%, rgba(255,255,255,.55), transparent 50%),
+        radial-gradient(420px 240px at 18% 82%, rgba(126, 112, 119, .22), transparent 48%),
+        linear-gradient(180deg, #e9dfde 0%, #d7cccc 100%);
+    }
+    .gg-landing-portrait::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(20,16,18,.02), rgba(20,16,18,.16)),
+        url("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1400&q=80") center/cover no-repeat;
+      opacity: .88;
+    }
+    .gg-landing-portrait__badge {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      display: grid;
+      gap: 10px;
+      z-index: 1;
+    }
+    .gg-landing-portrait__card,
+    .gg-landing-portrait__tag {
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 20px;
+      background: rgba(20,16,18,.34);
+      color: #fbf7f4;
+      backdrop-filter: blur(18px);
+    }
+    .gg-landing-portrait__card {
+      padding: 16px 18px;
+    }
+    .gg-landing-portrait__card strong {
+      display: block;
+      margin: 0 0 6px;
+      font: 650 15px/1.25 var(--gg-font-sans);
+      letter-spacing: -.01em;
+    }
+    .gg-landing-portrait__card span {
+      color: rgba(255,255,255,.82);
+      font: 500 13px/1.45 var(--gg-font-sans);
+    }
+    .gg-landing-portrait__tag {
+      width: max-content;
+      padding: 10px 14px;
+      font: 600 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .gg-landing-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .gg-landing-strip__item {
+      padding: 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 20px;
+      background: rgba(255,255,255,.40);
+    }
+    .gg-landing-strip__eyebrow {
+      margin: 0 0 6px;
+      color: var(--gg-ink-soft);
+      font: 600 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .gg-landing-strip__text {
+      margin: 0;
+      font: 600 14px/1.35 var(--gg-font-sans);
+      color: var(--gg-ink);
+    }
+
+    .gg-landing-panel {
+      padding: 22px;
+      display: grid;
+      gap: 22px;
+      background: var(--gg-landing-panel-bg);
+    }
+    .gg-landing-panel__head {
+      display: grid;
+      gap: 10px;
+    }
+    .gg-landing-panel__title {
+      margin: 0;
+      font: 700 var(--gg-landing-h2)/.95 var(--gg-font-sans);
+      letter-spacing: -.05em;
+      text-wrap: balance;
+      max-width: 12ch;
+    }
+    .gg-landing-panel__sub {
+      margin: 0;
+      max-width: 64ch;
+      color: var(--gg-landing-muted);
+      font: 500 var(--gg-landing-body)/1.55 var(--gg-font-sans);
+    }
+
+    .gg-landing-grid,
+    .gg-landing-offers,
+    .gg-landing-proof-grid,
+    .gg-landing-approach,
+    .gg-landing-contact {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
+    }
+
+    .gg-landing-cell {
+      padding: 18px;
+      border: 1px solid var(--gg-line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.42);
+      transition: transform var(--gg-landing-motion-quick), background-color var(--gg-landing-motion-quick), box-shadow var(--gg-landing-motion-quick);
+    }
+    .gg-landing-cell:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.56);
+    }
+    .gg-landing-cell__eyebrow {
+      margin: 0 0 8px;
+      color: var(--gg-accent-soft);
+      font: 600 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .gg-landing-cell__title {
+      margin: 0 0 10px;
+      font: 650 var(--gg-landing-h3)/1.18 var(--gg-font-sans);
+      letter-spacing: -.02em;
+    }
+    .gg-landing-cell__body {
+      margin: 0;
+      color: var(--gg-landing-muted);
+      font: 500 14px/1.52 var(--gg-font-sans);
+    }
+    .gg-landing-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+    .gg-landing-list li {
+      padding-top: 10px;
+      border-top: 1px solid var(--gg-line);
+      color: var(--gg-landing-muted);
+      font: 500 13px/1.45 var(--gg-font-sans);
+    }
+
+    .gg-landing-featured {
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(250,247,246,.54));
+      border-color: rgba(32,26,28,.16);
+    }
+
+    .gg-landing-kpis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .gg-landing-kpi {
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid var(--gg-line);
+      background: rgba(255,255,255,.52);
+    }
+    .gg-landing-kpi__n {
+      display: block;
+      margin: 0 0 6px;
+      font: 700 clamp(1.45rem, 6vw, 2.2rem)/1 var(--gg-font-sans);
+      letter-spacing: -.05em;
+    }
+    .gg-landing-kpi__t {
+      display: block;
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.45 var(--gg-font-sans);
+    }
+
+    .gg-landing-footer {
+      padding: 8px 0 4px;
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.5 var(--gg-font-sans);
+      text-align: center;
+    }
+
+    .gg-dock {
+      position: fixed;
+      left: 50%;
+      bottom: var(--gg-dock-offset-bottom);
+      transform: translateX(-50%);
+      z-index: 40;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--gg-toolbar-gap);
+      width: min(calc(100% - 12px), 720px);
+      padding: var(--gg-toolbar-pad);
+      border: 1px solid var(--gg-toolbar-border);
+      border-radius: var(--gg-toolbar-radius);
+      background: var(--gg-toolbar-surface);
+      box-shadow: var(--gg-shadow-soft);
+      backdrop-filter: blur(10px);
+    }
+    .gg-dock__item {
+      display: inline-flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      min-height: var(--gg-toolbar-item-min-height);
+      padding: 0 var(--gg-toolbar-item-pad-x);
+      border: 0;
+      border-radius: var(--gg-toolbar-item-radius);
+      background: transparent;
+      color: var(--gg-ink);
+      font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans);
+      cursor: pointer;
+      gap: 4px;
+      transition: background-color var(--gg-landing-motion-quick), transform var(--gg-landing-motion-quick), color var(--gg-landing-motion-quick);
+    }
+    .gg-dock__item:hover,
+    .gg-dock__item:focus-visible,
+    .gg-dock__item[aria-current="page"],
+    .gg-dock__item[data-gg-active="true"] {
+      background: var(--gg-toolbar-item-hover-bg);
+    }
+    .gg-dock__label {
+      font: var(--gg-toolbar-item-weight) 11px/1.1 var(--gg-font-sans);
+      letter-spacing: .02em;
+    }
+
+    .gg-sheet {
+      position: fixed;
+      inset: 0;
+      z-index: 92;
+      display: grid;
+      align-items: end;
+      justify-items: center;
+      padding: 0;
+    }
+    .gg-sheet[hidden] { display: none; }
+    .gg-sheet__scrim {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      background: rgba(32, 26, 28, .18);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+    .gg-sheet__panel {
+      position: relative;
+      width: min(100%, 720px);
+      max-height: var(--gg-panel-max-height);
+      padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) calc(var(--gg-panel-pad-y) + env(safe-area-inset-bottom));
+      border: 1px solid var(--gg-line-strong);
+      border-bottom: 0;
+      border-radius: 28px 28px 0 0;
+      background: var(--gg-surface-panel);
+      box-shadow: 0 28px 64px rgba(32, 26, 28, .12);
+      overflow: auto;
+      transform: translateY(18px);
+      opacity: 0;
+      transition: transform var(--gg-landing-motion-soft), opacity var(--gg-landing-motion-soft);
+    }
+    .gg-sheet[data-gg-state="open"] .gg-sheet__panel,
+    .gg-sheet[data-gg-state="opening"] .gg-sheet__panel {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .gg-sheet__head {
+      position: sticky;
+      top: calc(var(--gg-panel-pad-y) * -1);
+      z-index: 2;
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0;
+      padding: 12px var(--gg-panel-pad-x) 14px;
+      border-bottom: 1px solid var(--gg-line);
+      background: linear-gradient(180deg, var(--gg-surface-panel) 86%, rgba(245,239,236,.92) 100%);
+      text-align: center;
+    }
+    .gg-sheet__handle {
+      width: var(--gg-panel-handle-width);
+      height: var(--gg-panel-handle-height);
+      border-radius: 999px;
+      background: var(--gg-panel-handle-tone);
+      touch-action: none;
+    }
+    .gg-sheet__title {
+      margin: 0;
+      font: 600 13px/1.2 var(--gg-font-sans);
+      text-align: center;
+    }
+
+    .gg-landing-discovery {
+      display: grid;
+      gap: 16px;
+    }
+    .gg-landing-discovery__controls {
+      position: sticky;
+      top: 30px;
+      z-index: 2;
+      display: grid;
+      gap: 12px;
+      margin: 0 calc(var(--gg-panel-pad-x) * -1);
+      padding: 12px var(--gg-panel-pad-x) 14px;
+      border-bottom: 1px solid var(--gg-line);
+      background: linear-gradient(180deg, var(--gg-surface-panel) 82%, rgba(245,239,236,.94) 100%);
+    }
+    .gg-landing-discovery__input {
+      width: 100%;
+      min-height: 52px;
+      padding: 0 16px;
+      border: 1px solid var(--gg-border-interactive);
+      border-radius: 18px;
+      background: rgba(255,255,255,.44);
+      color: var(--gg-ink);
+      font: 500 14px/1.2 var(--gg-font-sans);
+    }
+    .gg-landing-discovery__tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .gg-landing-discovery__tab {
+      min-height: 42px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      color: var(--gg-ink-soft);
+      font: 600 13px/1.2 var(--gg-font-sans);
+      cursor: pointer;
+      transition: background-color var(--gg-landing-motion-quick), color var(--gg-landing-motion-quick);
+    }
+    .gg-landing-discovery__tab[data-gg-active="true"] {
+      background: var(--gg-surface-interactive);
+      color: var(--gg-ink);
+    }
+    .gg-landing-discovery__results,
+    .gg-landing-discovery__topics {
+      display: grid;
+      gap: 10px;
+    }
+    .gg-landing-discovery__item {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.28);
+      color: var(--gg-ink);
+      text-align: left;
+      cursor: pointer;
+      transition: transform var(--gg-landing-motion-quick), background-color var(--gg-landing-motion-quick);
+    }
+    .gg-landing-discovery__item:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.46);
+    }
+    .gg-landing-discovery__item strong {
+      display: block;
+      margin: 0 0 4px;
+      font: 600 14px/1.25 var(--gg-font-sans);
+    }
+    .gg-landing-discovery__item small {
+      display: block;
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.45 var(--gg-font-sans);
+    }
+
+    .gg-landing-more {
+      display: grid;
+      gap: 10px;
+    }
+    .gg-landing-more__link,
+    .gg-landing-more__social {
+      min-height: 52px;
+      padding: 0 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color var(--gg-landing-motion-quick), transform var(--gg-landing-motion-quick);
+    }
+    .gg-landing-more__link:hover,
+    .gg-landing-more__social:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.46);
+    }
+    .gg-landing-lang {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .gg-landing-lang__row {
+      display: flex;
+      gap: 10px;
+    }
+    .gg-landing-lang__button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      color: var(--gg-ink-soft);
+      font: 600 13px/1.2 var(--gg-font-sans);
+      cursor: pointer;
+    }
+    .gg-landing-lang__button[data-gg-active="true"] {
+      background: var(--gg-surface-interactive);
+      color: var(--gg-ink);
+    }
+    .gg-landing-more__footer {
+      margin-top: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--gg-line);
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.45 var(--gg-font-sans);
+    }
+
+    .gg-landing-reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .72s var(--gg-ease), transform .72s var(--gg-ease);
+    }
+    .gg-landing-reveal.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (min-width: 860px) {
+      .gg-landing-topbar__nav { display: inline-flex; }
+      .gg-landing-hero {
+        grid-template-columns: 1.08fr .92fr;
+      }
+      .gg-landing-hero__visual {
+        border-top: 0;
+        border-left: 1px solid var(--gg-line);
+      }
+      .gg-landing-grid,
+      .gg-landing-proof-grid,
+      .gg-landing-approach,
+      .gg-landing-contact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .gg-landing-offers {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .gg-landing-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 620px) {
+      .gg-landing-topbar {
+        grid-template-columns: 1fr auto;
+      }
+      .gg-landing-topbar__cta { display: none; }
+      .gg-landing-hero__proof,
+      .gg-landing-strip,
+      .gg-landing-kpis {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-navigation" href="#main">Skip to main content</a>
+
+  <div class="gg-landing-shell">
+    <div class="gg-landing-frame">
+      <header class="gg-landing-topbar">
+        <div class="gg-landing-topbar__brand">
+          <div class="gg-landing-topbar__mark" aria-hidden="true">EV</div>
+          <div class="gg-landing-topbar__identity">
+            <p class="gg-landing-topbar__name">Elara Voss</p>
+            <p class="gg-landing-topbar__meta" data-copy="brand.meta">Model · KOL · Sustainability Consultant</p>
           </div>
+        </div>
+        <nav class="gg-landing-topbar__nav" aria-label="Section navigation">
+          <a href="#bio" data-copy="nav.bio">Bio</a>
+          <a href="#services" data-copy="nav.services">Services</a>
+          <a href="#work" data-copy="nav.work">Work</a>
+          <a href="#approach" data-copy="nav.approach">Approach</a>
+          <a href="#contact" data-copy="nav.contact">Contact</a>
+        </nav>
+        <a class="gg-landing-topbar__cta" href="#contact">Request brief</a>
+      </header>
 
-          <div aria-hidden='true' class='gg-hero__scrim'/>
-
-          <div class='gg-wrap gg-hero__in'>
-            <div class='gg-hero__card'>
-              <p class='gg-kicker'>&#183; Intelligence by Creator &#183; Performance through Story &#183;</p>
-              <h1 class='gg-display'>Edited by pakrpp.</h1>
-              <p class='gg-lead'>
-                We cut for retention: hooks, pacing, sound, and clarity.
-                One second decides whether viewers stay. We edit for the stay.
-              </p>
-
-              <div class='gg-ctaRow'>
-                <a class='gg-btn gg-btn--accent wa-track' data-section='hero' href='https://wa.me/628999999999?text=Hi%20pakrpp%2C%20I%20need%20a%20quote%20(EN).%20Source%3A%20Hero' rel='noopener'>Get a Quote</a>
-
-                <a class='gg-btn gg-btn--ghost' href='#gg-landing-pillars-4'>See Packages</a>
+      <main id="main">
+        <section class="gg-landing-section" id="hero">
+          <div class="gg-landing-card gg-landing-hero gg-landing-reveal">
+            <div class="gg-landing-hero__copy">
+              <div>
+                <p class="gg-landing-kicker" data-copy="hero.kicker">Image, influence, responsibility</p>
+                <h1 class="gg-landing-display"><span data-copy="hero.titleA">Elegant in public.</span> <strong data-copy="hero.titleB">Serious underneath.</strong></h1>
+                <p class="gg-landing-lead" data-copy="hero.lead">Elara Voss is built for campaigns, partnerships, and advisory that need visual authority without empty signaling. Model. KOL. Sustainability consultant. One coherent personal brand.</p>
+                <div class="gg-landing-cta-row">
+                  <a class="gg-landing-btn gg-landing-btn--primary" href="#contact" data-copy="hero.ctaPrimary">Book collaboration</a>
+                  <a class="gg-landing-btn gg-landing-btn--ghost" href="#work" data-copy="hero.ctaSecondary">See selected work</a>
+                </div>
               </div>
 
-              <p class='gg-micro'>
-                Confidential by default &#183; NDA available &#183; First response &#8804; 1 business hour
-              </p>
+              <div class="gg-landing-hero__micro">
+                <div class="gg-landing-hero__proof">
+                  <div class="gg-landing-proof">
+                    <span class="gg-landing-proof__value" data-count="38">38</span>
+                    <span class="gg-landing-proof__label" data-copy="hero.metric1">Campaigns and partnerships delivered with premium fit</span>
+                  </div>
+                  <div class="gg-landing-proof">
+                    <span class="gg-landing-proof__value" data-count="3">3</span>
+                    <span class="gg-landing-proof__label" data-copy="hero.metric2">Disciplines held inside one clean narrative</span>
+                  </div>
+                </div>
+                <div class="gg-landing-kpis">
+                  <div class="gg-landing-kpi">
+                    <span class="gg-landing-kpi__n">Beauty</span>
+                    <span class="gg-landing-kpi__t" data-copy="hero.kpi1">Campaign image, launch storytelling, selective influence</span>
+                  </div>
+                  <div class="gg-landing-kpi">
+                    <span class="gg-landing-kpi__n">Luxury</span>
+                    <span class="gg-landing-kpi__t" data-copy="hero.kpi2">Poise, premium rhythm, restraint over noise</span>
+                  </div>
+                  <div class="gg-landing-kpi">
+                    <span class="gg-landing-kpi__n">ESG</span>
+                    <span class="gg-landing-kpi__t" data-copy="hero.kpi3">Narrative review, message tightening, credibility check</span>
+                  </div>
+                  <div class="gg-landing-kpi">
+                    <span class="gg-landing-kpi__n">Trust</span>
+                    <span class="gg-landing-kpi__t" data-copy="hero.kpi4">Audience fit before volume, coherence before hype</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div aria-label='Quick proof points' class='gg-hero__stats'>
-              <div class='gg-stat'><div class='gg-stat__n'>0&#8211;3s</div><div class='gg-stat__t'>Hook engineering</div></div>
-              <div class='gg-stat'><div class='gg-stat__n'>1&#8211;2d</div><div class='gg-stat__t'>First cut (typical)</div></div>
-              <div class='gg-stat'><div class='gg-stat__n'>Clean</div><div class='gg-stat__t'>Sound + captions ready</div></div>
+            <div class="gg-landing-hero__visual">
+              <div class="gg-landing-portrait">
+                <div class="gg-landing-portrait__badge">
+                  <div class="gg-landing-portrait__card">
+                    <strong data-copy="hero.visualTitle">For brands that need presence and judgment.</strong>
+                    <span data-copy="hero.visualBody">The point is not to look sustainable, influential, or premium in isolation. The point is to make those three read as one disciplined system.</span>
+                  </div>
+                  <div class="gg-landing-portrait__tag" data-copy="hero.visualTag">Jakarta · Singapore · Regional advisory</div>
+                </div>
+              </div>
+
+              <div class="gg-landing-strip">
+                <div class="gg-landing-strip__item">
+                  <p class="gg-landing-strip__eyebrow" data-copy="hero.strip1k">Model</p>
+                  <p class="gg-landing-strip__text" data-copy="hero.strip1v">Editorial softness with campaign-grade control.</p>
+                </div>
+                <div class="gg-landing-strip__item">
+                  <p class="gg-landing-strip__eyebrow" data-copy="hero.strip2k">KOL</p>
+                  <p class="gg-landing-strip__text" data-copy="hero.strip2v">Taste-led influence for brands that care about fit.</p>
+                </div>
+                <div class="gg-landing-strip__item">
+                  <p class="gg-landing-strip__eyebrow" data-copy="hero.strip3k">Consulting</p>
+                  <p class="gg-landing-strip__text" data-copy="hero.strip3v">Sustainability communication that survives scrutiny.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
-      </div>
 
-      <!-- SECTION 2 &#8212; WHY -->
-      <section aria-label='Why pakrpp' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars' role='region'>
-        <div class='gg-wrap'>
-          <header class='gg-head'>
-            <p class='gg-kicker gg-kicker--dark'>Why it works</p>
-            <h2 class='gg-h2'>Retention-first editing, not &#8220;pretty cuts.&#8221;</h2>
-            <p class='gg-sub'>Disciplined pacing, intentional audio, and ruthless clarity.</p>
-          </header>
-
-          <div class='gg-grid3' role='list'>
-            <article class='gg-card' role='listitem'>
-              <div aria-hidden='true' class='gg-card__ic'>&#9889;</div>
-              <h3 class='gg-h3'>Hook &amp; pacing</h3>
-              <p class='gg-p'>Cut dead air, tighten intent, front-load value.</p>
-            </article>
-
-            <article class='gg-card' role='listitem'>
-              <div aria-hidden='true' class='gg-card__ic'>🎧</div>
-              <h3 class='gg-h3'>Sound design</h3>
-              <p class='gg-p'>Noise, leveling, music bed, SFX (tasteful).</p>
-            </article>
-
-            <article class='gg-card' role='listitem'>
-              <div aria-hidden='true' class='gg-card__ic'>🧠</div>
-              <h3 class='gg-h3'>Clarity &#8594; action</h3>
-              <p class='gg-p'>Structure, emphasis, captions that don&#8217;t scream.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 3 &#8212; WORKFLOW -->
-      <section aria-label='Workflow' class='gg-section gg-darkband' data-surface='dark' id='gg-landing-hero-3' role='region'>
-        <div class='gg-wrap'>
-          <header class='gg-head gg-head--dark'>
-            <p class='gg-kicker'>Workflow</p>
-            <h2 class='gg-h2 gg-h2--light'>Fast, predictable, no drama.</h2>
-            <p class='gg-sub gg-sub--light'>You always know what&#39;s happening and when you&#39;ll get it.</p>
-          </header>
-
-          <ol aria-label='Editing steps' class='gg-steps'>
-            <li class='gg-step'><div class='gg-step__n'>01</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Brief</h3><p class='gg-p gg-p--light'>Goal + references + raw footage.</p></div></li>
-            <li class='gg-step'><div class='gg-step__n'>02</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>First cut</h3><p class='gg-p gg-p--light'>Hook, pacing, structure. Then polish.</p></div></li>
-            <li class='gg-step'><div class='gg-step__n'>03</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Revisions</h3><p class='gg-p gg-p--light'>2&#8211;3 rounds standard, feedback consolidated.</p></div></li>
-            <li class='gg-step'><div class='gg-step__n'>04</div><div class='gg-step__b'><h3 class='gg-h3 gg-h3--light'>Delivery</h3><p class='gg-p gg-p--light'>Exports for platform + caption-safe framing.</p></div></li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- SECTION 4 &#8212; PACKAGES -->
-      <section aria-label='Packages' class='gg-section gg-plain' data-surface='light' id='gg-landing-pillars-4' role='region'>
-        <div class='gg-wrap'>
-          <header class='gg-head'>
-            <p class='gg-kicker gg-kicker--dark'>Packages</p>
-            <h2 class='gg-h2'>Pick a lane. Ship faster.</h2>
-            <p class='gg-sub'>Simple packages. Custom quotes for campaigns and volume.</p>
-          </header>
-
-          <div class='gg-grid3' role='list'>
-            <article class='gg-card' role='listitem'>
-              <h3 class='gg-h3'>Starter</h3>
-              <p class='gg-p'>1 main edit &#183; 2 revisions &#183; clean captions</p>
-              <a class='gg-btn gg-btn--ghost' href='#contact'>Ask price</a>
-            </article>
-
-            <article class='gg-card gg-card--featured' role='listitem'>
-              <h3 class='gg-h3'>Growth</h3>
-              <p class='gg-p'>Hook/pacing &#183; sound design &#183; cutdowns</p>
-              <a class='gg-btn gg-btn--accent' href='#contact'>Start here</a>
-            </article>
-
-            <article class='gg-card' role='listitem'>
-              <h3 class='gg-h3'>Studio</h3>
-              <p class='gg-p'>Campaign &#183; multi-version exports &#183; priority</p>
-              <a class='gg-btn gg-btn--ghost' href='#contact'>Book consult</a>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 5 &#8212; CONTACT -->
-      <section aria-label='Contact' class='gg-section gg-contact' data-surface='light' id='contact' role='region'>
-        <div class='gg-wrap'>
-          <header class='gg-head'>
-            <p class='gg-kicker gg-kicker--dark'>Contact</p>
-            <h2 class='gg-h2'>Send the footage. Get the plan.</h2>
-            <p class='gg-sub'>Tell us your goal, platform, and deadline.</p>
-          </header>
-
-          <div class='gg-contactGrid'>
-            <div class='gg-card'>
-              <h3 class='gg-h3'>WhatsApp</h3>
-              <p class='gg-p'>Fastest route. Include references + deadline.</p>
-              <a class='gg-btn gg-btn--accent' href='https://wa.me/62999999999?text=Hi%20pakrpp%2C%20I%20want%20video%20editing.%20Goal%3A%20____.%20Platform%3A%20____.%20Deadline%3A%20____.' rel='noopener'>Chat on WhatsApp</a>
+        <section class="gg-landing-section" id="bio">
+          <div class="gg-landing-card gg-landing-panel gg-landing-reveal">
+            <div class="gg-landing-panel__head">
+              <p class="gg-landing-kicker" data-copy="bio.kicker">Positioning</p>
+              <h2 class="gg-landing-panel__title" data-copy="bio.title">Three identities. One calm public narrative.</h2>
+              <p class="gg-landing-panel__sub" data-copy="bio.sub">This personal brand is designed to hold image, influence, and sustainability in one room without making any of them feel borrowed or performative.</p>
             </div>
-
-            <div class='gg-card'>
-              <h3 class='gg-h3'>Quick brief</h3>
-              <p class='gg-p'>Contact shortcut via WhatsApp for now.</p>
+            <div class="gg-landing-grid">
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="bio.leftEyebrow">What people see first</p>
+                <h3 class="gg-landing-cell__title" data-copy="bio.leftTitle">Visual authority that reads premium, composed, and current.</h3>
+                <p class="gg-landing-cell__body" data-copy="bio.leftBody">Suitable for fashion, beauty, travel, wellness, and brand environments where elegance matters and over-performance weakens the room.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="bio.leftList1">Editorial image with campaign discipline</li>
+                  <li data-copy="bio.leftList2">Taste-based curation, not mass clutter</li>
+                  <li data-copy="bio.leftList3">Public softness without reputational looseness</li>
+                </ul>
+              </article>
+              <article class="gg-landing-cell gg-landing-featured">
+                <p class="gg-landing-cell__eyebrow" data-copy="bio.rightEyebrow">Why serious clients stay</p>
+                <h3 class="gg-landing-cell__title" data-copy="bio.rightTitle">There is a strategic mind behind the image.</h3>
+                <p class="gg-landing-cell__body" data-copy="bio.rightBody">Especially useful when sustainability, ESG, or impact messaging must be elegant enough for brand work and solid enough for institutions.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="bio.rightList1">Narrative tightening for sustainability communication</li>
+                  <li data-copy="bio.rightList2">Brand translation that stays legible to actual humans</li>
+                  <li data-copy="bio.rightList3">Cohesion between public image and public claims</li>
+                </ul>
+              </article>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section class="gg-landing-section" id="services">
+          <div class="gg-landing-card gg-landing-panel gg-landing-reveal">
+            <div class="gg-landing-panel__head">
+              <p class="gg-landing-kicker" data-copy="services.kicker">Services</p>
+              <h2 class="gg-landing-panel__title" data-copy="services.title">Built for campaigns, partnerships, and advisory that need more than visibility.</h2>
+              <p class="gg-landing-panel__sub" data-copy="services.sub">The offer is intentionally mixed because the market need is mixed: presence, influence, and message discipline.</p>
+            </div>
+            <div class="gg-landing-offers">
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="services.card1k">Model / Talent</p>
+                <h3 class="gg-landing-cell__title" data-copy="services.card1t">Campaigns, launches, shoots, and premium brand surfaces.</h3>
+                <p class="gg-landing-cell__body" data-copy="services.card1d">For brands that need image trust, not generic lifestyle wallpaper.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="services.card1l1">Editorial and commercial campaign support</li>
+                  <li data-copy="services.card1l2">Social-first image systems and ambassador work</li>
+                  <li data-copy="services.card1l3">Brand-fit discipline before acceptance</li>
+                </ul>
+              </article>
+              <article class="gg-landing-cell gg-landing-featured">
+                <p class="gg-landing-cell__eyebrow" data-copy="services.card2k">KOL / Influence</p>
+                <h3 class="gg-landing-cell__title" data-copy="services.card2t">Selective influence for brands that care about audience quality.</h3>
+                <p class="gg-landing-cell__body" data-copy="services.card2d">This is for trust and alignment, not inflated vanity reach.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="services.card2l1">Integrated launch storytelling</li>
+                  <li data-copy="services.card2l2">Longer-term partnerships over one-off noise</li>
+                  <li data-copy="services.card2l3">Audience fit, taste fit, reputation fit</li>
+                </ul>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="services.card3k">Consulting</p>
+                <h3 class="gg-landing-cell__title" data-copy="services.card3t">Sustainability communication that feels precise, not ceremonial.</h3>
+                <p class="gg-landing-cell__body" data-copy="services.card3d">For institutions, founders, and brands that need responsible messaging with public elegance.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="services.card3l1">Narrative review for ESG and sustainability stories</li>
+                  <li data-copy="services.card3l2">Stakeholder-facing message refinement</li>
+                  <li data-copy="services.card3l3">Positioning support for responsible public identity</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="gg-landing-section" id="work">
+          <div class="gg-landing-card gg-landing-panel gg-landing-reveal">
+            <div class="gg-landing-panel__head">
+              <p class="gg-landing-kicker" data-copy="work.kicker">Selected work</p>
+              <h2 class="gg-landing-panel__title" data-copy="work.title">A portfolio that can move between campaign image and strategic language.</h2>
+              <p class="gg-landing-panel__sub" data-copy="work.sub">Use this section as proof architecture: the kinds of rooms this brand can enter and still remain coherent.</p>
+            </div>
+            <div class="gg-landing-proof-grid">
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="work.item1k">Beauty</p>
+                <h3 class="gg-landing-cell__title" data-copy="work.item1t">Launch campaign with premium social rollout.</h3>
+                <p class="gg-landing-cell__body" data-copy="work.item1d">Hero visuals, social cutdowns, and KOL narrative kept in one clean message hierarchy.</p>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="work.item2k">Hospitality</p>
+                <h3 class="gg-landing-cell__title" data-copy="work.item2t">Lifestyle hotel partnership with editorial softness.</h3>
+                <p class="gg-landing-cell__body" data-copy="work.item2d">Travel and place storytelling shaped into premium conversion content without cheapening the image.</p>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="work.item3k">Responsible fashion</p>
+                <h3 class="gg-landing-cell__title" data-copy="work.item3t">Aspirational image with sustainability claims kept intelligible.</h3>
+                <p class="gg-landing-cell__body" data-copy="work.item3d">The point was not just to look ethical, but to communicate responsibly without killing desirability.</p>
+              </article>
+              <article class="gg-landing-cell gg-landing-featured">
+                <p class="gg-landing-cell__eyebrow" data-copy="work.item4k">Advisory</p>
+                <h3 class="gg-landing-cell__title" data-copy="work.item4t">Founder and institution-facing message review.</h3>
+                <p class="gg-landing-cell__body" data-copy="work.item4d">Positioning, narrative tightening, and public communication that could survive both scrutiny and aesthetics.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="gg-landing-section" id="approach">
+          <div class="gg-landing-card gg-landing-panel gg-landing-reveal">
+            <div class="gg-landing-panel__head">
+              <p class="gg-landing-kicker" data-copy="approach.kicker">Approach</p>
+              <h2 class="gg-landing-panel__title" data-copy="approach.title">Sustainability without performance theatre.</h2>
+              <p class="gg-landing-panel__sub" data-copy="approach.sub">The consulting side exists to make public messaging cleaner, sharper, and less embarrassing — especially when brands want the aesthetics of responsibility without the discipline.</p>
+            </div>
+            <div class="gg-landing-approach">
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="approach.step1k">Step 01</p>
+                <h3 class="gg-landing-cell__title" data-copy="approach.step1t">Clarify what can actually be claimed.</h3>
+                <p class="gg-landing-cell__body" data-copy="approach.step1d">Decide what can be said cleanly, what needs softening, and what requires stronger evidence before it deserves airtime.</p>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="approach.step2k">Step 02</p>
+                <h3 class="gg-landing-cell__title" data-copy="approach.step2t">Translate the message into human language.</h3>
+                <p class="gg-landing-cell__body" data-copy="approach.step2d">Remove ceremonial ESG jargon. Keep credibility. Make the message readable to actual people.</p>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="approach.step3k">Step 03</p>
+                <h3 class="gg-landing-cell__title" data-copy="approach.step3t">Align image and public claim.</h3>
+                <p class="gg-landing-cell__body" data-copy="approach.step3d">A sustainability story should still look premium — but never fake. The image system must support the message.</p>
+              </article>
+              <article class="gg-landing-cell gg-landing-featured">
+                <p class="gg-landing-cell__eyebrow" data-copy="approach.step4k">Outcome</p>
+                <h3 class="gg-landing-cell__title" data-copy="approach.step4t">A message that survives both attention and scrutiny.</h3>
+                <p class="gg-landing-cell__body" data-copy="approach.step4d">That is the actual point: not moral decoration, but public language that can stand upright.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="gg-landing-section" id="contact">
+          <div class="gg-landing-card gg-landing-panel gg-landing-reveal">
+            <div class="gg-landing-panel__head">
+              <p class="gg-landing-kicker" data-copy="contact.kicker">Contact</p>
+              <h2 class="gg-landing-panel__title" data-copy="contact.title">For collaborations that need poise in public and discipline underneath.</h2>
+              <p class="gg-landing-panel__sub" data-copy="contact.sub">Campaigns, long-term partnerships, speaking, moderation, and selective sustainability advisory.</p>
+            </div>
+            <div class="gg-landing-contact">
+              <article class="gg-landing-cell gg-landing-featured">
+                <p class="gg-landing-cell__eyebrow" data-copy="contact.leftKicker">Start with the brief</p>
+                <h3 class="gg-landing-cell__title" data-copy="contact.leftTitle">The fastest way to move is a clear ask.</h3>
+                <p class="gg-landing-cell__body" data-copy="contact.leftBody">Send category, market, timeline, deliverables, and whether the engagement is campaign-led, KOL-led, or consulting-led.</p>
+                <ul class="gg-landing-list">
+                  <li>Email — hello@elaravoss.com</li>
+                  <li>Management — management@elaravoss.com</li>
+                  <li>Base — Jakarta · Available regionally</li>
+                </ul>
+                <div class="gg-landing-cta-row">
+                  <a class="gg-landing-btn gg-landing-btn--primary" href="mailto:hello@elaravoss.com?subject=Collaboration%20Inquiry" data-copy="contact.ctaPrimary">Email Elara</a>
+                  <a class="gg-landing-btn gg-landing-btn--ghost" href="/" data-copy="contact.ctaSecondary">Open Blog</a>
+                </div>
+              </article>
+              <article class="gg-landing-cell">
+                <p class="gg-landing-cell__eyebrow" data-copy="contact.rightKicker">Best fit</p>
+                <h3 class="gg-landing-cell__title" data-copy="contact.rightTitle">Premium image without empty messaging.</h3>
+                <p class="gg-landing-cell__body" data-copy="contact.rightBody">The best matches are brands, agencies, founders, and institutions that want elegance without shallowness, and responsibility without dead language.</p>
+                <ul class="gg-landing-list">
+                  <li data-copy="contact.rightList1">Usually answers within 1 business day</li>
+                  <li data-copy="contact.rightList2">Clear brief, clear scope, clear budget range preferred</li>
+                  <li data-copy="contact.rightList3">Not for vague barter, mass spam, or chaotic positioning</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="gg-landing-footer">
+        <span data-copy="footer.note">Elara Voss — image, influence, and responsible strategy kept in one quiet system.</span>
+      </footer>
     </div>
+  </div>
 
-    <!-- /GAGA LANDING PAGE -->
-    <!-- /GAGA LANDING PAGE: DUMMY 5-SECTION -->
-  </section>
+  <nav aria-labelledby="gg-dock-title" class="gg-dock" data-gg-module="gg-dock" id="gg-dock">
+    <span class="gg-visually-hidden" id="gg-dock-title">Primary navigation</span>
+    <a class="gg-dock__item" data-gg-nav="home" href="#hero" aria-current="page">
+      <span aria-hidden="true" class="gg-icon">home_app_logo</span>
+      <span class="gg-dock__label" data-copy="dock.home">Home</span>
+    </a>
+    <a class="gg-dock__item" data-gg-nav="contact" href="#contact">
+      <span aria-hidden="true" class="gg-icon">calendar_add_on</span>
+      <span class="gg-dock__label" data-copy="dock.contact">Contact</span>
+    </a>
+    <button aria-controls="gg-command-panel" aria-expanded="false" class="gg-dock__item" data-gg-nav="search" type="button">
+      <span aria-hidden="true" class="gg-icon">explore</span>
+      <span class="gg-dock__label" data-copy="dock.search">Search</span>
+    </button>
+    <a class="gg-dock__item" data-gg-nav="blog" href="/">
+      <span aria-hidden="true" class="gg-icon">newsmode</span>
+      <span class="gg-dock__label" data-copy="dock.blog">Blog</span>
+    </a>
+    <button aria-controls="gg-more-panel" aria-expanded="false" class="gg-dock__item" data-gg-nav="more" type="button">
+      <span aria-hidden="true" class="gg-icon">menu</span>
+      <span class="gg-dock__label" data-copy="dock.more">More</span>
+    </button>
+  </nav>
+
+  <div class="gg-sheet gg-sheet--bottom" data-gg-edge="bottom" data-gg-state="closed" hidden id="gg-command-panel">
+    <button class="gg-sheet__scrim" data-gg-close="command" type="button">
+      <span class="gg-visually-hidden">Dismiss discovery sheet</span>
+    </button>
+    <section aria-labelledby="gg-command-title" aria-modal="true" class="gg-sheet__panel" role="dialog" tabindex="-1">
+      <div class="gg-sheet__head">
+        <div aria-hidden="true" class="gg-sheet__handle"></div>
+        <h2 class="gg-sheet__title" id="gg-command-title" data-copy="command.title">Discover</h2>
+      </div>
+      <div class="gg-landing-discovery">
+        <div class="gg-landing-discovery__controls">
+          <label class="gg-visually-hidden" for="gg-command-input">Search sections and offerings</label>
+          <input class="gg-landing-discovery__input" id="gg-command-input" type="search" data-copy-placeholder="command.placeholder" placeholder="Search sections and offerings" />
+          <div class="gg-landing-discovery__tabs" role="tablist" aria-label="Discovery modes">
+            <button class="gg-landing-discovery__tab" data-gg-tab="results" data-gg-active="true" type="button" role="tab" aria-selected="true"><span data-copy="command.tabs.results">Results</span></button>
+            <button class="gg-landing-discovery__tab" data-gg-tab="topics" data-gg-active="false" type="button" role="tab" aria-selected="false"><span data-copy="command.tabs.topics">Topics</span></button>
+          </div>
+        </div>
+        <div class="gg-landing-discovery__results" id="gg-discovery-results"></div>
+        <div class="gg-landing-discovery__topics" id="gg-discovery-topics" hidden></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="gg-sheet gg-sheet--bottom" data-gg-edge="bottom" data-gg-state="closed" hidden id="gg-more-panel">
+    <button class="gg-sheet__scrim" data-gg-close="more" type="button">
+      <span class="gg-visually-hidden">Dismiss more panel</span>
+    </button>
+    <section aria-labelledby="gg-more-title" aria-modal="true" class="gg-sheet__panel" role="dialog" tabindex="-1">
+      <div class="gg-sheet__head">
+        <div aria-hidden="true" class="gg-sheet__handle"></div>
+        <h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2>
+      </div>
+      <div class="gg-landing-more">
+        <a class="gg-landing-more__link" href="#bio"><span data-copy="more.about">About</span><span aria-hidden="true">→</span></a>
+        <a class="gg-landing-more__link" href="#services"><span data-copy="more.services">Services</span><span aria-hidden="true">→</span></a>
+        <a class="gg-landing-more__link" href="#contact"><span data-copy="more.contact">Contact</span><span aria-hidden="true">→</span></a>
+        <a class="gg-landing-more__link" href="/"><span data-copy="more.blog">Blog</span><span aria-hidden="true">→</span></a>
+
+        <div class="gg-landing-lang">
+          <strong data-copy="language.label">Language</strong>
+          <div class="gg-landing-lang__row">
+            <button class="gg-landing-lang__button" data-gg-lang="en" data-gg-active="true" type="button">EN</button>
+            <button class="gg-landing-lang__button" data-gg-lang="id" data-gg-active="false" type="button">ID</button>
+          </div>
+        </div>
+
+        <a class="gg-landing-more__social" href="https://instagram.com/" target="_blank" rel="noopener"><span data-copy="more.instagram">Instagram</span><span aria-hidden="true">↗</span></a>
+        <a class="gg-landing-more__social" href="https://www.tiktok.com/" target="_blank" rel="noopener"><span data-copy="more.tiktok">TikTok</span><span aria-hidden="true">↗</span></a>
+        <a class="gg-landing-more__social" href="https://www.linkedin.com/" target="_blank" rel="noopener"><span data-copy="more.linkedin">LinkedIn</span><span aria-hidden="true">↗</span></a>
+
+        <div class="gg-landing-more__footer" data-copy="more.rights">All rights reserved.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const GG_LANDING_COPY = {
+      en: {
+        "brand.meta":"Model · KOL · Sustainability Consultant",
+        "hero.kicker":"Image, influence, responsibility",
+        "hero.titleA":"Elegant in public.",
+        "hero.titleB":"Serious underneath.",
+        "hero.lead":"Elara Voss is built for campaigns, partnerships, and advisory that need visual authority without empty signaling. Model. KOL. Sustainability consultant. One coherent personal brand.",
+        "hero.ctaPrimary":"Book collaboration",
+        "hero.ctaSecondary":"See selected work",
+        "hero.metric1":"Campaigns and partnerships delivered with premium fit",
+        "hero.metric2":"Disciplines held inside one clean narrative",
+        "hero.kpi1":"Campaign image, launch storytelling, selective influence",
+        "hero.kpi2":"Poise, premium rhythm, restraint over noise",
+        "hero.kpi3":"Narrative review, message tightening, credibility check",
+        "hero.kpi4":"Audience fit before volume, coherence before hype",
+        "hero.visualTitle":"For brands that need presence and judgment.",
+        "hero.visualBody":"The point is not to look sustainable, influential, or premium in isolation. The point is to make those three read as one disciplined system.",
+        "hero.visualTag":"Jakarta · Singapore · Regional advisory",
+        "hero.strip1k":"Model",
+        "hero.strip1v":"Editorial softness with campaign-grade control.",
+        "hero.strip2k":"KOL",
+        "hero.strip2v":"Taste-led influence for brands that care about fit.",
+        "hero.strip3k":"Consulting",
+        "hero.strip3v":"Sustainability communication that survives scrutiny.",
+
+        "bio.kicker":"Positioning",
+        "bio.title":"Three identities. One calm public narrative.",
+        "bio.sub":"This personal brand is designed to hold image, influence, and sustainability in one room without making any of them feel borrowed or performative.",
+        "bio.leftEyebrow":"What people see first",
+        "bio.leftTitle":"Visual authority that reads premium, composed, and current.",
+        "bio.leftBody":"Suitable for fashion, beauty, travel, wellness, and brand environments where elegance matters and over-performance weakens the room.",
+        "bio.leftList1":"Editorial image with campaign discipline",
+        "bio.leftList2":"Taste-based curation, not mass clutter",
+        "bio.leftList3":"Public softness without reputational looseness",
+        "bio.rightEyebrow":"Why serious clients stay",
+        "bio.rightTitle":"There is a strategic mind behind the image.",
+        "bio.rightBody":"Especially useful when sustainability, ESG, or impact messaging must be elegant enough for brand work and solid enough for institutions.",
+        "bio.rightList1":"Narrative tightening for sustainability communication",
+        "bio.rightList2":"Brand translation that stays legible to actual humans",
+        "bio.rightList3":"Cohesion between public image and public claims",
+
+        "services.kicker":"Services",
+        "services.title":"Built for campaigns, partnerships, and advisory that need more than visibility.",
+        "services.sub":"The offer is intentionally mixed because the market need is mixed: presence, influence, and message discipline.",
+        "services.card1k":"Model / Talent",
+        "services.card1t":"Campaigns, launches, shoots, and premium brand surfaces.",
+        "services.card1d":"For brands that need image trust, not generic lifestyle wallpaper.",
+        "services.card1l1":"Editorial and commercial campaign support",
+        "services.card1l2":"Social-first image systems and ambassador work",
+        "services.card1l3":"Brand-fit discipline before acceptance",
+        "services.card2k":"KOL / Influence",
+        "services.card2t":"Selective influence for brands that care about audience quality.",
+        "services.card2d":"This is for trust and alignment, not inflated vanity reach.",
+        "services.card2l1":"Integrated launch storytelling",
+        "services.card2l2":"Longer-term partnerships over one-off noise",
+        "services.card2l3":"Audience fit, taste fit, reputation fit",
+        "services.card3k":"Consulting",
+        "services.card3t":"Sustainability communication that feels precise, not ceremonial.",
+        "services.card3d":"For institutions, founders, and brands that need responsible messaging with public elegance.",
+        "services.card3l1":"Narrative review for ESG and sustainability stories",
+        "services.card3l2":"Stakeholder-facing message refinement",
+        "services.card3l3":"Positioning support for responsible public identity",
+
+        "work.kicker":"Selected work",
+        "work.title":"A portfolio that can move between campaign image and strategic language.",
+        "work.sub":"Use this section as proof architecture: the kinds of rooms this brand can enter and still remain coherent.",
+        "work.item1k":"Beauty",
+        "work.item1t":"Launch campaign with premium social rollout.",
+        "work.item1d":"Hero visuals, social cutdowns, and KOL narrative kept in one clean message hierarchy.",
+        "work.item2k":"Hospitality",
+        "work.item2t":"Lifestyle partnership with editorial softness.",
+        "work.item2d":"Travel and place storytelling shaped into premium conversion content without cheapening the image.",
+        "work.item3k":"Responsible fashion",
+        "work.item3t":"Aspirational image with sustainability claims kept intelligible.",
+        "work.item3d":"The point was not just to look ethical, but to communicate responsibly without killing desirability.",
+        "work.item4k":"Advisory",
+        "work.item4t":"Founder and institution-facing message review.",
+        "work.item4d":"Positioning, narrative tightening, and public communication that could survive both scrutiny and aesthetics.",
+
+        "approach.kicker":"Approach",
+        "approach.title":"Sustainability without performance theatre.",
+        "approach.sub":"The consulting side exists to make public messaging cleaner, sharper, and less embarrassing — especially when brands want the aesthetics of responsibility without the discipline.",
+        "approach.step1k":"Step 01",
+        "approach.step1t":"Clarify what can actually be claimed.",
+        "approach.step1d":"Decide what can be said cleanly, what needs softening, and what requires stronger evidence before it deserves airtime.",
+        "approach.step2k":"Step 02",
+        "approach.step2t":"Translate the message into human language.",
+        "approach.step2d":"Remove ceremonial ESG jargon. Keep credibility. Make the message readable to actual people.",
+        "approach.step3k":"Step 03",
+        "approach.step3t":"Align image and public claim.",
+        "approach.step3d":"A sustainability story should still look premium — but never fake. The image system must support the message.",
+        "approach.step4k":"Outcome",
+        "approach.step4t":"A message that survives both attention and scrutiny.",
+        "approach.step4d":"That is the actual point: not moral decoration, but public language that can stand upright.",
+
+        "contact.kicker":"Contact",
+        "contact.title":"For collaborations that need poise in public and discipline underneath.",
+        "contact.sub":"Campaigns, long-term partnerships, speaking, moderation, and selective sustainability advisory.",
+        "contact.leftKicker":"Start with the brief",
+        "contact.leftTitle":"The fastest way to move is a clear ask.",
+        "contact.leftBody":"Send category, market, timeline, deliverables, and whether the engagement is campaign-led, KOL-led, or consulting-led.",
+        "contact.ctaPrimary":"Email Elara",
+        "contact.ctaSecondary":"Open Blog",
+        "contact.rightKicker":"Best fit",
+        "contact.rightTitle":"Premium image without empty messaging.",
+        "contact.rightBody":"The best matches are brands, agencies, founders, and institutions that want elegance without shallowness, and responsibility without dead language.",
+        "contact.rightList1":"Usually answers within 1 business day",
+        "contact.rightList2":"Clear brief, clear scope, clear budget range preferred",
+        "contact.rightList3":"Not for vague barter, mass spam, or chaotic positioning",
+
+        "footer.note":"Elara Voss — image, influence, and responsible strategy kept in one quiet system.",
+        "nav.bio":"Bio","nav.services":"Services","nav.work":"Work","nav.approach":"Approach","nav.contact":"Contact",
+        "dock.home":"Home","dock.contact":"Contact","dock.search":"Search","dock.blog":"Blog","dock.more":"More",
+        "command.title":"Discover","command.placeholder":"Search sections and offerings","command.tabs.results":"Results","command.tabs.topics":"Topics",
+        "more.title":"More","more.about":"About","more.services":"Services","more.contact":"Contact","more.blog":"Blog","more.instagram":"Instagram","more.tiktok":"TikTok","more.linkedin":"LinkedIn","more.rights":"All rights reserved.","language.label":"Language"
+      },
+      id: {
+        "brand.meta":"Model · KOL · Konsultan Keberlanjutan",
+        "hero.kicker":"Citra, pengaruh, tanggung jawab",
+        "hero.titleA":"Elegan di depan publik.",
+        "hero.titleB":"Serius di bawah permukaan.",
+        "hero.lead":"Elara Voss dibangun untuk kampanye, partnership, dan advisory yang membutuhkan otoritas visual tanpa sinyal kosong. Model. KOL. Konsultan keberlanjutan. Satu personal brand yang koheren.",
+        "hero.ctaPrimary":"Mulai kolaborasi",
+        "hero.ctaSecondary":"Lihat karya pilihan",
+        "hero.metric1":"Kampanye dan partnership dengan premium fit",
+        "hero.metric2":"Disiplin yang disatukan dalam satu narasi bersih",
+        "hero.kpi1":"Citra kampanye, storytelling peluncuran, influence terpilih",
+        "hero.kpi2":"Ketenangan, ritme premium, restraint di atas noise",
+        "hero.kpi3":"Review narasi, penajaman pesan, cek kredibilitas",
+        "hero.kpi4":"Kecocokan audiens sebelum volume, koherensi sebelum hype",
+        "hero.visualTitle":"Untuk brand yang butuh presence dan judgment.",
+        "hero.visualBody":"Tujuannya bukan terlihat sustainable, influential, atau premium secara terpisah. Tujuannya membuat ketiganya terbaca sebagai satu sistem yang disiplin.",
+        "hero.visualTag":"Jakarta · Singapura · Advisory regional",
+        "hero.strip1k":"Model",
+        "hero.strip1v":"Kelembutan editorial dengan kontrol setingkat kampanye.",
+        "hero.strip2k":"KOL",
+        "hero.strip2v":"Influence berbasis taste untuk brand yang peduli kecocokan.",
+        "hero.strip3k":"Konsultan",
+        "hero.strip3v":"Komunikasi keberlanjutan yang tahan diuji.",
+
+        "bio.kicker":"Positioning",
+        "bio.title":"Tiga identitas. Satu narasi publik yang tenang.",
+        "bio.sub":"Personal brand ini dirancang agar citra, influence, dan keberlanjutan bisa hadir dalam satu ruang tanpa terasa pinjaman atau performatif.",
+        "bio.leftEyebrow":"Yang terlihat lebih dulu",
+        "bio.leftTitle":"Otoritas visual yang terasa premium, tenang, dan mutakhir.",
+        "bio.leftBody":"Cocok untuk fashion, beauty, travel, wellness, dan lingkungan brand yang membutuhkan elegansi tanpa over-performance.",
+        "bio.leftList1":"Citra editorial dengan disiplin kampanye",
+        "bio.leftList2":"Kurasi berbasis taste, bukan keramaian massal",
+        "bio.leftList3":"Kelembutan publik tanpa kelonggaran reputasi",
+        "bio.rightEyebrow":"Kenapa klien serius bertahan",
+        "bio.rightTitle":"Ada pikiran strategis di balik citra.",
+        "bio.rightBody":"Terutama berguna ketika sustainability, ESG, atau impact messaging harus cukup elegan untuk brand work dan cukup kokoh untuk institusi.",
+        "bio.rightList1":"Penajaman narasi untuk komunikasi keberlanjutan",
+        "bio.rightList2":"Terjemahan brand yang tetap terbaca manusia",
+        "bio.rightList3":"Keselarasan antara citra publik dan klaim publik",
+
+        "services.kicker":"Layanan",
+        "services.title":"Dibangun untuk kampanye, partnership, dan advisory yang menuntut lebih dari visibilitas.",
+        "services.sub":"Offer ini memang campuran, karena kebutuhan pasarnya juga campuran: presence, influence, dan disiplin pesan.",
+        "services.card1k":"Model / Talent",
+        "services.card1t":"Kampanye, peluncuran, pemotretan, dan permukaan brand premium.",
+        "services.card1d":"Untuk brand yang membutuhkan image trust, bukan wallpaper lifestyle generik.",
+        "services.card1l1":"Dukungan kampanye editorial dan komersial",
+        "services.card1l2":"Sistem citra social-first dan kerja ambassador",
+        "services.card1l3":"Disiplin kecocokan brand sebelum menerima",
+        "services.card2k":"KOL / Influence",
+        "services.card2t":"Influence selektif untuk brand yang peduli kualitas audiens.",
+        "services.card2d":"Ini untuk trust dan alignment, bukan vanity reach yang dibesarkan.",
+        "services.card2l1":"Storytelling peluncuran yang terintegrasi",
+        "services.card2l2":"Partnership jangka lebih panjang, bukan noise satu kali",
+        "services.card2l3":"Kecocokan audiens, taste, dan reputasi",
+        "services.card3k":"Konsultasi",
+        "services.card3t":"Komunikasi keberlanjutan yang terasa presisi, bukan seremonial.",
+        "services.card3d":"Untuk institusi, founder, dan brand yang membutuhkan pesan bertanggung jawab dengan elegansi publik.",
+        "services.card3l1":"Review narasi untuk cerita ESG dan keberlanjutan",
+        "services.card3l2":"Penyempurnaan pesan stakeholder-facing",
+        "services.card3l3":"Dukungan positioning untuk identitas publik yang bertanggung jawab",
+
+        "work.kicker":"Karya pilihan",
+        "work.title":"Portofolio yang bisa bergerak antara citra kampanye dan bahasa strategis.",
+        "work.sub":"Gunakan bagian ini sebagai arsitektur bukti: jenis ruang yang bisa dimasuki brand ini dan tetap terasa koheren.",
+        "work.item1k":"Beauty",
+        "work.item1t":"Kampanye peluncuran dengan social rollout premium.",
+        "work.item1d":"Visual hero, cutdown sosial, dan narasi KOL yang dijaga dalam satu hirarki pesan yang bersih.",
+        "work.item2k":"Hospitality",
+        "work.item2t":"Partnership lifestyle dengan kelembutan editorial.",
+        "work.item2d":"Storytelling perjalanan dan tempat yang diolah menjadi konten konversi premium tanpa merusak citra.",
+        "work.item3k":"Responsible fashion",
+        "work.item3t":"Citra aspiratif dengan klaim keberlanjutan yang tetap masuk akal.",
+        "work.item3d":"Tujuannya bukan sekadar tampak etis, tetapi berkomunikasi secara bertanggung jawab tanpa membunuh desirability.",
+        "work.item4k":"Advisory",
+        "work.item4t":"Review pesan untuk founder dan institusi.",
+        "work.item4d":"Positioning, penajaman narasi, dan komunikasi publik yang tahan terhadap scrutiny maupun estetika.",
+
+        "approach.kicker":"Pendekatan",
+        "approach.title":"Keberlanjutan tanpa teater performatif.",
+        "approach.sub":"Sisi konsultasi ini ada untuk membuat komunikasi publik lebih bersih, lebih tajam, dan lebih sedikit memalukan — terutama ketika brand menginginkan estetika tanggung jawab tanpa disiplin yang menyertainya.",
+        "approach.step1k":"Langkah 01",
+        "approach.step1t":"Perjelas apa yang benar-benar bisa diklaim.",
+        "approach.step1d":"Tentukan apa yang bisa dikatakan dengan bersih, apa yang perlu dilunakkan, dan apa yang membutuhkan bukti lebih kuat sebelum layak ditayangkan.",
+        "approach.step2k":"Langkah 02",
+        "approach.step2t":"Terjemahkan pesan ke bahasa manusia.",
+        "approach.step2d":"Buang jargon ESG yang seremonial. Jaga kredibilitas. Buat pesan terbaca oleh manusia sungguhan.",
+        "approach.step3k":"Langkah 03",
+        "approach.step3t":"Selaraskan citra dan klaim publik.",
+        "approach.step3d":"Cerita keberlanjutan tetap harus terlihat premium — tetapi tidak pernah palsu. Sistem citranya harus menopang pesan.",
+        "approach.step4k":"Hasil",
+        "approach.step4t":"Pesan yang bertahan terhadap perhatian dan scrutiny.",
+        "approach.step4d":"Itulah titik sebenarnya: bukan dekorasi moral, melainkan bahasa publik yang bisa berdiri tegak.",
+
+        "contact.kicker":"Kontak",
+        "contact.title":"Untuk kolaborasi yang membutuhkan ketenangan di depan publik dan disiplin di baliknya.",
+        "contact.sub":"Kampanye, partnership jangka panjang, speaking, moderation, dan advisory keberlanjutan yang selektif.",
+        "contact.leftKicker":"Mulai dari brief",
+        "contact.leftTitle":"Cara tercepat bergerak adalah permintaan yang jelas.",
+        "contact.leftBody":"Kirim kategori, market, timeline, deliverables, dan apakah engagement-nya campaign-led, KOL-led, atau consulting-led.",
+        "contact.ctaPrimary":"Email Elara",
+        "contact.ctaSecondary":"Buka Blog",
+        "contact.rightKicker":"Best fit",
+        "contact.rightTitle":"Citra premium tanpa pesan kosong.",
+        "contact.rightBody":"Kecocokan terbaik adalah brand, agency, founder, dan institusi yang menginginkan elegansi tanpa kedangkalan, dan tanggung jawab tanpa bahasa mati.",
+        "contact.rightList1":"Biasanya menjawab dalam 1 hari kerja",
+        "contact.rightList2":"Brief jelas, scope jelas, kisaran budget jelas lebih disukai",
+        "contact.rightList3":"Bukan untuk barter samar, spam massal, atau positioning kacau",
+
+        "footer.note":"Elara Voss — citra, influence, dan strategi bertanggung jawab dalam satu sistem yang tenang.",
+        "nav.bio":"Profil","nav.services":"Layanan","nav.work":"Karya","nav.approach":"Pendekatan","nav.contact":"Kontak",
+        "dock.home":"Home","dock.contact":"Kontak","dock.search":"Cari","dock.blog":"Blog","dock.more":"More",
+        "command.title":"Temukan","command.placeholder":"Cari bagian dan offering","command.tabs.results":"Hasil","command.tabs.topics":"Topik",
+        "more.title":"More","more.about":"Tentang","more.services":"Layanan","more.contact":"Kontak","more.blog":"Blog","more.instagram":"Instagram","more.tiktok":"TikTok","more.linkedin":"LinkedIn","more.rights":"Hak cipta dilindungi.","language.label":"Bahasa"
+      }
+    };
+
+    const GG_LANDING_RESULTS = [
+      { type: "Section", title: "Bio", meta: "Positioning and identity", href: "#bio" },
+      { type: "Section", title: "Services", meta: "Model, KOL, consulting", href: "#services" },
+      { type: "Section", title: "Selected work", meta: "Campaigns and advisory", href: "#work" },
+      { type: "Section", title: "Approach", meta: "Sustainability lens", href: "#approach" },
+      { type: "Section", title: "Contact", meta: "Collaboration route", href: "#contact" },
+      { type: "Offer", title: "Campaign booking", meta: "Model and premium talent work", href: "#services" },
+      { type: "Offer", title: "KOL partnership", meta: "Selective influence and launch support", href: "#services" },
+      { type: "Offer", title: "Narrative review", meta: "Sustainability communication advisory", href: "#approach" }
+    ];
+
+    const GG_LANDING_TOPICS = [
+      { name: "Model", meta: "Editorial, campaigns, shoots", href: "#services" },
+      { name: "KOL", meta: "Influence and partnerships", href: "#services" },
+      { name: "Sustainability", meta: "Narrative, ESG, positioning", href: "#approach" },
+      { name: "Portfolio", meta: "Selected work and categories", href: "#work" },
+      { name: "Contact", meta: "Brief and management route", href: "#contact" }
+    ];
+
+    const GG_LANDING_STATE = {
+      lang: localStorage.getItem("gg-landing:lang") || "en",
+      activePanel: null
+    };
+
+    function ggLandingApplyCopy() {
+      const dict = GG_LANDING_COPY[GG_LANDING_STATE.lang] || GG_LANDING_COPY.en;
+      document.documentElement.lang = GG_LANDING_STATE.lang;
+      document.querySelectorAll("[data-copy]").forEach((node) => {
+        const key = node.getAttribute("data-copy");
+        if (dict[key]) node.textContent = dict[key];
+      });
+      document.querySelectorAll("[data-copy-placeholder]").forEach((node) => {
+        const key = node.getAttribute("data-copy-placeholder");
+        if (dict[key]) node.setAttribute("placeholder", dict[key]);
+      });
+      document.querySelectorAll("[data-gg-lang]").forEach((button) => {
+        button.setAttribute("data-gg-active", String(button.dataset.ggLang === GG_LANDING_STATE.lang));
+      });
+    }
+
+    function ggLandingOpenPanel(name) {
+      GG_LANDING_STATE.activePanel = name;
+      document.body.setAttribute("data-gg-scroll-lock", "true");
+      document.querySelectorAll(".gg-sheet").forEach((panel) => {
+        panel.hidden = true;
+        panel.setAttribute("data-gg-state", "closed");
+      });
+      document.querySelectorAll(".gg-dock__item[aria-controls]").forEach((button) => {
+        button.setAttribute("aria-expanded", "false");
+      });
+      const panel = document.getElementById(name === "command" ? "gg-command-panel" : "gg-more-panel");
+      if (!panel) return;
+      panel.hidden = false;
+      panel.setAttribute("data-gg-state", "open");
+      const trigger = document.querySelector(`.gg-dock__item[aria-controls="${panel.id}"]`);
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+      const focusable = panel.querySelector("input, button, a");
+      if (focusable) setTimeout(() => focusable.focus(), 20);
+    }
+
+    function ggLandingClosePanels() {
+      GG_LANDING_STATE.activePanel = null;
+      document.body.removeAttribute("data-gg-scroll-lock");
+      document.querySelectorAll(".gg-sheet").forEach((panel) => {
+        panel.hidden = true;
+        panel.setAttribute("data-gg-state", "closed");
+      });
+      document.querySelectorAll(".gg-dock__item[aria-controls]").forEach((button) => {
+        button.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function ggLandingRenderResults(query = "") {
+      const root = document.getElementById("gg-discovery-results");
+      if (!root) return;
+      root.innerHTML = "";
+      const q = query.trim().toLowerCase();
+      const items = q
+        ? GG_LANDING_RESULTS.filter((item) =>
+            item.title.toLowerCase().includes(q) ||
+            item.meta.toLowerCase().includes(q) ||
+            item.type.toLowerCase().includes(q)
+          )
+        : GG_LANDING_RESULTS.slice(0, 5);
+
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "gg-landing-discovery__item";
+        empty.innerHTML = `<strong>${GG_LANDING_STATE.lang === "id" ? "Tidak ada hasil." : "No results yet."}</strong><small>${GG_LANDING_STATE.lang === "id" ? "Coba kata kunci lain atau buka topik." : "Try another keyword or browse topics."}</small>`;
+        root.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "gg-landing-discovery__item";
+        button.innerHTML = `<strong>${item.title}</strong><small>${item.type} · ${item.meta}</small>`;
+        button.addEventListener("click", () => {
+          ggLandingClosePanels();
+          location.href = item.href;
+        });
+        root.appendChild(button);
+      });
+    }
+
+    function ggLandingRenderTopics() {
+      const root = document.getElementById("gg-discovery-topics");
+      if (!root) return;
+      root.innerHTML = "";
+      GG_LANDING_TOPICS.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "gg-landing-discovery__item";
+        button.innerHTML = `<strong>${item.name}</strong><small>${item.meta}</small>`;
+        button.addEventListener("click", () => {
+          ggLandingClosePanels();
+          location.href = item.href;
+        });
+        root.appendChild(button);
+      });
+    }
+
+    function ggLandingSetTab(name) {
+      document.querySelectorAll(".gg-landing-discovery__tab").forEach((tab) => {
+        const active = tab.dataset.ggTab === name;
+        tab.setAttribute("data-gg-active", String(active));
+        tab.setAttribute("aria-selected", String(active));
+      });
+      document.getElementById("gg-discovery-results").hidden = name !== "results";
+      document.getElementById("gg-discovery-topics").hidden = name !== "topics";
+    }
+
+    function ggLandingSetupDockState() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          let current = "home";
+          if (id === "contact") current = "contact";
+          document.querySelectorAll(".gg-dock__item[data-gg-nav]").forEach((item) => {
+            item.toggleAttribute("aria-current", item.dataset.ggNav === current);
+            item.setAttribute("data-gg-active", String(item.dataset.ggNav === current));
+          });
+        });
+      }, { threshold: .58 });
+
+      ["hero", "bio", "services", "work", "approach", "contact"].forEach((id) => {
+        const node = document.getElementById(id);
+        if (node) observer.observe(node);
+      });
+    }
+
+    function ggLandingSetupReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
+        });
+      }, { threshold: .18 });
+
+      document.querySelectorAll(".gg-landing-reveal").forEach((node) => observer.observe(node));
+    }
+
+    function ggLandingSetupCounts() {
+      document.querySelectorAll("[data-count]").forEach((node) => {
+        const target = Number(node.getAttribute("data-count") || "0");
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 28));
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          node.textContent = current;
+        }, 34);
+      });
+    }
+
+    function ggLandingInit() {
+      ggLandingApplyCopy();
+      ggLandingRenderResults();
+      ggLandingRenderTopics();
+      ggLandingSetTab("results");
+      ggLandingSetupDockState();
+      ggLandingSetupReveal();
+      ggLandingSetupCounts();
+
+      const searchTrigger = document.querySelector('.gg-dock__item[data-gg-nav="search"]');
+      const moreTrigger = document.querySelector('.gg-dock__item[data-gg-nav="more"]');
+      if (searchTrigger) searchTrigger.addEventListener("click", () => ggLandingOpenPanel("command"));
+      if (moreTrigger) moreTrigger.addEventListener("click", () => ggLandingOpenPanel("more"));
+
+      document.querySelectorAll("[data-gg-close]").forEach((node) => {
+        node.addEventListener("click", ggLandingClosePanels);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") ggLandingClosePanels();
+      });
+
+      const input = document.getElementById("gg-command-input");
+      if (input) {
+        input.addEventListener("input", (event) => {
+          ggLandingRenderResults(event.target.value || "");
+        });
+      }
+
+      document.querySelectorAll(".gg-landing-discovery__tab").forEach((tab) => {
+        tab.addEventListener("click", () => ggLandingSetTab(tab.dataset.ggTab));
+      });
+
+      document.querySelectorAll("[data-gg-lang]").forEach((button) => {
+        button.addEventListener("click", () => {
+          GG_LANDING_STATE.lang = button.dataset.ggLang;
+          localStorage.setItem("gg-landing:lang", GG_LANDING_STATE.lang);
+          ggLandingApplyCopy();
+          ggLandingRenderResults(input ? input.value : "");
+          ggLandingRenderTopics();
+        });
+      });
+    }
+
+    ggLandingInit();
+  </script>
+</body>
+</html>
