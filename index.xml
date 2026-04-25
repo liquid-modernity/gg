@@ -10,7 +10,10 @@
            of salt that you'll keep coming back for."/>
     <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
     <title><data:view.title.escaped/></title>
-
+    <meta content='prod' name='gg-env'/>
+<meta content='ac33998' name='gg-release'/>
+<meta content='7efce1d3acf1' name='gg-template-fingerprint'/>
+<div data-env='prod' data-gg-template-fingerprint='7efce1d3acf1' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
