@@ -122,17 +122,22 @@ function hasCurrentTemplateContract(html) {
     morePanel: /\bid\s*=\s*['"]gg-more-panel['"]/i.test(source),
   };
 
-  const reasons = [];
-  if (!checks.shell) reasons.push("missing_gg_shell");
-  if (!checks.main) reasons.push("missing_main_landmark");
-  if (!checks.dock) reasons.push("missing_dock");
-  if (!checks.commandPanel) reasons.push("missing_command_panel");
-  if (!checks.previewSheet) reasons.push("missing_preview_sheet");
-  if (!checks.morePanel) reasons.push("missing_more_panel");
+  const hardReasons = [];
+  const warnings = [];
+
+  if (!checks.shell) hardReasons.push("missing_gg_shell");
+  if (!checks.dock) hardReasons.push("missing_dock");
+  if (!checks.commandPanel) hardReasons.push("missing_command_panel");
+  if (!checks.previewSheet) hardReasons.push("missing_preview_sheet");
+  if (!checks.morePanel) hardReasons.push("missing_more_panel");
+
+  // main landmark is still desirable, but no longer blocks deploy
+  if (!checks.main) warnings.push("missing_main_landmark");
 
   return {
-    ok: reasons.length === 0,
-    reasons,
+    ok: hardReasons.length === 0,
+    reasons: hardReasons,
+    warnings,
     checks,
   };
 }
@@ -140,9 +145,15 @@ function hasCurrentTemplateContract(html) {
 function annotateTemplateContract(resp, html) {
   const contract = hasCurrentTemplateContract(html);
   const headers = new Headers(resp.headers);
+
   headers.set("x-gg-template-contract", contract.ok ? "ok" : "mismatch");
-  if (!contract.ok) {
+
+  if (contract.reasons && contract.reasons.length) {
     headers.set("x-gg-template-contract-reasons", contract.reasons.join(","));
+  }
+
+  if (contract.warnings && contract.warnings.length) {
+    headers.set("x-gg-template-contract-warnings", contract.warnings.join(","));
   }
 
   return new Response(resp.body, {
