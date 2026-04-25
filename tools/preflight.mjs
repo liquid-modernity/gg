@@ -52,8 +52,7 @@ for (const relativePath of requiredDirs) {
 const workerPath = path.resolve("worker.js");
 const workerSource = readFileSync(workerPath, "utf8");
 
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+
 
 // ...
 
