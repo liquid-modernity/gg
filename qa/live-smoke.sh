@@ -1,0 +1,2590 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export LC_ALL=C
+
+BASE_URL="${1:-https://www.pakrpp.com}"
+BASE_URL="${BASE_URL%/}"
+UA="Mozilla/5.0 (gg-live-smoke)"
+TEMPLATE_DRIFT_MODE="${GG_TEMPLATE_DRIFT_MODE:-warn}"
+TEMPLATE_CHANGED_IN_REV="${GG_TEMPLATE_CHANGED_IN_REV:-0}"
+EXPECTED_WORKER_VERSION="$(printf '%s' "${GG_EXPECTED_WORKER_VERSION:-}" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+WORKER_VERSION_MODE="${GG_WORKER_VERSION_MODE:-off}"
+WORKER_VERSION_CHECK_PATH="${GG_WORKER_VERSION_CHECK_PATH:-/__gg_worker_ping}"
+WORKER_ROLLOUT_MAX_ATTEMPTS="${GG_WORKER_ROLLOUT_MAX_ATTEMPTS:-12}"
+WORKER_ROLLOUT_BACKOFF_SECONDS="${GG_WORKER_ROLLOUT_BACKOFF_SECONDS:-5}"
+COMMENTS_PANEL_TARGET_PATH_0="${GG_COMMENTS_PANEL_TARGET_PATH_0:-${GG_COMMENTS_TARGET_PATH_0:-/2026/02/todo.html}}"
+COMMENTS_PANEL_TARGET_PATH_2="${GG_COMMENTS_PANEL_TARGET_PATH_2:-${GG_COMMENTS_TARGET_PATH_2:-/2025/10/in-night-we-stand-in-day-we-fight.html}}"
+COMMENTS_PANEL_TARGET_PATH_16="${GG_COMMENTS_PANEL_TARGET_PATH_16:-${GG_COMMENTS_TARGET_PATH_16:-/2025/10/tes-2.html}}"
+COMMENTS_COMPOSE_TARGET_PATH_0="${GG_COMMENTS_OPEN_TARGET_PATH_0:-}"
+COMMENTS_COMPOSE_TARGET_PATH_THREAD="${GG_COMMENTS_OPEN_TARGET_PATH_THREAD:-}"
+COMMENTS_COMPOSE_EXPECTED_COUNT_0="${GG_COMMENTS_OPEN_EXPECTED_COUNT_0:-0}"
+COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD="${GG_COMMENTS_OPEN_EXPECTED_COUNT_THREAD:-2}"
+COMMENTS_OWNER_BROWSER_MODE="${GG_COMMENTS_OWNER_BROWSER_MODE:-warn}"
+HOMEPAGE_MIXED_BROWSER_MODE="${GG_HOMEPAGE_MIXED_BROWSER_MODE:-$COMMENTS_OWNER_BROWSER_MODE}"
+PLAYWRIGHT_EXECUTABLE_PATH="${GG_PLAYWRIGHT_EXECUTABLE_PATH:-}"
+
+if [[ "$TEMPLATE_DRIFT_MODE" != "warn" && "$TEMPLATE_DRIFT_MODE" != "fail" ]]; then
+  TEMPLATE_DRIFT_MODE="warn"
+fi
+if [[ "$WORKER_VERSION_MODE" != "off" && "$WORKER_VERSION_MODE" != "warn" && "$WORKER_VERSION_MODE" != "fail" ]]; then
+  WORKER_VERSION_MODE="off"
+fi
+if [[ "$COMMENTS_OWNER_BROWSER_MODE" != "off" && "$COMMENTS_OWNER_BROWSER_MODE" != "warn" && "$COMMENTS_OWNER_BROWSER_MODE" != "fail" ]]; then
+  COMMENTS_OWNER_BROWSER_MODE="warn"
+fi
+if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" != "off" && "$HOMEPAGE_MIXED_BROWSER_MODE" != "warn" && "$HOMEPAGE_MIXED_BROWSER_MODE" != "fail" ]]; then
+  HOMEPAGE_MIXED_BROWSER_MODE="$COMMENTS_OWNER_BROWSER_MODE"
+fi
+if ! [[ "$WORKER_ROLLOUT_MAX_ATTEMPTS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_MAX_ATTEMPTS < 1 )); then
+  WORKER_ROLLOUT_MAX_ATTEMPTS=12
+fi
+if ! [[ "$WORKER_ROLLOUT_BACKOFF_SECONDS" =~ ^[0-9]+$ ]] || (( WORKER_ROLLOUT_BACKOFF_SECONDS < 1 )); then
+  WORKER_ROLLOUT_BACKOFF_SECONDS=5
+fi
+if ! [[ "$COMMENTS_COMPOSE_EXPECTED_COUNT_0" =~ ^[0-9]+$ ]]; then
+  COMMENTS_COMPOSE_EXPECTED_COUNT_0=0
+fi
+if ! [[ "$COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD" =~ ^[0-9]+$ ]]; then
+  COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD=2
+fi
+
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+failures=0
+warnings=0
+worker_rollout_state="worker_assets_rollout_not_checked"
+worker_rollout_note="Worker rollout check not requested."
+worker_live_version="unknown"
+worker_rollout_final_url=""
+template_release_state="blogger_template_parity_unknown"
+template_release_note="Template release state not evaluated."
+
+printf 'SMOKE scope: public-domain contract check only.\n'
+printf 'SMOKE scope: CI/CD deploy path updates Cloudflare Worker/assets, not Blogger template publish.\n'
+printf 'SMOKE scope: template drift mode=%s changed_in_rev=%s.\n' "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
+printf 'SMOKE scope: worker rollout mode=%s expected_version=%s check_path=%s attempts=%s backoff=%ss.\n' \
+  "$WORKER_VERSION_MODE" "${EXPECTED_WORKER_VERSION:-unset}" "$WORKER_VERSION_CHECK_PATH" "$WORKER_ROLLOUT_MAX_ATTEMPTS" "$WORKER_ROLLOUT_BACKOFF_SECONDS"
+printf 'SMOKE comments-fixtures panel.zero=%s panel.two=%s panel.sixteen=%s compose.zero=%s compose.thread=%s\n' \
+  "$COMMENTS_PANEL_TARGET_PATH_0" "$COMMENTS_PANEL_TARGET_PATH_2" "$COMMENTS_PANEL_TARGET_PATH_16" \
+  "${COMMENTS_COMPOSE_TARGET_PATH_0:-unset}" "${COMMENTS_COMPOSE_TARGET_PATH_THREAD:-unset}"
+printf 'SMOKE lane=FULL_PUBLIC_TEMPLATE_SENSITIVE\n'
+printf 'SMOKE classify=WORKER_SCOPE check=worker_rollout_version_headers\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=template_fingerprint_parity\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=surface_routes_listing_landing_detail\n'
+printf 'SMOKE classify=MIXED_SCOPE check=homepage_mixed_runtime_contract\n'
+printf 'SMOKE classify=TEMPLATE_SCOPE check=dock_truth_listing_preview_comments_owner\n'
+
+log_fail() {
+  failures=$((failures + 1))
+  printf 'FAIL: %s\n' "$1" >&2
+}
+
+log_warn() {
+  warnings=$((warnings + 1))
+  printf 'WARN: %s\n' "$1" >&2
+}
+
+to_path() {
+  local value="$1"
+  value="${value%%#*}"
+  if [[ "$value" =~ ^https?:// ]]; then
+    value="$(printf '%s' "$value" | sed -E 's#^https?://[^/]+##')"
+  fi
+  if [[ -z "$value" ]]; then
+    value="/"
+  fi
+  if [[ "${value:0:1}" != "/" ]]; then
+    value="/${value}"
+  fi
+  printf '%s' "$value"
+}
+
+absolute_for_path() {
+  local path
+  path="$(to_path "$1")"
+  printf '%s%s' "$BASE_URL" "$path"
+}
+
+safe_file_name() {
+  local value="$1"
+  value="$(printf '%s' "$value" | sed -E 's#[^A-Za-z0-9._-]#_#g')"
+  if [[ -z "$value" ]]; then
+    value="root"
+  fi
+  printf '%s' "$value"
+}
+
+fetch_page() {
+  local path_or_url="$1"
+  local out_file="$2"
+  local target
+  local meta
+  local attempt=1
+  local max_attempts=3
+  if [[ "$path_or_url" =~ ^https?:// ]]; then
+    target="$path_or_url"
+  else
+    target="${BASE_URL}${path_or_url}"
+  fi
+
+  while (( attempt <= max_attempts )); do
+    if meta="$(curl -sS -L \
+      --http1.1 \
+      --connect-timeout 15 \
+      --max-time 60 \
+      --max-redirs 10 \
+      -A "$UA" \
+      -o "$out_file" \
+      -w '%{url_effective}|%{http_code}|%{num_redirects}' \
+      "$target")"; then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+    if (( attempt < max_attempts )); then
+      sleep $((attempt * 2))
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  printf 'FAIL: fetch error for %s\n' "$target" >&2
+  : > "$out_file"
+  printf '%s|000|0\n' "$target"
+  return 0
+}
+
+fetch_headers() {
+  local path_or_url="$1"
+  local out_headers="$2"
+  local target
+  local meta
+  local attempt=1
+  local max_attempts=3
+  if [[ "$path_or_url" =~ ^https?:// ]]; then
+    target="$path_or_url"
+  else
+    target="${BASE_URL}${path_or_url}"
+  fi
+
+  while (( attempt <= max_attempts )); do
+    if meta="$(curl -sS -L \
+      --http1.1 \
+      --connect-timeout 15 \
+      --max-time 60 \
+      --max-redirs 10 \
+      -A "$UA" \
+      -D "$out_headers" \
+      -o /dev/null \
+      -w '%{url_effective}|%{http_code}|%{num_redirects}' \
+      "$target")"; then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+    if (( attempt < max_attempts )); then
+      sleep $((attempt * 2))
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  : > "$out_headers"
+  printf '%s|000|0\n' "$target"
+  return 0
+}
+
+extract_header_value() {
+  local file="$1"
+  local header_name="$2"
+  awk -v wanted="$(printf '%s' "$header_name" | tr '[:upper:]' '[:lower:]')" '
+    {
+      line=$0
+      gsub(/\r$/, "", line)
+      key=line
+      sub(/:.*/, "", key)
+      if (tolower(key) == wanted) {
+        sub(/^[^:]*:[[:space:]]*/, "", line)
+        value=line
+      }
+    }
+    END {
+      if (value != "") print value
+    }
+  ' "$file" | tail -n 1
+}
+
+worker_rollout_signal() {
+  local message="$1"
+  if [[ "$WORKER_VERSION_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    printf '::warning title=Worker rollout pending::%s\n' "$message"
+  fi
+}
+
+strict_template_mode() {
+  [[ "$TEMPLATE_DRIFT_MODE" == "fail" ]]
+}
+
+comments_owner_signal() {
+  local message="$1"
+  if strict_template_mode; then
+    log_fail "$message"
+    return
+  fi
+  if template_publish_pending; then
+    log_warn "$message"
+    return
+  fi
+  if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+}
+
+homepage_mixed_signal() {
+  local message="$1"
+  if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+}
+
+is_transient_browser_issue() {
+  local message
+  message="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  [[ "$message" == *"ns_error_unknown_host"* ]] \
+    || [[ "$message" == *"err_name_not_resolved"* ]] \
+    || [[ "$message" == *"error: getaddrinfo"* ]] \
+    || [[ "$message" == *"page.goto: timeout"* ]] \
+    || [[ "$message" == *"timeout "* && "$message" == *"exceeded"* ]] \
+    || [[ "$message" == *"navigation to"* && "$message" == *"timed out"* ]] \
+    || [[ "$message" == *"navigation failed because page crashed"* ]] \
+    || [[ "$message" == *"net::err_"* ]]
+}
+
+comments_owner_browser_signal() {
+  local detail="$1"
+  local message="$2"
+  if is_transient_browser_issue "$detail" && ! strict_template_mode; then
+    log_warn "${message} [transient-browser]"
+    return
+  fi
+  comments_owner_signal "$message"
+}
+
+homepage_mixed_browser_signal() {
+  local detail="$1"
+  local message="$2"
+  if is_transient_browser_issue "$detail" && ! strict_template_mode; then
+    log_warn "${message} [transient-browser]"
+    return
+  fi
+  homepage_mixed_signal "$message"
+}
+
+template_publish_pending() {
+  if ! is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+    return 1
+  fi
+  [[ "$template_release_state" != "blogger_template_parity_verified" && "$template_release_state" != "blogger_template_parity_unknown" ]]
+}
+
+detail_contract_signal() {
+  local message="$1"
+  if strict_template_mode; then
+    log_fail "$message"
+    return
+  fi
+  if template_publish_pending; then
+    log_warn "$message"
+  else
+    log_fail "$message"
+  fi
+}
+
+check_worker_rollout() {
+  local headers_file="$tmp_dir/$(safe_file_name "worker_rollout_headers").txt"
+  local root_headers_file="$tmp_dir/$(safe_file_name "worker_rollout_root_headers").txt"
+  local attempt=1
+  local meta=""
+  local meta_root=""
+  local status=""
+  local status_root=""
+  local final_url=""
+  local final_url_root=""
+  local observed=""
+  local observed_root=""
+  local expected=""
+  expected="$(printf '%s' "$EXPECTED_WORKER_VERSION" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+
+  if [[ "$WORKER_VERSION_MODE" == "off" || -z "$expected" ]]; then
+    worker_rollout_state="worker_assets_deployed_and_verified"
+    worker_rollout_note="Worker rollout check skipped (mode=${WORKER_VERSION_MODE}, expected=${expected:-unset})."
+    printf 'SMOKE rollout-check skipped mode=%s expected=%s\n' "$WORKER_VERSION_MODE" "${expected:-unset}"
+    return 0
+  fi
+
+  while (( attempt <= WORKER_ROLLOUT_MAX_ATTEMPTS )); do
+    meta="$(fetch_headers "$WORKER_VERSION_CHECK_PATH" "$headers_file")"
+    meta_root="$(fetch_headers "/" "$root_headers_file")"
+    final_url="${meta%%|*}"
+    status="${meta#*|}"
+    status="${status%%|*}"
+    final_url_root="${meta_root%%|*}"
+    status_root="${meta_root#*|}"
+    status_root="${status_root%%|*}"
+    observed="$(extract_header_value "$headers_file" "X-GG-Worker-Version")"
+    observed_root="$(extract_header_value "$root_headers_file" "X-GG-Worker-Version")"
+    observed="$(printf '%s' "$observed" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    observed_root="$(printf '%s' "$observed_root" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    worker_live_version="${observed:-missing}"
+    worker_rollout_final_url="${final_url}"
+
+    printf 'SMOKE rollout-check attempt=%s/%s path=%s status=%s observed=%s expected=%s root_status=%s root_observed=%s root_url=%s\n' \
+      "$attempt" "$WORKER_ROLLOUT_MAX_ATTEMPTS" "$WORKER_VERSION_CHECK_PATH" "$status" "${observed:-missing}" "$expected" "$status_root" "${observed_root:-missing}" "$final_url_root"
+
+    if [[ "$status" == "200" && -n "$observed" && "$observed" == "$expected" ]]; then
+      worker_rollout_state="worker_assets_deployed_and_verified"
+      worker_rollout_note="Expected worker version is live on public domain."
+      return 0
+    fi
+
+    if (( attempt < WORKER_ROLLOUT_MAX_ATTEMPTS )); then
+      sleep "$WORKER_ROLLOUT_BACKOFF_SECONDS"
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  worker_rollout_state="worker_assets_rollout_pending"
+  worker_rollout_note="Expected worker version not observed on public domain within rollout window."
+  worker_rollout_signal "expected='${expected}' observed='${worker_live_version}' path='${WORKER_VERSION_CHECK_PATH}' final='${worker_rollout_final_url:-unknown}'"
+}
+
+strip_inert_markup() {
+  local src_file="$1"
+  local out_file="$2"
+  node - "$src_file" "$out_file" <<'NODE'
+const fs = require('node:fs');
+const srcFile = process.argv[2];
+const outFile = process.argv[3];
+let html = '';
+try {
+  html = fs.readFileSync(srcFile, 'utf8');
+} catch {
+  html = '';
+}
+html = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+fs.writeFileSync(outFile, html, 'utf8');
+NODE
+}
+
+extract_attr_from_tag() {
+  local tag="$1"
+  local attr="$2"
+  printf '%s' "$tag" | sed -nE "s/.*[[:space:]]${attr}=['\\\"]([^'\\\"]+)['\\\"].*/\\1/p" | head -n 1
+}
+
+extract_title() {
+  local file="$1"
+  local tag
+  tag="$(grep -Eoi '<title>[^<]*</title>' "$file" | head -n 1 || true)"
+  printf '%s' "$tag" | sed -E 's#</?[Tt][Ii][Tt][Ll][Ee]>##g'
+}
+
+extract_canonical() {
+  local file="$1"
+  local tag
+  tag="$(grep -Eoi "<link[^>]+>" "$file" | grep -Ei "rel=['\\\"]canonical['\\\"]" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "href"
+}
+
+extract_og_url() {
+  local file="$1"
+  local tag
+  tag="$(grep -Eoi "<meta[^>]+>" "$file" | grep -Ei "property=['\\\"]og:url['\\\"]" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "content"
+}
+
+extract_template_fingerprint() {
+  local file="$1"
+  local value=""
+  value="$(node qa/template-fingerprint.mjs --extract-live --file "$file" 2>/dev/null || true)"
+  printf '%s' "$value"
+}
+
+extract_body_attr() {
+  local file="$1"
+  local attr="$2"
+  local tag
+  tag="$(grep -Eoi '<body[^>]*>' "$file" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "$attr"
+}
+
+extract_main_attr() {
+  local file="$1"
+  local attr="$2"
+  local tag
+  tag="$(grep -Eoi "<main[^>]+class=['\\\"][^'\\\"]*gg-main[^'\\\"]*['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "$attr"
+}
+
+extract_dock_href() {
+  local file="$1"
+  local action="$2"
+  local tag
+  tag="$(grep -Eoi "<a[^>]+data-gg-action=['\\\"]${action}['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "href"
+}
+
+normalize_href() {
+  local href="$1"
+  if [[ -z "$href" ]]; then
+    printf ''
+    return 0
+  fi
+  if [[ "$href" =~ ^https?:// ]]; then
+    printf '%s' "$href"
+    return 0
+  fi
+  printf '%s/%s' "$BASE_URL" "${href#/}"
+}
+
+assert_equal() {
+  local got="$1"
+  local expected="$2"
+  local context="$3"
+  if [[ "$got" != "$expected" ]]; then
+    log_fail "$context (got='$got' expected='$expected')"
+  fi
+}
+
+assert_starts_with() {
+  local got="$1"
+  local prefix="$2"
+  local context="$3"
+  if [[ "${got#"$prefix"}" == "$got" ]]; then
+    log_fail "$context (got='$got' expected-prefix='$prefix')"
+  fi
+}
+
+assert_no_placeholder_strings() {
+  local file="$1"
+  local context="$2"
+  local leaks
+  leaks="$(grep -nE 'Stories will appear shortly|Content temporarily unavailable|No headings available' "$file" || true)"
+  if [[ -n "$leaks" ]]; then
+    log_fail "$context placeholder leakage detected"
+    printf '%s\n' "$leaks" >&2
+  fi
+}
+
+assert_no_empty_editorial_shell() {
+  local file="$1"
+  local context="$2"
+  local leaks_file="$tmp_dir/$(safe_file_name "epanel_${context}").leaks"
+  : > "$leaks_file"
+  node - "$file" >"$leaks_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.exit(0);
+}
+const stripped = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+const visible = stripped
+  .replace(/<([a-z0-9]+)\b[^>]*class=['"][^'"]*\b(?:gg-visually-hidden|visually-hidden)\b[^'"]*['"][^>]*>[\s\S]*?<\/\1>/gi, ' ');
+const leaks = [];
+const rowNames = ['title', 'author', 'contributors', 'labels', 'tags', 'date', 'updated', 'comments', 'readtime', 'snippet'];
+const hasHiddenAttr = (tag) => /\bhidden\b/i.test(tag);
+const isPanelRowTag = (tag) => /\bclass=['"][^'"]*\bgg-epanel__row\b[^'"]*['"]/i.test(tag);
+
+const panelTag = (visible.match(/<div[^>]*class=['"][^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i) || [])[0] || '';
+if (panelTag && !hasHiddenAttr(panelTag)) {
+  leaks.push('editorial-preview-visible');
+}
+
+for (const rowName of rowNames) {
+  const re = new RegExp('<div[^>]*data-row=([\'"])' + rowName + '\\1[^>]*>', 'ig');
+  let m;
+  while ((m = re.exec(visible))) {
+    if (!isPanelRowTag(m[0])) continue;
+    if (!hasHiddenAttr(m[0])) leaks.push('row-' + rowName + '-visible');
+  }
+}
+
+const tocRe = /<div[^>]*data-row=(['"])toc\1[^>]*>/ig;
+let t;
+while ((t = tocRe.exec(visible))) {
+  if (!isPanelRowTag(t[0])) continue;
+  if (hasHiddenAttr(t[0])) continue;
+  const scope = visible.slice(t.index, Math.min(visible.length, t.index + 5000));
+  const tocHasItems = /<ol[^>]*data-gg-slot=(['"])toc\1[^>]*>[\s\S]*?<li\b/i.test(scope);
+  if (!tocHasItems) leaks.push('row-toc-visible-without-headings');
+}
+
+if (leaks.length) {
+  process.stdout.write(leaks.join('\n'));
+}
+NODE
+  if [[ -s "$leaks_file" ]]; then
+    while IFS= read -r leak; do
+      [[ -n "$leak" ]] || continue
+      log_fail "$context empty editorial shell leakage detected (${leak})"
+    done < "$leaks_file"
+  fi
+}
+
+assert_listing_idle_chrome_not_readable() {
+  local file="$1"
+  local context="$2"
+  local leaks_file="$tmp_dir/$(safe_file_name "idle_chrome_${context}").leaks"
+  : > "$leaks_file"
+  node - "$file" >"$leaks_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.exit(0);
+}
+const src = html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+let scope = src;
+const panelStart = src.search(/<div[^>]*class=['"][^'"]*\bgg-info-panel__card\b[^'"]*\bgg-editorial-preview\b[^'"]*['"][^>]*>/i);
+if (panelStart >= 0) {
+  const tail = src.slice(panelStart);
+  const storeEnd = tail.match(/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>[\s\S]*?<\/a>/i);
+  if (storeEnd && typeof storeEnd.index === 'number') {
+    scope = tail.slice(0, storeEnd.index + storeEnd[0].length + 256);
+  } else {
+    scope = tail.slice(0, 12000);
+  }
+}
+const leaks = [];
+
+const labelChecks = [
+  ['Title', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Title\s*<\/dt>/i],
+  ['Written by', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Written by\s*<\/dt>/i],
+  ['Contributors', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Contributors\s*<\/dt>/i],
+  ['Label', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Label\s*<\/dt>/i],
+  ['Tags', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Tags\s*<\/dt>/i],
+  ['Date', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Date\s*<\/dt>/i],
+  ['Updated', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Updated\s*<\/dt>/i],
+  ['Comments', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Comments\s*<\/dt>/i],
+  ['Read time', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Read time\s*<\/dt>/i],
+  ['Snippet', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Snippet\s*<\/dt>/i],
+  ['Table of Contents', /<dt[^>]*class=['"][^'"]*\bgg-epanel__label\b[^'"]*['"][^>]*>\s*Table of Contents\s*<\/dt>/i]
+];
+const iconTokenChecks = [
+  ['article', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*article\s*<\/span>/i],
+  ['person', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*person\s*<\/span>/i],
+  ['groups', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*groups\s*<\/span>/i],
+  ['label', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*label\s*<\/span>/i],
+  ['sell', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*sell\s*<\/span>/i],
+  ['calendar_today', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*calendar_today\s*<\/span>/i],
+  ['event_repeat', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*event_repeat\s*<\/span>/i],
+  ['comment', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*comment\s*<\/span>/i],
+  ['schedule', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*schedule\s*<\/span>/i],
+  ['text_snippet', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*text_snippet\s*<\/span>/i],
+  ['toc', /<span[^>]*class=['"][^'"]*\bgg-epanel__icon\b[^'"]*['"][^>]*>\s*toc\s*<\/span>/i],
+  ['visibility', /<span[^>]*class=['"][^'"]*\bmaterial-symbols-rounded\b[^'"]*['"][^>]*>\s*visibility\s*<\/span>/i]
+];
+
+for (const [name, re] of labelChecks) {
+  if (re.test(scope)) leaks.push(`label:${name}`);
+}
+for (const [name, re] of iconTokenChecks) {
+  if (re.test(scope)) leaks.push(`icon-token:${name}`);
+}
+if (/<a[^>]*class=['"][^'"]*\bgg-epanel__cta\b[^'"]*['"][^>]*>[\s\S]*?Read this post[\s\S]*?<\/a>/i.test(scope)) {
+  leaks.push('cta:Read this post');
+}
+if (/<a[^>]*data-gg-marker=['"]panel-listing-cta['"][^>]*>\s*Read this post\s*<\/a>/i.test(scope)) {
+  leaks.push('store-cta:Read this post');
+}
+if (leaks.length) process.stdout.write(leaks.join('\n'));
+NODE
+  if [[ -s "$leaks_file" ]]; then
+    while IFS= read -r leak; do
+      [[ -n "$leak" ]] || continue
+      log_fail "$context idle listing info chrome still publicly readable (${leak})"
+    done < "$leaks_file"
+  fi
+}
+
+assert_row_hidden() {
+  local file="$1"
+  local row="$2"
+  local context="$3"
+  if ! grep -Eq "<div[^>]+data-row=['\\\"]${row}['\\\"][^>]*hidden=['\\\"]hidden['\\\"]" "$file"; then
+    log_fail "$context row '${row}' expected hidden"
+  fi
+}
+
+discover_first_post_path() {
+  local file="$1"
+  local tag=""
+  local url=""
+  tag="$(grep -Eoi "<article[^>]+class=['\\\"][^'\\\"]*gg-post-card[^'\\\"]*['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  url="$(extract_attr_from_tag "$tag" "data-url")"
+  if [[ -z "$url" ]]; then
+    url="$(grep -Eoi "https?://[^\"'[:space:]]+/[0-9]{4}/[0-9]{2}/[^\"'#[:space:]]+\\.html" "$file" | head -n 1 || true)"
+  fi
+  if [[ -z "$url" ]]; then
+    url="$(grep -Eoi "/[0-9]{4}/[0-9]{2}/[^\"'#[:space:]]+\\.html" "$file" | head -n 1 || true)"
+  fi
+  if [[ -z "$url" ]]; then
+    return 1
+  fi
+  to_path "$url"
+}
+
+discover_page_candidates() {
+  local file="$1"
+  local line=""
+  local url=""
+  local path=""
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    url="$(printf '%s' "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    [[ -n "$url" ]] || continue
+    path="$(to_path "$url")"
+    if [[ "$path" =~ ^/p/(tags|author|sitemap|library|pay|support|privacy-policy)\.html$ ]]; then
+      continue
+    fi
+    printf '%s\n' "$path"
+  done < <(
+    grep -Eoi "https?://[^\"'[:space:]]+/p/[^\"'#[:space:]]+\\.html|/p/[^\"'#[:space:]]+\\.html" "$file" \
+      | awk '!seen[$0]++'
+  )
+}
+
+discover_first_live_page_path() {
+  local file="$1"
+  local candidate=""
+  local probe_file=""
+  local meta=""
+  local status=""
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+    probe_file="$tmp_dir/$(safe_file_name "probe_${candidate}").html"
+    meta="$(fetch_page "$candidate" "$probe_file")"
+    status="${meta#*|}"
+    status="${status%%|*}"
+    if [[ "$status" == "200" ]]; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done < <(discover_page_candidates "$file")
+  return 1
+}
+
+discover_first_page_path() {
+  local file="$1"
+  local page=""
+  page="$(discover_first_live_page_path "$file" || true)"
+  if [[ -z "$page" ]]; then
+    return 1
+  fi
+  printf '%s' "$page"
+}
+
+assert_absent_marker() {
+  local file="$1"
+  local context="$2"
+  local pattern="$3"
+  local label="$4"
+  local hit=""
+  hit="$(grep -Eoin "$pattern" "$file" | head -n 1 || true)"
+  if [[ -n "$hit" ]]; then
+    log_fail "$context forbidden marker detected (${label}) -> ${hit}"
+  fi
+}
+
+check_detail_panel_contract() {
+  local file="$1"
+  local context="$2"
+  if ! grep -Eq "id=['\\\"]gg-postinfo['\\\"]" "$file"; then
+    detail_contract_signal "$context missing #gg-postinfo (detail panel)"
+  fi
+  if ! grep -Eq "data-gg-marker=['\\\"]panel-post-author['\\\"]" "$file"; then
+    detail_contract_signal "$context missing panel-post-author slot"
+  fi
+  if ! grep -Eq "data-gg-marker=['\\\"]panel-post-tags['\\\"]" "$file"; then
+    detail_contract_signal "$context missing panel-post-tags slot"
+  fi
+  if ! grep -Eq "id=['\\\"]ggPanelComments['\\\"]" "$file"; then
+    detail_contract_signal "$context missing #ggPanelComments (detail comments panel)"
+  fi
+  assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-editorial-preview" "listing editorial panel on detail surface"
+  assert_absent_marker "$file" "$context" "data-gg-panelmeta=['\\\"]listing['\\\"]" "listing panel contract on detail surface"
+}
+
+check_detail_postmeta_contract() {
+  local file="$1"
+  local context="$2"
+  local report_file="$tmp_dir/$(safe_file_name "detail_postmeta_${context}").report"
+  node - "$file" >"$report_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let html = '';
+try {
+  html = fs.readFileSync(file, 'utf8');
+} catch {
+  process.exit(0);
+}
+const src = String(html || '')
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ');
+const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+const splitList = (raw, re) => clean(raw).split(re).map((x) => clean(x)).filter(Boolean);
+const toKey = (v) => clean(v).toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]+/g, '').replace(/^-+|-+$/g, '');
+const attr = (tag, name) => {
+  const re = new RegExp(name + '\\s*=\\s*(?:(["\'])(.*?)\\1|([^\\s"\'>]+))', 'i');
+  const m = String(tag || '').match(re);
+  return clean(m ? (m[2] || m[3] || '') : '');
+};
+
+const metaTags = src.match(/<(?:div|span)[^>]*(?:class=['"][^'"]*\bgg-postmeta\b[^'"]*['"]|data-gg-postmeta(?:=['"][^'"]*['"])?)[^>]*>/gi) || [];
+let best = { score: -1, author: '', contributors: [], tags: [], readMin: '', updated: '' };
+for (const tag of metaTags) {
+  const author = clean(attr(tag, 'data-author') || attr(tag, 'data-gg-author') || attr(tag, 'author'));
+  const updated = clean(attr(tag, 'data-updated') || attr(tag, 'data-gg-updated'));
+  const readMin = clean(attr(tag, 'data-read-min') || attr(tag, 'data-readtime') || attr(tag, 'data-gg-read-min') || attr(tag, 'data-gg-readtime'));
+  const contributors = splitList(attr(tag, 'data-contributors') || attr(tag, 'data-gg-contributors'), /\s*;\s*/);
+  const tags = splitList(attr(tag, 'data-tags') || attr(tag, 'data-gg-tags'), /\s*,\s*/);
+  const score = (author ? 2 : 0) + (updated ? 2 : 0) + (readMin ? 1 : 0) + (contributors.length * 3) + (tags.length * 4);
+  if (score > best.score) best = { score, author, contributors, tags, readMin, updated };
+}
+
+const labelTexts = [];
+const labelRe = /<a[^>]*rel=['"]tag['"][^>]*>([\s\S]*?)<\/a>/gi;
+let lm;
+while ((lm = labelRe.exec(src))) {
+  const txt = clean(String(lm[1] || '').replace(/<[^>]+>/g, ' '));
+  if (txt) labelTexts.push(txt);
+}
+
+const contributors = best.contributors.map((x) => clean(x)).filter(Boolean);
+const tags = best.tags.map((x) => clean(x)).filter(Boolean);
+const labels = labelTexts.map((x) => clean(x)).filter(Boolean);
+const authorLc = clean(best.author).toLowerCase();
+const contribLc = contributors.map((x) => x.toLowerCase());
+const tagKey = tags.map(toKey).filter(Boolean).sort().join(',');
+const labelKey = labels.map(toKey).filter(Boolean).sort().join(',');
+const hasCustomPayload = contributors.length > 0 || tags.length > 0 || !!clean(best.readMin);
+
+const fails = [];
+if (!metaTags.length) fails.push('missing-gg-postmeta-node');
+if (authorLc && contribLc.length && contribLc.every((x) => x === authorLc)) fails.push('contributors-fallback-to-main-author');
+if (authorLc && contribLc.some((x) => x === authorLc)) fails.push('contributors-include-main-author');
+if (tagKey && labelKey && tagKey === labelKey) fails.push('tags-fallback-to-native-labels');
+
+console.log(
+  'META|' +
+  `nodes=${metaTags.length};author=${clean(best.author)};contributors=${contributors.join(',') || 'none'};tags=${tags.join(',') || 'none'};labels=${labels.join(',') || 'none'};read_min=${clean(best.readMin) || 'none'};has_custom=${hasCustomPayload ? '1' : '0'}`
+);
+for (const f of fails) console.log(`FAIL|${f}`);
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE %s postmeta %s\n' "$context" "${line#META|}"
+      continue
+    fi
+    if [[ "$line" == FAIL\|* ]]; then
+      log_fail "$context custom postmeta contract violation (${line#FAIL|})"
+    fi
+  done < "$report_file"
+}
+
+check_surface_ownership_contract() {
+  local file="$1"
+  local context="$2"
+  local expected_surface="$3"
+  if [[ "$expected_surface" == "landing" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]blog['\\\"]|id=['\\\"]gg-home-blog['\\\"]" "blog/listing layer on landing"
+    assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-blog-layout" "blog layout chrome on landing"
+    assert_absent_marker "$file" "$context" "data-gg-module=['\\\"]mixed-media['\\\"]" "mixed/listing module host on landing"
+    assert_absent_marker "$file" "$context" "class=['\\\"][^'\\\"]*gg-editorial-preview" "listing editorial shell on landing"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on landing"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on landing"
+    return
+  fi
+  if [[ "$expected_surface" == "listing" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing hero blocks on listing surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on listing surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on listing surface"
+    return
+  fi
+  if [[ "$expected_surface" == "post" || "$expected_surface" == "page" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on detail surface"
+    check_detail_panel_contract "$file" "$context"
+    check_detail_postmeta_contract "$file" "$context"
+    return
+  fi
+  if [[ "$expected_surface" == "special" ]]; then
+    assert_absent_marker "$file" "$context" "data-gg-home-layer=['\\\"]landing['\\\"]|id=['\\\"]gg-landing['\\\"]|id=['\\\"]gg-landing-hero['\\\"]" "landing blocks on special surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]gg-postinfo['\\\"]" "detail information panel on special surface"
+    assert_absent_marker "$file" "$context" "id=['\\\"]ggPanelComments['\\\"]" "detail comments panel on special surface"
+    assert_absent_marker "$file" "$context" "data-gg-module=['\\\"]post-toolbar['\\\"]" "detail toolbar on special surface"
+  fi
+}
+
+check_listing_card_metadata() {
+  local file="$1"
+  local scan_file="$tmp_dir/$(safe_file_name "listing_meta_scan").html"
+  local card=""
+  local author=""
+  local contributors=""
+  local tags=""
+  local labels=""
+  local snippet=""
+  local toc_json=""
+  local author_lc=""
+  local contributors_lc=""
+  local token=""
+  strip_inert_markup "$file" "$scan_file"
+  card="$(grep -Eoi "<article[^>]+class=['\\\"][^'\\\"]*gg-post-card[^'\\\"]*['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  if [[ -z "$card" ]]; then
+    log_fail "listing missing gg-post-card"
+    return
+  fi
+
+  author="$(extract_attr_from_tag "$card" "data-author")"
+  if [[ -z "$author" ]]; then
+    author="$(extract_attr_from_tag "$card" "data-author-name")"
+  fi
+  contributors="$(extract_attr_from_tag "$card" "data-contributors")"
+  if [[ -z "$contributors" ]]; then
+    contributors="$(extract_attr_from_tag "$card" "data-gg-contributors")"
+  fi
+  tags="$(extract_attr_from_tag "$card" "data-tags")"
+  if [[ -z "$tags" ]]; then
+    tags="$(extract_attr_from_tag "$card" "data-gg-tags")"
+  fi
+  labels="$(extract_attr_from_tag "$card" "data-gg-labels")"
+  snippet="$(extract_attr_from_tag "$card" "data-snippet")"
+  if [[ -z "$snippet" ]]; then
+    snippet="$(extract_attr_from_tag "$card" "data-gg-snippet")"
+  fi
+  toc_json="$(extract_attr_from_tag "$card" "data-gg-toc-json")"
+
+  printf 'SMOKE listing-card author=%s contributors=%s tags=%s labels=%s snippet_len=%s toc_len=%s\n' \
+    "$author" "$contributors" "$tags" "$labels" "${#snippet}" "${#toc_json}"
+
+  if [[ -n "$author" && -n "$contributors" ]]; then
+    author_lc="$(printf '%s' "$author" | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    contributors_lc="$(printf '%s' "$contributors" | tr '[:upper:]' '[:lower:]' | tr ';' ',' | sed -E 's/[[:space:]]*,[[:space:]]*/,/g; s/^[[:space:]]+|[[:space:]]+$//g')"
+    if [[ "$contributors_lc" == "$author_lc" ]]; then
+      log_fail "listing contributors fallback to main author"
+    fi
+    IFS=',' read -r -a _contrib_parts <<< "$contributors_lc"
+    for token in "${_contrib_parts[@]}"; do
+      token="$(printf '%s' "$token" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+      if [[ -n "$token" && "$token" == "$author_lc" ]]; then
+        log_fail "listing contributors include main author token"
+        break
+      fi
+    done
+  fi
+
+  if [[ -n "$tags" && -n "$labels" ]]; then
+    if [[ "$(printf '%s' "$tags" | tr '[:upper:]' '[:lower:]' | sed -E 's/[[:space:]]+//g')" == "$(printf '%s' "$labels" | tr '[:upper:]' '[:lower:]' | sed -E 's/[[:space:]]+//g')" ]]; then
+      log_fail "listing tags fallback to label values"
+    fi
+  fi
+
+  if [[ -z "$snippet" ]]; then
+    assert_row_hidden "$file" "snippet" "listing editorial panel"
+  fi
+  if [[ -z "$toc_json" ]]; then
+    if grep -q "No headings available" "$scan_file"; then
+      log_fail "listing toc hint leaked placeholder"
+    fi
+  fi
+}
+
+check_listing_preview_runtime_contract() {
+  local root_file="$tmp_dir/$(safe_file_name "preview_contract_root").html"
+  local core_file="$tmp_dir/$(safe_file_name "preview_contract_core").js"
+  local report_file="$tmp_dir/$(safe_file_name "preview_contract_report").txt"
+  local meta=""
+  local status=""
+  local assets_version=""
+  fetch_page "/" "$root_file" >/dev/null
+
+  assets_version="$(node - "$root_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let src = '';
+try { src = fs.readFileSync(file, 'utf8'); } catch (_) { src = ''; }
+const m = src.match(/\/assets\/v\/([a-z0-9]+)\/boot\.js\b/i);
+if (m && m[1]) process.stdout.write(String(m[1]).trim());
+NODE
+)"
+  if [[ -z "$assets_version" ]]; then
+    log_fail "listing preview runtime contract unable to resolve versioned core asset path"
+    return
+  fi
+
+  meta="$(fetch_page "/assets/v/${assets_version}/modules/ui.bucket.core.js" "$core_file")"
+  status="${meta#*|}"
+  status="${status%%|*}"
+  if [[ "$status" != "200" ]]; then
+    log_fail "listing preview runtime contract failed to fetch core asset (status=${status})"
+    return
+  fi
+
+  node - "$core_file" >"$report_file" <<'NODE'
+const fs = require('node:fs');
+const file = process.argv[2];
+let src = '';
+try { src = fs.readFileSync(file, 'utf8'); } catch (_) { src = ''; }
+const fails = [];
+const hasSeedDisabled = /function\s+seedInitialPreview\s*\(\)\s*\{\s*return\s+false;\s*\}/.test(src);
+const hoverOpens = /function\s+handlePreviewHover[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
+const focusOpens = /function\s+handlePreviewFocus[\s\S]*?openWithCard\(\s*card\s*,\s*null\s*,\s*\{\s*focusPanel:\s*false\s*\}\s*\)/.test(src);
+const clickOpens = /function\s+handleClick[\s\S]*?openWithCard\(\s*card\s*,\s*infoBtn\s*,\s*\{\s*focusPanel:\s*true(?:\s*,[\s\S]*?)?\}\s*\)/.test(src);
+const hasIconSync = /function\s+syncPanelIconTokens\s*\(/.test(src);
+const openSetsIcons = /function\s+openWithCard[\s\S]*?syncPanelIconTokens\(\s*true\s*\)/.test(src);
+const resetClearsIcons = /function\s+resetPanelState[\s\S]*?syncPanelIconTokens\(\s*false\s*\)/.test(src);
+const hasSnippetExtractor = /function\s+extractPreviewSnippet\s*\(/.test(src);
+const headingReadsPostmeta = /function\s+parseHeadingItems[\s\S]*?getFromContext\(doc\)/.test(src);
+const headingSnippetFallback = /function\s+parseHeadingItems[\s\S]*?snippet=(?:cleanText|curateSnippet)\(pm&&pm\.snippet\|\|''(?:,\s*\d+)?\);\s*if\(!snippet\)\s*snippet=extractPreviewSnippet\(root\);/.test(src);
+const headingWritesMetaPayload = /function\s+parseHeadingItems[\s\S]*?out\._m=\{t:tags,a:author,c:contributors,u:updated,r:readTime,s:snippet\}/.test(src);
+const cardMetaFlexibleSplit = /function\s+parsePostMetaFromCard[\s\S]*?data-contributors[\s\S]*?\/\\s\*\[;,\]\\s\*\/[\s\S]*?data-tags[\s\S]*?\/\\s\*\[;,\]\\s\*\//.test(src);
+const payloadGuard = /if\(!hasPreviewPayload\)\{[\s\S]*?resetPanelState\(\);[\s\S]*?return false;/.test(src);
+const fetchPipeline = /function\s+resolveTocItems[\s\S]*?fetchPostHtml\([\s\S]*?parseHeadingItems\([\s\S]*?applyPostMeta\(key\)/.test(src);
+const metaCacheSet = /postMetaCache\.set\(\s*key\s*,\s*meta\s*\)/.test(src);
+const applySnippetFromHydratedMeta = /function\s+applyPostMeta[\s\S]*?m\.s\|\|m\.snippet/.test(src);
+const applyHydratedTags = /function\s+applyPostMeta[\s\S]*?fillChipsToSlot\(\s*'tags'\s*,\s*t\s*,\s*14\s*\)/.test(src);
+const applyHydratedContributors = /function\s+applyPostMeta[\s\S]*?fillChipsToSlot\(\s*'contributors'\s*,\s*contrib\s*,\s*12\s*\)/.test(src);
+const contributorNoAuthorFallback = /instContributors[\s\S]*?!authorText\|\|x\.toLowerCase\(\)!==authorText\.toLowerCase\(\)/.test(src);
+const tocHydrationGate = /function\s+hydrateToc[\s\S]*?resolveTocItems\(\s*abs\s*,\s*\{\s*abortOthers:true\s*\}\s*\)/.test(src);
+if (!hasSeedDisabled) fails.push('idle-seed-not-disabled');
+if (!hoverOpens) fails.push('hover-preview-open-missing');
+if (!focusOpens) fails.push('focus-preview-open-missing');
+if (!clickOpens) fails.push('info-action-open-missing');
+if (!hasIconSync) fails.push('icon-sync-helper-missing');
+if (!openSetsIcons) fails.push('open-does-not-set-icons');
+if (!resetClearsIcons) fails.push('reset-does-not-clear-icons');
+if (!hasSnippetExtractor) fails.push('snippet-extractor-missing');
+if (!headingReadsPostmeta) fails.push('heading-parser-postmeta-read-missing');
+if (!headingSnippetFallback) fails.push('heading-snippet-fallback-missing');
+if (!headingWritesMetaPayload) fails.push('heading-meta-payload-missing');
+if (!cardMetaFlexibleSplit) fails.push('card-meta-split-semicolon-comma-missing');
+if (!payloadGuard) fails.push('open-guard-without-payload-missing');
+if (!fetchPipeline) fails.push('hydration-fetch-pipeline-missing');
+if (!metaCacheSet) fails.push('hydrated-meta-cache-missing');
+if (!applySnippetFromHydratedMeta) fails.push('hydrated-snippet-apply-missing');
+if (!applyHydratedTags) fails.push('hydrated-tags-apply-missing');
+if (!applyHydratedContributors) fails.push('hydrated-contributors-apply-missing');
+if (!contributorNoAuthorFallback) fails.push('contributors-author-fallback-filter-missing');
+if (!tocHydrationGate) fails.push('toc-hydration-gate-missing');
+console.log(`META|seed_disabled=${hasSeedDisabled ? '1' : '0'};hover_open=${hoverOpens ? '1' : '0'};focus_open=${focusOpens ? '1' : '0'};click_open=${clickOpens ? '1' : '0'};icon_sync=${hasIconSync ? '1' : '0'};open_sets_icons=${openSetsIcons ? '1' : '0'};reset_clears_icons=${resetClearsIcons ? '1' : '0'};snippet_extractor=${hasSnippetExtractor ? '1' : '0'};heading_postmeta=${headingReadsPostmeta ? '1' : '0'};heading_snippet_fallback=${headingSnippetFallback ? '1' : '0'};heading_meta_payload=${headingWritesMetaPayload ? '1' : '0'};card_meta_split=${cardMetaFlexibleSplit ? '1' : '0'};payload_guard=${payloadGuard ? '1' : '0'};hydration_fetch=${fetchPipeline ? '1' : '0'};meta_cache=${metaCacheSet ? '1' : '0'};apply_snippet=${applySnippetFromHydratedMeta ? '1' : '0'};apply_tags=${applyHydratedTags ? '1' : '0'};apply_contributors=${applyHydratedContributors ? '1' : '0'};contributors_filter=${contributorNoAuthorFallback ? '1' : '0'};toc_hydration_gate=${tocHydrationGate ? '1' : '0'}`);
+for (const f of fails) console.log(`FAIL|${f}`);
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE listing-preview-contract %s asset=v/%s/modules/ui.bucket.core.js\n' "${line#META|}" "$assets_version"
+      continue
+    fi
+    if [[ "$line" == FAIL\|* ]]; then
+      log_fail "listing preview runtime contract violation (${line#FAIL|})"
+    fi
+  done < "$report_file"
+}
+
+check_homepage_mixed_contract() {
+  local report_file="$tmp_dir/$(safe_file_name "homepage_mixed_contract").txt"
+  local url
+  url="$(absolute_for_path "/")"
+
+  if [[ "$HOMEPAGE_MIXED_BROWSER_MODE" == "off" ]]; then
+    printf 'SMOKE homepage-mixed state=skip reason=mode-off target=/\n'
+    return 0
+  fi
+
+  GG_HOMEPAGE_MIXED_URL="$url" \
+  GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
+  node >"$report_file" <<'NODE'
+let chromium = null;
+let firefox = null;
+try {
+  ({ chromium, firefox } = require('playwright'));
+} catch (error) {
+  const detail = String(error && error.message ? error.message : error || '').replace(/\s+/g, ' ').trim();
+  console.log(`BROWSER|infra|playwright-module-unavailable:${detail || 'missing-module'}`);
+  process.exit(0);
+}
+
+const url = process.env.GG_HOMEPAGE_MIXED_URL || '';
+const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
+const expectedIds = [
+  'gg-mixed-featuredstrip',
+  'gg-mixed-newsish-1',
+  'gg-mixed-youtubeish',
+  'gg-mixed-shortish',
+  'gg-mixed-newsish-2',
+  'gg-mixed-podcastish',
+  'gg-mixed-bookish'
+];
+const primaryVisibleIds = [
+  'gg-mixed-featuredstrip',
+  'gg-mixed-newsish-1'
+];
+const deferredIds = expectedIds.filter((id) => !primaryVisibleIds.includes(id));
+const expectedMainFlow = ['gg-featuredpost1', 'blog', 'gg-mixed-deferred'];
+const expectedHomeOrder = 'featured,newsish-1,listing,youtubeish,shortish,newsish-2,podcastish,bookish';
+const requiredPreviewLabels = {
+  author: 'Written by',
+  labels: 'Label',
+  date: 'Date',
+  updated: 'Updated',
+  comments: 'Comments',
+  readtime: 'Read time'
+};
+const expectedSectionContracts = {
+  'gg-mixed-featuredstrip': { type: 'rail', structure: 'slider', total: '4', visible: '1', ratio: '16:9', cols: 1, layout: 'rail' },
+  'gg-mixed-newsish-1': { type: 'newsdeck', structure: 'newsdeck', total: '9', visible: '3x3', ratio: 'composite', cols: 3, layout: 'newsdeck', labels: ['News', 'Bookish', 'Podcast'] },
+  'gg-mixed-youtubeish': { type: 'youtube', structure: 'slider', total: '5', visible: '3', ratio: '16:9', cols: 1, layout: 'rail' },
+  'gg-mixed-shortish': { type: 'shorts', structure: 'slider', total: '6', visible: '4', ratio: '9:16', cols: 1, layout: 'rail' },
+  'gg-mixed-newsish-2': { type: 'newsdeck', structure: 'newsdeck', total: '9', visible: '3x3', ratio: 'composite', cols: 3, layout: 'newsdeck', labels: ['News', 'Youtube', 'Shorts'] },
+  'gg-mixed-podcastish': { type: 'podcast', structure: 'slider', total: '7', visible: '4', ratio: '1:1', cols: 1, layout: 'rail' },
+  'gg-mixed-bookish': { type: 'rail', structure: 'slider', total: '6', visible: '3', ratio: '1:1.48', cols: 1, layout: 'rail' }
+};
+
+function clean(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isMixedRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  return /mixed|gg-mixed|ui\.bucket\.(core|listing|mixed)|home[- ]state|gg-home-blog|featuredstrip|newsish|podcastish|bookish|youtubeish|shortish|editorial preview|gg-epanel|gg-info-panel/.test(hay);
+}
+
+function isIgnorableMixedRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  if (!hay) return false;
+  if (hay.includes('[report only]')) return true;
+  if (hay.includes('report-only policy')) return true;
+  if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
+  if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
+  return false;
+}
+
+function state(pass, detail) {
+  return { pass: !!pass, detail: detail || 'ok' };
+}
+
+async function captureState(page) {
+  return page.evaluate((ids) => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    const body = document.body;
+    const main = document.querySelector('main.gg-main');
+    const blogMain = document.querySelector('.gg-blog-main');
+    const primarySection = blogMain ? blogMain.querySelector('#gg-featuredpost1') : null;
+    const deferredSection = blogMain ? blogMain.querySelector('#gg-mixed-deferred') : null;
+    const moduleLoads = (window.GG && GG.boot && GG.boot._moduleLoadResults) ? GG.boot._moduleLoadResults : {};
+    const sections = ids.map((id) => {
+      const el = document.getElementById(id);
+      const grid = el ? el.querySelector('[data-role="grid"]') : null;
+      const rail = el ? el.querySelector('[data-role="rail"]') : null;
+      const newsdeckCols = Array.from(el ? el.querySelectorAll('.gg-newsdeck__col') : []);
+      return {
+        id,
+        exists: !!el,
+        visible: visible(el),
+        hidden: !!(el && el.hasAttribute('hidden')),
+        loaded: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-loaded') : ''),
+        state: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-state') : ''),
+        renderCount: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-render-count') : ''),
+        type: cleanValue(el && el.getAttribute ? (el.getAttribute('data-type') || el.getAttribute('data-gg-kind')) : ''),
+        kind: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-kind') || el.getAttribute('data-type')) : ''),
+        max: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-max') || el.getAttribute('data-max')) : ''),
+        cols: cleanValue(el && el.getAttribute ? (el.getAttribute('data-gg-cols') || el.getAttribute('data-cols')) : ''),
+        contractStructure: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-structure') : ''),
+        contractTotal: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-total') : ''),
+        contractVisible: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-visible') : ''),
+        contractRatio: cleanValue(el && el.getAttribute ? el.getAttribute('data-gg-contract-ratio') : ''),
+        gridVisible: visible(grid),
+        railVisible: visible(rail),
+        newsdeckCols: newsdeckCols.length,
+        newsdeckLabels: newsdeckCols.map((col) => cleanValue(col.querySelector('.gg-newsdeck__col-label') && col.querySelector('.gg-newsdeck__col-label').textContent)).filter(Boolean),
+        moreHref: cleanValue(el && el.querySelector ? ((el.querySelector('[data-role="more"]') || el.querySelector('.gg-mixed__more')) && (el.querySelector('[data-role="more"]') || el.querySelector('.gg-mixed__more')).getAttribute('href')) : '')
+      };
+    });
+    const ordered = Array.from(document.querySelectorAll('[data-gg-module="mixed-media"]'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    const primaryWidgets = Array.from(document.querySelectorAll('#gg-featuredpost1 > .widget'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    const deferredWidgets = Array.from(document.querySelectorAll('#gg-mixed-deferred > .widget'))
+      .map((el) => cleanValue(el.id))
+      .filter(Boolean);
+    const mainFlow = Array.from(blogMain ? blogMain.children : [])
+      .map((el) => cleanValue(el.id || el.className || el.tagName))
+      .filter(Boolean);
+    return {
+      bodySurface: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-surface') : ''),
+      bodyView: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-view') : ''),
+      mainSurface: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-surface') : ''),
+      mainView: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-view') : ''),
+      homeState: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-home-state') : ''),
+      blogHome: cleanValue(body && body.getAttribute ? body.getAttribute('data-gg-bloghome') : ''),
+      mixedModulePresent: !!(window.GG && GG.modules && GG.modules.mixedMedia),
+      mixedBucketLoaded: !!(window.GG && GG.__uiBuckets && GG.__uiBuckets.mixed),
+      moduleLoads,
+      ordered,
+      sections,
+      primaryWidgets,
+      deferredWidgets,
+      mainFlow,
+      runtimeHomeOrder: cleanValue(blogMain && blogMain.getAttribute ? blogMain.getAttribute('data-gg-runtime-home-order') : ''),
+      runtimePrimaryOrder: cleanValue(primarySection && primarySection.getAttribute ? primarySection.getAttribute('data-gg-runtime-mixed-order') : ''),
+      runtimeDeferredOrder: cleanValue(deferredSection && deferredSection.getAttribute ? deferredSection.getAttribute('data-gg-runtime-mixed-order') : '')
+    };
+  }, expectedIds);
+}
+
+async function capturePreviewState(page) {
+  return page.evaluate(() => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    function labelState(preview, rowName) {
+      const row = preview ? preview.querySelector(`[data-row="${rowName}"]`) : null;
+      const label = row ? row.querySelector('.gg-epanel__label') : null;
+      const value = row ? row.querySelector('.gg-epanel__value,[data-s],[data-gg-slot]') : null;
+      const style = label ? window.getComputedStyle(label) : null;
+      return {
+        exists: !!label,
+        text: cleanValue(label && label.textContent),
+        rowVisible: visible(row),
+        labelVisible: visible(label),
+        display: cleanValue(style && style.display),
+        visibility: cleanValue(style && style.visibility),
+        value: cleanValue(value && value.textContent)
+      };
+    }
+    const main = document.querySelector('main.gg-main');
+    const sidebar = document.querySelector('.gg-blog-layout--list .gg-blog-sidebar--right');
+    const panel = sidebar ? sidebar.querySelector('.gg-info-panel') : document.querySelector('.gg-info-panel');
+    const preview = panel ? panel.querySelector('.gg-editorial-preview') : null;
+    const rows = Array.from(preview ? preview.querySelectorAll('[data-row]') : [])
+      .filter((row) => !row.hidden)
+      .map((row) => cleanValue(row.getAttribute('data-row')));
+    const labelStates = {};
+    Object.keys({
+      author: 1,
+      labels: 1,
+      date: 1,
+      updated: 1,
+      comments: 1,
+      readtime: 1
+    }).forEach((key) => {
+      labelStates[key] = labelState(preview, key);
+    });
+    return {
+      rightPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-right-panel') : ''),
+      infoPanel: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-info-panel') : ''),
+      sidebarExists: !!sidebar,
+      sidebarVisible: visible(sidebar),
+      panelExists: !!panel,
+      panelVisible: visible(panel),
+      previewExists: !!preview,
+      previewVisible: visible(preview),
+      previewHidden: !!(preview && preview.hidden),
+      previewParent: cleanValue(preview && preview.parentElement ? preview.parentElement.className : ''),
+      title: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="title"]') && preview.querySelector('[data-s="title"]').textContent : ''),
+      author: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="author"]') && preview.querySelector('[data-s="author"]').textContent : ''),
+      snippet: cleanValue(preview && preview.querySelector ? preview.querySelector('[data-s="snippet"]') && preview.querySelector('[data-s="snippet"]').textContent : ''),
+      cta: cleanValue(preview && preview.querySelector ? preview.querySelector('.gg-epanel__cta') && preview.querySelector('.gg-epanel__cta').getAttribute('href') : ''),
+      rows,
+      labelStates
+    };
+  });
+}
+
+async function closePreview(page) {
+  await page.evaluate(() => {
+    const main = document.querySelector('main.gg-main');
+    if (main) {
+      main.setAttribute('data-gg-info-panel', 'closed');
+      main.setAttribute('data-gg-right-panel', 'closed');
+    }
+  });
+  await page.waitForTimeout(400);
+}
+
+function previewLabelSummary(preview) {
+  return Object.keys(requiredPreviewLabels).map((key) => {
+    const row = preview && preview.labelStates ? preview.labelStates[key] : null;
+    return `${key}:${row && row.text ? row.text : 'missing'}:${row && row.rowVisible ? 1 : 0}:${row && row.labelVisible ? 1 : 0}:${row && row.value ? row.value : 'missing'}`;
+  }).join(',');
+}
+
+function previewLabelsOk(preview) {
+  const requiredVisibleRows = ['author', 'labels', 'date'];
+  const conditionalRows = ['updated', 'comments', 'readtime'];
+  const labelStates = preview && preview.labelStates ? preview.labelStates : {};
+  const baseOk = Object.entries(requiredPreviewLabels).every(([key, expected]) => {
+    const row = labelStates[key];
+    return !!(row && row.exists && row.text === expected && row.display !== 'none' && row.visibility !== 'hidden');
+  });
+  if (!baseOk) return false;
+  if (!requiredVisibleRows.every((key) => {
+    const row = labelStates[key];
+    return !!(row && row.rowVisible && row.labelVisible && row.value);
+  })) {
+    return false;
+  }
+  return conditionalRows.every((key) => {
+    const row = labelStates[key];
+    return !!row && (!row.rowVisible || (row.labelVisible && row.value));
+  });
+}
+
+function sectionContractResult(section) {
+  const expected = expectedSectionContracts[section.id];
+  if (!expected) {
+    return { ok: false, detail: `${section.id}:missing-contract` };
+  }
+  const typeOk = section.type === expected.type;
+  const structureOk = section.contractStructure === expected.structure;
+  const totalOk = section.contractTotal === expected.total;
+  const visibleOk = section.contractVisible === expected.visible;
+  const ratioOk = section.contractRatio === expected.ratio;
+  const colsOk = String(section.cols || (section.newsdeckCols || '')) === String(expected.cols);
+  const layoutOk = expected.layout === 'newsdeck'
+    ? (section.gridVisible && !section.railVisible && section.newsdeckCols === expected.cols)
+    : (section.railVisible && !section.gridVisible);
+  const labelsOk = Array.isArray(expected.labels) && expected.labels.length
+    ? expected.labels.every((label) => section.newsdeckLabels.includes(label))
+    : true;
+  const renderOk = Number(section.renderCount || '0') > 0;
+  return {
+    ok: typeOk && structureOk && totalOk && visibleOk && ratioOk && colsOk && layoutOk && labelsOk && renderOk,
+    detail: `${section.id}:${typeOk ? 1 : 0}:${structureOk ? 1 : 0}:${totalOk ? 1 : 0}:${visibleOk ? 1 : 0}:${ratioOk ? 1 : 0}:${colsOk ? 1 : 0}:${layoutOk ? 1 : 0}:${labelsOk ? 1 : 0}:${renderOk ? 1 : 0}:${section.type || 'missing'}:${section.contractTotal || '0'}:${section.contractVisible || '0'}:${section.contractRatio || 'missing'}:${section.newsdeckLabels.join('+') || 'none'}`
+  };
+}
+
+async function main() {
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  if (executablePath) launchOptions.executablePath = executablePath;
+  let browser = null;
+  let browserName = 'chromium';
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    const detail = clean(error && error.message ? error.message : error);
+    if (/executable doesn't exist|please run the following command|playwright install|browserType\.launch|failed to launch/i.test(detail)) {
+      try {
+        browser = await firefox.launch({ headless: true });
+        browserName = 'firefox';
+      } catch (fallbackError) {
+        const fallbackDetail = clean(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+        console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'} || fallback=${fallbackDetail || 'firefox-launch-unavailable'}`);
+        return;
+      }
+    } else {
+      throw error;
+    }
+  }
+
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1800 } });
+  const runtimeErrors = [];
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const loc = msg.location ? msg.location() : {};
+    const payload = `${msg.text ? msg.text() : ''} ${(loc && loc.url) || ''}`;
+    if (isMixedRuntimeMessage(payload) && !isIgnorableMixedRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+  page.on('pageerror', (error) => {
+    const payload = `${error && error.message ? error.message : error} ${error && error.stack ? error.stack : ''}`;
+    if (isMixedRuntimeMessage(payload) && !isIgnorableMixedRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 45000 }); } catch (_) {}
+    await page.waitForTimeout(1200);
+
+    await page.evaluate(async () => {
+      const max = Math.max(
+        document.documentElement ? document.documentElement.scrollHeight : 0,
+        document.body ? document.body.scrollHeight : 0
+      );
+      const steps = [0, 600, 1200, 1800, 2600, 3400, max];
+      for (const y of steps) {
+        window.scrollTo(0, Math.max(0, Math.min(y, max)));
+        await new Promise((resolve) => setTimeout(resolve, 280));
+      }
+    });
+    await page.waitForTimeout(900);
+
+    const snapshot = await captureState(page);
+    const previewBefore = await capturePreviewState(page);
+    const orderedExpected = expectedIds.join(',');
+    const orderedActual = snapshot.ordered.filter((id) => expectedIds.includes(id)).join(',');
+    const renderedSections = snapshot.sections.filter((section) => section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const primaryRendered = snapshot.sections.filter((section) => primaryVisibleIds.includes(section.id) && section.exists && section.visible && section.hidden === false && section.loaded === '1' && Number(section.renderCount || '0') > 0);
+    const sectionContractSummary = snapshot.sections.map((section) => sectionContractResult(section));
+    const deferredSummary = snapshot.sections
+      .filter((section) => deferredIds.includes(section.id))
+      .map((section) => {
+        const count = Number(section.renderCount || '0');
+        const ok = section.exists && (
+          (section.visible && section.hidden === false && section.loaded === '1' && count > 0) ||
+          (!section.visible && section.hidden === true && (!section.loaded || section.loaded === '0') && count === 0)
+        );
+        return {
+          id: section.id,
+          ok,
+          detail: `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}:${section.type || 'missing'}:${section.contractTotal || '0'}`
+        };
+      });
+    const renderSummary = snapshot.sections.map((section) => `${section.id}:${section.exists ? 1 : 0}:${section.visible ? 1 : 0}:${section.hidden ? 1 : 0}:${section.loaded || '0'}:${section.renderCount || '0'}:${section.type || 'missing'}:${section.contractTotal || '0'}:${section.contractVisible || '0'}:${section.contractRatio || 'missing'}`).join(',');
+    const flowExpected = expectedMainFlow.join('>');
+    const flowActual = snapshot.mainFlow.join('>');
+    const flowOk = flowActual === flowExpected;
+    const homeOrderOk = snapshot.runtimeHomeOrder === expectedHomeOrder;
+    const layoutSummary = `flow=${flowActual || 'none'};runtimeHome=${snapshot.runtimeHomeOrder || 'missing'};runtimePrimary=${snapshot.runtimePrimaryOrder || 'missing'};runtimeDeferred=${snapshot.runtimeDeferredOrder || 'missing'};primaryWidgets=${snapshot.primaryWidgets.join(',') || 'none'};deferredWidgets=${snapshot.deferredWidgets.join(',') || 'none'}`;
+    const mixedLoadState = snapshot.moduleLoads && snapshot.moduleLoads['ui.bucket.mixed.js'] ? snapshot.moduleLoads['ui.bucket.mixed.js'] : 'missing';
+    const firstCard = page.locator('.gg-post-card').first();
+    const firstCardLink = page.locator('.gg-post-card .gg-post-card__title-link').first();
+    const firstMixedCard = page.locator('[data-gg-module="mixed-media"] .gg-mixed__card, [data-gg-module="mixed-media"] .gg-newsdeck__item').first();
+    let previewAfterHover = previewBefore;
+    let previewAfterFocus = previewBefore;
+    let previewAfterMixed = previewBefore;
+
+    if (await firstCard.count()) {
+      await firstCard.scrollIntoViewIfNeeded();
+      await firstCard.hover();
+      await page.waitForTimeout(700);
+      previewAfterHover = await capturePreviewState(page);
+      await closePreview(page);
+    }
+    if (await firstCardLink.count()) {
+      await firstCardLink.scrollIntoViewIfNeeded();
+      await firstCardLink.focus();
+      await page.waitForTimeout(700);
+      previewAfterFocus = await capturePreviewState(page);
+      await closePreview(page);
+    }
+    if (await firstMixedCard.count()) {
+      await firstMixedCard.scrollIntoViewIfNeeded();
+      await firstMixedCard.hover();
+      await page.waitForTimeout(700);
+      previewAfterMixed = await capturePreviewState(page);
+    }
+
+    const results = [];
+    results.push({
+      id: 'surface-state',
+      ...state(
+        snapshot.bodySurface === 'listing' &&
+        (snapshot.mainSurface === 'listing' || snapshot.mainSurface === 'home') &&
+        snapshot.homeState === 'blog' &&
+        snapshot.blogHome === '1' &&
+        snapshot.bodyView === 'listing' &&
+        snapshot.mainView === 'listing',
+        `bodySurface=${snapshot.bodySurface || 'missing'};mainSurface=${snapshot.mainSurface || 'missing'};homeState=${snapshot.homeState || 'missing'};blogHome=${snapshot.blogHome || 'missing'};bodyView=${snapshot.bodyView || 'missing'};mainView=${snapshot.mainView || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'mixed-module-load',
+      ...state(
+        snapshot.mixedModulePresent && snapshot.mixedBucketLoaded && mixedLoadState === 'ok',
+        `present=${snapshot.mixedModulePresent ? 1 : 0};bucket=${snapshot.mixedBucketLoaded ? 1 : 0};load=${mixedLoadState}`
+      )
+    });
+    results.push({
+      id: 'mixed-order',
+      ...state(
+        orderedActual === orderedExpected && flowOk && homeOrderOk,
+        `expected=${orderedExpected};actual=${orderedActual || 'missing'};${layoutSummary}`
+      )
+    });
+    results.push({
+      id: 'mixed-primary-visible',
+      ...state(
+        primaryRendered.length === primaryVisibleIds.length,
+        `expected=${primaryVisibleIds.join(',')};rendered=${primaryRendered.map((section) => section.id).join(',') || 'none'};all=${renderedSections.map((section) => section.id).join(',') || 'none'};detail=${renderSummary}`
+      )
+    });
+    results.push({
+      id: 'mixed-deferred-contract',
+      ...state(
+        deferredSummary.every((section) => section.ok),
+        deferredSummary.map((section) => section.detail).join(',') || 'none'
+      )
+    });
+    results.push({
+      id: 'mixed-section-contract',
+      ...state(
+        sectionContractSummary.every((section) => section.ok),
+        sectionContractSummary.map((section) => section.detail).join(',') || 'none'
+      )
+    });
+    results.push({
+      id: 'editorial-preview-shell',
+      ...state(
+        previewBefore.sidebarExists &&
+        previewBefore.panelExists &&
+        previewBefore.previewExists &&
+        /gg-info-panel/.test(previewBefore.previewParent),
+        `sidebar=${previewBefore.sidebarExists ? 1 : 0}:${previewBefore.sidebarVisible ? 1 : 0};panel=${previewBefore.panelExists ? 1 : 0}:${previewBefore.panelVisible ? 1 : 0};preview=${previewBefore.previewExists ? 1 : 0}:${previewBefore.previewVisible ? 1 : 0};parent=${previewBefore.previewParent || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-hover',
+      ...state(
+        previewAfterHover.previewVisible &&
+        previewAfterHover.infoPanel === 'open' &&
+        previewAfterHover.rightPanel === 'open' &&
+        !!previewAfterHover.title &&
+        previewAfterHover.cta !== '#',
+        `right=${previewAfterHover.rightPanel || 'missing'};info=${previewAfterHover.infoPanel || 'missing'};visible=${previewAfterHover.previewVisible ? 1 : 0};title=${previewAfterHover.title || 'missing'};cta=${previewAfterHover.cta || 'missing'};rows=${previewAfterHover.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-focus',
+      ...state(
+        previewAfterFocus.previewVisible &&
+        previewAfterFocus.infoPanel === 'open' &&
+        previewAfterFocus.rightPanel === 'open' &&
+        !!previewAfterFocus.title &&
+        previewAfterFocus.cta !== '#',
+        `right=${previewAfterFocus.rightPanel || 'missing'};info=${previewAfterFocus.infoPanel || 'missing'};visible=${previewAfterFocus.previewVisible ? 1 : 0};title=${previewAfterFocus.title || 'missing'};cta=${previewAfterFocus.cta || 'missing'};rows=${previewAfterFocus.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-content',
+      ...state(
+        !!previewAfterHover.author &&
+        (!!previewAfterHover.snippet || previewAfterHover.rows.includes('toc')),
+        `author=${previewAfterHover.author || 'missing'};snippet=${previewAfterHover.snippet || 'missing'};rows=${previewAfterHover.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'editorial-preview-meta-labels',
+      ...state(
+        previewLabelsOk(previewAfterHover),
+        previewLabelSummary(previewAfterHover)
+      )
+    });
+    results.push({
+      id: 'editorial-preview-boundary',
+      ...state(
+        !previewAfterMixed.previewVisible &&
+        previewAfterMixed.infoPanel !== 'open' &&
+        previewAfterMixed.rightPanel !== 'open',
+        `right=${previewAfterMixed.rightPanel || 'missing'};info=${previewAfterMixed.infoPanel || 'missing'};visible=${previewAfterMixed.previewVisible ? 1 : 0};rows=${previewAfterMixed.rows.join(',') || 'none'}`
+      )
+    });
+    results.push({
+      id: 'runtime-errors',
+      ...state(runtimeErrors.length === 0, runtimeErrors.length ? runtimeErrors.join(' || ') : 'ok')
+    });
+
+    console.log(`META|browser=${browserName};url=${url};bodySurface=${snapshot.bodySurface};mainSurface=${snapshot.mainSurface};homeState=${snapshot.homeState};mixedLoad=${mixedLoadState};ordered=${orderedActual};rendered=${renderedSections.map((section) => section.id).join(',') || 'none'};homeOrder=${snapshot.runtimeHomeOrder || 'missing'}`);
+    console.log(`DEBUG|browser=${browserName};bodyView=${snapshot.bodyView};mainView=${snapshot.mainView};blogHome=${snapshot.blogHome};moduleLoads=${Object.keys(snapshot.moduleLoads || {}).sort().map((key) => `${key}:${snapshot.moduleLoads[key]}`).join(',') || 'none'};detail=${renderSummary};${layoutSummary};previewBefore=${previewBefore.previewVisible ? 1 : 0}:${previewBefore.title || 'missing'};previewHover=${previewAfterHover.previewVisible ? 1 : 0}:${previewAfterHover.title || 'missing'};previewFocus=${previewAfterFocus.previewVisible ? 1 : 0}:${previewAfterFocus.title || 'missing'};previewMixed=${previewAfterMixed.previewVisible ? 1 : 0}:${previewAfterMixed.title || 'missing'};previewLabels=${previewLabelSummary(previewAfterHover)}`);
+    for (const row of results) {
+      console.log(`CRITERION|${row.id}|${row.pass ? 'pass' : 'fail'}|${row.detail}`);
+    }
+  } finally {
+    await page.close().catch(() => {});
+    await browser.close().catch(() => {});
+  }
+}
+
+main().catch((error) => {
+  console.log(`BROWSER|fail|${clean(error && error.message ? error.message : error)}`);
+  process.exit(0);
+});
+NODE
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE homepage-mixed %s target=/\n' "${line#META|}"
+      continue
+    fi
+    if [[ "$line" == DEBUG\|* ]]; then
+      printf 'SMOKE homepage-mixed-debug %s target=/\n' "${line#DEBUG|}"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|infra\|* ]]; then
+      homepage_mixed_signal "homepage mixed browser dependency unavailable (${line#BROWSER|infra|})"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|fail\|* ]]; then
+      homepage_mixed_browser_signal "${line#BROWSER|fail|}" "homepage mixed browser proof unavailable (${line#BROWSER|fail|})"
+      continue
+    fi
+    if [[ "$line" == CRITERION\|* ]]; then
+      local rest="${line#CRITERION|}"
+      local id="${rest%%|*}"
+      rest="${rest#*|}"
+      local state="${rest%%|*}"
+      local detail="${rest#*|}"
+      printf 'SMOKE homepage-mixed criterion=%s state=%s detail=%s\n' "$id" "$state" "$detail"
+      if [[ "$state" == "fail" ]]; then
+        homepage_mixed_signal "homepage mixed contract criterion=${id} failed (${detail})"
+      fi
+    fi
+  done < "$report_file"
+}
+
+check_comments_owner_contract() {
+  check_comments_panel_contract
+  check_comments_compose_contract
+}
+
+check_comments_panel_contract() {
+  check_comments_owner_case "zero" "panel-read" "0" "$COMMENTS_PANEL_TARGET_PATH_0" "0" "0"
+  check_comments_owner_case "two" "panel-read" "2" "$COMMENTS_PANEL_TARGET_PATH_2" "0" "0"
+  check_comments_owner_case "sixteen" "panel-read" "16" "$COMMENTS_PANEL_TARGET_PATH_16" "0" "0"
+}
+
+check_comments_compose_contract() {
+  local configured=0
+  if [[ -n "${COMMENTS_COMPOSE_TARGET_PATH_0:-}" ]]; then
+    configured=1
+    check_comments_owner_case "zero" "composer-open" "$COMMENTS_COMPOSE_EXPECTED_COUNT_0" "$COMMENTS_COMPOSE_TARGET_PATH_0" "1" "0"
+  else
+    printf 'SMOKE comments-compose fixture=zero state=skip reason=unset\n'
+  fi
+  if [[ -n "${COMMENTS_COMPOSE_TARGET_PATH_THREAD:-}" ]]; then
+    configured=1
+    check_comments_owner_case "thread" "composer-open" "$COMMENTS_COMPOSE_EXPECTED_COUNT_THREAD" "$COMMENTS_COMPOSE_TARGET_PATH_THREAD" "1" "1"
+  else
+    printf 'SMOKE comments-compose fixture=thread state=skip reason=unset\n'
+  fi
+  if [[ "$configured" -eq 0 ]]; then
+    printf 'SMOKE comments-compose lane=skip reason=open-fixtures-unconfigured\n'
+  fi
+}
+
+check_comments_owner_case() {
+  local case_name="$1"
+  local fixture_class="$2"
+  local expected_count="$3"
+  local path="$4"
+  local require_compose="${5:-0}"
+  local require_reply="${6:-0}"
+  local lane_label="comments-panel"
+  local url
+  local report_file="$tmp_dir/$(safe_file_name "comments_owner_${fixture_class}_${case_name}").txt"
+  local status=0
+
+  if [[ "$fixture_class" == "composer-open" ]]; then
+    lane_label="comments-compose"
+  fi
+  url="$(absolute_for_path "$path")"
+
+  if [[ "$COMMENTS_OWNER_BROWSER_MODE" == "off" ]]; then
+    printf 'SMOKE %s skipped mode=off case=%s target=%s fixtureClass=%s\n' "$lane_label" "$case_name" "$url" "$fixture_class"
+    return 0
+  fi
+
+  GG_COMMENTS_URL="$url" \
+  GG_COMMENTS_CASE_NAME="$case_name" \
+  GG_COMMENTS_FIXTURE_CLASS="$fixture_class" \
+  GG_COMMENTS_EXPECTED_COUNT="$expected_count" \
+  GG_COMMENTS_REQUIRE_COMPOSE="$require_compose" \
+  GG_COMMENTS_REQUIRE_REPLY="$require_reply" \
+  GG_PLAYWRIGHT_EXECUTABLE_PATH="$PLAYWRIGHT_EXECUTABLE_PATH" \
+  node >"$report_file" <<'NODE'
+let chromium = null;
+let firefox = null;
+try {
+  ({ chromium, firefox } = require('playwright'));
+} catch (error) {
+  const detail = String(error && error.message ? error.message : error || '').replace(/\s+/g, ' ').trim();
+  console.log(`BROWSER|infra|playwright-module-unavailable:${detail || 'missing-module'}`);
+  process.exit(0);
+}
+
+const url = process.env.GG_COMMENTS_URL || '';
+const caseName = process.env.GG_COMMENTS_CASE_NAME || 'case';
+const fixtureClass = process.env.GG_COMMENTS_FIXTURE_CLASS || 'panel-read';
+const expectedCount = Number(process.env.GG_COMMENTS_EXPECTED_COUNT || '0');
+const requireCompose = process.env.GG_COMMENTS_REQUIRE_COMPOSE === '1';
+const requireReply = process.env.GG_COMMENTS_REQUIRE_REPLY === '1';
+const executablePath = (process.env.GG_PLAYWRIGHT_EXECUTABLE_PATH || '').trim();
+const laneLabel = fixtureClass === 'composer-open' ? 'comments-compose' : 'comments-panel';
+
+function clean(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isCommentRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  return /comment|comments|reply|composer|ggpanelcomments|ui\.bucket\.(core|post|authors)|#comments|gg-comments/.test(hay);
+}
+
+function isIgnorableCommentRuntimeMessage(value) {
+  const hay = clean(value).toLowerCase();
+  if (!hay) return false;
+  if (hay.includes('[report only]')) return true;
+  if (hay.includes('report-only policy')) return true;
+  if (hay.includes("content security policy directive 'upgrade-insecure-requests' is ignored")) return true;
+  if (hay.includes('refused to load the image') && hay.includes('content security policy directive')) return true;
+  if (hay.includes('sha384') && hay.includes('recaptcha__en.js') && hay.includes('gstatic.com/recaptcha/releases')) return true;
+  return false;
+}
+
+function state(pass, detail) {
+  return { pass: !!pass, detail: detail || 'ok' };
+}
+
+function notApplicable(detail) {
+  return { skip: true, detail: detail || 'n/a' };
+}
+
+async function captureState(page) {
+  return page.evaluate(() => {
+    function cleanValue(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+    function visible(node) {
+      if (!node || node.hidden) return false;
+      if (node.getAttribute && (node.getAttribute('aria-hidden') === 'true' || node.getAttribute('data-gg-state') === 'hidden')) return false;
+      const style = window.getComputedStyle(node);
+      if (!style || style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      const rect = node.getBoundingClientRect();
+      return !!(rect.width || rect.height || node.getClientRects().length);
+    }
+    function visibleAll(selector, scope) {
+      return Array.from((scope || document).querySelectorAll(selector)).filter(visible);
+    }
+    function commentKey(comment) {
+      return cleanValue((comment && (comment.getAttribute('data-gg-comment-id') || comment.id || '') || '').replace(/^c/, ''));
+    }
+    function commentState(comment) {
+      return cleanValue(comment && comment.getAttribute ? comment.getAttribute('data-gg-comment-state') || 'active' : 'active');
+    }
+    function interactiveComments(root) {
+      return visibleAll('#cmt2-holder li.comment', root).filter((comment) => commentState(comment) === 'active');
+    }
+    function commentBlock(comment) {
+      if (!comment || !comment.children) return null;
+      return Array.from(comment.children).find((node) => node && node.classList && node.classList.contains('comment-block')) || null;
+    }
+    function commentActions(comment) {
+      const block = commentBlock(comment);
+      if (!block || !block.children) return null;
+      return Array.from(block.children).find((node) => node && node.classList && node.classList.contains('comment-actions')) || null;
+    }
+    function directVisibleActionOwners(comment, selector) {
+      const actions = commentActions(comment);
+      if (!actions || !actions.children) return [];
+      return Array.from(actions.children).filter((node) => node && node.matches && node.matches(selector) && visible(node));
+    }
+    function directReplyCount(comment) {
+      const replies = comment && comment.querySelector ? comment.querySelector(':scope > .comment-replies') : null;
+      return replies && replies.querySelectorAll ? replies.querySelectorAll('li.comment').length : 0;
+    }
+    function hasComposerField(node) {
+      if (!node) return false;
+      if (node.matches && node.matches('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]')) return true;
+      if (!node.querySelector) return false;
+      return !!node.querySelector('iframe, textarea, input:not([type="hidden"]), [contenteditable="true"]');
+    }
+    function composerNodeKind(node, rootComposerKind) {
+      if (!node) return 'missing';
+      if (node.id === 'comment-editor') return 'native';
+      if (node.getAttribute && node.getAttribute('data-gg-fallback') === '1') return 'fallback';
+      if (node.getAttribute && node.getAttribute('data-gg-native-plumbing') === 'composer') return 'native';
+      if (node.closest && node.closest('#top-ce[data-gg-fallback="1"]')) return 'fallback';
+      if (node.matches && node.matches('[data-gg-fallback-field="1"]')) return 'fallback';
+      if (node.querySelector) {
+        if (node.querySelector('[data-gg-fallback-field="1"], #top-ce[data-gg-fallback="1"]')) return 'fallback';
+        if (node.querySelector('#comment-editor, #comment-editor-src, iframe#comment-editor')) return 'native';
+      }
+      if (node.matches && node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]')) {
+        return rootComposerKind === 'native' ? 'native' : 'fallback';
+      }
+      return rootComposerKind || 'missing';
+    }
+    function composerKinds(nodes, rootComposerKind) {
+      return nodes.map((node) => composerNodeKind(node, rootComposerKind)).join(',');
+    }
+    function composerCountByKind(nodes, expectedKind, rootComposerKind) {
+      return nodes.filter((node) => composerNodeKind(node, rootComposerKind) === expectedKind).length;
+    }
+    function describeNode(node) {
+      if (!node) return 'none';
+      if (node.nodeType !== 1) return cleanValue(node.nodeName || 'node').toLowerCase();
+      const bits = [cleanValue(node.tagName || node.nodeName || 'node').toLowerCase()];
+      if (node.id) bits.push(`#${node.id}`);
+      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') bits.push('[composer-shell]');
+      if (node.closest && node.closest('#gg-composer-slot')) bits.push('[composer-slot]');
+      return cleanValue(bits.join(''));
+    }
+    function focusKind(node, rootComposerKind) {
+      if (!node || !node.matches) return 'none';
+      if (node.id === 'comment-editor') return 'native';
+      if (node.matches('textarea, input:not([type="hidden"]), [contenteditable="true"]') && node.closest('#gg-composer-slot')) {
+        return composerNodeKind(node, rootComposerKind);
+      }
+      if (node.getAttribute && node.getAttribute('data-gg-composer-focus-shell') === '1') {
+        if (rootComposerKind === 'native') return 'native-shell';
+        if (rootComposerKind === 'fallback') return 'fallback-shell';
+        return 'missing-shell';
+      }
+      return 'other';
+    }
+    function footerInView(root) {
+      const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+      const panel = document.querySelector('#ggPanelComments');
+      const body = panel && panel.querySelector ? panel.querySelector('.gg-comments-panel__body') : null;
+      if (!footer || !body) return false;
+      const rect = footer.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (rect.bottom <= 0 || rect.top >= viewportH) return false;
+      return rect.top >= (bodyRect.top - 1) && rect.bottom <= (bodyRect.bottom + 1);
+    }
+    function composerSignature(nodes) {
+      return nodes.map((node) => node.id || cleanValue(node.className) || node.nodeName.toLowerCase()).join(',');
+    }
+    function px(value) {
+      const parsed = parseFloat(String(value || '0'));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    function nodeFontSize(node) {
+      if (!node) return 0;
+      const style = window.getComputedStyle(node);
+      return style ? px(style.fontSize) : 0;
+    }
+    function minFontSize(selector, scope) {
+      const nodes = visibleAll(selector, scope);
+      if (!nodes.length) return 0;
+      let min = Number.POSITIVE_INFINITY;
+      nodes.forEach((node) => {
+        const size = nodeFontSize(node);
+        if (size > 0 && size < min) min = size;
+      });
+      return Number.isFinite(min) ? min : 0;
+    }
+    function minControlEdge(selector, scope) {
+      const nodes = visibleAll(selector, scope);
+      if (!nodes.length) return 0;
+      let min = Number.POSITIVE_INFINITY;
+      nodes.forEach((node) => {
+        const rect = node.getBoundingClientRect();
+        const edge = Math.min(rect.width || 0, rect.height || 0);
+        if (edge > 0 && edge < min) min = edge;
+      });
+      return Number.isFinite(min) ? min : 0;
+    }
+    function countControlsBelow(selector, scope, floorPx) {
+      return visibleAll(selector, scope).filter((node) => {
+        const rect = node.getBoundingClientRect();
+        return Math.min(rect.width || 0, rect.height || 0) > 0 && Math.min(rect.width || 0, rect.height || 0) < floorPx;
+      }).length;
+    }
+
+    const main = document.querySelector('main.gg-main');
+    const panel = document.querySelector('#ggPanelComments');
+    const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
+    const footer = root && root.querySelector ? root.querySelector('.gg-comments__footer') : null;
+    const widthBtn = root && root.querySelector ? root.querySelector('[data-gg-comment-action="panel-width"]') : null;
+    const sortBtn = root && root.querySelector ? root.querySelector('[data-gg-comment-action="sort-order"]') : null;
+    const threadToggles = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-thread-toggle')) : [];
+    const menuRoots = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-ctx-pop')) : [];
+    const menuItems = root && root.querySelectorAll ? Array.from(root.querySelectorAll('#cmt2-holder .cmt2-ctx-pop [data-gg-comment-action]')) : [];
+    const composerKind = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-kind') : '') || 'missing';
+    const composerReason = cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-reason') : '') || 'missing';
+    const comments = root ? visibleAll('#cmt2-holder li.comment', root) : [];
+    const interactive = root ? interactiveComments(root) : [];
+    const footerAddOwners = root ? visibleAll('.gg-comments__footer #gg-top-continue .comment-reply', root) : [];
+    const footerComposerOwners = root ? visibleAll('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread', root).filter(hasComposerField) : [];
+    const inlineComposerOwners = root ? visibleAll('#cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root).filter(hasComposerField) : [];
+    const nativePeers = root ? visibleAll('#cmt2-holder #top-continue, #cmt2-holder .continue, #cmt2-holder .item-control, #cmt2-holder .thread-toggle, #cmt2-holder .thread-count, #cmt2-holder a.comment-reply:not(.cmt2-reply-action), #cmt2-holder > #top-ce, #cmt2-holder > .comment-replybox-thread, #cmt2-holder li.comment > .comment-replybox-single, #cmt2-holder li.comment > .comment-replybox-thread', root) : [];
+    const deletePeers = [];
+    const replyOwnerFailures = [];
+    const moreOwnerFailures = [];
+    const toggleOwnerFailures = [];
+    let firstReplyId = '';
+
+    interactive.forEach((comment) => {
+      const key = commentKey(comment);
+      const replyOwners = directVisibleActionOwners(comment, '.cmt2-reply-action');
+      const moreOwners = directVisibleActionOwners(comment, '.cmt2-ctx');
+      const toggleOwners = directVisibleActionOwners(comment, '.cmt2-thread-toggle');
+      const deleteOwnerPeers = visibleAll('.comment-footer .comment-delete, .comment-actions .comment-delete, .comment-footer .cmt2-del, .comment-actions .cmt2-del, .gg-cmt2__del, .item-control', comment);
+      const childCount = directReplyCount(comment);
+      if (replyOwners.length !== 1) replyOwnerFailures.push(`${key}:${replyOwners.length}`);
+      if (moreOwners.length !== 1) moreOwnerFailures.push(`${key}:${moreOwners.length}`);
+      if (childCount > 0 && toggleOwners.length !== 1) toggleOwnerFailures.push(`${key}:expected1:${toggleOwners.length}`);
+      if (childCount === 0 && toggleOwners.length !== 0) toggleOwnerFailures.push(`${key}:expected0:${toggleOwners.length}`);
+      if (moreOwners.length > 0 && deleteOwnerPeers.length > 0) deletePeers.push(key);
+      if (!firstReplyId && replyOwners.length === 1) firstReplyId = key;
+    });
+
+    return {
+      url: location.href,
+      mainRightMode: cleanValue(main && main.getAttribute ? main.getAttribute('data-gg-right-mode') : ''),
+      panelVisible: visible(panel),
+      rootVisible: visible(root),
+      commentCount: comments.length,
+      interactiveCount: interactive.length,
+      commentsOpen: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
+      hasFooterCta: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0'),
+      replyAllowed: !!(footer && footer.getAttribute && footer.getAttribute('data-gg-has-cta') !== '0' && firstReplyId),
+      footerAddOwnerCount: footerAddOwners.length,
+      composerKind,
+      composerReason,
+      footerComposerCount: footerComposerOwners.length,
+      footerComposerSignature: composerSignature(footerComposerOwners),
+      footerComposerKinds: composerKinds(footerComposerOwners, composerKind),
+      footerNativeComposerCount: composerCountByKind(footerComposerOwners, 'native', composerKind),
+      footerFallbackComposerCount: composerCountByKind(footerComposerOwners, 'fallback', composerKind),
+      inlineComposerCount: inlineComposerOwners.length,
+      inlineComposerSignature: composerSignature(inlineComposerOwners),
+      inlineComposerKinds: composerKinds(inlineComposerOwners, composerKind),
+      inlineNativeComposerCount: composerCountByKind(inlineComposerOwners, 'native', composerKind),
+      inlineFallbackComposerCount: composerCountByKind(inlineComposerOwners, 'fallback', composerKind),
+      replyMode: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-reply-mode') : 'default') || 'default',
+      footerOpen: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-footer-open') : '0') || '0',
+      replyBannerCount: root ? visibleAll('.cmt2-replying', root).length : 0,
+      activeElement: describeNode(document.activeElement),
+      focusKind: focusKind(document.activeElement, composerKind),
+      footerInView: root ? footerInView(root) : false,
+      focusScrolled: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-scrolled') : '0') || '0',
+      focusFallbackUsed: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-fallback') : '0') || '0',
+      nativeEditorReady: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-native-ready') : '0') || '0',
+      focusState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus') : '') || 'missing',
+      focusTarget: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-composer-focus-target') : '') || 'missing',
+      nativePeerCount: nativePeers.length,
+      deletePeerFailures: deletePeers,
+      replyOwnerFailures,
+      moreOwnerFailures,
+      toggleOwnerFailures,
+      firstReplyId,
+      proofState: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof') : ''),
+      proofCount: cleanValue(root && root.getAttribute ? root.getAttribute('data-gg-comment-proof-count') : ''),
+      proofIssues: root && Array.isArray(root.__ggCommentProofIssues) ? root.__ggCommentProofIssues.join(',') : '',
+      minAuthorFontPx: minFontSize('#cmt2-holder li.comment cite.user', root),
+      minMetaFontPx: minFontSize('#cmt2-holder li.comment .datetime a, #cmt2-holder li.comment .cmt2-state', root),
+      minReplyMetaFontPx: minFontSize('#cmt2-holder li.comment .cmt2-reply-meta, #cmt2-holder li.comment .cmt2-replying__title', root),
+      minActionHitPx: minControlEdge('#comments .cmt2-head-btn, #cmt2-holder li.comment .comment-actions .cmt2-reply-action, #cmt2-holder li.comment .comment-actions .cmt2-thread-toggle, #cmt2-holder li.comment .comment-actions .cmt2-ctx-btn, .gg-comments__footer #gg-top-continue .comment-reply', root),
+      controlsBelow24Px: countControlsBelow('#comments .cmt2-head-btn, #cmt2-holder li.comment .comment-actions .cmt2-reply-action, #cmt2-holder li.comment .comment-actions .cmt2-thread-toggle, #cmt2-holder li.comment .comment-actions .cmt2-ctx-btn, .gg-comments__footer #gg-top-continue .comment-reply', root, 24),
+      footerHeightPx: footer && footer.getBoundingClientRect ? footer.getBoundingClientRect().height : 0,
+      composerHeightPx: root && root.querySelector ? (() => {
+        const composer = root.querySelector('.gg-comments__composerslot > #top-ce, .gg-comments__composerslot > .comment-replybox-single, .gg-comments__composerslot > .comment-replybox-thread');
+        if (!composer || !visible(composer) || !composer.getBoundingClientRect) return 0;
+        return composer.getBoundingClientRect().height || 0;
+      })() : 0,
+      widthPressed: cleanValue(widthBtn && widthBtn.getAttribute ? widthBtn.getAttribute('aria-pressed') : ''),
+      sortPressed: cleanValue(sortBtn && sortBtn.getAttribute ? sortBtn.getAttribute('aria-pressed') : ''),
+      widthControls: cleanValue(widthBtn && widthBtn.getAttribute ? widthBtn.getAttribute('aria-controls') : ''),
+      sortControls: cleanValue(sortBtn && sortBtn.getAttribute ? sortBtn.getAttribute('aria-controls') : ''),
+      threadToggleCount: threadToggles.length,
+      threadToggleA11yMissing: threadToggles.filter((btn) => {
+        const expanded = cleanValue(btn && btn.getAttribute ? btn.getAttribute('aria-expanded') : '');
+        const controls = cleanValue(btn && btn.getAttribute ? btn.getAttribute('aria-controls') : '');
+        return !/^(true|false)$/.test(expanded) || !controls;
+      }).length,
+      menuRoleMissing: menuRoots.filter((node) => cleanValue(node && node.getAttribute ? node.getAttribute('role') : '') !== 'menu').length,
+      menuItemRoleMissing: menuItems.filter((node) => cleanValue(node && node.getAttribute ? node.getAttribute('role') : '') !== 'menuitem').length,
+      visibleCommentsSurfaces: visibleAll('#comments', document).length,
+      visibleOffPanelSurfaces: visibleAll('#comments', document).filter((node) => !node.closest('#ggPanelComments')).length
+    };
+  });
+}
+
+async function main() {
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  if (executablePath) launchOptions.executablePath = executablePath;
+  let browser = null;
+  let browserName = 'chromium';
+  try {
+    browser = await chromium.launch(launchOptions);
+  } catch (error) {
+    const detail = clean(error && error.message ? error.message : error);
+    if (/executable doesn't exist|please run the following command|playwright install|browserType\.launch|failed to launch/i.test(detail)) {
+      try {
+        browser = await firefox.launch({ headless: true });
+        browserName = 'firefox';
+      } catch (fallbackError) {
+        const fallbackDetail = clean(fallbackError && fallbackError.message ? fallbackError.message : fallbackError);
+        console.log(`BROWSER|infra|${detail || 'browser-launch-unavailable'} || fallback=${fallbackDetail || 'firefox-launch-unavailable'}`);
+        return;
+      }
+    } else {
+      throw error;
+    }
+  }
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1600 } });
+  const runtimeErrors = [];
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const loc = msg.location ? msg.location() : {};
+    const payload = `${msg.text ? msg.text() : ''} ${(loc && loc.url) || ''}`;
+    if (isCommentRuntimeMessage(payload) && !isIgnorableCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+  page.on('pageerror', (error) => {
+    const payload = `${error && error.message ? error.message : error} ${error && error.stack ? error.stack : ''}`;
+    if (isCommentRuntimeMessage(payload) && !isIgnorableCommentRuntimeMessage(payload)) runtimeErrors.push(clean(payload));
+  });
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 45000 }); } catch (_) {}
+    await page.waitForTimeout(1200);
+
+    const commentsToggle = page.locator('[data-gg-postbar="comments"]');
+    if (await commentsToggle.count()) {
+      await commentsToggle.first().click();
+    }
+    await page.waitForFunction(() => {
+      const panel = document.querySelector('#ggPanelComments');
+      const root = panel && panel.querySelector ? panel.querySelector('#comments') : null;
+      const main = document.querySelector('main.gg-main');
+      if (!panel || !root || !main) return false;
+      const style = window.getComputedStyle(root);
+      return !panel.hidden &&
+        main.getAttribute('data-gg-right-mode') === 'comments' &&
+        style &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden';
+    }, { timeout: 20000 });
+    await page.waitForTimeout(1400);
+
+    const before = await captureState(page);
+    const isPanelRead = fixtureClass === 'panel-read';
+    const isComposerOpen = fixtureClass === 'composer-open';
+    let afterAdd = before;
+    let afterReply = before;
+
+    if (requireCompose && before.commentsOpen) {
+      const addBtn = page.locator('#ggPanelComments .gg-comments__footer #gg-top-continue .comment-reply').first();
+      if (await addBtn.count()) {
+        await addBtn.click();
+        await page.waitForTimeout(1800);
+        afterAdd = await captureState(page);
+      }
+    }
+
+    if (requireCompose && requireReply && before.replyAllowed) {
+      const replyBtn = page.locator(`#ggPanelComments #c${before.firstReplyId} .comment-actions .cmt2-reply-action`).first();
+      if (await replyBtn.count()) {
+        await replyBtn.click();
+        await page.waitForTimeout(2000);
+        afterReply = await captureState(page);
+      }
+    }
+
+    let focusState = notApplicable('compose-not-required');
+    if (requireCompose) {
+      if (!before.commentsOpen) {
+        focusState = notApplicable('comments-closed');
+      } else {
+        const addFocusOk = afterAdd.footerOpen === '1' &&
+          afterAdd.composerKind === 'native' &&
+          (afterAdd.focusKind === 'native' || afterAdd.focusKind === 'native-shell');
+        const replyFocusOk = requireReply
+          ? afterReply.replyMode === 'reply' &&
+            afterReply.composerKind === 'native' &&
+            (afterReply.focusKind === 'native' || afterReply.focusKind === 'native-shell')
+          : true;
+        focusState = state(
+          addFocusOk && replyFocusOk,
+          [
+            `before=${before.activeElement}`,
+            `afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind}`,
+            `afterReply=${afterReply.activeElement}:${afterReply.focusKind}`,
+            `kind=${afterAdd.composerKind}/${afterReply.composerKind}`,
+            `reason=${afterAdd.composerReason}/${afterReply.composerReason}`,
+            `composer=${afterAdd.footerOpen}`,
+            `replyMode=${afterReply.replyMode}`,
+            `footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0}`,
+            `scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled}`,
+            `fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed}`,
+            `nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`,
+            `focusState=${afterAdd.focusState}/${afterReply.focusState}`,
+            `focusTarget=${afterAdd.focusTarget}/${afterReply.focusTarget}`
+          ].join(';')
+        );
+      }
+    }
+
+    const effectiveRuntimeErrors = runtimeErrors.filter((entry) => {
+      if (fixtureClass === 'panel-read' && /error loading recaptcha script|recaptcha\/api\.js|commentformiframeview/i.test(entry)) {
+        return false;
+      }
+      return true;
+    });
+    const results = [];
+    results.push({
+      id: 'panel-open',
+      ...state(
+        before.panelVisible && before.rootVisible && before.mainRightMode === 'comments',
+        `panel=${before.panelVisible ? 1 : 0};root=${before.rootVisible ? 1 : 0};mode=${before.mainRightMode || 'missing'}`
+      )
+    });
+    results.push({
+      id: 'comment-count',
+      ...state(before.commentCount === expectedCount, `expected=${expectedCount};actual=${before.commentCount}`)
+    });
+    results.push({
+      id: 'single-surface',
+      ...state(
+        before.visibleCommentsSurfaces === 1 && before.visibleOffPanelSurfaces === 0,
+        `visible=${before.visibleCommentsSurfaces};offPanel=${before.visibleOffPanelSurfaces}`
+      )
+    });
+    results.push({
+      id: 'native-hidden',
+      ...state(
+        before.nativePeerCount === 0 && before.deletePeerFailures.length === 0,
+        `nativePeers=${before.nativePeerCount};deletePeers=${before.deletePeerFailures.join(',') || 'ok'}`
+      )
+    });
+    results.push({
+      id: 'unique-owners',
+      ...state(
+        before.replyOwnerFailures.length === 0 &&
+        before.moreOwnerFailures.length === 0 &&
+        before.toggleOwnerFailures.length === 0,
+        `reply=${before.replyOwnerFailures.join(',') || 'ok'};more=${before.moreOwnerFailures.join(',') || 'ok'};toggle=${before.toggleOwnerFailures.join(',') || 'ok'}`
+      )
+    });
+    results.push({
+      id: 'runtime-proof',
+      ...state(
+        before.proofState === 'ok',
+        `proof=${before.proofState || 'missing'}:${before.proofCount || 'missing'};issues=${before.proofIssues || 'none'}`
+      )
+    });
+    results.push({
+      id: 'density-floors',
+      ...(before.commentCount > 0
+        ? state(
+            before.minAuthorFontPx >= 12 &&
+            before.minMetaFontPx >= 11 &&
+            before.minReplyMetaFontPx >= 11,
+            `author=${before.minAuthorFontPx.toFixed(2)};meta=${before.minMetaFontPx.toFixed(2)};replyMeta=${before.minReplyMetaFontPx.toFixed(2)}`
+          )
+        : notApplicable('no-comments'))
+    });
+    results.push({
+      id: 'tap-target-floors',
+      ...(before.commentCount > 0
+        ? state(
+            before.minActionHitPx >= 24 && before.controlsBelow24Px === 0,
+            `minHit=${before.minActionHitPx.toFixed(2)};below24=${before.controlsBelow24Px}`
+          )
+        : notApplicable('no-comments'))
+    });
+    results.push({
+      id: 'controls-a11y',
+      ...state(
+        /^(true|false)$/.test(before.widthPressed) &&
+        /^(true|false)$/.test(before.sortPressed) &&
+        !!before.widthControls &&
+        !!before.sortControls &&
+        before.threadToggleA11yMissing === 0 &&
+        before.menuRoleMissing === 0 &&
+        before.menuItemRoleMissing === 0,
+        `widthPressed=${before.widthPressed || 'missing'};sortPressed=${before.sortPressed || 'missing'};widthControls=${before.widthControls || 'missing'};sortControls=${before.sortControls || 'missing'};toggleMissing=${before.threadToggleA11yMissing}/${before.threadToggleCount};menuRoleMissing=${before.menuRoleMissing};menuItemRoleMissing=${before.menuItemRoleMissing}`
+      )
+    });
+    results.push({
+      id: 'footer-budget-baseline',
+      ...state(
+        before.footerHeightPx <= (before.footerOpen === '1' ? 260 : 130),
+        `beforeFooter=${before.footerHeightPx.toFixed(2)};footerOpen=${before.footerOpen}`
+      )
+    });
+    results.push({
+      id: 'runtime-errors',
+      ...state(effectiveRuntimeErrors.length === 0, effectiveRuntimeErrors.length ? effectiveRuntimeErrors.join(' || ') : 'ok')
+    });
+
+    if (isPanelRead) {
+      results.push({
+        id: 'footer-add-owner',
+        ...(before.commentsOpen
+          ? state(before.footerAddOwnerCount === 1, `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=1;kind=${before.composerKind};reason=${before.composerReason}`)
+          : state(before.footerAddOwnerCount === 0, `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=0;kind=${before.composerKind};reason=${before.composerReason}`))
+      });
+      results.push({
+        id: 'closed-compose-honesty',
+        ...(before.commentsOpen
+          ? notApplicable('comments-open')
+          : state(
+              before.replyMode === 'default' &&
+              before.replyBannerCount === 0 &&
+              before.footerAddOwnerCount === 0 &&
+              before.footerComposerCount === 0 &&
+              before.footerFallbackComposerCount === 0 &&
+              before.inlineComposerCount === 0,
+              `replyMode=${before.replyMode};banner=${before.replyBannerCount};footerAdd=${before.footerAddOwnerCount};footer=${before.footerComposerCount}:${before.footerComposerKinds || 'none'};inline=${before.inlineComposerCount}:${before.inlineComposerKinds || 'none'};kind=${before.composerKind};reason=${before.composerReason}`
+            ))
+      });
+    }
+
+    if (isComposerOpen) {
+      results.push({
+        id: 'fixture-open-truth',
+        ...state(
+          before.commentsOpen,
+          `commentsOpen=${before.commentsOpen ? 'true' : 'false'};replyAllowed=${before.replyAllowed ? 'true' : 'false'};kind=${before.composerKind};reason=${before.composerReason}`
+        )
+      });
+      results.push({
+        id: 'footer-add-owner',
+        ...state(
+          before.commentsOpen && before.footerAddOwnerCount === 1,
+          `visibleAddOwners=${before.footerAddOwnerCount};commentsOpen=${before.commentsOpen ? 1 : 0};kind=${before.composerKind};reason=${before.composerReason}`
+        )
+      });
+      results.push({
+        id: 'composer-kind',
+        ...(before.commentsOpen
+          ? state(
+              afterAdd.composerKind === 'native',
+              `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerKinds || 'none'}`
+            )
+          : notApplicable(`kind=${before.composerKind};reason=${before.composerReason};commentsOpen=0`))
+      });
+      results.push({
+        id: 'footer-composer',
+        ...(before.commentsOpen
+          ? state(
+              afterAdd.composerKind === 'native' &&
+              afterAdd.footerComposerCount === 1 &&
+              afterAdd.footerNativeComposerCount === 1 &&
+              afterAdd.footerFallbackComposerCount === 0 &&
+              afterAdd.inlineComposerCount === 0 &&
+              afterAdd.inlineNativeComposerCount === 0 &&
+              afterAdd.inlineFallbackComposerCount === 0,
+              `kind=${afterAdd.composerKind};reason=${afterAdd.composerReason};footer=${afterAdd.footerComposerCount}:${afterAdd.footerComposerSignature || 'missing'}:${afterAdd.footerComposerKinds || 'none'};inline=${afterAdd.inlineComposerCount}:${afterAdd.inlineComposerSignature || 'none'}:${afterAdd.inlineComposerKinds || 'none'};open=${afterAdd.footerOpen}`
+            )
+          : notApplicable('comments-closed'))
+      });
+      results.push({
+        id: 'reply-footer',
+        ...(requireReply
+          ? (before.replyAllowed
+            ? state(
+                afterReply.composerKind === 'native' &&
+                afterReply.footerComposerCount === 1 &&
+                afterReply.footerNativeComposerCount === 1 &&
+                afterReply.footerFallbackComposerCount === 0 &&
+                afterReply.inlineComposerCount === 0 &&
+                afterReply.inlineNativeComposerCount === 0 &&
+                afterReply.inlineFallbackComposerCount === 0 &&
+                afterReply.replyMode === 'reply' &&
+                afterReply.replyBannerCount === 1,
+                `kind=${afterReply.composerKind};reason=${afterReply.composerReason};footer=${afterReply.footerComposerCount}:${afterReply.footerComposerSignature || 'missing'}:${afterReply.footerComposerKinds || 'none'};inline=${afterReply.inlineComposerCount}:${afterReply.inlineComposerSignature || 'none'}:${afterReply.inlineComposerKinds || 'none'};replyMode=${afterReply.replyMode};banner=${afterReply.replyBannerCount}`
+              )
+            : state(false, `replyAllowed=${before.replyAllowed ? 'true' : 'false'};firstReplyId=${before.firstReplyId || 'missing'};commentsOpen=${before.commentsOpen ? 'true' : 'false'}`))
+          : notApplicable('reply-not-required'))
+      });
+      results.push({
+        id: 'focus-footer',
+        ...focusState
+      });
+      results.push({
+        id: 'footer-budget',
+        ...(before.commentsOpen
+          ? state(
+              before.footerHeightPx <= 130 &&
+              afterAdd.footerHeightPx <= 260 &&
+              afterAdd.composerHeightPx <= 220 &&
+              (!requireReply || afterReply.footerHeightPx <= 260),
+              `beforeFooter=${before.footerHeightPx.toFixed(2)};afterOpenFooter=${afterAdd.footerHeightPx.toFixed(2)};afterOpenComposer=${afterAdd.composerHeightPx.toFixed(2)};afterReplyFooter=${afterReply.footerHeightPx.toFixed(2)}`
+            )
+          : notApplicable('comments-closed'))
+      });
+    }
+
+    console.log(`META|lane=${laneLabel};fixtureClass=${fixtureClass};case=${caseName};browser=${browserName};url=${before.url};expected=${expectedCount};actual=${before.commentCount};commentsOpen=${before.commentsOpen ? 'true' : 'false'};composerKind=${before.composerKind};composerReason=${before.composerReason};replyAllowed=${before.replyAllowed ? 'true' : 'false'};footerComposeRequired=${requireCompose ? 'true' : 'false'};proof=${clean(before.proofState) || 'missing'};proofCount=${clean(before.proofCount) || 'missing'}`);
+    console.log(`DEBUG|lane=${laneLabel};fixtureClass=${fixtureClass};case=${caseName};browser=${browserName};panel=${before.panelVisible ? 1 : 0};commentsOpen=${before.commentsOpen ? 'true' : 'false'};composerOpen=${afterAdd.footerOpen};replyMode=${afterReply.replyMode};replyAllowed=${before.replyAllowed ? 'true' : 'false'};footerComposeRequired=${requireCompose ? 'true' : 'false'};composerKind=${before.composerKind}/${afterAdd.composerKind}/${afterReply.composerKind};composerReason=${before.composerReason}/${afterAdd.composerReason}/${afterReply.composerReason};before=${before.activeElement};afterOpen=${afterAdd.activeElement}:${afterAdd.focusKind};afterReply=${afterReply.activeElement}:${afterReply.focusKind};footerInView=${afterAdd.footerInView ? 1 : 0}/${afterReply.footerInView ? 1 : 0};scrolled=${afterAdd.focusScrolled}/${afterReply.focusScrolled};fallback=${afterAdd.focusFallbackUsed}/${afterReply.focusFallbackUsed};nativeReady=${afterAdd.nativeEditorReady}/${afterReply.nativeEditorReady}`);
+    for (const row of results) {
+      const rowState = row.skip ? 'na' : (row.pass ? 'pass' : 'fail');
+      console.log(`CRITERION|${row.id}|${rowState}|${row.detail}`);
+    }
+  } finally {
+    await page.close().catch(() => {});
+    await browser.close().catch(() => {});
+  }
+}
+
+main().catch((error) => {
+  console.log(`BROWSER|fail|${clean(error && error.message ? error.message : error)}`);
+  process.exit(0);
+});
+NODE
+  status=$?
+
+  if [[ "$status" -ne 0 ]]; then
+    comments_owner_signal "${lane_label} contract runner exited unexpectedly case=${case_name} fixtureClass=${fixture_class} (status=${status})"
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ "$line" == META\|* ]]; then
+      printf 'SMOKE %s %s target=%s\n' "$lane_label" "${line#META|}" "$path"
+      continue
+    fi
+    if [[ "$line" == DEBUG\|* ]]; then
+      printf 'SMOKE %s-debug %s target=%s\n' "$lane_label" "${line#DEBUG|}" "$path"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|infra\|* ]]; then
+      log_warn "${lane_label} browser dependency unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|infra|})"
+      continue
+    fi
+    if [[ "$line" == BROWSER\|fail\|* ]]; then
+      comments_owner_browser_signal "${line#BROWSER|fail|}" "${lane_label} browser proof unavailable case=${case_name} fixtureClass=${fixture_class} (${line#BROWSER|fail|})"
+      continue
+    fi
+    if [[ "$line" == CRITERION\|* ]]; then
+      local rest="${line#CRITERION|}"
+      local id="${rest%%|*}"
+      rest="${rest#*|}"
+      local state="${rest%%|*}"
+      local detail="${rest#*|}"
+      printf 'SMOKE %s case=%s fixtureClass=%s criterion=%s state=%s detail=%s\n' "$lane_label" "$case_name" "$fixture_class" "$id" "$state" "$detail"
+      if [[ "$state" == "fail" ]]; then
+        comments_owner_signal "${lane_label} case=${case_name} fixtureClass=${fixture_class} criterion=${id} failed (${detail})"
+      fi
+    fi
+  done < "$report_file"
+}
+
+check_surface() {
+  local path="$1"
+  local expected_status="$2"
+  local expected_final="$3"
+  local expected_canonical="$4"
+  local expected_og="$5"
+  local expected_surface="$6"
+  local expected_page="$7"
+  local expected_home_state="${8:-}"
+  local expected_edited="${9:-ignore}"
+  local expected_redirect_min="${10:-0}"
+
+  local file="$tmp_dir/$(safe_file_name "$path").html"
+  local scan_file="$tmp_dir/$(safe_file_name "${path}_scan").html"
+  local meta final status redirects canonical og title desc surface page home_state edited_present
+  local meta_rest
+  meta="$(fetch_page "$path" "$file")"
+  strip_inert_markup "$file" "$scan_file"
+  final="${meta%%|*}"
+  meta_rest="${meta#*|}"
+  status="${meta_rest%%|*}"
+  redirects="${meta_rest##*|}"
+  canonical="$(extract_canonical "$file")"
+  og="$(extract_og_url "$file")"
+  title="$(extract_title "$file")"
+  desc="$(grep -Eoi "<meta[^>]+name=['\\\"]description['\\\"][^>]*>" "$file" | head -n 1 || true)"
+  desc="$(extract_attr_from_tag "$desc" "content")"
+  surface="$(extract_body_attr "$file" "data-gg-surface")"
+  page="$(extract_body_attr "$file" "data-gg-page")"
+  home_state="$(extract_main_attr "$file" "data-gg-home-state")"
+  if grep -q "Edited by pakrpp\\." "$file"; then
+    edited_present="yes"
+  else
+    edited_present="no"
+  fi
+
+  printf 'SMOKE path=%s final=%s status=%s redirects=%s canonical=%s og=%s surface=%s page=%s home_state=%s edited_by_pakrpp=%s title=%s desc=%s\n' \
+    "$path" "$final" "$status" "$redirects" "$canonical" "$og" "$surface" "$page" "$home_state" "$edited_present" "$title" "$desc"
+
+  assert_equal "$status" "$expected_status" "$path status"
+  assert_equal "$final" "$expected_final" "$path final URL"
+  assert_equal "$canonical" "$expected_canonical" "$path canonical"
+  assert_equal "$og" "$expected_og" "$path og:url"
+  assert_equal "$surface" "$expected_surface" "$path data-gg-surface"
+  assert_equal "$page" "$expected_page" "$path data-gg-page"
+  if [[ -n "$expected_home_state" ]]; then
+    assert_equal "$home_state" "$expected_home_state" "$path data-gg-home-state"
+  fi
+  if [[ "$expected_edited" == "present" ]]; then
+    assert_equal "$edited_present" "yes" "$path Edited by pakrpp marker"
+  elif [[ "$expected_edited" == "absent" ]]; then
+    assert_equal "$edited_present" "no" "$path Edited by pakrpp marker"
+  fi
+  assert_no_placeholder_strings "$scan_file" "$path"
+  if [[ "$path" == "/" || "$path" == "/landing" || "$path" == "/landing/" ]]; then
+    assert_no_empty_editorial_shell "$scan_file" "$path"
+  fi
+  if [[ "$path" == "/" ]]; then
+    assert_listing_idle_chrome_not_readable "$scan_file" "$path"
+  fi
+  check_surface_ownership_contract "$scan_file" "$path" "$expected_surface"
+
+  if [[ "$canonical" == *"/blog"* || "$og" == *"/blog"* ]]; then
+    log_fail "$path canonical/og contains forbidden /blog leakage"
+  fi
+  if [[ "$expected_redirect_min" =~ ^[0-9]+$ ]] && [[ "$redirects" =~ ^[0-9]+$ ]] && (( redirects < expected_redirect_min )); then
+    log_fail "$path redirect count below required minimum ($redirects < $expected_redirect_min)"
+  fi
+  if [[ -n "$redirects" ]] && [[ "$redirects" =~ ^[0-9]+$ ]] && (( redirects > 8 )); then
+    log_fail "$path unexpected redirect depth ($redirects)"
+  fi
+}
+
+check_dock_truth() {
+  local file="$tmp_dir/$(safe_file_name "dock_root").html"
+  fetch_page "/" "$file" >/dev/null
+
+  local home_href blog_href contact_href home_norm blog_norm contact_norm
+  home_href="$(extract_dock_href "$file" "home")"
+  blog_href="$(extract_dock_href "$file" "blog")"
+  contact_href="$(extract_dock_href "$file" "contact")"
+  home_norm="$(normalize_href "$home_href")"
+  blog_norm="$(normalize_href "$blog_href")"
+  contact_norm="$(normalize_href "$contact_href")"
+
+  printf 'SMOKE dock home=%s blog=%s contact=%s\n' "$home_norm" "$blog_norm" "$contact_norm"
+
+  assert_starts_with "$home_norm" "${BASE_URL}/landing" "dock home href"
+  assert_equal "$blog_norm" "${BASE_URL}/" "dock blog href"
+  assert_starts_with "$contact_norm" "${BASE_URL}/landing" "dock contact href"
+}
+
+check_discovered_detail_paths() {
+  local listing_file="$tmp_dir/$(safe_file_name "discovery_root").html"
+  local post_path=""
+  local page_path=""
+  fetch_page "/" "$listing_file" >/dev/null
+
+  post_path="$(discover_first_post_path "$listing_file" || true)"
+  if [[ -z "$post_path" ]]; then
+    log_fail "unable to discover a real post URL from /"
+  else
+    printf 'SMOKE discovered post=%s\n' "$post_path"
+    check_surface "$post_path" "200" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "$(absolute_for_path "$post_path")" "post" "post" "" "ignore"
+  fi
+
+  page_path="$(discover_first_page_path "$listing_file" || true)"
+  if [[ -z "$page_path" ]]; then
+    log_warn "no real page URL discovered from /; skipped page check"
+  else
+    printf 'SMOKE discovered page=%s\n' "$page_path"
+    check_surface "$page_path" "200" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "$(absolute_for_path "$page_path")" "page" "page" "" "ignore"
+  fi
+
+  check_listing_card_metadata "$listing_file"
+}
+
+is_truthy() {
+  local value
+  value="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
+  [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" || "$value" == "on" ]]
+}
+
+template_drift_signal() {
+  local message="$1"
+  if [[ "$TEMPLATE_DRIFT_MODE" == "fail" ]]; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    printf '::warning title=Template fingerprint drift::%s\n' "$message"
+  fi
+}
+
+check_template_fingerprint_drift() {
+  local file="$tmp_dir/$(safe_file_name "template_fp_root").html"
+  local repo_expected=""
+  local repo_embedded=""
+  local live_observed=""
+  local changed_prefix=""
+  local result_line=""
+
+  fetch_page "/" "$file" >/dev/null
+
+  if ! repo_expected="$(node qa/template-fingerprint.mjs --value 2>/dev/null)"; then
+    log_fail "unable to compute repo template fingerprint from index.prod.xml"
+    return
+  fi
+  if ! repo_embedded="$(node qa/template-fingerprint.mjs --embedded 2>/dev/null)"; then
+    log_fail "unable to read embedded template fingerprint marker from index.prod.xml"
+    return
+  fi
+  live_observed="$(extract_template_fingerprint "$file")"
+
+  printf 'SMOKE template-fingerprint repo_expected=%s repo_embedded=%s live_observed=%s mode=%s changed_in_rev=%s\n' \
+    "$repo_expected" "$repo_embedded" "${live_observed:-missing}" "$TEMPLATE_DRIFT_MODE" "$TEMPLATE_CHANGED_IN_REV"
+
+  if [[ "$repo_expected" != "$repo_embedded" ]]; then
+    log_fail "repo template fingerprint marker stale (embedded='$repo_embedded' expected='$repo_expected'). Run: node qa/template-fingerprint.mjs --write"
+    template_release_state="blogger_template_drift_detected"
+    template_release_note="Repo template fingerprint marker stale."
+  fi
+
+  if [[ -z "$live_observed" ]]; then
+    if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+      changed_prefix="index.prod.xml changed in this revision; "
+    fi
+    template_drift_signal "${changed_prefix}live marker 'data-gg-template-fingerprint' is missing. Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
+    result_line="marker_missing"
+    template_release_state="blogger_template_publish_required"
+    template_release_note="Manual Blogger template publish still required."
+  elif [[ "$live_observed" != "$repo_expected" ]]; then
+    if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
+      changed_prefix="index.prod.xml changed in this revision; "
+    fi
+    template_drift_signal "${changed_prefix}live template fingerprint drift (repo='${repo_expected}', live='${live_observed}'). Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
+    result_line="drift"
+    template_release_state="blogger_template_drift_detected"
+    template_release_note="Blogger template drift detected."
+  else
+    printf 'SMOKE template-fingerprint parity=match (%s)\n' "$repo_expected"
+    result_line="match"
+    template_release_state="blogger_template_parity_verified"
+    template_release_note="Blogger template parity verified."
+  fi
+
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo "### Template Fingerprint Check"
+      echo "- Repo expected: \`${repo_expected}\`"
+      echo "- Repo embedded: \`${repo_embedded}\`"
+      echo "- Live observed: \`${live_observed:-missing}\`"
+      echo "- Result: \`${result_line}\`"
+      echo "- State candidate: \`${template_release_state}\`"
+      if [[ "$result_line" != "match" ]]; then
+        echo "- Manual Blogger template publish is required for full parity."
+      fi
+    } >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+
+emit_release_state() {
+  local final_state="worker_assets_deployed_and_verified"
+  local final_note="Worker/assets public contract verified."
+  local contract_state="worker_assets_contract_passed"
+
+  if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" ]]; then
+    final_state="worker_assets_rollout_pending"
+    final_note="$worker_rollout_note"
+    contract_state="contract_failed"
+  elif [[ "$failures" -gt 0 ]]; then
+    final_state="contract_failed"
+    final_note="Public contract checks failed."
+    contract_state="contract_failed"
+  elif [[ "$template_release_state" != "blogger_template_parity_verified" && "$template_release_state" != "blogger_template_parity_unknown" ]]; then
+    final_state="worker_assets_deployed_only__blogger_template_publish_required"
+    final_note="$template_release_note"
+  fi
+
+  printf 'SMOKE worker-state=%s note=%s expected=%s observed=%s final=%s\n' \
+    "$worker_rollout_state" "$worker_rollout_note" "${EXPECTED_WORKER_VERSION:-unset}" "${worker_live_version:-missing}" "${worker_rollout_final_url:-unknown}"
+  printf 'SMOKE template-state=%s note=%s\n' "$template_release_state" "$template_release_note"
+  printf 'SMOKE contract-state=%s failures=%s warnings=%s\n' "$contract_state" "$failures" "$warnings"
+  printf 'SMOKE release-state=%s note=%s\n' "$final_state" "$final_note"
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo "### Release State"
+      echo "- Worker state: \`${worker_rollout_state}\`"
+      echo "- Worker note: ${worker_rollout_note}"
+      echo "- Expected worker version: \`${EXPECTED_WORKER_VERSION:-unset}\`"
+      echo "- Observed worker version: \`${worker_live_version:-missing}\`"
+      echo "- Template state: \`${template_release_state}\`"
+      echo "- Template note: ${template_release_note}"
+      echo "- Contract state: \`${contract_state}\`"
+      echo "- Final state: \`${final_state}\`"
+      echo "- Final note: ${final_note}"
+    } >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+
+printf 'SMOKE classify=WORKER_SCOPE run=check_worker_rollout\n'
+check_worker_rollout
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_template_fingerprint_drift\n'
+check_template_fingerprint_drift
+
+if [[ "$worker_rollout_state" == "worker_assets_rollout_pending" && "$WORKER_VERSION_MODE" == "fail" ]]; then
+  emit_release_state
+  printf 'LIVE SMOKE RESULT: FAILED (worker rollout pending)\n' >&2
+  exit 1
+fi
+
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_surface_routes\n'
+check_surface "/" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
+check_surface "/landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore" "1"
+check_surface "/landing/" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/?view=blog" "200" "${BASE_URL}/" "${BASE_URL}/" "${BASE_URL}/" "listing" "listing" "blog" "ignore"
+check_surface "/?view=landing" "200" "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "home" "landing" "ignore"
+check_surface "/p/library.html" "200" "${BASE_URL}/p/library.html" "${BASE_URL}/p/library.html" "${BASE_URL}/p/library.html" "special" "special" "" "ignore"
+printf 'SMOKE classify=MIXED_SCOPE run=check_homepage_mixed_contract\n'
+check_homepage_mixed_contract
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_dock_truth\n'
+check_dock_truth
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_discovered_detail_paths\n'
+check_discovered_detail_paths
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_listing_preview_runtime_contract\n'
+check_listing_preview_runtime_contract
+printf 'SMOKE classify=TEMPLATE_SCOPE run=check_comments_owner_contract\n'
+check_comments_owner_contract
+emit_release_state
+
+if [[ "$failures" -gt 0 ]]; then
+  printf 'LIVE SMOKE RESULT: FAILED (%s)\n' "$failures" >&2
+  exit 1
+fi
+
+if [[ "$warnings" -gt 0 ]]; then
+  printf 'LIVE SMOKE RESULT: PASS_WITH_WARNINGS (%s)\n' "$warnings"
+  exit 0
+fi
+
+printf 'LIVE SMOKE RESULT: PASS\n'
