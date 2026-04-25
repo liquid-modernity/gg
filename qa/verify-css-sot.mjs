@@ -5,7 +5,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const DOC_PATH = path.join(ROOT, "docs/css-source-of-truth.md");
-const INDEX_PATH = path.join(ROOT, "index.prod.xml");
+const INDEX_PATH = path.join(ROOT, "index.xml");
 const PACKAGE_PATH = path.join(ROOT, "package.json");
 const LATEST_CSS = path.join(ROOT, "public/assets/latest/main.css");
 
@@ -58,7 +58,7 @@ const findActiveRelease = () => {
   const unique = [...new Set(releases)];
   if (unique.length !== 1) {
     fail(
-      `index.prod.xml must reference exactly one active versioned main.css release, found: ${
+      `index.xml must reference exactly one active versioned main.css release, found: ${
         unique.join(", ") || "none"
       }`
     );

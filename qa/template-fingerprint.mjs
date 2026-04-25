@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-const DEFAULT_FILE = "index.prod.xml";
+const DEFAULT_FILE = "index.xml";
 const CARRIER_ID = "gg-fingerprint";
 const CARRIER_ATTR = "data-gg-template-fingerprint";
 const FP_PLACEHOLDER = "__GG_TEMPLATE_FP__";
@@ -16,7 +16,7 @@ const STRIP_STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
 const STRIP_COMMENT_RE = /<!--[\s\S]*?-->/g;
 
 const USAGE = `Usage:
-  node qa/template-fingerprint.mjs [--file index.prod.xml] [--value|--embedded|--check|--write|--extract-live]
+  node qa/template-fingerprint.mjs [--file index.xml] [--value|--embedded|--check|--write|--extract-live]
 
 Modes:
   --value     Print deterministic fingerprint derived from template content.

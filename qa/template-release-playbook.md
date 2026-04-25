@@ -7,7 +7,7 @@
 
 ## 1. Aturan paling penting
 
-Kalau perubahan menyentuh `index.prod.xml`, maka release **belum selesai** hanya dengan `npm run gaga`.
+Kalau perubahan menyentuh `index.xml`, maka release **belum selesai** hanya dengan `npm run gaga`.
 
 Kenapa?
 Karena:
@@ -20,7 +20,7 @@ Karena:
 ## 2. Kapan saya harus publish template Blogger manual?
 
 Lakukan manual publish kalau:
-- `index.prod.xml` berubah
+- `index.xml` berubah
 - atau perubahan menyentuh struktur/template SSR
 
 Kalau yang berubah hanya CSS, JS, Worker, asset, atau hal non-template:
@@ -30,13 +30,13 @@ Kalau yang berubah hanya CSS, JS, Worker, asset, atau hal non-template:
 
 ## 3. Langkah singkat setelah `npm run gaga`
 
-### A. Kalau `index.prod.xml` **tidak** berubah
+### A. Kalau `index.xml` **tidak** berubah
 1. Jalankan `npm run gaga`
 2. Tunggu deploy selesai
 3. Cek live
 4. Selesai
 
-### B. Kalau `index.prod.xml` **berubah**
+### B. Kalau `index.xml` **berubah**
 1. Jalankan `npm run gaga`
 2. Tunggu deploy selesai
 3. Jalankan:
@@ -64,7 +64,7 @@ Kalau yang berubah hanya CSS, JS, Worker, asset, atau hal non-template:
 - dan `npm run gaga:verify-template` lolos bila template memang berubah
 
 ### Release belum selesai kalau:
-- `index.prod.xml` berubah tapi Blogger belum dipublish manual
+- `index.xml` berubah tapi Blogger belum dipublish manual
 - live site masih menampilkan struktur lama
 - fitur/struktur baru hanya muncul di repo tapi belum muncul di Blogger
 

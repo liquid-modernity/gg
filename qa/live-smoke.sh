@@ -2451,11 +2451,11 @@ check_template_fingerprint_drift() {
   fetch_page "/" "$file" >/dev/null
 
   if ! repo_expected="$(node qa/template-fingerprint.mjs --value 2>/dev/null)"; then
-    log_fail "unable to compute repo template fingerprint from index.prod.xml"
+    log_fail "unable to compute repo template fingerprint from index.xml"
     return
   fi
   if ! repo_embedded="$(node qa/template-fingerprint.mjs --embedded 2>/dev/null)"; then
-    log_fail "unable to read embedded template fingerprint marker from index.prod.xml"
+    log_fail "unable to read embedded template fingerprint marker from index.xml"
     return
   fi
   live_observed="$(extract_template_fingerprint "$file")"
@@ -2471,7 +2471,7 @@ check_template_fingerprint_drift() {
 
   if [[ -z "$live_observed" ]]; then
     if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
-      changed_prefix="index.prod.xml changed in this revision; "
+      changed_prefix="index.xml changed in this revision; "
     fi
     template_drift_signal "${changed_prefix}live marker 'data-gg-template-fingerprint' is missing. Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
     result_line="marker_missing"
@@ -2479,7 +2479,7 @@ check_template_fingerprint_drift() {
     template_release_note="Manual Blogger template publish still required."
   elif [[ "$live_observed" != "$repo_expected" ]]; then
     if is_truthy "$TEMPLATE_CHANGED_IN_REV"; then
-      changed_prefix="index.prod.xml changed in this revision; "
+      changed_prefix="index.xml changed in this revision; "
     fi
     template_drift_signal "${changed_prefix}live template fingerprint drift (repo='${repo_expected}', live='${live_observed}'). Worker/assets deployed does not publish Blogger template; manual Blogger template publish required."
     result_line="drift"

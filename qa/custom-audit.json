@@ -38,9 +38,9 @@
       "entry": "gg-audit-4702eaa/wrangler.jsonc"
     },
     {
-      "path": "index.prod.xml",
+      "path": "index.xml",
       "exists": true,
-      "entry": "gg-audit-4702eaa/index.prod.xml"
+      "entry": "gg-audit-4702eaa/index.xml"
     },
     {
       "path": "src/worker.js",

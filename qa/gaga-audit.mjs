@@ -33,7 +33,7 @@ const CRITICAL_TARGETS = [
   "package.json",
   "package-lock.json",
   "wrangler.jsonc",
-  "index.prod.xml",
+  "index.xml",
   "src/worker.js",
   "public/manifest.webmanifest",
   "public/_headers",
@@ -664,7 +664,7 @@ function parseWorkflowSummary(zipPath, index, packageScripts) {
 function collectSignals(index, zipPath, workflowSummary) {
   const hasVersionedAssets = listByPrefix(index, "public/assets/v/").length > 0;
   const hasLatestAssets = listByPrefix(index, "public/assets/latest/").length > 0;
-  const hasTemplate = hasPath(index, "index.prod.xml");
+  const hasTemplate = hasPath(index, "index.xml");
   const hasWorker = hasPath(index, "src/worker.js");
   const hasWorkflows = workflowSummary.entries.length > 0;
   const qaEntries = listByPrefix(index, "qa/");
@@ -676,7 +676,7 @@ function collectSignals(index, zipPath, workflowSummary) {
   let indexProdRefersLatest = false;
   let qaLiveSmokeHasCommentsOwnerCheck = false;
   let qaLiveSmokeTargetsCommentsPath = false;
-  const indexEntry = firstEntryFor(index, "index.prod.xml");
+  const indexEntry = firstEntryFor(index, "index.xml");
   const liveSmokeEntry = firstEntryFor(index, "qa/live-smoke.sh");
   if (indexEntry) {
     const xml = readZipFileText(zipPath, indexEntry);
@@ -949,7 +949,7 @@ function buildFindings({
 
   if (signals.hasLatestAssets && signals.hasVersionedAssets && !signals.indexProdRefersVersioned) {
     warnings.push(
-      "Both public/assets/latest and public/assets/v exist without clear version pin in index.prod.xml."
+      "Both public/assets/latest and public/assets/v exist without clear version pin in index.xml."
     );
   }
   if (hasPath(index, "qa/live-smoke.sh") && !signals.qaLiveSmokeHasCommentsOwnerCheck) {
@@ -1125,7 +1125,7 @@ function renderMarkdown(report) {
   lines.push("## E. BLOG GAGA-ish Signals");
   lines.push(`- has public/assets/v/: ${yesNo(report.signals.hasVersionedAssets)}`);
   lines.push(`- has public/assets/latest/: ${yesNo(report.signals.hasLatestAssets)}`);
-  lines.push(`- has index.prod.xml: ${yesNo(report.signals.hasTemplate)}`);
+  lines.push(`- has index.xml: ${yesNo(report.signals.hasTemplate)}`);
   lines.push(`- has src/worker.js: ${yesNo(report.signals.hasWorker)}`);
   lines.push(`- has .github/workflows/: ${yesNo(report.signals.hasWorkflows)}`);
   lines.push(
@@ -1143,10 +1143,10 @@ function renderMarkdown(report) {
     `- qa/live-smoke targets 0/2/16 comments matrix: ${yesNo(report.signals.qaLiveSmokeTargetsCommentsPath)}`
   );
   lines.push(
-    `- index.prod.xml references /assets/v/: ${yesNo(report.signals.indexProdRefersVersioned)}`
+    `- index.xml references /assets/v/: ${yesNo(report.signals.indexProdRefersVersioned)}`
   );
   lines.push(
-    `- index.prod.xml references /assets/latest/: ${yesNo(report.signals.indexProdRefersLatest)}`
+    `- index.xml references /assets/latest/: ${yesNo(report.signals.indexProdRefersLatest)}`
   );
   lines.push("");
   lines.push("## F. Warnings");

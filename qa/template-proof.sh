@@ -294,7 +294,7 @@ live_observed="$(extract_template_fingerprint "$root_file")"
 fingerprint_state="UNKNOWN"
 if [[ -z "$repo_expected" || -z "$repo_embedded" ]]; then
   fingerprint_state="REPO_FINGERPRINT_READ_ERROR"
-  log_fail "unable to read repo fingerprint from index.prod.xml"
+  log_fail "unable to read repo fingerprint from index.xml"
 elif [[ "$repo_expected" != "$repo_embedded" ]]; then
   fingerprint_state="REPO_STALE"
   log_fail "repo fingerprint marker stale (embedded=${repo_embedded} expected=${repo_expected})"

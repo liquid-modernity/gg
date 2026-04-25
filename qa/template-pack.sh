@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SOURCE_FILE="${GG_TEMPLATE_SOURCE_FILE:-index.prod.xml}"
+SOURCE_FILE="${GG_TEMPLATE_SOURCE_FILE:-index.xml}"
 OUT_DIR="${GG_TEMPLATE_OUT_DIR:-dist}"
 ARTIFACT_FILE="${OUT_DIR}/blogger-template.publish.xml"
 META_FILE="${OUT_DIR}/blogger-template.publish.txt"

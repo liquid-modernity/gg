@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const ACTIVE_RELEASE = 'ac33998';
-const INDEX_PATH = path.join(ROOT, 'index.prod.xml');
+const INDEX_PATH = path.join(ROOT, 'index.xml');
 const WORKER_PATH = path.join(ROOT, 'src/worker.js');
 const SW_PATH = path.join(ROOT, 'public/sw.js');
 const HEADERS_PATH = path.join(ROOT, 'public/_headers');
@@ -118,16 +118,16 @@ function verifyReleasePins(issues, indexText) {
   const headerAssetPins = [...headersText.matchAll(/^\s*X-GG-Assets:\s*([^\s#]+)/gmi)].map((m) => m[1]);
 
   if (!hasReleaseMeta(indexText)) {
-    issues.push(`index.prod.xml missing gg-release=${ACTIVE_RELEASE}`);
+    issues.push(`index.xml missing gg-release=${ACTIVE_RELEASE}`);
   }
   if (!indexText.includes(`/assets/v/${ACTIVE_RELEASE}/main.css`)) {
-    issues.push(`index.prod.xml does not reference /assets/v/${ACTIVE_RELEASE}/main.css`);
+    issues.push(`index.xml does not reference /assets/v/${ACTIVE_RELEASE}/main.css`);
   }
   if (!indexText.includes(`/assets/v/${ACTIVE_RELEASE}/boot.js`)) {
-    issues.push(`index.prod.xml does not reference /assets/v/${ACTIVE_RELEASE}/boot.js`);
+    issues.push(`index.xml does not reference /assets/v/${ACTIVE_RELEASE}/boot.js`);
   }
   if (/\/assets\/latest\//.test(indexText)) {
-    issues.push('index.prod.xml references /assets/latest/');
+    issues.push('index.xml references /assets/latest/');
   }
   if (!new RegExp(`const\\s+WORKER_VERSION\\s*=\\s*['"]${ACTIVE_RELEASE}['"]`).test(workerText)) {
     issues.push(`src/worker.js WORKER_VERSION is not ${ACTIVE_RELEASE}`);
@@ -243,7 +243,7 @@ function main() {
   }
 
   if (hasLegacyLangCode(indexText)) {
-    issues.push('index.prod.xml still contains data-lang-code');
+    issues.push('index.xml still contains data-lang-code');
   }
   for (const file of jsTexts) {
     if (hasLegacyLangCode(file.text)) {
@@ -252,7 +252,7 @@ function main() {
   }
 
   if (!/id=['"]gg-palette-list['"]/.test(indexText)) {
-    issues.push('missing required #gg-palette-list listbox element in index.prod.xml');
+    issues.push('missing required #gg-palette-list listbox element in index.xml');
   }
 
   for (const file of jsTexts) {
@@ -269,7 +269,7 @@ function main() {
   }
 
   if (/>[\s\r\n]*[a-z]+(?:\.[a-z0-9_-]+){1,}[\s\r\n]*</i.test(indexText)) {
-    issues.push('index.prod.xml appears to contain raw copy keys rendered as text');
+    issues.push('index.xml appears to contain raw copy keys rendered as text');
   }
 
   if (issues.length) {

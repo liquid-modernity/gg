@@ -8,7 +8,7 @@
   "archive": {
     "topLevelRoots": [
       ".github",
-      "index.prod.xml",
+      "index.xml",
       "package-lock.json",
       "package.json",
       "public",
@@ -38,9 +38,9 @@
       "entry": "wrangler.jsonc"
     },
     {
-      "path": "index.prod.xml",
+      "path": "index.xml",
       "exists": true,
-      "entry": "index.prod.xml"
+      "entry": "index.xml"
     },
     {
       "path": "src/worker.js",

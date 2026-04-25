@@ -7,7 +7,7 @@
 ## A. Archive Basics
 - Path: `/Users/macbookpromid2012/Documents/BLOG-MIGRASI CDN DAN PWA/gg/dist/gg-audit.zip`
 - Size: 38303444 bytes (36.53 MB)
-- Top-level roots: `.github`, `index.prod.xml`, `package-lock.json`, `package.json`, `public`, `qa`, `src`, `tools`, `wrangler.jsonc`
+- Top-level roots: `.github`, `index.xml`, `package-lock.json`, `package.json`, `public`, `qa`, `src`, `tools`, `wrangler.jsonc`
 - File count: 171
 - Junk entries: _none_
 
@@ -15,7 +15,7 @@
 - [ok] `package.json` -> `package.json`
 - [ok] `package-lock.json` -> `package-lock.json`
 - [ok] `wrangler.jsonc` -> `wrangler.jsonc`
-- [ok] `index.prod.xml` -> `index.prod.xml`
+- [ok] `index.xml` -> `index.xml`
 - [ok] `src/worker.js` -> `src/worker.js`
 - [ok] `public/manifest.webmanifest` -> `public/manifest.webmanifest`
 - [ok] `public/_headers` -> `public/_headers`
@@ -45,15 +45,15 @@
 ## E. BLOG GAGA-ish Signals
 - has public/assets/v/: no
 - has public/assets/latest/: no
-- has index.prod.xml: yes
+- has index.xml: yes
 - has src/worker.js: yes
 - has .github/workflows/: yes
 - has qa/* files: yes (159)
 - template + worker + workflows co-exist: yes
 - qa/live-smoke comments owner check: yes
 - qa/live-smoke targets 0/2/16 comments matrix: yes
-- index.prod.xml references /assets/v/: yes
-- index.prod.xml references /assets/latest/: no
+- index.xml references /assets/v/: yes
+- index.xml references /assets/latest/: no
 
 ## F. Warnings
 - Archive contains legacy tools/* files (1 entries).
