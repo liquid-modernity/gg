@@ -6,7 +6,7 @@
   "edge": {
     "canonicalHost": true,
     "httpsRedirect": true,
-    "normalizeMobileQuery": false,
+    "normalizeMobileQuery": true,
     "redirectLegacyViews": true,
     "annotateTemplateContract": true,
     "mutateLandingContactAnchor": true,
