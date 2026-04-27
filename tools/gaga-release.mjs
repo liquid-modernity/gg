@@ -1,19 +1,32 @@
 #!/usr/bin/env node
 
+/* tools/gaga-release.mjs — GG staged release helper v10.2
+ *
+ * Purpose:
+ * - Build Blogger template artifact.
+ * - Run preflight.
+ * - Prepare Cloudflare bundle for inspection.
+ * - Commit/push only staged changes.
+ *
+ * It does not pretend that local commit equals live Cloudflare deploy.
+ */
+
 import { spawnSync } from "node:child_process";
 
 const DEFAULT_COMMIT_MESSAGE = "chore(release): ship latest GG changes";
 
 const usage = `Usage:
   node tools/gaga-release.mjs preflight
+  node tools/gaga-release.mjs prepare
   node tools/gaga-release.mjs ship [--dry-run] [--message "<commit message>"]
 
-Local flow stays lightweight:
-- build Blogger artifact
-- run lightweight preflight
-- commit/push
+Flow:
+- preflight: build Blogger artifact + validate contracts
+- prepare: preflight + stage Cloudflare build directory
+- ship: commit/push already-staged repository changes
 
-GitHub Actions handles Cloudflare deploy and Lighthouse.`;
+Cloudflare deploy may be performed by GitHub Actions or by:
+  node tools/cloudflare-deploy.mjs deploy`;
 
 function fail(message) {
   throw new Error(message);
@@ -65,10 +78,21 @@ function assertOnMainBranch() {
 
 function assertOriginExists() {
   const remote = readGit(["remote", "get-url", "origin"]);
-  if (!remote) {
-    fail('git remote "origin" is not configured');
-  }
+  if (!remote) fail('git remote "origin" is not configured');
   return remote;
+}
+
+function parseGithubActionsUrl(remoteUrl) {
+  const trimmed = String(remoteUrl || "").trim();
+  if (!trimmed) return null;
+
+  const sshMatch = trimmed.match(/^git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/i);
+  if (sshMatch) return `https://github.com/${sshMatch[1]}/${sshMatch[2]}/actions`;
+
+  const httpsMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+)\/(.+?)(?:\.git)?$/i);
+  if (httpsMatch) return `https://github.com/${httpsMatch[1]}/${httpsMatch[2]}/actions`;
+
+  return null;
 }
 
 function hasStagedChanges() {
@@ -90,12 +114,9 @@ function classifyStatusLines(lines) {
   for (const line of lines) {
     const indexState = line[0] || " ";
     const worktreeState = line[1] || " ";
-    if (indexState !== " " && indexState !== "?") {
-      staged.push(line);
-    }
-    if (worktreeState !== " " || line.startsWith("??")) {
-      unstaged.push(line);
-    }
+
+    if (indexState !== " " && indexState !== "?") staged.push(line);
+    if (worktreeState !== " " || line.startsWith("??")) unstaged.push(line);
   }
 
   return { staged, unstaged };
@@ -104,17 +125,13 @@ function classifyStatusLines(lines) {
 function printStatusLines(label, lines) {
   if (!lines.length) return;
   console.error(label);
-  for (const line of lines) {
-    console.error(`  ${line}`);
-  }
+  for (const line of lines) console.error(`  ${line}`);
 }
 
 function assertSafeStagedShip() {
   const status = classifyStatusLines(readStatusLines());
 
-  if (!status.staged.length && !status.unstaged.length) {
-    return "empty";
-  }
+  if (!status.staged.length && !status.unstaged.length) return "empty";
 
   if (status.unstaged.length) {
     console.error("Release is staged-only. Refusing to auto-stage working-tree changes.");
@@ -123,7 +140,7 @@ function assertSafeStagedShip() {
     console.error("Fix:");
     console.error("  1. Stage only intended release files: git add <path> ...");
     console.error("  2. Remove, ignore, or stash unrelated files.");
-    console.error("  3. Re-run: npm run gaga");
+    console.error("  3. Re-run release.");
     fail("unsafe dirty worktree for staged-only release");
   }
 
@@ -134,21 +151,37 @@ function assertSafeStagedShip() {
   return "staged";
 }
 
-function parseGithubActionsUrl(remoteUrl) {
-  const trimmed = String(remoteUrl || "").trim();
-  if (!trimmed) return null;
+function parseOptions(argv) {
+  const options = {
+    dryRun: false,
+    message: process.env.GAGA_COMMIT_MESSAGE || "",
+  };
 
-  const sshMatch = trimmed.match(/^git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/i);
-  if (sshMatch) {
-    return `https://github.com/${sshMatch[1]}/${sshMatch[2]}/actions`;
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+
+    if (arg === "--dry-run") {
+      options.dryRun = true;
+      continue;
+    }
+
+    if (arg === "--message" || arg === "-m") {
+      const value = argv[i + 1];
+      if (!value || value.startsWith("--")) fail("missing value for --message");
+      options.message = value;
+      i += 1;
+      continue;
+    }
+
+    if (arg === "--help" || arg === "-h") {
+      console.log(usage);
+      process.exit(0);
+    }
+
+    fail(`unknown option: ${arg}\n\n${usage}`);
   }
 
-  const httpsMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+)\/(.+?)(?:\.git)?$/i);
-  if (httpsMatch) {
-    return `https://github.com/${httpsMatch[1]}/${httpsMatch[2]}/actions`;
-  }
-
-  return null;
+  return options;
 }
 
 function runTemplatePack() {
@@ -159,35 +192,8 @@ function runPreflight() {
   run(process.execPath, ["tools/preflight.mjs"], { inherit: true });
 }
 
-function parseOptions(argv) {
-  const options = {
-    dryRun: false,
-    message: process.env.GAGA_COMMIT_MESSAGE || "",
-  };
-
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === "--dry-run") {
-      options.dryRun = true;
-      continue;
-    }
-    if (arg === "--message" || arg === "-m") {
-      const value = argv[i + 1];
-      if (!value || value.startsWith("--")) {
-        fail("missing value for --message");
-      }
-      options.message = value;
-      i += 1;
-      continue;
-    }
-    if (arg === "--help" || arg === "-h") {
-      console.log(usage);
-      process.exit(0);
-    }
-    fail(`unknown option: ${arg}\n\n${usage}`);
-  }
-
-  return options;
+function runCloudflarePrepare() {
+  run(process.execPath, ["tools/cloudflare-prepare.mjs"], { inherit: true });
 }
 
 function printStagedChanges() {
@@ -195,6 +201,16 @@ function printStagedChanges() {
   if (!staged) return;
   console.log("Staged changes selected for release:");
   console.log(staged);
+}
+
+function runPreflightFlow() {
+  runTemplatePack();
+  runPreflight();
+}
+
+function runPrepareFlow() {
+  runPreflightFlow();
+  runCloudflarePrepare();
 }
 
 function stageCommitAndPush({ dryRun, message, originUrl }) {
@@ -206,12 +222,12 @@ function stageCommitAndPush({ dryRun, message, originUrl }) {
     return;
   }
 
-  runTemplatePack();
-  runPreflight();
+  runPrepareFlow();
   printStagedChanges();
 
   if (dryRun) {
-    console.log("Dry run complete. Staged changes are ready to ship but were not committed/pushed.");
+    console.log("Dry run complete. Staged changes are ready but were not committed/pushed.");
+    console.log("Cloudflare bundle prepared at .cloudflare-build/ for inspection.");
     return;
   }
 
@@ -220,13 +236,13 @@ function stageCommitAndPush({ dryRun, message, originUrl }) {
 
   console.log("");
   console.log("Push complete.");
-  console.log("GitHub Actions CI, Cloudflare deploy, and Lighthouse stay in the cloud path.");
+  console.log("This does not prove the Worker is live. Verify after CI/deploy:");
+  console.log("  curl -I https://www.pakrpp.com/__gg/health");
+  console.log("  curl -I https://www.pakrpp.com/view");
+
   const actionsUrl = parseGithubActionsUrl(originUrl);
-  if (actionsUrl) {
-    console.log(`Inspect runs: ${actionsUrl}`);
-  } else {
-    console.log("Inspect runs: GitHub repository > Actions");
-  }
+  if (actionsUrl) console.log(`Inspect GitHub Actions: ${actionsUrl}`);
+  else console.log("Inspect GitHub Actions in the repository UI.");
 }
 
 function main() {
@@ -238,8 +254,12 @@ function main() {
   }
 
   if (subcommand === "preflight") {
-    runTemplatePack();
-    runPreflight();
+    runPreflightFlow();
+    return;
+  }
+
+  if (subcommand === "prepare") {
+    runPrepareFlow();
     return;
   }
 

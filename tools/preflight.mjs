@@ -1,146 +1,202 @@
 #!/usr/bin/env node
 
+/* tools/preflight.mjs — GG release preflight v10.2
+ *
+ * Purpose:
+ * - Validate that the repository is ready for the Edge Governance Worker.
+ * - Reject stale Worker contracts such as PUBLIC_STATIC_ROUTES.
+ * - Validate source syntax, flags, manifest, static asset presence, and Blogger XML markers.
+ */
+
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, statSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+const ROOT = process.cwd();
+
 const requiredFiles = [
   "_headers",
-  "ads.txt",
   "flags.json",
-  "gg-copy-en.json",
-  "gg-copy-id.json",
-  "gg-copy-manifest.json",
-  "gg-copy-meta.json",
   "index.xml",
-  "landing.html",
-  "llms.txt",
   "manifest.webmanifest",
   "offline.html",
-  "robots.txt",
   "sw.js",
   "worker.js",
   "wrangler.jsonc",
 ];
 
-const requiredDirs = ["gg-pwa-icon"];
+const recommendedFiles = [
+  "ads.txt",
+  "landing.html",
+  "llms.txt",
+  "robots.txt",
+];
+
+const recommendedDirs = [
+  "gg-pwa-icon",
+];
 
 function fail(message) {
   console.error(`preflight: ${message}`);
   process.exit(1);
 }
 
+function warn(message) {
+  console.warn(`preflight warning: ${message}`);
+}
+
 function ok(message) {
   console.log(message);
 }
 
-for (const relativePath of requiredFiles) {
-  const absolutePath = path.resolve(relativePath);
-  if (!existsSync(absolutePath)) {
-    fail(`missing required file: ${relativePath}`);
+function fileExists(relativePath) {
+  const absolutePath = path.resolve(ROOT, relativePath);
+  return existsSync(absolutePath) && statSync(absolutePath).isFile();
+}
+
+function dirExists(relativePath) {
+  const absolutePath = path.resolve(ROOT, relativePath);
+  return existsSync(absolutePath) && statSync(absolutePath).isDirectory();
+}
+
+function read(relativePath) {
+  return readFileSync(path.resolve(ROOT, relativePath), "utf8");
+}
+
+function readJson(relativePath) {
+  try {
+    return JSON.parse(read(relativePath));
+  } catch (error) {
+    fail(`${relativePath} is not valid JSON: ${error.message}`);
   }
 }
 
-for (const relativePath of requiredDirs) {
-  const absolutePath = path.resolve(relativePath);
-  if (!existsSync(absolutePath) || !statSync(absolutePath).isDirectory()) {
-    fail(`missing required directory: ${relativePath}`);
+function assertIncludes(source, needle, label) {
+  if (!source.includes(needle)) {
+    fail(label || `missing expected source marker: ${needle}`);
   }
 }
 
-const workerPath = path.resolve("worker.js");
-const workerSource = readFileSync(workerPath, "utf8");
-
-
-
-// ...
-
-const syntaxTempDir = mkdtempSync(path.join(os.tmpdir(), "gg-worker-check-"));
-const syntaxTempFile = path.join(syntaxTempDir, "worker-syntax-check.mjs");
-
-writeFileSync(syntaxTempFile, workerSource, "utf8");
-
-const syntaxCheck = spawnSync(process.execPath, ["--check", syntaxTempFile], {
-  encoding: "utf8",
-  stdio: ["ignore", "pipe", "pipe"],
-});
-
-rmSync(syntaxTempDir, { recursive: true, force: true });
-
-if (syntaxCheck.status !== 0) {
-  if (syntaxCheck.stderr) {
-    process.stderr.write(syntaxCheck.stderr);
+function assertAnyIncludes(source, needles, label) {
+  if (!needles.some((needle) => source.includes(needle))) {
+    fail(label || `missing one of expected markers: ${needles.join(", ")}`);
   }
-  fail("worker.js failed syntax validation");
 }
 
-/**
- * New worker contract checks
- * We no longer require:
- * - WORKER_VERSION constant
- * - /__gg_worker_ping
- * - /gg-flags.json
- *
- * We now require:
- * - landing public/internal route handling
- * - static route set / asset serving path
- * - HTML contract annotation
- * - current template contract checks
- */
+function syntaxCheckModule(relativePath, label) {
+  const source = read(relativePath);
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), "gg-syntax-check-"));
+  const tempFile = path.join(tempDir, `${label}.mjs`);
 
-if (!workerSource.includes("LANDING_PUBLIC_PATH")) {
-  fail("worker.js is missing LANDING_PUBLIC_PATH");
+  writeFileSync(tempFile, source, "utf8");
+
+  const result = spawnSync(process.execPath, ["--check", tempFile], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  rmSync(tempDir, { recursive: true, force: true });
+
+  if (result.status !== 0) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    fail(`${relativePath} failed syntax validation`);
+  }
 }
 
-if (!workerSource.includes('"/landing"')) {
-  fail('worker.js is missing the public /landing route contract');
+for (const file of requiredFiles) {
+  if (!fileExists(file)) fail(`missing required file: ${file}`);
 }
 
-if (!workerSource.includes("LANDING_INTERNAL_PATH")) {
-  fail("worker.js is missing LANDING_INTERNAL_PATH");
+for (const file of recommendedFiles) {
+  if (!fileExists(file)) warn(`recommended file is missing: ${file}`);
 }
 
-if (!workerSource.includes('"/landing.html"')) {
-  fail('worker.js is missing the internal /landing.html asset contract');
+for (const dir of recommendedDirs) {
+  if (!dirExists(dir)) warn(`recommended directory is missing: ${dir}`);
 }
 
-if (!workerSource.includes("PUBLIC_STATIC_ROUTES")) {
-  fail("worker.js is missing PUBLIC_STATIC_ROUTES");
+syntaxCheckModule("worker.js", "worker-syntax-check");
+
+for (const script of [
+  "tools/cloudflare-prepare.mjs",
+  "tools/cloudflare-deploy.mjs",
+  "tools/gaga-release.mjs",
+  "tools/template-pack.mjs",
+]) {
+  if (fileExists(script)) syntaxCheckModule(script, path.basename(script, ".mjs"));
 }
 
-if (!workerSource.includes("/manifest.webmanifest")) {
-  fail("worker.js is missing manifest route coverage");
+const flags = readJson("flags.json");
+const allowedModes = new Set(["development", "staging", "production"]);
+if (!allowedModes.has(flags.mode)) {
+  fail(`flags.json mode must be development, staging, or production; found ${JSON.stringify(flags.mode)}`);
 }
 
-if (!workerSource.includes("/offline.html")) {
-  fail("worker.js is missing offline route coverage");
+if (flags.mode === "production") {
+  warn("flags.json mode is production. Confirm dummy content has been removed before deploy.");
 }
 
-if (!workerSource.includes("/sw.js")) {
-  fail("worker.js is missing sw.js route coverage");
+for (const key of ["edge", "robots", "sw", "limits"]) {
+  if (!flags[key] || typeof flags[key] !== "object") {
+    fail(`flags.json is missing required object: ${key}`);
+  }
 }
 
-if (!workerSource.includes("/flags.json")) {
-  fail("worker.js is missing /flags.json route coverage");
+const manifest = readJson("manifest.webmanifest");
+if (manifest.scope !== "/") fail('manifest.webmanifest must use scope "/"');
+if (!manifest.start_url) fail("manifest.webmanifest is missing start_url");
+if (!manifest.icons || !Array.isArray(manifest.icons) || manifest.icons.length < 2) {
+  warn("manifest.webmanifest should define at least 192 and 512 icons");
 }
 
-if (!workerSource.includes("hasCurrentTemplateContract")) {
-  fail("worker.js is missing current template contract validation");
+const workerSource = read("worker.js");
+const requiredWorkerMarkers = [
+  "edge-governance-v10",
+  "STATIC_ROUTE_ASSET_MAP",
+  "FLAGS_CANONICAL_PATH",
+  '"/gg-flags.json"',
+  '"/flags.json"',
+  '"/__gg/health"',
+  '"/__gg/routes"',
+  '"/__gg/robots"',
+  '"/__gg/headers"',
+  '"/__gg/pwa"',
+  "legacyViewRedirect",
+  "isLegacyViewPath",
+  "withResponsePolicy",
+  "Service-Worker-Allowed",
+  "X-GG-Worker",
+  "X-GG-Edge-Mode",
+  "X-GG-Route-Class",
+  "X-GG-Template-Contract",
+];
+
+for (const marker of requiredWorkerMarkers) {
+  assertIncludes(workerSource, marker, `worker.js is missing v10 governance marker: ${marker}`);
 }
 
-if (!workerSource.includes("x-gg-template-contract")) {
-  fail("worker.js is missing x-gg-template-contract header annotation");
+if (workerSource.includes("PUBLIC_STATIC_ROUTES")) {
+  fail("worker.js still contains stale PUBLIC_STATIC_ROUTES contract");
 }
 
-const templatePath = path.resolve("index.xml");
-const templateSource = readFileSync(templatePath, "utf8");
+assertAnyIncludes(workerSource, ["developmentRobotsTag", "noindex, nofollow, nosnippet"], "worker.js is missing development crawler lockdown policy");
+assertAnyIncludes(workerSource, ["Google-Extended", "GPTBot", "OAI-SearchBot"], "worker.js is missing AI/search crawler robots policy");
 
+const swSource = read("sw.js");
+assertIncludes(swSource, "/offline.html", "sw.js is missing offline fallback URL");
+assertAnyIncludes(swSource, ["/gg-flags.json", "/flags.json", "FLAGS_URL"], "sw.js is missing flags URL contract");
+
+const offlineSource = read("offline.html");
+assertAnyIncludes(offlineSource, ["data-gg-surface=\"offline\"", "data-gg-surface='offline'"], "offline.html is missing data-gg-surface=offline");
+assertAnyIncludes(offlineSource, ["noindex", "robots"], "offline.html should carry noindex robots metadata");
+
+const templateSource = read("index.xml");
 if (!templateSource.includes("<html") || !templateSource.includes("<b:skin")) {
   fail("index.xml does not look like the Blogger template source");
 }
 
-// Current template freeze markers
 const templateMarkers = [
   `id='gg-shell'`,
   `id='main'`,
@@ -156,8 +212,13 @@ for (const marker of templateMarkers) {
   }
 }
 
+const wranglerSource = read("wrangler.jsonc");
+assertAnyIncludes(wranglerSource, [".cloudflare-build/worker.js", "main"], "wrangler.jsonc should point to the prepared Worker entry");
+assertAnyIncludes(wranglerSource, [".cloudflare-build/public", "assets"], "wrangler.jsonc should include static assets directory/binding");
+
 ok("PREFLIGHT OK");
-ok(`worker=${path.relative(process.cwd(), workerPath)}`);
-ok(`template=${path.relative(process.cwd(), templatePath)}`);
-ok("worker_contract=current-template-freeze");
-ok("scope=lightweight validation only");
+ok(`mode=${flags.mode}`);
+ok("worker_contract=edge-governance-v10");
+ok("legacy_view_redirect=/view* -> /");
+ok("crawler_policy=development-lockdown-unless-production");
+ok("scope=release-and-cloudflare-preflight");
