@@ -1,24 +1,78 @@
 {
   "name": "PakRPP",
   "short_name": "PakRPP",
-  "id": "/",
+  "description": "Editorial knowledge base and blog experience.",
+  "id": "/?app=pakrpp",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/landing?source=pwa",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f172a",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#f4eeef",
+  "theme_color": "#f4eeef",
+  "categories": ["education", "productivity", "news"],
+  "lang": "id-ID",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/gg-pwa-icon/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/gg-pwa-icon/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/gg-pwa-icon/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Open the main PakRPP surface.",
+      "url": "/?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/gg-pwa-icon/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Landing",
+      "short_name": "Landing",
+      "description": "Open the editorial landing surface.",
+      "url": "/landing?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/gg-pwa-icon/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Saved",
+      "short_name": "Saved",
+      "description": "Open saved offline reading items.",
+      "url": "/offline.html?saved=1&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/gg-pwa-icon/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
 }

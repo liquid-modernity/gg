@@ -1,4 +1,5 @@
-/* worker.js — PakRPP Edge Governance Layer v10.1
+/* worker.js — PakRPP Edge Governance Layer v10.2
+ *
  * Role:
  * - Cloudflare Worker edge router
  * - route-policy enforcer
@@ -19,6 +20,7 @@ const SITE = {
   originName: "PakRPP",
   release: "ac33998",
   templateFingerprint: "db5707fc3afa",
+  workerVersion: "edge-governance-v10.2",
 };
 
 const FLAGS_TTL_MS = 60 * 1000;
@@ -30,42 +32,21 @@ const DEFAULT_FLAGS = {
   mode: "development",
   release: SITE.release,
   templateFingerprint: SITE.templateFingerprint,
-
   csp_report_enabled: true,
-
   edge: {
     canonicalHost: true,
     httpsRedirect: true,
-
-    /*
-     * Keep false until mobile parity is verified.
-     * If enabled, ?m=1 and ?m=0 are normalized to clean URLs.
-     */
     normalizeMobileQuery: false,
-
-    /*
-     * Legacy Blogger Dynamic View routes are always redirected to "/".
-     * This flag is kept only for diagnostics/backward compatibility;
-     * it no longer controls behavior.
-     */
     redirectLegacyViews: true,
-
     annotateTemplateContract: true,
     mutateLandingContactAnchor: true,
-
-    /*
-     * If true, known bots can receive hard 403 in development/staging.
-     * Default false because X-Robots-Tag + robots.txt is safer while debugging.
-     */
     hardBlockKnownBotsInDevelopment: false,
   },
-
   robots: {
     developmentLockdown: true,
     blockAiBots: true,
     blockSearchBots: true,
   },
-
   sw: {
     enabled: true,
     navigationPreload: true,
@@ -76,7 +57,6 @@ const DEFAULT_FLAGS = {
     backgroundSync: false,
     debug: false,
   },
-
   limits: {
     maxPageEntries: 50,
     maxSavedEntries: 100,
@@ -84,7 +64,6 @@ const DEFAULT_FLAGS = {
     maxFeedAgeHours: 24,
     maxPageAgeDays: 30,
   },
-
   vanity: {
     "/about": "/p/about.html",
     "/authors": "/p/authors.html",
@@ -96,7 +75,6 @@ const DEFAULT_FLAGS = {
 
 const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
-
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
 const FLAGS_LEGACY_PATH = "/flags.json";
 
@@ -106,10 +84,8 @@ const STATIC_ROUTE_ASSET_MAP = new Map([
   ["/offline.html", "/offline.html"],
   ["/ads.txt", "/ads.txt"],
   ["/llms.txt", "/llms.txt"],
-
   [FLAGS_CANONICAL_PATH, "/__gg/flags.json"],
   [FLAGS_LEGACY_PATH, "/__gg/flags.json"],
-
   [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
 ]);
 
@@ -156,10 +132,7 @@ function cloneJson(value) {
 
 function mergePlainObject(base, incoming) {
   const out = Array.isArray(base) ? base.slice() : { ...base };
-
-  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) {
-    return out;
-  }
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) return out;
 
   for (const [key, value] of Object.entries(incoming)) {
     if (
@@ -181,10 +154,8 @@ function mergePlainObject(base, incoming) {
 
 function normalizeMode(value) {
   const mode = String(value || "").trim().toLowerCase();
-
-  if (mode === "lab") return "development";
+  if (mode === "lab" || mode === "public") return mode === "public" ? "development" : "development";
   if (ALLOWED_MODES.has(mode)) return mode;
-
   return DEFAULT_FLAGS.mode;
 }
 
@@ -203,7 +174,6 @@ function normalizeFlags(data, env = {}) {
   flags.release = String(flags.release || SITE.release);
   flags.templateFingerprint = String(flags.templateFingerprint || SITE.templateFingerprint);
   flags.csp_report_enabled = !!flags.csp_report_enabled;
-
   flags.edge = mergePlainObject(DEFAULT_FLAGS.edge, flags.edge || {});
   flags.robots = mergePlainObject(DEFAULT_FLAGS.robots, flags.robots || {});
   flags.sw = mergePlainObject(DEFAULT_FLAGS.sw, flags.sw || {});
@@ -215,7 +185,6 @@ function normalizeFlags(data, env = {}) {
 
 async function loadFlags(env) {
   const now = Date.now();
-
   if (flagsCache.value && now - flagsCache.ts < FLAGS_TTL_MS) {
     return cloneJson(flagsCache.value);
   }
@@ -234,10 +203,7 @@ async function loadFlags(env) {
     try {
       const req = new Request("https://assets.local/__gg/flags.json");
       const res = await env.ASSETS.fetch(req);
-
-      if (res.ok) {
-        data = await res.json();
-      }
+      if (res.ok) data = await res.json();
     } catch (_) {
       data = null;
     }
@@ -245,14 +211,12 @@ async function loadFlags(env) {
 
   const flags = normalizeFlags(data, env || {});
   flagsCache = { ts: now, value: flags };
-
   return cloneJson(flags);
 }
 
 function jsonResponse(payload, init = {}) {
   const headers = new Headers(init.headers || {});
   headers.set("Content-Type", "application/json; charset=utf-8");
-
   return new Response(JSON.stringify(payload, null, 2), {
     status: init.status || 200,
     statusText: init.statusText,
@@ -263,7 +227,6 @@ function jsonResponse(payload, init = {}) {
 function textResponse(text, init = {}) {
   const headers = new Headers(init.headers || {});
   headers.set("Content-Type", init.contentType || "text/plain; charset=utf-8");
-
   return new Response(text, {
     status: init.status || 200,
     statusText: init.statusText,
@@ -283,19 +246,18 @@ function getProto(request, url) {
   return request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
 }
 
-function redirectUrl(url, status = 301) {
-  return Response.redirect(url.toString(), status);
-}
-
 function redirectStatusForMode(flags) {
   return flags.mode === "production" ? 301 : 302;
+}
+
+function redirectUrl(url, status = 301) {
+  return Response.redirect(url.toString(), status);
 }
 
 function maybeCanonicalRedirect(request, flags) {
   const url = new URL(request.url);
   const host = getRequestHost(request).toLowerCase();
   const proto = getProto(request, url).toLowerCase();
-
   let changed = false;
 
   if (flags.edge.httpsRedirect && proto === "http") {
@@ -309,35 +271,26 @@ function maybeCanonicalRedirect(request, flags) {
   }
 
   if (!changed) return null;
-
   return redirectUrl(url, redirectStatusForMode(flags));
 }
 
 function normalizeMobileQueryRedirect(request, flags) {
   if (!flags.edge.normalizeMobileQuery) return null;
-
   const url = new URL(request.url);
-
   if (!url.searchParams.has("m")) return null;
-
   const m = url.searchParams.get("m");
-
   if (m !== "0" && m !== "1") return null;
-
   url.searchParams.delete("m");
-
   return redirectUrl(url, redirectStatusForMode(flags));
 }
 
 function vanityRedirect(request, flags) {
   const url = new URL(request.url);
   const target = flags.vanity && flags.vanity[url.pathname];
-
   if (!target) return null;
 
   const next = new URL(request.url);
   next.pathname = target;
-
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
@@ -347,17 +300,8 @@ function isLegacyViewPath(pathname) {
 
 function legacyViewRedirect(request, flags) {
   const url = new URL(request.url);
-
   if (!isLegacyViewPath(url.pathname)) return null;
-
   const next = new URL("/", request.url);
-
-  /*
-   * Final decision:
-   * - all Blogger Dynamic View legacy routes redirect to "/"
-   * - development/staging: 302
-   * - production: 301
-   */
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
@@ -367,33 +311,23 @@ function classifyRoute(request) {
 
   if (path === "/") return "home";
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
-
   if (path === "/robots.txt") return "robots";
   if (path === "/sitemap.xml") return "sitemap";
-
   if (path === "/sw.js") return "service-worker";
   if (path === "/offline.html") return "offline";
   if (path === "/manifest.webmanifest") return "manifest";
-
   if (path === FLAGS_CANONICAL_PATH || path === FLAGS_LEGACY_PATH) return "flags";
-
   if (path.startsWith("/__gg/")) return "diagnostic";
-
   if (path.startsWith("/assets/v/")) return "versioned-asset";
   if (path.startsWith("/assets/latest/")) return "latest-asset";
   if (path.startsWith("/assets/")) return "asset";
   if (path.startsWith("/gg-pwa-icon/")) return "icon";
-
   if (path.startsWith("/feeds/")) return "feed";
-
   if (path.startsWith("/search/label/")) return "label";
   if (path === "/search" || path.startsWith("/search/")) return "search";
-
   if (isLegacyViewPath(path)) return "legacy-view";
-
   if (path.startsWith("/p/") && path.endsWith(".html")) return "static-page";
   if (/^\/\d{4}\/\d{2}\/.+\.html$/i.test(path)) return "post";
-
   if (path.endsWith(".html")) return "html";
   if (path.endsWith(".xml")) return "xml";
   if (path.endsWith(".json")) return "json";
@@ -410,28 +344,20 @@ function shouldServeStaticFromAssets(pathname) {
   if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return true;
   if (pathname.startsWith("/gg-pwa-icon/")) return true;
   if (pathname.startsWith("/assets/")) return true;
-
   return false;
 }
 
 function resolveAssetPath(pathname) {
-  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) {
-    return STATIC_ROUTE_ASSET_MAP.get(pathname);
-  }
-
+  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return STATIC_ROUTE_ASSET_MAP.get(pathname);
   return pathname;
 }
 
 async function serveFromAssets(request, env, pathname) {
-  if (!env?.ASSETS) {
-    return textResponse("ASSETS binding missing", { status: 500 });
-  }
+  if (!env?.ASSETS) return textResponse("ASSETS binding missing", { status: 500 });
 
   const assetPath = resolveAssetPath(pathname);
   const url = new URL(request.url);
-
   url.pathname = assetPath;
-
   return env.ASSETS.fetch(new Request(url.toString(), request));
 }
 
@@ -451,14 +377,10 @@ async function handleStaticRoutes(request, env, flags) {
 }
 
 function baseSecurityHeaders(headers) {
+  headers.set("X-GG-Worker", SITE.workerVersion);
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  headers.set(
-    "Permissions-Policy",
-    "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()"
-  );
-
+  headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()");
   headers.set("X-Frame-Options", "SAMEORIGIN");
 }
 
@@ -468,63 +390,32 @@ function developmentRobotsTag() {
 
 function productionRobotsTag(route, isHtmlLike) {
   if (!isHtmlLike) {
-    if (["service-worker", "manifest", "flags", "diagnostic", "offline", "json"].includes(route)) {
-      return "noindex, nofollow";
-    }
-
-    if (["feed", "xml", "sitemap"].includes(route)) {
-      return "noindex, follow";
-    }
-
+    if (["service-worker", "manifest", "flags", "diagnostic", "offline", "json"].includes(route)) return "noindex, nofollow";
+    if (["feed", "xml", "sitemap"].includes(route)) return "noindex, follow";
     return "noindex";
   }
 
-  if (["home", "landing", "post", "static-page"].includes(route)) {
-    return "index, follow";
-  }
-
-  if (["label", "search", "feed"].includes(route)) {
-    return "noindex, follow";
-  }
-
-  if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) {
-    return "noindex, nofollow";
-  }
-
+  if (["home", "landing", "post", "static-page"].includes(route)) return "index, follow";
+  if (["label", "search", "feed"].includes(route)) return "noindex, follow";
+  if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
   return "index, follow";
 }
 
 function routeRobotsTag(route, contentType, flags) {
-  const isHtmlLike =
-    isHtmlContentType(contentType) ||
-    route === "home" ||
-    route === "post" ||
-    route === "static-page" ||
-    route === "landing";
-
-  if (flags.mode !== "production") {
-    return developmentRobotsTag();
-  }
-
+  const isHtmlLike = isHtmlContentType(contentType) || ["home", "post", "static-page", "landing"].includes(route);
+  if (flags.mode !== "production") return developmentRobotsTag();
   return productionRobotsTag(route, isHtmlLike);
 }
 
 function cacheControlForRoute(route, flags) {
   if (flags.mode !== "production") {
-    if (["versioned-asset", "icon"].includes(route)) {
-      return "public, max-age=300";
-    }
-
+    if (["versioned-asset", "icon"].includes(route)) return "public, max-age=300";
     return "no-store";
   }
 
   switch (route) {
-    case "versioned-asset":
-      return "public, max-age=31536000, immutable";
-
-    case "icon":
-      return "public, max-age=604800";
-
+    case "versioned-asset": return "public, max-age=31536000, immutable";
+    case "icon": return "public, max-age=604800";
     case "latest-asset":
     case "service-worker":
     case "manifest":
@@ -533,11 +424,9 @@ function cacheControlForRoute(route, flags) {
     case "robots":
     case "offline":
       return "no-cache, must-revalidate";
-
     case "feed":
     case "sitemap":
       return "public, max-age=300, stale-while-revalidate=86400";
-
     case "home":
     case "landing":
     case "post":
@@ -547,7 +436,6 @@ function cacheControlForRoute(route, flags) {
     case "html":
     case "origin":
       return "no-cache, must-revalidate";
-
     default:
       return "no-cache";
   }
@@ -559,13 +447,11 @@ function forceContentType(route, pathname, current) {
   if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
   if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
   if (route === "offline" || route === "landing") return current || "text/html; charset=utf-8";
-
   return current || "";
 }
 
 function cspReportOnlyValue(request) {
   const reportUri = new URL("/api/csp-report", request.url).pathname;
-
   return [
     "default-src 'self' https:",
     "base-uri 'self'",
@@ -589,17 +475,11 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   baseSecurityHeaders(headers);
 
   const forcedType = forceContentType(route, url.pathname, headers.get("content-type"));
-
-  if (forcedType) {
-    headers.set("Content-Type", forcedType);
-  }
+  if (forcedType) headers.set("Content-Type", forcedType);
 
   const contentType = headers.get("content-type") || "";
   const robotsTag = routeRobotsTag(route, contentType, flags);
-
-  if (robotsTag) {
-    headers.set("X-Robots-Tag", robotsTag);
-  }
+  if (robotsTag) headers.set("X-Robots-Tag", robotsTag);
 
   headers.set("Cache-Control", cacheControlForRoute(route, flags));
   headers.set("X-GG-Edge-Mode", flags.mode);
@@ -607,9 +487,7 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   headers.set("X-GG-Release", String(flags.release || SITE.release));
   headers.set("X-GG-Template-Fingerprint", String(flags.templateFingerprint || SITE.templateFingerprint));
 
-  if (route === "service-worker") {
-    headers.set("Service-Worker-Allowed", "/");
-  }
+  if (route === "service-worker") headers.set("Service-Worker-Allowed", "/");
 
   if ((isHtmlContentType(contentType) || route === "landing") && flags.csp_report_enabled) {
     headers.set("Content-Security-Policy-Report-Only", cspReportOnlyValue(request));
@@ -617,18 +495,12 @@ function withResponsePolicy(resp, request, flags, options = {}) {
 
   headers.set("Reporting-Endpoints", `gg-csp="${new URL("/api/csp-report", request.url).toString()}"`);
 
-  return new Response(resp.body, {
-    status: resp.status,
-    statusText: resp.statusText,
-    headers,
-  });
+  return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
 }
 
 function isKnownBotUserAgent(ua, list) {
   const source = String(ua || "").toLowerCase();
-
   if (!source) return false;
-
   return list.some((needle) => source.includes(needle));
 }
 
@@ -637,15 +509,8 @@ function shouldHardBlockBot(request, flags) {
   if (!flags.edge.hardBlockKnownBotsInDevelopment) return false;
 
   const ua = request.headers.get("user-agent") || "";
-
-  if (flags.robots.blockAiBots && isKnownBotUserAgent(ua, AI_AND_TRAINING_BOTS)) {
-    return true;
-  }
-
-  if (flags.robots.blockSearchBots && isKnownBotUserAgent(ua, SEARCH_BOTS)) {
-    return true;
-  }
-
+  if (flags.robots.blockAiBots && isKnownBotUserAgent(ua, AI_AND_TRAINING_BOTS)) return true;
+  if (flags.robots.blockSearchBots && isKnownBotUserAgent(ua, SEARCH_BOTS)) return true;
   return false;
 }
 
@@ -659,19 +524,7 @@ function buildRobotsTxt(request, flags) {
 
   if (flags.mode !== "production" && flags.robots.developmentLockdown) {
     if (flags.robots.blockAiBots) {
-      for (const bot of [
-        "GPTBot",
-        "OAI-SearchBot",
-        "ChatGPT-User",
-        "Google-Extended",
-        "CCBot",
-        "ClaudeBot",
-        "anthropic-ai",
-        "PerplexityBot",
-        "Applebot-Extended",
-        "Bytespider",
-        "Amazonbot",
-      ]) {
+      for (const bot of ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "Google-Extended", "CCBot", "ClaudeBot", "anthropic-ai", "PerplexityBot", "Applebot-Extended", "Bytespider", "Amazonbot"]) {
         lines.push(`User-agent: ${bot}`);
         lines.push("Disallow: /");
         lines.push("");
@@ -679,17 +532,7 @@ function buildRobotsTxt(request, flags) {
     }
 
     if (flags.robots.blockSearchBots) {
-      for (const bot of [
-        "Googlebot",
-        "Googlebot-Image",
-        "Googlebot-Video",
-        "bingbot",
-        "Slurp",
-        "DuckDuckBot",
-        "Baiduspider",
-        "YandexBot",
-        "Applebot",
-      ]) {
+      for (const bot of ["Googlebot", "Googlebot-Image", "Googlebot-Video", "bingbot", "Slurp", "DuckDuckBot", "Baiduspider", "YandexBot", "Applebot"]) {
         lines.push(`User-agent: ${bot}`);
         lines.push("Disallow: /");
         lines.push("");
@@ -701,22 +544,11 @@ function buildRobotsTxt(request, flags) {
     lines.push("");
     lines.push(`# Sitemap is visible for tooling, but pages are locked by X-Robots-Tag in ${flags.mode} mode.`);
     lines.push(`Sitemap: ${sitemapUrl}`);
-
     return lines.join("\n") + "\n";
   }
 
   if (flags.robots.blockAiBots) {
-    for (const bot of [
-      "GPTBot",
-      "Google-Extended",
-      "CCBot",
-      "ClaudeBot",
-      "anthropic-ai",
-      "PerplexityBot",
-      "Applebot-Extended",
-      "Bytespider",
-      "Amazonbot",
-    ]) {
+    for (const bot of ["GPTBot", "Google-Extended", "CCBot", "ClaudeBot", "anthropic-ai", "PerplexityBot", "Applebot-Extended", "Bytespider", "Amazonbot"]) {
       lines.push(`User-agent: ${bot}`);
       lines.push("Disallow: /");
       lines.push("");
@@ -738,17 +570,12 @@ function buildRobotsTxt(request, flags) {
 function routePolicyPreview(pathname, flags) {
   const fake = new Request(`https://${SITE.canonicalHost}${pathname || "/"}`);
   const route = classifyRoute(fake);
-
   const contentType =
-    route === "service-worker"
-      ? "application/javascript"
-      : route === "manifest"
-        ? "application/manifest+json"
-        : route === "flags" || route === "diagnostic"
-          ? "application/json"
-          : route === "feed" || route === "sitemap"
-            ? "application/xml"
-            : "text/html";
+    route === "service-worker" ? "application/javascript" :
+    route === "manifest" ? "application/manifest+json" :
+    route === "flags" || route === "diagnostic" ? "application/json" :
+    route === "feed" || route === "sitemap" ? "application/xml" :
+    "text/html";
 
   return {
     pathname,
@@ -757,82 +584,72 @@ function routePolicyPreview(pathname, flags) {
     robots: routeRobotsTag(route, contentType, flags),
     cacheControl: cacheControlForRoute(route, flags),
     contentType: forceContentType(route, pathname, contentType),
-    redirects:
-      isLegacyViewPath(pathname)
-        ? {
-            to: "/",
-            status: redirectStatusForMode(flags),
-            reason: "legacy-blogger-view-normalization",
-          }
-        : null,
+    redirects: isLegacyViewPath(pathname)
+      ? { to: "/", status: redirectStatusForMode(flags), reason: "legacy-blogger-view-normalization" }
+      : null,
   };
 }
 
-function diagnosticsPayload(request, flags) {
-  const url = new URL(request.url);
-
+function pwaDiagnostics(flags) {
   return {
     ok: true,
-    name: SITE.originName,
     mode: flags.mode,
     release: flags.release,
     templateFingerprint: flags.templateFingerprint,
-    canonicalHost: SITE.canonicalHost,
-
-    request: {
-      url: request.url,
-      host: getRequestHost(request),
-      route: classifyRoute(request),
-    },
-
-    pwa: {
+    workerVersion: SITE.workerVersion,
+    routes: {
       serviceWorker: "/sw.js",
       offline: "/offline.html",
       manifest: "/manifest.webmanifest",
       flags: FLAGS_CANONICAL_PATH,
       legacyFlagsAlias: FLAGS_LEGACY_PATH,
     },
+    serviceWorker: {
+      enabled: !!flags.sw.enabled,
+      navigationPreload: !!flags.sw.navigationPreload,
+      htmlQualityGate: !!flags.sw.htmlQualityGate,
+      offlineSearch: !!flags.sw.offlineSearch,
+      savedReading: !!flags.sw.savedReading,
+      contentIndex: !!flags.sw.contentIndex,
+      backgroundSync: !!flags.sw.backgroundSync,
+      debug: !!flags.sw.debug,
+    },
+    headers: {
+      serviceWorkerAllowed: "/",
+      swCacheControl: cacheControlForRoute("service-worker", flags),
+      offlineRobots: routeRobotsTag("offline", "text/html", flags),
+      manifestContentType: forceContentType("manifest", "/manifest.webmanifest", ""),
+    },
+    limits: flags.limits,
+  };
+}
 
+function diagnosticsPayload(request, flags) {
+  const url = new URL(request.url);
+  return {
+    ok: true,
+    name: SITE.originName,
+    mode: flags.mode,
+    release: flags.release,
+    templateFingerprint: flags.templateFingerprint,
+    workerVersion: SITE.workerVersion,
+    canonicalHost: SITE.canonicalHost,
+    request: { url: request.url, host: getRequestHost(request), route: classifyRoute(request) },
+    pwa: pwaDiagnostics(flags),
     routes: {
-      landing: {
-        public: LANDING_PUBLIC_PATH,
-        asset: LANDING_INTERNAL_PATH,
-      },
-
-      flags: {
-        canonical: FLAGS_CANONICAL_PATH,
-        legacy: FLAGS_LEGACY_PATH,
-        asset: "/__gg/flags.json",
-      },
-
+      landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
+      flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
       legacyBloggerViews: {
         decision: "redirect-to-root",
         target: "/",
         developmentStatus: 302,
         stagingStatus: 302,
         productionStatus: 301,
-        paths: [
-          "/view",
-          "/view/classic",
-          "/view/flipcard",
-          "/view/magazine",
-          "/view/mosaic",
-          "/view/sidebar",
-          "/view/snapshot",
-          "/view/timeslide",
-        ],
+        paths: ["/view", "/view/classic", "/view/flipcard", "/view/magazine", "/view/mosaic", "/view/sidebar", "/view/snapshot", "/view/timeslide"],
       },
-
-      diagnostics: [
-        "/__gg/health",
-        "/__gg/routes",
-        "/__gg/robots",
-        "/__gg/headers?url=/",
-      ],
+      diagnostics: ["/__gg/health", "/__gg/routes", "/__gg/robots", "/__gg/headers?url=/", "/__gg/pwa"],
     },
-
     policy: routePolicyPreview(url.pathname, flags),
-
     flags,
   };
 }
@@ -840,50 +657,19 @@ function diagnosticsPayload(request, flags) {
 async function handleDiagnostics(request, flags) {
   const url = new URL(request.url);
 
-  if (url.pathname === "/__gg/health") {
-    return jsonResponse(diagnosticsPayload(request, flags));
-  }
+  if (url.pathname === "/__gg/health") return jsonResponse(diagnosticsPayload(request, flags));
 
   if (url.pathname === "/__gg/routes") {
     return jsonResponse({
       mode: flags.mode,
       canonicalHost: SITE.canonicalHost,
-
       routeMatrix: {
-        indexInProduction: [
-          "/",
-          "/YYYY/MM/slug.html",
-          "/p/*.html",
-          "/landing",
-        ],
-
-        noindexInProduction: [
-          "/search",
-          "/search/label/*",
-          "/view/*",
-          "/offline.html",
-          "/sw.js",
-          "/manifest.webmanifest",
-          FLAGS_CANONICAL_PATH,
-          "/__gg/*",
-        ],
-
-        utility: [
-          "/feeds/*",
-          "/sitemap.xml",
-        ],
-
-        normalizedWhenEnabled: [
-          "?m=1",
-          "?m=0",
-        ],
-
-        alwaysRedirected: {
-          "/view": "/",
-          "/view/*": "/",
-        },
+        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing"],
+        noindexInProduction: ["/search", "/search/label/*", "/view/*", "/offline.html", "/sw.js", "/manifest.webmanifest", FLAGS_CANONICAL_PATH, "/__gg/*"],
+        utility: ["/feeds/*", "/sitemap.xml"],
+        normalizedWhenEnabled: ["?m=1", "?m=0"],
+        alwaysRedirected: { "/view": "/", "/view/*": "/" },
       },
-
       vanity: flags.vanity,
       staticAssetMap: Object.fromEntries(STATIC_ROUTE_ASSET_MAP),
     });
@@ -900,24 +686,16 @@ async function handleDiagnostics(request, flags) {
   if (url.pathname === "/__gg/headers") {
     const target = url.searchParams.get("url") || "/";
     const targetUrl = new URL(target, request.url);
-
     return jsonResponse(routePolicyPreview(targetUrl.pathname, flags));
   }
 
-  return jsonResponse(
-    {
-      ok: false,
-      error: "Unknown diagnostic endpoint",
-    },
-    { status: 404 }
-  );
+  if (url.pathname === "/__gg/pwa") return jsonResponse(pwaDiagnostics(flags));
+
+  return jsonResponse({ ok: false, error: "Unknown diagnostic endpoint" }, { status: 404 });
 }
 
 async function handleCspReport(request) {
-  try {
-    await request.text();
-  } catch (_) {}
-
+  try { await request.text(); } catch (_) {}
   return new Response(null, { status: 204 });
 }
 
@@ -927,19 +705,12 @@ function isHtmlResponse(resp) {
 
 function responseFromHtml(resp, html) {
   const headers = new Headers(resp.headers);
-
   headers.delete("content-length");
-
-  return new Response(html, {
-    status: resp.status,
-    statusText: resp.statusText,
-    headers,
-  });
+  return new Response(html, { status: resp.status, statusText: resp.statusText, headers });
 }
 
 function normalizeLandingContactHtml(html) {
   if (!html) return html;
-
   return String(html)
     .replaceAll("#gg-landing-hero-5", "#contact")
     .replace(/\bid=(['"])gg-landing-hero-5\1/gi, `id="contact"`);
@@ -947,7 +718,6 @@ function normalizeLandingContactHtml(html) {
 
 function hasCurrentTemplateContract(html) {
   const source = String(html || "");
-
   const checks = {
     shell: /\bid\s*=\s*['"]gg-shell['"]/i.test(source),
     main: /\b<main\b[^>]*\bid\s*=\s*['"]main['"]/i.test(source),
@@ -956,93 +726,50 @@ function hasCurrentTemplateContract(html) {
     previewSheet: /\bid\s*=\s*['"]gg-preview-sheet['"]/i.test(source),
     morePanel: /\bid\s*=\s*['"]gg-more-panel['"]/i.test(source),
   };
-
   const hardReasons = [];
   const warnings = [];
-
   if (!checks.shell) hardReasons.push("missing_gg_shell");
   if (!checks.dock) hardReasons.push("missing_dock");
   if (!checks.commandPanel) hardReasons.push("missing_command_panel");
   if (!checks.previewSheet) hardReasons.push("missing_preview_sheet");
   if (!checks.morePanel) hardReasons.push("missing_more_panel");
   if (!checks.main) warnings.push("missing_main_landmark");
-
-  return {
-    ok: hardReasons.length === 0,
-    reasons: hardReasons,
-    warnings,
-    checks,
-  };
+  return { ok: hardReasons.length === 0, reasons: hardReasons, warnings, checks };
 }
 
 function annotateTemplateContract(resp, html) {
   const contract = hasCurrentTemplateContract(html);
   const headers = new Headers(resp.headers);
-
   headers.set("X-GG-Template-Contract", contract.ok ? "ok" : "mismatch");
-
-  if (contract.reasons && contract.reasons.length) {
-    headers.set("X-GG-Template-Contract-Reasons", contract.reasons.join(","));
-  }
-
-  if (contract.warnings && contract.warnings.length) {
-    headers.set("X-GG-Template-Contract-Warnings", contract.warnings.join(","));
-  }
-
-  return new Response(resp.body, {
-    status: resp.status,
-    statusText: resp.statusText,
-    headers,
-  });
+  if (contract.reasons && contract.reasons.length) headers.set("X-GG-Template-Contract-Reasons", contract.reasons.join(","));
+  if (contract.warnings && contract.warnings.length) headers.set("X-GG-Template-Contract-Warnings", contract.warnings.join(","));
+  return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
 }
 
 function shouldBypassHtmlMutation(pathname) {
   const path = String(pathname || "");
-
   if (!path) return false;
   if (/\.txt$/i.test(path)) return true;
   if (path.startsWith("/.well-known/")) return true;
   if (path.startsWith("/feeds/")) return true;
   if (path === "/sitemap.xml") return true;
-
   return false;
 }
 
 async function handleHtml(request, flags, response) {
   const url = new URL(request.url);
-
-  if (!isHtmlResponse(response)) {
-    return withResponsePolicy(response, request, flags);
-  }
-
-  if (shouldBypassHtmlMutation(url.pathname)) {
-    return withResponsePolicy(response, request, flags);
-  }
+  if (!isHtmlResponse(response)) return withResponsePolicy(response, request, flags);
+  if (shouldBypassHtmlMutation(url.pathname)) return withResponsePolicy(response, request, flags);
 
   let html = "";
-
-  try {
-    html = await response.clone().text();
-  } catch (_) {
-    return withResponsePolicy(response, request, flags);
-  }
-
-  if (!html) {
-    return withResponsePolicy(response, request, flags);
-  }
+  try { html = await response.clone().text(); } catch (_) { return withResponsePolicy(response, request, flags); }
+  if (!html) return withResponsePolicy(response, request, flags);
 
   let out = html;
-
-  if (flags.edge.mutateLandingContactAnchor) {
-    out = normalizeLandingContactHtml(out);
-  }
+  if (flags.edge.mutateLandingContactAnchor) out = normalizeLandingContactHtml(out);
 
   let wrapped = responseFromHtml(response, out);
-
-  if (flags.edge.annotateTemplateContract) {
-    wrapped = annotateTemplateContract(wrapped, out);
-  }
-
+  if (flags.edge.annotateTemplateContract) wrapped = annotateTemplateContract(wrapped, out);
   return withResponsePolicy(wrapped, request, flags);
 }
 
@@ -1051,99 +778,45 @@ async function fetchOrigin(request) {
 }
 
 async function handleFlagsRoute(request, flags) {
-  return withResponsePolicy(
-    jsonResponse(flags),
-    request,
-    flags,
-    { route: "flags" }
-  );
+  return withResponsePolicy(jsonResponse(flags), request, flags, { route: "flags" });
 }
 
 async function handleRobotsRoute(request, flags) {
-  return withResponsePolicy(
-    textResponse(
-      buildRobotsTxt(request, flags),
-      { contentType: "text/plain; charset=utf-8" }
-    ),
-    request,
-    flags,
-    { route: "robots" }
-  );
+  return withResponsePolicy(textResponse(buildRobotsTxt(request, flags), { contentType: "text/plain; charset=utf-8" }), request, flags, { route: "robots" });
 }
 
 async function handleRequest(request, env, ctx) {
   const flags = await loadFlags(env);
   const url = new URL(request.url);
 
-  if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") {
-    return fetchOrigin(request);
-  }
+  if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") return fetchOrigin(request);
 
   const canonicalRedirect = maybeCanonicalRedirect(request, flags);
-
-  if (canonicalRedirect) {
-    return canonicalRedirect;
-  }
+  if (canonicalRedirect) return canonicalRedirect;
 
   if (shouldHardBlockBot(request, flags) && url.pathname !== "/robots.txt") {
-    return withResponsePolicy(
-      textResponse("Blocked in development mode", { status: 403 }),
-      request,
-      flags
-    );
+    return withResponsePolicy(textResponse("Blocked in development mode", { status: 403 }), request, flags);
   }
 
-  if (url.pathname === "/api/csp-report" && request.method === "POST") {
-    return handleCspReport(request);
-  }
+  if (url.pathname === "/api/csp-report" && request.method === "POST") return handleCspReport(request);
 
-  /*
-   * Legacy Blogger Dynamic View routes are normalized before any origin fetch.
-   * This is intentional and applies in every mode.
-   */
   const legacy = legacyViewRedirect(request, flags);
+  if (legacy) return legacy;
 
-  if (legacy) {
-    return legacy;
-  }
-
-  if (url.pathname === "/robots.txt") {
-    return handleRobotsRoute(request, flags);
-  }
-
-  if (url.pathname === FLAGS_CANONICAL_PATH || url.pathname === FLAGS_LEGACY_PATH) {
-    return handleFlagsRoute(request, flags);
-  }
-
-  if (url.pathname.startsWith("/__gg/")) {
-    return withResponsePolicy(
-      await handleDiagnostics(request, flags),
-      request,
-      flags,
-      { route: "diagnostic" }
-    );
-  }
+  if (url.pathname === "/robots.txt") return handleRobotsRoute(request, flags);
+  if (url.pathname === FLAGS_CANONICAL_PATH || url.pathname === FLAGS_LEGACY_PATH) return handleFlagsRoute(request, flags);
+  if (url.pathname.startsWith("/__gg/")) return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, { route: "diagnostic" });
 
   const vanity = vanityRedirect(request, flags);
-
-  if (vanity) {
-    return vanity;
-  }
+  if (vanity) return vanity;
 
   const mobile = normalizeMobileQueryRedirect(request, flags);
-
-  if (mobile) {
-    return mobile;
-  }
+  if (mobile) return mobile;
 
   const staticResponse = await handleStaticRoutes(request, env, flags);
-
-  if (staticResponse) {
-    return withResponsePolicy(staticResponse, request, flags);
-  }
+  if (staticResponse) return withResponsePolicy(staticResponse, request, flags);
 
   const originResponse = await fetchOrigin(request);
-
   return handleHtml(request, flags, originResponse);
 }
 
@@ -1153,16 +826,8 @@ export default {
       return await handleRequest(request, env, ctx);
     } catch (error) {
       const flags = normalizeFlags(null, env || {});
-
       return withResponsePolicy(
-        jsonResponse(
-          {
-            ok: false,
-            error: "edge_worker_failure",
-            message: error && error.message ? error.message : String(error),
-          },
-          { status: 500 }
-        ),
+        jsonResponse({ ok: false, error: "edge_worker_failure", message: error && error.message ? error.message : String(error) }, { status: 500 }),
         request,
         flags,
         { route: "diagnostic" }
