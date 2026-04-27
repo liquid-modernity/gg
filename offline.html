@@ -1,20 +1,656 @@
 <!doctype html>
-<html lang="en">
+<html lang="id" data-gg-surface="offline">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Offline</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#f4eeef" />
+  <title>Offline · PakRPP</title>
+
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background:#0f172a; color:#f8fafc; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
-    .card { background:#111827; padding:24px 28px; border:1px solid #1f2937; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.25); max-width:420px; text-align:center; }
-    h1 { margin:0 0 12px; font-size:1.25rem; }
-    p { margin:0; line-height:1.6; color:#e5e7eb; }
+    :root {
+      --gg-surface-page: #f4eeef;
+      --gg-surface-panel: #f5efec;
+      --gg-surface-quiet: rgba(255, 255, 255, .28);
+      --gg-surface-interactive: rgba(255, 255, 255, .48);
+      --gg-surface-interactive-strong: rgba(255, 255, 255, .66);
+      --gg-divider: rgba(32, 26, 28, .12);
+      --gg-divider-strong: rgba(32, 26, 28, .18);
+      --gg-border-interactive: rgba(32, 26, 28, .18);
+      --gg-ink: #201a1c;
+      --gg-ink-soft: #5f565b;
+      --gg-accent: #2d2529;
+      --gg-accent-soft: #6a5f66;
+      --gg-shadow-soft: 0 8px 24px rgba(32, 26, 28, .028);
+      --gg-shadow-panel: 0 16px 48px rgba(32, 26, 28, .105);
+      --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+      --gg-toolbar-gap: 4px;
+      --gg-toolbar-pad: 6px;
+      --gg-toolbar-radius: 999px;
+      --gg-toolbar-border: var(--gg-divider-strong);
+      --gg-toolbar-surface: var(--gg-surface-interactive-strong);
+      --gg-toolbar-item-min-height: 50px;
+      --gg-toolbar-item-pad-x: 8px;
+      --gg-toolbar-item-radius: 999px;
+      --gg-toolbar-item-size: 12px;
+      --gg-toolbar-item-weight: 600;
+      --gg-toolbar-item-hover-bg: var(--gg-surface-quiet);
+
+      --gg-dock-offset-bottom: max(10px, env(safe-area-inset-bottom));
+      --gg-dock-track-height: calc(var(--gg-toolbar-item-min-height) + (var(--gg-toolbar-pad) * 2));
+      --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
+      --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 22px);
+
+      --gg-ease: 180ms ease;
+      --gg-motion-press: 90ms ease;
+      --gg-press-scale: .985;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.52), transparent 36rem),
+        var(--gg-surface-page);
+      color: var(--gg-ink);
+      font: 15px/1.58 var(--gg-font-sans);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--gg-accent);
+      outline-offset: 2px;
+    }
+
+    .gg-shell {
+      min-height: 100vh;
+      padding: 14px 12px var(--gg-shell-bottom-clearance);
+      display: grid;
+      align-items: center;
+    }
+
+    .gg-main {
+      width: min(100%, 720px);
+      margin: 0 auto;
+    }
+
+    .gg-offline {
+      display: grid;
+      gap: 20px;
+    }
+
+    .gg-offline__hero {
+      display: grid;
+      gap: 12px;
+      padding: clamp(22px, 5vw, 34px);
+      border: 1px solid var(--gg-divider-strong);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .22);
+      box-shadow: var(--gg-shadow-panel);
+      backdrop-filter: blur(12px);
+    }
+
+    .gg-offline__eyebrow {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 650 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .gg-offline__title {
+      margin: 0;
+      max-width: 13ch;
+      color: var(--gg-ink);
+      font-size: clamp(34px, 10vw, 64px);
+      line-height: .98;
+      letter-spacing: -.055em;
+    }
+
+    .gg-offline__summary {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--gg-ink-soft);
+      font: 500 15px/1.65 var(--gg-font-sans);
+    }
+
+    .gg-offline__status {
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      max-width: 100%;
+      min-height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--gg-border-interactive);
+      border-radius: 999px;
+      background: var(--gg-surface-interactive);
+      color: var(--gg-accent-soft);
+      font: 650 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    body[data-gg-network="online"] .gg-offline__status {
+      color: var(--gg-ink);
+      background: var(--gg-surface-interactive-strong);
+    }
+
+    .gg-offline__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .gg-offline__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid var(--gg-border-interactive);
+      border-radius: 999px;
+      background: var(--gg-surface-interactive);
+      color: var(--gg-ink);
+      font: 650 13px/1.2 var(--gg-font-sans);
+      cursor: pointer;
+      transition:
+        transform var(--gg-motion-press),
+        background-color var(--gg-ease),
+        border-color var(--gg-ease),
+        color var(--gg-ease);
+    }
+
+    .gg-offline__action:hover,
+    .gg-offline__action:focus-visible {
+      background: var(--gg-surface-interactive-strong);
+      border-color: var(--gg-divider-strong);
+    }
+
+    .gg-offline__action:active {
+      transform: scale(var(--gg-press-scale));
+    }
+
+    .gg-offline__action--primary {
+      background: var(--gg-accent);
+      border-color: var(--gg-accent);
+      color: #fff;
+    }
+
+    .gg-offline__action--primary:hover,
+    .gg-offline__action--primary:focus-visible {
+      background: #201a1c;
+      border-color: #201a1c;
+      color: #fff;
+    }
+
+    .gg-offline__panel {
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--gg-divider);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, .18);
+      box-shadow: var(--gg-shadow-soft);
+      overflow: hidden;
+    }
+
+    .gg-offline__panel-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gg-divider);
+    }
+
+    .gg-offline__panel-title {
+      margin: 0;
+      color: var(--gg-ink);
+      font: 650 13px/1.2 var(--gg-font-sans);
+    }
+
+    .gg-offline__panel-meta {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 600 11px/1.2 var(--gg-font-sans);
+    }
+
+    .gg-offline__list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gg-offline__item {
+      border-bottom: 1px solid var(--gg-divider);
+    }
+
+    .gg-offline__item:last-child {
+      border-bottom: 0;
+    }
+
+    .gg-offline__link,
+    .gg-offline__empty {
+      display: grid;
+      gap: 4px;
+      width: 100%;
+      padding: 14px 16px;
+    }
+
+    .gg-offline__link:hover,
+    .gg-offline__link:focus-visible {
+      background: var(--gg-surface-quiet);
+    }
+
+    .gg-offline__link-title {
+      color: var(--gg-ink);
+      font: 650 15px/1.35 var(--gg-font-sans);
+      overflow-wrap: anywhere;
+    }
+
+    .gg-offline__link-meta,
+    .gg-offline__empty {
+      color: var(--gg-ink-soft);
+      font: 500 12px/1.45 var(--gg-font-sans);
+    }
+
+    .gg-offline__empty[hidden],
+    .gg-offline__panel[hidden] {
+      display: none;
+    }
+
+    .gg-dock {
+      position: fixed;
+      left: 50%;
+      bottom: var(--gg-dock-offset-bottom);
+      transform: translateX(-50%);
+      z-index: 40;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--gg-toolbar-gap);
+      width: min(calc(100% - 12px), 720px);
+      padding: var(--gg-toolbar-pad);
+      border: 1px solid var(--gg-toolbar-border);
+      border-radius: var(--gg-toolbar-radius);
+      background: var(--gg-toolbar-surface);
+      box-shadow: var(--gg-shadow-soft);
+      backdrop-filter: blur(10px);
+    }
+
+    .gg-dock__item {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: var(--gg-toolbar-item-min-height);
+      padding: 0 var(--gg-toolbar-item-pad-x);
+      border: 0;
+      border-radius: var(--gg-toolbar-item-radius);
+      background: transparent;
+      color: var(--gg-ink);
+      font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans);
+      cursor: pointer;
+      transition:
+        transform var(--gg-motion-press),
+        background-color var(--gg-ease),
+        color var(--gg-ease);
+    }
+
+    .gg-dock__item:hover,
+    .gg-dock__item:focus-visible {
+      background: var(--gg-toolbar-item-hover-bg);
+    }
+
+    .gg-dock__item:active {
+      transform: scale(var(--gg-press-scale));
+    }
+
+    .gg-dock__glyph {
+      font-size: 18px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .gg-dock__label {
+      font-size: inherit;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 769px) {
+      .gg-shell {
+        padding-top: 24px;
+      }
+
+      .gg-offline {
+        gap: 22px;
+      }
+
+      .gg-offline__hero {
+        padding: 38px;
+      }
+
+      .gg-offline__summary {
+        font-size: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h1>Anda sedang offline</h1>
-    <p>Silakan periksa koneksi internet Anda, lalu muat ulang halaman.</p>
-  </div>
+
+<body data-gg-network="unknown">
+  <main class="gg-shell" id="main-content">
+    <section class="gg-main gg-offline" aria-labelledby="gg-offline-title">
+      <div class="gg-offline__hero">
+        <p class="gg-offline__eyebrow" data-i18n="eyebrow">Mode Offline</p>
+
+        <h1 class="gg-offline__title" id="gg-offline-title" data-i18n="title">
+          Koneksi tidak tersedia.
+        </h1>
+
+        <p class="gg-offline__summary" data-i18n="summary">
+          Halaman yang Anda buka belum bisa dimuat karena jaringan tidak tersedia.
+          Beberapa halaman yang pernah tersimpan mungkin masih dapat dibuka.
+        </p>
+
+        <div class="gg-offline__status" id="gg-network-status" data-i18n="statusUnknown">
+          Memeriksa koneksi
+        </div>
+
+        <div class="gg-offline__actions" aria-label="Offline actions">
+          <button class="gg-offline__action gg-offline__action--primary" type="button" id="gg-retry" data-i18n="retry">
+            Coba lagi
+          </button>
+
+          <a class="gg-offline__action" href="/" data-i18n="home">
+            Home
+          </a>
+
+          <a class="gg-offline__action" href="/landing" data-i18n="landing">
+            Landing
+          </a>
+
+          <a class="gg-offline__action" href="/feeds/posts/default?alt=rss" data-i18n="rss">
+            RSS
+          </a>
+        </div>
+      </div>
+
+      <section class="gg-offline__panel" id="gg-saved-panel" aria-labelledby="gg-saved-title" hidden>
+        <div class="gg-offline__panel-head">
+          <h2 class="gg-offline__panel-title" id="gg-saved-title" data-i18n="savedTitle">
+            Halaman tersimpan
+          </h2>
+          <p class="gg-offline__panel-meta" id="gg-saved-meta" data-i18n="savedMeta">
+            Cache lokal
+          </p>
+        </div>
+
+        <ul class="gg-offline__list" id="gg-saved-list"></ul>
+
+        <p class="gg-offline__empty" id="gg-saved-empty" hidden data-i18n="savedEmpty">
+          Belum ada halaman artikel yang tersedia dari cache perangkat ini.
+        </p>
+      </section>
+    </section>
+  </main>
+
+  <nav class="gg-dock" aria-label="Offline navigation">
+    <a class="gg-dock__item" href="/">
+      <span class="gg-dock__glyph" aria-hidden="true">⌂</span>
+      <span class="gg-dock__label">Home</span>
+    </a>
+
+    <a class="gg-dock__item" href="/landing">
+      <span class="gg-dock__glyph" aria-hidden="true">◆</span>
+      <span class="gg-dock__label">Landing</span>
+    </a>
+
+    <button class="gg-dock__item" type="button" id="gg-dock-retry">
+      <span class="gg-dock__glyph" aria-hidden="true">↻</span>
+      <span class="gg-dock__label" data-i18n="dockRetry">Retry</span>
+    </button>
+
+    <a class="gg-dock__item" href="/feeds/posts/default?alt=rss">
+      <span class="gg-dock__glyph" aria-hidden="true">⋯</span>
+      <span class="gg-dock__label">RSS</span>
+    </a>
+  </nav>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var COPY = {
+        id: {
+          eyebrow: 'Mode Offline',
+          title: 'Koneksi tidak tersedia.',
+          summary: 'Halaman yang Anda buka belum bisa dimuat karena jaringan tidak tersedia. Beberapa halaman yang pernah tersimpan mungkin masih dapat dibuka.',
+          retry: 'Coba lagi',
+          home: 'Home',
+          landing: 'Landing',
+          rss: 'RSS',
+          dockRetry: 'Retry',
+          statusOnline: 'Koneksi kembali tersedia',
+          statusOffline: 'Sedang offline',
+          statusUnknown: 'Memeriksa koneksi',
+          savedTitle: 'Halaman tersimpan',
+          savedMeta: 'Cache lokal',
+          savedEmpty: 'Belum ada halaman artikel yang tersedia dari cache perangkat ini.'
+        },
+        en: {
+          eyebrow: 'Offline Mode',
+          title: 'Connection unavailable.',
+          summary: 'The requested page cannot be loaded because the network is unavailable. Some previously saved pages may still be available.',
+          retry: 'Try again',
+          home: 'Home',
+          landing: 'Landing',
+          rss: 'RSS',
+          dockRetry: 'Retry',
+          statusOnline: 'Connection restored',
+          statusOffline: 'Currently offline',
+          statusUnknown: 'Checking connection',
+          savedTitle: 'Saved pages',
+          savedMeta: 'Local cache',
+          savedEmpty: 'No article pages are available from this device cache yet.'
+        }
+      };
+
+      var html = document.documentElement;
+      var body = document.body;
+      var retry = document.getElementById('gg-retry');
+      var dockRetry = document.getElementById('gg-dock-retry');
+      var networkStatus = document.getElementById('gg-network-status');
+      var savedPanel = document.getElementById('gg-saved-panel');
+      var savedList = document.getElementById('gg-saved-list');
+      var savedEmpty = document.getElementById('gg-saved-empty');
+
+      function detectLocale() {
+        var stored = '';
+        try {
+          stored = localStorage.getItem('gg:locale') || localStorage.getItem('ggLocale') || '';
+        } catch (error) {}
+
+        var nav = (navigator.language || '').toLowerCase();
+        if (stored === 'en' || stored === 'id') return stored;
+        if (nav.indexOf('en') === 0) return 'en';
+        return 'id';
+      }
+
+      var locale = detectLocale();
+      var copy = COPY[locale] || COPY.id;
+      html.setAttribute('lang', locale);
+
+      function applyCopy() {
+        var nodes = document.querySelectorAll('[data-i18n]');
+        nodes.forEach(function (node) {
+          var key = node.getAttribute('data-i18n');
+          if (copy[key]) node.textContent = copy[key];
+        });
+      }
+
+      function setNetworkState() {
+        var online = navigator.onLine;
+        body.setAttribute('data-gg-network', online ? 'online' : 'offline');
+        if (networkStatus) {
+          networkStatus.textContent = online ? copy.statusOnline : copy.statusOffline;
+        }
+      }
+
+      function reload() {
+        window.location.reload();
+      }
+
+      function isLikelyArticleUrl(url) {
+        try {
+          var parsed = new URL(url);
+          if (parsed.origin !== location.origin) return false;
+          if (parsed.pathname === '/' || parsed.pathname === '/landing') return false;
+          if (parsed.pathname.indexOf('/feeds/') === 0) return false;
+          if (parsed.pathname.indexOf('/search') === 0) return false;
+          return /\.html$/.test(parsed.pathname);
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function cleanTitleFromUrl(url) {
+        try {
+          var parsed = new URL(url);
+          var last = parsed.pathname.split('/').filter(Boolean).pop() || parsed.hostname;
+          return decodeURIComponent(last)
+            .replace(/\.html$/i, '')
+            .replace(/[-_]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        } catch (error) {
+          return url;
+        }
+      }
+
+      function renderSavedPages(items) {
+        if (!savedPanel || !savedList || !savedEmpty) return;
+
+        savedPanel.hidden = false;
+        savedList.textContent = '';
+
+        if (!items.length) {
+          savedEmpty.hidden = false;
+          return;
+        }
+
+        savedEmpty.hidden = true;
+
+        items.slice(0, 5).forEach(function (item) {
+          var li = document.createElement('li');
+          li.className = 'gg-offline__item';
+
+          var a = document.createElement('a');
+          a.className = 'gg-offline__link';
+          a.href = item.url;
+
+          var title = document.createElement('span');
+          title.className = 'gg-offline__link-title';
+          title.textContent = item.title || cleanTitleFromUrl(item.url);
+
+          var meta = document.createElement('span');
+          meta.className = 'gg-offline__link-meta';
+          meta.textContent = item.pathname || item.url;
+
+          a.appendChild(title);
+          a.appendChild(meta);
+          li.appendChild(a);
+          savedList.appendChild(li);
+        });
+      }
+
+      function readCachedPages() {
+        if (!('caches' in window)) {
+          renderSavedPages([]);
+          return;
+        }
+
+        caches.keys()
+          .then(function (names) {
+            return Promise.all(names.map(function (name) {
+              return caches.open(name).then(function (cache) {
+                return cache.keys().then(function (requests) {
+                  return requests.map(function (request) {
+                    return request.url;
+                  });
+                });
+              });
+            }));
+          })
+          .then(function (groups) {
+            var seen = {};
+            var urls = [];
+
+            groups.flat().forEach(function (url) {
+              if (!seen[url] && isLikelyArticleUrl(url)) {
+                seen[url] = true;
+                urls.push(url);
+              }
+            });
+
+            var items = urls.slice(0, 5).map(function (url) {
+              var parsed = new URL(url);
+              return {
+                url: url,
+                pathname: parsed.pathname,
+                title: cleanTitleFromUrl(url)
+              };
+            });
+
+            renderSavedPages(items);
+          })
+          .catch(function () {
+            renderSavedPages([]);
+          });
+      }
+
+      applyCopy();
+      setNetworkState();
+      readCachedPages();
+
+      window.addEventListener('online', setNetworkState);
+      window.addEventListener('offline', setNetworkState);
+
+      if (retry) retry.addEventListener('click', reload);
+      if (dockRetry) dockRetry.addEventListener('click', reload);
+    })();
+  </script>
 </body>
 </html>
