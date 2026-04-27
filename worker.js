@@ -1,9 +1,16 @@
-/* worker.js — PakRPP Edge Governance Layer v10
- * Role: Cloudflare Worker edge router, route-policy enforcer, PWA asset gateway,
- * crawler lockdown layer, and diagnostics surface.
+/* worker.js — PakRPP Edge Governance Layer v10.1
+ * Role:
+ * - Cloudflare Worker edge router
+ * - route-policy enforcer
+ * - development crawler lockdown layer
+ * - PWA asset gateway
+ * - robots.txt generator
+ * - diagnostics surface
  *
- * This Worker deliberately does NOT become a Blogger replacement CMS.
- * Blogger SSR remains the source of truth for canonical posts and pages.
+ * Non-goal:
+ * - This Worker is NOT a replacement CMS.
+ * - Blogger SSR remains the canonical source of truth.
+ * - Worker must not proxy/mutate all Blogger posts just to hide Blogger.
  */
 
 const SITE = {
@@ -23,21 +30,42 @@ const DEFAULT_FLAGS = {
   mode: "development",
   release: SITE.release,
   templateFingerprint: SITE.templateFingerprint,
+
   csp_report_enabled: true,
+
   edge: {
     canonicalHost: true,
     httpsRedirect: true,
+
+    /*
+     * Keep false until mobile parity is verified.
+     * If enabled, ?m=1 and ?m=0 are normalized to clean URLs.
+     */
     normalizeMobileQuery: false,
-    redirectLegacyViews: false,
+
+    /*
+     * Legacy Blogger Dynamic View routes are always redirected to "/".
+     * This flag is kept only for diagnostics/backward compatibility;
+     * it no longer controls behavior.
+     */
+    redirectLegacyViews: true,
+
     annotateTemplateContract: true,
     mutateLandingContactAnchor: true,
+
+    /*
+     * If true, known bots can receive hard 403 in development/staging.
+     * Default false because X-Robots-Tag + robots.txt is safer while debugging.
+     */
     hardBlockKnownBotsInDevelopment: false,
   },
+
   robots: {
     developmentLockdown: true,
     blockAiBots: true,
     blockSearchBots: true,
   },
+
   sw: {
     enabled: true,
     navigationPreload: true,
@@ -48,6 +76,7 @@ const DEFAULT_FLAGS = {
     backgroundSync: false,
     debug: false,
   },
+
   limits: {
     maxPageEntries: 50,
     maxSavedEntries: 100,
@@ -55,6 +84,7 @@ const DEFAULT_FLAGS = {
     maxFeedAgeHours: 24,
     maxPageAgeDays: 30,
   },
+
   vanity: {
     "/about": "/p/about.html",
     "/authors": "/p/authors.html",
@@ -66,6 +96,7 @@ const DEFAULT_FLAGS = {
 
 const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
+
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
 const FLAGS_LEGACY_PATH = "/flags.json";
 
@@ -75,8 +106,10 @@ const STATIC_ROUTE_ASSET_MAP = new Map([
   ["/offline.html", "/offline.html"],
   ["/ads.txt", "/ads.txt"],
   ["/llms.txt", "/llms.txt"],
+
   [FLAGS_CANONICAL_PATH, "/__gg/flags.json"],
   [FLAGS_LEGACY_PATH, "/__gg/flags.json"],
+
   [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
 ]);
 
@@ -123,7 +156,10 @@ function cloneJson(value) {
 
 function mergePlainObject(base, incoming) {
   const out = Array.isArray(base) ? base.slice() : { ...base };
-  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) return out;
+
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) {
+    return out;
+  }
 
   for (const [key, value] of Object.entries(incoming)) {
     if (
@@ -145,8 +181,10 @@ function mergePlainObject(base, incoming) {
 
 function normalizeMode(value) {
   const mode = String(value || "").trim().toLowerCase();
+
   if (mode === "lab") return "development";
   if (ALLOWED_MODES.has(mode)) return mode;
+
   return DEFAULT_FLAGS.mode;
 }
 
@@ -177,6 +215,7 @@ function normalizeFlags(data, env = {}) {
 
 async function loadFlags(env) {
   const now = Date.now();
+
   if (flagsCache.value && now - flagsCache.ts < FLAGS_TTL_MS) {
     return cloneJson(flagsCache.value);
   }
@@ -195,7 +234,10 @@ async function loadFlags(env) {
     try {
       const req = new Request("https://assets.local/__gg/flags.json");
       const res = await env.ASSETS.fetch(req);
-      if (res.ok) data = await res.json();
+
+      if (res.ok) {
+        data = await res.json();
+      }
     } catch (_) {
       data = null;
     }
@@ -203,12 +245,14 @@ async function loadFlags(env) {
 
   const flags = normalizeFlags(data, env || {});
   flagsCache = { ts: now, value: flags };
+
   return cloneJson(flags);
 }
 
 function jsonResponse(payload, init = {}) {
   const headers = new Headers(init.headers || {});
   headers.set("Content-Type", "application/json; charset=utf-8");
+
   return new Response(JSON.stringify(payload, null, 2), {
     status: init.status || 200,
     statusText: init.statusText,
@@ -219,6 +263,7 @@ function jsonResponse(payload, init = {}) {
 function textResponse(text, init = {}) {
   const headers = new Headers(init.headers || {});
   headers.set("Content-Type", init.contentType || "text/plain; charset=utf-8");
+
   return new Response(text, {
     status: init.status || 200,
     statusText: init.statusText,
@@ -242,10 +287,15 @@ function redirectUrl(url, status = 301) {
   return Response.redirect(url.toString(), status);
 }
 
+function redirectStatusForMode(flags) {
+  return flags.mode === "production" ? 301 : 302;
+}
+
 function maybeCanonicalRedirect(request, flags) {
   const url = new URL(request.url);
   const host = getRequestHost(request).toLowerCase();
   const proto = getProto(request, url).toLowerCase();
+
   let changed = false;
 
   if (flags.edge.httpsRedirect && proto === "http") {
@@ -259,39 +309,56 @@ function maybeCanonicalRedirect(request, flags) {
   }
 
   if (!changed) return null;
-  return redirectUrl(url, flags.mode === "production" ? 301 : 302);
+
+  return redirectUrl(url, redirectStatusForMode(flags));
 }
 
 function normalizeMobileQueryRedirect(request, flags) {
   if (!flags.edge.normalizeMobileQuery) return null;
 
   const url = new URL(request.url);
+
   if (!url.searchParams.has("m")) return null;
 
   const m = url.searchParams.get("m");
+
   if (m !== "0" && m !== "1") return null;
 
   url.searchParams.delete("m");
-  return redirectUrl(url, flags.mode === "production" ? 301 : 302);
+
+  return redirectUrl(url, redirectStatusForMode(flags));
 }
 
 function vanityRedirect(request, flags) {
   const url = new URL(request.url);
   const target = flags.vanity && flags.vanity[url.pathname];
+
   if (!target) return null;
 
   const next = new URL(request.url);
   next.pathname = target;
-  return redirectUrl(next, flags.mode === "production" ? 301 : 302);
+
+  return redirectUrl(next, redirectStatusForMode(flags));
+}
+
+function isLegacyViewPath(pathname) {
+  return pathname === "/view" || pathname.startsWith("/view/");
 }
 
 function legacyViewRedirect(request, flags) {
   const url = new URL(request.url);
-  if (!url.pathname.startsWith("/view")) return null;
-  if (!flags.edge.redirectLegacyViews) return null;
+
+  if (!isLegacyViewPath(url.pathname)) return null;
 
   const next = new URL("/", request.url);
-  return redirectUrl(next, flags.mode === "production" ? 301 : 302);
+
+  /*
+   * Final decision:
+   * - all Blogger Dynamic View legacy routes redirect to "/"
+   * - development/staging: 302
+   * - production: 301
+   */
+  return redirectUrl(next, redirectStatusForMode(flags));
 }
 
 function classifyRoute(request) {
@@ -300,27 +367,38 @@ function classifyRoute(request) {
 
   if (path === "/") return "home";
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
+
   if (path === "/robots.txt") return "robots";
   if (path === "/sitemap.xml") return "sitemap";
+
   if (path === "/sw.js") return "service-worker";
   if (path === "/offline.html") return "offline";
   if (path === "/manifest.webmanifest") return "manifest";
+
   if (path === FLAGS_CANONICAL_PATH || path === FLAGS_LEGACY_PATH) return "flags";
+
   if (path.startsWith("/__gg/")) return "diagnostic";
+
   if (path.startsWith("/assets/v/")) return "versioned-asset";
   if (path.startsWith("/assets/latest/")) return "latest-asset";
   if (path.startsWith("/assets/")) return "asset";
   if (path.startsWith("/gg-pwa-icon/")) return "icon";
+
   if (path.startsWith("/feeds/")) return "feed";
+
   if (path.startsWith("/search/label/")) return "label";
   if (path === "/search" || path.startsWith("/search/")) return "search";
-  if (path.startsWith("/view")) return "legacy-view";
+
+  if (isLegacyViewPath(path)) return "legacy-view";
+
   if (path.startsWith("/p/") && path.endsWith(".html")) return "static-page";
   if (/^\/\d{4}\/\d{2}\/.+\.html$/i.test(path)) return "post";
+
   if (path.endsWith(".html")) return "html";
   if (path.endsWith(".xml")) return "xml";
   if (path.endsWith(".json")) return "json";
   if (path.endsWith(".txt")) return "text";
+
   return "origin";
 }
 
@@ -332,11 +410,15 @@ function shouldServeStaticFromAssets(pathname) {
   if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return true;
   if (pathname.startsWith("/gg-pwa-icon/")) return true;
   if (pathname.startsWith("/assets/")) return true;
+
   return false;
 }
 
 function resolveAssetPath(pathname) {
-  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return STATIC_ROUTE_ASSET_MAP.get(pathname);
+  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) {
+    return STATIC_ROUTE_ASSET_MAP.get(pathname);
+  }
+
   return pathname;
 }
 
@@ -347,6 +429,7 @@ async function serveFromAssets(request, env, pathname) {
 
   const assetPath = resolveAssetPath(pathname);
   const url = new URL(request.url);
+
   url.pathname = assetPath;
 
   return env.ASSETS.fetch(new Request(url.toString(), request));
@@ -357,7 +440,7 @@ async function handleStaticRoutes(request, env, flags) {
   const pathname = url.pathname;
 
   if (pathname === LANDING_INTERNAL_PATH) {
-    return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), flags.mode === "production" ? 301 : 302);
+    return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags));
   }
 
   if (shouldServeStaticFromAssets(pathname)) {
@@ -370,10 +453,12 @@ async function handleStaticRoutes(request, env, flags) {
 function baseSecurityHeaders(headers) {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
   headers.set(
     "Permissions-Policy",
     "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()"
   );
+
   headers.set("X-Frame-Options", "SAMEORIGIN");
 }
 
@@ -386,13 +471,26 @@ function productionRobotsTag(route, isHtmlLike) {
     if (["service-worker", "manifest", "flags", "diagnostic", "offline", "json"].includes(route)) {
       return "noindex, nofollow";
     }
-    if (["feed", "xml", "sitemap"].includes(route)) return "noindex, follow";
+
+    if (["feed", "xml", "sitemap"].includes(route)) {
+      return "noindex, follow";
+    }
+
     return "noindex";
   }
 
-  if (["home", "landing", "post", "static-page"].includes(route)) return "index, follow";
-  if (["label", "search", "feed"].includes(route)) return "noindex, follow";
-  if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
+  if (["home", "landing", "post", "static-page"].includes(route)) {
+    return "index, follow";
+  }
+
+  if (["label", "search", "feed"].includes(route)) {
+    return "noindex, follow";
+  }
+
+  if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) {
+    return "noindex, nofollow";
+  }
+
   return "index, follow";
 }
 
@@ -413,15 +511,20 @@ function routeRobotsTag(route, contentType, flags) {
 
 function cacheControlForRoute(route, flags) {
   if (flags.mode !== "production") {
-    if (["versioned-asset", "icon"].includes(route)) return "public, max-age=300";
+    if (["versioned-asset", "icon"].includes(route)) {
+      return "public, max-age=300";
+    }
+
     return "no-store";
   }
 
   switch (route) {
     case "versioned-asset":
       return "public, max-age=31536000, immutable";
+
     case "icon":
       return "public, max-age=604800";
+
     case "latest-asset":
     case "service-worker":
     case "manifest":
@@ -430,9 +533,11 @@ function cacheControlForRoute(route, flags) {
     case "robots":
     case "offline":
       return "no-cache, must-revalidate";
+
     case "feed":
     case "sitemap":
       return "public, max-age=300, stale-while-revalidate=86400";
+
     case "home":
     case "landing":
     case "post":
@@ -442,6 +547,7 @@ function cacheControlForRoute(route, flags) {
     case "html":
     case "origin":
       return "no-cache, must-revalidate";
+
     default:
       return "no-cache";
   }
@@ -453,11 +559,13 @@ function forceContentType(route, pathname, current) {
   if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
   if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
   if (route === "offline" || route === "landing") return current || "text/html; charset=utf-8";
+
   return current || "";
 }
 
 function cspReportOnlyValue(request) {
   const reportUri = new URL("/api/csp-report", request.url).pathname;
+
   return [
     "default-src 'self' https:",
     "base-uri 'self'",
@@ -481,11 +589,17 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   baseSecurityHeaders(headers);
 
   const forcedType = forceContentType(route, url.pathname, headers.get("content-type"));
-  if (forcedType) headers.set("Content-Type", forcedType);
+
+  if (forcedType) {
+    headers.set("Content-Type", forcedType);
+  }
 
   const contentType = headers.get("content-type") || "";
   const robotsTag = routeRobotsTag(route, contentType, flags);
-  if (robotsTag) headers.set("X-Robots-Tag", robotsTag);
+
+  if (robotsTag) {
+    headers.set("X-Robots-Tag", robotsTag);
+  }
 
   headers.set("Cache-Control", cacheControlForRoute(route, flags));
   headers.set("X-GG-Edge-Mode", flags.mode);
@@ -512,7 +626,9 @@ function withResponsePolicy(resp, request, flags, options = {}) {
 
 function isKnownBotUserAgent(ua, list) {
   const source = String(ua || "").toLowerCase();
+
   if (!source) return false;
+
   return list.some((needle) => source.includes(needle));
 }
 
@@ -521,8 +637,15 @@ function shouldHardBlockBot(request, flags) {
   if (!flags.edge.hardBlockKnownBotsInDevelopment) return false;
 
   const ua = request.headers.get("user-agent") || "";
-  if (flags.robots.blockAiBots && isKnownBotUserAgent(ua, AI_AND_TRAINING_BOTS)) return true;
-  if (flags.robots.blockSearchBots && isKnownBotUserAgent(ua, SEARCH_BOTS)) return true;
+
+  if (flags.robots.blockAiBots && isKnownBotUserAgent(ua, AI_AND_TRAINING_BOTS)) {
+    return true;
+  }
+
+  if (flags.robots.blockSearchBots && isKnownBotUserAgent(ua, SEARCH_BOTS)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -531,7 +654,7 @@ function buildRobotsTxt(request, flags) {
   const lines = [];
 
   lines.push(`# PakRPP robots policy — mode=${flags.mode}`);
-  lines.push(`# Generated by Cloudflare Worker. Do not edit as a static file.`);
+  lines.push("# Generated by Cloudflare Worker. Do not edit as a static file.");
   lines.push("");
 
   if (flags.mode !== "production" && flags.robots.developmentLockdown) {
@@ -576,8 +699,9 @@ function buildRobotsTxt(request, flags) {
     lines.push("User-agent: *");
     lines.push("Disallow: /");
     lines.push("");
-    lines.push(`# Sitemap intentionally left visible for tooling, but pages are locked by X-Robots-Tag in ${flags.mode} mode.`);
+    lines.push(`# Sitemap is visible for tooling, but pages are locked by X-Robots-Tag in ${flags.mode} mode.`);
     lines.push(`Sitemap: ${sitemapUrl}`);
+
     return lines.join("\n") + "\n";
   }
 
@@ -614,6 +738,7 @@ function buildRobotsTxt(request, flags) {
 function routePolicyPreview(pathname, flags) {
   const fake = new Request(`https://${SITE.canonicalHost}${pathname || "/"}`);
   const route = classifyRoute(fake);
+
   const contentType =
     route === "service-worker"
       ? "application/javascript"
@@ -632,11 +757,20 @@ function routePolicyPreview(pathname, flags) {
     robots: routeRobotsTag(route, contentType, flags),
     cacheControl: cacheControlForRoute(route, flags),
     contentType: forceContentType(route, pathname, contentType),
+    redirects:
+      isLegacyViewPath(pathname)
+        ? {
+            to: "/",
+            status: redirectStatusForMode(flags),
+            reason: "legacy-blogger-view-normalization",
+          }
+        : null,
   };
 }
 
 function diagnosticsPayload(request, flags) {
   const url = new URL(request.url);
+
   return {
     ok: true,
     name: SITE.originName,
@@ -644,11 +778,13 @@ function diagnosticsPayload(request, flags) {
     release: flags.release,
     templateFingerprint: flags.templateFingerprint,
     canonicalHost: SITE.canonicalHost,
+
     request: {
       url: request.url,
       host: getRequestHost(request),
       route: classifyRoute(request),
     },
+
     pwa: {
       serviceWorker: "/sw.js",
       offline: "/offline.html",
@@ -656,12 +792,47 @@ function diagnosticsPayload(request, flags) {
       flags: FLAGS_CANONICAL_PATH,
       legacyFlagsAlias: FLAGS_LEGACY_PATH,
     },
+
     routes: {
-      landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
-      flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
-      diagnostics: ["/__gg/health", "/__gg/routes", "/__gg/robots", "/__gg/headers?url=/"],
+      landing: {
+        public: LANDING_PUBLIC_PATH,
+        asset: LANDING_INTERNAL_PATH,
+      },
+
+      flags: {
+        canonical: FLAGS_CANONICAL_PATH,
+        legacy: FLAGS_LEGACY_PATH,
+        asset: "/__gg/flags.json",
+      },
+
+      legacyBloggerViews: {
+        decision: "redirect-to-root",
+        target: "/",
+        developmentStatus: 302,
+        stagingStatus: 302,
+        productionStatus: 301,
+        paths: [
+          "/view",
+          "/view/classic",
+          "/view/flipcard",
+          "/view/magazine",
+          "/view/mosaic",
+          "/view/sidebar",
+          "/view/snapshot",
+          "/view/timeslide",
+        ],
+      },
+
+      diagnostics: [
+        "/__gg/health",
+        "/__gg/routes",
+        "/__gg/robots",
+        "/__gg/headers?url=/",
+      ],
     },
+
     policy: routePolicyPreview(url.pathname, flags),
+
     flags,
   };
 }
@@ -677,8 +848,15 @@ async function handleDiagnostics(request, flags) {
     return jsonResponse({
       mode: flags.mode,
       canonicalHost: SITE.canonicalHost,
+
       routeMatrix: {
-        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing"],
+        indexInProduction: [
+          "/",
+          "/YYYY/MM/slug.html",
+          "/p/*.html",
+          "/landing",
+        ],
+
         noindexInProduction: [
           "/search",
           "/search/label/*",
@@ -689,9 +867,23 @@ async function handleDiagnostics(request, flags) {
           FLAGS_CANONICAL_PATH,
           "/__gg/*",
         ],
-        utility: ["/feeds/*", "/sitemap.xml"],
-        normalizedWhenEnabled: ["?m=1", "?m=0"],
+
+        utility: [
+          "/feeds/*",
+          "/sitemap.xml",
+        ],
+
+        normalizedWhenEnabled: [
+          "?m=1",
+          "?m=0",
+        ],
+
+        alwaysRedirected: {
+          "/view": "/",
+          "/view/*": "/",
+        },
       },
+
       vanity: flags.vanity,
       staticAssetMap: Object.fromEntries(STATIC_ROUTE_ASSET_MAP),
     });
@@ -708,16 +900,24 @@ async function handleDiagnostics(request, flags) {
   if (url.pathname === "/__gg/headers") {
     const target = url.searchParams.get("url") || "/";
     const targetUrl = new URL(target, request.url);
+
     return jsonResponse(routePolicyPreview(targetUrl.pathname, flags));
   }
 
-  return jsonResponse({ ok: false, error: "Unknown diagnostic endpoint" }, { status: 404 });
+  return jsonResponse(
+    {
+      ok: false,
+      error: "Unknown diagnostic endpoint",
+    },
+    { status: 404 }
+  );
 }
 
 async function handleCspReport(request) {
   try {
     await request.text();
   } catch (_) {}
+
   return new Response(null, { status: 204 });
 }
 
@@ -727,7 +927,9 @@ function isHtmlResponse(resp) {
 
 function responseFromHtml(resp, html) {
   const headers = new Headers(resp.headers);
+
   headers.delete("content-length");
+
   return new Response(html, {
     status: resp.status,
     statusText: resp.statusText,
@@ -737,6 +939,7 @@ function responseFromHtml(resp, html) {
 
 function normalizeLandingContactHtml(html) {
   if (!html) return html;
+
   return String(html)
     .replaceAll("#gg-landing-hero-5", "#contact")
     .replace(/\bid=(['"])gg-landing-hero-5\1/gi, `id="contact"`);
@@ -795,11 +998,13 @@ function annotateTemplateContract(resp, html) {
 
 function shouldBypassHtmlMutation(pathname) {
   const path = String(pathname || "");
+
   if (!path) return false;
   if (/\.txt$/i.test(path)) return true;
   if (path.startsWith("/.well-known/")) return true;
   if (path.startsWith("/feeds/")) return true;
   if (path === "/sitemap.xml") return true;
+
   return false;
 }
 
@@ -815,13 +1020,16 @@ async function handleHtml(request, flags, response) {
   }
 
   let html = "";
+
   try {
     html = await response.clone().text();
   } catch (_) {
     return withResponsePolicy(response, request, flags);
   }
 
-  if (!html) return withResponsePolicy(response, request, flags);
+  if (!html) {
+    return withResponsePolicy(response, request, flags);
+  }
 
   let out = html;
 
@@ -843,12 +1051,20 @@ async function fetchOrigin(request) {
 }
 
 async function handleFlagsRoute(request, flags) {
-  return withResponsePolicy(jsonResponse(flags), request, flags, { route: "flags" });
+  return withResponsePolicy(
+    jsonResponse(flags),
+    request,
+    flags,
+    { route: "flags" }
+  );
 }
 
 async function handleRobotsRoute(request, flags) {
   return withResponsePolicy(
-    textResponse(buildRobotsTxt(request, flags), { contentType: "text/plain; charset=utf-8" }),
+    textResponse(
+      buildRobotsTxt(request, flags),
+      { contentType: "text/plain; charset=utf-8" }
+    ),
     request,
     flags,
     { route: "robots" }
@@ -864,14 +1080,31 @@ async function handleRequest(request, env, ctx) {
   }
 
   const canonicalRedirect = maybeCanonicalRedirect(request, flags);
-  if (canonicalRedirect) return canonicalRedirect;
+
+  if (canonicalRedirect) {
+    return canonicalRedirect;
+  }
 
   if (shouldHardBlockBot(request, flags) && url.pathname !== "/robots.txt") {
-    return withResponsePolicy(textResponse("Blocked in development mode", { status: 403 }), request, flags);
+    return withResponsePolicy(
+      textResponse("Blocked in development mode", { status: 403 }),
+      request,
+      flags
+    );
   }
 
   if (url.pathname === "/api/csp-report" && request.method === "POST") {
     return handleCspReport(request);
+  }
+
+  /*
+   * Legacy Blogger Dynamic View routes are normalized before any origin fetch.
+   * This is intentional and applies in every mode.
+   */
+  const legacy = legacyViewRedirect(request, flags);
+
+  if (legacy) {
+    return legacy;
   }
 
   if (url.pathname === "/robots.txt") {
@@ -883,24 +1116,34 @@ async function handleRequest(request, env, ctx) {
   }
 
   if (url.pathname.startsWith("/__gg/")) {
-    return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, { route: "diagnostic" });
+    return withResponsePolicy(
+      await handleDiagnostics(request, flags),
+      request,
+      flags,
+      { route: "diagnostic" }
+    );
   }
 
   const vanity = vanityRedirect(request, flags);
-  if (vanity) return vanity;
 
-  const legacy = legacyViewRedirect(request, flags);
-  if (legacy) return legacy;
+  if (vanity) {
+    return vanity;
+  }
 
   const mobile = normalizeMobileQueryRedirect(request, flags);
-  if (mobile) return mobile;
+
+  if (mobile) {
+    return mobile;
+  }
 
   const staticResponse = await handleStaticRoutes(request, env, flags);
+
   if (staticResponse) {
     return withResponsePolicy(staticResponse, request, flags);
   }
 
   const originResponse = await fetchOrigin(request);
+
   return handleHtml(request, flags, originResponse);
 }
 
@@ -910,6 +1153,7 @@ export default {
       return await handleRequest(request, env, ctx);
     } catch (error) {
       const flags = normalizeFlags(null, env || {});
+
       return withResponsePolicy(
         jsonResponse(
           {
