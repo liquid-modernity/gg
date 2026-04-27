@@ -1,56 +1,197 @@
-/* worker.js — simplified Cloudflare Worker aligned to current PakRPP template freeze */
+/* worker.js — PakRPP Edge Governance Layer v10
+ * Role: Cloudflare Worker edge router, route-policy enforcer, PWA asset gateway,
+ * crawler lockdown layer, and diagnostics surface.
+ *
+ * This Worker deliberately does NOT become a Blogger replacement CMS.
+ * Blogger SSR remains the source of truth for canonical posts and pages.
+ */
+
+const SITE = {
+  canonicalHost: "www.pakrpp.com",
+  apexHost: "pakrpp.com",
+  originName: "PakRPP",
+  release: "ac33998",
+  templateFingerprint: "db5707fc3afa",
+};
 
 const FLAGS_TTL_MS = 60 * 1000;
 let flagsCache = { ts: 0, value: null };
 
-const DEFAULT_FLAGS = {
-  sw: { enabled: true },
-  csp_report_enabled: true,
-  mode: "public",
-};
+const ALLOWED_MODES = new Set(["development", "staging", "production"]);
 
-const PUBLIC_STATIC_ROUTES = new Set([
-  "/manifest.webmanifest",
-  "/sw.js",
-  "/offline.html",
-  "/robots.txt",
-  "/ads.txt",
-  "/llms.txt",
-  "/flags.json",
-]);
+const DEFAULT_FLAGS = {
+  mode: "development",
+  release: SITE.release,
+  templateFingerprint: SITE.templateFingerprint,
+  csp_report_enabled: true,
+  edge: {
+    canonicalHost: true,
+    httpsRedirect: true,
+    normalizeMobileQuery: false,
+    redirectLegacyViews: false,
+    annotateTemplateContract: true,
+    mutateLandingContactAnchor: true,
+    hardBlockKnownBotsInDevelopment: false,
+  },
+  robots: {
+    developmentLockdown: true,
+    blockAiBots: true,
+    blockSearchBots: true,
+  },
+  sw: {
+    enabled: true,
+    navigationPreload: true,
+    htmlQualityGate: true,
+    offlineSearch: true,
+    savedReading: true,
+    contentIndex: false,
+    backgroundSync: false,
+    debug: false,
+  },
+  limits: {
+    maxPageEntries: 50,
+    maxSavedEntries: 100,
+    maxRuntimeImages: 120,
+    maxFeedAgeHours: 24,
+    maxPageAgeDays: 30,
+  },
+  vanity: {
+    "/about": "/p/about.html",
+    "/authors": "/p/authors.html",
+    "/privacy": "/p/privacy-policy.html",
+    "/sitemap": "/p/sitemap.html",
+    "/contact": "/p/contact.html",
+  },
+};
 
 const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
+const FLAGS_CANONICAL_PATH = "/gg-flags.json";
+const FLAGS_LEGACY_PATH = "/flags.json";
 
-function normalizeFlags(data) {
-  const out = structuredClone(DEFAULT_FLAGS);
-  if (!data || typeof data !== "object") return out;
+const STATIC_ROUTE_ASSET_MAP = new Map([
+  ["/manifest.webmanifest", "/manifest.webmanifest"],
+  ["/sw.js", "/sw.js"],
+  ["/offline.html", "/offline.html"],
+  ["/ads.txt", "/ads.txt"],
+  ["/llms.txt", "/llms.txt"],
+  [FLAGS_CANONICAL_PATH, "/__gg/flags.json"],
+  [FLAGS_LEGACY_PATH, "/__gg/flags.json"],
+  [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
+]);
 
-  if (data.sw && typeof data.sw === "object" && typeof data.sw.enabled === "boolean") {
-    out.sw.enabled = data.sw.enabled;
-  }
-  if (typeof data.csp_report_enabled === "boolean") {
-    out.csp_report_enabled = data.csp_report_enabled;
-  }
-  if (typeof data.mode === "string" && data.mode.trim()) {
-    out.mode = data.mode.trim().toLowerCase() === "lab" ? "lab" : "public";
+const AI_AND_TRAINING_BOTS = [
+  "gptbot",
+  "oai-searchbot",
+  "chatgpt-user",
+  "google-extended",
+  "ccbot",
+  "claudebot",
+  "anthropic-ai",
+  "perplexitybot",
+  "applebot-extended",
+  "bytespider",
+  "amazonbot",
+  "omgili",
+  "omgilibot",
+  "youbot",
+  "diffbot",
+  "cohere-ai",
+  "facebookbot",
+  "meta-externalagent",
+  "meta-externalfetcher",
+];
+
+const SEARCH_BOTS = [
+  "googlebot",
+  "googlebot-image",
+  "googlebot-video",
+  "bingbot",
+  "slurp",
+  "duckduckbot",
+  "baiduspider",
+  "yandexbot",
+  "applebot",
+  "semrushbot",
+  "ahrefsbot",
+  "mj12bot",
+];
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function mergePlainObject(base, incoming) {
+  const out = Array.isArray(base) ? base.slice() : { ...base };
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) return out;
+
+  for (const [key, value] of Object.entries(incoming)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      out[key] &&
+      typeof out[key] === "object" &&
+      !Array.isArray(out[key])
+    ) {
+      out[key] = mergePlainObject(out[key], value);
+    } else {
+      out[key] = value;
+    }
   }
 
-  for (const [key, value] of Object.entries(data)) {
-    if (key === "sw" || key === "csp_report_enabled" || key === "mode") continue;
-    out[key] = value;
-  }
   return out;
+}
+
+function normalizeMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+  if (mode === "lab") return "development";
+  if (ALLOWED_MODES.has(mode)) return mode;
+  return DEFAULT_FLAGS.mode;
+}
+
+function normalizeFlags(data, env = {}) {
+  let flags = cloneJson(DEFAULT_FLAGS);
+
+  if (data && typeof data === "object") {
+    flags = mergePlainObject(flags, data);
+  }
+
+  if (typeof env.GG_MODE === "string" && env.GG_MODE.trim()) {
+    flags.mode = env.GG_MODE.trim();
+  }
+
+  flags.mode = normalizeMode(flags.mode);
+  flags.release = String(flags.release || SITE.release);
+  flags.templateFingerprint = String(flags.templateFingerprint || SITE.templateFingerprint);
+  flags.csp_report_enabled = !!flags.csp_report_enabled;
+
+  flags.edge = mergePlainObject(DEFAULT_FLAGS.edge, flags.edge || {});
+  flags.robots = mergePlainObject(DEFAULT_FLAGS.robots, flags.robots || {});
+  flags.sw = mergePlainObject(DEFAULT_FLAGS.sw, flags.sw || {});
+  flags.limits = mergePlainObject(DEFAULT_FLAGS.limits, flags.limits || {});
+  flags.vanity = mergePlainObject(DEFAULT_FLAGS.vanity, flags.vanity || {});
+
+  return flags;
 }
 
 async function loadFlags(env) {
   const now = Date.now();
   if (flagsCache.value && now - flagsCache.ts < FLAGS_TTL_MS) {
-    return structuredClone(flagsCache.value);
+    return cloneJson(flagsCache.value);
   }
 
   let data = null;
-  if (env?.ASSETS) {
+
+  if (env && typeof env.GG_FLAGS_JSON === "string" && env.GG_FLAGS_JSON.trim()) {
+    try {
+      data = JSON.parse(env.GG_FLAGS_JSON);
+    } catch (_) {
+      data = null;
+    }
+  }
+
+  if (!data && env?.ASSETS) {
     try {
       const req = new Request("https://assets.local/__gg/flags.json");
       const res = await env.ASSETS.fetch(req);
@@ -60,14 +201,173 @@ async function loadFlags(env) {
     }
   }
 
-  const flags = normalizeFlags(data);
+  const flags = normalizeFlags(data, env || {});
   flagsCache = { ts: now, value: flags };
-  return structuredClone(flags);
+  return cloneJson(flags);
 }
 
-function withSecurityHeaders(resp, requestUrl, contentType, flags = DEFAULT_FLAGS) {
-  const headers = new Headers(resp.headers);
+function jsonResponse(payload, init = {}) {
+  const headers = new Headers(init.headers || {});
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  return new Response(JSON.stringify(payload, null, 2), {
+    status: init.status || 200,
+    statusText: init.statusText,
+    headers,
+  });
+}
 
+function textResponse(text, init = {}) {
+  const headers = new Headers(init.headers || {});
+  headers.set("Content-Type", init.contentType || "text/plain; charset=utf-8");
+  return new Response(text, {
+    status: init.status || 200,
+    statusText: init.statusText,
+    headers,
+  });
+}
+
+function isSafeMethod(request) {
+  return request.method === "GET" || request.method === "HEAD";
+}
+
+function getRequestHost(request) {
+  return request.headers.get("host") || new URL(request.url).host;
+}
+
+function getProto(request, url) {
+  return request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
+}
+
+function redirectUrl(url, status = 301) {
+  return Response.redirect(url.toString(), status);
+}
+
+function maybeCanonicalRedirect(request, flags) {
+  const url = new URL(request.url);
+  const host = getRequestHost(request).toLowerCase();
+  const proto = getProto(request, url).toLowerCase();
+  let changed = false;
+
+  if (flags.edge.httpsRedirect && proto === "http") {
+    url.protocol = "https:";
+    changed = true;
+  }
+
+  if (flags.edge.canonicalHost && (host === SITE.apexHost || url.hostname === SITE.apexHost)) {
+    url.hostname = SITE.canonicalHost;
+    changed = true;
+  }
+
+  if (!changed) return null;
+  return redirectUrl(url, flags.mode === "production" ? 301 : 302);
+}
+
+function normalizeMobileQueryRedirect(request, flags) {
+  if (!flags.edge.normalizeMobileQuery) return null;
+
+  const url = new URL(request.url);
+  if (!url.searchParams.has("m")) return null;
+
+  const m = url.searchParams.get("m");
+  if (m !== "0" && m !== "1") return null;
+
+  url.searchParams.delete("m");
+  return redirectUrl(url, flags.mode === "production" ? 301 : 302);
+}
+
+function vanityRedirect(request, flags) {
+  const url = new URL(request.url);
+  const target = flags.vanity && flags.vanity[url.pathname];
+  if (!target) return null;
+
+  const next = new URL(request.url);
+  next.pathname = target;
+  return redirectUrl(next, flags.mode === "production" ? 301 : 302);
+}
+
+function legacyViewRedirect(request, flags) {
+  const url = new URL(request.url);
+  if (!url.pathname.startsWith("/view")) return null;
+  if (!flags.edge.redirectLegacyViews) return null;
+
+  const next = new URL("/", request.url);
+  return redirectUrl(next, flags.mode === "production" ? 301 : 302);
+}
+
+function classifyRoute(request) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (path === "/") return "home";
+  if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
+  if (path === "/robots.txt") return "robots";
+  if (path === "/sitemap.xml") return "sitemap";
+  if (path === "/sw.js") return "service-worker";
+  if (path === "/offline.html") return "offline";
+  if (path === "/manifest.webmanifest") return "manifest";
+  if (path === FLAGS_CANONICAL_PATH || path === FLAGS_LEGACY_PATH) return "flags";
+  if (path.startsWith("/__gg/")) return "diagnostic";
+  if (path.startsWith("/assets/v/")) return "versioned-asset";
+  if (path.startsWith("/assets/latest/")) return "latest-asset";
+  if (path.startsWith("/assets/")) return "asset";
+  if (path.startsWith("/gg-pwa-icon/")) return "icon";
+  if (path.startsWith("/feeds/")) return "feed";
+  if (path.startsWith("/search/label/")) return "label";
+  if (path === "/search" || path.startsWith("/search/")) return "search";
+  if (path.startsWith("/view")) return "legacy-view";
+  if (path.startsWith("/p/") && path.endsWith(".html")) return "static-page";
+  if (/^\/\d{4}\/\d{2}\/.+\.html$/i.test(path)) return "post";
+  if (path.endsWith(".html")) return "html";
+  if (path.endsWith(".xml")) return "xml";
+  if (path.endsWith(".json")) return "json";
+  if (path.endsWith(".txt")) return "text";
+  return "origin";
+}
+
+function isHtmlContentType(contentType) {
+  return String(contentType || "").toLowerCase().includes("text/html");
+}
+
+function shouldServeStaticFromAssets(pathname) {
+  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return true;
+  if (pathname.startsWith("/gg-pwa-icon/")) return true;
+  if (pathname.startsWith("/assets/")) return true;
+  return false;
+}
+
+function resolveAssetPath(pathname) {
+  if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return STATIC_ROUTE_ASSET_MAP.get(pathname);
+  return pathname;
+}
+
+async function serveFromAssets(request, env, pathname) {
+  if (!env?.ASSETS) {
+    return textResponse("ASSETS binding missing", { status: 500 });
+  }
+
+  const assetPath = resolveAssetPath(pathname);
+  const url = new URL(request.url);
+  url.pathname = assetPath;
+
+  return env.ASSETS.fetch(new Request(url.toString(), request));
+}
+
+async function handleStaticRoutes(request, env, flags) {
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+
+  if (pathname === LANDING_INTERNAL_PATH) {
+    return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), flags.mode === "production" ? 301 : 302);
+  }
+
+  if (shouldServeStaticFromAssets(pathname)) {
+    return serveFromAssets(request, env, pathname);
+  }
+
+  return null;
+}
+
+function baseSecurityHeaders(headers) {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set(
@@ -75,11 +375,133 @@ function withSecurityHeaders(resp, requestUrl, contentType, flags = DEFAULT_FLAG
     "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()"
   );
   headers.set("X-Frame-Options", "SAMEORIGIN");
+}
 
-  const isHtml = String(contentType || "").toLowerCase().includes("text/html");
-  if (isHtml) {
-    headers.set("X-Robots-Tag", flags.mode === "lab" ? "noindex, nofollow" : "index, follow");
+function developmentRobotsTag() {
+  return "noindex, nofollow, nosnippet, noimageindex, max-snippet:0, max-image-preview:none, max-video-preview:0";
+}
+
+function productionRobotsTag(route, isHtmlLike) {
+  if (!isHtmlLike) {
+    if (["service-worker", "manifest", "flags", "diagnostic", "offline", "json"].includes(route)) {
+      return "noindex, nofollow";
+    }
+    if (["feed", "xml", "sitemap"].includes(route)) return "noindex, follow";
+    return "noindex";
   }
+
+  if (["home", "landing", "post", "static-page"].includes(route)) return "index, follow";
+  if (["label", "search", "feed"].includes(route)) return "noindex, follow";
+  if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
+  return "index, follow";
+}
+
+function routeRobotsTag(route, contentType, flags) {
+  const isHtmlLike =
+    isHtmlContentType(contentType) ||
+    route === "home" ||
+    route === "post" ||
+    route === "static-page" ||
+    route === "landing";
+
+  if (flags.mode !== "production") {
+    return developmentRobotsTag();
+  }
+
+  return productionRobotsTag(route, isHtmlLike);
+}
+
+function cacheControlForRoute(route, flags) {
+  if (flags.mode !== "production") {
+    if (["versioned-asset", "icon"].includes(route)) return "public, max-age=300";
+    return "no-store";
+  }
+
+  switch (route) {
+    case "versioned-asset":
+      return "public, max-age=31536000, immutable";
+    case "icon":
+      return "public, max-age=604800";
+    case "latest-asset":
+    case "service-worker":
+    case "manifest":
+    case "flags":
+    case "diagnostic":
+    case "robots":
+    case "offline":
+      return "no-cache, must-revalidate";
+    case "feed":
+    case "sitemap":
+      return "public, max-age=300, stale-while-revalidate=86400";
+    case "home":
+    case "landing":
+    case "post":
+    case "static-page":
+    case "label":
+    case "search":
+    case "html":
+    case "origin":
+      return "no-cache, must-revalidate";
+    default:
+      return "no-cache";
+  }
+}
+
+function forceContentType(route, pathname, current) {
+  if (route === "service-worker") return "application/javascript; charset=utf-8";
+  if (route === "manifest") return "application/manifest+json; charset=utf-8";
+  if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
+  if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
+  if (route === "offline" || route === "landing") return current || "text/html; charset=utf-8";
+  return current || "";
+}
+
+function cspReportOnlyValue(request) {
+  const reportUri = new URL("/api/csp-report", request.url).pathname;
+  return [
+    "default-src 'self' https:",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.blogger.com https://www.gstatic.com https://www.google.com https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://unpkg.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.blogger.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https:",
+    "frame-src 'self' https://www.blogger.com https://*.blogger.com https://accounts.google.com https://www.google.com https://*.google.com",
+    `report-uri ${reportUri}`,
+  ].join("; ");
+}
+
+function withResponsePolicy(resp, request, flags, options = {}) {
+  const url = new URL(request.url);
+  const route = options.route || classifyRoute(request);
+  const headers = new Headers(resp.headers);
+
+  baseSecurityHeaders(headers);
+
+  const forcedType = forceContentType(route, url.pathname, headers.get("content-type"));
+  if (forcedType) headers.set("Content-Type", forcedType);
+
+  const contentType = headers.get("content-type") || "";
+  const robotsTag = routeRobotsTag(route, contentType, flags);
+  if (robotsTag) headers.set("X-Robots-Tag", robotsTag);
+
+  headers.set("Cache-Control", cacheControlForRoute(route, flags));
+  headers.set("X-GG-Edge-Mode", flags.mode);
+  headers.set("X-GG-Route-Class", route);
+  headers.set("X-GG-Release", String(flags.release || SITE.release));
+  headers.set("X-GG-Template-Fingerprint", String(flags.templateFingerprint || SITE.templateFingerprint));
+
+  if (route === "service-worker") {
+    headers.set("Service-Worker-Allowed", "/");
+  }
+
+  if ((isHtmlContentType(contentType) || route === "landing") && flags.csp_report_enabled) {
+    headers.set("Content-Security-Policy-Report-Only", cspReportOnlyValue(request));
+  }
+
+  headers.set("Reporting-Endpoints", `gg-csp="${new URL("/api/csp-report", request.url).toString()}"`);
 
   return new Response(resp.body, {
     status: resp.status,
@@ -88,8 +510,219 @@ function withSecurityHeaders(resp, requestUrl, contentType, flags = DEFAULT_FLAG
   });
 }
 
+function isKnownBotUserAgent(ua, list) {
+  const source = String(ua || "").toLowerCase();
+  if (!source) return false;
+  return list.some((needle) => source.includes(needle));
+}
+
+function shouldHardBlockBot(request, flags) {
+  if (flags.mode === "production") return false;
+  if (!flags.edge.hardBlockKnownBotsInDevelopment) return false;
+
+  const ua = request.headers.get("user-agent") || "";
+  if (flags.robots.blockAiBots && isKnownBotUserAgent(ua, AI_AND_TRAINING_BOTS)) return true;
+  if (flags.robots.blockSearchBots && isKnownBotUserAgent(ua, SEARCH_BOTS)) return true;
+  return false;
+}
+
+function buildRobotsTxt(request, flags) {
+  const sitemapUrl = new URL("/sitemap.xml", request.url).toString();
+  const lines = [];
+
+  lines.push(`# PakRPP robots policy — mode=${flags.mode}`);
+  lines.push(`# Generated by Cloudflare Worker. Do not edit as a static file.`);
+  lines.push("");
+
+  if (flags.mode !== "production" && flags.robots.developmentLockdown) {
+    if (flags.robots.blockAiBots) {
+      for (const bot of [
+        "GPTBot",
+        "OAI-SearchBot",
+        "ChatGPT-User",
+        "Google-Extended",
+        "CCBot",
+        "ClaudeBot",
+        "anthropic-ai",
+        "PerplexityBot",
+        "Applebot-Extended",
+        "Bytespider",
+        "Amazonbot",
+      ]) {
+        lines.push(`User-agent: ${bot}`);
+        lines.push("Disallow: /");
+        lines.push("");
+      }
+    }
+
+    if (flags.robots.blockSearchBots) {
+      for (const bot of [
+        "Googlebot",
+        "Googlebot-Image",
+        "Googlebot-Video",
+        "bingbot",
+        "Slurp",
+        "DuckDuckBot",
+        "Baiduspider",
+        "YandexBot",
+        "Applebot",
+      ]) {
+        lines.push(`User-agent: ${bot}`);
+        lines.push("Disallow: /");
+        lines.push("");
+      }
+    }
+
+    lines.push("User-agent: *");
+    lines.push("Disallow: /");
+    lines.push("");
+    lines.push(`# Sitemap intentionally left visible for tooling, but pages are locked by X-Robots-Tag in ${flags.mode} mode.`);
+    lines.push(`Sitemap: ${sitemapUrl}`);
+    return lines.join("\n") + "\n";
+  }
+
+  if (flags.robots.blockAiBots) {
+    for (const bot of [
+      "GPTBot",
+      "Google-Extended",
+      "CCBot",
+      "ClaudeBot",
+      "anthropic-ai",
+      "PerplexityBot",
+      "Applebot-Extended",
+      "Bytespider",
+      "Amazonbot",
+    ]) {
+      lines.push(`User-agent: ${bot}`);
+      lines.push("Disallow: /");
+      lines.push("");
+    }
+  }
+
+  lines.push("User-agent: *");
+  lines.push("Allow: /");
+  lines.push("Disallow: /view");
+  lines.push("Disallow: /view/");
+  lines.push("Disallow: /__gg/");
+  lines.push("Disallow: /api/csp-report");
+  lines.push("");
+  lines.push(`Sitemap: ${sitemapUrl}`);
+
+  return lines.join("\n") + "\n";
+}
+
+function routePolicyPreview(pathname, flags) {
+  const fake = new Request(`https://${SITE.canonicalHost}${pathname || "/"}`);
+  const route = classifyRoute(fake);
+  const contentType =
+    route === "service-worker"
+      ? "application/javascript"
+      : route === "manifest"
+        ? "application/manifest+json"
+        : route === "flags" || route === "diagnostic"
+          ? "application/json"
+          : route === "feed" || route === "sitemap"
+            ? "application/xml"
+            : "text/html";
+
+  return {
+    pathname,
+    route,
+    mode: flags.mode,
+    robots: routeRobotsTag(route, contentType, flags),
+    cacheControl: cacheControlForRoute(route, flags),
+    contentType: forceContentType(route, pathname, contentType),
+  };
+}
+
+function diagnosticsPayload(request, flags) {
+  const url = new URL(request.url);
+  return {
+    ok: true,
+    name: SITE.originName,
+    mode: flags.mode,
+    release: flags.release,
+    templateFingerprint: flags.templateFingerprint,
+    canonicalHost: SITE.canonicalHost,
+    request: {
+      url: request.url,
+      host: getRequestHost(request),
+      route: classifyRoute(request),
+    },
+    pwa: {
+      serviceWorker: "/sw.js",
+      offline: "/offline.html",
+      manifest: "/manifest.webmanifest",
+      flags: FLAGS_CANONICAL_PATH,
+      legacyFlagsAlias: FLAGS_LEGACY_PATH,
+    },
+    routes: {
+      landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
+      flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
+      diagnostics: ["/__gg/health", "/__gg/routes", "/__gg/robots", "/__gg/headers?url=/"],
+    },
+    policy: routePolicyPreview(url.pathname, flags),
+    flags,
+  };
+}
+
+async function handleDiagnostics(request, flags) {
+  const url = new URL(request.url);
+
+  if (url.pathname === "/__gg/health") {
+    return jsonResponse(diagnosticsPayload(request, flags));
+  }
+
+  if (url.pathname === "/__gg/routes") {
+    return jsonResponse({
+      mode: flags.mode,
+      canonicalHost: SITE.canonicalHost,
+      routeMatrix: {
+        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing"],
+        noindexInProduction: [
+          "/search",
+          "/search/label/*",
+          "/view/*",
+          "/offline.html",
+          "/sw.js",
+          "/manifest.webmanifest",
+          FLAGS_CANONICAL_PATH,
+          "/__gg/*",
+        ],
+        utility: ["/feeds/*", "/sitemap.xml"],
+        normalizedWhenEnabled: ["?m=1", "?m=0"],
+      },
+      vanity: flags.vanity,
+      staticAssetMap: Object.fromEntries(STATIC_ROUTE_ASSET_MAP),
+    });
+  }
+
+  if (url.pathname === "/__gg/robots") {
+    return jsonResponse({
+      mode: flags.mode,
+      robotsTxt: buildRobotsTxt(request, flags),
+      robotsTagDefault: flags.mode === "production" ? "route-specific" : developmentRobotsTag(),
+    });
+  }
+
+  if (url.pathname === "/__gg/headers") {
+    const target = url.searchParams.get("url") || "/";
+    const targetUrl = new URL(target, request.url);
+    return jsonResponse(routePolicyPreview(targetUrl.pathname, flags));
+  }
+
+  return jsonResponse({ ok: false, error: "Unknown diagnostic endpoint" }, { status: 404 });
+}
+
+async function handleCspReport(request) {
+  try {
+    await request.text();
+  } catch (_) {}
+  return new Response(null, { status: 204 });
+}
+
 function isHtmlResponse(resp) {
-  return String(resp.headers.get("content-type") || "").toLowerCase().includes("text/html");
+  return isHtmlContentType(resp.headers.get("content-type"));
 }
 
 function responseFromHtml(resp, html) {
@@ -103,7 +736,6 @@ function responseFromHtml(resp, html) {
 }
 
 function normalizeLandingContactHtml(html) {
-  // legacy migration kept from old worker, but simplified
   if (!html) return html;
   return String(html)
     .replaceAll("#gg-landing-hero-5", "#contact")
@@ -130,8 +762,6 @@ function hasCurrentTemplateContract(html) {
   if (!checks.commandPanel) hardReasons.push("missing_command_panel");
   if (!checks.previewSheet) hardReasons.push("missing_preview_sheet");
   if (!checks.morePanel) hardReasons.push("missing_more_panel");
-
-  // main landmark is still desirable, but no longer blocks deploy
   if (!checks.main) warnings.push("missing_main_landmark");
 
   return {
@@ -146,14 +776,14 @@ function annotateTemplateContract(resp, html) {
   const contract = hasCurrentTemplateContract(html);
   const headers = new Headers(resp.headers);
 
-  headers.set("x-gg-template-contract", contract.ok ? "ok" : "mismatch");
+  headers.set("X-GG-Template-Contract", contract.ok ? "ok" : "mismatch");
 
   if (contract.reasons && contract.reasons.length) {
-    headers.set("x-gg-template-contract-reasons", contract.reasons.join(","));
+    headers.set("X-GG-Template-Contract-Reasons", contract.reasons.join(","));
   }
 
   if (contract.warnings && contract.warnings.length) {
-    headers.set("x-gg-template-contract-warnings", contract.warnings.join(","));
+    headers.set("X-GG-Template-Contract-Warnings", contract.warnings.join(","));
   }
 
   return new Response(resp.body, {
@@ -166,125 +796,133 @@ function annotateTemplateContract(resp, html) {
 function shouldBypassHtmlMutation(pathname) {
   const path = String(pathname || "");
   if (!path) return false;
-
   if (/\.txt$/i.test(path)) return true;
   if (path.startsWith("/.well-known/")) return true;
-
+  if (path.startsWith("/feeds/")) return true;
+  if (path === "/sitemap.xml") return true;
   return false;
 }
 
-function shouldServeStaticFromAssets(pathname) {
-  const path = String(pathname || "");
-  if (!path) return false;
-
-  if (PUBLIC_STATIC_ROUTES.has(path)) return true;
-  if (path.startsWith("/gg-pwa-icon/")) return true;
-  if (path.startsWith("/__gg/")) return true;
-  if (path.startsWith("/assets/")) return true;
-
-  return false;
-}
-
-async function serveFromAssets(request, env, pathname) {
-  if (!env?.ASSETS) {
-    return new Response("ASSETS binding missing", { status: 500 });
-  }
-
-  let assetPath = pathname;
-
-  if (pathname === LANDING_PUBLIC_PATH) assetPath = LANDING_INTERNAL_PATH;
-  if (pathname === "/flags.json") assetPath = "/__gg/flags.json";
-
-  const url = new URL(request.url);
-  url.pathname = assetPath;
-
-  return env.ASSETS.fetch(new Request(url.toString(), request));
-}
-
-async function handleStaticRoutes(request, env, pathname) {
-  if (pathname === LANDING_INTERNAL_PATH) {
-    return Response.redirect(new URL(LANDING_PUBLIC_PATH, request.url).toString(), 301);
-  }
-
-  if (pathname === LANDING_PUBLIC_PATH) {
-    return serveFromAssets(request, env, pathname);
-  }
-
-  if (shouldServeStaticFromAssets(pathname)) {
-    return serveFromAssets(request, env, pathname);
-  }
-
-  return null;
-}
-
-async function handleCspReport(request) {
-  // keep it minimal and cheap
-  try {
-    await request.text();
-  } catch (_) {}
-  return new Response(null, { status: 204 });
-}
-
-async function fetchOrigin(request) {
-  // On Cloudflare custom-domain worker routes, this goes to origin.
-  return fetch(request);
-}
-
-async function handleHtml(request, env, response) {
+async function handleHtml(request, flags, response) {
   const url = new URL(request.url);
 
-  if (!isHtmlResponse(response)) return response;
-  if (shouldBypassHtmlMutation(url.pathname)) return response;
+  if (!isHtmlResponse(response)) {
+    return withResponsePolicy(response, request, flags);
+  }
+
+  if (shouldBypassHtmlMutation(url.pathname)) {
+    return withResponsePolicy(response, request, flags);
+  }
 
   let html = "";
   try {
     html = await response.clone().text();
   } catch (_) {
-    return response;
+    return withResponsePolicy(response, request, flags);
   }
 
-  if (!html) return response;
+  if (!html) return withResponsePolicy(response, request, flags);
 
   let out = html;
 
-  // keep landing migration compatibility
-  out = normalizeLandingContactHtml(out);
+  if (flags.edge.mutateLandingContactAnchor) {
+    out = normalizeLandingContactHtml(out);
+  }
 
   let wrapped = responseFromHtml(response, out);
-  wrapped = annotateTemplateContract(wrapped, out);
 
-  const flags = await loadFlags(env);
-  wrapped = withSecurityHeaders(
-    wrapped,
-    request.url,
-    wrapped.headers.get("content-type") || "text/html; charset=UTF-8",
-    flags
+  if (flags.edge.annotateTemplateContract) {
+    wrapped = annotateTemplateContract(wrapped, out);
+  }
+
+  return withResponsePolicy(wrapped, request, flags);
+}
+
+async function fetchOrigin(request) {
+  return fetch(request);
+}
+
+async function handleFlagsRoute(request, flags) {
+  return withResponsePolicy(jsonResponse(flags), request, flags, { route: "flags" });
+}
+
+async function handleRobotsRoute(request, flags) {
+  return withResponsePolicy(
+    textResponse(buildRobotsTxt(request, flags), { contentType: "text/plain; charset=utf-8" }),
+    request,
+    flags,
+    { route: "robots" }
   );
+}
 
-  return wrapped;
+async function handleRequest(request, env, ctx) {
+  const flags = await loadFlags(env);
+  const url = new URL(request.url);
+
+  if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") {
+    return fetchOrigin(request);
+  }
+
+  const canonicalRedirect = maybeCanonicalRedirect(request, flags);
+  if (canonicalRedirect) return canonicalRedirect;
+
+  if (shouldHardBlockBot(request, flags) && url.pathname !== "/robots.txt") {
+    return withResponsePolicy(textResponse("Blocked in development mode", { status: 403 }), request, flags);
+  }
+
+  if (url.pathname === "/api/csp-report" && request.method === "POST") {
+    return handleCspReport(request);
+  }
+
+  if (url.pathname === "/robots.txt") {
+    return handleRobotsRoute(request, flags);
+  }
+
+  if (url.pathname === FLAGS_CANONICAL_PATH || url.pathname === FLAGS_LEGACY_PATH) {
+    return handleFlagsRoute(request, flags);
+  }
+
+  if (url.pathname.startsWith("/__gg/")) {
+    return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, { route: "diagnostic" });
+  }
+
+  const vanity = vanityRedirect(request, flags);
+  if (vanity) return vanity;
+
+  const legacy = legacyViewRedirect(request, flags);
+  if (legacy) return legacy;
+
+  const mobile = normalizeMobileQueryRedirect(request, flags);
+  if (mobile) return mobile;
+
+  const staticResponse = await handleStaticRoutes(request, env, flags);
+  if (staticResponse) {
+    return withResponsePolicy(staticResponse, request, flags);
+  }
+
+  const originResponse = await fetchOrigin(request);
+  return handleHtml(request, flags, originResponse);
 }
 
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
-
-    if (pathname === "/api/csp-report" && request.method === "POST") {
-      return handleCspReport(request);
-    }
-
-    const staticResponse = await handleStaticRoutes(request, env, pathname);
-    if (staticResponse) {
-      const flags = await loadFlags(env);
-      return withSecurityHeaders(
-        staticResponse,
-        request.url,
-        staticResponse.headers.get("content-type") || "",
-        flags
+    try {
+      return await handleRequest(request, env, ctx);
+    } catch (error) {
+      const flags = normalizeFlags(null, env || {});
+      return withResponsePolicy(
+        jsonResponse(
+          {
+            ok: false,
+            error: "edge_worker_failure",
+            message: error && error.message ? error.message : String(error),
+          },
+          { status: 500 }
+        ),
+        request,
+        flags,
+        { route: "diagnostic" }
       );
     }
-
-    const originResponse = await fetchOrigin(request);
-    return handleHtml(request, env, originResponse);
   },
 };
