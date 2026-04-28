@@ -4,12 +4,16 @@
 
   const RELEASE = 'ac33998';
   const TEMPLATE_FINGERPRINT = 'db5707fc3afa';
-  const VERSION = `${RELEASE}-${TEMPLATE_FINGERPRINT}`;
+  const GG_SW_NAME = 'pakrpp-editorial-pwa';
+  const GG_SW_VERSION = `${RELEASE}-${TEMPLATE_FINGERPRINT}`;
+  const VERSION = GG_SW_VERSION;
 
   const CACHE_STATIC = `gg-static-${VERSION}`;
   const CACHE_PAGES = `gg-pages-${VERSION}`;
   const CACHE_FEEDS = `gg-feeds-${VERSION}`;
+  const CACHE_IMAGES = `gg-images-${VERSION}`;
   const CACHE_RUNTIME = `gg-runtime-${VERSION}`;
+  const MANAGED_CACHE_PREFIXES = ['gg-static-', 'gg-pages-', 'gg-feeds-', 'gg-images-', 'gg-runtime-', 'gg-saved-'];
 
   const OFFLINE_URL = '/offline.html';
   const MANIFEST_URL = '/manifest.webmanifest';
@@ -40,8 +44,19 @@
 
   let flagsCache = {
     ts: 0,
-    value: { sw: { enabled: true }, release: RELEASE }
+    value: {
+      mode: 'development',
+      release: RELEASE,
+      templateFingerprint: TEMPLATE_FINGERPRINT,
+      sw: {
+        enabled: true,
+        navigationPreload: true,
+        devAggressiveUpdate: false,
+        debug: false
+      }
+    }
   };
+  let clientCacheModes = {};
 
   function sameOrigin(url) {
     return url.origin === self.location.origin;
@@ -56,9 +71,25 @@
   }
 
   function normalizeFlags(data) {
-    const enabled = !(data && data.sw && data.sw.enabled === false);
-    const release = data && typeof data.release === 'string' ? data.release : RELEASE;
-    return { sw: { enabled }, release };
+    const source = data && typeof data === 'object' ? data : {};
+    const sw = source.sw && typeof source.sw === 'object' ? source.sw : {};
+    const mode = typeof source.mode === 'string' ? String(source.mode).toLowerCase() : 'development';
+
+    return {
+      mode: mode === 'production' || mode === 'staging' ? mode : 'development',
+      release: typeof source.release === 'string' ? source.release : RELEASE,
+      templateFingerprint: typeof source.templateFingerprint === 'string' ? source.templateFingerprint : TEMPLATE_FINGERPRINT,
+      sw: {
+        enabled: sw.enabled !== false,
+        navigationPreload: sw.navigationPreload !== false,
+        devAggressiveUpdate: !!sw.devAggressiveUpdate,
+        debug: !!sw.debug
+      }
+    };
+  }
+
+  function shouldAggressivelyUpdate(flags) {
+    return !!(flags && flags.mode === 'development' && flags.sw && flags.sw.devAggressiveUpdate);
   }
 
   async function fetchFlags(force = false) {
@@ -76,7 +107,7 @@
       flagsCache = { ts: now, value };
       return value;
     } catch (error) {
-      return flagsCache.value || { sw: { enabled: true }, release: RELEASE };
+      return flagsCache.value || normalizeFlags(null);
     }
   }
 
@@ -108,9 +139,76 @@
     });
   }
 
-  async function disableSelf() {
+  async function notifyClient(clientId, message) {
+    if (!clientId) return;
+
+    try {
+      const client = await self.clients.get(clientId);
+      if (client) client.postMessage(message);
+    } catch (error) {}
+  }
+
+  function isManagedCacheName(name) {
+    return MANAGED_CACHE_PREFIXES.some((prefix) => String(name || '').indexOf(prefix) === 0);
+  }
+
+  async function deleteManagedCaches(options = {}) {
+    const preserveSaved = options.preserveSaved !== false;
+    const keep = new Set(options.keep || []);
     const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
+
+    await Promise.all(keys.map((key) => {
+      if (!isManagedCacheName(key)) return null;
+      if (keep.has(key)) return null;
+      if (preserveSaved && key.indexOf('gg-saved-') === 0) return null;
+      return caches.delete(key);
+    }));
+  }
+
+  async function updateClientCacheMode(clientId, cacheMode, url) {
+    if (!clientId) return;
+
+    const payload = {
+      type: 'GG_SW_CACHE_MODE',
+      name: GG_SW_NAME,
+      version: VERSION,
+      cacheMode: cacheMode || 'unknown',
+      path: url ? `${url.pathname || '/'}${url.search || ''}` : '/'
+    };
+
+    clientCacheModes[clientId] = {
+      cacheMode: payload.cacheMode,
+      path: payload.path,
+      version: payload.version,
+      updatedAt: Date.now()
+    };
+
+    await notifyClient(clientId, payload);
+  }
+
+  async function buildStatusPayload(clientId) {
+    const flags = await fetchFlags(false);
+    const cacheNames = await caches.keys();
+    const cacheState = clientId && clientCacheModes[clientId] ? clientCacheModes[clientId] : null;
+
+    return {
+      type: 'GG_SW_STATUS',
+      name: GG_SW_NAME,
+      version: VERSION,
+      mode: flags.mode,
+      release: flags.release,
+      templateFingerprint: flags.templateFingerprint,
+      enabled: !!(flags.sw && flags.sw.enabled),
+      navigationPreload: !!(flags.sw && flags.sw.navigationPreload),
+      devAggressiveUpdate: shouldAggressivelyUpdate(flags),
+      cacheNames: cacheNames,
+      lastCacheMode: cacheState ? cacheState.cacheMode : 'unknown',
+      lastCachePath: cacheState ? cacheState.path : ''
+    };
+  }
+
+  async function disableSelf() {
+    await deleteManagedCaches({ preserveSaved: false });
     await notifyClients({ type: 'GG_SW_DISABLED' });
 
     try {
@@ -150,12 +248,13 @@
 
   function normalizedPageRequest(request) {
     const url = new URL(request.url);
+    const mobileMode = url.searchParams.get('m');
 
     url.hash = '';
 
     // Blogger mobile query should not explode page cache variants.
-    if (url.searchParams.get('m') === '1' && url.searchParams.size === 1) {
-      url.search = '';
+    if (mobileMode === '0' || mobileMode === '1') {
+      url.searchParams.delete('m');
     }
 
     return new Request(url.toString(), {
@@ -290,13 +389,46 @@
     );
   }
 
-  async function navigationResponse(request, url) {
+  async function navigationResponse(event, request, url) {
+    const clientId = event.resultingClientId || event.clientId;
+    const cacheRequest = normalizedPageRequest(request);
+
     try {
-      return await networkFirst(request, CACHE_PAGES, url, {
-        html: true,
-        normalize: true
+      const preload = await event.preloadResponse;
+
+      if (isSafeResponse(preload) && isHtmlResponse(preload)) {
+        await putIfSafe(CACHE_PAGES, cacheRequest, preload, {
+          html: true
+        });
+        event.waitUntil(updateClientCacheMode(clientId, 'network-fresh', url));
+        return preload;
+      }
+    } catch (error) {}
+
+    try {
+      const response = await fetch(request, {
+        cache: 'no-store'
       });
+
+      await putIfSafe(CACHE_PAGES, cacheRequest, response, {
+        html: true
+      });
+
+      log(url, 'navigation network fresh', url.pathname);
+      event.waitUntil(updateClientCacheMode(clientId, 'network-fresh', url));
+
+      return response;
     } catch (error) {
+      const cache = await caches.open(CACHE_PAGES);
+      const cached = await cache.match(cacheRequest);
+
+      if (cached) {
+        log(url, 'navigation page-cache hit', url.pathname);
+        event.waitUntil(updateClientCacheMode(clientId, 'page-cache-hit', url));
+        return cached;
+      }
+
+      event.waitUntil(updateClientCacheMode(clientId, 'offline-fallback', url));
       return offlineResponse();
     }
   }
@@ -322,6 +454,7 @@
   self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
       const debug = await hasDebugClient();
+      const flags = await fetchFlags(true);
 
       if (debug) {
         console.log('[gg-sw]', 'install', VERSION);
@@ -347,7 +480,9 @@
         ...ICON_URLS.map((url) => precacheOne(staticCache, url, debug))
       ]);
 
-      await self.skipWaiting();
+      if (shouldAggressivelyUpdate(flags)) {
+        await self.skipWaiting();
+      }
     })());
   });
 
@@ -364,22 +499,37 @@
         return;
       }
 
-      const keep = new Set([
+      const keep = [
         CACHE_STATIC,
         CACHE_PAGES,
         CACHE_FEEDS,
+        CACHE_IMAGES,
         CACHE_RUNTIME
-      ]);
+      ];
 
-      const keys = await caches.keys();
+      if (self.registration.navigationPreload) {
+        try {
+          if (flags && flags.sw && flags.sw.navigationPreload === false) {
+            await self.registration.navigationPreload.disable();
+          } else {
+            await self.registration.navigationPreload.enable();
+          }
+        } catch (error) {}
+      }
 
-      await Promise.all(keys.map((key) => {
-        return keep.has(key) ? null : caches.delete(key);
-      }));
+      await deleteManagedCaches({
+        keep: keep,
+        preserveSaved: true
+      });
 
-      await self.clients.claim();
+      if (shouldAggressivelyUpdate(flags)) {
+        await self.clients.claim();
+      }
+
       await notifyClients({
         type: 'GG_SW_READY',
+        name: GG_SW_NAME,
+        mode: flags.mode,
         version: VERSION
       });
     })());
@@ -387,9 +537,24 @@
 
   self.addEventListener('message', (event) => {
     const data = event && event.data ? event.data : {};
+    const sourceId = event && event.source && event.source.id ? event.source.id : '';
 
     if (data.type === 'SKIP_WAITING') {
       self.skipWaiting();
+      return;
+    }
+
+    if (data.type === 'GG_SW_STATUS') {
+      event.waitUntil((async () => {
+        const payload = await buildStatusPayload(sourceId);
+
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage(payload);
+          return;
+        }
+
+        await notifyClient(sourceId, payload);
+      })());
       return;
     }
 
@@ -410,8 +575,11 @@
             const cacheName = url.pathname.startsWith('/feeds/')
               ? CACHE_FEEDS
               : CACHE_PAGES;
+            const cacheRequest = url.pathname.startsWith('/feeds/')
+              ? request
+              : normalizedPageRequest(request);
 
-            await putIfSafe(cacheName, request, response, {
+            await putIfSafe(cacheName, cacheRequest, response, {
               html: !url.pathname.startsWith('/feeds/')
             });
           }
@@ -454,7 +622,7 @@
       }
 
       if (request.mode === 'navigate') {
-        return navigationResponse(request, url);
+        return navigationResponse(event, request, url);
       }
 
       if (url.pathname.startsWith('/feeds/')) {
@@ -470,7 +638,7 @@
       }
 
       if (request.destination === 'image') {
-        return staleWhileRevalidate(request, CACHE_RUNTIME, url);
+        return staleWhileRevalidate(request, CACHE_IMAGES, url);
       }
 
       return fetch(request);

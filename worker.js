@@ -36,7 +36,7 @@ const DEFAULT_FLAGS = {
   edge: {
     canonicalHost: true,
     httpsRedirect: true,
-    normalizeMobileQuery: false,
+    normalizeMobileQuery: true,
     redirectLegacyViews: true,
     annotateTemplateContract: true,
     mutateLandingContactAnchor: true,
@@ -55,6 +55,7 @@ const DEFAULT_FLAGS = {
     savedReading: true,
     contentIndex: false,
     backgroundSync: false,
+    devAggressiveUpdate: false,
     debug: false,
   },
   limits: {
@@ -567,9 +568,38 @@ function buildRobotsTxt(request, flags) {
   return lines.join("\n") + "\n";
 }
 
-function routePolicyPreview(pathname, flags) {
-  const fake = new Request(`https://${SITE.canonicalHost}${pathname || "/"}`);
+function previewRedirect(request, flags) {
+  const legacy = legacyViewRedirect(request, flags);
+  if (legacy) {
+    return {
+      to: legacy.headers.get("location") || "/",
+      status: legacy.status,
+      reason: "legacy-blogger-view-normalization",
+    };
+  }
+
+  const mobile = normalizeMobileQueryRedirect(request, flags);
+  if (mobile) {
+    return {
+      to: mobile.headers.get("location") || request.url,
+      status: mobile.status,
+      reason: "blogger-mobile-query-normalization",
+    };
+  }
+
+  return null;
+}
+
+function routePolicyPreview(input, flags) {
+  const fake = input instanceof Request
+    ? input
+    : new Request(
+        typeof input === "string" && /^[a-z]+:\/\//i.test(input)
+          ? input
+          : `https://${SITE.canonicalHost}${input || "/"}`
+      );
   const route = classifyRoute(fake);
+  const url = new URL(fake.url);
   const contentType =
     route === "service-worker" ? "application/javascript" :
     route === "manifest" ? "application/manifest+json" :
@@ -578,15 +608,14 @@ function routePolicyPreview(pathname, flags) {
     "text/html";
 
   return {
-    pathname,
+    pathname: url.pathname,
+    search: url.search,
     route,
     mode: flags.mode,
     robots: routeRobotsTag(route, contentType, flags),
     cacheControl: cacheControlForRoute(route, flags),
-    contentType: forceContentType(route, pathname, contentType),
-    redirects: isLegacyViewPath(pathname)
-      ? { to: "/", status: redirectStatusForMode(flags), reason: "legacy-blogger-view-normalization" }
-      : null,
+    contentType: forceContentType(route, url.pathname, contentType),
+    redirects: previewRedirect(fake, flags),
   };
 }
 
@@ -612,6 +641,7 @@ function pwaDiagnostics(flags) {
       savedReading: !!flags.sw.savedReading,
       contentIndex: !!flags.sw.contentIndex,
       backgroundSync: !!flags.sw.backgroundSync,
+      devAggressiveUpdate: !!flags.sw.devAggressiveUpdate,
       debug: !!flags.sw.debug,
     },
     headers: {
@@ -649,7 +679,7 @@ function diagnosticsPayload(request, flags) {
       },
       diagnostics: ["/__gg/health", "/__gg/routes", "/__gg/robots", "/__gg/headers?url=/", "/__gg/pwa"],
     },
-    policy: routePolicyPreview(url.pathname, flags),
+    policy: routePolicyPreview(url.toString(), flags),
     flags,
   };
 }
@@ -686,7 +716,7 @@ async function handleDiagnostics(request, flags) {
   if (url.pathname === "/__gg/headers") {
     const target = url.searchParams.get("url") || "/";
     const targetUrl = new URL(target, request.url);
-    return jsonResponse(routePolicyPreview(targetUrl.pathname, flags));
+    return jsonResponse(routePolicyPreview(targetUrl.toString(), flags));
   }
 
   if (url.pathname === "/__gg/pwa") return jsonResponse(pwaDiagnostics(flags));

@@ -116,6 +116,10 @@ function validateFlags(flags) {
     fail("flags.json is missing robots object");
   }
 
+  if (flags.mode === "production" && flags.sw.devAggressiveUpdate) {
+    fail("flags.json sw.devAggressiveUpdate must be false in production mode");
+  }
+
   return flags;
 }
 
@@ -156,9 +160,22 @@ for (const file of optionalRootFiles) {
 }
 
 const flagsPayload = `${JSON.stringify(flags, null, 2)}\n`;
-writeFileSync(path.join(publicRoot, "__gg", "flags.json"), flagsPayload, "utf8");
-writeFileSync(path.join(publicRoot, "gg-flags.json"), flagsPayload, "utf8");
-writeFileSync(path.join(publicRoot, "flags.json"), flagsPayload, "utf8");
+const flagOutputs = [
+  path.join(publicRoot, "__gg", "flags.json"),
+  path.join(publicRoot, "gg-flags.json"),
+  path.join(publicRoot, "flags.json"),
+];
+
+for (const output of flagOutputs) {
+  writeFileSync(output, flagsPayload, "utf8");
+}
+
+const canonicalFlagsBytes = readFileSync(flagOutputs[0]);
+for (const output of flagOutputs.slice(1)) {
+  if (!canonicalFlagsBytes.equals(readFileSync(output))) {
+    fail(`generated flags aliases are not byte-identical: ${rel(flagOutputs[0])} vs ${rel(output)}`);
+  }
+}
 
 const registryRoot = path.join(publicRoot, "registry");
 mkdirSync(registryRoot, { recursive: true });

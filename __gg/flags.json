@@ -25,6 +25,7 @@
     "savedReading": true,
     "contentIndex": false,
     "backgroundSync": false,
+    "devAggressiveUpdate": true,
     "debug": false
   },
   "limits": {
