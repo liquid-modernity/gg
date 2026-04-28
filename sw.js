@@ -89,7 +89,12 @@
   }
 
   function shouldAggressivelyUpdate(flags) {
-    return !!(flags && flags.mode === 'development' && flags.sw && flags.sw.devAggressiveUpdate);
+    return !!(
+      flags &&
+      (flags.mode === 'development' || flags.mode === 'staging') &&
+      flags.sw &&
+      flags.sw.devAggressiveUpdate
+    );
   }
 
   async function fetchFlags(force = false) {
@@ -208,7 +213,7 @@
   }
 
   async function disableSelf() {
-    await deleteManagedCaches({ preserveSaved: false });
+    await deleteManagedCaches({ preserveSaved: true });
     await notifyClients({ type: 'GG_SW_DISABLED' });
 
     try {
@@ -540,7 +545,12 @@
     const sourceId = event && event.source && event.source.id ? event.source.id : '';
 
     if (data.type === 'SKIP_WAITING') {
-      self.skipWaiting();
+      event.waitUntil((async () => {
+        const flags = await fetchFlags(false);
+        if (shouldAggressivelyUpdate(flags)) {
+          await self.skipWaiting();
+        }
+      })());
       return;
     }
 

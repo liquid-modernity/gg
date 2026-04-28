@@ -251,6 +251,12 @@ function redirectStatusForMode(flags) {
   return flags.mode === "production" ? 301 : 302;
 }
 
+function mobileQueryRedirectStatus() {
+  // Keep mobile query normalization on 302 in every mode for now.
+  // 301 can be considered later only after live mobile validation confirms it is safe.
+  return 302;
+}
+
 function redirectUrl(url, status = 301) {
   return Response.redirect(url.toString(), status);
 }
@@ -279,10 +285,11 @@ function normalizeMobileQueryRedirect(request, flags) {
   if (!flags.edge.normalizeMobileQuery) return null;
   const url = new URL(request.url);
   if (!url.searchParams.has("m")) return null;
-  const m = url.searchParams.get("m");
-  if (m !== "0" && m !== "1") return null;
+  const mValues = url.searchParams.getAll("m");
+  if (!mValues.length) return null;
+  if (mValues.some((value) => value !== "0" && value !== "1")) return null;
   url.searchParams.delete("m");
-  return redirectUrl(url, redirectStatusForMode(flags));
+  return redirectUrl(url, mobileQueryRedirectStatus());
 }
 
 function vanityRedirect(request, flags) {
@@ -669,6 +676,14 @@ function diagnosticsPayload(request, flags) {
     routes: {
       landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
       flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
+      mobileQueryNormalization: {
+        exactValues: ["0", "1"],
+        preserveOtherQueryParams: true,
+        malformedValuesIgnored: true,
+        developmentStatus: 302,
+        stagingStatus: 302,
+        productionStatus: 302,
+      },
       legacyBloggerViews: {
         decision: "redirect-to-root",
         target: "/",
@@ -698,6 +713,7 @@ async function handleDiagnostics(request, flags) {
         noindexInProduction: ["/search", "/search/label/*", "/view/*", "/offline.html", "/sw.js", "/manifest.webmanifest", FLAGS_CANONICAL_PATH, "/__gg/*"],
         utility: ["/feeds/*", "/sitemap.xml"],
         normalizedWhenEnabled: ["?m=1", "?m=0"],
+        mobileQueryNormalizationStatus: { development: 302, staging: 302, production: 302 },
         alwaysRedirected: { "/view": "/", "/view/*": "/" },
       },
       vanity: flags.vanity,

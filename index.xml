@@ -4288,12 +4288,35 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
           return meta;
         }
 
+        function hasPwaDebugQuery() {
+          return safeUrl(window.location.href).searchParams.get('ggdebug') === '1';
+        }
+
         function isPwaDebugAllowed(mode) {
           var currentMode = mode || pwaState.mode || 'unknown';
-          if (currentMode === 'production') {
-            return safeUrl(window.location.href).searchParams.get('ggdebug') === '1';
-          }
-          return true;
+          if (hasPwaDebugQuery()) return true;
+          return currentMode === 'development' || currentMode === 'staging';
+        }
+
+        function buildPwaActionGate(action, options) {
+          var gateOptions = options || {};
+          var currentMode = pwaState.mode || 'unknown';
+          var ggdebug = hasPwaDebugQuery();
+          var allowed = isPwaDebugAllowed(currentMode);
+
+          return {
+            ok: allowed,
+            allowed: allowed,
+            action: action || 'pwa-action',
+            mode: currentMode,
+            ggdebug: ggdebug,
+            hardReset: !!gateOptions.hardReset,
+            error: allowed ? '' : 'pwa_action_blocked',
+            reason: allowed ? 'allowed' : 'requires_development_or_staging_mode_or_ggdebug',
+            message: allowed
+              ? 'PWA action allowed.'
+              : 'PWA reset APIs are disabled unless mode is development/staging or ?ggdebug=1 is present.'
+          };
         }
 
         function pwaCacheSnapshot() {
@@ -4624,12 +4647,16 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
           return true;
         }
 
-        function clearPwaCaches() {
+        function clearPwaCaches(options) {
+          var clearOptions = options || {};
+          var preserveSaved = clearOptions.preserveSaved !== false;
+
           if (!window.caches || !window.caches.keys) return Promise.resolve([]);
 
           return window.caches.keys().then(function (names) {
             return Promise.all(names.map(function (name) {
               if (String(name || '').indexOf('gg-') !== 0) return Promise.resolve('');
+              if (preserveSaved && String(name || '').indexOf('gg-saved-') === 0) return Promise.resolve('');
               return window.caches.delete(name).then(function () {
                 return name;
               }).catch(function () {
@@ -4662,14 +4689,6 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
             for (i = 0; i < results.length; i += 1) total += results[i];
             return total;
           });
-        }
-
-        function guardPwaDebugAction(action) {
-          if (isPwaDebugAllowed(pwaState.mode)) {
-            return Promise.resolve();
-          }
-
-          return Promise.reject(new Error(action + ' requires ?ggdebug=1 in production'));
         }
 
         function initPwaClient() {
@@ -8835,62 +8854,94 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
         GG.pwa = {
           clearCaches: function () {
-            return guardPwaDebugAction('clearCaches').then(function () {
-              return clearPwaCaches().then(function (deletedCaches) {
-                return refreshPwaCacheAudit().then(function () {
-                  return {
-                    deletedCaches: deletedCaches,
-                    cache: pwaCacheSnapshot()
-                  };
-                });
+            var gate = buildPwaActionGate('clearCaches');
+
+            if (!gate.allowed) {
+              return Promise.resolve(gate);
+            }
+
+            return clearPwaCaches({
+              preserveSaved: true
+            }).then(function (deletedCaches) {
+              return refreshPwaCacheAudit().then(function () {
+                return {
+                  ok: true,
+                  action: gate.action,
+                  mode: gate.mode,
+                  ggdebug: gate.ggdebug,
+                  savedCachesPreserved: true,
+                  deletedCaches: deletedCaches,
+                  cache: pwaCacheSnapshot()
+                };
               });
             });
           },
           unregister: function () {
-            return guardPwaDebugAction('unregister').then(function () {
-              return unregisterPwaServiceWorkers().then(function (count) {
-                pwaState.registered = false;
-                pwaState.controlling = false;
-                pwaState.waiting = false;
-                return {
-                  unregistered: count
-                };
-              });
+            var gate = buildPwaActionGate('unregister');
+
+            if (!gate.allowed) {
+              return Promise.resolve(gate);
+            }
+
+            return unregisterPwaServiceWorkers().then(function (count) {
+              pwaState.registered = false;
+              pwaState.controlling = false;
+              pwaState.waiting = false;
+              return {
+                ok: true,
+                action: gate.action,
+                mode: gate.mode,
+                ggdebug: gate.ggdebug,
+                unregistered: count
+              };
             });
           },
           reset: function (options) {
             var resetOptions = options || {};
             var shouldReload = resetOptions.reload !== false;
+            var gate = buildPwaActionGate('reset', {
+              hardReset: true
+            });
 
-            return guardPwaDebugAction('reset').then(function () {
-              try {
-                window.sessionStorage.removeItem('gg:pwa:landing-redirected');
-              } catch (error) {}
+            if (!gate.allowed) {
+              return Promise.resolve(gate);
+            }
 
-              return clearPwaCaches().then(function (deletedCaches) {
-                return unregisterPwaServiceWorkers().then(function (count) {
-                  pwaState.registered = false;
-                  pwaState.controlling = false;
-                  pwaState.waiting = false;
-                  pwaState.updateAvailable = false;
-                  pwaState.cacheNames = [];
-                  pwaState.offlineCached = false;
-                  pwaState.landingCached = false;
-                  pwaState.landingVariantsCached = [];
-                  pwaState.lastCacheMode = 'unknown';
-                  pwaState.lastCachePath = '';
-                  writeBodyState('data-gg-cache-mode', 'unknown');
+            try {
+              window.sessionStorage.removeItem('gg:pwa:landing-redirected');
+            } catch (error) {}
 
-                  if (shouldReload) {
-                    window.location.replace(window.location.href);
-                  }
+            // Hard reset is the only client path allowed to remove gg-saved-* caches.
+            return clearPwaCaches({
+              preserveSaved: false
+            }).then(function (deletedCaches) {
+              return unregisterPwaServiceWorkers().then(function (count) {
+                pwaState.registered = false;
+                pwaState.controlling = false;
+                pwaState.waiting = false;
+                pwaState.updateAvailable = false;
+                pwaState.cacheNames = [];
+                pwaState.offlineCached = false;
+                pwaState.landingCached = false;
+                pwaState.landingVariantsCached = [];
+                pwaState.lastCacheMode = 'unknown';
+                pwaState.lastCachePath = '';
+                writeBodyState('data-gg-cache-mode', 'unknown');
 
-                  return {
-                    deletedCaches: deletedCaches,
-                    unregistered: count,
-                    reloading: shouldReload
-                  };
-                });
+                if (shouldReload) {
+                  window.location.replace(window.location.href);
+                }
+
+                return {
+                  ok: true,
+                  action: gate.action,
+                  mode: gate.mode,
+                  ggdebug: gate.ggdebug,
+                  hardReset: true,
+                  deletedCaches: deletedCaches,
+                  unregistered: count,
+                  reloading: shouldReload
+                };
               });
             });
           }
