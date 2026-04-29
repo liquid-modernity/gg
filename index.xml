@@ -2180,7 +2180,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
                 <div class='gg-search-empty__actions'>
                   <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.trySearch' data-gg-feedback-primary='true' data-gg-search-empty-action='search' type='button'>Try another search</button>
                   <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.browseTopics' data-gg-search-empty-action='topics' type='button'>Browse topics</button>
-                  <a class='gg-discovery-context__archive' data-gg-copy='searchEmpty.goBlog' expr:href='data:blog.homepageUrl' id='gg-search-empty-link-blog'>Go to Blog</a>
+                  <a class='gg-discovery-context__archive' data-gg-copy='searchEmpty.goBlog' href='/' id='gg-search-empty-link-blog'>Go to Blog</a>
                 </div>
                 <div class='gg-search-empty__fallback' hidden='hidden' id='gg-search-empty-fallback'>
                   <p class='gg-discovery-result__type gg-search-empty__fallback-title' data-gg-copy='searchEmpty.fallbackTitle' id='gg-search-empty-fallback-title'>Recent articles</p>
@@ -2190,7 +2190,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
               </section>
               <section aria-live='polite' class='gg-error404' hidden='hidden' id='gg-error404'>
                 <div class='gg-error404__actions'>
-                  <a class='gg-discovery-context__archive' data-gg-copy='error404.goHome' data-gg-feedback-primary='true' expr:href='data:blog.homepageUrl + &quot;landing&quot;' id='gg-error404-link-home'>Go Home</a>
+                  <a class='gg-discovery-context__archive' data-gg-copy='error404.goHome' data-gg-feedback-primary='true' href='/landing' id='gg-error404-link-home'>Go Home</a>
                   <button class='gg-discovery-context__action' data-gg-copy='error404.searchSite' data-gg-error404-action='search' type='button'>Search site</button>
                 </div>
                 <div class='gg-error404__fallback' hidden='hidden' id='gg-error404-fallback'>
@@ -2493,7 +2493,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   </b:if>
 </b:includable>
             <b:includable id='homePageLink'>
-  <a class='home-link' expr:href='data:blog.homepageUrl'>
+  <a class='home-link' href='/'>
     <data:messages.home/>
   </a>
 </b:includable>
@@ -2621,7 +2621,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
               <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url'>
                 <nav aria-labelledby='gg-breadcrumb-title' class='gg-breadcrumbs'>
                   <span class='gg-visually-hidden' data-gg-copy='post.breadcrumb' id='gg-breadcrumb-title'>Breadcrumb</span>
-                  <a data-gg-copy='post.blog' expr:href='data:blog.homepageUrl'>Blog</a>
+                  <a data-gg-copy='post.blog' href='/'>Blog</a>
                   <b:if cond='data:post.labels'>
                     <span aria-hidden='true'>/</span>
                     <a expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a>
@@ -2993,11 +2993,11 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
     <nav aria-labelledby='gg-dock-title' class='gg-dock' data-gg-module='gg-dock' id='gg-dock'>
       <span class='gg-visually-hidden' data-gg-copy='navigation.primary' id='gg-dock-title'>Primary navigation</span>
-      <a class='gg-dock__item' data-gg-nav='home' expr:href='data:blog.homepageUrl + &quot;landing&quot;'>
+      <a class='gg-dock__item' data-gg-nav='home' href='/landing'>
         <span aria-hidden='true' class='gg-icon'>home_app_logo</span>
         <span class='gg-dock__label' data-gg-copy='dock.home'>Home</span>
       </a>
-      <a class='gg-dock__item' data-gg-nav='contact' expr:href='data:blog.homepageUrl + &quot;landing#contact&quot;'>
+      <a class='gg-dock__item' data-gg-nav='contact' href='/landing#contact'>
         <span aria-hidden='true' class='gg-icon'>calendar_add_on</span>
         <span class='gg-dock__label' data-gg-copy='dock.contact'>Contact</span>
       </a>
@@ -3005,7 +3005,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
         <span aria-hidden='true' class='gg-icon'>explore</span>
         <span class='gg-dock__label' data-gg-copy='dock.search'>Search</span>
       </button>
-      <a class='gg-dock__item' data-gg-nav='blog' expr:href='data:blog.homepageUrl'>
+      <a class='gg-dock__item' data-gg-nav='blog' href='/'>
         <span aria-hidden='true' class='gg-icon'>newsmode</span>
         <span class='gg-dock__label' data-gg-copy='dock.blog'>Blog</span>
       </a>
@@ -3156,10 +3156,10 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
         </div>
 
         <div class='gg-more-list'>
-          <a class='gg-more-list__link' data-gg-copy='more.blog' expr:href='data:blog.homepageUrl'>Blog</a>
+          <a class='gg-more-list__link' data-gg-copy='more.blog' href='/'>Blog</a>
           <a class='gg-more-list__link' data-gg-copy='more.search' expr:href='data:blog.searchUrl'>Search</a>
-          <a class='gg-more-list__link' data-gg-copy='more.sitemap' expr:href='data:blog.homepageUrl + &quot;sitemap.xml&quot;'>Sitemap</a>
-          <a class='gg-more-list__link' data-gg-copy='more.rss' expr:href='data:blog.homepageUrl + &quot;feeds/posts/default?alt=rss&quot;'>RSS</a>
+          <a class='gg-more-list__link' data-gg-copy='more.sitemap' href='/sitemap.xml'>Sitemap</a>
+          <a class='gg-more-list__link' data-gg-copy='more.rss' href='/feeds/posts/default?alt=rss'>RSS</a>
         </div>
 
         <div class='gg-langswitch' data-gg-module='language'>
