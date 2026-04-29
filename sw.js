@@ -51,6 +51,7 @@
       sw: {
         enabled: true,
         navigationPreload: true,
+        htmlQualityGate: true,
         devAggressiveUpdate: false,
         debug: false
       }
@@ -82,6 +83,7 @@
       sw: {
         enabled: sw.enabled !== false,
         navigationPreload: sw.navigationPreload !== false,
+        htmlQualityGate: sw.htmlQualityGate !== false,
         devAggressiveUpdate: !!sw.devAggressiveUpdate,
         debug: !!sw.debug
       }
@@ -205,6 +207,7 @@
       templateFingerprint: flags.templateFingerprint,
       enabled: !!(flags.sw && flags.sw.enabled),
       navigationPreload: !!(flags.sw && flags.sw.navigationPreload),
+      htmlQualityGate: !!(flags.sw && flags.sw.htmlQualityGate),
       devAggressiveUpdate: shouldAggressivelyUpdate(flags),
       cacheNames: cacheNames,
       lastCacheMode: cacheState ? cacheState.cacheMode : 'unknown',
@@ -228,6 +231,29 @@
   function isHtmlResponse(response) {
     const type = response.headers.get('content-type') || '';
     return type.includes('text/html');
+  }
+
+  function hasExpectedHtmlShell(html) {
+    const source = String(html || '');
+    return /id\s*=\s*['"]gg-shell['"]/i.test(source) &&
+      /id\s*=\s*['"]gg-dock['"]/i.test(source) &&
+      /id\s*=\s*['"]gg-command-panel['"]/i.test(source) &&
+      /id\s*=\s*['"]gg-preview-sheet['"]/i.test(source) &&
+      /id\s*=\s*['"]gg-more-panel['"]/i.test(source);
+  }
+
+  async function isCacheableHtmlPageResponse(response, flags) {
+    if (!isSafeResponse(response)) return false;
+    if (!isHtmlResponse(response)) return false;
+    if (response.status !== 200) return false;
+    if (response.redirected) return false;
+    if (flags && flags.sw && flags.sw.htmlQualityGate === false) return true;
+
+    try {
+      return hasExpectedHtmlShell(await response.clone().text());
+    } catch (error) {
+      return false;
+    }
   }
 
   function shouldBypass(url, request) {
@@ -271,8 +297,11 @@
   }
 
   async function putIfSafe(cacheName, request, response, options = {}) {
-    if (!isSafeResponse(response)) return;
-    if (options.html && !isHtmlResponse(response)) return;
+    if (options.html) {
+      if (!(await isCacheableHtmlPageResponse(response, options.flags))) return;
+    } else if (!isSafeResponse(response)) {
+      return;
+    }
 
     try {
       const cache = await caches.open(cacheName);
@@ -280,12 +309,16 @@
     } catch (error) {}
   }
 
-  async function precacheOne(cache, url, debug) {
+  async function precacheOne(cache, url, debug, options = {}) {
     try {
       const request = new Request(url, { credentials: 'same-origin' });
       const response = await fetch(request, { cache: 'no-store' });
 
-      if (!isSafeResponse(response)) {
+      if (options.html) {
+        if (!(await isCacheableHtmlPageResponse(response, options.flags))) {
+          throw new Error(response.redirected ? 'redirected html response' : `uncacheable html ${response.status}`);
+        }
+      } else if (!isSafeResponse(response)) {
         throw new Error(`http ${response.status}`);
       }
 
@@ -350,7 +383,8 @@
       });
 
       await putIfSafe(cacheName, cacheRequest, response, {
-        html: options.html
+        html: options.html,
+        flags: options.flags
       });
 
       log(url, 'network-first fresh', url.pathname);
@@ -394,7 +428,7 @@
     );
   }
 
-  async function navigationResponse(event, request, url) {
+  async function navigationResponse(event, request, url, flags) {
     const clientId = event.resultingClientId || event.clientId;
     const cacheRequest = normalizedPageRequest(request);
 
@@ -403,9 +437,10 @@
 
       if (isSafeResponse(preload) && isHtmlResponse(preload)) {
         await putIfSafe(CACHE_PAGES, cacheRequest, preload, {
-          html: true
+          html: true,
+          flags: flags
         });
-        event.waitUntil(updateClientCacheMode(clientId, 'network-fresh', url));
+        event.waitUntil(updateClientCacheMode(clientId, preload.redirected ? 'network-redirected' : 'network-fresh', url));
         return preload;
       }
     } catch (error) {}
@@ -416,11 +451,12 @@
       });
 
       await putIfSafe(CACHE_PAGES, cacheRequest, response, {
-        html: true
+        html: true,
+        flags: flags
       });
 
       log(url, 'navigation network fresh', url.pathname);
-      event.waitUntil(updateClientCacheMode(clientId, 'network-fresh', url));
+      event.waitUntil(updateClientCacheMode(clientId, response.redirected ? 'network-redirected' : 'network-fresh', url));
 
       return response;
     } catch (error) {
@@ -476,7 +512,10 @@
           }
 
           if (url === '/' || url === '/landing') {
-            return precacheOne(pageCache, url, debug);
+            return precacheOne(pageCache, url, debug, {
+              html: true,
+              flags: flags
+            });
           }
 
           return precacheOne(staticCache, url, debug);
@@ -579,6 +618,7 @@
             credentials: 'same-origin'
           });
 
+          const flags = await fetchFlags(false);
           const response = await fetch(request);
 
           if (isSafeResponse(response)) {
@@ -590,7 +630,8 @@
               : normalizedPageRequest(request);
 
             await putIfSafe(cacheName, cacheRequest, response, {
-              html: !url.pathname.startsWith('/feeds/')
+              html: !url.pathname.startsWith('/feeds/'),
+              flags: flags
             });
           }
         } catch (error) {}
@@ -632,7 +673,7 @@
       }
 
       if (request.mode === 'navigate') {
-        return navigationResponse(event, request, url);
+        return navigationResponse(event, request, url, flags);
       }
 
       if (url.pathname.startsWith('/feeds/')) {

@@ -78,6 +78,7 @@ const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
 const FLAGS_LEGACY_PATH = "/flags.json";
+const ORIGIN_MOBILE_NORMALIZED_HEADER = "X-GG-Origin-Mobile-Normalized";
 
 const STATIC_ROUTE_ASSET_MAP = new Map([
   ["/manifest.webmanifest", "/manifest.webmanifest"],
@@ -259,6 +260,10 @@ function mobileQueryRedirectStatus() {
 
 function redirectUrl(url, status = 301) {
   return Response.redirect(url.toString(), status);
+}
+
+function isRedirectStatus(status) {
+  return status >= 300 && status < 400;
 }
 
 function maybeCanonicalRedirect(request, flags) {
@@ -501,9 +506,40 @@ function withResponsePolicy(resp, request, flags, options = {}) {
     headers.set("Content-Security-Policy-Report-Only", cspReportOnlyValue(request));
   }
 
+  if (options.headers && typeof options.headers === "object") {
+    for (const [name, value] of Object.entries(options.headers)) {
+      if (value == null || value === "") continue;
+      headers.set(name, String(value));
+    }
+  }
+
   headers.set("Reporting-Endpoints", `gg-csp="${new URL("/api/csp-report", request.url).toString()}"`);
 
   return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
+}
+
+function redirectDiagnosticsHeaders(details = {}) {
+  return {
+    "X-GG-Redirect-Reason": details.reason || "redirect",
+    "X-GG-Redirect-From": details.from || "",
+    "X-GG-Redirect-To": details.to || "",
+    "X-GG-Redirect-Status": String(details.status || 0),
+  };
+}
+
+function withRedirectDiagnostics(resp, request, flags, details = {}, options = {}) {
+  return withResponsePolicy(resp, request, flags, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...redirectDiagnosticsHeaders({
+        from: details.from || request.url,
+        to: details.to || resp.headers.get("location") || request.url,
+        status: details.status || resp.status,
+        reason: details.reason || "redirect",
+      }),
+    },
+  });
 }
 
 function isKnownBotUserAgent(ua, list) {
@@ -802,25 +838,152 @@ function shouldBypassHtmlMutation(pathname) {
   return false;
 }
 
-async function handleHtml(request, flags, response) {
+async function handleHtml(request, flags, response, options = {}) {
+  const route = options.route || classifyRoute(request);
   const url = new URL(request.url);
-  if (!isHtmlResponse(response)) return withResponsePolicy(response, request, flags);
-  if (shouldBypassHtmlMutation(url.pathname)) return withResponsePolicy(response, request, flags);
+  if (!isHtmlResponse(response)) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
+  if (shouldBypassHtmlMutation(url.pathname)) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
 
   let html = "";
-  try { html = await response.clone().text(); } catch (_) { return withResponsePolicy(response, request, flags); }
-  if (!html) return withResponsePolicy(response, request, flags);
+  try { html = await response.clone().text(); } catch (_) { return withResponsePolicy(response, request, flags, { route, headers: options.headers }); }
+  if (!html) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
 
   let out = html;
   if (flags.edge.mutateLandingContactAnchor) out = normalizeLandingContactHtml(out);
 
   let wrapped = responseFromHtml(response, out);
   if (flags.edge.annotateTemplateContract) wrapped = annotateTemplateContract(wrapped, out);
-  return withResponsePolicy(wrapped, request, flags);
+  return withResponsePolicy(wrapped, request, flags, { route, headers: options.headers });
 }
 
-async function fetchOrigin(request) {
-  return fetch(request);
+function isBloggerBackedHtmlRoute(route) {
+  return ["home", "label", "search", "post", "static-page", "html", "origin"].includes(route);
+}
+
+function shouldAddInternalMobileZero(request, route) {
+  if (!isSafeMethod(request)) return false;
+  if (!isBloggerBackedHtmlRoute(route)) return false;
+  const url = new URL(request.url);
+  return !url.searchParams.has("m");
+}
+
+function buildOriginRequest(request, route, flags, options = {}) {
+  const originUrl = new URL(request.url);
+  const headers = new Headers(request.headers);
+  const forceMobileZero = options.forceMobileZero === true;
+  const shouldNormalizeMobile = forceMobileZero || shouldAddInternalMobileZero(request, route, flags);
+
+  if (shouldNormalizeMobile) {
+    originUrl.searchParams.set("m", "0");
+    headers.set(ORIGIN_MOBILE_NORMALIZED_HEADER, "1");
+  }
+
+  const init = {
+    method: request.method,
+    headers,
+    redirect: "manual",
+  };
+
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    init.body = request.body;
+  }
+
+  return new Request(originUrl.toString(), init);
+}
+
+function canonicalComparableUrl(input, options = {}) {
+  const url = new URL(input.toString());
+  url.hash = "";
+  if (url.hostname === SITE.apexHost) url.hostname = SITE.canonicalHost;
+  if (options.stripMobileQuery) url.searchParams.delete("m");
+  const sortedEntries = Array.from(url.searchParams.entries()).sort(([aKey, aValue], [bKey, bValue]) => {
+    if (aKey === bKey) return aValue.localeCompare(bValue);
+    return aKey.localeCompare(bKey);
+  });
+  url.search = "";
+  for (const [key, value] of sortedEntries) {
+    url.searchParams.append(key, value);
+  }
+  return url.toString();
+}
+
+function getOriginMobileRedirectDetails(request, originRequest, response) {
+  if (!isRedirectStatus(response.status)) return null;
+
+  const location = response.headers.get("location");
+  if (!location) return null;
+
+  let locationUrl;
+  try {
+    locationUrl = new URL(location, request.url);
+  } catch (_) {
+    return null;
+  }
+
+  if (locationUrl.hostname !== SITE.canonicalHost && locationUrl.hostname !== SITE.apexHost) return null;
+
+  const mobileValues = locationUrl.searchParams.getAll("m");
+  if (!mobileValues.length) return null;
+  if (mobileValues.some((value) => value !== "0" && value !== "1")) return null;
+
+  const fromComparable = canonicalComparableUrl(originRequest.url, { stripMobileQuery: true });
+  const toComparable = canonicalComparableUrl(locationUrl, { stripMobileQuery: true });
+  if (fromComparable !== toComparable) return null;
+
+  return {
+    reason: "blogger-origin-mobile-redirect-suppressed",
+    from: originRequest.url,
+    to: locationUrl.toString(),
+    status: response.status,
+  };
+}
+
+function buildSuppressedOriginMobileResponse() {
+  return textResponse("Upstream mobile redirect suppressed after internal normalization", { status: 502 });
+}
+
+async function fetchOrigin(request, route, flags) {
+  if (!isBloggerBackedHtmlRoute(route)) {
+    return {
+      response: await fetch(request),
+      headers: null,
+    };
+  }
+
+  let originRequest = buildOriginRequest(request, route, flags);
+  let response = await fetch(originRequest);
+  let redirectDetails = getOriginMobileRedirectDetails(request, originRequest, response);
+
+  if (!redirectDetails) {
+    return {
+      response,
+      headers: null,
+    };
+  }
+
+  if (originRequest.headers.get(ORIGIN_MOBILE_NORMALIZED_HEADER) === "1") {
+    return {
+      response: buildSuppressedOriginMobileResponse(),
+      headers: redirectDiagnosticsHeaders(redirectDetails),
+    };
+  }
+
+  originRequest = buildOriginRequest(request, route, flags, { forceMobileZero: true });
+  response = await fetch(originRequest);
+  const secondRedirectDetails = getOriginMobileRedirectDetails(request, originRequest, response);
+  if (secondRedirectDetails) redirectDetails = secondRedirectDetails;
+
+  if (secondRedirectDetails) {
+    return {
+      response: buildSuppressedOriginMobileResponse(),
+      headers: redirectDiagnosticsHeaders(redirectDetails),
+    };
+  }
+
+  return {
+    response,
+    headers: redirectDiagnosticsHeaders(redirectDetails),
+  };
 }
 
 async function handleFlagsRoute(request, flags) {
@@ -834,11 +997,19 @@ async function handleRobotsRoute(request, flags) {
 async function handleRequest(request, env, ctx) {
   const flags = await loadFlags(env);
   const url = new URL(request.url);
+  const route = classifyRoute(request);
 
-  if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") return fetchOrigin(request);
+  if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") {
+    const origin = await fetchOrigin(request, route, flags);
+    return handleHtml(request, flags, origin.response, { headers: origin.headers, route });
+  }
 
   const canonicalRedirect = maybeCanonicalRedirect(request, flags);
-  if (canonicalRedirect) return canonicalRedirect;
+  if (canonicalRedirect) {
+    return withRedirectDiagnostics(canonicalRedirect, request, flags, {
+      reason: "canonical-host-or-https-normalization",
+    });
+  }
 
   if (shouldHardBlockBot(request, flags) && url.pathname !== "/robots.txt") {
     return withResponsePolicy(textResponse("Blocked in development mode", { status: 403 }), request, flags);
@@ -847,23 +1018,42 @@ async function handleRequest(request, env, ctx) {
   if (url.pathname === "/api/csp-report" && request.method === "POST") return handleCspReport(request);
 
   const legacy = legacyViewRedirect(request, flags);
-  if (legacy) return legacy;
+  if (legacy) {
+    return withRedirectDiagnostics(legacy, request, flags, {
+      reason: "legacy-blogger-view-normalization",
+    });
+  }
 
   if (url.pathname === "/robots.txt") return handleRobotsRoute(request, flags);
   if (url.pathname === FLAGS_CANONICAL_PATH || url.pathname === FLAGS_LEGACY_PATH) return handleFlagsRoute(request, flags);
   if (url.pathname.startsWith("/__gg/")) return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, { route: "diagnostic" });
 
   const vanity = vanityRedirect(request, flags);
-  if (vanity) return vanity;
+  if (vanity) {
+    return withRedirectDiagnostics(vanity, request, flags, {
+      reason: "vanity-path-normalization",
+    });
+  }
 
   const mobile = normalizeMobileQueryRedirect(request, flags);
-  if (mobile) return mobile;
+  if (mobile) {
+    return withRedirectDiagnostics(mobile, request, flags, {
+      reason: "blogger-mobile-query-normalization",
+    });
+  }
 
   const staticResponse = await handleStaticRoutes(request, env, flags);
-  if (staticResponse) return withResponsePolicy(staticResponse, request, flags);
+  if (staticResponse) {
+    if (isRedirectStatus(staticResponse.status)) {
+      return withRedirectDiagnostics(staticResponse, request, flags, {
+        reason: "landing-internal-path-normalization",
+      }, { route });
+    }
+    return withResponsePolicy(staticResponse, request, flags, { route });
+  }
 
-  const originResponse = await fetchOrigin(request);
-  return handleHtml(request, flags, originResponse);
+  const origin = await fetchOrigin(request, route, flags);
+  return handleHtml(request, flags, origin.response, { headers: origin.headers, route });
 }
 
 export default {
