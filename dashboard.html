@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GG Blogger Studio MVP</title>
+  <meta name="description" content="GG Blogger Studio MVP: single-file CDN-only Blogger editorial studio with hardened runtime gates." />
+
+  <!--
+    GG Blogger Studio MVP Hardened
+    ------------------------------------------------------------------
+    Product law:
+    - Alpine.js is only the reactive UI shell, not the editor brain.
+    - TipTap remains the editor engine.
+    - BloggerApiClient remains the API layer.
+    - Compiler remains the source of truth for public Blogger HTML.
+    - GG Elements remains the public-output contract.
+    - Dock + sheet replaces generic SaaS sidebar.
+    - Paper footer owns status; toolbar owns formatting; topbar owns global commands.
+    - No duplicated state: Alpine owns app state and exposes actions; TipTap state is synchronized into currentDoc.
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,-25..0&display=swap" rel="stylesheet" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script type="application/json" id="gg-blogger-studio-config">
+  {
+    "ggConfigVersion": "1.0.0",
+    "ggProduct": "gg-blogger-studio",
+    "googleOAuthClientId": "%%GG_GOOGLE_OAUTH_CLIENT_ID%%",
+    "googleApiKey": "%%GG_GOOGLE_API_KEY_BROWSER_RESTRICTED%%",
+    "bloggerBlogId": "%%GG_BLOGGER_BLOG_ID%%",
+    "bloggerApiBase": "https://www.googleapis.com/blogger/v3",
+    "bloggerScopes": ["https://www.googleapis.com/auth/blogger"],
+    "configEndpoint": "%%GG_BLOGGER_STUDIO_CONFIG_ENDPOINT%%",
+    "mediaUploadEndpoint": "%%GG_MEDIA_UPLOAD_ENDPOINT%%",
+    "defaults": {
+      "maxResults": 20,
+      "view": "AUTHOR",
+      "orderBy": "updated",
+      "fetchBodies": false
+    },
+    "features": {
+      "enableGooglePicker": false,
+      "enableYjs": false,
+      "enableWebRtc": false,
+      "enableDriveJsonDrafts": false,
+      "enableSheetsRegistry": false,
+      "enableMediaUpload": true,
+      "enableTableBlock": true,
+      "enableCarouselBlock": true
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --gg-black: #070707;
+      --gg-ink: #151515;
+      --gg-muted: #707070;
+      --gg-soft: #a8a8a8;
+      --gg-line: rgba(0,0,0,.10);
+      --gg-line-strong: rgba(0,0,0,.18);
+      --gg-bg: #f4f4f1;
+      --gg-bg-deep: #e7e7e4;
+      --gg-panel: rgba(255,255,255,.74);
+      --gg-panel-solid: #fbfbfa;
+      --gg-invert: #fff;
+      --gg-shadow: 0 28px 70px rgba(0,0,0,.08);
+      --gg-shadow-tight: 0 10px 28px rgba(0,0,0,.06);
+      --gg-radius-xl: 30px;
+      --gg-radius-lg: 22px;
+      --gg-radius-md: 16px;
+      --gg-topbar-h: 64px;
+      --gg-dock-h: 74px;
+      --gg-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+      --gg-prose-measure: 68ch;
+      --gg-prose-measure-wide: 72ch;
+      --gg-prose-size: clamp(17px,1.05vw,19px);
+      --gg-prose-leading: 1.68;
+      color-scheme: light;
+    }
+
+    :root[data-gg-theme="dark"] {
+      --gg-black: #f4f4f1;
+      --gg-ink: #f1f1ec;
+      --gg-muted: #a9a9a1;
+      --gg-soft: #77776f;
+      --gg-line: rgba(255,255,255,.13);
+      --gg-line-strong: rgba(255,255,255,.24);
+      --gg-bg: #11110f;
+      --gg-bg-deep: #050505;
+      --gg-panel: rgba(20,20,18,.72);
+      --gg-panel-solid: #151513;
+      --gg-invert: #080807;
+      --gg-shadow: 0 28px 80px rgba(0,0,0,.42);
+      --gg-shadow-tight: 0 10px 34px rgba(0,0,0,.34);
+      color-scheme: dark;
+    }
+
+    :root[data-gg-theme="dark"] body {
+      background: radial-gradient(circle at 12% -12%, rgba(255,255,255,.08), transparent 34rem), linear-gradient(135deg,var(--gg-bg),var(--gg-bg-deep));
+    }
+
+    :root[data-gg-theme="dark"] .gg-blogger-studio__topbar { background: rgba(12,12,10,.78); }
+    :root[data-gg-theme="dark"] .gg-blogger-studio__command,
+    :root[data-gg-theme="dark"] .gg-button,
+    :root[data-gg-theme="dark"] .gg-input,
+    :root[data-gg-theme="dark"] .gg-textarea { background: rgba(255,255,255,.07); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+    :root[data-gg-theme="dark"] .gg-button:hover { background: rgba(255,255,255,.13); }
+    :root[data-gg-theme="dark"] .gg-button--primary { background: var(--gg-black); color: var(--gg-invert); border-color: var(--gg-black); }
+    :root[data-gg-theme="dark"] .gg-button--primary:hover { background: #fff; color: #050505; }
+    :root[data-gg-theme="dark"] .gg-panel-card,
+    :root[data-gg-theme="dark"] .gg-blogger-studio__post-row { background: rgba(255,255,255,.055); }
+    :root[data-gg-theme="dark"] .gg-surface__header { background: rgba(255,255,255,.045); }
+    :root[data-gg-theme="dark"] .gg-dock,
+    :root[data-gg-theme="dark"] .gg-dock-tail,
+    :root[data-gg-theme="dark"] .gg-sheet__panel { background: rgba(18,18,16,.88); }
+    :root[data-gg-theme="dark"] .gg-dock__item:hover,
+    :root[data-gg-theme="dark"] .gg-dock__item.gg-is-active { background: rgba(255,255,255,.11); }
+    :root[data-gg-theme="dark"] .gg-surface {
+      background: rgba(18,18,16,.86);
+      border-color: rgba(255,255,255,.16);
+      box-shadow: 0 28px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.045);
+    }
+    :root[data-gg-theme="dark"] .gg-blogger-studio__editor { background: rgba(255,255,255,.035); }
+    :root[data-gg-theme="dark"] .gg-blogger-studio__toolbar,
+    :root[data-gg-theme="dark"] .gg-blogger-studio__meta,
+    :root[data-gg-theme="dark"] .gg-blogger-studio__preview,
+    :root[data-gg-theme="dark"] .gg-blogger-studio__compiled-output {
+      background: rgba(24,24,22,.94);
+      border-color: rgba(255,255,255,.16);
+      color: var(--gg-ink);
+    }
+    :root[data-gg-theme="dark"] .gg-blogger-studio__preview,
+    :root[data-gg-theme="dark"] .ProseMirror { color: #f3f3ed; }
+    :root[data-gg-theme="dark"] .ProseMirror blockquote,
+    :root[data-gg-theme="dark"] .gg-blogger-studio__preview blockquote,
+    :root[data-gg-theme="dark"] .gg-callout {
+      background: rgba(255,255,255,.065);
+      border-color: rgba(255,255,255,.22);
+    }
+    :root[data-gg-theme="dark"] .gg-table,
+    :root[data-gg-theme="dark"] .ProseMirror table,
+    :root[data-gg-theme="dark"] .gg-table-wrap {
+      background: rgba(255,255,255,.045);
+      border-color: rgba(255,255,255,.16);
+    }
+    :root[data-gg-theme="dark"] .gg-table th,
+    :root[data-gg-theme="dark"] .ProseMirror th { background: rgba(255,255,255,.085); }
+    :root[data-gg-theme="dark"] .gg-blogger-studio__title-input::placeholder { color: rgba(255,255,255,.32); }
+    :root[data-gg-theme="dark"] .gg-kbd { background: rgba(255,255,255,.10); color: #d7d7cf; border-color: rgba(255,255,255,.18); }
+    :root[data-gg-theme="dark"] .gg-status-dot { background: rgba(255,255,255,.30); }
+    :root[data-gg-theme="dark"] .gg-status-dot--ok { background: #f4f4f1; }
+    :root[data-gg-theme="dark"] .gg-status-dot--bad { background: transparent; border-color: #f4f4f1; }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--gg-font);
+      color: var(--gg-ink);
+      background: radial-gradient(circle at 12% -12%, rgba(0,0,0,.06), transparent 34rem), linear-gradient(135deg,var(--gg-bg),var(--gg-bg-deep));
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    [hidden], [x-cloak] { display: none !important; }
+
+    .gg-icon {
+      font-family: "Material Symbols Rounded";
+      font-style: normal;
+      font-weight: 400;
+      font-size: 21px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      direction: ltr;
+      white-space: nowrap;
+      font-feature-settings: "liga";
+      -webkit-font-feature-settings: "liga";
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" -25, "opsz" 24;
+    }
+
+    .gg-page-shell, .gg-blogger-studio { min-height: 100vh; }
+    .gg-blogger-studio__shell { min-height: 100vh; display: grid; grid-template-rows: var(--gg-topbar-h) 1fr; }
+
+    .gg-blogger-studio__topbar {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      height: var(--gg-topbar-h);
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(220px,520px) minmax(0,1fr);
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--gg-line);
+      background: rgba(244,244,241,.78);
+      backdrop-filter: blur(26px) saturate(135%);
+    }
+
+    .gg-blogger-studio__brand { display: inline-flex; align-items: center; justify-self: start; gap: 10px; min-width: 0; }
+    .gg-blogger-studio__mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 13px; background: var(--gg-black); color: var(--gg-invert); font-size: 12px; font-weight: 760; letter-spacing: -.04em; }
+    .gg-blogger-studio__brand-text { display: grid; gap: 1px; min-width: 0; }
+    .gg-blogger-studio__brand strong { font-size: 13px; line-height: 1.1; letter-spacing: -.02em; }
+    .gg-blogger-studio__brand small { color: var(--gg-muted); font-size: 11px; line-height: 1.1; }
+
+    .gg-blogger-studio__command {
+      justify-self: center;
+      width: 100%;
+      height: 38px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      padding: 0 10px 0 12px;
+      color: var(--gg-muted);
+      background: rgba(255,255,255,.56);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+    }
+    .gg-blogger-studio__command span:not(.gg-icon) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+
+    .gg-blogger-studio__top-actions,
+    .gg-action-row { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+    .gg-blogger-studio__top-actions { justify-self: end; }
+
+    .gg-button {
+      --gg-button-size: 40px;
+      min-width: var(--gg-button-size);
+      min-height: var(--gg-button-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.62);
+      color: var(--gg-ink);
+      padding: 0 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.64);
+      transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+    .gg-button:hover { transform: translateY(-1px); background: rgba(255,255,255,.90); border-color: var(--gg-line-strong); box-shadow: var(--gg-shadow-tight); }
+    .gg-button:focus-visible, .gg-dock__item:focus-visible, .gg-input:focus-visible, .gg-textarea:focus-visible { outline: 2px solid var(--gg-black); outline-offset: 3px; }
+    .gg-button:disabled { opacity: .38; cursor: not-allowed; transform: none; box-shadow: none; }
+    .gg-button--primary { background: var(--gg-black); color: var(--gg-invert); border-color: var(--gg-black); }
+    .gg-button--primary:hover { background: #000; color: var(--gg-invert); }
+    .gg-button--icon { width: 40px; padding: 0; }
+    .gg-button--small { --gg-button-size: 34px; min-width: 34px; padding: 0 11px; font-size: 12px; }
+
+    .gg-blogger-studio__body { min-height: calc(100vh - var(--gg-topbar-h)); padding: 20px 20px calc(var(--gg-dock-h) + 78px); }
+    .gg-blogger-studio__main { min-width: 0; }
+
+    .gg-surface { border: 1px solid var(--gg-line); border-radius: var(--gg-radius-xl); background: var(--gg-panel); box-shadow: var(--gg-shadow); overflow: hidden; backdrop-filter: blur(18px) saturate(130%); }
+    .gg-surface--pad { padding: 20px; }
+    .gg-surface__header { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--gg-line); background: rgba(255,255,255,.36); }
+    .gg-surface__title { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+    .gg-surface__title h1, .gg-panel-card h3 { margin: 0; font-size: 14px; letter-spacing: -.02em; font-weight: 700; }
+
+    .gg-grid { display: grid; gap: 12px; }
+    .gg-grid--cards { grid-template-columns: repeat(4,minmax(0,1fr)); }
+    .gg-panel-card { border: 1px solid var(--gg-line); border-radius: var(--gg-radius-lg); background: rgba(255,255,255,.50); padding: 16px; }
+    .gg-panel-card p, .gg-empty-state p, .gg-field-note { margin: 4px 0 0; color: var(--gg-muted); font-size: 12px; line-height: 1.45; }
+    .gg-stat { display: block; margin: 0 0 4px; font-size: clamp(30px,4vw,50px); letter-spacing: -.08em; font-weight: 760; line-height: .95; }
+
+    .gg-home-dashboard { display: grid; gap: 16px; }
+    .gg-home-workbench { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(280px,.75fr); gap: 16px; align-items: start; }
+    .gg-home-panel { min-width: 0; }
+    .gg-home-panel .gg-surface__header { margin: -16px -16px 12px; border-radius: var(--gg-radius-lg) var(--gg-radius-lg) 0 0; }
+    .gg-home-panel__body { display: grid; gap: 10px; }
+    .gg-home-panel__body .gg-blogger-studio__post-list { padding: 0; }
+    .gg-home-panel__hint { color: var(--gg-muted); font-size: 12px; line-height: 1.45; margin: 0; }
+
+    .gg-form { display: grid; gap: 12px; }
+    .gg-field label { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--gg-muted); font-size: 11px; font-weight: 650; letter-spacing: .02em; }
+    .gg-input, .gg-textarea { width: 100%; border: 1px solid var(--gg-line); border-radius: var(--gg-radius-md); background: rgba(255,255,255,.68); padding: 12px 13px; color: var(--gg-ink); outline: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.70); }
+    .gg-input::placeholder, .gg-textarea::placeholder { color: var(--gg-soft); }
+    .gg-textarea { min-height: 100px; resize: vertical; }
+
+    .gg-blogger-studio__search { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid var(--gg-line); background: rgba(255,255,255,.22); }
+    .gg-blogger-studio__editor-shell { position: relative; min-height: calc(100vh - var(--gg-topbar-h) - var(--gg-dock-h) - 48px); display: grid; grid-template-rows: auto auto 1fr; padding-top: 0; overflow: visible; }
+    .gg-blogger-studio__toolbar { position: sticky; top: calc(var(--gg-topbar-h) + 12px); justify-self: center; z-index: 120; width: fit-content; max-width: min(calc(100vw - 32px), 720px); margin: 12px auto 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 7px; border: 1px solid var(--gg-line); border-radius: 999px; background: rgba(251,251,250,.88); backdrop-filter: blur(28px) saturate(145%); box-shadow: var(--gg-shadow-tight); }
+
+    .gg-blogger-studio__title-input { width: min(100%, var(--gg-prose-measure-wide)); max-inline-size: var(--gg-prose-measure-wide); min-height: 1.1em; border: 0; outline: none; resize: none; overflow: hidden; background: transparent; padding: 18px 0 6px; margin-inline: auto; display: block; color: var(--gg-ink); font-size: clamp(34px,5vw,68px); font-weight: 720; letter-spacing: -.075em; line-height: 1.02; white-space: pre-wrap; overflow-wrap: anywhere; text-align:center;}
+    .gg-blogger-studio__title-input::placeholder { color: rgba(0,0,0,.24); }
+    .gg-blogger-studio__editor { min-height: 58vh; padding: 22px 20px 54px; background: rgba(255,255,255,.25); }
+    .gg-blogger-studio__meta { width: fit-content; max-width: min(calc(100vw - 32px), 620px); margin: 0 auto -1px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 13px; color: var(--gg-muted); font-size: 12px; flex-wrap: wrap; border: 1px solid var(--gg-line); border-bottom: 0; border-radius: 18px 18px 0 0; background: rgba(251,251,250,.92); backdrop-filter: blur(24px) saturate(140%); box-shadow: 0 -10px 28px rgba(0,0,0,.045); }
+
+    .ProseMirror { width: min(100%, var(--gg-prose-measure)); max-inline-size: var(--gg-prose-measure); min-height: 48vh; margin-inline: auto; outline: none; font-size: var(--gg-prose-size); line-height: var(--gg-prose-leading); letter-spacing: -.018em; color: var(--gg-ink); }
+    .ProseMirror p { margin: 0 0 1.05em; }
+    .ProseMirror h2, .ProseMirror h3, .gg-blogger-studio__preview h2, .gg-blogger-studio__preview h3 { letter-spacing: -.055em; line-height: 1.08; margin: 1.75em 0 .55em; }
+    .ProseMirror h2, .gg-blogger-studio__preview h2 { font-size: 30px; }
+    .ProseMirror h3, .gg-blogger-studio__preview h3 { font-size: 22px; }
+    .ProseMirror blockquote, .gg-blogger-studio__preview blockquote { margin: 1.4em auto; padding: 16px 18px; border-left: 2px solid var(--gg-black); background: rgba(0,0,0,.035); border-radius: 0 var(--gg-radius-md) var(--gg-radius-md) 0; max-inline-size: var(--gg-prose-measure); }
+    .ProseMirror img, .gg-blogger-studio__preview img { max-width: 100%; height: auto; border-radius: var(--gg-radius-lg); filter: grayscale(1); }
+    .gg-callout { padding: 16px 18px; border: 1px solid var(--gg-line); background: rgba(0,0,0,.035); border-radius: var(--gg-radius-lg); margin: 1.4em auto; max-inline-size: var(--gg-prose-measure); font-size: 15px; line-height: 1.55; }
+
+    .gg-table-wrap { max-inline-size: min(100%,86ch); margin: 1.6em auto; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--gg-line); border-radius: var(--gg-radius-lg); background: rgba(255,255,255,.42); }
+    .gg-table, .ProseMirror table { width: 100%; min-width: 560px; border-collapse: collapse; table-layout: fixed; font-size: 14px; line-height: 1.45; background: rgba(255,255,255,.55); border: 1px solid var(--gg-line); border-radius: var(--gg-radius-lg); overflow: hidden; }
+    .gg-table th, .gg-table td, .ProseMirror th, .ProseMirror td { min-width: 120px; padding: 12px 14px; border: 1px solid var(--gg-line); text-align: left; vertical-align: top; }
+    .gg-table th, .ProseMirror th { font-weight: 720; background: rgba(0,0,0,.035); }
+    .ProseMirror .selectedCell::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,.06); pointer-events: none; }
+    .ProseMirror .tableWrapper { max-inline-size: min(100%,86ch); margin: 1.6em auto; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    .gg-carousel-snap { max-inline-size: min(100%,86ch); margin: 1.8em auto; }
+    .gg-carousel-snap__track { display: grid; grid-auto-flow: column; grid-auto-columns: min(84%,680px); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 2px 2px 12px; }
+    .gg-carousel-snap__item { scroll-snap-align: center; margin: 0; }
+    .gg-carousel-snap__item img { width: 100%; height: auto; display: block; border-radius: var(--gg-radius-lg); filter: grayscale(1); }
+    .gg-carousel-snap__item figcaption { margin-top: 8px; color: var(--gg-muted); font-size: 12px; line-height: 1.45; }
+
+    .gg-blogger-studio__post-list { display: grid; gap: 8px; padding: 12px; }
+    .gg-blogger-studio__post-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; min-height: 64px; border: 1px solid var(--gg-line); border-radius: 20px; background: rgba(255,255,255,.48); padding: 12px 12px 12px 16px; }
+    .gg-blogger-studio__post-row h3 { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; letter-spacing: -.025em; font-weight: 680; }
+    .gg-blogger-studio__post-row p { margin: 5px 0 0; color: var(--gg-muted); font-size: 11px; }
+
+    .gg-blogger-studio__preview-wrap { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; padding: 16px; align-items: start; justify-items: stretch; }
+    .gg-blogger-studio__preview-stage { display: grid; justify-items: center; width: 100%; min-width: 0; }
+    .gg-blogger-studio__preview { max-inline-size: var(--gg-prose-measure); width: min(100%, var(--gg-prose-measure)); margin-inline: auto; padding: clamp(28px,5vw,60px); background: var(--gg-panel-solid); border-radius: var(--gg-radius-xl); border: 1px solid var(--gg-line); font-size: var(--gg-prose-size); line-height: var(--gg-prose-leading); letter-spacing: -.018em; }
+    .gg-blogger-studio__preview h1 { margin: 0 0 24px; font-size: clamp(38px,6vw,72px); line-height: .98; letter-spacing: -.075em; overflow-wrap: anywhere; }
+    .gg-blogger-studio__preview-gate { width: min(100%, var(--gg-prose-measure-wide)); margin-inline: auto; }
+    .gg-blogger-studio__preview-gate .gg-blogger-studio__gate-list { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .gg-blogger-studio__html-view { width: min(100%, 1180px); margin-inline: auto; display: grid; gap: 10px; }
+    .gg-blogger-studio__codebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--gg-muted); font-size: 12px; padding-inline: 4px; }
+    .gg-blogger-studio__compiled-output { width: 100%; min-height: min(72vh, 760px); resize: vertical; white-space: pre; overflow: auto; tab-size: 2; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; line-height: 1.58; letter-spacing: -.01em; }
+
+    .gg-blogger-studio__gate-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .gg-blogger-studio__gate-list li { display: grid; grid-template-columns: 18px minmax(0,1fr); align-items: center; gap: 8px; color: var(--gg-muted); font-size: 12px; line-height: 1.35; }
+    .gg-status-dot { width: 9px; height: 9px; border-radius: 999px; background: rgba(0,0,0,.28); }
+    .gg-status-dot--ok { background: var(--gg-black); }
+    .gg-status-dot--bad { background: transparent; border: 1px solid var(--gg-black); }
+
+    .gg-empty-state { min-height: 220px; display: grid; place-items: center; text-align: center; color: var(--gg-muted); padding: 24px; }
+    .gg-empty-state .gg-icon { margin: 0 auto 8px; font-size: 34px; color: var(--gg-soft); }
+
+    .gg-dock-stack {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      z-index: 90;
+      transform: translateX(-50%);
+      display: grid;
+      justify-items: center;
+      width: fit-content;
+      max-width: min(calc(100vw - 24px), 860px);
+      pointer-events: none;
+    }
+    .gg-dock-stack > * { pointer-events: auto; }
+    .gg-dock {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 58px;
+      width: fit-content;
+      max-width: min(calc(100vw - 24px), 860px);
+      padding: 7px;
+      border: 1px solid var(--gg-line);
+      border-radius: 26px;
+      background: rgba(244,244,241,.82);
+      backdrop-filter: blur(28px) saturate(145%);
+      box-shadow: var(--gg-shadow);
+    }
+    .gg-dock__item { position: relative; width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 18px; color: var(--gg-muted); background: transparent; transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease; }
+    .gg-dock__item:hover, .gg-dock__item.gg-is-active { color: var(--gg-black); background: rgba(255,255,255,.76); border-color: var(--gg-line); transform: translateY(-2px); }
+    .gg-dock__item .gg-badge, .gg-button .gg-badge { position: absolute; right: -3px; top: -3px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; }
+    .gg-button { position: relative; }
+    .gg-dock__divider { width: 1px; height: 28px; background: var(--gg-line); margin: 0 2px; }
+
+    .gg-sheet { position: fixed; inset: auto 16px calc(var(--gg-dock-h) + 58px); z-index: 85; display: none; justify-content: center; pointer-events: none; }
+    .gg-sheet.gg-is-open { display: flex; }
+    .gg-sheet__panel { width: min(760px,100%); max-height: min(68vh,720px); overflow: auto; pointer-events: auto; border: 1px solid var(--gg-line); border-radius: var(--gg-radius-xl); background: rgba(251,251,250,.92); backdrop-filter: blur(30px) saturate(145%); box-shadow: var(--gg-shadow); padding: 16px; animation: gg-sheet-up .18s ease both; outline: none; }
+    @keyframes gg-sheet-up { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .gg-toast { position: fixed; left: 50%; top: calc(var(--gg-topbar-h) + 76px); transform: translateX(-50%); z-index: 160; max-width: min(420px,calc(100vw - 32px)); display: none; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,.16); border-radius: 999px; background: rgba(7,7,7,.94); color: var(--gg-invert); padding: 13px 18px 13px 14px; box-shadow: 0 24px 80px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.18); font-size: 14px; font-weight: 650; letter-spacing: -.015em; backdrop-filter: blur(24px) saturate(150%); }
+    .gg-toast .gg-icon { width: 28px; height: 28px; border-radius: 999px; background: rgba(255,255,255,.12); color: var(--gg-invert); font-size: 18px; }
+    .gg-toast.gg-is-open { display: inline-flex; animation: gg-toast-in .22s cubic-bezier(.2,0,0,1) both; }
+    @keyframes gg-toast-in { from { transform: translateX(-50%) translateY(-10px) scale(.96); opacity: 0; filter: blur(4px); } to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; filter: blur(0); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }
+    .gg-kbd { border: 1px solid var(--gg-line); border-bottom-color: var(--gg-line-strong); background: rgba(255,255,255,.48); border-radius: 7px; padding: 2px 6px; font-size: 11px; color: var(--gg-muted); }
+
+    @media (max-width: 920px) {
+      .gg-grid--cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .gg-home-workbench { grid-template-columns: 1fr; }
+      .gg-blogger-studio__html-view { width: 100%; }
+    }
+
+    @media (max-width: 720px) {
+      :root { --gg-topbar-h: 58px; --gg-prose-measure: 100%; --gg-prose-measure-wide: 100%; --gg-prose-leading: 1.62; }
+      .gg-blogger-studio__topbar { grid-template-columns: auto minmax(44px,1fr) auto; padding: 0 12px; }
+      .gg-blogger-studio__brand-text, .gg-blogger-studio__command span:not(.gg-icon) { display: none; }
+      .gg-blogger-studio__command { display: flex; justify-content: center; }
+      .gg-blogger-studio__body { padding: 12px 12px calc(var(--gg-dock-h) + 72px); }
+      .gg-surface { border-radius: 24px; }
+      .gg-surface__header { padding: 14px 16px; }
+      .gg-blogger-studio__toolbar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; top: calc(var(--gg-topbar-h) + 10px); max-width: calc(100vw - 24px); }
+      .gg-blogger-studio__title-input { font-size: 38px; padding: 16px 18px 6px; }
+      .gg-blogger-studio__meta { width: fit-content; max-width: calc(100vw - 24px); }
+      .gg-blogger-studio__editor { padding: 18px 18px 44px; }
+      .ProseMirror { font-size: 17px; }
+      .gg-blogger-studio__search { grid-template-columns: 1fr auto; }
+      .gg-blogger-studio__search .gg-button[data-gg-action="load-more"] { grid-column: 1 / -1; width: 100%; }
+      .gg-dock-stack { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+      .gg-dock { width: 100%; justify-content: space-between; overflow-x: auto; }
+      .gg-dock__divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main id="gg-page-shell" class="gg-page-shell gg-page-shell--studio" data-gg-surface="studio" data-gg-context="special">
+    <section id="gg-blogger-studio" class="gg-blogger-studio" data-gg-module="gg-blogger-studio" data-gg-state="idle" data-gg-config-source="inline" aria-label="GG Blogger Studio" x-data="ggStudioApp()" x-init="boot()" :data-gg-theme="theme" @keydown.window="handleKeydown($event)" x-cloak>
+      <div class="gg-blogger-studio__shell">
+        <header class="gg-blogger-studio__topbar" data-gg-role="studio-topbar">
+          <a class="gg-blogger-studio__brand" href="#/home" aria-label="Home" @click.prevent="go('#/home')"><span class="gg-blogger-studio__mark" aria-hidden="true">GG</span><span class="gg-blogger-studio__brand-text"><strong>Studio</strong><small x-text="accessToken ? 'Google' : statusLabel"></small></span></a>
+          <button class="gg-blogger-studio__command" type="button" @click="openCommandPrompt()" aria-label="Command"><span class="gg-icon" aria-hidden="true">search</span><span>Command</span><span class="gg-kbd">⌘K</span></button>
+          <div class="gg-blogger-studio__top-actions" aria-label="Primary actions"><button class="gg-button gg-button--icon" type="button" @click="toggleTheme()" :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'" :title="theme === 'dark' ? 'Light mode' : 'Dark mode'"><span class="gg-icon" aria-hidden="true" x-text="theme === 'dark' ? 'light_mode' : 'dark_mode'"></span></button><button class="gg-button gg-button--icon" type="button" @click="openSheet('settings')" :class="{ 'gg-button--primary': activeSheet === 'settings' }" aria-label="Settings" title="Settings"><span class="gg-icon" aria-hidden="true">tune</span><span class="gg-badge" x-show="configIssues.length" x-text="configIssues.length"></span></button><button class="gg-button gg-button--icon" type="button" @click="connectGoogle()" aria-label="Connect Google" title="Connect Google"><span class="gg-icon" aria-hidden="true">account_circle</span></button><button class="gg-button gg-button--icon" type="button" @click="saveLocal(true)" aria-label="Save" title="Save"><span class="gg-icon" aria-hidden="true">save</span></button><button class="gg-button gg-button--icon" type="button" @click="preview()" aria-label="Preview" title="Preview"><span class="gg-icon" aria-hidden="true">visibility</span></button><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="publishCurrentPost()" aria-label="Publish" title="Publish"><span class="gg-icon" aria-hidden="true">publish</span></button></div>
+        </header>
+
+        <div class="gg-blogger-studio__body">
+          <main class="gg-blogger-studio__main" data-gg-slot="studio-route">
+            <section class="gg-surface gg-surface--pad" data-gg-view="home" data-gg-surface="studio-home" x-show="view === 'home'">
+              <div class="gg-home-dashboard">
+                <header class="gg-surface__header" style="margin:-20px -20px 16px"><div class="gg-surface__title"><span class="gg-icon" aria-hidden="true">space_dashboard</span><h1>Studio Home</h1></div><div class="gg-action-row"><button class="gg-button gg-button--icon" type="button" @click="loadPosts(false)" aria-label="Refresh posts" title="Refresh posts"><span class="gg-icon" aria-hidden="true">sync</span></button><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="newPost()" aria-label="New post" title="New post"><span class="gg-icon" aria-hidden="true">add</span></button></div></header>
+                <div class="gg-grid gg-grid--cards"><article class="gg-panel-card"><span class="gg-stat" x-text="stats.posts"></span><p>Posts</p></article><article class="gg-panel-card"><span class="gg-stat" x-text="stats.drafts"></span><p>Drafts</p></article><article class="gg-panel-card"><span class="gg-stat" x-text="stats.gate"></span><p>Gate</p></article><article class="gg-panel-card"><span class="gg-stat" x-text="accessToken ? 'ON' : 'OFF'"></span><p>Auth</p></article></div>
+                <div class="gg-home-workbench">
+                  <section class="gg-panel-card gg-home-panel" data-gg-surface="studio-home-posts">
+                    <header class="gg-surface__header"><div class="gg-surface__title"><span class="gg-icon" aria-hidden="true">article</span><h1>Posts</h1></div><div class="gg-action-row"><button class="gg-button gg-button--icon" type="button" @click="loadPosts(false)" aria-label="Refresh" title="Refresh"><span class="gg-icon" aria-hidden="true">sync</span></button><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="newPost()" aria-label="New" title="New"><span class="gg-icon" aria-hidden="true">add</span></button></div></header>
+                    <div class="gg-home-panel__body">
+                      <div class="gg-blogger-studio__search"><input class="gg-input" x-model="postSearch" @keydown.enter="searchPosts()" placeholder="Search posts" autocomplete="off" /><button class="gg-button gg-button--icon" type="button" @click="searchPosts()" aria-label="Search" title="Search"><span class="gg-icon" aria-hidden="true">search</span></button><button class="gg-button" type="button" data-gg-action="load-more" @click="loadMorePosts()" x-show="nextPageToken && !lastSearchQuery" aria-label="Load more" title="Load more"><span class="gg-icon" aria-hidden="true">expand_more</span><span>More</span></button></div>
+                      <div class="gg-blogger-studio__post-list"><template x-for="post in posts" :key="post.id"><article class="gg-blogger-studio__post-row"><div><h3 x-text="post.title || '(untitled)'"></h3><p x-text="postMeta(post)"></p></div><div class="gg-action-row"><a class="gg-button gg-button--icon" :href="post.url" target="_blank" rel="noopener" aria-label="Open" title="Open" x-show="post.url"><span class="gg-icon" aria-hidden="true">open_in_new</span></a><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="openPost(post.id)" aria-label="Edit" title="Edit"><span class="gg-icon" aria-hidden="true">edit</span></button></div></article></template></div>
+                      <div class="gg-empty-state" x-show="posts.length === 0"><div><span class="gg-icon" aria-hidden="true">inbox</span><p>No posts loaded. Connect Google, then refresh.</p></div></div>
+                    </div>
+                  </section>
+                  <section class="gg-panel-card gg-home-panel" data-gg-surface="studio-home-drafts">
+                    <header class="gg-surface__header"><div class="gg-surface__title"><span class="gg-icon" aria-hidden="true">draft</span><h1>Drafts</h1></div><div class="gg-action-row"><button class="gg-button gg-button--icon" type="button" @click="loadDrafts()" aria-label="Refresh drafts" title="Refresh drafts"><span class="gg-icon" aria-hidden="true">sync</span></button><button class="gg-button gg-button--icon" type="button" @click="saveLocal(true)" aria-label="Save current" title="Save current"><span class="gg-icon" aria-hidden="true">save</span></button></div></header>
+                    <div class="gg-home-panel__body">
+                      <p class="gg-home-panel__hint">Local drafts are now part of the home surface, not hidden as a separate working surface.</p>
+                      <div class="gg-blogger-studio__post-list"><template x-for="draft in drafts" :key="draft.docId"><article class="gg-blogger-studio__post-row"><div><h3 x-text="draft.title || '(untitled)'"></h3><p x-text="draftMeta(draft)"></p></div><div class="gg-action-row"><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="openLocalDraft(draft.docId)" aria-label="Open draft" title="Open draft"><span class="gg-icon" aria-hidden="true">open_in_new</span></button></div></article></template></div>
+                      <div class="gg-empty-state" x-show="drafts.length === 0"><div><span class="gg-icon" aria-hidden="true">draft</span><p>No local drafts yet.</p></div></div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </section>
+
+            <section class="gg-surface gg-blogger-studio__editor-shell" data-gg-view="editor" data-gg-surface="studio-editor" x-show="view === 'editor'">
+              <div class="gg-blogger-studio__toolbar" data-gg-role="editor-toolbar"><button class="gg-button gg-button--small gg-button--icon" type="button" @click="editorAction('bold')" aria-label="Bold" title="Bold"><strong>B</strong></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="editorAction('italic')" aria-label="Italic" title="Italic"><em>I</em></button><button class="gg-button gg-button--small" type="button" @click="editorAction('h2')" aria-label="Heading 2" title="Heading 2">H2</button><button class="gg-button gg-button--small" type="button" @click="editorAction('h3')" aria-label="Heading 3" title="Heading 3">H3</button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="editorAction('quote')" aria-label="Quote" title="Quote"><span class="gg-icon" aria-hidden="true">format_quote</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="editorAction('bullet')" aria-label="List" title="List"><span class="gg-icon" aria-hidden="true">format_list_bulleted</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="editorAction('link')" aria-label="Link" title="Link"><span class="gg-icon" aria-hidden="true">link</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="insertImageByUrl()" aria-label="Image URL" title="Image URL"><span class="gg-icon" aria-hidden="true">image</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="uploadImage()" aria-label="Upload image" title="Upload image"><span class="gg-icon" aria-hidden="true">upload</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="insertTableBlock()" aria-label="Table" title="Table"><span class="gg-icon" aria-hidden="true">table</span></button><button class="gg-button gg-button--small gg-button--icon" type="button" @click="insertCarouselBlock()" aria-label="Carousel" title="Carousel"><span class="gg-icon" aria-hidden="true">view_carousel</span></button></div>
+              <textarea class="gg-blogger-studio__title-input" x-ref="titleInput" x-model="currentDoc.title" @input="markDirty(); autosizeTitle()" placeholder="Untitled" autocomplete="off" rows="1"></textarea>
+              <div class="gg-blogger-studio__editor" id="gg-blogger-studio-editor" data-gg-role="editor-canvas" x-ignore></div>
+            </section>
+
+            <section class="gg-surface" data-gg-view="preview" data-gg-surface="studio-preview" x-show="view === 'preview'">
+              <header class="gg-surface__header"><div class="gg-surface__title"><span class="gg-icon" aria-hidden="true">chrome_reader_mode</span><h1>Preview</h1></div><div class="gg-action-row"><button class="gg-button gg-button--small" type="button" @click="setPreviewMode('render')" :class="{ 'gg-button--primary': previewMode === 'render' }" aria-label="Rendered view" title="Rendered view"><span class="gg-icon" aria-hidden="true">article</span><span>Render</span></button><button class="gg-button gg-button--small" type="button" @click="setPreviewMode('html')" :class="{ 'gg-button--primary': previewMode === 'html' }" aria-label="HTML view" title="HTML view"><span class="gg-icon" aria-hidden="true">code</span><span>HTML</span></button><button class="gg-button gg-button--icon" type="button" @click="copyCompiledHTML()" aria-label="Copy HTML" title="Copy HTML"><span class="gg-icon" aria-hidden="true">content_copy</span></button><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="publishCurrentPost()" aria-label="Publish" title="Publish"><span class="gg-icon" aria-hidden="true">publish</span></button></div></header>
+              <div class="gg-blogger-studio__preview-wrap">
+                <div class="gg-blogger-studio__preview-stage" x-show="previewMode === 'render'">
+                  <article class="gg-blogger-studio__preview" data-gg-editorial-body x-html="previewHtml"></article>
+                </div>
+                <section class="gg-blogger-studio__html-view" x-show="previewMode === 'html'">
+                  <div class="gg-blogger-studio__codebar"><span>Compiled Blogger HTML · formatted preview copy</span><button class="gg-button gg-button--small" type="button" @click="copyCompiledHTML()"><span class="gg-icon" aria-hidden="true">content_copy</span><span>Copy raw</span></button></div>
+                  <textarea class="gg-textarea gg-blogger-studio__compiled-output" x-model="compiledHtmlFormatted" readonly spellcheck="false" aria-label="Formatted compiled HTML"></textarea>
+                </section>
+                <section class="gg-panel-card gg-blogger-studio__preview-gate"><h3>Gate</h3><ul class="gg-blogger-studio__gate-list" style="margin-top:12px"><template x-for="item in gate" :key="item.label"><li><span class="gg-status-dot" :class="{ 'gg-status-dot--ok': item.ok, 'gg-status-dot--bad': !item.ok && item.level === 'error' }"></span><span x-text="item.label"></span></li></template></ul></section>
+              </div>
+            </section>
+
+            <section class="gg-surface gg-surface--pad" data-gg-view="media" data-gg-surface="studio-media" x-show="view === 'media'"><div class="gg-empty-state"><div><span class="gg-icon" aria-hidden="true">perm_media</span><p>Media</p><div class="gg-action-row" style="justify-content:center"><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="uploadImage()" aria-label="Upload image" title="Upload image"><span class="gg-icon" aria-hidden="true">upload</span></button><button class="gg-button gg-button--icon" type="button" @click="insertImageByUrl()" aria-label="Image URL" title="Image URL"><span class="gg-icon" aria-hidden="true">add_photo_alternate</span></button><button class="gg-button gg-button--icon" type="button" @click="insertCarouselBlock()" aria-label="Carousel" title="Carousel"><span class="gg-icon" aria-hidden="true">view_carousel</span></button></div></div></div></section>
+          </main>
+        </div>
+      </div>
+
+      <div class="gg-dock-stack" data-gg-role="studio-dock-stack">
+        <div class="gg-blogger-studio__meta gg-dock-tail" data-gg-role="dock-tail" aria-label="Editor status" x-show="view === 'editor'" x-transition.opacity>
+          <span x-text="currentDoc.postId ? '#' + currentDoc.postId : 'Local'"></span><span>·</span><span><span x-text="wordCountValue"></span>w</span><span>·</span><span x-text="currentDoc.remoteChanged ? 'Remote changed' : 'Clean'"></span><span>·</span><span x-text="statusLabel"></span><span>·</span><span><span class="gg-kbd">⌘S</span></span>
+        </div>
+      <nav class="gg-dock" data-gg-role="studio-dock" aria-label="Studio dock"><a class="gg-dock__item" href="#/home" @click.prevent="go('#/home')" :class="{ 'gg-is-active': view === 'home' && !route.startsWith('#/posts') }" aria-label="Home" title="Home"><span class="gg-icon" aria-hidden="true">space_dashboard</span></a><a class="gg-dock__item" href="#/posts" @click.prevent="go('#/posts')" :class="{ 'gg-is-active': route.startsWith('#/posts') }" aria-label="Posts on Home" title="Posts"><span class="gg-icon" aria-hidden="true">article</span><span class="gg-badge" x-text="posts.length"></span></a><button class="gg-dock__item" type="button" @click="go('#/home')" aria-label="Drafts on Home" title="Drafts"><span class="gg-icon" aria-hidden="true">draft</span><span class="gg-badge" x-text="drafts.length"></span></button><a class="gg-dock__item" href="#/post/edit" @click.prevent="go('#/post/edit')" :class="{ 'gg-is-active': view === 'editor' }" aria-label="Editor" title="Editor"><span class="gg-icon" aria-hidden="true">edit_square</span></a><a class="gg-dock__item" href="#/post/preview" @click.prevent="preview()" :class="{ 'gg-is-active': view === 'preview' }" aria-label="Preview" title="Preview"><span class="gg-icon" aria-hidden="true">chrome_reader_mode</span></a><span class="gg-dock__divider" aria-hidden="true"></span><button class="gg-dock__item" type="button" @click="newPost()" aria-label="New" title="New"><span class="gg-icon" aria-hidden="true">add</span></button><button class="gg-dock__item" type="button" @click="openSheet('doc')" :class="{ 'gg-is-active': activeSheet === 'doc' }" aria-label="Document" title="Document"><span class="gg-icon" aria-hidden="true">contract_edit</span></button><button class="gg-dock__item" type="button" @click="openSheet('gate')" :class="{ 'gg-is-active': activeSheet === 'gate' }" aria-label="Gate" title="Gate"><span class="gg-icon" aria-hidden="true">rule</span><span class="gg-badge" x-text="stats.gate"></span></button><button class="gg-dock__item" type="button" @click="openSheet('media')" :class="{ 'gg-is-active': activeSheet === 'media' }" aria-label="Media" title="Media"><span class="gg-icon" aria-hidden="true">perm_media</span></button></nav>
+      </div>
+
+      <section class="gg-sheet" :class="{ 'gg-is-open': activeSheet }" data-gg-role="studio-sheet" role="dialog" aria-modal="true" :aria-hidden="activeSheet ? 'false' : 'true'" aria-label="Studio sheet" @click.self="closeSheet()"><div class="gg-sheet__panel" tabindex="-1" x-ref="sheetPanel">
+        <section x-show="activeSheet === 'doc'"><div class="gg-grid"><section class="gg-panel-card"><h3>Doc</h3><div class="gg-form" style="margin-top:12px"><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">label</span>Labels</label><input class="gg-input" x-model="labelsInput" @input="markDirty()" placeholder="SEO, Blogger" autocomplete="off" /></div><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">segment</span>Excerpt</label><textarea class="gg-textarea" x-model="currentDoc.excerpt" @input="markDirty()" placeholder="Summary"></textarea></div><div class="gg-action-row" style="justify-content:flex-start"><button class="gg-button gg-button--icon" type="button" @click="saveLocal(true)" aria-label="Save" title="Save"><span class="gg-icon" aria-hidden="true">save</span></button><button class="gg-button gg-button--icon" type="button" @click="createSnapshot('manual')" aria-label="Snapshot" title="Snapshot"><span class="gg-icon" aria-hidden="true">history</span></button><button class="gg-button gg-button--icon" type="button" @click="revertCurrentPost()" aria-label="Revert to draft" title="Revert to draft"><span class="gg-icon" aria-hidden="true">unpublished</span></button></div></div></section></div></section>
+        <section x-show="activeSheet === 'drafts'"><section class="gg-panel-card"><h3>Drafts</h3><div class="gg-blogger-studio__post-list" style="padding:12px 0 0"><template x-for="draft in drafts" :key="draft.docId"><article class="gg-blogger-studio__post-row"><div><h3 x-text="draft.title || '(untitled)'"></h3><p x-text="draftMeta(draft)"></p></div><div class="gg-action-row"><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="openLocalDraft(draft.docId)" aria-label="Open draft" title="Open draft"><span class="gg-icon" aria-hidden="true">open_in_new</span></button></div></article></template></div><div class="gg-empty-state" x-show="drafts.length === 0"><div><span class="gg-icon" aria-hidden="true">draft</span><p>No drafts</p></div></div></section></section>
+        <section x-show="activeSheet === 'gate'"><section class="gg-panel-card"><h3>Gate</h3><ul class="gg-blogger-studio__gate-list" style="margin-top:12px"><template x-for="item in gate" :key="item.label"><li><span class="gg-status-dot" :class="{ 'gg-status-dot--ok': item.ok, 'gg-status-dot--bad': !item.ok && item.level === 'error' }"></span><span x-text="item.label"></span></li></template></ul><div class="gg-action-row" style="justify-content:flex-start;margin-top:14px"><button class="gg-button gg-button--icon" type="button" @click="validateCurrentDoc()" aria-label="Validate" title="Validate"><span class="gg-icon" aria-hidden="true">rule</span></button><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="saveDraftToBlogger()" aria-label="Save draft" title="Save draft"><span class="gg-icon" aria-hidden="true">cloud_upload</span></button></div></section><section class="gg-panel-card" style="margin-top:12px" x-show="configIssues.length"><h3>Config</h3><ul class="gg-blogger-studio__gate-list" style="margin-top:12px"><template x-for="item in configIssues" :key="item.key"><li><span class="gg-status-dot gg-status-dot--bad"></span><span x-text="item.label"></span></li></template></ul></section></section>
+        <section x-show="activeSheet === 'media'"><div class="gg-empty-state"><div><span class="gg-icon" aria-hidden="true">perm_media</span><p>Media</p><div class="gg-action-row" style="justify-content:center"><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="uploadImage()" aria-label="Upload image" title="Upload image"><span class="gg-icon" aria-hidden="true">upload</span></button><button class="gg-button gg-button--icon" type="button" @click="insertImageByUrl()" aria-label="Image URL" title="Image URL"><span class="gg-icon" aria-hidden="true">add_photo_alternate</span></button><button class="gg-button gg-button--icon" type="button" @click="insertCarouselBlock()" aria-label="Carousel" title="Carousel"><span class="gg-icon" aria-hidden="true">view_carousel</span></button></div></div></div></section>
+        <section x-show="activeSheet === 'settings'"><form class="gg-form"><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">key</span>OAuth Client ID</label><input class="gg-input" x-model="settings.googleOAuthClientId" placeholder="xxxxx.apps.googleusercontent.com" autocomplete="off" /></div><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">vpn_key</span>API Key</label><input class="gg-input" x-model="settings.googleApiKey" placeholder="AIza..." autocomplete="off" /></div><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">rss_feed</span>Blog ID</label><input class="gg-input" x-model="settings.bloggerBlogId" placeholder="1234567890123456789" autocomplete="off" /></div><div class="gg-field"><label><span class="gg-icon" aria-hidden="true">cloud_upload</span>Media endpoint</label><input class="gg-input" x-model="settings.mediaUploadEndpoint" placeholder="/__gg/media/upload" autocomplete="off" /></div><div class="gg-action-row" style="justify-content:flex-start"><button class="gg-button gg-button--primary gg-button--icon" type="button" @click="updateSettings(true)" aria-label="Save settings" title="Save settings"><span class="gg-icon" aria-hidden="true">check</span></button><button class="gg-button gg-button--icon" type="button" @click="connectGoogle()" aria-label="Connect" title="Connect"><span class="gg-icon" aria-hidden="true">account_circle</span></button><button class="gg-button gg-button--icon" type="button" @click="loadBlogs()" aria-label="Load blogs" title="Load blogs"><span class="gg-icon" aria-hidden="true">cloud_sync</span></button></div></form></section>
+      </div></section>
+
+      <input x-ref="imageInput" type="file" accept="image/*" hidden />
+      <input x-ref="carouselInput" type="file" accept="image/*" multiple hidden />
+      <div class="gg-toast" :class="{ 'gg-is-open': toastOpen }" role="status" aria-live="polite"><span class="gg-icon" aria-hidden="true" x-text="toastIcon"></span><span x-text="toastMessage"></span></div>
+    </section>
+  </main>
+
+  <script>
+    function ggStudioApp() {
+      const DEFAULT_SCOPE = 'https://www.googleapis.com/auth/blogger';
+      const API_FIELDS = {
+        blogs: 'kind,items(id,name,url,posts/totalItems,pages/totalItems)',
+        postList: 'kind,nextPageToken,items(id,title,updated,published,url,status,labels,replies/totalItems)',
+        postFull: 'kind,id,blog/id,published,updated,url,selfLink,title,content,labels,status',
+        postWrite: 'kind,id,blog/id,updated,url,title,labels,status'
+      };
+      const GG_STORAGE = {
+        settings: 'gg:blogger-studio:settings:v5',
+        activeDoc: 'gg:blogger-studio:active-doc:v5',
+        drafts: 'gg:blogger-studio:drafts:v5',
+        activity: 'gg:blogger-studio:activity:v5',
+        theme: 'gg:blogger-studio:theme:v5'
+      };
+
+      class BloggerApiClient {
+        constructor(app) { this.app = app; }
+        get base() { return this.app.config?.bloggerApiBase || 'https://www.googleapis.com/blogger/v3'; }
+        get apiKey() { return this.app.config?.googleApiKey || ''; }
+        buildUrl(path, params = {}) {
+          const url = new URL(path.startsWith('http') ? path : `${this.base}${path}`);
+          Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value)); });
+          return url.toString();
+        }
+        async request(path, options = {}) {
+          const params = { ...(options.params || {}) };
+          if (options.fields) params.fields = options.fields;
+          const requiresAuth = options.auth !== 'public';
+          const headers = { ...(options.headers || {}) };
+          if (requiresAuth) {
+            const connected = this.app.accessToken ? true : await this.app.connectGoogle();
+            if (!connected || !this.app.accessToken) throw this.app.makeApiError('auth', 'Not authorized');
+            headers.Authorization = `Bearer ${this.app.accessToken}`;
+          } else if (this.apiKey && !this.app.isPlaceholder(this.apiKey)) {
+            params.key = this.apiKey;
+          }
+          if (options.body) headers['Content-Type'] = 'application/json';
+          const controller = new AbortController();
+          const timeoutMs = Number(options.timeoutMs || 30000);
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          let response;
+          try {
+            response = await fetch(this.buildUrl(path, params), {
+              method: options.method || 'GET',
+              headers,
+              body: options.body ? JSON.stringify(options.body) : undefined,
+              signal: controller.signal,
+              credentials: 'omit',
+              cache: options.cache || 'no-store'
+            });
+          } catch (error) {
+            if (error.name === 'AbortError') throw this.app.makeApiError('timeout', 'Request timed out');
+            throw this.app.makeApiError('network', error.message || 'Network error');
+          } finally {
+            clearTimeout(timer);
+          }
+          const text = await response.text();
+          let data = null;
+          try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+          if (!response.ok) throw this.app.normalizeApiError(response, data);
+          return data;
+        }
+        listUserBlogs() { return this.request('/users/self/blogs', { fields: API_FIELDS.blogs }); }
+        listPosts(blogId, pageToken = '') {
+          const defaults = this.app.config?.defaults || {};
+          return this.request(`/blogs/${encodeURIComponent(blogId)}/posts`, {
+            fields: API_FIELDS.postList,
+            params: {
+              maxResults: defaults.maxResults || 20,
+              fetchBodies: false,
+              fetchImages: false,
+              orderBy: defaults.orderBy || 'updated',
+              view: 'AUTHOR',
+              pageToken
+            }
+          });
+        }
+        searchPosts(blogId, query) {
+          return this.request(`/blogs/${encodeURIComponent(blogId)}/posts/search`, {
+            fields: API_FIELDS.postList,
+            params: { q: query, fetchBodies: false, orderBy: 'updated' }
+          });
+        }
+        getPost(blogId, postId) { return this.request(`/blogs/${encodeURIComponent(blogId)}/posts/${encodeURIComponent(postId)}`, { fields: API_FIELDS.postFull, params: { view: 'AUTHOR' } }); }
+        insertPost(blogId, body) { return this.request(`/blogs/${encodeURIComponent(blogId)}/posts`, { method: 'POST', fields: API_FIELDS.postWrite, params: { isDraft: true }, body }); }
+        patchPost(blogId, postId, body) { return this.request(`/blogs/${encodeURIComponent(blogId)}/posts/${encodeURIComponent(postId)}`, { method: 'PATCH', fields: API_FIELDS.postWrite, body }); }
+        publishPost(blogId, postId) { return this.request(`/blogs/${encodeURIComponent(blogId)}/posts/${encodeURIComponent(postId)}/publish`, { method: 'POST', fields: API_FIELDS.postWrite }); }
+        revertPost(blogId, postId) { return this.request(`/blogs/${encodeURIComponent(blogId)}/posts/${encodeURIComponent(postId)}/revert`, { method: 'POST', fields: API_FIELDS.postWrite }); }
+      }
+
+      return {
+        route: location.hash || '#/home',
+        activeSheet: '',
+        config: {},
+        settings: {},
+        configIssues: [],
+        api: null,
+        accessToken: '',
+        tokenClient: null,
+        blogs: [],
+        posts: [],
+        nextPageToken: '',
+        lastSearchQuery: '',
+        postSearch: '',
+        drafts: [],
+        currentDoc: null,
+        labelsInput: '',
+        status: 'local',
+        gate: [],
+        stats: { posts: 0, drafts: 0, gate: 0 },
+        editor: null,
+        editorDeps: null,
+        editorBooting: false,
+        authPromise: null,
+        isBusy: false,
+        lastFocusedElement: null,
+        theme: 'light',
+        previewMode: 'render',
+        wordCountValue: 0,
+        compiledHtml: '',
+        compiledHtmlFormatted: '',
+        previewHtml: '',
+        autosaveTimer: null,
+        toastOpen: false,
+        toastMessage: 'Ready',
+        toastIcon: 'check_circle',
+
+        get view() { return this.routeToView(this.route); },
+        get statusLabel() { return this.status === 'dirty' ? 'Unsaved' : this.status === 'saved' ? 'Saved' : 'Local'; },
+
+        detectPreferredTheme() { return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light'; },
+        applyTheme() { document.documentElement.dataset.ggTheme = this.theme === 'dark' ? 'dark' : 'light'; },
+        toggleTheme() { this.theme = this.theme === 'dark' ? 'light' : 'dark'; this.applyTheme(); this.writeJSON(GG_STORAGE.theme, this.theme); this.toast(this.theme === 'dark' ? 'Dark mode' : 'Light mode', this.theme === 'dark' ? 'dark_mode' : 'light_mode'); },
+
+        async boot() {
+          document.querySelector('[data-gg-module="gg-blogger-studio"]')?.setAttribute('data-gg-state', 'booting');
+          this.theme = this.readJSON(GG_STORAGE.theme, this.detectPreferredTheme());
+          this.applyTheme();
+          this.currentDoc = this.readJSON(GG_STORAGE.activeDoc, this.createBlankDoc());
+          this.config = await this.loadRuntimeConfig();
+          this.settings = {
+            googleOAuthClientId: this.cleanPlaceholder(this.config.googleOAuthClientId || ''),
+            googleApiKey: this.cleanPlaceholder(this.config.googleApiKey || ''),
+            bloggerBlogId: this.cleanPlaceholder(this.config.bloggerBlogId || ''),
+            mediaUploadEndpoint: this.cleanPlaceholder(this.config.mediaUploadEndpoint || '')
+          };
+          this.configIssues = this.validateRuntimeConfig(this.config);
+          this.api = new BloggerApiClient(this);
+          this.labelsInput = (this.currentDoc.labels || []).join(', ');
+          this.loadDrafts();
+          this.refreshGate();
+          this.updateStats();
+          window.addEventListener('hashchange', () => { this.route = location.hash || '#/home'; this.handleRouteChanged(); });
+          this.$nextTick(() => { this.autosizeTitle(); this.handleRouteChanged(); });
+          document.querySelector('[data-gg-module="gg-blogger-studio"]')?.setAttribute('data-gg-state', 'ready');
+        },
+
+        async loadRuntimeConfig() {
+          const inline = this.readInlineConfig();
+          const localSettings = this.readJSON(GG_STORAGE.settings, {});
+          const endpoint = inline.configEndpoint;
+          let remote = {};
+          if (endpoint && !this.isPlaceholder(endpoint)) {
+            try {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), 12000);
+              const res = await fetch(endpoint, { cache: 'no-store', credentials: 'omit', signal: controller.signal });
+              clearTimeout(timer);
+              if (res.ok) remote = await res.json();
+              else remote = { ggConfigFetchError: `HTTP ${res.status}` };
+            } catch (error) {
+              remote = { ggConfigFetchError: error.name === 'AbortError' ? 'Config request timed out' : error.message };
+            }
+          }
+          return { ...inline, ...remote, ...localSettings, bloggerScopes: remote.bloggerScopes || inline.bloggerScopes || [DEFAULT_SCOPE] };
+        },
+        readInlineConfig() { const el = document.querySelector('#gg-blogger-studio-config'); if (!el) return {}; try { return JSON.parse(el.textContent || '{}'); } catch (error) { return { ggConfigParseError: error.message }; } },
+        validateRuntimeConfig(config) {
+          const issues = [];
+          if (!config.googleOAuthClientId || this.isPlaceholder(config.googleOAuthClientId)) issues.push({ key: 'googleOAuthClientId', label: 'OAuth Client ID' });
+          if (!config.bloggerBlogId || this.isPlaceholder(config.bloggerBlogId)) issues.push({ key: 'bloggerBlogId', label: 'Blog ID' });
+          if (config.googleApiKey && this.isPlaceholder(config.googleApiKey)) issues.push({ key: 'googleApiKey', label: 'API Key' });
+          if (config.ggConfigParseError) issues.push({ key: 'parse', label: 'Config JSON' });
+          if (config.ggConfigFetchError) issues.push({ key: 'fetch', label: 'Config endpoint' });
+          return issues;
+        },
+        updateSettings(show = true) {
+          this.config = { ...this.config, ...this.settings };
+          this.configIssues = this.validateRuntimeConfig(this.config);
+          this.api = new BloggerApiClient(this);
+          this.writeJSON(GG_STORAGE.settings, { ...this.settings, configEndpoint: this.config.configEndpoint });
+          this.updateStats();
+          if (show) this.toast('Settings saved', 'tune');
+        },
+
+        routeToView(route) {
+          if (route.startsWith('#/posts')) return 'home';
+          if (route.startsWith('#/post/new')) return 'editor';
+          if (route.startsWith('#/post/edit')) return 'editor';
+          if (route.startsWith('#/post/preview')) return 'preview';
+          if (route.startsWith('#/media')) return 'media';
+          return 'home';
+        },
+        handleRouteChanged() {
+          if (this.view === 'editor') this.$nextTick(() => this.initEditor());
+          else this.destroyEditor();
+          if (this.view === 'preview') this.renderPreview();
+          this.activeSheet = '';
+        },
+        go(hash) {
+          if (this.editor) this.saveLocal(false);
+          if (location.hash === hash) {
+            this.route = hash;
+            this.handleRouteChanged();
+            return;
+          }
+          location.hash = hash;
+        },
+        preview() { this.saveLocal(false); this.go('#/post/preview'); },
+        openSheet(name) {
+          this.lastFocusedElement = document.activeElement;
+          this.activeSheet = this.activeSheet === name ? '' : name;
+          if (name === 'drafts') this.loadDrafts();
+          this.$nextTick(() => this.$refs.sheetPanel?.focus?.());
+        },
+        closeSheet() {
+          this.activeSheet = '';
+          this.$nextTick(() => this.lastFocusedElement?.focus?.());
+        },
+        handleKeydown(event) {
+          const mod = event.metaKey || event.ctrlKey;
+          if (event.key === 'Escape') this.closeSheet();
+          if (mod && event.key.toLowerCase() === 's') { event.preventDefault(); this.saveLocal(true); }
+          if (mod && event.key === 'Enter') { event.preventDefault(); this.preview(); }
+          if (mod && event.key.toLowerCase() === 'k') { event.preventDefault(); this.openCommandPrompt(); }
+        },
+
+        async importFirstAvailable(label, urls) {
+          let lastError = null;
+          for (const url of urls) {
+            try { return await import(url); } catch (error) { lastError = error; }
+          }
+          throw this.makeApiError('dependency', `${label} failed: ${lastError?.message || 'CDN unavailable'}`);
+        },
+        async loadEditorDeps() {
+          if (this.editorDeps) return this.editorDeps;
+          const v = '2.11.5';
+          try {
+            const [core, starter, link, image, table, tableRow, tableHeader, tableCell] = await Promise.all([
+              this.importFirstAvailable('TipTap core', [`https://esm.sh/@tiptap/core@${v}`, `https://jspm.dev/@tiptap/core@${v}`]),
+              this.importFirstAvailable('TipTap starter', [`https://esm.sh/@tiptap/starter-kit@${v}`, `https://jspm.dev/@tiptap/starter-kit@${v}`]),
+              this.importFirstAvailable('TipTap link', [`https://esm.sh/@tiptap/extension-link@${v}`, `https://jspm.dev/@tiptap/extension-link@${v}`]),
+              this.importFirstAvailable('TipTap image', [`https://esm.sh/@tiptap/extension-image@${v}`, `https://jspm.dev/@tiptap/extension-image@${v}`]),
+              this.importFirstAvailable('TipTap table', [`https://esm.sh/@tiptap/extension-table@${v}`, `https://jspm.dev/@tiptap/extension-table@${v}`]),
+              this.importFirstAvailable('TipTap table row', [`https://esm.sh/@tiptap/extension-table-row@${v}`, `https://jspm.dev/@tiptap/extension-table-row@${v}`]),
+              this.importFirstAvailable('TipTap table header', [`https://esm.sh/@tiptap/extension-table-header@${v}`, `https://jspm.dev/@tiptap/extension-table-header@${v}`]),
+              this.importFirstAvailable('TipTap table cell', [`https://esm.sh/@tiptap/extension-table-cell@${v}`, `https://jspm.dev/@tiptap/extension-table-cell@${v}`])
+            ]);
+            const { Node } = core;
+            const CarouselSnap = Node.create({
+              name: 'ggCarouselSnap',
+              group: 'block',
+              atom: true,
+              addAttributes() {
+                return {
+                  items: {
+                    default: [],
+                    parseHTML: element => Array.from(element.querySelectorAll('img')).map((img, index) => {
+                      const fig = img.closest('figure');
+                      return {
+                        src: img.getAttribute('src') || '',
+                        alt: img.getAttribute('alt') || `Image ${index + 1}`,
+                        caption: fig?.querySelector('figcaption')?.textContent?.trim() || ''
+                      };
+                    }).filter(item => item.src)
+                  }
+                };
+              },
+              parseHTML() { return [{ tag: 'figure[data-gg-module="gg-carousel-snap"]' }]; },
+              renderHTML({ HTMLAttributes }) {
+                const items = Array.isArray(HTMLAttributes.items) ? HTMLAttributes.items.slice(0, 8) : [];
+                const children = items.map((item, index) => [
+                  'figure',
+                  { class: 'gg-carousel-snap__item' },
+                  ['img', { src: item.src, alt: item.alt || `Image ${index + 1}`, loading: 'lazy' }],
+                  ['figcaption', {}, item.caption || item.alt || '']
+                ]);
+                return ['figure', { class: 'gg-carousel-snap', 'data-gg-module': 'gg-carousel-snap' }, ['div', { class: 'gg-carousel-snap__track' }, ...children]];
+              }
+            });
+            this.editorDeps = { Editor: core.Editor, StarterKit: starter.default, Link: link.default, Image: image.default, Table: table.default, TableRow: tableRow.default, TableHeader: tableHeader.default, TableCell: tableCell.default, CarouselSnap };
+            return this.editorDeps;
+          } catch (error) {
+            console.error(error);
+            this.toast('Editor dependency failed', 'error');
+            throw error;
+          }
+        },
+        async initEditor() {
+          if (this.editor || this.editorBooting) return;
+          this.editorBooting = true;
+          try {
+            const mount = document.querySelector('#gg-blogger-studio-editor');
+            if (!mount || this.view !== 'editor') return;
+            const deps = await this.loadEditorDeps();
+            if (this.editor || this.view !== 'editor') return;
+            this.editor = new deps.Editor({
+              element: mount,
+              extensions: [
+                deps.StarterKit,
+                deps.Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' } }),
+                deps.Image.configure({ inline: false, allowBase64: false }),
+                deps.Table.configure({ resizable: true, HTMLAttributes: { class: 'gg-table gg-table-quick' } }),
+                deps.TableRow, deps.TableHeader, deps.TableCell, deps.CarouselSnap
+              ],
+              content: this.currentDoc.contentHtml || '<p></p>',
+              onUpdate: ({ editor }) => {
+                this.currentDoc.contentHtml = editor.getHTML();
+                this.wordCountValue = this.wordCount(editor.getText());
+                this.markDirty();
+                this.scheduleAutosave();
+                this.refreshGate();
+              }
+            });
+            this.wordCountValue = this.wordCount(this.editor.getText());
+          } catch (error) {
+            console.error(error);
+            this.toast('Editor failed', 'error');
+          } finally {
+            this.editorBooting = false;
+          }
+        },
+        destroyEditor() {
+          const mount = document.querySelector('#gg-blogger-studio-editor');
+          if (!this.editor) {
+            this.editorBooting = false;
+            if (mount) mount.replaceChildren();
+            return;
+          }
+          try { this.currentDoc.contentHtml = this.editor.getHTML(); } catch (_) {}
+          try { this.editor.destroy(); } catch (error) { console.warn('TipTap destroy failed', error); }
+          this.editor = null;
+          this.editorBooting = false;
+          if (mount) mount.replaceChildren();
+        },
+        editorAction(action) {
+          if (!this.editor) return;
+          const chain = this.editor.chain().focus();
+          if (action === 'bold') chain.toggleBold().run();
+          if (action === 'italic') chain.toggleItalic().run();
+          if (action === 'h2') chain.toggleHeading({ level: 2 }).run();
+          if (action === 'h3') chain.toggleHeading({ level: 3 }).run();
+          if (action === 'quote') chain.toggleBlockquote().run();
+          if (action === 'bullet') chain.toggleBulletList().run();
+          if (action === 'link') {
+            const url = prompt('URL');
+            const safe = this.sanitizeUrl(url, 'link');
+            if (url && !safe) return this.toast('Unsafe URL', 'link_off');
+            if (safe) chain.extendMarkRange('link').setLink({ href: safe }).run();
+          }
+          this.refreshGate();
+        },
+        insertImageByUrl() {
+          const raw = prompt('Image URL');
+          const src = this.sanitizeUrl(raw, 'image');
+          if (raw && !src) return this.toast('Unsafe image URL', 'image_not_supported');
+          if (!src || !this.editor) return;
+          const alt = prompt('Alt') || '';
+          this.editor.chain().focus().setImage({ src, alt: this.escapeText(alt) }).run();
+          this.saveLocal(false);
+        },
+        insertTableBlock() { if (!this.editor) return; const rows = Math.max(1, Math.min(20, Number(prompt('Rows', '3') || 3))); const cols = Math.max(1, Math.min(8, Number(prompt('Columns', '3') || 3))); this.editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run(); this.saveLocal(false); this.toast(`${rows}×${cols} table`, 'table'); },
+        async uploadImage() {
+          const input = this.$refs.imageInput;
+          if (!input) return;
+          input.onchange = async () => {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            const media = await this.uploadMediaFile(file);
+            if (!media || !media.src) return;
+            if (this.editor) this.editor.chain().focus().setImage({ src: media.src, alt: media.alt || this.fileNameToAlt(file.name) }).run();
+            this.saveLocal(false);
+          };
+          input.click();
+        },
+        async insertCarouselBlock() {
+          if (!this.editor) return;
+          const input = this.$refs.carouselInput;
+          if (!input) return;
+          input.onchange = async () => {
+            const files = Array.from(input.files || []).slice(0, 8);
+            input.value = '';
+            if (!files.length) return;
+            const uploaded = [];
+            for (const file of files) {
+              const media = await this.uploadMediaFile(file);
+              if (media && media.src) uploaded.push(media);
+            }
+            if (uploaded.length < 2) { this.toast('Need 2 images', 'view_carousel'); return; }
+            this.editor.chain().focus().insertContent({ type: 'ggCarouselSnap', attrs: { items: uploaded } }).run();
+            this.saveLocal(false);
+          };
+          input.click();
+        },
+        async uploadMediaFile(file) {
+          const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+          const maxSize = 6 * 1024 * 1024;
+          if (!file || !allowed.has(file.type)) { this.toast('Unsupported image', 'block'); return null; }
+          if (file.size > maxSize) { this.toast('Image too large', 'block'); return null; }
+          const endpoint = this.config?.mediaUploadEndpoint || '';
+          if (!endpoint || this.isPlaceholder(endpoint)) {
+            const raw = prompt(`Public HTTPS URL for ${file.name}`);
+            const src = this.sanitizeUrl(raw, 'image');
+            if (raw && !src) this.toast('Unsafe image URL', 'image_not_supported');
+            if (!src) return null;
+            return { src, alt: this.fileNameToAlt(file.name), name: file.name, local: false };
+          }
+          try {
+            const body = new FormData();
+            body.append('file', file);
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 45000);
+            const response = await fetch(endpoint, { method: 'POST', body, credentials: 'omit', signal: controller.signal });
+            clearTimeout(timer);
+            if (!response.ok) { this.toast(`Upload failed ${response.status}`, 'cloud_off'); return null; }
+            let data = {};
+            try { data = await response.json(); } catch (_) { this.toast('Upload response invalid', 'error'); return null; }
+            const src = this.sanitizeUrl(data.url || data.src, 'image');
+            if (!src) { this.toast('Upload URL unsafe', 'error'); return null; }
+            return { src, alt: data.alt || this.fileNameToAlt(file.name), caption: data.caption || '', name: file.name, width: data.width || 0, height: data.height || 0, local: false };
+          } catch (error) {
+            console.error(error);
+            this.toast(error.name === 'AbortError' ? 'Upload timed out' : 'Upload failed', 'cloud_off');
+            return null;
+          }
+        },
+
+
+        markDirty() { this.status = 'dirty'; this.updateLabelsFromInput(); this.refreshGate(); },
+        scheduleAutosave() { clearTimeout(this.autosaveTimer); this.autosaveTimer = setTimeout(() => this.saveLocal(false), 700); },
+        updateLabelsFromInput() { this.currentDoc.labels = this.labelsInput.split(',').map(x => x.trim()).filter(Boolean); },
+        saveLocal(show = true) {
+          this.updateLabelsFromInput();
+          if (this.editor) this.currentDoc.contentHtml = this.editor.getHTML();
+          this.currentDoc.updatedAt = new Date().toISOString();
+          const activeOk = this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc);
+          const drafts = this.readJSON(GG_STORAGE.drafts, {});
+          drafts[this.currentDoc.docId] = this.currentDoc;
+          const draftsOk = this.writeJSON(GG_STORAGE.drafts, drafts);
+          if (!activeOk || !draftsOk) return false;
+          this.status = 'saved';
+          this.addActivity('local-save', this.currentDoc.title || '(untitled)');
+          this.loadDrafts();
+          this.refreshGate();
+          if (show) this.toast('Saved', 'check_circle');
+          return true;
+        },
+        loadDrafts() { this.drafts = Object.values(this.readJSON(GG_STORAGE.drafts, {})).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))); this.updateStats(); },
+        openLocalDraft(draftId) { const drafts = this.readJSON(GG_STORAGE.drafts, {}); const draft = drafts[draftId]; if (!draft) return this.toast('Draft missing', 'draft'); this.destroyEditor(); this.currentDoc = { ...this.createBlankDoc(), ...draft }; this.labelsInput = (this.currentDoc.labels || []).join(', '); this.status = 'saved'; this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc); this.closeSheet(); this.go('#/post/edit'); this.toast('Draft opened', 'draft'); this.$nextTick(() => this.autosizeTitle()); },
+        newPost() { this.destroyEditor(); this.currentDoc = this.createBlankDoc(); this.labelsInput = ''; this.status = 'local'; this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc); this.closeSheet(); this.go('#/post/edit'); this.$nextTick(() => this.autosizeTitle()); },
+        autosizeTitle() { const el = this.$refs.titleInput; if (!el) return; el.style.height = 'auto'; el.style.height = Math.max(el.scrollHeight, 72) + 'px'; },
+
+        renderPreview() {
+          if (this.editor) this.saveLocal(false);
+          const html = this.compileToBloggerHTML(this.currentDoc || this.createBlankDoc());
+          this.compiledHtml = html;
+          this.compiledHtmlFormatted = this.formatHTML(html);
+          this.previewHtml = html;
+          this.refreshGate();
+        },
+        setPreviewMode(mode) {
+          this.previewMode = mode === 'html' ? 'html' : 'render';
+          if (this.view === 'preview') this.renderPreview();
+        },
+        compileToBloggerHTML(doc) {
+          const title = this.escapeHTML(doc.title || 'Untitled');
+          const excerpt = doc.excerpt ? `<p class="gg-excerpt">${this.escapeHTML(doc.excerpt)}</p>` : '';
+          const clean = this.sanitizeArticleHTML(doc.contentHtml || '<p></p>');
+          return `<article class="gg-article" data-gg-source="gg-blogger-studio" data-gg-doc-version="${this.escapeAttr(doc.docVersion || '1.0.0')}" data-gg-editorial-body><header class="gg-article-header"><h1>${title}</h1>${excerpt}</header><div class="gg-article-body">${clean}</div></article>`;
+        },
+        decompileBloggerHTML(html) {
+          const parsed = new DOMParser().parseFromString(html || '', 'text/html');
+          const article = parsed.querySelector('.gg-article[data-gg-source="gg-blogger-studio"], .gg-article');
+          const body = article?.querySelector('.gg-article-body');
+          const excerpt = article?.querySelector('.gg-excerpt')?.textContent?.trim() || '';
+          return {
+            contentHtml: body ? body.innerHTML.trim() : (html || '<p></p>'),
+            excerpt
+          };
+        },
+        sanitizeArticleHTML(html) {
+          const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
+          const root = doc.body.firstElementChild || doc.createElement('div');
+          root.querySelectorAll('script, style, object, embed, iframe, form, input, button, textarea, select, option, svg, math, link, meta, base').forEach(el => el.remove());
+          const allowedAttrs = new Set(['href','src','alt','title','class','loading','target','rel','data-gg-module','data-gg-media','data-gg-source','data-gg-doc-version','data-gg-editorial-body','colspan','rowspan','scope','width','height']);
+          root.querySelectorAll('*').forEach(el => {
+            Array.from(el.attributes).forEach(attr => {
+              const name = attr.name.toLowerCase();
+              const raw = String(attr.value || '').trim();
+              if (name.startsWith('on') || name === 'style' || name === 'srcdoc' || name === 'formaction' || name.includes(':') || !allowedAttrs.has(name)) {
+                el.removeAttribute(attr.name);
+                return;
+              }
+              if (name === 'href') {
+                const safe = this.sanitizeUrl(raw, 'link');
+                if (safe) el.setAttribute('href', safe); else el.removeAttribute(attr.name);
+              }
+              if (name === 'src') {
+                const safe = this.sanitizeUrl(raw, 'image');
+                if (safe) el.setAttribute('src', safe); else el.removeAttribute(attr.name);
+              }
+              if (name === 'class') {
+                const cleaned = this.sanitizeClassList(raw);
+                if (cleaned) el.setAttribute('class', cleaned); else el.removeAttribute('class');
+              }
+            });
+            if (el.tagName === 'A') {
+              el.setAttribute('rel', 'noopener noreferrer');
+              if (!el.getAttribute('target')) el.setAttribute('target', '_blank');
+            }
+            if (el.tagName === 'IMG') {
+              el.setAttribute('loading', 'lazy');
+              if (!el.getAttribute('alt')) el.setAttribute('alt', '');
+            }
+          });
+          root.querySelectorAll('table').forEach(table => {
+            if (!table.closest('.gg-table-wrap')) {
+              const figure = doc.createElement('figure');
+              figure.className = 'gg-table-wrap';
+              figure.setAttribute('data-gg-module', 'table');
+              table.classList.add('gg-table', 'gg-table-quick');
+              table.parentNode.insertBefore(figure, table);
+              figure.appendChild(table);
+            }
+          });
+          root.querySelectorAll('img').forEach(img => {
+            if (!img.closest('figure') && img.parentNode) {
+              const figure = doc.createElement('figure');
+              figure.className = 'gg-media-flow';
+              figure.setAttribute('data-gg-media', 'image');
+              img.parentNode.insertBefore(figure, img);
+              figure.appendChild(img);
+            }
+          });
+          return root.innerHTML.trim();
+        },
+        validateCurrentDoc() { this.saveLocal(false); const issues = this.gate.filter(x => !x.ok); this.toast(issues.length ? `${issues.length} issues` : 'Ready', issues.length ? 'rule' : 'check_circle'); },
+        validateDoc(doc) { const text = this.stripHTML(doc.contentHtml || '').trim(); const dom = new DOMParser().parseFromString(`<div>${doc.contentHtml || ''}</div>`, 'text/html'); const h1 = dom.querySelectorAll('h1').length; const headings = dom.querySelectorAll('h2,h3,h4').length; const images = Array.from(dom.querySelectorAll('img')); const imagesWithoutAlt = images.filter(img => !img.getAttribute('alt')?.trim()).length; const carousels = Array.from(dom.querySelectorAll('.gg-carousel-snap, [data-gg-module="gg-carousel-snap"]')); const badCarousels = carousels.filter(carousel => carousel.querySelectorAll('img').length < 2 || carousel.querySelectorAll('img').length > 8).length; const tables = Array.from(dom.querySelectorAll('table')); const tablesWithoutHeader = tables.filter(table => !table.querySelector('th')).length; return [{ label: 'Title', ok: Boolean(doc.title?.trim()), level: 'error' }, { label: '80 words', ok: this.wordCount(text) >= 80, level: 'error' }, { label: 'Label', ok: (doc.labels || []).length > 0, level: 'warning' }, { label: 'Excerpt', ok: Boolean(doc.excerpt?.trim()), level: 'warning' }, { label: 'No body H1', ok: h1 === 0, level: 'error' }, { label: 'Headings', ok: headings > 0, level: 'warning' }, { label: 'Alt text', ok: imagesWithoutAlt === 0, level: 'warning' }, { label: 'Table header', ok: tablesWithoutHeader === 0, level: 'warning' }, { label: 'Carousel 2-8', ok: badCarousels === 0, level: 'warning' }, { label: 'Saved', ok: Boolean(doc.updatedAt), level: 'warning' }]; },
+        refreshGate() { if (!this.currentDoc) return; this.gate = this.validateDoc(this.currentDoc); this.wordCountValue = this.wordCount(this.stripHTML(this.currentDoc.contentHtml || '')); this.updateStats(); },
+        updateStats() { this.stats = { posts: this.posts.length, drafts: this.drafts.length, gate: this.gate.filter(item => !item.ok).length }; },
+
+        async connectGoogle() {
+          this.updateSettings(false);
+          const config = this.config || {};
+          if (!config.googleOAuthClientId || this.isPlaceholder(config.googleOAuthClientId)) {
+            this.toast('OAuth missing', 'key_off');
+            this.openSheet('settings');
+            return false;
+          }
+          if (!window.google?.accounts?.oauth2) {
+            this.toast('Google loading', 'hourglass_top');
+            return false;
+          }
+          if (this.accessToken) return true;
+          if (this.authPromise) return this.authPromise;
+          this.authPromise = new Promise((resolve) => {
+            let settled = false;
+            const done = (ok) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(authTimer);
+              this.authPromise = null;
+              resolve(Boolean(ok));
+            };
+            const authTimer = setTimeout(() => {
+              this.toast('Auth timed out', 'hourglass_disabled');
+              done(false);
+            }, 60000);
+            this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: config.googleOAuthClientId,
+              scope: (config.bloggerScopes || [DEFAULT_SCOPE]).join(' '),
+              callback: (tokenResponse) => {
+                if (tokenResponse.error || !tokenResponse.access_token) {
+                  this.toast('Auth failed', 'error');
+                  done(false);
+                  return;
+                }
+                this.accessToken = tokenResponse.access_token;
+                this.status = 'google';
+                this.toast('Connected', 'account_circle');
+                this.updateStats();
+                done(true);
+              }
+            });
+            try { this.tokenClient.requestAccessToken({ prompt: this.accessToken ? '' : 'consent' }); }
+            catch (error) { this.toast('Auth failed', 'error'); done(false); }
+          });
+          return this.authPromise;
+        },
+
+        async loadPosts(append = false) { this.updateSettings(false); const blogId = this.requiredBlogId(); if (!blogId) return; try { const data = await this.api.listPosts(blogId, append ? this.nextPageToken : ''); this.posts = append ? this.posts.concat(data.items || []) : (data.items || []); this.nextPageToken = data.nextPageToken || ''; this.lastSearchQuery = ''; this.toast(`${this.posts.length} posts`, 'article'); this.updateStats(); } catch (error) { this.handleApiError(error, 'Posts failed'); } },
+        loadMorePosts() { if (this.nextPageToken) this.loadPosts(true); },
+        async searchPosts() { this.updateSettings(false); const blogId = this.requiredBlogId(); if (!blogId) return; const q = this.postSearch.trim(); if (!q) return this.loadPosts(false); try { const data = await this.api.searchPosts(blogId, q); this.posts = data.items || []; this.nextPageToken = ''; this.lastSearchQuery = q; this.toast(`${this.posts.length} found`, 'search'); this.updateStats(); } catch (error) { this.handleApiError(error, 'Search failed'); } },
+        async openPost(postId) {
+          if (!postId) return;
+          this.updateSettings(false);
+          const blogId = this.requiredBlogId();
+          if (!blogId) return;
+          try {
+            const post = await this.api.getPost(blogId, postId);
+            const decoded = this.decompileBloggerHTML(post.content || '<p></p>');
+            this.destroyEditor();
+            this.currentDoc = {
+              ...this.createBlankDoc(),
+              docId: `blogger_${post.id}`,
+              blogId,
+              postId: post.id,
+              title: post.title || '',
+              labels: post.labels || [],
+              excerpt: decoded.excerpt,
+              contentHtml: decoded.contentHtml || '<p></p>',
+              source: 'blogger',
+              sourceUpdated: post.updated || '',
+              remoteChanged: false,
+              bloggerUrl: post.url || '',
+              updatedAt: new Date().toISOString()
+            };
+            this.labelsInput = (this.currentDoc.labels || []).join(', ');
+            this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc);
+            this.addActivity('open-post', post.title || post.id);
+            this.closeSheet();
+            this.go('#/post/edit');
+          } catch (error) { this.handleApiError(error, 'Open failed'); }
+        },
+        async assertRemoteClean(doc) {
+          if (!doc.postId || !doc.sourceUpdated) return true;
+          const remote = await this.api.getPost(doc.blogId || this.requiredBlogId(), doc.postId);
+          if (remote.updated && remote.updated !== doc.sourceUpdated) {
+            this.currentDoc.remoteChanged = true;
+            this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc);
+            this.toast('Remote changed', 'sync_problem');
+            return false;
+          }
+          return true;
+        },
+        async saveDraftToBlogger(options = {}) {
+          this.updateSettings(false);
+          if (!this.saveLocal(false)) return null;
+          const doc = this.currentDoc;
+          const hardErrors = this.validateDoc(doc).filter(item => !item.ok && item.level === 'error');
+          if (hardErrors.length) { this.toast('Blocked', 'block'); this.openSheet('gate'); return null; }
+          const blogId = this.requiredBlogId();
+          if (!blogId) return null;
+          const body = { kind: 'blogger#post', title: doc.title, content: this.compileToBloggerHTML(doc), labels: doc.labels || [] };
+          try {
+            let result;
+            if (doc.postId) {
+              const clean = await this.assertRemoteClean(doc);
+              if (!clean) return null;
+              if (doc.bloggerUrl && !options.allowLivePatch) {
+                const ok = confirm('This will update an existing Blogger post. Continue?');
+                if (!ok) return null;
+              }
+              result = await this.api.patchPost(blogId, doc.postId, body);
+            } else {
+              result = await this.api.insertPost(blogId, body);
+            }
+            this.currentDoc.postId = result.id;
+            this.currentDoc.blogId = blogId;
+            this.currentDoc.bloggerUrl = result.url || this.currentDoc.bloggerUrl || '';
+            this.currentDoc.sourceUpdated = result.updated || '';
+            this.currentDoc.remoteChanged = false;
+            this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc);
+            this.addActivity('blogger-draft-save', result.title || result.id);
+            this.toast(doc.postId ? 'Post updated' : 'Draft saved', 'cloud_done');
+            this.loadDrafts();
+            return result;
+          } catch (error) { this.handleApiError(error, 'Draft failed'); return null; }
+        },
+        async publishCurrentPost() {
+          if (!this.saveLocal(false)) return;
+          const blockers = this.validateDoc(this.currentDoc).filter(item => !item.ok);
+          if (blockers.length) { this.toast('Gate blocked', 'rule'); this.openSheet('gate'); return; }
+          try {
+            const saved = await this.saveDraftToBlogger({ allowLivePatch: false });
+            const doc = this.currentDoc;
+            if (!saved || !doc.postId) return;
+            const ok = confirm('Publish this Blogger post now?');
+            if (!ok) return;
+            const result = await this.api.publishPost(this.requiredBlogId(), doc.postId);
+            this.currentDoc.bloggerUrl = result.url || this.currentDoc.bloggerUrl;
+            this.currentDoc.sourceUpdated = result.updated || this.currentDoc.sourceUpdated;
+            this.createSnapshot('before-publish');
+            this.addActivity('publish', result.title || result.id);
+            this.toast('Published', 'publish');
+            if (result.url) this.safeOpenUrl(result.url);
+          } catch (error) { this.handleApiError(error, 'Publish failed'); }
+        },
+        async revertCurrentPost() {
+          const doc = this.currentDoc;
+          if (!doc.postId) return this.toast('No post', 'info');
+          if (!confirm('Revert live post to draft?')) return;
+          try {
+            const result = await this.api.revertPost(this.requiredBlogId(), doc.postId);
+            this.currentDoc.sourceUpdated = result.updated || this.currentDoc.sourceUpdated;
+            this.currentDoc.remoteChanged = false;
+            this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc);
+            this.toast('Reverted', 'unpublished');
+          } catch (error) { this.handleApiError(error, 'Revert failed'); }
+        },
+
+
+        createSnapshot(type = 'manual') { this.saveLocal(false); const snapshot = { id: `snap_${Date.now()}`, type, createdAt: new Date().toISOString(), title: this.currentDoc.title, contentHtml: this.currentDoc.contentHtml, labels: this.currentDoc.labels, excerpt: this.currentDoc.excerpt }; this.currentDoc.snapshots = [...(this.currentDoc.snapshots || []), snapshot].slice(-30); this.writeJSON(GG_STORAGE.activeDoc, this.currentDoc); this.toast('Snapshot', 'history'); },
+        openCommandPrompt() { const cmd = prompt('new / home / posts / search / preview / save / publish / doc / drafts / gate / media / settings'); if (!cmd) return; const c = cmd.toLowerCase().trim(); if (c.includes('new')) this.newPost(); else if (c.includes('home')) this.go('#/home'); else if (c.includes('search')) this.searchPosts(); else if (c.includes('post')) this.go('#/posts'); else if (c.includes('preview')) this.preview(); else if (c.includes('save')) this.saveLocal(true); else if (c.includes('publish')) this.publishCurrentPost(); else if (c.includes('draft')) this.go('#/home'); else if (c.includes('doc')) this.openSheet('doc'); else if (c.includes('gate')) this.openSheet('gate'); else if (c.includes('media')) this.openSheet('media'); else if (c.includes('setting')) this.openSheet('settings'); },
+        async copyCompiledHTML() {
+          try { await navigator.clipboard.writeText(this.compiledHtml || ''); this.toast('Copied', 'content_copy'); }
+          catch (_) { this.toast('Copy failed', 'content_copy'); }
+        },
+        postMeta(post) { return [post.status || 'LIVE', post.updated ? new Date(post.updated).toLocaleDateString() : '', Array.isArray(post.labels) ? post.labels.slice(0,2).join(', ') : ''].filter(Boolean).join(' · '); },
+        draftMeta(draft) { return [draft.updatedAt ? new Date(draft.updatedAt).toLocaleString() : 'Local', Array.isArray(draft.labels) ? draft.labels.slice(0,2).join(', ') : '', draft.postId ? `#${draft.postId}` : 'draft'].filter(Boolean).join(' · '); },
+        addActivity(type, detail) { const activity = this.readJSON(GG_STORAGE.activity, []); activity.unshift({ type, detail, at: new Date().toISOString() }); this.writeJSON(GG_STORAGE.activity, activity.slice(0,120)); },
+        formatHTML(html) {
+          const raw = String(html || '').replace(/>\s+</g, '><').trim();
+          if (!raw) return '';
+          const tokens = raw.match(/<[^>]+>|[^<]+/g) || [];
+          let depth = 0;
+          const lines = [];
+          for (const token of tokens) {
+            const part = token.trim();
+            if (!part) continue;
+            const isClosing = /^<\//.test(part);
+            const isOpening = /^<[^!?/][^>]*>$/.test(part) && !/\/>$/.test(part) && !/^<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/i.test(part);
+            if (isClosing) depth = Math.max(0, depth - 1);
+            lines.push('  '.repeat(depth) + part);
+            if (isOpening) depth += 1;
+          }
+          return lines.join('\n');
+        },
+        createBlankDoc() { return { docId: `local_${Date.now()}_${Math.random().toString(16).slice(2)}`, docVersion: '1.0.0', blogId: '', postId: null, title: '', labels: [], excerpt: '', contentHtml: '<p></p><h2></h2><p></p>', seo: {}, schema: { type: 'Article' }, workflow: { status: 'draft' }, media: [], snapshots: [], audit: [], createdAt: new Date().toISOString(), updatedAt: '', sourceUpdated: '', remoteChanged: false }; },
+        makeApiError(type, message) { const error = new Error(message); error.type = type; return error; },
+        normalizeApiError(response, data) { const message = data?.error?.message || response.statusText || 'API error'; const error = this.makeApiError(response.status === 401 ? 'auth' : response.status === 403 ? 'forbidden' : response.status === 404 ? 'notFound' : response.status === 400 ? 'badRequest' : 'api', message); error.status = response.status; return error; },
+        handleApiError(error, fallback) { if (error.type === 'auth') this.toast('Auth required', 'account_circle'); else if (error.type === 'forbidden') this.toast('Forbidden', 'lock'); else if (error.type === 'notFound') this.toast('Not found', 'search_off'); else this.toast(fallback, 'error'); },
+        fileNameToAlt(name) { const base = String(name || 'Image'); const dot = base.lastIndexOf('.'); return (dot > 0 ? base.slice(0,dot) : base).replaceAll('-', ' ').replaceAll('_', ' '); },
+        wordCount(text) { const clean = String(text || '').split(String.fromCharCode(10)).join(' ').split(/\s+/).join(' ').trim(); return clean ? clean.split(' ').filter(Boolean).length : 0; },
+        stripHTML(html) { return new DOMParser().parseFromString(html || '', 'text/html').body.textContent || ''; },
+        isPlaceholder(value) { const text = String(value || '').trim(); return text.startsWith('%%GG_') && text.endsWith('%%'); },
+        cleanPlaceholder(value) { return this.isPlaceholder(value) ? '' : value; },
+        readJSON(key, fallback) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (_) { return fallback; } },
+        writeJSON(key, value) {
+          try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+          catch (error) { console.error(error); this.toast('Local save failed', 'sd_card_alert'); return false; }
+        },
+        escapeHTML(value) { return String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll(String.fromCharCode(34),'&quot;').replaceAll("'",'&#39;'); },
+        escapeAttr(value) { return this.escapeHTML(value).replaceAll('`','&#96;'); },
+        escapeText(value) { return String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, '').trim(); },
+        sanitizeClassList(value) {
+          return String(value || '').split(/\s+/).filter(token => /^(gg-|ProseMirror|tableWrapper|selectedCell)[A-Za-z0-9_-]*$/.test(token)).slice(0, 12).join(' ');
+        },
+        sanitizeUrl(value, kind = 'link') {
+          const raw = String(value || '').trim();
+          if (!raw) return '';
+          if (raw.startsWith('#') && kind === 'link') return raw;
+          try {
+            const url = new URL(raw, location.href);
+            const protocol = url.protocol.toLowerCase();
+            if (kind === 'image') {
+              if (protocol === 'https:' || (protocol === 'http:' && location.protocol === 'http:')) return url.href;
+              return '';
+            }
+            if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return url.href;
+            return '';
+          } catch (_) { return ''; }
+        },
+        safeOpenUrl(value) { const safe = this.sanitizeUrl(value, 'link'); if (safe) window.open(safe, '_blank', 'noopener,noreferrer'); },
+        toast(message, icon = 'check_circle') { this.toastMessage = message; this.toastIcon = icon; this.toastOpen = true; clearTimeout(this._toastTimer); this._toastTimer = setTimeout(() => { this.toastOpen = false; }, 3200); }
+      };
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+</body>
+</html>
