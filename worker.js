@@ -76,6 +76,10 @@ const DEFAULT_FLAGS = {
 
 const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
+const YELLOWCART_PUBLIC_PATH = "/yellowcart";
+const YELLOWCART_INTERNAL_PATH = "/yellowcart.html";
+const YELLOWCARD_LEGACY_PUBLIC_PATH = "/yellowcard";
+const YELLOWCARD_LEGACY_INTERNAL_PATH = "/yellowcard.html";
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
 const FLAGS_LEGACY_PATH = "/flags.json";
 const ORIGIN_MOBILE_NORMALIZED_HEADER = "X-GG-Origin-Mobile-Normalized";
@@ -89,6 +93,7 @@ const STATIC_ROUTE_ASSET_MAP = new Map([
   [FLAGS_CANONICAL_PATH, "/__gg/flags.json"],
   [FLAGS_LEGACY_PATH, "/__gg/flags.json"],
   [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
+  [YELLOWCART_PUBLIC_PATH, YELLOWCART_INTERNAL_PATH],
 ]);
 
 const AI_AND_TRAINING_BOTS = [
@@ -318,12 +323,35 @@ function legacyViewRedirect(request, flags) {
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
+function yellowcartRedirect(request) {
+  const url = new URL(request.url);
+  if (
+    url.pathname !== YELLOWCART_INTERNAL_PATH &&
+    url.pathname !== YELLOWCARD_LEGACY_PUBLIC_PATH &&
+    url.pathname !== YELLOWCARD_LEGACY_INTERNAL_PATH
+  ) {
+    return null;
+  }
+
+  const next = new URL(request.url);
+  next.pathname = YELLOWCART_PUBLIC_PATH;
+  return redirectUrl(next, 301);
+}
+
 function classifyRoute(request) {
   const url = new URL(request.url);
   const path = url.pathname;
 
   if (path === "/") return "home";
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
+  if (
+    path === YELLOWCART_PUBLIC_PATH ||
+    path === YELLOWCART_INTERNAL_PATH ||
+    path === YELLOWCARD_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCARD_LEGACY_INTERNAL_PATH
+  ) {
+    return "yellowcart";
+  }
   if (path === "/robots.txt") return "robots";
   if (path === "/sitemap.xml") return "sitemap";
   if (path === "/sw.js") return "service-worker";
@@ -382,6 +410,9 @@ async function handleStaticRoutes(request, env, flags) {
     return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags));
   }
 
+  const yellowcart = yellowcartRedirect(request);
+  if (yellowcart) return yellowcart;
+
   if (shouldServeStaticFromAssets(pathname)) {
     return serveFromAssets(request, env, pathname);
   }
@@ -408,7 +439,7 @@ function productionRobotsTag(route, isHtmlLike) {
     return "noindex";
   }
 
-  if (["home", "landing", "post", "static-page"].includes(route)) return "index, follow";
+  if (["home", "landing", "yellowcart", "post", "static-page"].includes(route)) return "index, follow";
   if (["label", "search", "feed"].includes(route)) return "noindex, follow";
   if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
   return "index, follow";
@@ -442,6 +473,7 @@ function cacheControlForRoute(route, flags) {
       return "public, max-age=300, stale-while-revalidate=86400";
     case "home":
     case "landing":
+    case "yellowcart":
     case "post":
     case "static-page":
     case "label":
@@ -459,7 +491,7 @@ function forceContentType(route, pathname, current) {
   if (route === "manifest") return "application/manifest+json; charset=utf-8";
   if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
   if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
-  if (route === "offline" || route === "landing") return current || "text/html; charset=utf-8";
+  if (route === "offline" || route === "landing" || route === "yellowcart") return current || "text/html; charset=utf-8";
   return current || "";
 }
 
@@ -630,6 +662,15 @@ function previewRedirect(request, flags) {
     };
   }
 
+  const yellowcart = yellowcartRedirect(request);
+  if (yellowcart) {
+    return {
+      to: yellowcart.headers.get("location") || YELLOWCART_PUBLIC_PATH,
+      status: yellowcart.status,
+      reason: "yellowcart-route-normalization",
+    };
+  }
+
   return null;
 }
 
@@ -675,6 +716,11 @@ function pwaDiagnostics(flags) {
       manifest: "/manifest.webmanifest",
       flags: FLAGS_CANONICAL_PATH,
       legacyFlagsAlias: FLAGS_LEGACY_PATH,
+      yellowcart: {
+        public: YELLOWCART_PUBLIC_PATH,
+        asset: YELLOWCART_INTERNAL_PATH,
+        redirects: [YELLOWCARD_LEGACY_PUBLIC_PATH, YELLOWCARD_LEGACY_INTERNAL_PATH, YELLOWCART_INTERNAL_PATH],
+      },
     },
     serviceWorker: {
       enabled: !!flags.sw.enabled,
@@ -711,6 +757,11 @@ function diagnosticsPayload(request, flags) {
     pwa: pwaDiagnostics(flags),
     routes: {
       landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
+      yellowcart: {
+        public: YELLOWCART_PUBLIC_PATH,
+        asset: YELLOWCART_INTERNAL_PATH,
+        redirects: [YELLOWCARD_LEGACY_PUBLIC_PATH, YELLOWCARD_LEGACY_INTERNAL_PATH, YELLOWCART_INTERNAL_PATH],
+      },
       flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
       mobileQueryNormalization: {
         exactValues: ["0", "1"],
@@ -745,12 +796,18 @@ async function handleDiagnostics(request, flags) {
       mode: flags.mode,
       canonicalHost: SITE.canonicalHost,
       routeMatrix: {
-        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing"],
+        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing", YELLOWCART_PUBLIC_PATH],
         noindexInProduction: ["/search", "/search/label/*", "/view/*", "/offline.html", "/sw.js", "/manifest.webmanifest", FLAGS_CANONICAL_PATH, "/__gg/*"],
         utility: ["/feeds/*", "/sitemap.xml"],
         normalizedWhenEnabled: ["?m=1", "?m=0"],
         mobileQueryNormalizationStatus: { development: 302, staging: 302, production: 302 },
-        alwaysRedirected: { "/view": "/", "/view/*": "/" },
+        alwaysRedirected: {
+          "/view": "/",
+          "/view/*": "/",
+          [YELLOWCARD_LEGACY_PUBLIC_PATH]: YELLOWCART_PUBLIC_PATH,
+          [YELLOWCARD_LEGACY_INTERNAL_PATH]: YELLOWCART_PUBLIC_PATH,
+          [YELLOWCART_INTERNAL_PATH]: YELLOWCART_PUBLIC_PATH,
+        },
       },
       vanity: flags.vanity,
       staticAssetMap: Object.fromEntries(STATIC_ROUTE_ASSET_MAP),
@@ -1046,7 +1103,9 @@ async function handleRequest(request, env, ctx) {
   if (staticResponse) {
     if (isRedirectStatus(staticResponse.status)) {
       return withRedirectDiagnostics(staticResponse, request, flags, {
-        reason: "landing-internal-path-normalization",
+        reason: url.pathname === LANDING_INTERNAL_PATH
+          ? "landing-internal-path-normalization"
+          : "yellowcart-route-normalization",
       }, { route });
     }
     return withResponsePolicy(staticResponse, request, flags, { route });

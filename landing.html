@@ -560,7 +560,8 @@
       position: fixed;
       left: 50%;
       bottom: var(--gg-dock-offset-bottom);
-      transform: translateX(-50%);
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
       z-index: 40;
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -572,6 +573,20 @@
       background: var(--gg-toolbar-surface);
       box-shadow: var(--gg-shadow-soft);
       backdrop-filter: blur(10px);
+      transition: transform var(--gg-landing-motion-soft), opacity var(--gg-landing-motion-quick);
+      will-change: transform, opacity;
+    }
+    body[data-gg-dock-state="hidden-by-scroll"] .gg-dock {
+      transform: translate3d(-50%, calc(100% + var(--gg-dock-offset-bottom) + 16px), 0);
+      opacity: 0;
+      pointer-events: none;
+    }
+    body[data-gg-dock-state="visible"] .gg-dock,
+    body[data-gg-dock-state="forced-visible"] .gg-dock,
+    body[data-gg-dock-state="panel-locked"] .gg-dock {
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
+      pointer-events: auto;
     }
     .gg-dock__item {
       display: inline-flex;
@@ -1450,10 +1465,119 @@
       { name: "Contact", meta: "Brief and management route", href: "#contact" }
     ];
 
+    const GG_LANDING_DOCK_TOP_ZONE = 72;
+    const GG_LANDING_DOCK_BOTTOM_ZONE = 112;
+    const GG_LANDING_DOCK_BOTTOM_RATIO = .14;
+    const GG_LANDING_DOCK_DIRECTION_DELTA = 6;
+    const GG_LANDING_DOCK_HIDE_THRESHOLD = 56;
+    const GG_LANDING_DOCK_SHOW_THRESHOLD = 34;
+
     const GG_LANDING_STATE = {
       lang: localStorage.getItem("gg-landing:lang") || "en",
-      activePanel: null
+      activePanel: null,
+      dockState: "visible",
+      dockFocused: false,
+      dockScrollDirection: "none",
+      dockLastScrollTop: 0,
+      dockDirectionStart: 0,
+      dockSyncFrame: 0
     };
+
+    function ggLandingWriteBodyState(name, value) {
+      if (!document.body) return;
+      document.body.setAttribute(name, value);
+    }
+
+    function ggLandingReadScrollTop() {
+      return Math.max(0, window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0);
+    }
+
+    function ggLandingDocumentHeight() {
+      return Math.max(
+        document.body ? document.body.scrollHeight : 0,
+        document.body ? document.body.offsetHeight : 0,
+        document.documentElement ? document.documentElement.scrollHeight : 0,
+        document.documentElement ? document.documentElement.offsetHeight : 0,
+        document.documentElement ? document.documentElement.clientHeight : 0
+      );
+    }
+
+    function ggLandingIsBottomZone(scrollTop) {
+      const viewportHeight = Math.max(window.innerHeight || 0, document.documentElement ? document.documentElement.clientHeight : 0);
+      const threshold = Math.max(GG_LANDING_DOCK_BOTTOM_ZONE, Math.round(viewportHeight * GG_LANDING_DOCK_BOTTOM_RATIO));
+      return (scrollTop + viewportHeight) >= (ggLandingDocumentHeight() - threshold);
+    }
+
+    function ggLandingResolveDockDirection(scrollTop) {
+      const delta = scrollTop - GG_LANDING_STATE.dockLastScrollTop;
+      let nextDirection = GG_LANDING_STATE.dockScrollDirection;
+
+      if (scrollTop <= 0) {
+        nextDirection = "none";
+        GG_LANDING_STATE.dockDirectionStart = 0;
+      } else if (Math.abs(delta) >= GG_LANDING_DOCK_DIRECTION_DELTA) {
+        nextDirection = delta > 0 ? "down" : "up";
+        if (nextDirection !== GG_LANDING_STATE.dockScrollDirection) {
+          GG_LANDING_STATE.dockDirectionStart = scrollTop;
+        }
+      }
+
+      GG_LANDING_STATE.dockScrollDirection = nextDirection;
+      GG_LANDING_STATE.dockLastScrollTop = scrollTop;
+      return nextDirection;
+    }
+
+    function ggLandingResolveDockState(scrollTop, bottomZone) {
+      if (GG_LANDING_STATE.activePanel) return "panel-locked";
+      if (GG_LANDING_STATE.dockFocused) return "forced-visible";
+      if (scrollTop <= GG_LANDING_DOCK_TOP_ZONE || bottomZone) return "visible";
+
+      if (GG_LANDING_STATE.dockState === "hidden-by-scroll") {
+        if (GG_LANDING_STATE.dockScrollDirection === "up" && (GG_LANDING_STATE.dockDirectionStart - scrollTop) >= GG_LANDING_DOCK_SHOW_THRESHOLD) {
+          return "visible";
+        }
+        return "hidden-by-scroll";
+      }
+
+      if (GG_LANDING_STATE.dockScrollDirection === "down" && (scrollTop - GG_LANDING_STATE.dockDirectionStart) >= GG_LANDING_DOCK_HIDE_THRESHOLD) {
+        return "hidden-by-scroll";
+      }
+
+      return "visible";
+    }
+
+    function ggLandingSyncDockState() {
+      const scrollTop = ggLandingReadScrollTop();
+      const bottomZone = ggLandingIsBottomZone(scrollTop);
+      const direction = ggLandingResolveDockDirection(scrollTop);
+      const dockState = ggLandingResolveDockState(scrollTop, bottomZone);
+
+      GG_LANDING_STATE.dockState = dockState;
+      ggLandingWriteBodyState("data-gg-dock-state", dockState);
+      ggLandingWriteBodyState("data-gg-scroll-direction", direction || "none");
+      ggLandingWriteBodyState("data-gg-bottom-zone", bottomZone ? "true" : "false");
+    }
+
+    function ggLandingRequestDockStateSync() {
+      if (GG_LANDING_STATE.dockSyncFrame) return;
+      GG_LANDING_STATE.dockSyncFrame = window.requestAnimationFrame(() => {
+        GG_LANDING_STATE.dockSyncFrame = 0;
+        ggLandingSyncDockState();
+      });
+    }
+
+    function ggLandingSyncDockFocusState() {
+      const dock = document.getElementById("gg-dock");
+      GG_LANDING_STATE.dockFocused = !!(dock && dock.contains(document.activeElement));
+      ggLandingSyncDockState();
+    }
+
+    function ggLandingSetBodyPanelState(name, lockScroll) {
+      ggLandingWriteBodyState("data-gg-active-panel", name || "");
+      ggLandingWriteBodyState("data-gg-panel-active", name ? "true" : "false");
+      ggLandingWriteBodyState("data-gg-scroll-lock", lockScroll ? "true" : "false");
+      ggLandingSyncDockState();
+    }
 
     function ggLandingApplyCopy() {
       const dict = GG_LANDING_COPY[GG_LANDING_STATE.lang] || GG_LANDING_COPY.en;
@@ -1472,8 +1596,10 @@
     }
 
     function ggLandingOpenPanel(name) {
+      const panel = document.getElementById(name === "command" ? "gg-command-panel" : "gg-more-panel");
+      if (!panel) return;
       GG_LANDING_STATE.activePanel = name;
-      document.body.setAttribute("data-gg-scroll-lock", "true");
+      ggLandingSetBodyPanelState(name, true);
       document.querySelectorAll(".gg-sheet").forEach((panel) => {
         panel.hidden = true;
         panel.setAttribute("data-gg-state", "closed");
@@ -1481,8 +1607,6 @@
       document.querySelectorAll(".gg-dock__item[aria-controls]").forEach((button) => {
         button.setAttribute("aria-expanded", "false");
       });
-      const panel = document.getElementById(name === "command" ? "gg-command-panel" : "gg-more-panel");
-      if (!panel) return;
       panel.hidden = false;
       panel.setAttribute("data-gg-state", "open");
       const trigger = document.querySelector(`.gg-dock__item[aria-controls="${panel.id}"]`);
@@ -1493,7 +1617,6 @@
 
     function ggLandingClosePanels() {
       GG_LANDING_STATE.activePanel = null;
-      document.body.removeAttribute("data-gg-scroll-lock");
       document.querySelectorAll(".gg-sheet").forEach((panel) => {
         panel.hidden = true;
         panel.setAttribute("data-gg-state", "closed");
@@ -1501,6 +1624,7 @@
       document.querySelectorAll(".gg-dock__item[aria-controls]").forEach((button) => {
         button.setAttribute("aria-expanded", "false");
       });
+      ggLandingSetBodyPanelState("", false);
     }
 
     function ggLandingRenderResults(query = "") {
@@ -1564,7 +1688,7 @@
       document.getElementById("gg-discovery-topics").hidden = name !== "topics";
     }
 
-    function ggLandingSetupDockState() {
+    function ggLandingSetupDockNavState() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
@@ -1582,6 +1706,37 @@
         const node = document.getElementById(id);
         if (node) observer.observe(node);
       });
+    }
+
+    function ggLandingSetupDockVisibility() {
+      const dock = document.getElementById("gg-dock");
+
+      ggLandingWriteBodyState("data-gg-active-panel", GG_LANDING_STATE.activePanel || "");
+      ggLandingWriteBodyState("data-gg-panel-active", GG_LANDING_STATE.activePanel ? "true" : "false");
+      if (!GG_LANDING_STATE.activePanel) ggLandingWriteBodyState("data-gg-scroll-lock", "false");
+
+      if (!dock) {
+        ggLandingWriteBodyState("data-gg-dock-state", "visible");
+        ggLandingWriteBodyState("data-gg-scroll-direction", "none");
+        ggLandingWriteBodyState("data-gg-bottom-zone", "false");
+        return;
+      }
+
+      GG_LANDING_STATE.dockLastScrollTop = ggLandingReadScrollTop();
+      GG_LANDING_STATE.dockDirectionStart = GG_LANDING_STATE.dockLastScrollTop;
+      GG_LANDING_STATE.dockScrollDirection = "none";
+      GG_LANDING_STATE.dockFocused = dock.contains(document.activeElement);
+
+      dock.addEventListener("focusin", ggLandingSyncDockFocusState);
+      dock.addEventListener("focusout", () => {
+        window.setTimeout(ggLandingSyncDockFocusState, 0);
+      });
+
+      window.addEventListener("scroll", ggLandingRequestDockStateSync, { passive: true });
+      window.addEventListener("resize", ggLandingRequestDockStateSync);
+      window.addEventListener("hashchange", ggLandingRequestDockStateSync);
+
+      ggLandingSyncDockState();
     }
 
     function ggLandingSetupReveal() {
@@ -1615,7 +1770,8 @@
       ggLandingRenderResults();
       ggLandingRenderTopics();
       ggLandingSetTab("results");
-      ggLandingSetupDockState();
+      ggLandingSetupDockNavState();
+      ggLandingSetupDockVisibility();
       ggLandingSetupReveal();
       ggLandingSetupCounts();
 

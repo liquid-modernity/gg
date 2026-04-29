@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Yellowcard · PakRPP</title>
-  <meta name="description" content="Yellowcard: katalog kurasi produk, alat, dan referensi pilihan PakRPP dengan preview cepat dan tautan marketplace." />
+  <title>Yellowcart · PakRPP</title>
+  <meta name="description" content="Yellowcart: katalog kurasi produk, alat, dan referensi pilihan PakRPP dengan preview cepat dan tautan marketplace." />
   <meta name="robots" content="index,follow" />
-  <link rel="canonical" href="https://www.pakrpp.com/yellowcard" />
+  <link rel="canonical" href="https://www.pakrpp.com/yellowcart" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&display=block" rel="stylesheet" />
@@ -14,8 +14,8 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Yellowcard",
-    "url": "https://www.pakrpp.com/yellowcard",
+    "name": "Yellowcart",
+    "url": "https://www.pakrpp.com/yellowcart",
     "description": "Katalog kurasi produk, alat, dan referensi pilihan PakRPP."
   }
   </script>
@@ -86,7 +86,6 @@
     }
 
     body[data-yc-scroll-lock="true"] { overflow: hidden; }
-    body[data-yc-scroll-lock="true"] .yc-dock { opacity: 0; pointer-events: none; transform: translate(-50%, 14px) scale(.98); }
 
     a { color: inherit; text-decoration: none; }
     img { display: block; max-width: 100%; height: auto; }
@@ -515,8 +514,24 @@
       background: var(--gg-toolbar-surface);
       box-shadow: var(--gg-shadow-soft);
       backdrop-filter: blur(16px) saturate(145%);
-      transform: translateX(-50%);
-      transition: opacity var(--gg-ease), transform var(--gg-ease);
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
+      transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-ease);
+      will-change: transform, opacity;
+    }
+
+    body[data-gg-dock-state="hidden-by-scroll"] .yc-dock {
+      transform: translate3d(-50%, calc(100% + var(--gg-dock-offset-bottom) + 16px), 0);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body[data-gg-dock-state="visible"] .yc-dock,
+    body[data-gg-dock-state="forced-visible"] .yc-dock,
+    body[data-gg-dock-state="panel-locked"] .yc-dock {
+      transform: translate3d(-50%, 0, 0);
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .yc-dock__item {
@@ -538,6 +553,11 @@
     .yc-dock__item:hover,
     .yc-dock__item:focus-visible,
     .yc-dock__item[aria-current="page"] { background: var(--gg-toolbar-item-hover-bg); }
+
+    .yc-dock__label {
+      font: var(--gg-toolbar-item-weight) 11px/1.1 var(--gg-font-sans);
+      letter-spacing: .02em;
+    }
 
     .yc-sheet {
       position: fixed;
@@ -852,23 +872,37 @@
     }
   </style>
 </head>
-<body>
+<body data-gg-active-panel="" data-gg-bottom-zone="false" data-gg-dock-state="visible" data-gg-panel-active="false" data-gg-scroll-direction="none">
+  <!-- Temporary feed label compatibility: public route is Yellowcart, Blogger label remains yellowcard until posts are relabeled. -->
   <main
     id="yc-app"
     class="yc-app"
-    data-yc-module="yellowcard"
+    data-yc-module="yellowcart"
     data-yc-state="loading"
     data-yc-feed-url="https://www.pakrpp.com/feeds/posts/default/-/yellowcard?alt=json&max-results=50"
-    aria-label="Yellowcard product catalogue"
+    aria-label="Yellowcart product catalogue"
   >
     <a class="yc-visually-hidden" href="#yc-grid">Lewati ke katalog</a>
 
     <section class="yc-main" aria-labelledby="yc-title">
-  
+      <header class="yc-topbar">
+        <a class="yc-brand" href="/" aria-label="PakRPP">
+          <span class="yc-brand__mark" aria-hidden="true">PK</span>
+          <span class="yc-brand__text">PakRPP</span>
+        </a>
+        <div class="yc-command">
+          <span class="yc-icon" aria-hidden="true">search</span>
+          <label class="yc-visually-hidden" for="yc-search">Cari produk, kategori, atau label</label>
+          <input id="yc-search" type="search" inputmode="search" placeholder="Cari produk, kategori, atau label" autocomplete="off" />
+        </div>
+        <button class="yc-action" id="yc-refresh" type="button" aria-label="Refresh katalog">
+          <span class="yc-icon" aria-hidden="true">refresh</span>
+        </button>
+      </header>
 
-      <section class="yc-hero" aria-label="Yellowcard introduction">
+      <section class="yc-hero" aria-label="Yellowcart introduction">
        <!--  <p class="yc-eyebrow">PAKRPP · Curated commerce</p> -->
-        <h1 class="yc-title" id="yc-title">Yellowcard</h1>
+        <h1 class="yc-title" id="yc-title">Yellowcart</h1>
         <p class="yc-summary">Kurasi produk, alat, dan referensi yang layak dibuka. Tap produk untuk preview cepat, carousel foto, harga, dan tombol marketplace tanpa meninggalkan katalog.</p>
         <div class="yc-disclosure" aria-label="Affiliate disclosure">
           <span class="yc-disclosure__pill">Affiliate links may be used</span>
@@ -876,7 +910,7 @@
         </div>
       </section>
 
-      <nav class="yc-filter" aria-label="Yellowcard filters">
+      <nav class="yc-filter" aria-label="Yellowcart filters">
         <button class="yc-chip" type="button" data-yc-filter="all" aria-pressed="true">All</button>
         <button class="yc-chip" type="button" data-yc-filter="fashion" aria-pressed="false">Fashion</button>
         <button class="yc-chip" type="button" data-yc-filter="tools" aria-pressed="false">Tools</button>
@@ -888,7 +922,7 @@
 
       <div class="yc-meta-row" aria-live="polite">
         <span id="yc-count">Memuat produk…</span>
-     <!--    <span id="yc-source">Label: yellowcard</span> -->
+        <span id="yc-source">Feed: Yellowcart</span>
       </div>
 
       <section class="yc-skeleton-grid" aria-label="Loading products" aria-hidden="true">
@@ -902,149 +936,149 @@
         <article class="yc-skeleton-card"><span class="yc-skeleton-line"></span><span class="yc-skeleton-line"></span><span class="yc-skeleton-line"></span></article>
       </section>
 
-      <section class="yc-grid" id="yc-grid" aria-label="Yellowcard product grid">
+      <section class="yc-grid" id="yc-grid" aria-label="Yellowcart product grid">
         <article class="yc-card" data-yc-card-slot="0" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="0" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="0" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="0">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="0">Rp—</span><span class="yc-card__title" data-yc-card-title="0">Product title</span><span class="yc-card__dots" data-yc-card-dots="0" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="0">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="0">Rp—</span><span class="yc-card__title" data-yc-card-title="0">Product title</span><span class="yc-card__dots" data-yc-card-dots="0" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="1" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="1" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="1" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="1">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="1">Rp—</span><span class="yc-card__title" data-yc-card-title="1">Product title</span><span class="yc-card__dots" data-yc-card-dots="1" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="1">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="1">Rp—</span><span class="yc-card__title" data-yc-card-title="1">Product title</span><span class="yc-card__dots" data-yc-card-dots="1" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="2" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="2" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="2" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="2">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="2">Rp—</span><span class="yc-card__title" data-yc-card-title="2">Product title</span><span class="yc-card__dots" data-yc-card-dots="2" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="2">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="2">Rp—</span><span class="yc-card__title" data-yc-card-title="2">Product title</span><span class="yc-card__dots" data-yc-card-dots="2" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="3" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="3" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="3" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="3">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="3">Rp—</span><span class="yc-card__title" data-yc-card-title="3">Product title</span><span class="yc-card__dots" data-yc-card-dots="3" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="3">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="3">Rp—</span><span class="yc-card__title" data-yc-card-title="3">Product title</span><span class="yc-card__dots" data-yc-card-dots="3" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="4" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="4" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="4" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="4">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="4">Rp—</span><span class="yc-card__title" data-yc-card-title="4">Product title</span><span class="yc-card__dots" data-yc-card-dots="4" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="4">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="4">Rp—</span><span class="yc-card__title" data-yc-card-title="4">Product title</span><span class="yc-card__dots" data-yc-card-dots="4" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="5" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="5" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="5" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="5">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="5">Rp—</span><span class="yc-card__title" data-yc-card-title="5">Product title</span><span class="yc-card__dots" data-yc-card-dots="5" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="5">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="5">Rp—</span><span class="yc-card__title" data-yc-card-title="5">Product title</span><span class="yc-card__dots" data-yc-card-dots="5" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="6" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="6" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="6" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="6">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="6">Rp—</span><span class="yc-card__title" data-yc-card-title="6">Product title</span><span class="yc-card__dots" data-yc-card-dots="6" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="6">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="6">Rp—</span><span class="yc-card__title" data-yc-card-title="6">Product title</span><span class="yc-card__dots" data-yc-card-dots="6" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="7" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="7" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="7" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="7">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="7">Rp—</span><span class="yc-card__title" data-yc-card-title="7">Product title</span><span class="yc-card__dots" data-yc-card-dots="7" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="7">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="7">Rp—</span><span class="yc-card__title" data-yc-card-title="7">Product title</span><span class="yc-card__dots" data-yc-card-dots="7" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="8" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="8" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="8" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="8">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="8">Rp—</span><span class="yc-card__title" data-yc-card-title="8">Product title</span><span class="yc-card__dots" data-yc-card-dots="8" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="8">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="8">Rp—</span><span class="yc-card__title" data-yc-card-title="8">Product title</span><span class="yc-card__dots" data-yc-card-dots="8" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="9" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="9" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="9" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="9">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="9">Rp—</span><span class="yc-card__title" data-yc-card-title="9">Product title</span><span class="yc-card__dots" data-yc-card-dots="9" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="9">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="9">Rp—</span><span class="yc-card__title" data-yc-card-title="9">Product title</span><span class="yc-card__dots" data-yc-card-dots="9" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="10" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="10" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="10" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="10">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="10">Rp—</span><span class="yc-card__title" data-yc-card-title="10">Product title</span><span class="yc-card__dots" data-yc-card-dots="10" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="10">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="10">Rp—</span><span class="yc-card__title" data-yc-card-title="10">Product title</span><span class="yc-card__dots" data-yc-card-dots="10" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="11" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="11" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="11" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="11">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="11">Rp—</span><span class="yc-card__title" data-yc-card-title="11">Product title</span><span class="yc-card__dots" data-yc-card-dots="11" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="11">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="11">Rp—</span><span class="yc-card__title" data-yc-card-title="11">Product title</span><span class="yc-card__dots" data-yc-card-dots="11" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="12" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="12" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="12" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="12">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="12">Rp—</span><span class="yc-card__title" data-yc-card-title="12">Product title</span><span class="yc-card__dots" data-yc-card-dots="12" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="12">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="12">Rp—</span><span class="yc-card__title" data-yc-card-title="12">Product title</span><span class="yc-card__dots" data-yc-card-dots="12" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="13" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="13" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="13" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="13">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="13">Rp—</span><span class="yc-card__title" data-yc-card-title="13">Product title</span><span class="yc-card__dots" data-yc-card-dots="13" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="13">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="13">Rp—</span><span class="yc-card__title" data-yc-card-title="13">Product title</span><span class="yc-card__dots" data-yc-card-dots="13" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="14" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="14" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="14" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="14">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="14">Rp—</span><span class="yc-card__title" data-yc-card-title="14">Product title</span><span class="yc-card__dots" data-yc-card-dots="14" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="14">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="14">Rp—</span><span class="yc-card__title" data-yc-card-title="14">Product title</span><span class="yc-card__dots" data-yc-card-dots="14" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="15" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="15" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="15" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="15">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="15">Rp—</span><span class="yc-card__title" data-yc-card-title="15">Product title</span><span class="yc-card__dots" data-yc-card-dots="15" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="15">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="15">Rp—</span><span class="yc-card__title" data-yc-card-title="15">Product title</span><span class="yc-card__dots" data-yc-card-dots="15" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="16" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="16" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="16" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="16">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="16">Rp—</span><span class="yc-card__title" data-yc-card-title="16">Product title</span><span class="yc-card__dots" data-yc-card-dots="16" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="16">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="16">Rp—</span><span class="yc-card__title" data-yc-card-title="16">Product title</span><span class="yc-card__dots" data-yc-card-dots="16" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="17" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="17" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="17" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="17">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="17">Rp—</span><span class="yc-card__title" data-yc-card-title="17">Product title</span><span class="yc-card__dots" data-yc-card-dots="17" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="17">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="17">Rp—</span><span class="yc-card__title" data-yc-card-title="17">Product title</span><span class="yc-card__dots" data-yc-card-dots="17" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="18" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="18" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="18" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="18">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="18">Rp—</span><span class="yc-card__title" data-yc-card-title="18">Product title</span><span class="yc-card__dots" data-yc-card-dots="18" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="18">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="18">Rp—</span><span class="yc-card__title" data-yc-card-title="18">Product title</span><span class="yc-card__dots" data-yc-card-dots="18" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="19" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="19" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="19" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="19">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="19">Rp—</span><span class="yc-card__title" data-yc-card-title="19">Product title</span><span class="yc-card__dots" data-yc-card-dots="19" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="19">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="19">Rp—</span><span class="yc-card__title" data-yc-card-title="19">Product title</span><span class="yc-card__dots" data-yc-card-dots="19" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="20" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="20" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="20" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="20">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="20">Rp—</span><span class="yc-card__title" data-yc-card-title="20">Product title</span><span class="yc-card__dots" data-yc-card-dots="20" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="20">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="20">Rp—</span><span class="yc-card__title" data-yc-card-title="20">Product title</span><span class="yc-card__dots" data-yc-card-dots="20" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="21" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="21" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="21" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="21">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="21">Rp—</span><span class="yc-card__title" data-yc-card-title="21">Product title</span><span class="yc-card__dots" data-yc-card-dots="21" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="21">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="21">Rp—</span><span class="yc-card__title" data-yc-card-title="21">Product title</span><span class="yc-card__dots" data-yc-card-dots="21" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="22" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="22" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="22" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="22">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="22">Rp—</span><span class="yc-card__title" data-yc-card-title="22">Product title</span><span class="yc-card__dots" data-yc-card-dots="22" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="22">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="22">Rp—</span><span class="yc-card__title" data-yc-card-title="22">Product title</span><span class="yc-card__dots" data-yc-card-dots="22" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
         <article class="yc-card" data-yc-card-slot="23" hidden>
           <button class="yc-card__button" type="button" data-yc-card-button="23" aria-label="Open product preview">
             <span class="yc-card__media"><img data-yc-card-image="23" src="" alt="" loading="lazy" /><span class="yc-card__shade" aria-hidden="true"></span><span class="yc-card__quick" aria-hidden="true"><span class="yc-icon">chevron_right</span></span></span>
-            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="23">YELLOWCARD</span><span class="yc-card__price" data-yc-card-price="23">Rp—</span><span class="yc-card__title" data-yc-card-title="23">Product title</span><span class="yc-card__dots" data-yc-card-dots="23" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
+            <span class="yc-card__content"><span class="yc-card__badge" data-yc-card-badge="23">YELLOWCART</span><span class="yc-card__price" data-yc-card-price="23">Rp—</span><span class="yc-card__title" data-yc-card-title="23">Product title</span><span class="yc-card__dots" data-yc-card-dots="23" aria-hidden="true"><span class="yc-card__dot"></span><span class="yc-card__dot"></span><span class="yc-card__dot"></span></span></span>
           </button>
         </article>
       </section>
@@ -1052,13 +1086,36 @@
       <section class="yc-empty" id="yc-empty" aria-live="polite">
         <span class="yc-icon" aria-hidden="true">inventory_2</span>
         <h2 id="yc-empty-title">Produk belum tersedia.</h2>
-        <p id="yc-empty-body">Belum ada postingan berlabel yellowcard, atau katalog belum bisa dimuat.</p>
+        <p id="yc-empty-body">Belum ada produk di katalog, atau feed belum bisa dimuat.</p>
       </section>
 
       <div class="yc-loadmore">
         <button class="yc-button" id="yc-loadmore" type="button"><span>Load more</span><span class="yc-icon" aria-hidden="true">keyboard_arrow_down</span></button>
       </div>
     </section>
+
+    <nav aria-label="Yellowcart navigation" class="yc-dock" data-gg-dock="1" data-gg-module="gg-dock" id="gg-dock">
+      <a class="yc-dock__item" data-gg-nav="home" href="/landing">
+        <span class="yc-icon" aria-hidden="true">home_app_logo</span>
+        <span class="yc-dock__label">Home</span>
+      </a>
+      <a class="yc-dock__item" data-gg-nav="contact" href="/landing#contact">
+        <span class="yc-icon" aria-hidden="true">calendar_add_on</span>
+        <span class="yc-dock__label">Contact</span>
+      </a>
+      <button aria-label="Focus search" class="yc-dock__item" data-gg-nav="search" id="yc-dock-search" type="button">
+        <span class="yc-icon" aria-hidden="true">explore</span>
+        <span class="yc-dock__label">Search</span>
+      </button>
+      <a class="yc-dock__item" data-gg-nav="blog" href="/">
+        <span class="yc-icon" aria-hidden="true">newsmode</span>
+        <span class="yc-dock__label">Blog</span>
+      </a>
+      <button aria-controls="yc-more-sheet" aria-expanded="false" class="yc-dock__item" data-gg-nav="more" id="yc-more-open" type="button">
+        <span class="yc-icon" aria-hidden="true">menu</span>
+        <span class="yc-dock__label">More</span>
+      </button>
+    </nav>
 
     <section class="yc-sheet" id="yc-product-sheet" data-yc-state="closed" role="dialog" aria-modal="true" aria-labelledby="yc-product-title" hidden>
       <button class="yc-sheet__scrim" id="yc-product-scrim" type="button" aria-label="Close product preview"></button>
@@ -1087,7 +1144,7 @@
             </div>
           </section>
           <section class="yc-product__head">
-            <span class="yc-product__badge" id="yc-product-badge">YELLOWCARD</span>
+            <span class="yc-product__badge" id="yc-product-badge">YELLOWCART</span>
             <h2 class="yc-product__title" id="yc-product-title">Product title</h2>
             <p class="yc-product__meta" id="yc-product-meta">PakRPP · Curated pick</p>
           </section>
@@ -1122,13 +1179,13 @@
           <button class="yc-sheet__close" id="yc-more-close" type="button" aria-label="Close more panel"><span class="yc-icon" aria-hidden="true">close</span></button>
         </header>
         <div class="yc-more">
-          <a class="yc-more__link" href="/search/label/yellowcard"><span>Native label archive</span><span class="yc-icon" aria-hidden="true">chevron_right</span></a>
-          <a class="yc-more__link" href="/feeds/posts/default/-/yellowcard"><span>Yellowcard feed</span><span class="yc-icon" aria-hidden="true">chevron_right</span></a>
+          <a class="yc-more__link" href="/search/label/yellowcard"><span>Native archive</span><span class="yc-icon" aria-hidden="true">chevron_right</span></a>
+          <a class="yc-more__link" href="/feeds/posts/default/-/yellowcard"><span>Yellowcart feed</span><span class="yc-icon" aria-hidden="true">chevron_right</span></a>
           <a class="yc-more__link" href="/"><span>Back to PakRPP</span><span class="yc-icon" aria-hidden="true">chevron_right</span></a>
         </div>
       </section>
     </section>
-    <noscript><section class="yc-main yc-empty"><h2>JavaScript dibutuhkan.</h2><p>Yellowcard memakai katalog interaktif. Buka arsip native sebagai fallback.</p><a class="yc-button yc-button--primary" href="/search/label/yellowcard">Buka arsip yellowcard</a></section></noscript>
+    <noscript><section class="yc-main yc-empty"><h2>JavaScript dibutuhkan.</h2><p>Yellowcart memakai katalog interaktif. Buka arsip native sebagai fallback.</p><a class="yc-button yc-button--primary" href="/search/label/yellowcard">Buka arsip produk</a></section></noscript>
   </main>
 
   <script>
@@ -1137,8 +1194,15 @@
       var SLOT_MAX = 24;
       var VISIBLE_INITIAL = 24;
       var MARKET = ['shopee', 'tokopedia', 'tiktok', 'official'];
+      var DOCK_TOP_ZONE_PX = 72;
+      var DOCK_BOTTOM_ZONE_PX = 112;
+      var DOCK_BOTTOM_ZONE_VIEWPORT_RATIO = 0.14;
+      var DOCK_DIRECTION_DELTA_PX = 6;
+      var DOCK_HIDE_THRESHOLD_PX = 56;
+      var DOCK_SHOW_THRESHOLD_PX = 34;
       var PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%201000%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23efe7e7%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23d9d0d1%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%221000%22%20fill%3D%22url%28%23g%29%22/%3E%3C/svg%3E';
       var app = document.getElementById('yc-app');
+      var dock = document.getElementById('gg-dock') || document.querySelector('[data-gg-dock="1"]') || document.querySelector('.yc-dock');
       var search = document.getElementById('yc-search');
       var refresh = document.getElementById('yc-refresh');
       var count = document.getElementById('yc-count');
@@ -1149,6 +1213,7 @@
       var productSheet = document.getElementById('yc-product-sheet');
       var productPanel = document.getElementById('yc-product-panel');
       var moreSheet = document.getElementById('yc-more-sheet');
+      var carousel = document.getElementById('yc-carousel');
       var cards = [].slice.call(document.querySelectorAll('[data-yc-card-slot]'));
       var cardButtons = [].slice.call(document.querySelectorAll('[data-yc-card-button]'));
       var chips = [].slice.call(document.querySelectorAll('[data-yc-filter]'));
@@ -1156,6 +1221,8 @@
       var slideImages = [].slice.call(document.querySelectorAll('[data-yc-slide-image]'));
       var dots = [].slice.call(document.querySelectorAll('[data-yc-dot]'));
       var contentItems = [].slice.call(document.querySelectorAll('[data-yc-content-item]'));
+      var dockSearchButton = document.getElementById('yc-dock-search');
+      var moreOpenButton = document.getElementById('yc-more-open');
       var links = {
         shopee: document.getElementById('yc-link-shopee'),
         tokopedia: document.getElementById('yc-link-tokopedia'),
@@ -1170,11 +1237,136 @@
         price: document.getElementById('yc-product-price'),
         read: document.getElementById('yc-read-article')
       };
-      var state = { products: [], filtered: [], query: '', filter: 'all', visibleLimit: VISIBLE_INITIAL, lastFocus: null };
+      var hasPanelSystem = !!(productSheet || moreSheet);
+      var state = {
+        products: [],
+        filtered: [],
+        query: '',
+        filter: 'all',
+        visibleLimit: VISIBLE_INITIAL,
+        lastFocus: null,
+        panelActive: '',
+        dockState: 'visible',
+        dockFocused: false,
+        dockScrollDirection: 'none',
+        dockLastScrollTop: 0,
+        dockDirectionStart: 0,
+        dockSyncFrame: 0
+      };
+
+      if (!app) return;
+
       function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
       function clean(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
       function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
+      function writeBodyState(name, value) { if (document.body) document.body.setAttribute(name, value); }
+      function setNodeText(node, value) { if (node) node.textContent = value; }
       function setState(value) { app.setAttribute('data-yc-state', value); }
+      function resolveScrollTop() { return Math.max(0, window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0); }
+      function resolveDocumentHeight() {
+        return Math.max(
+          document.body ? document.body.scrollHeight : 0,
+          document.body ? document.body.offsetHeight : 0,
+          document.documentElement ? document.documentElement.scrollHeight : 0,
+          document.documentElement ? document.documentElement.offsetHeight : 0,
+          document.documentElement ? document.documentElement.clientHeight : 0
+        );
+      }
+      function isBottomZone(scrollTop) {
+        var viewportHeight = Math.max(window.innerHeight || 0, document.documentElement ? document.documentElement.clientHeight : 0);
+        var threshold = Math.max(DOCK_BOTTOM_ZONE_PX, Math.round(viewportHeight * DOCK_BOTTOM_ZONE_VIEWPORT_RATIO));
+        return (scrollTop + viewportHeight) >= (resolveDocumentHeight() - threshold);
+      }
+      function resolveScrollDirection(scrollTop) {
+        var delta = scrollTop - state.dockLastScrollTop;
+        var nextDirection = state.dockScrollDirection;
+
+        if (scrollTop <= 0) {
+          nextDirection = 'none';
+          state.dockDirectionStart = 0;
+        } else if (Math.abs(delta) >= DOCK_DIRECTION_DELTA_PX) {
+          nextDirection = delta > 0 ? 'down' : 'up';
+          if (nextDirection !== state.dockScrollDirection) {
+            state.dockDirectionStart = scrollTop;
+          }
+        }
+
+        state.dockScrollDirection = nextDirection;
+        state.dockLastScrollTop = scrollTop;
+        return nextDirection;
+      }
+      function resolveDockState(scrollTop, bottomZone) {
+        if (hasPanelSystem && state.panelActive) return 'panel-locked';
+        if (state.dockFocused) return 'forced-visible';
+        if (scrollTop <= DOCK_TOP_ZONE_PX || bottomZone) return 'visible';
+
+        if (state.dockState === 'hidden-by-scroll') {
+          if (state.dockScrollDirection === 'up' && (state.dockDirectionStart - scrollTop) >= DOCK_SHOW_THRESHOLD_PX) {
+            return 'visible';
+          }
+          return 'hidden-by-scroll';
+        }
+
+        if (state.dockScrollDirection === 'down' && (scrollTop - state.dockDirectionStart) >= DOCK_HIDE_THRESHOLD_PX) {
+          return 'hidden-by-scroll';
+        }
+
+        return 'visible';
+      }
+      function syncDockVisibility() {
+        var scrollTop = resolveScrollTop();
+        var bottomZone = isBottomZone(scrollTop);
+        var direction = resolveScrollDirection(scrollTop);
+        var dockState = resolveDockState(scrollTop, bottomZone);
+
+        state.dockState = dockState;
+        writeBodyState('data-gg-dock-state', dockState);
+        writeBodyState('data-gg-scroll-direction', direction || 'none');
+        writeBodyState('data-gg-bottom-zone', bottomZone ? 'true' : 'false');
+      }
+      function requestDockVisibilitySync() {
+        if (state.dockSyncFrame) return;
+        state.dockSyncFrame = window.requestAnimationFrame(function () {
+          state.dockSyncFrame = 0;
+          syncDockVisibility();
+        });
+      }
+      function syncDockFocusState() {
+        state.dockFocused = !!(dock && dock.contains(document.activeElement));
+        syncDockVisibility();
+      }
+      function setPanelState(activeName) {
+        state.panelActive = hasPanelSystem ? String(activeName || '') : '';
+        writeBodyState('data-gg-active-panel', state.panelActive);
+        writeBodyState('data-gg-panel-active', hasPanelSystem ? (state.panelActive ? 'true' : 'false') : '0');
+        if (moreOpenButton) moreOpenButton.setAttribute('aria-expanded', state.panelActive === 'more' ? 'true' : 'false');
+        syncDockVisibility();
+      }
+      function initDockState() {
+        writeBodyState('data-gg-active-panel', '');
+        writeBodyState('data-gg-panel-active', hasPanelSystem ? 'false' : '0');
+        writeBodyState('data-gg-dock-state', 'visible');
+        writeBodyState('data-gg-scroll-direction', 'none');
+        writeBodyState('data-gg-bottom-zone', 'false');
+
+        if (!dock) return;
+
+        state.dockLastScrollTop = resolveScrollTop();
+        state.dockDirectionStart = state.dockLastScrollTop;
+        state.dockScrollDirection = 'none';
+        state.dockFocused = dock.contains(document.activeElement);
+
+        dock.addEventListener('focusin', syncDockFocusState);
+        dock.addEventListener('focusout', function () {
+          window.setTimeout(syncDockFocusState, 0);
+        });
+
+        window.addEventListener('scroll', requestDockVisibilitySync, { passive: true });
+        window.addEventListener('resize', requestDockVisibilitySync);
+        window.addEventListener('hashchange', requestDockVisibilitySync);
+
+        syncDockVisibility();
+      }
       function feedUrl() { return new URL(app.getAttribute('data-yc-feed-url'), location.origin).toString(); }
       function altUrl(entry) { var link = (entry.link || []).find(function (item) { return item.rel === 'alternate' && item.href; }); return link ? link.href : '#'; }
       function labels(entry) { return (entry.category || []).map(function (item) { return clean(item.term); }).filter(Boolean); }
@@ -1201,7 +1393,7 @@
         var parsed = parseContent(html);
         var data = parsed.data || {};
         var labs = labels(entry);
-        var category = clean(data.category || labs.filter(function (label) { return label.toLowerCase() !== 'yellowcard'; })[0] || 'Yellowcard');
+        var category = clean(data.category || labs.filter(function (label) { return label.toLowerCase() !== 'yellowcard'; })[0] || 'Yellowcart');
         var images = arr(data.images || data.gallery || data.image || parsed.images).map(clean).filter(Boolean).slice(0, 6);
         var linksOut = {};
         MARKET.forEach(function (key) { linksOut[key] = clean((data.links || {})[key] || parsed.links[key] || ''); });
@@ -1210,8 +1402,8 @@
           url: altUrl(entry),
           labels: labs,
           category: category,
-          badge: clean(arr(data.badges)[0] || category || 'Yellowcard'),
-          summary: clean(data.summary || data.tagline || parsed.summary || 'Produk kurasi Yellowcard.'),
+          badge: clean(arr(data.badges)[0] || category || 'Yellowcart'),
+          summary: clean(data.summary || data.tagline || parsed.summary || 'Produk kurasi Yellowcart.'),
           priceText: clean(data.priceText || data.price || 'Rp—'),
           images: images.length ? images : [PLACEHOLDER_IMAGE],
           links: linksOut,
@@ -1221,7 +1413,9 @@
         };
       }
       function loadProducts() {
-        setState('loading'); count.textContent = 'Memuat produk…'; source.textContent = 'Label: yellowcard';
+        setState('loading');
+        setNodeText(count, 'Memuat produk…');
+        setNodeText(source, 'Feed: Yellowcart');
         fetch(feedUrl(), { credentials: 'same-origin', cache: 'no-store' }).then(function (res) {
           if (!res.ok) throw new Error('feed');
           return res.json();
@@ -1232,9 +1426,10 @@
           applyFilters();
         }).catch(function () {
           state.products = []; state.filtered = []; renderCards(); setState('error');
-          emptyTitle.textContent = 'Katalog belum bisa dimuat.';
-          emptyBody.textContent = 'Cek feed yellowcard atau gunakan native label archive sebagai fallback.';
-          count.textContent = 'Gagal memuat produk'; source.textContent = '/search/label/yellowcard tersedia sebagai fallback';
+          setNodeText(emptyTitle, 'Katalog belum bisa dimuat.');
+          setNodeText(emptyBody, 'Cek feed Yellowcart atau gunakan arsip native sebagai fallback.');
+          setNodeText(count, 'Gagal memuat produk');
+          setNodeText(source, 'Arsip native tersedia sebagai fallback');
         });
       }
       function applyFilters() {
@@ -1245,7 +1440,10 @@
         });
         renderCards();
         setState(state.filtered.length ? 'ready' : 'empty');
-        if (!state.filtered.length) { emptyTitle.textContent = 'Produk tidak ditemukan.'; emptyBody.textContent = 'Coba filter lain atau kosongkan pencarian.'; }
+        if (!state.filtered.length) {
+          setNodeText(emptyTitle, 'Produk tidak ditemukan.');
+          setNodeText(emptyBody, 'Coba filter lain atau kosongkan pencarian.');
+        }
       }
       function renderCards() {
         var visible = state.filtered.slice(0, state.visibleLimit);
@@ -1254,61 +1452,131 @@
           card.hidden = !item;
           if (item) fillCard(index, item);
         });
-        count.textContent = state.filtered.length + ' produk';
-        source.textContent = state.query ? 'Filter aktif' : 'Label: yellowcard';
-        loadMore.hidden = state.filtered.length <= state.visibleLimit || state.visibleLimit >= SLOT_MAX;
+        setNodeText(count, state.filtered.length + ' produk');
+        setNodeText(source, state.query ? 'Filter aktif' : 'Feed: Yellowcart');
+        if (loadMore) loadMore.hidden = state.filtered.length <= state.visibleLimit || state.visibleLimit >= SLOT_MAX;
       }
       function bySlot(name, index) { return document.querySelector('[data-yc-' + name + '="' + index + '"]'); }
       function fillCard(index, item) {
         var image = bySlot('card-image', index);
-        image.src = item.images[0] || PLACEHOLDER_IMAGE; image.alt = item.title;
-        bySlot('card-title', index).textContent = item.title;
-        bySlot('card-price', index).textContent = item.priceText;
-        bySlot('card-badge', index).textContent = item.badge || 'YELLOWCARD';
-        bySlot('card-dots', index).hidden = item.images.length < 2;
-        bySlot('card-button', index).setAttribute('aria-label', 'Preview ' + item.title);
+        var titleNode = bySlot('card-title', index);
+        var priceNode = bySlot('card-price', index);
+        var badgeNode = bySlot('card-badge', index);
+        var dotsNode = bySlot('card-dots', index);
+        var buttonNode = bySlot('card-button', index);
+        if (image) {
+          image.src = item.images[0] || PLACEHOLDER_IMAGE;
+          image.alt = item.title;
+        }
+        if (titleNode) titleNode.textContent = item.title;
+        if (priceNode) priceNode.textContent = item.priceText;
+        if (badgeNode) badgeNode.textContent = item.badge || 'YELLOWCART';
+        if (dotsNode) dotsNode.hidden = item.images.length < 2;
+        if (buttonNode) buttonNode.setAttribute('aria-label', 'Preview ' + item.title);
       }
       function openProduct(index) {
         var item = state.filtered[index];
         if (!item) return;
         state.lastFocus = document.activeElement;
-        detail.badge.textContent = (item.badge || 'YELLOWCARD').toUpperCase();
-        detail.title.textContent = item.title;
-        detail.meta.textContent = ['PakRPP', item.published || item.updated || '', item.category].filter(Boolean).join(' · ');
-        detail.summary.textContent = item.summary;
-        detail.price.textContent = item.priceText;
-        detail.read.href = item.url || '#';
+        setNodeText(detail.badge, (item.badge || 'YELLOWCART').toUpperCase());
+        setNodeText(detail.title, item.title);
+        setNodeText(detail.meta, ['PakRPP', item.published || item.updated || '', item.category].filter(Boolean).join(' · '));
+        setNodeText(detail.summary, item.summary);
+        setNodeText(detail.price, item.priceText);
+        if (detail.read) detail.read.href = item.url || '#';
         fillCarousel(item); fillLinks(item); fillContents(item.contents.length ? item.contents : ['Description', 'Review']);
         openSheet(productSheet, productPanel);
       }
       function fillCarousel(item) {
         slides.forEach(function (slide, index) {
           var src = item.images[index];
-          slide.hidden = !src; dots[index].hidden = !src;
-          if (src) { slideImages[index].src = src; slideImages[index].alt = item.title + ' photo ' + (index + 1); }
-          dots[index].setAttribute('aria-current', index === 0 ? 'true' : 'false');
+          if (slide) slide.hidden = !src;
+          if (dots[index]) dots[index].hidden = !src;
+          if (src && slideImages[index]) {
+            slideImages[index].src = src;
+            slideImages[index].alt = item.title + ' photo ' + (index + 1);
+          }
+          if (dots[index]) dots[index].setAttribute('aria-current', index === 0 ? 'true' : 'false');
         });
         if (carousel) carousel.scrollLeft = 0;
       }
       function fillLinks(item) {
-        MARKET.forEach(function (key) { var href = item.links[key]; links[key].href = href || '#'; links[key].hidden = !href; links[key].setAttribute('aria-disabled', href ? 'false' : 'true'); });
+        MARKET.forEach(function (key) {
+          var href = item.links[key];
+          var node = links[key];
+          if (!node) return;
+          node.href = href || '#';
+          node.hidden = !href;
+          node.setAttribute('aria-disabled', href ? 'false' : 'true');
+        });
       }
-      function fillContents(items) { contentItems.forEach(function (node, index) { node.hidden = !items[index]; if (items[index]) node.textContent = items[index]; }); }
-      function openSheet(sheet, panel) { sheet.hidden = false; document.body.setAttribute('data-yc-scroll-lock', 'true'); requestAnimationFrame(function () { sheet.setAttribute('data-yc-state', 'open'); if (panel) panel.focus(); }); }
-      function closeSheet(sheet) { sheet.setAttribute('data-yc-state', 'closed'); setTimeout(function () { sheet.hidden = true; if (productSheet.hidden && moreSheet.hidden) document.body.removeAttribute('data-yc-scroll-lock'); if (state.lastFocus && state.lastFocus.focus) state.lastFocus.focus(); }, 180); }
+      function fillContents(items) {
+        contentItems.forEach(function (node, index) {
+          node.hidden = !items[index];
+          if (items[index]) node.textContent = items[index];
+        });
+      }
+      function isSheetVisible(sheet) { return !!(sheet && !sheet.hidden && sheet.getAttribute('data-yc-state') !== 'closed'); }
+      function resolveSheetName(sheet) {
+        if (!sheet) return '';
+        if (sheet === productSheet) return 'product';
+        if (sheet === moreSheet) return 'more';
+        return sheet.id || '';
+      }
+      function openSheet(sheet, panel) {
+        if (!sheet) return;
+        sheet.hidden = false;
+        document.body.setAttribute('data-yc-scroll-lock', 'true');
+        setPanelState(resolveSheetName(sheet));
+        window.requestAnimationFrame(function () {
+          sheet.setAttribute('data-yc-state', 'open');
+          if (panel) panel.focus();
+        });
+      }
+      function closeSheet(sheet) {
+        if (!sheet) return;
+        sheet.setAttribute('data-yc-state', 'closed');
+        window.setTimeout(function () {
+          sheet.hidden = true;
+          if (!isSheetVisible(productSheet) && !isSheetVisible(moreSheet)) {
+            document.body.removeAttribute('data-yc-scroll-lock');
+            setPanelState('');
+          } else if (isSheetVisible(moreSheet)) {
+            setPanelState('more');
+          } else if (isSheetVisible(productSheet)) {
+            setPanelState('product');
+          }
+          if (state.lastFocus && typeof state.lastFocus.focus === 'function') state.lastFocus.focus();
+        }, 180);
+      }
       cardButtons.forEach(function (button, index) { button.addEventListener('click', function () { openProduct(index); }); });
       chips.forEach(function (chip) { chip.addEventListener('click', function () { state.filter = chip.getAttribute('data-yc-filter') || 'all'; state.visibleLimit = VISIBLE_INITIAL; chips.forEach(function (item) { item.setAttribute('aria-pressed', item === chip ? 'true' : 'false'); }); applyFilters(); }); });
       dots.forEach(function (dot, index) { dot.addEventListener('click', function () { if (slides[index] && !slides[index].hidden) slides[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); dots.forEach(function (item, idx) { item.setAttribute('aria-current', idx === index ? 'true' : 'false'); }); }); });
-      search.addEventListener('input', function () { state.query = clean(search.value); state.visibleLimit = VISIBLE_INITIAL; applyFilters(); });
-      refresh.addEventListener('click', loadProducts);
-      loadMore.addEventListener('click', function () { state.visibleLimit = Math.min(SLOT_MAX, state.visibleLimit + 12); renderCards(); });
-      document.getElementById('yc-dock-search').addEventListener('click', function () { search.focus(); search.select(); });
-      document.getElementById('yc-product-close').addEventListener('click', function () { closeSheet(productSheet); });
-      document.getElementById('yc-product-scrim').addEventListener('click', function () { closeSheet(productSheet); });
-      document.getElementById('yc-more-open').addEventListener('click', function () { state.lastFocus = document.activeElement; openSheet(moreSheet, document.getElementById('yc-more-panel')); });
-      document.getElementById('yc-more-close').addEventListener('click', function () { closeSheet(moreSheet); });
-      document.getElementById('yc-more-scrim').addEventListener('click', function () { closeSheet(moreSheet); });
-      window.addEventListener('keydown', function (event) { if (event.key === 'Escape') { if (!productSheet.hidden) closeSheet(productSheet); else if (!moreSheet.hidden) closeSheet(moreSheet); } if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); search.focus(); search.select(); } });
+      if (search) search.addEventListener('input', function () { state.query = clean(search.value); state.visibleLimit = VISIBLE_INITIAL; applyFilters(); });
+      if (refresh) refresh.addEventListener('click', loadProducts);
+      if (loadMore) loadMore.addEventListener('click', function () { state.visibleLimit = Math.min(SLOT_MAX, state.visibleLimit + 12); renderCards(); });
+      if (dockSearchButton && search) dockSearchButton.addEventListener('click', function () { search.focus(); search.select(); });
+      var productClose = document.getElementById('yc-product-close');
+      var productScrim = document.getElementById('yc-product-scrim');
+      var moreClose = document.getElementById('yc-more-close');
+      var moreScrim = document.getElementById('yc-more-scrim');
+      if (productClose) productClose.addEventListener('click', function () { closeSheet(productSheet); });
+      if (productScrim) productScrim.addEventListener('click', function () { closeSheet(productSheet); });
+      if (moreOpenButton) moreOpenButton.addEventListener('click', function () { state.lastFocus = document.activeElement; openSheet(moreSheet, document.getElementById('yc-more-panel')); });
+      if (moreClose) moreClose.addEventListener('click', function () { closeSheet(moreSheet); });
+      if (moreScrim) moreScrim.addEventListener('click', function () { closeSheet(moreSheet); });
+      window.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          if (productSheet && !productSheet.hidden) closeSheet(productSheet);
+          else if (moreSheet && !moreSheet.hidden) closeSheet(moreSheet);
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && search) {
+          event.preventDefault();
+          search.focus();
+          search.select();
+        }
+      });
+      initDockState();
       loadProducts();
     }());
   </script>

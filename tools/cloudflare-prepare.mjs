@@ -32,6 +32,7 @@ const optionalRootFiles = [
   "landing.html",
   "llms.txt",
   "robots.txt",
+  "yellowcart.html",
 ];
 
 const registryFiles = [
