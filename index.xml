@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='00f0b5ca2701' name='gg-template-fingerprint'/>
+<meta content='4f454c2091f7' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -2124,7 +2124,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='00f0b5ca2701' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='4f454c2091f7' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-home-guard='pending' data-gg-lang='en' data-gg-surface='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
