@@ -3,7 +3,7 @@
   'use strict';
 
   const RELEASE = 'ac33998';
-  const TEMPLATE_FINGERPRINT = 'db5707fc3afa';
+  const TEMPLATE_FINGERPRINT = '4f454c2091f7';
   const GG_SW_NAME = 'pakrpp-editorial-pwa';
   const GG_SW_VERSION = `${RELEASE}-${TEMPLATE_FINGERPRINT}`;
   const VERSION = GG_SW_VERSION;

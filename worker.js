@@ -19,7 +19,7 @@ const SITE = {
   apexHost: "pakrpp.com",
   originName: "PakRPP",
   release: "ac33998",
-  templateFingerprint: "db5707fc3afa",
+  templateFingerprint: "4f454c2091f7",
   workerVersion: "edge-governance-v10.2",
 };
 
