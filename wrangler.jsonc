@@ -8,7 +8,10 @@
   "assets": {
     "directory": "./.cloudflare-build/public",
     "binding": "ASSETS",
-    "html_handling": "none"
+    "html_handling": "none",
+    "run_worker_first": [
+      "/yellowcart.html"
+    ]
   },
 
   "routes": [
