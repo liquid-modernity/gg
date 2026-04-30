@@ -29,6 +29,24 @@ log_info() {
   printf 'INFO: %s\n' "$1"
 }
 
+extract_body_snippet() {
+  local file="$1"
+  local needle="$2"
+
+  NEEDLE="$needle" perl -0ne '
+    my $needle = $ENV{NEEDLE};
+    my $text = $_;
+    my $pos = index($text, $needle);
+    exit 1 if $pos < 0;
+    my $start = $pos - 80;
+    $start = 0 if $start < 0;
+    my $snippet = substr($text, $start, 200);
+    $snippet =~ s/\s+/ /g;
+    $snippet =~ s/^\s+|\s+$//g;
+    print $snippet;
+  ' "$file" 2>/dev/null || true
+}
+
 fetch_headers() {
   local path="$1"
   local out_headers="$2"
@@ -225,11 +243,29 @@ check_landing_html_redirect() {
 }
 
 check_store_route() {
+  local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
-  local meta final status
+  local headers_meta meta final status release_header fingerprint_header dock_snippet saved_marker
+  headers_meta="$(fetch_headers "/store" "$headers_file")"
   meta="$(fetch_body "/store" "$body_file")"
   final="$(printf '%s' "$meta" | cut -d'|' -f1)"
   status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  release_header="$(extract_header_value "$headers_file" "x-gg-release")"
+  fingerprint_header="$(extract_header_value "$headers_file" "x-gg-template-fingerprint")"
+  dock_snippet="$(extract_body_snippet "$body_file" 'data-store-dock')"
+  saved_marker="absent"
+
+  if grep -Eq 'data-store-dock=["'"'"']saved["'"'"']' "$body_file"; then
+    saved_marker="present"
+  fi
+
+  log_info "/store freshness x-gg-release=${release_header:-missing} x-gg-template-fingerprint=${fingerprint_header:-missing}"
+  log_info "/store freshness data-store-dock-saved=${saved_marker}"
+  if [[ -n "$dock_snippet" ]]; then
+    log_info "/store freshness data-store-dock-snippet=${dock_snippet}"
+  else
+    log_info "/store freshness data-store-dock-snippet=missing"
+  fi
 
   if [[ "$status" != "200" ]]; then
     log_fail "/store expected status 200 (got ${status:-000})"
@@ -303,7 +339,7 @@ check_store_redirect() {
   fi
 }
 
-printf 'SMOKE-WORKER lane=WORKER_SCOPE base=%s\n' "$BASE_URL"
+printf 'SMOKE-WORKER lane=LIVE base=%s\n' "$BASE_URL"
 
 check_root_headers
 check_flags_endpoint
