@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='55827e507f94' name='gg-template-fingerprint'/>
+<meta content='545421c5c4da' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -2433,7 +2433,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='55827e507f94' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='545421c5c4da' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-home-guard='pending' data-gg-lang='en' data-gg-surface='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -4263,6 +4263,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         var DOCK_DIRECTION_DELTA_PX = 6;
         var DOCK_HIDE_THRESHOLD_PX = 56;
         var DOCK_SHOW_THRESHOLD_PX = 34;
+        var DETAIL_OUTLINE_MANUAL_OPEN_GRACE_MS = 1600;
 
         function escapeHtml(value) {
           return String(value || '').replace(/[&<>"']/g, function (char) {
@@ -4384,7 +4385,6 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var willHide = dockState === 'hidden-by-scroll';
           var becameHidden = !wasHidden && willHide;
           var becameVisible = wasHidden && (dockState === 'visible' || dockState === 'forced-visible');
-          var manualOpenAge = Date.now() - (state.detailOutlineManualOpenAt || 0);
 
           state.previousDockState = previousDockState;
           state.dockState = dockState;
@@ -4393,16 +4393,14 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           writeBodyState('data-gg-bottom-zone', bottomZone ? 'true' : 'false');
 
           if (becameHidden && ui.detailOutline && !ui.detailOutline.hidden) {
-            if (!state.detailOutlineManualOpen || manualOpenAge > 1200) {
-              state.detailOutlineManualOpen = false;
-              state.detailOutlineManualOpenAt = 0;
+            if (!isDetailOutlineManualOpenFresh()) {
+              clearDetailOutlineManualOpen();
               setDetailOutlineState('micro-peek');
             }
           }
 
           if (becameVisible) {
-            state.detailOutlineManualOpen = false;
-            state.detailOutlineManualOpenAt = 0;
+            clearDetailOutlineManualOpen();
           }
 
           requestDetailOutlineSync();
@@ -5487,6 +5485,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           return closePanel(state.panelActive, { returnFocus: false, reason: 'panel-switch' }).then(function () {
             clearPanelTimer(name);
             if (isDetailOutlineExpanded()) {
+              clearDetailOutlineManualOpen();
               state.detailOutlineState = resolveDetailOutlineCompactState();
               renderDetailOutline();
             }
@@ -7197,6 +7196,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           state.detailOutlineManualOpenAt = Date.now();
         }
 
+        function clearDetailOutlineManualOpen() {
+          state.detailOutlineManualOpen = false;
+          state.detailOutlineManualOpenAt = 0;
+        }
+
+        function isDetailOutlineManualOpenFresh() {
+          return state.detailOutlineManualOpen &&
+            (Date.now() - (state.detailOutlineManualOpenAt || 0)) <= DETAIL_OUTLINE_MANUAL_OPEN_GRACE_MS;
+        }
+
         function getDetailOutlineToggleCopyKey(outlineState) {
           if (outlineState === 'expanded') return 'outline.collapse';
           if (outlineState === 'micro-peek') return 'outline.peek';
@@ -7335,8 +7344,17 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         }
 
         function toggleDetailOutline() {
-          markDetailOutlineManualOpen();
-          setDetailOutlineState(resolveDetailOutlineToggleState());
+          var nextState = resolveDetailOutlineToggleState();
+
+          if (isDetailOutlineExpanded()) {
+            clearDetailOutlineManualOpen();
+          } else if (nextState === 'expanded' || nextState === 'peek') {
+            markDetailOutlineManualOpen();
+          } else {
+            clearDetailOutlineManualOpen();
+          }
+
+          setDetailOutlineState(nextState);
         }
 
         function scrollToDetailOutlineTarget(id) {
@@ -7356,6 +7374,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             window.history.replaceState(null, document.title, '#' + target.id);
           }
 
+          clearDetailOutlineManualOpen();
           setDetailOutlineState(resolveDetailOutlineCompactState());
         }
 
@@ -7373,9 +7392,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
 
           if (!isDetailOutlineExpanded()) {
-            nextCompactState = isDockHiddenByScroll() && state.detailOutlineState === 'micro-peek' && !state.detailOutlineManualOpen
-              ? 'micro-peek'
-              : resolveDetailOutlineCompactState();
+            if (isDockHiddenByScroll() && isDetailOutlineManualOpenFresh()) {
+              nextCompactState = state.detailOutlineState;
+            } else if (isDockHiddenByScroll() && state.detailOutlineState === 'micro-peek' && !state.detailOutlineManualOpen) {
+              nextCompactState = 'micro-peek';
+            } else {
+              if (state.detailOutlineManualOpen && !isDetailOutlineManualOpenFresh()) {
+                clearDetailOutlineManualOpen();
+              }
+              nextCompactState = resolveDetailOutlineCompactState();
+            }
             if (nextCompactState !== state.detailOutlineState) {
               state.detailOutlineState = nextCompactState;
               shouldRender = true;
@@ -7432,7 +7458,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
           if (gesture.expandedAtStart && delta >= collapseDelta) {
             state.ignoreClickUntil = Date.now() + 180;
-            markDetailOutlineManualOpen();
+            clearDetailOutlineManualOpen();
             setDetailOutlineState(resolveDetailOutlineCompactState());
           }
         }
@@ -9269,6 +9295,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
+              clearDetailOutlineManualOpen();
               setDetailOutlineState(resolveDetailOutlineCompactState());
             } else {
               closePanel(state.panelActive, { reason: 'escape-close' });
@@ -9346,9 +9373,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
         GG.detailOutline = {
           open: function () {
+            markDetailOutlineManualOpen();
             setDetailOutlineState('expanded');
           },
           close: function () {
+            clearDetailOutlineManualOpen();
             setDetailOutlineState(resolveDetailOutlineCompactState());
           },
           toggle: toggleDetailOutline,
