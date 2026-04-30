@@ -355,6 +355,7 @@
     }
 
     .store-filter {
+      display: none;
       position: sticky;
       top: 68px;
       z-index: 30;
@@ -397,11 +398,11 @@
     }
     .store-card {
       min-width: 0;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--gg-line) 76%, transparent);
-      border-radius: 0;
-      background: color-mix(in srgb, var(--gg-surface-interactive) 32%, transparent);
-      box-shadow: var(--gg-shadow-soft);
+      overflow: visible;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      box-shadow: none;
       transform: translateZ(0);
     }
     .store-card__button {
@@ -419,6 +420,7 @@
       position: relative;
       aspect-ratio: var(--store-card-aspect);
       overflow: hidden;
+      border-radius: 10px;
       background: linear-gradient(135deg, rgba(32,26,28,.08), rgba(255,255,255,.18));
     }
     .store-card__media img {
@@ -746,7 +748,6 @@
       gap: 8px;
     }
     .store-preview__market .store-button { min-width: 0; padding-inline: 10px; }
-    .store-preview__article { width: 100%; font-size: clamp(18px,5vw,28px); min-height: 54px; }
     .store-preview__notes {
       display: grid;
       gap: 10px;
@@ -861,6 +862,63 @@
       font-size: 12px;
     }
 
+
+
+    .store-filter-outline {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--gg-dock-clearance) + 0px);
+      z-index: 39;
+      display: grid;
+      gap: 0;
+      width: min(calc(100% - 66px), 600px);
+      border: 1px solid var(--gg-toolbar-border);
+      border-radius: 22px 22px 0 0;
+      background: var(--gg-toolbar-surface);
+      box-shadow: var(--gg-shadow-soft);
+      -webkit-backdrop-filter: blur(16px) saturate(145%);
+      backdrop-filter: blur(16px) saturate(145%);
+      transform: translateX(-50%);
+      overflow: hidden;
+      transition: bottom var(--gg-motion-sheet-open-bottom), transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-ease);
+    }
+    body[data-gg-dock-state='hidden-by-scroll'] .store-filter-outline { bottom: 0; }
+    body[data-gg-panel-active='true'] .store-filter-outline { opacity: 0; pointer-events: none; transform: translate(-50%, 10px); }
+    .store-filter-outline__peek {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: var(--gg-hit-min);
+      padding: 9px 12px;
+      border: 0;
+      background: transparent;
+      color: var(--gg-ink);
+      text-align: left;
+    }
+    body[data-gg-dock-state='hidden-by-scroll'] .store-filter-outline__peek { padding-bottom: calc(9px + env(safe-area-inset-bottom)); }
+    .store-filter-outline__main { display: grid; min-width: 0; gap: 2px; }
+    .store-filter-outline__eyebrow { color: var(--gg-accent-soft); font: 750 10px/1 var(--gg-font-sans); letter-spacing: .14em; text-transform: uppercase; }
+    .store-filter-outline__current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 760 15px/1.15 var(--gg-font-sans); letter-spacing: -.025em; }
+    .store-filter-outline__count { color: var(--gg-ink-soft); font: 650 12px/1.15 var(--gg-font-sans); white-space: nowrap; }
+    .store-filter-outline__icon { transition: transform var(--gg-motion-sheet-open-bottom); }
+    .store-filter-outline[data-store-filter-state='expanded'] .store-filter-outline__icon { transform: rotate(180deg); }
+    .store-filter-outline__panel { display: none; padding: 0 12px 12px; border-top: 1px solid var(--gg-divider); }
+    .store-filter-outline[data-store-filter-state='expanded'] .store-filter-outline__panel { display: block; }
+    .store-discovery-results, .store-saved-results { display: grid; gap: 0; border-top: 1px solid var(--gg-divider); }
+    .store-result-row { display: grid; grid-template-columns: 54px minmax(0,1fr) auto; align-items: center; gap: 10px; min-height: 72px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--gg-divider); background: transparent; color: var(--gg-ink); text-align: left; }
+    .store-result-row__thumb { width: 54px; aspect-ratio: 4 / 5; border-radius: 8px; overflow: hidden; background: var(--gg-surface-interactive); }
+    .store-result-row__thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .store-result-row__body { display: grid; gap: 3px; min-width: 0; }
+    .store-result-row__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 720 14px/1.2 var(--gg-font-sans); }
+    .store-result-row__meta { color: var(--gg-ink-soft); font: 620 12px/1.2 var(--gg-font-sans); }
+    .store-result-row__empty { padding: 16px 0; color: var(--gg-ink-soft); font: 600 13px/1.4 var(--gg-font-sans); text-align: center; }
+    .store-setting--link { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .store-preview__save[aria-pressed='true'] { background: var(--gg-accent); color: var(--gg-accent-contrast); border-color: var(--gg-accent); }
+    .store-preview__footer { position: sticky; bottom: 0; display: grid; justify-items: center; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(0deg, var(--gg-surface-panel) 70%, var(--gg-surface-panel-fade-soft)); border-top: 1px solid var(--gg-divider); }
+    .store-preview__handle { width: 62px; height: 22px; border: 0; background: transparent; position: relative; }
+    .store-preview__handle::before { content: ''; position: absolute; left: 50%; top: 9px; width: 62px; height: 3px; border-radius: 999px; background: var(--gg-panel-handle-tone); transform: translateX(-50%); }
     @media (min-width: 720px) {
       :root { --store-max: 920px; --store-card-gap: 12px; }
       .store-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
@@ -872,10 +930,6 @@
       .store-grid[data-store-wide='true'] { grid-template-columns: repeat(4, minmax(var(--store-card-min-wide),1fr)); }
     }
     @media (max-width: 520px) {
-      .store-topbar { grid-template-columns: auto minmax(44px,1fr) auto; }
-      .store-brand__text { display: none; }
-      .store-command { padding-inline: 10px; }
-      .store-command input::placeholder { color: transparent; }
       .store-preview__market { gap: 6px; }
       .store-preview__market .store-button { font-size: 12px; }
     }
@@ -896,48 +950,23 @@
   <main
     id="store-app"
     class="store-app"
-    data-store-module="store"
+    data-store-module="yellow-cart"
     data-store-state="loading"
-    data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"
-    data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=50"
+    data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=80"
+    data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=80"
     aria-label="Yellow Cart product catalogue"
   >
     <a class="gg-visually-hidden" href="#store-grid">Lewati ke katalog</a>
 
     <section class="store-main" aria-labelledby="store-title">
-      <header class="store-topbar">
-        <a class="store-brand" href="/store" aria-label="Yellow Cart">
-          <span class="store-brand__mark" aria-hidden="true">YC</span>
-          <span class="store-brand__text">Yellow Cart</span>
-        </a>
-        <div class="store-command">
-          <span class="gg-icon" aria-hidden="true">search</span>
-          <label class="gg-visually-hidden" for="store-search">Cari produk atau kategori</label>
-          <input id="store-search" type="search" inputmode="search" placeholder="Cari produk atau kategori" autocomplete="off" data-copy-placeholder="searchPlaceholder" />
-        </div>
-        <button class="store-action" id="store-refresh" type="button" aria-label="Refresh katalog">
-          <span class="gg-icon" aria-hidden="true">refresh</span>
-        </button>
-      </header>
-
       <section class="store-hero" aria-label="Yellow Cart introduction">
-        <p class="store-eyebrow" data-copy="eyebrow">PAKRPP · Curated affiliate store</p>
         <h1 class="store-title" id="store-title">Yellow Cart</h1>
-        <p class="store-summary" data-copy="summary">Kurasi produk premium pilihan PakRPP. Tap produk untuk preview editorial, harga, dan tautan marketplace tanpa meninggalkan katalog.</p>
+        <p class="store-summary" data-copy="summary">Kurasi produk pilihan.</p>
         <div class="store-disclosure" aria-label="Affiliate disclosure">
           <span class="store-pill" data-copy="affiliatePill">Affiliate links may be used</span>
           <span data-copy="availabilityNote">Harga dan ketersediaan mengikuti marketplace.</span>
         </div>
       </section>
-
-      <nav class="store-filter" aria-label="Store filters" data-store-filter-scope="page">
-        <button class="store-chip" type="button" data-store-filter="all" aria-pressed="true">All</button>
-        <button class="store-chip" type="button" data-store-filter="fashion" aria-pressed="false">Fashion</button>
-        <button class="store-chip" type="button" data-store-filter="skincare" aria-pressed="false">Skincare</button>
-        <button class="store-chip" type="button" data-store-filter="workspace" aria-pressed="false">Workspace</button>
-        <button class="store-chip" type="button" data-store-filter="tech" aria-pressed="false">Tech</button>
-        <button class="store-chip" type="button" data-store-filter="etc" aria-pressed="false">Etc</button>
-      </nav>
 
       <div class="store-meta-row" aria-live="polite">
         <span id="store-count">Memuat produk…</span>
@@ -959,10 +988,10 @@
       <section id="contact" class="store-contact" aria-labelledby="store-contact-title">
         <div class="store-contact__inner">
           <p class="store-eyebrow" data-copy="contactEyebrow">Contact</p>
-          <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, affiliate disclosures, and correction requests.</h2>
-          <p data-copy="contactBody">Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
+          <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, and affiliate inquiries.</h2>
+          <p data-copy="contactBody">Untuk penempatan produk kurasi, kolaborasi brand, koreksi data, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
           <div class="store-contact__actions">
-            <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Open PakRPP Contact</a>
+            <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Contact PakRPP</a>
             <a class="store-button" href="/" data-copy="backToBlog">Back to Blog</a>
           </div>
         </div>
@@ -981,23 +1010,43 @@
     </a>
     <button class="gg-dock__item" id="store-dock-search" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
       <span class="gg-icon" aria-hidden="true">search</span>
-      <span class="gg-dock__label">Search</span>
+      <span class="gg-dock__label">Discover</span>
     </button>
-    <a class="gg-dock__item" href="/">
-      <span class="gg-icon" aria-hidden="true">newsmode</span>
-      <span class="gg-dock__label">Blog</span>
-    </a>
+    <button class="gg-dock__item" id="store-saved-open" type="button" aria-haspopup="dialog" aria-controls="store-saved-sheet">
+      <span class="gg-icon" aria-hidden="true">bookmark</span>
+      <span class="gg-dock__label">Saved</span>
+    </button>
     <button class="gg-dock__item" id="store-more-open" type="button" aria-haspopup="dialog" aria-controls="store-more-sheet">
       <span class="gg-icon" aria-hidden="true">menu</span>
       <span class="gg-dock__label">More</span>
     </button>
   </nav>
 
+  <section class="store-filter-outline" id="store-filter-outline" data-store-filter-state="micro" aria-label="Store filters">
+    <button class="store-filter-outline__peek" id="store-filter-toggle" type="button" aria-expanded="false" aria-controls="store-filter-panel">
+      <span class="store-filter-outline__main">
+        <span class="store-filter-outline__eyebrow">Filter</span>
+        <span class="store-filter-outline__current" id="store-filter-current">All</span>
+      </span>
+      <span class="store-filter-outline__count" id="store-filter-count">0 produk</span>
+      <span class="gg-icon store-filter-outline__icon" aria-hidden="true">keyboard_arrow_up</span>
+    </button>
+    <div class="store-filter-outline__panel" id="store-filter-panel">
+      <div class="store-chip-row" data-store-filter-scope="outline">
+        <button class="store-chip" type="button" data-store-filter="all" aria-pressed="true">All</button>
+        <button class="store-chip" type="button" data-store-filter="fashion" aria-pressed="false">Fashion</button>
+        <button class="store-chip" type="button" data-store-filter="skincare" aria-pressed="false">Skincare</button>
+        <button class="store-chip" type="button" data-store-filter="workspace" aria-pressed="false">Workspace</button>
+        <button class="store-chip" type="button" data-store-filter="tech" aria-pressed="false">Tech</button>
+        <button class="store-chip" type="button" data-store-filter="etc" aria-pressed="false">Etc</button>
+      </div>
+    </div>
+  </section>
+
   <section class="gg-sheet store-preview-sheet" id="store-preview-sheet" data-gg-panel="preview" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-preview-title" hidden>
     <button class="gg-sheet__scrim" type="button" data-store-close="preview" aria-label="Tutup pratinjau produk"></button>
     <article class="gg-sheet__panel" id="store-preview-panel" tabindex="-1">
       <section class="store-preview__hero" aria-label="Product preview hero">
-        <button class="store-preview__close" type="button" data-store-close="preview" aria-label="Close preview"><span class="gg-icon" aria-hidden="true">close</span></button>
         <div class="store-preview__carousel" id="store-preview-carousel" aria-label="Product images"></div>
         <div class="store-preview__shade" aria-hidden="true"></div>
         <div class="store-preview__overlay">
@@ -1014,12 +1063,18 @@
           <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">TikTok</a>
           <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Tokopedia</a>
         </div>
-        <a class="store-button store-button--primary store-preview__article" id="store-read-article" href="#">Read the article</a>
+        <button class="store-button store-preview__save" id="store-preview-save" type="button" aria-pressed="false">
+          <span class="gg-icon" aria-hidden="true">bookmark</span>
+          <span id="store-preview-save-label">Save</span>
+        </button>
         <section class="store-preview__notes" id="store-preview-notes" hidden>
           <h3 data-copy="notesTitle">Notes</h3>
           <ul id="store-preview-notes-list"></ul>
         </section>
       </div>
+      <footer class="store-preview__footer">
+        <button class="store-preview__handle" type="button" data-store-close="preview" aria-label="Close preview"></button>
+      </footer>
     </article>
   </section>
 
@@ -1029,7 +1084,7 @@
       <header class="gg-sheet__head">
         <span class="gg-sheet__handle" aria-hidden="true"></span>
         <h2 class="gg-sheet__title" id="store-discovery-title">Discovery</h2>
-        <button class="gg-sheet__close" type="button" data-store-close="discovery" aria-label="Close discovery"><span class="gg-icon" aria-hidden="true">close</span></button>
+        <button class="gg-visually-hidden" type="button" data-store-close="discovery">Close discovery</button>
       </header>
       <div class="store-sheet-body">
         <label class="store-field" for="store-discovery-search">
@@ -1047,7 +1102,35 @@
             <button class="store-chip" type="button" data-store-filter="etc" aria-pressed="false">Etc</button>
           </div>
         </section>
+        <section class="store-sheet-section">
+          <p class="store-sheet-section__label">Quick intents</p>
+          <div class="store-chip-row">
+            <button class="store-chip" type="button" data-store-intent="featured">Featured</button>
+            <button class="store-chip" type="button" data-store-intent="latest">Latest</button>
+            <button class="store-chip" type="button" data-store-intent="under500">Under 500k</button>
+          </div>
+        </section>
         <p class="store-summary" id="store-discovery-status">All products are visible.</p>
+        <section class="store-sheet-section">
+          <p class="store-sheet-section__label">Results</p>
+          <div class="store-discovery-results" id="store-discovery-results"></div>
+        </section>
+      </div>
+    </section>
+  </section>
+
+
+  <section class="gg-sheet store-bottom-sheet" id="store-saved-sheet" data-gg-panel="saved" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-saved-title" hidden>
+    <button class="gg-sheet__scrim" type="button" data-store-close="saved" aria-label="Tutup saved"></button>
+    <section class="gg-sheet__panel" id="store-saved-panel" tabindex="-1">
+      <header class="gg-sheet__head">
+        <span class="gg-sheet__handle" aria-hidden="true"></span>
+        <h2 class="gg-sheet__title" id="store-saved-title">Saved</h2>
+        <button class="gg-visually-hidden" type="button" data-store-close="saved">Close saved</button>
+      </header>
+      <div class="store-sheet-body">
+        <p class="store-summary">Saved on this device.</p>
+        <div class="store-saved-results" id="store-saved-results"></div>
       </div>
     </section>
   </section>
@@ -1058,9 +1141,16 @@
       <header class="gg-sheet__head">
         <span class="gg-sheet__handle" aria-hidden="true"></span>
         <h2 class="gg-sheet__title" id="store-more-title">More</h2>
-        <button class="gg-sheet__close" type="button" data-store-close="more" aria-label="Close more panel"><span class="gg-icon" aria-hidden="true">close</span></button>
+        <button class="gg-visually-hidden" type="button" data-store-close="more">Close more panel</button>
       </header>
       <div class="store-sheet-body">
+        <section class="store-sheet-section" aria-labelledby="store-navigation-label">
+          <p class="store-sheet-section__label" id="store-navigation-label">Navigate</p>
+          <div class="store-setting-grid">
+            <a class="store-setting store-setting--link" href="/">Blog</a>
+            <a class="store-setting store-setting--link" href="/landing">Home</a>
+          </div>
+        </section>
         <section class="store-sheet-section" aria-labelledby="store-language-label">
           <p class="store-sheet-section__label" id="store-language-label">Language</p>
           <div class="store-setting-grid">
@@ -1111,7 +1201,7 @@
 
     var STORE_QA_MATRIX = [
       'Route /store returns canonical Yellow Cart surface.',
-      'Feed source is Blogger label Store with legacy label fallback only.',
+      'Feed source is Blogger label Store with legacy yellowcard fallback only.',
       'Grid uses 4:5 cards, 2 columns mobile, 3 columns tablet, optional 4 columns wide.',
       'Product card opens top preview sheet.',
       'Preview active hides and inerts dock.',
@@ -1124,15 +1214,15 @@
     var COPY = {
       id: {
         eyebrow: 'PAKRPP · Curated affiliate store',
-        summary: 'Kurasi produk premium pilihan PakRPP. Tap produk untuk preview editorial, harga, dan tautan marketplace tanpa meninggalkan katalog.',
+        summary: 'Kurasi produk pilihan.',
         affiliatePill: 'Affiliate links may be used',
         availabilityNote: 'Harga dan ketersediaan mengikuti marketplace.',
         searchPlaceholder: 'Cari produk atau kategori',
         filtersLabel: 'Filters',
         contactEyebrow: 'Contact',
-        contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
-        contactBody: 'Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.',
-        contactCta: 'Open PakRPP Contact',
+        contactTitle: 'Collaborations, product submissions, and affiliate inquiries.',
+        contactBody: 'Untuk penempatan produk kurasi, kolaborasi brand, koreksi data, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.',
+        contactCta: 'Contact PakRPP',
         backToBlog: 'Back to Blog',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
@@ -1141,21 +1231,21 @@
         emptyTitle: 'Produk tidak ditemukan.',
         emptyBody: 'Coba filter lain atau kosongkan pencarian.',
         feedStore: 'Feed: Store',
-        feedLegacy: 'Feed: Store archive fallback',
+        feedLegacy: 'Feed: legacy yellowcard',
         filterActive: 'Filter aktif',
         allVisible: 'All products are visible.'
       },
       en: {
         eyebrow: 'PAKRPP · Curated affiliate store',
-        summary: 'Premium affiliate picks curated by PakRPP. Tap a product for editorial preview, price, and marketplace links without leaving the catalogue.',
+        summary: 'Curated product picks.',
         affiliatePill: 'Affiliate links may be used',
         availabilityNote: 'Prices and availability follow the marketplace.',
         searchPlaceholder: 'Search products or categories',
         filtersLabel: 'Filters',
         contactEyebrow: 'Contact',
-        contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
-        contactBody: 'For curated product placement, brand collaboration, correction requests, or affiliate questions, use PakRPP contact channel.',
-        contactCta: 'Open PakRPP Contact',
+        contactTitle: 'Collaborations, product submissions, and affiliate inquiries.',
+        contactBody: 'For curated product placement, brand collaboration, data correction, or affiliate questions, use PakRPP contact channel.',
+        contactCta: 'Contact PakRPP',
         backToBlog: 'Back to Blog',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
@@ -1164,7 +1254,7 @@
         emptyTitle: 'No products found.',
         emptyBody: 'Try another filter or clear the search field.',
         feedStore: 'Feed: Store',
-        feedLegacy: 'Feed: Store archive fallback',
+        feedLegacy: 'Feed: legacy yellowcard',
         filterActive: 'Active filter',
         allVisible: 'All products are visible.'
       }
@@ -1198,6 +1288,16 @@
     var moreOpen = document.getElementById('store-more-open');
     var contactLink = document.getElementById('store-contact-link');
     var discoveryStatus = document.getElementById('store-discovery-status');
+    var discoveryResults = document.getElementById('store-discovery-results');
+    var savedOpen = document.getElementById('store-saved-open');
+    var savedSheet = document.getElementById('store-saved-sheet');
+    var savedPanel = document.getElementById('store-saved-panel');
+    var savedResults = document.getElementById('store-saved-results');
+    var filterOutline = document.getElementById('store-filter-outline');
+    var filterToggle = document.getElementById('store-filter-toggle');
+    var filterCurrent = document.getElementById('store-filter-current');
+    var filterCount = document.getElementById('store-filter-count');
+    var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
     var filterButtons = [].slice.call(document.querySelectorAll('[data-store-filter]'));
     var langButtons = [].slice.call(document.querySelectorAll('[data-store-lang]'));
     var themeButtons = [].slice.call(document.querySelectorAll('[data-store-theme]'));
@@ -1210,7 +1310,8 @@
       meta: document.getElementById('store-preview-meta'),
       summary: document.getElementById('store-preview-summary'),
       price: document.getElementById('store-preview-price'),
-      read: document.getElementById('store-read-article'),
+      save: document.getElementById('store-preview-save'),
+      saveLabel: document.getElementById('store-preview-save-label'),
       notes: document.getElementById('store-preview-notes'),
       notesList: document.getElementById('store-preview-notes-list'),
       links: {
@@ -1225,6 +1326,9 @@
       filtered: [],
       query: '',
       filter: 'all',
+      intent: '',
+      currentProductKey: '',
+      saved: readSaved(),
       visibleLimit: VISIBLE_INITIAL,
       panelActive: '',
       lastFocus: null,
@@ -1241,6 +1345,16 @@
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
+    function readSaved() {
+      try {
+        var raw = window.localStorage && window.localStorage.getItem('store:saved');
+        var parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      } catch (error) { return []; }
+    }
+    function writeSaved() { writeStorage('store:saved', JSON.stringify(state.saved || [])); }
+    function itemKey(item) { return item && (item.url || item.title) ? String(item.url || item.title) : ''; }
+    function isSaved(item) { var key = typeof item === 'string' ? item : itemKey(item); return !!key && state.saved.indexOf(key) > -1; }
     function clean(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
     function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
     function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
@@ -1286,29 +1400,16 @@
       var c = lower(category);
       return PUBLIC_FILTERS.indexOf(c) > -1 && c !== 'all' ? c : 'etc';
     }
-    function marketplaceInfo(href) {
-      var value = clean(href);
-      var url;
-      var host;
-      if (!value) return null;
-      try {
-        url = new URL(value, window.location.origin);
-      } catch (error) {
-        return null;
-      }
-      if (url.protocol !== 'https:') return null;
-      host = lower(url.hostname).replace(/^www\./, '');
-      if (/(^|\.)shopee\.[a-z.]+$/.test(host)) return { key: 'shopee', href: url.toString() };
-      if (host === 'tokopedia.com' || /(^|\.)tokopedia\.com$/.test(host)) return { key: 'tokopedia', href: url.toString() };
-      if (host === 'tiktok.com' || /(^|\.)tiktok\.com$/.test(host)) return { key: 'tiktok', href: url.toString() };
-      return null;
-    }
-    function marketplaceHref(raw, key) {
-      var info = marketplaceInfo(raw);
-      return info && info.key === key ? info.href : '';
+    function marketKey(href) {
+      var h = lower(href);
+      if (!h) return '';
+      if (h.indexOf('shopee') > -1) return 'shopee';
+      if (h.indexOf('tokopedia') > -1) return 'tokopedia';
+      if (h.indexOf('tiktok') > -1 || h.indexOf('vt.tiktok') > -1) return 'tiktok';
+      return 'official';
     }
     function parseJsonScript(doc) {
-      var scripts = [].slice.call(doc.querySelectorAll('script.gg-store-data, script[type="application/json"].gg-store-data, .gg-store-data[type="application/json"], script.gg-yellowcard-data, script[type="application/json"].gg-yellowcard-data, .gg-yellowcard-data[type="application/json"]'));
+      var scripts = [].slice.call(doc.querySelectorAll('script.gg-store-data, script.gg-yellowcard-data, script[type="application/json"].gg-store-data, script[type="application/json"].store-data'));
       for (var i = 0; i < scripts.length; i += 1) {
         try { return JSON.parse(scripts[i].textContent || '{}') || {}; } catch (error) {}
       }
@@ -1327,8 +1428,9 @@
         if (src) out.images.push(src);
       });
       anchors.forEach(function (a) {
-        var info = marketplaceInfo(a.getAttribute('href') || '');
-        if (info && !out.links[info.key]) out.links[info.key] = info.href;
+        var href = a.getAttribute('href') || '';
+        var key = marketKey(href);
+        if (key && !out.links[key]) out.links[key] = href;
       });
       [].slice.call(doc.querySelectorAll('script, style, noscript')).forEach(function (n) { n.remove(); });
       out.contents = heads.map(function (head) { return clean(head.textContent); }).filter(Boolean).slice(0, 4);
@@ -1343,10 +1445,10 @@
       var publicLabs = publicLabels(labs);
       var category = clean(data.category || publicLabs[0] || 'Etc');
       var images = arr(data.images || data.gallery || data.image || parsed.images).map(clean).filter(Boolean).slice(0, 8);
-      var dataLinks = data.links || {};
       var linksOut = {};
-      MARKET.forEach(function (key) { linksOut[key] = marketplaceHref(dataLinks[key], key) || marketplaceHref(parsed.links[key], key) || ''; });
+      MARKET.forEach(function (key) { linksOut[key] = clean((data.links || {})[key] || parsed.links[key] || ''); });
       return {
+        id: altUrl(entry),
         title: clean(data.name || data.productName || text(entry.title) || 'Untitled product'),
         url: altUrl(entry),
         labels: labs,
@@ -1399,15 +1501,35 @@
       });
     }
 
+    function priceNumber(text) {
+      var raw = lower(text).replace(/[^0-9,.k]/g, '');
+      if (!raw) return 0;
+      var isK = raw.indexOf('k') > -1;
+      raw = raw.replace(/k/g, '').replace(/\./g, '').replace(/,/g, '.');
+      var num = parseFloat(raw);
+      if (!num) return 0;
+      return isK ? num * 1000 : num;
+    }
+    function matchIntent(item, intent) {
+      var hay = [item.title, item.category, item.summary, item.badge, item.priceText, item.labels.join(' '), (item.contents || []).join(' ')].join(' ').toLowerCase();
+      if (intent === 'featured') return hay.indexOf('featured') > -1 || hay.indexOf('curated') > -1 || hay.indexOf('pilihan') > -1;
+      if (intent === 'under500') return priceNumber(item.priceText) > 0 && priceNumber(item.priceText) <= 500000;
+      if (intent === 'latest') return true;
+      return true;
+    }
     function applyFilters() {
       var q = lower(state.query);
       state.filtered = state.products.filter(function (item) {
         var hay = [item.title, item.category, item.summary, item.priceText, item.labels.join(' ')].join(' ').toLowerCase();
         var matchesQuery = !q || hay.indexOf(q) !== -1;
         var matchesFilter = state.filter === 'all' || item.filter === state.filter || lower(item.category) === state.filter;
-        return matchesQuery && matchesFilter;
+        var matchesIntent = !state.intent || matchIntent(item, state.intent);
+        return matchesQuery && matchesFilter && matchesIntent;
       });
+      if (state.intent === 'latest') state.filtered = state.filtered.slice().sort(function (a, b) { return String(b.published || '').localeCompare(String(a.published || '')); });
       renderCards();
+      renderDiscoveryResults();
+      renderSavedResults();
       app.setAttribute('data-store-state', state.filtered.length ? 'ready' : 'empty');
       empty.hidden = !!state.filtered.length;
       if (!state.filtered.length) {
@@ -1423,12 +1545,39 @@
       var unit = state.locale === 'en' ? 'products' : 'produk';
       setNodeText(count, state.filtered.length + ' ' + unit);
       setNodeText(source, state.query || state.filter !== 'all' ? copy('filterActive') : (state.feedSource === 'legacy' ? copy('feedLegacy') : copy('feedStore')));
-      setNodeText(discoveryStatus, state.query || state.filter !== 'all' ? (state.filtered.length + ' ' + unit) : copy('allVisible'));
+      setNodeText(discoveryStatus, state.query || state.filter !== 'all' || state.intent ? (state.filtered.length + ' ' + unit) : copy('allVisible'));
+      if (filterCurrent) setNodeText(filterCurrent, state.intent ? titleCase(state.intent === 'under500' ? 'Under 500k' : state.intent) : titleCase(state.filter));
+      if (filterCount) setNodeText(filterCount, state.filtered.length + ' ' + unit);
     }
     function updateChipState() {
       filterButtons.forEach(function (button) {
         button.setAttribute('aria-pressed', button.getAttribute('data-store-filter') === state.filter ? 'true' : 'false');
       });
+    }
+    function titleCase(value) {
+      value = clean(value || 'All');
+      return value ? value.charAt(0).toUpperCase() + value.slice(1) : 'All';
+    }
+    function renderResultRow(item, index, action) {
+      return '' +
+        '<button class="store-result-row" type="button" data-store-result-action="' + action + '" data-store-result-index="' + index + '">' +
+          '<span class="store-result-row__thumb"><img loading="lazy" decoding="async" src="' + escapeAttr(item.images[0] || PLACEHOLDER_IMAGE) + '" alt="" /></span>' +
+          '<span class="store-result-row__body">' +
+            '<span class="store-result-row__title">' + escapeHtml(item.title) + '</span>' +
+            '<span class="store-result-row__meta">' + escapeHtml([item.category, item.priceText].filter(Boolean).join(' · ')) + '</span>' +
+          '</span>' +
+          '<span class="gg-icon" aria-hidden="true">chevron_right</span>' +
+        '</button>';
+    }
+    function renderDiscoveryResults() {
+      if (!discoveryResults) return;
+      var rows = state.filtered.slice(0, 8);
+      discoveryResults.innerHTML = rows.length ? rows.map(function (item, index) { return renderResultRow(item, index, 'preview'); }).join('') : '<p class="store-result-row__empty">No matching products.</p>';
+    }
+    function renderSavedResults() {
+      if (!savedResults) return;
+      var savedItems = (state.products || []).filter(function (item) { return isSaved(item); });
+      savedResults.innerHTML = savedItems.length ? savedItems.map(function (item, index) { return renderResultRow(item, state.products.indexOf(item), 'saved-preview'); }).join('') : '<p class="store-result-row__empty">No saved picks yet. Open a product and tap Save.</p>';
     }
     function renderCards() {
       if (!grid) return;
@@ -1444,7 +1593,6 @@
             '<div class="store-card__media">' +
               '<img loading="lazy" decoding="async" src="' + escapeAttr(item.images[0] || PLACEHOLDER_IMAGE) + '" alt="' + escapeAttr(item.title) + '" />' +
               '<span class="store-card__shade" aria-hidden="true"></span>' +
-              '<span class="store-card__quick" aria-hidden="true"><span class="gg-icon">chevron_right</span></span>' +
               '<div class="store-card__content">' +
                 '<span class="store-card__badge">' + escapeHtml(item.badge || item.category) + '</span>' +
                 '<span class="store-card__price">' + escapeHtml(item.priceText) + '</span>' +
@@ -1470,7 +1618,12 @@
       setNodeText(preview.meta, ['PakRPP', item.published, 'Curated pick'].filter(Boolean).join(' · '));
       setNodeText(preview.summary, item.summary || 'Produk kurasi Yellow Cart.');
       setNodeText(preview.price, item.priceText || 'Rp—');
-      preview.read.href = item.url || '#';
+      state.currentProductKey = itemKey(item);
+      if (preview.save) {
+        var saved = isSaved(item);
+        preview.save.setAttribute('aria-pressed', saved ? 'true' : 'false');
+        setNodeText(preview.saveLabel, saved ? 'Saved' : 'Save');
+      }
       ['shopee', 'tiktok', 'tokopedia'].forEach(function (key) {
         var link = preview.links[key];
         var href = item.links && item.links[key];
@@ -1487,6 +1640,7 @@
     function getPanel(name) {
       if (name === 'preview') return { sheet: previewSheet, panel: previewPanel };
       if (name === 'discovery') return { sheet: discoverySheet, panel: discoveryPanel };
+      if (name === 'saved') return { sheet: savedSheet, panel: savedPanel };
       if (name === 'more') return { sheet: moreSheet, panel: morePanel };
       return null;
     }
@@ -1551,12 +1705,14 @@
     }
     function syncQuery(value) {
       state.query = clean(value);
+      state.intent = '';
       if (search && search.value !== value) search.value = value;
       if (discoverySearch && discoverySearch.value !== value) discoverySearch.value = value;
       state.visibleLimit = VISIBLE_INITIAL;
       applyFilters();
     }
     function setFilter(filter) {
+      state.intent = '';
       state.filter = PUBLIC_FILTERS.indexOf(filter) > -1 ? filter : 'all';
       state.visibleLimit = VISIBLE_INITIAL;
       applyFilters();
@@ -1587,19 +1743,58 @@
       });
     }
 
+    function openPreviewItem(item, trigger) {
+      if (!item) return;
+      fillPreview(item);
+      openPanel('preview', trigger || document.activeElement);
+    }
+
     grid.addEventListener('click', function (event) {
       var trigger = event.target.closest('[data-store-open-preview]');
       if (!trigger) return;
       var index = Number(trigger.getAttribute('data-store-open-preview'));
       var item = activeItem(index);
-      fillPreview(item);
-      openPanel('preview', trigger);
+      openPreviewItem(item, trigger);
     });
     if (loadMore) loadMore.addEventListener('click', function () { state.visibleLimit += VISIBLE_STEP; renderCards(); });
     if (refresh) refresh.addEventListener('click', loadProducts);
     if (search) search.addEventListener('input', function () { syncQuery(search.value); });
     if (discoverySearch) discoverySearch.addEventListener('input', function () { syncQuery(discoverySearch.value); });
     if (dockSearch) dockSearch.addEventListener('click', function () { openDiscovery(dockSearch); });
+    if (savedOpen) savedOpen.addEventListener('click', function () { renderSavedResults(); openPanel('saved', savedOpen); });
+    if (filterToggle) filterToggle.addEventListener('click', function () {
+      var expanded = filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded';
+      if (filterOutline) filterOutline.setAttribute('data-store-filter-state', expanded ? 'micro' : 'expanded');
+      filterToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    });
+    if (discoveryResults) discoveryResults.addEventListener('click', function (event) {
+      var row = event.target.closest('[data-store-result-index]');
+      if (!row) return;
+      var index = Number(row.getAttribute('data-store-result-index'));
+      var item = state.filtered[index];
+      closePanel('discovery', { restoreFocus: false });
+      openPreviewItem(item, row);
+    });
+    if (savedResults) savedResults.addEventListener('click', function (event) {
+      var row = event.target.closest('[data-store-result-index]');
+      if (!row) return;
+      var index = Number(row.getAttribute('data-store-result-index'));
+      var item = state.products[index];
+      closePanel('saved', { restoreFocus: false });
+      openPreviewItem(item, row);
+    });
+    if (preview.save) preview.save.addEventListener('click', function () {
+      var key = state.currentProductKey;
+      if (!key) return;
+      var pos = state.saved.indexOf(key);
+      if (pos > -1) state.saved.splice(pos, 1);
+      else state.saved.push(key);
+      writeSaved();
+      var saved = pos === -1;
+      preview.save.setAttribute('aria-pressed', saved ? 'true' : 'false');
+      setNodeText(preview.saveLabel, saved ? 'Saved' : 'Save');
+      renderSavedResults();
+    });
     if (moreOpen) moreOpen.addEventListener('click', function () { openPanel('more', moreOpen); });
     if (contactLink) contactLink.addEventListener('click', function (event) {
       if (location.pathname.replace(/\/$/, '') !== '/store') return;
@@ -1611,6 +1806,17 @@
     });
     filterButtons.forEach(function (button) {
       button.addEventListener('click', function () { setFilter(button.getAttribute('data-store-filter')); });
+    });
+    quickIntentButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.intent = button.getAttribute('data-store-intent') || '';
+        state.query = '';
+        state.filter = 'all';
+        if (search) search.value = '';
+        if (discoverySearch) discoverySearch.value = '';
+        state.visibleLimit = VISIBLE_INITIAL;
+        applyFilters();
+      });
     });
     closeButtons.forEach(function (button) {
       button.addEventListener('click', function () { closePanel(button.getAttribute('data-store-close')); });
@@ -1651,13 +1857,16 @@
       },
       openDiscovery: function () { openDiscovery(dockSearch); },
       openMore: function () { openPanel('more', moreOpen); },
+      openSaved: function () { renderSavedResults(); openPanel('saved', savedOpen); },
       close: function () { if (state.panelActive) closePanel(state.panelActive); },
       snapshot: function () {
         return {
           products: state.products.length,
           filtered: state.filtered.length,
           filter: state.filter,
+          intent: state.intent,
           query: state.query,
+          saved: state.saved.length,
           panelActive: state.panelActive,
           theme: state.theme,
           locale: state.locale,
