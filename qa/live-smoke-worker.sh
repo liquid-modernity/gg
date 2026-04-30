@@ -300,8 +300,11 @@ check_store_route() {
   grep -Eq 'class=["'"'"']gg-sheet store-preview-sheet["'"'"']' "$body_file" || log_fail "/store preview sheet is missing"
   grep -Eq '\.store-preview-sheet\s*\{' "$body_file" || log_fail "/store preview sheet CSS block is missing"
   grep -Eq 'align-items:\s*start;' "$body_file" || log_fail "/store preview sheet top alignment token is missing"
+  grep -Eq 'id=["'"'"']store-preview-dots["'"'"']' "$body_file" || log_fail "/store preview dots container is missing"
   grep -Eq 'class=["'"'"']store-preview__footer["'"'"']' "$body_file" || log_fail "/store preview footer handle container is missing"
   grep -Eq 'class=["'"'"']store-preview__handle["'"'"']' "$body_file" || log_fail "/store preview footer handle is missing"
+  grep -Eq 'class=["'"'"']store-preview__secondary-actions["'"'"']' "$body_file" || log_fail "/store preview secondary actions are missing"
+  grep -Eq 'id=["'"'"']store-copy-links["'"'"']' "$body_file" || log_fail "/store Copy Links button is missing"
   if grep -Eq 'store-preview__close' "$body_file"; then
     log_fail "/store preview still exposes a visible close button class"
   fi

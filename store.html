@@ -97,6 +97,9 @@
       --store-bottom-sheet-width: min(100%, 720px);
       --store-preview-max-height: min(92dvh, 900px);
       --store-preview-initial-height: min(72dvh, 720px);
+      --store-preview-hero-min: min(58dvh, 560px);
+      --store-preview-overlay-lift: clamp(116px, 18vw, 152px);
+      --store-preview-dot-hit: 24px;
       --store-control-h: 44px;
     }
 
@@ -393,17 +396,22 @@
     .store-card__dots {
       justify-self: center;
       display: inline-flex;
+      align-items: center;
       gap: 4px;
-      min-height: 4px;
-      margin-top: 2px;
+      min-height: 8px;
+      margin-top: 4px;
     }
     .store-card__dot {
       width: 4px;
       height: 4px;
       border-radius: 999px;
-      background: rgba(255,255,255,.62);
+      background: rgba(255,255,255,.36);
+      transition: width var(--gg-ease), background-color var(--gg-ease), opacity var(--gg-ease);
     }
-    .store-card__dot:not(:first-child) { background: rgba(255,255,255,.32); }
+    .store-card__dot.is-active {
+      width: 10px;
+      background: rgba(255,255,255,.92);
+    }
 
     .store-empty {
       display: grid;
@@ -559,25 +567,41 @@
     }
     .store-preview-sheet[data-gg-state='open'] .gg-sheet__panel { transform: translate3d(0,0,0); }
     .store-preview__hero {
-      position: relative;
-      min-height: min(58dvh, 560px);
+      position: sticky;
+      top: 0;
+      z-index: 0;
+      min-height: var(--store-preview-hero-min);
       overflow: hidden;
       background: #201a1c;
     }
     .store-preview__carousel {
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: 100%;
+      display: flex;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
+      scroll-snap-stop: always;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pinch-zoom;
       height: 100%;
       min-height: inherit;
     }
     .store-preview__carousel::-webkit-scrollbar { display: none; }
-    .store-preview__slide { scroll-snap-align: start; height: 100%; min-height: inherit; }
-    .store-preview__slide img { width: 100%; height: 100%; min-height: inherit; object-fit: cover; }
+    .store-preview__slide {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      height: 100%;
+      min-height: inherit;
+    }
+    .store-preview__slide img {
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
     .store-preview__shade {
       position: absolute;
       inset: 0;
@@ -586,14 +610,61 @@
         linear-gradient(0deg, rgba(0,0,0,.72), rgba(0,0,0,.34) 34%, rgba(0,0,0,.06) 68%, transparent);
       pointer-events: none;
     }
-    .store-preview__overlay {
+    .store-preview__dots {
       position: absolute;
-      inset: auto 22px 22px 22px;
+      left: 50%;
+      top: max(12px, env(safe-area-inset-top));
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 6px;
+      border-radius: 999px;
+      background: rgba(10,10,10,.16);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      transform: translateX(-50%);
+    }
+    .store-preview__dot {
+      width: var(--store-preview-dot-hit);
+      min-width: var(--store-preview-dot-hit);
+      height: var(--store-preview-dot-hit);
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      display: grid;
+      place-items: center;
+    }
+    .store-preview__dot::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.38);
+      transition: width var(--gg-ease), background-color var(--gg-ease), opacity var(--gg-ease);
+    }
+    .store-preview__dot[aria-pressed='true']::before {
+      width: 12px;
+      background: rgba(255,255,255,.92);
+    }
+    .store-preview__body {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 0;
+      margin-top: calc(-1 * var(--store-preview-overlay-lift));
+      padding: 0 18px;
+    }
+    .store-preview__intro {
+      justify-self: center;
+      width: min(100%, 34rem);
       display: grid;
       gap: 8px;
       color: #fff;
       text-align: center;
       text-shadow: 0 2px 18px rgba(0,0,0,.42);
+      padding: 0 8px 18px;
     }
     .store-preview__category {
       margin: 0;
@@ -607,11 +678,13 @@
       letter-spacing: -.07em;
     }
     .store-preview__meta { margin: 0; color: rgba(255,255,255,.86); font: 650 13px/1.35 var(--gg-font-sans); }
-    .store-preview__body {
+    .store-preview__surface {
       display: grid;
       gap: 16px;
-      padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
       background: var(--gg-surface-panel);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -1px 0 var(--gg-line-strong);
+      padding: 20px 18px 20px;
     }
     .store-preview__summary {
       margin: 0;
@@ -632,6 +705,21 @@
       gap: 8px;
     }
     .store-preview__market .store-button { min-width: 0; padding-inline: 10px; }
+    .store-preview__secondary-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 44px;
+      gap: 8px;
+    }
+    .store-preview__save { width: 100%; }
+    .store-preview__copy {
+      min-width: 44px;
+      padding-inline: 0;
+    }
+    .store-preview__copy[data-copy-state='copied'] {
+      border-color: var(--gg-accent);
+      background: var(--gg-accent);
+      color: var(--gg-accent-contrast);
+    }
     .store-preview__notes {
       display: grid;
       gap: 10px;
@@ -797,6 +885,8 @@
       .store-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
       .store-main { gap: 16px; }
       .store-preview__body { padding-inline: 22px; }
+      .store-preview__intro { padding-inline: 12px; }
+      .store-preview__surface { padding-inline: 22px; }
     }
     @media (min-width: 1180px) {
       :root { --store-max: var(--store-max-wide); --store-card-gap: 14px; }
@@ -922,28 +1012,36 @@
       <section class="store-preview__hero" aria-label="Product preview hero">
         <div class="store-preview__carousel" id="store-preview-carousel" aria-label="Product images"></div>
         <div class="store-preview__shade" aria-hidden="true"></div>
-        <div class="store-preview__overlay">
+        <div class="store-preview__dots" id="store-preview-dots" aria-label="Product image position" hidden></div>
+      </section>
+      <div class="store-preview__body">
+        <header class="store-preview__intro">
           <p class="store-preview__category" id="store-preview-category">Store</p>
           <h2 class="store-preview__title" id="store-preview-title">Yellow Cart</h2>
           <p class="store-preview__meta" id="store-preview-meta">PakRPP · Curated pick</p>
+        </header>
+        <div class="store-preview__surface">
+          <p class="store-preview__summary" id="store-preview-summary">Produk kurasi Yellow Cart.</p>
+          <p class="store-preview__price" id="store-preview-price">Rp—</p>
+          <div class="store-preview__market" aria-label="Marketplace links">
+            <a class="store-button store-button--primary" id="store-link-shopee" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Shopee</a>
+            <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">TikTok</a>
+            <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Tokopedia</a>
+          </div>
+          <div class="store-preview__secondary-actions">
+            <button class="store-button store-preview__save" id="store-preview-save" type="button" aria-pressed="false">
+              <span class="gg-icon" aria-hidden="true">bookmark</span>
+              <span id="store-preview-save-label">Save</span>
+            </button>
+            <button class="store-button store-preview__copy" id="store-copy-links" type="button" data-copy-state="idle" aria-label="Copy product links" title="Copy product links">
+              <span class="gg-icon" aria-hidden="true">content_copy</span>
+            </button>
+          </div>
+          <section class="store-preview__notes" id="store-preview-notes" hidden>
+            <h3 data-copy="notesTitle">Notes</h3>
+            <ul id="store-preview-notes-list"></ul>
+          </section>
         </div>
-      </section>
-      <div class="store-preview__body">
-        <p class="store-preview__summary" id="store-preview-summary">Produk kurasi Yellow Cart.</p>
-        <p class="store-preview__price" id="store-preview-price">Rp—</p>
-        <div class="store-preview__market" aria-label="Marketplace links">
-          <a class="store-button store-button--primary" id="store-link-shopee" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Shopee</a>
-          <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">TikTok</a>
-          <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Tokopedia</a>
-        </div>
-        <button class="store-button store-preview__save" id="store-preview-save" type="button" aria-pressed="false">
-          <span class="gg-icon" aria-hidden="true">bookmark</span>
-          <span id="store-preview-save-label">Save</span>
-        </button>
-        <section class="store-preview__notes" id="store-preview-notes" hidden>
-          <h3 data-copy="notesTitle">Notes</h3>
-          <ul id="store-preview-notes-list"></ul>
-        </section>
       </div>
       <footer class="store-preview__footer">
         <button class="store-preview__handle" type="button" data-store-close="preview" aria-label="Close preview"></button>
@@ -1077,7 +1175,8 @@
       'Route /store returns canonical Yellow Cart surface.',
       'Feed source is Blogger label Store with legacy label fallback only.',
       'Grid uses 4:5 cards, 2 columns mobile, 3 columns tablet, optional 4 columns wide.',
-      'Product card opens top preview sheet.',
+      'Product card opens top preview sheet with sticky hero staging and moving overlay copy.',
+      'Preview carousel is manual, snap-based, uses dots, and keeps Copy Links secondary to marketplace CTAs.',
       'Preview footer uses a handle and no visible close button.',
       'Preview active hides and inerts dock.',
       'Discover opens a command center with search, quick intents, and live result rows.',
@@ -1102,6 +1201,8 @@
         backToTop: 'Back to Top',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
+        copyLinksLabel: 'Salin tautan produk',
+        copyLinksCopied: 'Tautan tersalin',
         countLoading: 'Memuat produk…',
         countFail: 'Gagal memuat produk',
         emptyTitle: 'Produk tidak ditemukan.',
@@ -1125,6 +1226,8 @@
         backToTop: 'Back to Top',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
+        copyLinksLabel: 'Copy product links',
+        copyLinksCopied: 'Copied product links',
         countLoading: 'Loading products…',
         countFail: 'Failed to load products',
         emptyTitle: 'No products found.',
@@ -1179,6 +1282,7 @@
 
     var preview = {
       carousel: document.getElementById('store-preview-carousel'),
+      dots: document.getElementById('store-preview-dots'),
       category: document.getElementById('store-preview-category'),
       title: document.getElementById('store-preview-title'),
       meta: document.getElementById('store-preview-meta'),
@@ -1186,6 +1290,7 @@
       price: document.getElementById('store-preview-price'),
       save: document.getElementById('store-preview-save'),
       saveLabel: document.getElementById('store-preview-save-label'),
+      copy: document.getElementById('store-copy-links'),
       notes: document.getElementById('store-preview-notes'),
       notesList: document.getElementById('store-preview-notes-list'),
       links: {
@@ -1201,6 +1306,8 @@
       query: '',
       filter: 'all',
       intent: '',
+      currentPreviewItem: null,
+      currentPreviewImageIndex: 0,
       currentProductKey: '',
       saved: readSaved(),
       visibleLimit: VISIBLE_INITIAL,
@@ -1211,7 +1318,9 @@
       feedSource: 'Store',
       dockLastScrollTop: 0,
       dockDirectionStart: 0,
-      dockSyncFrame: 0
+      dockSyncFrame: 0,
+      previewDotSyncFrame: 0,
+      copyFeedbackTimer: 0
     };
 
     if (!app || !grid) return;
@@ -1235,11 +1344,29 @@
     function lower(value) { return clean(value).toLowerCase(); }
     function copy(key) { return (COPY[state.locale] && COPY[state.locale][key]) || COPY.id[key] || key; }
     function setNodeText(node, value) { if (node) node.textContent = value; }
+    function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+    function previewImageActionLabel(index) { return (state.locale === 'en' ? 'Show image ' : 'Tampilkan gambar ') + (index + 1); }
+    function previewCopyLabel() { return copy('copyLinksLabel'); }
+    function previewCopiedLabel() { return copy('copyLinksCopied'); }
+    function clearCopyFeedbackTimer() {
+      if (!state.copyFeedbackTimer) return;
+      window.clearTimeout(state.copyFeedbackTimer);
+      state.copyFeedbackTimer = 0;
+    }
+    function setPreviewCopyState(nextState) {
+      if (!preview.copy) return;
+      var copied = nextState === 'copied';
+      var label = copied ? previewCopiedLabel() : previewCopyLabel();
+      preview.copy.setAttribute('data-copy-state', copied ? 'copied' : 'idle');
+      preview.copy.setAttribute('aria-label', label);
+      preview.copy.setAttribute('title', label);
+    }
     function setCopy() {
       [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function (node) { node.textContent = copy(node.getAttribute('data-copy')); });
       [].slice.call(document.querySelectorAll('[data-copy-placeholder]')).forEach(function (node) { node.setAttribute('placeholder', copy(node.getAttribute('data-copy-placeholder'))); });
       langButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-lang') === state.locale ? 'true' : 'false'); });
       document.documentElement.lang = state.locale === 'en' ? 'en' : 'id';
+      setPreviewCopyState('idle');
       updateCounts();
     }
     function applyTheme() {
@@ -1473,7 +1600,9 @@
       if (loadMore) loadMore.hidden = state.filtered.length <= state.visibleLimit;
     }
     function renderCard(item, index) {
-      var dots = item.images.length > 1 ? '<span class="store-card__dots" aria-hidden="true"><span class="store-card__dot"></span><span class="store-card__dot"></span><span class="store-card__dot"></span></span>' : '';
+      var dots = item.images.length > 1 ? '<span class="store-card__dots" aria-hidden="true">' + item.images.map(function (_, dotIndex) {
+        return '<span class="store-card__dot' + (dotIndex === 0 ? ' is-active' : '') + '"></span>';
+      }).join('') + '</span>' : '';
       return '' +
         '<article class="store-card" data-store-card-index="' + index + '">' +
           '<button class="store-card__button" type="button" data-store-open-preview="' + index + '" aria-label="Preview ' + escapeHtml(item.title) + '">' +
@@ -1495,11 +1624,117 @@
     function escapeAttr(value) { return escapeHtml(value); }
 
     function activeItem(index) { return state.filtered[index]; }
+    function previewImageCount() {
+      var item = state.currentPreviewItem;
+      return item && item.images && item.images.length ? item.images.length : 0;
+    }
+    function syncPreviewDots() {
+      if (!preview.dots) return;
+      [].slice.call(preview.dots.querySelectorAll('[data-store-preview-dot]')).forEach(function (button, index) {
+        button.setAttribute('aria-pressed', index === state.currentPreviewImageIndex ? 'true' : 'false');
+      });
+    }
+    function renderPreviewDots(total) {
+      if (!preview.dots) return;
+      if (!total || total < 2) {
+        preview.dots.hidden = true;
+        preview.dots.innerHTML = '';
+        return;
+      }
+      preview.dots.hidden = false;
+      preview.dots.innerHTML = new Array(total).fill('').map(function (_, index) {
+        return '<button class="store-preview__dot" type="button" aria-label="' + escapeAttr(previewImageActionLabel(index)) + '" aria-pressed="' + (index === state.currentPreviewImageIndex ? 'true' : 'false') + '" data-store-preview-dot="' + index + '"></button>';
+      }).join('');
+    }
+    function syncPreviewImageIndexFromScroll() {
+      if (!preview.carousel) return;
+      var total = previewImageCount();
+      if (total < 2) {
+        state.currentPreviewImageIndex = 0;
+        syncPreviewDots();
+        return;
+      }
+      var width = preview.carousel.clientWidth || preview.carousel.getBoundingClientRect().width || 1;
+      var nextIndex = clamp(Math.round(preview.carousel.scrollLeft / width), 0, total - 1);
+      if (nextIndex !== state.currentPreviewImageIndex) {
+        state.currentPreviewImageIndex = nextIndex;
+        syncPreviewDots();
+      }
+    }
+    function schedulePreviewImageSync() {
+      if (state.previewDotSyncFrame) return;
+      state.previewDotSyncFrame = window.requestAnimationFrame(function () {
+        state.previewDotSyncFrame = 0;
+        syncPreviewImageIndexFromScroll();
+      });
+    }
+    function goToPreviewImage(index, behavior) {
+      if (!preview.carousel) return;
+      var total = previewImageCount();
+      if (!total) return;
+      var nextIndex = clamp(index, 0, total - 1);
+      var left = (preview.carousel.clientWidth || preview.carousel.getBoundingClientRect().width || 0) * nextIndex;
+      state.currentPreviewImageIndex = nextIndex;
+      syncPreviewDots();
+      if (typeof preview.carousel.scrollTo === 'function') preview.carousel.scrollTo({ left: left, behavior: behavior || 'smooth' });
+      else preview.carousel.scrollLeft = left;
+    }
+    function resetPreviewCarousel() {
+      if (!preview.carousel) return;
+      state.currentPreviewImageIndex = 0;
+      syncPreviewDots();
+      if (typeof preview.carousel.scrollTo === 'function') preview.carousel.scrollTo({ left: 0, behavior: 'auto' });
+      else preview.carousel.scrollLeft = 0;
+    }
+    function copyLinksText(item) {
+      var lines = [clean(item && item.title ? item.title : 'Product'), 'Curated via Yellow Cart · PakRPP'];
+      [
+        ['shopee', 'Shopee'],
+        ['tokopedia', 'Tokopedia'],
+        ['tiktok', 'TikTok']
+      ].forEach(function (entry) {
+        var href = item && item.links ? clean(item.links[entry[0]]) : '';
+        if (!href) return;
+        lines.push('', entry[1] + ':', href);
+      });
+      return lines.join('\n');
+    }
+    function fallbackCopyText(value) {
+      var area = document.createElement('textarea');
+      area.value = value;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.top = '-9999px';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      area.setSelectionRange(0, area.value.length);
+      try { return document.execCommand('copy'); } catch (error) { return false; }
+      finally { document.body.removeChild(area); }
+    }
+    function writeClipboardText(value) {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') return navigator.clipboard.writeText(value);
+      return fallbackCopyText(value) ? Promise.resolve() : Promise.reject(new Error('clipboard-unavailable'));
+    }
+    function showCopyFeedback() {
+      clearCopyFeedbackTimer();
+      setPreviewCopyState('copied');
+      state.copyFeedbackTimer = window.setTimeout(function () {
+        state.copyFeedbackTimer = 0;
+        setPreviewCopyState('idle');
+      }, 1600);
+    }
     function fillPreview(item) {
       if (!item) return;
-      preview.carousel.innerHTML = item.images.map(function (src) {
+      var images = item.images && item.images.length ? item.images : [PLACEHOLDER_IMAGE];
+      preview.carousel.innerHTML = images.map(function (src) {
         return '<figure class="store-preview__slide"><img src="' + escapeAttr(src) + '" alt="' + escapeAttr(item.title) + '" /></figure>';
       }).join('');
+      state.currentPreviewItem = item;
+      state.currentPreviewImageIndex = 0;
+      clearCopyFeedbackTimer();
+      setPreviewCopyState('idle');
+      renderPreviewDots(images.length);
       setNodeText(preview.category, item.category || 'Store');
       setNodeText(preview.title, item.title);
       setNodeText(preview.meta, ['PakRPP', item.published, 'Curated pick'].filter(Boolean).join(' · '));
@@ -1522,6 +1757,7 @@
       var noteList = item.contents && item.contents.length ? item.contents : [];
       preview.notes.hidden = !noteList.length;
       preview.notesList.innerHTML = noteList.map(function (note) { return '<li>' + escapeHtml(note) + '</li>'; }).join('');
+      window.requestAnimationFrame(resetPreviewCarousel);
     }
 
     function getPanel(name) {
@@ -1631,6 +1867,7 @@
 
     function openPreviewItem(item, trigger) {
       if (!item) return;
+      if (previewPanel) previewPanel.scrollTop = 0;
       fillPreview(item);
       openPanel('preview', trigger || document.activeElement);
     }
@@ -1679,6 +1916,19 @@
       setNodeText(preview.saveLabel, saved ? 'Saved' : 'Save');
       renderSavedResults();
     });
+    if (preview.copy) preview.copy.addEventListener('click', function () {
+      if (!state.currentPreviewItem) return;
+      var value = copyLinksText(state.currentPreviewItem);
+      writeClipboardText(value).then(showCopyFeedback).catch(function () {
+        if (fallbackCopyText(value)) showCopyFeedback();
+      });
+    });
+    if (preview.carousel) preview.carousel.addEventListener('scroll', schedulePreviewImageSync, { passive: true });
+    if (preview.dots) preview.dots.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-store-preview-dot]');
+      if (!button) return;
+      goToPreviewImage(Number(button.getAttribute('data-store-preview-dot')), 'smooth');
+    });
     if (moreOpen) moreOpen.addEventListener('click', function () { openPanel('more', moreOpen); });
     if (contactLink) contactLink.addEventListener('click', function (event) {
       if (location.pathname.replace(/\/$/, '') !== '/store') return;
@@ -1696,7 +1946,6 @@
         state.intent = button.getAttribute('data-store-intent') || '';
         state.query = '';
         state.filter = 'all';
-        if (search) search.value = '';
         if (discoverySearch) discoverySearch.value = '';
         state.visibleLimit = VISIBLE_INITIAL;
         applyFilters();
