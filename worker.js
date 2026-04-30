@@ -83,6 +83,8 @@ const YELLOWCARD_LEGACY_INTERNAL_PATH = "/yellowcard.html";
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
 const FLAGS_LEGACY_PATH = "/flags.json";
 const ORIGIN_MOBILE_NORMALIZED_HEADER = "X-GG-Origin-Mobile-Normalized";
+// Legacy internal name: "home" here means root listing (/), not public Home (/landing).
+const ROOT_LISTING_LEGACY_ROUTE = "home";
 
 const STATIC_ROUTE_ASSET_MAP = new Map([
   ["/manifest.webmanifest", "/manifest.webmanifest"],
@@ -342,7 +344,7 @@ function classifyRoute(request) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  if (path === "/") return "home";
+  if (path === "/") return ROOT_LISTING_LEGACY_ROUTE;
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
   if (
     path === YELLOWCART_PUBLIC_PATH ||
@@ -439,14 +441,14 @@ function productionRobotsTag(route, isHtmlLike) {
     return "noindex";
   }
 
-  if (["home", "landing", "yellowcart", "post", "static-page"].includes(route)) return "index, follow";
+  if ([ROOT_LISTING_LEGACY_ROUTE, "landing", "yellowcart", "post", "static-page"].includes(route)) return "index, follow";
   if (["label", "search", "feed"].includes(route)) return "noindex, follow";
   if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
   return "index, follow";
 }
 
 function routeRobotsTag(route, contentType, flags) {
-  const isHtmlLike = isHtmlContentType(contentType) || ["home", "post", "static-page", "landing"].includes(route);
+  const isHtmlLike = isHtmlContentType(contentType) || [ROOT_LISTING_LEGACY_ROUTE, "post", "static-page", "landing"].includes(route);
   if (flags.mode !== "production") return developmentRobotsTag();
   return productionRobotsTag(route, isHtmlLike);
 }
@@ -471,7 +473,7 @@ function cacheControlForRoute(route, flags) {
     case "feed":
     case "sitemap":
       return "public, max-age=300, stale-while-revalidate=86400";
-    case "home":
+    case ROOT_LISTING_LEGACY_ROUTE:
     case "landing":
     case "yellowcart":
     case "post":
@@ -855,6 +857,44 @@ function normalizeLandingContactHtml(html) {
     .replace(/\bid=(['"])gg-landing-hero-5\1/gi, `id="contact"`);
 }
 
+function normalizeMetadataUrlValue(rawValue, requestUrl) {
+  const value = String(rawValue || "").trim();
+  if (!value) return value;
+
+  try {
+    const url = new URL(value, requestUrl);
+    if (url.hostname === SITE.apexHost) url.hostname = SITE.canonicalHost;
+    url.pathname = (url.pathname || "/").replace(/\/{2,}/g, "/");
+    return url.toString();
+  } catch (_) {
+    return value;
+  }
+}
+
+function replaceTagAttributeValue(tag, attrName, nextValue) {
+  return String(tag || "").replace(
+    new RegExp(`(${attrName}=['"])([^'"]*)(['"])`, "i"),
+    (_, prefix, currentValue, suffix) => `${prefix}${nextValue(currentValue)}${suffix}`
+  );
+}
+
+function normalizeError404RouteMetadataHtml(html, requestUrl) {
+  const source = String(html || "");
+  if (!/\bdata-gg-(?:surface|page)=['"]error404['"]/i.test(source)) return source;
+
+  let out = source;
+  out = out.replace(
+    /<link\b[^>]*\brel=['"]canonical['"][^>]*>/i,
+    (tag) => replaceTagAttributeValue(tag, "href", (value) => normalizeMetadataUrlValue(value, requestUrl))
+  );
+  out = out.replace(
+    /<meta\b[^>]*\bproperty=['"]og:url['"][^>]*>/i,
+    (tag) => replaceTagAttributeValue(tag, "content", (value) => normalizeMetadataUrlValue(value, requestUrl))
+  );
+
+  return out;
+}
+
 function hasCurrentTemplateContract(html) {
   const source = String(html || "");
   const checks = {
@@ -907,6 +947,7 @@ async function handleHtml(request, flags, response, options = {}) {
 
   let out = html;
   if (flags.edge.mutateLandingContactAnchor) out = normalizeLandingContactHtml(out);
+  out = normalizeError404RouteMetadataHtml(out, request.url);
 
   let wrapped = responseFromHtml(response, out);
   if (flags.edge.annotateTemplateContract) wrapped = annotateTemplateContract(wrapped, out);
@@ -914,7 +955,7 @@ async function handleHtml(request, flags, response, options = {}) {
 }
 
 function isBloggerBackedHtmlRoute(route) {
-  return ["home", "label", "search", "post", "static-page", "html", "origin"].includes(route);
+  return [ROOT_LISTING_LEGACY_ROUTE, "label", "search", "post", "static-page", "html", "origin"].includes(route);
 }
 
 function shouldAddInternalMobileZero(request, route) {
