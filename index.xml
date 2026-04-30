@@ -8,11 +8,22 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='b3ec65771e7c' name='gg-template-fingerprint'/>
+<meta content='3fdf3bbab4e8' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
     <b:include data='blog' name='all-head-content'/>
+
+    <script>//<![CDATA[
+    (function () {
+      try {
+        var theme = window.localStorage && window.localStorage.getItem('gg:theme');
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-gg-theme', theme);
+        }
+      } catch (error) {}
+    }());
+    //]]></script>
 
     <script type='application/ld+json'>
 {
@@ -358,8 +369,57 @@
   }
 }
 
+html[data-gg-theme='light'] {
+  color-scheme: light;
+}
+
+html[data-gg-theme='dark'] {
+  color-scheme: dark;
+  --gg-surface-page: #141216;
+  --gg-surface-article: rgba(255, 255, 255, .06);
+  --gg-surface-panel: #1c1a1e;
+  --gg-toolbar-surface-fallback: #201d22;
+  --gg-detail-outline-surface-fallback: #201d22;
+  --gg-dock-surface-fallback: #201d22;
+  --gg-surface-quiet: rgba(255, 255, 255, .08);
+  --gg-surface-interactive: rgba(255, 255, 255, .1);
+  --gg-surface-interactive-strong: rgba(255, 255, 255, .14);
+  --gg-surface-panel-fade-soft: rgba(28, 26, 30, .92);
+  --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
+  --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
+  --gg-divider: rgba(255, 255, 255, .14);
+  --gg-divider-strong: rgba(255, 255, 255, .22);
+  --gg-border-interactive: rgba(255, 255, 255, .18);
+  --gg-ink: #f5f1f3;
+  --gg-ink-soft: #c8bec4;
+  --gg-accent: #f4eff1;
+  --gg-accent-soft: #d5c8cf;
+  --gg-accent-contrast: #111013;
+  --gg-accent-hover: #ffffff;
+  --gg-shadow-soft: 0 12px 28px rgba(0, 0, 0, .24);
+  --gg-shadow-panel-bottom: 0 -20px 52px rgba(0, 0, 0, .32);
+  --gg-shadow-panel-top: 0 20px 52px rgba(0, 0, 0, .32);
+  --gg-panel-handle-tone: rgba(255, 255, 255, .22);
+  --gg-panel-scrim: rgba(5, 4, 6, .56);
+  --gg-panel-scrim-fallback: rgba(5, 4, 6, .7);
+  --gg-detail-outline-micro-surface: rgba(255, 255, 255, .08);
+  --gg-detail-outline-progress-track: rgba(255, 255, 255, .12);
+  --gg-entry-row-divider: rgba(255, 255, 255, .14);
+  --gg-entry-row-surface-hover: rgba(255, 255, 255, .08);
+  --gg-entry-row-action-hover-bg: rgba(255, 255, 255, .08);
+  --gg-article-border: rgba(255, 255, 255, .1);
+  --gg-article-tail-divider: rgba(255, 255, 255, .14);
+  --gg-discovery-tab-surface: rgba(255, 255, 255, .06);
+  --gg-discovery-tab-active-surface: rgba(255, 255, 255, .12);
+  --gg-comment-thread-guide: rgba(255, 255, 255, .14);
+  --gg-comment-action-hover-bg: rgba(255, 255, 255, .08);
+  --gg-comment-avatar-ring: rgba(255, 255, 255, .14);
+  --gg-field-surface: rgba(255, 255, 255, .08);
+  --gg-hairline-subtle: rgba(255, 255, 255, .08);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-gg-theme='light']) {
     color-scheme: dark;
     --gg-surface-page: #141216;
     --gg-surface-article: rgba(255, 255, 255, .06);
@@ -412,10 +472,16 @@
     --gg-border-interactive: rgba(32, 26, 28, .42);
     --gg-focus-ring: 3px solid var(--gg-accent);
   }
+
+  html[data-gg-theme='dark'] {
+    --gg-divider: rgba(255, 255, 255, .32);
+    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-border-interactive: rgba(255, 255, 255, .5);
+  }
 }
 
 @media (prefers-color-scheme: dark) and (prefers-contrast: more) {
-  :root {
+  :root:not([data-gg-theme='light']) {
     --gg-divider: rgba(255, 255, 255, .32);
     --gg-divider-strong: rgba(255, 255, 255, .44);
     --gg-border-interactive: rgba(255, 255, 255, .5);
@@ -2098,7 +2164,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   font: 600 14px/1.2 var(--gg-font-sans);
 }
 
-.gg-langswitch {
+.gg-langswitch,
+.gg-appearance {
   display: grid;
   gap: 10px;
   margin-top: 14px;
@@ -2152,11 +2219,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   font: 500 var(--gg-more-footer-legal-size)/1.4 var(--gg-font-sans);
 }
 
-.gg-langswitch__title {
+.gg-langswitch__title,
+.gg-appearance__title {
   margin: 0;
   color: var(--gg-accent-soft);
-  font: 700 12px/1.2 var(--gg-font-sans);
-  letter-spacing: .1em;
+  font: 650 11px/1.2 var(--gg-font-sans);
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
@@ -2164,6 +2232,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+.gg-appearance__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .gg-langswitch__button {
@@ -2180,10 +2254,33 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   cursor: pointer;
 }
 
+.gg-appearance__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--gg-hit-min);
+  padding: 0 10px;
+  border: 1px solid var(--gg-border-interactive);
+  border-radius: 999px;
+  background: var(--gg-surface-interactive);
+  color: var(--gg-accent-soft);
+  font: 600 12px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
 .gg-langswitch__button[data-gg-active='true'] {
   border-color: var(--gg-accent);
   background: var(--gg-accent);
   color: var(--gg-accent-contrast);
+}
+
+.gg-appearance__button:hover,
+.gg-appearance__button:focus-visible,
+.gg-appearance__button[data-gg-active='true'],
+.gg-appearance__button[aria-pressed='true'] {
+  border-color: var(--gg-line-strong);
+  background: var(--gg-surface-interactive-strong);
+  color: var(--gg-ink);
 }
 
 .gg-dock__item,
@@ -2193,7 +2290,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-loadmore,
 .gg-more-list__link,
 .gg-more-footer__link,
-.gg-langswitch__button {
+.gg-langswitch__button,
+.gg-appearance__button {
   transition: transform var(--gg-motion-press), background-color var(--gg-motion-inline-open), border-color var(--gg-motion-inline-open), box-shadow var(--gg-motion-inline-open);
 }
 
@@ -2205,6 +2303,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-more-list__link[data-gg-press='active'],
 .gg-more-footer__link[data-gg-press='active'],
 .gg-langswitch__button[data-gg-press='active'],
+.gg-appearance__button[data-gg-press='active'],
 .gg-entry-row__title-trigger[data-gg-press='active'],
 .gg-entry-row__action[data-gg-press='active'],
 .gg-discovery-tab[data-gg-press='active'],
@@ -2316,7 +2415,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='b3ec65771e7c' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='3fdf3bbab4e8' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-home-guard='pending' data-gg-lang='en' data-gg-surface='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -3361,6 +3460,14 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             <button class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.id' data-gg-lang-option='id' type='button'>ID</button>
           </div>
         </div>
+        <div class='gg-appearance' data-gg-module='appearance'>
+          <p class='gg-appearance__title' data-gg-copy='appearance.label' id='gg-appearance-title'>Appearance</p>
+          <div aria-labelledby='gg-appearance-title' class='gg-appearance__actions' role='group'>
+            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
+            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
+            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
+          </div>
+        </div>
         <footer class='gg-more-footer'>
           <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
             <span class='gg-visually-hidden' data-gg-copy='more.channelsLabel' id='gg-more-footer-social-title'>Share site</span>
@@ -3509,6 +3616,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               en: 'EN',
               id: 'ID'
             },
+            appearance: {
+              label: 'Appearance',
+              system: 'System',
+              light: 'Light',
+              dark: 'Dark'
+            },
           },
           id: {
             navigation: {
@@ -3641,6 +3754,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               label: 'Bahasa',
               en: 'EN',
               id: 'ID'
+            },
+            appearance: {
+              label: 'Tampilan',
+              system: 'Sistem',
+              light: 'Terang',
+              dark: 'Gelap'
             },
           }
         };
@@ -3896,7 +4015,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           {
             viewport: 'mobile-portrait',
             intent: 'Primary touch surface.',
-            checks: ['home', 'search', 'label', 'archive', 'post', 'detail outline tray', 'preview sheet', 'comments sheet', 'more sheet', '?m=1', 'language switcher', 'drag dismiss']
+            checks: ['home', 'search', 'label', 'archive', 'post', 'detail outline tray', 'preview sheet', 'comments sheet', 'more sheet', '?m=1', 'language switcher', 'appearance switcher', 'drag dismiss']
           },
           {
             viewport: 'mobile-landscape',
@@ -3931,6 +4050,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           '.gg-more-list__link',
           '.gg-more-footer__link',
           '.gg-langswitch__button',
+          '.gg-appearance__button',
           '.gg-entry-row__title-trigger',
           '.gg-entry-row__action',
           '.gg-detail-toolbar__action',
@@ -4030,11 +4150,13 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           detailOutlineGroupTemplate: document.getElementById('gg-detail-outline-group-template'),
           detailOutlineItemTemplate: document.getElementById('gg-detail-outline-item-template'),
           commentsTitleText: document.getElementById('gg-comments-title-text'),
-          langButtons: document.querySelectorAll('[data-gg-lang-option]')
+          langButtons: document.querySelectorAll('[data-gg-lang-option]'),
+          themeButtons: document.querySelectorAll('[data-gg-theme-option]')
         };
 
         var state = {
           locale: 'en',
+          theme: 'system',
           surfaceContext: null,
           errorContract: null,
           previewCache: {},
@@ -4294,11 +4416,18 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         startupState.longTasks = Array.isArray(startupState.longTasks) ? startupState.longTasks : [];
         startupState.launchPath = startupState.launchPath || readBodyState('data-gg-launch-path', '/');
         startupState.displayMode = startupState.displayMode || readBodyState('data-gg-display-mode', 'browser');
+        var THEME_STORAGE_KEY = 'gg:theme';
 
         function normalizeLocale(value) {
           var locale = String(value || '').toLowerCase();
           if (locale.indexOf('id') === 0 || locale.indexOf('in') === 0) return 'id';
           return 'en';
+        }
+
+        function normalizeTheme(value) {
+          var theme = String(value || '').toLowerCase();
+          if (theme === 'light' || theme === 'dark') return theme;
+          return 'system';
         }
 
         function getCopy(key) {
@@ -4365,6 +4494,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           return normalizeLocale(document.documentElement.getAttribute('lang') || 'en');
         }
 
+        function readPreferredTheme() {
+          var stored = '';
+          try {
+            stored = window.localStorage ? window.localStorage.getItem(THEME_STORAGE_KEY) : '';
+          } catch (error) {
+            stored = '';
+          }
+          return normalizeTheme(stored);
+        }
+
         function applyCopy(scope) {
           var root = scope || document;
           var textNodes = root.querySelectorAll('[data-gg-copy]');
@@ -4403,6 +4542,19 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
         }
 
+        function syncThemeButtons() {
+          var i;
+          var node;
+          var active;
+
+          for (i = 0; i < ui.themeButtons.length; i += 1) {
+            node = ui.themeButtons[i];
+            active = node.getAttribute('data-gg-theme-option') === state.theme;
+            node.setAttribute('data-gg-active', active ? 'true' : 'false');
+            node.setAttribute('aria-pressed', active ? 'true' : 'false');
+          }
+        }
+
         function setLocale(locale, skipPersist) {
           state.locale = normalizeLocale(locale);
           if (ui.shell) ui.shell.setAttribute('data-gg-lang', state.locale);
@@ -4432,6 +4584,26 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               open: false
             });
           }
+        }
+
+        function setTheme(theme, skipPersist) {
+          state.theme = normalizeTheme(theme);
+
+          if (state.theme === 'light' || state.theme === 'dark') {
+            document.documentElement.setAttribute('data-gg-theme', state.theme);
+          } else {
+            document.documentElement.removeAttribute('data-gg-theme');
+          }
+
+          if (!skipPersist) {
+            try {
+              if (window.localStorage) window.localStorage.setItem(THEME_STORAGE_KEY, state.theme);
+            } catch (error) {
+              /* ignore storage failures */
+            }
+          }
+
+          syncThemeButtons();
         }
 
         function safeUrl(value) {
@@ -8259,6 +8431,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             error: state.errorContract,
             special: state.specialContract,
             locale: state.locale,
+            theme: state.theme,
             routes: getRouteTargets(),
             searchEmpty: searchEmptySnapshot(),
             error404Surface: error404Snapshot(),
@@ -8616,6 +8789,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               expected: 'Only EN and ID exist, locale persists in gg:lang, microcopy updates without scattered overrides.'
             },
             {
+              id: 'appearance-switcher',
+              run: 'Open More sheet, toggle System, Light, and Dark, then inspect html[data-gg-theme] plus GG.qa.snapshot().theme.',
+              expected: 'System removes html[data-gg-theme] and follows OS, while Light and Dark persist in gg:theme with matching aria-pressed state.'
+            },
+            {
               id: 'panel-behavior',
               run: 'Open command, preview, comments, and more. Then test ESC, scrim close, swipe-down dismiss, and focus return.',
               expected: 'All panels share one controller contract and close cleanly without scroll-lock drift.'
@@ -8841,6 +9019,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var moreTrigger;
           var commentsTrigger;
           var langTrigger;
+          var themeTrigger;
           var closeTrigger;
           var discoveryTabTrigger;
           var discoveryTopicToggle;
@@ -8865,6 +9044,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-open="comments"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
+          themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close]');
           discoveryTabTrigger = event.target.closest('[data-gg-command-tab]');
           discoveryTopicToggle = event.target.closest('[data-gg-topic-group-toggle]');
@@ -8966,6 +9146,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
+            return;
+          }
+
+          if (themeTrigger) {
+            event.preventDefault();
+            setTheme(themeTrigger.getAttribute('data-gg-theme-option'));
             return;
           }
 
@@ -9168,6 +9354,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           special: function () {
             return state.specialContract;
           },
+          theme: function () {
+            return state.theme;
+          },
           error404: error404Snapshot,
           searchEmpty: searchEmptySnapshot,
           outline: detailOutlineSnapshot,
@@ -9332,6 +9521,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         if (maybeRedirectStandaloneLaunch()) return;
 
         applySurfaceContract();
+        setTheme(readPreferredTheme(), true);
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
