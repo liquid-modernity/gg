@@ -829,7 +829,7 @@
     data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=50"
     aria-label="Yellow Cart product catalogue"
   >
-    <a class="gg-visually-hidden" href="#store-grid">Lewati ke katalog</a>
+    <a class="gg-visually-hidden" href="#home">Lewati ke katalog</a>
 
     <section class="store-main" aria-labelledby="store-title">
       <section class="store-hero" aria-label="Yellow Cart introduction">
@@ -846,7 +846,7 @@
         <span id="store-source">Feed: Store</span>
       </div>
 
-      <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite"></section>
+      <section class="store-grid" id="home" data-store-wide="true" aria-live="polite"></section>
 
       <section class="store-empty" id="store-empty" hidden>
         <h2 id="store-empty-title">Produk belum tersedia.</h2>
@@ -865,7 +865,7 @@
           <p data-copy="contactBody">Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
           <div class="store-contact__actions">
             <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Open PakRPP Contact</a>
-            <a class="store-button" href="/" data-copy="backToBlog">Back to Blog</a>
+            <a class="store-button" href="/store#home" data-copy="backToTop">Back to Top</a>
           </div>
         </div>
       </section>
@@ -878,7 +878,7 @@
       <span class="gg-dock__label">Store</span>
     </a>
     <a class="gg-dock__item" id="store-contact-link" data-store-dock="contact" href="/store#contact">
-      <span class="gg-icon" aria-hidden="true">contact_page</span>
+      <span class="gg-icon" aria-hidden="true">calendar_add_on</span>
       <span class="gg-dock__label">Contact</span>
     </a>
     <button class="gg-dock__item" id="store-dock-discover" data-store-dock="discover" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
@@ -1099,7 +1099,7 @@
         contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
         contactBody: 'Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.',
         contactCta: 'Open PakRPP Contact',
-        backToBlog: 'Back to Blog',
+        backToTop: 'Back to Top',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
         countLoading: 'Memuat produk…',
@@ -1122,7 +1122,7 @@
         contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
         contactBody: 'For curated product placement, brand collaboration, correction requests, or affiliate questions, use PakRPP contact channel.',
         contactCta: 'Open PakRPP Contact',
-        backToBlog: 'Back to Blog',
+        backToTop: 'Back to Top',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
         countLoading: 'Loading products…',
@@ -1144,7 +1144,7 @@
     var PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#d8d0ce"/><stop offset="1" stop-color="#817674"/></linearGradient></defs><rect width="800" height="1000" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui" font-size="42" fill="#fff" fill-opacity=".78">Yellow Cart</text></svg>');
 
     var app = document.getElementById('store-app');
-    var grid = document.getElementById('store-grid');
+    var grid = document.getElementById('home');
     var empty = document.getElementById('store-empty');
     var emptyTitle = document.getElementById('store-empty-title');
     var emptyBody = document.getElementById('store-empty-body');
