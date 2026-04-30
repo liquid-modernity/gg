@@ -233,81 +233,6 @@
       gap: 14px;
     }
 
-    .store-topbar {
-      position: sticky;
-      top: 8px;
-      z-index: 35;
-      display: grid;
-      grid-template-columns: auto minmax(0,1fr) auto;
-      align-items: center;
-      gap: 8px;
-      padding: 6px;
-      border: 1px solid var(--gg-toolbar-border);
-      border-radius: var(--gg-toolbar-radius);
-      background: color-mix(in srgb, var(--gg-surface-panel) 76%, transparent);
-      box-shadow: var(--gg-shadow-soft);
-      -webkit-backdrop-filter: blur(16px) saturate(145%);
-      backdrop-filter: blur(16px) saturate(145%);
-    }
-    .store-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: var(--gg-hit-min);
-      padding: 0 10px 0 8px;
-      border-radius: 999px;
-      color: var(--gg-ink);
-      font-weight: 760;
-      letter-spacing: -.03em;
-    }
-    .store-brand__mark {
-      width: 30px;
-      height: 30px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      background: var(--gg-accent);
-      color: var(--gg-accent-contrast);
-      font-size: 11px;
-      line-height: 1;
-    }
-    .store-command {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: auto minmax(0,1fr);
-      align-items: center;
-      gap: 8px;
-      min-height: var(--gg-hit-min);
-      padding: 0 12px;
-      border: 1px solid var(--gg-border-interactive);
-      border-radius: 999px;
-      background: var(--gg-surface-interactive);
-    }
-    .store-command input {
-      min-width: 0;
-      width: 100%;
-      border: 0;
-      background: transparent;
-      color: var(--gg-ink);
-      outline: none;
-      font-weight: 560;
-    }
-    .store-command input::placeholder { color: var(--gg-accent-soft); }
-    .store-action {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: var(--gg-hit-min);
-      min-height: var(--gg-hit-min);
-      border: 0;
-      border-radius: 999px;
-      background: transparent;
-      color: var(--gg-ink);
-      transition: background-color var(--gg-ease), transform var(--gg-motion-press);
-    }
-    .store-action:hover, .store-action:focus-visible { background: var(--gg-toolbar-item-hover-bg); }
-    .store-action:active { transform: scale(var(--gg-press-scale)); }
-
     .store-hero {
       display: grid;
       gap: 8px;
@@ -354,19 +279,6 @@
       font: 680 12px/1.2 var(--gg-font-sans);
     }
 
-    .store-filter {
-      display: none;
-      position: sticky;
-      top: 68px;
-      z-index: 30;
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 8px 0 10px;
-      scrollbar-width: none;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--gg-surface-page) 95%, transparent), color-mix(in srgb, var(--gg-surface-page) 70%, transparent), transparent);
-    }
-    .store-filter::-webkit-scrollbar { display: none; }
     .store-chip {
       flex: 0 0 auto;
       min-height: 38px;
@@ -438,20 +350,6 @@
         linear-gradient(180deg, rgba(0,0,0,.12), transparent 28%),
         linear-gradient(0deg, rgba(0,0,0,.72), rgba(0,0,0,.38) 34%, rgba(0,0,0,.06) 68%, transparent);
       pointer-events: none;
-    }
-    .store-card__quick {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      display: inline-grid;
-      place-items: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.72);
-      color: #201a1c;
-      transform: translateY(-50%);
-      box-shadow: 0 4px 14px rgba(0,0,0,.10);
     }
     .store-card__content {
       position: absolute;
@@ -709,20 +607,6 @@
       letter-spacing: -.07em;
     }
     .store-preview__meta { margin: 0; color: rgba(255,255,255,.86); font: 650 13px/1.35 var(--gg-font-sans); }
-    .store-preview__close {
-      position: absolute;
-      top: max(10px, env(safe-area-inset-top));
-      right: 10px;
-      z-index: 3;
-      width: var(--gg-hit-min);
-      min-height: var(--gg-hit-min);
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255,255,255,.72);
-      color: #201a1c;
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-    }
     .store-preview__body {
       display: grid;
       gap: 16px;
@@ -792,17 +676,6 @@
       font: 780 13px/1.2 var(--gg-font-sans);
       letter-spacing: .12em;
       text-transform: uppercase;
-    }
-    .gg-sheet__close {
-      position: absolute;
-      right: 8px;
-      top: 4px;
-      width: 38px;
-      min-height: 38px;
-      border: 0;
-      border-radius: 999px;
-      background: transparent;
-      color: var(--gg-ink);
     }
     .store-sheet-body { display: grid; gap: 16px; padding: 16px 18px calc(18px + env(safe-area-inset-bottom)); }
     .store-field {
@@ -950,10 +823,10 @@
   <main
     id="store-app"
     class="store-app"
-    data-store-module="yellow-cart"
+    data-store-module="store"
     data-store-state="loading"
-    data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=80"
-    data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=80"
+    data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"
+    data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=50"
     aria-label="Yellow Cart product catalogue"
   >
     <a class="gg-visually-hidden" href="#store-grid">Lewati ke katalog</a>
@@ -988,10 +861,10 @@
       <section id="contact" class="store-contact" aria-labelledby="store-contact-title">
         <div class="store-contact__inner">
           <p class="store-eyebrow" data-copy="contactEyebrow">Contact</p>
-          <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, and affiliate inquiries.</h2>
-          <p data-copy="contactBody">Untuk penempatan produk kurasi, kolaborasi brand, koreksi data, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
+          <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, affiliate disclosures, and correction requests.</h2>
+          <p data-copy="contactBody">Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
           <div class="store-contact__actions">
-            <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Contact PakRPP</a>
+            <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Open PakRPP Contact</a>
             <a class="store-button" href="/" data-copy="backToBlog">Back to Blog</a>
           </div>
         </div>
@@ -1000,23 +873,23 @@
   </main>
 
   <nav class="gg-dock store-dock" id="gg-dock" aria-label="Store navigation">
-    <a class="gg-dock__item" href="/store" aria-current="page">
+    <a class="gg-dock__item" data-store-dock="store" href="/store" aria-current="page">
       <span class="gg-icon" aria-hidden="true">home_app_logo</span>
       <span class="gg-dock__label">Store</span>
     </a>
-    <a class="gg-dock__item" id="store-contact-link" href="/store#contact">
+    <a class="gg-dock__item" id="store-contact-link" data-store-dock="contact" href="/store#contact">
       <span class="gg-icon" aria-hidden="true">contact_page</span>
       <span class="gg-dock__label">Contact</span>
     </a>
-    <button class="gg-dock__item" id="store-dock-search" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
+    <button class="gg-dock__item" id="store-dock-discover" data-store-dock="discover" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
       <span class="gg-icon" aria-hidden="true">search</span>
       <span class="gg-dock__label">Discover</span>
     </button>
-    <button class="gg-dock__item" id="store-saved-open" type="button" aria-haspopup="dialog" aria-controls="store-saved-sheet">
+    <button class="gg-dock__item" id="store-saved-open" data-store-dock="saved" type="button" aria-haspopup="dialog" aria-controls="store-saved-sheet">
       <span class="gg-icon" aria-hidden="true">bookmark</span>
       <span class="gg-dock__label">Saved</span>
     </button>
-    <button class="gg-dock__item" id="store-more-open" type="button" aria-haspopup="dialog" aria-controls="store-more-sheet">
+    <button class="gg-dock__item" id="store-more-open" data-store-dock="more" type="button" aria-haspopup="dialog" aria-controls="store-more-sheet">
       <span class="gg-icon" aria-hidden="true">menu</span>
       <span class="gg-dock__label">More</span>
     </button>
@@ -1147,8 +1020,8 @@
         <section class="store-sheet-section" aria-labelledby="store-navigation-label">
           <p class="store-sheet-section__label" id="store-navigation-label">Navigate</p>
           <div class="store-setting-grid">
-            <a class="store-setting store-setting--link" href="/">Blog</a>
-            <a class="store-setting store-setting--link" href="/landing">Home</a>
+            <a class="store-setting store-setting--link" data-store-more-link="blog" href="/">Blog</a>
+            <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing">Home</a>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-language-label">
@@ -1194,21 +1067,24 @@
       feedLabel: 'Store',
       legacyFeedLabel: 'yellowcard',
       preview: 'top-content-sheet',
-      utilitySheets: ['discovery', 'more'],
+      utilitySheets: ['discovery', 'saved', 'more'],
+      dock: ['store', 'contact', 'discover', 'saved', 'more'],
       dockRule: 'preview-active-beats-dock-and-near-bottom',
       gridAspectRatio: '4:5'
     };
 
     var STORE_QA_MATRIX = [
       'Route /store returns canonical Yellow Cart surface.',
-      'Feed source is Blogger label Store with legacy yellowcard fallback only.',
+      'Feed source is Blogger label Store with legacy label fallback only.',
       'Grid uses 4:5 cards, 2 columns mobile, 3 columns tablet, optional 4 columns wide.',
       'Product card opens top preview sheet.',
+      'Preview footer uses a handle and no visible close button.',
       'Preview active hides and inerts dock.',
-      'Discovery opens from dock Search and exposes All/Fashion/Skincare/Workspace/Tech/Etc.',
-      'More sheet contains language switcher, theme switcher, social links, and legal text.',
-      'Marketplace links open HTTPS URLs in a new tab with sponsored/nofollow/noopener/noreferrer.',
-      'Escape, scrim, and close buttons dismiss active sheets and restore focus.'
+      'Discover opens a command center with search, quick intents, and live result rows.',
+      'Saved opens local saved picks from localStorage.',
+      'More sheet contains Blog, Home, language switcher, theme switcher, social links, and legal text.',
+      'Marketplace CTAs stay primary and open in a new tab with sponsored/nofollow/noopener/noreferrer.',
+      'Escape, scrim, and footer handle dismiss active sheets and restore focus.'
     ];
 
     var COPY = {
@@ -1220,9 +1096,9 @@
         searchPlaceholder: 'Cari produk atau kategori',
         filtersLabel: 'Filters',
         contactEyebrow: 'Contact',
-        contactTitle: 'Collaborations, product submissions, and affiliate inquiries.',
-        contactBody: 'Untuk penempatan produk kurasi, kolaborasi brand, koreksi data, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.',
-        contactCta: 'Contact PakRPP',
+        contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
+        contactBody: 'Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.',
+        contactCta: 'Open PakRPP Contact',
         backToBlog: 'Back to Blog',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
@@ -1231,7 +1107,7 @@
         emptyTitle: 'Produk tidak ditemukan.',
         emptyBody: 'Coba filter lain atau kosongkan pencarian.',
         feedStore: 'Feed: Store',
-        feedLegacy: 'Feed: legacy yellowcard',
+        feedLegacy: 'Feed: Store archive fallback',
         filterActive: 'Filter aktif',
         allVisible: 'All products are visible.'
       },
@@ -1243,9 +1119,9 @@
         searchPlaceholder: 'Search products or categories',
         filtersLabel: 'Filters',
         contactEyebrow: 'Contact',
-        contactTitle: 'Collaborations, product submissions, and affiliate inquiries.',
-        contactBody: 'For curated product placement, brand collaboration, data correction, or affiliate questions, use PakRPP contact channel.',
-        contactCta: 'Contact PakRPP',
+        contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
+        contactBody: 'For curated product placement, brand collaboration, correction requests, or affiliate questions, use PakRPP contact channel.',
+        contactCta: 'Open PakRPP Contact',
         backToBlog: 'Back to Blog',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
@@ -1254,7 +1130,7 @@
         emptyTitle: 'No products found.',
         emptyBody: 'Try another filter or clear the search field.',
         feedStore: 'Feed: Store',
-        feedLegacy: 'Feed: legacy yellowcard',
+        feedLegacy: 'Feed: Store archive fallback',
         filterActive: 'Active filter',
         allVisible: 'All products are visible.'
       }
@@ -1275,16 +1151,14 @@
     var count = document.getElementById('store-count');
     var source = document.getElementById('store-source');
     var loadMore = document.getElementById('store-loadmore');
-    var search = document.getElementById('store-search');
     var discoverySearch = document.getElementById('store-discovery-search');
-    var refresh = document.getElementById('store-refresh');
     var previewSheet = document.getElementById('store-preview-sheet');
     var previewPanel = document.getElementById('store-preview-panel');
     var discoverySheet = document.getElementById('store-discovery-sheet');
     var discoveryPanel = document.getElementById('store-discovery-panel');
     var moreSheet = document.getElementById('store-more-sheet');
     var morePanel = document.getElementById('store-more-panel');
-    var dockSearch = document.getElementById('store-dock-search');
+    var discoverOpen = document.getElementById('store-dock-discover');
     var moreOpen = document.getElementById('store-more-open');
     var contactLink = document.getElementById('store-contact-link');
     var discoveryStatus = document.getElementById('store-discovery-status');
@@ -1400,16 +1274,29 @@
       var c = lower(category);
       return PUBLIC_FILTERS.indexOf(c) > -1 && c !== 'all' ? c : 'etc';
     }
-    function marketKey(href) {
-      var h = lower(href);
-      if (!h) return '';
-      if (h.indexOf('shopee') > -1) return 'shopee';
-      if (h.indexOf('tokopedia') > -1) return 'tokopedia';
-      if (h.indexOf('tiktok') > -1 || h.indexOf('vt.tiktok') > -1) return 'tiktok';
-      return 'official';
+    function marketplaceInfo(href) {
+      var value = clean(href);
+      var url;
+      var host;
+      if (!value) return null;
+      try {
+        url = new URL(value, window.location.origin);
+      } catch (error) {
+        return null;
+      }
+      if (url.protocol !== 'https:') return null;
+      host = lower(url.hostname).replace(/^www\./, '');
+      if (/(^|\.)shopee\.[a-z.]+$/.test(host)) return { key: 'shopee', href: url.toString() };
+      if (host === 'tokopedia.com' || /(^|\.)tokopedia\.com$/.test(host)) return { key: 'tokopedia', href: url.toString() };
+      if (host === 'tiktok.com' || /(^|\.)tiktok\.com$/.test(host)) return { key: 'tiktok', href: url.toString() };
+      return null;
+    }
+    function marketplaceHref(raw, key) {
+      var info = marketplaceInfo(raw);
+      return info && info.key === key ? info.href : '';
     }
     function parseJsonScript(doc) {
-      var scripts = [].slice.call(doc.querySelectorAll('script.gg-store-data, script.gg-yellowcard-data, script[type="application/json"].gg-store-data, script[type="application/json"].store-data'));
+      var scripts = [].slice.call(doc.querySelectorAll('script.gg-store-data, script[type="application/json"].gg-store-data, .gg-store-data[type="application/json"], script.gg-yellowcard-data, script[type="application/json"].gg-yellowcard-data, .gg-yellowcard-data[type="application/json"]'));
       for (var i = 0; i < scripts.length; i += 1) {
         try { return JSON.parse(scripts[i].textContent || '{}') || {}; } catch (error) {}
       }
@@ -1428,9 +1315,8 @@
         if (src) out.images.push(src);
       });
       anchors.forEach(function (a) {
-        var href = a.getAttribute('href') || '';
-        var key = marketKey(href);
-        if (key && !out.links[key]) out.links[key] = href;
+        var info = marketplaceInfo(a.getAttribute('href') || '');
+        if (info && !out.links[info.key]) out.links[info.key] = info.href;
       });
       [].slice.call(doc.querySelectorAll('script, style, noscript')).forEach(function (n) { n.remove(); });
       out.contents = heads.map(function (head) { return clean(head.textContent); }).filter(Boolean).slice(0, 4);
@@ -1445,8 +1331,9 @@
       var publicLabs = publicLabels(labs);
       var category = clean(data.category || publicLabs[0] || 'Etc');
       var images = arr(data.images || data.gallery || data.image || parsed.images).map(clean).filter(Boolean).slice(0, 8);
+      var dataLinks = data.links || {};
       var linksOut = {};
-      MARKET.forEach(function (key) { linksOut[key] = clean((data.links || {})[key] || parsed.links[key] || ''); });
+      MARKET.forEach(function (key) { linksOut[key] = marketplaceHref(dataLinks[key], key) || marketplaceHref(parsed.links[key], key) || ''; });
       return {
         id: altUrl(entry),
         title: clean(data.name || data.productName || text(entry.title) || 'Untitled product'),
@@ -1706,7 +1593,6 @@
     function syncQuery(value) {
       state.query = clean(value);
       state.intent = '';
-      if (search && search.value !== value) search.value = value;
       if (discoverySearch && discoverySearch.value !== value) discoverySearch.value = value;
       state.visibleLimit = VISIBLE_INITIAL;
       applyFilters();
@@ -1757,10 +1643,8 @@
       openPreviewItem(item, trigger);
     });
     if (loadMore) loadMore.addEventListener('click', function () { state.visibleLimit += VISIBLE_STEP; renderCards(); });
-    if (refresh) refresh.addEventListener('click', loadProducts);
-    if (search) search.addEventListener('input', function () { syncQuery(search.value); });
     if (discoverySearch) discoverySearch.addEventListener('input', function () { syncQuery(discoverySearch.value); });
-    if (dockSearch) dockSearch.addEventListener('click', function () { openDiscovery(dockSearch); });
+    if (discoverOpen) discoverOpen.addEventListener('click', function () { openDiscovery(discoverOpen); });
     if (savedOpen) savedOpen.addEventListener('click', function () { renderSavedResults(); openPanel('saved', savedOpen); });
     if (filterToggle) filterToggle.addEventListener('click', function () {
       var expanded = filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded';
@@ -1840,7 +1724,7 @@
       trapFocus(event);
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        openDiscovery(document.activeElement || dockSearch);
+        openDiscovery(document.activeElement || discoverOpen);
       }
     });
     window.addEventListener('scroll', scheduleDockSync, { passive: true });
@@ -1855,7 +1739,7 @@
         fillPreview(item);
         openPanel('preview', document.querySelector('[data-store-open-preview="' + (index || 0) + '"]'));
       },
-      openDiscovery: function () { openDiscovery(dockSearch); },
+      openDiscovery: function () { openDiscovery(discoverOpen); },
       openMore: function () { openPanel('more', moreOpen); },
       openSaved: function () { renderSavedResults(); openPanel('saved', savedOpen); },
       close: function () { if (state.panelActive) closePanel(state.panelActive); },
