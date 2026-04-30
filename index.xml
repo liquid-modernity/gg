@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='545421c5c4da' name='gg-template-fingerprint'/>
+<meta content='83aa39bdb869' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -2394,7 +2394,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
     <b:include data='blog' name='google-analytics'/>
   </head>
 
-  <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' data-gg-hydration='critical' data-gg-network='unknown'>
+  <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-hydration='critical' data-gg-network='unknown'>
     <script type='text/javascript'>
       //<![CDATA[
       (function () {
@@ -2433,11 +2433,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='545421c5c4da' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-template-fingerprint='83aa39bdb869' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
-    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-home-guard='pending' data-gg-lang='en' data-gg-surface='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
-      <main class='gg-main' data-gg-surface='pending' data-gg-surface-source='pending' id='main' role='main' tabindex='-1'>
+    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-root-listing='pending' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
+      <main class='gg-main' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' id='main' role='main' tabindex='-1'>
         <b:if cond='not data:view.isSingleItem'>
         <header class='gg-site-head'>
           <p class='gg-site-head__eyebrow' hidden='hidden' id='gg-site-head-eyebrow'/>
@@ -2476,7 +2476,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               <b:widget-setting name='showReactions'>false</b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-              <div class='gg-entry-list' data-gg-listing-budget='essential' data-gg-surface='pending' data-gg-surface-source='pending' id='gg-entry-list'>
+              <div class='gg-entry-list' data-gg-listing-budget='essential' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' id='gg-entry-list'>
                 <b:loop values='data:posts' var='post'>
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
@@ -2802,7 +2802,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   </b:if>
 </b:includable>
             <b:includable id='homePageLink'>
-  <a class='home-link' href='/'>
+  <a class='home-link' href='/landing'>
     <data:messages.home/>
   </a>
 </b:includable>
@@ -3474,16 +3474,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         <div class='gg-langswitch' data-gg-module='language'>
           <p class='gg-langswitch__title' data-gg-copy='language.label' id='gg-language-title'>Language</p>
           <div aria-labelledby='gg-language-title' class='gg-langswitch__actions' role='group'>
-            <button class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.en' data-gg-lang-option='en' type='button'>EN</button>
-            <button class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.id' data-gg-lang-option='id' type='button'>ID</button>
+            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.en' data-gg-lang-option='en' type='button'>EN</button>
+            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.id' data-gg-lang-option='id' type='button'>ID</button>
           </div>
         </div>
         <div class='gg-appearance' data-gg-module='appearance'>
           <p class='gg-appearance__title' data-gg-copy='appearance.label' id='gg-appearance-title'>Appearance</p>
           <div aria-labelledby='gg-appearance-title' class='gg-appearance__actions' role='group'>
-            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
-            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
-            <button class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
           </div>
         </div>
         <footer class='gg-more-footer'>
@@ -3782,10 +3782,43 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
         };
 
+        var ROUTE_VOCABULARY_CONTRACT = {
+          publicRoutes: {
+            listing: {
+              path: '/',
+              uiLabel: 'Blog',
+              surface: 'listing',
+              page: 'listing'
+            },
+            landing: {
+              path: '/landing',
+              uiLabel: 'Home',
+              surface: 'landing',
+              page: 'landing'
+            },
+            legacyBlogAlias: {
+              path: '/blog',
+              policy: 'dead-or-advisory-unless-edge-redirect-is-explicitly-supported',
+              rationale: 'The rendered UI, canonical tags, schema, and dock do not publish /blog as a first-class public route.'
+            }
+          },
+          reservedTerms: {
+            home: 'Human-facing label for /landing only.',
+            blog: 'Human-facing label for /.',
+            listing: 'Technical root feed surface/page name.',
+            special: 'Non-error unmatched runtime fallback only.'
+          },
+          acceptanceNote: 'Route vocabulary now separates public labels from technical surfaces so Home can mean /landing while the root feed remains surface=listing/page=listing.'
+        };
+
         var SURFACE_LEDGER = {
-          home: {
-            purpose: 'Primary homepage editorial index.',
+          listing: {
+            purpose: 'Primary blog listing surface at the canonical root route.',
             source: 'Exact homepage URL with no search, label, or archive params.'
+          },
+          landing: {
+            purpose: 'Public landing/home surface.',
+            source: 'Dedicated /landing route, including in-page landing sections such as #contact.'
           },
           search: {
             purpose: 'Keyword search results surface.',
@@ -3809,7 +3842,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           },
           special: {
             purpose: 'Special or unmatched non-standard route surface.',
-            source: 'Runtime fallback when route does not match home/search/label/archive/post/page and is not a native Blogger error view.'
+            source: 'Runtime fallback when route does not match listing/landing/search/label/archive/post/page and is not a native Blogger error view.'
           },
           error404: {
             purpose: 'Blogger error state.',
@@ -4011,7 +4044,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             area: 'command',
             status: 'closed',
             resolution: 'Discovery now follows an explicit three-step contract: local listing dataset first, feed JSON enhancement second, native Blogger search results last.',
-            cleanupCondition: 'Delete this closed note only after live Blogger verification confirms the search contract is stable across home, search, post, and mobile routes.'
+            cleanupCondition: 'Delete this closed note only after live Blogger verification confirms the search contract is stable across listing, search, post, and mobile routes.'
           },
           {
             id: 'bridge-preview-same-origin-fetch',
@@ -4033,7 +4066,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           {
             viewport: 'mobile-portrait',
             intent: 'Primary touch surface.',
-            checks: ['home', 'search', 'label', 'archive', 'post', 'detail outline tray', 'preview sheet', 'comments sheet', 'more sheet', '?m=1', 'language switcher', 'appearance switcher', 'drag dismiss']
+            checks: ['listing', 'landing', 'search', 'label', 'archive', 'post', 'detail outline tray', 'preview sheet', 'comments sheet', 'more sheet', '?m=1', 'language switcher', 'appearance switcher', 'drag dismiss']
           },
           {
             viewport: 'mobile-landscape',
@@ -5338,7 +5371,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               panel: ui.commandPanelSheet,
               scrim: ui.commandPanelScrim,
               lockScroll: true,
-              trapFocus: false,
+              trapFocus: true,
               returnFocus: true,
               openDuration: 220,
               closeDuration: 170
@@ -5811,45 +5844,56 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var isSearch = !isLabel && path.indexOf('/search') === 0 && !!routeParams.get('q');
           var isArchive = !viewPost && !viewPage && !isLabel && !isSearch && isArchivePath(path, routeParams);
           var surface = 'special';
+          var page = 'special';
           var source = 'runtime.special';
 
           homeParams.delete('m');
 
           if (viewError) {
             surface = 'error404';
+            page = 'error404';
             source = 'view.isError';
           } else if (viewPost) {
             surface = 'post';
+            page = 'post';
             source = 'view.isPost';
           } else if (viewPage) {
             surface = 'page';
+            page = 'page';
             source = 'view.isPage';
           } else if (path === homePath && !homeParams.toString()) {
-            surface = 'home';
-            source = 'url.home';
+            surface = 'listing';
+            page = 'listing';
+            source = 'url.root-listing';
           } else if (landingRoute.isContact) {
-            surface = 'special';
+            surface = 'landing';
+            page = 'landing';
             source = 'url.landing.contact';
           } else if (isLanding) {
-            surface = 'special';
+            surface = 'landing';
+            page = 'landing';
             source = 'url.landing';
           } else if (isLabel) {
             surface = 'label';
+            page = 'label';
             source = 'url.search/label';
           } else if (isSearch) {
             surface = 'search';
+            page = 'search';
             source = 'url.search?q';
           } else if (isArchive) {
             surface = 'archive';
+            page = 'archive';
             source = 'url.archive';
           }
 
           return {
             surface: surface,
+            page: page,
             source: source,
             variant: isMobile ? 'mobile' : 'default',
-            isPureHome: surface === 'home',
-            isListing: surface === 'home' || surface === 'search' || surface === 'label' || surface === 'archive',
+            isRootListing: surface === 'listing' && source === 'url.root-listing',
+            isListing: surface === 'listing' || surface === 'search' || surface === 'label' || surface === 'archive',
             isMobile: isMobile
           };
         }
@@ -5878,20 +5922,6 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             return {
               specialKind: 'none',
               specialSource: 'none'
-            };
-          }
-
-          if (surfaceContext.source === 'url.landing.contact') {
-            return {
-              specialKind: 'landing-contact',
-              specialSource: 'url.landing.contact'
-            };
-          }
-
-          if (surfaceContext.source === 'url.landing') {
-            return {
-              specialKind: 'landing',
-              specialSource: 'url.landing'
             };
           }
 
@@ -6619,7 +6649,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           state.specialContract = detectSpecialContract(state.surfaceContext);
           if (!ui.shell) return;
 
-          document.body.setAttribute('data-gg-home-guard', state.surfaceContext.isPureHome ? 'true' : 'false');
+          document.body.setAttribute('data-gg-page', state.surfaceContext.page);
+          document.body.setAttribute('data-gg-root-listing', state.surfaceContext.isRootListing ? 'true' : 'false');
           document.body.setAttribute('data-gg-surface', state.surfaceContext.surface);
           document.body.setAttribute('data-gg-surface-source', state.surfaceContext.source);
           document.body.setAttribute('data-gg-surface-variant', state.surfaceContext.variant);
@@ -6627,7 +6658,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           applySpecialContractAttributes(document.body, state.specialContract);
           ui.shell.setAttribute('data-gg-feed-contract', 'declared');
           ui.shell.setAttribute('data-gg-error-contract', state.surfaceContext.surface === 'error404' ? ERROR_RUNTIME_CONTRACT.primaryMode : ERROR_RUNTIME_CONTRACT.fallbackMode);
-          ui.shell.setAttribute('data-gg-home-guard', state.surfaceContext.isPureHome ? 'true' : 'false');
+          ui.shell.setAttribute('data-gg-page', state.surfaceContext.page);
+          ui.shell.setAttribute('data-gg-root-listing', state.surfaceContext.isRootListing ? 'true' : 'false');
           ui.shell.setAttribute('data-gg-surface', state.surfaceContext.surface);
           ui.shell.setAttribute('data-gg-surface-source', state.surfaceContext.source);
           ui.shell.setAttribute('data-gg-surface-variant', state.surfaceContext.variant);
@@ -6635,6 +6667,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           applySpecialContractAttributes(ui.shell, state.specialContract);
 
           if (ui.main) {
+            ui.main.setAttribute('data-gg-page', state.surfaceContext.page);
             ui.main.setAttribute('data-gg-surface', state.surfaceContext.surface);
             ui.main.setAttribute('data-gg-surface-source', state.surfaceContext.source);
             applyErrorContractAttributes(ui.main, state.errorContract);
@@ -6642,6 +6675,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
 
           if (ui.listing) {
+            ui.listing.setAttribute('data-gg-page', state.surfaceContext.page);
             ui.listing.setAttribute('data-gg-surface', state.surfaceContext.surface);
             ui.listing.setAttribute('data-gg-surface-source', state.surfaceContext.source);
             applyErrorContractAttributes(ui.listing, state.errorContract);
@@ -7191,6 +7225,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           renderDetailOutline();
         }
 
+        function restoreDetailOutlineToggleFocus() {
+          if (!ui.detailOutline || !ui.detailOutlineToggle) return;
+          if (!ui.detailOutline.contains(document.activeElement) || document.activeElement === ui.detailOutlineToggle) return;
+          try {
+            ui.detailOutlineToggle.focus({ preventScroll: true });
+          } catch (error) {
+            ui.detailOutlineToggle.focus();
+          }
+        }
+
         function markDetailOutlineManualOpen() {
           state.detailOutlineManualOpen = true;
           state.detailOutlineManualOpenAt = Date.now();
@@ -7376,6 +7420,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
           clearDetailOutlineManualOpen();
           setDetailOutlineState(resolveDetailOutlineCompactState());
+          restoreDetailOutlineToggleFocus();
         }
 
         function syncDetailOutlineCurrent() {
@@ -8384,16 +8429,17 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
         function expectedDockKey() {
           if (!state.surfaceContext) return '';
-          if (state.surfaceContext.surface === 'home') return 'blog';
+          if (state.surfaceContext.surface === 'listing') return 'blog';
           if (state.surfaceContext.surface === 'search') return 'search';
-          if (state.surfaceContext.surface === 'special' && state.surfaceContext.source === 'url.landing.contact') return 'contact';
-          if (state.surfaceContext.surface === 'special' && state.surfaceContext.source === 'url.landing') return 'home';
+          if (state.surfaceContext.surface === 'landing' && state.surfaceContext.source === 'url.landing.contact') return 'contact';
+          if (state.surfaceContext.surface === 'landing') return 'home';
           return '';
         }
 
         function getRouteTargets() {
           var routes = {
-            home: ui.shell ? toAbsoluteUrl(ui.shell.getAttribute('data-gg-home-url')) : safeUrl(window.location.href).origin + '/',
+            listing: ui.shell ? toAbsoluteUrl(ui.shell.getAttribute('data-gg-home-url')) : safeUrl(window.location.href).origin + '/',
+            landing: makeHomeUrl('landing'),
             search: '',
             label: '',
             archive: '',
@@ -8427,7 +8473,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
 
           routes.mobile = (function () {
-            var url = safeUrl(routes.home || window.location.href);
+            var url = safeUrl(routes.listing || window.location.href);
             url.searchParams.set('m', '1');
             return url.href;
           }());
@@ -8471,7 +8517,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var checks = [];
 
           checks.push(makeCheck('surface-current', 'Current surface contract is known', !!(state.surfaceContext && SURFACE_LEDGER[state.surfaceContext.surface]), state.surfaceContext ? state.surfaceContext.surface + ' via ' + state.surfaceContext.source : 'No runtime surface detected'));
-          checks.push(makeCheck('route-home', 'Blog listing target is available for live smoke', !!routes.home, routes.home || 'Missing homepage URL'));
+          checks.push(makeCheck('route-listing', 'Blog listing target is available for live smoke', !!routes.listing, routes.listing || 'Missing listing route'));
+          checks.push(makeCheck('route-landing', 'Landing/home target is available for live smoke', !!routes.landing, routes.landing || 'Missing landing route'));
           checks.push(makeCheck('route-search', 'Search target is available for live smoke', !!routes.search, routes.search || 'Missing search route'));
           checks.push(makeCheck('route-label', 'Label target is available for live smoke', !!routes.label, routes.label || 'No label route available on current runtime', true));
           checks.push(makeCheck('route-archive', 'Archive target is available for live smoke', !!routes.archive, routes.archive || 'No archive-like route available on current runtime', true));
@@ -8525,6 +8572,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             panels: panelSnapshot(),
             outline: detailOutlineSnapshot(),
             contracts: {
+              routeVocabulary: ROUTE_VOCABULARY_CONTRACT,
               command: COMMAND_PANEL_CONTRACT,
               utilitySheet: UTILITY_SHEET_CONTRACT,
               search: SEARCH_DATA_CONTRACT,
@@ -8705,12 +8753,13 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         }
 
         function expectedSurfaceForRouteKey(key) {
-          if (key === 'home') return 'home';
+          if (key === 'listing') return 'listing';
+          if (key === 'landing') return 'landing';
           if (key === 'search') return 'search';
           if (key === 'label') return 'label';
           if (key === 'archive') return 'archive';
           if (key === 'post') return 'post';
-          if (key === 'mobile') return 'home';
+          if (key === 'mobile') return 'listing';
           if (key === 'error404') return 'error404';
           return '';
         }
@@ -8718,7 +8767,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         function routeExpectationMatches(key, smoke) {
           var surface = smoke && smoke.surface ? smoke.surface.surface : '';
           if (key === 'olderPageUrl') return !!(smoke && smoke.surface && smoke.surface.isListing);
-          if (key === 'mobile') return surface === 'home' && smoke.surface && smoke.surface.variant === 'mobile';
+          if (key === 'mobile') return surface === 'listing' && smoke.surface && smoke.surface.variant === 'mobile';
           if (key === 'error404') return surface === 'error404' && smoke.snapshot && smoke.snapshot.error && smoke.snapshot.error.errorState === '404';
           return surface === expectedSurfaceForRouteKey(key);
         }
@@ -8819,12 +8868,17 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             {
               id: 'route-matrix',
               run: 'GG.qa.runRouteMatrix({ exercisePanels: true })',
-              expected: 'Expect live same-origin verification for home, search, label, archive, post, ?m=1, olderPageUrl, and the generated 404 probe.'
+              expected: 'Expect live same-origin verification for listing, landing, search, label, archive, post, ?m=1, olderPageUrl, and the generated 404 probe.'
             },
             {
-              id: 'home',
-              url: routes.home,
-              expected: 'Surface=home, dock current=blog, command and preview flows available.'
+              id: 'listing',
+              url: routes.listing,
+              expected: 'Surface=listing, dock current=blog, command and preview flows available.'
+            },
+            {
+              id: 'landing',
+              url: routes.landing,
+              expected: 'Surface=landing, dock current=home, and landing recovery/navigation stays coherent.'
             },
             {
               id: 'search',
@@ -8839,7 +8893,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             {
               id: 'archive',
               url: routes.archive,
-              expected: 'Surface=archive, archive route resolves without home/search confusion.'
+              expected: 'Surface=archive, archive route resolves without listing/search confusion.'
             },
             {
               id: 'post',
@@ -8897,7 +8951,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
         function runRouteMatrix(options) {
           var matrixOptions = options || {};
-          var order = ['home', 'search', 'label', 'archive', 'post', 'mobile', 'olderPageUrl', 'error404'];
+          var order = ['listing', 'landing', 'search', 'label', 'archive', 'post', 'mobile', 'olderPageUrl', 'error404'];
           var routes = getRouteTargets();
           var timeoutMs = Math.max(5000, matrixOptions.timeoutMs || 12000);
           var results = [];
@@ -9297,13 +9351,14 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
               clearDetailOutlineManualOpen();
               setDetailOutlineState(resolveDetailOutlineCompactState());
+              restoreDetailOutlineToggleFocus();
             } else {
               closePanel(state.panelActive, { reason: 'escape-close' });
             }
             return;
           }
 
-          if (event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel || state.panelActive === 'command') {
+          if (event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel) {
             return;
           }
 
@@ -9331,6 +9386,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         };
 
         GG.phase0 = {
+          routeVocabulary: ROUTE_VOCABULARY_CONTRACT,
           surfaceLedger: SURFACE_LEDGER,
           feedPrerequisites: FEED_PREREQUISITES,
           currentSurface: null
@@ -9379,6 +9435,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           close: function () {
             clearDetailOutlineManualOpen();
             setDetailOutlineState(resolveDetailOutlineCompactState());
+            restoreDetailOutlineToggleFocus();
           },
           toggle: toggleDetailOutline,
           setState: setDetailOutlineState,

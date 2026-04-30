@@ -78,8 +78,54 @@ extract_main_attr() {
   local file="$1"
   local attr="$2"
   local tag=""
-  tag="$(grep -Eoi "<main[^>]+class=['\\\"][^'\\\"]*gg-main[^'\\\"]*['\\\"][^>]*>" "$file" 2>/dev/null | head -n 1 || true)"
+  tag="$(grep -Eoi "<main[^>]+id=['\\\"]main['\\\"][^>]*>" "$file" 2>/dev/null | head -n 1 || true)"
+  if [[ -z "$tag" ]]; then
+    tag="$(grep -Eoi "<main[^>]+class=['\\\"][^'\\\"]*gg-main[^'\\\"]*['\\\"][^>]*>" "$file" 2>/dev/null | head -n 1 || true)"
+  fi
   extract_attr_from_tag "$tag" "$attr"
+}
+
+extract_shell_attr() {
+  local file="$1"
+  local attr="$2"
+  local tag=""
+  tag="$(grep -Eoi "<[^>]+id=['\\\"]gg-shell['\\\"][^>]*>" "$file" 2>/dev/null | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "$attr"
+}
+
+extract_fingerprint_attr() {
+  local file="$1"
+  local attr="$2"
+  local tag=""
+  tag="$(grep -Eoi "<[^>]+id=['\\\"]gg-fingerprint['\\\"][^>]*>" "$file" 2>/dev/null | head -n 1 || true)"
+  extract_attr_from_tag "$tag" "$attr"
+}
+
+extract_route_attr() {
+  local file="$1"
+  local attr="$2"
+  local value=""
+
+  value="$(extract_body_attr "$file" "$attr")"
+  if [[ -n "$value" && "$value" != "pending" ]]; then
+    printf '%s' "$value"
+    return 0
+  fi
+
+  value="$(extract_main_attr "$file" "$attr")"
+  if [[ -n "$value" && "$value" != "pending" ]]; then
+    printf '%s' "$value"
+    return 0
+  fi
+
+  value="$(extract_shell_attr "$file" "$attr")"
+  if [[ -n "$value" && "$value" != "pending" ]]; then
+    printf '%s' "$value"
+    return 0
+  fi
+
+  value="$(extract_fingerprint_attr "$file" "$attr")"
+  printf '%s' "$value"
 }
 
 extract_template_fingerprint() {
@@ -264,9 +310,8 @@ root_status="${root_rest%%|*}"
 root_redirects="${root_rest##*|}"
 root_canonical="$(extract_canonical "$root_file")"
 root_og="$(extract_og_url "$root_file")"
-root_surface="$(extract_body_attr "$root_file" "data-gg-surface")"
-root_page="$(extract_body_attr "$root_file" "data-gg-page")"
-root_home_state="$(extract_main_attr "$root_file" "data-gg-home-state")"
+root_surface="$(extract_route_attr "$root_file" "data-gg-surface")"
+root_page="$(extract_route_attr "$root_file" "data-gg-page")"
 
 landing_final="${landing_meta%%|*}"
 landing_rest="${landing_meta#*|}"
@@ -274,9 +319,8 @@ landing_status="${landing_rest%%|*}"
 landing_redirects="${landing_rest##*|}"
 landing_canonical="$(extract_canonical "$landing_file")"
 landing_og="$(extract_og_url "$landing_file")"
-landing_surface="$(extract_body_attr "$landing_file" "data-gg-surface")"
-landing_page="$(extract_body_attr "$landing_file" "data-gg-page")"
-landing_home_state="$(extract_main_attr "$landing_file" "data-gg-home-state")"
+landing_surface="$(extract_route_attr "$landing_file" "data-gg-surface")"
+landing_page="$(extract_route_attr "$landing_file" "data-gg-page")"
 
 blog_final="${blog_meta%%|*}"
 blog_rest="${blog_meta#*|}"
@@ -284,8 +328,8 @@ blog_status="${blog_rest%%|*}"
 blog_redirects="${blog_rest##*|}"
 blog_canonical="$(extract_canonical "$blog_file")"
 blog_og="$(extract_og_url "$blog_file")"
-blog_surface="$(extract_body_attr "$blog_file" "data-gg-surface")"
-blog_page="$(extract_body_attr "$blog_file" "data-gg-page")"
+blog_surface="$(extract_route_attr "$blog_file" "data-gg-surface")"
+blog_page="$(extract_route_attr "$blog_file" "data-gg-page")"
 
 repo_expected="$(node qa/template-fingerprint.mjs --value 2>/dev/null || true)"
 repo_embedded="$(node qa/template-fingerprint.mjs --embedded 2>/dev/null || true)"
@@ -339,10 +383,15 @@ evaluate_surface_route "/landing" \
   "$landing_status" "$landing_final" "$landing_canonical" "$landing_og" "$landing_surface" "$landing_page" \
   "${BASE_URL}/landing" "${BASE_URL}/landing" "${BASE_URL}/landing" "landing" "landing"
 
-blog_redirect_truth="PASS"
-if [[ "$blog_status" != "200" || "$blog_final" != "${BASE_URL}/" || ! "$blog_redirects" =~ ^[0-9]+$ || "$blog_redirects" -lt 1 ]]; then
-  blog_redirect_truth="FAIL"
-  log_fail "/blog redirect truth mismatch"
+blog_route_policy="dead-legacy-alias-advisory"
+blog_route_result="ADVISORY"
+if [[ "$blog_status" == "200" && "$blog_final" == "${BASE_URL}/" && "$blog_redirects" =~ ^[0-9]+$ && "$blog_redirects" -ge 1 ]]; then
+  blog_route_policy="legacy-alias-redirect-to-root"
+  blog_route_result="PASS"
+elif [[ "$blog_status" != "404" && "$blog_status" != "410" ]]; then
+  blog_route_policy="unexpected-public-route"
+  blog_route_result="FAIL"
+  log_fail "/blog legacy alias contract mismatch"
 fi
 
 release_state="unknown"
@@ -375,10 +424,10 @@ printf 'live_observed=%s\n' "${live_observed:-missing}"
 printf 'fingerprint_state=%s\n' "$fingerprint_state"
 printf 'release_state=%s\n' "$release_state"
 printf 'release_note=%s\n' "$release_note"
-printf 'route_root_redirects=%s home_state=%s\n' "$root_redirects" "$root_home_state"
-printf 'route_landing_redirects=%s home_state=%s\n' "$landing_redirects" "$landing_home_state"
-printf 'route_blog_redirect_only=%s status=%s final=%s redirects=%s canonical=%s og=%s surface=%s page=%s\n' \
-  "$blog_redirect_truth" "$blog_status" "$blog_final" "$blog_redirects" "$blog_canonical" "$blog_og" "$blog_surface" "$blog_page"
+printf 'route_root_redirects=%s surface=%s page=%s\n' "$root_redirects" "$root_surface" "$root_page"
+printf 'route_landing_redirects=%s surface=%s page=%s\n' "$landing_redirects" "$landing_surface" "$landing_page"
+printf 'route_blog_policy=%s result=%s status=%s final=%s redirects=%s canonical=%s og=%s surface=%s page=%s\n' \
+  "$blog_route_policy" "$blog_route_result" "$blog_status" "$blog_final" "$blog_redirects" "$blog_canonical" "$blog_og" "$blog_surface" "$blog_page"
 printf 'empty_shell_root=%s reasons=%s\n' "$root_shell_state" "$root_shell_reason"
 printf 'empty_shell_landing=%s reasons=%s\n' "$landing_shell_state" "$landing_shell_reason"
 

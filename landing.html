@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Elara Voss — Model, KOL, Sustainability Consultant</title>
   <meta name="description" content="A quiet-luxury personal landing page for a model, KOL, and sustainability consultant with Apple-ish restraint, mobile-first full-height sections, and dock/sheet behavior aligned to the main GG system." />
+  <link rel="canonical" href="https://www.pakrpp.com/landing" />
+  <meta property="og:url" content="https://www.pakrpp.com/landing" />
   <meta name="theme-color" content="#f4eeef" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -853,10 +855,11 @@
     }
   </style>
 </head>
-<body>
+<body data-gg-page="landing" data-gg-surface="landing" data-gg-surface-source="static.landing">
   <a class="skip-navigation" href="#main">Skip to main content</a>
+  <div data-env="prod" data-gg-page="landing" data-gg-release="ac33998" data-gg-surface="landing" hidden="hidden" id="gg-fingerprint"></div>
 
-  <div class="gg-landing-shell">
+  <div class="gg-landing-shell" data-gg-page="landing" data-gg-surface="landing" data-gg-surface-source="static.landing" id="gg-shell">
     <div class="gg-landing-frame">
       <header class="gg-landing-topbar">
         <div class="gg-landing-topbar__brand">
@@ -876,7 +879,7 @@
         <a class="gg-landing-topbar__cta" href="#contact">Request brief</a>
       </header>
 
-      <main id="main">
+      <main data-gg-page="landing" data-gg-surface="landing" data-gg-surface-source="static.landing" id="main">
         <section class="gg-landing-section" id="hero">
           <div class="gg-landing-card gg-landing-hero gg-landing-reveal">
             <div class="gg-landing-hero__copy">
@@ -1198,8 +1201,8 @@
         <div class="gg-landing-lang">
           <strong data-copy="language.label">Language</strong>
           <div class="gg-landing-lang__row">
-            <button class="gg-landing-lang__button" data-gg-lang="en" data-gg-active="true" type="button">EN</button>
-            <button class="gg-landing-lang__button" data-gg-lang="id" data-gg-active="false" type="button">ID</button>
+            <button aria-pressed="true" class="gg-landing-lang__button" data-gg-lang="en" data-gg-active="true" type="button">EN</button>
+            <button aria-pressed="false" class="gg-landing-lang__button" data-gg-lang="id" data-gg-active="false" type="button">ID</button>
           </div>
         </div>
 
@@ -1591,7 +1594,9 @@
         if (dict[key]) node.setAttribute("placeholder", dict[key]);
       });
       document.querySelectorAll("[data-gg-lang]").forEach((button) => {
-        button.setAttribute("data-gg-active", String(button.dataset.ggLang === GG_LANDING_STATE.lang));
+        const active = button.dataset.ggLang === GG_LANDING_STATE.lang;
+        button.setAttribute("data-gg-active", String(active));
+        button.setAttribute("aria-pressed", String(active));
       });
     }
 
@@ -1809,6 +1814,50 @@
         });
       });
     }
+
+    function ggLandingSurfaceSnapshot() {
+      return {
+        surface: "landing",
+        page: "landing",
+        source: "static.landing",
+        variant: "default",
+        isListing: false,
+        isMobile: false
+      };
+    }
+
+    window.GG = window.GG || {};
+    window.GG.qa = {
+      snapshot() {
+        return {
+          generatedAt: new Date().toISOString(),
+          surface: ggLandingSurfaceSnapshot(),
+          error: {
+            errorState: "none",
+            errorSource: "none"
+          },
+          special: {
+            specialKind: "none",
+            specialSource: "none"
+          },
+          dock: {
+            active: Array.from(document.querySelectorAll('.gg-dock__item[aria-current="page"]')).map((node) => node.getAttribute("data-gg-nav"))
+          },
+          panels: {
+            active: GG_LANDING_STATE.activePanel
+          }
+        };
+      },
+      runSmoke() {
+        const snapshot = this.snapshot();
+        return Promise.resolve({
+          surface: snapshot.surface,
+          snapshot,
+          checklist: [],
+          exercises: []
+        });
+      }
+    };
 
     ggLandingInit();
   </script>
