@@ -1,4 +1,4 @@
-/* worker.js — PakRPP Edge Governance Layer v10.2
+/* worker.js — PakRPP Edge Governance Layer v10.3
  *
  * Role:
  * - Cloudflare Worker edge router
@@ -20,7 +20,7 @@ const SITE = {
   originName: "PakRPP",
   release: "ac33998",
   templateFingerprint: "4f454c2091f7",
-  workerVersion: "edge-governance-v10.2",
+  workerVersion: "edge-governance-v10.3",
 };
 
 const FLAGS_TTL_MS = 60 * 1000;
@@ -76,8 +76,10 @@ const DEFAULT_FLAGS = {
 
 const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
-const YELLOWCART_PUBLIC_PATH = "/yellowcart";
-const YELLOWCART_INTERNAL_PATH = "/yellowcart.html";
+const STORE_PUBLIC_PATH = "/store";
+const STORE_INTERNAL_PATH = "/store.html";
+const YELLOWCART_LEGACY_PUBLIC_PATH = "/yellowcart";
+const YELLOWCART_LEGACY_INTERNAL_PATH = "/yellowcart.html";
 const YELLOWCARD_LEGACY_PUBLIC_PATH = "/yellowcard";
 const YELLOWCARD_LEGACY_INTERNAL_PATH = "/yellowcard.html";
 const FLAGS_CANONICAL_PATH = "/gg-flags.json";
@@ -95,7 +97,7 @@ const STATIC_ROUTE_ASSET_MAP = new Map([
   [FLAGS_CANONICAL_PATH, "/__gg/flags.json"],
   [FLAGS_LEGACY_PATH, "/__gg/flags.json"],
   [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
-  [YELLOWCART_PUBLIC_PATH, YELLOWCART_INTERNAL_PATH],
+  [STORE_PUBLIC_PATH, STORE_INTERNAL_PATH],
 ]);
 
 const AI_AND_TRAINING_BOTS = [
@@ -325,10 +327,12 @@ function legacyViewRedirect(request, flags) {
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
-function yellowcartRedirect(request) {
+function storeRouteRedirect(request) {
   const url = new URL(request.url);
   if (
-    url.pathname !== YELLOWCART_INTERNAL_PATH &&
+    url.pathname !== STORE_INTERNAL_PATH &&
+    url.pathname !== YELLOWCART_LEGACY_PUBLIC_PATH &&
+    url.pathname !== YELLOWCART_LEGACY_INTERNAL_PATH &&
     url.pathname !== YELLOWCARD_LEGACY_PUBLIC_PATH &&
     url.pathname !== YELLOWCARD_LEGACY_INTERNAL_PATH
   ) {
@@ -336,7 +340,7 @@ function yellowcartRedirect(request) {
   }
 
   const next = new URL(request.url);
-  next.pathname = YELLOWCART_PUBLIC_PATH;
+  next.pathname = STORE_PUBLIC_PATH;
   return redirectUrl(next, 301);
 }
 
@@ -347,12 +351,14 @@ function classifyRoute(request) {
   if (path === "/") return ROOT_LISTING_LEGACY_ROUTE;
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
   if (
-    path === YELLOWCART_PUBLIC_PATH ||
-    path === YELLOWCART_INTERNAL_PATH ||
+    path === STORE_PUBLIC_PATH ||
+    path === STORE_INTERNAL_PATH ||
+    path === YELLOWCART_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCART_LEGACY_INTERNAL_PATH ||
     path === YELLOWCARD_LEGACY_PUBLIC_PATH ||
     path === YELLOWCARD_LEGACY_INTERNAL_PATH
   ) {
-    return "yellowcart";
+    return "store";
   }
   if (path === "/robots.txt") return "robots";
   if (path === "/sitemap.xml") return "sitemap";
@@ -412,8 +418,8 @@ async function handleStaticRoutes(request, env, flags) {
     return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags));
   }
 
-  const yellowcart = yellowcartRedirect(request);
-  if (yellowcart) return yellowcart;
+  const storeRedirect = storeRouteRedirect(request);
+  if (storeRedirect) return storeRedirect;
 
   if (shouldServeStaticFromAssets(pathname)) {
     return serveFromAssets(request, env, pathname);
@@ -441,14 +447,14 @@ function productionRobotsTag(route, isHtmlLike) {
     return "noindex";
   }
 
-  if ([ROOT_LISTING_LEGACY_ROUTE, "landing", "yellowcart", "post", "static-page"].includes(route)) return "index, follow";
+  if ([ROOT_LISTING_LEGACY_ROUTE, "landing", "store", "post", "static-page"].includes(route)) return "index, follow";
   if (["label", "search", "feed"].includes(route)) return "noindex, follow";
   if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
   return "index, follow";
 }
 
 function routeRobotsTag(route, contentType, flags) {
-  const isHtmlLike = isHtmlContentType(contentType) || [ROOT_LISTING_LEGACY_ROUTE, "post", "static-page", "landing"].includes(route);
+  const isHtmlLike = isHtmlContentType(contentType) || [ROOT_LISTING_LEGACY_ROUTE, "post", "static-page", "landing", "store"].includes(route);
   if (flags.mode !== "production") return developmentRobotsTag();
   return productionRobotsTag(route, isHtmlLike);
 }
@@ -475,7 +481,7 @@ function cacheControlForRoute(route, flags) {
       return "public, max-age=300, stale-while-revalidate=86400";
     case ROOT_LISTING_LEGACY_ROUTE:
     case "landing":
-    case "yellowcart":
+    case "store":
     case "post":
     case "static-page":
     case "label":
@@ -493,7 +499,7 @@ function forceContentType(route, pathname, current) {
   if (route === "manifest") return "application/manifest+json; charset=utf-8";
   if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
   if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
-  if (route === "offline" || route === "landing" || route === "yellowcart") return current || "text/html; charset=utf-8";
+  if (route === "offline" || route === "landing" || route === "store") return current || "text/html; charset=utf-8";
   return current || "";
 }
 
@@ -664,12 +670,12 @@ function previewRedirect(request, flags) {
     };
   }
 
-  const yellowcart = yellowcartRedirect(request);
-  if (yellowcart) {
+  const storeRedirect = storeRouteRedirect(request);
+  if (storeRedirect) {
     return {
-      to: yellowcart.headers.get("location") || YELLOWCART_PUBLIC_PATH,
-      status: yellowcart.status,
-      reason: "yellowcart-route-normalization",
+      to: storeRedirect.headers.get("location") || STORE_PUBLIC_PATH,
+      status: storeRedirect.status,
+      reason: "store-route-normalization",
     };
   }
 
@@ -718,10 +724,16 @@ function pwaDiagnostics(flags) {
       manifest: "/manifest.webmanifest",
       flags: FLAGS_CANONICAL_PATH,
       legacyFlagsAlias: FLAGS_LEGACY_PATH,
-      yellowcart: {
-        public: YELLOWCART_PUBLIC_PATH,
-        asset: YELLOWCART_INTERNAL_PATH,
-        redirects: [YELLOWCARD_LEGACY_PUBLIC_PATH, YELLOWCARD_LEGACY_INTERNAL_PATH, YELLOWCART_INTERNAL_PATH],
+      store: {
+        public: STORE_PUBLIC_PATH,
+        asset: STORE_INTERNAL_PATH,
+        redirects: [
+          STORE_INTERNAL_PATH,
+          YELLOWCART_LEGACY_PUBLIC_PATH,
+          YELLOWCART_LEGACY_INTERNAL_PATH,
+          YELLOWCARD_LEGACY_PUBLIC_PATH,
+          YELLOWCARD_LEGACY_INTERNAL_PATH,
+        ],
       },
     },
     serviceWorker: {
@@ -759,10 +771,16 @@ function diagnosticsPayload(request, flags) {
     pwa: pwaDiagnostics(flags),
     routes: {
       landing: { public: LANDING_PUBLIC_PATH, asset: LANDING_INTERNAL_PATH },
-      yellowcart: {
-        public: YELLOWCART_PUBLIC_PATH,
-        asset: YELLOWCART_INTERNAL_PATH,
-        redirects: [YELLOWCARD_LEGACY_PUBLIC_PATH, YELLOWCARD_LEGACY_INTERNAL_PATH, YELLOWCART_INTERNAL_PATH],
+      store: {
+        public: STORE_PUBLIC_PATH,
+        asset: STORE_INTERNAL_PATH,
+        redirects: [
+          STORE_INTERNAL_PATH,
+          YELLOWCART_LEGACY_PUBLIC_PATH,
+          YELLOWCART_LEGACY_INTERNAL_PATH,
+          YELLOWCARD_LEGACY_PUBLIC_PATH,
+          YELLOWCARD_LEGACY_INTERNAL_PATH,
+        ],
       },
       flags: { canonical: FLAGS_CANONICAL_PATH, legacy: FLAGS_LEGACY_PATH, asset: "/__gg/flags.json" },
       mobileQueryNormalization: {
@@ -798,7 +816,7 @@ async function handleDiagnostics(request, flags) {
       mode: flags.mode,
       canonicalHost: SITE.canonicalHost,
       routeMatrix: {
-        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing", YELLOWCART_PUBLIC_PATH],
+        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing", STORE_PUBLIC_PATH],
         noindexInProduction: ["/search", "/search/label/*", "/view/*", "/offline.html", "/sw.js", "/manifest.webmanifest", FLAGS_CANONICAL_PATH, "/__gg/*"],
         utility: ["/feeds/*", "/sitemap.xml"],
         normalizedWhenEnabled: ["?m=1", "?m=0"],
@@ -806,9 +824,11 @@ async function handleDiagnostics(request, flags) {
         alwaysRedirected: {
           "/view": "/",
           "/view/*": "/",
-          [YELLOWCARD_LEGACY_PUBLIC_PATH]: YELLOWCART_PUBLIC_PATH,
-          [YELLOWCARD_LEGACY_INTERNAL_PATH]: YELLOWCART_PUBLIC_PATH,
-          [YELLOWCART_INTERNAL_PATH]: YELLOWCART_PUBLIC_PATH,
+          [STORE_INTERNAL_PATH]: STORE_PUBLIC_PATH,
+          [YELLOWCART_LEGACY_PUBLIC_PATH]: STORE_PUBLIC_PATH,
+          [YELLOWCART_LEGACY_INTERNAL_PATH]: STORE_PUBLIC_PATH,
+          [YELLOWCARD_LEGACY_PUBLIC_PATH]: STORE_PUBLIC_PATH,
+          [YELLOWCARD_LEGACY_INTERNAL_PATH]: STORE_PUBLIC_PATH,
         },
       },
       vanity: flags.vanity,
@@ -1146,7 +1166,7 @@ async function handleRequest(request, env, ctx) {
       return withRedirectDiagnostics(staticResponse, request, flags, {
         reason: url.pathname === LANDING_INTERNAL_PATH
           ? "landing-internal-path-normalization"
-          : "yellowcart-route-normalization",
+          : "store-route-normalization",
       }, { route });
     }
     return withResponsePolicy(staticResponse, request, flags, { route });

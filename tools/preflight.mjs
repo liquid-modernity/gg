@@ -21,6 +21,7 @@ const requiredFiles = [
   "index.xml",
   "manifest.webmanifest",
   "offline.html",
+  "store.html",
   "sw.js",
   "worker.js",
   "wrangler.jsonc",
@@ -155,6 +156,8 @@ const workerSource = read("worker.js");
 const requiredWorkerMarkers = [
   "edge-governance-v10",
   "STATIC_ROUTE_ASSET_MAP",
+  "STORE_PUBLIC_PATH",
+  "STORE_INTERNAL_PATH",
   "FLAGS_CANONICAL_PATH",
   '"/gg-flags.json"',
   '"/flags.json"',
@@ -163,6 +166,7 @@ const requiredWorkerMarkers = [
   '"/__gg/robots"',
   '"/__gg/headers"',
   '"/__gg/pwa"',
+  "storeRouteRedirect",
   "legacyViewRedirect",
   "isLegacyViewPath",
   "withResponsePolicy",
@@ -215,6 +219,7 @@ for (const marker of templateMarkers) {
 const wranglerSource = read("wrangler.jsonc");
 assertAnyIncludes(wranglerSource, [".cloudflare-build/worker.js", "main"], "wrangler.jsonc should point to the prepared Worker entry");
 assertAnyIncludes(wranglerSource, [".cloudflare-build/public", "assets"], "wrangler.jsonc should include static assets directory/binding");
+assertIncludes(wranglerSource, '"run_worker_first": true', "wrangler.jsonc must force the Worker to run before static assets");
 
 ok("PREFLIGHT OK");
 ok(`mode=${flags.mode}`);

@@ -224,6 +224,68 @@ check_landing_html_redirect() {
   fi
 }
 
+check_store_route() {
+  local body_file="$tmp_dir/store_body.html"
+  local meta final status
+  meta="$(fetch_body "/store" "$body_file")"
+  final="$(printf '%s' "$meta" | cut -d'|' -f1)"
+  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+
+  if [[ "$status" != "200" ]]; then
+    log_fail "/store expected status 200 (got ${status:-000})"
+    return
+  fi
+
+  if [[ "$final" != "${BASE_URL}/store" ]]; then
+    log_fail "/store final URL is unexpected (${final:-missing})"
+  fi
+
+  grep -Eq '<title>\s*Yellow Cart · PakRPP\s*</title>' "$body_file" || log_fail "/store missing canonical title"
+  grep -Eq 'rel=["'"'"']canonical["'"'"'][^>]*href=["'"'"']https://www\.pakrpp\.com/store["'"'"']' "$body_file" || log_fail "/store missing canonical /store"
+  grep -Eq '<h1[^>]*>\s*Yellow Cart\s*</h1>' "$body_file" || log_fail "/store missing H1 Yellow Cart"
+  grep -Eq 'href=["'"'"']/store["'"'"'][^>]*aria-current=["'"'"']page["'"'"']|aria-current=["'"'"']page["'"'"'][^>]*href=["'"'"']/store["'"'"']' "$body_file" || log_fail "/store dock current item is not Store"
+  grep -Eq 'id=["'"'"']store-contact-link["'"'"'][^>]*href=["'"'"']/store#contact["'"'"']' "$body_file" || log_fail "/store contact dock href is not /store#contact"
+  grep -Eq '<a[^>]*class=["'"'"'][^"'"'"']*gg-dock__item[^"'"'"']*["'"'"'][^>]*href=["'"'"']/["'"'"']' "$body_file" || log_fail "/store blog dock href is not /"
+  grep -Eq 'id=["'"'"']store-dock-search["'"'"']' "$body_file" || log_fail "/store search trigger is missing"
+  grep -Eq 'id=["'"'"']store-more-open["'"'"']' "$body_file" || log_fail "/store more trigger is missing"
+  grep -Eq 'data-store-lang=["'"'"']en["'"'"']' "$body_file" || log_fail "/store EN switch is missing"
+  grep -Eq 'data-store-lang=["'"'"']id["'"'"']' "$body_file" || log_fail "/store ID switch is missing"
+  grep -Eq 'data-store-theme=["'"'"']system["'"'"']' "$body_file" || log_fail "/store System theme switch is missing"
+  grep -Eq 'data-store-theme=["'"'"']light["'"'"']' "$body_file" || log_fail "/store Light theme switch is missing"
+  grep -Eq 'data-store-theme=["'"'"']dark["'"'"']' "$body_file" || log_fail "/store Dark theme switch is missing"
+  grep -Eq -- '--store-card-aspect:\s*4 / 5;' "$body_file" || log_fail "/store 4:5 card aspect token is missing"
+  grep -Eq 'aspect-ratio:\s*var\(--store-card-aspect\)' "$body_file" || log_fail "/store card aspect-ratio rule is missing"
+}
+
+check_store_redirect() {
+  local path="$1"
+  local headers_file="$tmp_dir$(printf '%s' "$path" | tr '/.' '__').headers.txt"
+  local target="${BASE_URL}${path}"
+  local status location
+
+  curl -sS \
+    --http1.1 \
+    --connect-timeout 15 \
+    --max-time 60 \
+    --max-redirs 0 \
+    -A "$UA" \
+    -D "$headers_file" \
+    -o /dev/null \
+    "$target" || true
+
+  status="$(awk 'toupper($1) ~ /^HTTP\/[0-9.]+$/ { code=$2 } END { print code }' "$headers_file")"
+  location="$(extract_header_value "$headers_file" "location")"
+
+  if [[ "$status" != "301" && "$status" != "302" && "$status" != "308" ]]; then
+    log_fail "${path} did not return redirect status (got ${status:-000})"
+    return
+  fi
+
+  if [[ "$location" != "${BASE_URL}/store" && "$location" != "/store" ]]; then
+    log_fail "${path} redirect location is unexpected (${location:-missing})"
+  fi
+}
+
 printf 'SMOKE-WORKER lane=WORKER_SCOPE base=%s\n' "$BASE_URL"
 
 check_root_headers
@@ -231,6 +293,12 @@ check_flags_endpoint
 check_sw_asset
 check_landing_route
 check_landing_html_redirect
+check_store_route
+check_store_redirect "/store.html"
+check_store_redirect "/yellowcart"
+check_store_redirect "/yellowcart.html"
+check_store_redirect "/yellowcard"
+check_store_redirect "/yellowcard.html"
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   {

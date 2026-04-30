@@ -23,6 +23,7 @@ const requiredRootFiles = [
   "_headers",
   "manifest.webmanifest",
   "offline.html",
+  "store.html",
   "sw.js",
   "flags.json",
 ];
@@ -32,6 +33,7 @@ const optionalRootFiles = [
   "landing.html",
   "llms.txt",
   "robots.txt",
+  "store.html",
   "yellowcart.html",
 ];
 

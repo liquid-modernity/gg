@@ -4,8 +4,9 @@
 
   const RELEASE = 'ac33998';
   const TEMPLATE_FINGERPRINT = '4f454c2091f7';
+  const ROUTE_CACHE_SCHEMA = 'store-route-v1';
   const GG_SW_NAME = 'pakrpp-editorial-pwa';
-  const GG_SW_VERSION = `${RELEASE}-${TEMPLATE_FINGERPRINT}`;
+  const GG_SW_VERSION = `${RELEASE}-${TEMPLATE_FINGERPRINT}-${ROUTE_CACHE_SCHEMA}`;
   const VERSION = GG_SW_VERSION;
 
   const CACHE_STATIC = `gg-static-${VERSION}`;
@@ -28,6 +29,7 @@
     MANIFEST_URL,
     '/',
     '/landing',
+    '/store',
     '/feeds/posts/default?alt=json&max-results=80'
   ];
 
@@ -511,7 +513,7 @@
             return precacheOne(feedCache, url, debug);
           }
 
-          if (url === '/' || url === '/landing') {
+          if (url === '/' || url === '/landing' || url === '/store') {
             return precacheOne(pageCache, url, debug, {
               html: true,
               flags: flags

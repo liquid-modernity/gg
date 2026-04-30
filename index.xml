@@ -375,8 +375,8 @@ html[data-gg-theme='light'] {
 
 html[data-gg-theme='dark'] {
   color-scheme: dark;
-  --gg-surface-page: #141216;
-  --gg-surface-article: rgba(255, 255, 255, .06);
+  --gg-surface-page: #000000;
+  --gg-surface-article: rgba(0, 0, 0, 0);
   --gg-surface-panel: #1c1a1e;
   --gg-toolbar-surface-fallback: #201d22;
   --gg-detail-outline-surface-fallback: #201d22;
@@ -421,8 +421,8 @@ html[data-gg-theme='dark'] {
 @media (prefers-color-scheme: dark) {
   :root:not([data-gg-theme='light']) {
     color-scheme: dark;
-    --gg-surface-page: #141216;
-    --gg-surface-article: rgba(255, 255, 255, .06);
+  --gg-surface-page: #000000;
+  --gg-surface-article: rgba(0, 0, 0, 0);
     --gg-surface-panel: #1c1a1e;
     --gg-toolbar-surface-fallback: #201d22;
     --gg-detail-outline-surface-fallback: #201d22;
@@ -2394,7 +2394,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
     <b:include data='blog' name='google-analytics'/>
   </head>
 
-  <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-hydration='critical' data-gg-network='unknown'>
+  <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' data-gg-hydration='critical' data-gg-network='unknown' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))'>
     <script type='text/javascript'>
       //<![CDATA[
       (function () {
@@ -2433,11 +2433,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-template-fingerprint='83aa39bdb869' data-release='ac33998' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='83aa39bdb869' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
-    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-root-listing='pending' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
-      <main class='gg-main' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' id='main' role='main' tabindex='-1'>
+    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
+      <main class='gg-main' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='main' role='main' tabindex='-1'>
         <b:if cond='not data:view.isSingleItem'>
         <header class='gg-site-head'>
           <p class='gg-site-head__eyebrow' hidden='hidden' id='gg-site-head-eyebrow'/>
@@ -2476,7 +2476,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               <b:widget-setting name='showReactions'>false</b:widget-setting>
             </b:widget-settings>
             <b:includable id='main'>
-              <div class='gg-entry-list' data-gg-listing-budget='essential' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' data-gg-surface-source='pending' id='gg-entry-list'>
+              <div class='gg-entry-list' data-gg-listing-budget='essential' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='gg-entry-list'>
                 <b:loop values='data:posts' var='post'>
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
