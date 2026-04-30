@@ -268,6 +268,7 @@
       margin-top: 4px;
       color: var(--gg-accent-soft);
       font: 630 11px/1.45 var(--gg-font-sans);
+      justify-content: center;
     }
     .store-pill, .store-chip {
       display: inline-flex;
@@ -461,9 +462,12 @@
       border-top: 1px solid var(--gg-divider);
     }
     .store-contact__inner {
-      display: grid;
-      gap: 14px;
-      max-width: 60ch;
+      justify-items: center;
+    display: grid;
+    gap: 14px;
+    max-width: 60ch;
+    text-align: center;
+    align-items: end;
     }
     .store-contact h2 {
       margin: 0;
@@ -654,7 +658,7 @@
       display: grid;
       gap: 0;
       margin-top: calc(-1 * var(--store-preview-overlay-lift));
-      padding: 0 18px;
+      padding: 0px;
     }
     .store-preview__intro {
       justify-self: center;
@@ -865,7 +869,7 @@
     .store-filter-outline__count { color: var(--gg-ink-soft); font: 650 12px/1.15 var(--gg-font-sans); white-space: nowrap; }
     .store-filter-outline__icon { transition: transform var(--gg-motion-sheet-open-bottom); }
     .store-filter-outline[data-store-filter-state='expanded'] .store-filter-outline__icon { transform: rotate(180deg); }
-    .store-filter-outline__panel { display: none; padding: 0 12px 12px; border-top: 1px solid var(--gg-divider); }
+    .store-filter-outline__panel { display: none; padding: 12px 12px 12px; border-top: 1px solid var(--gg-divider); }
     .store-filter-outline[data-store-filter-state='expanded'] .store-filter-outline__panel { display: block; }
     .store-discovery-results, .store-saved-results { display: grid; gap: 0; border-top: 1px solid var(--gg-divider); }
     .store-result-row { display: grid; grid-template-columns: 54px minmax(0,1fr) auto; align-items: center; gap: 10px; min-height: 72px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--gg-divider); background: transparent; color: var(--gg-ink); text-align: left; }
@@ -954,7 +958,15 @@
           <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, affiliate disclosures, and correction requests.</h2>
           <p data-copy="contactBody">Untuk kolaborasi brand, pengajuan produk, permintaan koreksi, atau pertanyaan affiliate, gunakan kanal kontak PakRPP.</p>
           <div class="store-contact__actions">
-            <a class="store-button store-button--primary" href="/landing#contact" data-copy="contactCta">Open PakRPP Contact</a>
+            <a
+            class="store-button store-button--primary"
+            href="https://wa.me/628910111213"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-copy="contactCta"
+          >
+            WhatsApp
+          </a>
             <a class="store-button" href="/store#home" data-copy="backToTop">Back to Top</a>
           </div>
         </div>
@@ -1118,8 +1130,8 @@
         <section class="store-sheet-section" aria-labelledby="store-navigation-label">
           <p class="store-sheet-section__label" id="store-navigation-label">Navigate</p>
           <div class="store-setting-grid">
-            <a class="store-setting store-setting--link" data-store-more-link="blog" href="/">Blog</a>
             <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing">Home</a>
+<a class="store-setting store-setting--link" data-store-more-link="blog" href="/">Blog</a>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-language-label">
