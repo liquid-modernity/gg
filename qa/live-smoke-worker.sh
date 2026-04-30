@@ -293,7 +293,7 @@ check_store_route() {
   grep -Eq 'data-store-theme=["'"'"']system["'"'"']' "$body_file" || log_fail "/store System theme switch is missing"
   grep -Eq 'data-store-theme=["'"'"']light["'"'"']' "$body_file" || log_fail "/store Light theme switch is missing"
   grep -Eq 'data-store-theme=["'"'"']dark["'"'"']' "$body_file" || log_fail "/store Dark theme switch is missing"
-  grep -Eq 'id=["'"'"']store-grid["'"'"']' "$body_file" || log_fail "/store grid is missing"
+  grep -Eq 'class=["'"'"'][^"'"'"']*store-grid[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store catalogue surface is missing"
   grep -Eq -- '--store-card-aspect:\s*4 / 5;' "$body_file" || log_fail "/store 4:5 card aspect token is missing"
   grep -Eq 'aspect-ratio:\s*var\(--store-card-aspect\)' "$body_file" || log_fail "/store card aspect-ratio rule is missing"
   grep -Eq 'border-radius:\s*10px;' "$body_file" || log_fail "/store card media 10px radius token is missing"
