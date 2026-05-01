@@ -23,106 +23,132 @@
   <!-- STORE_LCP_PRELOAD_END -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" /></noscript>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Yellow Cart",
-    "url": "https://www.pakrpp.com/store",
-    "description": "Kurasi produk affiliate premium pilihan PakRPP."
-  }
-  </script>
   <!-- STORE_ITEMLIST_JSONLD_START -->
   <script type="application/ld+json" id="store-itemlist-jsonld">
 {
   "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "Yellow Cart product picks",
-  "url": "https://www.pakrpp.com/store",
-  "itemListElement": [
+  "@graph": [
     {
-      "@type": "ListItem",
-      "position": 1,
-      "url": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html",
-      "item": {
-        "@type": "Product",
-        "@id": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html#product",
-        "name": "Dummy Desk Tray Organizer",
-        "description": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
-        "image": [
-          "https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125",
-          "https://picsum.photos/seed/yellowcart-desk-tray-2/900/1125",
-          "https://picsum.photos/seed/yellowcart-desk-tray-3/900/1125"
-        ],
-        "brand": {
-          "@type": "Brand",
-          "name": "Generic"
-        },
-        "category": "Workspace"
+      "@type": "WebSite",
+      "@id": "https://www.pakrpp.com/#website",
+      "name": "PakRPP",
+      "url": "https://www.pakrpp.com"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.pakrpp.com/#organization",
+      "name": "PakRPP",
+      "url": "https://www.pakrpp.com"
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": "https://www.pakrpp.com/store#collection",
+      "name": "Yellow Cart",
+      "url": "https://www.pakrpp.com/store",
+      "isPartOf": {
+        "@id": "https://www.pakrpp.com/#website"
+      },
+      "publisher": {
+        "@id": "https://www.pakrpp.com/#organization"
+      },
+      "description": "Yellow Cart is PakRPP's affiliate product curation and discovery page for editorially selected fashion, skincare, workspace, tech, and everyday picks.",
+      "mainEntity": {
+        "@id": "https://www.pakrpp.com/store#itemlist"
       }
     },
     {
-      "@type": "ListItem",
-      "position": 2,
-      "url": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
-      "item": {
-        "@type": "Product",
-        "@id": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html#product",
-        "name": "Everyday Canvas Tote",
-        "description": "Tote bag kanvas sederhana untuk membawa buku, laptop ringan, dokumen, atau barang harian tanpa tampilan yang terlalu ramai.",
-        "image": [
-          "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
-          "https://picsum.photos/seed/yellowcart-tote-2/900/1125",
-          "https://picsum.photos/seed/yellowcart-tote-3/900/1125"
-        ],
-        "brand": {
-          "@type": "Brand",
-          "name": "Generic"
+      "@type": "ItemList",
+      "@id": "https://www.pakrpp.com/store#itemlist",
+      "name": "Yellow Cart product picks",
+      "url": "https://www.pakrpp.com/store",
+      "numberOfItems": 4,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "url": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html",
+          "item": {
+            "@type": "Product",
+            "@id": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html#product",
+            "name": "Dummy Desk Tray Organizer",
+            "description": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
+            "image": [
+              "https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125",
+              "https://picsum.photos/seed/yellowcart-desk-tray-2/900/1125",
+              "https://picsum.photos/seed/yellowcart-desk-tray-3/900/1125"
+            ],
+            "brand": {
+              "@type": "Brand",
+              "name": "Generic"
+            },
+            "category": "Workspace"
+          }
         },
-        "category": "Etc"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "url": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
-      "item": {
-        "@type": "Product",
-        "@id": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html#product",
-        "name": "Minimal Barrier Serum",
-        "description": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
-        "image": [
-          "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
-          "https://picsum.photos/seed/yellowcart-serum-2/900/1125",
-          "https://picsum.photos/seed/yellowcart-serum-3/900/1125"
-        ],
-        "brand": {
-          "@type": "Brand",
-          "name": "Generic"
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "url": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+          "item": {
+            "@type": "Product",
+            "@id": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html#product",
+            "name": "Everyday Canvas Tote",
+            "description": "Tote bag kanvas sederhana untuk membawa buku, laptop ringan, dokumen, atau barang harian tanpa tampilan yang terlalu ramai.",
+            "image": [
+              "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+              "https://picsum.photos/seed/yellowcart-tote-2/900/1125",
+              "https://picsum.photos/seed/yellowcart-tote-3/900/1125"
+            ],
+            "brand": {
+              "@type": "Brand",
+              "name": "Generic"
+            },
+            "category": "Etc"
+          }
         },
-        "category": "Skincare"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 4,
-      "url": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
-      "item": {
-        "@type": "Product",
-        "@id": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html#product",
-        "name": "Neutral Linen Overshirt",
-        "description": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
-        "image": [
-          "https://picsum.photos/seed/yellowcart-linen-1/900/1125",
-          "https://picsum.photos/seed/yellowcart-linen-2/900/1125",
-          "https://picsum.photos/seed/yellowcart-linen-3/900/1125"
-        ],
-        "brand": {
-          "@type": "Brand",
-          "name": "Generic"
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "url": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+          "item": {
+            "@type": "Product",
+            "@id": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html#product",
+            "name": "Minimal Barrier Serum",
+            "description": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
+            "image": [
+              "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+              "https://picsum.photos/seed/yellowcart-serum-2/900/1125",
+              "https://picsum.photos/seed/yellowcart-serum-3/900/1125"
+            ],
+            "brand": {
+              "@type": "Brand",
+              "name": "Generic"
+            },
+            "category": "Skincare"
+          }
         },
-        "category": "Fashion"
-      }
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "url": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+          "item": {
+            "@type": "Product",
+            "@id": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html#product",
+            "name": "Neutral Linen Overshirt",
+            "description": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+            "image": [
+              "https://picsum.photos/seed/yellowcart-linen-1/900/1125",
+              "https://picsum.photos/seed/yellowcart-linen-2/900/1125",
+              "https://picsum.photos/seed/yellowcart-linen-3/900/1125"
+            ],
+            "brand": {
+              "@type": "Brand",
+              "name": "Generic"
+            },
+            "category": "Fashion"
+          }
+        }
+      ]
     }
   ]
 }
@@ -996,12 +1022,48 @@
       font: 820 clamp(30px,8vw,44px)/1 var(--gg-font-sans);
       letter-spacing: -.06em;
     }
+    .store-preview__facts {
+      display: grid;
+      gap: 10px;
+    }
+    .store-preview__fact {
+      display: grid;
+      gap: 4px;
+    }
+    .store-preview__fact[hidden] { display: none !important; }
+    .store-preview__fact-label {
+      margin: 0;
+      font: 760 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gg-accent-soft);
+    }
+    .store-preview__fact-value {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 560 14px/1.55 var(--gg-font-sans);
+      overflow-wrap: anywhere;
+    }
+    .store-preview__market-label {
+      margin: 0;
+      font: 760 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gg-accent-soft);
+      text-align: center;
+    }
     .store-preview__market {
       display: grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
       gap: 8px;
     }
     .store-preview__market .store-button { min-width: 0; padding-inline: 10px; }
+    .store-preview__footnote {
+      margin: -6px 0 0;
+      color: var(--gg-ink-soft);
+      font: 560 12px/1.45 var(--gg-font-sans);
+      text-align: center;
+    }
     .store-preview__secondary-actions {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 44px;
@@ -1624,13 +1686,25 @@
           <p class="store-preview__meta" id="store-preview-meta" data-copy="previewMetaFallback">PakRPP · Curated pick</p>
         </header>
         <div class="store-preview__surface">
-          <p class="store-preview__summary" id="store-preview-summary" data-copy="previewSummaryFallback">Produk kurasi Yellow Cart.</p>
           <p class="store-preview__price" id="store-preview-price">Rp—</p>
-          <div class="store-preview__market" aria-label="Marketplace links" data-copy-aria="marketplaceLinksLabel">
-            <a class="store-button store-button--primary" id="store-link-shopee" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Shopee</a>
-            <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">TikTok</a>
-            <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Tokopedia</a>
+          <p class="store-preview__summary" id="store-preview-summary" data-copy="previewSummaryFallback">Produk kurasi Yellow Cart.</p>
+          <div class="store-preview__facts">
+            <div class="store-preview__fact" id="store-preview-why-picked" hidden>
+              <p class="store-preview__fact-label" data-copy="semanticWhyPickedLabel">Kenapa dipilih</p>
+              <p class="store-preview__fact-value" id="store-preview-why-picked-value"></p>
+            </div>
+            <div class="store-preview__fact" id="store-preview-caveat" hidden>
+              <p class="store-preview__fact-label" data-copy="semanticCaveatLabel">Catatan</p>
+              <p class="store-preview__fact-value" id="store-preview-caveat-value"></p>
+            </div>
           </div>
+          <p class="store-preview__market-label" data-copy="marketplaceCtaLabel">Cek harga</p>
+          <div class="store-preview__market" aria-label="Marketplace links" data-copy-aria="marketplaceLinksLabel">
+            <a class="store-button store-button--primary" id="store-link-shopee" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Cek harga produk di Shopee">Shopee</a>
+            <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Cek harga produk di Tokopedia">Tokopedia</a>
+            <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Cek harga produk di TikTok">TikTok</a>
+          </div>
+          <p class="store-preview__footnote" data-copy="marketplaceFootnote">Harga, stok, pengiriman, dan retur mengikuti marketplace masing-masing.</p>
           <div class="store-preview__secondary-actions">
             <button class="store-button store-preview__save" id="store-preview-save" type="button" aria-pressed="false">
               <span class="gg-icon" id="store-preview-save-icon" aria-hidden="true">bookmark_add</span>
@@ -2217,6 +2291,8 @@
         curatedPickMeta: 'Pilihan kurasi',
         previewMetaFallback: 'PakRPP · Pilihan kurasi',
         previewSummaryFallback: 'Produk kurasi Yellow Cart.',
+        marketplaceCtaLabel: 'Cek harga',
+        marketplaceFootnote: 'Harga, stok, pengiriman, dan retur mengikuti marketplace masing-masing.',
         copyLinksAttribution: 'Kurasi via Yellow Cart · PakRPP',
         semanticProductsTitle: 'Catatan produk Yellow Cart',
         semanticWhyPickedLabel: 'Kenapa dipilih',
@@ -2319,6 +2395,8 @@
         curatedPickMeta: 'Curated pick',
         previewMetaFallback: 'PakRPP · Curated pick',
         previewSummaryFallback: 'Curated Yellow Cart product.',
+        marketplaceCtaLabel: 'Check price',
+        marketplaceFootnote: 'Price, stock, shipping, and returns follow each marketplace.',
         copyLinksAttribution: 'Curated via Yellow Cart · PakRPP',
         semanticProductsTitle: 'Yellow Cart product notes',
         semanticWhyPickedLabel: 'Why picked',
@@ -2340,6 +2418,11 @@
 
     var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
     var STORE_CANONICAL_PATH = '/store';
+    var STORE_WEBSITE_ID = STORE_CANONICAL_ORIGIN + '/#website';
+    var STORE_ORGANIZATION_ID = STORE_CANONICAL_ORIGIN + '/#organization';
+    var STORE_COLLECTION_ID = STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH + '#collection';
+    var STORE_ITEMLIST_ID = STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH + '#itemlist';
+    var STORE_SCHEMA_DESCRIPTION = 'Yellow Cart is PakRPP\'s affiliate product curation and discovery page for editorially selected fashion, skincare, workspace, tech, and everyday picks.';
     // Static featured card seed. Build-time prerender sync keeps this aligned with the first snapshot product.
     // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
@@ -2497,6 +2580,10 @@
       meta: document.getElementById('store-preview-meta'),
       summary: document.getElementById('store-preview-summary'),
       price: document.getElementById('store-preview-price'),
+      whyPicked: document.getElementById('store-preview-why-picked'),
+      whyPickedValue: document.getElementById('store-preview-why-picked-value'),
+      caveat: document.getElementById('store-preview-caveat'),
+      caveatValue: document.getElementById('store-preview-caveat-value'),
       save: document.getElementById('store-preview-save'),
       saveIcon: document.getElementById('store-preview-save-icon'),
       saveLabel: document.getElementById('store-preview-save-label'),
@@ -2824,18 +2911,30 @@
     }
     function isNonSpecificOfferUrl(value) {
       var href = clean(value);
-      return /\/search\b|[?&](q|query|keyword|keywords)=/i.test(href);
+      return /\/search\b|[?&](q|query|keyword|keywords)=|[?&]st=product(?:&|$)/i.test(href);
     }
-    function specificOfferUrl(item) {
+    function marketplaceDisplayName(key) {
+      if (key === 'shopee') return 'Shopee';
+      if (key === 'tokopedia') return 'Tokopedia';
+      if (key === 'tiktok') return 'TikTok';
+      if (key === 'lazada') return 'Lazada';
+      if (key === 'website') return normalizeLocale(state.locale) === 'id' ? 'website produk' : 'product website';
+      return 'marketplace';
+    }
+    function specificOfferMeta(item) {
       var links = item && item.links ? item.links : {};
       var keys = ['shopee', 'tokopedia', 'tiktok', 'lazada', 'website'];
       var index;
       var href;
       for (index = 0; index < keys.length; index += 1) {
         href = absoluteUrl(links[keys[index]]);
-        if (href && !isNonSpecificOfferUrl(href)) return href;
+        if (href && !isNonSpecificOfferUrl(href)) return { url: href, key: keys[index] };
       }
-      return '';
+      return null;
+    }
+    function specificOfferUrl(item) {
+      var meta = specificOfferMeta(item);
+      return meta ? meta.url : '';
     }
     function requestedItemSlug() {
       var search;
@@ -2884,11 +2983,14 @@
     function previewSummaryText(item) {
       return clean(item && item.summary ? item.summary : '') || copy('previewSummaryFallback');
     }
+    function previewVerdictText(item) {
+      return clean(item && item.verdict ? item.verdict : '') || previewSummaryText(item);
+    }
     function savedEmptyLabel() {
       return copy('savedEmptyTitle') + ' ' + copy('savedEmptyBody');
     }
     function semanticSummaryText(item) {
-      return clean(item && (item.verdict || item.summary) ? (item.verdict || item.summary) : '') || previewSummaryText(item);
+      return previewSummaryText(item);
     }
     function semanticBestForText(item) {
       return cleanTextList(item && item.bestFor).join(' · ') || clean(item && item.useCase) || clean(item && item.geoContext);
@@ -2926,6 +3028,7 @@
       var list = (items || []).map(function (item, index) {
         var itemUrl = canonicalProductUrl(item) || productStoreAbsoluteUrl(item);
         var images = arr(item && item.images).map(absoluteUrl).filter(Boolean);
+        var offerMeta = specificOfferMeta(item);
         var product = {
           '@type': 'Product',
           '@id': itemUrl + '#product',
@@ -2938,16 +3041,21 @@
         };
         var offerPrice = item && item.price ? Number(item.price) : 0;
         var offerCurrency = clean(item && item.priceCurrency).toUpperCase();
-        var offerUrl = specificOfferUrl(item);
         if (images.length) product.image = images;
         if (item && item.category) product.category = item.category;
-        if (offerPrice > 0 && offerCurrency && offerUrl) {
+        if (offerPrice > 0 && offerCurrency && offerMeta && offerMeta.url) {
           product.offers = {
             '@type': 'Offer',
-            url: offerUrl,
+            url: offerMeta.url,
             price: String(offerPrice),
             priceCurrency: offerCurrency
           };
+          if (offerMeta.key !== 'website') {
+            product.offers.seller = {
+              '@type': 'Organization',
+              name: marketplaceDisplayName(offerMeta.key)
+            };
+          }
         }
         return {
           '@type': 'ListItem',
@@ -2959,10 +3067,39 @@
       if (!itemListJsonLd) return;
       itemListJsonLd.textContent = JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: 'Yellow Cart',
-        url: STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH,
-        itemListElement: list
+        '@graph': [
+          {
+            '@type': 'WebSite',
+            '@id': STORE_WEBSITE_ID,
+            name: 'PakRPP',
+            url: STORE_CANONICAL_ORIGIN
+          },
+          {
+            '@type': 'Organization',
+            '@id': STORE_ORGANIZATION_ID,
+            name: 'PakRPP',
+            url: STORE_CANONICAL_ORIGIN
+          },
+          {
+            '@type': 'CollectionPage',
+            '@id': STORE_COLLECTION_ID,
+            name: 'Yellow Cart',
+            url: STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH,
+            isPartOf: { '@id': STORE_WEBSITE_ID },
+            publisher: { '@id': STORE_ORGANIZATION_ID },
+            description: STORE_SCHEMA_DESCRIPTION,
+            mainEntity: { '@id': STORE_ITEMLIST_ID }
+          },
+          {
+            '@type': 'ItemList',
+            '@id': STORE_ITEMLIST_ID,
+            name: 'Yellow Cart product picks',
+            url: STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH,
+            numberOfItems: list.length,
+            itemListOrder: 'https://schema.org/ItemListOrderDescending',
+            itemListElement: list
+          }
+        ]
       });
     }
     function clearToastTimer() {
@@ -3030,6 +3167,23 @@
       preview.save.setAttribute('aria-label', saved ? copy('savedLabel') : copy('saveLabel'));
       setNodeText(preview.saveLabel, saved ? copy('savedLabel') : copy('saveLabel'));
       if (preview.saveIcon) preview.saveIcon.textContent = saved ? 'bookmark' : 'bookmark_add';
+    }
+    function togglePreviewFact(node, valueNode, value) {
+      if (!node || !valueNode) return;
+      if (clean(value)) {
+        node.hidden = false;
+        valueNode.textContent = clean(value);
+      } else {
+        node.hidden = true;
+        valueNode.textContent = '';
+      }
+    }
+    function marketplaceAriaLabel(key, item) {
+      var title = displayProductTitle(item);
+      if (normalizeLocale(state.locale) === 'id') {
+        return 'Cek harga ' + title + ' di ' + marketplaceDisplayName(key);
+      }
+      return 'Check price for ' + title + ' on ' + marketplaceDisplayName(key);
     }
     function syncFilterToggleState(expanded) {
       var label = filterCurrent ? clean(filterCurrent.textContent) || currentFilterLabel() : currentFilterLabel();
@@ -3801,15 +3955,18 @@
       setNodeText(preview.category, item.category || copy('storeLabel'));
       setNodeText(preview.title, displayProductTitle(item));
       setNodeText(preview.meta, previewMetaText(item));
-      setNodeText(preview.summary, previewSummaryText(item));
       setNodeText(preview.price, item.priceText || 'Rp—');
+      setNodeText(preview.summary, previewVerdictText(item));
+      togglePreviewFact(preview.whyPicked, preview.whyPickedValue, item.whyPicked);
+      togglePreviewFact(preview.caveat, preview.caveatValue, item.caveat);
       state.currentProductKey = itemKey(item);
       if (preview.save) setPreviewSaveState(isSaved(item));
-      ['shopee', 'tiktok', 'tokopedia'].forEach(function (key) {
+      ['shopee', 'tokopedia', 'tiktok'].forEach(function (key) {
         var link = preview.links[key];
         var href = item.links && item.links[key];
         if (!link) return;
         link.href = href || '#';
+        link.setAttribute('aria-label', marketplaceAriaLabel(key, item));
         link.setAttribute('aria-disabled', href ? 'false' : 'true');
         link.hidden = !href;
       });
@@ -3836,10 +3993,17 @@
       setNodeText(preview.category, item.category || copy('storeLabel'));
       setNodeText(preview.title, displayProductTitle(item));
       setNodeText(preview.meta, previewMetaText(item));
-      setNodeText(preview.summary, previewSummaryText(item));
       setNodeText(preview.price, item.priceText || 'Rp—');
+      setNodeText(preview.summary, previewVerdictText(item));
+      togglePreviewFact(preview.whyPicked, preview.whyPickedValue, item.whyPicked);
+      togglePreviewFact(preview.caveat, preview.caveatValue, item.caveat);
       setPreviewSaveState(isSaved(item));
       setPreviewCopyState(preview.copy && preview.copy.getAttribute('data-copy-state') === 'copied' ? 'copied' : 'idle');
+      ['shopee', 'tokopedia', 'tiktok'].forEach(function (key) {
+        var link = preview.links[key];
+        if (!link) return;
+        link.setAttribute('aria-label', marketplaceAriaLabel(key, item));
+      });
       renderPreviewNotes(noteList);
       [].slice.call(preview.dots.querySelectorAll('[data-store-preview-dot]')).forEach(function (button, index) {
         button.setAttribute('aria-label', previewImageActionLabel(index));

@@ -316,6 +316,13 @@ function vanityRedirect(request, flags) {
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
+function storeCanonicalRedirectStatus(flags, pathname) {
+  if (pathname === `${STORE_PUBLIC_PATH}/`) {
+    return flags.mode === "production" ? 308 : 302;
+  }
+  return 301;
+}
+
 function isLegacyViewPath(pathname) {
   return pathname === "/view" || pathname.startsWith("/view/");
 }
@@ -327,9 +334,10 @@ function legacyViewRedirect(request, flags) {
   return redirectUrl(next, redirectStatusForMode(flags));
 }
 
-function storeRouteRedirect(request) {
+function storeRouteRedirect(request, flags) {
   const url = new URL(request.url);
   if (
+    url.pathname !== `${STORE_PUBLIC_PATH}/` &&
     url.pathname !== STORE_INTERNAL_PATH &&
     url.pathname !== YELLOWCART_LEGACY_PUBLIC_PATH &&
     url.pathname !== YELLOWCART_LEGACY_INTERNAL_PATH &&
@@ -341,7 +349,7 @@ function storeRouteRedirect(request) {
 
   const next = new URL(request.url);
   next.pathname = STORE_PUBLIC_PATH;
-  return redirectUrl(next, 301);
+  return redirectUrl(next, storeCanonicalRedirectStatus(flags, url.pathname));
 }
 
 function classifyRoute(request) {
@@ -418,7 +426,7 @@ async function handleStaticRoutes(request, env, flags) {
     return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags));
   }
 
-  const storeRedirect = storeRouteRedirect(request);
+  const storeRedirect = storeRouteRedirect(request, flags);
   if (storeRedirect) return storeRedirect;
 
   if (shouldServeStaticFromAssets(pathname)) {
@@ -437,7 +445,13 @@ function baseSecurityHeaders(headers) {
 }
 
 function developmentRobotsTag() {
+  // Development and staging stay locked down until production go-live.
+  // This noindex contract is allowed only outside production mode.
   return "noindex, nofollow, nosnippet, noimageindex, max-snippet:0, max-image-preview:none, max-video-preview:0";
+}
+
+function productionIndexableHtmlRobotsTag() {
+  return "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1";
 }
 
 function productionRobotsTag(route, isHtmlLike) {
@@ -447,14 +461,15 @@ function productionRobotsTag(route, isHtmlLike) {
     return "noindex";
   }
 
-  if ([ROOT_LISTING_LEGACY_ROUTE, "landing", "store", "post", "static-page"].includes(route)) return "index, follow";
+  if ([ROOT_LISTING_LEGACY_ROUTE, "landing", "store", "post", "static-page"].includes(route)) return productionIndexableHtmlRobotsTag();
   if (["label", "search", "feed"].includes(route)) return "noindex, follow";
   if (["legacy-view", "offline", "diagnostic", "flags", "manifest", "service-worker"].includes(route)) return "noindex, nofollow";
-  return "index, follow";
+  return productionIndexableHtmlRobotsTag();
 }
 
 function routeRobotsTag(route, contentType, flags) {
   const isHtmlLike = isHtmlContentType(contentType) || [ROOT_LISTING_LEGACY_ROUTE, "post", "static-page", "landing", "store"].includes(route);
+  // Only non-production modes are allowed to emit the lockdown noindex header.
   if (flags.mode !== "production") return developmentRobotsTag();
   return productionRobotsTag(route, isHtmlLike);
 }
@@ -670,7 +685,7 @@ function previewRedirect(request, flags) {
     };
   }
 
-  const storeRedirect = storeRouteRedirect(request);
+  const storeRedirect = storeRouteRedirect(request, flags);
   if (storeRedirect) {
     return {
       to: storeRedirect.headers.get("location") || STORE_PUBLIC_PATH,
@@ -680,6 +695,11 @@ function previewRedirect(request, flags) {
   }
 
   return null;
+}
+
+function diagnosticsFlagsForMode(flags, modeOverride) {
+  if (!modeOverride) return flags;
+  return normalizeFlags({ ...cloneJson(flags), mode: modeOverride });
 }
 
 function routePolicyPreview(input, flags) {
@@ -822,6 +842,7 @@ async function handleDiagnostics(request, flags) {
         normalizedWhenEnabled: ["?m=1", "?m=0"],
         mobileQueryNormalizationStatus: { development: 302, staging: 302, production: 302 },
         alwaysRedirected: {
+          [`${STORE_PUBLIC_PATH}/`]: STORE_PUBLIC_PATH,
           "/view": "/",
           "/view/*": "/",
           [STORE_INTERNAL_PATH]: STORE_PUBLIC_PATH,
@@ -837,17 +858,19 @@ async function handleDiagnostics(request, flags) {
   }
 
   if (url.pathname === "/__gg/robots") {
+    const previewFlags = diagnosticsFlagsForMode(flags, normalizeMode(url.searchParams.get("mode")));
     return jsonResponse({
-      mode: flags.mode,
-      robotsTxt: buildRobotsTxt(request, flags),
-      robotsTagDefault: flags.mode === "production" ? "route-specific" : developmentRobotsTag(),
+      mode: previewFlags.mode,
+      robotsTxt: buildRobotsTxt(request, previewFlags),
+      robotsTagDefault: previewFlags.mode === "production" ? "route-specific" : developmentRobotsTag(),
     });
   }
 
   if (url.pathname === "/__gg/headers") {
     const target = url.searchParams.get("url") || "/";
     const targetUrl = new URL(target, request.url);
-    return jsonResponse(routePolicyPreview(targetUrl.toString(), flags));
+    const previewFlags = diagnosticsFlagsForMode(flags, normalizeMode(url.searchParams.get("mode")));
+    return jsonResponse(routePolicyPreview(targetUrl.toString(), previewFlags));
   }
 
   if (url.pathname === "/__gg/pwa") return jsonResponse(pwaDiagnostics(flags));

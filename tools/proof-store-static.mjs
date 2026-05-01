@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
+const WORKER_PATH = path.resolve(ROOT, "worker.js");
+const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 
@@ -67,20 +69,62 @@ function imageTags(text) {
   return text.match(/<img\b[^>]*>/gi) || [];
 }
 
+function preloadTags(text) {
+  return text.match(/<link\b[^>]*rel=["']preload["'][^>]*>/gi) || [];
+}
+
+function isNonSpecificOfferUrl(value) {
+  return /\/search\b|[?&](q|query|keyword|keywords)=|[?&]st=product(?:&|$)/i.test(String(value || ""));
+}
+
+function hasType(node, expected) {
+  const types = Array.isArray(node?.["@type"]) ? node["@type"] : [node?.["@type"]];
+  return types.filter(Boolean).includes(expected);
+}
+
+function graphNodes(schema) {
+  if (!schema) return [];
+  if (Array.isArray(schema["@graph"])) return schema["@graph"];
+  return [schema];
+}
+
+function findGraphNode(nodes, expectedType, idSuffix = "") {
+  return nodes.find((node) => hasType(node, expectedType) && (!idSuffix || String(node["@id"] || "").endsWith(idSuffix))) || null;
+}
+
 const gridRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
 const staticProductsRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
 const jsonLdRegion = extractMarkedRegion(source, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
 const semanticRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
+const preloadRegion = extractMarkedRegion(source, "<!-- STORE_LCP_PRELOAD_START -->", "<!-- STORE_LCP_PRELOAD_END -->");
 
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
 
 const staticProducts = parseJsonScript("store-static-products");
-const itemListJsonLd = parseJsonScript("store-itemlist-jsonld");
+const schema = parseJsonScript("store-itemlist-jsonld");
+const graph = graphNodes(schema);
+const websiteNode = findGraphNode(graph, "WebSite", "#website");
+const organizationNode = findGraphNode(graph, "Organization", "#organization");
+const collectionNode = findGraphNode(graph, "CollectionPage", "#collection");
+const itemListNode = findGraphNode(graph, "ItemList", "#itemlist") || findGraphNode(graph, "ItemList");
 
 if (Array.isArray(staticProducts) && !staticProducts.length) fail("static product JSON is empty");
-if (itemListJsonLd && (!Array.isArray(itemListJsonLd.itemListElement) || !itemListJsonLd.itemListElement.length)) {
-  fail("ItemList JSON-LD itemListElement is empty");
+if (!websiteNode) fail("schema graph is missing WebSite");
+if (!organizationNode) fail("schema graph is missing Organization");
+if (!collectionNode) fail("schema graph is missing CollectionPage");
+if (!itemListNode) fail("schema graph is missing ItemList");
+
+if (collectionNode) {
+  if (!collectionNode.mainEntity || collectionNode.mainEntity["@id"] !== String(itemListNode?.["@id"] || "")) {
+    fail("CollectionPage mainEntity does not reference the ItemList @id");
+  }
+}
+
+if (itemListNode) {
+  if (!Array.isArray(itemListNode.itemListElement) || !itemListNode.itemListElement.length) {
+    fail("ItemList JSON-LD itemListElement is empty");
+  }
 }
 
 if (Array.isArray(staticProducts) && staticProducts.length) {
@@ -89,7 +133,12 @@ if (Array.isArray(staticProducts) && staticProducts.length) {
   const notes = semanticRegion.match(/class=["']store-semantic-product["']/g) || [];
   const images = imageTags(gridRegion);
   const highPriorityImages = images.filter((tag) => /fetchpriority=["']high["']/i.test(tag));
-  const firstAnchor = anchorTags(gridRegion)[0] || "";
+  const preloadImages = preloadTags(preloadRegion).filter((tag) => /\bas=["']image["']/i.test(tag));
+  const preloadHigh = preloadImages.filter((tag) => /fetchpriority=["']high["']/i.test(tag));
+  const previewMarkup = source.match(/<div class="store-preview__market"[\s\S]*?<\/div>/i)?.[0] || "";
+  const previewLinks = anchorTags(previewMarkup);
+  const firstImageSrc = images[0]?.match(/\bsrc=(["'])(.*?)\1/i)?.[2] || "";
+  const preloadHref = preloadHigh[0]?.match(/\bhref=(["'])(.*?)\1/i)?.[2] || "";
 
   if (!gridTagMatch) {
     fail("missing #store-grid section");
@@ -98,36 +147,74 @@ if (Array.isArray(staticProducts) && staticProducts.length) {
   }
 
   if (!cards.length) fail("generated store grid is empty");
-  if (cards.length !== staticProducts.length) {
-    fail(`generated store grid count (${cards.length}) does not match static products (${staticProducts.length})`);
-  }
-
+  if (cards.length !== staticProducts.length) fail(`generated store grid count (${cards.length}) does not match static products (${staticProducts.length})`);
   if (!notes.length) fail("generated semantic products are empty");
-  if (notes.length !== staticProducts.length) {
-    fail(`generated semantic notes count (${notes.length}) does not match static products (${staticProducts.length})`);
-  }
-
-  if (semanticRegion.includes("Product notes will appear here after the curation loads.")) {
-    fail("semantic placeholder remains visible after products were generated");
-  }
+  if (notes.length !== staticProducts.length) fail(`generated semantic notes count (${notes.length}) does not match static products (${staticProducts.length})`);
+  if (semanticRegion.includes("Product notes will appear here after the curation loads.")) fail("semantic placeholder remains visible after products were generated");
 
   if (!images.length) fail("generated store grid has no images");
   if (!highPriorityImages.length) fail("generated store grid has no fetchpriority=high image");
   if (highPriorityImages.length > 1) fail(`generated store grid has ${highPriorityImages.length} fetchpriority=high images`);
   if (images.length && !/fetchpriority=["']high["']/i.test(images[0])) fail("first generated image is not fetchpriority=high");
 
-  if (/href=["'][^"']*(?:shopee|tokopedia|tiktok|lazada)\./i.test(firstAnchor)) {
-    fail("first generated product card href points to a marketplace URL instead of a canonical product URL");
-  }
+  if (preloadImages.length !== 1) fail(`expected exactly one preload image, found ${preloadImages.length}`);
+  if (preloadHigh.length !== 1) fail(`expected exactly one high-priority preload image, found ${preloadHigh.length}`);
+  if (preloadHref && firstImageSrc && preloadHref !== firstImageSrc) fail("preload high-priority image does not match the first generated product image");
 
-  for (const anchor of anchorTags(`${gridRegion}\n${semanticRegion}`)) {
-    const hrefMatch = anchor.match(/\bhref=(["'])(.*?)\1/i);
-    if (!hrefMatch) continue;
-    if (!/(?:shopee|tokopedia|tiktok|lazada)\./i.test(hrefMatch[2])) continue;
-    if (!/\btarget=(["'])_blank\1/i.test(anchor)) fail(`generated marketplace link is missing target=_blank (${hrefMatch[2]})`);
-    if (!/\brel=(["'])[^"']*\bsponsored\b[^"']*\bnofollow\b[^"']*\bnoopener\b[^"']*\bnoreferrer\b[^"']*\1/i.test(anchor)) {
-      fail(`generated marketplace link is missing rel=\"sponsored nofollow noopener noreferrer\" (${hrefMatch[2]})`);
+  if (!previewLinks.length) fail("preview marketplace CTA group is missing");
+  for (const anchor of previewLinks) {
+    const text = anchor.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const ariaLabel = anchor.match(/\baria-label=(["'])(.*?)\1/i)?.[2] || "";
+    if (!["Shopee", "Tokopedia", "TikTok"].includes(text)) fail(`preview marketplace label is not short-form (${text || "missing"})`);
+    if (!/(cek harga|check price)/i.test(ariaLabel)) fail(`preview marketplace aria-label is not descriptive (${text || "missing"})`);
+  }
+  if (!/marketplaceAriaLabel\(/.test(source)) fail("runtime marketplace aria-label helper is missing");
+  if (!/store-preview__footnote/.test(source)) fail("preview marketplace footnote is missing");
+
+  if (!itemListNode) {
+    fail("ItemList graph is missing");
+  } else {
+    if (Number(itemListNode.numberOfItems) !== staticProducts.length) {
+      fail(`ItemList numberOfItems (${itemListNode.numberOfItems}) does not match static products (${staticProducts.length})`);
     }
+    if (itemListNode.itemListOrder !== "https://schema.org/ItemListOrderDescending") {
+      fail("ItemList itemListOrder is not descending");
+    }
+    if (!Array.isArray(itemListNode.itemListElement) || itemListNode.itemListElement.length !== staticProducts.length) {
+      fail(`ItemList itemListElement count does not match static products (${staticProducts.length})`);
+    }
+
+    for (const [index, entry] of itemListNode.itemListElement.entries()) {
+      const url = String(entry?.url || "");
+      const product = entry?.item || {};
+      if (!url) fail(`ListItem ${index + 1} is missing url`);
+      if (/(?:shopee|tokopedia|tiktok|lazada)\./i.test(url)) fail(`ListItem ${index + 1} url points to marketplace instead of canonical post`);
+      if (isNonSpecificOfferUrl(url)) fail(`ListItem ${index + 1} url points to a search-style URL`);
+      if (!product || !hasType(product, "Product")) fail(`ListItem ${index + 1} is missing Product item`);
+      if (!product["@id"] || !String(product["@id"]).endsWith("#product")) fail(`ListItem ${index + 1} Product is missing #product @id`);
+      if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) fail(`ListItem ${index + 1} emitted Offer for search-style marketplace URL`);
+      if (product.offers?.seller?.name === "PakRPP") fail(`ListItem ${index + 1} Offer seller must not be PakRPP`);
+    }
+  }
+}
+
+if (existsSync(WORKER_PATH)) {
+  const workerSource = readFileSync(WORKER_PATH, "utf8");
+  if (!/function developmentRobotsTag\(\)/.test(workerSource)) fail("worker.js is missing developmentRobotsTag()");
+  if (!/noindex, nofollow, nosnippet, noimageindex/.test(workerSource)) fail("worker.js is missing the development lockdown robots contract");
+  if (!/function productionIndexableHtmlRobotsTag\(\)/.test(workerSource)) fail("worker.js is missing explicit production indexable HTML robots helper");
+  if (!/index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1/.test(workerSource)) fail("worker.js is missing the production indexable /store robots tag");
+  if (!/flags\.mode !== "production"\) return developmentRobotsTag\(\);/.test(workerSource)) fail("worker.js is missing the non-production robots guard");
+}
+
+if (existsSync(FLAGS_PATH)) {
+  try {
+    const flags = JSON.parse(readFileSync(FLAGS_PATH, "utf8"));
+    if (!["development", "staging", "production"].includes(String(flags.mode || ""))) {
+      fail(`flags.json has an invalid mode (${JSON.stringify(flags.mode)})`);
+    }
+  } catch (error) {
+    fail(`flags.json is not valid JSON: ${error.message}`);
   }
 }
 
@@ -138,5 +225,5 @@ if (failures.length) {
 }
 
 const staticCount = Array.isArray(staticProducts) ? staticProducts.length : 0;
-const itemCount = itemListJsonLd && Array.isArray(itemListJsonLd.itemListElement) ? itemListJsonLd.itemListElement.length : 0;
+const itemCount = itemListNode && Array.isArray(itemListNode.itemListElement) ? itemListNode.itemListElement.length : 0;
 console.log(`STORE STATIC PROOF PASS path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticCount} itemList=${itemCount}`);

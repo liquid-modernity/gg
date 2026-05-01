@@ -9,6 +9,11 @@ const LCP_FALLBACK_PATH = path.resolve(ROOT, "config/store-lcp-product.json");
 const FEED_URL = "https://www.pakrpp.com/feeds/posts/default/-/Store?alt=json&max-results=50";
 const STORE_ORIGIN = "https://www.pakrpp.com";
 const STORE_PATHNAME = "/store";
+const STORE_WEBSITE_ID = `${STORE_ORIGIN}/#website`;
+const STORE_ORGANIZATION_ID = `${STORE_ORIGIN}/#organization`;
+const STORE_COLLECTION_ID = `${STORE_ORIGIN}${STORE_PATHNAME}#collection`;
+const STORE_ITEMLIST_ID = `${STORE_ORIGIN}${STORE_PATHNAME}#itemlist`;
+const STORE_SCHEMA_DESCRIPTION = "Yellow Cart is PakRPP's affiliate product curation and discovery page for editorially selected fashion, skincare, workspace, tech, and everyday picks.";
 const SYSTEM_LABELS = new Set(["store", "yellowcard", "yellowcart"]);
 const MARKET_KEYS = ["shopee", "tokopedia", "tiktok", "lazada", "website", "official"];
 const SOFT_MODE = process.argv.includes("--soft");
@@ -424,15 +429,23 @@ function sortProducts(products) {
 }
 
 function isNonSpecificOfferUrl(value) {
-  return /\/search\b|[?&](q|query|keyword|keywords)=/i.test(clean(value));
+  return /\/search\b|[?&](q|query|keyword|keywords)=|[?&]st=product(?:&|$)/i.test(clean(value));
 }
 
-function specificOfferUrl(product) {
+function marketplaceDisplayName(key) {
+  if (key === "shopee") return "Shopee";
+  if (key === "tokopedia") return "Tokopedia";
+  if (key === "tiktok") return "TikTok";
+  if (key === "lazada") return "Lazada";
+  return "";
+}
+
+function specificOfferMeta(product) {
   for (const key of ["shopee", "tokopedia", "tiktok", "lazada", "website"]) {
     const href = absoluteUrl(product && product.links && product.links[key]);
-    if (href && !isNonSpecificOfferUrl(href)) return href;
+    if (href && !isNonSpecificOfferUrl(href)) return { url: href, key };
   }
-  return "";
+  return null;
 }
 
 function buildPreloadBlock(product) {
@@ -484,44 +497,81 @@ function buildStaticProductsJsonBlock(products) {
 }
 
 function buildItemListJsonLdBlock(products) {
-  const itemList = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Yellow Cart product picks",
-    url: `${STORE_ORIGIN}${STORE_PATHNAME}`,
-    itemListElement: products.map((product, index) => {
-      const item = {
-        "@type": "Product",
-        "@id": `${product.canonicalUrl}#product`,
-        name: product.name,
-        description: product.summary,
-        image: product.images,
-        brand: {
-          "@type": "Brand",
-          name: product.brand || "Generic",
-        },
-        category: product.category,
+  const itemListElements = products.map((product, index) => {
+    const item = {
+      "@type": "Product",
+      "@id": `${product.canonicalUrl}#product`,
+      name: product.name,
+      description: product.summary,
+      image: product.images,
+      brand: {
+        "@type": "Brand",
+        name: product.brand || "Generic",
+      },
+      category: product.category,
+    };
+    const offerMeta = specificOfferMeta(product);
+    if (product.price > 0 && product.priceCurrency && offerMeta && offerMeta.url) {
+      item.offers = {
+        "@type": "Offer",
+        url: offerMeta.url,
+        price: String(product.price),
+        priceCurrency: product.priceCurrency,
       };
-      const offerUrl = specificOfferUrl(product);
-      if (product.price > 0 && product.priceCurrency && offerUrl) {
-        item.offers = {
-          "@type": "Offer",
-          url: offerUrl,
-          price: String(product.price),
-          priceCurrency: product.priceCurrency,
+      if (offerMeta.key !== "website") {
+        item.offers.seller = {
+          "@type": "Organization",
+          name: marketplaceDisplayName(offerMeta.key),
         };
       }
+    }
 
-      return {
-        "@type": "ListItem",
-        position: index + 1,
-        url: product.canonicalUrl,
-        item,
-      };
-    }),
+    return {
+      "@type": "ListItem",
+      position: index + 1,
+      url: product.canonicalUrl,
+      item,
+    };
+  });
+
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": STORE_WEBSITE_ID,
+        name: "PakRPP",
+        url: STORE_ORIGIN,
+      },
+      {
+        "@type": "Organization",
+        "@id": STORE_ORGANIZATION_ID,
+        name: "PakRPP",
+        url: STORE_ORIGIN,
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": STORE_COLLECTION_ID,
+        name: "Yellow Cart",
+        url: `${STORE_ORIGIN}${STORE_PATHNAME}`,
+        isPartOf: { "@id": STORE_WEBSITE_ID },
+        publisher: { "@id": STORE_ORGANIZATION_ID },
+        description: STORE_SCHEMA_DESCRIPTION,
+        mainEntity: { "@id": STORE_ITEMLIST_ID },
+      },
+      {
+        "@type": "ItemList",
+        "@id": STORE_ITEMLIST_ID,
+        name: "Yellow Cart product picks",
+        url: `${STORE_ORIGIN}${STORE_PATHNAME}`,
+        numberOfItems: products.length,
+        itemListOrder: "https://schema.org/ItemListOrderDescending",
+        itemListElement: itemListElements,
+      },
+    ],
   };
 
-  return `  <script type="application/ld+json" id="store-itemlist-jsonld">\n${escapeJsonForScript(itemList)}\n  </script>`;
+  return `  <script type="application/ld+json" id="store-itemlist-jsonld">\n${escapeJsonForScript(graph)}\n  </script>`;
 }
 
 function buildSemanticFact(label, value) {

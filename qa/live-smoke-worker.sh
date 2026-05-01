@@ -15,6 +15,7 @@ failures=0
 warnings=0
 root_contract="missing"
 root_contract_reasons="missing"
+current_mode="unknown"
 
 log_fail() {
   failures=$((failures + 1))
@@ -33,6 +34,22 @@ log_info() {
 if [[ ! -f "$PROOF_TOOL" ]]; then
   log_fail "tools/proof-store-static.mjs is missing"
 fi
+
+json_field() {
+  local file="$1"
+  local dotted_key="$2"
+
+  node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const dotted = process.argv[2];
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const value = dotted.split(".").reduce((acc, key) => (acc == null ? undefined : acc[key]), data);
+    if (value == null) process.exit(3);
+    if (typeof value === "string") process.stdout.write(value);
+    else process.stdout.write(JSON.stringify(value));
+  ' "$file" "$dotted_key" 2>/dev/null
+}
 
 extract_body_snippet() {
   local file="$1"
@@ -189,6 +206,10 @@ check_flags_endpoint() {
 
   if ! grep -q '"mode"' "$flags_file"; then
     log_warn "/flags.json missing mode field"
+  else
+    current_mode="$(json_field "$flags_file" "mode" || true)"
+    [[ -n "$current_mode" ]] || current_mode="unknown"
+    log_info "/flags.json mode=${current_mode}"
   fi
 }
 
@@ -366,12 +387,74 @@ check_store_route() {
     log_fail "/store still serves stale non-https wa.me href"
   fi
 
+  if [[ "$current_mode" == "production" ]]; then
+    if [[ "$robots_header" == *"noindex"* || "$robots_header" == *"nofollow"* || "$robots_header" == *"nosnippet"* || "$robots_header" == *"noimageindex"* ]]; then
+      log_fail "/store production header must not contain development noindex lockdown (${robots_header:-missing})"
+    fi
+  elif [[ "$robots_header" == *"noindex"* ]]; then
+    log_info "/store non-production header still carries lockdown robots as expected (${robots_header})"
+  fi
+
   if ! proof_output="$(node "$PROOF_TOOL" "$body_file" 2>&1)"; then
     log_fail "/store static proof failed"
     printf '%s\n' "$proof_output"
   else
     log_info "$proof_output"
   fi
+}
+
+check_diagnostic_mode_contracts() {
+  local prod_headers_file="$tmp_dir/store_prod_headers.json"
+  local prod_slash_file="$tmp_dir/store_prod_slash_headers.json"
+  local dev_slash_file="$tmp_dir/store_dev_slash_headers.json"
+  local prod_robots_file="$tmp_dir/store_prod_robots.json"
+  local prod_headers_meta prod_slash_meta dev_slash_meta prod_robots_meta
+  local prod_mode prod_robots prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
+
+  prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file")"
+  prod_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=production" "$prod_slash_file")"
+  dev_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=development" "$dev_slash_file")"
+  prod_robots_meta="$(fetch_body "/__gg/robots?mode=production" "$prod_robots_file")"
+
+  if [[ "$(printf '%s' "$prod_headers_meta" | cut -d'|' -f2)" != "200" ]]; then
+    log_fail "/__gg/headers?url=/store&mode=production expected status 200"
+    return
+  fi
+
+  prod_mode="$(json_field "$prod_headers_file" "mode" || true)"
+  prod_robots="$(json_field "$prod_headers_file" "robots" || true)"
+  prod_slash_to="$(json_field "$prod_slash_file" "redirects.to" || true)"
+  prod_slash_status="$(json_field "$prod_slash_file" "redirects.status" || true)"
+  dev_slash_status="$(json_field "$dev_slash_file" "redirects.status" || true)"
+  prod_robots_txt="$(json_field "$prod_robots_file" "robotsTxt" || true)"
+
+  [[ "$prod_mode" == "production" ]] || log_fail "production diagnostics preview did not report mode=production"
+
+  if [[ "$prod_robots" == *"noindex"* || "$prod_robots" == *"nofollow"* || "$prod_robots" == *"nosnippet"* || "$prod_robots" == *"noimageindex"* ]]; then
+    log_fail "production diagnostics preview for /store is not indexable (${prod_robots:-missing})"
+  fi
+
+  if [[ "$prod_slash_status" != "301" && "$prod_slash_status" != "308" ]]; then
+    log_fail "production diagnostics preview for /store/ must redirect with 301 or 308 (got ${prod_slash_status:-missing})"
+  fi
+
+  if [[ "$prod_slash_to" != "https://www.pakrpp.com/store" && "$prod_slash_to" != "/store" ]]; then
+    log_fail "production diagnostics preview for /store/ redirects to unexpected target (${prod_slash_to:-missing})"
+  fi
+
+  if [[ -n "$dev_slash_status" && "$dev_slash_status" != "301" && "$dev_slash_status" != "302" && "$dev_slash_status" != "308" ]]; then
+    log_warn "development diagnostics preview for /store/ is not redirecting to /store yet (status=${dev_slash_status})"
+  fi
+
+  if [[ "$prod_robots_txt" == *"User-agent: OAI-SearchBot"$'\n'"Disallow: /"* ]]; then
+    log_fail "production robots preview blocks OAI-SearchBot"
+  fi
+  if [[ "$prod_robots_txt" == *"User-agent: Googlebot"$'\n'"Disallow: /"* ]]; then
+    log_fail "production robots preview blocks Googlebot"
+  fi
+
+  log_info "diagnostic preview production /store robots=${prod_robots:-missing}"
+  log_info "diagnostic preview production /store/ redirect=${prod_slash_status:-missing} -> ${prod_slash_to:-missing}"
 }
 
 check_store_redirect() {
@@ -403,6 +486,37 @@ check_store_redirect() {
   fi
 }
 
+check_store_slash_redirect_live() {
+  local headers_file="$tmp_dir/store_slash_live.headers.txt"
+  local status location
+
+  curl -sS \
+    --http1.1 \
+    --connect-timeout 15 \
+    --max-time 60 \
+    --max-redirs 0 \
+    -A "$UA" \
+    -D "$headers_file" \
+    -o /dev/null \
+    "${BASE_URL}/store/" || true
+
+  status="$(awk 'toupper($1) ~ /^HTTP\/[0-9.]+$/ { code=$2 } END { print code }' "$headers_file")"
+  location="$(extract_header_value "$headers_file" "location")"
+
+  if [[ "$status" == "301" || "$status" == "302" || "$status" == "308" ]]; then
+    if [[ "$location" != "${BASE_URL}/store" && "$location" != "/store" ]]; then
+      log_fail "/store/ redirect location is unexpected (${location:-missing})"
+    fi
+    return
+  fi
+
+  if [[ "$current_mode" == "production" ]]; then
+    log_fail "/store/ must redirect to /store in production mode (got ${status:-000})"
+  else
+    log_warn "/store/ is not redirecting in ${current_mode:-non-production} mode yet (got ${status:-000})"
+  fi
+}
+
 printf 'SMOKE-WORKER lane=LIVE base=%s\n' "$BASE_URL"
 
 check_root_headers
@@ -411,6 +525,8 @@ check_sw_asset
 check_landing_route
 check_landing_html_redirect
 check_store_route
+check_diagnostic_mode_contracts
+check_store_slash_redirect_live
 check_store_redirect "/store.html"
 check_store_redirect "/yellowcart"
 check_store_redirect "/yellowcart.html"
