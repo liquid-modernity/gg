@@ -463,13 +463,13 @@
       border-top: 1px solid var(--gg-divider);
     }
     .store-contact__inner {
-      justify-items: center;
-    display: grid;
-    gap: 14px;
-    max-width: 60ch;
-    text-align: center;
-    align-items: end;
-    }
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 60ch;
+  text-align: center;
+  align-items: end;
+}
     .store-contact h2 {
       margin: 0;
       font-size: clamp(30px, 8vw, 58px);
@@ -1014,14 +1014,15 @@
     data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"
     data-store-legacy-feed-url="/feeds/posts/default/-/yellowcard?alt=json&max-results=50"
     aria-label="Yellow Cart product catalogue"
+    data-copy-aria="storeCatalogueLabel"
   >
-    <a class="gg-visually-hidden" href="#store-grid">Lewati ke katalog</a>
+    <a class="gg-visually-hidden" href="#store-grid" data-copy="skipToCatalog">Lewati ke katalog</a>
 
     <section class="store-main" aria-labelledby="store-title">
-      <section class="store-hero" id="store-top" aria-label="Yellow Cart introduction">
+      <section class="store-hero" id="store-top" aria-label="Yellow Cart introduction" data-copy-aria="storeIntroLabel">
         <h1 class="store-title" id="store-title">Yellow Cart</h1>
         <p class="store-summary" data-copy="summary">Kurasi produk pilihan.</p>
-        <div class="store-disclosure" aria-label="Affiliate disclosure">
+        <div class="store-disclosure" aria-label="Affiliate disclosure" data-copy-aria="affiliateDisclosureLabel">
           <span class="store-pill store-disclosure__copy" data-copy="affiliateDisclosure">Affiliate links may be used · Harga dan ketersediaan mengikuti marketplace.</span>
         </div>
       </section>
@@ -1040,12 +1041,12 @@
       </section>
 
       <div class="store-loadmore">
-        <button class="store-button" id="store-loadmore" type="button" hidden>Load more</button>
+        <button class="store-button" id="store-loadmore" type="button" data-copy="loadMoreLabel" hidden>Load more</button>
       </div>
 
       <section id="contact" class="store-contact" aria-labelledby="store-contact-title">
         <div class="store-contact__inner">
-          <p class="store-eyebrow" data-copy="contactEyebrow">Contact</p>
+          <p class="store-eyebrow" data-copy="contactEyebrow">Kontak</p>
           <h2 id="store-contact-title" data-copy="contactTitle">Collaborations, product submissions, affiliate disclosures, and correction requests.</h2>
           <p data-copy="contactBody">Untuk kolaborasi brand, pengajuan produk, koreksi data, atau pertanyaan affiliate, hubungi PakRPP melalui WhatsApp.</p>
           <div class="store-contact__actions">
@@ -1065,68 +1066,68 @@
     </section>
   </main>
 
-  <nav class="gg-dock store-dock" id="gg-dock" aria-label="Store navigation">
+  <nav class="gg-dock store-dock" id="gg-dock" aria-label="Store navigation" data-copy-aria="storeNavigationLabel">
     <a class="gg-dock__item" data-store-dock="store" href="/store" aria-current="page">
       <span class="gg-icon" aria-hidden="true">home_app_logo</span>
-      <span class="gg-dock__label">Store</span>
+      <span class="gg-dock__label" data-copy="storeLabel">Store</span>
     </a>
     <a class="gg-dock__item" id="store-contact-link" data-store-dock="contact" href="/store#contact">
       <span class="gg-icon" aria-hidden="true">chat</span>
-      <span class="gg-dock__label">Contact</span>
+      <span class="gg-dock__label" data-copy="contactLabel">Contact</span>
     </a>
     <button class="gg-dock__item" id="store-dock-discover" data-store-dock="discover" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
       <span class="gg-icon" aria-hidden="true">search</span>
-      <span class="gg-dock__label">Discover</span>
+      <span class="gg-dock__label" data-copy="discoverLabel">Discover</span>
     </button>
     <button class="gg-dock__item" id="store-saved-open" data-store-dock="saved" type="button" aria-haspopup="dialog" aria-controls="store-saved-sheet">
       <span class="gg-icon" aria-hidden="true">bookmark</span>
-      <span class="gg-dock__label">Saved</span>
+      <span class="gg-dock__label" data-copy="savedDockLabel">Saved</span>
     </button>
     <button class="gg-dock__item" id="store-more-open" data-store-dock="more" type="button" aria-haspopup="dialog" aria-controls="store-more-sheet">
       <span class="gg-icon" aria-hidden="true">menu</span>
-      <span class="gg-dock__label">More</span>
+      <span class="gg-dock__label" data-copy="moreDockLabel">More</span>
     </button>
   </nav>
 
-  <section class="store-filter-outline" id="store-filter-outline" data-store-filter-state="micro" aria-label="Store filters">
-    <button class="store-filter-outline__peek" id="store-filter-toggle" type="button" aria-expanded="false" aria-controls="store-filter-panel" aria-label="Open Store filter">
+  <section class="store-filter-outline" id="store-filter-outline" data-store-filter-state="micro" aria-label="Store filters" data-copy-aria="storeFiltersSectionLabel">
+    <button class="store-filter-outline__peek" id="store-filter-toggle" type="button" aria-expanded="false" aria-controls="store-filter-panel" aria-label="Open Store filter" data-copy-aria="openStoreFilter">
       <span class="store-filter-outline__main">
         <span class="gg-icon store-filter-outline__current-icon" id="store-filter-current-icon" aria-hidden="true">filter_list</span>
-        <span class="store-filter-outline__current" id="store-filter-current">All</span>
+        <span class="store-filter-outline__current" id="store-filter-current" data-copy="filterAllLabel">All</span>
       </span>
       <span class="store-filter-outline__count" id="store-filter-count">0 produk</span>
       <span class="gg-icon store-filter-outline__icon" id="store-filter-toggle-icon" aria-hidden="true">keyboard_arrow_up</span>
     </button>
     <div class="store-filter-outline__panel" id="store-filter-panel">
       <div class="store-chip-row" data-store-filter-scope="outline">
-        <button class="store-chip" type="button" data-store-filter="all" aria-pressed="true">All</button>
-        <button class="store-chip" type="button" data-store-filter="fashion" aria-pressed="false">Fashion</button>
-        <button class="store-chip" type="button" data-store-filter="skincare" aria-pressed="false">Skincare</button>
-        <button class="store-chip" type="button" data-store-filter="workspace" aria-pressed="false">Workspace</button>
-        <button class="store-chip" type="button" data-store-filter="tech" aria-pressed="false">Tech</button>
-        <button class="store-chip" type="button" data-store-filter="etc" aria-pressed="false">Etc</button>
+        <button class="store-chip" type="button" data-store-filter="all" data-copy="filterAllLabel" aria-pressed="true">All</button>
+        <button class="store-chip" type="button" data-store-filter="fashion" data-copy="filterFashionLabel" aria-pressed="false">Fashion</button>
+        <button class="store-chip" type="button" data-store-filter="skincare" data-copy="filterSkincareLabel" aria-pressed="false">Skincare</button>
+        <button class="store-chip" type="button" data-store-filter="workspace" data-copy="filterWorkspaceLabel" aria-pressed="false">Workspace</button>
+        <button class="store-chip" type="button" data-store-filter="tech" data-copy="filterTechLabel" aria-pressed="false">Tech</button>
+        <button class="store-chip" type="button" data-store-filter="etc" data-copy="filterEtcLabel" aria-pressed="false">Etc</button>
       </div>
     </div>
   </section>
 
   <section class="gg-sheet store-preview-sheet" id="store-preview-sheet" data-gg-panel="preview" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-preview-title" aria-hidden="true" inert hidden>
-    <button class="gg-sheet__scrim" type="button" data-store-close="preview" aria-label="Tutup pratinjau produk"></button>
+    <button class="gg-sheet__scrim" type="button" data-store-close="preview" aria-label="Tutup pratinjau produk" data-copy-aria="closePreview"></button>
     <article class="gg-sheet__panel" id="store-preview-panel" tabindex="-1">
-      <section class="store-preview__hero" aria-label="Product preview hero">
-        <div class="store-preview__carousel" id="store-preview-carousel" aria-label="Product images"></div>
+      <section class="store-preview__hero" aria-label="Product preview hero" data-copy-aria="previewHeroLabel">
+        <div class="store-preview__carousel" id="store-preview-carousel" aria-label="Product images" data-copy-aria="productImagesLabel"></div>
         <div class="store-preview__shade" aria-hidden="true"></div>
-        <div class="store-preview__dots" id="store-preview-dots" aria-label="Product image position" hidden></div>
+        <div class="store-preview__dots" id="store-preview-dots" aria-label="Product image position" data-copy-aria="productImagePositionLabel" hidden></div>
       </section>
       <div class="store-preview__body">
         <header class="store-preview__intro">
-          <p class="store-preview__category" id="store-preview-category">Store</p>
+          <p class="store-preview__category" id="store-preview-category" data-copy="storeLabel">Store</p>
           <h2 class="store-preview__title" id="store-preview-title">Yellow Cart</h2>
-          <p class="store-preview__meta" id="store-preview-meta">PakRPP · Curated pick</p>
+          <p class="store-preview__meta" id="store-preview-meta" data-copy="previewMetaFallback">PakRPP · Curated pick</p>
         </header>
         <div class="store-preview__surface">
-          <p class="store-preview__summary" id="store-preview-summary">Produk kurasi Yellow Cart.</p>
+          <p class="store-preview__summary" id="store-preview-summary" data-copy="previewSummaryFallback">Produk kurasi Yellow Cart.</p>
           <p class="store-preview__price" id="store-preview-price">Rp—</p>
-          <div class="store-preview__market" aria-label="Marketplace links">
+          <div class="store-preview__market" aria-label="Marketplace links" data-copy-aria="marketplaceLinksLabel">
             <a class="store-button store-button--primary" id="store-link-shopee" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Shopee</a>
             <a class="store-button store-button--primary" id="store-link-tiktok" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">TikTok</a>
             <a class="store-button store-button--primary" id="store-link-tokopedia" href="#" target="_blank" rel="sponsored nofollow noopener noreferrer">Tokopedia</a>
@@ -1134,9 +1135,9 @@
           <div class="store-preview__secondary-actions">
             <button class="store-button store-preview__save" id="store-preview-save" type="button" aria-pressed="false">
               <span class="gg-icon" id="store-preview-save-icon" aria-hidden="true">bookmark_add</span>
-              <span id="store-preview-save-label">Save</span>
+              <span id="store-preview-save-label" data-copy="saveLabel">Save</span>
             </button>
-            <button class="store-button store-preview__copy" id="store-copy-links" type="button" data-copy-state="idle" aria-label="Copy product links" title="Copy product links">
+            <button class="store-button store-preview__copy" id="store-copy-links" type="button" data-copy-state="idle" aria-label="Copy product links" title="Copy product links" data-copy-aria="copyLinksLabel" data-copy-title="copyLinksLabel">
               <span class="gg-icon" id="store-copy-links-icon" aria-hidden="true">content_copy</span>
             </button>
           </div>
@@ -1148,18 +1149,18 @@
         </div>
       </div>
       <footer class="store-preview__footer">
-        <button class="store-preview__handle" type="button" data-store-close="preview" aria-label="Close preview"></button>
+        <button class="store-preview__handle" type="button" data-store-close="preview" aria-label="Close preview" data-copy-aria="closePreview"></button>
       </footer>
     </article>
   </section>
 
   <section class="gg-sheet store-bottom-sheet" id="store-discovery-sheet" data-gg-panel="discovery" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-discovery-title" aria-hidden="true" inert hidden>
-    <button class="gg-sheet__scrim" type="button" data-store-close="discovery" aria-label="Tutup discovery"></button>
+    <button class="gg-sheet__scrim" type="button" data-store-close="discovery" aria-label="Tutup discovery" data-copy-aria="closeDiscovery"></button>
     <section class="gg-sheet__panel" id="store-discovery-panel" tabindex="-1">
       <header class="gg-sheet__head">
         <span class="gg-sheet__handle" data-store-drag-handle="discovery" aria-hidden="true"></span>
-        <h2 class="gg-sheet__title" id="store-discovery-title">Discovery</h2>
-        <button class="gg-visually-hidden" type="button" data-store-close="discovery">Close discovery</button>
+        <h2 class="gg-sheet__title" id="store-discovery-title" data-copy="discoveryTitle">Discovery</h2>
+        <button class="gg-visually-hidden" type="button" data-store-close="discovery" data-copy="closeDiscovery">Close discovery</button>
       </header>
       <div class="store-sheet-body">
         <label class="store-field" for="store-discovery-search">
@@ -1167,27 +1168,27 @@
           <input id="store-discovery-search" type="search" placeholder="Cari produk atau kategori" autocomplete="off" data-copy-placeholder="searchPlaceholder" />
         </label>
         <section class="store-sheet-section">
-          <p class="store-sheet-section__label" data-copy="filtersLabel">Filters</p>
+          <p class="store-sheet-section__label" data-copy="filtersLabel">Filter</p>
           <div class="store-chip-row" data-store-filter-scope="discovery">
-            <button class="store-chip" type="button" data-store-filter="all" aria-pressed="true">All</button>
-            <button class="store-chip" type="button" data-store-filter="fashion" aria-pressed="false">Fashion</button>
-            <button class="store-chip" type="button" data-store-filter="skincare" aria-pressed="false">Skincare</button>
-            <button class="store-chip" type="button" data-store-filter="workspace" aria-pressed="false">Workspace</button>
-            <button class="store-chip" type="button" data-store-filter="tech" aria-pressed="false">Tech</button>
-            <button class="store-chip" type="button" data-store-filter="etc" aria-pressed="false">Etc</button>
+            <button class="store-chip" type="button" data-store-filter="all" data-copy="filterAllLabel" aria-pressed="true">All</button>
+            <button class="store-chip" type="button" data-store-filter="fashion" data-copy="filterFashionLabel" aria-pressed="false">Fashion</button>
+            <button class="store-chip" type="button" data-store-filter="skincare" data-copy="filterSkincareLabel" aria-pressed="false">Skincare</button>
+            <button class="store-chip" type="button" data-store-filter="workspace" data-copy="filterWorkspaceLabel" aria-pressed="false">Workspace</button>
+            <button class="store-chip" type="button" data-store-filter="tech" data-copy="filterTechLabel" aria-pressed="false">Tech</button>
+            <button class="store-chip" type="button" data-store-filter="etc" data-copy="filterEtcLabel" aria-pressed="false">Etc</button>
           </div>
         </section>
         <section class="store-sheet-section">
-          <p class="store-sheet-section__label">Quick intents</p>
+          <p class="store-sheet-section__label" data-copy="quickIntentsLabel">Quick intents</p>
           <div class="store-chip-row">
-            <button class="store-chip" type="button" data-store-intent="featured">Featured</button>
-            <button class="store-chip" type="button" data-store-intent="latest">Latest</button>
-            <button class="store-chip" type="button" data-store-intent="under500">Under 500k</button>
+            <button class="store-chip" type="button" data-store-intent="featured" data-copy="featuredLabel">Featured</button>
+            <button class="store-chip" type="button" data-store-intent="latest" data-copy="latestLabel">Latest</button>
+            <button class="store-chip" type="button" data-store-intent="under500" data-copy="under500Label">Under 500k</button>
           </div>
         </section>
-        <p class="store-summary" id="store-discovery-status">All products are visible.</p>
+        <p class="store-summary" id="store-discovery-status" data-copy="allVisible">All products are visible.</p>
         <section class="store-sheet-section">
-          <p class="store-sheet-section__label">Results</p>
+          <p class="store-sheet-section__label" data-copy="resultsLabel">Results</p>
           <div class="store-discovery-results" id="store-discovery-results"></div>
         </section>
       </div>
@@ -1196,15 +1197,15 @@
 
 
   <section class="gg-sheet store-bottom-sheet" id="store-saved-sheet" data-gg-panel="saved" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-saved-title" aria-hidden="true" inert hidden>
-    <button class="gg-sheet__scrim" type="button" data-store-close="saved" aria-label="Tutup saved"></button>
+    <button class="gg-sheet__scrim" type="button" data-store-close="saved" aria-label="Tutup saved" data-copy-aria="closeSaved"></button>
     <section class="gg-sheet__panel" id="store-saved-panel" tabindex="-1">
       <header class="gg-sheet__head">
         <span class="gg-sheet__handle" data-store-drag-handle="saved" aria-hidden="true"></span>
-        <h2 class="gg-sheet__title" id="store-saved-title">Saved</h2>
-        <button class="gg-visually-hidden" type="button" data-store-close="saved">Close saved</button>
+        <h2 class="gg-sheet__title" id="store-saved-title" data-copy="savedDockLabel">Saved</h2>
+        <button class="gg-visually-hidden" type="button" data-store-close="saved" data-copy="closeSaved">Close saved</button>
       </header>
       <div class="store-sheet-body">
-        <p class="store-summary">Saved on this device.</p>
+        <p class="store-summary" data-copy="savedOnDevice">Saved on this device.</p>
         <div class="store-inline-toast" id="store-saved-toast" role="status" aria-live="polite" hidden></div>
         <div class="store-saved-results" id="store-saved-results"></div>
       </div>
@@ -1212,44 +1213,44 @@
   </section>
 
   <section class="gg-sheet store-bottom-sheet" id="store-more-sheet" data-gg-panel="more" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-more-title" aria-hidden="true" inert hidden>
-    <button class="gg-sheet__scrim" type="button" data-store-close="more" aria-label="Tutup panel lainnya"></button>
+    <button class="gg-sheet__scrim" type="button" data-store-close="more" aria-label="Tutup panel lainnya" data-copy-aria="closeMore"></button>
     <section class="gg-sheet__panel" id="store-more-panel" tabindex="-1">
       <header class="gg-sheet__head">
         <span class="gg-sheet__handle" data-store-drag-handle="more" aria-hidden="true"></span>
-        <h2 class="gg-sheet__title" id="store-more-title">More</h2>
-        <button class="gg-visually-hidden" type="button" data-store-close="more">Close more panel</button>
+        <h2 class="gg-sheet__title" id="store-more-title" data-copy="moreTitle">More</h2>
+        <button class="gg-visually-hidden" type="button" data-store-close="more" data-copy="closeMore">Close more panel</button>
       </header>
       <div class="store-sheet-body">
         <section class="store-sheet-section" aria-labelledby="store-navigation-label">
-          <p class="store-sheet-section__label" id="store-navigation-label">Navigate</p>
+          <p class="store-sheet-section__label" id="store-navigation-label" data-copy="navigateLabel">Navigate</p>
           <div class="store-setting-grid">
-            <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing">Home</a>
-<a class="store-setting store-setting--link" data-store-more-link="blog" href="/">Blog</a>
+            <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing" data-copy="homeLabel">Home</a>
+<a class="store-setting store-setting--link" data-store-more-link="blog" href="/" data-copy="blogLabel">Blog</a>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-language-label">
-          <p class="store-sheet-section__label" id="store-language-label">Language</p>
+          <p class="store-sheet-section__label" id="store-language-label" data-copy="languageLabel">Language</p>
           <div class="store-setting-grid">
             <button class="store-setting" type="button" data-store-lang="en" aria-pressed="false">EN</button>
             <button class="store-setting" type="button" data-store-lang="id" aria-pressed="true">ID</button>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-appearance-label">
-          <p class="store-sheet-section__label" id="store-appearance-label">Appearance</p>
+          <p class="store-sheet-section__label" id="store-appearance-label" data-copy="appearanceLabel">Appearance</p>
           <div class="store-setting-grid store-setting-grid--three">
-            <button class="store-setting" type="button" data-store-theme="system" aria-pressed="true">System</button>
-            <button class="store-setting" type="button" data-store-theme="light" aria-pressed="false">Light</button>
-            <button class="store-setting" type="button" data-store-theme="dark" aria-pressed="false">Dark</button>
+            <button class="store-setting" type="button" data-store-theme="system" data-copy="systemLabel" aria-pressed="true">System</button>
+            <button class="store-setting" type="button" data-store-theme="light" data-copy="lightLabel" aria-pressed="false">Light</button>
+            <button class="store-setting" type="button" data-store-theme="dark" data-copy="darkLabel" aria-pressed="false">Dark</button>
           </div>
         </section>
         <footer class="store-footer">
-          <div class="store-social" aria-label="Social links">
-            <a id="store-share-x" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Fstore&text=Yellow%20Cart%20%C2%B7%20PakRPP" target="_blank" rel="noopener noreferrer" aria-label="Share to X">X</a>
-            <a id="store-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to Facebook">FB</a>
-            <a id="store-share-wa" href="https://wa.me/?text=Yellow%20Cart%20%C2%B7%20PakRPP%20https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to WhatsApp">WA</a>
+          <div class="store-social" aria-label="Social links" data-copy-aria="socialLinksLabel">
+            <a id="store-share-x" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Fstore&text=Yellow%20Cart%20%C2%B7%20PakRPP" target="_blank" rel="noopener noreferrer" aria-label="Share to X" data-copy-aria="shareXLabel">X</a>
+            <a id="store-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to Facebook" data-copy-aria="shareFacebookLabel">FB</a>
+            <a id="store-share-wa" href="https://wa.me/?text=Yellow%20Cart%20%C2%B7%20PakRPP%20https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to WhatsApp" data-copy-aria="shareWhatsAppLabel">WA</a>
           </div>
           <span data-copy="legalText">Some outbound links may be affiliate links. Prices and availability may change.</span>
-          <span>Copyright © 2026 PakRPP. All rights reserved.</span>
+          <span data-copy="copyrightText">Copyright © 2026 PakRPP. All rights reserved.</span>
         </footer>
       </div>
     </section>
@@ -1389,24 +1390,29 @@
       id: {
         eyebrow: 'PAKRPP · Curated affiliate store',
         summary: 'Kurasi produk pilihan.',
+        affiliateDisclosureLabel: 'Pengungkapan afiliasi',
         affiliateDisclosure: 'Affiliate links may be used · Harga dan ketersediaan mengikuti marketplace.',
         searchPlaceholder: 'Cari produk atau kategori',
-        filtersLabel: 'Filters',
-        contactEyebrow: 'Contact',
-        contactTitle: 'Collaborations, product submissions, affiliate disclosures, and correction requests.',
+        filtersLabel: 'Filter',
+        contactEyebrow: 'Kontak',
+        contactTitle: 'Kolaborasi, pengajuan produk, pengungkapan afiliasi, dan permintaan koreksi.',
         contactBody: 'Untuk kolaborasi brand, pengajuan produk, koreksi data, atau pertanyaan affiliate, hubungi PakRPP melalui WhatsApp.',
         contactCta: 'WhatsApp',
-        backToTop: 'Back to Top',
+        backToTop: 'Kembali ke Atas',
         archiveCta: 'Lihat arsip Store',
         curatedTitle: 'Belum ada produk yang ditampilkan.',
         curatedBody: 'Koleksi Yellow Cart sedang dikurasi.',
-        notesTitle: 'Notes',
-        legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
+        notesTitle: 'Catatan',
+        legalText: 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
+        copyrightText: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
         copyLinksLabel: 'Salin tautan produk',
-        copyLinksCopied: 'Tautan tersalin',
-        saveLabel: 'Save',
-        savedLabel: 'Saved',
-        savedToast: 'Disimpan ke Saved',
+        copyLinksCopied: 'Tersalin',
+        saveLabel: 'Simpan',
+        savedLabel: 'Tersimpan',
+        savedOnDevice: 'Tersimpan di perangkat ini.',
+        savedEmptyTitle: 'Belum ada produk tersimpan.',
+        savedEmptyBody: 'Buka produk dan tekan Simpan.',
+        savedToast: 'Disimpan',
         removedToast: 'Dihapus dari Saved',
         copyToast: 'Tautan tersalin',
         copyFailToast: 'Gagal menyalin tautan',
@@ -1416,13 +1422,69 @@
         emptyTitle: 'Produk tidak ditemukan.',
         emptyBody: 'Coba filter lain atau kosongkan pencarian.',
         feedStore: 'Feed: Store',
-        feedLegacy: 'Feed: Store archive fallback',
+        feedLegacy: 'Feed: arsip Store cadangan',
         filterActive: 'Filter aktif',
-        allVisible: 'All products are visible.'
+        allVisible: 'Semua produk ditampilkan.',
+        discoveryTitle: 'Discovery',
+        resultsLabel: 'Hasil',
+        quickIntentsLabel: 'Pilihan cepat',
+        featuredLabel: 'Unggulan',
+        latestLabel: 'Terbaru',
+        under500Label: 'Di bawah 500k',
+        moreTitle: 'Lainnya',
+        navigateLabel: 'Navigasi',
+        languageLabel: 'Bahasa',
+        appearanceLabel: 'Tampilan',
+        systemLabel: 'Sistem',
+        lightLabel: 'Terang',
+        darkLabel: 'Gelap',
+        homeLabel: 'Home',
+        blogLabel: 'Blog',
+        storeLabel: 'Store',
+        contactLabel: 'Kontak',
+        discoverLabel: 'Discovery',
+        savedDockLabel: 'Saved',
+        moreDockLabel: 'Lainnya',
+        previewProductLabel: 'Pratinjau produk',
+        curatedFallback: 'Kurasi',
+        untitledProduct: 'Produk tanpa judul',
+        closePreview: 'Tutup pratinjau',
+        closeDiscovery: 'Tutup Discovery',
+        closeSaved: 'Tutup Saved',
+        closeMore: 'Tutup panel lainnya',
+        openStoreFilter: 'Buka filter Store',
+        closeStoreFilter: 'Tutup filter Store',
+        skipToCatalog: 'Lewati ke katalog',
+        storeNavigationLabel: 'Navigasi Store',
+        storeCatalogueLabel: 'Katalog produk Yellow Cart',
+        storeIntroLabel: 'Pengenalan Yellow Cart',
+        storeFiltersSectionLabel: 'Filter Store',
+        previewHeroLabel: 'Hero pratinjau produk',
+        productImagesLabel: 'Gambar produk',
+        productImagePositionLabel: 'Posisi gambar produk',
+        marketplaceLinksLabel: 'Tautan marketplace',
+        socialLinksLabel: 'Tautan sosial',
+        shareXLabel: 'Bagikan ke X',
+        shareFacebookLabel: 'Bagikan ke Facebook',
+        shareWhatsAppLabel: 'Bagikan ke WhatsApp',
+        showImageLabel: 'Tampilkan gambar',
+        curatedPickMeta: 'Pilihan kurasi',
+        previewMetaFallback: 'PakRPP · Pilihan kurasi',
+        previewSummaryFallback: 'Produk kurasi Yellow Cart.',
+        copyLinksAttribution: 'Kurasi via Yellow Cart · PakRPP',
+        filterAllLabel: 'Semua',
+        filterFashionLabel: 'Fashion',
+        filterSkincareLabel: 'Skincare',
+        filterWorkspaceLabel: 'Workspace',
+        filterTechLabel: 'Tech',
+        filterEtcLabel: 'Lainnya',
+        loadMoreLabel: 'Muat lebih banyak',
+        productUnit: 'produk'
       },
       en: {
         eyebrow: 'PAKRPP · Curated affiliate store',
         summary: 'Curated product picks.',
+        affiliateDisclosureLabel: 'Affiliate disclosure',
         affiliateDisclosure: 'Affiliate links may be used · Prices and availability follow the marketplace.',
         searchPlaceholder: 'Search products or categories',
         filtersLabel: 'Filters',
@@ -1436,11 +1498,15 @@
         curatedBody: 'Yellow Cart is still being curated.',
         notesTitle: 'Notes',
         legalText: 'Some outbound links may be affiliate links. Prices and availability may change.',
+        copyrightText: 'Copyright © 2026 PakRPP. All rights reserved.',
         copyLinksLabel: 'Copy product links',
-        copyLinksCopied: 'Copied product links',
+        copyLinksCopied: 'Copied',
         saveLabel: 'Save',
         savedLabel: 'Saved',
-        savedToast: 'Saved to Saved',
+        savedOnDevice: 'Saved on this device.',
+        savedEmptyTitle: 'No saved picks yet.',
+        savedEmptyBody: 'Open a product and tap Save.',
+        savedToast: 'Saved',
         removedToast: 'Removed from Saved',
         copyToast: 'Copied links',
         copyFailToast: 'Copy failed',
@@ -1448,11 +1514,66 @@
         countLoading: 'Loading products…',
         countFail: 'Failed to load products',
         emptyTitle: 'No products found.',
-        emptyBody: 'Try another filter or clear the search field.',
+        emptyBody: 'Try another filter or clear the search.',
         feedStore: 'Feed: Store',
         feedLegacy: 'Feed: Store archive fallback',
         filterActive: 'Active filter',
-        allVisible: 'All products are visible.'
+        allVisible: 'All products are visible.',
+        discoveryTitle: 'Discovery',
+        resultsLabel: 'Results',
+        quickIntentsLabel: 'Quick intents',
+        featuredLabel: 'Featured',
+        latestLabel: 'Latest',
+        under500Label: 'Under 500k',
+        moreTitle: 'More',
+        navigateLabel: 'Navigate',
+        languageLabel: 'Language',
+        appearanceLabel: 'Appearance',
+        systemLabel: 'System',
+        lightLabel: 'Light',
+        darkLabel: 'Dark',
+        homeLabel: 'Home',
+        blogLabel: 'Blog',
+        storeLabel: 'Store',
+        contactLabel: 'Contact',
+        discoverLabel: 'Discover',
+        savedDockLabel: 'Saved',
+        moreDockLabel: 'More',
+        previewProductLabel: 'Preview product',
+        curatedFallback: 'Curated',
+        untitledProduct: 'Untitled product',
+        closePreview: 'Close preview',
+        closeDiscovery: 'Close Discovery',
+        closeSaved: 'Close Saved',
+        closeMore: 'Close more panel',
+        openStoreFilter: 'Open Store filter',
+        closeStoreFilter: 'Close Store filter',
+        skipToCatalog: 'Skip to catalogue',
+        storeNavigationLabel: 'Store navigation',
+        storeCatalogueLabel: 'Yellow Cart product catalogue',
+        storeIntroLabel: 'Yellow Cart introduction',
+        storeFiltersSectionLabel: 'Store filters',
+        previewHeroLabel: 'Product preview hero',
+        productImagesLabel: 'Product images',
+        productImagePositionLabel: 'Product image position',
+        marketplaceLinksLabel: 'Marketplace links',
+        socialLinksLabel: 'Social links',
+        shareXLabel: 'Share to X',
+        shareFacebookLabel: 'Share to Facebook',
+        shareWhatsAppLabel: 'Share to WhatsApp',
+        showImageLabel: 'Show image',
+        curatedPickMeta: 'Curated pick',
+        previewMetaFallback: 'PakRPP · Curated pick',
+        previewSummaryFallback: 'Curated Yellow Cart product.',
+        copyLinksAttribution: 'Curated via Yellow Cart · PakRPP',
+        filterAllLabel: 'All',
+        filterFashionLabel: 'Fashion',
+        filterSkincareLabel: 'Skincare',
+        filterWorkspaceLabel: 'Workspace',
+        filterTechLabel: 'Tech',
+        filterEtcLabel: 'Etc',
+        loadMoreLabel: 'Load more',
+        productUnit: 'products'
       }
     };
 
@@ -1550,7 +1671,7 @@
       visibleLimit: VISIBLE_INITIAL,
       panelActive: '',
       lastFocus: null,
-      locale: readStorage('gg:lang') || 'id',
+      locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
       feedSource: 'Store',
       dockLastScrollTop: 0,
@@ -1574,6 +1695,7 @@
       return template.content.firstElementChild.cloneNode(true);
     }
 
+    function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
@@ -1591,10 +1713,10 @@
     function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
     function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
     function lower(value) { return clean(value).toLowerCase(); }
-    function copy(key) { return (COPY[state.locale] && COPY[state.locale][key]) || COPY.id[key] || key; }
+    function copy(key) { return (COPY[normalizeLocale(state.locale)] && COPY[normalizeLocale(state.locale)][key]) || COPY.id[key] || key; }
     function setNodeText(node, value) { if (node) node.textContent = value; }
     function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
-    function productUnit() { return state.locale === 'en' ? 'products' : 'produk'; }
+    function productUnit() { return copy('productUnit'); }
     function prefersReducedMotion() {
       return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
@@ -1608,24 +1730,47 @@
       var field = node.closest('input, textarea, select');
       return !!field;
     }
-    function previewImageActionLabel(index) { return (state.locale === 'en' ? 'Show image ' : 'Tampilkan gambar ') + (index + 1); }
+    function filterCopyKey(filter) {
+      return ({
+        all: 'filterAllLabel',
+        fashion: 'filterFashionLabel',
+        skincare: 'filterSkincareLabel',
+        workspace: 'filterWorkspaceLabel',
+        tech: 'filterTechLabel',
+        etc: 'filterEtcLabel'
+      })[filter] || 'filterAllLabel';
+    }
+    function currentFilterLabel() {
+      return copy(filterCopyKey(state.filter));
+    }
+    function previewImageActionLabel(index) { return copy('showImageLabel') + ' ' + (index + 1); }
     function previewCopyLabel() { return copy('copyLinksLabel'); }
     function previewCopiedLabel() { return copy('copyLinksCopied'); }
+    function previewMetaText(item) {
+      return ['PakRPP', item && item.published, copy('curatedPickMeta')].filter(Boolean).join(' · ');
+    }
+    function displayProductTitle(item) {
+      return clean(item && item.title ? item.title : '') || copy('untitledProduct');
+    }
+    function displayProductBadge(item) {
+      return clean(item && (item.badge || item.category) ? (item.badge || item.category) : '') || copy('curatedFallback');
+    }
+    function previewSummaryText(item) {
+      return clean(item && item.summary ? item.summary : '') || copy('previewSummaryFallback');
+    }
+    function savedEmptyLabel() {
+      return copy('savedEmptyTitle') + ' ' + copy('savedEmptyBody');
+    }
     function clearToastTimer() {
       if (!state.toastTimer) return;
       window.clearTimeout(state.toastTimer);
       state.toastTimer = 0;
     }
-    function currentFilterLabel() {
-      return titleCase(state.filter);
-    }
     function currentFilterIcon() {
       return STORE_FILTER_ICON_MAP[state.filter] || STORE_FILTER_ICON_MAP.all;
     }
     function filterToggleAriaLabel(expanded, label, countLabel) {
-      var action = expanded ? (state.locale === 'en' ? 'Close Store filter' : 'Tutup filter Store') : (state.locale === 'en' ? 'Open Store filter' : 'Buka filter Store');
-      var active = state.locale === 'en' ? 'Active filter' : 'Filter aktif';
-      return action + '. ' + active + ': ' + label + '. ' + countLabel + '.';
+      return copy(expanded ? 'closeStoreFilter' : 'openStoreFilter') + '. ' + copy('filterActive') + ': ' + label + '. ' + countLabel + '.';
     }
     function toastNodes() {
       return [preview.toast, savedToast, globalToast].filter(Boolean);
@@ -1678,6 +1823,7 @@
     function setPreviewSaveState(saved) {
       if (!preview.save) return;
       preview.save.setAttribute('aria-pressed', saved ? 'true' : 'false');
+      preview.save.setAttribute('aria-label', saved ? copy('savedLabel') : copy('saveLabel'));
       setNodeText(preview.saveLabel, saved ? copy('savedLabel') : copy('saveLabel'));
       if (preview.saveIcon) preview.saveIcon.textContent = saved ? 'bookmark' : 'bookmark_add';
     }
@@ -1720,9 +1866,12 @@
     function setCopy() {
       [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function (node) { node.textContent = copy(node.getAttribute('data-copy')); });
       [].slice.call(document.querySelectorAll('[data-copy-placeholder]')).forEach(function (node) { node.setAttribute('placeholder', copy(node.getAttribute('data-copy-placeholder'))); });
+      [].slice.call(document.querySelectorAll('[data-copy-aria]')).forEach(function (node) { node.setAttribute('aria-label', copy(node.getAttribute('data-copy-aria'))); });
+      [].slice.call(document.querySelectorAll('[data-copy-title]')).forEach(function (node) { node.setAttribute('title', copy(node.getAttribute('data-copy-title'))); });
+      [].slice.call(document.querySelectorAll('[data-copy-value]')).forEach(function (node) { node.value = copy(node.getAttribute('data-copy-value')); });
       langButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-lang') === state.locale ? 'true' : 'false'); });
-      document.documentElement.lang = state.locale === 'en' ? 'en' : 'id';
-      setPreviewCopyState('idle');
+      document.documentElement.lang = normalizeLocale(state.locale);
+      setPreviewCopyState(preview.copy && preview.copy.getAttribute('data-copy-state') === 'copied' ? 'copied' : 'idle');
       setPreviewSaveState(preview.save && preview.save.getAttribute('aria-pressed') === 'true');
       syncFilterToggleState(filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded');
       updateCounts();
@@ -1814,20 +1963,20 @@
       var data = parsed.data || {};
       var labs = labels(entry);
       var publicLabs = publicLabels(labs);
-      var category = clean(data.category || publicLabs[0] || 'Etc');
+      var category = clean(data.category || publicLabs[0] || '');
       var images = arr(data.images || data.gallery || data.image || parsed.images).map(clean).filter(Boolean).slice(0, 8);
       var dataLinks = data.links || {};
       var linksOut = {};
       MARKET.forEach(function (key) { linksOut[key] = marketplaceHref(dataLinks[key], key) || marketplaceHref(parsed.links[key], key) || ''; });
       return {
         id: altUrl(entry),
-        title: clean(data.name || data.productName || text(entry.title) || 'Untitled product'),
+        title: clean(data.name || data.productName || text(entry.title) || ''),
         url: altUrl(entry),
         labels: labs,
         category: category,
         filter: publicFilter(category),
-        badge: clean(arr(data.badges)[0] || category || 'Curated'),
-        summary: clean(data.summary || data.tagline || parsed.summary || 'Produk kurasi Yellow Cart.'),
+        badge: clean(arr(data.badges)[0] || category || ''),
+        summary: clean(data.summary || data.tagline || parsed.summary || ''),
         priceText: clean(data.priceText || data.price || 'Rp—'),
         images: images.length ? images : [PLACEHOLDER_IMAGE],
         links: linksOut,
@@ -1865,8 +2014,8 @@
         state.filtered = [];
         renderCards();
         app.setAttribute('data-store-state', 'error');
-        setNodeText(emptyTitle, 'Belum ada produk yang ditampilkan.');
-        setNodeText(emptyBody, 'Koleksi Yellow Cart sedang dikurasi.');
+        setNodeText(emptyTitle, copy('curatedTitle'));
+        setNodeText(emptyBody, copy('curatedBody'));
         setNodeText(count, copy('countFail'));
         setNodeText(source, copy('feedStore'));
         empty.hidden = false;
@@ -1955,17 +2104,18 @@
       var price = node.querySelector('[data-store-card-price]');
       var title = node.querySelector('[data-store-card-title]');
       var dots = node.querySelector('[data-store-card-dots]');
+      var displayTitle = displayProductTitle(item);
 
       node.dataset.storeCardIndex = String(index);
       button.dataset.storeOpenPreview = String(index);
-      button.setAttribute('aria-label', 'Preview ' + item.title);
+      button.setAttribute('aria-label', copy('previewProductLabel') + ': ' + displayTitle);
 
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
-      img.alt = item.title || '';
+      img.alt = displayTitle;
 
-      badge.textContent = item.badge || item.category || 'Curated';
+      badge.textContent = displayProductBadge(item);
       price.textContent = item.priceText || 'Rp—';
-      title.textContent = item.title || 'Untitled product';
+      title.textContent = displayTitle;
 
       renderCardDots(dots, item.images.length);
       return node;
@@ -1975,12 +2125,14 @@
       var img = node.querySelector('img');
       var title = node.querySelector('[data-store-result-title]');
       var meta = node.querySelector('[data-store-result-meta]');
+      var displayTitle = displayProductTitle(item);
 
       node.dataset.storeResultIndex = String(index);
       if (action) node.setAttribute('data-store-result-action', action);
+      node.setAttribute('aria-label', copy('previewProductLabel') + ': ' + displayTitle);
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
-      img.alt = item.title || '';
-      title.textContent = item.title || 'Untitled product';
+      img.alt = displayTitle;
+      title.textContent = displayTitle;
       meta.textContent = [item.category, item.priceText].filter(Boolean).join(' · ');
 
       return node;
@@ -1992,15 +2144,17 @@
       var title = node.querySelector('[data-store-result-title]');
       var meta = node.querySelector('[data-store-result-meta]');
       var removeButton = node.querySelector('[data-store-remove-saved]');
+      var displayTitle = displayProductTitle(item);
 
       row.dataset.storeResultIndex = String(index);
       row.setAttribute('data-store-result-action', 'saved-preview');
+      row.setAttribute('aria-label', copy('previewProductLabel') + ': ' + displayTitle);
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
-      img.alt = item.title || '';
-      title.textContent = item.title || 'Untitled product';
+      img.alt = displayTitle;
+      title.textContent = displayTitle;
       meta.textContent = [item.category, item.priceText].filter(Boolean).join(' · ');
       removeButton.dataset.storeRemoveSaved = String(index);
-      removeButton.setAttribute('aria-label', copy('removeSavedLabel') + ': ' + item.title);
+      removeButton.setAttribute('aria-label', copy('removeSavedLabel') + ': ' + displayTitle);
 
       return node;
     }
@@ -2018,7 +2172,7 @@
           fragment.appendChild(renderResultRowNode(item, index, 'preview'));
         });
       } else {
-        fragment.appendChild(renderEmptyRowNode('No matching products.'));
+        fragment.appendChild(renderEmptyRowNode(copy('emptyTitle')));
       }
       discoveryResults.replaceChildren(fragment);
     }
@@ -2031,7 +2185,7 @@
           fragment.appendChild(renderSavedRowNode(item, state.products.indexOf(item)));
         });
       } else {
-        fragment.appendChild(renderEmptyRowNode('No saved picks yet. Open a product and tap Save.'));
+        fragment.appendChild(renderEmptyRowNode(savedEmptyLabel()));
       }
       savedResults.replaceChildren(fragment);
     }
@@ -2151,7 +2305,7 @@
       else preview.carousel.scrollLeft = 0;
     }
     function copyLinksText(item) {
-      var lines = [clean(item && item.title ? item.title : 'Product'), 'Curated via Yellow Cart · PakRPP'];
+      var lines = [displayProductTitle(item), copy('copyLinksAttribution')];
       [
         ['shopee', 'Shopee'],
         ['tokopedia', 'Tokopedia'],
@@ -2197,16 +2351,16 @@
     function fillPreview(item) {
       if (!item) return;
       var images = item.images && item.images.length ? item.images : [PLACEHOLDER_IMAGE];
-      renderPreviewSlides(images, item.title);
+      renderPreviewSlides(images, displayProductTitle(item));
       state.currentPreviewItem = item;
       state.currentPreviewImageIndex = 0;
       clearCopyFeedbackTimer();
       setPreviewCopyState('idle');
       renderPreviewDots(images.length);
-      setNodeText(preview.category, item.category || 'Store');
-      setNodeText(preview.title, item.title);
-      setNodeText(preview.meta, ['PakRPP', item.published, 'Curated pick'].filter(Boolean).join(' · '));
-      setNodeText(preview.summary, item.summary || 'Produk kurasi Yellow Cart.');
+      setNodeText(preview.category, item.category || copy('storeLabel'));
+      setNodeText(preview.title, displayProductTitle(item));
+      setNodeText(preview.meta, previewMetaText(item));
+      setNodeText(preview.summary, previewSummaryText(item));
       setNodeText(preview.price, item.priceText || 'Rp—');
       state.currentProductKey = itemKey(item);
       if (preview.save) setPreviewSaveState(isSaved(item));
@@ -2223,6 +2377,32 @@
       clearToastTimer();
       hideAllToasts();
       window.requestAnimationFrame(resetPreviewCarousel);
+    }
+    function refreshPreviewLocale() {
+      if (!state.currentPreviewItem) return;
+      var item = state.currentPreviewItem;
+      var noteList = item.contents && item.contents.length ? item.contents : [];
+      setNodeText(preview.category, item.category || copy('storeLabel'));
+      setNodeText(preview.title, displayProductTitle(item));
+      setNodeText(preview.meta, previewMetaText(item));
+      setNodeText(preview.summary, previewSummaryText(item));
+      setNodeText(preview.price, item.priceText || 'Rp—');
+      setPreviewSaveState(isSaved(item));
+      setPreviewCopyState(preview.copy && preview.copy.getAttribute('data-copy-state') === 'copied' ? 'copied' : 'idle');
+      renderPreviewNotes(noteList);
+      [].slice.call(preview.dots.querySelectorAll('[data-store-preview-dot]')).forEach(function (button, index) {
+        button.setAttribute('aria-label', previewImageActionLabel(index));
+      });
+    }
+    function refreshLocaleUI() {
+      setCopy();
+      renderCards();
+      renderDiscoveryResults();
+      renderSavedResults();
+      updateCounts();
+      updateChipState();
+      updateFilterPeek();
+      refreshPreviewLocale();
     }
 
     function getPanel(name) {
@@ -2503,11 +2683,9 @@
     });
     langButtons.forEach(function (button) {
       button.addEventListener('click', function () {
-        state.locale = button.getAttribute('data-store-lang') === 'en' ? 'en' : 'id';
+        state.locale = normalizeLocale(button.getAttribute('data-store-lang'));
         writeStorage('gg:lang', state.locale);
-        setCopy();
-        renderSavedResults();
-        renderDiscoveryResults();
+        refreshLocaleUI();
       });
     });
     themeButtons.forEach(function (button) {
