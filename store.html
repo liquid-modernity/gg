@@ -7,7 +7,7 @@
   <meta name="description" content="Yellow Cart: kurasi produk affiliate premium PakRPP dengan preview editorial, filter kategori, dan tautan marketplace." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://www.pakrpp.com/store" />
-  <meta name="gg-store-contract" content="store-lcp-single-source-v1" />
+  <meta name="gg-store-contract" content="store-static-prerender-v1" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Yellow Cart · PakRPP" />
   <meta property="og:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
@@ -32,7 +32,37 @@
     "description": "Kurasi produk affiliate premium pilihan PakRPP."
   }
   </script>
-  <script type="application/ld+json" id="store-itemlist-jsonld"></script>
+  <!-- STORE_ITEMLIST_JSONLD_START -->
+  <script type="application/ld+json" id="store-itemlist-jsonld">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Yellow Cart product picks",
+  "url": "https://www.pakrpp.com/store",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "url": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+      "item": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/store?item=neutral-linen-overshirt#product",
+        "name": "Neutral Linen Overshirt",
+        "description": "Curated Yellow Cart product.",
+        "image": [
+          "https://picsum.photos/seed/yellowcart-linen-1/900/1125"
+        ],
+        "brand": {
+          "@type": "Brand",
+          "name": "Generic"
+        },
+        "category": "Fashion"
+      }
+    }
+  ]
+}
+  </script>
+  <!-- STORE_ITEMLIST_JSONLD_END -->
   <script>
     (function () {
       try {
@@ -1246,20 +1276,7 @@
         <p id="store-category-description">Kumpulan produk pilihan Yellow Cart untuk gaya hidup, kerja, dan kebutuhan harian yang dikurasi secara editorial.</p>
       </section>
 
-      <section class="store-grid store-grid--skeleton" id="store-grid-skeleton" aria-hidden="true">
-        <!-- STORE_LCP_CARD_START -->
-        <article class="store-card store-card--initial-lcp" data-store-initial-lcp-card>
-          <div class="store-card__media">
-            <img src="https://picsum.photos/seed/yellowcart-linen-1/900/1125" alt="Neutral Linen Overshirt" loading="eager" decoding="async" fetchpriority="high" draggable="false" data-store-initial-lcp-image />
-            <span class="store-card__shade" aria-hidden="true"></span>
-            <div class="store-card__content">
-              <span class="store-card__badge">Fashion</span>
-              <span class="store-card__price">Rp429.000</span>
-              <h2 class="store-card__title">Neutral Linen Overshirt</h2>
-            </div>
-          </div>
-        </article>
-        <!-- STORE_LCP_CARD_END -->
+      <section class="store-grid store-grid--skeleton" id="store-grid-skeleton" aria-hidden="true" hidden>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
@@ -1274,7 +1291,24 @@
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
       </section>
 
-      <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite" hidden></section>
+      <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite">
+        <!-- STORE_STATIC_GRID_START -->
+        <article class="store-card" data-store-product-id="neutral-linen-overshirt">
+          <a class="store-card__button" href="https://www.pakrpp.com/store?item=neutral-linen-overshirt" aria-label="Buka Neutral Linen Overshirt" data-store-open-preview="0" data-store-product-slug="neutral-linen-overshirt">
+            <div class="store-card__media">
+              <img src="https://picsum.photos/seed/yellowcart-linen-1/900/1125" width="900" height="1125" alt="Neutral Linen Overshirt" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
+              <span class="store-card__shade" aria-hidden="true"></span>
+              <div class="store-card__content">
+                <span class="store-card__badge">Fashion</span>
+                <span class="store-card__price">Rp429.000</span>
+                <h2 class="store-card__title">Neutral Linen Overshirt</h2>
+            <span class="store-card__dots" aria-hidden="true" hidden></span>
+              </div>
+            </div>
+          </a>
+        </article>
+        <!-- STORE_STATIC_GRID_END -->
+      </section>
 
       <section class="store-empty" id="store-empty" hidden>
         <h2 id="store-empty-title" data-copy="curatedTitle">Belum ada produk yang ditampilkan.</h2>
@@ -1289,7 +1323,19 @@
       <section class="store-semantic-products" id="store-semantic-products" aria-labelledby="store-semantic-title">
         <h2 id="store-semantic-title" data-copy="semanticProductsTitle">Yellow Cart product notes</h2>
         <div class="store-semantic-product-list" id="store-semantic-product-list">
-          <p class="store-semantic-product__empty" data-copy="semanticEmptyLabel">Product notes will appear here after the curation loads.</p>
+          <!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->
+          <article class="store-semantic-product" id="store-note-neutral-linen-overshirt">
+            <div class="store-semantic-product__head">
+              <p class="store-semantic-product__category">Fashion</p>
+              <h3 class="store-semantic-product__title">Neutral Linen Overshirt</h3>
+              <p class="store-semantic-product__summary">Curated Yellow Cart product.</p>
+            </div>
+            <div class="store-semantic-product__links">
+              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/store?item=neutral-linen-overshirt">Editorial detail</a>
+              <a class="store-button" href="https://www.pakrpp.com/store?item=neutral-linen-overshirt" data-store-open-slug="neutral-linen-overshirt">Open in Store</a>
+            </div>
+          </article>
+          <!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->
         </div>
       </section>
 
@@ -1513,9 +1559,53 @@
 
   <textarea id="store-copy-buffer" class="gg-visually-hidden" tabindex="-1" aria-hidden="true" readonly></textarea>
 
+  <!-- STORE_STATIC_PRODUCTS_JSON_START -->
+  <script type="application/json" id="store-static-products">
+[
+  {
+    "id": "neutral-linen-overshirt",
+    "slug": "neutral-linen-overshirt",
+    "name": "Neutral Linen Overshirt",
+    "category": "Fashion",
+    "priceText": "Rp429.000",
+    "price": 429000,
+    "priceCurrency": "IDR",
+    "availability": "",
+    "condition": "",
+    "brand": "",
+    "summary": "Curated Yellow Cart product.",
+    "verdict": "",
+    "whyPicked": "",
+    "bestFor": [],
+    "notes": [],
+    "caveat": "",
+    "material": "",
+    "useCase": "",
+    "geoContext": "",
+    "tags": [],
+    "images": [
+      "https://picsum.photos/seed/yellowcart-linen-1/900/1125"
+    ],
+    "links": {
+      "shopee": "",
+      "tokopedia": "",
+      "tiktok": "",
+      "lazada": "",
+      "website": "",
+      "official": ""
+    },
+    "canonicalUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+    "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+    "datePublished": "",
+    "dateModified": ""
+  }
+]
+  </script>
+  <!-- STORE_STATIC_PRODUCTS_JSON_END -->
+
   <template id="store-card-template">
     <article class="store-card" data-store-card>
-      <button class="store-card__button" type="button" data-store-open-preview aria-label="">
+      <a class="store-card__button" href="/" data-store-open-preview data-store-product-slug aria-label="">
         <div class="store-card__media">
           <img loading="lazy" decoding="async" src="" alt="" draggable="false" />
           <span class="store-card__shade" aria-hidden="true"></span>
@@ -1526,7 +1616,7 @@
             <span class="store-card__dots" data-store-card-dots aria-hidden="true" hidden></span>
           </div>
         </div>
-      </button>
+      </a>
     </article>
   </template>
 
@@ -1712,6 +1802,7 @@
         emptyTitle: 'Produk tidak ditemukan.',
         emptyBody: 'Coba filter lain atau kosongkan pencarian.',
         feedStore: 'Feed: Store',
+        feedStatic: 'Snapshot: Store',
         feedLegacy: 'Feed: arsip Store cadangan',
         filterActive: 'Filter aktif',
         allVisible: 'Semua produk ditampilkan.',
@@ -1813,6 +1904,7 @@
         emptyTitle: 'No products found.',
         emptyBody: 'Try another filter or clear the search.',
         feedStore: 'Feed: Store',
+        feedStatic: 'Snapshot: Store',
         feedLegacy: 'Feed: Store archive fallback',
         filterActive: 'Active filter',
         allVisible: 'All products are visible.',
@@ -1883,7 +1975,7 @@
 
     var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
     var STORE_CANONICAL_PATH = '/store';
-    // Performance-only featured card config. Feed data still wins after hydration.
+    // Static featured card seed. Build-time prerender sync keeps this aligned with the first snapshot product.
     // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
       slug: "neutral-linen-overshirt",
@@ -1980,7 +2072,7 @@
       return out;
     }, {});
     var SYSTEM_LABELS = ['store', 'yellowcard', 'yellowcart'];
-    var MARKET = ['shopee', 'tiktok', 'tokopedia', 'official'];
+    var MARKET = ['shopee', 'tiktok', 'tokopedia', 'lazada', 'website', 'official'];
     var PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#d8d0ce"/><stop offset="1" stop-color="#817674"/></linearGradient></defs><rect width="800" height="1000" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui" font-size="42" fill="#fff" fill-opacity=".78">Yellow Cart</text></svg>');
 
     var app = document.getElementById('store-app');
@@ -2022,6 +2114,7 @@
     var savedToast = document.getElementById('store-saved-toast');
     var globalToast = document.getElementById('store-toast');
     var copyBuffer = document.getElementById('store-copy-buffer');
+    var staticProductsScript = document.getElementById('store-static-products');
     var itemListJsonLd = document.getElementById('store-itemlist-jsonld');
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle]'));
@@ -2364,6 +2457,21 @@
     function canonicalProductUrl(item) {
       return absoluteUrl(item && (item.canonicalUrl || item.url));
     }
+    function isNonSpecificOfferUrl(value) {
+      var href = clean(value);
+      return /\/search\b|[?&](q|query|keyword|keywords)=/i.test(href);
+    }
+    function specificOfferUrl(item) {
+      var links = item && item.links ? item.links : {};
+      var keys = ['shopee', 'tokopedia', 'tiktok', 'lazada', 'website'];
+      var index;
+      var href;
+      for (index = 0; index < keys.length; index += 1) {
+        href = absoluteUrl(links[keys[index]]);
+        if (href && !isNonSpecificOfferUrl(href)) return href;
+      }
+      return '';
+    }
     function requestedItemSlug() {
       var search;
       var querySlug = '';
@@ -2417,6 +2525,9 @@
     function semanticSummaryText(item) {
       return clean(item && (item.verdict || item.summary) ? (item.verdict || item.summary) : '') || previewSummaryText(item);
     }
+    function semanticBestForText(item) {
+      return cleanTextList(item && item.bestFor).join(' · ') || clean(item && item.useCase) || clean(item && item.geoContext);
+    }
     function semanticTags(item) {
       return cleanTextList(item && item.tags).slice(0, 6);
     }
@@ -2427,7 +2538,7 @@
         item.summary,
         item.verdict,
         item.whyPicked,
-        item.bestFor,
+        cleanTextList(item.bestFor).join(' '),
         item.caveat,
         item.useCase,
         item.geoContext,
@@ -2448,20 +2559,27 @@
     }
     function updateItemListJsonLd(items) {
       var list = (items || []).map(function (item, index) {
+        var itemUrl = canonicalProductUrl(item) || productStoreAbsoluteUrl(item);
+        var images = arr(item && item.images).map(absoluteUrl).filter(Boolean);
         var product = {
           '@type': 'Product',
+          '@id': itemUrl + '#product',
           name: displayProductTitle(item),
-          description: semanticSummaryText(item)
+          description: semanticSummaryText(item),
+          brand: {
+            '@type': 'Brand',
+            name: clean(item && item.brand) || 'Generic'
+          }
         };
         var offerPrice = item && item.price ? Number(item.price) : 0;
         var offerCurrency = clean(item && item.priceCurrency).toUpperCase();
-        var image = absoluteUrl(item && item.images && item.images[0]);
-        if (image) product.image = image;
-        if (item && item.brand) product.brand = { '@type': 'Brand', name: item.brand };
+        var offerUrl = specificOfferUrl(item);
+        if (images.length) product.image = images;
         if (item && item.category) product.category = item.category;
-        if (offerPrice > 0 && offerCurrency) {
+        if (offerPrice > 0 && offerCurrency && offerUrl) {
           product.offers = {
             '@type': 'Offer',
+            url: offerUrl,
             price: String(offerPrice),
             priceCurrency: offerCurrency
           };
@@ -2469,7 +2587,7 @@
         return {
           '@type': 'ListItem',
           position: index + 1,
-          url: canonicalProductUrl(item) || productStoreAbsoluteUrl(item),
+          url: itemUrl,
           item: product
         };
       });
@@ -2644,10 +2762,16 @@
       if (/(^|\.)shopee\.[a-z.]+$/.test(host)) return { key: 'shopee', href: url.toString() };
       if (host === 'tokopedia.com' || /(^|\.)tokopedia\.com$/.test(host)) return { key: 'tokopedia', href: url.toString() };
       if (host === 'tiktok.com' || /(^|\.)tiktok\.com$/.test(host)) return { key: 'tiktok', href: url.toString() };
+      if (host === 'lazada.com' || /(^|\.)lazada\.[a-z.]+$/.test(host)) return { key: 'lazada', href: url.toString() };
       return null;
     }
     function marketplaceHref(raw, key) {
       var info = marketplaceInfo(raw);
+      var genericUrl;
+      if (key === 'website') {
+        genericUrl = absoluteUrl(raw);
+        return genericUrl || '';
+      }
       return info && info.key === key ? info.href : '';
     }
     function parseJsonScript(doc) {
@@ -2707,10 +2831,11 @@
       return {
         id: canonicalUrl || altUrl(entry),
         slug: slug,
+        name: title,
         title: title,
         url: altUrl(entry),
         canonicalUrl: canonicalUrl,
-        storeUrl: clean(data.storeUrl) || storeRelativeUrl(slug),
+        storeUrl: clean(data.storeUrl) || storeAbsoluteUrl(slug),
         labels: labs,
         category: category,
         filter: publicFilter(category),
@@ -2718,7 +2843,7 @@
         summary: clean(data.summary || data.tagline || parsed.summary || ''),
         verdict: clean(data.verdict || data.takeaway || ''),
         whyPicked: clean(data.whyPicked || data.why || data.reason || ''),
-        bestFor: clean(data.bestFor || data.best_for || data.audience || ''),
+        bestFor: cleanTextList(data.bestFor || data.best_for || data.audience),
         caveat: clean(data.caveat || data.consider || data.warning || ''),
         material: clean(data.material || ''),
         useCase: clean(data.useCase || data.use_case || ''),
@@ -2727,6 +2852,7 @@
         availability: clean(data.availability || ''),
         condition: clean(data.condition || data.itemCondition || ''),
         tags: tags,
+        notes: notes,
         priceText: priceText,
         price: price > 0 ? price : 0,
         priceCurrency: priceCurrency,
@@ -2738,6 +2864,90 @@
         datePublished: clean(data.datePublished || text(entry.published)),
         dateModified: clean(data.dateModified || text(entry.updated))
       };
+    }
+    function normalizeStaticProduct(item) {
+      var raw = item && typeof item === 'object' ? item : {};
+      var title = clean(raw.title || raw.name || '');
+      var slug = slugify(raw.slug || raw.id || title || raw.storeUrl || raw.canonicalUrl || '');
+      var category = clean(raw.category || '') || 'Etc';
+      var images = arr(raw.images || raw.image).map(clean).filter(Boolean);
+      var tags = cleanTextList(raw.tags);
+      var notes = cleanTextList(raw.notes || raw.contents);
+      var canonicalUrl = absoluteUrl(raw.canonicalUrl || raw.url || raw.storeUrl);
+      var storeUrl = absoluteUrl(raw.storeUrl) || storeAbsoluteUrl(slug);
+      var priceText = clean(raw.priceText || raw.priceLabel || raw.price || 'Rp—');
+      var price = parsePriceValue(raw.price) || parsePriceValue(priceText);
+      var datePublished = clean(raw.datePublished || '');
+      var dateModified = clean(raw.dateModified || '');
+      var links = {};
+
+      MARKET.forEach(function (key) {
+        links[key] = raw.links && raw.links[key] ? clean(raw.links[key]) : '';
+      });
+
+      return {
+        id: clean(raw.id || slug || canonicalUrl || storeUrl),
+        slug: slug,
+        name: title,
+        title: title,
+        url: canonicalUrl || storeUrl,
+        canonicalUrl: canonicalUrl || storeUrl,
+        storeUrl: storeUrl,
+        labels: arr(raw.labels).map(clean).filter(Boolean),
+        category: category,
+        filter: publicFilter(category),
+        badge: clean(raw.badge || category),
+        summary: clean(raw.summary || raw.verdict || ''),
+        verdict: clean(raw.verdict || ''),
+        whyPicked: clean(raw.whyPicked || ''),
+        bestFor: cleanTextList(raw.bestFor),
+        caveat: clean(raw.caveat || ''),
+        material: clean(raw.material || ''),
+        useCase: cleanFirst(raw.useCase),
+        geoContext: cleanFirst(raw.geoContext),
+        brand: cleanFirst(raw.brand),
+        availability: clean(raw.availability || ''),
+        condition: clean(raw.condition || ''),
+        tags: tags,
+        notes: notes,
+        priceText: priceText,
+        price: price > 0 ? price : 0,
+        priceCurrency: detectPriceCurrency(priceText, raw.priceCurrency || raw.currency),
+        images: images.length ? images : [PLACEHOLDER_IMAGE],
+        links: links,
+        contents: notes,
+        published: dateLabel(datePublished),
+        updated: dateLabel(dateModified),
+        datePublished: datePublished,
+        dateModified: dateModified
+      };
+    }
+    function readStaticProducts() {
+      var payload;
+      var parsed;
+      try {
+        payload = staticProductsScript ? staticProductsScript.textContent : '';
+        if (!clean(payload)) return [];
+        parsed = JSON.parse(payload);
+        return Array.isArray(parsed) ? parsed.map(normalizeStaticProduct).filter(function (item) { return !!(item && item.slug && item.title); }) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+    function hydrateStaticProducts(products) {
+      if (!products.length) return false;
+      state.products = products.slice();
+      state.visibleLimit = initialVisibleLimit();
+      state.hasLoadedMore = false;
+      state.feedSource = 'static';
+      empty.hidden = true;
+      setSkeletonVisible(false);
+      applyFilters();
+      app.setAttribute('data-store-state', state.filtered.length ? 'ready' : 'empty');
+      syncRequestedPreview();
+      scheduleOverflowAudit('static-bootstrap');
+      scheduleDebugVitalsReport('static-bootstrap');
+      return true;
     }
 
     function feedUrl(kind) {
@@ -2755,11 +2965,15 @@
       });
     }
     function loadProducts() {
-      app.setAttribute('data-store-state', 'loading');
-      setSkeletonVisible(true);
-      setNodeText(count, copy('countLoading'));
-      setNodeText(source, copy('feedStore'));
-      empty.hidden = true;
+      var staticProducts = readStaticProducts();
+      var hadStatic = hydrateStaticProducts(staticProducts);
+      if (!hadStatic) {
+        app.setAttribute('data-store-state', 'loading');
+        setSkeletonVisible(true);
+        setNodeText(count, copy('countLoading'));
+        setNodeText(source, copy('feedStore'));
+        empty.hidden = true;
+      }
       fetchFeed('primary').catch(function () { return fetchFeed('legacy'); }).then(function (entries) {
         state.products = entries.map(normalize).filter(Boolean);
         state.visibleLimit = initialVisibleLimit();
@@ -2769,6 +2983,15 @@
         scheduleOverflowAudit('feed-render');
         scheduleDebugVitalsReport('feed-render');
       }).catch(function () {
+        if (hadStatic || state.products.length) {
+          setSkeletonVisible(false);
+          empty.hidden = !!state.filtered.length;
+          app.setAttribute('data-store-state', state.filtered.length ? 'ready' : 'empty');
+          updateCounts();
+          scheduleOverflowAudit('feed-fallback-static');
+          scheduleDebugVitalsReport('feed-fallback-static');
+          return;
+        }
         state.products = [];
         state.filtered = [];
         setSkeletonVisible(false);
@@ -2836,7 +3059,7 @@
       if (!count || !source) return;
       if (app.getAttribute('data-store-state') === 'loading') { setNodeText(count, copy('countLoading')); return; }
       setNodeText(count, state.filtered.length + ' ' + unit);
-      setNodeText(source, state.query || state.filter !== 'all' ? copy('filterActive') : (state.feedSource === 'legacy' ? copy('feedLegacy') : copy('feedStore')));
+      setNodeText(source, state.query || state.filter !== 'all' ? copy('filterActive') : (state.feedSource === 'legacy' ? copy('feedLegacy') : (state.feedSource === 'static' ? copy('feedStatic') : copy('feedStore'))));
       setNodeText(discoveryStatus, state.query || state.filter !== 'all' || state.intent ? (state.filtered.length + ' ' + unit) : copy('allVisible'));
     }
     function updateChipState() {
@@ -2866,9 +3089,8 @@
       node.replaceChildren(fragment);
     }
     function setCardImagePriority(img, index) {
-      var eagerCount = window.matchMedia && window.matchMedia('(min-width: 720px)').matches ? 4 : 2;
-      var loading = index < eagerCount ? 'eager' : 'lazy';
-      var fetchPriority = index < 2 ? 'high' : 'auto';
+      var loading = index === 0 ? 'eager' : 'lazy';
+      var fetchPriority = index === 0 ? 'high' : 'auto';
       if (!img) return;
       img.loading = loading;
       img.setAttribute('loading', loading);
@@ -2887,11 +3109,16 @@
       var displayTitle = displayProductTitle(item);
 
       node.dataset.storeCardIndex = String(index);
+      node.dataset.storeProductId = item.slug || item.id || '';
       button.dataset.storeOpenPreview = String(index);
+      button.dataset.storeProductSlug = item.slug || '';
+      button.href = canonicalProductUrl(item) || productStoreAbsoluteUrl(item);
       button.setAttribute('aria-label', copy('previewProductLabel') + ': ' + displayTitle);
 
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
       img.alt = displayTitle;
+      img.width = 900;
+      img.height = 1125;
       setCardImagePriority(img, index);
 
       badge.textContent = displayProductBadge(item);
@@ -3011,7 +3238,7 @@
         setNodeText(titleNode, displayProductTitle(item));
         setNodeText(summaryNode, semanticSummaryText(item));
         toggleSemanticFact(whyNode, whyValue, item.whyPicked);
-        toggleSemanticFact(bestForNode, bestForValue, item.bestFor || item.useCase || item.geoContext);
+        toggleSemanticFact(bestForNode, bestForValue, semanticBestForText(item));
         toggleSemanticFact(caveatNode, caveatValue, item.caveat);
 
         if (detailLink) detailLink.href = canonicalProductUrl(item) || STORE_CANONICAL_PATH;
@@ -3473,6 +3700,8 @@
       if (!trigger) return;
       var index = Number(trigger.getAttribute('data-store-open-preview'));
       var item = activeItem(index);
+      if (!item) return;
+      event.preventDefault();
       openPreviewItem(item, trigger);
     });
     if (storeDockLink) storeDockLink.addEventListener('click', function (event) {

@@ -17,7 +17,6 @@ const ROOT = process.cwd();
 
 const requiredFiles = [
   "_headers",
-  "config/store-lcp-product.json",
   "flags.json",
   "index.xml",
   "manifest.webmanifest",
@@ -122,20 +121,14 @@ for (const dir of recommendedDirs) {
 syntaxCheckModule("worker.js", "worker-syntax-check");
 
 for (const script of [
+  "tools/build-store-static.mjs",
   "tools/cloudflare-prepare.mjs",
   "tools/cloudflare-deploy.mjs",
   "tools/gaga-release.mjs",
-  "tools/sync-store-lcp.mjs",
+  "tools/proof-store-static.mjs",
   "tools/template-pack.mjs",
 ]) {
   if (fileExists(script)) syntaxCheckModule(script, path.basename(script, ".mjs"));
-}
-
-const storeLcpConfig = readJson("config/store-lcp-product.json");
-for (const field of ["slug", "name", "category", "priceText", "image", "alt"]) {
-  if (typeof storeLcpConfig[field] !== "string" || !storeLcpConfig[field].trim()) {
-    fail(`config/store-lcp-product.json is missing required field: ${field}`);
-  }
 }
 
 const flags = readJson("flags.json");
@@ -200,6 +193,23 @@ assertAnyIncludes(workerSource, ["Google-Extended", "GPTBot", "OAI-SearchBot"], 
 const swSource = read("sw.js");
 assertIncludes(swSource, "/offline.html", "sw.js is missing offline fallback URL");
 assertAnyIncludes(swSource, ["/gg-flags.json", "/flags.json", "FLAGS_URL"], "sw.js is missing flags URL contract");
+
+const storeSource = read("store.html");
+assertIncludes(storeSource, 'name="gg-store-contract" content="store-static-prerender-v1"', "store.html is missing the static prerender contract marker");
+for (const marker of [
+  "<!-- STORE_LCP_PRELOAD_START -->",
+  "<!-- STORE_STATIC_GRID_START -->",
+  "<!-- STORE_STATIC_PRODUCTS_JSON_START -->",
+  '<script type="application/json" id="store-static-products">',
+  "<!-- STORE_ITEMLIST_JSONLD_START -->",
+  '<script type="application/ld+json" id="store-itemlist-jsonld">',
+  "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->",
+  "// STORE_LCP_PRODUCT_START",
+  "function readStaticProducts(",
+  "function hydrateStaticProducts(",
+]) {
+  assertIncludes(storeSource, marker, `store.html is missing static store marker: ${marker}`);
+}
 
 const offlineSource = read("offline.html");
 assertAnyIncludes(offlineSource, ["data-gg-surface=\"offline\"", "data-gg-surface='offline'"], "offline.html is missing data-gg-surface=offline");
