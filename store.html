@@ -725,10 +725,27 @@
       background: var(--gg-accent);
       color: var(--gg-accent-contrast);
     }
+    .store-inline-toast {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      max-width: min(100%, 320px);
+      padding: 0 14px;
+      border: 1px solid var(--gg-line-strong);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--gg-surface-interactive-strong) 88%, transparent);
+      color: var(--gg-ink);
+      box-shadow: var(--gg-shadow-soft);
+      font: 700 12px/1.2 var(--gg-font-sans);
+      text-align: center;
+    }
+    .store-inline-toast[hidden] { display: none !important; }
     .store-toast {
       position: fixed;
       left: 50%;
-      bottom: calc(env(safe-area-inset-bottom) + 28px);
+      bottom: calc(var(--gg-dock-clearance) + 54px);
       z-index: 96;
       display: inline-flex;
       align-items: center;
@@ -901,10 +918,25 @@
       text-align: left;
     }
     body[data-gg-dock-state='hidden-by-scroll'] .store-filter-outline__peek { padding-bottom: calc(9px + env(safe-area-inset-bottom)); }
-    .store-filter-outline__main { display: grid; min-width: 0; gap: 2px; }
-    .store-filter-outline__eyebrow { display: inline-flex; align-items: center; gap: 6px; color: var(--gg-accent-soft); font: 750 10px/1 var(--gg-font-sans); letter-spacing: .14em; text-transform: uppercase; }
-    .store-filter-outline__label-icon { font-size: 16px; line-height: 1; }
-    .store-filter-outline__current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 760 15px/1.15 var(--gg-font-sans); letter-spacing: -.025em; }
+    .store-filter-outline__main {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      gap: 8px;
+    }
+    .store-filter-outline__current-icon {
+      flex: 0 0 auto;
+      font-size: 17px;
+      color: var(--gg-accent-soft);
+    }
+    .store-filter-outline__current {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 760 15px/1.15 var(--gg-font-sans);
+      letter-spacing: -.025em;
+    }
     .store-filter-outline__count { color: var(--gg-ink-soft); font: 650 12px/1.15 var(--gg-font-sans); white-space: nowrap; }
     .store-filter-outline__icon { transition: color var(--gg-ease), opacity var(--gg-ease); }
     .store-filter-outline__panel { display: none; padding: 12px 12px 12px; border-top: 1px solid var(--gg-divider); }
@@ -1057,10 +1089,10 @@
   </nav>
 
   <section class="store-filter-outline" id="store-filter-outline" data-store-filter-state="micro" aria-label="Store filters">
-    <button class="store-filter-outline__peek" id="store-filter-toggle" type="button" aria-expanded="false" aria-controls="store-filter-panel">
+    <button class="store-filter-outline__peek" id="store-filter-toggle" type="button" aria-expanded="false" aria-controls="store-filter-panel" aria-label="Open Store filter">
       <span class="store-filter-outline__main">
-        <span class="store-filter-outline__eyebrow"><span class="gg-icon store-filter-outline__label-icon" aria-hidden="true">filter_list</span>Filter</span>
-        <span class="store-filter-outline__current" id="store-filter-current"><span class="gg-icon store-filter-outline__label-icon" aria-hidden="true" id="store-filter-current">filter_list</span>All</span>
+        <span class="gg-icon store-filter-outline__current-icon" id="store-filter-current-icon" aria-hidden="true">filter_list</span>
+        <span class="store-filter-outline__current" id="store-filter-current">All</span>
       </span>
       <span class="store-filter-outline__count" id="store-filter-count">0 produk</span>
       <span class="gg-icon store-filter-outline__icon" id="store-filter-toggle-icon" aria-hidden="true">keyboard_arrow_up</span>
@@ -1108,6 +1140,7 @@
               <span class="gg-icon" id="store-copy-links-icon" aria-hidden="true">content_copy</span>
             </button>
           </div>
+          <div class="store-inline-toast" id="store-preview-toast" role="status" aria-live="polite" hidden></div>
           <section class="store-preview__notes" id="store-preview-notes" hidden>
             <h3 data-copy="notesTitle">Notes</h3>
             <ul id="store-preview-notes-list"></ul>
@@ -1172,6 +1205,7 @@
       </header>
       <div class="store-sheet-body">
         <p class="store-summary">Saved on this device.</p>
+        <div class="store-inline-toast" id="store-saved-toast" role="status" aria-live="polite" hidden></div>
         <div class="store-saved-results" id="store-saved-results"></div>
       </div>
     </section>
@@ -1226,6 +1260,78 @@
   <noscript>
     <section class="store-main store-empty"><h2>JavaScript dibutuhkan.</h2><p>Yellow Cart memakai katalog interaktif. Buka <a href="/search/label/Store">arsip Store</a> sebagai fallback.</p></section>
   </noscript>
+
+  <textarea id="store-copy-buffer" class="gg-visually-hidden" tabindex="-1" aria-hidden="true" readonly></textarea>
+
+  <template id="store-card-template">
+    <article class="store-card" data-store-card>
+      <button class="store-card__button" type="button" data-store-open-preview aria-label="">
+        <div class="store-card__media">
+          <img loading="lazy" decoding="async" src="" alt="" draggable="false" />
+          <span class="store-card__shade" aria-hidden="true"></span>
+          <div class="store-card__content">
+            <span class="store-card__badge" data-store-card-badge></span>
+            <span class="store-card__price" data-store-card-price></span>
+            <h2 class="store-card__title" data-store-card-title></h2>
+            <span class="store-card__dots" data-store-card-dots aria-hidden="true" hidden></span>
+          </div>
+        </div>
+      </button>
+    </article>
+  </template>
+
+  <template id="store-card-dot-template">
+    <span class="store-card__dot"></span>
+  </template>
+
+  <template id="store-preview-slide-template">
+    <div class="store-preview__slide">
+      <img src="" alt="" draggable="false" />
+    </div>
+  </template>
+
+  <template id="store-preview-dot-template">
+    <button class="store-preview__dot" type="button" aria-label="" aria-pressed="false" data-store-preview-dot></button>
+  </template>
+
+  <template id="store-result-row-template">
+    <button class="store-result-row" type="button" data-store-result-index>
+      <span class="store-result-row__thumb">
+        <img src="" alt="" loading="lazy" decoding="async" draggable="false" />
+      </span>
+      <span class="store-result-row__body">
+        <span class="store-result-row__title" data-store-result-title></span>
+        <span class="store-result-row__meta" data-store-result-meta></span>
+      </span>
+      <span class="gg-icon" aria-hidden="true">chevron_right</span>
+    </button>
+  </template>
+
+  <template id="store-saved-row-template">
+    <div class="store-result-row-group" data-store-saved-row>
+      <button class="store-result-row" type="button" data-store-result-index>
+        <span class="store-result-row__thumb">
+          <img src="" alt="" loading="lazy" decoding="async" draggable="false" />
+        </span>
+        <span class="store-result-row__body">
+          <span class="store-result-row__title" data-store-result-title></span>
+          <span class="store-result-row__meta" data-store-result-meta></span>
+        </span>
+        <span class="gg-icon" aria-hidden="true">chevron_right</span>
+      </button>
+      <button class="store-result-row__remove" type="button" data-store-remove-saved aria-label="">
+        <span class="gg-icon" aria-hidden="true">bookmark_remove</span>
+      </button>
+    </div>
+  </template>
+
+  <template id="store-empty-row-template">
+    <p class="store-result-row__empty" data-store-empty-row></p>
+  </template>
+
+  <template id="store-preview-note-template">
+    <li data-store-preview-note></li>
+  </template>
 
   <script>
   (function () {
@@ -1351,6 +1457,14 @@
     };
 
     var PUBLIC_FILTERS = ['all', 'fashion', 'skincare', 'workspace', 'tech', 'etc'];
+    var STORE_FILTER_ICON_MAP = {
+      all: 'filter_list',
+      fashion: 'checkroom',
+      skincare: 'spa',
+      workspace: 'desktop_windows',
+      tech: 'devices',
+      etc: 'category'
+    };
     var SYSTEM_LABELS = ['store', 'yellowcard', 'yellowcart'];
     var MARKET = ['shopee', 'tiktok', 'tokopedia', 'official'];
     var VISIBLE_INITIAL = 24;
@@ -1384,8 +1498,12 @@
     var filterOutline = document.getElementById('store-filter-outline');
     var filterToggle = document.getElementById('store-filter-toggle');
     var filterToggleIcon = document.getElementById('store-filter-toggle-icon');
+    var filterCurrentIcon = document.getElementById('store-filter-current-icon');
     var filterCurrent = document.getElementById('store-filter-current');
     var filterCount = document.getElementById('store-filter-count');
+    var savedToast = document.getElementById('store-saved-toast');
+    var globalToast = document.getElementById('store-toast');
+    var copyBuffer = document.getElementById('store-copy-buffer');
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
@@ -1408,7 +1526,7 @@
       copy: document.getElementById('store-copy-links'),
       copyIcon: document.getElementById('store-copy-links-icon'),
       handle: document.querySelector('#store-preview-sheet .store-preview__handle'),
-      toast: document.getElementById('store-toast'),
+      toast: document.getElementById('store-preview-toast'),
       notes: document.getElementById('store-preview-notes'),
       notesList: document.getElementById('store-preview-notes-list'),
       links: {
@@ -1441,10 +1559,19 @@
       previewScrollSettleTimer: 0,
       copyFeedbackTimer: 0,
       toastTimer: 0,
+      activeToastNode: null,
       dragSession: null
     };
 
     if (!app || !grid) return;
+
+    function cloneTemplate(id) {
+      var template = document.getElementById(id);
+      if (!template || !template.content || !template.content.firstElementChild) {
+        throw new Error('Missing template: ' + id);
+      }
+      return template.content.firstElementChild.cloneNode(true);
+    }
 
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
@@ -1466,6 +1593,7 @@
     function copy(key) { return (COPY[state.locale] && COPY[state.locale][key]) || COPY.id[key] || key; }
     function setNodeText(node, value) { if (node) node.textContent = value; }
     function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+    function productUnit() { return state.locale === 'en' ? 'products' : 'produk'; }
     function prefersReducedMotion() {
       return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
@@ -1484,15 +1612,49 @@
       window.clearTimeout(state.toastTimer);
       state.toastTimer = 0;
     }
-    function showToast(message) {
-      if (!preview.toast || !message) return;
+    function currentFilterLabel() {
+      return titleCase(state.filter);
+    }
+    function currentFilterIcon() {
+      return STORE_FILTER_ICON_MAP[state.filter] || STORE_FILTER_ICON_MAP.all;
+    }
+    function filterToggleAriaLabel(expanded, label, countLabel) {
+      var action = expanded ? (state.locale === 'en' ? 'Close Store filter' : 'Tutup filter Store') : (state.locale === 'en' ? 'Open Store filter' : 'Buka filter Store');
+      var active = state.locale === 'en' ? 'Active filter' : 'Filter aktif';
+      return action + '. ' + active + ': ' + label + '. ' + countLabel + '.';
+    }
+    function toastNodes() {
+      return [preview.toast, savedToast, globalToast].filter(Boolean);
+    }
+    function hideToastNode(node) {
+      if (!node) return;
+      node.hidden = true;
+      node.textContent = '';
+    }
+    function hideAllToasts() {
+      toastNodes().forEach(hideToastNode);
+      state.activeToastNode = null;
+    }
+    function resolveToastNode(context) {
+      if (context === 'preview') return preview.toast || globalToast;
+      if (context === 'saved') return savedToast || globalToast;
+      if (context === 'discovery') return globalToast;
+      if (state.panelActive === 'preview' && preview.toast) return preview.toast;
+      if (state.panelActive === 'saved' && savedToast) return savedToast;
+      return globalToast;
+    }
+    function showToast(message, context) {
+      var node = resolveToastNode(context);
+      if (!node || !message) return;
       clearToastTimer();
-      preview.toast.hidden = false;
-      preview.toast.textContent = message;
+      hideAllToasts();
+      node.hidden = false;
+      node.textContent = message;
+      state.activeToastNode = node;
       state.toastTimer = window.setTimeout(function () {
         state.toastTimer = 0;
-        preview.toast.hidden = true;
-        preview.toast.textContent = '';
+        hideToastNode(node);
+        if (state.activeToastNode === node) state.activeToastNode = null;
       }, 1600);
     }
     function clearCopyFeedbackTimer() {
@@ -1516,8 +1678,20 @@
       if (preview.saveIcon) preview.saveIcon.textContent = saved ? 'bookmark' : 'bookmark_add';
     }
     function syncFilterToggleState(expanded) {
-      if (filterToggle) filterToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      var label = filterCurrent ? clean(filterCurrent.textContent) || currentFilterLabel() : currentFilterLabel();
+      var countLabel = filterCount ? clean(filterCount.textContent) || ('0 ' + productUnit()) : ('0 ' + productUnit());
+      if (filterToggle) {
+        filterToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        filterToggle.setAttribute('aria-label', filterToggleAriaLabel(expanded, label, countLabel));
+      }
       if (filterToggleIcon) filterToggleIcon.textContent = expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_up';
+    }
+    function updateFilterPeek(countLabel) {
+      var label = currentFilterLabel();
+      if (filterCurrentIcon) setNodeText(filterCurrentIcon, currentFilterIcon());
+      if (filterCurrent) setNodeText(filterCurrent, label);
+      if (filterCount) setNodeText(filterCount, countLabel || (state.filtered.length + ' ' + productUnit()));
+      syncFilterToggleState(filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded');
     }
     function setPanelEnvironment(active) {
       if (dock) {
@@ -1734,14 +1908,14 @@
       updateCounts();
     }
     function updateCounts() {
+      var unit = productUnit();
+      var filterCountLabel = state.filtered.length + ' ' + unit;
+      updateFilterPeek(filterCountLabel);
       if (!count || !source) return;
       if (app.getAttribute('data-store-state') === 'loading') { setNodeText(count, copy('countLoading')); return; }
-      var unit = state.locale === 'en' ? 'products' : 'produk';
       setNodeText(count, state.filtered.length + ' ' + unit);
       setNodeText(source, state.query || state.filter !== 'all' ? copy('filterActive') : (state.feedSource === 'legacy' ? copy('feedLegacy') : copy('feedStore')));
       setNodeText(discoveryStatus, state.query || state.filter !== 'all' || state.intent ? (state.filtered.length + ' ' + unit) : copy('allVisible'));
-      if (filterCurrent) setNodeText(filterCurrent, state.intent ? titleCase(state.intent === 'under500' ? 'Under 500k' : state.intent) : titleCase(state.filter));
-      if (filterCount) setNodeText(filterCount, state.filtered.length + ' ' + unit);
     }
     function updateChipState() {
       filterButtons.forEach(function (button) {
@@ -1752,65 +1926,121 @@
       value = clean(value || 'All');
       return value ? value.charAt(0).toUpperCase() + value.slice(1) : 'All';
     }
-    function renderResultRow(item, index, action) {
-      return '' +
-        '<button class="store-result-row" type="button" data-store-result-action="' + action + '" data-store-result-index="' + index + '">' +
-          '<span class="store-result-row__thumb"><img loading="lazy" decoding="async" src="' + escapeAttr(item.images[0] || PLACEHOLDER_IMAGE) + '" alt="" /></span>' +
-          '<span class="store-result-row__body">' +
-            '<span class="store-result-row__title">' + escapeHtml(item.title) + '</span>' +
-            '<span class="store-result-row__meta">' + escapeHtml([item.category, item.priceText].filter(Boolean).join(' · ')) + '</span>' +
-          '</span>' +
-          '<span class="gg-icon" aria-hidden="true">chevron_right</span>' +
-        '</button>';
+    function renderCardDots(node, total) {
+      if (!node) return;
+      if (!total || total < 2) {
+        node.hidden = true;
+        node.replaceChildren();
+        return;
+      }
+      var fragment = document.createDocumentFragment();
+      var dotIndex;
+      for (dotIndex = 0; dotIndex < total; dotIndex += 1) {
+        var dot = cloneTemplate('store-card-dot-template');
+        if (dotIndex === 0) dot.classList.add('is-active');
+        fragment.appendChild(dot);
+      }
+      node.hidden = false;
+      node.replaceChildren(fragment);
     }
-    function renderSavedRow(item, index) {
-      return '' +
-        '<div class="store-result-row-group">' +
-          renderResultRow(item, index, 'saved-preview') +
-          '<button class="store-result-row__remove" type="button" data-store-saved-remove-index="' + index + '" aria-label="' + escapeAttr(copy('removeSavedLabel') + ': ' + item.title) + '">' +
-            '<span class="gg-icon" aria-hidden="true">bookmark_remove</span>' +
-          '</button>' +
-        '</div>';
+    function renderCardNode(item, index) {
+      var node = cloneTemplate('store-card-template');
+      var button = node.querySelector('[data-store-open-preview]');
+      var img = node.querySelector('img');
+      var badge = node.querySelector('[data-store-card-badge]');
+      var price = node.querySelector('[data-store-card-price]');
+      var title = node.querySelector('[data-store-card-title]');
+      var dots = node.querySelector('[data-store-card-dots]');
+
+      node.dataset.storeCardIndex = String(index);
+      button.dataset.storeOpenPreview = String(index);
+      button.setAttribute('aria-label', 'Preview ' + item.title);
+
+      img.src = item.images[0] || PLACEHOLDER_IMAGE;
+      img.alt = item.title || '';
+
+      badge.textContent = item.badge || item.category || 'Curated';
+      price.textContent = item.priceText || 'Rp—';
+      title.textContent = item.title || 'Untitled product';
+
+      renderCardDots(dots, item.images.length);
+      return node;
+    }
+    function renderResultRowNode(item, index, action) {
+      var node = cloneTemplate('store-result-row-template');
+      var img = node.querySelector('img');
+      var title = node.querySelector('[data-store-result-title]');
+      var meta = node.querySelector('[data-store-result-meta]');
+
+      node.dataset.storeResultIndex = String(index);
+      if (action) node.setAttribute('data-store-result-action', action);
+      img.src = item.images[0] || PLACEHOLDER_IMAGE;
+      img.alt = item.title || '';
+      title.textContent = item.title || 'Untitled product';
+      meta.textContent = [item.category, item.priceText].filter(Boolean).join(' · ');
+
+      return node;
+    }
+    function renderSavedRowNode(item, index) {
+      var node = cloneTemplate('store-saved-row-template');
+      var row = node.querySelector('[data-store-result-index]');
+      var img = node.querySelector('img');
+      var title = node.querySelector('[data-store-result-title]');
+      var meta = node.querySelector('[data-store-result-meta]');
+      var removeButton = node.querySelector('[data-store-remove-saved]');
+
+      row.dataset.storeResultIndex = String(index);
+      row.setAttribute('data-store-result-action', 'saved-preview');
+      img.src = item.images[0] || PLACEHOLDER_IMAGE;
+      img.alt = item.title || '';
+      title.textContent = item.title || 'Untitled product';
+      meta.textContent = [item.category, item.priceText].filter(Boolean).join(' · ');
+      removeButton.dataset.storeRemoveSaved = String(index);
+      removeButton.setAttribute('aria-label', copy('removeSavedLabel') + ': ' + item.title);
+
+      return node;
+    }
+    function renderEmptyRowNode(message) {
+      var node = cloneTemplate('store-empty-row-template');
+      node.textContent = message;
+      return node;
     }
     function renderDiscoveryResults() {
       if (!discoveryResults) return;
       var rows = state.filtered.slice(0, 8);
-      discoveryResults.innerHTML = rows.length ? rows.map(function (item, index) { return renderResultRow(item, index, 'preview'); }).join('') : '<p class="store-result-row__empty">No matching products.</p>';
+      var fragment = document.createDocumentFragment();
+      if (rows.length) {
+        rows.forEach(function (item, index) {
+          fragment.appendChild(renderResultRowNode(item, index, 'preview'));
+        });
+      } else {
+        fragment.appendChild(renderEmptyRowNode('No matching products.'));
+      }
+      discoveryResults.replaceChildren(fragment);
     }
     function renderSavedResults() {
       if (!savedResults) return;
       var savedItems = (state.products || []).filter(function (item) { return isSaved(item); });
-      savedResults.innerHTML = savedItems.length ? savedItems.map(function (item) { return renderSavedRow(item, state.products.indexOf(item)); }).join('') : '<p class="store-result-row__empty">No saved picks yet. Open a product and tap Save.</p>';
+      var fragment = document.createDocumentFragment();
+      if (savedItems.length) {
+        savedItems.forEach(function (item) {
+          fragment.appendChild(renderSavedRowNode(item, state.products.indexOf(item)));
+        });
+      } else {
+        fragment.appendChild(renderEmptyRowNode('No saved picks yet. Open a product and tap Save.'));
+      }
+      savedResults.replaceChildren(fragment);
     }
     function renderCards() {
       if (!grid) return;
       var visible = state.filtered.slice(0, state.visibleLimit);
-      grid.innerHTML = visible.map(renderCard).join('');
+      var fragment = document.createDocumentFragment();
+      visible.forEach(function (item, index) {
+        fragment.appendChild(renderCardNode(item, index));
+      });
+      grid.replaceChildren(fragment);
       if (loadMore) loadMore.hidden = state.filtered.length <= state.visibleLimit;
     }
-    function renderCard(item, index) {
-      var dots = item.images.length > 1 ? '<span class="store-card__dots" aria-hidden="true">' + item.images.map(function (_, dotIndex) {
-        return '<span class="store-card__dot' + (dotIndex === 0 ? ' is-active' : '') + '"></span>';
-      }).join('') + '</span>' : '';
-      return '' +
-        '<article class="store-card" data-store-card-index="' + index + '">' +
-          '<button class="store-card__button" type="button" data-store-open-preview="' + index + '" aria-label="Preview ' + escapeHtml(item.title) + '">' +
-            '<div class="store-card__media">' +
-              '<img loading="lazy" decoding="async" src="' + escapeAttr(item.images[0] || PLACEHOLDER_IMAGE) + '" alt="' + escapeAttr(item.title) + '" />' +
-              '<span class="store-card__shade" aria-hidden="true"></span>' +
-              '<div class="store-card__content">' +
-                '<span class="store-card__badge">' + escapeHtml(item.badge || item.category) + '</span>' +
-                '<span class="store-card__price">' + escapeHtml(item.priceText) + '</span>' +
-                '<h2 class="store-card__title">' + escapeHtml(item.title) + '</h2>' + dots +
-              '</div>' +
-            '</div>' +
-          '</button>' +
-        '</article>';
-    }
-    function escapeHtml(value) {
-      return clean(value).replace(/[&<>"']/g, function (char) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]; });
-    }
-    function escapeAttr(value) { return escapeHtml(value); }
 
     function activeItem(index) { return state.filtered[index]; }
     function previewImageCount() {
@@ -1827,13 +2057,49 @@
       if (!preview.dots) return;
       if (!total || total < 2) {
         preview.dots.hidden = true;
-        preview.dots.innerHTML = '';
+        preview.dots.replaceChildren();
         return;
       }
+      var fragment = document.createDocumentFragment();
+      var index;
+      var button;
       preview.dots.hidden = false;
-      preview.dots.innerHTML = new Array(total).fill('').map(function (_, index) {
-        return '<button class="store-preview__dot" type="button" aria-label="' + escapeAttr(previewImageActionLabel(index)) + '" aria-pressed="' + (index === state.currentPreviewImageIndex ? 'true' : 'false') + '" data-store-preview-dot="' + index + '"></button>';
-      }).join('');
+      for (index = 0; index < total; index += 1) {
+        button = cloneTemplate('store-preview-dot-template');
+        button.dataset.storePreviewDot = String(index);
+        button.setAttribute('aria-label', previewImageActionLabel(index));
+        button.setAttribute('aria-pressed', index === state.currentPreviewImageIndex ? 'true' : 'false');
+        fragment.appendChild(button);
+      }
+      preview.dots.replaceChildren(fragment);
+    }
+    function renderPreviewSlides(images, title) {
+      if (!preview.carousel) return;
+      var fragment = document.createDocumentFragment();
+      images.forEach(function (src) {
+        var slide = cloneTemplate('store-preview-slide-template');
+        var img = slide.querySelector('img');
+        img.src = src;
+        img.alt = title || '';
+        fragment.appendChild(slide);
+      });
+      preview.carousel.replaceChildren(fragment);
+    }
+    function renderPreviewNotes(noteList) {
+      if (!preview.notes || !preview.notesList) return;
+      if (!noteList.length) {
+        preview.notes.hidden = true;
+        preview.notesList.replaceChildren();
+        return;
+      }
+      var fragment = document.createDocumentFragment();
+      noteList.forEach(function (note) {
+        var node = cloneTemplate('store-preview-note-template');
+        node.textContent = note;
+        fragment.appendChild(node);
+      });
+      preview.notes.hidden = false;
+      preview.notesList.replaceChildren(fragment);
     }
     function syncPreviewImageIndexFromScroll() {
       if (!preview.carousel) return;
@@ -1894,17 +2160,12 @@
       return lines.join('\n');
     }
     function fallbackCopyText(value) {
-      var area = document.createElement('textarea');
-      area.value = value;
-      area.setAttribute('readonly', '');
-      area.style.position = 'fixed';
-      area.style.top = '-9999px';
-      area.style.left = '-9999px';
-      document.body.appendChild(area);
-      area.select();
-      area.setSelectionRange(0, area.value.length);
+      if (!copyBuffer) return false;
+      copyBuffer.value = value;
+      copyBuffer.select();
+      copyBuffer.setSelectionRange(0, copyBuffer.value.length);
       try { return document.execCommand('copy'); } catch (error) { return false; }
-      finally { document.body.removeChild(area); }
+      finally { copyBuffer.value = ''; }
     }
     function writeClipboardText(value) {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') return navigator.clipboard.writeText(value);
@@ -1923,7 +2184,7 @@
     function showCopyFeedback() {
       clearCopyFeedbackTimer();
       setPreviewCopyState('copied');
-      showToast(copy('copyToast'));
+      showToast(copy('copyToast'), 'preview');
       state.copyFeedbackTimer = window.setTimeout(function () {
         state.copyFeedbackTimer = 0;
         setPreviewCopyState('idle');
@@ -1932,9 +2193,7 @@
     function fillPreview(item) {
       if (!item) return;
       var images = item.images && item.images.length ? item.images : [PLACEHOLDER_IMAGE];
-      preview.carousel.innerHTML = images.map(function (src) {
-        return '<figure class="store-preview__slide"><img src="' + escapeAttr(src) + '" alt="' + escapeAttr(item.title) + '" /></figure>';
-      }).join('');
+      renderPreviewSlides(images, item.title);
       state.currentPreviewItem = item;
       state.currentPreviewImageIndex = 0;
       clearCopyFeedbackTimer();
@@ -1956,12 +2215,9 @@
         link.hidden = !href;
       });
       var noteList = item.contents && item.contents.length ? item.contents : [];
-      preview.notes.hidden = !noteList.length;
-      preview.notesList.innerHTML = noteList.map(function (note) { return '<li>' + escapeHtml(note) + '</li>'; }).join('');
-      if (preview.toast) {
-        preview.toast.hidden = true;
-        preview.toast.textContent = '';
-      }
+      renderPreviewNotes(noteList);
+      clearToastTimer();
+      hideAllToasts();
       window.requestAnimationFrame(resetPreviewCarousel);
     }
 
@@ -1981,6 +2237,8 @@
       var config = getPanel(name);
       if (!config || !config.sheet || !config.panel) return;
       if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false });
+      clearToastTimer();
+      hideAllToasts();
       state.panelActive = name;
       state.lastFocus = trigger || document.activeElement;
       config.sheet.hidden = false;
@@ -2011,6 +2269,8 @@
       document.body.setAttribute('data-gg-panel-active', 'false');
       document.body.setAttribute('data-gg-scroll-lock', 'false');
       clearPreviewScrollSettleTimer();
+      clearToastTimer();
+      hideAllToasts();
       setPanelEnvironment(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
@@ -2093,7 +2353,7 @@
     function toggleSavedItem(item) {
       var nextSaved = !isSaved(item);
       setSavedForItem(item, nextSaved);
-      showToast(copy(nextSaved ? 'savedToast' : 'removedToast'));
+      showToast(copy(nextSaved ? 'savedToast' : 'removedToast'), 'preview');
       return nextSaved;
     }
     function beginDragSession(name, handle, event) {
@@ -2154,13 +2414,13 @@
       openPreviewItem(item, row);
     });
     if (savedResults) savedResults.addEventListener('click', function (event) {
-      var removeButton = event.target.closest('[data-store-saved-remove-index]');
+      var removeButton = event.target.closest('[data-store-remove-saved]');
       if (removeButton) {
-        var removeIndex = Number(removeButton.getAttribute('data-store-saved-remove-index'));
+        var removeIndex = Number(removeButton.getAttribute('data-store-remove-saved'));
         var removeItem = state.products[removeIndex];
         if (!removeItem) return;
         setSavedForItem(removeItem, false);
-        showToast(copy('removedToast'));
+        showToast(copy('removedToast'), 'saved');
         return;
       }
       var row = event.target.closest('[data-store-result-index]');
@@ -2179,7 +2439,7 @@
       var value = copyLinksText(state.currentPreviewItem);
       writeClipboardText(value).then(showCopyFeedback).catch(function () {
         if (fallbackCopyText(value)) showCopyFeedback();
-        else showToast(copy('copyFailToast'));
+        else showToast(copy('copyFailToast'), 'preview');
       });
     });
     if (preview.carousel) preview.carousel.addEventListener('scroll', schedulePreviewImageSync, { passive: true });
