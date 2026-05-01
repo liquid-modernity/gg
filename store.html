@@ -11,9 +11,14 @@
   <meta property="og:title" content="Yellow Cart · PakRPP" />
   <meta property="og:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
   <meta property="og:url" content="https://www.pakrpp.com/store" />
+  <meta property="og:site_name" content="PakRPP" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yellow Cart · PakRPP" />
+  <meta name="twitter:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" /></noscript>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -23,6 +28,7 @@
     "description": "Kurasi produk affiliate premium pilihan PakRPP."
   }
   </script>
+  <script type="application/ld+json" id="store-itemlist-jsonld"></script>
   <script>
     (function () {
       try {
@@ -307,12 +313,32 @@
       color: var(--gg-ink-soft);
       font: 650 12px/1.35 var(--gg-font-sans);
     }
+    .store-category-context {
+      display: grid;
+      gap: 6px;
+      padding: 14px 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 38%, transparent);
+    }
+    .store-category-context h2 {
+      margin: 0;
+      font: 760 16px/1.1 var(--gg-font-sans);
+      letter-spacing: -.04em;
+    }
+    .store-category-context p {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 520 13px/1.5 var(--gg-font-sans);
+    }
     .store-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0,1fr));
       gap: var(--store-card-gap);
       align-items: start;
     }
+    .store-grid--skeleton { pointer-events: none; }
+    .store-grid--skeleton .store-card--skeleton:nth-child(n+9) { display: none; }
     .store-card {
       min-width: 0;
       overflow: visible;
@@ -414,6 +440,56 @@
       width: 10px;
       background: rgba(255,255,255,.92);
     }
+    .store-card--skeleton .store-card__media {
+      aspect-ratio: var(--store-card-aspect);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)),
+        linear-gradient(135deg, rgba(32,26,28,.08), rgba(255,255,255,.18));
+      overflow: hidden;
+    }
+    .store-card--skeleton .store-card__media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    }
+    .store-card__skeleton-chip,
+    .store-card__skeleton-line,
+    .store-card__skeleton-dot {
+      display: block;
+      background: rgba(255,255,255,.26);
+    }
+    .store-card__skeleton-chip {
+      justify-self: center;
+      width: 72px;
+      height: 10px;
+      border-radius: 999px;
+    }
+    .store-card__skeleton-line {
+      justify-self: center;
+      height: 14px;
+      border-radius: 999px;
+    }
+    .store-card__skeleton-line--price { width: 92px; }
+    .store-card__skeleton-line--title { width: min(76%, 160px); }
+    .store-card__skeleton-line--title-secondary {
+      width: min(58%, 120px);
+      height: 11px;
+      opacity: .88;
+    }
+    .store-card__skeleton-dots {
+      justify-self: center;
+      display: inline-flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .store-card__skeleton-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      opacity: .72;
+    }
 
     .store-empty {
       display: grid;
@@ -453,6 +529,109 @@
     }
     .store-button--primary:hover, .store-button--primary:focus-visible { background: var(--gg-accent-hover); color: var(--gg-accent-contrast); }
     .store-button[aria-disabled='true'] { opacity: .48; pointer-events: none; }
+    .store-semantic-products {
+      display: grid;
+      gap: 14px;
+      padding: 16px 0 2px;
+    }
+    .store-semantic-products h2 {
+      margin: 0;
+      font: 760 clamp(20px, 5.5vw, 28px)/1 var(--gg-font-sans);
+      letter-spacing: -.05em;
+    }
+    .store-semantic-product-list {
+      display: grid;
+      gap: 10px;
+      min-height: 180px;
+      align-content: start;
+    }
+    .store-semantic-product {
+      display: grid;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 32%, transparent);
+      box-shadow: var(--gg-shadow-soft);
+    }
+    .store-semantic-product__head {
+      display: grid;
+      gap: 6px;
+    }
+    .store-semantic-product__category {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 760 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .store-semantic-product__title {
+      margin: 0;
+      font: 760 18px/1.1 var(--gg-font-sans);
+      letter-spacing: -.04em;
+    }
+    .store-semantic-product__summary {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 520 14px/1.55 var(--gg-font-sans);
+    }
+    .store-semantic-product__facts {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+    }
+    .store-semantic-product__fact {
+      display: grid;
+      gap: 2px;
+    }
+    .store-semantic-product__fact[hidden] { display: none !important; }
+    .store-semantic-product__label {
+      color: var(--gg-accent-soft);
+      font: 760 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .store-semantic-product__value {
+      color: var(--gg-ink);
+      font: 520 13px/1.5 var(--gg-font-sans);
+    }
+    .store-semantic-product__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .store-semantic-product__tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 44%, transparent);
+      color: var(--gg-accent-soft);
+      font: 700 11px/1.2 var(--gg-font-sans);
+    }
+    .store-semantic-product__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .store-semantic-product__links .store-button {
+      min-height: 36px;
+      padding-inline: 14px;
+      font-size: 12px;
+    }
+    .store-semantic-product__links .store-button--subtle {
+      background: transparent;
+      color: var(--gg-accent-soft);
+    }
+    .store-semantic-product__empty {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 600 13px/1.5 var(--gg-font-sans);
+      text-align: center;
+      padding: 14px 0 2px;
+    }
 
     .store-contact {
       min-height: 100svh;
@@ -979,6 +1158,8 @@
     @media (min-width: 720px) {
       :root { --store-max: 920px; --store-card-gap: 12px; }
       .store-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .store-grid--skeleton .store-card--skeleton:nth-child(n+9) { display: block; }
+      .store-grid--skeleton .store-card--skeleton:nth-child(n+13) { display: none; }
       .store-main { gap: 16px; }
       .store-preview__body { padding-inline: 22px; }
       .store-preview__intro { padding-inline: 12px; }
@@ -998,6 +1179,15 @@
         transition-duration: .001ms !important;
         scroll-behavior: auto !important;
       }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .store-card--skeleton .store-card__media::after {
+        animation: store-skeleton-shimmer 1.45s linear infinite;
+      }
+    }
+    @keyframes store-skeleton-shimmer {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
     }
     @media (forced-colors: active) {
       a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid CanvasText !important; }
@@ -1032,7 +1222,27 @@
         <span id="store-source">Feed: Store</span>
       </div>
 
-      <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite"></section>
+      <section class="store-category-context" id="store-category-context" aria-live="polite">
+        <h2 id="store-category-title">Semua Kurasi</h2>
+        <p id="store-category-description">Kumpulan produk pilihan Yellow Cart untuk gaya hidup, kerja, dan kebutuhan harian yang dikurasi secara editorial.</p>
+      </section>
+
+      <section class="store-grid store-grid--skeleton" id="store-grid-skeleton" aria-hidden="true">
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+        <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
+      </section>
+
+      <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite" hidden></section>
 
       <section class="store-empty" id="store-empty" hidden>
         <h2 id="store-empty-title" data-copy="curatedTitle">Belum ada produk yang ditampilkan.</h2>
@@ -1043,6 +1253,13 @@
       <div class="store-loadmore">
         <button class="store-button" id="store-loadmore" type="button" data-copy="loadMoreLabel" hidden>Load more</button>
       </div>
+
+      <section class="store-semantic-products" id="store-semantic-products" aria-labelledby="store-semantic-title">
+        <h2 id="store-semantic-title" data-copy="semanticProductsTitle">Yellow Cart product notes</h2>
+        <div class="store-semantic-product-list" id="store-semantic-product-list">
+          <p class="store-semantic-product__empty" data-copy="semanticEmptyLabel">Product notes will appear here after the curation loads.</p>
+        </div>
+      </section>
 
       <section id="contact" class="store-contact" aria-labelledby="store-contact-title">
         <div class="store-contact__inner">
@@ -1334,6 +1551,39 @@
     <li data-store-preview-note></li>
   </template>
 
+  <template id="store-semantic-product-template">
+    <article class="store-semantic-product" data-store-semantic-product>
+      <div class="store-semantic-product__head">
+        <p class="store-semantic-product__category" data-store-semantic-category></p>
+        <h3 class="store-semantic-product__title" data-store-semantic-title></h3>
+        <p class="store-semantic-product__summary" data-store-semantic-summary></p>
+      </div>
+      <dl class="store-semantic-product__facts">
+        <div class="store-semantic-product__fact" data-store-semantic-why hidden>
+          <dt class="store-semantic-product__label" data-copy="semanticWhyPickedLabel">Why picked</dt>
+          <dd class="store-semantic-product__value" data-store-semantic-why-value></dd>
+        </div>
+        <div class="store-semantic-product__fact" data-store-semantic-best-for hidden>
+          <dt class="store-semantic-product__label" data-copy="semanticBestForLabel">Best for</dt>
+          <dd class="store-semantic-product__value" data-store-semantic-best-for-value></dd>
+        </div>
+        <div class="store-semantic-product__fact" data-store-semantic-caveat hidden>
+          <dt class="store-semantic-product__label" data-copy="semanticCaveatLabel">Caveat</dt>
+          <dd class="store-semantic-product__value" data-store-semantic-caveat-value></dd>
+        </div>
+      </dl>
+      <div class="store-semantic-product__tags" data-store-semantic-tags hidden></div>
+      <div class="store-semantic-product__links">
+        <a class="store-button store-button--subtle" data-store-semantic-detail-link href="/">
+          <span data-copy="semanticEditorialDetailLabel">Editorial detail</span>
+        </a>
+        <a class="store-button" data-store-semantic-store-link data-store-open-slug href="/store">
+          <span data-copy="semanticStoreLinkLabel">Open in Store</span>
+        </a>
+      </div>
+    </article>
+  </template>
+
   <script>
   (function () {
     'use strict';
@@ -1472,6 +1722,13 @@
         previewMetaFallback: 'PakRPP · Pilihan kurasi',
         previewSummaryFallback: 'Produk kurasi Yellow Cart.',
         copyLinksAttribution: 'Kurasi via Yellow Cart · PakRPP',
+        semanticProductsTitle: 'Catatan produk Yellow Cart',
+        semanticWhyPickedLabel: 'Kenapa dipilih',
+        semanticBestForLabel: 'Cocok untuk',
+        semanticCaveatLabel: 'Catatan',
+        semanticEditorialDetailLabel: 'Detail editorial',
+        semanticStoreLinkLabel: 'Buka di Store',
+        semanticEmptyLabel: 'Ringkasan produk akan muncul di sini setelah kurasi dimuat.',
         filterAllLabel: 'Semua',
         filterFashionLabel: 'Fashion',
         filterSkincareLabel: 'Skincare',
@@ -1566,6 +1823,13 @@
         previewMetaFallback: 'PakRPP · Curated pick',
         previewSummaryFallback: 'Curated Yellow Cart product.',
         copyLinksAttribution: 'Curated via Yellow Cart · PakRPP',
+        semanticProductsTitle: 'Yellow Cart product notes',
+        semanticWhyPickedLabel: 'Why picked',
+        semanticBestForLabel: 'Best for',
+        semanticCaveatLabel: 'Caveat',
+        semanticEditorialDetailLabel: 'Editorial detail',
+        semanticStoreLinkLabel: 'Open in Store',
+        semanticEmptyLabel: 'Product notes will appear here after the curation loads.',
         filterAllLabel: 'All',
         filterFashionLabel: 'Fashion',
         filterSkincareLabel: 'Skincare',
@@ -1577,29 +1841,110 @@
       }
     };
 
-    var PUBLIC_FILTERS = ['all', 'fashion', 'skincare', 'workspace', 'tech', 'etc'];
-    var STORE_FILTER_ICON_MAP = {
-      all: 'filter_list',
-      fashion: 'checkroom',
-      skincare: 'spa',
-      workspace: 'desktop_windows',
-      tech: 'devices',
-      etc: 'category'
+    var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
+    var STORE_CANONICAL_PATH = '/store';
+    var STORE_CATEGORY_CONFIG = {
+      all: {
+        labelKey: 'filterAllLabel',
+        icon: 'filter_list',
+        title: {
+          id: 'Semua Kurasi',
+          en: 'All Picks'
+        },
+        description: {
+          id: 'Kumpulan produk pilihan Yellow Cart untuk gaya hidup, kerja, dan kebutuhan harian yang dikurasi secara editorial.',
+          en: 'A curated Yellow Cart selection for lifestyle, work, and everyday use.'
+        },
+        keywords: ['yellow cart', 'kurasi produk', 'affiliate store']
+      },
+      fashion: {
+        labelKey: 'filterFashionLabel',
+        icon: 'checkroom',
+        title: {
+          id: 'Fashion',
+          en: 'Fashion'
+        },
+        description: {
+          id: 'Pilihan fashion dengan tampilan bersih, netral, dan mudah dipadukan untuk kerja, perjalanan, dan gaya harian.',
+          en: 'Clean, neutral, and wearable fashion picks for work, travel, and daily style.'
+        },
+        keywords: ['fashion minimalis', 'daily wear', 'workwear']
+      },
+      skincare: {
+        labelKey: 'filterSkincareLabel',
+        icon: 'spa',
+        title: {
+          id: 'Skincare',
+          en: 'Skincare'
+        },
+        description: {
+          id: 'Kurasi skincare sederhana untuk rutinitas yang realistis, termasuk kebutuhan dasar kulit di iklim tropis.',
+          en: 'Simple skincare picks for realistic routines, including basic needs in tropical climates.'
+        },
+        keywords: ['skincare tropis', 'skin barrier', 'daily skincare']
+      },
+      workspace: {
+        labelKey: 'filterWorkspaceLabel',
+        icon: 'desktop_windows',
+        title: {
+          id: 'Workspace',
+          en: 'Workspace'
+        },
+        description: {
+          id: 'Produk untuk setup kerja remote, meja kecil, dan ruang kerja yang rapi tanpa terasa berlebihan.',
+          en: 'Products for remote work setups, small desks, and calm workspaces.'
+        },
+        keywords: ['remote work setup', 'workspace minimalis', 'WFH']
+      },
+      tech: {
+        labelKey: 'filterTechLabel',
+        icon: 'devices',
+        title: {
+          id: 'Tech',
+          en: 'Tech'
+        },
+        description: {
+          id: 'Perangkat dan aksesori teknologi yang dipilih untuk fungsi, kerapian, dan kemudahan penggunaan harian.',
+          en: 'Tech devices and accessories selected for function, neatness, and everyday usability.'
+        },
+        keywords: ['tech accessories', 'minimal setup', 'daily tech']
+      },
+      etc: {
+        labelKey: 'filterEtcLabel',
+        icon: 'category',
+        title: {
+          id: 'Lainnya',
+          en: 'Other'
+        },
+        description: {
+          id: 'Produk lintas kategori yang tetap relevan dengan prinsip kurasi Yellow Cart.',
+          en: 'Cross-category products that still fit the Yellow Cart curation logic.'
+        },
+        keywords: ['daily essentials', 'curated picks']
+      }
     };
+    var PUBLIC_FILTERS = Object.keys(STORE_CATEGORY_CONFIG);
+    var STORE_FILTER_ICON_MAP = Object.keys(STORE_CATEGORY_CONFIG).reduce(function (out, key) {
+      out[key] = STORE_CATEGORY_CONFIG[key].icon;
+      return out;
+    }, {});
     var SYSTEM_LABELS = ['store', 'yellowcard', 'yellowcart'];
     var MARKET = ['shopee', 'tiktok', 'tokopedia', 'official'];
-    var VISIBLE_INITIAL = 24;
-    var VISIBLE_STEP = 12;
     var PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#d8d0ce"/><stop offset="1" stop-color="#817674"/></linearGradient></defs><rect width="800" height="1000" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui" font-size="42" fill="#fff" fill-opacity=".78">Yellow Cart</text></svg>');
 
     var app = document.getElementById('store-app');
     var grid = document.getElementById('store-grid');
+    var skeletonGrid = document.getElementById('store-grid-skeleton');
     var empty = document.getElementById('store-empty');
     var emptyTitle = document.getElementById('store-empty-title');
     var emptyBody = document.getElementById('store-empty-body');
     var count = document.getElementById('store-count');
     var source = document.getElementById('store-source');
+    var categoryContext = document.getElementById('store-category-context');
+    var categoryTitle = document.getElementById('store-category-title');
+    var categoryDescription = document.getElementById('store-category-description');
     var loadMore = document.getElementById('store-loadmore');
+    var semanticList = document.getElementById('store-semantic-product-list');
     var discoverySearch = document.getElementById('store-discovery-search');
     var previewSheet = document.getElementById('store-preview-sheet');
     var previewPanel = document.getElementById('store-preview-panel');
@@ -1626,6 +1971,7 @@
     var savedToast = document.getElementById('store-saved-toast');
     var globalToast = document.getElementById('store-toast');
     var copyBuffer = document.getElementById('store-copy-buffer');
+    var itemListJsonLd = document.getElementById('store-itemlist-jsonld');
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
@@ -1668,12 +2014,14 @@
       currentPreviewImageIndex: 0,
       currentProductKey: '',
       saved: readSaved(),
-      visibleLimit: VISIBLE_INITIAL,
+      visibleLimit: initialVisibleLimit(),
+      hasLoadedMore: false,
       panelActive: '',
       lastFocus: null,
       locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
       feedSource: 'Store',
+      storeDeepLinkSlug: '',
       dockLastScrollTop: 0,
       dockDirectionStart: 0,
       dockSyncFrame: 0,
@@ -1682,7 +2030,8 @@
       copyFeedbackTimer: 0,
       toastTimer: 0,
       activeToastNode: null,
-      dragSession: null
+      dragSession: null,
+      resizeSyncFrame: 0
     };
 
     if (!app || !grid) return;
@@ -1710,6 +2059,18 @@
     function itemKey(item) { return item && (item.url || item.title) ? String(item.url || item.title) : ''; }
     function isSaved(item) { var key = typeof item === 'string' ? item : itemKey(item); return !!key && state.saved.indexOf(key) > -1; }
     function clean(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
+    function cleanTextList(value) { return arr(value).map(clean).filter(Boolean); }
+    function cleanFirst(value) {
+      if (Array.isArray(value)) return clean(value[0]);
+      if (value && typeof value === 'object') return clean(value.name || value.label || value.value || value.title || '');
+      return clean(value);
+    }
+    function slugify(value) {
+      var base = clean(value).toLowerCase();
+      if (!base) return '';
+      if (typeof base.normalize === 'function') base = base.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+      return base.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
     function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
     function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
     function lower(value) { return clean(value).toLowerCase(); }
@@ -1717,10 +2078,20 @@
     function setNodeText(node, value) { if (node) node.textContent = value; }
     function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
     function productUnit() { return copy('productUnit'); }
+    function initialVisibleLimit() {
+      return window.matchMedia && window.matchMedia('(min-width: 720px)').matches ? 12 : 8;
+    }
+    function visibleStepLimit() {
+      return window.matchMedia && window.matchMedia('(min-width: 720px)').matches ? 12 : 8;
+    }
     function prefersReducedMotion() {
       return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
     function smoothBehavior() { return prefersReducedMotion() ? 'auto' : 'smooth'; }
+    function setSkeletonVisible(visible) {
+      if (skeletonGrid) skeletonGrid.hidden = !visible;
+      if (grid) grid.hidden = visible;
+    }
     function isStorePath() {
       return window.location.pathname.replace(/\/+$/, '') === '/store';
     }
@@ -1731,17 +2102,102 @@
       return !!field;
     }
     function filterCopyKey(filter) {
-      return ({
-        all: 'filterAllLabel',
-        fashion: 'filterFashionLabel',
-        skincare: 'filterSkincareLabel',
-        workspace: 'filterWorkspaceLabel',
-        tech: 'filterTechLabel',
-        etc: 'filterEtcLabel'
-      })[filter] || 'filterAllLabel';
+      var config = STORE_CATEGORY_CONFIG[filter] || STORE_CATEGORY_CONFIG.all;
+      return config.labelKey || 'filterAllLabel';
     }
     function currentFilterLabel() {
       return copy(filterCopyKey(state.filter));
+    }
+    function categoryLocaleValue(field, filter) {
+      var config = STORE_CATEGORY_CONFIG[filter] || STORE_CATEGORY_CONFIG.all;
+      var locale = normalizeLocale(state.locale);
+      return clean(config && config[field] && config[field][locale] ? config[field][locale] : (config && config[field] && config[field].id) || '');
+    }
+    function updateCategoryContext() {
+      if (!categoryContext) return;
+      setNodeText(categoryTitle, categoryLocaleValue('title', state.filter));
+      setNodeText(categoryDescription, categoryLocaleValue('description', state.filter));
+    }
+    function absoluteUrl(value) {
+      var raw = clean(value);
+      var url;
+      if (!raw) return '';
+      if (raw === '#') return '';
+      try {
+        url = new URL(raw, STORE_CANONICAL_ORIGIN);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+        return url.toString();
+      }
+      catch (error) { return ''; }
+    }
+    function parsePriceValue(value) {
+      var raw;
+      var compact;
+      var parsed;
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      raw = clean(value);
+      if (!raw) return 0;
+      compact = lower(raw).replace(/[^0-9,.\-]/g, '');
+      if (!compact) return 0;
+      if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(compact)) compact = compact.replace(/\./g, '').replace(',', '.');
+      if (compact.indexOf(',') > -1 && compact.indexOf('.') > -1) compact = compact.replace(/\./g, '').replace(',', '.');
+      else if (compact.indexOf(',') > -1) compact = compact.replace(',', '.');
+      parsed = parseFloat(compact);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    function detectPriceCurrency(priceText, explicitCurrency) {
+      var currency = clean(explicitCurrency).toUpperCase();
+      var raw = lower(priceText);
+      if (currency) return currency;
+      if (raw.indexOf('rp') > -1 || raw.indexOf('idr') > -1) return 'IDR';
+      return '';
+    }
+    function storeRelativeUrl(slug) {
+      return slug ? (STORE_CANONICAL_PATH + '?item=' + encodeURIComponent(slug)) : STORE_CANONICAL_PATH;
+    }
+    function storeAbsoluteUrl(slug) {
+      return STORE_CANONICAL_ORIGIN + storeRelativeUrl(slug);
+    }
+    function productStoreUrl(item) {
+      return clean(item && item.storeUrl) || storeRelativeUrl(item && item.slug);
+    }
+    function productStoreAbsoluteUrl(item) {
+      return absoluteUrl(productStoreUrl(item)) || storeAbsoluteUrl(item && item.slug);
+    }
+    function canonicalProductUrl(item) {
+      return absoluteUrl(item && (item.canonicalUrl || item.url));
+    }
+    function requestedItemSlug() {
+      var search;
+      var querySlug = '';
+      var hash = clean((window.location.hash || '').replace(/^#/, ''));
+      try { search = new URLSearchParams(window.location.search || ''); }
+      catch (error) { search = null; }
+      if (search) querySlug = slugify(search.get('item') || '');
+      if (querySlug) return querySlug;
+      return /^item-/.test(hash) ? slugify(hash.slice(5)) : '';
+    }
+    function updateHistoryUrl(url) {
+      if (!isStorePath()) return;
+      try { history.replaceState(null, '', url); } catch (error) {}
+    }
+    function syncPreviewUrl(item) {
+      if (!item || !item.slug) return;
+      state.storeDeepLinkSlug = item.slug;
+      updateHistoryUrl(storeRelativeUrl(item.slug));
+    }
+    function clearPreviewUrl() {
+      var next;
+      if (!isStorePath()) return;
+      try {
+        next = new URL(window.location.href);
+        next.searchParams.delete('item');
+        if (/^#item-/.test(next.hash || '')) next.hash = '';
+        updateHistoryUrl(next.pathname + next.search + next.hash);
+      } catch (error) {
+        updateHistoryUrl(STORE_CANONICAL_PATH);
+      }
+      state.storeDeepLinkSlug = '';
     }
     function previewImageActionLabel(index) { return copy('showImageLabel') + ' ' + (index + 1); }
     function previewCopyLabel() { return copy('copyLinksLabel'); }
@@ -1760,6 +2216,74 @@
     }
     function savedEmptyLabel() {
       return copy('savedEmptyTitle') + ' ' + copy('savedEmptyBody');
+    }
+    function semanticSummaryText(item) {
+      return clean(item && (item.verdict || item.summary) ? (item.verdict || item.summary) : '') || previewSummaryText(item);
+    }
+    function semanticTags(item) {
+      return cleanTextList(item && item.tags).slice(0, 6);
+    }
+    function productSearchHaystack(item) {
+      return [
+        item.title,
+        item.category,
+        item.summary,
+        item.verdict,
+        item.whyPicked,
+        item.bestFor,
+        item.caveat,
+        item.useCase,
+        item.geoContext,
+        item.priceText,
+        item.labels.join(' '),
+        (item.tags || []).join(' '),
+        (item.contents || []).join(' ')
+      ].join(' ').toLowerCase();
+    }
+    function findItemBySlug(slug) {
+      var expected = slugify(slug);
+      var index;
+      if (!expected) return null;
+      for (index = 0; index < state.products.length; index += 1) {
+        if (slugify(state.products[index].slug) === expected) return state.products[index];
+      }
+      return null;
+    }
+    function updateItemListJsonLd(items) {
+      var list = (items || []).map(function (item, index) {
+        var product = {
+          '@type': 'Product',
+          name: displayProductTitle(item),
+          description: semanticSummaryText(item)
+        };
+        var offerPrice = item && item.price ? Number(item.price) : 0;
+        var offerCurrency = clean(item && item.priceCurrency).toUpperCase();
+        var image = absoluteUrl(item && item.images && item.images[0]);
+        if (image) product.image = image;
+        if (item && item.brand) product.brand = { '@type': 'Brand', name: item.brand };
+        if (item && item.category) product.category = item.category;
+        if (offerPrice > 0 && offerCurrency) {
+          product.offers = {
+            '@type': 'Offer',
+            price: String(offerPrice),
+            priceCurrency: offerCurrency
+          };
+        }
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          url: canonicalProductUrl(item) || productStoreAbsoluteUrl(item),
+          item: product
+        };
+      });
+      if (!itemListJsonLd) return;
+      itemListJsonLd.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Yellow Cart',
+        url: STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH,
+        itemListElement: list
+      });
     }
     function clearToastTimer() {
       if (!state.toastTimer) return;
@@ -1957,32 +2481,65 @@
       out.summary = clean(doc.body ? doc.body.textContent : '').slice(0, 220);
       return out;
     }
+    function deriveSlug(data, entry, fallbackTitle) {
+      var entryUrl = altUrl(entry);
+      var fromUrl = '';
+      try { fromUrl = entryUrl ? new URL(entryUrl).pathname.split('/').filter(Boolean).pop() : ''; }
+      catch (error) { fromUrl = ''; }
+      return slugify(data.slug || data.handle || data.storeSlug || fromUrl || fallbackTitle || entryUrl || 'product');
+    }
     function normalize(entry) {
       var html = text(entry.content) || text(entry.summary);
       var parsed = parseContent(html);
       var data = parsed.data || {};
       var labs = labels(entry);
       var publicLabs = publicLabels(labs);
+      var title = clean(data.name || data.productName || text(entry.title) || '');
       var category = clean(data.category || publicLabs[0] || '');
       var images = arr(data.images || data.gallery || data.image || parsed.images).map(clean).filter(Boolean).slice(0, 8);
       var dataLinks = data.links || {};
+      var canonicalUrl = absoluteUrl(data.canonicalUrl || data.url || altUrl(entry));
+      var slug = deriveSlug(data, entry, title);
+      var priceText = clean(data.priceText || data.priceLabel || data.price || 'Rp—');
+      var price = parsePriceValue(data.price) || priceNumber(priceText);
+      var priceCurrency = detectPriceCurrency(priceText, data.priceCurrency || data.currency);
+      var notes = cleanTextList(data.notes || data.contents || data.sections || parsed.contents).slice(0, 6);
+      var tags = cleanTextList(data.tags || data.keywords || data.labels || data.topics);
       var linksOut = {};
       MARKET.forEach(function (key) { linksOut[key] = marketplaceHref(dataLinks[key], key) || marketplaceHref(parsed.links[key], key) || ''; });
       return {
-        id: altUrl(entry),
-        title: clean(data.name || data.productName || text(entry.title) || ''),
+        id: canonicalUrl || altUrl(entry),
+        slug: slug,
+        title: title,
         url: altUrl(entry),
+        canonicalUrl: canonicalUrl,
+        storeUrl: clean(data.storeUrl) || storeRelativeUrl(slug),
         labels: labs,
         category: category,
         filter: publicFilter(category),
         badge: clean(arr(data.badges)[0] || category || ''),
         summary: clean(data.summary || data.tagline || parsed.summary || ''),
-        priceText: clean(data.priceText || data.price || 'Rp—'),
+        verdict: clean(data.verdict || data.takeaway || ''),
+        whyPicked: clean(data.whyPicked || data.why || data.reason || ''),
+        bestFor: clean(data.bestFor || data.best_for || data.audience || ''),
+        caveat: clean(data.caveat || data.consider || data.warning || ''),
+        material: clean(data.material || ''),
+        useCase: clean(data.useCase || data.use_case || ''),
+        geoContext: clean(data.geoContext || data.geo || data.locationContext || ''),
+        brand: cleanFirst(data.brand),
+        availability: clean(data.availability || ''),
+        condition: clean(data.condition || data.itemCondition || ''),
+        tags: tags,
+        priceText: priceText,
+        price: price > 0 ? price : 0,
+        priceCurrency: priceCurrency,
         images: images.length ? images : [PLACEHOLDER_IMAGE],
         links: linksOut,
-        contents: arr(data.contents || data.sections || data.notes || parsed.contents).map(clean).filter(Boolean).slice(0, 4),
+        contents: notes,
         published: dateLabel(text(entry.published)),
-        updated: dateLabel(text(entry.updated))
+        updated: dateLabel(text(entry.updated)),
+        datePublished: clean(data.datePublished || text(entry.published)),
+        dateModified: clean(data.dateModified || text(entry.updated))
       };
     }
 
@@ -2002,17 +2559,24 @@
     }
     function loadProducts() {
       app.setAttribute('data-store-state', 'loading');
+      setSkeletonVisible(true);
       setNodeText(count, copy('countLoading'));
       setNodeText(source, copy('feedStore'));
       empty.hidden = true;
       fetchFeed('primary').catch(function () { return fetchFeed('legacy'); }).then(function (entries) {
         state.products = entries.map(normalize).filter(Boolean);
-        state.visibleLimit = VISIBLE_INITIAL;
+        state.visibleLimit = initialVisibleLimit();
+        state.hasLoadedMore = false;
         applyFilters();
+        syncRequestedPreview();
       }).catch(function () {
         state.products = [];
         state.filtered = [];
+        setSkeletonVisible(false);
         renderCards();
+        renderSemanticProducts();
+        updateCategoryContext();
+        updateItemListJsonLd([]);
         app.setAttribute('data-store-state', 'error');
         setNodeText(emptyTitle, copy('curatedTitle'));
         setNodeText(emptyBody, copy('curatedBody'));
@@ -2032,7 +2596,7 @@
       return isK ? num * 1000 : num;
     }
     function matchIntent(item, intent) {
-      var hay = [item.title, item.category, item.summary, item.badge, item.priceText, item.labels.join(' '), (item.contents || []).join(' ')].join(' ').toLowerCase();
+      var hay = productSearchHaystack(item);
       if (intent === 'featured') return hay.indexOf('featured') > -1 || hay.indexOf('curated') > -1 || hay.indexOf('pilihan') > -1;
       if (intent === 'under500') return priceNumber(item.priceText) > 0 && priceNumber(item.priceText) <= 500000;
       if (intent === 'latest') return true;
@@ -2041,7 +2605,7 @@
     function applyFilters() {
       var q = lower(state.query);
       state.filtered = state.products.filter(function (item) {
-        var hay = [item.title, item.category, item.summary, item.priceText, item.labels.join(' ')].join(' ').toLowerCase();
+        var hay = productSearchHaystack(item);
         var matchesQuery = !q || hay.indexOf(q) !== -1;
         var matchesFilter = state.filter === 'all' || item.filter === state.filter || lower(item.category) === state.filter;
         var matchesIntent = !state.intent || matchIntent(item, state.intent);
@@ -2049,8 +2613,11 @@
       });
       if (state.intent === 'latest') state.filtered = state.filtered.slice().sort(function (a, b) { return String(b.published || '').localeCompare(String(a.published || '')); });
       renderCards();
+      renderSemanticProducts();
       renderDiscoveryResults();
       renderSavedResults();
+      updateCategoryContext();
+      updateItemListJsonLd(state.filtered);
       app.setAttribute('data-store-state', state.filtered.length ? 'ready' : 'empty');
       empty.hidden = !!state.filtered.length;
       if (!state.filtered.length) {
@@ -2096,6 +2663,14 @@
       node.hidden = false;
       node.replaceChildren(fragment);
     }
+    function setCardImagePriority(img, index) {
+      var eagerCount = window.matchMedia('(min-width: 720px)').matches ? 4 : 3;
+      if (!img) return;
+      img.loading = index < eagerCount ? 'eager' : 'lazy';
+      img.setAttribute('loading', img.loading);
+      img.setAttribute('fetchpriority', index < 2 ? 'high' : 'low');
+      img.decoding = 'async';
+    }
     function renderCardNode(item, index) {
       var node = cloneTemplate('store-card-template');
       var button = node.querySelector('[data-store-open-preview]');
@@ -2112,6 +2687,7 @@
 
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
       img.alt = displayTitle;
+      setCardImagePriority(img, index);
 
       badge.textContent = displayProductBadge(item);
       price.textContent = item.priceText || 'Rp—';
@@ -2189,10 +2765,77 @@
       }
       savedResults.replaceChildren(fragment);
     }
+    function toggleSemanticFact(node, valueNode, value) {
+      if (!node || !valueNode) return;
+      if (clean(value)) {
+        node.hidden = false;
+        valueNode.textContent = clean(value);
+      } else {
+        node.hidden = true;
+        valueNode.textContent = '';
+      }
+    }
+    function renderSemanticProducts() {
+      var items = state.filtered.slice();
+      var fragment = document.createDocumentFragment();
+      if (!semanticList) return;
+      if (!items.length) {
+        var emptyNode = document.createElement('p');
+        emptyNode.className = 'store-semantic-product__empty';
+        emptyNode.textContent = copy('semanticEmptyLabel');
+        fragment.appendChild(emptyNode);
+        semanticList.replaceChildren(fragment);
+        return;
+      }
+      items.forEach(function (item) {
+        var node = cloneTemplate('store-semantic-product-template');
+        var categoryNode = node.querySelector('[data-store-semantic-category]');
+        var titleNode = node.querySelector('[data-store-semantic-title]');
+        var summaryNode = node.querySelector('[data-store-semantic-summary]');
+        var whyNode = node.querySelector('[data-store-semantic-why]');
+        var whyValue = node.querySelector('[data-store-semantic-why-value]');
+        var bestForNode = node.querySelector('[data-store-semantic-best-for]');
+        var bestForValue = node.querySelector('[data-store-semantic-best-for-value]');
+        var caveatNode = node.querySelector('[data-store-semantic-caveat]');
+        var caveatValue = node.querySelector('[data-store-semantic-caveat-value]');
+        var tagsNode = node.querySelector('[data-store-semantic-tags]');
+        var detailLink = node.querySelector('[data-store-semantic-detail-link]');
+        var storeLink = node.querySelector('[data-store-semantic-store-link]');
+        var tags = semanticTags(item);
+
+        setNodeText(categoryNode, item.category || currentFilterLabel());
+        setNodeText(titleNode, displayProductTitle(item));
+        setNodeText(summaryNode, semanticSummaryText(item));
+        toggleSemanticFact(whyNode, whyValue, item.whyPicked);
+        toggleSemanticFact(bestForNode, bestForValue, item.bestFor || item.useCase || item.geoContext);
+        toggleSemanticFact(caveatNode, caveatValue, item.caveat);
+
+        if (detailLink) detailLink.href = canonicalProductUrl(item) || STORE_CANONICAL_PATH;
+        if (storeLink) {
+          storeLink.href = productStoreUrl(item);
+          storeLink.setAttribute('data-store-open-slug', item.slug || '');
+        }
+        if (tagsNode) {
+          tagsNode.replaceChildren();
+          if (tags.length) {
+            tagsNode.hidden = false;
+            tags.forEach(function (tag) {
+              var tagNode = document.createElement('span');
+              tagNode.className = 'store-semantic-product__tag';
+              tagNode.textContent = tag;
+              tagsNode.appendChild(tagNode);
+            });
+          } else tagsNode.hidden = true;
+        }
+        fragment.appendChild(node);
+      });
+      semanticList.replaceChildren(fragment);
+    }
     function renderCards() {
       if (!grid) return;
       var visible = state.filtered.slice(0, state.visibleLimit);
       var fragment = document.createDocumentFragment();
+      setSkeletonVisible(false);
       visible.forEach(function (item, index) {
         fragment.appendChild(renderCardNode(item, index));
       });
@@ -2306,6 +2949,7 @@
     }
     function copyLinksText(item) {
       var lines = [displayProductTitle(item), copy('copyLinksAttribution')];
+      if (item && item.slug) lines.push('', 'Store:', productStoreAbsoluteUrl(item));
       [
         ['shopee', 'Shopee'],
         ['tokopedia', 'Tokopedia'],
@@ -2378,6 +3022,16 @@
       hideAllToasts();
       window.requestAnimationFrame(resetPreviewCarousel);
     }
+    function syncRequestedPreview() {
+      var slug = requestedItemSlug();
+      var item = findItemBySlug(slug);
+      if (!slug || !item) return;
+      if (state.panelActive === 'preview' && state.currentPreviewItem && slugify(state.currentPreviewItem.slug) === slug) {
+        syncPreviewUrl(item);
+        return;
+      }
+      openPreviewItem(item, document.querySelector('[data-store-open-slug="' + slug + '"]') || document.querySelector('[data-store-open-preview="' + state.filtered.indexOf(item) + '"]'));
+    }
     function refreshPreviewLocale() {
       if (!state.currentPreviewItem) return;
       var item = state.currentPreviewItem;
@@ -2397,11 +3051,14 @@
     function refreshLocaleUI() {
       setCopy();
       renderCards();
+      renderSemanticProducts();
       renderDiscoveryResults();
       renderSavedResults();
       updateCounts();
       updateChipState();
       updateFilterPeek();
+      updateCategoryContext();
+      updateItemListJsonLd(state.filtered);
       refreshPreviewLocale();
     }
 
@@ -2442,7 +3099,8 @@
       });
     }
     function closePanel(name, options) {
-      var config = getPanel(name || state.panelActive);
+      var panelName = name || state.panelActive;
+      var config = getPanel(panelName);
       if (!config || !config.sheet) return;
       config.sheet.setAttribute('data-gg-state', 'closed');
       config.sheet.setAttribute('aria-hidden', 'true');
@@ -2455,6 +3113,7 @@
       clearPreviewScrollSettleTimer();
       clearToastTimer();
       hideAllToasts();
+      if (panelName === 'preview') clearPreviewUrl();
       setPanelEnvironment(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
@@ -2496,17 +3155,33 @@
     function scrollToStoreTop() {
       scrollToStoreTarget('store-top', '/store');
     }
+    function syncResponsiveVisibleLimit() {
+      var next = initialVisibleLimit();
+      if (state.hasLoadedMore || app.getAttribute('data-store-state') === 'loading') return;
+      if (state.visibleLimit === next) return;
+      state.visibleLimit = next;
+      renderCards();
+    }
+    function scheduleResponsiveVisibleSync() {
+      if (state.resizeSyncFrame) return;
+      state.resizeSyncFrame = window.requestAnimationFrame(function () {
+        state.resizeSyncFrame = 0;
+        syncResponsiveVisibleLimit();
+      });
+    }
     function syncQuery(value) {
       state.query = clean(value);
       state.intent = '';
       if (discoverySearch && discoverySearch.value !== value) discoverySearch.value = value;
-      state.visibleLimit = VISIBLE_INITIAL;
+      state.visibleLimit = initialVisibleLimit();
+      state.hasLoadedMore = false;
       applyFilters();
     }
     function setFilter(filter) {
       state.intent = '';
       state.filter = PUBLIC_FILTERS.indexOf(filter) > -1 ? filter : 'all';
-      state.visibleLimit = VISIBLE_INITIAL;
+      state.visibleLimit = initialVisibleLimit();
+      state.hasLoadedMore = false;
       applyFilters();
     }
     function syncDockState(force) {
@@ -2585,6 +3260,7 @@
       if (previewPanel) previewPanel.scrollTop = 0;
       fillPreview(item);
       openPanel('preview', trigger || document.activeElement);
+      syncPreviewUrl(item);
     }
 
     grid.addEventListener('click', function (event) {
@@ -2599,7 +3275,11 @@
       event.preventDefault();
       scrollToStoreTop();
     });
-    if (loadMore) loadMore.addEventListener('click', function () { state.visibleLimit += VISIBLE_STEP; renderCards(); });
+    if (loadMore) loadMore.addEventListener('click', function () {
+      state.hasLoadedMore = true;
+      state.visibleLimit += visibleStepLimit();
+      renderCards();
+    });
     if (discoverySearch) discoverySearch.addEventListener('input', function () { syncQuery(discoverySearch.value); });
     if (discoverOpen) discoverOpen.addEventListener('click', function () { openDiscovery(discoverOpen); });
     if (savedOpen) savedOpen.addEventListener('click', function () { renderSavedResults(); openPanel('saved', savedOpen); });
@@ -2632,6 +3312,15 @@
       var item = state.products[index];
       closePanel('saved', { restoreFocus: false });
       openPreviewItem(item, row);
+    });
+    if (semanticList) semanticList.addEventListener('click', function (event) {
+      var link = event.target.closest('[data-store-open-slug]');
+      var item;
+      if (!link || !isStorePath()) return;
+      item = findItemBySlug(link.getAttribute('data-store-open-slug'));
+      if (!item) return;
+      event.preventDefault();
+      openPreviewItem(item, link);
     });
     if (preview.save) preview.save.addEventListener('click', function () {
       if (!state.currentPreviewItem) return;
@@ -2674,7 +3363,8 @@
         state.query = '';
         state.filter = 'all';
         if (discoverySearch) discoverySearch.value = '';
-        state.visibleLimit = VISIBLE_INITIAL;
+        state.visibleLimit = initialVisibleLimit();
+        state.hasLoadedMore = false;
         applyFilters();
       });
     });
@@ -2693,6 +3383,11 @@
         state.theme = button.getAttribute('data-store-theme') || 'system';
         applyTheme();
       });
+    });
+    window.addEventListener('popstate', function () {
+      if (!isStorePath()) return;
+      if (requestedItemSlug()) syncRequestedPreview();
+      else if (state.panelActive === 'preview') closePanel('preview', { restoreFocus: false });
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.panelActive) closePanel(state.panelActive);
@@ -2722,6 +3417,7 @@
       }
     });
     window.addEventListener('scroll', scheduleDockSync, { passive: true });
+    window.addEventListener('resize', scheduleResponsiveVisibleSync, { passive: true });
 
     window.StoreSurface = {
       contracts: {
@@ -2756,6 +3452,7 @@
 
     setCopy();
     applyTheme();
+    updateCategoryContext();
     loadProducts();
   }());
   </script>
