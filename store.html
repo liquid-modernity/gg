@@ -7,6 +7,7 @@
   <meta name="description" content="Yellow Cart: kurasi produk affiliate premium PakRPP dengan preview editorial, filter kategori, dan tautan marketplace." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://www.pakrpp.com/store" />
+  <meta name="gg-store-contract" content="store-lcp-single-source-v1" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Yellow Cart · PakRPP" />
   <meta property="og:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
@@ -17,8 +18,9 @@
   <meta name="twitter:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Keep this preload in sync with STORE_LCP_PRODUCT below. -->
+  <!-- STORE_LCP_PRELOAD_START -->
   <link rel="preload" as="image" href="https://picsum.photos/seed/yellowcart-linen-1/900/1125" fetchpriority="high" />
+  <!-- STORE_LCP_PRELOAD_END -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" /></noscript>
   <script type="application/ld+json">
@@ -1245,18 +1247,10 @@
       </section>
 
       <section class="store-grid store-grid--skeleton" id="store-grid-skeleton" aria-hidden="true">
-        <!-- Keep this static LCP card in sync with STORE_LCP_PRODUCT below. -->
+        <!-- STORE_LCP_CARD_START -->
         <article class="store-card store-card--initial-lcp" data-store-initial-lcp-card>
           <div class="store-card__media">
-            <img
-              src="https://picsum.photos/seed/yellowcart-linen-1/900/1125"
-              alt="Neutral Linen Overshirt"
-              loading="eager"
-              decoding="async"
-              fetchpriority="high"
-              draggable="false"
-              data-store-initial-lcp-image
-            />
+            <img src="https://picsum.photos/seed/yellowcart-linen-1/900/1125" alt="Neutral Linen Overshirt" loading="eager" decoding="async" fetchpriority="high" draggable="false" data-store-initial-lcp-image />
             <span class="store-card__shade" aria-hidden="true"></span>
             <div class="store-card__content">
               <span class="store-card__badge">Fashion</span>
@@ -1265,6 +1259,7 @@
             </div>
           </div>
         </article>
+        <!-- STORE_LCP_CARD_END -->
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
@@ -1889,13 +1884,16 @@
     var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
     var STORE_CANONICAL_PATH = '/store';
     // Performance-only featured card config. Feed data still wins after hydration.
+    // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
-      slug: 'neutral-linen-overshirt',
-      name: 'Neutral Linen Overshirt',
-      image: 'https://picsum.photos/seed/yellowcart-linen-1/900/1125',
-      category: 'Fashion',
-      priceText: 'Rp429.000'
+      slug: "neutral-linen-overshirt",
+      name: "Neutral Linen Overshirt",
+      category: "Fashion",
+      priceText: "Rp429.000",
+      image: "https://picsum.photos/seed/yellowcart-linen-1/900/1125",
+      alt: "Neutral Linen Overshirt"
     };
+    // STORE_LCP_PRODUCT_END
     var STORE_CATEGORY_CONFIG = {
       all: {
         labelKey: 'filterAllLabel',

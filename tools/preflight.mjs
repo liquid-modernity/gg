@@ -17,6 +17,7 @@ const ROOT = process.cwd();
 
 const requiredFiles = [
   "_headers",
+  "config/store-lcp-product.json",
   "flags.json",
   "index.xml",
   "manifest.webmanifest",
@@ -124,9 +125,17 @@ for (const script of [
   "tools/cloudflare-prepare.mjs",
   "tools/cloudflare-deploy.mjs",
   "tools/gaga-release.mjs",
+  "tools/sync-store-lcp.mjs",
   "tools/template-pack.mjs",
 ]) {
   if (fileExists(script)) syntaxCheckModule(script, path.basename(script, ".mjs"));
+}
+
+const storeLcpConfig = readJson("config/store-lcp-product.json");
+for (const field of ["slug", "name", "category", "priceText", "image", "alt"]) {
+  if (typeof storeLcpConfig[field] !== "string" || !storeLcpConfig[field].trim()) {
+    fail(`config/store-lcp-product.json is missing required field: ${field}`);
+  }
 }
 
 const flags = readJson("flags.json");

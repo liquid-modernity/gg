@@ -6,6 +6,7 @@ export LC_ALL=C
 BASE_URL="${1:-https://www.pakrpp.com}"
 BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke-worker)"
+CONFIG_FILE="config/store-lcp-product.json"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -28,6 +29,49 @@ log_warn() {
 log_info() {
   printf 'INFO: %s\n' "$1"
 }
+
+read_config_field() {
+  local field="$1"
+  node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const key = process.argv[2];
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const value = typeof data[key] === "string" ? data[key].trim() : "";
+    if (!value) process.exit(2);
+    process.stdout.write(value);
+  ' "$CONFIG_FILE" "$field" 2>/dev/null
+}
+
+escape_html_attr() {
+  local value="$1"
+  node -e '
+    const value = String(process.argv[1] || "");
+    process.stdout.write(
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'"'"'/g, "&#39;")
+    );
+  ' "$value"
+}
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  log_fail "config/store-lcp-product.json is missing"
+fi
+
+STORE_LCP_SLUG="$(read_config_field slug || true)"
+STORE_LCP_IMAGE="$(read_config_field image || true)"
+STORE_LCP_ALT="$(read_config_field alt || true)"
+
+[[ -n "$STORE_LCP_SLUG" ]] || log_fail "config/store-lcp-product.json slug is missing or invalid"
+[[ -n "$STORE_LCP_IMAGE" ]] || log_fail "config/store-lcp-product.json image is missing or invalid"
+[[ -n "$STORE_LCP_ALT" ]] || log_fail "config/store-lcp-product.json alt is missing or invalid"
+
+STORE_LCP_IMAGE_ATTR="$(escape_html_attr "$STORE_LCP_IMAGE")"
+STORE_LCP_ALT_ATTR="$(escape_html_attr "$STORE_LCP_ALT")"
 
 extract_body_snippet() {
   local file="$1"
@@ -245,7 +289,7 @@ check_landing_html_redirect() {
 check_store_route() {
   local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
-  local headers_meta meta final status release_header fingerprint_header dock_snippet saved_marker
+  local headers_meta meta final status release_header fingerprint_header dock_snippet preload_snippet lcp_card_snippet saved_marker
   headers_meta="$(fetch_headers "/store" "$headers_file")"
   meta="$(fetch_body "/store" "$body_file")"
   final="$(printf '%s' "$meta" | cut -d'|' -f1)"
@@ -253,6 +297,8 @@ check_store_route() {
   release_header="$(extract_header_value "$headers_file" "x-gg-release")"
   fingerprint_header="$(extract_header_value "$headers_file" "x-gg-template-fingerprint")"
   dock_snippet="$(extract_body_snippet "$body_file" 'data-store-dock')"
+  preload_snippet="$(extract_body_snippet "$body_file" 'STORE_LCP_PRELOAD_START')"
+  lcp_card_snippet="$(extract_body_snippet "$body_file" 'data-store-initial-lcp-card')"
   saved_marker="absent"
 
   if grep -Eq 'data-store-dock=["'"'"']saved["'"'"']' "$body_file"; then
@@ -266,6 +312,16 @@ check_store_route() {
   else
     log_info "/store freshness data-store-dock-snippet=missing"
   fi
+  if [[ -n "$preload_snippet" ]]; then
+    log_info "/store freshness lcp-preload-snippet=${preload_snippet}"
+  else
+    log_info "/store freshness lcp-preload-snippet=missing"
+  fi
+  if [[ -n "$lcp_card_snippet" ]]; then
+    log_info "/store freshness lcp-card-snippet=${lcp_card_snippet}"
+  else
+    log_info "/store freshness lcp-card-snippet=missing"
+  fi
 
   if [[ "$status" != "200" ]]; then
     log_fail "/store expected status 200 (got ${status:-000})"
@@ -278,9 +334,26 @@ check_store_route() {
 
   grep -Eq '<title>\s*Yellow Cart · PakRPP\s*</title>' "$body_file" || log_fail "/store missing canonical title"
   grep -Eq 'rel=["'"'"']canonical["'"'"'][^>]*href=["'"'"']https://www\.pakrpp\.com/store["'"'"']' "$body_file" || log_fail "/store missing canonical /store"
+  grep -Eq 'name=["'"'"']gg-store-contract["'"'"'][^>]*content=["'"'"']store-lcp-single-source-v1["'"'"']' "$body_file" || log_fail "/store gg-store-contract marker is missing"
   grep -Eq '<h1[^>]*>\s*Yellow Cart\s*</h1>' "$body_file" || log_fail "/store missing H1 Yellow Cart"
   grep -Eq 'href=["'"'"']https://wa\.me/[0-9]+\?text=' "$body_file" || log_fail "/store WhatsApp CTA href is missing full https://wa.me format"
   grep -Eq 'Affiliate links may be used[[:space:]]*·[[:space:]]*(Harga dan ketersediaan mengikuti marketplace\.|Prices and availability follow the marketplace\.)' "$body_file" || log_fail "/store disclosure separator copy is missing"
+  grep -Fq 'STORE_LCP_PRELOAD_START' "$body_file" || log_fail "/store LCP preload start marker is missing"
+  grep -Fq 'STORE_LCP_PRELOAD_END' "$body_file" || log_fail "/store LCP preload end marker is missing"
+  grep -Fq 'STORE_LCP_CARD_START' "$body_file" || log_fail "/store LCP card start marker is missing"
+  grep -Fq 'STORE_LCP_CARD_END' "$body_file" || log_fail "/store LCP card end marker is missing"
+  grep -Fq 'data-store-initial-lcp-card' "$body_file" || log_fail "/store initial LCP card is missing"
+  grep -Fq 'data-store-initial-lcp-image' "$body_file" || log_fail "/store initial LCP image hook is missing"
+  grep -Fq "href=\"$STORE_LCP_IMAGE_ATTR\"" "$body_file" || log_fail "/store LCP preload image is out of sync with config"
+  grep -Fq "src=\"$STORE_LCP_IMAGE_ATTR\"" "$body_file" || log_fail "/store initial LCP image src is out of sync with config"
+  grep -Fq "alt=\"$STORE_LCP_ALT_ATTR\"" "$body_file" || log_fail "/store initial LCP image alt is out of sync with config"
+  grep -Fq "slug: \"$STORE_LCP_SLUG\"" "$body_file" || log_fail "/store STORE_LCP_PRODUCT slug is out of sync with config"
+  grep -Eq 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']image["'"'"'][^>]*fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store LCP image preload contract is missing"
+  grep -Eq 'fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store high fetchpriority marker is missing"
+  grep -Eq 'id=["'"'"']store-grid-skeleton["'"'"']' "$body_file" || log_fail "/store skeleton grid is missing"
+  grep -Eq 'id=["'"'"']store-category-context["'"'"']' "$body_file" || log_fail "/store category context is missing"
+  grep -Eq 'id=["'"'"']store-semantic-products["'"'"']' "$body_file" || log_fail "/store semantic products section is missing"
+  grep -Eq 'id=["'"'"']store-itemlist-jsonld["'"'"']' "$body_file" || log_fail "/store ItemList JSON-LD target is missing"
   grep -Eq '<a[^>]*data-store-dock=["'"'"']store["'"'"'][^>]*href=["'"'"']/store["'"'"'][^>]*aria-current=["'"'"']page["'"'"']|<a[^>]*aria-current=["'"'"']page["'"'"'][^>]*data-store-dock=["'"'"']store["'"'"'][^>]*href=["'"'"']/store["'"'"']' "$body_file" || log_fail "/store dock Store href/current contract is missing"
   grep -Eq '<a[^>]*data-store-dock=["'"'"']contact["'"'"'][^>]*href=["'"'"']/store#contact["'"'"']' "$body_file" || log_fail "/store dock Contact href is not /store#contact"
   grep -Eq '<button[^>]*data-store-dock=["'"'"']discover["'"'"'][^>]*aria-controls=["'"'"']store-discovery-sheet["'"'"']' "$body_file" || log_fail "/store dock Discover button contract is missing"
@@ -319,6 +392,18 @@ check_store_route() {
   grep -Eq 'id=["'"'"']store-link-shopee["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store Shopee CTA rel/target contract is missing"
   grep -Eq 'id=["'"'"']store-link-tiktok["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store TikTok CTA rel/target contract is missing"
   grep -Eq 'id=["'"'"']store-link-tokopedia["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store Tokopedia CTA rel/target contract is missing"
+  if grep -Fq 'Coba refresh katalog' "$body_file"; then
+    log_fail "/store still serves stale string: Coba refresh katalog"
+  fi
+  if grep -Fq 'calendar_add_on' "$body_file"; then
+    log_fail "/store still serves stale string: calendar_add_on"
+  fi
+  if grep -Fq 'Affiliate links may be used Harga' "$body_file"; then
+    log_fail "/store still serves stale disclosure separator string"
+  fi
+  if grep -Fq 'href="wa.me/' "$body_file"; then
+    log_fail "/store still serves stale non-https wa.me href"
+  fi
 }
 
 check_store_redirect() {

@@ -5,6 +5,8 @@ export LC_ALL=C
 
 artifact_file=".cloudflare-build/public/store.html"
 source_file="store.html"
+config_file="config/store-lcp-product.json"
+sync_tool="tools/sync-store-lcp.mjs"
 target_file="$source_file"
 failures=0
 
@@ -17,11 +19,25 @@ log_fail() {
   printf 'FAIL: %s\n' "$1" >&2
 }
 
+check_file_exists() {
+  local file_path="$1"
+  local message="$2"
+
+  [[ -f "$file_path" ]] || log_fail "$message"
+}
+
 check_pattern() {
   local pattern="$1"
   local message="$2"
 
   grep -Eq -- "$pattern" "$target_file" || log_fail "$message"
+}
+
+check_literal() {
+  local needle="$1"
+  local message="$2"
+
+  grep -Fq -- "$needle" "$target_file" || log_fail "$message"
 }
 
 check_absent() {
@@ -61,6 +77,70 @@ check_count_gte() {
   fi
 }
 
+read_config_field() {
+  local field="$1"
+  node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const key = process.argv[2];
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const value = typeof data[key] === "string" ? data[key].trim() : "";
+    if (!value) process.exit(2);
+    process.stdout.write(value);
+  ' "$config_file" "$field" 2>/dev/null
+}
+
+escape_html_text() {
+  local value="$1"
+  node -e '
+    const value = String(process.argv[1] || "");
+    process.stdout.write(
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+    );
+  ' "$value"
+}
+
+escape_html_attr() {
+  local value="$1"
+  node -e '
+    const value = String(process.argv[1] || "");
+    process.stdout.write(
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'"'"'/g, "&#39;")
+    );
+  ' "$value"
+}
+
+check_file_exists "$config_file" "config/store-lcp-product.json is missing"
+check_file_exists "$sync_tool" "tools/sync-store-lcp.mjs is missing"
+
+store_lcp_slug="$(read_config_field slug || true)"
+store_lcp_name="$(read_config_field name || true)"
+store_lcp_category="$(read_config_field category || true)"
+store_lcp_price_text="$(read_config_field priceText || true)"
+store_lcp_image="$(read_config_field image || true)"
+store_lcp_alt="$(read_config_field alt || true)"
+
+[[ -n "$store_lcp_slug" ]] || log_fail "config/store-lcp-product.json slug is missing or invalid"
+[[ -n "$store_lcp_name" ]] || log_fail "config/store-lcp-product.json name is missing or invalid"
+[[ -n "$store_lcp_category" ]] || log_fail "config/store-lcp-product.json category is missing or invalid"
+[[ -n "$store_lcp_price_text" ]] || log_fail "config/store-lcp-product.json priceText is missing or invalid"
+[[ -n "$store_lcp_image" ]] || log_fail "config/store-lcp-product.json image is missing or invalid"
+[[ -n "$store_lcp_alt" ]] || log_fail "config/store-lcp-product.json alt is missing or invalid"
+
+store_lcp_name_html="$(escape_html_text "$store_lcp_name")"
+store_lcp_category_html="$(escape_html_text "$store_lcp_category")"
+store_lcp_price_text_html="$(escape_html_text "$store_lcp_price_text")"
+store_lcp_image_attr="$(escape_html_attr "$store_lcp_image")"
+store_lcp_alt_attr="$(escape_html_attr "$store_lcp_alt")"
+
 printf 'SMOKE-STORE-ARTIFACT lane=ARTIFACT source=%s\n' "$target_file"
 
 check_pattern '<title>\s*Yellow Cart · PakRPP\s*</title>' "artifact missing canonical title"
@@ -74,11 +154,18 @@ check_pattern 'var STORE_CATEGORY_CONFIG = \{' "artifact STORE_CATEGORY_CONFIG i
 check_pattern 'id=["'"'"']store-top["'"'"']' "artifact store-top anchor is missing"
 check_pattern 'id=["'"'"']store-grid["'"'"']' "artifact store-grid anchor is missing"
 check_pattern 'id=["'"'"']store-grid-skeleton["'"'"']' "artifact skeleton grid is missing"
+check_pattern 'name=["'"'"']gg-store-contract["'"'"'][^>]*content=["'"'"']store-lcp-single-source-v1["'"'"']' "artifact gg-store-contract meta marker is missing"
+check_pattern 'STORE_LCP_PRELOAD_START' "artifact STORE_LCP_PRELOAD_START marker is missing"
+check_pattern 'STORE_LCP_PRELOAD_END' "artifact STORE_LCP_PRELOAD_END marker is missing"
+check_pattern 'STORE_LCP_CARD_START' "artifact STORE_LCP_CARD_START marker is missing"
+check_pattern 'STORE_LCP_CARD_END' "artifact STORE_LCP_CARD_END marker is missing"
+check_pattern 'STORE_LCP_PRODUCT_START' "artifact STORE_LCP_PRODUCT_START marker is missing"
+check_pattern 'STORE_LCP_PRODUCT_END' "artifact STORE_LCP_PRODUCT_END marker is missing"
 check_pattern 'var STORE_LCP_PRODUCT = \{' "artifact STORE_LCP_PRODUCT config is missing"
 check_pattern 'id=["'"'"']store-category-context["'"'"']' "artifact category semantic context is missing"
 check_pattern 'id=["'"'"']store-semantic-products["'"'"']' "artifact semantic product section is missing"
 check_pattern 'id=["'"'"']store-itemlist-jsonld["'"'"']' "artifact ItemList JSON-LD script is missing"
-check_pattern 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']image["'"'"'][^>]*href=["'"'"']https://picsum\.photos/seed/yellowcart-linen-1/900/1125["'"'"'][^>]*fetchpriority=["'"'"']high["'"'"']' "artifact LCP image preload is missing or not high priority"
+check_literal "<link rel=\"preload\" as=\"image\" href=\"$store_lcp_image_attr\" fetchpriority=\"high\" />" "artifact LCP image preload is missing or out of sync with config"
 check_pattern 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']style["'"'"'][^>]*Material\+Symbols' "artifact Material Symbols preload is missing"
 check_pattern '<noscript><link[^>]*Material\+Symbols[^>]*rel=["'"'"']stylesheet["'"'"']' "artifact Material Symbols noscript fallback is missing"
 check_pattern 'href=["'"'"']#store-grid["'"'"']' "artifact skip link to store-grid is missing"
@@ -193,8 +280,20 @@ check_pattern 'state\.visibleLimit = initialVisibleLimit\(\)' "artifact visibleL
 check_pattern 'state\.visibleLimit \+= visibleStepLimit\(\)' "artifact load more should use responsive visibleStepLimit"
 check_pattern 'data-store-initial-lcp-card' "artifact initial LCP card is missing"
 check_pattern 'data-store-initial-lcp-image' "artifact initial LCP image hook is missing"
+check_literal "src=\"$store_lcp_image_attr\"" "artifact initial LCP image src is out of sync with config"
+check_literal "alt=\"$store_lcp_alt_attr\"" "artifact initial LCP image alt is out of sync with config"
+check_literal ">$store_lcp_category_html</span>" "artifact initial LCP badge is out of sync with config"
+check_literal ">$store_lcp_price_text_html</span>" "artifact initial LCP price is out of sync with config"
+check_literal ">$store_lcp_name_html</h2>" "artifact initial LCP title is out of sync with config"
 check_pattern 'loading=["'"'"']eager["'"'"']' "artifact initial LCP image must load eagerly"
 check_pattern 'fetchpriority=["'"'"']high["'"'"']' "artifact initial LCP image or preload must use high fetchpriority"
+check_count_eq 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']image["'"'"']' '1' "artifact should only ship one image preload"
+check_literal "slug: \"$store_lcp_slug\"" "artifact STORE_LCP_PRODUCT slug is out of sync with config"
+check_literal "name: \"$store_lcp_name\"" "artifact STORE_LCP_PRODUCT name is out of sync with config"
+check_literal "category: \"$store_lcp_category\"" "artifact STORE_LCP_PRODUCT category is out of sync with config"
+check_literal "priceText: \"$store_lcp_price_text\"" "artifact STORE_LCP_PRODUCT priceText is out of sync with config"
+check_literal "image: \"$store_lcp_image\"" "artifact STORE_LCP_PRODUCT image is out of sync with config"
+check_literal "alt: \"$store_lcp_alt\"" "artifact STORE_LCP_PRODUCT alt is out of sync with config"
 check_pattern 'loading = index < eagerCount \? ["'"'"']eager["'"'"'] : ["'"'"']lazy["'"'"']' "artifact card image loading priority is missing"
 check_pattern 'var fetchPriority = index < 2 \? ["'"'"']high["'"'"'] : ["'"'"']auto["'"'"']' "artifact card image fetchpriority logic is missing"
 check_pattern 'img\.setAttribute\(["'"'"']fetchpriority["'"'"'], fetchPriority\)' "artifact card image fetchpriority binding is missing"
