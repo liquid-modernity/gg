@@ -17,6 +17,8 @@
   <meta name="twitter:description" content="Kurasi produk affiliate premium PakRPP dengan preview editorial dan tautan marketplace." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Keep this preload in sync with STORE_LCP_PRODUCT below. -->
+  <link rel="preload" as="image" href="https://picsum.photos/seed/yellowcart-linen-1/900/1125" fetchpriority="high" />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" /></noscript>
   <script type="application/ld+json">
@@ -181,7 +183,14 @@
 
     * { box-sizing: border-box; }
     html { min-height: 100%; scroll-behavior: smooth; }
-    html, body { min-height: 100%; }
+    html, body {
+      min-height: 100%;
+      max-width: 100%;
+      overflow-x: clip;
+    }
+    @supports not (overflow-x: clip) {
+      html, body { overflow-x: hidden; }
+    }
     body {
       margin: 0;
       background:
@@ -373,6 +382,7 @@
       transform: scale(1.001);
       transition: transform 420ms cubic-bezier(.22,1,.36,1), filter var(--gg-ease);
     }
+    .store-card--initial-lcp .store-card__media { background: #201a1c; }
     .store-card__button:hover img, .store-card__button:focus-visible img { transform: scale(1.035); }
     .store-card__shade {
       position: absolute;
@@ -574,6 +584,7 @@
       margin: 0;
       color: var(--gg-ink-soft);
       font: 520 14px/1.55 var(--gg-font-sans);
+      overflow-wrap: anywhere;
     }
     .store-semantic-product__facts {
       display: grid;
@@ -594,6 +605,7 @@
     .store-semantic-product__value {
       color: var(--gg-ink);
       font: 520 13px/1.5 var(--gg-font-sans);
+      overflow-wrap: anywhere;
     }
     .store-semantic-product__tags {
       display: flex;
@@ -642,13 +654,13 @@
       border-top: 1px solid var(--gg-divider);
     }
     .store-contact__inner {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  max-width: 60ch;
-  text-align: center;
-  align-items: end;
-}
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      max-width: 60ch;
+      text-align: center;
+      align-items: end;
+    }
     .store-contact h2 {
       margin: 0;
       font-size: clamp(30px, 8vw, 58px);
@@ -860,7 +872,12 @@
       font: 780 clamp(28px, 8vw, 52px)/1 var(--gg-font-sans);
       letter-spacing: -.07em;
     }
-    .store-preview__meta { margin: 0; color: rgba(255,255,255,.86); font: 650 13px/1.35 var(--gg-font-sans); }
+    .store-preview__meta {
+      margin: 0;
+      color: rgba(255,255,255,.86);
+      font: 650 13px/1.35 var(--gg-font-sans);
+      overflow-wrap: anywhere;
+    }
     .store-preview__surface {
       display: grid;
       gap: 16px;
@@ -930,7 +947,7 @@
       align-items: center;
       justify-content: center;
       min-height: 36px;
-      max-width: min(calc(100vw - 32px), 320px);
+      max-width: min(calc(100% - 32px), 320px);
       padding: 0 14px;
       border: 1px solid var(--gg-line-strong);
       border-radius: 999px;
@@ -1128,7 +1145,7 @@
     .store-result-row__thumb img { width: 100%; height: 100%; object-fit: cover; }
     .store-result-row__body { display: grid; gap: 3px; min-width: 0; }
     .store-result-row__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 720 14px/1.2 var(--gg-font-sans); }
-    .store-result-row__meta { color: var(--gg-ink-soft); font: 620 12px/1.2 var(--gg-font-sans); }
+    .store-result-row__meta { color: var(--gg-ink-soft); font: 620 12px/1.2 var(--gg-font-sans); overflow-wrap: anywhere; }
     .store-result-row__empty { padding: 16px 0; color: var(--gg-ink-soft); font: 600 13px/1.4 var(--gg-font-sans); text-align: center; }
     .store-result-row__remove {
       width: 44px;
@@ -1228,6 +1245,26 @@
       </section>
 
       <section class="store-grid store-grid--skeleton" id="store-grid-skeleton" aria-hidden="true">
+        <!-- Keep this static LCP card in sync with STORE_LCP_PRODUCT below. -->
+        <article class="store-card store-card--initial-lcp" data-store-initial-lcp-card>
+          <div class="store-card__media">
+            <img
+              src="https://picsum.photos/seed/yellowcart-linen-1/900/1125"
+              alt="Neutral Linen Overshirt"
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
+              draggable="false"
+              data-store-initial-lcp-image
+            />
+            <span class="store-card__shade" aria-hidden="true"></span>
+            <div class="store-card__content">
+              <span class="store-card__badge">Fashion</span>
+              <span class="store-card__price">Rp429.000</span>
+              <h2 class="store-card__title">Neutral Linen Overshirt</h2>
+            </div>
+          </div>
+        </article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
         <article class="store-card store-card--skeleton"><div class="store-card__media"><span class="store-card__shade" aria-hidden="true"></span><div class="store-card__content"><span class="store-card__skeleton-chip"></span><span class="store-card__skeleton-line store-card__skeleton-line--price"></span><span class="store-card__skeleton-line store-card__skeleton-line--title"></span><span class="store-card__skeleton-line store-card__skeleton-line--title-secondary"></span><span class="store-card__skeleton-dots"><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span><span class="store-card__skeleton-dot"></span></span></div></div></article>
@@ -1551,6 +1588,14 @@
     <li data-store-preview-note></li>
   </template>
 
+  <template id="store-semantic-empty-template">
+    <p class="store-semantic-product__empty" data-copy="semanticEmptyLabel"></p>
+  </template>
+
+  <template id="store-semantic-tag-template">
+    <span class="store-semantic-product__tag" data-store-semantic-tag></span>
+  </template>
+
   <template id="store-semantic-product-template">
     <article class="store-semantic-product" data-store-semantic-product>
       <div class="store-semantic-product__head">
@@ -1843,6 +1888,14 @@
 
     var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
     var STORE_CANONICAL_PATH = '/store';
+    // Performance-only featured card config. Feed data still wins after hydration.
+    var STORE_LCP_PRODUCT = {
+      slug: 'neutral-linen-overshirt',
+      name: 'Neutral Linen Overshirt',
+      image: 'https://picsum.photos/seed/yellowcart-linen-1/900/1125',
+      category: 'Fashion',
+      priceText: 'Rp429.000'
+    };
     var STORE_CATEGORY_CONFIG = {
       all: {
         labelKey: 'filterAllLabel',
@@ -2033,6 +2086,18 @@
       dragSession: null,
       resizeSyncFrame: 0
     };
+    var DEBUG_FLAGS = {
+      overflow: queryFlag('debugOverflow'),
+      vitals: queryFlag('debugVitals')
+    };
+    var debugState = {
+      clsSources: [],
+      clsValue: 0,
+      lcpEntry: null,
+      overflowAuditTimer: 0,
+      paintEntries: [],
+      vitalsObserversStarted: false
+    };
 
     if (!app || !grid) return;
 
@@ -2074,10 +2139,28 @@
     function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
     function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
     function lower(value) { return clean(value).toLowerCase(); }
+    function queryFlag(name) {
+      try { return new URLSearchParams(window.location.search || '').get(name) === '1'; }
+      catch (error) { return false; }
+    }
     function copy(key) { return (COPY[normalizeLocale(state.locale)] && COPY[normalizeLocale(state.locale)][key]) || COPY.id[key] || key; }
     function setNodeText(node, value) { if (node) node.textContent = value; }
     function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
     function productUnit() { return copy('productUnit'); }
+    function describeNode(node) {
+      var parts;
+      if (!node || node.nodeType !== 1) return '';
+      parts = [node.tagName.toLowerCase()];
+      if (node.id) parts.push('#' + node.id);
+      if (node.classList && node.classList.length) parts.push('.' + [].slice.call(node.classList).slice(0, 3).join('.'));
+      return parts.join('');
+    }
+    function textSnippet(node) {
+      return clean(node && node.textContent ? node.textContent : '').slice(0, 120);
+    }
+    function debugLog(channel, payload) {
+      console.info('[store][' + channel + ']', payload);
+    }
     function initialVisibleLimit() {
       return window.matchMedia && window.matchMedia('(min-width: 720px)').matches ? 12 : 8;
     }
@@ -2091,6 +2174,122 @@
     function setSkeletonVisible(visible) {
       if (skeletonGrid) skeletonGrid.hidden = !visible;
       if (grid) grid.hidden = visible;
+    }
+    function matchesConfiguredLcpProduct(item) {
+      return !!(item && STORE_LCP_PRODUCT.slug && slugify(item.slug) === slugify(STORE_LCP_PRODUCT.slug));
+    }
+    function shouldPrioritizeConfiguredLcpProduct() {
+      return !state.query && state.filter === 'all' && !state.intent;
+    }
+    function prioritizeConfiguredLcpProduct(items) {
+      var next;
+      var index;
+      if (!shouldPrioritizeConfiguredLcpProduct()) return items;
+      index = (items || []).findIndex(matchesConfiguredLcpProduct);
+      if (index <= 0) return items;
+      next = items.slice();
+      next.unshift(next.splice(index, 1)[0]);
+      return next;
+    }
+    function scheduleOverflowAudit(reason) {
+      if (!DEBUG_FLAGS.overflow) return;
+      if (debugState.overflowAuditTimer) window.clearTimeout(debugState.overflowAuditTimer);
+      debugState.overflowAuditTimer = window.setTimeout(function () {
+        debugState.overflowAuditTimer = 0;
+        runOverflowAudit(reason);
+      }, 90);
+    }
+    function runOverflowAudit(reason) {
+      var viewport = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      var offenders = [];
+      if (!DEBUG_FLAGS.overflow || !document.body || !viewport) return;
+      [].slice.call(document.body.querySelectorAll('*')).forEach(function (node) {
+        var rect;
+        var style;
+        var overflowLeft;
+        var overflowRight;
+        var exceed;
+        if (!node || !node.getClientRects || !node.getClientRects().length) return;
+        if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'NOSCRIPT') return;
+        style = window.getComputedStyle(node);
+        if (!style || style.display === 'none' || style.visibility === 'hidden') return;
+        rect = node.getBoundingClientRect();
+        overflowLeft = Math.max(0, 0 - rect.left);
+        overflowRight = Math.max(0, rect.right - viewport);
+        exceed = Math.max(overflowLeft, overflowRight);
+        if (exceed <= 1) return;
+        offenders.push({
+          node: describeNode(node),
+          overflow: Number(exceed.toFixed(2)),
+          width: Number(rect.width.toFixed(2)),
+          text: textSnippet(node)
+        });
+      });
+      debugLog('overflow', {
+        reason: reason,
+        viewport: viewport,
+        offenders: offenders
+      });
+    }
+    function reportDebugVitals(reason) {
+      var lcpEntry;
+      var lcpNode;
+      if (!DEBUG_FLAGS.vitals) return;
+      lcpEntry = debugState.lcpEntry;
+      lcpNode = lcpEntry && lcpEntry.element;
+      debugLog('vitals', {
+        reason: reason,
+        now: Math.round(window.performance.now()),
+        readyState: document.readyState,
+        lcpTime: lcpEntry ? Math.round(lcpEntry.startTime) : 0,
+        lcpTag: lcpNode && lcpNode.tagName ? lcpNode.tagName.toLowerCase() : '',
+        lcpSelector: describeNode(lcpNode),
+        lcpCurrentSrc: lcpNode && lcpNode.currentSrc ? lcpNode.currentSrc : '',
+        lcpText: textSnippet(lcpNode),
+        paints: debugState.paintEntries.slice(),
+        clsValue: Number(debugState.clsValue.toFixed(4)),
+        clsSources: debugState.clsSources.slice()
+      });
+    }
+    function scheduleDebugVitalsReport(reason) {
+      if (!DEBUG_FLAGS.vitals) return;
+      window.requestAnimationFrame(function () {
+        window.setTimeout(function () {
+          reportDebugVitals(reason);
+        }, 0);
+      });
+    }
+    function setupDebugVitals() {
+      if (!DEBUG_FLAGS.vitals || debugState.vitalsObserversStarted || !('PerformanceObserver' in window)) return;
+      debugState.vitalsObserversStarted = true;
+      try {
+        new PerformanceObserver(function (list) {
+          list.getEntries().forEach(function (entry) {
+            debugState.paintEntries.push({
+              name: entry.name,
+              startTime: Math.round(entry.startTime)
+            });
+          });
+        }).observe({ type: 'paint', buffered: true });
+      } catch (error) {}
+      try {
+        new PerformanceObserver(function (list) {
+          var entries = list.getEntries();
+          if (entries.length) debugState.lcpEntry = entries[entries.length - 1];
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      } catch (error) {}
+      try {
+        new PerformanceObserver(function (list) {
+          list.getEntries().forEach(function (entry) {
+            if (entry.hadRecentInput) return;
+            debugState.clsValue += entry.value || 0;
+            (entry.sources || []).forEach(function (source) {
+              var label = describeNode(source && source.node);
+              if (label && debugState.clsSources.indexOf(label) === -1) debugState.clsSources.push(label);
+            });
+          });
+        }).observe({ type: 'layout-shift', buffered: true });
+      } catch (error) {}
     }
     function isStorePath() {
       return window.location.pathname.replace(/\/+$/, '') === '/store';
@@ -2569,6 +2768,8 @@
         state.hasLoadedMore = false;
         applyFilters();
         syncRequestedPreview();
+        scheduleOverflowAudit('feed-render');
+        scheduleDebugVitalsReport('feed-render');
       }).catch(function () {
         state.products = [];
         state.filtered = [];
@@ -2583,6 +2784,8 @@
         setNodeText(count, copy('countFail'));
         setNodeText(source, copy('feedStore'));
         empty.hidden = false;
+        scheduleOverflowAudit('feed-error');
+        scheduleDebugVitalsReport('feed-error');
       });
     }
 
@@ -2612,6 +2815,7 @@
         return matchesQuery && matchesFilter && matchesIntent;
       });
       if (state.intent === 'latest') state.filtered = state.filtered.slice().sort(function (a, b) { return String(b.published || '').localeCompare(String(a.published || '')); });
+      else state.filtered = prioritizeConfiguredLcpProduct(state.filtered);
       renderCards();
       renderSemanticProducts();
       renderDiscoveryResults();
@@ -2664,11 +2868,14 @@
       node.replaceChildren(fragment);
     }
     function setCardImagePriority(img, index) {
-      var eagerCount = window.matchMedia('(min-width: 720px)').matches ? 4 : 3;
+      var eagerCount = window.matchMedia && window.matchMedia('(min-width: 720px)').matches ? 4 : 2;
+      var loading = index < eagerCount ? 'eager' : 'lazy';
+      var fetchPriority = index < 2 ? 'high' : 'auto';
       if (!img) return;
-      img.loading = index < eagerCount ? 'eager' : 'lazy';
-      img.setAttribute('loading', img.loading);
-      img.setAttribute('fetchpriority', index < 2 ? 'high' : 'low');
+      img.loading = loading;
+      img.setAttribute('loading', loading);
+      if ('fetchPriority' in img) img.fetchPriority = fetchPriority;
+      img.setAttribute('fetchpriority', fetchPriority);
       img.decoding = 'async';
     }
     function renderCardNode(item, index) {
@@ -2780,8 +2987,7 @@
       var fragment = document.createDocumentFragment();
       if (!semanticList) return;
       if (!items.length) {
-        var emptyNode = document.createElement('p');
-        emptyNode.className = 'store-semantic-product__empty';
+        var emptyNode = cloneTemplate('store-semantic-empty-template');
         emptyNode.textContent = copy('semanticEmptyLabel');
         fragment.appendChild(emptyNode);
         semanticList.replaceChildren(fragment);
@@ -2820,8 +3026,7 @@
           if (tags.length) {
             tagsNode.hidden = false;
             tags.forEach(function (tag) {
-              var tagNode = document.createElement('span');
-              tagNode.className = 'store-semantic-product__tag';
+              var tagNode = cloneTemplate('store-semantic-tag-template');
               tagNode.textContent = tag;
               tagsNode.appendChild(tagNode);
             });
@@ -2841,6 +3046,8 @@
       });
       grid.replaceChildren(fragment);
       if (loadMore) loadMore.hidden = state.filtered.length <= state.visibleLimit;
+      scheduleOverflowAudit('cards-render');
+      scheduleDebugVitalsReport('cards-render');
     }
 
     function activeItem(index) { return state.filtered[index]; }
@@ -3417,7 +3624,27 @@
       }
     });
     window.addEventListener('scroll', scheduleDockSync, { passive: true });
-    window.addEventListener('resize', scheduleResponsiveVisibleSync, { passive: true });
+    window.addEventListener('resize', function () {
+      scheduleResponsiveVisibleSync();
+      scheduleOverflowAudit('resize');
+    }, { passive: true });
+    setupDebugVitals();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        scheduleOverflowAudit('dom-content-loaded');
+        scheduleDebugVitalsReport('dom-content-loaded');
+      }, { once: true });
+    } else {
+      scheduleOverflowAudit('dom-content-loaded');
+      scheduleDebugVitalsReport('dom-content-loaded');
+    }
+    window.addEventListener('load', function () {
+      scheduleOverflowAudit('window-load');
+      scheduleDebugVitalsReport('window-load');
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') reportDebugVitals('visibility-hidden');
+    });
 
     window.StoreSurface = {
       contracts: {
