@@ -63,6 +63,10 @@ check_repo_pattern 'function developmentRobotsTag\(\)' "worker.js" "worker.js mi
 check_repo_pattern 'function productionIndexableHtmlRobotsTag\(\)' "worker.js" "worker.js missing production indexable robots helper"
 check_repo_pattern 'flags\.mode !== "production"\) return developmentRobotsTag\(\);' "worker.js" "worker.js missing dev/staging robots lockdown guard"
 check_repo_pattern 'mode=production' "qa/live-smoke-worker.sh" "live smoke missing production mode diagnostics coverage"
+check_repo_pattern 'GG_LIVE_TIMEOUT_SECONDS' "qa/live-smoke-worker.sh" "live smoke missing configurable timeout contract"
+check_repo_pattern 'X-GG-Store-Source' "worker.js" "worker.js missing /store source debug header"
+check_repo_pattern 'User-agent: Googlebot' "worker.js" "worker.js missing explicit Googlebot robots allowance"
+check_repo_pattern 'User-agent: OAI-SearchBot' "worker.js" "worker.js missing explicit OAI-SearchBot robots allowance"
 
 check_pattern '<title>\s*Yellow Cart · PakRPP\s*</title>' "artifact missing canonical title"
 check_pattern 'rel=["'"'"']canonical["'"'"'][^>]*href=["'"'"']https://www\.pakrpp\.com/store["'"'"']' "artifact missing canonical /store"

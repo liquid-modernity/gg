@@ -7,6 +7,8 @@ BASE_URL="${1:-https://www.pakrpp.com}"
 BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke-worker)"
 PROOF_TOOL="tools/proof-store-static.mjs"
+LIVE_TIMEOUT_SECONDS="${GG_LIVE_TIMEOUT_SECONDS:-20}"
+CONNECT_TIMEOUT_SECONDS="${GG_LIVE_CONNECT_TIMEOUT_SECONDS:-$LIVE_TIMEOUT_SECONDS}"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -51,6 +53,60 @@ json_field() {
   ' "$file" "$dotted_key" 2>/dev/null
 }
 
+meta_field() {
+  local meta="$1"
+  local index="$2"
+  printf '%s' "$meta" | cut -d'|' -f"$index"
+}
+
+meta_status() {
+  meta_field "$1" 2
+}
+
+meta_exit_code() {
+  meta_field "$1" 10
+}
+
+meta_is_timeout() {
+  [[ "$(meta_exit_code "$1")" == "28" ]]
+}
+
+meta_is_unreachable() {
+  local status
+  status="$(meta_status "$1")"
+  [[ "$(meta_exit_code "$1")" != "0" || "$status" == "000" ]]
+}
+
+can_check_body() {
+  local meta="$1"
+  local body_file="$2"
+  [[ "$(meta_exit_code "$meta")" == "0" && "$(meta_status "$meta")" == "200" && -s "$body_file" ]]
+}
+
+default_meta() {
+  local target="$1"
+  printf '%s|000|0|0|0|0|0|0|0' "$target"
+}
+
+meta_outcome() {
+  local meta="$1"
+  local status
+  status="$(meta_status "$meta")"
+  if meta_is_timeout "$meta"; then
+    printf 'TIMEOUT'
+    return
+  fi
+  if meta_is_unreachable "$meta"; then
+    printf 'UNREACHABLE'
+    return
+  fi
+  if [[ "$status" == "200" ]]; then
+    printf 'PASS'
+    return
+  fi
+  printf 'HTTP_%s' "${status:-000}"
+}
+
 extract_body_snippet() {
   local file="$1"
   local needle="$2"
@@ -74,47 +130,133 @@ fetch_headers() {
   local out_headers="$2"
   local target="${BASE_URL}${path}"
   local meta=""
+  local curl_exit=0
 
-  if meta="$(curl -sS -L \
+  meta="$(curl -sS -L \
     --http1.1 \
-    --connect-timeout 15 \
-    --max-time 60 \
+    --connect-timeout "$CONNECT_TIMEOUT_SECONDS" \
+    --max-time "$LIVE_TIMEOUT_SECONDS" \
     --max-redirs 10 \
     -A "$UA" \
     -D "$out_headers" \
     -o /dev/null \
-    -w '%{url_effective}|%{http_code}|%{num_redirects}' \
-    "$target")"; then
-    printf '%s\n' "$meta"
-    return 0
+    -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}' \
+    "$target" 2>/dev/null)" || curl_exit=$?
+
+  if [[ ! -s "$out_headers" ]]; then
+    : > "$out_headers"
   fi
 
-  : > "$out_headers"
-  printf '%s|000|0\n' "$target"
+  printf '%s|%s\n' "${meta:-$(default_meta "$target")}" "$curl_exit"
   return 0
 }
 
 fetch_body() {
   local path="$1"
   local out_file="$2"
+  local out_headers="${3:-}"
   local target="${BASE_URL}${path}"
   local meta=""
+  local curl_exit=0
+  local curl_args=(
+    curl -sS -L
+    --http1.1
+    --connect-timeout "$CONNECT_TIMEOUT_SECONDS"
+    --max-time "$LIVE_TIMEOUT_SECONDS"
+    --max-redirs 10
+    -A "$UA"
+  )
 
-  if meta="$(curl -sS -L \
-    --http1.1 \
-    --connect-timeout 15 \
-    --max-time 60 \
-    --max-redirs 10 \
-    -A "$UA" \
-    -o "$out_file" \
-    -w '%{url_effective}|%{http_code}|%{num_redirects}' \
-    "$target")"; then
-    printf '%s\n' "$meta"
-    return 0
+  if [[ -n "$out_headers" ]]; then
+    curl_args+=(-D "$out_headers")
   fi
 
-  : > "$out_file"
-  printf '%s|000|0\n' "$target"
+  curl_args+=(
+    -o "$out_file"
+    -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}'
+    "$target"
+  )
+
+  meta="$("${curl_args[@]}" 2>/dev/null)" || curl_exit=$?
+
+  if [[ ! -f "$out_file" ]]; then
+    : > "$out_file"
+  fi
+  if [[ -n "$out_headers" && ! -s "$out_headers" ]]; then
+    : > "$out_headers"
+  fi
+
+  printf '%s|%s\n' "${meta:-$(default_meta "$target")}" "$curl_exit"
+  return 0
+}
+
+fetch_headers_nofollow() {
+  local path="$1"
+  local out_headers="$2"
+  local target="${BASE_URL}${path}"
+  local meta=""
+  local curl_exit=0
+
+  meta="$(curl -sS \
+    --http1.1 \
+    --connect-timeout "$CONNECT_TIMEOUT_SECONDS" \
+    --max-time "$LIVE_TIMEOUT_SECONDS" \
+    --max-redirs 0 \
+    -A "$UA" \
+    -D "$out_headers" \
+    -o /dev/null \
+    -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}' \
+    "$target" 2>/dev/null)" || curl_exit=$?
+
+  if [[ ! -s "$out_headers" ]]; then
+    : > "$out_headers"
+  fi
+
+  printf '%s|%s\n' "${meta:-$(default_meta "$target")}" "$curl_exit"
+  return 0
+}
+
+log_route_timing() {
+  local label="$1"
+  local meta="$2"
+  local headers_file="$3"
+  local status dns connect tls ttfb total size_download outcome edge_mode route_class cf_cache cache_control release store_source store_static store_cache extra
+
+  [[ -f "$headers_file" ]] || : > "$headers_file"
+
+  status="$(meta_status "$meta")"
+  dns="$(meta_field "$meta" 4)"
+  connect="$(meta_field "$meta" 5)"
+  tls="$(meta_field "$meta" 6)"
+  ttfb="$(meta_field "$meta" 7)"
+  total="$(meta_field "$meta" 8)"
+  size_download="$(meta_field "$meta" 9)"
+  outcome="$(meta_outcome "$meta")"
+  edge_mode="$(extract_header_value "$headers_file" "x-gg-edge-mode")"
+  route_class="$(extract_header_value "$headers_file" "x-gg-route-class")"
+  cf_cache="$(extract_header_value "$headers_file" "cf-cache-status")"
+  cache_control="$(extract_header_value "$headers_file" "cache-control")"
+  release="$(extract_header_value "$headers_file" "x-gg-release")"
+  store_source="$(extract_header_value "$headers_file" "x-gg-store-source")"
+  store_static="$(extract_header_value "$headers_file" "x-gg-store-static")"
+  store_cache="$(extract_header_value "$headers_file" "x-gg-store-cache-policy")"
+  extra=""
+
+  [[ -n "$store_source" ]] && extra="${extra} store-source=${store_source}"
+  [[ -n "$store_static" ]] && extra="${extra} store-static=${store_static}"
+  [[ -n "$store_cache" ]] && extra="${extra} store-cache=${store_cache}"
+
+  log_info "timing ${label} outcome=${outcome} status=${status:-000} dns=${dns:-0} connect=${connect:-0} tls=${tls:-0} ttfb=${ttfb:-0} total=${total:-0} bytes=${size_download:-0} edge=${edge_mode:-missing} route=${route_class:-missing} cf-cache-status=${cf_cache:-missing} cache-control=${cache_control:-missing} release=${release:-missing}${extra}"
+}
+
+report_unreachable() {
+  local label="$1"
+  local meta="$2"
+  local reason="unreachable"
+  if meta_is_timeout "$meta"; then
+    reason="timeout"
+  fi
+  log_fail "${label} ${reason} (status=$(meta_status "$meta") curl_exit=$(meta_exit_code "$meta") ttfb=$(meta_field "$meta" 7) total=$(meta_field "$meta" 8) timeout=${LIVE_TIMEOUT_SECONDS}s)"
   return 0
 }
 
@@ -143,7 +285,13 @@ check_root_headers() {
   local body_file="$tmp_dir/root_body.html"
   local meta status contract_header reasons_header robots_header content_type
   meta="$(fetch_headers "/" "$headers_file")"
-  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  log_route_timing "/" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/" "$meta"
+    return
+  fi
 
   contract_header="$(extract_header_value "$headers_file" "x-gg-template-contract" | tr '[:upper:]' '[:lower:]')"
   reasons_header="$(extract_header_value "$headers_file" "x-gg-template-contract-reasons" | tr '[:upper:]' '[:lower:]')"
@@ -179,21 +327,33 @@ check_root_headers() {
 
   # fetch body only for lightweight diagnostics if contract mismatches
   if [[ "$contract_header" != "ok" ]]; then
-    fetch_body "/" "$body_file" >/dev/null
-    grep -qi 'id=.gg-shell.' "$body_file" || log_warn "/ body diagnostic: gg-shell marker not found"
-    grep -qi 'id=.main.' "$body_file" || log_warn "/ body diagnostic: main landmark marker not found"
-    grep -qi 'id=.gg-dock.' "$body_file" || log_warn "/ body diagnostic: gg-dock marker not found"
-    grep -qi 'id=.gg-command-panel.' "$body_file" || log_warn "/ body diagnostic: gg-command-panel marker not found"
-    grep -qi 'id=.gg-preview-sheet.' "$body_file" || log_warn "/ body diagnostic: gg-preview-sheet marker not found"
-    grep -qi 'id=.gg-more-panel.' "$body_file" || log_warn "/ body diagnostic: gg-more-panel marker not found"
+    local body_meta
+    body_meta="$(fetch_body "/" "$body_file")"
+    if can_check_body "$body_meta" "$body_file"; then
+      grep -qi 'id=.gg-shell.' "$body_file" || log_warn "/ body diagnostic: gg-shell marker not found"
+      grep -qi 'id=.main.' "$body_file" || log_warn "/ body diagnostic: main landmark marker not found"
+      grep -qi 'id=.gg-dock.' "$body_file" || log_warn "/ body diagnostic: gg-dock marker not found"
+      grep -qi 'id=.gg-command-panel.' "$body_file" || log_warn "/ body diagnostic: gg-command-panel marker not found"
+      grep -qi 'id=.gg-preview-sheet.' "$body_file" || log_warn "/ body diagnostic: gg-preview-sheet marker not found"
+      grep -qi 'id=.gg-more-panel.' "$body_file" || log_warn "/ body diagnostic: gg-more-panel marker not found"
+    else
+      log_warn "/ body diagnostic skipped because the route body was unavailable"
+    fi
   fi
 }
 
 check_flags_endpoint() {
   local flags_file="$tmp_dir/flags.json"
+  local headers_file="$tmp_dir/flags_headers.txt"
   local meta status
-  meta="$(fetch_body "/flags.json" "$flags_file")"
-  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  meta="$(fetch_body "/flags.json" "$flags_file" "$headers_file")"
+  log_route_timing "/flags.json" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/flags.json" "$meta"
+    return
+  fi
 
   if [[ "$status" != "200" ]]; then
     log_fail "/flags.json expected status 200 (got ${status:-000})"
@@ -217,7 +377,14 @@ check_sw_asset() {
   local headers_file="$tmp_dir/sw_headers.txt"
   local meta status content_type
   meta="$(fetch_headers "/sw.js" "$headers_file")"
-  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  log_route_timing "/sw.js" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/sw.js" "$meta"
+    return
+  fi
+
   content_type="$(extract_header_value "$headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
 
   if [[ "$status" != "200" ]]; then
@@ -233,7 +400,13 @@ check_landing_route() {
   local headers_file="$tmp_dir/landing_headers.txt"
   local meta status
   meta="$(fetch_headers "/landing" "$headers_file")"
-  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  log_route_timing "/landing" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/landing" "$meta"
+    return
+  fi
 
   if [[ "$status" != "200" ]]; then
     log_fail "/landing expected status 200 (got ${status:-000})"
@@ -242,21 +415,16 @@ check_landing_route() {
 
 check_landing_html_redirect() {
   local headers_file="$tmp_dir/landing_html_headers.txt"
-  local target="${BASE_URL}/landing.html"
-  local status location
+  local meta status location
 
-  curl -sS \
-    --http1.1 \
-    --connect-timeout 15 \
-    --max-time 60 \
-    --max-redirs 0 \
-    -A "$UA" \
-    -D "$headers_file" \
-    -o /dev/null \
-    "$target" || true
-
-  status="$(awk 'toupper($1) ~ /^HTTP\/[0-9.]+$/ { code=$2 } END { print code }' "$headers_file")"
+  meta="$(fetch_headers_nofollow "/landing.html" "$headers_file")"
+  status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/landing.html" "$meta"
+    return
+  fi
 
   if [[ "$status" != "301" && "$status" != "302" && "$status" != "308" ]]; then
     log_warn "/landing.html did not return redirect status (got ${status:-000})"
@@ -271,23 +439,44 @@ check_landing_html_redirect() {
 check_store_route() {
   local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
-  local headers_meta meta final status release_header fingerprint_header dock_snippet preload_snippet grid_snippet saved_marker proof_output
-  headers_meta="$(fetch_headers "/store" "$headers_file")"
-  meta="$(fetch_body "/store" "$body_file")"
-  final="$(printf '%s' "$meta" | cut -d'|' -f1)"
-  status="$(printf '%s' "$meta" | cut -d'|' -f2)"
+  local meta final status release_header fingerprint_header robots_header store_source_header store_static_header store_cache_header dock_snippet preload_snippet grid_snippet saved_marker proof_output
+  meta="$(fetch_body "/store" "$body_file" "$headers_file")"
+  log_route_timing "/store" "$meta" "$headers_file"
+  final="$(meta_field "$meta" 1)"
+  status="$(meta_status "$meta")"
   release_header="$(extract_header_value "$headers_file" "x-gg-release")"
   fingerprint_header="$(extract_header_value "$headers_file" "x-gg-template-fingerprint")"
+  robots_header="$(extract_header_value "$headers_file" "x-robots-tag" | tr '[:upper:]' '[:lower:]')"
+  store_source_header="$(extract_header_value "$headers_file" "x-gg-store-source")"
+  store_static_header="$(extract_header_value "$headers_file" "x-gg-store-static")"
+  store_cache_header="$(extract_header_value "$headers_file" "x-gg-store-cache-policy")"
+  saved_marker="absent"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/store" "$meta"
+    return
+  fi
+
+  if [[ "$status" != "200" ]]; then
+    log_fail "/store expected status 200 (got ${status:-000})"
+    return
+  fi
+
+  if ! can_check_body "$meta" "$body_file"; then
+    log_fail "/store body unavailable for validation despite status 200"
+    return
+  fi
+
   dock_snippet="$(extract_body_snippet "$body_file" 'data-store-dock')"
   preload_snippet="$(extract_body_snippet "$body_file" 'STORE_LCP_PRELOAD_START')"
   grid_snippet="$(extract_body_snippet "$body_file" 'STORE_STATIC_GRID_START')"
-  saved_marker="absent"
 
   if grep -Eq 'data-store-dock=["'"'"']saved["'"'"']' "$body_file"; then
     saved_marker="present"
   fi
 
   log_info "/store freshness x-gg-release=${release_header:-missing} x-gg-template-fingerprint=${fingerprint_header:-missing}"
+  log_info "/store source x-gg-store-source=${store_source_header:-missing} x-gg-store-static=${store_static_header:-missing} x-gg-store-cache-policy=${store_cache_header:-missing}"
   log_info "/store freshness data-store-dock-saved=${saved_marker}"
   if [[ -n "$dock_snippet" ]]; then
     log_info "/store freshness data-store-dock-snippet=${dock_snippet}"
@@ -303,11 +492,6 @@ check_store_route() {
     log_info "/store freshness static-grid-snippet=${grid_snippet}"
   else
     log_info "/store freshness static-grid-snippet=missing"
-  fi
-
-  if [[ "$status" != "200" ]]; then
-    log_fail "/store expected status 200 (got ${status:-000})"
-    return
   fi
 
   if [[ "$final" != "${BASE_URL}/store" ]]; then
@@ -404,25 +588,61 @@ check_store_route() {
 }
 
 check_diagnostic_mode_contracts() {
+  local prod_headers_http="$tmp_dir/store_prod_headers.http"
+  local dev_headers_http="$tmp_dir/store_dev_headers.http"
   local prod_headers_file="$tmp_dir/store_prod_headers.json"
+  local dev_headers_file="$tmp_dir/store_dev_headers.json"
   local prod_slash_file="$tmp_dir/store_prod_slash_headers.json"
   local dev_slash_file="$tmp_dir/store_dev_slash_headers.json"
   local prod_robots_file="$tmp_dir/store_prod_robots.json"
-  local prod_headers_meta prod_slash_meta dev_slash_meta prod_robots_meta
-  local prod_mode prod_robots prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
+  local prod_headers_meta dev_headers_meta prod_slash_meta dev_slash_meta prod_robots_meta
+  local prod_mode prod_robots dev_robots prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
 
-  prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file")"
+  prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file" "$prod_headers_http")"
+  dev_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=development" "$dev_headers_file" "$dev_headers_http")"
   prod_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=production" "$prod_slash_file")"
   dev_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=development" "$dev_slash_file")"
   prod_robots_meta="$(fetch_body "/__gg/robots?mode=production" "$prod_robots_file")"
+  log_route_timing "/__gg/headers?url=/store&mode=production" "$prod_headers_meta" "$prod_headers_http"
 
-  if [[ "$(printf '%s' "$prod_headers_meta" | cut -d'|' -f2)" != "200" ]]; then
+  if meta_is_unreachable "$prod_headers_meta"; then
+    report_unreachable "/__gg/headers?url=/store&mode=production" "$prod_headers_meta"
+    return
+  fi
+
+  if ! can_check_body "$prod_headers_meta" "$prod_headers_file"; then
+    log_fail "/__gg/headers?url=/store&mode=production body unavailable for diagnostics"
+    return
+  fi
+
+  if [[ "$(meta_status "$prod_headers_meta")" != "200" ]]; then
     log_fail "/__gg/headers?url=/store&mode=production expected status 200"
+    return
+  fi
+
+  if meta_is_unreachable "$dev_headers_meta"; then
+    report_unreachable "/__gg/headers?url=/store&mode=development" "$dev_headers_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_slash_meta"; then
+    report_unreachable "/__gg/headers?url=/store/&mode=production" "$prod_slash_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$dev_slash_meta"; then
+    report_unreachable "/__gg/headers?url=/store/&mode=development" "$dev_slash_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_robots_meta"; then
+    report_unreachable "/__gg/robots?mode=production" "$prod_robots_meta"
     return
   fi
 
   prod_mode="$(json_field "$prod_headers_file" "mode" || true)"
   prod_robots="$(json_field "$prod_headers_file" "robots" || true)"
+  dev_robots="$(json_field "$dev_headers_file" "robots" || true)"
   prod_slash_to="$(json_field "$prod_slash_file" "redirects.to" || true)"
   prod_slash_status="$(json_field "$prod_slash_file" "redirects.status" || true)"
   dev_slash_status="$(json_field "$dev_slash_file" "redirects.status" || true)"
@@ -430,8 +650,20 @@ check_diagnostic_mode_contracts() {
 
   [[ "$prod_mode" == "production" ]] || log_fail "production diagnostics preview did not report mode=production"
 
-  if [[ "$prod_robots" == *"noindex"* || "$prod_robots" == *"nofollow"* || "$prod_robots" == *"nosnippet"* || "$prod_robots" == *"noimageindex"* ]]; then
+  if [[ "$prod_robots" == *"noindex"* || "$prod_robots" == *"nofollow"* || "$prod_robots" == *"nosnippet"* || "$prod_robots" == *"noimageindex"* || "$prod_robots" == *"max-snippet:0"* || "$prod_robots" == *"max-image-preview:none"* ]]; then
     log_fail "production diagnostics preview for /store is not indexable (${prod_robots:-missing})"
+  else
+    log_info "PASS: production diagnostics preview for /store is indexable (${prod_robots:-missing})"
+  fi
+
+  if [[ "$dev_robots" == *"noindex"* ]]; then
+    log_info "PASS: development diagnostics preview for /store keeps lockdown robots (${dev_robots})"
+  else
+    log_warn "development diagnostics preview for /store no longer shows the expected noindex guard (${dev_robots:-missing})"
+  fi
+
+  if [[ "$current_mode" != "production" ]]; then
+    log_warn "current deployment mode is ${current_mode:-unknown}; production /store indexability result is simulated via diagnostics"
   fi
 
   if [[ "$prod_slash_status" != "301" && "$prod_slash_status" != "308" ]]; then
@@ -446,11 +678,11 @@ check_diagnostic_mode_contracts() {
     log_warn "development diagnostics preview for /store/ is not redirecting to /store yet (status=${dev_slash_status})"
   fi
 
-  if [[ "$prod_robots_txt" == *"User-agent: OAI-SearchBot"$'\n'"Disallow: /"* ]]; then
-    log_fail "production robots preview blocks OAI-SearchBot"
+  if [[ "$prod_robots_txt" != *"User-agent: OAI-SearchBot"$'\n'"Allow: /"* ]]; then
+    log_fail "production robots preview must explicitly allow OAI-SearchBot"
   fi
-  if [[ "$prod_robots_txt" == *"User-agent: Googlebot"$'\n'"Disallow: /"* ]]; then
-    log_fail "production robots preview blocks Googlebot"
+  if [[ "$prod_robots_txt" != *"User-agent: Googlebot"$'\n'"Allow: /"* ]]; then
+    log_fail "production robots preview must explicitly allow Googlebot"
   fi
 
   log_info "diagnostic preview production /store robots=${prod_robots:-missing}"
@@ -460,21 +692,16 @@ check_diagnostic_mode_contracts() {
 check_store_redirect() {
   local path="$1"
   local headers_file="$tmp_dir$(printf '%s' "$path" | tr '/.' '__').headers.txt"
-  local target="${BASE_URL}${path}"
-  local status location
+  local meta status location
 
-  curl -sS \
-    --http1.1 \
-    --connect-timeout 15 \
-    --max-time 60 \
-    --max-redirs 0 \
-    -A "$UA" \
-    -D "$headers_file" \
-    -o /dev/null \
-    "$target" || true
-
-  status="$(awk 'toupper($1) ~ /^HTTP\/[0-9.]+$/ { code=$2 } END { print code }' "$headers_file")"
+  meta="$(fetch_headers_nofollow "$path" "$headers_file")"
+  status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "$path" "$meta"
+    return
+  fi
 
   if [[ "$status" != "301" && "$status" != "302" && "$status" != "308" ]]; then
     log_fail "${path} did not return redirect status (got ${status:-000})"
@@ -488,20 +715,16 @@ check_store_redirect() {
 
 check_store_slash_redirect_live() {
   local headers_file="$tmp_dir/store_slash_live.headers.txt"
-  local status location
+  local meta status location
 
-  curl -sS \
-    --http1.1 \
-    --connect-timeout 15 \
-    --max-time 60 \
-    --max-redirs 0 \
-    -A "$UA" \
-    -D "$headers_file" \
-    -o /dev/null \
-    "${BASE_URL}/store/" || true
-
-  status="$(awk 'toupper($1) ~ /^HTTP\/[0-9.]+$/ { code=$2 } END { print code }' "$headers_file")"
+  meta="$(fetch_headers_nofollow "/store/" "$headers_file")"
+  status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/store/" "$meta"
+    return
+  fi
 
   if [[ "$status" == "301" || "$status" == "302" || "$status" == "308" ]]; then
     if [[ "$location" != "${BASE_URL}/store" && "$location" != "/store" ]]; then

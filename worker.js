@@ -509,6 +509,30 @@ function cacheControlForRoute(route, flags) {
   }
 }
 
+function summarizeStoreCachePolicy(cacheControl) {
+  const value = String(cacheControl || "").toLowerCase();
+  if (value.includes("stale-while-revalidate")) return "swr";
+  if (value.includes("no-store")) return "no-store";
+  return "cacheable";
+}
+
+function storeDebugHeaders(route, flags, response, detail = {}) {
+  if (route !== "store" || isRedirectStatus(response.status)) return null;
+
+  const cacheControl = cacheControlForRoute(route, flags);
+  const source = String(detail.source || "unknown");
+  let staticState = String(detail.static || "unknown");
+
+  if (source === "assets") staticState = response.ok ? "present" : "missing";
+  else if ((source === "blogger-origin" || source === "worker-fallback") && staticState === "unknown") staticState = "missing";
+
+  return {
+    "X-GG-Store-Source": source,
+    "X-GG-Store-Static": staticState,
+    "X-GG-Store-Cache-Policy": summarizeStoreCachePolicy(cacheControl),
+  };
+}
+
 function forceContentType(route, pathname, current) {
   if (route === "service-worker") return "application/javascript; charset=utf-8";
   if (route === "manifest") return "application/manifest+json; charset=utf-8";
@@ -539,6 +563,7 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   const url = new URL(request.url);
   const route = options.route || classifyRoute(request);
   const headers = new Headers(resp.headers);
+  const storeHeaders = storeDebugHeaders(route, flags, resp, options.storeDebug || {});
 
   baseSecurityHeaders(headers);
 
@@ -559,6 +584,13 @@ function withResponsePolicy(resp, request, flags, options = {}) {
 
   if ((isHtmlContentType(contentType) || route === "landing") && flags.csp_report_enabled) {
     headers.set("Content-Security-Policy-Report-Only", cspReportOnlyValue(request));
+  }
+
+  if (storeHeaders) {
+    for (const [name, value] of Object.entries(storeHeaders)) {
+      if (!value) continue;
+      headers.set(name, String(value));
+    }
   }
 
   if (options.headers && typeof options.headers === "object") {
@@ -653,6 +685,13 @@ function buildRobotsTxt(request, flags) {
       lines.push("");
     }
   }
+
+  lines.push("User-agent: Googlebot");
+  lines.push("Allow: /");
+  lines.push("");
+  lines.push("User-agent: OAI-SearchBot");
+  lines.push("Allow: /");
+  lines.push("");
 
   lines.push("User-agent: *");
   lines.push("Allow: /");
@@ -981,12 +1020,12 @@ function shouldBypassHtmlMutation(pathname) {
 async function handleHtml(request, flags, response, options = {}) {
   const route = options.route || classifyRoute(request);
   const url = new URL(request.url);
-  if (!isHtmlResponse(response)) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
-  if (shouldBypassHtmlMutation(url.pathname)) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
+  if (!isHtmlResponse(response)) return withResponsePolicy(response, request, flags, { route, headers: options.headers, storeDebug: options.storeDebug });
+  if (shouldBypassHtmlMutation(url.pathname)) return withResponsePolicy(response, request, flags, { route, headers: options.headers, storeDebug: options.storeDebug });
 
   let html = "";
-  try { html = await response.clone().text(); } catch (_) { return withResponsePolicy(response, request, flags, { route, headers: options.headers }); }
-  if (!html) return withResponsePolicy(response, request, flags, { route, headers: options.headers });
+  try { html = await response.clone().text(); } catch (_) { return withResponsePolicy(response, request, flags, { route, headers: options.headers, storeDebug: options.storeDebug }); }
+  if (!html) return withResponsePolicy(response, request, flags, { route, headers: options.headers, storeDebug: options.storeDebug });
 
   let out = html;
   if (flags.edge.mutateLandingContactAnchor) out = normalizeLandingContactHtml(out);
@@ -994,7 +1033,7 @@ async function handleHtml(request, flags, response, options = {}) {
 
   let wrapped = responseFromHtml(response, out);
   if (flags.edge.annotateTemplateContract) wrapped = annotateTemplateContract(wrapped, out);
-  return withResponsePolicy(wrapped, request, flags, { route, headers: options.headers });
+  return withResponsePolicy(wrapped, request, flags, { route, headers: options.headers, storeDebug: options.storeDebug });
 }
 
 function isBloggerBackedHtmlRoute(route) {
@@ -1192,11 +1231,20 @@ async function handleRequest(request, env, ctx) {
           : "store-route-normalization",
       }, { route });
     }
-    return withResponsePolicy(staticResponse, request, flags, { route });
+    return withResponsePolicy(staticResponse, request, flags, {
+      route,
+      storeDebug: route === "store" ? { source: "assets" } : null,
+    });
   }
 
   const origin = await fetchOrigin(request, route, flags);
-  return handleHtml(request, flags, origin.response, { headers: origin.headers, route });
+  return handleHtml(request, flags, origin.response, {
+    headers: origin.headers,
+    route,
+    storeDebug: route === "store"
+      ? { source: isBloggerBackedHtmlRoute(route) ? "blogger-origin" : "worker-fallback" }
+      : null,
+  });
 }
 
 export default {

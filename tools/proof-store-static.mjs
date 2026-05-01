@@ -205,6 +205,10 @@ if (existsSync(WORKER_PATH)) {
   if (!/function productionIndexableHtmlRobotsTag\(\)/.test(workerSource)) fail("worker.js is missing explicit production indexable HTML robots helper");
   if (!/index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1/.test(workerSource)) fail("worker.js is missing the production indexable /store robots tag");
   if (!/flags\.mode !== "production"\) return developmentRobotsTag\(\);/.test(workerSource)) fail("worker.js is missing the non-production robots guard");
+  if (!/X-GG-Store-Source/.test(workerSource)) fail("worker.js is missing the /store source debug header");
+  if (!/X-GG-Store-Static/.test(workerSource)) fail("worker.js is missing the /store static debug header");
+  if (!/User-agent: Googlebot/.test(workerSource)) fail("worker.js is missing explicit Googlebot robots allowance");
+  if (!/User-agent: OAI-SearchBot/.test(workerSource)) fail("worker.js is missing explicit OAI-SearchBot robots allowance");
 }
 
 if (existsSync(FLAGS_PATH)) {
