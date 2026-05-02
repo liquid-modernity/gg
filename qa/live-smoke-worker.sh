@@ -1093,10 +1093,11 @@ if [[ "$failure_class" == "PASS_WITH_WARNINGS" ]]; then
 fi
 
 if [[ "$failure_class" == "INFRA_UNREACHABLE" ]]; then
-  printf 'LIVE SMOKE WORKER RESULT: INFRA_UNREACHABLE\n'
   if is_truthy "$ALLOW_GLOBAL_TIMEOUT_WARN"; then
+    printf 'LIVE SMOKE WORKER RESULT: INFRA_UNREACHABLE_WARN\n'
     exit 0
   fi
+  printf 'LIVE SMOKE WORKER RESULT: INFRA_UNREACHABLE\n'
   exit 1
 fi
 

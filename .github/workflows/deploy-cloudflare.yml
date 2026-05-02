@@ -143,4 +143,10 @@ jobs:
           GG_LIVE_RETRIES: "3"
           GG_LIVE_TIMEOUT_SECONDS: "30"
           GG_LIVE_CONNECT_TIMEOUT_SECONDS: "15"
-        run: npm run gaga:verify-worker-live
+          GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN: ${{ vars.GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN || '0' }}
+        run: |
+          if [ "${GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN}" = "1" ]; then
+            npm run gaga:verify-worker-live:local
+          else
+            npm run gaga:verify-worker-live:strict
+          fi
