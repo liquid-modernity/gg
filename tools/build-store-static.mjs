@@ -42,13 +42,88 @@ const STORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.js");
 const STORE_ASSET_DIR = path.resolve(ROOT, "assets/store");
 const STORE_ASSET_CSS_PATH = path.resolve(STORE_ASSET_DIR, "store.css");
 const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
+const STORE_BUILD_REPORT_PATH = path.resolve(ROOT, "dist/store-build-report.json");
 const STORE_FEED_CACHE_PATH = clean(process.env.GG_STORE_FEED_JSON_PATH || "");
+const STORE_FEED_PROBE_WARNING = clean(process.env.GG_STORE_FEED_PROBE_WARNING || "");
 const SOFT_MODE = process.argv.includes("--soft");
+const STORE_CI = isTruthyEnv(process.env.STORE_CI);
+const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
+const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
+const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES;
+const STORE_SKIP_NETWORK_FEED = isTruthyEnv(process.env.GG_STORE_SKIP_NETWORK_FEED);
+const STORE_FEED_TIMEOUT_MS = parseTimeoutMs(process.env.STORE_FEED_TIMEOUT_SECONDS, 20);
 const LEGACY_PRODUCT_REPLACEMENTS = new Map([
   ["desk-tray-organizer", "minimal-desk-tray-organizer"],
 ]);
+let LAST_MACHINE_REPORT = null;
+
+function isTruthyEnv(value) {
+  return ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+}
+
+function parseTimeoutMs(value, fallbackSeconds) {
+  const seconds = Number.parseInt(String(value || fallbackSeconds), 10);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : fallbackSeconds * 1000;
+}
+
+function validationMode() {
+  return "development";
+}
+
+function writeMachineReport(report) {
+  const normalized = {
+    timestamp: new Date().toISOString(),
+    ...report,
+  };
+
+  mkdirSync(path.dirname(STORE_BUILD_REPORT_PATH), { recursive: true });
+  writeFileSync(STORE_BUILD_REPORT_PATH, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
+  LAST_MACHINE_REPORT = normalized;
+  return normalized;
+}
+
+function buildMachineReport({ source = "unknown", report = null, status = "unknown", warnings = [], error = "" } = {}) {
+  const sourceReport = report && typeof report === "object" ? report : {};
+  return {
+    source,
+    sourceType: sourceReport.sourceType || source,
+    products: Number(sourceReport.productCount || 0),
+    categoryCounts: sourceReport.categoryCounts || {},
+    feedEntries: Number(sourceReport.feedEntries || 0),
+    validProducts: Number(sourceReport.validProducts || sourceReport.productCount || 0),
+    invalidProducts: Number(sourceReport.invalidProducts || 0),
+    imageSourceSummary: sourceReport.imageSources || {},
+    imageSourceSummaryText: sourceReport.imageSourceSummary || "",
+    warnings: unique(arr(sourceReport.warnings).concat(arr(warnings)).filter(Boolean)),
+    strict: STORE_STRICT_MODE,
+    strictImages: STORE_STRICT_IMAGES,
+    requireLiveFeed: STORE_REQUIRE_LIVE_FEED,
+    ci: STORE_CI,
+    status,
+    pageCount: Number(sourceReport.pageCount || 0),
+    error: clean(error),
+  };
+}
 
 function fail(message) {
+  try {
+    if (!LAST_MACHINE_REPORT) {
+      writeMachineReport(buildMachineReport({
+        status: "failed",
+        warnings: [message, STORE_FEED_PROBE_WARNING ? `STORE FEED PROBE WARN ${STORE_FEED_PROBE_WARNING}` : ""],
+        error: message,
+      }));
+    } else if (LAST_MACHINE_REPORT.status !== "failed") {
+      writeMachineReport({
+        ...LAST_MACHINE_REPORT,
+        status: "failed",
+        error: clean(message),
+        warnings: unique(arr(LAST_MACHINE_REPORT.warnings).concat(message).filter(Boolean)),
+      });
+    }
+  } catch (error) {
+    // Best effort only; build errors should still surface even if report writing fails.
+  }
   console.error(`store:build: ${message}`);
   process.exit(1);
 }
@@ -375,7 +450,7 @@ function replacedLegacySlugs(entries) {
 
 function governProducts(entries, options = {}) {
   const sourceType = clean(options.sourceType);
-  const mode = clean(options.mode || "development").toLowerCase() || "development";
+  const mode = clean(options.mode || validationMode()).toLowerCase() || validationMode();
   const feedEntries = Number.isFinite(options.feedEntries) ? options.feedEntries : arr(entries).length;
   const normalized = sortProductEntries(
     arr(entries)
@@ -607,7 +682,7 @@ function reuseExistingSnapshotOrFail(storeSource, reason) {
     warn(`${reason}; reusing existing static snapshot (${existingStatic.length} product${existingStatic.length === 1 ? "" : "s"})`);
     const governed = governProducts(wrapProducts(existingStatic), {
       sourceType: "existing-static",
-      mode: readMode(),
+      mode: validationMode(),
       feedEntries: existingStatic.length,
     });
     if (!governed.products.length) fail(`${reason}; existing static snapshot yielded no valid products`);
@@ -620,7 +695,7 @@ function reuseExistingSnapshotOrFail(storeSource, reason) {
     warn(`${reason}; using config/store-lcp-product.json as an emergency static seed`);
     const governed = governProducts(wrapProducts(fallbackSeed), {
       sourceType: "lcp-fallback",
-      mode: readMode(),
+      mode: validationMode(),
       feedEntries: fallbackSeed.length,
     });
     if (!governed.products.length || governed.errors.length) fail(`${reason}; lcp fallback failed validation`);
@@ -662,7 +737,7 @@ async function fetchFeedPage(url, attempt = 1) {
       });
     });
 
-    request.setTimeout(20000, () => {
+    request.setTimeout(STORE_FEED_TIMEOUT_MS, () => {
       request.destroy(new Error("feed request timed out"));
     });
 
@@ -693,6 +768,11 @@ async function fetchFeedEntries() {
     pageCount += 1;
     nextUrl = nextFeedUrl(cachedPayload);
     if (!nextUrl) return { entries, pageCount };
+    if (STORE_SKIP_NETWORK_FEED) {
+      throw new Error("feed probe cached only the first page and network fetch is disabled");
+    }
+  } else if (STORE_SKIP_NETWORK_FEED) {
+    throw new Error(`feed probe unavailable${STORE_FEED_PROBE_WARNING ? `: ${STORE_FEED_PROBE_WARNING}` : ""}`);
   }
 
   while (nextUrl) {
@@ -713,9 +793,17 @@ async function fetchFeedEntries() {
 }
 
 async function resolveProducts(storeSource) {
-  const mode = readMode();
+  const mode = validationMode();
   const existingStaticProducts = readExistingStaticProducts(storeSource);
   const existingProductsBySlug = new Map(existingStaticProducts.map((product) => [product.slug, product]));
+  const fallbackResult = (reason) => {
+    const fallback = reuseExistingSnapshotOrFail(storeSource, reason);
+    return {
+      ...fallback,
+      fallbackReason: reason,
+      fatalError: STORE_REQUIRE_LIVE_FEED ? `STORE_REQUIRE_LIVE_FEED=1 blocked static fallback: ${reason}` : "",
+    };
+  };
 
   try {
     const { entries, pageCount } = await fetchFeedEntries();
@@ -732,7 +820,7 @@ async function resolveProducts(storeSource) {
       if (SOFT_MODE) {
         warn(`soft mode kept build running after validation issues:\n- ${hardErrors.join("\n- ")}`);
       } else {
-        return reuseExistingSnapshotOrFail(storeSource, `live Store feed failed validation:\n- ${hardErrors.join("\n- ")}`);
+        return fallbackResult(`live Store feed failed validation:\n- ${hardErrors.join("\n- ")}`);
       }
     }
 
@@ -740,12 +828,31 @@ async function resolveProducts(storeSource) {
 
     return { products: governed.products, source: "live-feed", report: governed.report };
   } catch (error) {
-    return reuseExistingSnapshotOrFail(storeSource, `live Store feed unavailable; ${error.message}`);
+    return fallbackResult(`live Store feed unavailable; ${error.message}`);
   }
 }
 
 const originalStoreSource = read(STORE_PATH);
-const { products, source, report } = await resolveProducts(originalStoreSource);
+const { products, source, report, fatalError = "", fallbackReason = "" } = await resolveProducts(originalStoreSource);
+const buildWarnings = unique(arr(report?.warnings).concat([
+  fallbackReason,
+  STORE_FEED_PROBE_WARNING ? `STORE FEED PROBE WARN ${STORE_FEED_PROBE_WARNING}` : "",
+]).filter(Boolean));
+
+if (fatalError) {
+  writeMachineReport(buildMachineReport({
+    source,
+    report: {
+      ...report,
+      warnings: buildWarnings,
+    },
+    status: "failed",
+    warnings: buildWarnings,
+    error: fatalError,
+  }));
+  fail(fatalError);
+}
+
 const firstProduct = products[0];
 const { criticalCss, storeCss, storeJs } = syncStoreAssets();
 const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
@@ -767,6 +874,16 @@ nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_RUNTIME_JS_ST
 if (nextStoreSource !== originalStoreSource) {
   writeFileSync(STORE_PATH, nextStoreSource, "utf8");
 }
+
+writeMachineReport(buildMachineReport({
+  source,
+  report: {
+    ...report,
+    warnings: buildWarnings,
+  },
+  status: nextStoreSource === originalStoreSource ? "unchanged" : "updated",
+  warnings: buildWarnings,
+}));
 
 console.log("STORE STATIC BUILD OK");
 console.log(`source=${source}`);

@@ -36,6 +36,44 @@ jobs:
             echo "- This workflow does **not** deploy production."
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Build/proof Yellow Cart store
+        run: npm run store:check:ci
+
+      - name: Verify store split assets
+        run: |
+          test -f store.html
+          test -f assets/store/store.css
+          test -f assets/store/store.js
+          grep -Eq '<link[^>]+href="/assets/store/store\.css"' store.html
+          grep -Eq '<script[^>]+src="/assets/store/store\.js"[^>]*defer' store.html
+
+      - name: Summarize store build report
+        run: |
+          node --input-type=module <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import { readFileSync } from "node:fs";
+          const report = JSON.parse(readFileSync("dist/store-build-report.json", "utf8"));
+          const categorySummary = Object.entries(report.categoryCounts || {}).map(([key, value]) => `${key}:${value}`).join(", ") || "none";
+          const imageSummary = Object.entries(report.imageSourceSummary || {}).map(([key, value]) => `${key}:${value}`).join(", ") || "none";
+          const warnings = Array.isArray(report.warnings) ? report.warnings : [];
+          console.log("### Store Build Report");
+          console.log(`- source: \`${report.source}\``);
+          console.log(`- products: \`${report.products}\``);
+          console.log(`- validProducts: \`${report.validProducts}\``);
+          console.log(`- invalidProducts: \`${report.invalidProducts}\``);
+          console.log(`- feedEntries: \`${report.feedEntries}\``);
+          console.log(`- categoryCounts: \`${categorySummary}\``);
+          console.log(`- imageSourceSummary: \`${imageSummary}\``);
+          console.log(`- strict: \`${report.strict}\``);
+          console.log(`- warnings: \`${warnings.length}\``);
+          EOF
+
+      - name: Upload store build report
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-build-report-ci
+          path: dist/store-build-report.json
+          if-no-files-found: error
+
       - name: Build Blogger publish artifact
         run: npm run gaga:template:pack
 

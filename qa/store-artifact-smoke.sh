@@ -5,14 +5,21 @@ export LC_ALL=C
 
 artifact_file=".cloudflare-build/public/store.html"
 source_file="store.html"
+artifact_root=".cloudflare-build/public"
+source_root="."
 build_tool="tools/build-store-static.mjs"
 proof_tool="tools/proof-store-static.mjs"
 target_file="$source_file"
+target_root="$source_root"
 failures=0
 
 if [[ -f "$artifact_file" && ! "$source_file" -nt "$artifact_file" ]]; then
   target_file="$artifact_file"
+  target_root="$artifact_root"
 fi
+
+target_store_js="${target_root}/assets/store/store.js"
+target_store_css="${target_root}/assets/store/store.css"
 
 log_fail() {
   failures=$((failures + 1))
@@ -52,13 +59,23 @@ check_repo_pattern() {
   grep -Eq -- "$pattern" "$file_path" || log_fail "$message"
 }
 
+check_file_pattern() {
+  local pattern="$1"
+  local file_path="$2"
+  local message="$3"
+  grep -Eq -- "$pattern" "$file_path" || log_fail "$message"
+}
+
 check_file_exists "$build_tool" "tools/build-store-static.mjs is missing"
 check_file_exists "$proof_tool" "tools/proof-store-static.mjs is missing"
+check_file_exists "$target_store_js" "store runtime asset is missing: ${target_store_js}"
+check_file_exists "$target_store_css" "store stylesheet asset is missing: ${target_store_css}"
 
 printf 'SMOKE-STORE-ARTIFACT lane=ARTIFACT source=%s\n' "$target_file"
 
-check_repo_pattern '"store:build"[[:space:]]*:[[:space:]]*"node tools/build-store-static\.mjs"' "package.json" "package.json missing store:build script"
+check_repo_pattern '"store:build"[[:space:]]*:[[:space:]]*"bash tools/store-build\.sh"' "package.json" "package.json missing store:build split-asset wrapper script"
 check_repo_pattern '"store:proof"[[:space:]]*:[[:space:]]*"node tools/proof-store-static\.mjs"' "package.json" "package.json missing store:proof script"
+check_repo_pattern '"store:check:ci"[[:space:]]*:[[:space:]]*"STORE_CI=1 STORE_REQUIRE_LIVE_FEED=0 STORE_STRICT_IMAGES=0 npm run store:check"' "package.json" "package.json missing store:check:ci script"
 check_repo_pattern 'function developmentRobotsTag\(\)' "worker.js" "worker.js missing development robots helper"
 check_repo_pattern 'function productionIndexableHtmlRobotsTag\(\)' "worker.js" "worker.js missing production indexable robots helper"
 check_repo_pattern 'flags\.mode !== "production"\) return developmentRobotsTag\(\);' "worker.js" "worker.js missing dev/staging robots lockdown guard"
@@ -84,18 +101,9 @@ check_pattern 'STORE_STATIC_GRID_START' "artifact STORE_STATIC_GRID_START marker
 check_pattern 'STORE_STATIC_PRODUCTS_JSON_START' "artifact STORE_STATIC_PRODUCTS_JSON_START marker is missing"
 check_pattern 'STORE_ITEMLIST_JSONLD_START' "artifact STORE_ITEMLIST_JSONLD_START marker is missing"
 check_pattern 'STORE_STATIC_SEMANTIC_PRODUCTS_START' "artifact STORE_STATIC_SEMANTIC_PRODUCTS_START marker is missing"
-check_pattern 'STORE_LCP_PRODUCT_START' "artifact STORE_LCP_PRODUCT_START marker is missing"
+check_pattern 'href=["'"'"']/assets/store/store\.css["'"'"']' "artifact store stylesheet reference is missing"
+check_pattern 'src=["'"'"']/assets/store/store\.js["'"'"'][^>]*defer' "artifact store runtime asset reference is missing"
 check_pattern 'data-store-feed-url=["'"'"']/feeds/posts/default/-/Store\?alt=json&amp;max-results=50["'"'"']|data-store-feed-url=["'"'"']/feeds/posts/default/-/Store\?alt=json&max-results=50["'"'"']' "artifact Store feed contract is missing"
-check_pattern 'function readStaticProducts\(' "artifact readStaticProducts helper is missing"
-check_pattern 'function hydrateStaticProducts\(' "artifact hydrateStaticProducts helper is missing"
-check_pattern 'state\.feedSource = ["'"'"']static["'"'"']' "artifact static feedSource boot path is missing"
-check_pattern 'syncRequestedPreview\(\);' "artifact static deep-link sync is missing"
-check_pattern 'function updateItemListJsonLd\(' "artifact ItemList JSON-LD updater is missing"
-check_pattern 'function setCardImagePriority\(' "artifact image priority helper is missing"
-check_pattern 'var loading = index === 0 \? ["'"'"']eager["'"'"'] : ["'"'"']lazy["'"'"']' "artifact card loading priority contract is missing"
-check_pattern 'var fetchPriority = index === 0 \? ["'"'"']high["'"'"'] : ["'"'"']auto["'"'"']' "artifact card fetchpriority contract is missing"
-check_pattern 'button\.href = canonicalProductUrl\(item\) \|\| productStoreAbsoluteUrl\(item\)' "artifact card href canonical fallback binding is missing"
-check_pattern 'event\.preventDefault\(\);' "artifact preview interception preventDefault is missing"
 check_pattern 'data-copy=["'"'"']marketplaceCtaLabel["'"'"']' "artifact preview marketplace CTA label hook is missing"
 check_pattern 'data-copy=["'"'"']marketplaceFootnote["'"'"']' "artifact preview marketplace footnote hook is missing"
 check_pattern 'id=["'"'"']store-preview-why-picked["'"'"']' "artifact preview why-picked block is missing"
@@ -108,11 +116,30 @@ check_pattern 'id=["'"'"']store-link-tokopedia["'"'"'][^>]*target=["'"'"']_blank
 check_pattern 'id=["'"'"']store-link-shopee["'"'"'][^>]*aria-label=["'"'"']' "artifact Shopee CTA aria-label is missing"
 check_pattern 'id=["'"'"']store-link-tokopedia["'"'"'][^>]*aria-label=["'"'"']' "artifact Tokopedia CTA aria-label is missing"
 check_pattern 'id=["'"'"']store-link-tiktok["'"'"'][^>]*aria-label=["'"'"']' "artifact TikTok CTA aria-label is missing"
-check_pattern 'marketplaceAriaLabel\(' "artifact runtime marketplace aria-label helper is missing"
-check_pattern 'data-store-remove-saved' "artifact saved remove hook is missing"
 check_pattern 'max-width:[[:space:]]*100%;' "artifact html/body max-width guard is missing"
 check_pattern 'overflow-x:[[:space:]]*clip;' "artifact html/body overflow-x clip guard is missing"
 check_pattern '@supports not \(overflow-x: clip\)' "artifact overflow fallback guard is missing"
+
+check_file_pattern 'STORE_LCP_PRODUCT_START' "$target_store_js" "store runtime asset is missing STORE_LCP_PRODUCT_START marker"
+check_file_pattern 'function readStaticProducts\(' "$target_store_js" "store runtime asset is missing readStaticProducts helper"
+check_file_pattern 'function hydrateStaticProducts\(' "$target_store_js" "store runtime asset is missing hydrateStaticProducts helper"
+check_file_pattern 'function loadProducts\(' "$target_store_js" "store runtime asset is missing loadProducts helper"
+check_file_pattern 'state\.feedSource = ["'"'"']static["'"'"']' "$target_store_js" "store runtime asset is missing static feedSource boot path"
+check_file_pattern 'syncRequestedPreview\(\);' "$target_store_js" "store runtime asset is missing static deep-link sync"
+check_file_pattern 'function updateItemListJsonLd\(' "$target_store_js" "store runtime asset is missing ItemList JSON-LD updater"
+check_file_pattern 'function setCardImagePriority\(' "$target_store_js" "store runtime asset is missing image priority helper"
+check_file_pattern 'var loading = index === 0 \? ["'"'"']eager["'"'"'] : ["'"'"']lazy["'"'"']' "$target_store_js" "store runtime asset is missing card loading priority contract"
+check_file_pattern 'var fetchPriority = index === 0 \? ["'"'"']high["'"'"'] : ["'"'"']auto["'"'"']' "$target_store_js" "store runtime asset is missing card fetchpriority contract"
+check_file_pattern 'button\.href = canonicalProductUrl\(item\) \|\| productStoreAbsoluteUrl\(item\)' "$target_store_js" "store runtime asset is missing card href canonical fallback binding"
+check_file_pattern 'event\.preventDefault\(\);' "$target_store_js" "store runtime asset is missing preview interception preventDefault calls"
+check_file_pattern 'marketplaceAriaLabel\(' "$target_store_js" "store runtime asset is missing marketplace aria-label helper"
+check_file_pattern 'data-store-remove-saved' "$target_store_js" "store runtime asset is missing saved remove hook"
+
+check_file_pattern '\.store-app' "$target_store_css" "store stylesheet asset is missing .store-app"
+check_file_pattern '\.store-card' "$target_store_css" "store stylesheet asset is missing .store-card"
+check_file_pattern '\.store-preview-sheet' "$target_store_css" "store stylesheet asset is missing .store-preview-sheet"
+check_file_pattern '\.store-semantic-category-rail' "$target_store_css" "store stylesheet asset is missing .store-semantic-category-rail"
+check_file_pattern '\.gg-dock' "$target_store_css" "store stylesheet asset is missing .gg-dock"
 
 check_absent 'store-lcp-single-source-v1' "artifact still exposes stale LCP single-source contract"
 check_absent 'data-store-initial-lcp-card' "artifact still contains legacy initial LCP card markup"

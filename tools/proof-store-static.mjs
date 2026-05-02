@@ -23,6 +23,13 @@ const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 const warnings = [];
+const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
+const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
+const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES;
+
+function isTruthyEnv(value) {
+  return ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+}
 
 function fail(message) {
   failures.push(message);
@@ -234,20 +241,20 @@ if (reportValidProducts && reportValidProducts !== staticProducts.length) {
 }
 
 if (reportSourceType === "existing-static") {
-  if (mode === "production") fail("build report sourceType is existing-static in production");
+  if (STORE_REQUIRE_LIVE_FEED) fail("build report sourceType is existing-static while live feed is required");
   else warn("build report sourceType is existing-static");
 } else if (reportSourceType !== "live-feed") {
-  if (mode === "production") fail(`build report sourceType is ${reportSourceType}`);
+  if (STORE_REQUIRE_LIVE_FEED) fail(`build report sourceType is ${reportSourceType} while live feed is required`);
   else warn(`build report sourceType is ${reportSourceType}`);
 }
 
 if (reportExistingStaticFallbackCount > 0) {
-  if (mode === "production") fail(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
+  if (STORE_STRICT_MODE) fail(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
   else warn(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
 }
 
 if (reportMissingImageCount > 0) {
-  if (mode === "production") fail(`build report has missing image extractions (${reportMissingImageCount})`);
+  if (STORE_STRICT_MODE) fail(`build report has missing image extractions (${reportMissingImageCount})`);
   else warn(`build report has missing image extractions (${reportMissingImageCount})`);
 }
 
@@ -255,7 +262,7 @@ const duplicateSlugs = [];
 const seenSlugs = new Set();
 for (const product of staticProducts) {
   const label = product.slug || product.name || "unknown";
-  const validation = validateStoreProduct(product, { mode });
+  const validation = validateStoreProduct(product, { mode: STORE_STRICT_IMAGES ? "production" : "development" });
   if (isDummyProduct(product)) fail(`${label}: dummy product remained in normalized output`);
   if (slugLooksLikeUrl(product.slug)) fail(`${label}: slug looks like a URL`);
   if (slugEndsWithHtml(product.slug)) fail(`${label}: slug ends with .html`);

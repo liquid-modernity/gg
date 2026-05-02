@@ -29,11 +29,13 @@ jobs:
             echo "  - ${base_url}/"
             echo "  - ${base_url}/landing"
             echo "  - ${base_url}/search"
+            echo "  - ${base_url}/store"
           } >> "$GITHUB_STEP_SUMMARY"
           {
             echo "GG_LIGHTHOUSE_URL_1=${base_url}/"
             echo "GG_LIGHTHOUSE_URL_2=${base_url}/landing"
             echo "GG_LIGHTHOUSE_URL_3=${base_url}/search"
+            echo "GG_LIGHTHOUSE_URL_4=${base_url}/store"
           } >> "$GITHUB_ENV"
 
       - name: Run Lighthouse CI
@@ -43,6 +45,7 @@ jobs:
             ${{ env.GG_LIGHTHOUSE_URL_1 }}
             ${{ env.GG_LIGHTHOUSE_URL_2 }}
             ${{ env.GG_LIGHTHOUSE_URL_3 }}
+            ${{ env.GG_LIGHTHOUSE_URL_4 }}
           runs: 1
           uploadArtifacts: true
           temporaryPublicStorage: true

@@ -79,10 +79,24 @@ function assertIncludes(source, needle, label) {
   }
 }
 
+function assertNotIncludes(source, needle, label) {
+  if (source.includes(needle)) {
+    fail(label || `unexpected source marker present: ${needle}`);
+  }
+}
+
 function assertAnyIncludes(source, needles, label) {
   if (!needles.some((needle) => source.includes(needle))) {
     fail(label || `missing one of expected markers: ${needles.join(", ")}`);
   }
+}
+
+function assertFileIncludes(relativePath, needle, label) {
+  assertIncludes(read(relativePath), needle, label || `${relativePath} is missing marker: ${needle}`);
+}
+
+function assertAssetReference(source, pattern, label) {
+  if (!pattern.test(source)) fail(label);
 }
 
 function syntaxCheckModule(relativePath, label) {
@@ -204,11 +218,52 @@ for (const marker of [
   "<!-- STORE_ITEMLIST_JSONLD_START -->",
   '<script type="application/ld+json" id="store-itemlist-jsonld">',
   "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->",
+]) {
+  assertIncludes(storeSource, marker, `store.html is missing static store marker: ${marker}`);
+}
+assertAssetReference(
+  storeSource,
+  /<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']\/assets\/store\/store\.css["'][^>]*>/i,
+  "store.html is missing /assets/store/store.css reference"
+);
+assertAssetReference(
+  storeSource,
+  /<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i,
+  "store.html is missing deferred /assets/store/store.js reference"
+);
+for (const marker of [
+  "function readStaticProducts(",
+  "function hydrateStaticProducts(",
+  "function loadProducts(",
+]) {
+  assertNotIncludes(storeSource, marker, `store.html unexpectedly contains re-inlined runtime store function: ${marker}`);
+}
+
+if (!fileExists("assets/store/store.js")) fail("missing required file: assets/store/store.js");
+if (!fileExists("assets/store/store.css")) fail("missing required file: assets/store/store.css");
+
+const storeRuntimeSource = read("assets/store/store.js");
+const storeCssSource = read("assets/store/store.css");
+
+for (const marker of [
   "// STORE_LCP_PRODUCT_START",
   "function readStaticProducts(",
   "function hydrateStaticProducts(",
+  "function loadProducts(",
+  "data-store-open-preview",
+  "store-static-products",
 ]) {
-  assertIncludes(storeSource, marker, `store.html is missing static store marker: ${marker}`);
+  assertIncludes(storeRuntimeSource, marker, `assets/store/store.js is missing runtime store marker: ${marker}`);
+}
+
+for (const marker of [
+  ".store-app",
+  ".store-card",
+  ".store-preview-sheet",
+  ".store-semantic-category-rail",
+  ".gg-dock",
+]) {
+  assertIncludes(storeCssSource, marker, `assets/store/store.css is missing store style marker: ${marker}`);
 }
 
 const offlineSource = read("offline.html");
