@@ -1,11 +1,20 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
 const STORE_PATH = path.resolve(ROOT, "store.html");
 const LCP_FALLBACK_PATH = path.resolve(ROOT, "config/store-lcp-product.json");
+const STORE_SOURCE_DIR = path.resolve(ROOT, "src/store");
+const STORE_CRITICAL_CSS_PATH = path.resolve(STORE_SOURCE_DIR, "store.critical.css");
+const STORE_CSS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.css");
+const STORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.js");
+const STORE_ASSET_DIR = path.resolve(ROOT, "assets/store");
+const STORE_ASSET_CSS_PATH = path.resolve(STORE_ASSET_DIR, "store.css");
+const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
+const STORE_ASSET_CSS_HREF = "/assets/store/store.css";
+const STORE_ASSET_JS_HREF = "/assets/store/store.js";
 const FEED_URL = "https://www.pakrpp.com/feeds/posts/default/-/Store?alt=json&max-results=50";
 const STORE_ORIGIN = "https://www.pakrpp.com";
 const STORE_PATHNAME = "/store";
@@ -143,6 +152,10 @@ function escapeJsonForScript(value) {
   return JSON.stringify(value, null, 2).replace(/<\/script/gi, "<\\/script");
 }
 
+function normalizeTextFile(value) {
+  return String(value).replace(/\r\n/g, "\n").trimEnd() + "\n";
+}
+
 function replaceMarkedRegion(source, startMarker, endMarker, nextContent) {
   const startIndex = source.indexOf(startMarker);
   const endIndex = source.indexOf(endMarker);
@@ -156,6 +169,38 @@ function replaceMarkedRegion(source, startMarker, endMarker, nextContent) {
   if (endIndex <= startIndex) fail(`marker order is invalid: ${startMarker} -> ${endMarker}`);
 
   return `${source.slice(0, startIndex + startMarker.length)}\n${nextContent}\n${markerIndent}${source.slice(endIndex)}`;
+}
+
+function writeTextFile(filePath, value) {
+  const nextValue = normalizeTextFile(value);
+  const prevValue = existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+  if (prevValue !== nextValue) writeFileSync(filePath, nextValue, "utf8");
+}
+
+function buildCriticalCssBlock(cssSource) {
+  return `  <style>\n${normalizeTextFile(cssSource).trimEnd()}\n  </style>`;
+}
+
+function buildAssetCssLink() {
+  return `  <link rel="stylesheet" href="${STORE_ASSET_CSS_HREF}" />`;
+}
+
+function buildRuntimeScriptTag() {
+  return `  <script src="${STORE_ASSET_JS_HREF}" defer></script>`;
+}
+
+function syncStoreAssets() {
+  const criticalCss = read(STORE_CRITICAL_CSS_PATH);
+  const storeCss = read(STORE_CSS_SOURCE_PATH);
+  const storeJs = read(STORE_JS_SOURCE_PATH);
+
+  mkdirSync(STORE_ASSET_DIR, { recursive: true });
+
+  return {
+    criticalCss: normalizeTextFile(criticalCss),
+    storeCss: normalizeTextFile(storeCss),
+    storeJs: normalizeTextFile(storeJs),
+  };
 }
 
 function extractScriptTextById(source, id) {
@@ -732,14 +777,21 @@ async function resolveProducts(storeSource) {
 const originalStoreSource = read(STORE_PATH);
 const { products, source } = await resolveProducts(originalStoreSource);
 const firstProduct = products[0];
+const { criticalCss, storeCss, storeJs } = syncStoreAssets();
+const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
+
+writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
+writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
 
 let nextStoreSource = originalStoreSource;
+nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->", buildCriticalCssBlock(criticalCss));
+nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_ASSET_CSS_START -->", "<!-- STORE_ASSET_CSS_END -->", buildAssetCssLink());
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_LCP_PRELOAD_START -->", "<!-- STORE_LCP_PRELOAD_END -->", buildPreloadBlock(firstProduct));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->", buildGridBlock(products));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->", buildStaticProductsJsonBlock(products));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->", buildItemListJsonLdBlock(products));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->", buildSemanticProductsBlock(products));
-nextStoreSource = replaceMarkedRegion(nextStoreSource, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
+nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_RUNTIME_JS_START -->", "<!-- STORE_RUNTIME_JS_END -->", buildRuntimeScriptTag());
 
 if (nextStoreSource !== originalStoreSource) {
   writeFileSync(STORE_PATH, nextStoreSource, "utf8");

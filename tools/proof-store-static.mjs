@@ -7,6 +7,11 @@ const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
 const WORKER_PATH = path.resolve(ROOT, "worker.js");
 const FLAGS_PATH = path.resolve(ROOT, "flags.json");
+const STORE_ASSET_CSS_PATH = path.resolve(ROOT, "assets/store/store.css");
+const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
+const STORE_FEED_URL = "/feeds/posts/default/-/Store?alt=json&max-results=50";
+const STORE_LEGACY_FEED_URL = "/feeds/posts/default/-/yellowcard?alt=json&max-results=50";
+const CRITICAL_CSS_BUDGET_BYTES = 15 * 1024;
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 
@@ -44,6 +49,28 @@ function extractScriptTextById(text, id) {
   const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = text.match(new RegExp(`<script\\b[^>]*id=["']${escapedId}["'][^>]*>([\\s\\S]*?)<\\/script>`, "i"));
   return match ? match[1] : "";
+}
+
+function scriptTags(text) {
+  return text.match(/<script\b[\s\S]*?<\/script>/gi) || [];
+}
+
+function styleTags(text) {
+  return text.match(/<style\b[\s\S]*?<\/style>/gi) || [];
+}
+
+function tagAttr(tag, name) {
+  const match = tag.match(new RegExp(`\\b${name}=(["'])(.*?)\\1`, "i"));
+  return match ? match[2] : "";
+}
+
+function tagBody(tag) {
+  const match = tag.match(/>([\s\S]*?)<\/script>/i) || tag.match(/>([\s\S]*?)<\/style>/i);
+  return match ? match[1] : "";
+}
+
+function isThemeBootScript(body) {
+  return /gg:theme/.test(body) && /data-gg-theme/.test(body) && /localStorage/.test(body);
 }
 
 function parseJsonScript(id) {
@@ -97,6 +124,9 @@ const staticProductsRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_PROD
 const jsonLdRegion = extractMarkedRegion(source, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
 const semanticRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
 const preloadRegion = extractMarkedRegion(source, "<!-- STORE_LCP_PRELOAD_START -->", "<!-- STORE_LCP_PRELOAD_END -->");
+const criticalCssRegion = extractMarkedRegion(source, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->");
+const assetCssRegion = extractMarkedRegion(source, "<!-- STORE_ASSET_CSS_START -->", "<!-- STORE_ASSET_CSS_END -->");
+const runtimeAssetRegion = extractMarkedRegion(source, "<!-- STORE_RUNTIME_JS_START -->", "<!-- STORE_RUNTIME_JS_END -->");
 
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
@@ -108,6 +138,67 @@ const websiteNode = findGraphNode(graph, "WebSite", "#website");
 const organizationNode = findGraphNode(graph, "Organization", "#organization");
 const collectionNode = findGraphNode(graph, "CollectionPage", "#collection");
 const itemListNode = findGraphNode(graph, "ItemList", "#itemlist") || findGraphNode(graph, "ItemList");
+const inlineStyleTags = styleTags(source);
+const inlineScriptTags = scriptTags(source);
+const criticalStyleTag = inlineStyleTags[0] || "";
+const criticalCssText = tagBody(criticalStyleTag).trim();
+const headEndIndex = source.indexOf("</head>");
+const themeBootScripts = inlineScriptTags.filter((tag) => {
+  const src = tagAttr(tag, "src");
+  const type = String(tagAttr(tag, "type") || "").toLowerCase();
+  if (src || type === "application/ld+json" || type === "application/json") return false;
+  return isThemeBootScript(tagBody(tag));
+});
+
+if (!/<meta\s+name=["']gg-store-contract["']\s+content=["']store-static-prerender-v1["']\s*\/?>/i.test(source)) {
+  fail("missing gg-store-contract marker");
+}
+if (!source.includes(`data-store-feed-url="${STORE_FEED_URL}"`)) fail("store feed URL changed or missing");
+if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_URL}"`)) fail("legacy store feed URL changed or missing");
+
+if (inlineStyleTags.length !== 1) fail(`expected exactly one inline style block, found ${inlineStyleTags.length}`);
+if (!/<style\b[^>]*>[\s\S]*<\/style>/i.test(criticalCssRegion)) fail("critical CSS marker block is missing its inline <style>");
+if (Buffer.byteLength(criticalCssText, "utf8") > CRITICAL_CSS_BUDGET_BYTES) {
+  fail(`critical CSS exceeds 15 KB (${Buffer.byteLength(criticalCssText, "utf8")} bytes)`);
+}
+if (!/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']\/assets\/store\/store\.css["'][^>]*>/i.test(assetCssRegion)) {
+  fail("store.html does not reference /assets/store/store.css");
+}
+if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(runtimeAssetRegion)) {
+  fail("store.html does not reference /assets/store/store.js with defer");
+}
+if (countOccurrences(source, "/assets/store/store.css") !== 1) fail("expected exactly one /assets/store/store.css reference");
+if (countOccurrences(source, "/assets/store/store.js") !== 1) fail("expected exactly one /assets/store/store.js reference");
+if (themeBootScripts.length !== 1) fail(`expected exactly one inline theme boot script, found ${themeBootScripts.length}`);
+if (themeBootScripts.length === 1) {
+  const themeScriptIndex = source.indexOf(themeBootScripts[0]);
+  if (headEndIndex !== -1 && themeScriptIndex > headEndIndex) fail("theme boot script is not in <head>");
+}
+
+for (const tag of inlineScriptTags) {
+  const src = tagAttr(tag, "src");
+  const type = String(tagAttr(tag, "type") || "").toLowerCase();
+  const body = tagBody(tag).trim();
+  if (src || !body) continue;
+  if (type === "application/ld+json" || type === "application/json") continue;
+  if (isThemeBootScript(body)) continue;
+  fail("unexpected inline runtime JavaScript remains in store.html");
+}
+
+let storeCssAsset = "";
+let storeJsAsset = "";
+if (!existsSync(STORE_ASSET_CSS_PATH)) fail("/assets/store/store.css is missing");
+else {
+  storeCssAsset = readFileSync(STORE_ASSET_CSS_PATH, "utf8");
+  if (!storeCssAsset.trim()) fail("/assets/store/store.css is empty");
+}
+if (!existsSync(STORE_ASSET_JS_PATH)) fail("/assets/store/store.js is missing");
+else {
+  storeJsAsset = readFileSync(STORE_ASSET_JS_PATH, "utf8");
+  if (!storeJsAsset.trim()) fail("/assets/store/store.js is empty");
+}
+if (storeJsAsset && !/marketplaceAriaLabel\(/.test(storeJsAsset)) fail("runtime marketplace aria-label helper is missing from assets/store/store.js");
+if (storeJsAsset && !/window\.StoreSurface/.test(storeJsAsset)) fail("runtime StoreSurface contract is missing from assets/store/store.js");
 
 if (Array.isArray(staticProducts) && !staticProducts.length) fail("static product JSON is empty");
 if (!websiteNode) fail("schema graph is missing WebSite");
@@ -168,7 +259,6 @@ if (Array.isArray(staticProducts) && staticProducts.length) {
     if (!["Shopee", "Tokopedia", "TikTok"].includes(text)) fail(`preview marketplace label is not short-form (${text || "missing"})`);
     if (!/(cek harga|check price)/i.test(ariaLabel)) fail(`preview marketplace aria-label is not descriptive (${text || "missing"})`);
   }
-  if (!/marketplaceAriaLabel\(/.test(source)) fail("runtime marketplace aria-label helper is missing");
   if (!/store-preview__footnote/.test(source)) fail("preview marketplace footnote is missing");
 
   if (!itemListNode) {
