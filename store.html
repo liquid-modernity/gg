@@ -67,11 +67,11 @@
         {
           "@type": "ListItem",
           "position": 1,
-          "url": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html",
+          "url": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
           "item": {
             "@type": "Product",
-            "@id": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html#product",
-            "name": "Dummy Desk Tray Organizer",
+            "@id": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html#product",
+            "name": "Minimal Desk Tray Organizer",
             "description": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
             "image": [
               "https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125",
@@ -408,7 +408,7 @@
       font: 630 11px/1.45 var(--gg-font-sans);
       justify-content: center;
     }
-    .store-disclosure__copy { max-width: 54ch; text-wrap: balance; }
+    .store-disclosure__copy { max-width: 54ch; text-wrap: balance; text-align:center; }
     .store-pill, .store-chip {
       display: inline-flex;
       align-items: center;
@@ -665,19 +665,133 @@
     .store-semantic-products {
       display: grid;
       gap: 14px;
-      padding: 16px 0 2px;
+      padding: 18px 0 2px;
+    }
+    .store-semantic-products__head,
+    .store-semantic-subhead {
+      display: grid;
+      gap: 7px;
+      padding: 0 2px;
     }
     .store-semantic-products h2 {
       margin: 0;
-      font: 760 clamp(20px, 5.5vw, 28px)/1 var(--gg-font-sans);
-      letter-spacing: -.05em;
+      font: 780 clamp(22px, 5.8vw, 32px)/.98 var(--gg-font-sans);
+      letter-spacing: -.06em;
     }
+    .store-semantic-products__lead,
+    .store-semantic-subhead__lead {
+      max-width: 64ch;
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 540 13px/1.55 var(--gg-font-sans);
+    }
+    .store-semantic-section-title {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 780 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .store-semantic-shortlist {
+      display: grid;
+      gap: 10px;
+      padding: 12px 0 2px;
+    }
+    .store-semantic-shortlist__grid {
+      display: grid;
+      gap: 9px;
+    }
+    .store-semantic-shortlist-card {
+      display: grid;
+      gap: 8px;
+      padding: 14px 16px;
+      border: 1px solid var(--gg-line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 34%, transparent);
+      box-shadow: var(--gg-shadow-soft);
+    }
+    .store-semantic-shortlist-card__badge {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 790 10px/1.2 var(--gg-font-sans);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .store-semantic-shortlist-card__title {
+      margin: 0;
+      font: 780 16px/1.1 var(--gg-font-sans);
+      letter-spacing: -.045em;
+    }
+    .store-semantic-shortlist-card__reason {
+      margin: 0;
+      color: var(--gg-ink-soft);
+      font: 540 13px/1.5 var(--gg-font-sans);
+      overflow-wrap: anywhere;
+    }
+    .store-semantic-shortlist-card .store-button {
+      min-height: 34px;
+      padding-inline: 13px;
+      font-size: 12px;
+      place-self:center;
+    }
+    .store-semantic-groups { display: grid; gap: 10px; }
     .store-semantic-product-list {
       display: grid;
       gap: 10px;
       min-height: 180px;
       align-content: start;
     }
+    .store-semantic-group {
+      overflow: hidden;
+      border: 1px solid var(--gg-line);
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 24%, transparent);
+    }
+    .store-semantic-group[open] {
+      background: color-mix(in srgb, var(--gg-surface-interactive) 34%, transparent);
+      box-shadow: var(--gg-shadow-soft);
+    }
+    .store-semantic-group__summary {
+      display: grid;
+      grid-template-columns: auto minmax(0,1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 11px 14px;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+    .store-semantic-group__summary::-webkit-details-marker { display: none; }
+    .store-semantic-group__icon {
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      border: 1px solid var(--gg-line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 46%, transparent);
+      color: var(--gg-accent-soft);
+      font-size: 18px;
+    }
+    .store-semantic-group__main { display: grid; gap: 3px; min-width: 0; }
+    .store-semantic-group__title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 780 15px/1.15 var(--gg-font-sans);
+      letter-spacing: -.035em;
+    }
+    .store-semantic-group__description {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--gg-ink-soft);
+      font: 560 12px/1.25 var(--gg-font-sans);
+    }
+    .store-semantic-group__count { color: var(--gg-ink-soft); font: 680 12px/1.15 var(--gg-font-sans); white-space: nowrap; }
+    .store-semantic-group__chevron { color: var(--gg-accent-soft); transition: transform var(--gg-ease); }
+    .store-semantic-group[open] .store-semantic-group__chevron { transform: rotate(180deg); }
+    .store-semantic-group__body { display: grid; gap: 10px; padding: 0 12px 12px; }
     .store-semantic-product {
       display: grid;
       gap: 10px;
@@ -687,86 +801,185 @@
       background: color-mix(in srgb, var(--gg-surface-interactive) 32%, transparent);
       box-shadow: var(--gg-shadow-soft);
     }
-    .store-semantic-product__head {
-      display: grid;
-      gap: 6px;
-    }
-    .store-semantic-product__category {
-      margin: 0;
-      color: var(--gg-accent-soft);
-      font: 760 11px/1.2 var(--gg-font-sans);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-    .store-semantic-product__title {
-      margin: 0;
-      font: 760 18px/1.1 var(--gg-font-sans);
-      letter-spacing: -.04em;
-    }
-    .store-semantic-product__summary {
-      margin: 0;
-      color: var(--gg-ink-soft);
-      font: 520 14px/1.55 var(--gg-font-sans);
-      overflow-wrap: anywhere;
-    }
-    .store-semantic-product__facts {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-    }
-    .store-semantic-product__fact {
-      display: grid;
-      gap: 2px;
-    }
+    .store-semantic-product__head { display: grid; gap: 6px; }
+    .store-semantic-product__category { margin: 0; color: var(--gg-accent-soft); font: 780 10px/1.2 var(--gg-font-sans); letter-spacing: .14em; text-transform: uppercase; }
+    .store-semantic-product__title { margin: 0; font: 780 17px/1.1 var(--gg-font-sans); letter-spacing: -.045em; }
+    .store-semantic-product__summary { margin: 0; color: var(--gg-ink-soft); font: 520 13px/1.5 var(--gg-font-sans); overflow-wrap: anywhere; }
+    .store-semantic-product__facts { display: grid; gap: 8px; margin: 0; }
+    .store-semantic-product__fact { display: grid; gap: 2px; }
     .store-semantic-product__fact[hidden] { display: none !important; }
-    .store-semantic-product__label {
-      color: var(--gg-accent-soft);
-      font: 760 11px/1.2 var(--gg-font-sans);
-      letter-spacing: .08em;
-      text-transform: uppercase;
+    .store-semantic-product__label { color: var(--gg-accent-soft); font: 760 10px/1.2 var(--gg-font-sans); letter-spacing: .12em; text-transform: uppercase; }
+    .store-semantic-product__value { color: var(--gg-ink); font: 540 13px/1.5 var(--gg-font-sans); overflow-wrap: anywhere; }
+    .store-semantic-product__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .store-semantic-product__tag { display: inline-flex; align-items: center; min-height: 27px; padding: 0 10px; border: 1px solid var(--gg-line); border-radius: 999px; background: color-mix(in srgb, var(--gg-surface-interactive) 44%, transparent); color: var(--gg-accent-soft); font: 700 11px/1.2 var(--gg-font-sans); }
+    .store-semantic-product__links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .store-semantic-product__links .store-button { min-height: 34px; padding-inline: 13px; font-size: 12px; }
+    .store-semantic-product__links .store-button--subtle { background: transparent; color: var(--gg-accent-soft); }
+    .store-semantic-product__empty {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      margin: 0;
+      padding: 18px 16px;
+      border: 1px dashed var(--gg-line-strong);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 34%, transparent);
+      color: var(--gg-ink-soft);
+      font: 620 13px/1.5 var(--gg-font-sans);
+      text-align: center;
     }
-    .store-semantic-product__value {
-      color: var(--gg-ink);
-      font: 520 13px/1.5 var(--gg-font-sans);
-      overflow-wrap: anywhere;
-    }
-    .store-semantic-product__tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .store-semantic-product__tag {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 0 10px;
+    .store-semantic-product__empty::before {
+      content: 'shoppingmode';
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
       border: 1px solid var(--gg-line);
       border-radius: 999px;
-      background: color-mix(in srgb, var(--gg-surface-interactive) 44%, transparent);
+      background: color-mix(in srgb, var(--gg-surface-interactive) 48%, transparent);
       color: var(--gg-accent-soft);
-      font: 700 11px/1.2 var(--gg-font-sans);
+      font-family: "Material Symbols Outlined";
+      font-size: 20px;
+      font-variation-settings: 'FILL' 0, 'wght' var(--gg-icon-weight), 'GRAD' var(--gg-icon-grade), 'opsz' 24;
     }
-    .store-semantic-product__links {
+
+
+
+    /* Human-clean semantic layer: semantic content stays available, but the default view is quieter. */
+    .store-semantic-products { gap: 12px; padding-top: 20px; }
+    .store-semantic-products__head { padding-inline: 2px; }
+    .store-semantic-shortlist { padding-top: 4px; }
+    .store-semantic-shortlist-card { gap: 7px; padding: 13px 14px; box-shadow: none; }
+    .store-semantic-shortlist-card__reason {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+    .store-semantic-group { box-shadow: none; }
+    .store-semantic-group[open] { box-shadow: none; }
+    .store-semantic-group__description { display: none; }
+    .store-semantic-group__body { padding-top: 0; }
+    .store-semantic-product { gap: 8px; padding: 13px 14px; box-shadow: none; }
+    .store-semantic-product__category { display: none; }
+    .store-semantic-product__summary {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+    .store-semantic-product__facts { gap: 6px; }
+    .store-semantic-product__tags { display: none !important; }
+    .store-semantic-product__links .store-button--subtle { display: none; }
+
+
+    /* Apple-like category rail for curated notes: sliding feel without turning text cards into a carousel. */
+    .store-semantic-category-rail-wrap {
+      position: relative;
+      margin: -2px -12px 2px;
+      padding: 0 12px;
+      overflow: hidden;
+    }
+    .store-semantic-category-rail-wrap::before,
+    .store-semantic-category-rail-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 1;
+      width: 22px;
+      pointer-events: none;
+    }
+    .store-semantic-category-rail-wrap::before {
+      left: 0;
+      background: linear-gradient(90deg, var(--gg-surface-page), transparent);
+    }
+    .store-semantic-category-rail-wrap::after {
+      right: 0;
+      background: linear-gradient(270deg, var(--gg-surface-page), transparent);
+    }
+    .store-semantic-category-rail {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 8px 10px;
     }
-    .store-semantic-product__links .store-button {
-      min-height: 36px;
+    .store-semantic-category-rail::-webkit-scrollbar { display: none; }
+    .store-semantic-category-chip {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 13px 0 10px;
+      border: 1px solid var(--gg-border-interactive);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--gg-surface-interactive) 42%, transparent);
+      color: var(--gg-ink);
+      font: 760 13px/1.1 var(--gg-font-sans);
+      white-space: nowrap;
+      transition: background-color var(--gg-ease), color var(--gg-ease), border-color var(--gg-ease), transform var(--gg-motion-press);
+    }
+    .store-semantic-category-chip:active { transform: scale(var(--gg-press-scale)); }
+    .store-semantic-category-chip[aria-selected='true'] {
+      border-color: var(--gg-accent);
+      background: var(--gg-accent);
+      color: var(--gg-accent-contrast);
+    }
+    .store-semantic-category-chip__icon {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: color-mix(in srgb, currentColor 10%, transparent);
+      font-size: 16px;
+    }
+    .store-semantic-category-chip__count {
+      opacity: .68;
+      font: 720 11px/1 var(--gg-font-sans);
+    }
+    .store-semantic-product-list { min-height: 0; }
+    .store-semantic-group {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .store-semantic-group[open] { background: transparent; box-shadow: none; }
+    .store-semantic-group:not([open]) { display: none; }
+    .store-semantic-group__summary {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .store-semantic-group__body { padding: 0; }
+    .store-semantic-group:not(.is-expanded) .store-semantic-group__body > .store-semantic-product:nth-of-type(n+4) { display: none; }
+    .store-semantic-more {
+      justify-self: start;
+      min-height: 38px;
       padding-inline: 14px;
       font-size: 12px;
+      margin-top: 2px;
     }
-    .store-semantic-product__links .store-button--subtle {
-      background: transparent;
-      color: var(--gg-accent-soft);
+    @media (min-width: 720px) {
+      .store-semantic-category-rail-wrap { margin-inline: -16px; padding-inline: 16px; }
+      .store-semantic-category-rail { padding-inline: 10px; }
     }
-    .store-semantic-product__empty {
-      margin: 0;
-      color: var(--gg-ink-soft);
-      font: 600 13px/1.5 var(--gg-font-sans);
-      text-align: center;
-      padding: 14px 0 2px;
-    }
+
 
     .store-contact {
       min-height: 100svh;
@@ -1337,6 +1550,8 @@
       .store-grid--skeleton .store-card--skeleton:nth-child(n+9) { display: block; }
       .store-grid--skeleton .store-card--skeleton:nth-child(n+13) { display: none; }
       .store-main { gap: 16px; }
+      .store-semantic-shortlist__grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .store-semantic-group__body { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .store-preview__body { padding-inline: 22px; }
       .store-preview__intro { padding-inline: 12px; }
       .store-preview__surface { padding-inline: 22px; }
@@ -1386,8 +1601,7 @@
 
     <section class="store-main" aria-labelledby="store-title">
       <section class="store-hero" id="store-top" aria-label="Yellow Cart introduction" data-copy-aria="storeIntroLabel">
-        <h1 class="store-title" id="store-title">Yellow Cart</h1>
-        <p class="store-summary" data-copy="summary">Kurasi produk pilihan.</p>
+        <h1 class="store-title" id="store-title" aria-label='Kurasi produk pilihan.'>Yellow Cart</h1>
         <div class="store-disclosure" aria-label="Affiliate disclosure" data-copy-aria="affiliateDisclosureLabel">
           <span class="store-pill store-disclosure__copy" data-copy="affiliateDisclosure">Affiliate links may be used · Harga dan ketersediaan mengikuti marketplace.</span>
         </div>
@@ -1420,15 +1634,15 @@
 
       <section class="store-grid" id="store-grid" data-store-wide="true" aria-live="polite">
         <!-- STORE_STATIC_GRID_START -->
-        <article class="store-card" data-store-product-id="dummy-desk-tray-organizer">
-          <a class="store-card__button" href="https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html" aria-label="Buka Dummy Desk Tray Organizer" data-store-open-preview="0" data-store-product-slug="dummy-desk-tray-organizer">
+        <article class="store-card" data-store-product-id="minimal-desk-tray-organizer">
+          <a class="store-card__button" href="https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html" aria-label="Buka Minimal Desk Tray Organizer" data-store-open-preview="0" data-store-product-slug="minimal-desk-tray-organizer">
             <div class="store-card__media">
-              <img src="https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125" width="900" height="1125" alt="Dummy Desk Tray Organizer" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
+              <img src="https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125" width="900" height="1125" alt="Minimal Desk Tray Organizer" loading="eager" decoding="async" fetchpriority="high" draggable="false" />
               <span class="store-card__shade" aria-hidden="true"></span>
               <div class="store-card__content">
                 <span class="store-card__badge">Workspace</span>
                 <span class="store-card__price">Rp129.000</span>
-                <h2 class="store-card__title">Dummy Desk Tray Organizer</h2>
+                <h2 class="store-card__title">Minimal Desk Tray Organizer</h2>
             <span class="store-card__dots" aria-hidden="true">
               <span class="store-card__dot is-active"></span>
               <span class="store-card__dot"></span>
@@ -1506,103 +1720,206 @@
       </div>
 
       <section class="store-semantic-products" id="store-semantic-products" aria-labelledby="store-semantic-title">
-        <h2 id="store-semantic-title" data-copy="semanticProductsTitle">Yellow Cart product notes</h2>
-        <div class="store-semantic-product-list" id="store-semantic-product-list">
-          <!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->
-          <article class="store-semantic-product" id="store-note-dummy-desk-tray-organizer">
-            <div class="store-semantic-product__head">
-              <p class="store-semantic-product__category">Workspace</p>
-              <h3 class="store-semantic-product__title">Dummy Desk Tray Organizer</h3>
-              <p class="store-semantic-product__summary">Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.</p>
-            </div>
-            <dl class="store-semantic-product__facts">
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Why picked</dt>
-            <dd class="store-semantic-product__value">Dipilih karena bentuknya sederhana, mudah ditempatkan di meja kecil, dan membantu mengurangi visual clutter saat bekerja atau belajar.</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Best for</dt>
-            <dd class="store-semantic-product__value">Workspace setup · Study desk · Small accessories · Cable and stationery control</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Caveat</dt>
-            <dd class="store-semantic-product__value">Produk seperti ini tidak menyelesaikan masalah meja berantakan kalau jumlah barang yang disimpan tetap terlalu banyak.</dd>
-          </div>
-            </dl>
-            <div class="store-semantic-product__links">
-              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html">Editorial detail</a>
-              <a class="store-button" href="https://www.pakrpp.com/store?item=dummy-desk-tray-organizer" data-store-open-slug="dummy-desk-tray-organizer">Open in Store</a>
-            </div>
-          </article>
-          <article class="store-semantic-product" id="store-note-everyday-canvas-tote">
-            <div class="store-semantic-product__head">
-              <p class="store-semantic-product__category">Etc</p>
-              <h3 class="store-semantic-product__title">Everyday Canvas Tote</h3>
-              <p class="store-semantic-product__summary">Tote bag kanvas sederhana untuk membawa buku, laptop ringan, dokumen, atau barang harian tanpa tampilan yang terlalu ramai.</p>
-            </div>
-            <dl class="store-semantic-product__facts">
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Why picked</dt>
-            <dd class="store-semantic-product__value">Dipilih karena desainnya sederhana, mudah dipadukan, dan fungsional untuk kebutuhan harian ringan tanpa terlihat berlebihan.</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Best for</dt>
-            <dd class="store-semantic-product__value">Daily carry · Campus · Light errands</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Caveat</dt>
-            <dd class="store-semantic-product__value">Tidak semua tote cocok untuk beban laptop berat.</dd>
-          </div>
-            </dl>
-            <div class="store-semantic-product__links">
-              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/05/everyday-canvas-tote.html">Editorial detail</a>
-              <a class="store-button" href="https://www.pakrpp.com/store?item=everyday-canvas-tote" data-store-open-slug="everyday-canvas-tote">Open in Store</a>
-            </div>
-          </article>
-          <article class="store-semantic-product" id="store-note-https-www-pakrpp-com-2026-04-minimal-barrier-serum-html">
-            <div class="store-semantic-product__head">
-              <p class="store-semantic-product__category">Skincare</p>
-              <h3 class="store-semantic-product__title">Minimal Barrier Serum</h3>
-              <p class="store-semantic-product__summary">Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.</p>
-            </div>
-            <dl class="store-semantic-product__facts">
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Best for</dt>
-            <dd class="store-semantic-product__value">Daily skincare · Simple routine · Skin barrier care</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Caveat</dt>
-            <dd class="store-semantic-product__value">Hasil pemakaian dapat berbeda pada setiap jenis kulit.</dd>
-          </div>
-            </dl>
-            <div class="store-semantic-product__links">
-              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/04/minimal-barrier-serum.html">Editorial detail</a>
-              <a class="store-button" href="https://www.pakrpp.com/store?item=https-www-pakrpp-com-2026-04-minimal-barrier-serum-html" data-store-open-slug="https-www-pakrpp-com-2026-04-minimal-barrier-serum-html">Open in Store</a>
-            </div>
-          </article>
-          <article class="store-semantic-product" id="store-note-https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html">
-            <div class="store-semantic-product__head">
-              <p class="store-semantic-product__category">Fashion</p>
-              <h3 class="store-semantic-product__title">Neutral Linen Overshirt</h3>
-              <p class="store-semantic-product__summary">Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.</p>
-            </div>
-            <dl class="store-semantic-product__facts">
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Best for</dt>
-            <dd class="store-semantic-product__value">Workwear · Travel · Daily casual</dd>
-          </div>
-          <div class="store-semantic-product__fact">
-            <dt class="store-semantic-product__label">Caveat</dt>
-            <dd class="store-semantic-product__value">Warna produk dapat berbeda tergantung pencahayaan foto marketplace.</dd>
-          </div>
-            </dl>
-            <div class="store-semantic-product__links">
-              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html">Editorial detail</a>
-              <a class="store-button" href="https://www.pakrpp.com/store?item=https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html" data-store-open-slug="https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html">Open in Store</a>
-            </div>
-          </article>
-          <!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->
+        <div class="store-semantic-products__head">
+          <h2 id="store-semantic-title" data-copy="semanticProductsTitle" >Catatan Kuratorial</h2>
         </div>
+
+        <section class="store-semantic-shortlist" aria-labelledby="store-semantic-shortlist-title">
+          <div class="store-semantic-subhead">
+            <p class="store-semantic-section-title" id="store-semantic-shortlist-title" data-copy="semanticShortlistTitle" >Pilihan Utama</p>
+          </div>
+          <div class="store-semantic-shortlist__grid" id="store-semantic-shortlist-grid">
+            <article class="store-semantic-shortlist-card">
+              <p class="store-semantic-shortlist-card__badge">Paling berguna</p>
+              <h3 class="store-semantic-shortlist-card__title">Minimal Desk Tray Organizer</h3>
+              <p class="store-semantic-shortlist-card__reason">Mengurangi visual clutter kecil di meja kerja tanpa membuat setup terlihat ramai.</p>
+              <a class="store-button" href="https://www.pakrpp.com/store?item=minimal-desk-tray-organizer" data-store-open-slug="minimal-desk-tray-organizer">Buka produk</a>
+            </article>
+            <article class="store-semantic-shortlist-card">
+              <p class="store-semantic-shortlist-card__badge">Harian</p>
+              <h3 class="store-semantic-shortlist-card__title">Everyday Canvas Tote</h3>
+              <p class="store-semantic-shortlist-card__reason">Fungsional untuk kebutuhan harian ringan tanpa tampilan yang terlalu berlebihan.</p>
+              <a class="store-button" href="https://www.pakrpp.com/store?item=everyday-canvas-tote" data-store-open-slug="everyday-canvas-tote">Buka produk</a>
+            </article>
+            <article class="store-semantic-shortlist-card">
+              <p class="store-semantic-shortlist-card__badge">Rutinitas ringan</p>
+              <h3 class="store-semantic-shortlist-card__title">Minimal Barrier Serum</h3>
+              <p class="store-semantic-shortlist-card__reason">Masuk untuk rutinitas skincare sederhana, dengan catatan hasil tetap bergantung jenis kulit.</p>
+              <a class="store-button" href="https://www.pakrpp.com/store?item=https-www-pakrpp-com-2026-04-minimal-barrier-serum-html" data-store-open-slug="https-www-pakrpp-com-2026-04-minimal-barrier-serum-html">Buka produk</a>
+            </article>
+          </div>
+        </section>
+
+        <section class="store-semantic-groups" aria-labelledby="store-semantic-browse-title">
+          <div class="store-semantic-subhead">
+            <p class="store-semantic-section-title" id="store-semantic-browse-title" data-copy="semanticBrowseTitle" >Kategori</p>
+          </div>
+          <div class="store-semantic-category-rail-wrap">
+            <div class="store-semantic-category-rail" id="store-semantic-category-rail" role="tablist" aria-label="Kategori Catatan Kuratorial">
+              <button class="store-semantic-category-chip" id="store-semantic-chip-workspace" type="button" role="tab" aria-selected="true" data-store-semantic-category="workspace" aria-controls="store-semantic-panel-workspace">
+                <span class="gg-icon store-semantic-category-chip__icon" aria-hidden="true">desktop_windows</span>
+                <span>Workspace</span>
+                <span class="store-semantic-category-chip__count">1</span>
+              </button>
+              <button class="store-semantic-category-chip" id="store-semantic-chip-etc" type="button" role="tab" aria-selected="false" data-store-semantic-category="etc" aria-controls="store-semantic-panel-etc">
+                <span class="gg-icon store-semantic-category-chip__icon" aria-hidden="true">category</span>
+                <span>Lainnya</span>
+                <span class="store-semantic-category-chip__count">1</span>
+              </button>
+              <button class="store-semantic-category-chip" id="store-semantic-chip-skincare" type="button" role="tab" aria-selected="false" data-store-semantic-category="skincare" aria-controls="store-semantic-panel-skincare">
+                <span class="gg-icon store-semantic-category-chip__icon" aria-hidden="true">spa</span>
+                <span>Skincare</span>
+                <span class="store-semantic-category-chip__count">1</span>
+              </button>
+              <button class="store-semantic-category-chip" id="store-semantic-chip-fashion" type="button" role="tab" aria-selected="false" data-store-semantic-category="fashion" aria-controls="store-semantic-panel-fashion">
+                <span class="gg-icon store-semantic-category-chip__icon" aria-hidden="true">checkroom</span>
+                <span>Fashion</span>
+                <span class="store-semantic-category-chip__count">1</span>
+              </button>
+            </div>
+          </div>
+          <div class="store-semantic-product-list" id="store-semantic-product-list">
+            <!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->
+            <details class="store-semantic-group" id="store-semantic-panel-workspace" data-store-semantic-panel="workspace" role="tabpanel" aria-labelledby="store-semantic-chip-workspace" open>
+              <summary class="store-semantic-group__summary">
+                <span class="gg-icon store-semantic-group__icon" aria-hidden="true">desktop_windows</span>
+                <span class="store-semantic-group__main">
+                  <span class="store-semantic-group__title" aria-label='Produk untuk meja kerja yang lebih rapi, ringan, dan tidak ramai.'>Workspace</span>
+                </span>
+                <span class="store-semantic-group__count">1 produk</span>
+                <span class="gg-icon store-semantic-group__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="store-semantic-group__body">
+                <article class="store-semantic-product" id="store-note-minimal-desk-tray-organizer">
+                            <div class="store-semantic-product__head">                              
+                              <h3 class="store-semantic-product__title">Minimal Desk Tray Organizer</h3>
+                              <p class="store-semantic-product__summary">Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.</p>
+                            </div>
+                            <dl class="store-semantic-product__facts">
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Kenapa dipilih</dt>
+                            <dd class="store-semantic-product__value">Dipilih karena bentuknya sederhana, mudah ditempatkan di meja kecil, dan membantu mengurangi visual clutter saat bekerja atau belajar.</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Cocok untuk</dt>
+                            <dd class="store-semantic-product__value">Setup meja · Meja belajar · Aksesori kecil · Kabel dan alat tulis</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Catatan</dt>
+                            <dd class="store-semantic-product__value">Produk seperti ini tidak menyelesaikan masalah meja berantakan kalau jumlah barang yang disimpan tetap terlalu banyak.</dd>
+                          </div>
+                            </dl>
+                            <div class="store-semantic-product__links">
+                              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html">Detail editorial</a>
+                              <a class="store-button" href="https://www.pakrpp.com/store?item=minimal-desk-tray-organizer" data-store-open-slug="minimal-desk-tray-organizer">Buka di Store</a>
+                            </div>
+                          </article>
+              </div>
+            </details>
+            <details class="store-semantic-group" id="store-semantic-panel-etc" data-store-semantic-panel="etc" role="tabpanel" aria-labelledby="store-semantic-chip-etc">
+              <summary class="store-semantic-group__summary">
+                <span class="gg-icon store-semantic-group__icon" aria-hidden="true">category</span>
+                <span class="store-semantic-group__main">
+                  <span class="store-semantic-group__title" aria-label='Produk harian lintas kategori yang tetap masuk prinsip kurasi Yellow Cart.'>Lainnya</span>
+                </span>
+                <span class="store-semantic-group__count">1 produk</span>
+                <span class="gg-icon store-semantic-group__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="store-semantic-group__body">
+                <article class="store-semantic-product" id="store-note-everyday-canvas-tote">
+                            <div class="store-semantic-product__head">
+                              <h3 class="store-semantic-product__title">Everyday Canvas Tote</h3>
+                              <p class="store-semantic-product__summary">Tote bag kanvas sederhana untuk membawa buku, laptop ringan, dokumen, atau barang harian tanpa tampilan yang terlalu ramai.</p>
+                            </div>
+                            <dl class="store-semantic-product__facts">
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Kenapa dipilih</dt>
+                            <dd class="store-semantic-product__value">Dipilih karena desainnya sederhana, mudah dipadukan, dan fungsional untuk kebutuhan harian ringan tanpa terlihat berlebihan.</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Cocok untuk</dt>
+                            <dd class="store-semantic-product__value">Bawaan harian · Kampus · Keperluan ringan</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Catatan</dt>
+                            <dd class="store-semantic-product__value">Tidak semua tote cocok untuk beban laptop berat.</dd>
+                          </div>
+                            </dl>
+                            <div class="store-semantic-product__links">
+                              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/05/everyday-canvas-tote.html">Detail editorial</a>
+                              <a class="store-button" href="https://www.pakrpp.com/store?item=everyday-canvas-tote" data-store-open-slug="everyday-canvas-tote">Buka di Store</a>
+                            </div>
+                          </article>
+              </div>
+            </details>
+            <details class="store-semantic-group" id="store-semantic-panel-skincare" data-store-semantic-panel="skincare" role="tabpanel" aria-labelledby="store-semantic-chip-skincare">
+              <summary class="store-semantic-group__summary">
+                <span class="gg-icon store-semantic-group__icon" aria-hidden="true">spa</span>
+                <span class="store-semantic-group__main">
+                  <span class="store-semantic-group__title" aria-label='Pilihan sederhana untuk rutinitas ringan, dengan batasan yang tetap disebutkan.'>Skincare</span>
+                </span>
+                <span class="store-semantic-group__count">1 produk</span>
+                <span class="gg-icon store-semantic-group__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="store-semantic-group__body">
+                <article class="store-semantic-product" id="store-note-https-www-pakrpp-com-2026-04-minimal-barrier-serum-html">
+                            <div class="store-semantic-product__head">
+                              <h3 class="store-semantic-product__title">Minimal Barrier Serum</h3>
+                              <p class="store-semantic-product__summary">Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.</p>
+                            </div>
+                            <dl class="store-semantic-product__facts">
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Cocok untuk</dt>
+                            <dd class="store-semantic-product__value">Skincare harian · Rutinitas ringan · Perawatan skin barrier</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Catatan</dt>
+                            <dd class="store-semantic-product__value">Hasil pemakaian dapat berbeda pada setiap jenis kulit.</dd>
+                          </div>
+                            </dl>
+                            <div class="store-semantic-product__links">
+                              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/04/minimal-barrier-serum.html">Detail editorial</a>
+                              <a class="store-button" href="https://www.pakrpp.com/store?item=https-www-pakrpp-com-2026-04-minimal-barrier-serum-html" data-store-open-slug="https-www-pakrpp-com-2026-04-minimal-barrier-serum-html">Buka di Store</a>
+                            </div>
+                          </article>
+              </div>
+            </details>
+            <details class="store-semantic-group" id="store-semantic-panel-fashion" data-store-semantic-panel="fashion" role="tabpanel" aria-labelledby="store-semantic-chip-fashion">
+              <summary class="store-semantic-group__summary">
+                <span class="gg-icon store-semantic-group__icon" aria-hidden="true">checkroom</span>
+                <span class="store-semantic-group__main">
+                  <span class="store-semantic-group__title" aria-label='Item netral yang mudah masuk ke gaya kerja, kasual, atau perjalanan.'>Fashion</span>
+                </span>
+                <span class="store-semantic-group__count">1 produk</span>
+                <span class="gg-icon store-semantic-group__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="store-semantic-group__body">
+                <article class="store-semantic-product" id="store-note-https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html">
+                            <div class="store-semantic-product__head">
+                              <p class="store-semantic-product__category">Fashion</p>
+                              <h3 class="store-semantic-product__title">Neutral Linen Overshirt</h3>
+                              <p class="store-semantic-product__summary">Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.</p>
+                            </div>
+                            <dl class="store-semantic-product__facts">
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Cocok untuk</dt>
+                            <dd class="store-semantic-product__value">Kerja · Perjalanan · Kasual harian</dd>
+                          </div>
+                          <div class="store-semantic-product__fact">
+                            <dt class="store-semantic-product__label">Catatan</dt>
+                            <dd class="store-semantic-product__value">Warna produk dapat berbeda tergantung pencahayaan foto marketplace.</dd>
+                          </div>
+                            </dl>
+                            <div class="store-semantic-product__links">
+                              <a class="store-button store-button--subtle" href="https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html">Detail editorial</a>
+                              <a class="store-button" href="https://www.pakrpp.com/store?item=https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html" data-store-open-slug="https-www-pakrpp-com-2026-04-neutral-linen-overshirt-html">Buka di Store</a>
+                            </div>
+                          </article>
+              </div>
+            </details>
+            <!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->
+          </div>
+        </section>
       </section>
 
       <section id="contact" class="store-contact" aria-labelledby="store-contact-title">
@@ -1841,9 +2158,9 @@
   <script type="application/json" id="store-static-products">
 [
   {
-    "id": "dummy-desk-tray-organizer",
-    "slug": "dummy-desk-tray-organizer",
-    "name": "Dummy Desk Tray Organizer",
+    "id": "minimal-desk-tray-organizer",
+    "slug": "minimal-desk-tray-organizer",
+    "name": "Minimal Desk Tray Organizer",
     "category": "Workspace",
     "priceText": "Rp129.000",
     "price": 129000,
@@ -1856,7 +2173,7 @@
     "whyPicked": "Dipilih karena bentuknya sederhana, mudah ditempatkan di meja kecil, dan membantu mengurangi visual clutter saat bekerja atau belajar.",
     "bestFor": [
       "Workspace setup",
-      "Study desk",
+      "Meja belajar",
       "Small accessories",
       "Cable and stationery control"
     ],
@@ -1888,8 +2205,8 @@
       "website": "",
       "official": ""
     },
-    "canonicalUrl": "https://www.pakrpp.com/2026/05/dummy-desk-tray-organizer.html",
-    "storeUrl": "https://www.pakrpp.com/store?item=dummy-desk-tray-organizer",
+    "canonicalUrl": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+    "storeUrl": "https://www.pakrpp.com/store?item=minimal-desk-tray-organizer",
     "datePublished": "2026-05-01",
     "dateModified": "2026-05-01"
   },
@@ -1908,7 +2225,7 @@
     "verdict": "A simple daily tote for light carry, campus, errands, and understated everyday styling.",
     "whyPicked": "Dipilih karena desainnya sederhana, mudah dipadukan, dan fungsional untuk kebutuhan harian ringan tanpa terlihat berlebihan.",
     "bestFor": [
-      "Daily carry",
+      "Bawaan harian",
       "Campus",
       "Light errands"
     ],
@@ -1919,7 +2236,7 @@
     ],
     "caveat": "Tidak semua tote cocok untuk beban laptop berat.",
     "material": "Canvas",
-    "useCase": "Daily carry",
+    "useCase": "Bawaan harian",
     "geoContext": "Indonesia; useful for commuting, campus, and everyday errands.",
     "tags": [
       "canvas tote",
@@ -1959,8 +2276,8 @@
     "verdict": "",
     "whyPicked": "",
     "bestFor": [
-      "Daily skincare",
-      "Simple routine",
+      "Skincare harian",
+      "Rutinitas ringan",
       "Skin barrier care"
     ],
     "notes": [
@@ -2006,9 +2323,9 @@
     "verdict": "",
     "whyPicked": "",
     "bestFor": [
-      "Workwear",
-      "Travel",
-      "Daily casual"
+      "Kerja",
+      "Perjalanan",
+      "Kasual harian"
     ],
     "notes": [
       "Cocok untuk layering ringan.",
@@ -2114,6 +2431,32 @@
 
   <template id="store-semantic-empty-template">
     <p class="store-semantic-product__empty" data-copy="semanticEmptyLabel"></p>
+  </template>
+
+  <template id="store-semantic-shortlist-template">
+    <article class="store-semantic-shortlist-card" data-store-semantic-shortlist-card>
+      <p class="store-semantic-shortlist-card__badge" data-store-semantic-shortlist-badge></p>
+      <h3 class="store-semantic-shortlist-card__title" data-store-semantic-shortlist-title></h3>
+      <p class="store-semantic-shortlist-card__reason" data-store-semantic-shortlist-reason></p>
+      <a class="store-button" data-store-semantic-shortlist-link data-store-open-slug href="/store">
+        <span data-copy="semanticStoreLinkLabel">Open in Store</span>
+      </a>
+    </article>
+  </template>
+
+  <template id="store-semantic-group-template">
+    <details class="store-semantic-group" data-store-semantic-group>
+      <summary class="store-semantic-group__summary">
+        <span class="gg-icon store-semantic-group__icon" aria-hidden="true" data-store-semantic-group-icon>category</span>
+        <span class="store-semantic-group__main">
+          <span class="store-semantic-group__title" data-store-semantic-group-title></span>
+          <span class="store-semantic-group__description" data-store-semantic-group-description></span>
+        </span>
+        <span class="store-semantic-group__count" data-store-semantic-group-count></span>
+        <span class="gg-icon store-semantic-group__chevron" aria-hidden="true">expand_more</span>
+      </summary>
+      <div class="store-semantic-group__body" data-store-semantic-group-body></div>
+    </details>
   </template>
 
   <template id="store-semantic-tag-template">
@@ -2294,13 +2637,23 @@
         marketplaceCtaLabel: 'Cek harga',
         marketplaceFootnote: 'Harga, stok, pengiriman, dan retur mengikuti marketplace masing-masing.',
         copyLinksAttribution: 'Kurasi via Yellow Cart · PakRPP',
-        semanticProductsTitle: 'Catatan produk Yellow Cart',
+        semanticProductsTitle: 'Catatan Kuratorial',
+        semanticProductsLead: 'Alasan singkat, kecocokan, dan catatan sebelum membuka marketplace.',
+        semanticShortlistTitle: 'Pilihan Utama',
+        semanticShortlistLead: 'Tiga pilihan awal agar pembaca tidak perlu menelusuri semuanya.',
+        semanticBrowseTitle: 'Category',
+        semanticBrowseLead: 'Buka kategori untuk melihat catatan produk yang lebih lengkap.',
+        semanticShortlistBadgeOne: 'Paling berguna',
+        semanticShortlistBadgeTwo: 'Harian',
+        semanticShortlistBadgeThree: 'Paling visual',
         semanticWhyPickedLabel: 'Kenapa dipilih',
         semanticBestForLabel: 'Cocok untuk',
         semanticCaveatLabel: 'Catatan',
         semanticEditorialDetailLabel: 'Detail editorial',
-        semanticStoreLinkLabel: 'Buka di Store',
-        semanticEmptyLabel: 'Ringkasan produk akan muncul di sini setelah kurasi dimuat.',
+        semanticStoreLinkLabel: 'Buka produk',
+        semanticMoreLabel: 'Lihat {count} lainnya',
+        semanticLessLabel: 'Tampilkan lebih sedikit',
+        semanticEmptyLabel: 'Pilih produk untuk membaca alasan pemilihan, kecocokan penggunaan, dan catatan sebelum membeli.',
         filterAllLabel: 'Semua',
         filterFashionLabel: 'Fashion',
         filterSkincareLabel: 'Skincare',
@@ -2398,13 +2751,23 @@
         marketplaceCtaLabel: 'Check price',
         marketplaceFootnote: 'Price, stock, shipping, and returns follow each marketplace.',
         copyLinksAttribution: 'Curated via Yellow Cart · PakRPP',
-        semanticProductsTitle: 'Yellow Cart product notes',
+        semanticProductsTitle: 'Editorial Notes',
+        semanticProductsLead: 'A concise curation layer based on function, look, use context, and what to consider before buying.',
+        semanticShortlistTitle: 'Shortlist',
+        semanticShortlistLead: 'Start with the most relevant picks before opening the full catalogue.',
+        semanticBrowseTitle: 'Category',
+        semanticBrowseLead: 'All product notes remain available for readers and search systems, but are grouped so the page does not become a duplicate catalogue.',
+        semanticShortlistBadgeOne: 'Paling berguna',
+        semanticShortlistBadgeTwo: 'Harian',
+        semanticShortlistBadgeThree: 'Paling visual',
         semanticWhyPickedLabel: 'Why picked',
         semanticBestForLabel: 'Best for',
         semanticCaveatLabel: 'Caveat',
         semanticEditorialDetailLabel: 'Editorial detail',
-        semanticStoreLinkLabel: 'Open in Store',
-        semanticEmptyLabel: 'Product notes will appear here after the curation loads.',
+        semanticStoreLinkLabel: 'Open product',
+        semanticMoreLabel: 'Show {count} more',
+        semanticLessLabel: 'Show fewer',
+        semanticEmptyLabel: 'Open a product to see why it was picked, who it suits, and what to consider before buying.',
         filterAllLabel: 'All',
         filterFashionLabel: 'Fashion',
         filterSkincareLabel: 'Skincare',
@@ -2426,12 +2789,12 @@
     // Static featured card seed. Build-time prerender sync keeps this aligned with the first snapshot product.
     // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
-      slug: "dummy-desk-tray-organizer",
-      name: "Dummy Desk Tray Organizer",
+      slug: "minimal-desk-tray-organizer",
+      name: "Minimal Desk Tray Organizer",
       category: "Workspace",
       priceText: "Rp129.000",
       image: "https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125",
-      alt: "Dummy Desk Tray Organizer"
+      alt: "Minimal Desk Tray Organizer"
     };
     // STORE_LCP_PRODUCT_END
     var STORE_CATEGORY_CONFIG = {
@@ -2536,6 +2899,8 @@
     var categoryDescription = document.getElementById('store-category-description');
     var loadMore = document.getElementById('store-loadmore');
     var semanticList = document.getElementById('store-semantic-product-list');
+    var semanticRail = document.getElementById('store-semantic-category-rail');
+    var semanticShortlist = document.getElementById('store-semantic-shortlist-grid');
     var discoverySearch = document.getElementById('store-discovery-search');
     var previewSheet = document.getElementById('store-preview-sheet');
     var previewPanel = document.getElementById('store-preview-panel');
@@ -2605,6 +2970,7 @@
       filtered: [],
       query: '',
       filter: 'all',
+      semanticCategory: '',
       intent: '',
       currentPreviewItem: null,
       currentPreviewImageIndex: 0,
@@ -2687,6 +3053,15 @@
       catch (error) { return false; }
     }
     function copy(key) { return (COPY[normalizeLocale(state.locale)] && COPY[normalizeLocale(state.locale)][key]) || COPY.id[key] || key; }
+    function setScopedCopy(root) {
+      if (!root || !(root instanceof Element)) return;
+      if (root.matches('[data-copy]')) root.textContent = copy(root.getAttribute('data-copy'));
+      [].slice.call(root.querySelectorAll('[data-copy]')).forEach(function (node) { node.textContent = copy(node.getAttribute('data-copy')); });
+      if (root.matches('[data-copy-aria]')) root.setAttribute('aria-label', copy(root.getAttribute('data-copy-aria')));
+      [].slice.call(root.querySelectorAll('[data-copy-aria]')).forEach(function (node) { node.setAttribute('aria-label', copy(node.getAttribute('data-copy-aria'))); });
+      if (root.matches('[data-copy-title]')) root.setAttribute('title', copy(root.getAttribute('data-copy-title')));
+      [].slice.call(root.querySelectorAll('[data-copy-title]')).forEach(function (node) { node.setAttribute('title', copy(node.getAttribute('data-copy-title'))); });
+    }
     function setNodeText(node, value) { if (node) node.textContent = value; }
     function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
     function productUnit() { return copy('productUnit'); }
@@ -3726,60 +4101,210 @@
         valueNode.textContent = '';
       }
     }
+    function semanticShortlistBadge(index) {
+      var keys = ['semanticShortlistBadgeOne', 'semanticShortlistBadgeTwo', 'semanticShortlistBadgeThree'];
+      return copy(keys[index] || 'semanticShortlistBadgeOne');
+    }
+    function semanticCategoryKey(item) {
+      var fromFilter = clean(item && item.filter).toLowerCase();
+      var fromCategory = lower(item && item.category);
+      if (fromFilter && STORE_CATEGORY_CONFIG[fromFilter] && fromFilter !== 'all') return fromFilter;
+      if (fromCategory && STORE_CATEGORY_CONFIG[fromCategory] && fromCategory !== 'all') return fromCategory;
+      return publicFilter(item && item.category);
+    }
+    function semanticCategoryTitle(key) {
+      return categoryLocaleValue('title', key) || copy(filterCopyKey(key));
+    }
+    function semanticCategoryDescription(key) {
+      return categoryLocaleValue('description', key) || copy('semanticBrowseLead');
+    }
+    function semanticCategoryIcon(key) {
+      return STORE_FILTER_ICON_MAP[key] || STORE_FILTER_ICON_MAP.etc || 'category';
+    }
+    function renderSemanticProductNode(item) {
+      var node = cloneTemplate('store-semantic-product-template');
+      var categoryNode = node.querySelector('[data-store-semantic-category]');
+      var titleNode = node.querySelector('[data-store-semantic-title]');
+      var summaryNode = node.querySelector('[data-store-semantic-summary]');
+      var whyNode = node.querySelector('[data-store-semantic-why]');
+      var whyValue = node.querySelector('[data-store-semantic-why-value]');
+      var bestForNode = node.querySelector('[data-store-semantic-best-for]');
+      var bestForValue = node.querySelector('[data-store-semantic-best-for-value]');
+      var caveatNode = node.querySelector('[data-store-semantic-caveat]');
+      var caveatValue = node.querySelector('[data-store-semantic-caveat-value]');
+      var tagsNode = node.querySelector('[data-store-semantic-tags]');
+      var detailLink = node.querySelector('[data-store-semantic-detail-link]');
+      var storeLink = node.querySelector('[data-store-semantic-store-link]');
+      var tags = semanticTags(item);
+
+      setScopedCopy(node);
+      setNodeText(categoryNode, item.category || semanticCategoryTitle(semanticCategoryKey(item)) || currentFilterLabel());
+      setNodeText(titleNode, displayProductTitle(item));
+      setNodeText(summaryNode, semanticSummaryText(item));
+      toggleSemanticFact(whyNode, whyValue, item.whyPicked);
+      toggleSemanticFact(bestForNode, bestForValue, semanticBestForText(item));
+      toggleSemanticFact(caveatNode, caveatValue, item.caveat);
+
+      if (detailLink) detailLink.href = canonicalProductUrl(item) || STORE_CANONICAL_PATH;
+      if (storeLink) {
+        storeLink.href = productStoreUrl(item);
+        storeLink.setAttribute('data-store-open-slug', item.slug || '');
+      }
+      if (tagsNode) {
+        tagsNode.replaceChildren();
+        if (tags.length) {
+          tagsNode.hidden = false;
+          tags.forEach(function (tag) {
+            var tagNode = cloneTemplate('store-semantic-tag-template');
+            tagNode.textContent = tag;
+            tagsNode.appendChild(tagNode);
+          });
+        } else tagsNode.hidden = true;
+      }
+      return node;
+    }
+    function renderSemanticShortlist(items) {
+      var fragment = document.createDocumentFragment();
+      if (!semanticShortlist) return;
+      items.slice(0, 3).forEach(function (item, index) {
+        var node = cloneTemplate('store-semantic-shortlist-template');
+        var badge = node.querySelector('[data-store-semantic-shortlist-badge]');
+        var title = node.querySelector('[data-store-semantic-shortlist-title]');
+        var reason = node.querySelector('[data-store-semantic-shortlist-reason]');
+        var link = node.querySelector('[data-store-semantic-shortlist-link]');
+        setScopedCopy(node);
+        setNodeText(badge, semanticShortlistBadge(index));
+        setNodeText(title, displayProductTitle(item));
+        setNodeText(reason, clean(item && item.whyPicked) || semanticSummaryText(item));
+        if (link) {
+          link.href = productStoreUrl(item);
+          link.setAttribute('data-store-open-slug', item.slug || '');
+        }
+        fragment.appendChild(node);
+      });
+      semanticShortlist.replaceChildren(fragment);
+    }
+    function semanticPanelId(key) {
+      return 'store-semantic-panel-' + clean(key || 'category').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
+    }
+    function semanticChipId(key) {
+      return 'store-semantic-chip-' + clean(key || 'category').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
+    }
+    function syncSemanticRailActive(activeKey) {
+      if (!semanticRail) return;
+      [].slice.call(semanticRail.querySelectorAll('[data-store-semantic-category]')).forEach(function (button) {
+        var selected = button.getAttribute('data-store-semantic-category') === activeKey;
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+        if (selected && button.scrollIntoView) button.scrollIntoView({ block: 'nearest', inline: 'center' });
+      });
+    }
+    function setSemanticCategory(key) {
+      if (!key) return;
+      state.semanticCategory = key;
+      if (semanticList) {
+        [].slice.call(semanticList.querySelectorAll('[data-store-semantic-panel]')).forEach(function (panel) {
+          var active = panel.getAttribute('data-store-semantic-panel') === key;
+          panel.open = active;
+          panel.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+      }
+      syncSemanticRailActive(key);
+    }
+    function renderSemanticRail(order, groups, activeKey) {
+      var fragment = document.createDocumentFragment();
+      if (!semanticRail) return;
+      order.forEach(function (key) {
+        var button = document.createElement('button');
+        var icon = document.createElement('span');
+        var label = document.createElement('span');
+        var count = document.createElement('span');
+        var selected = key === activeKey;
+        button.type = 'button';
+        button.className = 'store-semantic-category-chip';
+        button.id = semanticChipId(key);
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+        button.setAttribute('aria-controls', semanticPanelId(key));
+        button.setAttribute('data-store-semantic-category', key);
+        icon.className = 'gg-icon store-semantic-category-chip__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = semanticCategoryIcon(key);
+        label.textContent = semanticCategoryTitle(key);
+        count.className = 'store-semantic-category-chip__count';
+        count.textContent = String((groups[key] || []).length);
+        button.appendChild(icon);
+        button.appendChild(label);
+        button.appendChild(count);
+        fragment.appendChild(button);
+      });
+      semanticRail.replaceChildren(fragment);
+    }
+    function renderSemanticMoreButton(extraCount) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'store-button store-semantic-more';
+      button.setAttribute('data-store-semantic-more', String(extraCount));
+      button.textContent = copy('semanticMoreLabel').replace('{count}', String(extraCount));
+      return button;
+    }
     function renderSemanticProducts() {
       var items = state.filtered.slice();
       var fragment = document.createDocumentFragment();
+      var groups = {};
+      var order = [];
+      var activeKey;
       if (!semanticList) return;
+      renderSemanticShortlist(items);
       if (!items.length) {
+        if (semanticRail) semanticRail.replaceChildren();
         var emptyNode = cloneTemplate('store-semantic-empty-template');
+        setScopedCopy(emptyNode);
         emptyNode.textContent = copy('semanticEmptyLabel');
         fragment.appendChild(emptyNode);
         semanticList.replaceChildren(fragment);
         return;
       }
       items.forEach(function (item) {
-        var node = cloneTemplate('store-semantic-product-template');
-        var categoryNode = node.querySelector('[data-store-semantic-category]');
-        var titleNode = node.querySelector('[data-store-semantic-title]');
-        var summaryNode = node.querySelector('[data-store-semantic-summary]');
-        var whyNode = node.querySelector('[data-store-semantic-why]');
-        var whyValue = node.querySelector('[data-store-semantic-why-value]');
-        var bestForNode = node.querySelector('[data-store-semantic-best-for]');
-        var bestForValue = node.querySelector('[data-store-semantic-best-for-value]');
-        var caveatNode = node.querySelector('[data-store-semantic-caveat]');
-        var caveatValue = node.querySelector('[data-store-semantic-caveat-value]');
-        var tagsNode = node.querySelector('[data-store-semantic-tags]');
-        var detailLink = node.querySelector('[data-store-semantic-detail-link]');
-        var storeLink = node.querySelector('[data-store-semantic-store-link]');
-        var tags = semanticTags(item);
-
-        setNodeText(categoryNode, item.category || currentFilterLabel());
-        setNodeText(titleNode, displayProductTitle(item));
-        setNodeText(summaryNode, semanticSummaryText(item));
-        toggleSemanticFact(whyNode, whyValue, item.whyPicked);
-        toggleSemanticFact(bestForNode, bestForValue, semanticBestForText(item));
-        toggleSemanticFact(caveatNode, caveatValue, item.caveat);
-
-        if (detailLink) detailLink.href = canonicalProductUrl(item) || STORE_CANONICAL_PATH;
-        if (storeLink) {
-          storeLink.href = productStoreUrl(item);
-          storeLink.setAttribute('data-store-open-slug', item.slug || '');
+        var key = semanticCategoryKey(item);
+        if (!groups[key]) {
+          groups[key] = [];
+          order.push(key);
         }
-        if (tagsNode) {
-          tagsNode.replaceChildren();
-          if (tags.length) {
-            tagsNode.hidden = false;
-            tags.forEach(function (tag) {
-              var tagNode = cloneTemplate('store-semantic-tag-template');
-              tagNode.textContent = tag;
-              tagsNode.appendChild(tagNode);
-            });
-          } else tagsNode.hidden = true;
-        }
-        fragment.appendChild(node);
+        groups[key].push(item);
+      });
+      activeKey = state.semanticCategory && groups[state.semanticCategory] ? state.semanticCategory : order[0];
+      state.semanticCategory = activeKey;
+      renderSemanticRail(order, groups, activeKey);
+      order.forEach(function (key) {
+        var group = cloneTemplate('store-semantic-group-template');
+        var icon = group.querySelector('[data-store-semantic-group-icon]');
+        var title = group.querySelector('[data-store-semantic-group-title]');
+        var description = group.querySelector('[data-store-semantic-group-description]');
+        var countNode = group.querySelector('[data-store-semantic-group-count]');
+        var body = group.querySelector('[data-store-semantic-group-body]');
+        var groupItems = groups[key] || [];
+        var active = key === activeKey;
+        setScopedCopy(group);
+        group.id = semanticPanelId(key);
+        group.setAttribute('data-store-semantic-panel', key);
+        group.setAttribute('role', 'tabpanel');
+        group.setAttribute('aria-labelledby', semanticChipId(key));
+        group.setAttribute('aria-hidden', active ? 'false' : 'true');
+        group.open = active;
+        setNodeText(icon, semanticCategoryIcon(key));
+        setNodeText(title, semanticCategoryTitle(key));
+        setNodeText(description, semanticCategoryDescription(key));
+        setNodeText(countNode, groupItems.length + ' ' + productUnit());
+        groupItems.forEach(function (item) {
+          if (body) body.appendChild(renderSemanticProductNode(item));
+        });
+        if (body && groupItems.length > 3) body.appendChild(renderSemanticMoreButton(groupItems.length - 3));
+        fragment.appendChild(group);
       });
       semanticList.replaceChildren(fragment);
+      syncSemanticRailActive(activeKey);
     }
+
     function renderCards() {
       if (!grid) return;
       var visible = state.filtered.slice(0, state.visibleLimit);
@@ -4276,9 +4801,29 @@
       closePanel('saved', { restoreFocus: false });
       openPreviewItem(item, row);
     });
+    if (semanticRail) semanticRail.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-store-semantic-category]');
+      if (!chip) return;
+      event.preventDefault();
+      setSemanticCategory(chip.getAttribute('data-store-semantic-category'));
+    });
     if (semanticList) semanticList.addEventListener('click', function (event) {
-      var link = event.target.closest('[data-store-open-slug]');
+      var moreButton = event.target.closest('[data-store-semantic-more]');
+      var panel;
+      var expanded;
+      var extraCount;
+      var link;
       var item;
+      if (moreButton) {
+        panel = moreButton.closest('[data-store-semantic-panel]');
+        if (!panel) return;
+        expanded = !panel.classList.contains('is-expanded');
+        extraCount = moreButton.getAttribute('data-store-semantic-more') || '0';
+        panel.classList.toggle('is-expanded', expanded);
+        moreButton.textContent = expanded ? copy('semanticLessLabel') : copy('semanticMoreLabel').replace('{count}', extraCount);
+        return;
+      }
+      link = event.target.closest('[data-store-open-slug]');
       if (!link || !isStorePath()) return;
       item = findItemBySlug(link.getAttribute('data-store-open-slug'));
       if (!item) return;
