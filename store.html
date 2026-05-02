@@ -1008,7 +1008,9 @@
       background: var(--gg-surface-interactive);
       color: var(--gg-ink);
       font: 750 13px/1.2 var(--gg-font-sans);
-      transition: background-color var(--gg-ease), transform var(--gg-motion-press), color var(--gg-ease), border-color var(--gg-ease);
+      transition: background-color var(--gg-ease), transform var(--gg-motion-press), color var(--gg-ease), border-color var(--gg-ease);min-width: 50%;
+    max-height: 15%;
+    place-self: center;
     }
     .store-button:hover, .store-button:focus-visible { background: var(--gg-surface-interactive-strong); }
     .store-button:active { transform: scale(var(--gg-press-scale)); }
@@ -1326,7 +1328,7 @@
     .store-semantic-group__body { padding: 0; }
     .store-semantic-group:not(.is-expanded) .store-semantic-group__body > .store-semantic-product:nth-of-type(n+4) { display: none; }
     .store-semantic-more {
-      justify-self: start;
+      justify-self: center;
       min-height: 38px;
       padding-inline: 14px;
       font-size: 12px;
