@@ -1008,9 +1008,7 @@
       background: var(--gg-surface-interactive);
       color: var(--gg-ink);
       font: 750 13px/1.2 var(--gg-font-sans);
-      transition: background-color var(--gg-ease), transform var(--gg-motion-press), color var(--gg-ease), border-color var(--gg-ease);min-width: 50%;
-    max-height: 15%;
-    place-self: center;
+      transition: background-color var(--gg-ease), transform var(--gg-motion-press), color var(--gg-ease), border-color var(--gg-ease);
     }
     .store-button:hover, .store-button:focus-visible { background: var(--gg-surface-interactive-strong); }
     .store-button:active { transform: scale(var(--gg-press-scale)); }
@@ -1334,6 +1332,11 @@
       font-size: 12px;
       margin-top: 2px;
     }
+button.store-button.store-semantic-more {
+    min-width: auto;
+    max-height: none;
+    place-self: center;
+}
     @media (min-width: 720px) {
       .store-semantic-category-rail-wrap { margin-inline: -16px; padding-inline: 16px; }
       .store-semantic-category-rail { padding-inline: 10px; }
