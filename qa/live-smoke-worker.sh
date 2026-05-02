@@ -436,6 +436,83 @@ check_landing_html_redirect() {
   fi
 }
 
+check_store_split_assets() {
+  local js_headers_file="$tmp_dir/store_asset_js_headers.txt"
+  local js_body_file="$tmp_dir/store_asset_js.js"
+  local css_headers_file="$tmp_dir/store_asset_css_headers.txt"
+  local css_body_file="$tmp_dir/store_asset_css.css"
+  local js_meta css_meta js_status css_status js_content_type css_content_type marker
+
+  js_meta="$(fetch_body "/assets/store/store.js" "$js_body_file" "$js_headers_file")"
+  log_route_timing "/assets/store/store.js" "$js_meta" "$js_headers_file"
+  css_meta="$(fetch_body "/assets/store/store.css" "$css_body_file" "$css_headers_file")"
+  log_route_timing "/assets/store/store.css" "$css_meta" "$css_headers_file"
+
+  if meta_is_unreachable "$js_meta"; then
+    report_unreachable "/assets/store/store.js" "$js_meta"
+  else
+    js_status="$(meta_status "$js_meta")"
+    js_content_type="$(extract_header_value "$js_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+
+    if [[ "$js_status" != "200" ]]; then
+      log_fail "/assets/store/store.js expected status 200 (got ${js_status:-000})"
+    fi
+
+    if [[ ! -s "$js_body_file" ]]; then
+      log_fail "/assets/store/store.js is empty"
+    fi
+
+    if [[ -s "$js_body_file" ]]; then
+      if [[ "$js_content_type" != *"javascript"* && "$js_content_type" != *"ecmascript"* && "$js_content_type" != *"text/plain"* ]]; then
+        log_warn "/assets/store/store.js content-type is unusual (${js_content_type:-missing})"
+      fi
+
+      for marker in \
+        'STORE_LCP_PRODUCT_START' \
+        'function readStaticProducts(' \
+        'function hydrateStaticProducts(' \
+        'function loadProducts(' \
+        'data-store-open-preview' \
+        'store-static-products'; do
+        grep -Fq "$marker" "$js_body_file" || log_fail "/assets/store/store.js missing runtime marker: ${marker}"
+      done
+    fi
+  fi
+
+  if meta_is_unreachable "$css_meta"; then
+    report_unreachable "/assets/store/store.css" "$css_meta"
+  else
+    css_status="$(meta_status "$css_meta")"
+    css_content_type="$(extract_header_value "$css_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+
+    if [[ "$css_status" != "200" ]]; then
+      log_fail "/assets/store/store.css expected status 200 (got ${css_status:-000})"
+    fi
+
+    if [[ ! -s "$css_body_file" ]]; then
+      log_fail "/assets/store/store.css is empty"
+    fi
+
+    if [[ -s "$css_body_file" ]]; then
+      if [[ "$css_content_type" != *"text/css"* && "$css_content_type" != *"text/plain"* ]]; then
+        log_warn "/assets/store/store.css content-type is unusual (${css_content_type:-missing})"
+      fi
+
+      for marker in \
+        '.store-app' \
+        '.store-card' \
+        '.store-preview-sheet' \
+        'align-items: start;' \
+        '.store-semantic-category-rail' \
+        '.gg-dock' \
+        'aspect-ratio: var(--store-card-aspect)' \
+        'border-radius: 10px;'; do
+        grep -Fq "$marker" "$css_body_file" || log_fail "/assets/store/store.css missing style marker: ${marker}"
+      done
+    fi
+  fi
+}
+
 check_store_route() {
   local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
@@ -511,9 +588,10 @@ check_store_route() {
   grep -Fq 'STORE_STATIC_PRODUCTS_JSON_START' "$body_file" || log_fail "/store static products JSON start marker is missing"
   grep -Fq 'STORE_ITEMLIST_JSONLD_START' "$body_file" || log_fail "/store ItemList JSON-LD start marker is missing"
   grep -Fq 'STORE_STATIC_SEMANTIC_PRODUCTS_START' "$body_file" || log_fail "/store semantic products marker is missing"
-  grep -Fq 'STORE_LCP_PRODUCT_START' "$body_file" || log_fail "/store LCP product seed marker is missing"
   grep -Eq 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']image["'"'"'][^>]*fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store LCP image preload contract is missing"
   grep -Eq 'fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store high fetchpriority marker is missing"
+  grep -Eq 'href=["'"'"']/assets/store/store\.css["'"'"']' "$body_file" || log_fail "/store missing /assets/store/store.css reference"
+  grep -Eq '<script[^>]*src=["'"'"']/assets/store/store\.js["'"'"'][^>]*defer[^>]*>|<script[^>]*defer[^>]*src=["'"'"']/assets/store/store\.js["'"'"'][^>]*>' "$body_file" || log_fail "/store missing deferred /assets/store/store.js reference"
   grep -Eq 'id=["'"'"']store-grid-skeleton["'"'"']' "$body_file" || log_fail "/store skeleton grid is missing"
   grep -Eq 'id=["'"'"']store-grid["'"'"']' "$body_file" || log_fail "/store main grid is missing"
   grep -Eq 'id=["'"'"']store-category-context["'"'"']' "$body_file" || log_fail "/store category context is missing"
@@ -539,12 +617,7 @@ check_store_route() {
   grep -Eq 'data-store-theme=["'"'"']light["'"'"']' "$body_file" || log_fail "/store Light theme switch is missing"
   grep -Eq 'data-store-theme=["'"'"']dark["'"'"']' "$body_file" || log_fail "/store Dark theme switch is missing"
   grep -Eq 'class=["'"'"'][^"'"'"']*store-grid[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store catalogue surface is missing"
-  grep -Eq -- '--store-card-aspect:\s*4 / 5;' "$body_file" || log_fail "/store 4:5 card aspect token is missing"
-  grep -Eq 'aspect-ratio:\s*var\(--store-card-aspect\)' "$body_file" || log_fail "/store card aspect-ratio rule is missing"
-  grep -Eq 'border-radius:\s*10px;' "$body_file" || log_fail "/store card media 10px radius token is missing"
   grep -Eq 'class=["'"'"']gg-sheet store-preview-sheet["'"'"']' "$body_file" || log_fail "/store preview sheet is missing"
-  grep -Eq '\.store-preview-sheet\s*\{' "$body_file" || log_fail "/store preview sheet CSS block is missing"
-  grep -Eq 'align-items:\s*start;' "$body_file" || log_fail "/store preview sheet top alignment token is missing"
   grep -Eq 'id=["'"'"']store-preview-dots["'"'"']' "$body_file" || log_fail "/store preview dots container is missing"
   grep -Eq 'class=["'"'"']store-preview__footer["'"'"']' "$body_file" || log_fail "/store preview footer handle container is missing"
   grep -Eq 'class=["'"'"']store-preview__handle["'"'"']' "$body_file" || log_fail "/store preview footer handle is missing"
@@ -558,6 +631,15 @@ check_store_route() {
   grep -Eq 'id=["'"'"']store-link-shopee["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store Shopee CTA rel/target contract is missing"
   grep -Eq 'id=["'"'"']store-link-tiktok["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store TikTok CTA rel/target contract is missing"
   grep -Eq 'id=["'"'"']store-link-tokopedia["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store Tokopedia CTA rel/target contract is missing"
+  if grep -Fq 'function readStaticProducts(' "$body_file"; then
+    log_fail "/store must not inline runtime function: readStaticProducts"
+  fi
+  if grep -Fq 'function hydrateStaticProducts(' "$body_file"; then
+    log_fail "/store must not inline runtime function: hydrateStaticProducts"
+  fi
+  if grep -Fq 'function loadProducts(' "$body_file"; then
+    log_fail "/store must not inline runtime function: loadProducts"
+  fi
   if grep -Fq 'Coba refresh katalog' "$body_file"; then
     log_fail "/store still serves stale string: Coba refresh katalog"
   fi
@@ -748,6 +830,7 @@ check_sw_asset
 check_landing_route
 check_landing_html_redirect
 check_store_route
+check_store_split_assets
 check_diagnostic_mode_contracts
 check_store_slash_redirect_live
 check_store_redirect "/store.html"
