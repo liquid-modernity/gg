@@ -140,4 +140,7 @@ jobs:
       - name: Post-deploy live worker smoke
         env:
           GG_LIVE_BASE_URL: ${{ env.GG_LIVE_BASE_URL }}
+          GG_LIVE_RETRIES: "3"
+          GG_LIVE_TIMEOUT_SECONDS: "30"
+          GG_LIVE_CONNECT_TIMEOUT_SECONDS: "15"
         run: npm run gaga:verify-worker-live

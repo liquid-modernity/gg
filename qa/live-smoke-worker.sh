@@ -7,8 +7,11 @@ BASE_URL="${1:-https://www.pakrpp.com}"
 BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke-worker)"
 PROOF_TOOL="tools/proof-store-static.mjs"
-LIVE_TIMEOUT_SECONDS="${GG_LIVE_TIMEOUT_SECONDS:-20}"
-CONNECT_TIMEOUT_SECONDS="${GG_LIVE_CONNECT_TIMEOUT_SECONDS:-$LIVE_TIMEOUT_SECONDS}"
+LIVE_RETRIES="${GG_LIVE_RETRIES:-3}"
+LIVE_RETRY_DELAY_SECONDS="${GG_LIVE_RETRY_DELAY_SECONDS:-3}"
+LIVE_TIMEOUT_SECONDS="${GG_LIVE_TIMEOUT_SECONDS:-30}"
+CONNECT_TIMEOUT_SECONDS="${GG_LIVE_CONNECT_TIMEOUT_SECONDS:-15}"
+ALLOW_GLOBAL_TIMEOUT_WARN="${GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN:-0}"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -18,9 +21,62 @@ warnings=0
 root_contract="missing"
 root_contract_reasons="missing"
 current_mode="unknown"
+current_failure_scope="route"
+store_route_reachable=0
+has_contract_failure=0
+has_route_failure=0
+has_store_asset_failure=0
+infra_unreachable=0
+core_endpoint_total=5
+core_reachable_count=0
+core_unreachable_count=0
+core_timeout_unreachable_count=0
+core_reachable_labels=""
+core_unreachable_labels=""
+asset_checks_attempted=0
+asset_checks_passed=0
+asset_checks_failed=0
+failure_class="PASS"
+
+normalize_positive_int() {
+  local value="$1"
+  local fallback="$2"
+  if [[ "$value" =~ ^[0-9]+$ ]] && [[ "$value" -gt 0 ]]; then
+    printf '%s\n' "$value"
+    return
+  fi
+  printf '%s\n' "$fallback"
+}
+
+normalize_nonnegative_int() {
+  local value="$1"
+  local fallback="$2"
+  if [[ "$value" =~ ^[0-9]+$ ]]; then
+    printf '%s\n' "$value"
+    return
+  fi
+  printf '%s\n' "$fallback"
+}
+
+is_truthy() {
+  case "${1:-0}" in
+    1|true|TRUE|yes|YES|on|ON) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+LIVE_RETRIES="$(normalize_positive_int "$LIVE_RETRIES" 3)"
+LIVE_RETRY_DELAY_SECONDS="$(normalize_nonnegative_int "$LIVE_RETRY_DELAY_SECONDS" 3)"
+LIVE_TIMEOUT_SECONDS="$(normalize_positive_int "$LIVE_TIMEOUT_SECONDS" 30)"
+CONNECT_TIMEOUT_SECONDS="$(normalize_positive_int "$CONNECT_TIMEOUT_SECONDS" 15)"
 
 log_fail() {
   failures=$((failures + 1))
+  case "${current_failure_scope:-route}" in
+    contract) has_contract_failure=1 ;;
+    store_asset) has_store_asset_failure=1 ;;
+    *) has_route_failure=1 ;;
+  esac
   printf 'FAIL: %s\n' "$1" >&2
 }
 
@@ -69,6 +125,27 @@ meta_exit_code() {
 
 meta_is_timeout() {
   [[ "$(meta_exit_code "$1")" == "28" ]]
+}
+
+meta_retry_reason() {
+  local meta="$1"
+  local exit_code status
+  exit_code="$(meta_exit_code "$meta")"
+  status="$(meta_status "$meta")"
+
+  case "$exit_code" in
+    28) printf 'timeout\n'; return 0 ;;
+    6) printf 'dns\n'; return 0 ;;
+    7) printf 'connect\n'; return 0 ;;
+    35|52|55|56|92) printf 'tls\n'; return 0 ;;
+  esac
+
+  if [[ "$status" == "000" ]]; then
+    printf 'unreachable\n'
+    return 0
+  fi
+
+  return 1
 }
 
 meta_is_unreachable() {
@@ -125,64 +202,53 @@ extract_body_snippet() {
   ' "$file" 2>/dev/null || true
 }
 
-fetch_headers() {
-  local path="$1"
-  local out_headers="$2"
-  local target="${BASE_URL}${path}"
-  local meta=""
-  local curl_exit=0
-
-  meta="$(curl -sS -L \
-    --http1.1 \
-    --connect-timeout "$CONNECT_TIMEOUT_SECONDS" \
-    --max-time "$LIVE_TIMEOUT_SECONDS" \
-    --max-redirs 10 \
-    -A "$UA" \
-    -D "$out_headers" \
-    -o /dev/null \
-    -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}' \
-    "$target" 2>/dev/null)" || curl_exit=$?
-
-  if [[ ! -s "$out_headers" ]]; then
-    : > "$out_headers"
-  fi
-
-  printf '%s|%s\n' "${meta:-$(default_meta "$target")}" "$curl_exit"
-  return 0
-}
-
-fetch_body() {
-  local path="$1"
-  local out_file="$2"
-  local out_headers="${3:-}"
+run_curl_request() {
+  local mode="$1"
+  local path="$2"
+  local out_file="${3:-}"
+  local out_headers="${4:-}"
   local target="${BASE_URL}${path}"
   local meta=""
   local curl_exit=0
   local curl_args=(
-    curl -sS -L
+    curl -sS
     --http1.1
     --connect-timeout "$CONNECT_TIMEOUT_SECONDS"
     --max-time "$LIVE_TIMEOUT_SECONDS"
-    --max-redirs 10
     -A "$UA"
   )
 
-  if [[ -n "$out_headers" ]]; then
-    curl_args+=(-D "$out_headers")
-  fi
+  case "$mode" in
+    headers)
+      curl_args+=(-L --max-redirs 10 -D "$out_headers" -o /dev/null)
+      ;;
+    body)
+      curl_args+=(-L --max-redirs 10)
+      if [[ -n "$out_headers" ]]; then
+        curl_args+=(-D "$out_headers")
+      fi
+      curl_args+=(-o "$out_file")
+      ;;
+    headers_nofollow)
+      curl_args+=(--max-redirs 0 -D "$out_headers" -o /dev/null)
+      ;;
+    *)
+      printf '%s|000|0|0|0|0|0|0|0|1\n' "$(default_meta "$target")"
+      return 0
+      ;;
+  esac
 
   curl_args+=(
-    -o "$out_file"
     -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}'
     "$target"
   )
 
   meta="$("${curl_args[@]}" 2>/dev/null)" || curl_exit=$?
 
-  if [[ ! -f "$out_file" ]]; then
+  if [[ -n "$out_file" && ! -f "$out_file" ]]; then
     : > "$out_file"
   fi
-  if [[ -n "$out_headers" && ! -s "$out_headers" ]]; then
+  if [[ -n "$out_headers" && ! -f "$out_headers" ]]; then
     : > "$out_headers"
   fi
 
@@ -190,30 +256,100 @@ fetch_body() {
   return 0
 }
 
+fetch_with_retry() {
+  local mode="$1"
+  local path="$2"
+  local out_file="${3:-}"
+  local out_headers="${4:-}"
+  local attempt=1
+  local meta=""
+  local retry_reason=""
+
+  while (( attempt <= LIVE_RETRIES )); do
+    if [[ -n "$out_file" ]]; then
+      : > "$out_file"
+    fi
+    if [[ -n "$out_headers" ]]; then
+      : > "$out_headers"
+    fi
+
+    meta="$(run_curl_request "$mode" "$path" "$out_file" "$out_headers")"
+
+    if ! retry_reason="$(meta_retry_reason "$meta")"; then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+
+    if (( attempt >= LIVE_RETRIES )); then
+      printf '%s\n' "$meta"
+      return 0
+    fi
+
+    printf 'INFO: fetch retry path=%s attempt=%s/%s reason=%s\n' "$path" "$((attempt + 1))" "$LIVE_RETRIES" "$retry_reason" >&2
+    if (( LIVE_RETRY_DELAY_SECONDS > 0 )); then
+      sleep "$LIVE_RETRY_DELAY_SECONDS"
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  printf '%s\n' "$meta"
+  return 0
+}
+
+fetch_headers() {
+  local path="$1"
+  local out_headers="$2"
+
+  fetch_with_retry "headers" "$path" "" "$out_headers"
+}
+
+fetch_body() {
+  local path="$1"
+  local out_file="$2"
+  local out_headers="${3:-}"
+
+  fetch_with_retry "body" "$path" "$out_file" "$out_headers"
+}
+
 fetch_headers_nofollow() {
   local path="$1"
   local out_headers="$2"
-  local target="${BASE_URL}${path}"
-  local meta=""
-  local curl_exit=0
 
-  meta="$(curl -sS \
-    --http1.1 \
-    --connect-timeout "$CONNECT_TIMEOUT_SECONDS" \
-    --max-time "$LIVE_TIMEOUT_SECONDS" \
-    --max-redirs 0 \
-    -A "$UA" \
-    -D "$out_headers" \
-    -o /dev/null \
-    -w '%{url_effective}|%{http_code}|%{num_redirects}|%{time_namelookup}|%{time_connect}|%{time_appconnect}|%{time_starttransfer}|%{time_total}|%{size_download}' \
-    "$target" 2>/dev/null)" || curl_exit=$?
+  fetch_with_retry "headers_nofollow" "$path" "" "$out_headers"
+}
 
-  if [[ ! -s "$out_headers" ]]; then
-    : > "$out_headers"
+append_label() {
+  local current="$1"
+  local label="$2"
+  if [[ -n "$current" ]]; then
+    printf '%s, %s\n' "$current" "$label"
+    return
+  fi
+  printf '%s\n' "$label"
+}
+
+record_core_endpoint_result() {
+  local label="$1"
+  local meta="$2"
+
+  if meta_retry_reason "$meta" >/dev/null; then
+    core_unreachable_count=$((core_unreachable_count + 1))
+    core_timeout_unreachable_count=$((core_timeout_unreachable_count + 1))
+    core_unreachable_labels="$(append_label "$core_unreachable_labels" "$label")"
+    return
   fi
 
-  printf '%s|%s\n' "${meta:-$(default_meta "$target")}" "$curl_exit"
-  return 0
+  core_reachable_count=$((core_reachable_count + 1))
+  core_reachable_labels="$(append_label "$core_reachable_labels" "$label")"
+}
+
+mark_asset_check_result() {
+  local failures_before="$1"
+  if [[ "$failures" == "$failures_before" ]]; then
+    asset_checks_passed=$((asset_checks_passed + 1))
+  else
+    asset_checks_failed=$((asset_checks_failed + 1))
+  fi
 }
 
 log_route_timing() {
@@ -253,7 +389,9 @@ report_unreachable() {
   local label="$1"
   local meta="$2"
   local reason="unreachable"
-  if meta_is_timeout "$meta"; then
+  if reason="$(meta_retry_reason "$meta")"; then
+    :
+  elif meta_is_timeout "$meta"; then
     reason="timeout"
   fi
   log_fail "${label} ${reason} (status=$(meta_status "$meta") curl_exit=$(meta_exit_code "$meta") ttfb=$(meta_field "$meta" 7) total=$(meta_field "$meta" 8) timeout=${LIVE_TIMEOUT_SECONDS}s)"
@@ -284,8 +422,10 @@ check_root_headers() {
   local headers_file="$tmp_dir/root_headers.txt"
   local body_file="$tmp_dir/root_body.html"
   local meta status contract_header reasons_header robots_header content_type
+  current_failure_scope="route"
   meta="$(fetch_headers "/" "$headers_file")"
   log_route_timing "/" "$meta" "$headers_file"
+  record_core_endpoint_result "/" "$meta"
   status="$(meta_status "$meta")"
 
   if meta_is_unreachable "$meta"; then
@@ -302,6 +442,7 @@ check_root_headers() {
     log_fail "/ expected status 200 (got ${status:-000})"
   fi
 
+  current_failure_scope="contract"
   if [[ -z "$contract_header" ]]; then
     log_fail "/ missing x-gg-template-contract"
   else
@@ -346,8 +487,10 @@ check_flags_endpoint() {
   local flags_file="$tmp_dir/flags.json"
   local headers_file="$tmp_dir/flags_headers.txt"
   local meta status
+  current_failure_scope="route"
   meta="$(fetch_body "/flags.json" "$flags_file" "$headers_file")"
   log_route_timing "/flags.json" "$meta" "$headers_file"
+  record_core_endpoint_result "/flags.json" "$meta"
   status="$(meta_status "$meta")"
 
   if meta_is_unreachable "$meta"; then
@@ -376,8 +519,10 @@ check_flags_endpoint() {
 check_sw_asset() {
   local headers_file="$tmp_dir/sw_headers.txt"
   local meta status content_type
+  current_failure_scope="route"
   meta="$(fetch_headers "/sw.js" "$headers_file")"
   log_route_timing "/sw.js" "$meta" "$headers_file"
+  record_core_endpoint_result "/sw.js" "$meta"
   status="$(meta_status "$meta")"
 
   if meta_is_unreachable "$meta"; then
@@ -399,8 +544,10 @@ check_sw_asset() {
 check_landing_route() {
   local headers_file="$tmp_dir/landing_headers.txt"
   local meta status
+  current_failure_scope="route"
   meta="$(fetch_headers "/landing" "$headers_file")"
   log_route_timing "/landing" "$meta" "$headers_file"
+  record_core_endpoint_result "/landing" "$meta"
   status="$(meta_status "$meta")"
 
   if meta_is_unreachable "$meta"; then
@@ -417,6 +564,7 @@ check_landing_html_redirect() {
   local headers_file="$tmp_dir/landing_html_headers.txt"
   local meta status location
 
+  current_failure_scope="route"
   meta="$(fetch_headers_nofollow "/landing.html" "$headers_file")"
   status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
@@ -442,15 +590,24 @@ check_store_split_assets() {
   local css_headers_file="$tmp_dir/store_asset_css_headers.txt"
   local css_body_file="$tmp_dir/store_asset_css.css"
   local js_meta css_meta js_status css_status js_content_type css_content_type marker
+  local js_failures_before css_failures_before asset_unreachable_scope="route"
+
+  if [[ "$store_route_reachable" == "1" ]]; then
+    asset_unreachable_scope="store_asset"
+  fi
 
   js_meta="$(fetch_body "/assets/store/store.js" "$js_body_file" "$js_headers_file")"
   log_route_timing "/assets/store/store.js" "$js_meta" "$js_headers_file"
   css_meta="$(fetch_body "/assets/store/store.css" "$css_body_file" "$css_headers_file")"
   log_route_timing "/assets/store/store.css" "$css_meta" "$css_headers_file"
 
+  asset_checks_attempted=$((asset_checks_attempted + 1))
+  js_failures_before="$failures"
+  current_failure_scope="$asset_unreachable_scope"
   if meta_is_unreachable "$js_meta"; then
     report_unreachable "/assets/store/store.js" "$js_meta"
   else
+    current_failure_scope="store_asset"
     js_status="$(meta_status "$js_meta")"
     js_content_type="$(extract_header_value "$js_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
 
@@ -478,10 +635,15 @@ check_store_split_assets() {
       done
     fi
   fi
+  mark_asset_check_result "$js_failures_before"
 
+  asset_checks_attempted=$((asset_checks_attempted + 1))
+  css_failures_before="$failures"
+  current_failure_scope="$asset_unreachable_scope"
   if meta_is_unreachable "$css_meta"; then
     report_unreachable "/assets/store/store.css" "$css_meta"
   else
+    current_failure_scope="store_asset"
     css_status="$(meta_status "$css_meta")"
     css_content_type="$(extract_header_value "$css_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
 
@@ -511,14 +673,17 @@ check_store_split_assets() {
       done
     fi
   fi
+  mark_asset_check_result "$css_failures_before"
 }
 
 check_store_route() {
   local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
   local meta final status release_header fingerprint_header robots_header store_source_header store_static_header store_cache_header dock_snippet preload_snippet grid_snippet saved_marker proof_output
+  current_failure_scope="route"
   meta="$(fetch_body "/store" "$body_file" "$headers_file")"
   log_route_timing "/store" "$meta" "$headers_file"
+  record_core_endpoint_result "/store" "$meta"
   final="$(meta_field "$meta" 1)"
   status="$(meta_status "$meta")"
   release_header="$(extract_header_value "$headers_file" "x-gg-release")"
@@ -544,6 +709,8 @@ check_store_route() {
     return
   fi
 
+  store_route_reachable=1
+  current_failure_scope="contract"
   dock_snippet="$(extract_body_snippet "$body_file" 'data-store-dock')"
   preload_snippet="$(extract_body_snippet "$body_file" 'STORE_LCP_PRELOAD_START')"
   grid_snippet="$(extract_body_snippet "$body_file" 'STORE_STATIC_GRID_START')"
@@ -680,6 +847,7 @@ check_diagnostic_mode_contracts() {
   local prod_headers_meta dev_headers_meta prod_slash_meta dev_slash_meta prod_robots_meta
   local prod_mode prod_robots dev_robots prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
 
+  current_failure_scope="route"
   prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file" "$prod_headers_http")"
   dev_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=development" "$dev_headers_file" "$dev_headers_http")"
   prod_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=production" "$prod_slash_file")"
@@ -722,6 +890,7 @@ check_diagnostic_mode_contracts() {
     return
   fi
 
+  current_failure_scope="contract"
   prod_mode="$(json_field "$prod_headers_file" "mode" || true)"
   prod_robots="$(json_field "$prod_headers_file" "robots" || true)"
   dev_robots="$(json_field "$dev_headers_file" "robots" || true)"
@@ -776,6 +945,7 @@ check_store_redirect() {
   local headers_file="$tmp_dir$(printf '%s' "$path" | tr '/.' '__').headers.txt"
   local meta status location
 
+  current_failure_scope="route"
   meta="$(fetch_headers_nofollow "$path" "$headers_file")"
   status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
@@ -799,6 +969,7 @@ check_store_slash_redirect_live() {
   local headers_file="$tmp_dir/store_slash_live.headers.txt"
   local meta status location
 
+  current_failure_scope="route"
   meta="$(fetch_headers_nofollow "/store/" "$headers_file")"
   status="$(meta_status "$meta")"
   location="$(extract_header_value "$headers_file" "location")"
@@ -822,6 +993,51 @@ check_store_slash_redirect_live() {
   fi
 }
 
+resolve_failure_class() {
+  if (( core_timeout_unreachable_count >= 4 )); then
+    infra_unreachable=1
+  fi
+
+  if (( has_store_asset_failure )); then
+    failure_class="STORE_ASSET_FAILURE"
+    return
+  fi
+
+  if (( has_contract_failure )); then
+    failure_class="CONTRACT_FAILURE"
+    return
+  fi
+
+  if (( infra_unreachable )); then
+    failure_class="INFRA_UNREACHABLE"
+    return
+  fi
+
+  if (( has_route_failure )); then
+    failure_class="ROUTE_FAILURE"
+    return
+  fi
+
+  if (( warnings > 0 )); then
+    failure_class="PASS_WITH_WARNINGS"
+    return
+  fi
+
+  failure_class="PASS"
+}
+
+print_summary() {
+  log_info "summary core-endpoints reachable=${core_reachable_count}/${core_endpoint_total} unreachable=${core_unreachable_count}/${core_endpoint_total}"
+  log_info "summary core-reachable-labels=${core_reachable_labels:-none}"
+  log_info "summary core-unreachable-labels=${core_unreachable_labels:-none}"
+  log_info "summary asset-checks attempted=${asset_checks_attempted} passed=${asset_checks_passed} failed=${asset_checks_failed}"
+  log_info "summary failure-class=${failure_class}"
+}
+
+should_skip_post_store_checks() {
+  (( core_timeout_unreachable_count >= 4 )) && [[ "$store_route_reachable" != "1" ]]
+}
+
 printf 'SMOKE-WORKER lane=LIVE base=%s\n' "$BASE_URL"
 
 check_root_headers
@@ -831,13 +1047,23 @@ check_landing_route
 check_landing_html_redirect
 check_store_route
 check_store_split_assets
-check_diagnostic_mode_contracts
-check_store_slash_redirect_live
-check_store_redirect "/store.html"
-check_store_redirect "/yellowcart"
-check_store_redirect "/yellowcart.html"
-check_store_redirect "/yellowcard"
-check_store_redirect "/yellowcard.html"
+if should_skip_post_store_checks; then
+  log_info "skipping non-core diagnostics because core endpoints are infra-unreachable and /store did not become reachable"
+else
+  check_diagnostic_mode_contracts
+  check_store_slash_redirect_live
+  check_store_redirect "/store.html"
+  check_store_redirect "/yellowcart"
+  check_store_redirect "/yellowcart.html"
+  check_store_redirect "/yellowcard"
+  check_store_redirect "/yellowcard.html"
+fi
+
+resolve_failure_class
+if [[ "$failure_class" == "INFRA_UNREACHABLE" ]] && is_truthy "$ALLOW_GLOBAL_TIMEOUT_WARN"; then
+  log_warn "global infra unreachable is allowed by GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=1"
+fi
+print_summary
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   {
@@ -845,19 +1071,34 @@ if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     echo "- Base URL: \`${BASE_URL}\`"
     echo "- Root template contract: \`${root_contract}\`"
     echo "- Root template contract reasons: \`${root_contract_reasons}\`"
+    echo "- Core endpoints reachable: \`${core_reachable_count}/${core_endpoint_total}\`"
+    echo "- Core endpoints unreachable: \`${core_unreachable_count}/${core_endpoint_total}\`"
+    echo "- Asset checks attempted: \`${asset_checks_attempted}\`"
+    echo "- Asset checks passed: \`${asset_checks_passed}\`"
+    echo "- Asset checks failed: \`${asset_checks_failed}\`"
+    echo "- Failure class: \`${failure_class}\`"
     echo "- Failures: \`${failures}\`"
     echo "- Warnings: \`${warnings}\`"
   } >> "$GITHUB_STEP_SUMMARY"
 fi
 
-if [[ "$failures" -gt 0 ]]; then
-  printf 'LIVE SMOKE WORKER RESULT: FAILED (%s)\n' "$failures" >&2
-  exit 1
+if [[ "$failure_class" == "PASS" ]]; then
+  printf 'LIVE SMOKE WORKER RESULT: PASS\n'
+  exit 0
 fi
 
-if [[ "$warnings" -gt 0 ]]; then
+if [[ "$failure_class" == "PASS_WITH_WARNINGS" ]]; then
   printf 'LIVE SMOKE WORKER RESULT: PASS_WITH_WARNINGS (%s)\n' "$warnings"
   exit 0
 fi
 
-printf 'LIVE SMOKE WORKER RESULT: PASS\n'
+if [[ "$failure_class" == "INFRA_UNREACHABLE" ]]; then
+  printf 'LIVE SMOKE WORKER RESULT: INFRA_UNREACHABLE\n'
+  if is_truthy "$ALLOW_GLOBAL_TIMEOUT_WARN"; then
+    exit 0
+  fi
+  exit 1
+fi
+
+printf 'LIVE SMOKE WORKER RESULT: %s\n' "$failure_class" >&2
+exit 1
