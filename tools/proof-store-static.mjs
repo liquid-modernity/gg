@@ -3,52 +3,37 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+import {
+  CRITICAL_CSS_BUDGET_BYTES,
+  STORE_ASSET_CSS_HREF,
+  STORE_ASSET_JS_HREF,
+  STORE_FEED_PATH,
+  STORE_LEGACY_FEED_PATH,
+} from "../src/store/store.config.mjs";
+import { extractMarkedRegion, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
+import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../src/store/lib/normalize-store-product.mjs";
+import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
+
 const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
 const WORKER_PATH = path.resolve(ROOT, "worker.js");
 const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_ASSET_CSS_PATH = path.resolve(ROOT, "assets/store/store.css");
 const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
-const STORE_FEED_URL = "/feeds/posts/default/-/Store?alt=json&max-results=50";
-const STORE_LEGACY_FEED_URL = "/feeds/posts/default/-/yellowcard?alt=json&max-results=50";
-const CRITICAL_CSS_BUDGET_BYTES = 15 * 1024;
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
+const warnings = [];
 
 function fail(message) {
   failures.push(message);
 }
 
+function warn(message) {
+  warnings.push(message);
+}
+
 function countOccurrences(text, needle) {
   return (text.match(new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length;
-}
-
-function extractMarkedRegion(text, startMarker, endMarker) {
-  const startIndex = text.indexOf(startMarker);
-  const endIndex = text.indexOf(endMarker);
-
-  if (startIndex === -1) {
-    fail(`missing marker ${startMarker}`);
-    return "";
-  }
-  if (endIndex === -1) {
-    fail(`missing marker ${endMarker}`);
-    return "";
-  }
-  if (countOccurrences(text, startMarker) !== 1) fail(`duplicate marker ${startMarker}`);
-  if (countOccurrences(text, endMarker) !== 1) fail(`duplicate marker ${endMarker}`);
-  if (endIndex <= startIndex) {
-    fail(`marker order invalid ${startMarker} -> ${endMarker}`);
-    return "";
-  }
-
-  return text.slice(startIndex + startMarker.length, endIndex);
-}
-
-function extractScriptTextById(text, id) {
-  const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = text.match(new RegExp(`<script\\b[^>]*id=["']${escapedId}["'][^>]*>([\\s\\S]*?)<\\/script>`, "i"));
-  return match ? match[1] : "";
 }
 
 function scriptTags(text) {
@@ -57,6 +42,18 @@ function scriptTags(text) {
 
 function styleTags(text) {
   return text.match(/<style\b[\s\S]*?<\/style>/gi) || [];
+}
+
+function anchorTags(text) {
+  return text.match(/<a\b[\s\S]*?<\/a>/gi) || [];
+}
+
+function imageTags(text) {
+  return text.match(/<img\b[^>]*>/gi) || [];
+}
+
+function preloadTags(text) {
+  return text.match(/<link\b[^>]*rel=["']preload["'][^>]*>/gi) || [];
 }
 
 function tagAttr(tag, name) {
@@ -71,33 +68,6 @@ function tagBody(tag) {
 
 function isThemeBootScript(body) {
   return /gg:theme/.test(body) && /data-gg-theme/.test(body) && /localStorage/.test(body);
-}
-
-function parseJsonScript(id) {
-  const scriptText = extractScriptTextById(source, id);
-  if (!scriptText.trim()) {
-    fail(`missing or empty script#${id}`);
-    return null;
-  }
-
-  try {
-    return JSON.parse(scriptText);
-  } catch (error) {
-    fail(`invalid JSON in script#${id}: ${error.message}`);
-    return null;
-  }
-}
-
-function anchorTags(text) {
-  return text.match(/<a\b[\s\S]*?<\/a>/gi) || [];
-}
-
-function imageTags(text) {
-  return text.match(/<img\b[^>]*>/gi) || [];
-}
-
-function preloadTags(text) {
-  return text.match(/<link\b[^>]*rel=["']preload["'][^>]*>/gi) || [];
 }
 
 function isNonSpecificOfferUrl(value) {
@@ -119,6 +89,19 @@ function findGraphNode(nodes, expectedType, idSuffix = "") {
   return nodes.find((node) => hasType(node, expectedType) && (!idSuffix || String(node["@id"] || "").endsWith(idSuffix))) || null;
 }
 
+let mode = "development";
+if (existsSync(FLAGS_PATH)) {
+  try {
+    const flags = JSON.parse(readFileSync(FLAGS_PATH, "utf8"));
+    mode = String(flags.mode || "development");
+    if (!["development", "staging", "production"].includes(mode)) {
+      fail(`flags.json has an invalid mode (${JSON.stringify(flags.mode)})`);
+    }
+  } catch (error) {
+    fail(`flags.json is not valid JSON: ${error.message}`);
+  }
+}
+
 const gridRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
 const staticProductsRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
 const jsonLdRegion = extractMarkedRegion(source, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
@@ -128,11 +111,32 @@ const criticalCssRegion = extractMarkedRegion(source, "<!-- STORE_CRITICAL_CSS_S
 const assetCssRegion = extractMarkedRegion(source, "<!-- STORE_ASSET_CSS_START -->", "<!-- STORE_ASSET_CSS_END -->");
 const runtimeAssetRegion = extractMarkedRegion(source, "<!-- STORE_RUNTIME_JS_START -->", "<!-- STORE_RUNTIME_JS_END -->");
 
+if (!gridRegion) fail("missing STORE_STATIC_GRID markers");
+if (!staticProductsRegion) fail("missing STORE_STATIC_PRODUCTS_JSON markers");
+if (!jsonLdRegion) fail("missing STORE_ITEMLIST_JSONLD markers");
+if (!semanticRegion) fail("missing STORE_STATIC_SEMANTIC_PRODUCTS markers");
+if (!preloadRegion) fail("missing STORE_LCP_PRELOAD markers");
+if (!criticalCssRegion) fail("missing STORE_CRITICAL_CSS markers");
+if (!assetCssRegion) fail("missing STORE_ASSET_CSS markers");
+if (!runtimeAssetRegion) fail("missing STORE_RUNTIME_JS markers");
+
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
 
-const staticProducts = parseJsonScript("store-static-products");
-const schema = parseJsonScript("store-itemlist-jsonld");
+let rawStaticProducts = [];
+let schema = null;
+try {
+  rawStaticProducts = extractStaticProductsFromStoreHtml(source);
+} catch (error) {
+  fail(`invalid JSON in script#store-static-products: ${error.message}`);
+}
+try {
+  schema = parseJsonScript(source, "store-itemlist-jsonld");
+} catch (error) {
+  fail(`invalid JSON in script#store-itemlist-jsonld: ${error.message}`);
+}
+
+const staticProducts = rawStaticProducts.map((product) => normalizeStoreProduct(product));
 const graph = graphNodes(schema);
 const websiteNode = findGraphNode(graph, "WebSite", "#website");
 const organizationNode = findGraphNode(graph, "Organization", "#organization");
@@ -153,8 +157,8 @@ const themeBootScripts = inlineScriptTags.filter((tag) => {
 if (!/<meta\s+name=["']gg-store-contract["']\s+content=["']store-static-prerender-v1["']\s*\/?>/i.test(source)) {
   fail("missing gg-store-contract marker");
 }
-if (!source.includes(`data-store-feed-url="${STORE_FEED_URL}"`)) fail("store feed URL changed or missing");
-if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_URL}"`)) fail("legacy store feed URL changed or missing");
+if (!source.includes(`data-store-feed-url="${STORE_FEED_PATH}"`)) fail("store feed URL changed or missing");
+if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_PATH}"`)) fail("legacy store feed URL changed or missing");
 
 if (inlineStyleTags.length !== 1) fail(`expected exactly one inline style block, found ${inlineStyleTags.length}`);
 if (!/<style\b[^>]*>[\s\S]*<\/style>/i.test(criticalCssRegion)) fail("critical CSS marker block is missing its inline <style>");
@@ -162,13 +166,13 @@ if (Buffer.byteLength(criticalCssText, "utf8") > CRITICAL_CSS_BUDGET_BYTES) {
   fail(`critical CSS exceeds 15 KB (${Buffer.byteLength(criticalCssText, "utf8")} bytes)`);
 }
 if (!/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']\/assets\/store\/store\.css["'][^>]*>/i.test(assetCssRegion)) {
-  fail("store.html does not reference /assets/store/store.css");
+  fail(`store.html does not reference ${STORE_ASSET_CSS_HREF}`);
 }
 if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(runtimeAssetRegion)) {
-  fail("store.html does not reference /assets/store/store.js with defer");
+  fail(`store.html does not reference ${STORE_ASSET_JS_HREF} with defer`);
 }
-if (countOccurrences(source, "/assets/store/store.css") !== 1) fail("expected exactly one /assets/store/store.css reference");
-if (countOccurrences(source, "/assets/store/store.js") !== 1) fail("expected exactly one /assets/store/store.js reference");
+if (countOccurrences(source, STORE_ASSET_CSS_HREF) !== 1) fail(`expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
+if (countOccurrences(source, STORE_ASSET_JS_HREF) !== 1) fail(`expected exactly one ${STORE_ASSET_JS_HREF} reference`);
 if (themeBootScripts.length !== 1) fail(`expected exactly one inline theme boot script, found ${themeBootScripts.length}`);
 if (themeBootScripts.length === 1) {
   const themeScriptIndex = source.indexOf(themeBootScripts[0]);
@@ -187,20 +191,39 @@ for (const tag of inlineScriptTags) {
 
 let storeCssAsset = "";
 let storeJsAsset = "";
-if (!existsSync(STORE_ASSET_CSS_PATH)) fail("/assets/store/store.css is missing");
+if (!existsSync(STORE_ASSET_CSS_PATH)) fail(`${STORE_ASSET_CSS_HREF} is missing`);
 else {
   storeCssAsset = readFileSync(STORE_ASSET_CSS_PATH, "utf8");
-  if (!storeCssAsset.trim()) fail("/assets/store/store.css is empty");
+  if (!storeCssAsset.trim()) fail(`${STORE_ASSET_CSS_HREF} is empty`);
 }
-if (!existsSync(STORE_ASSET_JS_PATH)) fail("/assets/store/store.js is missing");
+if (!existsSync(STORE_ASSET_JS_PATH)) fail(`${STORE_ASSET_JS_HREF} is missing`);
 else {
   storeJsAsset = readFileSync(STORE_ASSET_JS_PATH, "utf8");
-  if (!storeJsAsset.trim()) fail("/assets/store/store.js is empty");
+  if (!storeJsAsset.trim()) fail(`${STORE_ASSET_JS_HREF} is empty`);
 }
-if (storeJsAsset && !/marketplaceAriaLabel\(/.test(storeJsAsset)) fail("runtime marketplace aria-label helper is missing from assets/store/store.js");
-if (storeJsAsset && !/window\.StoreSurface/.test(storeJsAsset)) fail("runtime StoreSurface contract is missing from assets/store/store.js");
+if (storeJsAsset && !/marketplaceAriaLabel\(/.test(storeJsAsset)) fail(`runtime marketplace aria-label helper is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/window\.StoreSurface/.test(storeJsAsset)) fail(`runtime StoreSurface contract is missing from ${STORE_ASSET_JS_HREF}`);
 
-if (Array.isArray(staticProducts) && !staticProducts.length) fail("static product JSON is empty");
+if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeJsAsset)) fail('public output still contains "Dummy" or "dummy"');
+if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeJsAsset)) fail('public output still contains category "Etc"');
+
+if (!staticProducts.length) fail("static product JSON is empty");
+
+const duplicateSlugs = [];
+const seenSlugs = new Set();
+for (const product of staticProducts) {
+  const label = product.slug || product.name || "unknown";
+  const validation = validateStoreProduct(product, { mode });
+  if (isDummyProduct(product)) fail(`${label}: dummy product remained in normalized output`);
+  if (slugLooksLikeUrl(product.slug)) fail(`${label}: slug looks like a URL`);
+  if (slugEndsWithHtml(product.slug)) fail(`${label}: slug ends with .html`);
+  if (seenSlugs.has(product.slug)) duplicateSlugs.push(product.slug);
+  else seenSlugs.add(product.slug);
+  for (const message of validation.errors) fail(`${label}: ${message}`);
+  for (const message of validation.warnings) warn(`${label}: ${message}`);
+}
+if (duplicateSlugs.length) fail(`duplicate slugs remain: ${Array.from(new Set(duplicateSlugs)).join(", ")}`);
+
 if (!websiteNode) fail("schema graph is missing WebSite");
 if (!organizationNode) fail("schema graph is missing Organization");
 if (!collectionNode) fail("schema graph is missing CollectionPage");
@@ -218,7 +241,7 @@ if (itemListNode) {
   }
 }
 
-if (Array.isArray(staticProducts) && staticProducts.length) {
+if (staticProducts.length) {
   const gridTagMatch = source.match(/<section\b[^>]*id=["']store-grid["'][^>]*>/i);
   const cards = gridRegion.match(/data-store-product-id=/g) || [];
   const notes = semanticRegion.match(/class=["']store-semantic-product["']/g) || [];
@@ -265,13 +288,13 @@ if (Array.isArray(staticProducts) && staticProducts.length) {
     fail("ItemList graph is missing");
   } else {
     if (Number(itemListNode.numberOfItems) !== staticProducts.length) {
-      fail(`ItemList numberOfItems (${itemListNode.numberOfItems}) does not match static products (${staticProducts.length})`);
+      fail(`ItemList numberOfItems (${itemListNode.numberOfItems}) does not match normalized product count (${staticProducts.length})`);
     }
     if (itemListNode.itemListOrder !== "https://schema.org/ItemListOrderDescending") {
       fail("ItemList itemListOrder is not descending");
     }
     if (!Array.isArray(itemListNode.itemListElement) || itemListNode.itemListElement.length !== staticProducts.length) {
-      fail(`ItemList itemListElement count does not match static products (${staticProducts.length})`);
+      fail(`ItemList itemListElement count does not match normalized product count (${staticProducts.length})`);
     }
 
     for (const [index, entry] of itemListNode.itemListElement.entries()) {
@@ -282,6 +305,8 @@ if (Array.isArray(staticProducts) && staticProducts.length) {
       if (isNonSpecificOfferUrl(url)) fail(`ListItem ${index + 1} url points to a search-style URL`);
       if (!product || !hasType(product, "Product")) fail(`ListItem ${index + 1} is missing Product item`);
       if (!product["@id"] || !String(product["@id"]).endsWith("#product")) fail(`ListItem ${index + 1} Product is missing #product @id`);
+      if (/\bdummy\b/i.test(String(product.name || ""))) fail(`ListItem ${index + 1} still contains dummy product`);
+      if (String(product.category || "") === "Etc") fail(`ListItem ${index + 1} still uses public category Etc`);
       if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) fail(`ListItem ${index + 1} emitted Offer for search-style marketplace URL`);
       if (product.offers?.seller?.name === "PakRPP") fail(`ListItem ${index + 1} Offer seller must not be PakRPP`);
     }
@@ -301,23 +326,12 @@ if (existsSync(WORKER_PATH)) {
   if (!/User-agent: OAI-SearchBot/.test(workerSource)) fail("worker.js is missing explicit OAI-SearchBot robots allowance");
 }
 
-if (existsSync(FLAGS_PATH)) {
-  try {
-    const flags = JSON.parse(readFileSync(FLAGS_PATH, "utf8"));
-    if (!["development", "staging", "production"].includes(String(flags.mode || ""))) {
-      fail(`flags.json has an invalid mode (${JSON.stringify(flags.mode)})`);
-    }
-  } catch (error) {
-    fail(`flags.json is not valid JSON: ${error.message}`);
-  }
-}
-
 if (failures.length) {
   console.error(`STORE STATIC PROOF FAIL path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH}`);
   for (const message of failures) console.error(`- ${message}`);
   process.exit(1);
 }
 
-const staticCount = Array.isArray(staticProducts) ? staticProducts.length : 0;
-const itemCount = itemListNode && Array.isArray(itemListNode.itemListElement) ? itemListNode.itemListElement.length : 0;
-console.log(`STORE STATIC PROOF PASS path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticCount} itemList=${itemCount}`);
+for (const message of warnings) console.warn(`STORE STATIC PROOF WARN ${message}`);
+
+console.log(`STORE STATIC PROOF PASS path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticProducts.length} itemList=${itemListNode?.itemListElement?.length || 0}`);

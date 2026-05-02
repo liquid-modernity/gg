@@ -160,7 +160,7 @@
         filterSkincareLabel: 'Skincare',
         filterWorkspaceLabel: 'Workspace',
         filterTechLabel: 'Tech',
-        filterEtcLabel: 'Lainnya',
+        filterEverydayLabel: 'Lainnya',
         loadMoreLabel: 'Muat lebih banyak',
         productUnit: 'produk'
       },
@@ -274,7 +274,7 @@
         filterSkincareLabel: 'Skincare',
         filterWorkspaceLabel: 'Workspace',
         filterTechLabel: 'Tech',
-        filterEtcLabel: 'Etc',
+        filterEverydayLabel: 'Lainnya',
         loadMoreLabel: 'Load more',
         productUnit: 'products'
       }
@@ -364,8 +364,8 @@
         },
         keywords: ['tech accessories', 'minimal setup', 'daily tech']
       },
-      etc: {
-        labelKey: 'filterEtcLabel',
+      everyday: {
+        labelKey: 'filterEverydayLabel',
         icon: 'category',
         title: {
           id: 'Lainnya',
@@ -1140,7 +1140,7 @@
     }
     function publicFilter(category) {
       var c = lower(category);
-      return PUBLIC_FILTERS.indexOf(c) > -1 && c !== 'all' ? c : 'etc';
+      return PUBLIC_FILTERS.indexOf(c) > -1 && c !== 'all' ? c : 'everyday';
     }
     function marketplaceInfo(href) {
       var value = clean(href);
@@ -1264,7 +1264,7 @@
       var raw = item && typeof item === 'object' ? item : {};
       var title = clean(raw.title || raw.name || '');
       var slug = slugify(raw.slug || raw.id || title || raw.storeUrl || raw.canonicalUrl || '');
-      var category = clean(raw.category || '') || 'Etc';
+      var category = clean(raw.category || '') || 'Lainnya';
       var images = arr(raw.images || raw.image).map(clean).filter(Boolean);
       var tags = cleanTextList(raw.tags);
       var notes = cleanTextList(raw.notes || raw.contents);
@@ -1620,7 +1620,7 @@
       return categoryLocaleValue('description', key) || copy('semanticBrowseLead');
     }
     function semanticCategoryIcon(key) {
-      return STORE_FILTER_ICON_MAP[key] || STORE_FILTER_ICON_MAP.etc || 'category';
+      return STORE_FILTER_ICON_MAP[key] || STORE_FILTER_ICON_MAP.everyday || 'category';
     }
     function renderSemanticProductNode(item) {
       var node = cloneTemplate('store-semantic-product-template');
