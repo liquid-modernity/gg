@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import https from "node:https";
 import path from "node:path";
 
 import {
@@ -12,6 +13,7 @@ import {
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
+import { extractFeedProducts } from "../src/store/lib/extract-feed-products.mjs";
 import { extractScriptTextById, extractStaticProductsFromStoreHtml } from "../src/store/lib/extract-static-products.mjs";
 import {
   absoluteUrl,
@@ -30,6 +32,7 @@ import { buildStoreReport, formatStoreReport } from "../src/store/lib/store-repo
 import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
 
 const ROOT = process.cwd();
+const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_PATH = path.resolve(ROOT, "store.html");
 const LCP_FALLBACK_PATH = path.resolve(ROOT, "config/store-lcp-product.json");
 const STORE_SOURCE_DIR = path.resolve(ROOT, "src/store");
@@ -39,7 +42,11 @@ const STORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.js");
 const STORE_ASSET_DIR = path.resolve(ROOT, "assets/store");
 const STORE_ASSET_CSS_PATH = path.resolve(STORE_ASSET_DIR, "store.css");
 const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
+const STORE_FEED_CACHE_PATH = clean(process.env.GG_STORE_FEED_JSON_PATH || "");
 const SOFT_MODE = process.argv.includes("--soft");
+const LEGACY_PRODUCT_REPLACEMENTS = new Map([
+  ["desk-tray-organizer", "minimal-desk-tray-organizer"],
+]);
 
 function fail(message) {
   console.error(`store:build: ${message}`);
@@ -64,6 +71,28 @@ function readJson(filePath) {
   } catch (error) {
     fail(`${path.relative(ROOT, filePath) || filePath} is not valid JSON: ${error.message}`);
   }
+}
+
+function readMode() {
+  if (!existsSync(FLAGS_PATH)) return "development";
+  const flags = readJson(FLAGS_PATH);
+  const mode = clean(flags?.mode || "development").toLowerCase() || "development";
+  if (["development", "staging", "production"].includes(mode)) return mode;
+  fail(`flags.json has an invalid mode (${JSON.stringify(flags?.mode)})`);
+}
+
+function readFeedPayloadCache(filePath) {
+  if (!filePath) return null;
+
+  try {
+    const payload = JSON.parse(readFileSync(filePath, "utf8"));
+    if (Array.isArray(payload?.feed?.entry) && payload.feed.entry.length) return payload;
+    warn(`prefetched store feed cache is missing entries: ${filePath}`);
+  } catch (error) {
+    warn(`unable to read prefetched store feed cache ${filePath}: ${error.message}`);
+  }
+
+  return null;
 }
 
 function normalizeTextFile(value) {
@@ -306,14 +335,14 @@ function normalizeEntryProduct(entry, index) {
   return { product: normalizeStoreProduct(rawProduct), errors: [] };
 }
 
-function sortProducts(products) {
-  return products
-    .map((product, index) => ({ product, index }))
+function sortProductEntries(entries) {
+  return entries
+    .map((entry, index) => ({ entry, index }))
     .sort((a, b) => {
-      const aModified = dateValue(a.product.dateModified);
-      const bModified = dateValue(b.product.dateModified);
-      const aPublished = dateValue(a.product.datePublished);
-      const bPublished = dateValue(b.product.datePublished);
+      const aModified = dateValue(a.entry.product.dateModified);
+      const bModified = dateValue(b.entry.product.dateModified);
+      const aPublished = dateValue(a.entry.product.datePublished);
+      const bPublished = dateValue(b.entry.product.datePublished);
 
       if (Number.isFinite(aModified) && Number.isFinite(bModified) && aModified !== bModified) return bModified - aModified;
       if (Number.isFinite(aModified) !== Number.isFinite(bModified)) return Number.isFinite(bModified) ? 1 : -1;
@@ -321,26 +350,74 @@ function sortProducts(products) {
       if (Number.isFinite(aPublished) !== Number.isFinite(bPublished)) return Number.isFinite(bPublished) ? 1 : -1;
       return a.index - b.index;
     })
-    .map((entry) => entry.product);
+    .map((entry) => entry.entry);
 }
 
-function governProducts(products, sourceType) {
-  const normalized = sortProducts(products.map((product) => normalizeStoreProduct(product)));
+function wrapProducts(products, imageSource = "existing-static-fallback") {
+  return products.map((product) => ({
+    product: normalizeStoreProduct(product),
+    imageSource,
+    warnings: [],
+    errors: [],
+  }));
+}
+
+function replacedLegacySlugs(entries) {
+  const slugs = new Set(entries.map((entry) => entry?.product?.slug).filter(Boolean));
+  const replaced = new Map();
+
+  for (const [legacySlug, replacementSlug] of LEGACY_PRODUCT_REPLACEMENTS) {
+    if (slugs.has(legacySlug) && slugs.has(replacementSlug)) replaced.set(legacySlug, replacementSlug);
+  }
+
+  return replaced;
+}
+
+function governProducts(entries, options = {}) {
+  const sourceType = clean(options.sourceType);
+  const mode = clean(options.mode || "development").toLowerCase() || "development";
+  const feedEntries = Number.isFinite(options.feedEntries) ? options.feedEntries : arr(entries).length;
+  const normalized = sortProductEntries(
+    arr(entries)
+      .filter((entry) => entry?.product)
+      .map((entry) => ({
+        ...entry,
+        product: normalizeStoreProduct(entry.product),
+      }))
+  );
   const output = [];
+  const keptEntries = [];
   const warnings = [];
   const errors = [];
   const duplicateSlugs = [];
   const removedInvalidProducts = [];
   const seen = new Set();
+  const replacedSlugs = replacedLegacySlugs(normalized);
 
-  for (const product of normalized) {
+  for (const entry of normalized) {
+    const product = entry.product;
     const productLabel = product.slug || product.name || "unknown";
-    const validation = validateStoreProduct(product, { mode: "development" });
+    const validation = validateStoreProduct(product, { mode, imageSource: entry.imageSource });
 
+    warnings.push(...arr(entry.warnings).map((message) => `${productLabel}: ${message}`));
     warnings.push(...validation.warnings.map((message) => `${productLabel}: ${message}`));
+
+    if (replacedSlugs.has(product.slug)) {
+      removedInvalidProducts.push({
+        slug: product.slug,
+        name: product.name,
+        reason: `replaced by ${replacedSlugs.get(product.slug)}`,
+      });
+      continue;
+    }
 
     if (isDummyProduct(product)) {
       removedInvalidProducts.push({ slug: product.slug, name: product.name, reason: "dummy product" });
+      continue;
+    }
+
+    if (arr(entry.errors).length) {
+      errors.push(...entry.errors.map((message) => `${productLabel}: ${message}`));
       continue;
     }
 
@@ -357,14 +434,21 @@ function governProducts(products, sourceType) {
 
     seen.add(product.slug);
     output.push(product);
+    keptEntries.push({
+      ...entry,
+      product,
+    });
   }
 
   const report = buildStoreReport({
     products: output,
+    productEntries: keptEntries,
     removedInvalidProducts,
     duplicateSlugs: unique(duplicateSlugs),
     warnings: unique(warnings),
     sourceType,
+    feedEntries,
+    invalidProducts: errors.length,
   });
 
   return {
@@ -424,6 +508,10 @@ function buildStaticProductsJsonBlock(products) {
 
 function buildItemListJsonLdBlock(products) {
   return `  <script type="application/ld+json" id="store-itemlist-jsonld">\n${escapeJsonForScript(buildStoreJsonLd(products))}\n  </script>`;
+}
+
+function buildStoreReportBlock(report) {
+  return `  <script type="application/json" id="store-build-report">\n${escapeJsonForScript(report)}\n  </script>`;
 }
 
 function buildSemanticFact(label, value) {
@@ -517,7 +605,11 @@ function reuseExistingSnapshotOrFail(storeSource, reason) {
   const existingStatic = readExistingStaticProducts(storeSource);
   if (existingStatic.length) {
     warn(`${reason}; reusing existing static snapshot (${existingStatic.length} product${existingStatic.length === 1 ? "" : "s"})`);
-    const governed = governProducts(existingStatic, "existing-static");
+    const governed = governProducts(wrapProducts(existingStatic), {
+      sourceType: "existing-static",
+      mode: readMode(),
+      feedEntries: existingStatic.length,
+    });
     if (!governed.products.length) fail(`${reason}; existing static snapshot yielded no valid products`);
     if (governed.errors.length) fail(`${reason}; existing static snapshot failed validation:\n- ${governed.errors.join("\n- ")}`);
     return { products: governed.products, source: "existing-static", report: governed.report };
@@ -526,7 +618,11 @@ function reuseExistingSnapshotOrFail(storeSource, reason) {
   const fallbackSeed = readLcpFallbackProducts();
   if (fallbackSeed.length) {
     warn(`${reason}; using config/store-lcp-product.json as an emergency static seed`);
-    const governed = governProducts(fallbackSeed, "lcp-fallback");
+    const governed = governProducts(wrapProducts(fallbackSeed), {
+      sourceType: "lcp-fallback",
+      mode: readMode(),
+      feedEntries: fallbackSeed.length,
+    });
     if (!governed.products.length || governed.errors.length) fail(`${reason}; lcp fallback failed validation`);
     return { products: governed.products, source: "lcp-fallback", report: governed.report };
   }
@@ -534,37 +630,103 @@ function reuseExistingSnapshotOrFail(storeSource, reason) {
   fail(reason);
 }
 
-async function fetchFeedEntries() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+async function fetchFeedPage(url, attempt = 1) {
+  return new Promise((resolve, reject) => {
+    const request = https.get(url, { headers: { accept: "application/json" } }, (response) => {
+      const status = Number(response.statusCode || 0);
+      const location = absoluteUrl(response.headers.location || "", url);
 
-  try {
-    const response = await fetch(STORE_FEED_URL, {
-      headers: { accept: "application/json" },
-      signal: controller.signal,
+      if ([301, 302, 303, 307, 308].includes(status) && location) {
+        response.resume();
+        resolve(fetchFeedPage(location, attempt));
+        return;
+      }
+
+      if (status < 200 || status >= 300) {
+        response.resume();
+        reject(new Error(`feed request failed with status ${status}`));
+        return;
+      }
+
+      let body = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => {
+        body += chunk;
+      });
+      response.on("end", () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (error) {
+          reject(new Error(`feed payload is not valid JSON: ${error.message}`));
+        }
+      });
     });
 
-    if (!response.ok) throw new Error(`feed request failed with status ${response.status}`);
+    request.setTimeout(20000, () => {
+      request.destroy(new Error("feed request timed out"));
+    });
 
-    const payload = await response.json();
-    const entries = payload?.feed?.entry;
-    if (!Array.isArray(entries) || !entries.length) throw new Error("feed returned no Store entries");
-    return entries;
-  } finally {
-    clearTimeout(timeout);
+    request.on("error", (error) => {
+      if (attempt < 2) resolve(fetchFeedPage(url, attempt + 1));
+      else reject(error);
+    });
+  });
+}
+
+function nextFeedUrl(payload) {
+  for (const link of arr(payload?.feed?.link)) {
+    if (clean(link?.rel) === "next") return absoluteUrl(link?.href);
   }
+  return "";
+}
+
+async function fetchFeedEntries() {
+  const entries = [];
+  const seen = new Set();
+  let nextUrl = STORE_FEED_URL;
+  let pageCount = 0;
+  const cachedPayload = readFeedPayloadCache(STORE_FEED_CACHE_PATH);
+
+  if (cachedPayload) {
+    const cachedEntries = Array.isArray(cachedPayload?.feed?.entry) ? cachedPayload.feed.entry : [];
+    entries.push(...cachedEntries);
+    pageCount += 1;
+    nextUrl = nextFeedUrl(cachedPayload);
+    if (!nextUrl) return { entries, pageCount };
+  }
+
+  while (nextUrl) {
+    if (seen.has(nextUrl)) throw new Error("feed pagination loop detected");
+    seen.add(nextUrl);
+    pageCount += 1;
+
+    const payload = await fetchFeedPage(nextUrl);
+    const pageEntries = Array.isArray(payload?.feed?.entry) ? payload.feed.entry : [];
+    if (!pageEntries.length && !entries.length) throw new Error("feed returned no Store entries");
+    entries.push(...pageEntries);
+    nextUrl = nextFeedUrl(payload);
+  }
+
+  if (!entries.length) throw new Error("feed returned no Store entries");
+
+  return { entries, pageCount };
 }
 
 async function resolveProducts(storeSource) {
+  const mode = readMode();
+  const existingStaticProducts = readExistingStaticProducts(storeSource);
+  const existingProductsBySlug = new Map(existingStaticProducts.map((product) => [product.slug, product]));
+
   try {
-    const entries = await fetchFeedEntries();
-    const normalized = entries.map(normalizeEntryProduct);
-    const extractionErrors = normalized.flatMap((result) => result.errors || []);
-    const governed = governProducts(
-      normalized.map((result) => result.product).filter(Boolean),
-      "feed"
-    );
-    const hardErrors = extractionErrors.concat(governed.errors);
+    const { entries, pageCount } = await fetchFeedEntries();
+    const extracted = extractFeedProducts(entries, { existingProductsBySlug });
+    const governed = governProducts(extracted.items, {
+      sourceType: "live-feed",
+      mode,
+      feedEntries: extracted.entryCount,
+    });
+    governed.report.pageCount = pageCount;
+    const hardErrors = governed.errors.slice();
 
     if (hardErrors.length) {
       if (SOFT_MODE) {
@@ -576,7 +738,7 @@ async function resolveProducts(storeSource) {
 
     if (!governed.products.length) fail("feed returned no valid products after normalization");
 
-    return { products: governed.products, source: "feed", report: governed.report };
+    return { products: governed.products, source: "live-feed", report: governed.report };
   } catch (error) {
     return reuseExistingSnapshotOrFail(storeSource, `live Store feed unavailable; ${error.message}`);
   }
@@ -599,6 +761,7 @@ nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_GRID_S
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->", buildStaticProductsJsonBlock(products));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->", buildItemListJsonLdBlock(products));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->", buildSemanticProductsBlock(products));
+nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_BUILD_REPORT_START -->", "<!-- STORE_BUILD_REPORT_END -->", buildStoreReportBlock(report));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_RUNTIME_JS_START -->", "<!-- STORE_RUNTIME_JS_END -->", buildRuntimeScriptTag());
 
 if (nextStoreSource !== originalStoreSource) {

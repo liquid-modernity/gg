@@ -24,3 +24,8 @@ export function extractStaticProductsFromStoreHtml(source) {
   const parsed = parseJsonScript(source, "store-static-products");
   return Array.isArray(parsed) ? parsed : [];
 }
+
+export function extractStoreBuildReportFromStoreHtml(source) {
+  const parsed = parseJsonScript(source, "store-build-report");
+  return parsed && typeof parsed === "object" ? parsed : null;
+}

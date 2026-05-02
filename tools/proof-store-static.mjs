@@ -109,6 +109,7 @@ const semanticRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_SEMANTIC_P
 const preloadRegion = extractMarkedRegion(source, "<!-- STORE_LCP_PRELOAD_START -->", "<!-- STORE_LCP_PRELOAD_END -->");
 const criticalCssRegion = extractMarkedRegion(source, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->");
 const assetCssRegion = extractMarkedRegion(source, "<!-- STORE_ASSET_CSS_START -->", "<!-- STORE_ASSET_CSS_END -->");
+const buildReportRegion = extractMarkedRegion(source, "<!-- STORE_BUILD_REPORT_START -->", "<!-- STORE_BUILD_REPORT_END -->");
 const runtimeAssetRegion = extractMarkedRegion(source, "<!-- STORE_RUNTIME_JS_START -->", "<!-- STORE_RUNTIME_JS_END -->");
 
 if (!gridRegion) fail("missing STORE_STATIC_GRID markers");
@@ -118,13 +119,16 @@ if (!semanticRegion) fail("missing STORE_STATIC_SEMANTIC_PRODUCTS markers");
 if (!preloadRegion) fail("missing STORE_LCP_PRELOAD markers");
 if (!criticalCssRegion) fail("missing STORE_CRITICAL_CSS markers");
 if (!assetCssRegion) fail("missing STORE_ASSET_CSS markers");
+if (!buildReportRegion) fail("missing STORE_BUILD_REPORT markers");
 if (!runtimeAssetRegion) fail("missing STORE_RUNTIME_JS markers");
 
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
+if (!/id=["']store-build-report["']/.test(buildReportRegion)) fail("STORE_BUILD_REPORT marker block is missing #store-build-report");
 
 let rawStaticProducts = [];
 let schema = null;
+let buildReport = null;
 try {
   rawStaticProducts = extractStaticProductsFromStoreHtml(source);
 } catch (error) {
@@ -134,6 +138,11 @@ try {
   schema = parseJsonScript(source, "store-itemlist-jsonld");
 } catch (error) {
   fail(`invalid JSON in script#store-itemlist-jsonld: ${error.message}`);
+}
+try {
+  buildReport = parseJsonScript(source, "store-build-report");
+} catch (error) {
+  fail(`invalid JSON in script#store-build-report: ${error.message}`);
 }
 
 const staticProducts = rawStaticProducts.map((product) => normalizeStoreProduct(product));
@@ -208,6 +217,39 @@ if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeJsAsset)) fail('public o
 if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeJsAsset)) fail('public output still contains category "Etc"');
 
 if (!staticProducts.length) fail("static product JSON is empty");
+if (!buildReport || typeof buildReport !== "object") fail("build report is missing or empty");
+
+const reportSourceType = String(buildReport?.sourceType || "");
+const reportImageSummary = String(buildReport?.imageSourceSummary || "");
+const reportImageSources = buildReport?.imageSources && typeof buildReport.imageSources === "object" ? buildReport.imageSources : null;
+const reportValidProducts = Number(buildReport?.validProducts ?? buildReport?.productCount ?? 0);
+const reportExistingStaticFallbackCount = Number(reportImageSources?.["existing-static-fallback"] || 0);
+const reportMissingImageCount = Number(reportImageSources?.missing || 0);
+
+if (!reportSourceType) fail("build report is missing sourceType");
+if (!reportImageSources) fail("build report is missing imageSources");
+if (!reportImageSummary) fail("build report is missing imageSourceSummary");
+if (reportValidProducts && reportValidProducts !== staticProducts.length) {
+  fail(`build report validProducts (${reportValidProducts}) does not match normalized product count (${staticProducts.length})`);
+}
+
+if (reportSourceType === "existing-static") {
+  if (mode === "production") fail("build report sourceType is existing-static in production");
+  else warn("build report sourceType is existing-static");
+} else if (reportSourceType !== "live-feed") {
+  if (mode === "production") fail(`build report sourceType is ${reportSourceType}`);
+  else warn(`build report sourceType is ${reportSourceType}`);
+}
+
+if (reportExistingStaticFallbackCount > 0) {
+  if (mode === "production") fail(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
+  else warn(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
+}
+
+if (reportMissingImageCount > 0) {
+  if (mode === "production") fail(`build report has missing image extractions (${reportMissingImageCount})`);
+  else warn(`build report has missing image extractions (${reportMissingImageCount})`);
+}
 
 const duplicateSlugs = [];
 const seenSlugs = new Set();

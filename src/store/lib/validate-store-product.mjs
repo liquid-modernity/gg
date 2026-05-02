@@ -18,6 +18,7 @@ export function validateStoreProduct(product, options = {}) {
   const mode = clean(options.mode || "development").toLowerCase() || "development";
   const errors = [];
   const warnings = [];
+  const imageSource = clean(options.imageSource);
   const slug = clean(product?.slug);
   const name = clean(product?.name);
   const categoryKey = clean(product?.categoryKey);
@@ -50,6 +51,11 @@ export function validateStoreProduct(product, options = {}) {
   else if (!absoluteUrl(canonicalUrl)) errors.push("canonicalUrl is not an absolute http(s) URL");
 
   if (!firstImage) errors.push("missing image");
+  if (imageSource === "existing-static-fallback") {
+    if (mode === "production") errors.push("used existing static image fallback");
+    else warnings.push("used existing static image fallback");
+  }
+  if (imageSource === "missing") errors.push("image extraction source is missing");
 
   const picsumImages = images.filter((value) => /picsum\.photos/i.test(String(value)));
   if (mode === "production" && picsumImages.length) {

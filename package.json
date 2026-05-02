@@ -7,7 +7,7 @@
     "gaga:dry": "node tools/gaga-release.mjs ship --dry-run",
     "gaga:push": "node tools/gaga-release.mjs ship",
     "gaga:preflight": "node tools/preflight.mjs",
-    "store:build": "node tools/build-store-static.mjs",
+    "store:build": "bash tools/store-build.sh",
     "store:proof": "node tools/proof-store-static.mjs",
     "gaga:template:pack": "node tools/template-pack.mjs",
     "gaga:cf:prepare": "npm run store:build && node tools/cloudflare-prepare.mjs",
