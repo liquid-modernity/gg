@@ -77,6 +77,54 @@ jobs:
       - name: Build Blogger publish artifact
         run: npm run gaga:template:pack
 
+      - name: Prepare Cloudflare public assets
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cloudflare-build/public/__gg/assets/css
+          mkdir -p .cloudflare-build/public/__gg/assets/js
+
+          if [ -f "dist/assets/css/gg-app.dev.css" ]; then
+            cp dist/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          elif [ -f "__gg/assets/css/gg-app.dev.css" ]; then
+            cp __gg/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          else
+            echo "Missing gg-app.dev.css in dist/assets/css or __gg/assets/css" >&2
+            exit 1
+          fi
+
+          if [ -f "dist/assets/js/gg-app.dev.js" ]; then
+            cp dist/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+          elif [ -f "__gg/assets/js/gg-app.dev.js" ]; then
+            cp __gg/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+          else
+            echo "Missing gg-app.dev.js in dist/assets/js or __gg/assets/js" >&2
+            exit 1
+          fi
+
+          if [ -f "__gg/flags.json" ]; then
+            cp __gg/flags.json .cloudflare-build/public/__gg/flags.json
+          elif [ -f "gg-flags.json" ]; then
+            cp gg-flags.json .cloudflare-build/public/__gg/flags.json
+          elif [ -f "registry/gg-flags.json" ]; then
+            cp registry/gg-flags.json .cloudflare-build/public/__gg/flags.json
+          fi
+
+          test -s .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          test -s .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+
+          ls -lh .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          ls -lh .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+
+      - name: Verify extracted app asset wiring
+        run: |
+          set -euo pipefail
+          test -f index.xml
+          test -f .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          test -f .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+          grep -Fq "/__gg/assets/css/gg-app.dev.css" index.xml
+          grep -Fq "/__gg/assets/js/gg-app.dev.js" index.xml
+
       - name: Lightweight preflight
         run: npm run gaga:preflight
 
