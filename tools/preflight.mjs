@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-/* tools/preflight.mjs — GG release preflight v10.2
+/* tools/preflight.mjs — GG release preflight v10.3-cicd
  *
  * Purpose:
  * - Validate that the repository is ready for the Edge Governance Worker.
  * - Reject stale Worker contracts such as PUBLIC_STATIC_ROUTES.
- * - Validate source syntax, flags, manifest, static asset presence, and Blogger XML markers.
+ * - Validate source syntax, flags, manifest, static asset presence, Blogger XML markers,
+ *   critical extracted app assets, ASSETS binding, and /__gg asset routing contracts.
  */
 
 import { spawnSync } from "node:child_process";
@@ -70,6 +71,50 @@ function readJson(relativePath) {
     return JSON.parse(read(relativePath));
   } catch (error) {
     fail(`${relativePath} is not valid JSON: ${error.message}`);
+  }
+}
+
+function stripJsonc(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:\\])\/\/.*$/gm, "$1")
+    .replace(/,\s*([}\]])/g, "$1");
+}
+
+function readJsonc(relativePath) {
+  try {
+    return JSON.parse(stripJsonc(read(relativePath)));
+  } catch (error) {
+    fail(`${relativePath} is not valid JSONC: ${error.message}`);
+  }
+}
+
+function normalizeRelativePath(value) {
+  if (!value || typeof value !== "string") return "";
+  return value.replace(/^\.\//, "").replace(/\/$/, "");
+}
+
+function resolveAssetDirectory(wrangler) {
+  const directory = wrangler?.assets?.directory;
+  if (!directory || typeof directory !== "string") {
+    fail("wrangler.jsonc is missing assets.directory");
+  }
+  return normalizeRelativePath(directory);
+}
+
+function assertAssetFile(assetDir, relativeAssetPath, label) {
+  const normalizedAssetDir = normalizeRelativePath(assetDir);
+  const fullPath = `${normalizedAssetDir}/${relativeAssetPath}`;
+  if (!fileExists(fullPath)) {
+    fail(`${label || relativeAssetPath} is missing from ASSETS directory: ${fullPath}`);
+  }
+  return fullPath;
+}
+
+function assertNoBroadJsonHeaderForGgAssets(headersSource) {
+  const blockMatch = headersSource.match(/\/__gg\/\*[\s\S]*?(?=\n\/|\n#|\s*$)/);
+  if (blockMatch && /Content-Type:\s*application\/json/i.test(blockMatch[0])) {
+    fail('_headers must not force Content-Type: application/json on /__gg/* because /__gg/assets/*.css and *.js live there');
   }
 }
 
@@ -168,10 +213,44 @@ if (!manifest.icons || !Array.isArray(manifest.icons) || manifest.icons.length <
   warn("manifest.webmanifest should define at least 192 and 512 icons");
 }
 
+const wrangler = readJsonc("wrangler.jsonc");
+const assetDir = resolveAssetDirectory(wrangler);
+if (wrangler.assets?.binding !== "ASSETS") fail('wrangler.jsonc assets.binding must be "ASSETS"');
+if (wrangler.assets?.run_worker_first !== true) fail("wrangler.jsonc assets.run_worker_first must be true so Worker route policy runs before static assets");
+
+for (const assetPath of [
+  "__gg/assets/css/gg-app.dev.css",
+  "__gg/assets/js/gg-app.dev.js",
+]) {
+  assertAssetFile(assetDir, assetPath, `critical extracted app asset ${assetPath}`);
+}
+
+for (const assetPath of [
+  "__gg/flags.json",
+  "sw.js",
+  "manifest.webmanifest",
+  "offline.html",
+]) {
+  if (!fileExists(`${assetDir}/${assetPath}`)) warn(`recommended ASSETS file is missing: ${assetDir}/${assetPath}`);
+}
+
+const headersSource = read("_headers");
+assertNoBroadJsonHeaderForGgAssets(headersSource);
+assertAnyIncludes(headersSource, ["/__gg/assets/*.css", "/__gg/assets/css/*"], "_headers should define a CSS-specific /__gg/assets rule");
+assertAnyIncludes(headersSource, ["/__gg/assets/*.js", "/__gg/assets/js/*"], "_headers should define a JS-specific /__gg/assets rule");
+assertAnyIncludes(headersSource, ["text/css"], "_headers must set text/css for extracted CSS assets");
+assertAnyIncludes(headersSource, ["application/javascript", "text/javascript"], "_headers must set JavaScript MIME for extracted JS assets");
+
+const indexSourceForAssets = read("index.xml");
+assertAnyIncludes(indexSourceForAssets, ["/__gg/assets/css/gg-app.dev.css", "gg-app.min.css"], "index.xml should reference the extracted app CSS asset");
+assertAnyIncludes(indexSourceForAssets, ["/__gg/assets/js/gg-app.dev.js", "gg-app.min.js"], "index.xml should reference the extracted app JS asset");
+
 const workerSource = read("worker.js");
 const requiredWorkerMarkers = [
   "edge-governance-v10",
   "STATIC_ROUTE_ASSET_MAP",
+  "GG_ASSET_PREFIX",
+  '"/__gg/assets/"',
   "STORE_PUBLIC_PATH",
   "STORE_INTERNAL_PATH",
   "FLAGS_CANONICAL_PATH",
@@ -200,6 +279,9 @@ for (const marker of requiredWorkerMarkers) {
 if (workerSource.includes("PUBLIC_STATIC_ROUTES")) {
   fail("worker.js still contains stale PUBLIC_STATIC_ROUTES contract");
 }
+
+assertAnyIncludes(workerSource, ["pathname.startsWith(GG_ASSET_PREFIX)", "path.startsWith(GG_ASSET_PREFIX)", "startsWith(\"/__gg/assets/\")"], "worker.js must route /__gg/assets/* before diagnostics");
+assertAnyIncludes(workerSource, ["env.ASSETS.fetch"], "worker.js must serve Cloudflare ASSETS through env.ASSETS.fetch");
 
 assertAnyIncludes(workerSource, ["developmentRobotsTag", "noindex, nofollow, nosnippet"], "worker.js is missing development crawler lockdown policy");
 assertAnyIncludes(workerSource, ["Google-Extended", "GPTBot", "OAI-SearchBot"], "worker.js is missing AI/search crawler robots policy");
@@ -297,6 +379,8 @@ assertIncludes(wranglerSource, '"run_worker_first": true', "wrangler.jsonc must 
 
 ok("PREFLIGHT OK");
 ok(`mode=${flags.mode}`);
+ok(`assets_directory=${assetDir}`);
+ok("critical_app_assets=/__gg/assets/css/gg-app.dev.css,/__gg/assets/js/gg-app.dev.js");
 ok("worker_contract=edge-governance-v10");
 ok("legacy_view_redirect=/view* -> /");
 ok("crawler_policy=development-lockdown-unless-production");

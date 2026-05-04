@@ -26,6 +26,7 @@ store_route_reachable=0
 has_contract_failure=0
 has_route_failure=0
 has_store_asset_failure=0
+has_gg_app_asset_failure=0
 infra_unreachable=0
 core_endpoint_total=5
 core_reachable_count=0
@@ -36,6 +37,9 @@ core_unreachable_labels=""
 asset_checks_attempted=0
 asset_checks_passed=0
 asset_checks_failed=0
+gg_app_asset_checks_attempted=0
+gg_app_asset_checks_passed=0
+gg_app_asset_checks_failed=0
 failure_class="PASS"
 
 normalize_positive_int() {
@@ -75,6 +79,7 @@ log_fail() {
   case "${current_failure_scope:-route}" in
     contract) has_contract_failure=1 ;;
     store_asset) has_store_asset_failure=1 ;;
+    gg_app_asset) has_gg_app_asset_failure=1 ;;
     *) has_route_failure=1 ;;
   esac
   printf 'FAIL: %s\n' "$1" >&2
@@ -584,6 +589,87 @@ check_landing_html_redirect() {
   fi
 }
 
+check_gg_app_assets() {
+  local css_headers_file="$tmp_dir/gg_app_css_headers.txt"
+  local css_body_file="$tmp_dir/gg_app_css.css"
+  local js_headers_file="$tmp_dir/gg_app_js_headers.txt"
+  local js_body_file="$tmp_dir/gg_app_js.js"
+  local css_meta js_meta css_status js_status css_content_type js_content_type failures_before marker
+
+  css_meta="$(fetch_body "/__gg/assets/css/gg-app.dev.css" "$css_body_file" "$css_headers_file")"
+  log_route_timing "/__gg/assets/css/gg-app.dev.css" "$css_meta" "$css_headers_file"
+  js_meta="$(fetch_body "/__gg/assets/js/gg-app.dev.js" "$js_body_file" "$js_headers_file")"
+  log_route_timing "/__gg/assets/js/gg-app.dev.js" "$js_meta" "$js_headers_file"
+
+  gg_app_asset_checks_attempted=$((gg_app_asset_checks_attempted + 1))
+  asset_checks_attempted=$((asset_checks_attempted + 1))
+  failures_before="$failures"
+  current_failure_scope="gg_app_asset"
+  if meta_is_unreachable "$css_meta"; then
+    report_unreachable "/__gg/assets/css/gg-app.dev.css" "$css_meta"
+  else
+    css_status="$(meta_status "$css_meta")"
+    css_content_type="$(extract_header_value "$css_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+    if [[ "$css_status" != "200" ]]; then
+      log_fail "/__gg/assets/css/gg-app.dev.css expected status 200 (got ${css_status:-000})"
+    fi
+    if [[ ! -s "$css_body_file" ]]; then
+      log_fail "/__gg/assets/css/gg-app.dev.css is empty"
+    fi
+    if [[ "$css_content_type" != *"text/css"* && "$css_content_type" != *"text/plain"* ]]; then
+      log_fail "/__gg/assets/css/gg-app.dev.css content-type must be text/css during normal serving (got ${css_content_type:-missing})"
+    fi
+    if [[ -s "$css_body_file" ]]; then
+      for marker in '.gg-dock' '.gg-sheet' '.gg-detail-toolbar'; do
+        grep -Fq "$marker" "$css_body_file" || log_fail "/__gg/assets/css/gg-app.dev.css missing expected app CSS marker: ${marker}"
+      done
+      if grep -Fq 'Unknown diagnostic endpoint' "$css_body_file" || grep -Fq '"ok": false' "$css_body_file"; then
+        log_fail "/__gg/assets/css/gg-app.dev.css is being answered by diagnostics JSON, not static CSS"
+      fi
+    fi
+  fi
+  mark_asset_check_result "$failures_before"
+  if [[ "$failures" == "$failures_before" ]]; then
+    gg_app_asset_checks_passed=$((gg_app_asset_checks_passed + 1))
+  else
+    gg_app_asset_checks_failed=$((gg_app_asset_checks_failed + 1))
+  fi
+
+  gg_app_asset_checks_attempted=$((gg_app_asset_checks_attempted + 1))
+  asset_checks_attempted=$((asset_checks_attempted + 1))
+  failures_before="$failures"
+  current_failure_scope="gg_app_asset"
+  if meta_is_unreachable "$js_meta"; then
+    report_unreachable "/__gg/assets/js/gg-app.dev.js" "$js_meta"
+  else
+    js_status="$(meta_status "$js_meta")"
+    js_content_type="$(extract_header_value "$js_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+    if [[ "$js_status" != "200" ]]; then
+      log_fail "/__gg/assets/js/gg-app.dev.js expected status 200 (got ${js_status:-000})"
+    fi
+    if [[ ! -s "$js_body_file" ]]; then
+      log_fail "/__gg/assets/js/gg-app.dev.js is empty"
+    fi
+    if [[ "$js_content_type" != *"javascript"* && "$js_content_type" != *"ecmascript"* && "$js_content_type" != *"text/plain"* ]]; then
+      log_fail "/__gg/assets/js/gg-app.dev.js content-type must be JavaScript during normal serving (got ${js_content_type:-missing})"
+    fi
+    if [[ -s "$js_body_file" ]]; then
+      for marker in 'window.GG' 'addEventListener' 'data-gg-panel'; do
+        grep -Fq "$marker" "$js_body_file" || log_fail "/__gg/assets/js/gg-app.dev.js missing expected app JS marker: ${marker}"
+      done
+      if grep -Fq 'Unknown diagnostic endpoint' "$js_body_file" || grep -Fq '"ok": false' "$js_body_file"; then
+        log_fail "/__gg/assets/js/gg-app.dev.js is being answered by diagnostics JSON, not static JavaScript"
+      fi
+    fi
+  fi
+  mark_asset_check_result "$failures_before"
+  if [[ "$failures" == "$failures_before" ]]; then
+    gg_app_asset_checks_passed=$((gg_app_asset_checks_passed + 1))
+  else
+    gg_app_asset_checks_failed=$((gg_app_asset_checks_failed + 1))
+  fi
+}
+
 check_store_split_assets() {
   local js_headers_file="$tmp_dir/store_asset_js_headers.txt"
   local js_body_file="$tmp_dir/store_asset_js.js"
@@ -998,6 +1084,11 @@ resolve_failure_class() {
     infra_unreachable=1
   fi
 
+  if (( has_gg_app_asset_failure )); then
+    failure_class="GG_APP_ASSET_FAILURE"
+    return
+  fi
+
   if (( has_store_asset_failure )); then
     failure_class="STORE_ASSET_FAILURE"
     return
@@ -1031,6 +1122,7 @@ print_summary() {
   log_info "summary core-reachable-labels=${core_reachable_labels:-none}"
   log_info "summary core-unreachable-labels=${core_unreachable_labels:-none}"
   log_info "summary asset-checks attempted=${asset_checks_attempted} passed=${asset_checks_passed} failed=${asset_checks_failed}"
+  log_info "summary gg-app-asset-checks attempted=${gg_app_asset_checks_attempted} passed=${gg_app_asset_checks_passed} failed=${gg_app_asset_checks_failed}"
   log_info "summary failure-class=${failure_class}"
 }
 
@@ -1043,6 +1135,7 @@ printf 'SMOKE-WORKER lane=LIVE base=%s\n' "$BASE_URL"
 check_root_headers
 check_flags_endpoint
 check_sw_asset
+check_gg_app_assets
 check_landing_route
 check_landing_html_redirect
 check_store_route
@@ -1076,6 +1169,9 @@ if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     echo "- Asset checks attempted: \`${asset_checks_attempted}\`"
     echo "- Asset checks passed: \`${asset_checks_passed}\`"
     echo "- Asset checks failed: \`${asset_checks_failed}\`"
+    echo "- GG app asset checks attempted: \`${gg_app_asset_checks_attempted}\`"
+    echo "- GG app asset checks passed: \`${gg_app_asset_checks_passed}\`"
+    echo "- GG app asset checks failed: \`${gg_app_asset_checks_failed}\`"
     echo "- Failure class: \`${failure_class}\`"
     echo "- Failures: \`${failures}\`"
     echo "- Warnings: \`${warnings}\`"
