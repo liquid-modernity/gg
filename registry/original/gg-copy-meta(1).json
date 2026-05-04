@@ -1,0 +1,317 @@
+ <script id='gg-copy-meta' type='application/json'>
+{
+  &quot;schemaVersion&quot;: &quot;1.0.0&quot;,
+  &quot;defaultOwner&quot;: &quot;registry&quot;,
+  &quot;defaultSourceLocale&quot;: &quot;en&quot;,
+  &quot;namespacePolicy&quot;: {
+    &quot;global&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;system&quot;,
+      &quot;type&quot;: &quot;generic&quot;
+    },
+    &quot;lang&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;language-switcher&quot;,
+      &quot;type&quot;: &quot;label&quot;
+    },
+    &quot;nav&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;navigation&quot;,
+      &quot;type&quot;: &quot;label&quot;
+    },
+    &quot;special&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;special&quot;],
+      &quot;primitive&quot;: &quot;special-page&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;dock&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;, &quot;post&quot;, &quot;page&quot;, &quot;special&quot;],
+      &quot;primitive&quot;: &quot;dock&quot;,
+      &quot;type&quot;: &quot;label&quot;
+    },
+    &quot;drawer.more&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;, &quot;landing&quot;, &quot;post&quot;, &quot;page&quot;, &quot;special&quot;],
+      &quot;primitive&quot;: &quot;sheet&quot;,
+      &quot;type&quot;: &quot;label&quot;
+    },
+    &quot;search&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;, &quot;error&quot;, &quot;special&quot;],
+      &quot;primitive&quot;: &quot;search&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;palette&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;, &quot;post&quot;, &quot;page&quot;, &quot;special&quot;],
+      &quot;primitive&quot;: &quot;command-palette&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;post.action&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;, &quot;post&quot;],
+      &quot;primitive&quot;: &quot;toolbar&quot;,
+      &quot;type&quot;: &quot;action&quot;
+    },
+    &quot;library&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;special&quot;, &quot;post&quot;, &quot;listing&quot;],
+      &quot;primitive&quot;: &quot;library&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;share&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;post&quot;, &quot;listing&quot;],
+      &quot;primitive&quot;: &quot;sheet&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;comments&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;post&quot;, &quot;listing&quot;],
+      &quot;primitive&quot;: &quot;comments&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;toc&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;post&quot;, &quot;page&quot;],
+      &quot;primitive&quot;: &quot;panel&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;mixed&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;listing&quot;],
+      &quot;primitive&quot;: &quot;mixed-media&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;dialog.confirm&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;dialog&quot;,
+      &quot;type&quot;: &quot;confirm&quot;
+    },
+    &quot;dialog.delete&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;dialog&quot;,
+      &quot;type&quot;: &quot;destructive-confirm&quot;
+    },
+    &quot;toast&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;toast&quot;,
+      &quot;type&quot;: &quot;status&quot;
+    },
+    &quot;banner&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;banner&quot;,
+      &quot;type&quot;: &quot;status&quot;
+    },
+    &quot;update&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;all&quot;],
+      &quot;primitive&quot;: &quot;update-flow&quot;,
+      &quot;type&quot;: &quot;status&quot;
+    },
+    &quot;offline&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;offline&quot;, &quot;all&quot;],
+      &quot;primitive&quot;: &quot;recovery&quot;,
+      &quot;type&quot;: &quot;status&quot;
+    },
+    &quot;notfound&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;error&quot;],
+      &quot;primitive&quot;: &quot;error-surface&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    },
+    &quot;install&quot;: {
+      &quot;owner&quot;: &quot;registry&quot;,
+      &quot;surface&quot;: [&quot;landing&quot;, &quot;listing&quot;, &quot;post&quot;, &quot;special&quot;],
+      &quot;primitive&quot;: &quot;install-prompt&quot;,
+      &quot;type&quot;: &quot;mixed&quot;
+    }
+  },
+  &quot;overrides&quot;: {
+    &quot;search.input.label&quot;: {
+      &quot;type&quot;: &quot;aria&quot;,
+      &quot;maxLength&quot;: {
+        &quot;en&quot;: 24,
+        &quot;id&quot;: 28
+      }
+    },
+    &quot;palette.input.label&quot;: {
+      &quot;type&quot;: &quot;aria&quot;,
+      &quot;maxLength&quot;: {
+        &quot;en&quot;: 24,
+        &quot;id&quot;: 28
+      }
+    },
+    &quot;comments.panel.toggle&quot;: {
+      &quot;type&quot;: &quot;aria&quot;,
+      &quot;maxLength&quot;: {
+        &quot;en&quot;: 40,
+        &quot;id&quot;: 48
+      }
+    },
+    &quot;post.action.toggleComments&quot;: {
+      &quot;type&quot;: &quot;aria&quot;,
+      &quot;maxLength&quot;: {
+        &quot;en&quot;: 40,
+        &quot;id&quot;: 48
+      }
+    },
+    &quot;comments.count.one&quot;: {
+      &quot;type&quot;: &quot;counter&quot;,
+      &quot;interpolation&quot;: false
+    },
+    &quot;comments.count.many&quot;: {
+      &quot;type&quot;: &quot;counter&quot;,
+      &quot;interpolation&quot;: true,
+      &quot;requiredPlaceholders&quot;: [&quot;count&quot;]
+    },
+    &quot;comments.count.short.one&quot;: {
+      &quot;type&quot;: &quot;counter-short&quot;,
+      &quot;interpolation&quot;: false
+    },
+    &quot;comments.count.short.many&quot;: {
+      &quot;type&quot;: &quot;counter-short&quot;,
+      &quot;interpolation&quot;: true,
+      &quot;requiredPlaceholders&quot;: [&quot;count&quot;]
+    },
+    &quot;toast.saved&quot;: {
+      &quot;status&quot;: &quot;fallback-only&quot;,
+      &quot;notes&quot;: &quot;Prefer domain-specific toast keys when possible.&quot;
+    },
+    &quot;toast.removed&quot;: {
+      &quot;status&quot;: &quot;fallback-only&quot;,
+      &quot;notes&quot;: &quot;Prefer domain-specific toast keys when possible.&quot;
+    },
+    &quot;lang.current&quot;: {
+      &quot;status&quot;: &quot;runtime-display-label&quot;,
+      &quot;notes&quot;: &quot;Use only for active locale display, not as source-of-truth locale identity.&quot;
+    },
+    &quot;nav.landing&quot;: {
+      &quot;status&quot;: &quot;conditional-public&quot;,
+      &quot;notes&quot;: &quot;Keep only if landing is intentionally exposed in public navigation.&quot;
+    }
+  },
+  &quot;nativePassthrough&quot;: {
+    &quot;blogger&quot;: [
+      &quot;data:messages.postAComment&quot;,
+      &quot;data:messages.deleteComment&quot;
+    ],
+    &quot;browser&quot;: [
+      &quot;permission prompts&quot;,
+      &quot;beforeunload prompt&quot;,
+      &quot;system install prompt&quot;,
+      &quot;os-level notifications&quot;
+    ]
+  },
+  &quot;forbiddenPatterns&quot;: [
+    &quot;alert(&quot;,
+    &quot;confirm(&quot;,
+    &quot;prompt(&quot;,
+    &quot;content:\&quot;&quot;,
+    &quot;content:&#39;&quot;
+  ],
+  &quot;deprecationPolicy&quot;: {
+    &quot;allowAliases&quot;: true,
+    &quot;requireReplacementKey&quot;: true,
+    &quot;requireRemovalWindow&quot;: true
+  }
+}
+</script>
+    
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;WebSite&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;,
+  &quot;potentialAction&quot;: {
+    &quot;@type&quot;: &quot;SearchAction&quot;,
+    &quot;target&quot;: &quot;<data:blog.searchUrl/>?q={search_term_string}&quot;,
+    &quot;query-input&quot;: &quot;required name=search_term_string&quot;
+  }
+}
+</script>
+
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;Organization&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;<b:if cond='data:blog.logoUrl'>,
+  &quot;logo&quot;: {
+    &quot;@type&quot;: &quot;ImageObject&quot;,
+    &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
+  }
+}
+</script>
+
+<script type='application/ld+json'>
+  {
+    &quot;@context&quot;: &quot;https://schema.org&quot;,
+    &quot;@type&quot;: &quot;BlogPosting&quot;,
+    &quot;mainEntityOfPage&quot;: {
+      &quot;@type&quot;: &quot;WebPage&quot;,
+      &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
+    },
+    &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
+    <b:if cond='data:post.date and data:post.date.iso8601'>
+    &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,
+    <b:elseif cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'/>
+    &quot;datePublished&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,
+    <b:else/>
+    &quot;datePublished&quot;: &quot;&quot;,
+    </b:if>
+    <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
+    &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,
+    <b:elseif cond='data:post.date and data:post.date.iso8601'/>
+    &quot;dateModified&quot;: &quot;<data:post.date.iso8601/>&quot;,
+    <b:else/>
+    &quot;dateModified&quot;: &quot;&quot;,
+    </b:if>
+    &quot;description&quot;: &quot;<data:post.snippet.escaped/>&quot;,
+    &quot;author&quot;: {
+      &quot;@type&quot;: &quot;Person&quot;,
+      &quot;name&quot;: &quot;<b:if cond='data:post.author and data:post.author.name'><data:post.author.name.escaped/><b:else/>PakRPP</b:if>&quot;
+    },
+    &quot;publisher&quot;: {
+      &quot;@type&quot;: &quot;Organization&quot;,
+      &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;<b:if cond='data:blog.logoUrl'>,
+      &quot;logo&quot;: {
+        &quot;@type&quot;: &quot;ImageObject&quot;,
+        &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
+      }</b:if>
+    }<b:if cond='data:post.firstImageUrl'>,
+    &quot;image&quot;: [&quot;<data:post.firstImageUrl/>&quot;]</b:if>
+  }
+  </script>
+
+  <script type='application/ld+json'>
+  {
+    &quot;@context&quot;: &quot;https://schema.org&quot;,
+    &quot;@type&quot;: &quot;BreadcrumbList&quot;,
+    &quot;itemListElement&quot;: [
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 1,
+        &quot;name&quot;: &quot;Home&quot;,
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 2,
+        &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
+        &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
+      }
+    ]
+  }
+  </script>

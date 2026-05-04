@@ -1,0 +1,83 @@
+.gg-search-empty,
+.gg-error404 {
+  display: grid;
+  gap: var(--gg-search-empty-gap);
+  padding-top: 8px;
+}
+
+.gg-search-empty[hidden],
+.gg-error404[hidden] {
+  display: none;
+}
+
+.gg-search-empty__actions,
+.gg-error404__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--gg-search-empty-action-gap);
+}
+
+.gg-search-empty__actions .gg-discovery-context__action,
+.gg-search-empty__actions .gg-discovery-context__archive,
+.gg-error404__actions .gg-discovery-context__action,
+.gg-error404__actions .gg-discovery-context__archive {
+  color: var(--gg-ink-soft);
+  font-weight: 550;
+}
+
+.gg-search-empty__actions [data-gg-feedback-primary='true'],
+.gg-error404__actions [data-gg-feedback-primary='true'] {
+  min-height: var(--gg-search-empty-primary-min-height);
+  padding: 0 var(--gg-search-empty-primary-pad-x);
+  border-radius: 999px;
+  background: var(--gg-surface-interactive);
+  box-shadow: inset 0 0 0 1px var(--gg-border-interactive);
+  color: var(--gg-ink);
+  font-weight: 600;
+}
+
+.gg-search-empty__actions [data-gg-feedback-primary='true']:hover,
+.gg-search-empty__actions [data-gg-feedback-primary='true']:focus-visible,
+.gg-error404__actions [data-gg-feedback-primary='true']:hover,
+.gg-error404__actions [data-gg-feedback-primary='true']:focus-visible {
+  background: var(--gg-surface-interactive-strong);
+}
+
+.gg-search-empty__fallback,
+.gg-error404__fallback {
+  display: grid;
+  gap: var(--gg-search-empty-fallback-gap);
+}
+
+.gg-search-empty__fallback[hidden],
+.gg-error404__fallback[hidden],
+.gg-search-empty__status[hidden],
+.gg-error404__status[hidden] {
+  display: none;
+}
+
+.gg-search-empty__fallback-title,
+.gg-search-empty__status,
+.gg-error404__fallback-title,
+.gg-error404__status {
+  margin: 0;
+}
+
+.gg-search-empty__status,
+.gg-error404__status {
+  color: var(--gg-ink-soft);
+  font: 500 13px/1.55 var(--gg-font-sans);
+}
+
+.gg-discovery-search__field {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 14px;
+  border: 1px solid var(--gg-line);
+  border-radius: 16px;
+  background: var(--gg-field-surface);
+  color: var(--gg-ink);
+  font: 500 15px/1.2 var(--gg-font-sans);
+}
+

@@ -1,0 +1,13 @@
+    <div data-env='prod' data-gg-template-fingerprint='3bca7531a9c6' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <b:include name='skipNavigation'/>
+
+    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
+      <main class='gg-main' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='main' role='main' tabindex='-1'>
+        <b:if cond='not data:view.isSingleItem'>
+        <header class='gg-site-head'>
+          <p class='gg-site-head__eyebrow' hidden='hidden' id='gg-site-head-eyebrow'/>
+          <h1 class='gg-site-head__title'><data:blog.title/></h1>
+          <p class='gg-site-head__summary' hidden='hidden' id='gg-site-head-summary'/>
+        </header>
+        </b:if>
+

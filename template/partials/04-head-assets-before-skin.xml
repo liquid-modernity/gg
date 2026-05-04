@@ -1,0 +1,5 @@
+    <link href='/manifest.webmanifest' rel='manifest'/>
+    <link href='https://fonts.googleapis.com' rel='preconnect'/>
+    <link crossorigin='anonymous' href='https://fonts.gstatic.com' rel='preconnect'/>
+    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=calendar_add_on,chevron_right,comment,explore,home_app_logo,keyboard_arrow_down,keyboard_arrow_up,menu,newsmode&amp;display=block' rel='stylesheet'/>
+

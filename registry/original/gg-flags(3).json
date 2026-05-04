@@ -1,0 +1,45 @@
+{
+  "mode": "development",
+  "release": "ac33998",
+  "templateFingerprint": "4f454c2091f7",
+  "csp_report_enabled": true,
+  "edge": {
+    "canonicalHost": true,
+    "httpsRedirect": true,
+    "normalizeMobileQuery": true,
+    "redirectLegacyViews": true,
+    "annotateTemplateContract": true,
+    "mutateLandingContactAnchor": true,
+    "hardBlockKnownBotsInDevelopment": false
+  },
+  "robots": {
+    "developmentLockdown": true,
+    "blockAiBots": true,
+    "blockSearchBots": true
+  },
+  "sw": {
+    "enabled": true,
+    "navigationPreload": true,
+    "htmlQualityGate": true,
+    "offlineSearch": true,
+    "savedReading": true,
+    "contentIndex": false,
+    "backgroundSync": false,
+    "devAggressiveUpdate": true,
+    "debug": false
+  },
+  "limits": {
+    "maxPageEntries": 50,
+    "maxSavedEntries": 100,
+    "maxRuntimeImages": 120,
+    "maxFeedAgeHours": 24,
+    "maxPageAgeDays": 30
+  },
+  "vanity": {
+    "/about": "/p/about.html",
+    "/authors": "/p/authors.html",
+    "/privacy": "/p/privacy-policy.html",
+    "/sitemap": "/p/sitemap.html",
+    "/contact": "/p/contact.html"
+  }
+}

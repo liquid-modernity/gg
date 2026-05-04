@@ -1,0 +1,105 @@
+.gg-breadcrumbs {
+  margin: 0 0 10px;
+  color: var(--gg-accent-soft);
+  font: 500 12px/1.5 var(--gg-font-sans);
+}
+
+.gg-breadcrumbs a:hover { text-decoration: underline; }
+
+.gg-article {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  max-width: 62ch;
+  justify-self: center;
+  padding: var(--gg-article-pad-y) var(--gg-article-pad-x) calc(var(--gg-article-pad-bottom-base) + var(--gg-detail-bottom-clearance));
+  border-top: 1px solid var(--gg-article-border);
+  border-bottom: 1px solid var(--gg-article-border);
+  border-radius: var(--gg-article-radius);
+  background: var(--gg-surface-article);
+  box-shadow: var(--gg-article-shadow);
+}
+
+.gg-article__title {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 8vw, 42px);
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.gg-post-body {
+  max-width: none;
+  color: var(--gg-ink);
+  font-size: 16px;
+}
+
+.gg-post-body p,
+.gg-post-body ul,
+.gg-post-body ol,
+.gg-post-body blockquote {
+  margin: 0 0 1em;
+}
+
+.gg-post-body img {
+  margin: 1.5em auto;
+  border-radius: 18px;
+}
+
+.gg-article__tail {
+  display: grid;
+  gap: var(--gg-article-tail-group-gap);
+  margin-top: 20px;
+  padding-top: var(--gg-article-tail-pad-top);
+  border-top: 1px solid var(--gg-article-tail-divider);
+}
+
+.gg-article__tail-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gg-article-tail-line-gap);
+  margin: 0;
+  color: var(--gg-article-tail-prefix-tone);
+  font: 500 12px/1.55 var(--gg-font-sans);
+}
+
+.gg-article__tail-part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.gg-article__tail .gg-meta__cue {
+  color: var(--gg-article-tail-prefix-tone);
+}
+
+.gg-article__tail .gg-meta__value {
+  color: var(--gg-article-tail-value-tone);
+}
+
+.gg-taxonomy {
+  min-width: 0;
+  color: var(--gg-taxonomy-link-tone);
+}
+
+.gg-taxonomy__item {
+  display: inline;
+}
+
+.gg-taxonomy__item + .gg-taxonomy__item::before {
+  content: '\00b7';
+  margin: 0 var(--gg-taxonomy-separator-gap);
+  color: var(--gg-taxonomy-link-tone);
+}
+
+.gg-taxonomy__link {
+  color: var(--gg-taxonomy-link-tone);
+  text-decoration: none;
+}
+
+.gg-taxonomy__link:hover,
+.gg-taxonomy__link:focus-visible {
+  color: var(--gg-taxonomy-link-hover-tone);
+  text-decoration: underline;
+}
+

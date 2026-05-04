@@ -1,0 +1,55 @@
+.gg-detail-toolbar {
+  position: sticky;
+  top: var(--gg-detail-toolbar-offset-top);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--gg-toolbar-gap);
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
+  padding: var(--gg-toolbar-pad);
+  border: 1px solid var(--gg-toolbar-border);
+  border-radius: var(--gg-toolbar-radius);
+  background: var(--gg-toolbar-surface);
+  box-shadow: var(--gg-shadow-soft);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.gg-detail-toolbar__action {
+  display: inline-flex;
+  justify-content: center;
+  min-height: var(--gg-toolbar-item-min-height);
+  padding: 0 var(--gg-toolbar-item-pad-x);
+  border: 0;
+  border-radius: var(--gg-toolbar-item-radius);
+  background: transparent;
+  color: var(--gg-ink);
+  font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+}
+
+.gg-detail-toolbar__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--gg-toolbar-badge-min-size);
+  padding: 0 var(--gg-toolbar-badge-pad-x);
+  border-radius: 999px;
+  background: var(--gg-toolbar-badge-bg);
+  color: var(--gg-toolbar-badge-tone);
+  font-size: var(--gg-toolbar-badge-size);
+  line-height: 1;
+}
+
+.gg-detail-toolbar__action:hover,
+.gg-detail-toolbar__action:focus-visible {
+  background: var(--gg-toolbar-item-hover-bg);
+}
+

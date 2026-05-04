@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+  <head>
+    <meta content='Mary&apos;s simple recipe for maple bacon donuts            makes a sticky, sweet treat with just a hint            of salt that you&apos;ll keep coming back for.' name='description'/>
+    <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
+    <title><data:view.title.escaped/></title>
+    <meta content='prod' name='gg-env'/>
+<meta content='ac33998' name='gg-release'/>
+<meta content='3bca7531a9c6' name='gg-template-fingerprint'/>
+    <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
+    <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
+
+    <b:include data='blog' name='all-head-content'/>
+

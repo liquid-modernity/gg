@@ -1,0 +1,113 @@
+            <b:includable id='postDetail' var='post'>
+              <div aria-labelledby='gg-detail-toolbar-title' class='gg-detail-toolbar' role='toolbar'>
+                <span class='gg-visually-hidden' data-gg-copy='detail.toolbar' id='gg-detail-toolbar-title'>Detail actions</span>
+                <button aria-controls='gg-comments-panel' aria-expanded='false' class='gg-detail-toolbar__action' data-gg-open='comments' type='button'>
+                  <span class='gg-detail-toolbar__count' id='gg-detail-comments-count'><data:post.numberOfComments/></span>
+                  <span aria-hidden='true' class='gg-icon'>comment</span>
+                  <span data-gg-copy='comments.launch' id='gg-detail-comments-label'>Comments</span>
+                </button>
+              </div>
+
+              <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url'>
+                <nav aria-labelledby='gg-breadcrumb-title' class='gg-breadcrumbs'>
+                  <span class='gg-visually-hidden' data-gg-copy='post.breadcrumb' id='gg-breadcrumb-title'>Breadcrumb</span>
+                  <a data-gg-copy='post.blog' href='/'>Blog</a>
+                  <b:if cond='data:post.labels'>
+                    <span aria-hidden='true'>/</span>
+                    <a expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a>
+                  </b:if>
+                </nav>
+
+                <h1 class='gg-article__title'><data:post.title/></h1>
+
+                <b:include data='post' name='postBody'/>
+                <footer class='gg-article__tail'>
+                  <p class='gg-article__tail-line'>
+                    <span class='gg-meta__cue' data-gg-copy='post.by'>By</span>
+                    <span class='gg-meta__value'><data:post.author.name/></span>
+                  </p>
+                  <b:if cond='(data:post.date and data:post.date.iso8601) or (data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601)'>
+                    <p class='gg-article__tail-line'>
+                      <b:if cond='data:post.date and data:post.date.iso8601'>
+                        <span class='gg-article__tail-part'>
+                          <span class='gg-meta__cue' data-gg-copy='post.published'>Published</span>
+                          <time class='gg-meta__value' expr:datetime='data:post.date.iso8601'><data:post.date/></time>
+                        </span>
+                      </b:if>
+                      <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601'>
+                        <span class='gg-article__tail-part'>
+                          <span class='gg-meta__cue' data-gg-copy='post.updated'>Updated</span>
+                          <time class='gg-meta__value' expr:datetime='data:post.lastUpdated.iso8601'><data:post.lastUpdated/></time>
+                        </span>
+                      </b:if>
+                    </p>
+                  </b:if>
+
+                  <b:if cond='data:post.labels'>
+                    <p class='gg-article__tail-line'>
+                      <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
+                      <span class='gg-taxonomy'>
+                        <b:loop values='data:post.labels' var='label'>
+                          <span class='gg-taxonomy__item'>
+                            <a class='gg-taxonomy__link' expr:href='data:label.url'><data:label.name/></a>
+                          </span>
+                        </b:loop>
+                      </span>
+                    </p>
+                  </b:if>
+                </footer>
+              </article>
+
+              <nav aria-label='Contents' class='gg-detail-outline' data-gg-copy-aria-label='outline.title' data-gg-outline-state='peek' hidden='hidden' id='gg-detail-outline'>
+                <button aria-controls='gg-detail-outline-tray' aria-expanded='false' class='gg-detail-outline__peek' data-gg-outline-toggle='true' id='gg-detail-outline-toggle' type='button'>
+                  <span class='gg-detail-outline__peek-main'>
+                    <span class='gg-detail-outline__label' data-gg-copy='outline.title'>Contents</span>
+                    <strong class='gg-detail-outline__current' id='gg-detail-outline-current'><data:post.title/></strong>
+                  </span>
+                  <span class='gg-detail-outline__summary' hidden='hidden' id='gg-detail-outline-summary'/>
+                  <span aria-hidden='true' class='gg-detail-outline__affordance'>
+                    <span aria-hidden='true' class='gg-detail-outline__handle'/>
+                    <span aria-hidden='true' class='gg-icon' id='gg-detail-outline-glyph'>keyboard_arrow_up</span>
+                  </span>
+                  <progress aria-hidden='true' class='gg-detail-outline__progress' id='gg-detail-outline-progress' max='1' tabindex='-1' value='0'>0</progress>
+                </button>
+                <div class='gg-detail-outline__tray' hidden='hidden' id='gg-detail-outline-tray'>
+                  <ol class='gg-detail-outline__list' id='gg-detail-outline-list'/>
+                </div>
+                <template id='gg-detail-outline-empty-template'>
+                  <li class='gg-detail-outline__empty' data-gg-template-part='text'/>
+                </template>
+                <template id='gg-detail-outline-group-template'>
+                  <li class='gg-detail-outline__group'>
+                    <button class='gg-detail-outline__item-button' data-gg-template-part='button' type='button'>
+                      <span class='gg-detail-outline__item-label' data-gg-template-part='label'/>
+                    </button>
+                    <ol class='gg-detail-outline__sublist' data-gg-template-part='sublist' hidden='hidden'/>
+                  </li>
+                </template>
+                <template id='gg-detail-outline-item-template'>
+                  <li class='gg-detail-outline__item'>
+                    <button class='gg-detail-outline__item-button' data-gg-template-part='button' type='button'>
+                      <span class='gg-detail-outline__item-label' data-gg-template-part='label'/>
+                    </button>
+                  </li>
+                </template>
+              </nav>
+
+              <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='comments' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-comments-panel'>
+                <button class='gg-sheet__scrim' data-gg-close='comments' type='button'>
+                  <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
+                </button>
+                <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
+                  <div class='gg-sheet__head'>
+                    <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='comments'/>
+                    <span class='gg-sheet__title' id='gg-comments-title'>
+                      <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
+                    </span>
+                  </div>
+                  <div class='gg-comments gg-comments--sheet'>
+                    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+                  </div>
+                </section>
+              </div>
+            </b:includable>

@@ -1,0 +1,297 @@
+{
+  "schemaVersion": "1.0.0",
+  "defaultOwner": "registry",
+  "defaultSourceLocale": "en",
+  "namespacePolicy": {
+    "global": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "system",
+      "type": "generic"
+    },
+    "lang": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "language-switcher",
+      "type": "label"
+    },
+    "nav": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "navigation",
+      "type": "label"
+    },
+    "special": {
+      "owner": "registry",
+      "surface": [
+        "special"
+      ],
+      "primitive": "special-page",
+      "type": "mixed"
+    },
+    "dock": {
+      "owner": "registry",
+      "surface": [
+        "listing",
+        "post",
+        "page",
+        "special"
+      ],
+      "primitive": "dock",
+      "type": "label"
+    },
+    "drawer.more": {
+      "owner": "registry",
+      "surface": [
+        "listing",
+        "landing",
+        "post",
+        "page",
+        "special"
+      ],
+      "primitive": "sheet",
+      "type": "label"
+    },
+    "search": {
+      "owner": "registry",
+      "surface": [
+        "listing",
+        "error",
+        "special"
+      ],
+      "primitive": "search",
+      "type": "mixed"
+    },
+    "palette": {
+      "owner": "registry",
+      "surface": [
+        "listing",
+        "post",
+        "page",
+        "special"
+      ],
+      "primitive": "command-palette",
+      "type": "mixed"
+    },
+    "post.action": {
+      "owner": "registry",
+      "surface": [
+        "listing",
+        "post"
+      ],
+      "primitive": "toolbar",
+      "type": "action"
+    },
+    "library": {
+      "owner": "registry",
+      "surface": [
+        "special",
+        "post",
+        "listing"
+      ],
+      "primitive": "library",
+      "type": "mixed"
+    },
+    "share": {
+      "owner": "registry",
+      "surface": [
+        "post",
+        "listing"
+      ],
+      "primitive": "sheet",
+      "type": "mixed"
+    },
+    "comments": {
+      "owner": "registry",
+      "surface": [
+        "post",
+        "listing"
+      ],
+      "primitive": "comments",
+      "type": "mixed"
+    },
+    "toc": {
+      "owner": "registry",
+      "surface": [
+        "post",
+        "page"
+      ],
+      "primitive": "panel",
+      "type": "mixed"
+    },
+    "mixed": {
+      "owner": "registry",
+      "surface": [
+        "listing"
+      ],
+      "primitive": "mixed-media",
+      "type": "mixed"
+    },
+    "dialog.confirm": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "dialog",
+      "type": "confirm"
+    },
+    "dialog.delete": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "dialog",
+      "type": "destructive-confirm"
+    },
+    "toast": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "toast",
+      "type": "status"
+    },
+    "banner": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "banner",
+      "type": "status"
+    },
+    "update": {
+      "owner": "registry",
+      "surface": [
+        "all"
+      ],
+      "primitive": "update-flow",
+      "type": "status"
+    },
+    "offline": {
+      "owner": "registry",
+      "surface": [
+        "offline",
+        "all"
+      ],
+      "primitive": "recovery",
+      "type": "status"
+    },
+    "notfound": {
+      "owner": "registry",
+      "surface": [
+        "error"
+      ],
+      "primitive": "error-surface",
+      "type": "mixed"
+    },
+    "install": {
+      "owner": "registry",
+      "surface": [
+        "landing",
+        "listing",
+        "post",
+        "special"
+      ],
+      "primitive": "install-prompt",
+      "type": "mixed"
+    }
+  },
+  "overrides": {
+    "search.input.label": {
+      "type": "aria",
+      "maxLength": {
+        "en": 24,
+        "id": 28
+      }
+    },
+    "palette.input.label": {
+      "type": "aria",
+      "maxLength": {
+        "en": 24,
+        "id": 28
+      }
+    },
+    "comments.panel.toggle": {
+      "type": "aria",
+      "maxLength": {
+        "en": 40,
+        "id": 48
+      }
+    },
+    "post.action.toggleComments": {
+      "type": "aria",
+      "maxLength": {
+        "en": 40,
+        "id": 48
+      }
+    },
+    "comments.count.one": {
+      "type": "counter",
+      "interpolation": false
+    },
+    "comments.count.many": {
+      "type": "counter",
+      "interpolation": true,
+      "requiredPlaceholders": [
+        "count"
+      ]
+    },
+    "comments.count.short.one": {
+      "type": "counter-short",
+      "interpolation": false
+    },
+    "comments.count.short.many": {
+      "type": "counter-short",
+      "interpolation": true,
+      "requiredPlaceholders": [
+        "count"
+      ]
+    },
+    "toast.saved": {
+      "status": "fallback-only",
+      "notes": "Prefer domain-specific toast keys when possible."
+    },
+    "toast.removed": {
+      "status": "fallback-only",
+      "notes": "Prefer domain-specific toast keys when possible."
+    },
+    "lang.current": {
+      "status": "runtime-display-label",
+      "notes": "Use only for active locale display, not as source-of-truth locale identity."
+    },
+    "nav.landing": {
+      "status": "conditional-public",
+      "notes": "Keep only if landing is intentionally exposed in public navigation."
+    }
+  },
+  "nativePassthrough": {
+    "blogger": [
+      "data:messages.postAComment",
+      "data:messages.deleteComment"
+    ],
+    "browser": [
+      "permission prompts",
+      "beforeunload prompt",
+      "system install prompt",
+      "os-level notifications"
+    ]
+  },
+  "forbiddenPatterns": [
+    "alert(",
+    "confirm(",
+    "prompt(",
+    "content:\"",
+    "content:'"
+  ],
+  "deprecationPolicy": {
+    "allowAliases": true,
+    "requireReplacementKey": true,
+    "requireRemovalWindow": true
+  }
+}

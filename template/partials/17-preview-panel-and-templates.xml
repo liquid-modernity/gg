@@ -1,0 +1,53 @@
+    <div class='gg-preview gg-sheet gg-sheet--top' data-gg-edge='top' data-gg-panel='preview' data-gg-panel-family='content-sheet' data-gg-state='closed' hidden='hidden' id='gg-preview-sheet'>
+      <button class='gg-sheet__scrim' data-gg-close='preview' type='button'>
+        <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
+      </button>
+      <section aria-labelledby='gg-preview-title' aria-modal='true' class='gg-content-sheet gg-preview__sheet gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-content-sheet__body gg-preview__body'>
+           <div class='gg-preview__media' hidden='hidden' id='gg-preview-media'>
+            <img alt='' id='gg-preview-image' loading='lazy' src=''/>
+          </div>
+          <header class='gg-content-sheet__content-head gg-preview__content-head'>
+            <h2 class='gg-preview__title' data-gg-copy='preview.titleFallback' id='gg-preview-title'>Article preview</h2>
+            <p class='gg-preview__summary' id='gg-preview-summary'/>
+          </header>
+          <div class='gg-preview__meta' id='gg-preview-meta'/>
+          <p class='gg-preview__taxonomy' hidden='hidden' id='gg-preview-taxonomy'>
+            <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
+            <span class='gg-taxonomy' id='gg-preview-taxonomy-items'/>
+          </p>
+          <section class='gg-preview__toc' id='gg-preview-toc'>
+            <h3 class='gg-preview__section-title' data-gg-copy='preview.contents'>Contents</h3>
+            <p class='gg-preview__status' data-gg-copy='preview.preparing' id='gg-preview-status'>Preparing preview&#8230;</p>
+            <ol class='gg-preview__toc-list' id='gg-preview-toc-list'/>
+          </section>
+          <template id='gg-preview-meta-item-template'>
+            <span class='gg-preview__meta-item'>
+              <span class='gg-meta__cue' data-gg-template-part='cue'/>
+              <span class='gg-meta__value' data-gg-template-part='value'/>
+            </span>
+          </template>
+          <template id='gg-preview-meta-separator-template'>
+            <span aria-hidden='true' class='gg-meta__cue'>&#183;</span>
+          </template>
+          <template id='gg-preview-taxonomy-item-template'>
+            <span class='gg-taxonomy__item'>
+              <a class='gg-taxonomy__link' data-gg-template-part='link' hidden='hidden' href='#'/>
+              <span class='gg-taxonomy__link' data-gg-template-part='text' hidden='hidden'/>
+            </span>
+          </template>
+          <template id='gg-preview-toc-item-template'>
+            <li class='gg-preview__toc-item'>
+              <a class='gg-preview__toc-link' data-gg-template-part='link' hidden='hidden' href='#'/>
+              <span class='gg-preview__toc-link' data-gg-template-part='text' hidden='hidden'/>
+            </li>
+          </template>
+        </div>
+        <div class='gg-preview__footer'>
+            <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
+          </div>
+        <div class='gg-content-sheet__affordance gg-preview__affordance'>
+          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='preview'/>
+        </div>
+      </section>
+    </div>

@@ -1,0 +1,23 @@
+    <nav aria-labelledby='gg-dock-title' class='gg-dock' data-gg-module='gg-dock' id='gg-dock'>
+      <span class='gg-visually-hidden' data-gg-copy='navigation.primary' id='gg-dock-title'>Primary navigation</span>
+      <a class='gg-dock__item' data-gg-nav='home' href='/landing'>
+        <span aria-hidden='true' class='gg-icon'>home_app_logo</span>
+        <span class='gg-dock__label' data-gg-copy='dock.home'>Home</span>
+      </a>
+      <a class='gg-dock__item' data-gg-nav='contact' href='/landing#contact'>
+        <span aria-hidden='true' class='gg-icon'>calendar_add_on</span>
+        <span class='gg-dock__label' data-gg-copy='dock.contact'>Contact</span>
+      </a>
+      <button aria-controls='gg-command-panel' aria-expanded='false' class='gg-dock__item' data-gg-focus='command' data-gg-nav='search' data-gg-panel-trigger='command' type='button'>
+        <span aria-hidden='true' class='gg-icon'>explore</span>
+        <span class='gg-dock__label' data-gg-copy='dock.search'>Search</span>
+      </button>
+      <a class='gg-dock__item' data-gg-nav='blog' href='/'>
+        <span aria-hidden='true' class='gg-icon'>newsmode</span>
+        <span class='gg-dock__label' data-gg-copy='dock.blog'>Blog</span>
+      </a>
+      <button aria-controls='gg-more-panel' aria-expanded='false' class='gg-dock__item' data-gg-nav='more' data-gg-open='more' type='button'>
+        <span aria-hidden='true' class='gg-icon'>menu</span>
+        <span class='gg-dock__label' data-gg-copy='dock.more'>More</span>
+      </button>
+    </nav>

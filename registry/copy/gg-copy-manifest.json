@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryVersion": "1.0.0",
+  "sourceLocale": "en",
+  "supportedLocales": [
+    "en",
+    "id"
+  ],
+  "defaultLocale": "en",
+  "fallbackChain": {
+    "en": [
+      "en"
+    ],
+    "id": [
+      "id",
+      "en"
+    ]
+  },
+  "interpolation": {
+    "syntax": "brace",
+    "escapeHtml": true,
+    "allowedPlaceholders": [
+      "count",
+      "title",
+      "name",
+      "label",
+      "device"
+    ]
+  },
+  "pluralization": {
+    "strategy": "key-suffix",
+    "supportedSuffixes": [
+      "one",
+      "many",
+      "short.one",
+      "short.many"
+    ],
+    "recommendedFuture": "icu-messageformat"
+  },
+  "delivery": {
+    "currentMode": "inline-two-locales-workspace",
+    "recommendedProductionMode": "inline-active-locale-plus-lazy-namespaces",
+    "criticalNamespacesBySurface": {
+      "listing": [
+        "global",
+        "lang",
+        "nav",
+        "dock",
+        "search",
+        "mixed"
+      ],
+      "landing": [
+        "global",
+        "lang",
+        "nav",
+        "drawer",
+        "install"
+      ],
+      "post": [
+        "global",
+        "lang",
+        "nav",
+        "dock",
+        "post",
+        "share",
+        "comments",
+        "toc"
+      ],
+      "page": [
+        "global",
+        "lang",
+        "nav"
+      ],
+      "special": [
+        "global",
+        "lang",
+        "nav",
+        "drawer"
+      ],
+      "error": [
+        "global",
+        "lang",
+        "notfound",
+        "search"
+      ],
+      "offline": [
+        "global",
+        "lang",
+        "offline"
+      ]
+    }
+  },
+  "nativeSources": {
+    "blogger": "passthrough-allowed",
+    "browser": "unstyleable-do-not-brand",
+    "editorial": "outside-registry"
+  },
+  "lint": {
+    "requireKeyParityAcrossLocales": true,
+    "requirePlaceholderParityAcrossLocales": true,
+    "forbidRawKeyRendering": true,
+    "forbidPublicUiLiteralsInJs": true,
+    "forbidPublicUiCopyInCssContent": true,
+    "forbidNativeAlertConfirmPromptForProductUi": true
+  },
+  "namespaces": [
+    "global",
+    "lang",
+    "nav",
+    "special",
+    "dock",
+    "drawer.more",
+    "search",
+    "palette",
+    "post.action",
+    "library",
+    "share",
+    "comments",
+    "toc",
+    "mixed",
+    "dialog.confirm",
+    "dialog.delete",
+    "toast",
+    "banner",
+    "update",
+    "offline",
+    "notfound",
+    "install"
+  ]
+}

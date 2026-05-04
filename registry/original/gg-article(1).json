@@ -1,0 +1,2273 @@
+{
+  "$schema": "./schemas/gg-article.schema.json",
+  "contract": {
+    "id": "gg-article-registry",
+    "version": "1.0.0",
+    "site": "https://www.pakrpp.com",
+    "sourceOfTruth": {
+      "content": "Blogger Posts via Blogger API v3",
+      "metadata": "gg-article.json",
+      "template": "index.xml",
+      "delivery": "Cloudflare edge/cache"
+    },
+    "nativeBloggerStatusModel": [
+      "draft",
+      "live",
+      "scheduled"
+    ],
+    "dashboardPolicy": {
+      "useNativeDraftPublishOnly": true,
+      "formalApprovalWorkflow": false,
+      "publishGate": "metadata and QA only",
+      "browserMustNotHoldCloudflareToken": true
+    }
+  },
+  "defaults": {
+    "language": "id-ID",
+    "author": "PakRPP Editorial",
+    "robots": "index,follow",
+    "schemaType": "BlogPosting",
+    "reviewCadenceDays": 90,
+    "labels": [
+      "PakRPP"
+    ]
+  },
+  "clusters": [
+    {
+      "id": "yellow-cart",
+      "label": "Yellow Cart",
+      "description": "Affiliate product curation articles connected to /store.",
+      "pillarUrl": "https://www.pakrpp.com/store",
+      "priority": 1
+    },
+    {
+      "id": "blogger-cloudflare",
+      "label": "Blogger + Cloudflare",
+      "description": "Technical content about Blogger, GitHub, Cloudflare, PWA, and editorial infrastructure.",
+      "pillarUrl": "",
+      "priority": 2
+    }
+  ],
+  "articles": [
+    {
+      "id": "article-foldable-reusable-bag",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+        "path": "/2026/05/foldable-reusable-bag.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Lainnya"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Foldable Reusable Bag · Yellow Cart PakRPP",
+        "description": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+        "slug": "foldable-reusable-bag",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Foldable Reusable Bag",
+        "excerpt": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar.",
+        "cluster": "yellow-cart",
+        "subcluster": "everyday",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "reusable bag",
+          "foldable bag",
+          "daily errands",
+          "backup bag"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
+        "alt": "Foldable Reusable Bag",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "foldable-reusable-bag"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+          "headline": "Foldable Reusable Bag",
+          "description": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html#product",
+          "productId": "foldable-reusable-bag"
+        }
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/foldable-reusable-bag.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/foldable-reusable-bag.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-braided-fast-charging-cable",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+        "path": "/2026/05/braided-fast-charging-cable.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Tech"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Braided Fast Charging Cable · Yellow Cart PakRPP",
+        "description": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+        "slug": "braided-fast-charging-cable",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Braided Fast Charging Cable",
+        "excerpt": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa.",
+        "cluster": "yellow-cart",
+        "subcluster": "tech",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "charging cable",
+          "braided cable",
+          "tech accessory",
+          "daily carry"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
+        "alt": "Braided Fast Charging Cable",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "braided-fast-charging-cable"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+          "headline": "Braided Fast Charging Cable",
+          "description": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html#product",
+          "productId": "braided-fast-charging-cable"
+        }
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/braided-fast-charging-cable.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/braided-fast-charging-cable.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-compact-cable-box",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+        "path": "/2026/05/compact-cable-box.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Workspace"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Compact Cable Box · Yellow Cart PakRPP",
+        "description": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+        "slug": "compact-cable-box",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Compact Cable Box",
+        "excerpt": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih.",
+        "cluster": "yellow-cart",
+        "subcluster": "workspace",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "cable box",
+          "cable management",
+          "desk setup",
+          "charging corner"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
+        "alt": "Compact Cable Box",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "compact-cable-box"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+          "headline": "Compact Cable Box",
+          "description": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/compact-cable-box.html#product",
+          "productId": "compact-cable-box"
+        }
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/compact-cable-box.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/compact-cable-box.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-slim-card-holder",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+        "path": "/2026/05/slim-card-holder.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Lainnya"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Slim Card Holder · Yellow Cart PakRPP",
+        "description": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+        "slug": "slim-card-holder",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Slim Card Holder",
+        "excerpt": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil.",
+        "cluster": "yellow-cart",
+        "subcluster": "everyday",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "card holder",
+          "minimal wallet",
+          "daily carry",
+          "small bag"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
+        "alt": "Slim Card Holder",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "slim-card-holder"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+          "headline": "Slim Card Holder",
+          "description": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/slim-card-holder.html#product",
+          "productId": "slim-card-holder"
+        }
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/slim-card-holder.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/slim-card-holder.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-quiet-wireless-mouse",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+        "path": "/2026/05/quiet-wireless-mouse.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Tech"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Quiet Wireless Mouse · Yellow Cart PakRPP",
+        "description": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+        "slug": "quiet-wireless-mouse",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Quiet Wireless Mouse",
+        "excerpt": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu.",
+        "cluster": "yellow-cart",
+        "subcluster": "tech",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "wireless mouse",
+          "silent mouse",
+          "laptop accessory",
+          "quiet workspace"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
+        "alt": "Quiet Wireless Mouse",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "quiet-wireless-mouse"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+          "headline": "Quiet Wireless Mouse",
+          "description": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html#product",
+          "productId": "quiet-wireless-mouse"
+        }
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/quiet-wireless-mouse.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/quiet-wireless-mouse.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-soft-desk-mat",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+        "path": "/2026/05/soft-desk-mat.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Workspace"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Soft Desk Mat · Yellow Cart PakRPP",
+        "description": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+        "slug": "soft-desk-mat",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Soft Desk Mat",
+        "excerpt": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang.",
+        "cluster": "yellow-cart",
+        "subcluster": "workspace",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "desk mat",
+          "mouse pad",
+          "minimal desk",
+          "workspace setup"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
+        "alt": "Soft Desk Mat",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "soft-desk-mat"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+          "headline": "Soft Desk Mat",
+          "description": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/soft-desk-mat.html#product",
+          "productId": "soft-desk-mat"
+        }
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/soft-desk-mat.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/soft-desk-mat.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-simple-hydrating-moisturizer",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+        "path": "/2026/05/simple-hydrating-moisturizer.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Skincare"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Simple Hydrating Moisturizer · Yellow Cart PakRPP",
+        "description": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+        "slug": "simple-hydrating-moisturizer",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Simple Hydrating Moisturizer",
+        "excerpt": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah.",
+        "cluster": "yellow-cart",
+        "subcluster": "skincare",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "moisturizer",
+          "daily hydration",
+          "simple skincare",
+          "skin comfort"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
+        "alt": "Simple Hydrating Moisturizer",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "simple-hydrating-moisturizer"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+          "headline": "Simple Hydrating Moisturizer",
+          "description": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html#product",
+          "productId": "simple-hydrating-moisturizer"
+        }
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/simple-hydrating-moisturizer.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/simple-hydrating-moisturizer.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-stainless-daily-tumbler",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+        "path": "/2026/05/stainless-daily-tumbler.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Lainnya"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Stainless Daily Tumbler · Yellow Cart PakRPP",
+        "description": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+        "slug": "stainless-daily-tumbler",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Stainless Daily Tumbler",
+        "excerpt": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek.",
+        "cluster": "yellow-cart",
+        "subcluster": "everyday",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "daily tumbler",
+          "stainless tumbler",
+          "office carry",
+          "campus essentials"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
+        "alt": "Stainless Daily Tumbler",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "stainless-daily-tumbler"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+          "headline": "Stainless Daily Tumbler",
+          "description": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html#product",
+          "productId": "stainless-daily-tumbler"
+        }
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/stainless-daily-tumbler.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/stainless-daily-tumbler.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-portable-bluetooth-keyboard",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+        "path": "/2026/05/portable-bluetooth-keyboard.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Tech"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Portable Bluetooth Keyboard · Yellow Cart PakRPP",
+        "description": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+        "slug": "portable-bluetooth-keyboard",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Portable Bluetooth Keyboard",
+        "excerpt": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel.",
+        "cluster": "yellow-cart",
+        "subcluster": "tech",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "bluetooth keyboard",
+          "portable keyboard",
+          "tablet setup",
+          "writing setup"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
+        "alt": "Portable Bluetooth Keyboard",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "portable-bluetooth-keyboard"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+          "headline": "Portable Bluetooth Keyboard",
+          "description": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html#product",
+          "productId": "portable-bluetooth-keyboard"
+        }
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/portable-bluetooth-keyboard.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/portable-bluetooth-keyboard.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-adjustable-laptop-stand",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+        "path": "/2026/05/adjustable-laptop-stand.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Workspace"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Adjustable Laptop Stand · Yellow Cart PakRPP",
+        "description": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+        "slug": "adjustable-laptop-stand",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Adjustable Laptop Stand",
+        "excerpt": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata.",
+        "cluster": "yellow-cart",
+        "subcluster": "workspace",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "laptop stand",
+          "desk setup",
+          "wfh",
+          "study desk"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
+        "alt": "Adjustable Laptop Stand",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "adjustable-laptop-stand"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+          "headline": "Adjustable Laptop Stand",
+          "description": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html#product",
+          "productId": "adjustable-laptop-stand"
+        }
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/adjustable-laptop-stand.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/adjustable-laptop-stand.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-lightweight-daily-sunscreen",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+        "path": "/2026/05/lightweight-daily-sunscreen.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Skincare"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Lightweight Daily Sunscreen · Yellow Cart PakRPP",
+        "description": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+        "slug": "lightweight-daily-sunscreen",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Lightweight Daily Sunscreen",
+        "excerpt": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket.",
+        "cluster": "yellow-cart",
+        "subcluster": "skincare",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "daily sunscreen",
+          "light sunscreen",
+          "morning skincare",
+          "sun protection"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
+        "alt": "Lightweight Daily Sunscreen",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "lightweight-daily-sunscreen"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+          "headline": "Lightweight Daily Sunscreen",
+          "description": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html#product",
+          "productId": "lightweight-daily-sunscreen"
+        }
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/lightweight-daily-sunscreen.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/lightweight-daily-sunscreen.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-compact-usb-c-hub",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+        "path": "/2026/05/compact-usb-c-hub.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Tech"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Compact USB-C Hub · Yellow Cart PakRPP",
+        "description": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+        "slug": "compact-usb-c-hub",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Compact USB-C Hub",
+        "excerpt": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori.",
+        "cluster": "yellow-cart",
+        "subcluster": "tech",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "usb c hub",
+          "laptop accessory",
+          "portable tech",
+          "external display"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
+        "alt": "Compact USB-C Hub",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "compact-usb-c-hub"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+          "headline": "Compact USB-C Hub",
+          "description": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html#product",
+          "productId": "compact-usb-c-hub"
+        }
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/compact-usb-c-hub.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/compact-usb-c-hub.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-minimal-desk-tray-organizer",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+        "path": "/2026/05/minimal-desk-tray-organizer.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Workspace"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Minimal Desk Tray Organizer · Yellow Cart PakRPP",
+        "description": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+        "slug": "minimal-desk-tray-organizer",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Minimal Desk Tray Organizer",
+        "excerpt": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
+        "cluster": "yellow-cart",
+        "subcluster": "workspace",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "desk tray",
+          "workspace organizer",
+          "minimal desk",
+          "daily carry storage"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
+        "alt": "Minimal Desk Tray Organizer",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "minimal-desk-tray-organizer"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+          "headline": "Minimal Desk Tray Organizer",
+          "description": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html#product",
+          "productId": "minimal-desk-tray-organizer"
+        }
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/minimal-desk-tray-organizer.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/minimal-desk-tray-organizer.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-gentle-gel-cleanser",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+        "path": "/2026/05/gentle-gel-cleanser.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Skincare"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Gentle Gel Cleanser · Yellow Cart PakRPP",
+        "description": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+        "slug": "gentle-gel-cleanser",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Gentle Gel Cleanser",
+        "excerpt": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat.",
+        "cluster": "yellow-cart",
+        "subcluster": "skincare",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "gel cleanser",
+          "face wash",
+          "basic skincare",
+          "gentle cleanser"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
+        "alt": "Gentle Gel Cleanser",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "gentle-gel-cleanser"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+          "headline": "Gentle Gel Cleanser",
+          "description": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html#product",
+          "productId": "gentle-gel-cleanser"
+        }
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/gentle-gel-cleanser.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/gentle-gel-cleanser.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-compact-crossbody-sling",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+        "path": "/2026/04/compact-crossbody-sling.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Fashion"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Compact Crossbody Sling · Yellow Cart PakRPP",
+        "description": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+        "slug": "compact-crossbody-sling",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Compact Crossbody Sling",
+        "excerpt": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh.",
+        "cluster": "yellow-cart",
+        "subcluster": "fashion",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "crossbody sling",
+          "daily carry",
+          "compact bag",
+          "minimal bag"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
+        "alt": "Compact Crossbody Sling",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "compact-crossbody-sling"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+          "headline": "Compact Crossbody Sling",
+          "description": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html#product",
+          "productId": "compact-crossbody-sling"
+        }
+      },
+      "dates": {
+        "published": "2026-04-30",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/04/compact-crossbody-sling.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/compact-crossbody-sling.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-clean-canvas-sneakers",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+        "path": "/2026/04/clean-canvas-sneakers.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Fashion"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Clean Canvas Sneakers · Yellow Cart PakRPP",
+        "description": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+        "slug": "clean-canvas-sneakers",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Clean Canvas Sneakers",
+        "excerpt": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian.",
+        "cluster": "yellow-cart",
+        "subcluster": "fashion",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "canvas sneakers",
+          "daily shoes",
+          "casual footwear",
+          "minimal sneakers"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
+        "alt": "Clean Canvas Sneakers",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "clean-canvas-sneakers"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+          "headline": "Clean Canvas Sneakers",
+          "description": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html#product",
+          "productId": "clean-canvas-sneakers"
+        }
+      },
+      "dates": {
+        "published": "2026-04-29",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/04/clean-canvas-sneakers.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/clean-canvas-sneakers.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-relaxed-cotton-t-shirt",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+        "path": "/2026/04/relaxed-cotton-t-shirt.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Fashion"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Relaxed Cotton T-Shirt · Yellow Cart PakRPP",
+        "description": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+        "slug": "relaxed-cotton-t-shirt",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Relaxed Cotton T-Shirt",
+        "excerpt": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan.",
+        "cluster": "yellow-cart",
+        "subcluster": "fashion",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "cotton t-shirt",
+          "basic outfit",
+          "minimal wardrobe",
+          "daily casual"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
+        "alt": "Relaxed Cotton T-Shirt",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "relaxed-cotton-t-shirt"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+          "headline": "Relaxed Cotton T-Shirt",
+          "description": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html#product",
+          "productId": "relaxed-cotton-t-shirt"
+        }
+      },
+      "dates": {
+        "published": "2026-04-28",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/04/relaxed-cotton-t-shirt.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/relaxed-cotton-t-shirt.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-neutral-linen-overshirt",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+        "path": "/2026/04/neutral-linen-overshirt.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Fashion"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Neutral Linen Overshirt · Yellow Cart PakRPP",
+        "description": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+        "slug": "neutral-linen-overshirt",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Neutral Linen Overshirt",
+        "excerpt": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+        "cluster": "yellow-cart",
+        "subcluster": "fashion",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "linen overshirt",
+          "neutral outfit",
+          "daily casual",
+          "minimal fashion"
+        ],
+        "lastReviewedAt": "2026-05-04",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+        "alt": "Neutral Linen Overshirt",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "neutral-linen-overshirt"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+          "headline": "Neutral Linen Overshirt",
+          "description": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html#product",
+          "productId": "neutral-linen-overshirt"
+        }
+      },
+      "dates": {
+        "published": "2026-04-27",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/04/neutral-linen-overshirt.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/neutral-linen-overshirt.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-everyday-canvas-tote",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+        "path": "/2026/05/everyday-canvas-tote.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Lainnya"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Everyday Canvas Tote · Yellow Cart PakRPP",
+        "description": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+        "slug": "everyday-canvas-tote",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Everyday Canvas Tote",
+        "excerpt": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai.",
+        "cluster": "yellow-cart",
+        "subcluster": "everyday",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "canvas tote",
+          "daily carry",
+          "minimal bag",
+          "campus bag"
+        ],
+        "lastReviewedAt": "2026-05-01",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+        "alt": "Everyday Canvas Tote",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-tote-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-tote-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "everyday-canvas-tote"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+          "headline": "Everyday Canvas Tote",
+          "description": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html#product",
+          "productId": "everyday-canvas-tote"
+        }
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-01"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/05/everyday-canvas-tote.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/everyday-canvas-tote.json",
+        "notes": ""
+      }
+    },
+    {
+      "id": "article-minimal-barrier-serum",
+      "type": "store-product-article",
+      "status": {
+        "local": "metadata-ready",
+        "blogger": "unknown",
+        "workflow": "draft-or-live-native-blogger",
+        "visibility": "public"
+      },
+      "blogger": {
+        "blogId": "%%GG_BLOGGER_BLOG_ID%%",
+        "postId": "",
+        "url": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+        "path": "/2026/04/minimal-barrier-serum.html",
+        "labels": [
+          "Store",
+          "Yellow Cart",
+          "Skincare"
+        ],
+        "lastRemoteUpdated": ""
+      },
+      "seo": {
+        "title": "Minimal Barrier Serum · Yellow Cart PakRPP",
+        "description": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
+        "canonicalUrl": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+        "slug": "minimal-barrier-serum",
+        "robots": "index,follow",
+        "language": "id-ID",
+        "schemaType": "BlogPosting"
+      },
+      "editorial": {
+        "headline": "Minimal Barrier Serum",
+        "excerpt": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
+        "cluster": "yellow-cart",
+        "subcluster": "skincare",
+        "author": "PakRPP Editorial",
+        "tone": "editorial-affiliate-curation",
+        "intent": [
+          "product discovery",
+          "practical recommendation"
+        ],
+        "tags": [
+          "barrier serum",
+          "daily skincare",
+          "simple routine",
+          "light serum"
+        ],
+        "lastReviewedAt": "2026-05-01",
+        "reviewCadenceDays": 90
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+        "alt": "Minimal Barrier Serum",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-serum-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-serum-3/900/1125"
+        ]
+      },
+      "relations": {
+        "products": [
+          "minimal-barrier-serum"
+        ],
+        "relatedArticles": [],
+        "pillarArticle": "",
+        "internalLinkTargets": []
+      },
+      "schema": {
+        "article": {
+          "@type": "BlogPosting",
+          "mainEntityOfPage": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+          "headline": "Minimal Barrier Serum",
+          "description": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat."
+        },
+        "product": {
+          "@id": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html#product",
+          "productId": "minimal-barrier-serum"
+        }
+      },
+      "dates": {
+        "published": "2026-04-28",
+        "modified": "2026-05-01"
+      },
+      "qa": {
+        "requiredBeforePublish": [
+          "title",
+          "description",
+          "canonicalUrl",
+          "labels",
+          "heroImage",
+          "excerpt",
+          "relatedProduct"
+        ],
+        "lastCheckedAt": "",
+        "checks": {
+          "hasTitle": true,
+          "hasDescription": true,
+          "hasCanonical": true,
+          "hasHeroImage": true,
+          "hasProductRelation": true
+        }
+      },
+      "ops": {
+        "cachePurgePaths": [
+          "/2026/04/minimal-barrier-serum.html",
+          "/store"
+        ],
+        "githubBackupPath": "content/articles/minimal-barrier-serum.json",
+        "notes": ""
+      }
+    }
+  ]
+}

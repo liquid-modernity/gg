@@ -1,0 +1,75 @@
+    <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='command' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-command-panel'>
+      <button class='gg-sheet__scrim' data-gg-close='command' type='button'>
+        <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
+      </button>
+      <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-discovery'>
+        <div class='gg-sheet__head'>
+          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='command'/>
+          <h2 class='gg-sheet__title' data-gg-copy='command.title' id='gg-command-title'>Discover</h2>
+        </div>
+        <div class='gg-discovery__controls'>
+        <form class='gg-discovery-search' expr:action='data:blog.searchUrl' id='gg-command-sheet-form' method='get' role='search'>
+          <label class='gg-visually-hidden' data-gg-copy='command.inputLabel' for='gg-command-sheet-input'>Search articles and topics</label>
+          <input aria-controls='gg-discovery-body' aria-expanded='false' autocomplete='off' class='gg-discovery-search__field' data-gg-copy-placeholder='command.placeholder' data-gg-panel-trigger='command' id='gg-command-sheet-input' name='q' placeholder='Search articles and topics' spellcheck='false' type='search'/>
+        </form>
+        <div aria-label='Discovery modes' class='gg-discovery-tabs' data-gg-copy-aria-label='command.tabs.label' role='tablist'>
+          <button aria-controls='gg-discovery-panel-results' aria-selected='true' class='gg-discovery-tab' data-gg-command-tab='results' id='gg-discovery-tab-results' role='tab' type='button'>
+            <span data-gg-copy='command.tabs.results'>Results</span>
+          </button>
+          <button aria-controls='gg-discovery-panel-topics' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='topics' id='gg-discovery-tab-topics' role='tab' type='button'>
+            <span data-gg-copy='command.tabs.topics'>Topics</span>
+          </button>
+        </div>
+        </div>
+        <div class='gg-discovery__body' id='gg-discovery-body'>
+          <section aria-labelledby='gg-discovery-tab-results' class='gg-discovery-view gg-discovery-view--results' id='gg-discovery-panel-results' role='tabpanel'>
+            <div class='gg-discovery-context' hidden='hidden' id='gg-discovery-context'>
+              <div class='gg-discovery-context__meta'>
+                <span class='gg-discovery-context__eyebrow' data-gg-copy='command.results.activeTopic'>Active topic</span>
+                <strong class='gg-discovery-context__title' id='gg-discovery-context-title'/>
+              </div>
+              <button class='gg-discovery-context__action' data-gg-copy='command.results.backToTopics' data-gg-topic-back='true' id='gg-discovery-context-back' type='button'>Back to topics</button>
+              <button class='gg-discovery-context__action' data-gg-copy='command.results.clearTopic' data-gg-topic-clear='true' id='gg-discovery-context-clear' type='button'>Clear topic</button>
+              <a class='gg-discovery-context__archive' data-gg-copy='command.results.openArchive' hidden='hidden' href='#' id='gg-discovery-context-archive'>Open archive</a>
+            </div>
+            <div class='gg-discovery-results' id='gg-discovery-results' role='listbox'/>
+          </section>
+          <section aria-labelledby='gg-discovery-tab-topics' class='gg-discovery-view gg-discovery-view--topics' hidden='hidden' id='gg-discovery-panel-topics' role='tabpanel'>
+            <div class='gg-discovery-topics' id='gg-discovery-topics'/>
+          </section>
+        </div>
+        <template id='gg-discovery-result-template'>
+          <button class='gg-discovery-result' role='option' type='button'>
+            <span class='gg-discovery-result__type' data-gg-template-part='type'/>
+            <strong class='gg-discovery-result__title' data-gg-template-part='title'/>
+            <span class='gg-discovery-result__meta' data-gg-template-part='meta'/>
+          </button>
+        </template>
+        <template id='gg-discovery-empty-template'>
+          <p class='gg-discovery-empty' data-gg-template-part='text'/>
+        </template>
+        <template id='gg-discovery-topic-template'>
+          <div class='gg-discovery-topic'>
+            <button aria-pressed='false' class='gg-discovery-topic__apply' data-gg-template-part='apply' type='button'>
+              <span class='gg-discovery-topic__name' data-gg-template-part='name'/>
+              <span class='gg-discovery-topic__meta' data-gg-template-part='meta'/>
+            </button>
+            <a class='gg-discovery-topic__archive' data-gg-template-part='archive' href='#'>Open archive</a>
+          </div>
+        </template>
+        <template id='gg-discovery-topic-group-template'>
+          <section class='gg-discovery-topic-group'>
+            <button aria-expanded='false' class='gg-discovery-topic-group__toggle' data-gg-template-part='toggle' type='button'>
+              <span data-gg-template-part='group-key'/>
+              <span class='gg-discovery-topic-group__meta'>
+                <span data-gg-template-part='group-count'/>
+                <span aria-hidden='true' class='gg-discovery-topic-group__glyph gg-icon'>chevron_right</span>
+              </span>
+            </button>
+            <div class='gg-discovery-topic-group__list' data-gg-template-part='list' hidden='hidden'/>
+          </section>
+        </template>
+        </div>
+      </section>
+    </div>

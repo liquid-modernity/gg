@@ -1,0 +1,114 @@
+.gg-entry-list {
+  display: grid;
+  gap: 0;
+  background: var(--gg-entry-list-bg);
+}
+
+.gg-entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--gg-entry-row-gap);
+  padding: var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);
+  border-bottom: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
+  background: transparent;
+  transition: background-color var(--gg-ease);
+}
+
+.gg-entry-row__title {
+  min-width: 0;
+  margin: 0;
+  color: var(--gg-ink);
+  font: var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans);
+  letter-spacing: 0;
+}
+
+.gg-entry-row__title-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  overflow-wrap: anywhere;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--gg-motion-press), color var(--gg-ease);
+}
+
+.gg-entry-row__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  align-self: center;
+  min-height: var(--gg-entry-row-action-min-height);
+  padding: 0 var(--gg-entry-row-action-pad-x);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--gg-entry-row-action-tone);
+  font: var(--gg-entry-row-action-weight) var(--gg-entry-row-action-size)/1.2 var(--gg-font-sans);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .18em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--gg-motion-press), background-color var(--gg-ease), color var(--gg-ease), text-decoration-color var(--gg-ease);
+}
+
+@media (hover: hover) {
+  .gg-entry-row:hover {
+    background: var(--gg-entry-row-surface-hover);
+  }
+
+  .gg-entry-row__action:hover {
+    background: var(--gg-entry-row-action-hover-bg);
+    color: var(--gg-entry-row-action-hover-tone);
+    text-decoration-color: currentColor;
+  }
+}
+
+.gg-loadmore-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0 var(--gg-listing-bottom-clearance);
+}
+
+.gg-loadmore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid var(--gg-line-strong);
+  border-radius: 999px;
+  background: var(--gg-surface-interactive);
+  font: 600 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.gg-listing-sentinel {
+  display: none;
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.gg-loadmore-wrap[data-gg-listing-growth='auto'] .gg-loadmore,
+.gg-loadmore-wrap[data-gg-listing-growth='loading'] .gg-loadmore,
+.gg-loadmore-wrap[data-gg-listing-growth='exhausted'] .gg-loadmore {
+  display: none;
+}
+
+.gg-loadmore-wrap[data-gg-listing-growth='auto'] .gg-listing-sentinel,
+.gg-loadmore-wrap[data-gg-listing-growth='loading'] .gg-listing-sentinel {
+  display: block;
+}
+

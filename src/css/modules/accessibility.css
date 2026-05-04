@@ -1,0 +1,21 @@
+@media (forced-colors: active) {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid CanvasText !important;
+  }
+
+  .gg-dock,
+  .gg-detail-toolbar,
+  .gg-detail-outline,
+  .gg-sheet__panel,
+  .gg-discovery-tab,
+  .gg-loadmore,
+  .gg-preview__cta {
+    border: 1px solid CanvasText !important;
+    forced-color-adjust: auto !important;
+  }
+}
+

@@ -1,0 +1,1888 @@
+{
+  "$schema": "./schemas/gg-store.schema.json",
+  "contract": {
+    "id": "gg-store-registry",
+    "version": "1.0.0",
+    "site": "https://www.pakrpp.com",
+    "productName": "Yellow Cart",
+    "sourceOfTruth": {
+      "metadata": "gg-store.json",
+      "buildArtifact": "store.html",
+      "publicRoute": "/store",
+      "productArticles": "Blogger posts labelled Store / Yellow Cart"
+    },
+    "rules": {
+      "browserMayRead": true,
+      "browserMustNotHoldSecrets": true,
+      "affiliateDisclosureRequired": true,
+      "storeHtmlIsGeneratedArtifact": true,
+      "manualEditStoreHtml": "avoid except template-level changes"
+    }
+  },
+  "build": {
+    "generatedAt": "2026-05-03T00:00:00+07:00",
+    "target": "store.html",
+    "canonicalUrl": "https://www.pakrpp.com/store",
+    "staticGridStartMarker": "<!-- STORE_STATIC_GRID_START -->",
+    "staticGridEndMarker": "<!-- STORE_STATIC_GRID_END -->",
+    "jsonLdStartMarker": "<!-- STORE_ITEMLIST_JSONLD_START -->",
+    "jsonLdEndMarker": "<!-- STORE_ITEMLIST_JSONLD_END -->",
+    "productJsonStartMarker": "<!-- STORE_STATIC_PRODUCTS_JSON_START -->",
+    "productJsonEndMarker": "<!-- STORE_STATIC_PRODUCTS_JSON_END -->",
+    "lcpPolicy": {
+      "source": "first active product with media.lcpCandidate=true, else first active product",
+      "preloadMarkerStart": "<!-- STORE_LCP_PRELOAD_START -->",
+      "preloadMarkerEnd": "<!-- STORE_LCP_PRELOAD_END -->"
+    },
+    "feed": {
+      "primaryLabel": "Store",
+      "legacyLabel": "yellowcard",
+      "maxResults": 50
+    }
+  },
+  "copy": {
+    "title": "Yellow Cart",
+    "description": "Kurasi produk affiliate premium PakRPP dengan preview editorial, filter kategori, dan tautan marketplace.",
+    "affiliateDisclosure": "Affiliate links may be used · Harga dan ketersediaan mengikuti marketplace.",
+    "empty": "Belum ada produk yang cocok dengan filter ini."
+  },
+  "categories": [
+    {
+      "id": "everyday",
+      "label": "Lainnya",
+      "description": "Kurasi kebutuhan harian yang sederhana, murah, dan mudah dipakai ulang.",
+      "priority": 1,
+      "enabled": true
+    },
+    {
+      "id": "tech",
+      "label": "Tech",
+      "description": "Kurasi aksesori teknologi kecil yang praktis untuk kerja dan mobilitas.",
+      "priority": 2,
+      "enabled": true
+    },
+    {
+      "id": "workspace",
+      "label": "Workspace",
+      "description": "Kurasi perlengkapan meja kerja agar ruang terlihat rapi, tenang, dan fungsional.",
+      "priority": 3,
+      "enabled": true
+    },
+    {
+      "id": "skincare",
+      "label": "Skincare",
+      "description": "Kurasi skincare dasar yang ringan, sederhana, dan cocok untuk rutinitas minimal.",
+      "priority": 4,
+      "enabled": true
+    },
+    {
+      "id": "fashion",
+      "label": "Fashion",
+      "description": "Kurasi pakaian dan aksesori bergaya bersih, praktis, dan mudah dipakai harian.",
+      "priority": 5,
+      "enabled": true
+    }
+  ],
+  "products": [
+    {
+      "id": "foldable-reusable-bag",
+      "slug": "foldable-reusable-bag",
+      "status": "active",
+      "visibility": "public",
+      "position": 1,
+      "name": "Foldable Reusable Bag",
+      "category": {
+        "id": "everyday",
+        "label": "Lainnya"
+      },
+      "price": {
+        "amount": 39000,
+        "currency": "IDR",
+        "text": "Rp39.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar.",
+        "verdict": "A tiny backup bag that solves many small everyday carrying problems.",
+        "whyPicked": "Dipilih karena ukurannya kecil saat dilipat, mudah disimpan di tas utama, dan berguna ketika bawaan tiba-tiba bertambah.",
+        "bestFor": [
+          "Grocery run",
+          "Backup bag",
+          "Travel",
+          "Daily errands"
+        ],
+        "notes": [
+          "Cek kapasitas beban sebelum membeli.",
+          "Pilih bahan yang mudah dilipat ulang.",
+          "Simpan di tas utama agar benar-benar terpakai saat dibutuhkan."
+        ],
+        "caveat": "Reusable bag tipis tidak cocok untuk barang berat, tajam, atau basah tanpa perlindungan tambahan.",
+        "material": "Polyester or nylon fabric",
+        "useCase": "Backup carry bag",
+        "geoContext": "Indonesia; useful for minimarket runs, commuting, travel, and sudden extra carry needs.",
+        "tags": [
+          "reusable bag",
+          "foldable bag",
+          "daily errands",
+          "backup bag"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-3/900/1125"
+        ],
+        "alt": "Foldable Reusable Bag",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": true
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=foldable-reusable-bag",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=foldable%20reusable%20bag",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=foldable%20reusable%20bag",
+          "tiktok": "https://www.tiktok.com/search?q=foldable%20reusable%20bag",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html#product",
+        "itemListPosition": 1,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "braided-fast-charging-cable",
+      "slug": "braided-fast-charging-cable",
+      "status": "active",
+      "visibility": "public",
+      "position": 2,
+      "name": "Braided Fast Charging Cable",
+      "category": {
+        "id": "tech",
+        "label": "Tech"
+      },
+      "price": {
+        "amount": 49000,
+        "currency": "IDR",
+        "text": "Rp49.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa.",
+        "verdict": "A practical replacement cable for people who need something simple, durable-looking, and easy to keep nearby.",
+        "whyPicked": "Dipilih karena kabel adalah aksesori kecil yang paling sering dipakai, hilang, rusak, atau dibutuhkan di banyak tempat.",
+        "bestFor": [
+          "Daily charging",
+          "Travel pouch",
+          "Desk setup",
+          "Backup cable"
+        ],
+        "notes": [
+          "Cek tipe konektor sebelum membeli.",
+          "Pastikan mendukung daya yang dibutuhkan perangkat.",
+          "Hindari kabel terlalu panjang jika ingin setup meja tetap rapi."
+        ],
+        "caveat": "Klaim fast charging tidak berarti apa-apa jika adaptor atau perangkat tidak mendukung daya yang sama.",
+        "material": "Braided cable",
+        "useCase": "Charging accessory",
+        "geoContext": "Indonesia; useful for daily commuting, campus bags, desk charging, and travel pouches.",
+        "tags": [
+          "charging cable",
+          "braided cable",
+          "tech accessory",
+          "daily carry"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-3/900/1125"
+        ],
+        "alt": "Braided Fast Charging Cable",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=braided-fast-charging-cable",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=braided%20fast%20charging%20cable",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=braided%20fast%20charging%20cable",
+          "tiktok": "https://www.tiktok.com/search?q=braided%20fast%20charging%20cable",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html#product",
+        "itemListPosition": 2,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "compact-cable-box",
+      "slug": "compact-cable-box",
+      "status": "active",
+      "visibility": "public",
+      "position": 3,
+      "name": "Compact Cable Box",
+      "category": {
+        "id": "workspace",
+        "label": "Workspace"
+      },
+      "price": {
+        "amount": 99000,
+        "currency": "IDR",
+        "text": "Rp99.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih.",
+        "verdict": "A quiet fix for one of the most visible sources of workspace mess: exposed cables.",
+        "whyPicked": "Dipilih karena kabel yang terlihat acak sering membuat meja tampak berantakan meskipun barang lain sudah sedikit.",
+        "bestFor": [
+          "Cable control",
+          "WFH setup",
+          "TV desk",
+          "Charging corner"
+        ],
+        "notes": [
+          "Cek ventilasi agar adaptor tidak terlalu panas.",
+          "Pastikan ukuran cukup untuk stop kontak yang digunakan.",
+          "Jangan menumpuk terlalu banyak adaptor di dalam box."
+        ],
+        "caveat": "Cable box merapikan tampilan, tetapi tidak menggantikan pengaturan listrik yang aman.",
+        "material": "Plastic cable box",
+        "useCase": "Cable management",
+        "geoContext": "Indonesia; useful for home offices, small desks, shared rooms, and charging stations.",
+        "tags": [
+          "cable box",
+          "cable management",
+          "desk setup",
+          "charging corner"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-cable-box-3/900/1125"
+        ],
+        "alt": "Compact Cable Box",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=compact-cable-box",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=cable%20management%20box",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=cable%20management%20box",
+          "tiktok": "https://www.tiktok.com/search?q=cable%20management%20box",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/compact-cable-box.html#product",
+        "itemListPosition": 3,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-04",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "slim-card-holder",
+      "slug": "slim-card-holder",
+      "status": "active",
+      "visibility": "public",
+      "position": 4,
+      "name": "Slim Card Holder",
+      "category": {
+        "id": "everyday",
+        "label": "Lainnya"
+      },
+      "price": {
+        "amount": 59000,
+        "currency": "IDR",
+        "text": "Rp59.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil.",
+        "verdict": "A small carry item for people who want fewer things in their pocket but still need essential cards.",
+        "whyPicked": "Dipilih karena bentuknya ringkas, mudah dipindah antar tas, dan membantu mengurangi bawaan yang tidak perlu.",
+        "bestFor": [
+          "Minimal wallet",
+          "Daily carry",
+          "Small bag",
+          "Quick errands"
+        ],
+        "notes": [
+          "Cek jumlah slot kartu.",
+          "Pastikan bahan tidak mudah mengelupas.",
+          "Jangan simpan terlalu banyak kartu agar bentuk tetap tipis."
+        ],
+        "caveat": "Card holder tidak cocok jika pengguna masih sering membawa banyak uang tunai, struk, atau kartu fisik sekaligus.",
+        "material": "Synthetic leather or fabric",
+        "useCase": "Compact wallet alternative",
+        "geoContext": "Indonesia; useful for cashless errands, small bags, campus routines, and compact daily carry.",
+        "tags": [
+          "card holder",
+          "minimal wallet",
+          "daily carry",
+          "small bag"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-slim-card-holder-3/900/1125"
+        ],
+        "alt": "Slim Card Holder",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=slim-card-holder",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=slim%20card%20holder",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=slim%20card%20holder",
+          "tiktok": "https://www.tiktok.com/search?q=slim%20card%20holder",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/slim-card-holder.html#product",
+        "itemListPosition": 4,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "quiet-wireless-mouse",
+      "slug": "quiet-wireless-mouse",
+      "status": "active",
+      "visibility": "public",
+      "position": 5,
+      "name": "Quiet Wireless Mouse",
+      "category": {
+        "id": "tech",
+        "label": "Tech"
+      },
+      "price": {
+        "amount": 89000,
+        "currency": "IDR",
+        "text": "Rp89.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu.",
+        "verdict": "A small comfort upgrade for people who work in shared rooms or quiet environments.",
+        "whyPicked": "Dipilih karena suara klik kecil bisa mengganggu di ruang bersama, dan mouse senyap membuat kerja harian terasa lebih halus.",
+        "bestFor": [
+          "Shared workspace",
+          "Night work",
+          "Study room",
+          "Laptop setup"
+        ],
+        "notes": [
+          "Cek ukuran mouse agar sesuai genggaman.",
+          "Perhatikan jenis koneksi: dongle atau Bluetooth.",
+          "Pastikan baterai mudah diganti atau diisi ulang."
+        ],
+        "caveat": "Mouse senyap tidak selalu memiliki sensor terbaik untuk gaming atau pekerjaan presisi tinggi.",
+        "material": "Plastic mouse body",
+        "useCase": "Quiet daily computing",
+        "geoContext": "Indonesia; useful for shared houses, dorm rooms, libraries, and compact work desks.",
+        "tags": [
+          "wireless mouse",
+          "silent mouse",
+          "laptop accessory",
+          "quiet workspace"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-3/900/1125"
+        ],
+        "alt": "Quiet Wireless Mouse",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=quiet-wireless-mouse",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=silent%20wireless%20mouse",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=silent%20wireless%20mouse",
+          "tiktok": "https://www.tiktok.com/search?q=silent%20wireless%20mouse",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html#product",
+        "itemListPosition": 5,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "soft-desk-mat",
+      "slug": "soft-desk-mat",
+      "status": "active",
+      "visibility": "public",
+      "position": 6,
+      "name": "Soft Desk Mat",
+      "category": {
+        "id": "workspace",
+        "label": "Workspace"
+      },
+      "price": {
+        "amount": 79000,
+        "currency": "IDR",
+        "text": "Rp79.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang.",
+        "verdict": "A simple surface layer that makes a desk feel more intentional without adding clutter.",
+        "whyPicked": "Dipilih karena desk mat dapat menyatukan area keyboard, mouse, dan alat tulis sehingga meja terlihat lebih tertata.",
+        "bestFor": [
+          "Keyboard setup",
+          "Mouse area",
+          "Minimal desk",
+          "Study table"
+        ],
+        "notes": [
+          "Cek ukuran agar sesuai dengan lebar meja.",
+          "Pilih bahan yang mudah dibersihkan.",
+          "Warna netral akan lebih mudah masuk ke setup yang berbeda."
+        ],
+        "caveat": "Desk mat cepat terlihat kotor jika sering terkena minuman, debu, atau bekas tangan.",
+        "material": "PU leather or fabric surface",
+        "useCase": "Desk surface organization",
+        "geoContext": "Indonesia; useful for compact workspaces, study tables, and home office surfaces.",
+        "tags": [
+          "desk mat",
+          "mouse pad",
+          "minimal desk",
+          "workspace setup"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-soft-desk-mat-3/900/1125"
+        ],
+        "alt": "Soft Desk Mat",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=soft-desk-mat",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=soft%20desk%20mat",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=soft%20desk%20mat",
+          "tiktok": "https://www.tiktok.com/search?q=soft%20desk%20mat",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/soft-desk-mat.html#product",
+        "itemListPosition": 6,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "simple-hydrating-moisturizer",
+      "slug": "simple-hydrating-moisturizer",
+      "status": "active",
+      "visibility": "public",
+      "position": 7,
+      "name": "Simple Hydrating Moisturizer",
+      "category": {
+        "id": "skincare",
+        "label": "Skincare"
+      },
+      "price": {
+        "amount": 75000,
+        "currency": "IDR",
+        "text": "Rp75.000"
+      },
+      "brand": {
+        "name": "Generic",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah.",
+        "verdict": "A basic moisturizer concept for users who want a calmer and more consistent skincare routine.",
+        "whyPicked": "Dipilih karena pelembap sederhana sering menjadi produk yang lebih realistis dipakai setiap hari dibanding rutinitas panjang yang sulit konsisten.",
+        "bestFor": [
+          "Daily hydration",
+          "Simple routine",
+          "Skin comfort",
+          "Night routine"
+        ],
+        "notes": [
+          "Cek tekstur produk agar sesuai dengan preferensi kulit.",
+          "Gunakan secukupnya dan sesuaikan dengan cuaca.",
+          "Jika kulit mudah berjerawat, perhatikan klaim non-comedogenic bila tersedia."
+        ],
+        "caveat": "Moisturizer tidak otomatis memperbaiki semua masalah kulit, terutama jika pemicu utamanya iritasi, alergi, atau produk lain yang tidak cocok.",
+        "material": "Moisturizer formulation",
+        "useCase": "Daily hydration",
+        "geoContext": "Indonesia; useful for air-conditioned rooms, humid weather, and users who want a simple skincare base.",
+        "tags": [
+          "moisturizer",
+          "daily hydration",
+          "simple skincare",
+          "skin comfort"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-3/900/1125"
+        ],
+        "alt": "Simple Hydrating Moisturizer",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=simple-hydrating-moisturizer",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=hydrating%20moisturizer",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=hydrating%20moisturizer",
+          "tiktok": "https://www.tiktok.com/search?q=hydrating%20moisturizer",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html#product",
+        "itemListPosition": 7,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-03",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "stainless-daily-tumbler",
+      "slug": "stainless-daily-tumbler",
+      "status": "active",
+      "visibility": "public",
+      "position": 8,
+      "name": "Stainless Daily Tumbler",
+      "category": {
+        "id": "everyday",
+        "label": "Lainnya"
+      },
+      "price": {
+        "amount": 119000,
+        "currency": "IDR",
+        "text": "Rp119.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek.",
+        "verdict": "A practical daily object that supports a cleaner bag routine and fewer disposable cups.",
+        "whyPicked": "Dipilih karena tumbler adalah barang kecil yang sering dipakai, mudah dibawa, dan relevan untuk rutinitas harian yang lebih tertata.",
+        "bestFor": [
+          "Office routine",
+          "Campus",
+          "Short commute",
+          "Daily hydration"
+        ],
+        "notes": [
+          "Cek kapasitas dan ukuran agar muat di tas.",
+          "Pastikan tutup tidak mudah bocor.",
+          "Perhatikan apakah produk cocok untuk minuman panas atau dingin."
+        ],
+        "caveat": "Tumbler yang terlalu besar bisa merepotkan dibawa dan lebih sering tertinggal daripada dipakai.",
+        "material": "Stainless steel",
+        "useCase": "Daily drink carry",
+        "geoContext": "Indonesia; useful for campus, offices, commuting, and daily hydration in warm weather.",
+        "tags": [
+          "daily tumbler",
+          "stainless tumbler",
+          "office carry",
+          "campus essentials"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-3/900/1125"
+        ],
+        "alt": "Stainless Daily Tumbler",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=stainless-daily-tumbler",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=stainless%20tumbler",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=stainless%20tumbler",
+          "tiktok": "https://www.tiktok.com/search?q=stainless%20tumbler",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html#product",
+        "itemListPosition": 8,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "portable-bluetooth-keyboard",
+      "slug": "portable-bluetooth-keyboard",
+      "status": "active",
+      "visibility": "public",
+      "position": 9,
+      "name": "Portable Bluetooth Keyboard",
+      "category": {
+        "id": "tech",
+        "label": "Tech"
+      },
+      "price": {
+        "amount": 199000,
+        "currency": "IDR",
+        "text": "Rp199.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel.",
+        "verdict": "A lightweight typing upgrade for users who move between desk, tablet, and small workspace setups.",
+        "whyPicked": "Dipilih karena keyboard eksternal dapat membuat setup laptop atau tablet terasa lebih fleksibel, terutama saat bekerja di ruang kecil.",
+        "bestFor": [
+          "Tablet setup",
+          "Portable writing",
+          "WFH",
+          "Study routine"
+        ],
+        "notes": [
+          "Cek layout tombol sebelum membeli.",
+          "Perhatikan daya tahan baterai dan metode pengisian.",
+          "Pastikan perangkat mendukung koneksi Bluetooth yang kompatibel."
+        ],
+        "caveat": "Keyboard portabel sering mengorbankan jarak tombol dan kenyamanan mengetik panjang.",
+        "material": "Plastic keyboard body",
+        "useCase": "Portable typing",
+        "geoContext": "Indonesia; useful for students, mobile workers, tablet users, and compact workspaces.",
+        "tags": [
+          "bluetooth keyboard",
+          "portable keyboard",
+          "tablet setup",
+          "writing setup"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-3/900/1125"
+        ],
+        "alt": "Portable Bluetooth Keyboard",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=portable-bluetooth-keyboard",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=portable%20bluetooth%20keyboard",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=portable%20bluetooth%20keyboard",
+          "tiktok": "https://www.tiktok.com/search?q=portable%20bluetooth%20keyboard",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html#product",
+        "itemListPosition": 9,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "adjustable-laptop-stand",
+      "slug": "adjustable-laptop-stand",
+      "status": "active",
+      "visibility": "public",
+      "position": 10,
+      "name": "Adjustable Laptop Stand",
+      "category": {
+        "id": "workspace",
+        "label": "Workspace"
+      },
+      "price": {
+        "amount": 149000,
+        "currency": "IDR",
+        "text": "Rp149.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata.",
+        "verdict": "A practical desk upgrade for people who work from a laptop but want a cleaner viewing angle.",
+        "whyPicked": "Dipilih karena efeknya terasa langsung pada susunan meja, terutama untuk pengguna laptop yang bekerja lama di satu tempat.",
+        "bestFor": [
+          "WFH setup",
+          "Study desk",
+          "Video calls",
+          "Laptop ergonomics"
+        ],
+        "notes": [
+          "Cek batas beban dan ukuran laptop yang didukung.",
+          "Gunakan keyboard eksternal jika posisi laptop terlalu tinggi.",
+          "Pastikan engsel cukup kuat agar tidak mudah turun."
+        ],
+        "caveat": "Stand laptop bukan solusi lengkap untuk ergonomi jika kursi, tinggi meja, dan kebiasaan duduk tetap buruk.",
+        "material": "Aluminium or synthetic stand",
+        "useCase": "Laptop desk setup",
+        "geoContext": "Indonesia; useful for WFH corners, student rooms, compact apartments, and small office desks.",
+        "tags": [
+          "laptop stand",
+          "desk setup",
+          "wfh",
+          "study desk"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-3/900/1125"
+        ],
+        "alt": "Adjustable Laptop Stand",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=adjustable-laptop-stand",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=adjustable%20laptop%20stand",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=adjustable%20laptop%20stand",
+          "tiktok": "https://www.tiktok.com/search?q=adjustable%20laptop%20stand",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html#product",
+        "itemListPosition": 10,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "lightweight-daily-sunscreen",
+      "slug": "lightweight-daily-sunscreen",
+      "status": "active",
+      "visibility": "public",
+      "position": 11,
+      "name": "Lightweight Daily Sunscreen",
+      "category": {
+        "id": "skincare",
+        "label": "Skincare"
+      },
+      "price": {
+        "amount": 89000,
+        "currency": "IDR",
+        "text": "Rp89.000"
+      },
+      "brand": {
+        "name": "Generic",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket.",
+        "verdict": "A practical daily sunscreen concept for humid days and low-effort morning routines.",
+        "whyPicked": "Dipilih karena sunscreen adalah langkah penting dalam rutinitas pagi, dan tekstur ringan biasanya lebih mudah dipakai konsisten di cuaca panas.",
+        "bestFor": [
+          "Morning routine",
+          "Daily commute",
+          "Humid weather",
+          "Lightweight skincare"
+        ],
+        "notes": [
+          "Cek nilai SPF dan PA pada kemasan produk.",
+          "Gunakan ulang sesuai kebutuhan, terutama saat banyak berkeringat.",
+          "Pastikan cocok dengan kulit dan tidak menimbulkan rasa perih."
+        ],
+        "caveat": "Sunscreen hanya efektif jika digunakan cukup dan diaplikasikan ulang sesuai aktivitas.",
+        "material": "Sunscreen formulation",
+        "useCase": "Daily sun protection",
+        "geoContext": "Indonesia; relevant for tropical weather, commuting, outdoor errands, and daily sun exposure.",
+        "tags": [
+          "daily sunscreen",
+          "light sunscreen",
+          "morning skincare",
+          "sun protection"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-3/900/1125"
+        ],
+        "alt": "Lightweight Daily Sunscreen",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=lightweight-daily-sunscreen",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=lightweight%20sunscreen",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=lightweight%20sunscreen",
+          "tiktok": "https://www.tiktok.com/search?q=lightweight%20sunscreen",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html#product",
+        "itemListPosition": 11,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-02",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "compact-usb-c-hub",
+      "slug": "compact-usb-c-hub",
+      "status": "active",
+      "visibility": "public",
+      "position": 12,
+      "name": "Compact USB-C Hub",
+      "category": {
+        "id": "tech",
+        "label": "Tech"
+      },
+      "price": {
+        "amount": 179000,
+        "currency": "IDR",
+        "text": "Rp179.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori.",
+        "verdict": "A compact utility tool for laptop users who need more ports without carrying a large dock.",
+        "whyPicked": "Dipilih karena banyak laptop modern memiliki port terbatas, sementara kebutuhan kerja harian sering masih membutuhkan HDMI, USB-A, atau card reader.",
+        "bestFor": [
+          "Laptop users",
+          "Presentation",
+          "External display",
+          "Portable setup"
+        ],
+        "notes": [
+          "Cek kompatibilitas dengan laptop sebelum membeli.",
+          "Pastikan port yang dibutuhkan benar-benar tersedia.",
+          "Untuk penggunaan berat, pilih hub dengan build quality dan manajemen panas yang baik."
+        ],
+        "caveat": "USB-C hub murah bisa cepat panas atau tidak stabil jika digunakan untuk banyak perangkat sekaligus.",
+        "material": "Aluminium or synthetic housing",
+        "useCase": "Laptop connectivity",
+        "geoContext": "Indonesia; useful for campus presentations, WFH setups, coworking, and portable laptop workflows.",
+        "tags": [
+          "usb c hub",
+          "laptop accessory",
+          "portable tech",
+          "external display"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-3/900/1125"
+        ],
+        "alt": "Compact USB-C Hub",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=compact-usb-c-hub",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=usb%20c%20hub",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=usb%20c%20hub",
+          "tiktok": "https://www.tiktok.com/search?q=usb%20c%20hub",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html#product",
+        "itemListPosition": 12,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "minimal-desk-tray-organizer",
+      "slug": "minimal-desk-tray-organizer",
+      "status": "active",
+      "visibility": "public",
+      "position": 13,
+      "name": "Minimal Desk Tray Organizer",
+      "category": {
+        "id": "workspace",
+        "label": "Workspace"
+      },
+      "price": {
+        "amount": 129000,
+        "currency": "IDR",
+        "text": "Rp129.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
+        "verdict": "A simple workspace tray for keeping small daily items visible, contained, and easy to reach.",
+        "whyPicked": "Dipilih karena bentuknya sederhana, mudah ditempatkan di meja kecil, dan membantu mengurangi visual clutter saat bekerja atau belajar.",
+        "bestFor": [
+          "Workspace setup",
+          "Meja belajar",
+          "Small accessories",
+          "Cable and stationery control"
+        ],
+        "notes": [
+          "Cek ukuran tray sebelum membeli.",
+          "Pastikan material cukup kaku agar tidak mudah melengkung.",
+          "Lebih cocok untuk barang kecil, bukan untuk beban berat."
+        ],
+        "caveat": "Produk seperti ini tidak menyelesaikan masalah meja berantakan kalau jumlah barang yang disimpan tetap terlalu banyak.",
+        "material": "Plastic or synthetic tray",
+        "useCase": "Desk organization",
+        "geoContext": "Indonesia; useful for compact desks, home office corners, dorm rooms, and small workspace setups.",
+        "tags": [
+          "desk tray",
+          "workspace organizer",
+          "minimal desk",
+          "daily carry storage"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-3/900/1125"
+        ],
+        "alt": "Minimal Desk Tray Organizer",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=minimal-desk-tray-organizer",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=desk%20tray%20organizer",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=desk%20tray%20organizer",
+          "tiktok": "https://www.tiktok.com/search?q=desk%20tray%20organizer",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html#product",
+        "itemListPosition": 13,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "gentle-gel-cleanser",
+      "slug": "gentle-gel-cleanser",
+      "status": "active",
+      "visibility": "public",
+      "position": 14,
+      "name": "Gentle Gel Cleanser",
+      "category": {
+        "id": "skincare",
+        "label": "Skincare"
+      },
+      "price": {
+        "amount": 69000,
+        "currency": "IDR",
+        "text": "Rp69.000"
+      },
+      "brand": {
+        "name": "Generic",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat.",
+        "verdict": "A low-drama cleanser concept for people who want a clean starting point before adding other products.",
+        "whyPicked": "Dipilih karena cleanser adalah dasar rutinitas skincare, dan format gel biasanya mudah dipahami oleh pengguna yang ingin mulai dari langkah sederhana.",
+        "bestFor": [
+          "Basic cleansing",
+          "Morning routine",
+          "Evening routine",
+          "Simple skincare"
+        ],
+        "notes": [
+          "Cek apakah produk sesuai jenis kulit.",
+          "Hindari area mata jika tidak ditujukan sebagai eye cleanser.",
+          "Jika kulit terasa tertarik setelah pemakaian, pertimbangkan produk yang lebih lembut."
+        ],
+        "caveat": "Cleanser yang terasa bersih belum tentu cocok jika membuat kulit kering atau terasa ketarik.",
+        "material": "Gel cleanser formulation",
+        "useCase": "Face cleansing",
+        "geoContext": "Indonesia; relevant for humid climates, daily commuting, and simple morning-evening skincare routines.",
+        "tags": [
+          "gel cleanser",
+          "face wash",
+          "basic skincare",
+          "gentle cleanser"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-3/900/1125"
+        ],
+        "alt": "Gentle Gel Cleanser",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=gentle-gel-cleanser",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=gentle%20gel%20cleanser",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=gentle%20gel%20cleanser",
+          "tiktok": "https://www.tiktok.com/search?q=gentle%20gel%20cleanser",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html#product",
+        "itemListPosition": 14,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "compact-crossbody-sling",
+      "slug": "compact-crossbody-sling",
+      "status": "active",
+      "visibility": "public",
+      "position": 15,
+      "name": "Compact Crossbody Sling",
+      "category": {
+        "id": "fashion",
+        "label": "Fashion"
+      },
+      "price": {
+        "amount": 119000,
+        "currency": "IDR",
+        "text": "Rp119.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh.",
+        "verdict": "A compact carry option for quick errands, light travel, and cleaner daily movement.",
+        "whyPicked": "Dipilih karena ukurannya ringkas, mudah dipakai lintas gaya, dan membantu memisahkan barang penting dari tas utama.",
+        "bestFor": [
+          "Quick errands",
+          "Light travel",
+          "Daily carry",
+          "Hands-free movement"
+        ],
+        "notes": [
+          "Cek dimensi agar ponsel dan dompet benar-benar muat.",
+          "Perhatikan kualitas ritsleting dan tali.",
+          "Pilih model netral jika ingin dipakai lintas outfit."
+        ],
+        "caveat": "Tas kecil seperti ini tidak cocok untuk pengguna yang sering membawa banyak barang atau perangkat besar.",
+        "material": "Nylon or synthetic fabric",
+        "useCase": "Compact daily carry",
+        "geoContext": "Indonesia; useful for short errands, public transport, campus movement, and casual travel.",
+        "tags": [
+          "crossbody sling",
+          "daily carry",
+          "compact bag",
+          "minimal bag"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-3/900/1125"
+        ],
+        "alt": "Compact Crossbody Sling",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=compact-crossbody-sling",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=crossbody%20sling%20bag",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=crossbody%20sling%20bag",
+          "tiktok": "https://www.tiktok.com/search?q=crossbody%20sling%20bag",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html#product",
+        "itemListPosition": 15,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-04-30",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "clean-canvas-sneakers",
+      "slug": "clean-canvas-sneakers",
+      "status": "active",
+      "visibility": "public",
+      "position": 16,
+      "name": "Clean Canvas Sneakers",
+      "category": {
+        "id": "fashion",
+        "label": "Fashion"
+      },
+      "price": {
+        "amount": 189000,
+        "currency": "IDR",
+        "text": "Rp189.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian.",
+        "verdict": "A simple everyday sneaker for people who want one pair that works with many outfits.",
+        "whyPicked": "Dipilih karena siluetnya tidak ramai, mudah dipadukan, dan cukup fleksibel untuk gaya kasual, kampus, maupun perjalanan ringan.",
+        "bestFor": [
+          "Daily walking",
+          "Campus",
+          "Casual outfit",
+          "Travel light"
+        ],
+        "notes": [
+          "Cek ukuran insole dan review kenyamanan.",
+          "Pilih warna netral jika ingin lebih mudah dipadukan.",
+          "Perhatikan bahan sol jika sering berjalan jauh."
+        ],
+        "caveat": "Sneakers kanvas tidak selalu ideal untuk hujan, medan licin, atau aktivitas yang membutuhkan bantalan kuat.",
+        "material": "Canvas upper",
+        "useCase": "Everyday footwear",
+        "geoContext": "Indonesia; useful for campus, casual commutes, short city walks, and warm-weather outfits.",
+        "tags": [
+          "canvas sneakers",
+          "daily shoes",
+          "casual footwear",
+          "minimal sneakers"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-3/900/1125"
+        ],
+        "alt": "Clean Canvas Sneakers",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=clean-canvas-sneakers",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=canvas%20sneakers",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=canvas%20sneakers",
+          "tiktok": "https://www.tiktok.com/search?q=canvas%20sneakers",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html#product",
+        "itemListPosition": 16,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-04-29",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "relaxed-cotton-t-shirt",
+      "slug": "relaxed-cotton-t-shirt",
+      "status": "active",
+      "visibility": "public",
+      "position": 17,
+      "name": "Relaxed Cotton T-Shirt",
+      "category": {
+        "id": "fashion",
+        "label": "Fashion"
+      },
+      "price": {
+        "amount": 99000,
+        "currency": "IDR",
+        "text": "Rp99.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan.",
+        "verdict": "A reliable base layer for people who want a simple outfit without overthinking it.",
+        "whyPicked": "Dipilih karena bentuknya sederhana, mudah menjadi dasar outfit, dan tidak bergantung pada logo besar atau detail yang cepat terlihat usang.",
+        "bestFor": [
+          "Daily casual",
+          "Layering",
+          "Campus",
+          "Minimal wardrobe"
+        ],
+        "notes": [
+          "Cek gramasi bahan jika ingin kaos yang tidak terlalu tipis.",
+          "Perhatikan ukuran bahu dan panjang badan.",
+          "Warna netral biasanya lebih mudah dipakai berulang."
+        ],
+        "caveat": "Kaos polos tetap bisa terlihat kurang rapi jika bahan terlalu tipis atau potongannya tidak sesuai tubuh.",
+        "material": "Cotton or cotton blend",
+        "useCase": "Everyday base outfit",
+        "geoContext": "Indonesia; suitable for warm weather, campus routines, casual offices, and low-maintenance daily outfits.",
+        "tags": [
+          "cotton t-shirt",
+          "basic outfit",
+          "minimal wardrobe",
+          "daily casual"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-3/900/1125"
+        ],
+        "alt": "Relaxed Cotton T-Shirt",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=relaxed-cotton-t-shirt",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=relaxed%20cotton%20t%20shirt",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=relaxed%20cotton%20t%20shirt",
+          "tiktok": "https://www.tiktok.com/search?q=relaxed%20cotton%20t%20shirt",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html#product",
+        "itemListPosition": 17,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-04-28",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "neutral-linen-overshirt",
+      "slug": "neutral-linen-overshirt",
+      "status": "active",
+      "visibility": "public",
+      "position": 18,
+      "name": "Neutral Linen Overshirt",
+      "category": {
+        "id": "fashion",
+        "label": "Fashion"
+      },
+      "price": {
+        "amount": 159000,
+        "currency": "IDR",
+        "text": "Rp159.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+        "verdict": "A flexible neutral layer for casual workdays, travel, and understated everyday styling.",
+        "whyPicked": "Dipilih karena warna netral dan potongan overshirt membuatnya mudah dipakai sebagai lapisan ringan tanpa terlihat terlalu formal.",
+        "bestFor": [
+          "Workwear",
+          "Travel",
+          "Daily casual",
+          "Layering"
+        ],
+        "notes": [
+          "Cek size chart sebelum membeli.",
+          "Perhatikan komposisi bahan karena linen blend bisa terasa berbeda.",
+          "Warna produk dapat terlihat berbeda karena pencahayaan foto marketplace."
+        ],
+        "caveat": "Overshirt linen mudah terlihat kusut, sehingga kurang cocok untuk pembaca yang menginginkan tampilan selalu sangat rapi.",
+        "material": "Linen blend",
+        "useCase": "Neutral everyday outfit",
+        "geoContext": "Indonesia; suitable for warm weather, casual offices, short trips, and understated daily styling.",
+        "tags": [
+          "linen overshirt",
+          "neutral outfit",
+          "daily casual",
+          "minimal fashion"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-3/900/1125"
+        ],
+        "alt": "Neutral Linen Overshirt",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=linen%20overshirt",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=linen%20overshirt",
+          "tiktok": "https://www.tiktok.com/search?q=linen%20overshirt",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html#product",
+        "itemListPosition": 18,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-04-27",
+        "modified": "2026-05-04"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "everyday-canvas-tote",
+      "slug": "everyday-canvas-tote",
+      "status": "active",
+      "visibility": "public",
+      "position": 19,
+      "name": "Everyday Canvas Tote",
+      "category": {
+        "id": "everyday",
+        "label": "Lainnya"
+      },
+      "price": {
+        "amount": 89000,
+        "currency": "IDR",
+        "text": "Rp89.000"
+      },
+      "brand": {
+        "name": "Unbranded",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai.",
+        "verdict": "A clean daily tote for light errands, campus use, and low-effort everyday carry.",
+        "whyPicked": "Dipilih karena bentuknya sederhana, mudah dipadukan, dan cukup fungsional untuk kebutuhan harian ringan tanpa terlihat berlebihan.",
+        "bestFor": [
+          "Bawaan harian",
+          "Campus",
+          "Light errands",
+          "Minimal bag"
+        ],
+        "notes": [
+          "Cek ukuran dan ketebalan bahan sebelum membeli.",
+          "Pastikan jahitan pegangan cukup kuat.",
+          "Lebih cocok untuk bawaan ringan sampai sedang."
+        ],
+        "caveat": "Tidak semua tote cocok untuk membawa laptop berat atau barang yang membutuhkan perlindungan ekstra.",
+        "material": "Canvas",
+        "useCase": "Daily carry",
+        "geoContext": "Indonesia; useful for campus, short errands, casual workdays, and compact daily routines.",
+        "tags": [
+          "canvas tote",
+          "daily carry",
+          "minimal bag",
+          "campus bag"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-tote-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-tote-3/900/1125"
+        ],
+        "alt": "Everyday Canvas Tote",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=everyday-canvas-tote",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=canvas%20tote%20bag",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=canvas%20tote%20bag",
+          "tiktok": "https://www.tiktok.com/search?q=canvas%20tote%20bag",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html#product",
+        "itemListPosition": 19,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-05-01",
+        "modified": "2026-05-01"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    },
+    {
+      "id": "minimal-barrier-serum",
+      "slug": "minimal-barrier-serum",
+      "status": "active",
+      "visibility": "public",
+      "position": 20,
+      "name": "Minimal Barrier Serum",
+      "category": {
+        "id": "skincare",
+        "label": "Skincare"
+      },
+      "price": {
+        "amount": 79000,
+        "currency": "IDR",
+        "text": "Rp79.000"
+      },
+      "brand": {
+        "name": "Generic",
+        "type": "Brand"
+      },
+      "editorial": {
+        "summary": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
+        "verdict": "A simple skincare pick for users who prefer a light, low-effort daily routine.",
+        "whyPicked": "Dipilih karena konsepnya sederhana, mudah masuk ke rutinitas harian, dan cocok untuk pembaca yang tidak ingin skincare terasa terlalu rumit.",
+        "bestFor": [
+          "Daily skincare",
+          "Simple routine",
+          "Skin barrier care",
+          "Light hydration"
+        ],
+        "notes": [
+          "Cek komposisi bahan aktif sebelum membeli.",
+          "Lakukan patch test jika kulit mudah bereaksi.",
+          "Gunakan sesuai petunjuk produk dan hentikan pemakaian jika muncul iritasi."
+        ],
+        "caveat": "Hasil pemakaian dapat berbeda pada setiap jenis kulit, dan produk skincare tidak boleh diperlakukan sebagai solusi instan.",
+        "material": "Serum formulation",
+        "useCase": "Skincare routine",
+        "geoContext": "Indonesia; relevant for humid weather, simple morning routines, and users who prefer lightweight skincare.",
+        "tags": [
+          "barrier serum",
+          "daily skincare",
+          "simple routine",
+          "light serum"
+        ]
+      },
+      "media": {
+        "heroImage": "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+        "images": [
+          "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+          "https://picsum.photos/seed/yellowcart-serum-2/900/1125",
+          "https://picsum.photos/seed/yellowcart-serum-3/900/1125"
+        ],
+        "alt": "Minimal Barrier Serum",
+        "width": 900,
+        "height": 1125,
+        "lcpCandidate": false
+      },
+      "links": {
+        "canonicalArticleUrl": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+        "storeUrl": "https://www.pakrpp.com/store?item=minimal-barrier-serum",
+        "affiliate": {
+          "shopee": "https://shopee.co.id/search?keyword=barrier%20serum",
+          "tokopedia": "https://www.tokopedia.com/search?st=product&q=barrier%20serum",
+          "tiktok": "https://www.tiktok.com/search?q=barrier%20serum",
+          "lazada": "",
+          "website": "",
+          "official": ""
+        }
+      },
+      "schema": {
+        "@type": "Product",
+        "@id": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html#product",
+        "itemListPosition": 20,
+        "includeInItemList": true
+      },
+      "dates": {
+        "published": "2026-04-28",
+        "modified": "2026-05-01"
+      },
+      "qa": {
+        "allowDummyImages": false,
+        "checks": {
+          "hasCanonicalArticle": true,
+          "hasHeroImage": true,
+          "hasAffiliateLink": true,
+          "hasDisclosure": true
+        }
+      }
+    }
+  ]
+}

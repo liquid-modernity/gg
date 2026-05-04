@@ -1,0 +1,119 @@
+html[data-gg-theme='light'] {
+  color-scheme: light;
+}
+
+html[data-gg-theme='dark'] {
+  color-scheme: dark;
+  --gg-surface-page: #000000;
+  --gg-surface-article: rgba(0, 0, 0, 0);
+  --gg-surface-panel: #1c1a1e;
+  --gg-toolbar-surface-fallback: #201d22;
+  --gg-detail-outline-surface-fallback: #201d22;
+  --gg-dock-surface-fallback: #201d22;
+  --gg-surface-quiet: rgba(255, 255, 255, .08);
+  --gg-surface-interactive: rgba(255, 255, 255, .1);
+  --gg-surface-interactive-strong: rgba(255, 255, 255, .14);
+  --gg-surface-panel-fade-soft: rgba(28, 26, 30, .92);
+  --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
+  --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
+  --gg-divider: rgba(255, 255, 255, .14);
+  --gg-divider-strong: rgba(255, 255, 255, .22);
+  --gg-border-interactive: rgba(255, 255, 255, .18);
+  --gg-ink: #f5f1f3;
+  --gg-ink-soft: #c8bec4;
+  --gg-accent: #f4eff1;
+  --gg-accent-soft: #d5c8cf;
+  --gg-accent-contrast: #111013;
+  --gg-accent-hover: #ffffff;
+  --gg-shadow-soft: 0 12px 28px rgba(0, 0, 0, .24);
+  --gg-shadow-panel-bottom: 0 -20px 52px rgba(0, 0, 0, .32);
+  --gg-shadow-panel-top: 0 20px 52px rgba(0, 0, 0, .32);
+  --gg-panel-handle-tone: rgba(255, 255, 255, .22);
+  --gg-panel-scrim: rgba(5, 4, 6, .56);
+  --gg-panel-scrim-fallback: rgba(5, 4, 6, .7);
+  --gg-detail-outline-micro-surface: rgba(255, 255, 255, .08);
+  --gg-detail-outline-progress-track: rgba(255, 255, 255, .12);
+  --gg-entry-row-divider: rgba(255, 255, 255, .14);
+  --gg-entry-row-surface-hover: rgba(255, 255, 255, .08);
+  --gg-entry-row-action-hover-bg: rgba(255, 255, 255, .08);
+  --gg-article-border: rgba(255, 255, 255, .1);
+  --gg-article-tail-divider: rgba(255, 255, 255, .14);
+  --gg-discovery-tab-surface: rgba(255, 255, 255, .06);
+  --gg-discovery-tab-active-surface: rgba(255, 255, 255, .12);
+  --gg-comment-thread-guide: rgba(255, 255, 255, .14);
+  --gg-comment-action-hover-bg: rgba(255, 255, 255, .08);
+  --gg-comment-avatar-ring: rgba(255, 255, 255, .14);
+  --gg-field-surface: rgba(255, 255, 255, .08);
+  --gg-hairline-subtle: rgba(255, 255, 255, .08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-gg-theme='light']) {
+    color-scheme: dark;
+  --gg-surface-page: #000000;
+  --gg-surface-article: rgba(0, 0, 0, 0);
+    --gg-surface-panel: #1c1a1e;
+    --gg-toolbar-surface-fallback: #201d22;
+    --gg-detail-outline-surface-fallback: #201d22;
+    --gg-dock-surface-fallback: #201d22;
+    --gg-surface-quiet: rgba(255, 255, 255, .08);
+    --gg-surface-interactive: rgba(255, 255, 255, .1);
+    --gg-surface-interactive-strong: rgba(255, 255, 255, .14);
+    --gg-surface-panel-fade-soft: rgba(28, 26, 30, .92);
+    --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
+    --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
+    --gg-divider: rgba(255, 255, 255, .14);
+    --gg-divider-strong: rgba(255, 255, 255, .22);
+    --gg-border-interactive: rgba(255, 255, 255, .18);
+    --gg-ink: #f5f1f3;
+    --gg-ink-soft: #c8bec4;
+    --gg-accent: #f4eff1;
+    --gg-accent-soft: #d5c8cf;
+    --gg-accent-contrast: #111013;
+    --gg-accent-hover: #ffffff;
+    --gg-shadow-soft: 0 12px 28px rgba(0, 0, 0, .24);
+    --gg-shadow-panel-bottom: 0 -20px 52px rgba(0, 0, 0, .32);
+    --gg-shadow-panel-top: 0 20px 52px rgba(0, 0, 0, .32);
+    --gg-panel-handle-tone: rgba(255, 255, 255, .22);
+    --gg-panel-scrim: rgba(5, 4, 6, .56);
+    --gg-panel-scrim-fallback: rgba(5, 4, 6, .7);
+    --gg-detail-outline-micro-surface: rgba(255, 255, 255, .08);
+    --gg-detail-outline-progress-track: rgba(255, 255, 255, .12);
+    --gg-entry-row-divider: rgba(255, 255, 255, .14);
+    --gg-entry-row-surface-hover: rgba(255, 255, 255, .08);
+    --gg-entry-row-action-hover-bg: rgba(255, 255, 255, .08);
+    --gg-article-border: rgba(255, 255, 255, .1);
+    --gg-article-tail-divider: rgba(255, 255, 255, .14);
+    --gg-discovery-tab-surface: rgba(255, 255, 255, .06);
+    --gg-discovery-tab-active-surface: rgba(255, 255, 255, .12);
+    --gg-comment-thread-guide: rgba(255, 255, 255, .14);
+    --gg-comment-action-hover-bg: rgba(255, 255, 255, .08);
+    --gg-comment-avatar-ring: rgba(255, 255, 255, .14);
+    --gg-field-surface: rgba(255, 255, 255, .08);
+    --gg-hairline-subtle: rgba(255, 255, 255, .08);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --gg-divider: rgba(32, 26, 28, .26);
+    --gg-divider-strong: rgba(32, 26, 28, .36);
+    --gg-border-interactive: rgba(32, 26, 28, .42);
+    --gg-focus-ring: 3px solid var(--gg-accent);
+  }
+
+  html[data-gg-theme='dark'] {
+    --gg-divider: rgba(255, 255, 255, .32);
+    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-border-interactive: rgba(255, 255, 255, .5);
+  }
+}
+
+@media (prefers-color-scheme: dark) and (prefers-contrast: more) {
+  :root:not([data-gg-theme='light']) {
+    --gg-divider: rgba(255, 255, 255, .32);
+    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-border-interactive: rgba(255, 255, 255, .5);
+  }
+}
+

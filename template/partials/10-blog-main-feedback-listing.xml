@@ -1,0 +1,48 @@
+            <b:includable id='main'>
+              <div class='gg-entry-list' data-gg-listing-budget='essential' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='gg-entry-list'>
+                <b:loop values='data:posts' var='post'>
+                  <b:if cond='data:view.isSingleItem'>
+                    <b:include data='post' name='postDetail'/>
+                  <b:else/>
+                    <b:include data='post' name='postRow'/>
+                  </b:if>
+                </b:loop>
+              </div>
+              <section aria-live='polite' class='gg-search-empty' hidden='hidden' id='gg-search-empty'>
+                <div class='gg-search-empty__actions'>
+                  <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.trySearch' data-gg-feedback-primary='true' data-gg-search-empty-action='search' type='button'>Try another search</button>
+                  <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.browseTopics' data-gg-search-empty-action='topics' type='button'>Browse topics</button>
+                  <a class='gg-discovery-context__archive' data-gg-copy='searchEmpty.goBlog' href='/' id='gg-search-empty-link-blog'>Go to Blog</a>
+                </div>
+                <div class='gg-search-empty__fallback' hidden='hidden' id='gg-search-empty-fallback'>
+                  <p class='gg-discovery-result__type gg-search-empty__fallback-title' data-gg-copy='searchEmpty.fallbackTitle' id='gg-search-empty-fallback-title'>Recent articles</p>
+                  <div class='gg-discovery-results' id='gg-search-empty-results'/>
+                </div>
+                <p class='gg-search-empty__status' hidden='hidden' id='gg-search-empty-status'/>
+              </section>
+              <section aria-live='polite' class='gg-error404' hidden='hidden' id='gg-error404'>
+                <div class='gg-error404__actions'>
+                  <a class='gg-discovery-context__archive' data-gg-copy='error404.goHome' data-gg-feedback-primary='true' href='/landing' id='gg-error404-link-home'>Go Home</a>
+                  <button class='gg-discovery-context__action' data-gg-copy='error404.searchSite' data-gg-error404-action='search' type='button'>Search site</button>
+                </div>
+                <div class='gg-error404__fallback' hidden='hidden' id='gg-error404-fallback'>
+                  <p class='gg-discovery-result__type gg-error404__fallback-title' data-gg-copy='error404.fallbackTitle' id='gg-error404-fallback-title'>Recent articles</p>
+                  <div class='gg-discovery-results' id='gg-error404-results'/>
+                </div>
+                <p class='gg-error404__status' hidden='hidden' id='gg-error404-status'/>
+              </section>
+              <template id='gg-feedback-result-template'>
+                <a class='gg-discovery-result'>
+                  <span class='gg-discovery-result__type'/>
+                  <strong class='gg-discovery-result__title'/>
+                  <span class='gg-discovery-result__meta'/>
+                </a>
+              </template>
+
+              <div class='gg-loadmore-wrap' data-gg-listing-growth='fallback' data-gg-loadmore-state='fallback' id='gg-loadmore-wrap'>
+                <b:if cond='data:view.isMultipleItems and data:olderPageUrl'>
+                  <a class='gg-loadmore' data-gg-copy='pagination.moreEntries' expr:href='data:olderPageUrl' id='gg-loadmore-fallback'>More entries</a>
+                </b:if>
+                <div aria-hidden='true' class='gg-listing-sentinel' id='gg-listing-sentinel'/>
+              </div>
+            </b:includable>

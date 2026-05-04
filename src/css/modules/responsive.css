@@ -1,0 +1,29 @@
+@media (max-width: 480px) {
+  :root {
+    --gg-toolbar-item-pad-x: 6px;
+    --gg-toolbar-item-size: 11px;
+    --gg-icon-size: 19px;
+    --gg-icon-size-compact: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .gg-shell {
+    min-height: 100vh;
+    padding: 18px 14px var(--gg-shell-bottom-clearance);
+  }
+
+  .gg-main {
+    width: min(100%, 860px);
+  }
+
+  .gg-discovery-search__field {
+    min-height: 58px;
+    font-size: 16px;
+  }
+
+  .gg-article {
+    max-width: 64ch;
+  }
+}
+

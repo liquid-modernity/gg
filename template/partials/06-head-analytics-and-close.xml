@@ -1,0 +1,3 @@
+
+    <b:include data='blog' name='google-analytics'/>
+  </head>

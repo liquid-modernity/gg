@@ -1,0 +1,25 @@
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --gg-motion-press: 0.001ms linear;
+    --gg-motion-inline-open: 0.001ms linear;
+    --gg-motion-sheet-open-top: 0.001ms linear;
+    --gg-motion-sheet-close-top: 0.001ms linear;
+    --gg-motion-sheet-open-bottom: 0.001ms linear;
+    --gg-motion-sheet-close-bottom: 0.001ms linear;
+    --gg-motion-drag-return: 0.001ms linear;
+    --gg-press-scale: 1;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
