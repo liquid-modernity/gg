@@ -45,6 +45,26 @@
   Cache-Control: no-store
   X-Content-Type-Options: nosniff
   X-Robots-Tag: noindex, nofollow
+  X-GG-Assets: ac33998
+
+/__gg/assets/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: no-store
+  X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex, nofollow
+  X-GG-Assets: ac33998
+
+/__gg/*.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+  X-GG-Assets: ac33998
+
+/__gg/assets/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: no-store
+  X-Content-Type-Options: nosniff
+  X-Robots-Tag: noindex, nofollow
 
 /__gg/assets/*.js
   Content-Type: application/javascript; charset=utf-8
@@ -61,7 +81,6 @@
 /__gg/*
   Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
-
 /robots.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: no-store

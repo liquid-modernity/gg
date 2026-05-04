@@ -111,9 +111,32 @@ function assertAssetFile(assetDir, relativeAssetPath, label) {
   return fullPath;
 }
 
+function parseHeadersBlocks(headersSource) {
+  const lines = headersSource.split(/\r?\n/);
+  const blocks = [];
+  let current = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    if (line.startsWith("/")) {
+      current = { route: trimmed, lines: [] };
+      blocks.push(current);
+      continue;
+    }
+
+    if (current) current.lines.push(line);
+  }
+
+  return blocks;
+}
+
 function assertNoBroadJsonHeaderForGgAssets(headersSource) {
-  const blockMatch = headersSource.match(/\/__gg\/\*[\s\S]*?(?=\n\/|\n#|\s*$)/);
-  if (blockMatch && /Content-Type:\s*application\/json/i.test(blockMatch[0])) {
+  const blocks = parseHeadersBlocks(headersSource);
+  const broadBlock = blocks.find((block) => block.route === "/__gg/*");
+
+  if (broadBlock && /Content-Type:\s*application\/json/i.test(broadBlock.lines.join("\n"))) {
     fail('_headers must not force Content-Type: application/json on /__gg/* because /__gg/assets/*.css and *.js live there');
   }
 }

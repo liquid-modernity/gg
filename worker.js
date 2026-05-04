@@ -1175,30 +1175,28 @@ async function handleFlagsRoute(request, flags) {
 async function handleRobotsRoute(request, flags) {
   return withResponsePolicy(textResponse(buildRobotsTxt(request, flags), { contentType: "text/plain; charset=utf-8" }), request, flags, { route: "robots" });
 }
-if (url.pathname.startsWith(GG_ASSET_PREFIX)) {
-  const staticResponse = await serveFromAssets(request, env, url.pathname);
 
-  return withResponsePolicy(staticResponse, request, flags, {
-    route: "asset",
-    headers: {
-      "Content-Type": url.pathname.endsWith(".css")
-        ? "text/css; charset=utf-8"
-        : url.pathname.endsWith(".js")
-          ? "application/javascript; charset=utf-8"
-          : staticResponse.headers.get("content-type") || "application/octet-stream"
-    }
-  });
-}
-if (url.pathname.startsWith("/__gg/")) {
-  return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, {
-    route: "diagnostic"
-  });
-}
 async function handleRequest(request, env, ctx) {
   const flags = await loadFlags(env);
   const url = new URL(request.url);
   const route = classifyRoute(request);
+  // Extracted app assets must bypass the /__gg diagnostics router.
+  // Without this early branch, /__gg/assets/*.css/js is treated as an
+  // unknown diagnostic endpoint and the Blogger shell renders without runtime bindings.
+  if (url.pathname.startsWith(GG_ASSET_PREFIX)) {
+    const staticResponse = await serveFromAssets(request, env, url.pathname);
 
+    return withResponsePolicy(staticResponse, request, flags, {
+      route: "asset",
+      headers: {
+        "Content-Type": url.pathname.endsWith(".css")
+          ? "text/css; charset=utf-8"
+          : url.pathname.endsWith(".js")
+            ? "application/javascript; charset=utf-8"
+            : staticResponse.headers.get("content-type") || "application/octet-stream"
+      }
+    });
+  }
   if (!isSafeMethod(request) && url.pathname !== "/api/csp-report") {
     const origin = await fetchOrigin(request, route, flags);
     return handleHtml(request, flags, origin.response, { headers: origin.headers, route });
