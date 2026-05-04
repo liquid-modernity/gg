@@ -1,0 +1,1300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+  <head>
+    <meta content='Mary&apos;s simple recipe for maple bacon donuts            makes a sticky, sweet treat with just a hint            of salt that you&apos;ll keep coming back for.' name='description'/>
+    <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
+    <title><data:view.title.escaped/></title>
+    <meta content='development' name='gg-env'/>
+<meta content='ac33998' name='gg-release'/>
+<meta content='3bca7531a9c6' name='gg-template-fingerprint'/>
+    <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
+    <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
+
+    <b:include data='blog' name='all-head-content'/>
+
+    <script>//<![CDATA[
+    (function () {
+      try {
+        var theme = window.localStorage && window.localStorage.getItem('gg:theme');
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-gg-theme', theme);
+        }
+      } catch (error) {}
+    }());
+    //]]></script>
+
+    <script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;WebSite&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;,
+  &quot;potentialAction&quot;: {
+    &quot;@type&quot;: &quot;SearchAction&quot;,
+    &quot;target&quot;: &quot;<data:blog.searchUrl/>?q={search_term_string}&quot;,
+    &quot;query-input&quot;: &quot;required name=search_term_string&quot;
+  }
+}
+    </script>
+
+    <script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;Organization&quot;,
+  &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;,
+  &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;<b:if cond='data:blog.logoUrl'>,
+  &quot;logo&quot;: {
+    &quot;@type&quot;: &quot;ImageObject&quot;,
+    &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
+  }</b:if>
+}
+    </script>
+
+    <b:if cond='data:view.isPost'>
+      <script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;BlogPosting&quot;,
+  &quot;mainEntityOfPage&quot;: {
+    &quot;@type&quot;: &quot;WebPage&quot;,
+    &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
+  },
+  &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
+  &quot;description&quot;: &quot;<data:post.snippet.escaped/>&quot;,
+  <b:if cond='data:post.date and data:post.date.iso8601'>
+  &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,</b:if>
+  <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
+  &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,</b:if>
+  &quot;author&quot;: {
+    &quot;@type&quot;: &quot;Person&quot;,
+    &quot;name&quot;: &quot;<b:if cond='data:post.author and data:post.author.name'><data:post.author.name.escaped/><b:else/><data:blog.title.escaped/></b:if>&quot;
+  },
+  &quot;publisher&quot;: {
+    &quot;@type&quot;: &quot;Organization&quot;,
+    &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;<b:if cond='data:blog.logoUrl'>,
+    &quot;logo&quot;: {
+      &quot;@type&quot;: &quot;ImageObject&quot;,
+      &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
+    }</b:if>
+  }<b:if cond='data:post.firstImageUrl'>,
+  &quot;image&quot;: [&quot;<data:post.firstImageUrl/>&quot;]</b:if>
+}
+      </script>
+    </b:if>
+
+    <link href='/manifest.webmanifest' rel='manifest'/>
+    <link href='https://fonts.googleapis.com' rel='preconnect'/>
+    <link crossorigin='anonymous' href='https://fonts.gstatic.com' rel='preconnect'/>
+    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=calendar_add_on,chevron_right,comment,explore,home_app_logo,keyboard_arrow_down,keyboard_arrow_up,menu,newsmode&amp;display=block' rel='stylesheet'/>
+
+    <b:skin><![CDATA[
+:root {
+  color-scheme: light;
+  --gg-hit-min: 44px;
+  --gg-surface-page: #f4eeef;
+  --gg-surface-article: rgba(255,255,255,.16);
+  --gg-surface-panel: #f5efec;
+  --gg-surface-interactive: rgba(255,255,255,.48);
+  --gg-surface-interactive-strong: rgba(255,255,255,.66);
+  --gg-divider: rgba(32,26,28,.12);
+  --gg-divider-strong: rgba(32,26,28,.18);
+  --gg-border-interactive: rgba(32,26,28,.18);
+  --gg-ink: #201a1c;
+  --gg-ink-soft: #5f565b;
+  --gg-accent: #2d2529;
+  --gg-accent-soft: #6a5f66;
+  --gg-focus-ring: 2px solid var(--gg-accent);
+  --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.028);
+  --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --gg-dock-offset-bottom: max(10px, env(safe-area-inset-bottom));
+  --gg-toolbar-item-min-height: 50px;
+  --gg-toolbar-pad: 6px;
+  --gg-dock-track-height: calc(var(--gg-toolbar-item-min-height) + (var(--gg-toolbar-pad) * 2));
+  --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
+  --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 20px);
+  --gg-entry-row-pad-y: 16px;
+  --gg-entry-row-pad-x: 2px;
+  --gg-entry-row-gap: 12px;
+  --gg-entry-row-divider: rgba(32,26,28,.14);
+  --gg-entry-row-title-size: 18px;
+  --gg-entry-row-title-line: 1.28;
+  --gg-entry-row-title-weight: 600;
+  --gg-article-border: rgba(32,26,28,.1);
+  --gg-article-pad-y: 16px;
+  --gg-article-pad-x: 0px;
+  --gg-detail-bottom-clearance: 44px;
+  --gg-ease: 180ms ease;
+}
+html[data-gg-theme='dark'] {
+  color-scheme: dark;
+  --gg-surface-page:#000;
+  --gg-surface-article:rgba(0,0,0,0);
+  --gg-surface-panel:#1c1a1e;
+  --gg-surface-interactive:rgba(255,255,255,.1);
+  --gg-surface-interactive-strong:rgba(255,255,255,.14);
+  --gg-divider:rgba(255,255,255,.14);
+  --gg-divider-strong:rgba(255,255,255,.22);
+  --gg-border-interactive:rgba(255,255,255,.18);
+  --gg-ink:#f5f1f3;
+  --gg-ink-soft:#c8bec4;
+  --gg-accent:#f4eff1;
+  --gg-accent-soft:#d5c8cf;
+  --gg-entry-row-divider:rgba(255,255,255,.14);
+  --gg-article-border:rgba(255,255,255,.1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-gg-theme='light']) {
+    color-scheme: dark;
+    --gg-surface-page:#000;
+    --gg-surface-article:rgba(0,0,0,0);
+    --gg-surface-panel:#1c1a1e;
+    --gg-surface-interactive:rgba(255,255,255,.1);
+    --gg-surface-interactive-strong:rgba(255,255,255,.14);
+    --gg-divider:rgba(255,255,255,.14);
+    --gg-divider-strong:rgba(255,255,255,.22);
+    --gg-border-interactive:rgba(255,255,255,.18);
+    --gg-ink:#f5f1f3;
+    --gg-ink-soft:#c8bec4;
+    --gg-accent:#f4eff1;
+    --gg-accent-soft:#d5c8cf;
+    --gg-entry-row-divider:rgba(255,255,255,.14);
+    --gg-article-border:rgba(255,255,255,.1);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{min-height:100%}
+body{margin:0;background:var(--gg-surface-page);color:var(--gg-ink);font:15px/1.58 var(--gg-font-sans);text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+body[data-gg-scroll-lock='true']{overflow:hidden}
+a{color:inherit;text-decoration:none}a:hover{color:var(--gg-accent)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:var(--gg-focus-ring);outline-offset:2px}
+img{max-width:100%;height:auto;display:block}
+.skip-navigation{position:absolute;top:0;left:12px;z-index:120;padding:10px 14px;border-radius:12px;background:var(--gg-surface-interactive);box-shadow:var(--gg-shadow-soft);color:var(--gg-ink);transform:translateY(calc(-100% - 8px));transition:transform var(--gg-ease),color var(--gg-ease)}
+.skip-navigation:focus,.skip-navigation:focus-visible{transform:translateY(12px)}
+.gg-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.gg-shell{min-height:100vh;padding:12px 12px var(--gg-shell-bottom-clearance)}
+.gg-main{width:min(100%,720px);margin:0 auto}.gg-site-head{display:grid;gap:0;margin-bottom:8px}.gg-site-head__eyebrow{margin:0 0 6px;color:var(--gg-accent-soft);font:600 11px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.16em;text-transform:uppercase}.gg-site-head__title{margin:0;font-size:clamp(18px,7vw,34px);line-height:1.08;letter-spacing:-.03em}.gg-site-head__summary{margin:8px 0 0;max-width:62ch;color:var(--gg-ink-soft)}
+.gg-entry-list{display:grid;gap:0;background:transparent}.gg-entry-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--gg-entry-row-gap);padding:var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);border-bottom:1px solid var(--gg-entry-row-divider);background:transparent}.gg-entry-row__title{min-width:0;margin:0;color:var(--gg-ink);font:var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans)}.gg-entry-row__title-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}.gg-entry-row__action{display:inline-flex;align-items:center;justify-content:flex-end;min-height:44px;padding:0 6px;border:0;border-radius:12px;background:transparent;color:var(--gg-accent-soft);font:600 12px/1.2 var(--gg-font-sans);white-space:nowrap;cursor:pointer}
+.gg-article{display:grid;gap:0;width:100%;max-width:62ch;justify-self:center;padding:var(--gg-article-pad-y) var(--gg-article-pad-x) calc(28px + var(--gg-detail-bottom-clearance));border-top:1px solid var(--gg-article-border);border-bottom:1px solid var(--gg-article-border);background:var(--gg-surface-article)}.gg-article__title{margin:0 0 10px;font-size:clamp(24px,8vw,42px);line-height:1.1}.gg-post-body{max-width:none;color:var(--gg-ink);font-size:16px}.gg-post-body p,.gg-post-body ul,.gg-post-body ol,.gg-post-body blockquote{margin:0 0 1em}.gg-post-body img{margin:1.5em auto;border-radius:18px}.gg-breadcrumbs{margin:0 0 10px;color:var(--gg-accent-soft);font:500 12px/1.5 var(--gg-font-sans)}
+.gg-dock{position:fixed;left:50%;bottom:var(--gg-dock-offset-bottom);z-index:40;transform:translateX(-50%);max-width:calc(100% - 24px)}.gg-sheet[hidden],.gg-detail-outline[hidden],.gg-search-empty[hidden],.gg-error404[hidden]{display:none!important}
+@media (min-width:769px){:root{--gg-entry-row-pad-y:18px;--gg-entry-row-title-size:20px;--gg-article-pad-y:22px}.gg-shell{padding-left:16px;padding-right:16px}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+]]></b:skin>
+
+    <!-- GG external non-critical app CSS: served by Cloudflare/edge in extracted mode. -->
+    <link as='style' href='/__gg/assets/css/gg-app.dev.css' rel='preload'/>
+    <link href='/__gg/assets/css/gg-app.dev.css' rel='stylesheet'/>
+
+    <b:include data='blog' name='google-analytics'/>
+  </head>
+
+  <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' data-gg-hydration='critical' data-gg-network='unknown' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))'>
+    <script type='text/javascript'>
+      //<![CDATA[
+      (function () {
+        var GG = window.GG = window.GG || {};
+        var startup = GG.__startup = GG.__startup || {};
+        var body = document.body;
+        var standalone = false;
+      
+        try { performance.mark('gg:boot:start'); } catch (error) {}
+      
+        startup.startedAt = window.performance && typeof window.performance.now === 'function'
+          ? window.performance.now()
+          : 0;
+        startup.launchPath = window.location.pathname || '/';
+      
+        try {
+          standalone = !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        } catch (error) {
+          standalone = false;
+        }
+      
+        if (!standalone && window.navigator && window.navigator.standalone === true) {
+          standalone = true;
+        }
+      
+        startup.displayMode = standalone ? 'standalone' : 'browser';
+        startup.longTasks = Array.isArray(startup.longTasks) ? startup.longTasks : [];
+      
+        if (!body) return;
+      
+        body.setAttribute('data-gg-boot', 'starting');
+        body.setAttribute('data-gg-hydration', 'critical');
+        body.setAttribute('data-gg-network', window.navigator && window.navigator.onLine === false ? 'offline' : 'online');
+        body.setAttribute('data-gg-display-mode', startup.displayMode);
+        body.setAttribute('data-gg-launch-path', startup.launchPath);
+      }());
+      //]]>
+      </script>
+    <div data-env='prod' data-gg-template-fingerprint='3bca7531a9c6' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <b:include name='skipNavigation'/>
+
+    <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
+      <main class='gg-main' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='main' role='main' tabindex='-1'>
+        <b:if cond='not data:view.isSingleItem'>
+        <header class='gg-site-head'>
+          <p class='gg-site-head__eyebrow' hidden='hidden' id='gg-site-head-eyebrow'/>
+          <h1 class='gg-site-head__title'><data:blog.title/></h1>
+          <p class='gg-site-head__summary' hidden='hidden' id='gg-site-head-summary'/>
+        </header>
+        </b:if>
+
+        <b:section class='gg-section' id='page_body' name='GG Main Surface' showaddelement='true'>
+          <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='2' visible='true'>
+            <b:widget-settings>
+              <b:widget-setting name='commentLabel'>Comments</b:widget-setting>
+              <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+              <b:widget-setting name='authorLabel'>Penned by</b:widget-setting>
+              <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+              <b:widget-setting name='timestampLabel'/>
+              <b:widget-setting name='reactionsLabel'/>
+              <b:widget-setting name='showAuthorProfile'>true</b:widget-setting>
+              <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+              <b:widget-setting name='showLocation'>false</b:widget-setting>
+              <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+              <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+              <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
+              <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+              <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
+              <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+              <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
+              <b:widget-setting name='postLocationLabel'>Thought from</b:widget-setting>
+              <b:widget-setting name='showAuthor'>true</b:widget-setting>
+              <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
+              <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
+              <b:widget-setting name='showLabels'>true</b:widget-setting>
+              <b:widget-setting name='postLabelsLabel'>The</b:widget-setting>
+              <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+              <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+              <b:widget-setting name='showReactions'>false</b:widget-setting>
+            </b:widget-settings>
+            <b:includable id='main'>
+              <div class='gg-entry-list' data-gg-listing-budget='essential' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='gg-entry-list'>
+                <b:loop values='data:posts' var='post'>
+                  <b:if cond='data:view.isSingleItem'>
+                    <b:include data='post' name='postDetail'/>
+                  <b:else/>
+                    <b:include data='post' name='postRow'/>
+                  </b:if>
+                </b:loop>
+              </div>
+              <section aria-live='polite' class='gg-search-empty' hidden='hidden' id='gg-search-empty'>
+                <div class='gg-search-empty__actions'>
+                  <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.trySearch' data-gg-feedback-primary='true' data-gg-search-empty-action='search' type='button'>Try another search</button>
+                  <button class='gg-discovery-context__action' data-gg-copy='searchEmpty.browseTopics' data-gg-search-empty-action='topics' type='button'>Browse topics</button>
+                  <a class='gg-discovery-context__archive' data-gg-copy='searchEmpty.goBlog' href='/' id='gg-search-empty-link-blog'>Go to Blog</a>
+                </div>
+                <div class='gg-search-empty__fallback' hidden='hidden' id='gg-search-empty-fallback'>
+                  <p class='gg-discovery-result__type gg-search-empty__fallback-title' data-gg-copy='searchEmpty.fallbackTitle' id='gg-search-empty-fallback-title'>Recent articles</p>
+                  <div class='gg-discovery-results' id='gg-search-empty-results'/>
+                </div>
+                <p class='gg-search-empty__status' hidden='hidden' id='gg-search-empty-status'/>
+              </section>
+              <section aria-live='polite' class='gg-error404' hidden='hidden' id='gg-error404'>
+                <div class='gg-error404__actions'>
+                  <a class='gg-discovery-context__archive' data-gg-copy='error404.goHome' data-gg-feedback-primary='true' href='/landing' id='gg-error404-link-home'>Go Home</a>
+                  <button class='gg-discovery-context__action' data-gg-copy='error404.searchSite' data-gg-error404-action='search' type='button'>Search site</button>
+                </div>
+                <div class='gg-error404__fallback' hidden='hidden' id='gg-error404-fallback'>
+                  <p class='gg-discovery-result__type gg-error404__fallback-title' data-gg-copy='error404.fallbackTitle' id='gg-error404-fallback-title'>Recent articles</p>
+                  <div class='gg-discovery-results' id='gg-error404-results'/>
+                </div>
+                <p class='gg-error404__status' hidden='hidden' id='gg-error404-status'/>
+              </section>
+              <template id='gg-feedback-result-template'>
+                <a class='gg-discovery-result'>
+                  <span class='gg-discovery-result__type'/>
+                  <strong class='gg-discovery-result__title'/>
+                  <span class='gg-discovery-result__meta'/>
+                </a>
+              </template>
+
+              <div class='gg-loadmore-wrap' data-gg-listing-growth='fallback' data-gg-loadmore-state='fallback' id='gg-loadmore-wrap'>
+                <b:if cond='data:view.isMultipleItems and data:olderPageUrl'>
+                  <a class='gg-loadmore' data-gg-copy='pagination.moreEntries' expr:href='data:olderPageUrl' id='gg-loadmore-fallback'>More entries</a>
+                </b:if>
+                <div aria-hidden='true' class='gg-listing-sentinel' id='gg-listing-sentinel'/>
+              </div>
+            </b:includable>
+            <b:includable id='aboutPostAuthor'>
+  <div class='author-name'>
+    <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <span>
+        <data:post.author.name/>
+      </span>
+    </a>
+  </div>
+  <div>
+    <span class='author-desc'>
+      <data:post.author.aboutMe/>
+    </span>
+  </div>
+</b:includable>
+            <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+            <b:includable id='blogThisShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=270,width=475\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='bylineByName' var='byline'>
+  <b:switch var='data:byline.name'>
+  <b:case value='share'/>
+    <b:include cond='data:post.shareUrl' name='postShareButtons'/>
+  <b:case value='comments'/>
+    <b:include cond='data:post.allowComments' name='postCommentsLink'/>
+  <b:case value='location'/>
+    <b:include cond='data:post.location' name='postLocation'/>
+  <b:case value='timestamp'/>
+    <b:include cond='not data:view.isPage' name='postTimestamp'/>
+  <b:case value='author'/>
+    <b:include name='postAuthor'/>
+  <b:case value='labels'/>
+    <b:include cond='data:post.labels' name='postLabels'/>
+  <b:case value='icons'/>
+    <b:include cond='data:post.emailPostUrl' name='emailPostIcon'/>
+  </b:switch>
+</b:includable>
+            <b:includable id='bylineRegion' var='regionItems'>
+  <b:loop values='data:regionItems' var='byline'>
+    <b:include data='byline' name='bylineByName'/>
+  </b:loop>
+</b:includable>
+            <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container'>
+    <img class='author-avatar' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+            <b:includable id='commentDeleteIcon' var='comment'>
+  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+        <img src='https://resources.blogblog.com/img/icon_delete13.gif'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+            <b:includable id='commentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+            <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+            <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+            <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+            <b:includable id='commentPicker' var='post'>
+  <b:if cond='data:post.showThreadedComments'>
+    <b:include data='post' name='threadedComments'/>
+  <b:else/>
+    <b:include data='post' name='comments'/>
+  </b:if>
+</b:includable>
+            <b:includable id='comments' var='post'>
+  <section expr:class='&quot;comments&quot; + (data:post.embedCommentForm ? &quot; embed&quot; : &quot;&quot;)' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+    <b:if cond='data:post.allowComments'>
+
+      <b:include name='commentsTitle'/>
+
+      <div expr:id='data:widget.instanceId + &quot;_comments-block-wrapper&quot;'>
+        <b:include cond='data:post.comments' data='post.comments' name='commentList'/>
+      </div>
+
+      <b:if cond='data:post.commentPagingRequired'>
+        <div class='paging-control-container'>
+          <b:if cond='data:post.hasOlderLinks'>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.oldestLinkUrl'>
+              <data:messages.oldest/>
+            </a>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.olderLinkUrl'>
+              <data:messages.older/>
+            </a>
+          </b:if>
+
+          <span class='comment-range-text'>
+            <data:post.commentRangeText/>
+          </span>
+
+          <b:if cond='data:post.hasNewerLinks'>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newerLinkUrl'>
+              <data:messages.newer/>
+            </a>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newestLinkUrl'>
+              <data:messages.newest/>
+            </a>
+          </b:if>
+        </div>
+      </b:if>
+
+      <div class='footer'>
+        <b:if cond='data:post.embedCommentForm'>
+          <b:if cond='data:post.allowNewComments'>
+            <b:include data='post' name='commentForm'/>
+          <b:else/>
+            <data:post.noNewCommentsText/>
+          </b:if>
+        <b:else/>
+          <b:if cond='data:post.allowComments'>
+            <b:include data='post' name='addComments'/>
+          </b:if>
+        </b:if>
+      </div>
+    </b:if>
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+            <b:includable id='commentsLink'>
+  <a class='comment-link' expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:if cond='data:post.numberOfComments &gt; 0'>
+      <b:message name='messages.numberOfComments'>
+        <b:param expr:value='data:post.numberOfComments' name='numComments'/>
+      </b:message>
+    <b:else/>
+      <data:messages.postAComment/>
+    </b:if>
+  </a>
+</b:includable>
+            <b:includable id='commentsLinkIframe'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+            <b:includable id='defaultAdUnit'>
+  <ins class='adsbygoogle' data-ad-format='auto' expr:data-ad-client='data:adClientId ?: data:blog.adsenseClientId' expr:data-ad-host='data:blog.adsenseHostId' expr:style='data:style ?: &quot;display: block;&quot;'>
+    <b:attr cond='not data:blog.analytics4' expr:value='data:blog.analyticsAccountNumber' name='data-analytics-uacct'/>
+  </ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</b:includable>
+            <b:includable id='emailPostIcon'>
+  <span class='byline post-icons'>
+    <!-- email post links -->
+    <span class='item-action'>
+      <a expr:href='data:post.emailPostUrl' expr:title='data:messages.emailPost'>
+        <b:include data='{ iconClass: &quot;touch-icon sharing-icon&quot; }' name='emailIcon'/>
+      </a>
+    </span>
+  </span>
+</b:includable>
+            <b:includable id='facebookShare'>
+  <b:with value='&quot;window.open(this.href, \&quot;_blank\&quot;, \&quot;height=430,width=640\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='feedLinks'>
+  <b:if cond='!data:view.isPost'> <!-- Blog feed links -->
+    <b:if cond='data:feedLinks'>
+      <div class='blog-feeds'>
+        <b:include data='feedLinks' name='feedLinksBody'/>
+      </div>
+    </b:if>
+  <b:else/> <!--Post feed links -->
+    <div class='post-feeds'>
+      <b:loop values='data:posts' var='post'>
+        <b:if cond='data:post.allowComments and data:post.feedLinks'>
+          <b:include data='post.feedLinks' name='feedLinksBody'/>
+        </b:if>
+      </b:loop>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='feedLinksBody' var='links'>
+  <div class='feed-links'>
+  <data:messages.subscribeTo/>
+  <b:loop values='data:links' var='f'>
+     <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+  </b:loop>
+  </div>
+</b:includable>
+            <b:includable id='footerBylines'>
+  <b:if cond='data:widgets.Blog.first.footerBylines'>
+    <b:loop index='i' values='data:widgets.Blog.first.footerBylines' var='region'>
+      <b:if cond='not data:region.items.empty'>
+        <div expr:class='&quot;post-footer-line post-footer-line-&quot; + (data:i + 1)'>
+          <b:with value='&quot;footer-&quot; + (data:i + 1)' var='regionName'>
+            <b:include data='region.items' name='bylineRegion'/>
+          </b:with>
+        </div>
+      </b:if>
+    </b:loop>
+  </b:if>
+</b:includable>
+            <b:includable id='googlePlusShare'>
+</b:includable>
+            <b:includable id='headerByline'>
+  <b:if cond='data:widgets.Blog.first.headerByline'>
+    <div class='post-header'>
+      <div class='post-header-line-1'>
+        <b:with value='&quot;header-1&quot;' var='regionName'>
+          <b:include data='data:widgets.Blog.first.headerByline.items' name='bylineRegion'/>
+        </b:with>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='homePageLink'>
+  <a class='home-link' href='/landing'>
+    <data:messages.home/>
+  </a>
+</b:includable>
+            <b:includable id='iframeComments' var='post'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='inlineAd' var='post'>
+  <b:if cond='!data:view.isPreview'>
+    <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+      <!-- Ad -->
+      <div class='inline-ad'>
+        <b:if cond='data:this.adCode != &quot;&quot;'>
+          <data:this.adCode/>
+        <b:else/>
+          <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+        </b:if>
+      </div>
+    </b:if>
+  <b:else/>
+    <div class='inline-ad'>
+      <div class='inline-ad-placeholder'>
+        <span><b:message name='messages.adsGoHere'/></span>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='linkShare'>
+  <b:with value='&quot;window.prompt(\&quot;Copy to clipboard: Ctrl+C, Enter\&quot;, \&quot;&quot; + data:originalUrl + &quot;\&quot;); return false;&quot;' var='onclick'>
+    <b:include name='platformShare'/>
+  </b:with>
+</b:includable>
+            <b:includable id='nextPageLink'>
+  <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+    <data:messages.olderPosts/>
+  </a>
+</b:includable>
+            <b:includable id='otherSharingButton'>
+  <span class='sharing-platform-button sharing-element-other' expr:aria-label='data:messages.shareToOtherApps.escaped' expr:data-url='data:originalUrl' expr:title='data:messages.shareToOtherApps.escaped' role='menuitem' tabindex='-1'>
+    <b:with value='{key: &quot;sharingOther&quot;}' var='platform'>
+      <b:include name='sharingPlatformIcon'/>
+    </b:with>
+    <span class='platform-sharing-text'><data:messages.shareOtherApps.escaped/></span>
+  </span>
+</b:includable>
+            <b:includable id='platformShare'>
+  <a expr:class='&quot;goog-inline-block sharing-&quot; + data:platform.key' expr:data-url='data:originalUrl' expr:href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:onclick='data:onclick ? data:onclick : &quot;&quot;' expr:title='data:platform.shareMessage' target='_blank'>
+    <span class='share-button-link-text'>
+      <data:platform.shareMessage/>
+    </span>
+  </a>
+</b:includable>
+            <b:includable id='post' var='post'>
+  <div class='post'>
+    <b:include data='post' name='postMeta'/>
+    <b:include data='post' name='postTitle'/>
+    <b:include name='headerByline'/>
+    <b:if cond='data:view.isSingleItem'>
+      <b:include data='post' name='postBody'/>
+    <b:else/>
+      <b:include data='post' name='postBodySnippet'/>
+      <b:include data='post' name='postJumpLink'/>
+    </b:if>
+    <b:include data='post' name='postFooter'/>
+  </div>
+</b:includable>
+            <b:includable id='postAuthor'>
+  <span class='byline post-author vcard'>
+    <span class='post-author-label'>
+      <data:byline.label/>
+    </span>
+    <span class='fn'>
+      <b:if cond='data:post.author.profileUrl'>
+        <meta expr:content='data:post.author.profileUrl'/>
+        <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+          <span><data:post.author.name/></span>
+        </a>
+      <b:else/>
+        <span><data:post.author.name/></span>
+      </b:if>
+    </span>
+  </span>
+</b:includable>
+            <b:includable id='postBody' var='post'>
+              <div class='gg-post-body entry-content' expr:id='&quot;post-body-&quot; + data:post.id'>
+                <data:post.body/>
+              </div>
+            </b:includable>
+            <b:includable id='postBodySnippet' var='post'>
+              <b:include data='post' name='postBody'/>
+            </b:includable>
+            <b:includable id='postCommentsAndAd' var='post'>
+  <article class='post-outer-container'>
+    <!-- Post title and body -->
+    <div class='post-outer'>
+      <b:include data='post' name='post'/>
+    </div>
+
+    <!-- Comments -->
+    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+    <!-- Show ad inside post container, after comments, if single item. -->
+    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+  </article>
+
+  <!-- Show ad outside post container (between posts) for feed pages. -->
+  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+</b:includable>
+            <b:includable id='postCommentsLink'>
+  <b:if cond='data:view.isMultipleItems'>
+    <span class='byline post-comment-link container'>
+      <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+    </span>
+  </b:if>
+            </b:includable>
+            <b:includable id='postDetail' var='post'>
+              <div aria-labelledby='gg-detail-toolbar-title' class='gg-detail-toolbar' role='toolbar'>
+                <span class='gg-visually-hidden' data-gg-copy='detail.toolbar' id='gg-detail-toolbar-title'>Detail actions</span>
+                <button aria-controls='gg-comments-panel' aria-expanded='false' class='gg-detail-toolbar__action' data-gg-open='comments' type='button'>
+                  <span class='gg-detail-toolbar__count' id='gg-detail-comments-count'><data:post.numberOfComments/></span>
+                  <span aria-hidden='true' class='gg-icon'>comment</span>
+                  <span data-gg-copy='comments.launch' id='gg-detail-comments-label'>Comments</span>
+                </button>
+              </div>
+
+              <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url'>
+                <nav aria-labelledby='gg-breadcrumb-title' class='gg-breadcrumbs'>
+                  <span class='gg-visually-hidden' data-gg-copy='post.breadcrumb' id='gg-breadcrumb-title'>Breadcrumb</span>
+                  <a data-gg-copy='post.blog' href='/'>Blog</a>
+                  <b:if cond='data:post.labels'>
+                    <span aria-hidden='true'>/</span>
+                    <a expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a>
+                  </b:if>
+                </nav>
+
+                <h1 class='gg-article__title'><data:post.title/></h1>
+
+                <b:include data='post' name='postBody'/>
+                <footer class='gg-article__tail'>
+                  <p class='gg-article__tail-line'>
+                    <span class='gg-meta__cue' data-gg-copy='post.by'>By</span>
+                    <span class='gg-meta__value'><data:post.author.name/></span>
+                  </p>
+                  <b:if cond='(data:post.date and data:post.date.iso8601) or (data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601)'>
+                    <p class='gg-article__tail-line'>
+                      <b:if cond='data:post.date and data:post.date.iso8601'>
+                        <span class='gg-article__tail-part'>
+                          <span class='gg-meta__cue' data-gg-copy='post.published'>Published</span>
+                          <time class='gg-meta__value' expr:datetime='data:post.date.iso8601'><data:post.date/></time>
+                        </span>
+                      </b:if>
+                      <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601'>
+                        <span class='gg-article__tail-part'>
+                          <span class='gg-meta__cue' data-gg-copy='post.updated'>Updated</span>
+                          <time class='gg-meta__value' expr:datetime='data:post.lastUpdated.iso8601'><data:post.lastUpdated/></time>
+                        </span>
+                      </b:if>
+                    </p>
+                  </b:if>
+
+                  <b:if cond='data:post.labels'>
+                    <p class='gg-article__tail-line'>
+                      <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
+                      <span class='gg-taxonomy'>
+                        <b:loop values='data:post.labels' var='label'>
+                          <span class='gg-taxonomy__item'>
+                            <a class='gg-taxonomy__link' expr:href='data:label.url'><data:label.name/></a>
+                          </span>
+                        </b:loop>
+                      </span>
+                    </p>
+                  </b:if>
+                </footer>
+              </article>
+
+              <nav aria-label='Contents' class='gg-detail-outline' data-gg-copy-aria-label='outline.title' data-gg-outline-state='peek' hidden='hidden' id='gg-detail-outline'>
+                <button aria-controls='gg-detail-outline-tray' aria-expanded='false' class='gg-detail-outline__peek' data-gg-outline-toggle='true' id='gg-detail-outline-toggle' type='button'>
+                  <span class='gg-detail-outline__peek-main'>
+                    <span class='gg-detail-outline__label' data-gg-copy='outline.title'>Contents</span>
+                    <strong class='gg-detail-outline__current' id='gg-detail-outline-current'><data:post.title/></strong>
+                  </span>
+                  <span class='gg-detail-outline__summary' hidden='hidden' id='gg-detail-outline-summary'/>
+                  <span aria-hidden='true' class='gg-detail-outline__affordance'>
+                    <span aria-hidden='true' class='gg-detail-outline__handle'/>
+                    <span aria-hidden='true' class='gg-icon' id='gg-detail-outline-glyph'>keyboard_arrow_up</span>
+                  </span>
+                  <progress aria-hidden='true' class='gg-detail-outline__progress' id='gg-detail-outline-progress' max='1' tabindex='-1' value='0'>0</progress>
+                </button>
+                <div class='gg-detail-outline__tray' hidden='hidden' id='gg-detail-outline-tray'>
+                  <ol class='gg-detail-outline__list' id='gg-detail-outline-list'/>
+                </div>
+                <template id='gg-detail-outline-empty-template'>
+                  <li class='gg-detail-outline__empty' data-gg-template-part='text'/>
+                </template>
+                <template id='gg-detail-outline-group-template'>
+                  <li class='gg-detail-outline__group'>
+                    <button class='gg-detail-outline__item-button' data-gg-template-part='button' type='button'>
+                      <span class='gg-detail-outline__item-label' data-gg-template-part='label'/>
+                    </button>
+                    <ol class='gg-detail-outline__sublist' data-gg-template-part='sublist' hidden='hidden'/>
+                  </li>
+                </template>
+                <template id='gg-detail-outline-item-template'>
+                  <li class='gg-detail-outline__item'>
+                    <button class='gg-detail-outline__item-button' data-gg-template-part='button' type='button'>
+                      <span class='gg-detail-outline__item-label' data-gg-template-part='label'/>
+                    </button>
+                  </li>
+                </template>
+              </nav>
+
+              <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='comments' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-comments-panel'>
+                <button class='gg-sheet__scrim' data-gg-close='comments' type='button'>
+                  <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
+                </button>
+                <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
+                  <div class='gg-sheet__head'>
+                    <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='comments'/>
+                    <span class='gg-sheet__title' id='gg-comments-title'>
+                      <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
+                    </span>
+                  </div>
+                  <div class='gg-comments gg-comments--sheet'>
+                    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+                  </div>
+                </section>
+              </div>
+            </b:includable>
+            <b:includable id='postFooter' var='post'>
+  <div class='post-footer'>
+    <b:include name='footerBylines'/>
+    <b:include data='post' name='postFooterAuthorProfile'/>
+  </div>
+</b:includable>
+            <b:includable id='postFooterAuthorProfile' var='post'>
+  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+    <div class='author-profile'>
+      <b:if cond='data:post.author.authorPhoto.url'>
+        <img class='author-image' expr:src='data:post.author.authorPhoto.url' width='50px'/>
+        <div class='author-about'>
+          <b:include data='post' name='aboutPostAuthor'/>
+        </div>
+      <b:else/>
+        <b:include data='post' name='aboutPostAuthor'/>
+      </b:if>
+    </div>
+  </b:if>
+</b:includable>
+            <b:includable id='postHeader' var='post'>
+  <b:include name='headerByline'/>
+</b:includable>
+            <b:includable id='postJumpLink' var='post'>
+  <div class='jump-link flat-button'>
+    <a expr:href='data:post.url fragment &quot;more&quot;' expr:title='data:post.title'>
+      <b:eval expr='data:blog.jumpLinkMessage'/>
+    </a>
+  </div>
+</b:includable>
+            <b:includable id='postLabels'>
+  <span class='byline post-labels'>
+    <span class='byline-label'><data:byline.label/></span>
+    <b:loop index='i' values='data:post.labels' var='label'>
+      <a expr:href='data:label.url' rel='tag'>
+        <data:label.name/>
+      </a>
+    </b:loop>
+  </span>
+</b:includable>
+            <b:includable id='postLocation'>
+  <span class='byline post-location'>
+    <data:byline.label/>
+    <a expr:href='data:post.location.mapsUrl' target='_blank'><data:post.location.name/></a>
+  </span>
+</b:includable>
+            <b:includable id='postMeta' var='post'>
+  <b:include data='post' name='postMetadataJSON'/>
+</b:includable>
+            <b:includable id='postMetadataJSONImage'>
+  &quot;image&quot;: {
+    &quot;@type&quot;: &quot;ImageObject&quot;,
+    <b:if cond='data:post.featuredImage.isResizable'>
+    &quot;url&quot;: &quot;<b:eval expr='resizeImage(data:post.featuredImage, 1200, &quot;1200:630&quot;)'/>&quot;,
+    &quot;height&quot;: 630,
+    &quot;width&quot;: 1200
+    <b:else/>
+    &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/w1200/&quot;,
+    &quot;height&quot;: 348,
+    &quot;width&quot;: 1200
+    </b:if>
+  },
+</b:includable>
+            <b:includable id='postMetadataJSONPublisher'>
+ &quot;publisher&quot;: {
+    &quot;@type&quot;: &quot;Organization&quot;,
+    &quot;name&quot;: &quot;Blogger&quot;,
+    &quot;logo&quot;: {
+      &quot;@type&quot;: &quot;ImageObject&quot;,
+      &quot;url&quot;: &quot;https://blogger.googleusercontent.com/img/b/U2hvZWJveA/AVvXsEgfMvYAhAbdHksiBA24JKmb2Tav6K0GviwztID3Cq4VpV96HaJfy0viIu8z1SSw_G9n5FQHZWSRao61M3e58ImahqBtr7LiOUS6m_w59IvDYwjmMcbq3fKW4JSbacqkbxTo8B90dWp0Cese92xfLMPe_tg11g/h60/&quot;,
+      &quot;width&quot;: 206,
+      &quot;height&quot;: 60
+    }
+  },
+</b:includable>
+            <b:includable id='postPagination'>
+  <div class='blog-pager container' id='blog-pager'>
+    <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+    <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+    <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+  </div>
+</b:includable>
+            <b:includable id='postReactions'>
+  <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+            <b:includable id='postRow' var='post'>
+              <article class='gg-entry-row' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-url='data:post.url'>
+                <h2 class='gg-entry-row__title'>
+                  <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__title-trigger' data-gg-open='preview' type='button'><data:post.title/></button>
+                </h2>
+
+                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-copy='listing.details' data-gg-open='preview' type='button'>Details</button>
+              </article>
+            </b:includable>
+            <b:includable id='postShareButtons'>
+  <div class='byline post-share-buttons goog-inline-block'>
+    <b:with value='data:sharingId ?: ((data:widget.instanceId ?: &quot;sharing&quot;) + &quot;-&quot; + (data:regionName ?: &quot;byline&quot;) + &quot;-&quot; + data:post.id)' var='sharingId'>
+      <!-- Note: 'sharingButtons' includable is from the default Sharing widget markup. -->
+      <b:include data='{                                                sharingId: data:sharingId,                                                originalUrl: data:post.url,                                                platforms: data:this.sharing.platforms,                                                shareUrl: data:post.shareUrl,                                                shareTitle: data:post.title,                                              }' name='sharingButtons'/>
+    </b:with>
+  </div>
+</b:includable>
+            <b:includable id='postTimestamp'>
+  <span class='byline post-timestamp'>
+    <data:byline.label/>
+    <b:if cond='data:post.url'>
+      <meta expr:content='data:post.url.canonical'/>
+      <a class='timestamp-link' expr:href='data:post.url' rel='bookmark' title='permanent link'>
+        <time class='published' expr:datetime='data:post.date.iso8601' expr:title='data:post.date.iso8601'>
+          <data:post.date/>
+        </time>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+            <b:includable id='postTitle' var='post'>
+  <a expr:name='data:post.id'/>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title entry-title'>
+      <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+        <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+      <b:else/>
+        <data:post.title/>
+      </b:if>
+    </h3>
+  </b:if>
+</b:includable>
+            <b:includable id='previousPageLink'>
+  <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+    <data:messages.newerPosts/>
+  </a>
+</b:includable>
+            <b:includable id='sharingButton'>
+  <span expr:aria-label='data:platform.shareMessage' expr:class='&quot;sharing-platform-button sharing-element-&quot; + data:platform.key' expr:data-href='data:shareUrl + &quot;&amp;target=&quot; + data:platform.target' expr:data-url='data:originalUrl' expr:title='data:platform.shareMessage' role='menuitem' tabindex='-1'>
+    <b:include name='sharingPlatformIcon'/>
+    <span class='platform-sharing-text'><data:platform.name/></span>
+  </span>
+</b:includable>
+            <b:includable id='sharingButtonContent'>
+  <div class='flat-icon-button ripple'>
+    <b:include name='shareIcon'/>
+  </div>
+</b:includable>
+            <b:includable id='sharingButtons'>
+  <div class='sharing' expr:aria-owns='&quot;sharing-popup-&quot; + data:sharingId' expr:data-title='data:shareTitle'>
+    <button class='sharing-button touch-icon-button' expr:aria-controls='&quot;sharing-popup-&quot; + data:sharingId' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-button-&quot; + data:sharingId' role='button'>
+      <b:include name='sharingButtonContent'/>
+    </button>
+    <b:include name='sharingButtonsMenu'/>
+  </div>
+</b:includable>
+            <b:includable id='sharingButtonsMenu'>
+  <div class='share-buttons-container'>
+    <ul aria-hidden='true' class='share-buttons hidden' expr:aria-label='data:messages.share.escaped' expr:id='&quot;sharing-popup-&quot; + data:sharingId' role='menu'>
+      <b:loop values='(data:platforms ?: data:blog.sharing.platforms) filter (p =&gt; p.key not in {&quot;blogThis&quot;})' var='platform'>
+        <li>
+          <b:include name='sharingButton'/>
+        </li>
+      </b:loop>
+      <li aria-hidden='true' class='hidden'>
+        <b:include name='otherSharingButton'/>
+      </li>
+    </ul>
+  </div>
+</b:includable>
+            <b:includable id='sharingPlatformIcon'>
+  <b:include data='{ iconClass: (&quot;touch-icon sharing-&quot; + data:platform.key) }' expr:name='data:platform.key + &quot;Icon&quot;'/>
+</b:includable>
+            <b:includable id='threadedCommentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+            <b:includable id='threadedCommentJs' var='post'>
+  <script async='async' expr:src='data:post.commentSrc' type='text/javascript'/>
+  <b:template-script inline='true' name='threaded_comments'/>
+  <script type='text/javascript'>
+    blogger.widgets.blog.initThreadedComments(
+        <data:post.commentJso/>,
+        <data:post.commentMsgs/>,
+        <data:post.commentConfig/>);
+  </script>
+</b:includable>
+            <b:includable id='threadedComments' var='post'>
+  <section class='comments threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+
+    <b:include name='commentsTitle'/>
+
+    <div class='comments-content'>
+      <b:if cond='data:post.embedCommentForm'>
+        <b:include data='post' name='threadedCommentJs'/>
+      </b:if>
+      <div id='comment-holder'>
+         <data:post.commentHtml/>
+      </div>
+    </div>
+
+    <p class='comment-footer'>
+      <b:if cond='data:post.allowNewComments'>
+        <b:include data='post' name='threadedCommentForm'/>
+      <b:else/>
+        <data:post.noNewCommentsText/>
+      </b:if>
+      <b:if cond='data:post.showManageComments'>
+        <b:include data='post' name='manageComments'/>
+      </b:if>
+    </p>
+
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+            <b:includable id='tooltipCss'>
+  <!-- LINT.IfChange -->
+  <style>
+    .post-body a.b-tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip {
+      display: block !important;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-20%, 1px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip iframe {
+      width: 200px;
+      height: 198px;
+      max-width: none;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (hover: hover) {
+      .post-body a.b-tooltip-container:hover .b-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
+</b:includable>
+          </b:widget>
+        </b:section>
+      </main>
+    </div>
+
+    <nav aria-labelledby='gg-dock-title' class='gg-dock' data-gg-module='gg-dock' id='gg-dock'>
+      <span class='gg-visually-hidden' data-gg-copy='navigation.primary' id='gg-dock-title'>Primary navigation</span>
+      <a class='gg-dock__item' data-gg-nav='home' href='/landing'>
+        <span aria-hidden='true' class='gg-icon'>home_app_logo</span>
+        <span class='gg-dock__label' data-gg-copy='dock.home'>Home</span>
+      </a>
+      <a class='gg-dock__item' data-gg-nav='contact' href='/landing#contact'>
+        <span aria-hidden='true' class='gg-icon'>calendar_add_on</span>
+        <span class='gg-dock__label' data-gg-copy='dock.contact'>Contact</span>
+      </a>
+      <button aria-controls='gg-command-panel' aria-expanded='false' class='gg-dock__item' data-gg-focus='command' data-gg-nav='search' data-gg-panel-trigger='command' type='button'>
+        <span aria-hidden='true' class='gg-icon'>explore</span>
+        <span class='gg-dock__label' data-gg-copy='dock.search'>Search</span>
+      </button>
+      <a class='gg-dock__item' data-gg-nav='blog' href='/'>
+        <span aria-hidden='true' class='gg-icon'>newsmode</span>
+        <span class='gg-dock__label' data-gg-copy='dock.blog'>Blog</span>
+      </a>
+      <button aria-controls='gg-more-panel' aria-expanded='false' class='gg-dock__item' data-gg-nav='more' data-gg-open='more' type='button'>
+        <span aria-hidden='true' class='gg-icon'>menu</span>
+        <span class='gg-dock__label' data-gg-copy='dock.more'>More</span>
+      </button>
+    </nav>
+
+    <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='command' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-command-panel'>
+      <button class='gg-sheet__scrim' data-gg-close='command' type='button'>
+        <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
+      </button>
+      <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-discovery'>
+        <div class='gg-sheet__head'>
+          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='command'/>
+          <h2 class='gg-sheet__title' data-gg-copy='command.title' id='gg-command-title'>Discover</h2>
+        </div>
+        <div class='gg-discovery__controls'>
+        <form class='gg-discovery-search' expr:action='data:blog.searchUrl' id='gg-command-sheet-form' method='get' role='search'>
+          <label class='gg-visually-hidden' data-gg-copy='command.inputLabel' for='gg-command-sheet-input'>Search articles and topics</label>
+          <input aria-controls='gg-discovery-body' aria-expanded='false' autocomplete='off' class='gg-discovery-search__field' data-gg-copy-placeholder='command.placeholder' data-gg-panel-trigger='command' id='gg-command-sheet-input' name='q' placeholder='Search articles and topics' spellcheck='false' type='search'/>
+        </form>
+        <div aria-label='Discovery modes' class='gg-discovery-tabs' data-gg-copy-aria-label='command.tabs.label' role='tablist'>
+          <button aria-controls='gg-discovery-panel-results' aria-selected='true' class='gg-discovery-tab' data-gg-command-tab='results' id='gg-discovery-tab-results' role='tab' type='button'>
+            <span data-gg-copy='command.tabs.results'>Results</span>
+          </button>
+          <button aria-controls='gg-discovery-panel-topics' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='topics' id='gg-discovery-tab-topics' role='tab' type='button'>
+            <span data-gg-copy='command.tabs.topics'>Topics</span>
+          </button>
+        </div>
+        </div>
+        <div class='gg-discovery__body' id='gg-discovery-body'>
+          <section aria-labelledby='gg-discovery-tab-results' class='gg-discovery-view gg-discovery-view--results' id='gg-discovery-panel-results' role='tabpanel'>
+            <div class='gg-discovery-context' hidden='hidden' id='gg-discovery-context'>
+              <div class='gg-discovery-context__meta'>
+                <span class='gg-discovery-context__eyebrow' data-gg-copy='command.results.activeTopic'>Active topic</span>
+                <strong class='gg-discovery-context__title' id='gg-discovery-context-title'/>
+              </div>
+              <button class='gg-discovery-context__action' data-gg-copy='command.results.backToTopics' data-gg-topic-back='true' id='gg-discovery-context-back' type='button'>Back to topics</button>
+              <button class='gg-discovery-context__action' data-gg-copy='command.results.clearTopic' data-gg-topic-clear='true' id='gg-discovery-context-clear' type='button'>Clear topic</button>
+              <a class='gg-discovery-context__archive' data-gg-copy='command.results.openArchive' hidden='hidden' href='#' id='gg-discovery-context-archive'>Open archive</a>
+            </div>
+            <div class='gg-discovery-results' id='gg-discovery-results' role='listbox'/>
+          </section>
+          <section aria-labelledby='gg-discovery-tab-topics' class='gg-discovery-view gg-discovery-view--topics' hidden='hidden' id='gg-discovery-panel-topics' role='tabpanel'>
+            <div class='gg-discovery-topics' id='gg-discovery-topics'/>
+          </section>
+        </div>
+        <template id='gg-discovery-result-template'>
+          <button class='gg-discovery-result' role='option' type='button'>
+            <span class='gg-discovery-result__type' data-gg-template-part='type'/>
+            <strong class='gg-discovery-result__title' data-gg-template-part='title'/>
+            <span class='gg-discovery-result__meta' data-gg-template-part='meta'/>
+          </button>
+        </template>
+        <template id='gg-discovery-empty-template'>
+          <p class='gg-discovery-empty' data-gg-template-part='text'/>
+        </template>
+        <template id='gg-discovery-topic-template'>
+          <div class='gg-discovery-topic'>
+            <button aria-pressed='false' class='gg-discovery-topic__apply' data-gg-template-part='apply' type='button'>
+              <span class='gg-discovery-topic__name' data-gg-template-part='name'/>
+              <span class='gg-discovery-topic__meta' data-gg-template-part='meta'/>
+            </button>
+            <a class='gg-discovery-topic__archive' data-gg-template-part='archive' href='#'>Open archive</a>
+          </div>
+        </template>
+        <template id='gg-discovery-topic-group-template'>
+          <section class='gg-discovery-topic-group'>
+            <button aria-expanded='false' class='gg-discovery-topic-group__toggle' data-gg-template-part='toggle' type='button'>
+              <span data-gg-template-part='group-key'/>
+              <span class='gg-discovery-topic-group__meta'>
+                <span data-gg-template-part='group-count'/>
+                <span aria-hidden='true' class='gg-discovery-topic-group__glyph gg-icon'>chevron_right</span>
+              </span>
+            </button>
+            <div class='gg-discovery-topic-group__list' data-gg-template-part='list' hidden='hidden'/>
+          </section>
+        </template>
+        </div>
+      </section>
+    </div>
+
+    <div class='gg-preview gg-sheet gg-sheet--top' data-gg-edge='top' data-gg-panel='preview' data-gg-panel-family='content-sheet' data-gg-state='closed' hidden='hidden' id='gg-preview-sheet'>
+      <button class='gg-sheet__scrim' data-gg-close='preview' type='button'>
+        <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
+      </button>
+      <section aria-labelledby='gg-preview-title' aria-modal='true' class='gg-content-sheet gg-preview__sheet gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-content-sheet__body gg-preview__body'>
+           <div class='gg-preview__media' hidden='hidden' id='gg-preview-media'>
+            <img alt='' id='gg-preview-image' loading='lazy' src=''/>
+          </div>
+          <header class='gg-content-sheet__content-head gg-preview__content-head'>
+            <h2 class='gg-preview__title' data-gg-copy='preview.titleFallback' id='gg-preview-title'>Article preview</h2>
+            <p class='gg-preview__summary' id='gg-preview-summary'/>
+          </header>
+          <div class='gg-preview__meta' id='gg-preview-meta'/>
+          <p class='gg-preview__taxonomy' hidden='hidden' id='gg-preview-taxonomy'>
+            <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
+            <span class='gg-taxonomy' id='gg-preview-taxonomy-items'/>
+          </p>
+          <section class='gg-preview__toc' id='gg-preview-toc'>
+            <h3 class='gg-preview__section-title' data-gg-copy='preview.contents'>Contents</h3>
+            <p class='gg-preview__status' data-gg-copy='preview.preparing' id='gg-preview-status'>Preparing preview&#8230;</p>
+            <ol class='gg-preview__toc-list' id='gg-preview-toc-list'/>
+          </section>
+          <template id='gg-preview-meta-item-template'>
+            <span class='gg-preview__meta-item'>
+              <span class='gg-meta__cue' data-gg-template-part='cue'/>
+              <span class='gg-meta__value' data-gg-template-part='value'/>
+            </span>
+          </template>
+          <template id='gg-preview-meta-separator-template'>
+            <span aria-hidden='true' class='gg-meta__cue'>&#183;</span>
+          </template>
+          <template id='gg-preview-taxonomy-item-template'>
+            <span class='gg-taxonomy__item'>
+              <a class='gg-taxonomy__link' data-gg-template-part='link' hidden='hidden' href='#'/>
+              <span class='gg-taxonomy__link' data-gg-template-part='text' hidden='hidden'/>
+            </span>
+          </template>
+          <template id='gg-preview-toc-item-template'>
+            <li class='gg-preview__toc-item'>
+              <a class='gg-preview__toc-link' data-gg-template-part='link' hidden='hidden' href='#'/>
+              <span class='gg-preview__toc-link' data-gg-template-part='text' hidden='hidden'/>
+            </li>
+          </template>
+        </div>
+        <div class='gg-preview__footer'>
+            <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
+          </div>
+        <div class='gg-content-sheet__affordance gg-preview__affordance'>
+          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='preview'/>
+        </div>
+      </section>
+    </div>
+
+    <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='more' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-more-panel'>
+      <button class='gg-sheet__scrim' data-gg-close='more' type='button'>
+        <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
+      </button>
+      <section aria-labelledby='gg-more-title' aria-modal='true' class='gg-more-sheet gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-sheet__head'>
+          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='more'/>
+          <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
+        </div>
+
+        <div class='gg-more-list'>
+          <a class='gg-more-list__link' data-gg-copy='more.blog' href='/'>Blog</a>
+          <a class='gg-more-list__link' data-gg-copy='more.search' expr:href='data:blog.searchUrl'>Search</a>
+          <a class='gg-more-list__link' data-gg-copy='more.sitemap' href='/sitemap.xml'>Sitemap</a>
+          <a class='gg-more-list__link' data-gg-copy='more.rss' href='/feeds/posts/default?alt=rss'>RSS</a>
+        </div>
+
+        <div class='gg-langswitch' data-gg-module='language'>
+          <p class='gg-langswitch__title' data-gg-copy='language.label' id='gg-language-title'>Language</p>
+          <div aria-labelledby='gg-language-title' class='gg-langswitch__actions' role='group'>
+            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.en' data-gg-lang-option='en' type='button'>EN</button>
+            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.id' data-gg-lang-option='id' type='button'>ID</button>
+          </div>
+        </div>
+        <div class='gg-appearance' data-gg-module='appearance'>
+          <p class='gg-appearance__title' data-gg-copy='appearance.label' id='gg-appearance-title'>Appearance</p>
+          <div aria-labelledby='gg-appearance-title' class='gg-appearance__actions' role='group'>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
+            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
+          </div>
+        </div>
+        <footer class='gg-more-footer'>
+          <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
+            <span class='gg-visually-hidden' data-gg-copy='more.channelsLabel' id='gg-more-footer-social-title'>Share site</span>
+            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'>X</a>
+            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'>Fb</a>
+            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'>Wa</a>
+          </div>
+          <small class='gg-more-footer__legal' data-gg-copy='more.rights'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
+        </footer>
+      </section>
+    </div>
+
+        <!-- GG non-critical app JS moved out of critical HTML. -->
+    <script defer='defer' src='/__gg/assets/js/gg-app.dev.js'></script>
+  </body>
+</html>
