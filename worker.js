@@ -99,7 +99,7 @@ const STATIC_ROUTE_ASSET_MAP = new Map([
   [LANDING_PUBLIC_PATH, LANDING_INTERNAL_PATH],
   [STORE_PUBLIC_PATH, STORE_INTERNAL_PATH],
 ]);
-
+const GG_ASSET_PREFIX = "/__gg/assets/";
 const AI_AND_TRAINING_BOTS = [
   "gptbot",
   "oai-searchbot",
@@ -374,6 +374,7 @@ function classifyRoute(request) {
   if (path === "/offline.html") return "offline";
   if (path === "/manifest.webmanifest") return "manifest";
   if (path === FLAGS_CANONICAL_PATH || path === FLAGS_LEGACY_PATH) return "flags";
+  if (path.startsWith(GG_ASSET_PREFIX)) return "asset";
   if (path.startsWith("/__gg/")) return "diagnostic";
   if (path.startsWith("/assets/v/")) return "versioned-asset";
   if (path.startsWith("/assets/latest/")) return "latest-asset";
@@ -399,6 +400,7 @@ function isHtmlContentType(contentType) {
 
 function shouldServeStaticFromAssets(pathname) {
   if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return true;
+  if (pathname.startsWith(GG_ASSET_PREFIX)) return true;
   if (pathname.startsWith("/gg-pwa-icon/")) return true;
   if (pathname.startsWith("/assets/")) return true;
   return false;
@@ -1173,7 +1175,25 @@ async function handleFlagsRoute(request, flags) {
 async function handleRobotsRoute(request, flags) {
   return withResponsePolicy(textResponse(buildRobotsTxt(request, flags), { contentType: "text/plain; charset=utf-8" }), request, flags, { route: "robots" });
 }
+if (url.pathname.startsWith(GG_ASSET_PREFIX)) {
+  const staticResponse = await serveFromAssets(request, env, url.pathname);
 
+  return withResponsePolicy(staticResponse, request, flags, {
+    route: "asset",
+    headers: {
+      "Content-Type": url.pathname.endsWith(".css")
+        ? "text/css; charset=utf-8"
+        : url.pathname.endsWith(".js")
+          ? "application/javascript; charset=utf-8"
+          : staticResponse.headers.get("content-type") || "application/octet-stream"
+    }
+  });
+}
+if (url.pathname.startsWith("/__gg/")) {
+  return withResponsePolicy(await handleDiagnostics(request, flags), request, flags, {
+    route: "diagnostic"
+  });
+}
 async function handleRequest(request, env, ctx) {
   const flags = await loadFlags(env);
   const url = new URL(request.url);

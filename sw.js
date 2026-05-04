@@ -673,7 +673,9 @@
           cache: 'no-store'
         });
       }
-
+      if (url.pathname.startsWith('/__gg/assets/')) {
+        return fetch(request, { cache: 'no-store' });
+      }
       if (request.mode === 'navigate') {
         return navigationResponse(event, request, url, flags);
       }
