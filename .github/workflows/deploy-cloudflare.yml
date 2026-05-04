@@ -215,7 +215,37 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npm run gaga:cf:deploy
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cloudflare-build/public/__gg/assets/css
+          mkdir -p .cloudflare-build/public/__gg/assets/js
+
+          if [ -f "dist/assets/css/gg-app.dev.css" ]; then
+            cp dist/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          elif [ -f "__gg/assets/css/gg-app.dev.css" ]; then
+            cp __gg/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          else
+            echo "Missing gg-app.dev.css immediately before deploy" >&2
+            exit 1
+          fi
+
+          if [ -f "dist/assets/js/gg-app.dev.js" ]; then
+            cp dist/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+          elif [ -f "__gg/assets/js/gg-app.dev.js" ]; then
+            cp __gg/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+          else
+            echo "Missing gg-app.dev.js immediately before deploy" >&2
+            exit 1
+          fi
+
+          test -s .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
+          test -s .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
+
+          echo "Final Cloudflare asset tree before deploy:"
+          find .cloudflare-build/public/__gg -maxdepth 5 -type f -print
+
+          npx --yes wrangler deploy
 
       - name: Post-deploy live worker smoke
         env:
