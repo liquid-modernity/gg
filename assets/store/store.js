@@ -507,6 +507,7 @@
     };
     var storeManifestCache = null;
     var storeManifestPromise = null;
+    var initialCategoryFilter = initialStoreCategoryFilter();
 
     var state = {
       products: [],
@@ -517,7 +518,8 @@
       discoveryPrice: 'all',
       discoverySort: 'recommended',
       query: '',
-      filter: 'all',
+      filter: initialCategoryFilter || 'all',
+      routeFilter: initialCategoryFilter,
       semanticCategory: '',
       intent: '',
       currentPreviewItem: null,
@@ -604,6 +606,10 @@
     function queryFlag(name) {
       try { return new URLSearchParams(window.location.search || '').get(name) === '1'; }
       catch (error) { return false; }
+    }
+    function initialStoreCategoryFilter() {
+      var key = app ? clean(app.getAttribute('data-store-category-key')).toLowerCase() : '';
+      return key && PUBLIC_FILTERS.indexOf(key) > -1 && key !== 'all' ? key : '';
     }
     function copy(key) { return (COPY[normalizeLocale(state.locale)] && COPY[normalizeLocale(state.locale)][key]) || COPY.id[key] || key; }
     function setScopedCopy(root) {
@@ -1733,10 +1739,11 @@
     }
     function applyFilters() {
       var q = lower(state.query);
+      var activeFilter = state.routeFilter || state.filter;
       state.filtered = state.products.filter(function (item) {
         var hay = productSearchHaystack(item);
         var matchesQuery = !q || hay.indexOf(q) !== -1;
-        var matchesFilter = state.filter === 'all' || item.filter === state.filter || lower(item.category) === state.filter;
+        var matchesFilter = activeFilter === 'all' || item.filter === activeFilter || lower(item.category) === activeFilter;
         var matchesIntent = !state.intent || matchIntent(item, state.intent);
         return matchesQuery && matchesFilter && matchesIntent;
       });
@@ -2487,7 +2494,7 @@
     }
     function setFilter(filter) {
       state.intent = '';
-      state.filter = PUBLIC_FILTERS.indexOf(filter) > -1 ? filter : 'all';
+      state.filter = state.routeFilter || (PUBLIC_FILTERS.indexOf(filter) > -1 ? filter : 'all');
       state.visibleLimit = initialVisibleLimit();
       state.hasLoadedMore = false;
       applyFilters();
@@ -2702,7 +2709,7 @@
       button.addEventListener('click', function () {
         state.intent = button.getAttribute('data-store-intent') || '';
         state.query = '';
-        state.filter = 'all';
+        state.filter = state.routeFilter || 'all';
         if (discoverySearch) discoverySearch.value = '';
         state.visibleLimit = initialVisibleLimit();
         state.hasLoadedMore = false;
@@ -2817,6 +2824,7 @@
           discoveryPrice: state.discoveryPrice,
           discoverySort: state.discoverySort,
           filter: state.filter,
+          routeFilter: state.routeFilter,
           intent: state.intent,
           query: state.query,
           saved: state.saved.length,

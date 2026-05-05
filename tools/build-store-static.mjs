@@ -14,6 +14,8 @@ import {
 } from "../src/store/store.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
 import { buildStoreManifest } from "../src/store/lib/build-store-manifest.mjs";
+import { renderCategoryPage } from "../src/store/lib/render-category-page.mjs";
+import { CATEGORY_PAGE_SIZE, productsForCategory, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
 import { extractFeedProducts } from "../src/store/lib/extract-feed-products.mjs";
 import { extractScriptTextById, extractStaticProductsFromStoreHtml } from "../src/store/lib/extract-static-products.mjs";
 import {
@@ -107,6 +109,7 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     manifestBytes: Number(sourceReport.manifestBytes || 0),
     manifestItems: Number(sourceReport.manifestItems || 0),
     manifestCategories: Array.isArray(sourceReport.manifestCategories) ? sourceReport.manifestCategories : [],
+    categoryPages: Array.isArray(sourceReport.categoryPages) ? sourceReport.categoryPages : [],
     status,
     pageCount: Number(sourceReport.pageCount || 0),
     error: clean(error),
@@ -868,11 +871,27 @@ const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_STAR
 const manifest = buildStoreManifest(products, { source });
 const manifestContent = normalizeTextFile(JSON.stringify(manifest, null, 2));
 const manifestBytes = Buffer.byteLength(manifestContent, "utf8");
+const categoryPageSummary = storeCategoryRoutes().map((route) => {
+  const categoryProducts = productsForCategory(products, route.key);
+  return {
+    key: route.key,
+    label: route.label,
+    path: route.path,
+    canonicalUrl: route.canonicalUrl,
+    outputPath: route.nestedOutputPath,
+    flatOutputPath: route.flatOutputPath,
+    totalProducts: categoryProducts.length,
+    visibleProducts: Math.min(categoryProducts.length, CATEGORY_PAGE_SIZE),
+    pageSize: CATEGORY_PAGE_SIZE,
+    needsPagination: categoryProducts.length > CATEGORY_PAGE_SIZE,
+  };
+});
 
 report.manifestPath = STORE_MANIFEST_REPORT_PATH;
 report.manifestBytes = manifestBytes;
 report.manifestItems = manifest.items.length;
 report.manifestCategories = manifest.categories.map((entry) => ({ ...entry }));
+report.categoryPages = categoryPageSummary.map((entry) => ({ ...entry }));
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
 writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
@@ -892,6 +911,17 @@ nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_RUNTIME_JS_ST
 
 if (nextStoreSource !== originalStoreSource) {
   writeFileSync(STORE_PATH, nextStoreSource, "utf8");
+}
+
+for (const route of storeCategoryRoutes()) {
+  const categoryPage = renderCategoryPage({
+    template: nextStoreSource,
+    products,
+    categoryKey: route.key,
+    report,
+  });
+  writeTextFile(path.resolve(ROOT, categoryPage.route.nestedOutputPath), categoryPage.html);
+  writeTextFile(path.resolve(ROOT, categoryPage.route.flatOutputPath), categoryPage.html);
 }
 
 writeMachineReport(buildMachineReport({

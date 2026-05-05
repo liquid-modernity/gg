@@ -30,7 +30,13 @@ function specificOfferMeta(product) {
   return null;
 }
 
-export function buildStoreJsonLd(products) {
+export function buildStoreJsonLd(products, options = {}) {
+  const routeUrl = clean(options.routeUrl) || STORE_ROUTE_URL;
+  const collectionId = clean(options.collectionId) || STORE_COLLECTION_ID;
+  const itemListId = clean(options.itemListId) || STORE_ITEMLIST_ID;
+  const collectionName = clean(options.collectionName) || "Yellow Cart";
+  const itemListName = clean(options.itemListName) || "Yellow Cart product picks";
+  const description = clean(options.description) || STORE_SCHEMA_DESCRIPTION;
   const itemListElements = products.map((product, index) => {
     const item = {
       "@type": "Product",
@@ -86,19 +92,19 @@ export function buildStoreJsonLd(products) {
       },
       {
         "@type": "CollectionPage",
-        "@id": STORE_COLLECTION_ID,
-        name: "Yellow Cart",
-        url: STORE_ROUTE_URL,
+        "@id": collectionId,
+        name: collectionName,
+        url: routeUrl,
         isPartOf: { "@id": STORE_WEBSITE_ID },
         publisher: { "@id": STORE_ORGANIZATION_ID },
-        description: STORE_SCHEMA_DESCRIPTION,
-        mainEntity: { "@id": STORE_ITEMLIST_ID },
+        description,
+        mainEntity: { "@id": itemListId },
       },
       {
         "@type": "ItemList",
-        "@id": STORE_ITEMLIST_ID,
-        name: "Yellow Cart product picks",
-        url: `${STORE_ORIGIN}${STORE_PATHNAME}`,
+        "@id": itemListId,
+        name: itemListName,
+        url: routeUrl || `${STORE_ORIGIN}${STORE_PATHNAME}`,
         numberOfItems: products.length,
         itemListOrder: "https://schema.org/ItemListOrderDescending",
         itemListElement: itemListElements,

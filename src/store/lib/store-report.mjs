@@ -57,6 +57,9 @@ export function formatStoreReport(report) {
   const manifestCategorySummary = Array.isArray(report.manifestCategories)
     ? report.manifestCategories.map((entry) => `${entry.label || entry.key}:${Number(entry.count || 0)}`).join(", ")
     : "";
+  const categoryPageSummary = Array.isArray(report.categoryPages)
+    ? report.categoryPages.map((entry) => `${entry.path}:${Number(entry.visibleProducts || 0)}/${Number(entry.totalProducts || 0)}`).join(", ")
+    : "";
   const removed = report.removedInvalidProducts.length
     ? report.removedInvalidProducts.map((entry) => `${entry.slug || entry.name || "unknown"} [${entry.reason}]`).join("; ")
     : "none";
@@ -74,6 +77,7 @@ export function formatStoreReport(report) {
     Number.isFinite(report.manifestBytes) ? `manifestBytes=${report.manifestBytes}` : "",
     Number.isFinite(report.manifestItems) ? `manifestItems=${report.manifestItems}` : "",
     manifestCategorySummary ? `manifestCategories=${manifestCategorySummary}` : "",
+    categoryPageSummary ? `categoryPages=${categoryPageSummary}` : "",
     `removedInvalidProducts=${removed}`,
     `duplicateSlugs=${duplicates}`,
     `warnings=${warnings}`,

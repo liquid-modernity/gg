@@ -14,6 +14,7 @@ import { STORE_MANIFEST_VERSION } from "../src/store/lib/build-store-manifest.mj
 import { CATEGORY_CONFIG, CATEGORY_ORDER, categoryCounts } from "../src/store/lib/category-config.mjs";
 import { extractMarkedRegion, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
 import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../src/store/lib/normalize-store-product.mjs";
+import { CATEGORY_PAGE_SIZE, productCategoryKey, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
 import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
 
 const ROOT = process.cwd();
@@ -112,6 +113,19 @@ function manifestCategoryMap(categories = []) {
     map.set(String(entry?.key || ""), entry || {});
   }
   return map;
+}
+
+function validateInlineRuntimeScripts(pageSource, pageLabel) {
+  const tags = scriptTags(pageSource);
+  for (const tag of tags) {
+    const src = tagAttr(tag, "src");
+    const type = String(tagAttr(tag, "type") || "").toLowerCase();
+    const body = tagBody(tag).trim();
+    if (src || !body) continue;
+    if (type === "application/ld+json" || type === "application/json") continue;
+    if (isThemeBootScript(body)) continue;
+    fail(`${pageLabel}: unexpected inline runtime JavaScript remains`);
+  }
 }
 
 let mode = "development";
@@ -514,6 +528,145 @@ if (staticProducts.length) {
       if (String(product.category || "") === "Etc") fail(`ListItem ${index + 1} still uses public category Etc`);
       if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) fail(`ListItem ${index + 1} emitted Offer for search-style marketplace URL`);
       if (product.offers?.seller?.name === "PakRPP") fail(`ListItem ${index + 1} Offer seller must not be PakRPP`);
+    }
+  }
+}
+
+if (staticProducts.length) {
+  const categoryPageSeenSlugs = new Map();
+  const categoryExpectedCounts = categoryCounts(staticProducts);
+
+  for (const route of storeCategoryRoutes()) {
+    const nestedPath = path.resolve(TARGET_ROOT, route.nestedOutputPath);
+    const flatPath = path.resolve(TARGET_ROOT, route.flatOutputPath);
+    const pageLabel = `category page ${route.path}`;
+
+    if (!existsSync(nestedPath)) {
+      reportDrift(`${pageLabel}: artifact is missing at ${path.relative(ROOT, nestedPath) || nestedPath}`);
+      continue;
+    }
+    if (!existsSync(flatPath)) {
+      reportDrift(`${pageLabel}: transitional flat artifact is missing at ${path.relative(ROOT, flatPath) || flatPath}`);
+    }
+
+    const pageSource = readFileSync(nestedPath, "utf8");
+    const pageStaticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
+    const pageGridRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
+    const pageSemanticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
+    const pageJsonLdRegion = extractMarkedRegion(pageSource, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
+    let pageProducts = [];
+    let pageSchema = null;
+
+    if (/\bdummy\b/i.test(pageSource)) fail(`${pageLabel}: contains dummy`);
+    if (/\bEtc\b/.test(pageSource)) fail(`${pageLabel}: contains public category Etc`);
+    if (pageSource.includes(STORE_MANIFEST_VERSION)) fail(`${pageLabel}: manifest is inlined`);
+    if (!pageStaticRegion) fail(`${pageLabel}: missing static products markers`);
+    if (!pageGridRegion) fail(`${pageLabel}: missing static grid markers`);
+    if (!pageSemanticRegion) fail(`${pageLabel}: missing semantic product markers`);
+    if (!pageJsonLdRegion) fail(`${pageLabel}: missing ItemList JSON-LD markers`);
+
+    if (!new RegExp(`<title>\\s*${route.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*<\\/title>`, "i").test(pageSource)) {
+      fail(`${pageLabel}: title is missing category context`);
+    }
+    if (!new RegExp(`rel=["']canonical["'][^>]*href=["']${route.canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "i").test(pageSource)) {
+      fail(`${pageLabel}: canonical is wrong or missing`);
+    }
+    if (!new RegExp(`<meta\\s+property=["']og:url["'][^>]*content=["']${route.canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "i").test(pageSource)) {
+      fail(`${pageLabel}: OG URL is wrong or missing`);
+    }
+    if (/<title>\s*Yellow Cart · PakRPP\s*<\/title>/i.test(pageSource)) {
+      fail(`${pageLabel}: title duplicates /store title`);
+    }
+    if (!new RegExp(`<h1[^>]*>\\s*${route.h1.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*<\\/h1>`, "i").test(pageSource)) {
+      fail(`${pageLabel}: H1 is wrong or missing`);
+    }
+    if (!/class=["'][^"']*store-category-page-rail[^"']*["']/.test(pageSource)) {
+      fail(`${pageLabel}: category rail is missing`);
+    }
+    for (const expectedRoute of storeCategoryRoutes()) {
+      if (!pageSource.includes(`href="${expectedRoute.path}"`)) fail(`${pageLabel}: category rail misses ${expectedRoute.path}`);
+    }
+    if (!pageSource.includes('href="/store"')) fail(`${pageLabel}: link back to /store is missing`);
+    if (!pageSource.includes(`data-store-category-key="${route.key}"`)) fail(`${pageLabel}: runtime category key is missing`);
+    if (countOccurrences(pageSource, STORE_ASSET_CSS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
+    if (countOccurrences(pageSource, STORE_ASSET_JS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_JS_HREF} reference`);
+    if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(pageSource)) {
+      fail(`${pageLabel}: misses deferred ${STORE_ASSET_JS_HREF}`);
+    }
+    validateInlineRuntimeScripts(pageSource, pageLabel);
+    if (/function\s+readStaticProducts\(/.test(pageSource) || /function\s+loadProducts\(/.test(pageSource)) {
+      fail(`${pageLabel}: full runtime JavaScript is inlined`);
+    }
+
+    try {
+      pageProducts = extractStaticProductsFromStoreHtml(pageSource).map((product) => normalizeStoreProduct(product));
+    } catch (error) {
+      fail(`${pageLabel}: invalid static products JSON: ${error.message}`);
+    }
+    try {
+      pageSchema = parseJsonScript(pageSource, "store-itemlist-jsonld");
+    } catch (error) {
+      fail(`${pageLabel}: invalid ItemList JSON-LD: ${error.message}`);
+    }
+
+    const expectedCount = Math.min(Number(categoryExpectedCounts[route.key] || 0), CATEGORY_PAGE_SIZE);
+    if (!pageProducts.length) fail(`${pageLabel}: has no visible products`);
+    if (pageProducts.length !== expectedCount) {
+      fail(`${pageLabel}: visible product count (${pageProducts.length}) does not match category count (${expectedCount})`);
+    }
+    if (pageProducts.length > CATEGORY_PAGE_SIZE) {
+      fail(`${pageLabel}: includes more than ${CATEGORY_PAGE_SIZE} products`);
+    }
+
+    for (const product of pageProducts) {
+      if (productCategoryKey(product) !== route.key) {
+        fail(`${pageLabel}: contains product from wrong category (${product.slug || product.name || "unknown"})`);
+      }
+      if (categoryPageSeenSlugs.has(product.slug)) {
+        fail(`${pageLabel}: duplicate product slug across category pages (${product.slug})`);
+      } else {
+        categoryPageSeenSlugs.set(product.slug, route.key);
+      }
+    }
+
+    const pageCards = pageGridRegion.match(/data-store-product-id=/g) || [];
+    const pageNotes = pageSemanticRegion.match(/class=["']store-semantic-product["']/g) || [];
+    if (pageCards.length !== pageProducts.length) {
+      fail(`${pageLabel}: grid count (${pageCards.length}) does not match static products (${pageProducts.length})`);
+    }
+    if (pageNotes.length !== pageProducts.length) {
+      fail(`${pageLabel}: semantic note count (${pageNotes.length}) does not match static products (${pageProducts.length})`);
+    }
+
+    const pageGraph = graphNodes(pageSchema);
+    const pageCollection = findGraphNode(pageGraph, "CollectionPage", "#collection");
+    const pageItemList = findGraphNode(pageGraph, "ItemList", "#itemlist") || findGraphNode(pageGraph, "ItemList");
+    if (!pageCollection) fail(`${pageLabel}: JSON-LD is missing CollectionPage`);
+    if (!pageItemList) fail(`${pageLabel}: JSON-LD is missing ItemList`);
+    if (pageCollection && String(pageCollection.url || "") !== route.canonicalUrl) {
+      fail(`${pageLabel}: CollectionPage URL is wrong (${pageCollection.url || "missing"})`);
+    }
+    if (pageCollection && pageItemList && String(pageCollection.mainEntity?.["@id"] || "") !== String(pageItemList["@id"] || "")) {
+      fail(`${pageLabel}: CollectionPage mainEntity does not reference category ItemList`);
+    }
+    if (pageItemList) {
+      const entries = Array.isArray(pageItemList.itemListElement) ? pageItemList.itemListElement : [];
+      if (String(pageItemList.url || "") !== route.canonicalUrl) fail(`${pageLabel}: ItemList URL is wrong (${pageItemList.url || "missing"})`);
+      if (Number(pageItemList.numberOfItems) !== pageProducts.length) {
+        fail(`${pageLabel}: ItemList numberOfItems (${pageItemList.numberOfItems}) does not match visible products (${pageProducts.length})`);
+      }
+      if (entries.length !== pageProducts.length) {
+        fail(`${pageLabel}: ItemList item count (${entries.length}) does not match visible products (${pageProducts.length})`);
+      }
+      for (const [index, entry] of entries.entries()) {
+        const product = entry?.item || {};
+        if (product.category && product.category !== route.label) {
+          fail(`${pageLabel}: JSON-LD product ${index + 1} has wrong category (${product.category})`);
+        }
+        if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) {
+          fail(`${pageLabel}: JSON-LD product ${index + 1} emitted Offer for search-style marketplace URL`);
+        }
+      }
     }
   }
 }

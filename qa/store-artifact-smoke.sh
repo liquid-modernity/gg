@@ -181,6 +181,38 @@ if ! node -e '
   log_fail "store manifest is invalid: ${target_store_manifest}"
 fi
 
+if ! node -e '
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const root = process.argv[1];
+  const categories = [
+    ["fashion", "Fashion", "Fashion Picks · Yellow Cart"],
+    ["skincare", "Skincare", "Skincare Picks · Yellow Cart"],
+    ["workspace", "Workspace", "Workspace Picks · Yellow Cart"],
+    ["tech", "Tech", "Tech Picks · Yellow Cart"],
+    ["everyday", "Lainnya", "Everyday Picks · Yellow Cart"],
+  ];
+  for (const [key, label, title] of categories) {
+    const nested = path.join(root, "store", key, "index.html");
+    const flat = path.join(root, `store-${key}.html`);
+    if (!fs.existsSync(nested) || !fs.existsSync(flat)) process.exit(10);
+    const html = fs.readFileSync(nested, "utf8");
+    if (!html.includes(`<title>${title}</title>`)) process.exit(11);
+    if (!html.includes(`href="https://www.pakrpp.com/store/${key}"`)) process.exit(12);
+    if (!html.includes(`data-store-category-key="${key}"`)) process.exit(13);
+    if (!html.includes("store-category-page-rail")) process.exit(14);
+    if (!html.includes("href=\"/assets/store/store.css\"") || !/src="\/assets\/store\/store\.js"[^>]*defer/.test(html)) process.exit(15);
+    if (/\bEtc\b|\bdummy\b/i.test(html)) process.exit(16);
+    const match = html.match(/<script\b[^>]*id="store-static-products"[^>]*>([\s\S]*?)<\/script>/i);
+    if (!match) process.exit(17);
+    const products = JSON.parse(match[1]);
+    if (!Array.isArray(products) || products.length < 1 || products.length > 48) process.exit(18);
+    if (products.some((product) => String(product.categoryKey || "") !== key || String(product.category || "") !== label)) process.exit(19);
+  }
+' "$target_root" >/dev/null 2>&1; then
+  log_fail "store category artifacts are invalid or missing"
+fi
+
 if ! node "$proof_tool" "$target_file"; then
   log_fail "tools/proof-store-static.mjs failed for $target_file"
 fi
