@@ -46,7 +46,9 @@ const registryFiles = [
 
 const optionalDirs = [
   "assets",
+  "__gg/assets",
   "gg-pwa-icon",
+  "store",
 ];
 
 function rel(file) {

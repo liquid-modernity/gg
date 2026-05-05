@@ -7,6 +7,7 @@ BASE_URL="${1:-https://www.pakrpp.com}"
 BASE_URL="${BASE_URL%/}"
 UA="Mozilla/5.0 (gg-live-smoke-worker)"
 PROOF_TOOL="tools/proof-store-static.mjs"
+STORE_MANIFEST_SOURCE="store/data/manifest.json"
 LIVE_RETRIES="${GG_LIVE_RETRIES:-3}"
 LIVE_RETRY_DELAY_SECONDS="${GG_LIVE_RETRY_DELAY_SECONDS:-3}"
 LIVE_TIMEOUT_SECONDS="${GG_LIVE_TIMEOUT_SECONDS:-30}"
@@ -765,7 +766,7 @@ check_store_split_assets() {
 check_store_route() {
   local headers_file="$tmp_dir/store_headers.txt"
   local body_file="$tmp_dir/store_body.html"
-  local meta final status release_header fingerprint_header robots_header store_source_header store_static_header store_cache_header dock_snippet preload_snippet grid_snippet saved_marker proof_output
+  local proof_root manifest_dir manifest_file meta final status release_header fingerprint_header robots_header store_source_header store_static_header store_cache_header dock_snippet preload_snippet grid_snippet saved_marker proof_output
   current_failure_scope="route"
   meta="$(fetch_body "/store" "$body_file" "$headers_file")"
   log_route_timing "/store" "$meta" "$headers_file"
@@ -914,7 +915,17 @@ check_store_route() {
     log_info "/store non-production header still carries lockdown robots as expected (${robots_header})"
   fi
 
-  if ! proof_output="$(node "$PROOF_TOOL" "$body_file" 2>&1)"; then
+  proof_root="$tmp_dir"
+  manifest_dir="$proof_root/store/data"
+  manifest_file="$manifest_dir/manifest.json"
+  mkdir -p "$manifest_dir"
+  if [[ -f "$STORE_MANIFEST_SOURCE" ]]; then
+    cp "$STORE_MANIFEST_SOURCE" "$manifest_file"
+  else
+    log_fail "local store manifest is missing at ${STORE_MANIFEST_SOURCE}"
+  fi
+
+  if ! proof_output="$(STORE_PROOF_ALLOW_REPORT_DRIFT=1 node "$PROOF_TOOL" "$body_file" 2>&1)"; then
     log_fail "/store static proof failed"
     printf '%s\n' "$proof_output"
   else

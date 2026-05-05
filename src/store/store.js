@@ -95,6 +95,23 @@
         featuredLabel: 'Unggulan',
         latestLabel: 'Terbaru',
         under500Label: 'Di bawah 500k',
+        priceFiltersLabel: 'Harga',
+        sortLabel: 'Urutkan',
+        priceAllLabel: 'Semua harga',
+        priceUnder50Label: '<50k',
+        price50To100Label: '50k-100k',
+        price100To200Label: '100k-200k',
+        price200To500Label: '200k-500k',
+        priceOver500Label: '>500k',
+        priceUnknownLabel: 'Tanpa harga',
+        sortRecommendedLabel: 'Rekomendasi',
+        sortNewestLabel: 'Terbaru',
+        sortPriceAscLabel: 'Harga naik',
+        sortPriceDescLabel: 'Harga turun',
+        sortAzLabel: 'A-Z',
+        intentDailyLabel: 'Harian',
+        intentTravelLabel: 'Travel',
+        intentWorkspaceLabel: 'Workspace',
         moreTitle: 'Lainnya',
         navigateLabel: 'Navigasi',
         languageLabel: 'Bahasa',
@@ -209,6 +226,23 @@
         featuredLabel: 'Featured',
         latestLabel: 'Latest',
         under500Label: 'Under 500k',
+        priceFiltersLabel: 'Price',
+        sortLabel: 'Sort',
+        priceAllLabel: 'All prices',
+        priceUnder50Label: '<50k',
+        price50To100Label: '50k-100k',
+        price100To200Label: '100k-200k',
+        price200To500Label: '200k-500k',
+        priceOver500Label: '>500k',
+        priceUnknownLabel: 'No price',
+        sortRecommendedLabel: 'Recommended',
+        sortNewestLabel: 'Newest',
+        sortPriceAscLabel: 'Price asc',
+        sortPriceDescLabel: 'Price desc',
+        sortAzLabel: 'A-Z',
+        intentDailyLabel: 'Daily',
+        intentTravelLabel: 'Travel',
+        intentWorkspaceLabel: 'Workspace',
         moreTitle: 'More',
         navigateLabel: 'Navigate',
         languageLabel: 'Language',
@@ -282,6 +316,8 @@
 
     var STORE_CANONICAL_ORIGIN = 'https://www.pakrpp.com';
     var STORE_CANONICAL_PATH = '/store';
+    var STORE_MANIFEST_URL = '/store/data/manifest.json';
+    var STORE_MANIFEST_VERSION = 'store-manifest-v1';
     var STORE_WEBSITE_ID = STORE_CANONICAL_ORIGIN + '/#website';
     var STORE_ORGANIZATION_ID = STORE_CANONICAL_ORIGIN + '/#organization';
     var STORE_COLLECTION_ID = STORE_CANONICAL_ORIGIN + STORE_CANONICAL_PATH + '#collection';
@@ -379,6 +415,8 @@
       }
     };
     var PUBLIC_FILTERS = Object.keys(STORE_CATEGORY_CONFIG);
+    var DISCOVERY_PRICE_BANDS = ['all', 'under-50k', '50k-100k', '100k-200k', '200k-500k', 'over-500k', 'unknown'];
+    var DISCOVERY_SORTS = ['recommended', 'newest', 'price-asc', 'price-desc', 'az'];
     var STORE_FILTER_ICON_MAP = Object.keys(STORE_CATEGORY_CONFIG).reduce(function (out, key) {
       out[key] = STORE_CATEGORY_CONFIG[key].icon;
       return out;
@@ -433,6 +471,8 @@
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
+    var priceBandButtons = [].slice.call(document.querySelectorAll('[data-store-price-band]'));
+    var sortButtons = [].slice.call(document.querySelectorAll('[data-store-sort]'));
     var filterButtons = [].slice.call(document.querySelectorAll('[data-store-filter]'));
     var langButtons = [].slice.call(document.querySelectorAll('[data-store-lang]'));
     var themeButtons = [].slice.call(document.querySelectorAll('[data-store-theme]'));
@@ -465,10 +505,17 @@
         tokopedia: document.getElementById('store-link-tokopedia')
       }
     };
+    var storeManifestCache = null;
+    var storeManifestPromise = null;
 
     var state = {
       products: [],
       filtered: [],
+      discoveryItems: [],
+      discoveryFiltered: [],
+      discoveryManifestState: 'idle',
+      discoveryPrice: 'all',
+      discoverySort: 'recommended',
       query: '',
       filter: 'all',
       semanticCategory: '',
@@ -549,6 +596,11 @@
     function text(node) { return node && typeof node.$t === 'string' ? node.$t : ''; }
     function arr(value) { return Array.isArray(value) ? value : (value ? [value] : []); }
     function lower(value) { return clean(value).toLowerCase(); }
+    function searchText(value) {
+      var out = lower(value);
+      if (typeof out.normalize === 'function') out = out.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+      return out;
+    }
     function queryFlag(name) {
       try { return new URLSearchParams(window.location.search || '').get(name) === '1'; }
       catch (error) { return false; }
@@ -1103,6 +1155,8 @@
       [].slice.call(document.querySelectorAll('[data-copy-aria]')).forEach(function (node) { node.setAttribute('aria-label', copy(node.getAttribute('data-copy-aria'))); });
       [].slice.call(document.querySelectorAll('[data-copy-title]')).forEach(function (node) { node.setAttribute('title', copy(node.getAttribute('data-copy-title'))); });
       [].slice.call(document.querySelectorAll('[data-copy-value]')).forEach(function (node) { node.value = copy(node.getAttribute('data-copy-value')); });
+      if (discoverySearch) discoverySearch.setAttribute('aria-label', copy('searchPlaceholder'));
+      if (discoveryStatus) discoveryStatus.setAttribute('aria-live', 'polite');
       langButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-lang') === state.locale ? 'true' : 'false'); });
       document.documentElement.lang = normalizeLocale(state.locale);
       setPreviewCopyState(preview.copy && preview.copy.getAttribute('data-copy-state') === 'copied' ? 'copied' : 'idle');
@@ -1392,6 +1446,7 @@
         setSkeletonVisible(false);
         renderCards();
         renderSemanticProducts();
+        applyDiscoveryFilters();
         updateCategoryContext();
         updateItemListJsonLd([]);
         app.setAttribute('data-store-state', 'error');
@@ -1414,6 +1469,261 @@
       if (!num) return 0;
       return isK ? num * 1000 : num;
     }
+    function priceBandForPrice(value) {
+      var amount = typeof value === 'number' ? value : parsePriceValue(value);
+      if (!Number.isFinite(amount) || amount <= 0) return 'unknown';
+      if (amount < 50000) return 'under-50k';
+      if (amount < 100000) return '50k-100k';
+      if (amount < 200000) return '100k-200k';
+      if (amount < 500000) return '200k-500k';
+      return 'over-500k';
+    }
+    function normalizeDiscoveryList(value) {
+      return cleanTextList(value).map(slugify).filter(Boolean);
+    }
+    function validateStoreManifest(payload) {
+      var items;
+      var countValue;
+      var required = ['slug', 'name', 'categoryKey', 'categoryLabel', 'url', 'storeUrl', 'image'];
+      if (!payload || typeof payload !== 'object') throw new Error('manifest-shape');
+      if (clean(payload.version) !== STORE_MANIFEST_VERSION) throw new Error('manifest-version');
+      if (!Array.isArray(payload.items)) throw new Error('manifest-items');
+      countValue = Number(payload.count);
+      items = payload.items;
+      if (!Number.isFinite(countValue) || countValue !== items.length) throw new Error('manifest-count');
+      items.forEach(function (item, index) {
+        required.forEach(function (field) {
+          if (!clean(item && item[field])) throw new Error('manifest-item-' + index + '-' + field);
+        });
+      });
+      return payload;
+    }
+    function loadStoreManifest() {
+      if (storeManifestCache) return Promise.resolve(storeManifestCache);
+      if (storeManifestPromise) return storeManifestPromise;
+      if (!window.fetch) return Promise.reject(new Error('manifest-fetch-unavailable'));
+      storeManifestPromise = fetch(STORE_MANIFEST_URL, { credentials: 'same-origin', cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('manifest-http-' + res.status);
+        return res.json();
+      }).then(function (payload) {
+        storeManifestCache = validateStoreManifest(payload);
+        return storeManifestCache;
+      }).catch(function (error) {
+        storeManifestPromise = null;
+        throw error;
+      });
+      return storeManifestPromise;
+    }
+    function normalizeDiscoveryCategoryKey(value, label) {
+      var key = lower(value);
+      if (STORE_CATEGORY_CONFIG[key] && key !== 'all') return key;
+      return publicFilter(label || value);
+    }
+    function normalizeManifestDiscoveryItem(raw) {
+      var price = Number(raw && raw.price ? raw.price : 0);
+      var categoryKey = normalizeDiscoveryCategoryKey(raw && raw.categoryKey, raw && raw.categoryLabel);
+      var image = absoluteUrl(raw && raw.image) || clean(raw && raw.image) || PLACEHOLDER_IMAGE;
+      var sort = raw && raw.sort && typeof raw.sort === 'object' ? raw.sort : {};
+      var sortPrice = Number(sort.price || price || 0);
+      if (!Number.isFinite(price)) price = parsePriceValue(raw && raw.priceText);
+      if (!Number.isFinite(sortPrice)) sortPrice = price || 0;
+      return {
+        id: clean(raw && (raw.url || raw.storeUrl || raw.slug)),
+        slug: slugify(raw && raw.slug),
+        name: clean(raw && raw.name),
+        title: clean(raw && raw.name),
+        url: absoluteUrl(raw && raw.url),
+        canonicalUrl: absoluteUrl(raw && raw.url),
+        storeUrl: absoluteUrl(raw && raw.storeUrl) || storeAbsoluteUrl(slugify(raw && raw.slug)),
+        labels: [],
+        category: clean(raw && raw.categoryLabel) || categoryLocaleValue('title', categoryKey),
+        categoryKey: categoryKey,
+        filter: categoryKey,
+        summary: clean(raw && raw.summary),
+        priceText: clean(raw && raw.priceText) || 'Rp—',
+        price: price > 0 ? price : 0,
+        priceBand: DISCOVERY_PRICE_BANDS.indexOf(clean(raw && raw.priceBand)) > -1 ? clean(raw && raw.priceBand) : priceBandForPrice(price),
+        images: [image],
+        tags: normalizeDiscoveryList(raw && raw.tags).slice(0, 8),
+        intent: normalizeDiscoveryList(raw && raw.intent).slice(0, 8),
+        datePublished: clean(raw && raw.datePublished),
+        dateModified: clean(raw && raw.dateModified),
+        published: dateLabel((raw && raw.dateModified) || (raw && raw.datePublished)),
+        updated: dateLabel(raw && raw.dateModified),
+        sort: {
+          name: searchText(sort.name || (raw && raw.name)),
+          date: clean(sort.date || (raw && raw.dateModified) || (raw && raw.datePublished)),
+          price: sortPrice > 0 ? sortPrice : price,
+          score: Number(sort.score || 0) || 0
+        }
+      };
+    }
+    function fallbackIntentForItem(item) {
+      var categoryKey = normalizeDiscoveryCategoryKey(item && item.filter, item && item.category);
+      var hay = searchText([
+        categoryKey,
+        item && item.category,
+        item && item.useCase,
+        item && item.geoContext,
+        cleanTextList(item && item.tags).join(' '),
+        cleanTextList(item && item.bestFor).join(' ')
+      ].join(' '));
+      var values = [];
+      if (categoryKey === 'fashion') values.push('daily');
+      else if (categoryKey === 'skincare') values.push('skincare-routine');
+      else if (categoryKey === 'workspace') values.push('workspace');
+      else if (categoryKey === 'tech') values.push('portable');
+      else values.push('daily');
+      if (hay.indexOf('travel') > -1 || hay.indexOf('commute') > -1) values.push('travel');
+      if (hay.indexOf('workwear') > -1 || hay.indexOf('office') > -1) values.push('workwear');
+      if (hay.indexOf('wfh') > -1 || hay.indexOf('remote') > -1) values.push('wfh');
+      if (hay.indexOf('hydration') > -1 || hay.indexOf('moistur') > -1) values.push('hydration');
+      if (hay.indexOf('cable') > -1) values.push('cable-management');
+      if (hay.indexOf('compact') > -1 || hay.indexOf('slim') > -1) values.push('compact');
+      return values.filter(function (value, index) { return value && values.indexOf(value) === index; }).slice(0, 8);
+    }
+    function normalizeFallbackDiscoveryItem(item) {
+      var categoryKey = normalizeDiscoveryCategoryKey(item && item.filter, item && item.category);
+      var image = arr(item && item.images)[0] || PLACEHOLDER_IMAGE;
+      var price = Number(item && item.price ? item.price : 0) || priceNumber(item && item.priceText);
+      return {
+        id: itemKey(item),
+        slug: slugify(item && item.slug),
+        name: displayProductTitle(item),
+        title: displayProductTitle(item),
+        url: canonicalProductUrl(item),
+        canonicalUrl: canonicalProductUrl(item),
+        storeUrl: productStoreAbsoluteUrl(item),
+        labels: arr(item && item.labels).map(clean).filter(Boolean),
+        category: clean(item && item.category) || categoryLocaleValue('title', categoryKey),
+        categoryKey: categoryKey,
+        filter: categoryKey,
+        summary: previewSummaryText(item),
+        priceText: clean(item && item.priceText) || 'Rp—',
+        price: price > 0 ? price : 0,
+        priceBand: priceBandForPrice(price),
+        images: [image],
+        tags: normalizeDiscoveryList(item && item.tags).slice(0, 8),
+        intent: fallbackIntentForItem(item),
+        datePublished: clean(item && item.datePublished),
+        dateModified: clean(item && item.dateModified),
+        published: clean(item && item.published),
+        updated: clean(item && item.updated),
+        sort: {
+          name: searchText(displayProductTitle(item)),
+          date: clean((item && item.dateModified) || (item && item.datePublished) || (item && item.updated) || (item && item.published)),
+          price: price > 0 ? price : 0,
+          score: 0
+        },
+        sourceProduct: item
+      };
+    }
+    function fallbackDiscoveryItems() {
+      return (state.products || []).map(normalizeFallbackDiscoveryItem).filter(function (item) {
+        return !!(item && item.slug && item.title);
+      });
+    }
+    function discoverySourceItems() {
+      if (state.discoveryManifestState === 'ready') return state.discoveryItems;
+      return fallbackDiscoveryItems();
+    }
+    function discoverySearchHaystack(item) {
+      return searchText([
+        item && (item.name || item.title),
+        item && (item.categoryLabel || item.category),
+        item && item.summary,
+        cleanTextList(item && item.tags).join(' '),
+        cleanTextList(item && item.intent).join(' '),
+        item && item.priceText
+      ].join(' '));
+    }
+    function discoveryDateValue(item) {
+      var raw = clean(item && item.sort && item.sort.date) || clean(item && item.dateModified) || clean(item && item.datePublished);
+      var parsed = raw ? Date.parse(raw) : 0;
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+    function discoveryNameValue(item) {
+      return searchText((item && item.sort && item.sort.name) || (item && (item.name || item.title)) || '');
+    }
+    function discoveryPriceValue(item) {
+      var value = Number(item && item.sort && item.sort.price ? item.sort.price : item && item.price);
+      return Number.isFinite(value) && value > 0 ? value : 0;
+    }
+    function discoveryRecommendedCompare(a, b) {
+      var scoreDiff = (Number(b && b.sort && b.sort.score) || 0) - (Number(a && a.sort && a.sort.score) || 0);
+      if (scoreDiff) return scoreDiff;
+      return discoveryDateValue(b) - discoveryDateValue(a) || discoveryNameValue(a).localeCompare(discoveryNameValue(b));
+    }
+    function sortDiscoveryItems(items) {
+      var sort = DISCOVERY_SORTS.indexOf(state.discoverySort) > -1 ? state.discoverySort : 'recommended';
+      var rows = (items || []).slice();
+      if (sort === 'newest') return rows.sort(function (a, b) {
+        return discoveryDateValue(b) - discoveryDateValue(a) || discoveryNameValue(a).localeCompare(discoveryNameValue(b));
+      });
+      if (sort === 'price-asc') return rows.sort(function (a, b) {
+        var ap = discoveryPriceValue(a) || Number.POSITIVE_INFINITY;
+        var bp = discoveryPriceValue(b) || Number.POSITIVE_INFINITY;
+        return ap - bp || discoveryNameValue(a).localeCompare(discoveryNameValue(b));
+      });
+      if (sort === 'price-desc') return rows.sort(function (a, b) {
+        return discoveryPriceValue(b) - discoveryPriceValue(a) || discoveryNameValue(a).localeCompare(discoveryNameValue(b));
+      });
+      if (sort === 'az') return rows.sort(function (a, b) {
+        return discoveryNameValue(a).localeCompare(discoveryNameValue(b));
+      });
+      return rows.sort(discoveryRecommendedCompare);
+    }
+    function matchDiscoveryIntent(item, intent) {
+      var normalized = slugify(intent);
+      var intents = normalizeDiscoveryList(item && item.intent);
+      if (!normalized) return true;
+      if (normalized === 'featured') return (Number(item && item.sort && item.sort.score) || 0) > 0 || discoverySearchHaystack(item).indexOf('pilihan') > -1;
+      if (normalized === 'latest') return true;
+      if (normalized === 'under500') return discoveryPriceValue(item) > 0 && discoveryPriceValue(item) <= 500000;
+      return intents.indexOf(normalized) > -1;
+    }
+    function applyDiscoveryFilters() {
+      var q = searchText(state.query);
+      var priceFilter = DISCOVERY_PRICE_BANDS.indexOf(state.discoveryPrice) > -1 ? state.discoveryPrice : 'all';
+      state.discoveryFiltered = discoverySourceItems().filter(function (item) {
+        var categoryKey = normalizeDiscoveryCategoryKey(item && (item.categoryKey || item.filter), item && item.category);
+        var matchesQuery = !q || discoverySearchHaystack(item).indexOf(q) !== -1;
+        var matchesFilter = state.filter === 'all' || categoryKey === state.filter;
+        var matchesPrice = priceFilter === 'all' || clean(item && item.priceBand) === priceFilter;
+        var matchesIntent = matchDiscoveryIntent(item, state.intent);
+        return matchesQuery && matchesFilter && matchesPrice && matchesIntent;
+      });
+      state.discoveryFiltered = sortDiscoveryItems(state.discoveryFiltered);
+      renderDiscoveryResults();
+      updateDiscoveryCounts();
+      updateChipState();
+    }
+    function updateDiscoveryCounts() {
+      var unit = productUnit();
+      var active = state.query || state.filter !== 'all' || state.intent || state.discoveryPrice !== 'all' || state.discoverySort !== 'recommended';
+      if (!discoveryStatus) return;
+      if (state.discoveryManifestState === 'loading' && !state.discoveryFiltered.length) {
+        setNodeText(discoveryStatus, copy('countLoading'));
+        return;
+      }
+      setNodeText(discoveryStatus, active ? (state.discoveryFiltered.length + ' ' + unit) : copy('allVisible'));
+    }
+    function ensureDiscoveryManifest() {
+      if (state.discoveryManifestState === 'ready' || state.discoveryManifestState === 'loading' || state.discoveryManifestState === 'fallback') return;
+      state.discoveryManifestState = 'loading';
+      applyDiscoveryFilters();
+      loadStoreManifest().then(function (manifest) {
+        state.discoveryItems = manifest.items.map(normalizeManifestDiscoveryItem).filter(function (item) {
+          return !!(item && item.slug && item.title);
+        });
+        state.discoveryManifestState = 'ready';
+        applyDiscoveryFilters();
+      }).catch(function () {
+        state.discoveryItems = [];
+        state.discoveryManifestState = 'fallback';
+        applyDiscoveryFilters();
+      });
+    }
     function matchIntent(item, intent) {
       var hay = productSearchHaystack(item);
       if (intent === 'featured') return hay.indexOf('featured') > -1 || hay.indexOf('curated') > -1 || hay.indexOf('pilihan') > -1;
@@ -1434,7 +1744,7 @@
       else state.filtered = prioritizeConfiguredLcpProduct(state.filtered);
       renderCards();
       renderSemanticProducts();
-      renderDiscoveryResults();
+      applyDiscoveryFilters();
       renderSavedResults();
       updateCategoryContext();
       updateItemListJsonLd(state.filtered);
@@ -1455,11 +1765,20 @@
       if (app.getAttribute('data-store-state') === 'loading') { setNodeText(count, copy('countLoading')); return; }
       setNodeText(count, state.filtered.length + ' ' + unit);
       setNodeText(source, state.query || state.filter !== 'all' ? copy('filterActive') : (state.feedSource === 'legacy' ? copy('feedLegacy') : (state.feedSource === 'static' ? copy('feedStatic') : copy('feedStore'))));
-      setNodeText(discoveryStatus, state.query || state.filter !== 'all' || state.intent ? (state.filtered.length + ' ' + unit) : copy('allVisible'));
+      updateDiscoveryCounts();
     }
     function updateChipState() {
       filterButtons.forEach(function (button) {
         button.setAttribute('aria-pressed', button.getAttribute('data-store-filter') === state.filter ? 'true' : 'false');
+      });
+      quickIntentButtons.forEach(function (button) {
+        button.setAttribute('aria-pressed', slugify(button.getAttribute('data-store-intent')) === slugify(state.intent) ? 'true' : 'false');
+      });
+      priceBandButtons.forEach(function (button) {
+        button.setAttribute('aria-pressed', button.getAttribute('data-store-price-band') === state.discoveryPrice ? 'true' : 'false');
+      });
+      sortButtons.forEach(function (button) {
+        button.setAttribute('aria-pressed', button.getAttribute('data-store-sort') === state.discoverySort ? 'true' : 'false');
       });
     }
     function titleCase(value) {
@@ -1536,7 +1855,7 @@
       img.src = item.images[0] || PLACEHOLDER_IMAGE;
       img.alt = displayTitle;
       title.textContent = displayTitle;
-      meta.textContent = [item.category, item.priceText].filter(Boolean).join(' · ');
+      meta.textContent = [item.category, item.priceText, action === 'preview' ? item.summary : ''].filter(Boolean).join(' · ');
 
       return node;
     }
@@ -1568,7 +1887,7 @@
     }
     function renderDiscoveryResults() {
       if (!discoveryResults) return;
-      var rows = state.filtered.slice(0, 8);
+      var rows = state.discoveryFiltered.slice(0, 8);
       var fragment = document.createDocumentFragment();
       if (rows.length) {
         rows.forEach(function (item, index) {
@@ -2126,7 +2445,9 @@
 
     function openDiscovery(trigger) {
       if (discoverySearch) discoverySearch.value = state.query;
+      applyDiscoveryFilters();
       openPanel('discovery', trigger, { focusTarget: discoverySearch, selectText: true });
+      ensureDiscoveryManifest();
     }
     function scrollToStoreTarget(targetId, nextUrl) {
       var target = document.getElementById(targetId) || document.getElementById('store-grid');
@@ -2249,6 +2570,15 @@
       openPanel('preview', trigger || document.activeElement);
       syncPreviewUrl(item);
     }
+    function previewItemForDiscovery(item) {
+      if (!item) return null;
+      return item.sourceProduct || findItemBySlug(item.slug);
+    }
+    function navigateToDiscoveryItem(item) {
+      var target = productStoreUrl(item) || canonicalProductUrl(item);
+      if (!target) return;
+      window.location.assign(target);
+    }
 
     grid.addEventListener('click', function (event) {
       var trigger = event.target.closest('[data-store-open-preview]');
@@ -2281,9 +2611,11 @@
       var row = event.target.closest('[data-store-result-index]');
       if (!row) return;
       var index = Number(row.getAttribute('data-store-result-index'));
-      var item = state.filtered[index];
+      var item = state.discoveryFiltered[index];
+      var previewItem = previewItemForDiscovery(item);
       closePanel('discovery', { restoreFocus: false });
-      openPreviewItem(item, row);
+      if (previewItem) openPreviewItem(previewItem, row);
+      else navigateToDiscoveryItem(item);
     });
     if (savedResults) savedResults.addEventListener('click', function (event) {
       var removeButton = event.target.closest('[data-store-remove-saved]');
@@ -2377,6 +2709,20 @@
         applyFilters();
       });
     });
+    priceBandButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var next = button.getAttribute('data-store-price-band') || 'all';
+        state.discoveryPrice = DISCOVERY_PRICE_BANDS.indexOf(next) > -1 ? next : 'all';
+        applyDiscoveryFilters();
+      });
+    });
+    sortButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var next = button.getAttribute('data-store-sort') || 'recommended';
+        state.discoverySort = DISCOVERY_SORTS.indexOf(next) > -1 ? next : 'recommended';
+        applyDiscoveryFilters();
+      });
+    });
     closeButtons.forEach(function (button) {
       button.addEventListener('click', function () { closePanel(button.getAttribute('data-store-close')); });
     });
@@ -2466,6 +2812,10 @@
         return {
           products: state.products.length,
           filtered: state.filtered.length,
+          discoveryFiltered: state.discoveryFiltered.length,
+          discoveryManifestState: state.discoveryManifestState,
+          discoveryPrice: state.discoveryPrice,
+          discoverySort: state.discoverySort,
           filter: state.filter,
           intent: state.intent,
           query: state.query,

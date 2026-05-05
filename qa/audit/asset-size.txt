@@ -1,0 +1,5 @@
+ 72K	index.xml
+ 64K	__gg/assets/css/gg-app.dev.css
+240K	__gg/assets/js/gg-app.dev.js
+ 64K	dist/assets/css/gg-app.dev.css
+240K	dist/assets/js/gg-app.dev.js

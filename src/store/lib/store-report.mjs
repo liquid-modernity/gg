@@ -54,6 +54,9 @@ export function formatStoreReport(report) {
   const categorySummary = CATEGORY_ORDER
     .map((key) => `${CATEGORY_CONFIG[key].label}:${report.categoryCounts[CATEGORY_CONFIG[key].label] || 0}`)
     .join(", ");
+  const manifestCategorySummary = Array.isArray(report.manifestCategories)
+    ? report.manifestCategories.map((entry) => `${entry.label || entry.key}:${Number(entry.count || 0)}`).join(", ")
+    : "";
   const removed = report.removedInvalidProducts.length
     ? report.removedInvalidProducts.map((entry) => `${entry.slug || entry.name || "unknown"} [${entry.reason}]`).join("; ")
     : "none";
@@ -67,8 +70,12 @@ export function formatStoreReport(report) {
     `invalidProducts=${Number(report.invalidProducts || 0)}`,
     `imageSourceSummary=${report.imageSourceSummary || formatImageSourceSummary(report.imageSources)}`,
     `categoryCounts=${categorySummary}`,
+    report.manifestPath ? `manifestPath=${report.manifestPath}` : "",
+    Number.isFinite(report.manifestBytes) ? `manifestBytes=${report.manifestBytes}` : "",
+    Number.isFinite(report.manifestItems) ? `manifestItems=${report.manifestItems}` : "",
+    manifestCategorySummary ? `manifestCategories=${manifestCategorySummary}` : "",
     `removedInvalidProducts=${removed}`,
     `duplicateSlugs=${duplicates}`,
     `warnings=${warnings}`,
-  ];
+  ].filter(Boolean);
 }

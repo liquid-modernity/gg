@@ -1,0 +1,710 @@
+{
+  "version": "store-manifest-v1",
+  "generatedAt": "2026-05-05T20:18:27.788Z",
+  "source": "existing-static",
+  "count": 20,
+  "categories": [
+    {
+      "key": "fashion",
+      "label": "Fashion",
+      "count": 4,
+      "path": "/store/fashion"
+    },
+    {
+      "key": "skincare",
+      "label": "Skincare",
+      "count": 4,
+      "path": "/store/skincare"
+    },
+    {
+      "key": "workspace",
+      "label": "Workspace",
+      "count": 4,
+      "path": "/store/workspace"
+    },
+    {
+      "key": "tech",
+      "label": "Tech",
+      "count": 4,
+      "path": "/store/tech"
+    },
+    {
+      "key": "everyday",
+      "label": "Lainnya",
+      "count": 4,
+      "path": "/store/everyday"
+    }
+  ],
+  "items": [
+    {
+      "slug": "foldable-reusable-bag",
+      "name": "Foldable Reusable Bag",
+      "categoryKey": "everyday",
+      "categoryLabel": "Lainnya",
+      "price": 39000,
+      "priceText": "Rp39.000",
+      "priceBand": "under-50k",
+      "summary": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar.",
+      "image": "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=foldable-reusable-bag",
+      "tags": [
+        "reusable-bag",
+        "foldable-bag",
+        "daily-errands",
+        "backup-bag"
+      ],
+      "intent": [
+        "daily",
+        "travel",
+        "portable"
+      ],
+      "datePublished": "2026-05-04",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "foldable reusable bag",
+        "date": "2026-05-04",
+        "price": 39000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "braided-fast-charging-cable",
+      "name": "Braided Fast Charging Cable",
+      "categoryKey": "tech",
+      "categoryLabel": "Tech",
+      "price": 49000,
+      "priceText": "Rp49.000",
+      "priceBand": "under-50k",
+      "summary": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa.",
+      "image": "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=braided-fast-charging-cable",
+      "tags": [
+        "charging-cable",
+        "braided-cable",
+        "tech-accessory",
+        "daily-carry"
+      ],
+      "intent": [
+        "portable",
+        "travel",
+        "daily",
+        "workspace",
+        "cable-management",
+        "campus"
+      ],
+      "datePublished": "2026-05-04",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "braided fast charging cable",
+        "date": "2026-05-04",
+        "price": 49000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "compact-cable-box",
+      "name": "Compact Cable Box",
+      "categoryKey": "workspace",
+      "categoryLabel": "Workspace",
+      "price": 99000,
+      "priceText": "Rp99.000",
+      "priceBand": "50k-100k",
+      "summary": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih.",
+      "image": "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=compact-cable-box",
+      "tags": [
+        "cable-box",
+        "cable-management",
+        "desk-setup",
+        "charging-corner"
+      ],
+      "intent": [
+        "workspace",
+        "workwear",
+        "wfh",
+        "cable-management",
+        "compact"
+      ],
+      "datePublished": "2026-05-04",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "compact cable box",
+        "date": "2026-05-04",
+        "price": 99000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "slim-card-holder",
+      "name": "Slim Card Holder",
+      "categoryKey": "everyday",
+      "categoryLabel": "Lainnya",
+      "price": 59000,
+      "priceText": "Rp59.000",
+      "priceBand": "50k-100k",
+      "summary": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil.",
+      "image": "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=slim-card-holder",
+      "tags": [
+        "card-holder",
+        "minimal-wallet",
+        "daily-carry",
+        "small-bag"
+      ],
+      "intent": [
+        "daily",
+        "portable",
+        "campus",
+        "compact"
+      ],
+      "datePublished": "2026-05-03",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "slim card holder",
+        "date": "2026-05-04",
+        "price": 59000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "quiet-wireless-mouse",
+      "name": "Quiet Wireless Mouse",
+      "categoryKey": "tech",
+      "categoryLabel": "Tech",
+      "price": 89000,
+      "priceText": "Rp89.000",
+      "priceBand": "50k-100k",
+      "summary": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu.",
+      "image": "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=quiet-wireless-mouse",
+      "tags": [
+        "wireless-mouse",
+        "silent-mouse",
+        "laptop-accessory",
+        "quiet-workspace"
+      ],
+      "intent": [
+        "portable",
+        "daily",
+        "study",
+        "workspace",
+        "cable-management",
+        "compact"
+      ],
+      "datePublished": "2026-05-03",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "quiet wireless mouse",
+        "date": "2026-05-04",
+        "price": 89000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "soft-desk-mat",
+      "name": "Soft Desk Mat",
+      "categoryKey": "workspace",
+      "categoryLabel": "Workspace",
+      "price": 79000,
+      "priceText": "Rp79.000",
+      "priceBand": "50k-100k",
+      "summary": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang.",
+      "image": "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=soft-desk-mat",
+      "tags": [
+        "desk-mat",
+        "mouse-pad",
+        "minimal-desk",
+        "workspace-setup"
+      ],
+      "intent": [
+        "workspace",
+        "workwear",
+        "study",
+        "portable",
+        "compact"
+      ],
+      "datePublished": "2026-05-03",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "soft desk mat",
+        "date": "2026-05-04",
+        "price": 79000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "simple-hydrating-moisturizer",
+      "name": "Simple Hydrating Moisturizer",
+      "categoryKey": "skincare",
+      "categoryLabel": "Skincare",
+      "price": 75000,
+      "priceText": "Rp75.000",
+      "priceBand": "50k-100k",
+      "summary": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah.",
+      "image": "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=simple-hydrating-moisturizer",
+      "tags": [
+        "moisturizer",
+        "daily-hydration",
+        "simple-skincare",
+        "skin-comfort"
+      ],
+      "intent": [
+        "skincare-routine",
+        "daily",
+        "hydration"
+      ],
+      "datePublished": "2026-05-03",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "simple hydrating moisturizer",
+        "date": "2026-05-04",
+        "price": 75000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "stainless-daily-tumbler",
+      "name": "Stainless Daily Tumbler",
+      "categoryKey": "everyday",
+      "categoryLabel": "Lainnya",
+      "price": 119000,
+      "priceText": "Rp119.000",
+      "priceBand": "100k-200k",
+      "summary": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek.",
+      "image": "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=stainless-daily-tumbler",
+      "tags": [
+        "daily-tumbler",
+        "stainless-tumbler",
+        "office-carry",
+        "campus-essentials"
+      ],
+      "intent": [
+        "daily",
+        "workwear",
+        "travel",
+        "hydration",
+        "campus"
+      ],
+      "datePublished": "2026-05-02",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "stainless daily tumbler",
+        "date": "2026-05-04",
+        "price": 119000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "portable-bluetooth-keyboard",
+      "name": "Portable Bluetooth Keyboard",
+      "categoryKey": "tech",
+      "categoryLabel": "Tech",
+      "price": 199000,
+      "priceText": "Rp199.000",
+      "priceBand": "100k-200k",
+      "summary": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel.",
+      "image": "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=portable-bluetooth-keyboard",
+      "tags": [
+        "bluetooth-keyboard",
+        "portable-keyboard",
+        "tablet-setup",
+        "writing-setup"
+      ],
+      "intent": [
+        "portable",
+        "study",
+        "workspace",
+        "wfh",
+        "compact"
+      ],
+      "datePublished": "2026-05-02",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "portable bluetooth keyboard",
+        "date": "2026-05-04",
+        "price": 199000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "adjustable-laptop-stand",
+      "name": "Adjustable Laptop Stand",
+      "categoryKey": "workspace",
+      "categoryLabel": "Workspace",
+      "price": 149000,
+      "priceText": "Rp149.000",
+      "priceBand": "100k-200k",
+      "summary": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata.",
+      "image": "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=adjustable-laptop-stand",
+      "tags": [
+        "laptop-stand",
+        "desk-setup",
+        "wfh",
+        "study-desk"
+      ],
+      "intent": [
+        "workspace",
+        "workwear",
+        "study",
+        "wfh",
+        "portable",
+        "compact"
+      ],
+      "datePublished": "2026-05-02",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "adjustable laptop stand",
+        "date": "2026-05-04",
+        "price": 149000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "lightweight-daily-sunscreen",
+      "name": "Lightweight Daily Sunscreen",
+      "categoryKey": "skincare",
+      "categoryLabel": "Skincare",
+      "price": 89000,
+      "priceText": "Rp89.000",
+      "priceBand": "50k-100k",
+      "summary": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket.",
+      "image": "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=lightweight-daily-sunscreen",
+      "tags": [
+        "daily-sunscreen",
+        "light-sunscreen",
+        "morning-skincare",
+        "sun-protection"
+      ],
+      "intent": [
+        "skincare-routine",
+        "travel",
+        "daily"
+      ],
+      "datePublished": "2026-05-02",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "lightweight daily sunscreen",
+        "date": "2026-05-04",
+        "price": 89000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "compact-usb-c-hub",
+      "name": "Compact USB-C Hub",
+      "categoryKey": "tech",
+      "categoryLabel": "Tech",
+      "price": 179000,
+      "priceText": "Rp179.000",
+      "priceBand": "100k-200k",
+      "summary": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori.",
+      "image": "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=compact-usb-c-hub",
+      "tags": [
+        "usb-c-hub",
+        "laptop-accessory",
+        "portable-tech",
+        "external-display"
+      ],
+      "intent": [
+        "portable",
+        "workspace",
+        "wfh",
+        "campus"
+      ],
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "compact usb-c hub",
+        "date": "2026-05-04",
+        "price": 179000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "minimal-desk-tray-organizer",
+      "name": "Minimal Desk Tray Organizer",
+      "categoryKey": "workspace",
+      "categoryLabel": "Workspace",
+      "price": 129000,
+      "priceText": "Rp129.000",
+      "priceBand": "100k-200k",
+      "summary": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
+      "image": "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=minimal-desk-tray-organizer",
+      "tags": [
+        "desk-tray",
+        "workspace-organizer",
+        "minimal-desk",
+        "daily-carry-storage"
+      ],
+      "intent": [
+        "workspace",
+        "workwear",
+        "daily",
+        "study",
+        "cable-management",
+        "portable",
+        "compact"
+      ],
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "minimal desk tray organizer",
+        "date": "2026-05-04",
+        "price": 129000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "gentle-gel-cleanser",
+      "name": "Gentle Gel Cleanser",
+      "categoryKey": "skincare",
+      "categoryLabel": "Skincare",
+      "price": 69000,
+      "priceText": "Rp69.000",
+      "priceBand": "50k-100k",
+      "summary": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat.",
+      "image": "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=gentle-gel-cleanser",
+      "tags": [
+        "gel-cleanser",
+        "face-wash",
+        "basic-skincare",
+        "gentle-cleanser"
+      ],
+      "intent": [
+        "skincare-routine",
+        "daily"
+      ],
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "gentle gel cleanser",
+        "date": "2026-05-04",
+        "price": 69000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "compact-crossbody-sling",
+      "name": "Compact Crossbody Sling",
+      "categoryKey": "fashion",
+      "categoryLabel": "Fashion",
+      "price": 119000,
+      "priceText": "Rp119.000",
+      "priceBand": "100k-200k",
+      "summary": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh.",
+      "image": "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=compact-crossbody-sling",
+      "tags": [
+        "crossbody-sling",
+        "daily-carry",
+        "compact-bag",
+        "minimal-bag"
+      ],
+      "intent": [
+        "daily",
+        "travel",
+        "portable",
+        "campus",
+        "compact"
+      ],
+      "datePublished": "2026-04-30",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "compact crossbody sling",
+        "date": "2026-05-04",
+        "price": 119000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "clean-canvas-sneakers",
+      "name": "Clean Canvas Sneakers",
+      "categoryKey": "fashion",
+      "categoryLabel": "Fashion",
+      "price": 189000,
+      "priceText": "Rp189.000",
+      "priceBand": "100k-200k",
+      "summary": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian.",
+      "image": "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=clean-canvas-sneakers",
+      "tags": [
+        "canvas-sneakers",
+        "daily-shoes",
+        "casual-footwear",
+        "minimal-sneakers"
+      ],
+      "intent": [
+        "daily",
+        "travel",
+        "portable",
+        "campus",
+        "compact"
+      ],
+      "datePublished": "2026-04-29",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "clean canvas sneakers",
+        "date": "2026-05-04",
+        "price": 189000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "relaxed-cotton-t-shirt",
+      "name": "Relaxed Cotton T-Shirt",
+      "categoryKey": "fashion",
+      "categoryLabel": "Fashion",
+      "price": 99000,
+      "priceText": "Rp99.000",
+      "priceBand": "50k-100k",
+      "summary": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan.",
+      "image": "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=relaxed-cotton-t-shirt",
+      "tags": [
+        "cotton-t-shirt",
+        "basic-outfit",
+        "minimal-wardrobe",
+        "daily-casual"
+      ],
+      "intent": [
+        "daily",
+        "workwear",
+        "campus",
+        "compact"
+      ],
+      "datePublished": "2026-04-28",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "relaxed cotton t-shirt",
+        "date": "2026-05-04",
+        "price": 99000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "neutral-linen-overshirt",
+      "name": "Neutral Linen Overshirt",
+      "categoryKey": "fashion",
+      "categoryLabel": "Fashion",
+      "price": 159000,
+      "priceText": "Rp159.000",
+      "priceBand": "100k-200k",
+      "summary": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+      "image": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+      "tags": [
+        "linen-overshirt",
+        "neutral-outfit",
+        "daily-casual",
+        "minimal-fashion"
+      ],
+      "intent": [
+        "daily",
+        "workwear",
+        "travel",
+        "portable",
+        "compact"
+      ],
+      "datePublished": "2026-04-27",
+      "dateModified": "2026-05-04",
+      "sort": {
+        "name": "neutral linen overshirt",
+        "date": "2026-05-04",
+        "price": 159000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "everyday-canvas-tote",
+      "name": "Everyday Canvas Tote",
+      "categoryKey": "everyday",
+      "categoryLabel": "Lainnya",
+      "price": 89000,
+      "priceText": "Rp89.000",
+      "priceBand": "50k-100k",
+      "summary": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai.",
+      "image": "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=everyday-canvas-tote",
+      "tags": [
+        "canvas-tote",
+        "daily-carry",
+        "minimal-bag",
+        "campus-bag"
+      ],
+      "intent": [
+        "daily",
+        "portable",
+        "campus",
+        "compact"
+      ],
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-01",
+      "sort": {
+        "name": "everyday canvas tote",
+        "date": "2026-05-01",
+        "price": 89000,
+        "score": 0
+      }
+    },
+    {
+      "slug": "minimal-barrier-serum",
+      "name": "Minimal Barrier Serum",
+      "categoryKey": "skincare",
+      "categoryLabel": "Skincare",
+      "price": 79000,
+      "priceText": "Rp79.000",
+      "priceBand": "50k-100k",
+      "summary": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
+      "image": "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=minimal-barrier-serum",
+      "tags": [
+        "barrier-serum",
+        "daily-skincare",
+        "simple-routine",
+        "light-serum"
+      ],
+      "intent": [
+        "skincare-routine",
+        "daily",
+        "hydration"
+      ],
+      "datePublished": "2026-04-28",
+      "dateModified": "2026-05-01",
+      "sort": {
+        "name": "minimal barrier serum",
+        "date": "2026-05-01",
+        "price": 79000,
+        "score": 0
+      }
+    }
+  ]
+}

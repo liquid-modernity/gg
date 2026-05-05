@@ -13,6 +13,7 @@ import {
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
+import { buildStoreManifest } from "../src/store/lib/build-store-manifest.mjs";
 import { extractFeedProducts } from "../src/store/lib/extract-feed-products.mjs";
 import { extractScriptTextById, extractStaticProductsFromStoreHtml } from "../src/store/lib/extract-static-products.mjs";
 import {
@@ -42,6 +43,9 @@ const STORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.js");
 const STORE_ASSET_DIR = path.resolve(ROOT, "assets/store");
 const STORE_ASSET_CSS_PATH = path.resolve(STORE_ASSET_DIR, "store.css");
 const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
+const STORE_MANIFEST_REPORT_PATH = "store/data/manifest.json";
+const STORE_MANIFEST_PATH = path.resolve(ROOT, STORE_MANIFEST_REPORT_PATH);
+const STORE_MANIFEST_DIST_PATH = path.resolve(ROOT, "dist/store/data/manifest.json");
 const STORE_BUILD_REPORT_PATH = path.resolve(ROOT, "dist/store-build-report.json");
 const STORE_FEED_CACHE_PATH = clean(process.env.GG_STORE_FEED_JSON_PATH || "");
 const STORE_FEED_PROBE_WARNING = clean(process.env.GG_STORE_FEED_PROBE_WARNING || "");
@@ -99,6 +103,10 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     strictImages: STORE_STRICT_IMAGES,
     requireLiveFeed: STORE_REQUIRE_LIVE_FEED,
     ci: STORE_CI,
+    manifestPath: clean(sourceReport.manifestPath),
+    manifestBytes: Number(sourceReport.manifestBytes || 0),
+    manifestItems: Number(sourceReport.manifestItems || 0),
+    manifestCategories: Array.isArray(sourceReport.manifestCategories) ? sourceReport.manifestCategories : [],
     status,
     pageCount: Number(sourceReport.pageCount || 0),
     error: clean(error),
@@ -192,6 +200,7 @@ function replaceMarkedRegion(source, startMarker, endMarker, nextContent) {
 function writeTextFile(filePath, value) {
   const nextValue = normalizeTextFile(value);
   const prevValue = existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+  mkdirSync(path.dirname(filePath), { recursive: true });
   if (prevValue !== nextValue) writeFileSync(filePath, nextValue, "utf8");
 }
 
@@ -856,9 +865,19 @@ if (fatalError) {
 const firstProduct = products[0];
 const { criticalCss, storeCss, storeJs } = syncStoreAssets();
 const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
+const manifest = buildStoreManifest(products, { source });
+const manifestContent = normalizeTextFile(JSON.stringify(manifest, null, 2));
+const manifestBytes = Buffer.byteLength(manifestContent, "utf8");
+
+report.manifestPath = STORE_MANIFEST_REPORT_PATH;
+report.manifestBytes = manifestBytes;
+report.manifestItems = manifest.items.length;
+report.manifestCategories = manifest.categories.map((entry) => ({ ...entry }));
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
 writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
+writeTextFile(STORE_MANIFEST_PATH, manifestContent);
+writeTextFile(STORE_MANIFEST_DIST_PATH, manifestContent);
 
 let nextStoreSource = originalStoreSource;
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->", buildCriticalCssBlock(criticalCss));

@@ -10,22 +10,27 @@ import {
   STORE_FEED_PATH,
   STORE_LEGACY_FEED_PATH,
 } from "../src/store/store.config.mjs";
+import { STORE_MANIFEST_VERSION } from "../src/store/lib/build-store-manifest.mjs";
+import { CATEGORY_CONFIG, CATEGORY_ORDER, categoryCounts } from "../src/store/lib/category-config.mjs";
 import { extractMarkedRegion, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
 import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../src/store/lib/normalize-store-product.mjs";
 import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
 
 const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
+const TARGET_ROOT = path.dirname(TARGET_PATH);
 const WORKER_PATH = path.resolve(ROOT, "worker.js");
 const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_ASSET_CSS_PATH = path.resolve(ROOT, "assets/store/store.css");
 const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
+const STORE_MANIFEST_PATH = path.resolve(TARGET_ROOT, "store/data/manifest.json");
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 const warnings = [];
 const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
 const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
 const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES;
+const STORE_PROOF_ALLOW_REPORT_DRIFT = isTruthyEnv(process.env.STORE_PROOF_ALLOW_REPORT_DRIFT);
 
 function isTruthyEnv(value) {
   return ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
@@ -37,6 +42,11 @@ function fail(message) {
 
 function warn(message) {
   warnings.push(message);
+}
+
+function reportDrift(message) {
+  if (STORE_PROOF_ALLOW_REPORT_DRIFT) warn(message);
+  else fail(message);
 }
 
 function countOccurrences(text, needle) {
@@ -96,6 +106,14 @@ function findGraphNode(nodes, expectedType, idSuffix = "") {
   return nodes.find((node) => hasType(node, expectedType) && (!idSuffix || String(node["@id"] || "").endsWith(idSuffix))) || null;
 }
 
+function manifestCategoryMap(categories = []) {
+  const map = new Map();
+  for (const entry of Array.isArray(categories) ? categories : []) {
+    map.set(String(entry?.key || ""), entry || {});
+  }
+  return map;
+}
+
 let mode = "development";
 if (existsSync(FLAGS_PATH)) {
   try {
@@ -132,10 +150,12 @@ if (!runtimeAssetRegion) fail("missing STORE_RUNTIME_JS markers");
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
 if (!/id=["']store-build-report["']/.test(buildReportRegion)) fail("STORE_BUILD_REPORT marker block is missing #store-build-report");
+if (source.includes(STORE_MANIFEST_VERSION)) fail("store manifest must not be injected inline into store.html");
 
 let rawStaticProducts = [];
 let schema = null;
 let buildReport = null;
+let manifest = null;
 try {
   rawStaticProducts = extractStaticProductsFromStoreHtml(source);
 } catch (error) {
@@ -151,8 +171,18 @@ try {
 } catch (error) {
   fail(`invalid JSON in script#store-build-report: ${error.message}`);
 }
+if (!existsSync(STORE_MANIFEST_PATH)) {
+  fail(`store manifest is missing at ${path.relative(ROOT, STORE_MANIFEST_PATH) || STORE_MANIFEST_PATH}`);
+} else {
+  try {
+    manifest = JSON.parse(readFileSync(STORE_MANIFEST_PATH, "utf8"));
+  } catch (error) {
+    fail(`store manifest is not valid JSON: ${error.message}`);
+  }
+}
 
 const staticProducts = rawStaticProducts.map((product) => normalizeStoreProduct(product));
+const expectedManifestCounts = categoryCounts(staticProducts);
 const graph = graphNodes(schema);
 const websiteNode = findGraphNode(graph, "WebSite", "#website");
 const organizationNode = findGraphNode(graph, "Organization", "#organization");
@@ -219,6 +249,17 @@ else {
 }
 if (storeJsAsset && !/marketplaceAriaLabel\(/.test(storeJsAsset)) fail(`runtime marketplace aria-label helper is missing from ${STORE_ASSET_JS_HREF}`);
 if (storeJsAsset && !/window\.StoreSurface/.test(storeJsAsset)) fail(`runtime StoreSurface contract is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/\/store\/data\/manifest\.json/.test(storeJsAsset)) fail(`runtime discovery manifest fetch path is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/function loadStoreManifest\(/.test(storeJsAsset)) fail(`runtime discovery manifest loader is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/function validateStoreManifest\(/.test(storeJsAsset)) fail(`runtime discovery manifest validator is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/function applyDiscoveryFilters\(/.test(storeJsAsset)) fail(`runtime discovery filter model is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/function fallbackDiscoveryItems\(/.test(storeJsAsset)) fail(`runtime discovery static fallback is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/storeManifestCache/.test(storeJsAsset)) fail(`runtime discovery manifest cache is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeJsAsset && !/discoveryManifestState = ["']fallback["']/.test(storeJsAsset)) fail(`runtime discovery manifest failure fallback is missing from ${STORE_ASSET_JS_HREF}`);
+if (!/id=["']store-discovery-search["'][^>]*\baria-label=/.test(source)) reportDrift("Discovery search input is missing an accessible label");
+if (!/id=["']store-discovery-status["'][^>]*\baria-live=/.test(source)) reportDrift("Discovery result status is missing aria-live");
+if (!/data-store-price-band=["']under-50k["']/.test(source)) reportDrift("Discovery price-band filter hooks are missing");
+if (!/data-store-sort=["']recommended["']/.test(source)) reportDrift("Discovery sort hooks are missing");
 
 if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeJsAsset)) fail('public output still contains "Dummy" or "dummy"');
 if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeJsAsset)) fail('public output still contains category "Etc"');
@@ -241,10 +282,10 @@ if (reportValidProducts && reportValidProducts !== staticProducts.length) {
 }
 
 if (reportSourceType === "existing-static") {
-  if (STORE_REQUIRE_LIVE_FEED) fail("build report sourceType is existing-static while live feed is required");
+  if (STORE_STRICT_MODE) fail("build report sourceType is existing-static while strict mode is enabled");
   else warn("build report sourceType is existing-static");
 } else if (reportSourceType !== "live-feed") {
-  if (STORE_REQUIRE_LIVE_FEED) fail(`build report sourceType is ${reportSourceType} while live feed is required`);
+  if (STORE_STRICT_MODE) fail(`build report sourceType is ${reportSourceType} while strict mode is enabled`);
   else warn(`build report sourceType is ${reportSourceType}`);
 }
 
@@ -256,6 +297,121 @@ if (reportExistingStaticFallbackCount > 0) {
 if (reportMissingImageCount > 0) {
   if (STORE_STRICT_MODE) fail(`build report has missing image extractions (${reportMissingImageCount})`);
   else warn(`build report has missing image extractions (${reportMissingImageCount})`);
+}
+
+if (!manifest || typeof manifest !== "object") {
+  fail("store manifest is missing or empty");
+} else {
+  const forbiddenFields = ["whyPicked", "bestFor", "notes", "caveat", "geoContext", "links"];
+  const requiredFields = ["slug", "name", "categoryKey", "categoryLabel", "priceText", "summary", "image", "url", "storeUrl"];
+  const manifestItems = Array.isArray(manifest.items) ? manifest.items : [];
+  const manifestCategories = Array.isArray(manifest.categories) ? manifest.categories : [];
+  const manifestCategoryLookup = manifestCategoryMap(manifestCategories);
+  const duplicateManifestSlugs = [];
+  const seenManifestSlugs = new Set();
+
+  if (!manifest.version) fail("store manifest is missing version");
+  else if (manifest.version !== STORE_MANIFEST_VERSION) fail(`store manifest version is not ${STORE_MANIFEST_VERSION}`);
+
+  if (!Array.isArray(manifest.items)) fail("store manifest items is not an array");
+  if (!Array.isArray(manifest.categories)) fail("store manifest categories is not an array");
+
+  if (Number(manifest.count || 0) !== manifestItems.length) {
+    fail(`store manifest count (${manifest.count}) does not match item count (${manifestItems.length})`);
+  }
+  if (manifestItems.length !== staticProducts.length) {
+    fail(`store manifest item count (${manifestItems.length}) does not match normalized product count (${staticProducts.length})`);
+  }
+  if (String(manifest.source || "") !== reportSourceType) {
+    reportDrift(`store manifest source (${manifest.source || "missing"}) does not match build report sourceType (${reportSourceType || "missing"})`);
+  }
+  if (Number(buildReport?.manifestItems || 0) !== manifestItems.length) {
+    reportDrift(`build report manifestItems (${buildReport?.manifestItems || 0}) does not match store manifest item count (${manifestItems.length})`);
+  }
+  if (String(buildReport?.manifestPath || "") !== "store/data/manifest.json") {
+    reportDrift(`build report manifestPath is unexpected (${buildReport?.manifestPath || "missing"})`);
+  }
+  if (!Array.isArray(buildReport?.manifestCategories)) {
+    reportDrift("build report manifestCategories is missing");
+  } else if (JSON.stringify(buildReport.manifestCategories) !== JSON.stringify(manifestCategories)) {
+    reportDrift("build report manifestCategories does not match store manifest categories");
+  }
+
+  if (String(manifest.source || "") === "existing-static") {
+    if (STORE_STRICT_MODE) fail("store manifest source is existing-static while strict mode is enabled");
+    else warn("store manifest source is existing-static");
+  }
+
+  for (const key of CATEGORY_ORDER) {
+    const entry = manifestCategoryLookup.get(key);
+    if (!entry) {
+      fail(`store manifest category is missing key ${key}`);
+      continue;
+    }
+    if (String(entry.label || "") !== CATEGORY_CONFIG[key].label) {
+      fail(`store manifest category ${key} has unexpected label (${entry.label || "missing"})`);
+    }
+    if (String(entry.path || "") !== CATEGORY_CONFIG[key].futurePath) {
+      fail(`store manifest category ${key} has unexpected path (${entry.path || "missing"})`);
+    }
+    if (Number(entry.count || 0) !== Number(expectedManifestCounts[key] || 0)) {
+      fail(`store manifest category ${key} count (${entry.count || 0}) does not match normalized product count (${expectedManifestCounts[key] || 0})`);
+    }
+  }
+
+  for (const category of manifestCategories) {
+    const key = String(category?.key || "");
+    const label = String(category?.label || "");
+    const routePath = String(category?.path || "");
+    if (/\bdummy\b/i.test(key) || /\bdummy\b/i.test(label) || /\bdummy\b/i.test(routePath)) {
+      fail(`store manifest category contains dummy (${key || label || routePath})`);
+    }
+    if (key === "etc") fail('store manifest categoryKey "etc" is not allowed');
+    if (label === "Etc") fail('store manifest category label "Etc" is not allowed');
+    if (/\/store\/etc(?:$|[/?#])/.test(routePath)) fail("store manifest category path must not reference /store/etc");
+  }
+
+  for (const item of manifestItems) {
+    const label = String(item?.slug || item?.name || "unknown");
+
+    if (seenManifestSlugs.has(label)) duplicateManifestSlugs.push(label);
+    else seenManifestSlugs.add(label);
+
+    if (/\bdummy\b/i.test(JSON.stringify(item || {}))) fail(`${label}: store manifest still contains dummy`);
+    if (String(item?.categoryKey || "") === "etc") fail(`${label}: store manifest categoryKey "etc" is not allowed`);
+    if (String(item?.categoryLabel || "") === "Etc") fail(`${label}: store manifest categoryLabel "Etc" is not allowed`);
+    if (/\/store\/etc(?:$|[/?#])/.test(String(item?.storeUrl || ""))) fail(`${label}: store manifest storeUrl must not reference /store/etc`);
+
+    for (const field of forbiddenFields) {
+      if (Object.prototype.hasOwnProperty.call(item || {}, field)) fail(`${label}: store manifest contains forbidden field ${field}`);
+    }
+
+    for (const field of requiredFields) {
+      if (!String(item?.[field] || "").trim()) fail(`${label}: store manifest is missing ${field}`);
+    }
+
+    if (!Array.isArray(item?.intent)) fail(`${label}: store manifest intent is not an array`);
+    else if (item.intent.length > 8) fail(`${label}: store manifest has more than 8 intent values`);
+
+    if (String(item?.summary || "").length > 180) fail(`${label}: store manifest summary exceeds 180 characters`);
+
+    if (Array.isArray(item?.intent) && item.intent.some((value) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(value || "")))) {
+      fail(`${label}: store manifest intent values must be lowercase kebab-case`);
+    }
+
+    if (Array.isArray(item?.tags) && item.tags.some((value) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(value || "")))) {
+      fail(`${label}: store manifest tags must be lowercase kebab-case`);
+    }
+
+    if (/picsum\.photos/i.test(String(item?.image || ""))) {
+      if (STORE_STRICT_MODE) fail(`${label}: store manifest image uses picsum.photos`);
+      else warn(`${label}: store manifest image uses picsum.photos`);
+    }
+  }
+
+  if (duplicateManifestSlugs.length) {
+    fail(`store manifest has duplicate slugs: ${Array.from(new Set(duplicateManifestSlugs)).join(", ")}`);
+  }
 }
 
 const duplicateSlugs = [];

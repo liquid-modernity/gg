@@ -20,6 +20,7 @@ fi
 
 target_store_js="${target_root}/assets/store/store.js"
 target_store_css="${target_root}/assets/store/store.css"
+target_store_manifest="${target_root}/store/data/manifest.json"
 
 log_fail() {
   failures=$((failures + 1))
@@ -70,6 +71,7 @@ check_file_exists "$build_tool" "tools/build-store-static.mjs is missing"
 check_file_exists "$proof_tool" "tools/proof-store-static.mjs is missing"
 check_file_exists "$target_store_js" "store runtime asset is missing: ${target_store_js}"
 check_file_exists "$target_store_css" "store stylesheet asset is missing: ${target_store_css}"
+check_file_exists "$target_store_manifest" "store manifest is missing: ${target_store_manifest}"
 
 printf 'SMOKE-STORE-ARTIFACT lane=ARTIFACT source=%s\n' "$target_file"
 
@@ -108,6 +110,10 @@ check_pattern 'data-copy=["'"'"']marketplaceCtaLabel["'"'"']' "artifact preview 
 check_pattern 'data-copy=["'"'"']marketplaceFootnote["'"'"']' "artifact preview marketplace footnote hook is missing"
 check_pattern 'id=["'"'"']store-preview-why-picked["'"'"']' "artifact preview why-picked block is missing"
 check_pattern 'id=["'"'"']store-preview-caveat["'"'"']' "artifact preview caveat block is missing"
+check_pattern 'id=["'"'"']store-discovery-search["'"'"'][^>]*aria-label=' "artifact Discovery search accessible label is missing"
+check_pattern 'id=["'"'"']store-discovery-status["'"'"'][^>]*aria-live=' "artifact Discovery aria-live status is missing"
+check_pattern 'data-store-price-band=["'"'"']under-50k["'"'"']' "artifact Discovery price-band hooks are missing"
+check_pattern 'data-store-sort=["'"'"']recommended["'"'"']' "artifact Discovery sort hooks are missing"
 check_pattern '<a[^>]*data-store-dock=["'"'"']store["'"'"'][^>]*href=["'"'"']/store["'"'"']' "artifact dock Store href contract is missing"
 check_pattern '<a[^>]*data-store-dock=["'"'"']contact["'"'"'][^>]*href=["'"'"']/store#contact["'"'"']' "artifact dock Contact href contract is missing"
 check_pattern 'id=["'"'"']store-link-shopee["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "artifact Shopee CTA rel/target contract is missing"
@@ -124,6 +130,12 @@ check_file_pattern 'STORE_LCP_PRODUCT_START' "$target_store_js" "store runtime a
 check_file_pattern 'function readStaticProducts\(' "$target_store_js" "store runtime asset is missing readStaticProducts helper"
 check_file_pattern 'function hydrateStaticProducts\(' "$target_store_js" "store runtime asset is missing hydrateStaticProducts helper"
 check_file_pattern 'function loadProducts\(' "$target_store_js" "store runtime asset is missing loadProducts helper"
+check_file_pattern '/store/data/manifest\.json' "$target_store_js" "store runtime asset is missing discovery manifest fetch path"
+check_file_pattern 'function loadStoreManifest\(' "$target_store_js" "store runtime asset is missing loadStoreManifest helper"
+check_file_pattern 'function validateStoreManifest\(' "$target_store_js" "store runtime asset is missing manifest validator"
+check_file_pattern 'function applyDiscoveryFilters\(' "$target_store_js" "store runtime asset is missing manifest-backed Discovery filters"
+check_file_pattern 'function fallbackDiscoveryItems\(' "$target_store_js" "store runtime asset is missing Discovery static fallback"
+check_file_pattern 'storeManifestCache' "$target_store_js" "store runtime asset is missing in-memory manifest cache"
 check_file_pattern 'state\.feedSource = ["'"'"']static["'"'"']' "$target_store_js" "store runtime asset is missing static feedSource boot path"
 check_file_pattern 'syncRequestedPreview\(\);' "$target_store_js" "store runtime asset is missing static deep-link sync"
 check_file_pattern 'function updateItemListJsonLd\(' "$target_store_js" "store runtime asset is missing ItemList JSON-LD updater"
@@ -155,6 +167,19 @@ check_absent 'preview\.dots\.innerHTML' "artifact still renders preview dots via
 check_absent 'insertAdjacentHTML' "artifact still uses insertAdjacentHTML"
 check_absent 'id=["'"'"']home["'"'"']' "artifact still contains legacy home id"
 check_absent 'href=["'"'"']#home["'"'"']' "artifact still contains legacy #home anchor"
+check_absent 'store-manifest-v1' "artifact still inlines the discovery manifest into store.html"
+
+if ! node -e '
+  const fs = require("node:fs");
+  const file = process.argv[1];
+  const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (!Array.isArray(manifest.items) || manifest.items.length < 1) process.exit(2);
+  if (JSON.stringify(manifest).match(/\bdummy\b/i)) process.exit(3);
+  if (manifest.categories.some((entry) => String(entry?.label || "") === "Etc" || String(entry?.key || "") === "etc" || /\/store\/etc(?:$|[/?#])/.test(String(entry?.path || "")))) process.exit(4);
+  if (manifest.items.some((entry) => String(entry?.categoryLabel || "") === "Etc" || String(entry?.categoryKey || "") === "etc" || /\/store\/etc(?:$|[/?#])/.test(String(entry?.storeUrl || "")))) process.exit(5);
+' "$target_store_manifest" >/dev/null 2>&1; then
+  log_fail "store manifest is invalid: ${target_store_manifest}"
+fi
 
 if ! node "$proof_tool" "$target_file"; then
   log_fail "tools/proof-store-static.mjs failed for $target_file"

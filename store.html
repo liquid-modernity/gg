@@ -2203,7 +2203,7 @@ input:focus-visible {
       <div class="store-sheet-body">
         <label class="store-field" for="store-discovery-search">
           <span class="gg-icon" aria-hidden="true">search</span>
-          <input id="store-discovery-search" type="search" placeholder="Cari produk atau kategori" autocomplete="off" data-copy-placeholder="searchPlaceholder" />
+          <input id="store-discovery-search" type="search" placeholder="Cari produk atau kategori" autocomplete="off" aria-label="Cari produk atau kategori" data-copy-placeholder="searchPlaceholder" />
         </label>
         <section class="store-sheet-section">
           <p class="store-sheet-section__label" data-copy="filtersLabel">Filter</p>
@@ -2219,12 +2219,34 @@ input:focus-visible {
         <section class="store-sheet-section">
           <p class="store-sheet-section__label" data-copy="quickIntentsLabel">Quick intents</p>
           <div class="store-chip-row">
-            <button class="store-chip" type="button" data-store-intent="featured" data-copy="featuredLabel">Featured</button>
-            <button class="store-chip" type="button" data-store-intent="latest" data-copy="latestLabel">Latest</button>
-            <button class="store-chip" type="button" data-store-intent="under500" data-copy="under500Label">Under 500k</button>
+            <button class="store-chip" type="button" data-store-intent="daily" data-copy="intentDailyLabel" aria-pressed="false">Daily</button>
+            <button class="store-chip" type="button" data-store-intent="travel" data-copy="intentTravelLabel" aria-pressed="false">Travel</button>
+            <button class="store-chip" type="button" data-store-intent="workspace" data-copy="intentWorkspaceLabel" aria-pressed="false">Workspace</button>
           </div>
         </section>
-        <p class="store-summary" id="store-discovery-status" data-copy="allVisible">All products are visible.</p>
+        <section class="store-sheet-section">
+          <p class="store-sheet-section__label" data-copy="priceFiltersLabel">Price</p>
+          <div class="store-chip-row">
+            <button class="store-chip" type="button" data-store-price-band="all" data-copy="priceAllLabel" aria-pressed="true">All prices</button>
+            <button class="store-chip" type="button" data-store-price-band="under-50k" data-copy="priceUnder50Label" aria-pressed="false">&lt;50k</button>
+            <button class="store-chip" type="button" data-store-price-band="50k-100k" data-copy="price50To100Label" aria-pressed="false">50k-100k</button>
+            <button class="store-chip" type="button" data-store-price-band="100k-200k" data-copy="price100To200Label" aria-pressed="false">100k-200k</button>
+            <button class="store-chip" type="button" data-store-price-band="200k-500k" data-copy="price200To500Label" aria-pressed="false">200k-500k</button>
+            <button class="store-chip" type="button" data-store-price-band="over-500k" data-copy="priceOver500Label" aria-pressed="false">&gt;500k</button>
+            <button class="store-chip" type="button" data-store-price-band="unknown" data-copy="priceUnknownLabel" aria-pressed="false">No price</button>
+          </div>
+        </section>
+        <section class="store-sheet-section">
+          <p class="store-sheet-section__label" data-copy="sortLabel">Sort</p>
+          <div class="store-chip-row">
+            <button class="store-chip" type="button" data-store-sort="recommended" data-copy="sortRecommendedLabel" aria-pressed="true">Recommended</button>
+            <button class="store-chip" type="button" data-store-sort="newest" data-copy="sortNewestLabel" aria-pressed="false">Newest</button>
+            <button class="store-chip" type="button" data-store-sort="price-asc" data-copy="sortPriceAscLabel" aria-pressed="false">Price asc</button>
+            <button class="store-chip" type="button" data-store-sort="price-desc" data-copy="sortPriceDescLabel" aria-pressed="false">Price desc</button>
+            <button class="store-chip" type="button" data-store-sort="az" data-copy="sortAzLabel" aria-pressed="false">A-Z</button>
+          </div>
+        </section>
+        <p class="store-summary" id="store-discovery-status" data-copy="allVisible" aria-live="polite">All products are visible.</p>
         <section class="store-sheet-section">
           <p class="store-sheet-section__label" data-copy="resultsLabel">Results</p>
           <div class="store-discovery-results" id="store-discovery-results"></div>
@@ -3552,6 +3574,41 @@ input:focus-visible {
     "everyday-canvas-tote: picsum.photos remains in non-production data",
     "minimal-barrier-serum: used existing static image fallback",
     "minimal-barrier-serum: picsum.photos remains in non-production data"
+  ],
+  "manifestPath": "store/data/manifest.json",
+  "manifestBytes": 22046,
+  "manifestItems": 20,
+  "manifestCategories": [
+    {
+      "key": "fashion",
+      "label": "Fashion",
+      "count": 4,
+      "path": "/store/fashion"
+    },
+    {
+      "key": "skincare",
+      "label": "Skincare",
+      "count": 4,
+      "path": "/store/skincare"
+    },
+    {
+      "key": "workspace",
+      "label": "Workspace",
+      "count": 4,
+      "path": "/store/workspace"
+    },
+    {
+      "key": "tech",
+      "label": "Tech",
+      "count": 4,
+      "path": "/store/tech"
+    },
+    {
+      "key": "everyday",
+      "label": "Lainnya",
+      "count": 4,
+      "path": "/store/everyday"
+    }
   ]
 }
   </script>
