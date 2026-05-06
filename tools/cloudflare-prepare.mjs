@@ -11,7 +11,7 @@
  * This script does not deploy. It only prepares the bundle.
  */
 
-import { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
@@ -144,6 +144,15 @@ function copyDirectoryIfPresent(relativePath, destinationDir) {
   return true;
 }
 
+function copyTopLevelStoreFlatArtifacts(destinationDir) {
+  for (const entry of readdirSync(ROOT, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (!/^store-[a-z0-9-]+(?:-page-[0-9]+)?\.html$/i.test(entry.name)) continue;
+
+    copyFileSync(path.join(ROOT, entry.name), path.join(destinationDir, entry.name));
+  }
+}
+
 for (const file of requiredRootFiles) {
   ensureFile(file);
 }
@@ -163,6 +172,8 @@ for (const file of ["_headers", "manifest.webmanifest", "offline.html", "sw.js"]
 for (const file of optionalRootFiles) {
   copyIfPresent(file, publicRoot);
 }
+
+copyTopLevelStoreFlatArtifacts(publicRoot);
 
 const flagsPayload = `${JSON.stringify(flags, null, 2)}\n`;
 const flagOutputs = [
