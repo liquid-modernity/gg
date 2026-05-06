@@ -10,6 +10,12 @@ proof_tool="tools/proof-store-static.mjs"
 target_file="$artifact_file"
 target_root="$artifact_root"
 failures=0
+store_require_flat_transitional="${GG_STORE_REQUIRE_FLAT_TRANSITIONAL:-1}"
+store_require_flat_transitional="$(printf '%s' "$store_require_flat_transitional" | tr '[:upper:]' '[:lower:]')"
+case "$store_require_flat_transitional" in
+  0|false|no|off) store_require_flat_transitional=0 ;;
+  *) store_require_flat_transitional=1 ;;
+esac
 
 target_store_js="${target_root}/assets/store/store.js"
 target_store_css="${target_root}/assets/store/store.css"
@@ -87,13 +93,17 @@ check_not_stale "assets/store/store.js" "$target_store_js" "store runtime asset"
 check_not_stale "assets/store/store.css" "$target_store_css" "store stylesheet asset"
 check_not_stale "store/data/manifest.json" "$target_store_manifest" "store manifest"
 
-for source_category_artifact in store-*.html; do
-  [[ -f "$source_category_artifact" ]] || continue
-  check_not_stale "$source_category_artifact" "${artifact_root}/${source_category_artifact}" "$source_category_artifact"
-done
+if [[ "$store_require_flat_transitional" == "1" ]]; then
+  for source_category_artifact in store-*.html; do
+    [[ -f "$source_category_artifact" ]] || continue
+    check_file_exists "${artifact_root}/${source_category_artifact}" "transitional flat Store artifact is missing: ${artifact_root}/${source_category_artifact}"
+    check_not_stale "$source_category_artifact" "${artifact_root}/${source_category_artifact}" "$source_category_artifact"
+  done
+fi
 
 for source_category_artifact in store/*/index.html store/*/page/*/index.html; do
   [[ -f "$source_category_artifact" ]] || continue
+  check_file_exists "${artifact_root}/${source_category_artifact}" "canonical nested Store artifact is missing: ${artifact_root}/${source_category_artifact}"
   check_not_stale "$source_category_artifact" "${artifact_root}/${source_category_artifact}" "$source_category_artifact"
 done
 
@@ -227,8 +237,13 @@ if ! node -e '
 
   (async () => {
     const root = process.argv[1];
-    const pageSize = 48;
+    const {
+      STORE_ARTIFACT_CONTRACT_VERSION,
+      STORE_CATEGORY_PAGE_SIZE,
+      STORE_REQUIRE_FLAT_TRANSITIONAL,
+    } = await import(pathToFileURL(path.resolve("src/store/store.config.mjs")).href);
     const { STORE_CATEGORIES } = await import(pathToFileURL(path.resolve("src/store/store-categories.config.mjs")).href);
+    const pageSize = STORE_CATEGORY_PAGE_SIZE;
     const manifest = JSON.parse(fs.readFileSync(path.join(root, "store/data/manifest.json"), "utf8"));
     const categories = STORE_CATEGORIES.map((category) => [category.key, category.label, category.title]);
     const counts = Object.fromEntries(categories.map(([key]) => [key, 0]));
@@ -236,6 +251,23 @@ if ! node -e '
       const key = String(item && item.categoryKey || "");
       if (Object.prototype.hasOwnProperty.call(counts, key)) counts[key] += 1;
     }
+    const normalizeArtifactPath = (value) => String(value || "").replace(/^\/+/, "");
+    const contractList = (values) => new Set((Array.isArray(values) ? values : []).map((entry) => normalizeArtifactPath(entry)).filter(Boolean));
+    const parseJsonScript = (html, id, missingCode) => {
+      const match = html.match(new RegExp("<script\\b[^>]*id=\"" + id + "\"[^>]*>([\\s\\S]*?)<\\/script>", "i"));
+      if (!match) process.exit(missingCode);
+      return JSON.parse(match[1]);
+    };
+    const rootHtml = fs.readFileSync(path.join(root, "store.html"), "utf8");
+    const buildReport = parseJsonScript(rootHtml, "store-build-report", 28);
+    const contract = buildReport && buildReport.artifactContract;
+    if (!contract || typeof contract !== "object") process.exit(29);
+    if (String(contract.version || "") !== STORE_ARTIFACT_CONTRACT_VERSION) process.exit(30);
+    if (normalizeArtifactPath(contract.rootArtifact) !== "store.html") process.exit(31);
+    if (normalizeArtifactPath(contract.manifestArtifact) !== "store/data/manifest.json") process.exit(32);
+    if (Boolean(contract.flatTransitionalRequired) !== STORE_REQUIRE_FLAT_TRANSITIONAL) process.exit(33);
+    const canonicalArtifactSet = contractList(contract.canonicalNestedArtifacts);
+    const flatArtifactSet = contractList(contract.flatTransitionalArtifacts);
     const parseProducts = (html) => {
       const match = html.match(/<script\b[^>]*id="store-static-products"[^>]*>([\s\S]*?)<\/script>/i);
       if (!match) process.exit(17);
@@ -251,13 +283,18 @@ if ! node -e '
       return graph.find((node) => node && node["@type"] === "ItemList") || graph.find((node) => Array.isArray(node && node["@type"]) && node["@type"].includes("ItemList"));
     };
     const checkPage = (key, label, title, pageNumber, totalPages, totalProducts) => {
-      const nested = pageNumber === 1 ? path.join(root, "store", key, "index.html") : path.join(root, "store", key, "page", String(pageNumber), "index.html");
-      const flat = pageNumber === 1 ? path.join(root, `store-${key}.html`) : path.join(root, `store-${key}-page-${pageNumber}.html`);
+      const nestedRelative = pageNumber === 1 ? `store/${key}/index.html` : `store/${key}/page/${pageNumber}/index.html`;
+      const flatRelative = pageNumber === 1 ? `store-${key}.html` : `store-${key}-page-${pageNumber}.html`;
+      const nested = path.join(root, nestedRelative);
+      const flat = path.join(root, flatRelative);
       const publicPath = pageNumber === 1 ? `/store/${key}` : `/store/${key}/page/${pageNumber}`;
       const canonicalUrl = `https://www.pakrpp.com${publicPath}`;
       const expectedTitle = pageNumber === 1 ? title : `${title.replace(" · Yellow Cart", "")} · Page ${pageNumber} · Yellow Cart`;
       const expectedCount = Math.min(Math.max(totalProducts - ((pageNumber - 1) * pageSize), 0), pageSize);
-      if (!fs.existsSync(nested) || !fs.existsSync(flat)) process.exit(10);
+      if (!canonicalArtifactSet.has(nestedRelative)) process.exit(34);
+      if (!flatArtifactSet.has(flatRelative)) process.exit(35);
+      if (!fs.existsSync(nested)) process.exit(10);
+      if (STORE_REQUIRE_FLAT_TRANSITIONAL && !fs.existsSync(flat)) process.exit(36);
       const html = fs.readFileSync(nested, "utf8");
       if (!html.includes(`<title>${expectedTitle}</title>`)) process.exit(11);
       if (!html.includes(`href="${canonicalUrl}"`)) process.exit(12);

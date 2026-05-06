@@ -12,6 +12,8 @@ export const STORE_SCHEMA_DESCRIPTION = "Yellow Cart is PakRPP's affiliate produ
 export const STORE_CATEGORY_PAGE_SIZE = 48;
 export const STORE_ASSET_CSS_HREF = "/assets/store/store.css";
 export const STORE_ASSET_JS_HREF = "/assets/store/store.js";
+export const STORE_ARTIFACT_CONTRACT_VERSION = "store-artifact-contract-v1";
+export const STORE_REQUIRE_FLAT_TRANSITIONAL = isStoreFlatTransitionalRequired();
 export const CRITICAL_CSS_BUDGET_BYTES = 15 * 1024;
 export const STORE_PRODUCTION_BUDGETS = Object.freeze({
   storeHtmlBytes: 250 * 1024,
@@ -28,6 +30,10 @@ export const STORE_PRODUCTION_BUDGETS = Object.freeze({
 });
 export const SYSTEM_LABELS = ["store", "yellowcard", "yellowcart"];
 export const MARKET_KEYS = ["shopee", "tokopedia", "tiktok", "lazada", "website", "official"];
+
+export function isStoreFlatTransitionalRequired(value = globalThis.process?.env?.GG_STORE_REQUIRE_FLAT_TRANSITIONAL ?? "1") {
+  return !["0", "false", "no", "off"].includes(String(value).trim().toLowerCase());
+}
 
 export function storeAbsoluteUrl(slug) {
   return `${STORE_ROUTE_URL}?item=${encodeURIComponent(slug)}`;

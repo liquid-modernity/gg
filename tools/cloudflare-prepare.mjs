@@ -11,8 +11,13 @@
  * This script does not deploy. It only prepares the bundle.
  */
 
-import { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
+
+import {
+  STORE_ARTIFACT_CONTRACT_VERSION,
+  STORE_REQUIRE_FLAT_TRANSITIONAL,
+} from "../src/store/store.config.mjs";
 
 const ROOT = process.cwd();
 const buildRoot = path.resolve(ROOT, ".cloudflare-build");
@@ -144,13 +149,76 @@ function copyDirectoryIfPresent(relativePath, destinationDir) {
   return true;
 }
 
-function copyTopLevelStoreFlatArtifacts(destinationDir) {
-  for (const entry of readdirSync(ROOT, { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
-    if (!/^store-[a-z0-9-]+(?:-page-[0-9]+)?\.html$/i.test(entry.name)) continue;
+function normalizeArtifactPath(relativePath) {
+  const normalized = String(relativePath || "").trim().replace(/^\/+/, "").replace(/\\/g, "/");
 
-    copyFileSync(path.join(ROOT, entry.name), path.join(destinationDir, entry.name));
+  if (!normalized || normalized.startsWith("../") || normalized.includes("/../")) {
+    fail(`invalid Store artifact path: ${JSON.stringify(relativePath)}`);
   }
+
+  return normalized;
+}
+
+function copyRelativeFile(relativePath, destinationDir) {
+  const normalized = normalizeArtifactPath(relativePath);
+  const source = ensureFile(normalized);
+  const destination = path.join(destinationDir, normalized);
+
+  mkdirSync(path.dirname(destination), { recursive: true });
+  copyFileSync(source, destination);
+  return normalized;
+}
+
+function extractStoreBuildReport() {
+  const storeSource = readFileSync(ensureFile("store.html"), "utf8");
+  const match = storeSource.match(/<script\b(?=[^>]*\bid=["']store-build-report["'])[^>]*>([\s\S]*?)<\/script>/i);
+
+  if (!match) fail("store.html missing script#store-build-report");
+
+  try {
+    return JSON.parse(match[1]);
+  } catch (error) {
+    fail(`store.html script#store-build-report is not valid JSON: ${error.message}`);
+  }
+}
+
+function storeArtifactContractPaths(report) {
+  const contract = report?.artifactContract;
+  if (!contract || typeof contract !== "object") {
+    fail("store build report missing artifactContract; run npm run store:build");
+  }
+  if (String(contract.version || "") !== STORE_ARTIFACT_CONTRACT_VERSION) {
+    fail(`store artifactContract version is ${contract.version || "missing"}, expected ${STORE_ARTIFACT_CONTRACT_VERSION}`);
+  }
+  if (Boolean(contract.flatTransitionalRequired) !== STORE_REQUIRE_FLAT_TRANSITIONAL) {
+    fail(`store artifactContract flatTransitionalRequired is ${Boolean(contract.flatTransitionalRequired)}, expected ${STORE_REQUIRE_FLAT_TRANSITIONAL}; run npm run store:build`);
+  }
+
+  const paths = new Set([
+    contract.rootArtifact || "store.html",
+    contract.manifestArtifact || "store/data/manifest.json",
+    ...(Array.isArray(contract.assetArtifacts) ? contract.assetArtifacts : []),
+    ...(Array.isArray(contract.canonicalNestedArtifacts) ? contract.canonicalNestedArtifacts : []),
+  ]);
+
+  if (STORE_REQUIRE_FLAT_TRANSITIONAL) {
+    for (const entry of Array.isArray(contract.flatTransitionalArtifacts) ? contract.flatTransitionalArtifacts : []) {
+      paths.add(entry);
+    }
+  }
+
+  return Array.from(paths).map((entry) => normalizeArtifactPath(entry)).sort();
+}
+
+function copyStoreArtifactsFromContract(destinationDir) {
+  const report = extractStoreBuildReport();
+  const copied = [];
+
+  for (const relativePath of storeArtifactContractPaths(report)) {
+    copied.push(copyRelativeFile(relativePath, destinationDir));
+  }
+
+  return copied;
 }
 
 for (const file of requiredRootFiles) {
@@ -172,8 +240,6 @@ for (const file of ["_headers", "manifest.webmanifest", "offline.html", "sw.js"]
 for (const file of optionalRootFiles) {
   copyIfPresent(file, publicRoot);
 }
-
-copyTopLevelStoreFlatArtifacts(publicRoot);
 
 const flagsPayload = `${JSON.stringify(flags, null, 2)}\n`;
 const flagOutputs = [
@@ -206,6 +272,8 @@ for (const dir of optionalDirs) {
   const destination = path.join(publicRoot, dir);
   copyDirectoryIfPresent(dir, destination);
 }
+
+copyStoreArtifactsFromContract(publicRoot);
 
 const manifest = readJsonFile("manifest.webmanifest");
 if (manifest.scope !== "/") {

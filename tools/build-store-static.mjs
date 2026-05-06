@@ -5,11 +5,13 @@ import https from "node:https";
 import path from "node:path";
 
 import {
+  STORE_ARTIFACT_CONTRACT_VERSION,
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
   STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_URL,
   STORE_PRODUCTION_BUDGETS,
+  STORE_REQUIRE_FLAT_TRANSITIONAL,
   SYSTEM_LABELS,
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
@@ -151,6 +153,7 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     manifestCategories: Array.isArray(sourceReport.manifestCategories) ? sourceReport.manifestCategories : [],
     categoryPages: Array.isArray(sourceReport.categoryPages) ? sourceReport.categoryPages : [],
     pagination: sourceReport.pagination && typeof sourceReport.pagination === "object" ? sourceReport.pagination : null,
+    artifactContract: sourceReport.artifactContract && typeof sourceReport.artifactContract === "object" ? sourceReport.artifactContract : null,
     budgets: sourceReport.budgets && typeof sourceReport.budgets === "object" ? sourceReport.budgets : { ...STORE_PRODUCTION_BUDGETS },
     status,
     pageCount: Number(sourceReport.pageCount || 0),
@@ -278,6 +281,28 @@ function buildAssetCssLink() {
 
 function buildRuntimeScriptTag() {
   return `  <script src="${STORE_ASSET_JS_HREF}" defer></script>`;
+}
+
+function artifactHrefPath(value) {
+  return String(value || "").replace(/^\/+/, "");
+}
+
+function buildStoreArtifactContract(categoryPagination) {
+  const pages = categoryPagination.flatMap((category) => category.pages);
+
+  return {
+    version: STORE_ARTIFACT_CONTRACT_VERSION,
+    rootArtifact: "store.html",
+    manifestArtifact: STORE_MANIFEST_REPORT_PATH,
+    assetArtifacts: [
+      artifactHrefPath(STORE_ASSET_CSS_HREF),
+      artifactHrefPath(STORE_ASSET_JS_HREF),
+    ],
+    canonicalNested: true,
+    canonicalNestedArtifacts: pages.map((page) => page.nestedOutputPath),
+    flatTransitionalRequired: STORE_REQUIRE_FLAT_TRANSITIONAL,
+    flatTransitionalArtifacts: pages.map((page) => page.flatOutputPath),
+  };
 }
 
 function buildStoreFilterChips(indent = "") {
@@ -984,6 +1009,7 @@ report.manifestItems = manifest.items.length;
 report.manifestCategories = manifest.categories.map((entry) => ({ ...entry }));
 report.categoryPages = categoryPageSummary.map((entry) => ({ ...entry }));
 report.pagination = paginationSummary;
+report.artifactContract = buildStoreArtifactContract(categoryPagination);
 report.budgets = { ...STORE_PRODUCTION_BUDGETS };
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);

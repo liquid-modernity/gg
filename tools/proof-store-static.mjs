@@ -6,12 +6,14 @@ import { gzipSync } from "node:zlib";
 
 import {
   CRITICAL_CSS_BUDGET_BYTES,
+  STORE_ARTIFACT_CONTRACT_VERSION,
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
   STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_PATH,
   STORE_LEGACY_FEED_PATH,
   STORE_PRODUCTION_BUDGETS,
+  STORE_REQUIRE_FLAT_TRANSITIONAL,
 } from "../src/store/store.config.mjs";
 import { STORE_MANIFEST_VERSION } from "../src/store/lib/build-store-manifest.mjs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, categoryCounts } from "../src/store/lib/category-config.mjs";
@@ -93,6 +95,78 @@ function staticFallbackFailOrWarn(message) {
 function reportDrift(message) {
   if (STORE_PROOF_ALLOW_REPORT_DRIFT) warn(message);
   else fail(message);
+}
+
+function artifactHrefPath(value) {
+  return String(value || "").replace(/^\/+/, "");
+}
+
+function normalizedArtifactList(values) {
+  return Array.from(new Set((Array.isArray(values) ? values : [])
+    .map((value) => artifactHrefPath(value).trim())
+    .filter(Boolean))).sort();
+}
+
+function expectedStoreArtifactContract(categoryPagination) {
+  const pages = categoryPagination.flatMap((category) => category.pages);
+
+  return {
+    version: STORE_ARTIFACT_CONTRACT_VERSION,
+    rootArtifact: "store.html",
+    manifestArtifact: "store/data/manifest.json",
+    assetArtifacts: [
+      artifactHrefPath(STORE_ASSET_CSS_HREF),
+      artifactHrefPath(STORE_ASSET_JS_HREF),
+    ],
+    canonicalNested: true,
+    canonicalNestedArtifacts: pages.map((page) => page.nestedOutputPath),
+    flatTransitionalRequired: STORE_REQUIRE_FLAT_TRANSITIONAL,
+    flatTransitionalArtifacts: pages.map((page) => page.flatOutputPath),
+  };
+}
+
+function compareArtifactList(actual, expected, label) {
+  const actualList = normalizedArtifactList(actual);
+  const expectedList = normalizedArtifactList(expected);
+  if (JSON.stringify(actualList) === JSON.stringify(expectedList)) return;
+
+  const actualSet = new Set(actualList);
+  const expectedSet = new Set(expectedList);
+  const missing = expectedList.filter((entry) => !actualSet.has(entry));
+  const unexpected = actualList.filter((entry) => !expectedSet.has(entry));
+  const details = [
+    missing.length ? `missing=${missing.join(",")}` : "",
+    unexpected.length ? `unexpected=${unexpected.join(",")}` : "",
+  ].filter(Boolean).join(" ");
+  fail(`build report artifactContract ${label} mismatch${details ? ` (${details})` : ""}`);
+}
+
+function checkStoreArtifactContract(report, expected) {
+  const contract = report?.artifactContract;
+  if (!contract || typeof contract !== "object") {
+    fail("build report artifactContract is missing");
+    return;
+  }
+
+  if (String(contract.version || "") !== expected.version) {
+    fail(`build report artifactContract version is ${contract.version || "missing"}, expected ${expected.version}`);
+  }
+  if (artifactHrefPath(contract.rootArtifact) !== expected.rootArtifact) {
+    fail(`build report artifactContract rootArtifact is ${contract.rootArtifact || "missing"}, expected ${expected.rootArtifact}`);
+  }
+  if (artifactHrefPath(contract.manifestArtifact) !== expected.manifestArtifact) {
+    fail(`build report artifactContract manifestArtifact is ${contract.manifestArtifact || "missing"}, expected ${expected.manifestArtifact}`);
+  }
+  if (contract.canonicalNested !== true) {
+    fail("build report artifactContract canonicalNested must be true");
+  }
+  if (Boolean(contract.flatTransitionalRequired) !== expected.flatTransitionalRequired) {
+    fail(`build report artifactContract flatTransitionalRequired is ${Boolean(contract.flatTransitionalRequired)}, expected ${expected.flatTransitionalRequired}`);
+  }
+
+  compareArtifactList(contract.assetArtifacts, expected.assetArtifacts, "assetArtifacts");
+  compareArtifactList(contract.canonicalNestedArtifacts, expected.canonicalNestedArtifacts, "canonicalNestedArtifacts");
+  compareArtifactList(contract.flatTransitionalArtifacts, expected.flatTransitionalArtifacts, "flatTransitionalArtifacts");
 }
 
 function recordDevelopmentNote(message) {
@@ -361,6 +435,8 @@ const themeBootScripts = inlineScriptTags.filter((tag) => {
   if (src || type === "application/ld+json" || type === "application/json") return false;
   return isThemeBootScript(tagBody(tag));
 });
+
+checkStoreArtifactContract(buildReport, expectedStoreArtifactContract(expectedCategoryPagination));
 
 if (!/<meta\s+name=["']gg-store-contract["']\s+content=["']store-static-prerender-v1["']\s*\/?>/i.test(source)) {
   fail("missing gg-store-contract marker");
@@ -739,11 +815,11 @@ if (staticProducts.length) {
       const pageLabel = `category page ${route.path}`;
 
       if (!existsSync(nestedPath)) {
-        reportDrift(`${pageLabel}: artifact is missing at ${path.relative(ROOT, nestedPath) || nestedPath}`);
+        fail(`${pageLabel}: canonical nested artifact is missing at ${path.relative(ROOT, nestedPath) || nestedPath}`);
         continue;
       }
-      if (!existsSync(flatPath)) {
-        reportDrift(`${pageLabel}: transitional flat artifact is missing at ${path.relative(ROOT, flatPath) || flatPath}`);
+      if (STORE_REQUIRE_FLAT_TRANSITIONAL && !existsSync(flatPath)) {
+        fail(`${pageLabel}: transitional flat artifact is missing at ${path.relative(ROOT, flatPath) || flatPath}`);
       }
 
       const pageSource = readFileSync(nestedPath, "utf8");
