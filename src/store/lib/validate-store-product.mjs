@@ -5,6 +5,51 @@ function isKebabCaseSlug(value) {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(clean(value));
 }
 
+export function isPlaceholderImageUrl(value) {
+  let url;
+  try {
+    url = new URL(String(value || "").trim());
+  } catch (_) {
+    return false;
+  }
+
+  const host = url.hostname.toLowerCase();
+  return (
+    host === "picsum.photos" ||
+    host.endsWith(".picsum.photos") ||
+    host === "placehold.co" ||
+    host.endsWith(".placehold.co") ||
+    host === "placeholder.com" ||
+    host.endsWith(".placeholder.com") ||
+    host === "dummyimage.com" ||
+    host.endsWith(".dummyimage.com") ||
+    host === "via.placeholder.com"
+  );
+}
+
+export function productionImageUrlIssue(value) {
+  const raw = String(value || "").trim();
+  let url;
+
+  if (!raw) return "empty image URL";
+  if (/^(?:data|blob):/i.test(raw)) return "data/blob image URL is not allowed in production";
+  if (/^\/\//.test(raw) || /^\//.test(raw)) return "relative image URL is not allowed in production";
+
+  try {
+    url = new URL(raw);
+  } catch (_) {
+    return "image URL is not a valid absolute URL";
+  }
+
+  const host = url.hostname.toLowerCase();
+  if (url.protocol !== "https:") return "image URL must be HTTPS in production";
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1" || host.endsWith(".local")) {
+    return "localhost image URL is not allowed in production";
+  }
+  if (isPlaceholderImageUrl(raw)) return "placeholder image URL is not allowed in production";
+  return "";
+}
+
 export function isDummyProduct(product) {
   return [
     product?.id,
@@ -57,12 +102,17 @@ export function validateStoreProduct(product, options = {}) {
   }
   if (imageSource === "missing") errors.push("image extraction source is missing");
 
-  const picsumImages = images.filter((value) => /picsum\.photos/i.test(String(value)));
-  if (mode === "production" && picsumImages.length) {
-    errors.push("picsum.photos is not allowed in production");
-  } else if (picsumImages.length) {
-    warnings.push("picsum.photos remains in non-production data");
+  const placeholderImages = images.filter((value) => isPlaceholderImageUrl(value));
+  if (mode === "production") {
+    const unsafeIssues = uniqueProductionImageIssues(images.map(productionImageUrlIssue).filter(Boolean));
+    errors.push(...unsafeIssues);
+  } else if (placeholderImages.length) {
+    warnings.push("placeholder image URL remains in non-production data");
   }
 
   return { errors, warnings };
+}
+
+function uniqueProductionImageIssues(values) {
+  return Array.from(new Set(values));
 }

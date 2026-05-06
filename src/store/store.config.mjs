@@ -9,9 +9,23 @@ export const STORE_ORGANIZATION_ID = `${STORE_ORIGIN}/#organization`;
 export const STORE_COLLECTION_ID = `${STORE_ROUTE_URL}#collection`;
 export const STORE_ITEMLIST_ID = `${STORE_ROUTE_URL}#itemlist`;
 export const STORE_SCHEMA_DESCRIPTION = "Yellow Cart is PakRPP's affiliate product curation and discovery page for editorially selected fashion, skincare, workspace, tech, and everyday picks.";
+export const STORE_CATEGORY_PAGE_SIZE = 48;
 export const STORE_ASSET_CSS_HREF = "/assets/store/store.css";
 export const STORE_ASSET_JS_HREF = "/assets/store/store.js";
 export const CRITICAL_CSS_BUDGET_BYTES = 15 * 1024;
+export const STORE_PRODUCTION_BUDGETS = Object.freeze({
+  storeHtmlBytes: 250 * 1024,
+  categoryHtmlBytes: 350 * 1024,
+  criticalCssBytes: CRITICAL_CSS_BUDGET_BYTES,
+  storeCssGzipWarnBytes: 70 * 1024,
+  storeCssGzipFailBytes: 120 * 1024,
+  storeJsGzipWarnBytes: 90 * 1024,
+  storeJsGzipFailBytes: 150 * 1024,
+  manifestGzipWarnBytes: 250 * 1024,
+  manifestGzipFailBytes: 500 * 1024,
+  storeVisibleProducts: 50,
+  categoryVisibleProducts: 60,
+});
 export const SYSTEM_LABELS = ["store", "yellowcard", "yellowcart"];
 export const MARKET_KEYS = ["shopee", "tokopedia", "tiktok", "lazada", "website", "official"];
 

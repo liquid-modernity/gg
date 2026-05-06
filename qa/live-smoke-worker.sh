@@ -362,7 +362,7 @@ log_route_timing() {
   local label="$1"
   local meta="$2"
   local headers_file="$3"
-  local status dns connect tls ttfb total size_download outcome edge_mode route_class cf_cache cache_control release store_source store_static store_cache extra
+  local status dns connect tls ttfb total size_download outcome edge_mode route_class cf_cache cache_control release store_route store_category store_page store_source store_static store_cache extra
 
   [[ -f "$headers_file" ]] || : > "$headers_file"
 
@@ -379,11 +379,17 @@ log_route_timing() {
   cf_cache="$(extract_header_value "$headers_file" "cf-cache-status")"
   cache_control="$(extract_header_value "$headers_file" "cache-control")"
   release="$(extract_header_value "$headers_file" "x-gg-release")"
+  store_route="$(extract_header_value "$headers_file" "x-gg-store-route")"
+  store_category="$(extract_header_value "$headers_file" "x-gg-store-category")"
+  store_page="$(extract_header_value "$headers_file" "x-gg-store-page")"
   store_source="$(extract_header_value "$headers_file" "x-gg-store-source")"
   store_static="$(extract_header_value "$headers_file" "x-gg-store-static")"
   store_cache="$(extract_header_value "$headers_file" "x-gg-store-cache-policy")"
   extra=""
 
+  [[ -n "$store_route" ]] && extra="${extra} store-route=${store_route}"
+  [[ -n "$store_category" ]] && extra="${extra} store-category=${store_category}"
+  [[ -n "$store_page" ]] && extra="${extra} store-page=${store_page}"
   [[ -n "$store_source" ]] && extra="${extra} store-source=${store_source}"
   [[ -n "$store_static" ]] && extra="${extra} store-static=${store_static}"
   [[ -n "$store_cache" ]] && extra="${extra} store-cache=${store_cache}"
@@ -422,6 +428,42 @@ extract_header_value() {
       if (value != "") print value
     }
   ' "$file" | tail -n 1
+}
+
+is_production_strict_smoke() {
+  [[ "$current_mode" == "production" ]] && return 0
+  is_truthy "${GG_LIVE_PRODUCTION_STRICT:-0}" && return 0
+  [[ "${GG_EDGE_MODE:-}" == "production" ]] && return 0
+  [[ "${STORE_PRODUCTION:-0}" == "1" ]] && return 0
+  return 1
+}
+
+check_store_html_cache_header() {
+  local path="$1"
+  local headers_file="$2"
+  local cache_control
+
+  is_production_strict_smoke || return 0
+  cache_control="$(extract_header_value "$headers_file" "cache-control" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$cache_control" != *"public"* || "$cache_control" != *"max-age=300"* || "$cache_control" != *"stale-while-revalidate=86400"* ]]; then
+    log_fail "${path} production Cache-Control must be public, max-age=300, stale-while-revalidate=86400 (got ${cache_control:-missing})"
+  fi
+}
+
+check_store_asset_cache_header() {
+  local path="$1"
+  local headers_file="$2"
+  local cache_control
+
+  is_production_strict_smoke || return 0
+  cache_control="$(extract_header_value "$headers_file" "cache-control" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$cache_control" == *"immutable"* ]]; then
+    return 0
+  fi
+  if [[ "$cache_control" == *"public"* && "$cache_control" == *"max-age=300"* && "$cache_control" == *"stale-while-revalidate=86400"* ]]; then
+    return 0
+  fi
+  log_fail "${path} production Cache-Control must be immutable when hashed or SWR 300 when non-hashed (got ${cache_control:-missing})"
 }
 
 check_root_headers() {
@@ -721,6 +763,7 @@ check_store_split_assets() {
         grep -Fq "$marker" "$js_body_file" || log_fail "/assets/store/store.js missing runtime marker: ${marker}"
       done
     fi
+    check_store_asset_cache_header "/assets/store/store.js" "$js_headers_file"
   fi
   mark_asset_check_result "$js_failures_before"
 
@@ -759,8 +802,54 @@ check_store_split_assets() {
         grep -Fq "$marker" "$css_body_file" || log_fail "/assets/store/store.css missing style marker: ${marker}"
       done
     fi
+    check_store_asset_cache_header "/assets/store/store.css" "$css_headers_file"
   fi
   mark_asset_check_result "$css_failures_before"
+}
+
+check_store_manifest_route_live() {
+  local headers_file="$tmp_dir/store_manifest_headers.txt"
+  local body_file="$tmp_dir/store_manifest.json"
+  local meta status content_type failures_before
+
+  current_failure_scope="store_asset"
+  meta="$(fetch_body "/store/data/manifest.json" "$body_file" "$headers_file")"
+  log_route_timing "/store/data/manifest.json" "$meta" "$headers_file"
+  asset_checks_attempted=$((asset_checks_attempted + 1))
+  failures_before="$failures"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/store/data/manifest.json" "$meta"
+    mark_asset_check_result "$failures_before"
+    return
+  fi
+
+  status="$(meta_status "$meta")"
+  if [[ "$status" != "200" ]]; then
+    if is_production_strict_smoke; then
+      log_fail "/store/data/manifest.json expected status 200 (got ${status:-000})"
+    else
+      log_warn "/store/data/manifest.json is not live on the current deployment yet (got ${status:-000})"
+    fi
+    mark_asset_check_result "$failures_before"
+    return
+  fi
+
+  content_type="$(extract_header_value "$headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$content_type" != *"json"* && "$content_type" != *"text/plain"* ]]; then
+    log_fail "/store/data/manifest.json content-type must be JSON during normal serving (got ${content_type:-missing})"
+  fi
+
+  if [[ ! -s "$body_file" ]]; then
+    log_fail "/store/data/manifest.json is empty"
+  else
+    grep -Fq '"items"' "$body_file" || log_fail "/store/data/manifest.json is missing items"
+    grep -Fq '"categories"' "$body_file" || log_fail "/store/data/manifest.json is missing categories"
+    grep -Fq '"count"' "$body_file" || log_fail "/store/data/manifest.json is missing count"
+  fi
+
+  check_store_asset_cache_header "/store/data/manifest.json" "$headers_file"
+  mark_asset_check_result "$failures_before"
 }
 
 check_store_route() {
@@ -914,6 +1003,7 @@ check_store_route() {
   elif [[ "$robots_header" == *"noindex"* ]]; then
     log_info "/store non-production header still carries lockdown robots as expected (${robots_header})"
   fi
+  check_store_html_cache_header "/store" "$headers_file"
 
   proof_root="$tmp_dir"
   manifest_dir="$proof_root/store/data"
@@ -933,24 +1023,239 @@ check_store_route() {
   fi
 }
 
+local_store_category_page_exists() {
+  local category="$1"
+  local page="${2:-1}"
+  if [[ "$page" == "1" ]]; then
+    [[ -f "store/${category}/index.html" || -f "store-${category}.html" ]]
+    return
+  fi
+  [[ -f "store/${category}/page/${page}/index.html" || -f "store-${category}-page-${page}.html" ]]
+}
+
+store_route_drift_or_fail() {
+  local path="$1"
+  local headers_file="$2"
+  local message="$3"
+  local store_route_header route_class_header
+  store_route_header="$(extract_header_value "$headers_file" "x-gg-store-route")"
+  route_class_header="$(extract_header_value "$headers_file" "x-gg-route-class")"
+
+  if [[ "$route_class_header" == "store" || -n "$store_route_header" ]]; then
+    log_fail "$message"
+    return
+  fi
+
+  log_warn "${path} clean Store route is not active on the current deployment yet (${message})"
+}
+
+check_store_category_page_live() {
+  local path="$1"
+  local category="$2"
+  local expected_route="$3"
+  local page="$4"
+  local title_pattern="$5"
+  local headers_file="$tmp_dir/store_${category}_${page}_headers.txt"
+  local body_file="$tmp_dir/store_${category}_${page}_body.html"
+  local meta status route_class store_route store_category store_page store_static robots_header canonical_pattern
+
+  current_failure_scope="route"
+  meta="$(fetch_body "$path" "$body_file" "$headers_file")"
+  log_route_timing "$path" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "$path" "$meta"
+    return
+  fi
+
+  if [[ "$status" != "200" ]]; then
+    store_route_drift_or_fail "$path" "$headers_file" "${path} expected status 200 (got ${status:-000})"
+    return
+  fi
+
+  if ! can_check_body "$meta" "$body_file"; then
+    log_fail "${path} body unavailable for validation despite status 200"
+    return
+  fi
+
+  current_failure_scope="contract"
+  route_class="$(extract_header_value "$headers_file" "x-gg-route-class")"
+  store_route="$(extract_header_value "$headers_file" "x-gg-store-route")"
+  store_category="$(extract_header_value "$headers_file" "x-gg-store-category")"
+  store_page="$(extract_header_value "$headers_file" "x-gg-store-page")"
+  store_static="$(extract_header_value "$headers_file" "x-gg-store-static")"
+  robots_header="$(extract_header_value "$headers_file" "x-robots-tag" | tr '[:upper:]' '[:lower:]')"
+
+  if [[ "$route_class" != "store" ]]; then
+    store_route_drift_or_fail "$path" "$headers_file" "${path} x-gg-route-class should be store (got ${route_class:-missing})"
+    return
+  fi
+  if [[ "$store_route" != "$expected_route" ]]; then
+    store_route_drift_or_fail "$path" "$headers_file" "${path} x-gg-store-route should be ${expected_route} (got ${store_route:-missing})"
+    return
+  fi
+  [[ "$store_category" == "$category" ]] || log_fail "${path} x-gg-store-category should be ${category} (got ${store_category:-missing})"
+  [[ "$store_page" == "$page" ]] || log_fail "${path} x-gg-store-page should be ${page} (got ${store_page:-missing})"
+  [[ "$store_static" == "present" ]] || log_fail "${path} x-gg-store-static should be present (got ${store_static:-missing})"
+
+  canonical_pattern="rel=[\"']canonical[\"'][^>]*href=[\"']https://www\\.pakrpp\\.com${path//\//\\/}[\"']"
+  grep -Eq "$title_pattern" "$body_file" || log_fail "${path} title is missing expected category context"
+  grep -Eq "$canonical_pattern" "$body_file" || log_fail "${path} canonical is missing or not self-referential"
+  grep -Eq "data-store-category-key=[\"']${category}[\"']" "$body_file" || log_fail "${path} runtime category key is missing"
+  grep -Eq "data-store-category-page-number=[\"']${page}[\"']" "$body_file" || log_fail "${path} runtime category page number is missing"
+  grep -Eq 'id=["'"'"']store-static-products["'"'"']' "$body_file" || log_fail "${path} static products payload is missing"
+  grep -Eq 'id=["'"'"']store-itemlist-jsonld["'"'"']' "$body_file" || log_fail "${path} ItemList JSON-LD target is missing"
+  if grep -Eq '\bdummy\b|\bEtc\b|/store/etc($|[/?#" ])' "$body_file"; then
+    log_fail "${path} contains forbidden dummy/Etc route content"
+  fi
+
+  if [[ "$current_mode" == "production" ]]; then
+    if [[ "$robots_header" == *"noindex"* || "$robots_header" == *"nofollow"* || "$robots_header" == *"nosnippet"* || "$robots_header" == *"noimageindex"* ]]; then
+      log_fail "${path} production header must not contain development noindex lockdown (${robots_header:-missing})"
+    fi
+  elif [[ "$robots_header" == *"noindex"* ]]; then
+    log_info "${path} non-production header still carries lockdown robots as expected (${robots_header})"
+  fi
+  check_store_html_cache_header "$path" "$headers_file"
+}
+
+check_store_category_routes() {
+  local category label title_pattern
+  local categories=(
+    "fashion|Fashion|<title>[[:space:]]*Fashion Picks · Yellow Cart[[:space:]]*</title>"
+    "skincare|Skincare|<title>[[:space:]]*Skincare Picks · Yellow Cart[[:space:]]*</title>"
+    "workspace|Workspace|<title>[[:space:]]*Workspace Picks · Yellow Cart[[:space:]]*</title>"
+    "tech|Tech|<title>[[:space:]]*Tech Picks · Yellow Cart[[:space:]]*</title>"
+    "everyday|Lainnya|<title>[[:space:]]*Everyday Picks · Yellow Cart[[:space:]]*</title>"
+  )
+
+  for entry in "${categories[@]}"; do
+    IFS='|' read -r category label title_pattern <<< "$entry"
+    if local_store_category_page_exists "$category" 1; then
+      check_store_category_page_live "/store/${category}" "$category" "category" "1" "$title_pattern"
+    else
+      log_info "skipping /store/${category}; local category artifact is not generated"
+    fi
+  done
+
+  check_store_etc_route_live
+  check_store_page_one_redirect_live
+
+  if local_store_category_page_exists "fashion" 2; then
+    check_store_category_page_live "/store/fashion/page/2" "fashion" "category-page" "2" '<title>[[:space:]]*Fashion Picks · Page 2 · Yellow Cart[[:space:]]*</title>'
+  else
+    log_info "skipping /store/fashion/page/2; local pagination artifact is not generated"
+  fi
+}
+
+check_store_etc_route_live() {
+  local headers_file="$tmp_dir/store_etc_headers.txt"
+  local meta status location route_class store_route
+
+  current_failure_scope="route"
+  meta="$(fetch_headers_nofollow "/store/etc" "$headers_file")"
+  status="$(meta_status "$meta")"
+  location="$(extract_header_value "$headers_file" "location")"
+  route_class="$(extract_header_value "$headers_file" "x-gg-route-class")"
+  store_route="$(extract_header_value "$headers_file" "x-gg-store-route")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/store/etc" "$meta"
+    return
+  fi
+
+  if [[ "$status" == "404" ]]; then
+    log_info "/store/etc returns controlled 404"
+    return
+  fi
+  if [[ "$status" == "301" || "$status" == "302" || "$status" == "308" ]]; then
+    if [[ "$location" == "${BASE_URL}/store/everyday" || "$location" == "/store/everyday" ]]; then
+      log_info "/store/etc redirects to /store/everyday"
+      return
+    fi
+    log_fail "/store/etc redirect location is unexpected (${location:-missing})"
+    return
+  fi
+  if [[ "$route_class" == "store" || -n "$store_route" ]]; then
+    log_fail "/store/etc must redirect to /store/everyday or return controlled 404 (got ${status:-000})"
+  else
+    log_warn "/store/etc clean Store route is not active on the current deployment yet (got ${status:-000})"
+  fi
+}
+
+check_store_page_one_redirect_live() {
+  local headers_file="$tmp_dir/store_fashion_page_one_headers.txt"
+  local meta status location route_class store_route
+
+  current_failure_scope="route"
+  meta="$(fetch_headers_nofollow "/store/fashion/page/1" "$headers_file")"
+  status="$(meta_status "$meta")"
+  location="$(extract_header_value "$headers_file" "location")"
+  route_class="$(extract_header_value "$headers_file" "x-gg-route-class")"
+  store_route="$(extract_header_value "$headers_file" "x-gg-store-route")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "/store/fashion/page/1" "$meta"
+    return
+  fi
+
+  if [[ "$status" == "301" || "$status" == "302" || "$status" == "308" ]]; then
+    if [[ "$location" == "${BASE_URL}/store/fashion" || "$location" == "/store/fashion" ]]; then
+      log_info "/store/fashion/page/1 redirects to /store/fashion"
+      return
+    fi
+    log_fail "/store/fashion/page/1 redirect location is unexpected (${location:-missing})"
+    return
+  fi
+  if [[ "$route_class" == "store" || -n "$store_route" ]]; then
+    log_fail "/store/fashion/page/1 must redirect to /store/fashion (got ${status:-000})"
+  else
+    log_warn "/store/fashion/page/1 clean Store route is not active on the current deployment yet (got ${status:-000})"
+  fi
+}
+
 check_diagnostic_mode_contracts() {
   local prod_headers_http="$tmp_dir/store_prod_headers.http"
   local dev_headers_http="$tmp_dir/store_dev_headers.http"
   local prod_headers_file="$tmp_dir/store_prod_headers.json"
   local dev_headers_file="$tmp_dir/store_dev_headers.json"
+  local prod_category_http="$tmp_dir/store_fashion_prod_headers.http"
+  local prod_category_file="$tmp_dir/store_fashion_prod_headers.json"
+  local prod_page_two_http="$tmp_dir/store_fashion_page_two_prod_headers.http"
+  local prod_page_two_file="$tmp_dir/store_fashion_page_two_prod_headers.json"
+  local prod_manifest_http="$tmp_dir/store_manifest_prod_headers.http"
+  local prod_manifest_file="$tmp_dir/store_manifest_prod_headers.json"
+  local prod_js_http="$tmp_dir/store_js_prod_headers.http"
+  local prod_js_file="$tmp_dir/store_js_prod_headers.json"
+  local prod_css_http="$tmp_dir/store_css_prod_headers.http"
+  local prod_css_file="$tmp_dir/store_css_prod_headers.json"
   local prod_slash_file="$tmp_dir/store_prod_slash_headers.json"
   local dev_slash_file="$tmp_dir/store_dev_slash_headers.json"
   local prod_robots_file="$tmp_dir/store_prod_robots.json"
-  local prod_headers_meta dev_headers_meta prod_slash_meta dev_slash_meta prod_robots_meta
-  local prod_mode prod_robots dev_robots prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
+  local prod_headers_meta dev_headers_meta prod_category_meta prod_page_two_meta prod_manifest_meta prod_js_meta prod_css_meta prod_slash_meta dev_slash_meta prod_robots_meta
+  local prod_mode prod_robots prod_cache dev_robots prod_category_route prod_category_store_route prod_category_robots prod_category_canonical prod_category_cache prod_page_two_route prod_page_two_store_route prod_page_two_robots prod_page_two_canonical prod_page_two_cache prod_manifest_cache prod_js_cache prod_css_cache prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
 
   current_failure_scope="route"
   prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file" "$prod_headers_http")"
   dev_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=development" "$dev_headers_file" "$dev_headers_http")"
+  prod_category_meta="$(fetch_body "/__gg/headers?url=/store/fashion&mode=production" "$prod_category_file" "$prod_category_http")"
+  prod_manifest_meta="$(fetch_body "/__gg/headers?url=/store/data/manifest.json&mode=production" "$prod_manifest_file" "$prod_manifest_http")"
+  prod_js_meta="$(fetch_body "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_file" "$prod_js_http")"
+  prod_css_meta="$(fetch_body "/__gg/headers?url=/assets/store/store.css&mode=production" "$prod_css_file" "$prod_css_http")"
+  if local_store_category_page_exists "fashion" 2; then
+    prod_page_two_meta="$(fetch_body "/__gg/headers?url=/store/fashion/page/2&mode=production" "$prod_page_two_file" "$prod_page_two_http")"
+  else
+    prod_page_two_meta=""
+  fi
   prod_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=production" "$prod_slash_file")"
   dev_slash_meta="$(fetch_body "/__gg/headers?url=/store/&mode=development" "$dev_slash_file")"
   prod_robots_meta="$(fetch_body "/__gg/robots?mode=production" "$prod_robots_file")"
   log_route_timing "/__gg/headers?url=/store&mode=production" "$prod_headers_meta" "$prod_headers_http"
+  log_route_timing "/__gg/headers?url=/store/fashion&mode=production" "$prod_category_meta" "$prod_category_http"
+  log_route_timing "/__gg/headers?url=/store/data/manifest.json&mode=production" "$prod_manifest_meta" "$prod_manifest_http"
+  log_route_timing "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_meta" "$prod_js_http"
+  log_route_timing "/__gg/headers?url=/assets/store/store.css&mode=production" "$prod_css_meta" "$prod_css_http"
 
   if meta_is_unreachable "$prod_headers_meta"; then
     report_unreachable "/__gg/headers?url=/store&mode=production" "$prod_headers_meta"
@@ -972,6 +1277,19 @@ check_diagnostic_mode_contracts() {
     return
   fi
 
+  if meta_is_unreachable "$prod_category_meta"; then
+    report_unreachable "/__gg/headers?url=/store/fashion&mode=production" "$prod_category_meta"
+    return
+  fi
+
+  if [[ -n "$prod_page_two_meta" ]]; then
+    log_route_timing "/__gg/headers?url=/store/fashion/page/2&mode=production" "$prod_page_two_meta" "$prod_page_two_http"
+    if meta_is_unreachable "$prod_page_two_meta"; then
+      report_unreachable "/__gg/headers?url=/store/fashion/page/2&mode=production" "$prod_page_two_meta"
+      return
+    fi
+  fi
+
   if meta_is_unreachable "$prod_slash_meta"; then
     report_unreachable "/__gg/headers?url=/store/&mode=production" "$prod_slash_meta"
     return
@@ -991,10 +1309,20 @@ check_diagnostic_mode_contracts() {
   prod_mode="$(json_field "$prod_headers_file" "mode" || true)"
   prod_robots="$(json_field "$prod_headers_file" "robots" || true)"
   dev_robots="$(json_field "$dev_headers_file" "robots" || true)"
+  prod_category_route="$(json_field "$prod_category_file" "route" || true)"
+  prod_category_store_route="$(json_field "$prod_category_file" "store.route" || true)"
+  prod_category_robots="$(json_field "$prod_category_file" "robots" || true)"
+  prod_category_canonical="$(json_field "$prod_category_file" "store.canonical" || true)"
   prod_slash_to="$(json_field "$prod_slash_file" "redirects.to" || true)"
   prod_slash_status="$(json_field "$prod_slash_file" "redirects.status" || true)"
   dev_slash_status="$(json_field "$dev_slash_file" "redirects.status" || true)"
   prod_robots_txt="$(json_field "$prod_robots_file" "robotsTxt" || true)"
+  if [[ -n "$prod_page_two_meta" ]]; then
+    prod_page_two_route="$(json_field "$prod_page_two_file" "route" || true)"
+    prod_page_two_store_route="$(json_field "$prod_page_two_file" "store.route" || true)"
+    prod_page_two_robots="$(json_field "$prod_page_two_file" "robots" || true)"
+    prod_page_two_canonical="$(json_field "$prod_page_two_file" "store.canonical" || true)"
+  fi
 
   [[ "$prod_mode" == "production" ]] || log_fail "production diagnostics preview did not report mode=production"
 
@@ -1008,6 +1336,30 @@ check_diagnostic_mode_contracts() {
     log_info "PASS: development diagnostics preview for /store keeps lockdown robots (${dev_robots})"
   else
     log_warn "development diagnostics preview for /store no longer shows the expected noindex guard (${dev_robots:-missing})"
+  fi
+
+  if [[ "$prod_category_route" == "store" && "$prod_category_store_route" == "category" ]]; then
+    if [[ "$prod_category_robots" == *"noindex"* || "$prod_category_robots" == *"nofollow"* || "$prod_category_robots" == *"nosnippet"* || "$prod_category_robots" == *"noimageindex"* ]]; then
+      log_fail "production diagnostics preview for /store/fashion is not indexable (${prod_category_robots:-missing})"
+    fi
+    if [[ "$prod_category_canonical" != "https://www.pakrpp.com/store/fashion" ]]; then
+      log_fail "production diagnostics preview for /store/fashion canonical is wrong (${prod_category_canonical:-missing})"
+    fi
+  else
+    log_warn "production diagnostics preview for /store/fashion is not on the clean Store route yet (route=${prod_category_route:-missing} store=${prod_category_store_route:-missing})"
+  fi
+
+  if [[ -n "$prod_page_two_meta" ]]; then
+    if [[ "$prod_page_two_route" == "store" && "$prod_page_two_store_route" == "category-page" ]]; then
+      if [[ "$prod_page_two_robots" == *"noindex"* || "$prod_page_two_robots" == *"nofollow"* || "$prod_page_two_robots" == *"nosnippet"* || "$prod_page_two_robots" == *"noimageindex"* ]]; then
+        log_fail "production diagnostics preview for /store/fashion/page/2 is not indexable (${prod_page_two_robots:-missing})"
+      fi
+      if [[ "$prod_page_two_canonical" != "https://www.pakrpp.com/store/fashion/page/2" ]]; then
+        log_fail "production diagnostics preview for /store/fashion/page/2 canonical is wrong (${prod_page_two_canonical:-missing})"
+      fi
+    else
+      log_warn "production diagnostics preview for /store/fashion/page/2 is not on the clean Store route yet (route=${prod_page_two_route:-missing} store=${prod_page_two_store_route:-missing})"
+    fi
   fi
 
   if [[ "$current_mode" != "production" ]]; then
@@ -1150,7 +1502,9 @@ check_gg_app_assets
 check_landing_route
 check_landing_html_redirect
 check_store_route
+check_store_category_routes
 check_store_split_assets
+check_store_manifest_route_live
 if should_skip_post_store_checks; then
   log_info "skipping non-core diagnostics because core endpoints are infra-unreachable and /store did not become reachable"
 else

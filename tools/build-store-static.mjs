@@ -7,15 +7,16 @@ import path from "node:path";
 import {
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
+  STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_URL,
-  STORE_ORIGIN,
+  STORE_PRODUCTION_BUDGETS,
   SYSTEM_LABELS,
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
 import { buildStoreManifest } from "../src/store/lib/build-store-manifest.mjs";
+import { paginateStoreCategories } from "../src/store/lib/paginate-products.mjs";
 import { renderCategoryPage } from "../src/store/lib/render-category-page.mjs";
-import { CATEGORY_PAGE_SIZE, productsForCategory, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
 import { extractFeedProducts } from "../src/store/lib/extract-feed-products.mjs";
 import { extractScriptTextById, extractStaticProductsFromStoreHtml } from "../src/store/lib/extract-static-products.mjs";
 import {
@@ -110,6 +111,8 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     manifestItems: Number(sourceReport.manifestItems || 0),
     manifestCategories: Array.isArray(sourceReport.manifestCategories) ? sourceReport.manifestCategories : [],
     categoryPages: Array.isArray(sourceReport.categoryPages) ? sourceReport.categoryPages : [],
+    pagination: sourceReport.pagination && typeof sourceReport.pagination === "object" ? sourceReport.pagination : null,
+    budgets: sourceReport.budgets && typeof sourceReport.budgets === "object" ? sourceReport.budgets : { ...STORE_PRODUCTION_BUDGETS },
     status,
     pageCount: Number(sourceReport.pageCount || 0),
     error: clean(error),
@@ -871,27 +874,43 @@ const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_STAR
 const manifest = buildStoreManifest(products, { source });
 const manifestContent = normalizeTextFile(JSON.stringify(manifest, null, 2));
 const manifestBytes = Buffer.byteLength(manifestContent, "utf8");
-const categoryPageSummary = storeCategoryRoutes().map((route) => {
-  const categoryProducts = productsForCategory(products, route.key);
-  return {
-    key: route.key,
-    label: route.label,
-    path: route.path,
-    canonicalUrl: route.canonicalUrl,
-    outputPath: route.nestedOutputPath,
-    flatOutputPath: route.flatOutputPath,
-    totalProducts: categoryProducts.length,
-    visibleProducts: Math.min(categoryProducts.length, CATEGORY_PAGE_SIZE),
-    pageSize: CATEGORY_PAGE_SIZE,
-    needsPagination: categoryProducts.length > CATEGORY_PAGE_SIZE,
-  };
-});
+const categoryPagination = paginateStoreCategories(products, STORE_CATEGORY_PAGE_SIZE);
+const categoryPageSummary = categoryPagination.flatMap((category) => category.pages.map((page) => ({
+  key: category.key,
+  label: category.label,
+  page: page.pageNumber,
+  path: page.path,
+  canonicalUrl: page.canonicalUrl,
+  outputPath: page.nestedOutputPath,
+  flatOutputPath: page.flatOutputPath,
+  totalProducts: category.totalProducts,
+  visibleProducts: page.visibleProducts,
+  pageSize: page.pageSize,
+  totalPages: category.totalPages,
+  positionOffset: page.positionOffset,
+  prevPath: page.prevPath,
+  nextPath: page.nextPath,
+  needsPagination: category.totalProducts > page.pageSize,
+})));
+const paginationSummary = {
+  pageSize: STORE_CATEGORY_PAGE_SIZE,
+  categories: Object.fromEntries(categoryPagination.map((category) => [
+    category.key,
+    {
+      total: category.totalProducts,
+      pages: category.totalPages,
+      paths: category.paths,
+    },
+  ])),
+};
 
 report.manifestPath = STORE_MANIFEST_REPORT_PATH;
 report.manifestBytes = manifestBytes;
 report.manifestItems = manifest.items.length;
 report.manifestCategories = manifest.categories.map((entry) => ({ ...entry }));
 report.categoryPages = categoryPageSummary.map((entry) => ({ ...entry }));
+report.pagination = paginationSummary;
+report.budgets = { ...STORE_PRODUCTION_BUDGETS };
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
 writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
@@ -913,15 +932,19 @@ if (nextStoreSource !== originalStoreSource) {
   writeFileSync(STORE_PATH, nextStoreSource, "utf8");
 }
 
-for (const route of storeCategoryRoutes()) {
-  const categoryPage = renderCategoryPage({
-    template: nextStoreSource,
-    products,
-    categoryKey: route.key,
-    report,
-  });
-  writeTextFile(path.resolve(ROOT, categoryPage.route.nestedOutputPath), categoryPage.html);
-  writeTextFile(path.resolve(ROOT, categoryPage.route.flatOutputPath), categoryPage.html);
+for (const category of categoryPagination) {
+  for (const page of category.pages) {
+    const categoryPage = renderCategoryPage({
+      template: nextStoreSource,
+      products,
+      categoryKey: category.key,
+      page: page.pageNumber,
+      paginationPage: page,
+      report,
+    });
+    writeTextFile(path.resolve(ROOT, categoryPage.route.nestedOutputPath), categoryPage.html);
+    writeTextFile(path.resolve(ROOT, categoryPage.route.flatOutputPath), categoryPage.html);
+  }
 }
 
 writeMachineReport(buildMachineReport({

@@ -37,6 +37,7 @@ export function buildStoreJsonLd(products, options = {}) {
   const collectionName = clean(options.collectionName) || "Yellow Cart";
   const itemListName = clean(options.itemListName) || "Yellow Cart product picks";
   const description = clean(options.description) || STORE_SCHEMA_DESCRIPTION;
+  const positionOffset = Math.max(0, Number.parseInt(String(options.positionOffset || 0), 10) || 0);
   const itemListElements = products.map((product, index) => {
     const item = {
       "@type": "Product",
@@ -69,7 +70,7 @@ export function buildStoreJsonLd(products, options = {}) {
 
     return {
       "@type": "ListItem",
-      position: index + 1,
+      position: positionOffset + index + 1,
       url: product.canonicalUrl,
       item,
     };

@@ -2,20 +2,25 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 
 import {
   CRITICAL_CSS_BUDGET_BYTES,
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
+  STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_PATH,
   STORE_LEGACY_FEED_PATH,
+  STORE_PRODUCTION_BUDGETS,
 } from "../src/store/store.config.mjs";
 import { STORE_MANIFEST_VERSION } from "../src/store/lib/build-store-manifest.mjs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, categoryCounts } from "../src/store/lib/category-config.mjs";
 import { extractMarkedRegion, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
 import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../src/store/lib/normalize-store-product.mjs";
-import { CATEGORY_PAGE_SIZE, productCategoryKey, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
-import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
+import { paginateCategoryProducts, paginateStoreCategories } from "../src/store/lib/paginate-products.mjs";
+import { renderCategoryPage } from "../src/store/lib/render-category-page.mjs";
+import { productCategoryKey, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
+import { isDummyProduct, isPlaceholderImageUrl, productionImageUrlIssue, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
 
 const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
@@ -28,9 +33,13 @@ const STORE_MANIFEST_PATH = path.resolve(TARGET_ROOT, "store/data/manifest.json"
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 const warnings = [];
+const STORE_CI = isTruthyEnv(process.env.STORE_CI);
 const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
 const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
-const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES;
+let STORE_PRODUCTION = isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production";
+let STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
+let STORE_PROOF_MODE = STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development";
+const STORE_ALLOW_EXISTING_STATIC = isTruthyEnv(process.env.STORE_ALLOW_EXISTING_STATIC) || isTruthyEnv(process.env.STORE_PROOF_ALLOW_EXISTING_STATIC);
 const STORE_PROOF_ALLOW_REPORT_DRIFT = isTruthyEnv(process.env.STORE_PROOF_ALLOW_REPORT_DRIFT);
 
 function isTruthyEnv(value) {
@@ -45,13 +54,67 @@ function warn(message) {
   warnings.push(message);
 }
 
+function modeFailOrWarn(message) {
+  if (STORE_STRICT_MODE) fail(message);
+  else warn(message);
+}
+
+function staticFallbackFailOrWarn(message) {
+  if (STORE_STRICT_MODE && !STORE_ALLOW_EXISTING_STATIC) fail(message);
+  else warn(STORE_ALLOW_EXISTING_STATIC ? `${message} (allowed by STORE_ALLOW_EXISTING_STATIC)` : message);
+}
+
 function reportDrift(message) {
   if (STORE_PROOF_ALLOW_REPORT_DRIFT) warn(message);
   else fail(message);
 }
 
+function byteLength(value) {
+  return Buffer.byteLength(String(value || ""), "utf8");
+}
+
+function gzipByteLength(value) {
+  return gzipSync(Buffer.from(String(value || ""), "utf8")).length;
+}
+
+function checkBudget(label, value, warnBytes, failBytes, { strictOnly = false } = {}) {
+  if (!Number.isFinite(value) || value < 0) {
+    fail(`${label} budget size could not be measured`);
+    return;
+  }
+  if (Number.isFinite(failBytes) && value > failBytes) {
+    if (!strictOnly || STORE_STRICT_MODE) fail(`${label} exceeds fail budget (${value} bytes > ${failBytes} bytes)`);
+    else warn(`${label} exceeds fail budget (${value} bytes > ${failBytes} bytes)`);
+    return;
+  }
+  if (Number.isFinite(warnBytes) && value > warnBytes) warn(`${label} exceeds warning budget (${value} bytes > ${warnBytes} bytes)`);
+}
+
+function checkMaxBudget(label, value, maxBytes, { strictOnly = false } = {}) {
+  checkBudget(label, value, Number.POSITIVE_INFINITY, maxBytes, { strictOnly });
+}
+
+function checkNoProductionNoindex(pageSource, pageLabel) {
+  if (!STORE_PRODUCTION) return;
+  const forbidden = /\b(?:noindex|nofollow|nosnippet|noimageindex|max-snippet:0|max-image-preview:none)\b/i;
+  const robotMeta = String(pageSource || "").match(/<meta\b[^>]*name=["']robots["'][^>]*>/gi) || [];
+  const badMeta = robotMeta.find((tag) => forbidden.test(tagAttr(tag, "content")));
+  if (badMeta) fail(`${pageLabel}: production route includes forbidden robots directive`);
+}
+
+function checkProductionImageUrl(value, label) {
+  const issue = productionImageUrlIssue(value);
+  if (!issue) return;
+  if (STORE_STRICT_MODE) fail(`${label}: ${issue}`);
+  else warn(`${label}: ${issue}`);
+}
+
 function countOccurrences(text, needle) {
   return (text.match(new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length;
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function scriptTags(text) {
@@ -77,6 +140,13 @@ function preloadTags(text) {
 function tagAttr(tag, name) {
   const match = tag.match(new RegExp(`\\b${name}=(["'])(.*?)\\1`, "i"));
   return match ? match[2] : "";
+}
+
+function hasAnchorRelHref(text, rel, href) {
+  return anchorTags(text).some((anchor) => {
+    const relTokens = String(tagAttr(anchor, "rel") || "").toLowerCase().split(/\s+/).filter(Boolean);
+    return tagAttr(anchor, "href") === href && relTokens.includes(rel);
+  });
 }
 
 function tagBody(tag) {
@@ -140,6 +210,9 @@ if (existsSync(FLAGS_PATH)) {
     fail(`flags.json is not valid JSON: ${error.message}`);
   }
 }
+if (mode === "production") STORE_PRODUCTION = true;
+STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
+STORE_PROOF_MODE = STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development";
 
 const gridRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
 const staticProductsRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
@@ -161,6 +234,9 @@ if (!assetCssRegion) fail("missing STORE_ASSET_CSS markers");
 if (!buildReportRegion) fail("missing STORE_BUILD_REPORT markers");
 if (!runtimeAssetRegion) fail("missing STORE_RUNTIME_JS markers");
 
+checkMaxBudget("/store HTML", byteLength(source), STORE_PRODUCTION_BUDGETS.storeHtmlBytes, { strictOnly: true });
+checkNoProductionNoindex(source, "/store");
+
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
 if (!/id=["']store-build-report["']/.test(buildReportRegion)) fail("STORE_BUILD_REPORT marker block is missing #store-build-report");
@@ -170,6 +246,7 @@ let rawStaticProducts = [];
 let schema = null;
 let buildReport = null;
 let manifest = null;
+let manifestSource = "";
 try {
   rawStaticProducts = extractStaticProductsFromStoreHtml(source);
 } catch (error) {
@@ -189,7 +266,8 @@ if (!existsSync(STORE_MANIFEST_PATH)) {
   fail(`store manifest is missing at ${path.relative(ROOT, STORE_MANIFEST_PATH) || STORE_MANIFEST_PATH}`);
 } else {
   try {
-    manifest = JSON.parse(readFileSync(STORE_MANIFEST_PATH, "utf8"));
+    manifestSource = readFileSync(STORE_MANIFEST_PATH, "utf8");
+    manifest = JSON.parse(manifestSource);
   } catch (error) {
     fail(`store manifest is not valid JSON: ${error.message}`);
   }
@@ -197,6 +275,7 @@ if (!existsSync(STORE_MANIFEST_PATH)) {
 
 const staticProducts = rawStaticProducts.map((product) => normalizeStoreProduct(product));
 const expectedManifestCounts = categoryCounts(staticProducts);
+const expectedCategoryPagination = paginateStoreCategories(staticProducts, STORE_CATEGORY_PAGE_SIZE);
 const graph = graphNodes(schema);
 const websiteNode = findGraphNode(graph, "WebSite", "#website");
 const organizationNode = findGraphNode(graph, "Organization", "#organization");
@@ -270,6 +349,15 @@ if (storeJsAsset && !/function applyDiscoveryFilters\(/.test(storeJsAsset)) fail
 if (storeJsAsset && !/function fallbackDiscoveryItems\(/.test(storeJsAsset)) fail(`runtime discovery static fallback is missing from ${STORE_ASSET_JS_HREF}`);
 if (storeJsAsset && !/storeManifestCache/.test(storeJsAsset)) fail(`runtime discovery manifest cache is missing from ${STORE_ASSET_JS_HREF}`);
 if (storeJsAsset && !/discoveryManifestState = ["']fallback["']/.test(storeJsAsset)) fail(`runtime discovery manifest failure fallback is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeCssAsset) {
+  checkBudget(`${STORE_ASSET_CSS_HREF} gzip`, gzipByteLength(storeCssAsset), STORE_PRODUCTION_BUDGETS.storeCssGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeCssGzipFailBytes);
+}
+if (storeJsAsset) {
+  checkBudget(`${STORE_ASSET_JS_HREF} gzip`, gzipByteLength(storeJsAsset), STORE_PRODUCTION_BUDGETS.storeJsGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeJsGzipFailBytes);
+}
+if (manifestSource) {
+  checkBudget("store manifest gzip", gzipByteLength(manifestSource), STORE_PRODUCTION_BUDGETS.manifestGzipWarnBytes, STORE_PRODUCTION_BUDGETS.manifestGzipFailBytes);
+}
 if (!/id=["']store-discovery-search["'][^>]*\baria-label=/.test(source)) reportDrift("Discovery search input is missing an accessible label");
 if (!/id=["']store-discovery-status["'][^>]*\baria-live=/.test(source)) reportDrift("Discovery result status is missing aria-live");
 if (!/data-store-price-band=["']under-50k["']/.test(source)) reportDrift("Discovery price-band filter hooks are missing");
@@ -279,6 +367,9 @@ if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeJsAsset)) fail('public o
 if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeJsAsset)) fail('public output still contains category "Etc"');
 
 if (!staticProducts.length) fail("static product JSON is empty");
+if (staticProducts.length > STORE_PRODUCTION_BUDGETS.storeVisibleProducts) {
+  modeFailOrWarn(`/store visible product count (${staticProducts.length}) exceeds ${STORE_PRODUCTION_BUDGETS.storeVisibleProducts}`);
+}
 if (!buildReport || typeof buildReport !== "object") fail("build report is missing or empty");
 
 const reportSourceType = String(buildReport?.sourceType || "");
@@ -294,23 +385,30 @@ if (!reportImageSummary) fail("build report is missing imageSourceSummary");
 if (reportValidProducts && reportValidProducts !== staticProducts.length) {
   fail(`build report validProducts (${reportValidProducts}) does not match normalized product count (${staticProducts.length})`);
 }
+if (STORE_STRICT_MODE && reportValidProducts < 1) fail("build report validProducts is 0 while strict mode is enabled");
 
 if (reportSourceType === "existing-static") {
-  if (STORE_STRICT_MODE) fail("build report sourceType is existing-static while strict mode is enabled");
-  else warn("build report sourceType is existing-static");
+  staticFallbackFailOrWarn("build report sourceType is existing-static while strict mode is enabled");
 } else if (reportSourceType !== "live-feed") {
-  if (STORE_STRICT_MODE) fail(`build report sourceType is ${reportSourceType} while strict mode is enabled`);
-  else warn(`build report sourceType is ${reportSourceType}`);
+  modeFailOrWarn(`build report sourceType is ${reportSourceType} while strict mode is enabled`);
 }
 
 if (reportExistingStaticFallbackCount > 0) {
-  if (STORE_STRICT_MODE) fail(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
-  else warn(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
+  staticFallbackFailOrWarn(`build report used existing-static-fallback images (${reportExistingStaticFallbackCount})`);
 }
 
 if (reportMissingImageCount > 0) {
-  if (STORE_STRICT_MODE) fail(`build report has missing image extractions (${reportMissingImageCount})`);
-  else warn(`build report has missing image extractions (${reportMissingImageCount})`);
+  modeFailOrWarn(`build report has missing image extractions (${reportMissingImageCount})`);
+}
+
+if (!buildReport?.budgets || typeof buildReport.budgets !== "object") {
+  reportDrift("build report production budgets are missing");
+} else {
+  for (const [key, expected] of Object.entries(STORE_PRODUCTION_BUDGETS)) {
+    if (Number(buildReport.budgets[key] || 0) !== Number(expected)) {
+      reportDrift(`build report budget ${key} (${buildReport.budgets[key] || "missing"}) does not match ${expected}`);
+    }
+  }
 }
 
 if (!manifest || typeof manifest !== "object") {
@@ -352,8 +450,9 @@ if (!manifest || typeof manifest !== "object") {
   }
 
   if (String(manifest.source || "") === "existing-static") {
-    if (STORE_STRICT_MODE) fail("store manifest source is existing-static while strict mode is enabled");
-    else warn("store manifest source is existing-static");
+    staticFallbackFailOrWarn("store manifest source is existing-static while strict mode is enabled");
+  } else if (STORE_STRICT_MODE && String(manifest.source || "") !== "live-feed") {
+    fail(`store manifest source is ${manifest.source || "missing"} while strict mode is enabled`);
   }
 
   for (const key of CATEGORY_ORDER) {
@@ -383,6 +482,33 @@ if (!manifest || typeof manifest !== "object") {
     if (key === "etc") fail('store manifest categoryKey "etc" is not allowed');
     if (label === "Etc") fail('store manifest category label "Etc" is not allowed');
     if (/\/store\/etc(?:$|[/?#])/.test(routePath)) fail("store manifest category path must not reference /store/etc");
+  }
+
+  if (!buildReport?.pagination || typeof buildReport.pagination !== "object") {
+    reportDrift("build report pagination summary is missing");
+  } else {
+    const reportPagination = buildReport.pagination;
+    const reportCategories = reportPagination.categories && typeof reportPagination.categories === "object" ? reportPagination.categories : {};
+    if (Number(reportPagination.pageSize || 0) !== STORE_CATEGORY_PAGE_SIZE) {
+      reportDrift(`build report pagination pageSize (${reportPagination.pageSize || "missing"}) is not ${STORE_CATEGORY_PAGE_SIZE}`);
+    }
+
+    for (const category of expectedCategoryPagination) {
+      const entry = reportCategories[category.key];
+      if (!entry) {
+        reportDrift(`build report pagination is missing ${category.key}`);
+        continue;
+      }
+      if (Number(entry.total || 0) !== category.totalProducts) {
+        reportDrift(`build report pagination ${category.key} total (${entry.total || 0}) does not match ${category.totalProducts}`);
+      }
+      if (Number(entry.pages || 0) !== category.totalPages) {
+        reportDrift(`build report pagination ${category.key} pages (${entry.pages || 0}) does not match ${category.totalPages}`);
+      }
+      if (JSON.stringify(Array.isArray(entry.paths) ? entry.paths : []) !== JSON.stringify(category.paths)) {
+        reportDrift(`build report pagination ${category.key} paths do not match generated pagination`);
+      }
+    }
   }
 
   for (const item of manifestItems) {
@@ -417,10 +543,8 @@ if (!manifest || typeof manifest !== "object") {
       fail(`${label}: store manifest tags must be lowercase kebab-case`);
     }
 
-    if (/picsum\.photos/i.test(String(item?.image || ""))) {
-      if (STORE_STRICT_MODE) fail(`${label}: store manifest image uses picsum.photos`);
-      else warn(`${label}: store manifest image uses picsum.photos`);
-    }
+    if (isPlaceholderImageUrl(item?.image)) modeFailOrWarn(`${label}: store manifest image uses a placeholder host`);
+    checkProductionImageUrl(item?.image, `${label}: store manifest image`);
   }
 
   if (duplicateManifestSlugs.length) {
@@ -432,7 +556,7 @@ const duplicateSlugs = [];
 const seenSlugs = new Set();
 for (const product of staticProducts) {
   const label = product.slug || product.name || "unknown";
-  const validation = validateStoreProduct(product, { mode: STORE_STRICT_IMAGES ? "production" : "development" });
+  const validation = validateStoreProduct(product, { mode: (STORE_STRICT_IMAGES || STORE_PRODUCTION) ? "production" : "development" });
   if (isDummyProduct(product)) fail(`${label}: dummy product remained in normalized output`);
   if (slugLooksLikeUrl(product.slug)) fail(`${label}: slug looks like a URL`);
   if (slugEndsWithHtml(product.slug)) fail(`${label}: slug ends with .html`);
@@ -534,138 +658,286 @@ if (staticProducts.length) {
 
 if (staticProducts.length) {
   const categoryPageSeenSlugs = new Map();
-  const categoryExpectedCounts = categoryCounts(staticProducts);
 
-  for (const route of storeCategoryRoutes()) {
-    const nestedPath = path.resolve(TARGET_ROOT, route.nestedOutputPath);
-    const flatPath = path.resolve(TARGET_ROOT, route.flatOutputPath);
-    const pageLabel = `category page ${route.path}`;
+  for (const category of expectedCategoryPagination) {
+    for (const route of category.pages) {
+      const nestedPath = path.resolve(TARGET_ROOT, route.nestedOutputPath);
+      const flatPath = path.resolve(TARGET_ROOT, route.flatOutputPath);
+      const pageLabel = `category page ${route.path}`;
 
-    if (!existsSync(nestedPath)) {
-      reportDrift(`${pageLabel}: artifact is missing at ${path.relative(ROOT, nestedPath) || nestedPath}`);
-      continue;
+      if (!existsSync(nestedPath)) {
+        reportDrift(`${pageLabel}: artifact is missing at ${path.relative(ROOT, nestedPath) || nestedPath}`);
+        continue;
+      }
+      if (!existsSync(flatPath)) {
+        reportDrift(`${pageLabel}: transitional flat artifact is missing at ${path.relative(ROOT, flatPath) || flatPath}`);
+      }
+
+      const pageSource = readFileSync(nestedPath, "utf8");
+      checkMaxBudget(`${pageLabel} HTML`, byteLength(pageSource), STORE_PRODUCTION_BUDGETS.categoryHtmlBytes, { strictOnly: true });
+      checkNoProductionNoindex(pageSource, pageLabel);
+      const pageStaticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
+      const pageGridRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
+      const pageSemanticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
+      const pageJsonLdRegion = extractMarkedRegion(pageSource, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
+      let pageProducts = [];
+      let pageSchema = null;
+
+      if (/\bdummy\b/i.test(pageSource)) fail(`${pageLabel}: contains dummy`);
+      if (/\bEtc\b/.test(pageSource)) fail(`${pageLabel}: contains public category Etc`);
+      if (/\/store\/etc(?:$|[/?#"' ])/.test(pageSource)) fail(`${pageLabel}: route path references /store/etc`);
+      if (pageSource.includes(STORE_MANIFEST_VERSION)) fail(`${pageLabel}: manifest is inlined`);
+      if (!pageStaticRegion) fail(`${pageLabel}: missing static products markers`);
+      if (!pageGridRegion) fail(`${pageLabel}: missing static grid markers`);
+      if (!pageSemanticRegion) fail(`${pageLabel}: missing semantic product markers`);
+      if (!pageJsonLdRegion) fail(`${pageLabel}: missing ItemList JSON-LD markers`);
+
+      if (!new RegExp(`<title>\\s*${escapeRegExp(route.title)}\\s*<\\/title>`, "i").test(pageSource)) {
+        fail(`${pageLabel}: title is missing category pagination context`);
+      }
+      if (!new RegExp(`rel=["']canonical["'][^>]*href=["']${escapeRegExp(route.canonicalUrl)}["']`, "i").test(pageSource)) {
+        fail(`${pageLabel}: canonical is wrong or missing`);
+      }
+      if (route.pageNumber > 1 && new RegExp(`rel=["']canonical["'][^>]*href=["']${escapeRegExp(category.route.canonicalUrl)}["']`, "i").test(pageSource)) {
+        fail(`${pageLabel}: canonical points to page 1`);
+      }
+      if (!new RegExp(`<meta\\s+property=["']og:url["'][^>]*content=["']${escapeRegExp(route.canonicalUrl)}["']`, "i").test(pageSource)) {
+        fail(`${pageLabel}: OG URL is wrong or missing`);
+      }
+      if (/<title>\s*Yellow Cart · PakRPP\s*<\/title>/i.test(pageSource)) {
+        fail(`${pageLabel}: title duplicates /store title`);
+      }
+      if (!new RegExp(`<h1[^>]*>\\s*${escapeRegExp(route.h1)}\\s*<\\/h1>`, "i").test(pageSource)) {
+        fail(`${pageLabel}: H1 is wrong or missing`);
+      }
+      if (!/class=["'][^"']*store-category-page-rail[^"']*["']/.test(pageSource)) {
+        fail(`${pageLabel}: category rail is missing`);
+      }
+      for (const expectedRoute of storeCategoryRoutes()) {
+        if (!pageSource.includes(`href="${expectedRoute.path}"`)) fail(`${pageLabel}: category rail misses ${expectedRoute.path}`);
+      }
+      if (!pageSource.includes('href="/store"')) fail(`${pageLabel}: link back to /store is missing`);
+      if (!pageSource.includes(`data-store-category-key="${route.key}"`)) fail(`${pageLabel}: runtime category key is missing`);
+      if (!pageSource.includes(`data-store-category-page-number="${route.pageNumber}"`)) fail(`${pageLabel}: runtime page number is missing`);
+      if (route.prevPath && !hasAnchorRelHref(pageSource, "prev", route.prevPath)) fail(`${pageLabel}: crawlable previous link is missing`);
+      if (route.nextPath && !hasAnchorRelHref(pageSource, "next", route.nextPath)) fail(`${pageLabel}: crawlable next link is missing`);
+      if (route.pageNumber > 1 && !route.prevPath) fail(`${pageLabel}: page ${route.pageNumber} has no previous path`);
+      if (route.pageNumber < category.totalPages && !route.nextPath) fail(`${pageLabel}: non-last page has no next path`);
+      if (countOccurrences(pageSource, STORE_ASSET_CSS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
+      if (countOccurrences(pageSource, STORE_ASSET_JS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_JS_HREF} reference`);
+      if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(pageSource)) {
+        fail(`${pageLabel}: misses deferred ${STORE_ASSET_JS_HREF}`);
+      }
+      validateInlineRuntimeScripts(pageSource, pageLabel);
+      if (/function\s+readStaticProducts\(/.test(pageSource) || /function\s+loadProducts\(/.test(pageSource)) {
+        fail(`${pageLabel}: full runtime JavaScript is inlined`);
+      }
+
+      try {
+        pageProducts = extractStaticProductsFromStoreHtml(pageSource).map((product) => normalizeStoreProduct(product));
+      } catch (error) {
+        fail(`${pageLabel}: invalid static products JSON: ${error.message}`);
+      }
+      try {
+        pageSchema = parseJsonScript(pageSource, "store-itemlist-jsonld");
+      } catch (error) {
+        fail(`${pageLabel}: invalid ItemList JSON-LD: ${error.message}`);
+      }
+
+      const expectedCount = Math.min(Math.max(category.totalProducts - route.positionOffset, 0), STORE_CATEGORY_PAGE_SIZE);
+      if (!pageProducts.length) fail(`${pageLabel}: has no visible products`);
+      if (pageProducts.length !== expectedCount) {
+        fail(`${pageLabel}: visible product count (${pageProducts.length}) does not match expected page count (${expectedCount})`);
+      }
+      if (pageProducts.length > STORE_CATEGORY_PAGE_SIZE) {
+        fail(`${pageLabel}: includes more than ${STORE_CATEGORY_PAGE_SIZE} products`);
+      }
+      if (pageProducts.length > STORE_PRODUCTION_BUDGETS.categoryVisibleProducts) {
+        modeFailOrWarn(`${pageLabel}: visible product count (${pageProducts.length}) exceeds ${STORE_PRODUCTION_BUDGETS.categoryVisibleProducts}`);
+      }
+
+      for (const product of pageProducts) {
+        if (productCategoryKey(product) !== route.key) {
+          fail(`${pageLabel}: contains product from wrong category (${product.slug || product.name || "unknown"})`);
+        }
+        if (categoryPageSeenSlugs.has(product.slug)) {
+          fail(`${pageLabel}: duplicate product slug across category pages (${product.slug})`);
+        } else {
+          categoryPageSeenSlugs.set(product.slug, route.key);
+        }
+      }
+
+      const pageCards = pageGridRegion.match(/data-store-product-id=/g) || [];
+      const pageNotes = pageSemanticRegion.match(/class=["']store-semantic-product["']/g) || [];
+      if (pageCards.length !== pageProducts.length) {
+        fail(`${pageLabel}: grid count (${pageCards.length}) does not match static products (${pageProducts.length})`);
+      }
+      if (pageNotes.length !== pageProducts.length) {
+        fail(`${pageLabel}: semantic note count (${pageNotes.length}) does not match static products (${pageProducts.length})`);
+      }
+
+      const pageGraph = graphNodes(pageSchema);
+      const pageCollection = findGraphNode(pageGraph, "CollectionPage", "#collection");
+      const pageItemList = findGraphNode(pageGraph, "ItemList", "#itemlist") || findGraphNode(pageGraph, "ItemList");
+      if (!pageCollection) fail(`${pageLabel}: JSON-LD is missing CollectionPage`);
+      if (!pageItemList) fail(`${pageLabel}: JSON-LD is missing ItemList`);
+      if (pageCollection && String(pageCollection.url || "") !== route.canonicalUrl) {
+        fail(`${pageLabel}: CollectionPage URL is wrong (${pageCollection.url || "missing"})`);
+      }
+      if (pageCollection && pageItemList && String(pageCollection.mainEntity?.["@id"] || "") !== String(pageItemList["@id"] || "")) {
+        fail(`${pageLabel}: CollectionPage mainEntity does not reference category ItemList`);
+      }
+      if (pageItemList) {
+        const entries = Array.isArray(pageItemList.itemListElement) ? pageItemList.itemListElement : [];
+        if (String(pageItemList.url || "") !== route.canonicalUrl) fail(`${pageLabel}: ItemList URL is wrong (${pageItemList.url || "missing"})`);
+        if (Number(pageItemList.numberOfItems) !== pageProducts.length) {
+          fail(`${pageLabel}: ItemList numberOfItems (${pageItemList.numberOfItems}) does not match visible products (${pageProducts.length})`);
+        }
+        if (entries.length !== pageProducts.length) {
+          fail(`${pageLabel}: ItemList item count (${entries.length}) does not match visible products (${pageProducts.length})`);
+        }
+        for (const [index, entry] of entries.entries()) {
+          const product = entry?.item || {};
+          const expectedPosition = route.positionOffset + index + 1;
+          if (Number(entry?.position || 0) !== expectedPosition) {
+            fail(`${pageLabel}: JSON-LD position ${entry?.position || "missing"} does not match ${expectedPosition}`);
+          }
+          if (product.category && product.category !== route.label) {
+            fail(`${pageLabel}: JSON-LD product ${index + 1} has wrong category (${product.category})`);
+          }
+          if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) {
+            fail(`${pageLabel}: JSON-LD product ${index + 1} emitted Offer for search-style marketplace URL`);
+          }
+        }
+      }
     }
-    if (!existsSync(flatPath)) {
-      reportDrift(`${pageLabel}: transitional flat artifact is missing at ${path.relative(ROOT, flatPath) || flatPath}`);
-    }
+  }
+}
 
-    const pageSource = readFileSync(nestedPath, "utf8");
-    const pageStaticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
-    const pageGridRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
-    const pageSemanticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
-    const pageJsonLdRegion = extractMarkedRegion(pageSource, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->");
+if (staticProducts.length) {
+  const syntheticKey = "fashion";
+  const syntheticBaseRoute = storeCategoryRoutes().find((route) => route.key === syntheticKey);
+  const baseProduct = staticProducts.find((product) => productCategoryKey(product) === syntheticKey) || staticProducts[0];
+  const baseImages = Array.isArray(baseProduct?.images) && baseProduct.images.length ? baseProduct.images : ["https://www.pakrpp.com/favicon.ico"];
+  const syntheticTotal = STORE_CATEGORY_PAGE_SIZE * 2 + 5;
+  const syntheticProducts = Array.from({ length: syntheticTotal }, (_, index) => {
+    const slug = `synthetic-pagination-${syntheticKey}-${index + 1}`;
+    return {
+      ...baseProduct,
+      id: slug,
+      slug,
+      name: `${syntheticBaseRoute.h1} Pagination Fixture ${index + 1}`,
+      summary: baseProduct.summary || "Synthetic pagination proof product.",
+      category: syntheticBaseRoute.label,
+      categoryKey: syntheticKey,
+      categoryLabel: syntheticBaseRoute.label,
+      canonicalUrl: `https://www.pakrpp.com/p/${slug}.html`,
+      storeUrl: `/store?item=${slug}`,
+      images: baseImages.slice(),
+      links: { ...(baseProduct.links || {}) },
+      bestFor: Array.isArray(baseProduct.bestFor) ? baseProduct.bestFor.slice() : [],
+      tags: Array.isArray(baseProduct.tags) ? baseProduct.tags.slice() : [],
+      intent: Array.isArray(baseProduct.intent) ? baseProduct.intent.slice() : [],
+    };
+  });
+  const syntheticPagination = paginateCategoryProducts(syntheticProducts, syntheticKey, STORE_CATEGORY_PAGE_SIZE);
+
+  if (syntheticPagination.totalPages !== 3) {
+    fail(`synthetic pagination expected 3 pages, found ${syntheticPagination.totalPages}`);
+  }
+
+  for (const route of syntheticPagination.pages) {
+    const label = `synthetic category page ${route.path}`;
+    let rendered = null;
     let pageProducts = [];
     let pageSchema = null;
 
-    if (/\bdummy\b/i.test(pageSource)) fail(`${pageLabel}: contains dummy`);
-    if (/\bEtc\b/.test(pageSource)) fail(`${pageLabel}: contains public category Etc`);
-    if (pageSource.includes(STORE_MANIFEST_VERSION)) fail(`${pageLabel}: manifest is inlined`);
-    if (!pageStaticRegion) fail(`${pageLabel}: missing static products markers`);
-    if (!pageGridRegion) fail(`${pageLabel}: missing static grid markers`);
-    if (!pageSemanticRegion) fail(`${pageLabel}: missing semantic product markers`);
-    if (!pageJsonLdRegion) fail(`${pageLabel}: missing ItemList JSON-LD markers`);
+    try {
+      rendered = renderCategoryPage({
+        template: source,
+        products: syntheticProducts,
+        categoryKey: syntheticKey,
+        page: route.pageNumber,
+        paginationPage: route,
+        report: {
+          sourceType: "synthetic-pagination-proof",
+          productCount: syntheticProducts.length,
+          validProducts: syntheticProducts.length,
+          warnings: [],
+        },
+      });
+    } catch (error) {
+      fail(`${label}: render failed: ${error.message}`);
+      continue;
+    }
 
-    if (!new RegExp(`<title>\\s*${route.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*<\\/title>`, "i").test(pageSource)) {
-      fail(`${pageLabel}: title is missing category context`);
+    const pageSource = rendered.html;
+    const expectedCount = Math.min(Math.max(syntheticTotal - route.positionOffset, 0), STORE_CATEGORY_PAGE_SIZE);
+    if (!new RegExp(`<title>\\s*${escapeRegExp(route.title)}\\s*<\\/title>`, "i").test(pageSource)) {
+      fail(`${label}: title is missing pagination context`);
     }
-    if (!new RegExp(`rel=["']canonical["'][^>]*href=["']${route.canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "i").test(pageSource)) {
-      fail(`${pageLabel}: canonical is wrong or missing`);
+    if (!new RegExp(`rel=["']canonical["'][^>]*href=["']${escapeRegExp(route.canonicalUrl)}["']`, "i").test(pageSource)) {
+      fail(`${label}: canonical is wrong or missing`);
     }
-    if (!new RegExp(`<meta\\s+property=["']og:url["'][^>]*content=["']${route.canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "i").test(pageSource)) {
-      fail(`${pageLabel}: OG URL is wrong or missing`);
+    if (route.pageNumber > 1 && new RegExp(`rel=["']canonical["'][^>]*href=["']${escapeRegExp(syntheticBaseRoute.canonicalUrl)}["']`, "i").test(pageSource)) {
+      fail(`${label}: canonical points to page 1`);
     }
-    if (/<title>\s*Yellow Cart · PakRPP\s*<\/title>/i.test(pageSource)) {
-      fail(`${pageLabel}: title duplicates /store title`);
+    if (route.prevPath && !hasAnchorRelHref(pageSource, "prev", route.prevPath)) fail(`${label}: previous link is missing`);
+    if (route.nextPath && !hasAnchorRelHref(pageSource, "next", route.nextPath)) fail(`${label}: next link is missing`);
+    if (route.pageNumber === 2 && route.nestedOutputPath !== "store/fashion/page/2/index.html") {
+      fail(`${label}: nested output path is wrong (${route.nestedOutputPath})`);
     }
-    if (!new RegExp(`<h1[^>]*>\\s*${route.h1.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*<\\/h1>`, "i").test(pageSource)) {
-      fail(`${pageLabel}: H1 is wrong or missing`);
+    if (route.pageNumber === 2 && route.flatOutputPath !== "store-fashion-page-2.html") {
+      fail(`${label}: flat output path is wrong (${route.flatOutputPath})`);
     }
-    if (!/class=["'][^"']*store-category-page-rail[^"']*["']/.test(pageSource)) {
-      fail(`${pageLabel}: category rail is missing`);
-    }
-    for (const expectedRoute of storeCategoryRoutes()) {
-      if (!pageSource.includes(`href="${expectedRoute.path}"`)) fail(`${pageLabel}: category rail misses ${expectedRoute.path}`);
-    }
-    if (!pageSource.includes('href="/store"')) fail(`${pageLabel}: link back to /store is missing`);
-    if (!pageSource.includes(`data-store-category-key="${route.key}"`)) fail(`${pageLabel}: runtime category key is missing`);
-    if (countOccurrences(pageSource, STORE_ASSET_CSS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
-    if (countOccurrences(pageSource, STORE_ASSET_JS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_JS_HREF} reference`);
-    if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(pageSource)) {
-      fail(`${pageLabel}: misses deferred ${STORE_ASSET_JS_HREF}`);
-    }
-    validateInlineRuntimeScripts(pageSource, pageLabel);
-    if (/function\s+readStaticProducts\(/.test(pageSource) || /function\s+loadProducts\(/.test(pageSource)) {
-      fail(`${pageLabel}: full runtime JavaScript is inlined`);
+    if (route.pageNumber === 2 && route.title !== "Fashion Picks · Page 2 · Yellow Cart") {
+      fail(`${label}: page 2 title is wrong (${route.title})`);
     }
 
     try {
       pageProducts = extractStaticProductsFromStoreHtml(pageSource).map((product) => normalizeStoreProduct(product));
     } catch (error) {
-      fail(`${pageLabel}: invalid static products JSON: ${error.message}`);
+      fail(`${label}: invalid static products JSON: ${error.message}`);
     }
     try {
       pageSchema = parseJsonScript(pageSource, "store-itemlist-jsonld");
     } catch (error) {
-      fail(`${pageLabel}: invalid ItemList JSON-LD: ${error.message}`);
+      fail(`${label}: invalid ItemList JSON-LD: ${error.message}`);
     }
 
-    const expectedCount = Math.min(Number(categoryExpectedCounts[route.key] || 0), CATEGORY_PAGE_SIZE);
-    if (!pageProducts.length) fail(`${pageLabel}: has no visible products`);
     if (pageProducts.length !== expectedCount) {
-      fail(`${pageLabel}: visible product count (${pageProducts.length}) does not match category count (${expectedCount})`);
+      fail(`${label}: visible product count (${pageProducts.length}) does not match ${expectedCount}`);
     }
-    if (pageProducts.length > CATEGORY_PAGE_SIZE) {
-      fail(`${pageLabel}: includes more than ${CATEGORY_PAGE_SIZE} products`);
+    if (pageProducts.length > STORE_CATEGORY_PAGE_SIZE) {
+      fail(`${label}: includes more than ${STORE_CATEGORY_PAGE_SIZE} products`);
     }
-
+    if (pageProducts.length === syntheticProducts.length) {
+      fail(`${label}: contains the full synthetic category list`);
+    }
     for (const product of pageProducts) {
-      if (productCategoryKey(product) !== route.key) {
-        fail(`${pageLabel}: contains product from wrong category (${product.slug || product.name || "unknown"})`);
+      if (productCategoryKey(product) !== syntheticKey) {
+        fail(`${label}: contains product from wrong category (${product.slug || product.name || "unknown"})`);
       }
-      if (categoryPageSeenSlugs.has(product.slug)) {
-        fail(`${pageLabel}: duplicate product slug across category pages (${product.slug})`);
-      } else {
-        categoryPageSeenSlugs.set(product.slug, route.key);
-      }
-    }
-
-    const pageCards = pageGridRegion.match(/data-store-product-id=/g) || [];
-    const pageNotes = pageSemanticRegion.match(/class=["']store-semantic-product["']/g) || [];
-    if (pageCards.length !== pageProducts.length) {
-      fail(`${pageLabel}: grid count (${pageCards.length}) does not match static products (${pageProducts.length})`);
-    }
-    if (pageNotes.length !== pageProducts.length) {
-      fail(`${pageLabel}: semantic note count (${pageNotes.length}) does not match static products (${pageProducts.length})`);
     }
 
     const pageGraph = graphNodes(pageSchema);
-    const pageCollection = findGraphNode(pageGraph, "CollectionPage", "#collection");
     const pageItemList = findGraphNode(pageGraph, "ItemList", "#itemlist") || findGraphNode(pageGraph, "ItemList");
-    if (!pageCollection) fail(`${pageLabel}: JSON-LD is missing CollectionPage`);
-    if (!pageItemList) fail(`${pageLabel}: JSON-LD is missing ItemList`);
-    if (pageCollection && String(pageCollection.url || "") !== route.canonicalUrl) {
-      fail(`${pageLabel}: CollectionPage URL is wrong (${pageCollection.url || "missing"})`);
+    if (!pageItemList) {
+      fail(`${label}: JSON-LD is missing ItemList`);
+      continue;
     }
-    if (pageCollection && pageItemList && String(pageCollection.mainEntity?.["@id"] || "") !== String(pageItemList["@id"] || "")) {
-      fail(`${pageLabel}: CollectionPage mainEntity does not reference category ItemList`);
+    const entries = Array.isArray(pageItemList.itemListElement) ? pageItemList.itemListElement : [];
+    if (String(pageItemList.url || "") !== route.canonicalUrl) fail(`${label}: ItemList URL is wrong (${pageItemList.url || "missing"})`);
+    if (Number(pageItemList.numberOfItems || 0) !== pageProducts.length) {
+      fail(`${label}: ItemList numberOfItems (${pageItemList.numberOfItems || 0}) does not match visible products (${pageProducts.length})`);
     }
-    if (pageItemList) {
-      const entries = Array.isArray(pageItemList.itemListElement) ? pageItemList.itemListElement : [];
-      if (String(pageItemList.url || "") !== route.canonicalUrl) fail(`${pageLabel}: ItemList URL is wrong (${pageItemList.url || "missing"})`);
-      if (Number(pageItemList.numberOfItems) !== pageProducts.length) {
-        fail(`${pageLabel}: ItemList numberOfItems (${pageItemList.numberOfItems}) does not match visible products (${pageProducts.length})`);
-      }
-      if (entries.length !== pageProducts.length) {
-        fail(`${pageLabel}: ItemList item count (${entries.length}) does not match visible products (${pageProducts.length})`);
-      }
-      for (const [index, entry] of entries.entries()) {
-        const product = entry?.item || {};
-        if (product.category && product.category !== route.label) {
-          fail(`${pageLabel}: JSON-LD product ${index + 1} has wrong category (${product.category})`);
-        }
-        if (product.offers?.url && isNonSpecificOfferUrl(product.offers.url)) {
-          fail(`${pageLabel}: JSON-LD product ${index + 1} emitted Offer for search-style marketplace URL`);
-        }
+    if (entries.length !== pageProducts.length) {
+      fail(`${label}: ItemList element count (${entries.length}) does not match visible products (${pageProducts.length})`);
+    }
+    for (const [index, entry] of entries.entries()) {
+      const expectedPosition = route.positionOffset + index + 1;
+      if (Number(entry?.position || 0) !== expectedPosition) {
+        fail(`${label}: JSON-LD position ${entry?.position || "missing"} does not match ${expectedPosition}`);
       }
     }
   }
@@ -680,6 +952,10 @@ if (existsSync(WORKER_PATH)) {
   if (!/flags\.mode !== "production"\) return developmentRobotsTag\(\);/.test(workerSource)) fail("worker.js is missing the non-production robots guard");
   if (!/X-GG-Store-Source/.test(workerSource)) fail("worker.js is missing the /store source debug header");
   if (!/X-GG-Store-Static/.test(workerSource)) fail("worker.js is missing the /store static debug header");
+  if (!/X-GG-Store-Cache-Policy/.test(workerSource)) fail("worker.js is missing the /store cache policy debug header");
+  if (!/public, max-age=300, stale-while-revalidate=86400/.test(workerSource)) fail("worker.js is missing the production store HTML/manifest SWR cache policy");
+  if (!/immutable/.test(workerSource)) fail("worker.js is missing immutable hashed asset cache policy support");
+  if (!/STORE_DATA_PREFIX/.test(workerSource) || !/\/store\/data\//.test(workerSource)) fail("worker.js is missing explicit /store/data manifest route readiness");
   if (!/User-agent: Googlebot/.test(workerSource)) fail("worker.js is missing explicit Googlebot robots allowance");
   if (!/User-agent: OAI-SearchBot/.test(workerSource)) fail("worker.js is missing explicit OAI-SearchBot robots allowance");
 }
@@ -692,4 +968,4 @@ if (failures.length) {
 
 for (const message of warnings) console.warn(`STORE STATIC PROOF WARN ${message}`);
 
-console.log(`STORE STATIC PROOF PASS path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticProducts.length} itemList=${itemListNode?.itemListElement?.length || 0}`);
+console.log(`STORE STATIC PROOF PASS mode=${STORE_PROOF_MODE} path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticProducts.length} itemList=${itemListNode?.itemListElement?.length || 0}`);

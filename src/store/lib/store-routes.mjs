@@ -1,7 +1,7 @@
-import { STORE_ORIGIN } from "../store.config.mjs";
+import { STORE_CATEGORY_PAGE_SIZE, STORE_ORIGIN } from "../store.config.mjs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, normalizeCategory } from "./category-config.mjs";
 
-export const CATEGORY_PAGE_SIZE = 48;
+export const CATEGORY_PAGE_SIZE = STORE_CATEGORY_PAGE_SIZE;
 
 const CATEGORY_PAGE_COPY = {
   fashion: {

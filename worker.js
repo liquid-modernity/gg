@@ -78,6 +78,14 @@ const LANDING_PUBLIC_PATH = "/landing";
 const LANDING_INTERNAL_PATH = "/landing.html";
 const STORE_PUBLIC_PATH = "/store";
 const STORE_INTERNAL_PATH = "/store.html";
+const STORE_DATA_PREFIX = "/store/data/";
+const STORE_ASSET_PREFIX = "/assets/store/";
+const STORE_CATEGORY_KEYS = ["fashion", "skincare", "workspace", "tech", "everyday"];
+const STORE_CATEGORY_SET = new Set(STORE_CATEGORY_KEYS);
+const STORE_CATEGORY_ALIASES = new Map([
+  ["lainnya", "everyday"],
+  ["etc", "everyday"],
+]);
 const YELLOWCART_LEGACY_PUBLIC_PATH = "/yellowcart";
 const YELLOWCART_LEGACY_INTERNAL_PATH = "/yellowcart.html";
 const YELLOWCARD_LEGACY_PUBLIC_PATH = "/yellowcard";
@@ -323,6 +331,157 @@ function storeCanonicalRedirectStatus(flags, pathname) {
   return 301;
 }
 
+function isStoreCleanRoutePath(pathname) {
+  const path = String(pathname || "");
+  if (path.startsWith(STORE_DATA_PREFIX)) return false;
+  return (
+    path === STORE_PUBLIC_PATH ||
+    path === STORE_INTERNAL_PATH ||
+    path === `${STORE_PUBLIC_PATH}/` ||
+    path.startsWith(`${STORE_PUBLIC_PATH}/`) ||
+    path === YELLOWCART_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCART_LEGACY_INTERNAL_PATH ||
+    path === YELLOWCARD_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCARD_LEGACY_INTERNAL_PATH
+  );
+}
+
+function normalizeStoreCategoryKey(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return STORE_CATEGORY_ALIASES.get(key) || key;
+}
+
+function storeCategoryNestedAssetPath(categoryKey, pageNumber = 1) {
+  return pageNumber === 1
+    ? `/store/${categoryKey}/index.html`
+    : `/store/${categoryKey}/page/${pageNumber}/index.html`;
+}
+
+function storeCategoryFlatAssetPath(categoryKey, pageNumber = 1) {
+  return pageNumber === 1
+    ? `/store-${categoryKey}.html`
+    : `/store-${categoryKey}-page-${pageNumber}.html`;
+}
+
+function storeCategoryPublicPath(categoryKey, pageNumber = 1) {
+  return pageNumber === 1
+    ? `${STORE_PUBLIC_PATH}/${categoryKey}`
+    : `${STORE_PUBLIC_PATH}/${categoryKey}/page/${pageNumber}`;
+}
+
+function storeCategoryAssetPaths(categoryKey, pageNumber = 1) {
+  return [
+    storeCategoryNestedAssetPath(categoryKey, pageNumber),
+    storeCategoryFlatAssetPath(categoryKey, pageNumber),
+  ];
+}
+
+function storeRouteDebug(storeRoute, categoryKey = "", pageNumber = 1) {
+  return {
+    source: "assets",
+    storeRoute,
+    category: categoryKey,
+    page: pageNumber,
+  };
+}
+
+function storeRedirectResolution(targetPath, reason) {
+  return {
+    action: "redirect",
+    targetPath,
+    reason,
+  };
+}
+
+function storeNotFoundResolution(reason, categoryKey = "", pageNumber = "") {
+  return {
+    action: "not-found",
+    reason,
+    storeDebug: storeRouteDebug("not-found", categoryKey, pageNumber || ""),
+  };
+}
+
+function resolveStoreCleanRoutePath(pathname) {
+  const path = String(pathname || "");
+
+  if (!isStoreCleanRoutePath(path)) return null;
+
+  if (
+    path === STORE_INTERNAL_PATH ||
+    path === YELLOWCART_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCART_LEGACY_INTERNAL_PATH ||
+    path === YELLOWCARD_LEGACY_PUBLIC_PATH ||
+    path === YELLOWCARD_LEGACY_INTERNAL_PATH
+  ) {
+    return storeRedirectResolution(STORE_PUBLIC_PATH, "store-root-normalization");
+  }
+
+  if (path === `${STORE_PUBLIC_PATH}/`) {
+    return storeRedirectResolution(STORE_PUBLIC_PATH, "store-trailing-slash-normalization");
+  }
+
+  if (path === STORE_PUBLIC_PATH) {
+    return {
+      action: "asset",
+      assetPaths: [STORE_INTERNAL_PATH],
+      canonicalPath: STORE_PUBLIC_PATH,
+      storeDebug: storeRouteDebug("root", "", 1),
+    };
+  }
+
+  if (path.length > STORE_PUBLIC_PATH.length + 1 && path.endsWith("/")) {
+    return storeRedirectResolution(path.replace(/\/+$/, ""), "store-trailing-slash-normalization");
+  }
+
+  const rest = path.slice(`${STORE_PUBLIC_PATH}/`.length);
+  const segments = rest.split("/");
+  if (!rest || segments.some((segment) => segment === "")) return storeNotFoundResolution("store-malformed-path");
+
+  if (segments.length === 1) {
+    const rawCategory = segments[0];
+    const categoryKey = normalizeStoreCategoryKey(rawCategory);
+    if (!STORE_CATEGORY_SET.has(categoryKey)) return storeNotFoundResolution("store-unknown-category", categoryKey);
+    if (rawCategory !== categoryKey) return storeRedirectResolution(storeCategoryPublicPath(categoryKey), "store-category-alias-normalization");
+    return {
+      action: "asset",
+      assetPaths: storeCategoryAssetPaths(categoryKey, 1),
+      canonicalPath: storeCategoryPublicPath(categoryKey, 1),
+      storeDebug: storeRouteDebug("category", categoryKey, 1),
+    };
+  }
+
+  if (segments.length === 3 && segments[1] === "page") {
+    const rawCategory = segments[0];
+    const categoryKey = normalizeStoreCategoryKey(rawCategory);
+    const rawPage = segments[2];
+    if (!STORE_CATEGORY_SET.has(categoryKey)) return storeNotFoundResolution("store-unknown-category", categoryKey);
+    if (!/^\d+$/.test(rawPage)) return storeNotFoundResolution("store-malformed-pagination", categoryKey);
+
+    const pageNumber = Number.parseInt(rawPage, 10);
+    if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) {
+      return storeNotFoundResolution("store-invalid-pagination", categoryKey, pageNumber || rawPage);
+    }
+
+    if (pageNumber === 1) {
+      return storeRedirectResolution(storeCategoryPublicPath(categoryKey, 1), "store-page-one-normalization");
+    }
+
+    const canonicalPath = storeCategoryPublicPath(categoryKey, pageNumber);
+    if (rawCategory !== categoryKey || rawPage !== String(pageNumber)) {
+      return storeRedirectResolution(canonicalPath, "store-pagination-normalization");
+    }
+
+    return {
+      action: "asset",
+      assetPaths: storeCategoryAssetPaths(categoryKey, pageNumber),
+      canonicalPath,
+      storeDebug: storeRouteDebug("category-page", categoryKey, pageNumber),
+    };
+  }
+
+  return storeNotFoundResolution("store-malformed-path");
+}
+
 function isLegacyViewPath(pathname) {
   return pathname === "/view" || pathname.startsWith("/view/");
 }
@@ -336,19 +495,11 @@ function legacyViewRedirect(request, flags) {
 
 function storeRouteRedirect(request, flags) {
   const url = new URL(request.url);
-  if (
-    url.pathname !== `${STORE_PUBLIC_PATH}/` &&
-    url.pathname !== STORE_INTERNAL_PATH &&
-    url.pathname !== YELLOWCART_LEGACY_PUBLIC_PATH &&
-    url.pathname !== YELLOWCART_LEGACY_INTERNAL_PATH &&
-    url.pathname !== YELLOWCARD_LEGACY_PUBLIC_PATH &&
-    url.pathname !== YELLOWCARD_LEGACY_INTERNAL_PATH
-  ) {
-    return null;
-  }
+  const resolution = resolveStoreCleanRoutePath(url.pathname);
+  if (!resolution || resolution.action !== "redirect") return null;
 
   const next = new URL(request.url);
-  next.pathname = STORE_PUBLIC_PATH;
+  next.pathname = resolution.targetPath;
   return redirectUrl(next, storeCanonicalRedirectStatus(flags, url.pathname));
 }
 
@@ -358,16 +509,7 @@ function classifyRoute(request) {
 
   if (path === "/") return ROOT_LISTING_LEGACY_ROUTE;
   if (path === LANDING_PUBLIC_PATH || path === LANDING_INTERNAL_PATH) return "landing";
-  if (
-    path === STORE_PUBLIC_PATH ||
-    path === STORE_INTERNAL_PATH ||
-    path === YELLOWCART_LEGACY_PUBLIC_PATH ||
-    path === YELLOWCART_LEGACY_INTERNAL_PATH ||
-    path === YELLOWCARD_LEGACY_PUBLIC_PATH ||
-    path === YELLOWCARD_LEGACY_INTERNAL_PATH
-  ) {
-    return "store";
-  }
+  if (isStoreCleanRoutePath(path)) return "store";
   if (path === "/robots.txt") return "robots";
   if (path === "/sitemap.xml") return "sitemap";
   if (path === "/sw.js") return "service-worker";
@@ -378,6 +520,7 @@ function classifyRoute(request) {
   if (path.startsWith("/__gg/")) return "diagnostic";
   if (path.startsWith("/assets/v/")) return "versioned-asset";
   if (path.startsWith("/assets/latest/")) return "latest-asset";
+  if (path.startsWith(STORE_ASSET_PREFIX)) return "asset";
   if (path.startsWith("/assets/")) return "asset";
   if (path.startsWith("/gg-pwa-icon/")) return "icon";
   if (path.startsWith("/feeds/")) return "feed";
@@ -400,6 +543,7 @@ function isHtmlContentType(contentType) {
 
 function shouldServeStaticFromAssets(pathname) {
   if (STATIC_ROUTE_ASSET_MAP.has(pathname)) return true;
+  if (pathname.startsWith(STORE_DATA_PREFIX)) return true;
   if (pathname.startsWith(GG_ASSET_PREFIX)) return true;
   if (pathname.startsWith("/gg-pwa-icon/")) return true;
   if (pathname.startsWith("/assets/")) return true;
@@ -420,19 +564,75 @@ async function serveFromAssets(request, env, pathname) {
   return env.ASSETS.fetch(new Request(url.toString(), request));
 }
 
+async function serveAssetPath(request, env, assetPath) {
+  if (!env?.ASSETS) return textResponse("ASSETS binding missing", { status: 500 });
+
+  const url = new URL(request.url);
+  url.pathname = assetPath;
+  return env.ASSETS.fetch(new Request(url.toString(), request));
+}
+
+async function serveStoreCleanRoute(request, env, resolution) {
+  if (resolution.action === "not-found") {
+    return textResponse("Store page not found", {
+      status: 404,
+      headers: {
+        "X-GG-Store-Miss": resolution.reason || "not-found",
+      },
+    });
+  }
+
+  let firstResponse = null;
+  for (const assetPath of resolution.assetPaths || []) {
+    const response = await serveAssetPath(request, env, assetPath);
+    if (!firstResponse) firstResponse = response;
+    if (response.ok) {
+      const headers = new Headers(response.headers);
+      headers.set("X-GG-Store-Asset", assetPath);
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    }
+  }
+
+  const headers = new Headers(firstResponse?.headers || {});
+  headers.set("X-GG-Store-Miss", "asset-not-found");
+  return new Response("Store page not found", { status: 404, headers });
+}
+
 async function handleStaticRoutes(request, env, flags) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
   if (pathname === LANDING_INTERNAL_PATH) {
-    return redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags));
+    return {
+      response: redirectUrl(new URL(LANDING_PUBLIC_PATH, request.url), redirectStatusForMode(flags)),
+      route: "landing",
+    };
   }
 
-  const storeRedirect = storeRouteRedirect(request, flags);
-  if (storeRedirect) return storeRedirect;
+  const storeResolution = resolveStoreCleanRoutePath(pathname);
+  if (storeResolution) {
+    if (storeResolution.action === "redirect") {
+      const next = new URL(request.url);
+      next.pathname = storeResolution.targetPath;
+      return {
+        response: redirectUrl(next, storeCanonicalRedirectStatus(flags, pathname)),
+        route: "store",
+        redirectReason: storeResolution.reason || "store-route-normalization",
+      };
+    }
+
+    return {
+      response: await serveStoreCleanRoute(request, env, storeResolution),
+      route: "store",
+      storeDebug: storeResolution.storeDebug,
+    };
+  }
 
   if (shouldServeStaticFromAssets(pathname)) {
-    return serveFromAssets(request, env, pathname);
+    return {
+      response: await serveFromAssets(request, env, pathname),
+      route: classifyRoute(request),
+    };
   }
 
   return null;
@@ -476,10 +676,20 @@ function routeRobotsTag(route, contentType, flags) {
   return productionRobotsTag(route, isHtmlLike);
 }
 
-function cacheControlForRoute(route, flags) {
+function isHashedStoreAssetPath(pathname) {
+  return /^\/assets\/store\/[^/]+\.[a-f0-9]{7,}\.(?:css|js)$/i.test(String(pathname || ""));
+}
+
+function cacheControlForRoute(route, flags, pathname = "") {
   if (flags.mode !== "production") {
     if (["versioned-asset", "icon"].includes(route)) return "public, max-age=300";
     return "no-store";
+  }
+
+  if (pathname.startsWith(STORE_DATA_PREFIX)) return "public, max-age=300, stale-while-revalidate=86400";
+  if (pathname.startsWith(STORE_ASSET_PREFIX)) {
+    if (isHashedStoreAssetPath(pathname)) return "public, max-age=31536000, immutable";
+    return "public, max-age=300, stale-while-revalidate=86400";
   }
 
   switch (route) {
@@ -499,6 +709,7 @@ function cacheControlForRoute(route, flags) {
     case ROOT_LISTING_LEGACY_ROUTE:
     case "landing":
     case "store":
+      return "public, max-age=300, stale-while-revalidate=86400";
     case "post":
     case "static-page":
     case "label":
@@ -521,23 +732,33 @@ function summarizeStoreCachePolicy(cacheControl) {
 function storeDebugHeaders(route, flags, response, detail = {}) {
   if (route !== "store" || isRedirectStatus(response.status)) return null;
 
-  const cacheControl = cacheControlForRoute(route, flags);
+  const cacheControl = cacheControlForRoute(route, flags, detail.pathname || "");
   const source = String(detail.source || "unknown");
   let staticState = String(detail.static || "unknown");
+  const storeRoute = String(detail.storeRoute || "root");
+  const category = String(detail.category || "");
+  const page = detail.page == null || detail.page === "" ? "" : String(detail.page);
 
   if (source === "assets") staticState = response.ok ? "present" : "missing";
   else if ((source === "blogger-origin" || source === "worker-fallback") && staticState === "unknown") staticState = "missing";
 
-  return {
+  const headers = {
+    "X-GG-Store-Route": storeRoute,
     "X-GG-Store-Source": source,
     "X-GG-Store-Static": staticState,
     "X-GG-Store-Cache-Policy": summarizeStoreCachePolicy(cacheControl),
   };
+
+  if (category) headers["X-GG-Store-Category"] = category;
+  if (page) headers["X-GG-Store-Page"] = page;
+
+  return headers;
 }
 
 function forceContentType(route, pathname, current) {
   if (route === "service-worker") return "application/javascript; charset=utf-8";
   if (route === "manifest") return "application/manifest+json; charset=utf-8";
+  if (pathname.startsWith(STORE_DATA_PREFIX) || route === "json") return "application/json; charset=utf-8";
   if (route === "flags" || route === "diagnostic") return "application/json; charset=utf-8";
   if (route === "robots" || pathname.endsWith(".txt")) return "text/plain; charset=utf-8";
   if (route === "offline" || route === "landing" || route === "store") return current || "text/html; charset=utf-8";
@@ -565,7 +786,7 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   const url = new URL(request.url);
   const route = options.route || classifyRoute(request);
   const headers = new Headers(resp.headers);
-  const storeHeaders = storeDebugHeaders(route, flags, resp, options.storeDebug || {});
+  const storeHeaders = storeDebugHeaders(route, flags, resp, { pathname: url.pathname, ...(options.storeDebug || {}) });
 
   baseSecurityHeaders(headers);
 
@@ -576,7 +797,7 @@ function withResponsePolicy(resp, request, flags, options = {}) {
   const robotsTag = routeRobotsTag(route, contentType, flags);
   if (robotsTag) headers.set("X-Robots-Tag", robotsTag);
 
-  headers.set("Cache-Control", cacheControlForRoute(route, flags));
+  headers.set("Cache-Control", cacheControlForRoute(route, flags, url.pathname));
   headers.set("X-GG-Edge-Mode", flags.mode);
   headers.set("X-GG-Route-Class", route);
   headers.set("X-GG-Release", String(flags.release || SITE.release));
@@ -756,9 +977,19 @@ function routePolicyPreview(input, flags) {
   const contentType =
     route === "service-worker" ? "application/javascript" :
     route === "manifest" ? "application/manifest+json" :
-    route === "flags" || route === "diagnostic" ? "application/json" :
+    route === "flags" || route === "diagnostic" || route === "json" ? "application/json" :
     route === "feed" || route === "sitemap" ? "application/xml" :
     "text/html";
+  const storeResolution = resolveStoreCleanRoutePath(url.pathname);
+  const storePreview = storeResolution ? {
+    action: storeResolution.action,
+    route: storeResolution.storeDebug?.storeRoute || (storeResolution.action === "redirect" ? "redirect" : ""),
+    category: storeResolution.storeDebug?.category || "",
+    page: storeResolution.storeDebug?.page || "",
+    canonical: storeResolution.canonicalPath ? `https://${SITE.canonicalHost}${storeResolution.canonicalPath}` : "",
+    assetPaths: storeResolution.assetPaths || [],
+    reason: storeResolution.reason || "",
+  } : null;
 
   return {
     pathname: url.pathname,
@@ -766,9 +997,10 @@ function routePolicyPreview(input, flags) {
     route,
     mode: flags.mode,
     robots: routeRobotsTag(route, contentType, flags),
-    cacheControl: cacheControlForRoute(route, flags),
+    cacheControl: cacheControlForRoute(route, flags, url.pathname),
     contentType: forceContentType(route, url.pathname, contentType),
     redirects: previewRedirect(fake, flags),
+    store: storePreview,
   };
 }
 
@@ -788,8 +1020,17 @@ function pwaDiagnostics(flags) {
       store: {
         public: STORE_PUBLIC_PATH,
         asset: STORE_INTERNAL_PATH,
+        manifest: `${STORE_DATA_PREFIX}manifest.json`,
+        categories: STORE_CATEGORY_KEYS.map((key) => storeCategoryPublicPath(key)),
+        paginationPattern: `${STORE_PUBLIC_PATH}/:category/page/:page`,
         redirects: [
           STORE_INTERNAL_PATH,
+          `${STORE_PUBLIC_PATH}/`,
+          `${STORE_PUBLIC_PATH}/:category/`,
+          `${STORE_PUBLIC_PATH}/:category/page/1`,
+          `${STORE_PUBLIC_PATH}/:category/page/02`,
+          `${STORE_PUBLIC_PATH}/lainnya`,
+          `${STORE_PUBLIC_PATH}/etc`,
           YELLOWCART_LEGACY_PUBLIC_PATH,
           YELLOWCART_LEGACY_INTERNAL_PATH,
           YELLOWCARD_LEGACY_PUBLIC_PATH,
@@ -835,8 +1076,19 @@ function diagnosticsPayload(request, flags) {
       store: {
         public: STORE_PUBLIC_PATH,
         asset: STORE_INTERNAL_PATH,
+        manifest: `${STORE_DATA_PREFIX}manifest.json`,
+        categories: STORE_CATEGORY_KEYS.map((key) => storeCategoryPublicPath(key)),
+        paginationPattern: `${STORE_PUBLIC_PATH}/:category/page/:page`,
+        nestedArtifactPattern: "store/{category}/page/{page}/index.html",
+        flatArtifactPattern: "store-{category}-page-{page}.html",
         redirects: [
           STORE_INTERNAL_PATH,
+          `${STORE_PUBLIC_PATH}/`,
+          `${STORE_PUBLIC_PATH}/lainnya`,
+          `${STORE_PUBLIC_PATH}/etc`,
+          `${STORE_PUBLIC_PATH}/:category/`,
+          `${STORE_PUBLIC_PATH}/:category/page/1`,
+          `${STORE_PUBLIC_PATH}/:category/page/02`,
           YELLOWCART_LEGACY_PUBLIC_PATH,
           YELLOWCART_LEGACY_INTERNAL_PATH,
           YELLOWCARD_LEGACY_PUBLIC_PATH,
@@ -877,13 +1129,18 @@ async function handleDiagnostics(request, flags) {
       mode: flags.mode,
       canonicalHost: SITE.canonicalHost,
       routeMatrix: {
-        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing", STORE_PUBLIC_PATH],
+        indexInProduction: ["/", "/YYYY/MM/slug.html", "/p/*.html", "/landing", STORE_PUBLIC_PATH, `${STORE_PUBLIC_PATH}/:category`, `${STORE_PUBLIC_PATH}/:category/page/:page`],
         noindexInProduction: ["/search", "/search/label/*", "/view/*", "/offline.html", "/sw.js", "/manifest.webmanifest", FLAGS_CANONICAL_PATH, "/__gg/*"],
         utility: ["/feeds/*", "/sitemap.xml"],
         normalizedWhenEnabled: ["?m=1", "?m=0"],
         mobileQueryNormalizationStatus: { development: 302, staging: 302, production: 302 },
         alwaysRedirected: {
           [`${STORE_PUBLIC_PATH}/`]: STORE_PUBLIC_PATH,
+          [`${STORE_PUBLIC_PATH}/lainnya`]: `${STORE_PUBLIC_PATH}/everyday`,
+          [`${STORE_PUBLIC_PATH}/etc`]: `${STORE_PUBLIC_PATH}/everyday`,
+          [`${STORE_PUBLIC_PATH}/:category/`]: `${STORE_PUBLIC_PATH}/:category`,
+          [`${STORE_PUBLIC_PATH}/:category/page/1`]: `${STORE_PUBLIC_PATH}/:category`,
+          [`${STORE_PUBLIC_PATH}/:category/page/02`]: `${STORE_PUBLIC_PATH}/:category/page/2`,
           "/view": "/",
           "/view/*": "/",
           [STORE_INTERNAL_PATH]: STORE_PUBLIC_PATH,
@@ -1242,16 +1499,20 @@ async function handleRequest(request, env, ctx) {
 
   const staticResponse = await handleStaticRoutes(request, env, flags);
   if (staticResponse) {
-    if (isRedirectStatus(staticResponse.status)) {
-      return withRedirectDiagnostics(staticResponse, request, flags, {
-        reason: url.pathname === LANDING_INTERNAL_PATH
+    const response = staticResponse.response || staticResponse;
+    const responseRoute = staticResponse.route || route;
+    const storeDebug = staticResponse.storeDebug || (responseRoute === "store" ? { source: "assets" } : null);
+
+    if (isRedirectStatus(response.status)) {
+      return withRedirectDiagnostics(response, request, flags, {
+        reason: staticResponse.redirectReason || (url.pathname === LANDING_INTERNAL_PATH
           ? "landing-internal-path-normalization"
-          : "store-route-normalization",
-      }, { route });
+          : "store-route-normalization"),
+      }, { route: responseRoute });
     }
-    return withResponsePolicy(staticResponse, request, flags, {
-      route,
-      storeDebug: route === "store" ? { source: "assets" } : null,
+    return withResponsePolicy(response, request, flags, {
+      route: responseRoute,
+      storeDebug,
     });
   }
 

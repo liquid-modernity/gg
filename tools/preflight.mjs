@@ -285,6 +285,8 @@ const requiredWorkerMarkers = [
   '"/__gg/headers"',
   '"/__gg/pwa"',
   "storeRouteRedirect",
+  "resolveStoreCleanRoutePath",
+  "storeCategoryAssetPaths",
   "legacyViewRedirect",
   "isLegacyViewPath",
   "withResponsePolicy",
@@ -292,6 +294,9 @@ const requiredWorkerMarkers = [
   "X-GG-Worker",
   "X-GG-Edge-Mode",
   "X-GG-Route-Class",
+  "X-GG-Store-Route",
+  "X-GG-Store-Category",
+  "X-GG-Store-Page",
   "X-GG-Template-Contract",
 ];
 
