@@ -4,19 +4,12 @@ set -euo pipefail
 export LC_ALL=C
 
 artifact_file=".cloudflare-build/public/store.html"
-source_file="store.html"
 artifact_root=".cloudflare-build/public"
-source_root="."
 build_tool="tools/build-store-static.mjs"
 proof_tool="tools/proof-store-static.mjs"
-target_file="$source_file"
-target_root="$source_root"
+target_file="$artifact_file"
+target_root="$artifact_root"
 failures=0
-
-if [[ -f "$artifact_file" && ! "$source_file" -nt "$artifact_file" ]]; then
-  target_file="$artifact_file"
-  target_root="$artifact_root"
-fi
 
 target_store_js="${target_root}/assets/store/store.js"
 target_store_css="${target_root}/assets/store/store.css"
@@ -67,11 +60,47 @@ check_file_pattern() {
   grep -Eq -- "$pattern" "$file_path" || log_fail "$message"
 }
 
+check_not_stale() {
+  local source_path="$1"
+  local artifact_path="$2"
+  local label="$3"
+
+  [[ -f "$source_path" && -f "$artifact_path" ]] || return 0
+  if [[ "$source_path" -nt "$artifact_path" ]]; then
+    log_fail "${label} is stale in ${artifact_root}; run node tools/cloudflare-prepare.mjs before qa/store-artifact-smoke.sh"
+  fi
+}
+
+if [[ ! -d "$artifact_root" ]]; then
+  log_fail "Cloudflare public bundle is missing at ${artifact_root}; run node tools/cloudflare-prepare.mjs before qa/store-artifact-smoke.sh"
+fi
+
 check_file_exists "$build_tool" "tools/build-store-static.mjs is missing"
 check_file_exists "$proof_tool" "tools/proof-store-static.mjs is missing"
+check_file_exists "$target_file" "Cloudflare store artifact is missing: ${target_file}; run node tools/cloudflare-prepare.mjs before qa/store-artifact-smoke.sh"
 check_file_exists "$target_store_js" "store runtime asset is missing: ${target_store_js}"
 check_file_exists "$target_store_css" "store stylesheet asset is missing: ${target_store_css}"
 check_file_exists "$target_store_manifest" "store manifest is missing: ${target_store_manifest}"
+
+check_not_stale "store.html" "$target_file" "store.html"
+check_not_stale "assets/store/store.js" "$target_store_js" "store runtime asset"
+check_not_stale "assets/store/store.css" "$target_store_css" "store stylesheet asset"
+check_not_stale "store/data/manifest.json" "$target_store_manifest" "store manifest"
+
+for source_category_artifact in store-*.html; do
+  [[ -f "$source_category_artifact" ]] || continue
+  check_not_stale "$source_category_artifact" "${artifact_root}/${source_category_artifact}" "$source_category_artifact"
+done
+
+for source_category_artifact in store/*/index.html store/*/page/*/index.html; do
+  [[ -f "$source_category_artifact" ]] || continue
+  check_not_stale "$source_category_artifact" "${artifact_root}/${source_category_artifact}" "$source_category_artifact"
+done
+
+if [[ "$failures" -gt 0 ]]; then
+  printf 'STORE ARTIFACT SMOKE RESULT: FAILED (%s)\n' "$failures" >&2
+  exit 1
+fi
 
 printf 'SMOKE-STORE-ARTIFACT lane=ARTIFACT source=%s\n' "$target_file"
 
@@ -79,6 +108,7 @@ check_repo_pattern '"store:build"[[:space:]]*:[[:space:]]*"bash tools/store-buil
 check_repo_pattern '"store:proof"[[:space:]]*:[[:space:]]*"node tools/proof-store-static\.mjs"' "package.json" "package.json missing store:proof script"
 check_repo_pattern '"store:check:ci"[[:space:]]*:[[:space:]]*"STORE_CI=1 STORE_REQUIRE_LIVE_FEED=0 STORE_STRICT_IMAGES=0 npm run store:check"' "package.json" "package.json missing store:check:ci script"
 check_repo_pattern '"store:check:production"[[:space:]]*:[[:space:]]*"STORE_CI=1 STORE_PRODUCTION=1 STORE_REQUIRE_LIVE_FEED=1 STORE_STRICT_IMAGES=1 npm run store:check"' "package.json" "package.json missing store:check:production script"
+check_repo_pattern '"gaga:verify-store-artifact"[[:space:]]*:[[:space:]]*"npm run store:check && node tools/cloudflare-prepare\.mjs && bash qa/store-artifact-smoke\.sh"' "package.json" "package.json missing deterministic Cloudflare artifact verification chain"
 check_repo_pattern 'function developmentRobotsTag\(\)' "worker.js" "worker.js missing development robots helper"
 check_repo_pattern 'function productionIndexableHtmlRobotsTag\(\)' "worker.js" "worker.js missing production indexable robots helper"
 check_repo_pattern 'flags\.mode !== "production"\) return developmentRobotsTag\(\);' "worker.js" "worker.js missing dev/staging robots lockdown guard"

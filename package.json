@@ -19,8 +19,8 @@
     "gaga:cf:deploy": "node tools/cloudflare-deploy.mjs deploy",
     "gaga:template:status": "bash qa/template-status.sh",
     "gaga:template:proof": "bash qa/template-proof.sh",
-    "gaga:verify-store-artifact": "npm run store:check && bash qa/store-artifact-smoke.sh",
-    "gaga:verify-worker": "npm run store:check && bash qa/store-artifact-smoke.sh",
+    "gaga:verify-store-artifact": "npm run store:check && node tools/cloudflare-prepare.mjs && bash qa/store-artifact-smoke.sh",
+    "gaga:verify-worker": "npm run gaga:verify-store-artifact",
     "gaga:verify-worker-live": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
     "gaga:verify-worker-live:local": "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=1 bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
     "gaga:verify-worker-live:strict": "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=0 bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""

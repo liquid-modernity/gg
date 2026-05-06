@@ -42,7 +42,7 @@
   --gg-panel-more-min-height: 260px;
   --gg-panel-preview-min-height: 320px;
   --gg-panel-preview-max-height: min(94dvh, 920px);
-  --gg-panel-width: min(100%, 920px);
+  --gg-panel-width: min(100%, 600px);
   --gg-panel-radius: 26px;
   --gg-panel-pad-y: 0px;
   --gg-panel-pad-x: 14px;
