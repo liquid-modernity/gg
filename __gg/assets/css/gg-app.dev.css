@@ -83,7 +83,7 @@
   --gg-bottom-safezone-breathing: 20px;
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + var(--gg-bottom-safezone-breathing));
   --gg-listing-bottom-clearance: var(--gg-bottom-safezone-min);
-  --gg-detail-outline-width: 560px;
+  --gg-detail-outline-width: 540px;
   --gg-detail-outline-radius: 22px;
   --gg-detail-outline-border: var(--gg-toolbar-border);
   --gg-detail-outline-surface: var(--gg-toolbar-surface);
@@ -271,7 +271,7 @@
     --gg-discovery-result-title-size: 17px;
     --gg-comment-avatar-size: 38px;
     --gg-comment-indent: 22px;
-    --gg-detail-outline-width: 600px;
+    --gg-detail-outline-width: 540px;
     --gg-detail-outline-expanded-max-height: min(40dvh, 340px);
     --gg-detail-outline-peek-title-size: 16px;
     --gg-detail-outline-micro-min-height: var(--gg-hit-min);
@@ -1394,7 +1394,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gg-toolbar-gap);
-  width: min(calc(100% - 12px), 720px);
+  width: min(calc(100% - 12px), 600px);
   padding: var(--gg-toolbar-pad);
   border: 1px solid var(--gg-toolbar-border);
   border-radius: var(--gg-toolbar-radius);
