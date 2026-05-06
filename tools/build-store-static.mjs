@@ -56,7 +56,8 @@ const SOFT_MODE = process.argv.includes("--soft");
 const STORE_CI = isTruthyEnv(process.env.STORE_CI);
 const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
 const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
-const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES;
+const STORE_PRODUCTION = isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production";
+const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
 const STORE_SKIP_NETWORK_FEED = isTruthyEnv(process.env.GG_STORE_SKIP_NETWORK_FEED);
 const STORE_FEED_TIMEOUT_MS = parseTimeoutMs(process.env.STORE_FEED_TIMEOUT_SECONDS, 20);
 const LEGACY_PRODUCT_REPLACEMENTS = new Map([
@@ -105,6 +106,8 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     strict: STORE_STRICT_MODE,
     strictImages: STORE_STRICT_IMAGES,
     requireLiveFeed: STORE_REQUIRE_LIVE_FEED,
+    production: STORE_PRODUCTION,
+    proofMode: STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development",
     ci: STORE_CI,
     manifestPath: clean(sourceReport.manifestPath),
     manifestBytes: Number(sourceReport.manifestBytes || 0),

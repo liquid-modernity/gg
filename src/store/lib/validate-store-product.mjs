@@ -43,7 +43,7 @@ export function productionImageUrlIssue(value) {
 
   const host = url.hostname.toLowerCase();
   if (url.protocol !== "https:") return "image URL must be HTTPS in production";
-  if (host === "localhost" || host === "127.0.0.1" || host === "::1" || host.endsWith(".local")) {
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]" || host.endsWith(".local")) {
     return "localhost image URL is not allowed in production";
   }
   if (isPlaceholderImageUrl(raw)) return "placeholder image URL is not allowed in production";

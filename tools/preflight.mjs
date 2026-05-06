@@ -276,6 +276,7 @@ const requiredWorkerMarkers = [
   '"/__gg/assets/"',
   "STORE_PUBLIC_PATH",
   "STORE_INTERNAL_PATH",
+  "STORE_DATA_PREFIX",
   "FLAGS_CANONICAL_PATH",
   '"/gg-flags.json"',
   '"/flags.json"',
@@ -297,7 +298,9 @@ const requiredWorkerMarkers = [
   "X-GG-Store-Route",
   "X-GG-Store-Category",
   "X-GG-Store-Page",
+  "X-GG-Store-Cache-Policy",
   "X-GG-Template-Contract",
+  "public, max-age=300, stale-while-revalidate=86400",
 ];
 
 for (const marker of requiredWorkerMarkers) {

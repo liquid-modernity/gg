@@ -84,6 +84,10 @@ jobs:
       - name: Build/proof Yellow Cart store
         run: npm run store:check:ci
 
+      - name: Production readiness proof
+        if: ${{ vars.GG_STORE_PRODUCTION_READINESS == '1' }}
+        run: npm run store:check:production
+
       - name: Verify store split assets
         run: |
           set -euo pipefail
@@ -254,6 +258,7 @@ jobs:
           GG_LIVE_TIMEOUT_SECONDS: "30"
           GG_LIVE_CONNECT_TIMEOUT_SECONDS: "15"
           GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN: ${{ vars.GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN || '0' }}
+          GG_LIVE_PRODUCTION_STRICT: ${{ vars.GG_LIVE_PRODUCTION_STRICT || '0' }}
         run: |
           if [ "${GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN}" = "1" ]; then
             npm run gaga:verify-worker-live:local

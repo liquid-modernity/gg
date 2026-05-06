@@ -388,7 +388,7 @@ if (reportValidProducts && reportValidProducts !== staticProducts.length) {
 if (STORE_STRICT_MODE && reportValidProducts < 1) fail("build report validProducts is 0 while strict mode is enabled");
 
 if (reportSourceType === "existing-static") {
-  staticFallbackFailOrWarn("build report sourceType is existing-static while strict mode is enabled");
+  staticFallbackFailOrWarn("build report sourceType is existing-static");
 } else if (reportSourceType !== "live-feed") {
   modeFailOrWarn(`build report sourceType is ${reportSourceType} while strict mode is enabled`);
 }
@@ -450,7 +450,7 @@ if (!manifest || typeof manifest !== "object") {
   }
 
   if (String(manifest.source || "") === "existing-static") {
-    staticFallbackFailOrWarn("store manifest source is existing-static while strict mode is enabled");
+    staticFallbackFailOrWarn("store manifest source is existing-static");
   } else if (STORE_STRICT_MODE && String(manifest.source || "") !== "live-feed") {
     fail(`store manifest source is ${manifest.source || "missing"} while strict mode is enabled`);
   }
@@ -544,7 +544,7 @@ if (!manifest || typeof manifest !== "object") {
     }
 
     if (isPlaceholderImageUrl(item?.image)) modeFailOrWarn(`${label}: store manifest image uses a placeholder host`);
-    checkProductionImageUrl(item?.image, `${label}: store manifest image`);
+    else checkProductionImageUrl(item?.image, `${label}: store manifest image`);
   }
 
   if (duplicateManifestSlugs.length) {

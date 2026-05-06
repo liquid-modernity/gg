@@ -466,6 +466,15 @@ check_store_asset_cache_header() {
   log_fail "${path} production Cache-Control must be immutable when hashed or SWR 300 when non-hashed (got ${cache_control:-missing})"
 }
 
+log_production_cache_drift() {
+  local message="$1"
+  if is_production_strict_smoke; then
+    log_fail "$message"
+  else
+    log_warn "$message"
+  fi
+}
+
 check_root_headers() {
   local headers_file="$tmp_dir/root_headers.txt"
   local body_file="$tmp_dir/root_body.html"
@@ -1282,6 +1291,21 @@ check_diagnostic_mode_contracts() {
     return
   fi
 
+  if meta_is_unreachable "$prod_manifest_meta"; then
+    report_unreachable "/__gg/headers?url=/store/data/manifest.json&mode=production" "$prod_manifest_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_js_meta"; then
+    report_unreachable "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_css_meta"; then
+    report_unreachable "/__gg/headers?url=/assets/store/store.css&mode=production" "$prod_css_meta"
+    return
+  fi
+
   if [[ -n "$prod_page_two_meta" ]]; then
     log_route_timing "/__gg/headers?url=/store/fashion/page/2&mode=production" "$prod_page_two_meta" "$prod_page_two_http"
     if meta_is_unreachable "$prod_page_two_meta"; then
@@ -1308,11 +1332,16 @@ check_diagnostic_mode_contracts() {
   current_failure_scope="contract"
   prod_mode="$(json_field "$prod_headers_file" "mode" || true)"
   prod_robots="$(json_field "$prod_headers_file" "robots" || true)"
+  prod_cache="$(json_field "$prod_headers_file" "cacheControl" || true)"
   dev_robots="$(json_field "$dev_headers_file" "robots" || true)"
   prod_category_route="$(json_field "$prod_category_file" "route" || true)"
   prod_category_store_route="$(json_field "$prod_category_file" "store.route" || true)"
   prod_category_robots="$(json_field "$prod_category_file" "robots" || true)"
   prod_category_canonical="$(json_field "$prod_category_file" "store.canonical" || true)"
+  prod_category_cache="$(json_field "$prod_category_file" "cacheControl" || true)"
+  prod_manifest_cache="$(json_field "$prod_manifest_file" "cacheControl" || true)"
+  prod_js_cache="$(json_field "$prod_js_file" "cacheControl" || true)"
+  prod_css_cache="$(json_field "$prod_css_file" "cacheControl" || true)"
   prod_slash_to="$(json_field "$prod_slash_file" "redirects.to" || true)"
   prod_slash_status="$(json_field "$prod_slash_file" "redirects.status" || true)"
   dev_slash_status="$(json_field "$dev_slash_file" "redirects.status" || true)"
@@ -1322,6 +1351,7 @@ check_diagnostic_mode_contracts() {
     prod_page_two_store_route="$(json_field "$prod_page_two_file" "store.route" || true)"
     prod_page_two_robots="$(json_field "$prod_page_two_file" "robots" || true)"
     prod_page_two_canonical="$(json_field "$prod_page_two_file" "store.canonical" || true)"
+    prod_page_two_cache="$(json_field "$prod_page_two_file" "cacheControl" || true)"
   fi
 
   [[ "$prod_mode" == "production" ]] || log_fail "production diagnostics preview did not report mode=production"
@@ -1330,6 +1360,9 @@ check_diagnostic_mode_contracts() {
     log_fail "production diagnostics preview for /store is not indexable (${prod_robots:-missing})"
   else
     log_info "PASS: production diagnostics preview for /store is indexable (${prod_robots:-missing})"
+  fi
+  if [[ "$prod_cache" != *"public"* || "$prod_cache" != *"max-age=300"* || "$prod_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /store has wrong cache policy (${prod_cache:-missing})"
   fi
 
   if [[ "$dev_robots" == *"noindex"* ]]; then
@@ -1345,8 +1378,21 @@ check_diagnostic_mode_contracts() {
     if [[ "$prod_category_canonical" != "https://www.pakrpp.com/store/fashion" ]]; then
       log_fail "production diagnostics preview for /store/fashion canonical is wrong (${prod_category_canonical:-missing})"
     fi
+    if [[ "$prod_category_cache" != *"public"* || "$prod_category_cache" != *"max-age=300"* || "$prod_category_cache" != *"stale-while-revalidate=86400"* ]]; then
+      log_production_cache_drift "production diagnostics preview for /store/fashion has wrong cache policy (${prod_category_cache:-missing})"
+    fi
   else
     log_warn "production diagnostics preview for /store/fashion is not on the clean Store route yet (route=${prod_category_route:-missing} store=${prod_category_store_route:-missing})"
+  fi
+
+  if [[ "$prod_manifest_cache" != *"public"* || "$prod_manifest_cache" != *"max-age=300"* || "$prod_manifest_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /store/data/manifest.json has wrong cache policy (${prod_manifest_cache:-missing})"
+  fi
+  if [[ "$prod_js_cache" != *"public"* || "$prod_js_cache" != *"max-age=300"* || "$prod_js_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /assets/store/store.js has wrong cache policy (${prod_js_cache:-missing})"
+  fi
+  if [[ "$prod_css_cache" != *"public"* || "$prod_css_cache" != *"max-age=300"* || "$prod_css_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /assets/store/store.css has wrong cache policy (${prod_css_cache:-missing})"
   fi
 
   if [[ -n "$prod_page_two_meta" ]]; then
@@ -1356,6 +1402,9 @@ check_diagnostic_mode_contracts() {
       fi
       if [[ "$prod_page_two_canonical" != "https://www.pakrpp.com/store/fashion/page/2" ]]; then
         log_fail "production diagnostics preview for /store/fashion/page/2 canonical is wrong (${prod_page_two_canonical:-missing})"
+      fi
+      if [[ "$prod_page_two_cache" != *"public"* || "$prod_page_two_cache" != *"max-age=300"* || "$prod_page_two_cache" != *"stale-while-revalidate=86400"* ]]; then
+        log_production_cache_drift "production diagnostics preview for /store/fashion/page/2 has wrong cache policy (${prod_page_two_cache:-missing})"
       fi
     else
       log_warn "production diagnostics preview for /store/fashion/page/2 is not on the clean Store route yet (route=${prod_page_two_route:-missing} store=${prod_page_two_store_route:-missing})"
