@@ -223,73 +223,75 @@ fi
 if ! node -e '
   const fs = require("node:fs");
   const path = require("node:path");
-  const root = process.argv[1];
-  const pageSize = 48;
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "store/data/manifest.json"), "utf8"));
-  const categories = [
-    ["fashion", "Fashion", "Fashion Picks · Yellow Cart"],
-    ["skincare", "Skincare", "Skincare Picks · Yellow Cart"],
-    ["workspace", "Workspace", "Workspace Picks · Yellow Cart"],
-    ["tech", "Tech", "Tech Picks · Yellow Cart"],
-    ["everyday", "Lainnya", "Everyday Picks · Yellow Cart"],
-  ];
-  const counts = Object.fromEntries(categories.map(([key]) => [key, 0]));
-  for (const item of Array.isArray(manifest.items) ? manifest.items : []) {
-    const key = String(item && item.categoryKey || "");
-    if (Object.prototype.hasOwnProperty.call(counts, key)) counts[key] += 1;
-  }
-  const parseProducts = (html) => {
-    const match = html.match(/<script\b[^>]*id="store-static-products"[^>]*>([\s\S]*?)<\/script>/i);
-    if (!match) process.exit(17);
-    const products = JSON.parse(match[1]);
-    if (!Array.isArray(products)) process.exit(18);
-    return products;
-  };
-  const parseItemList = (html) => {
-    const match = html.match(/<script\b[^>]*id="store-itemlist-jsonld"[^>]*>([\s\S]*?)<\/script>/i);
-    if (!match) process.exit(27);
-    const schema = JSON.parse(match[1]);
-    const graph = Array.isArray(schema["@graph"]) ? schema["@graph"] : [schema];
-    return graph.find((node) => node && node["@type"] === "ItemList") || graph.find((node) => Array.isArray(node && node["@type"]) && node["@type"].includes("ItemList"));
-  };
-  const checkPage = (key, label, title, pageNumber, totalPages, totalProducts) => {
-    const nested = pageNumber === 1 ? path.join(root, "store", key, "index.html") : path.join(root, "store", key, "page", String(pageNumber), "index.html");
-    const flat = pageNumber === 1 ? path.join(root, `store-${key}.html`) : path.join(root, `store-${key}-page-${pageNumber}.html`);
-    const publicPath = pageNumber === 1 ? `/store/${key}` : `/store/${key}/page/${pageNumber}`;
-    const canonicalUrl = `https://www.pakrpp.com${publicPath}`;
-    const expectedTitle = pageNumber === 1 ? title : `${title.replace(" · Yellow Cart", "")} · Page ${pageNumber} · Yellow Cart`;
-    const expectedCount = Math.min(Math.max(totalProducts - ((pageNumber - 1) * pageSize), 0), pageSize);
-    if (!fs.existsSync(nested) || !fs.existsSync(flat)) process.exit(10);
-    const html = fs.readFileSync(nested, "utf8");
-    if (!html.includes(`<title>${expectedTitle}</title>`)) process.exit(11);
-    if (!html.includes(`href="${canonicalUrl}"`)) process.exit(12);
-    if (!html.includes(`data-store-category-key="${key}"`)) process.exit(13);
-    if (!html.includes("store-category-page-rail")) process.exit(14);
-    if (!html.includes("href=\"/assets/store/store.css\"") || !/src="\/assets\/store\/store\.js"[^>]*defer/.test(html)) process.exit(15);
-    if (/\bEtc\b|\bdummy\b/i.test(html)) process.exit(16);
-    if (/\/store\/etc(?:$|[/?#" ])/.test(html)) process.exit(26);
-    const products = parseProducts(html);
-    if (products.length !== expectedCount || products.length < 1 || products.length > pageSize) process.exit(18);
-    if (products.some((product) => String(product.categoryKey || "") !== key || String(product.category || "") !== label)) process.exit(19);
-    const prevHref = pageNumber === 2 ? `/store/${key}` : `/store/${key}/page/${pageNumber - 1}`;
-    const nextHref = `/store/${key}/page/${pageNumber + 1}`;
-    if (pageNumber > 1 && !html.includes(`rel="prev" href="${prevHref}"`)) process.exit(20);
-    if (pageNumber < totalPages && !html.includes(`rel="next" href="${nextHref}"`)) process.exit(21);
-    const itemList = parseItemList(html);
-    if (!itemList || Number(itemList.numberOfItems || 0) !== products.length) process.exit(22);
-    const entries = Array.isArray(itemList.itemListElement) ? itemList.itemListElement : [];
-    if (entries.length !== products.length) process.exit(23);
-    if (String(itemList.url || "") !== canonicalUrl) process.exit(24);
-    const expectedFirstPosition = (pageNumber - 1) * pageSize + 1;
-    if (entries.length && Number(entries[0].position || 0) !== expectedFirstPosition) process.exit(25);
-  };
-  for (const [key, label, title] of categories) {
-    const totalProducts = counts[key] || 0;
-    const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
-    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
-      checkPage(key, label, title, pageNumber, totalPages, totalProducts);
+  const { pathToFileURL } = require("node:url");
+
+  (async () => {
+    const root = process.argv[1];
+    const pageSize = 48;
+    const { STORE_CATEGORIES } = await import(pathToFileURL(path.resolve("src/store/store-categories.config.mjs")).href);
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, "store/data/manifest.json"), "utf8"));
+    const categories = STORE_CATEGORIES.map((category) => [category.key, category.label, category.title]);
+    const counts = Object.fromEntries(categories.map(([key]) => [key, 0]));
+    for (const item of Array.isArray(manifest.items) ? manifest.items : []) {
+      const key = String(item && item.categoryKey || "");
+      if (Object.prototype.hasOwnProperty.call(counts, key)) counts[key] += 1;
     }
-  }
+    const parseProducts = (html) => {
+      const match = html.match(/<script\b[^>]*id="store-static-products"[^>]*>([\s\S]*?)<\/script>/i);
+      if (!match) process.exit(17);
+      const products = JSON.parse(match[1]);
+      if (!Array.isArray(products)) process.exit(18);
+      return products;
+    };
+    const parseItemList = (html) => {
+      const match = html.match(/<script\b[^>]*id="store-itemlist-jsonld"[^>]*>([\s\S]*?)<\/script>/i);
+      if (!match) process.exit(27);
+      const schema = JSON.parse(match[1]);
+      const graph = Array.isArray(schema["@graph"]) ? schema["@graph"] : [schema];
+      return graph.find((node) => node && node["@type"] === "ItemList") || graph.find((node) => Array.isArray(node && node["@type"]) && node["@type"].includes("ItemList"));
+    };
+    const checkPage = (key, label, title, pageNumber, totalPages, totalProducts) => {
+      const nested = pageNumber === 1 ? path.join(root, "store", key, "index.html") : path.join(root, "store", key, "page", String(pageNumber), "index.html");
+      const flat = pageNumber === 1 ? path.join(root, `store-${key}.html`) : path.join(root, `store-${key}-page-${pageNumber}.html`);
+      const publicPath = pageNumber === 1 ? `/store/${key}` : `/store/${key}/page/${pageNumber}`;
+      const canonicalUrl = `https://www.pakrpp.com${publicPath}`;
+      const expectedTitle = pageNumber === 1 ? title : `${title.replace(" · Yellow Cart", "")} · Page ${pageNumber} · Yellow Cart`;
+      const expectedCount = Math.min(Math.max(totalProducts - ((pageNumber - 1) * pageSize), 0), pageSize);
+      if (!fs.existsSync(nested) || !fs.existsSync(flat)) process.exit(10);
+      const html = fs.readFileSync(nested, "utf8");
+      if (!html.includes(`<title>${expectedTitle}</title>`)) process.exit(11);
+      if (!html.includes(`href="${canonicalUrl}"`)) process.exit(12);
+      if (!html.includes(`data-store-category-key="${key}"`)) process.exit(13);
+      if (!html.includes("store-category-page-rail")) process.exit(14);
+      if (!html.includes("href=\"/assets/store/store.css\"") || !/src="\/assets\/store\/store\.js"[^>]*defer/.test(html)) process.exit(15);
+      if (/\bEtc\b|\bdummy\b/i.test(html)) process.exit(16);
+      if (/\/store\/etc(?:$|[/?#" ])/.test(html)) process.exit(26);
+      const products = parseProducts(html);
+      if (products.length !== expectedCount || products.length < 1 || products.length > pageSize) process.exit(18);
+      if (products.some((product) => String(product.categoryKey || "") !== key || String(product.category || "") !== label)) process.exit(19);
+      const prevHref = pageNumber === 2 ? `/store/${key}` : `/store/${key}/page/${pageNumber - 1}`;
+      const nextHref = `/store/${key}/page/${pageNumber + 1}`;
+      if (pageNumber > 1 && !html.includes(`rel="prev" href="${prevHref}"`)) process.exit(20);
+      if (pageNumber < totalPages && !html.includes(`rel="next" href="${nextHref}"`)) process.exit(21);
+      const itemList = parseItemList(html);
+      if (!itemList || Number(itemList.numberOfItems || 0) !== products.length) process.exit(22);
+      const entries = Array.isArray(itemList.itemListElement) ? itemList.itemListElement : [];
+      if (entries.length !== products.length) process.exit(23);
+      if (String(itemList.url || "") !== canonicalUrl) process.exit(24);
+      const expectedFirstPosition = (pageNumber - 1) * pageSize + 1;
+      if (entries.length && Number(entries[0].position || 0) !== expectedFirstPosition) process.exit(25);
+    };
+    for (const [key, label, title] of categories) {
+      const totalProducts = counts[key] || 0;
+      const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
+      for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+        checkPage(key, label, title, pageNumber, totalPages, totalProducts);
+      }
+    }
+  })().catch((error) => {
+    console.error(error && error.stack ? error.stack : error);
+    process.exit(99);
+  });
 ' "$target_root" >/dev/null 2>&1; then
   log_fail "store category artifacts are invalid or missing"
 fi

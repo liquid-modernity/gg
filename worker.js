@@ -80,12 +80,84 @@ const STORE_PUBLIC_PATH = "/store";
 const STORE_INTERNAL_PATH = "/store.html";
 const STORE_DATA_PREFIX = "/store/data/";
 const STORE_ASSET_PREFIX = "/assets/store/";
-const STORE_CATEGORY_KEYS = ["fashion", "skincare", "workspace", "tech", "everyday"];
+// STORE_CATEGORY_REGISTRY_START
+const STORE_CATEGORY_REGISTRY = Object.freeze([
+  {
+    "key": "fashion",
+    "label": "Fashion",
+    "slug": "fashion",
+    "path": "/store/fashion",
+    "aliases": [
+      "fashion",
+      "style",
+      "outfit"
+    ],
+    "routeAliases": [],
+    "fallback": false
+  },
+  {
+    "key": "skincare",
+    "label": "Skincare",
+    "slug": "skincare",
+    "path": "/store/skincare",
+    "aliases": [
+      "skincare"
+    ],
+    "routeAliases": [],
+    "fallback": false
+  },
+  {
+    "key": "workspace",
+    "label": "Workspace",
+    "slug": "workspace",
+    "path": "/store/workspace",
+    "aliases": [
+      "workspace"
+    ],
+    "routeAliases": [],
+    "fallback": false
+  },
+  {
+    "key": "tech",
+    "label": "Tech",
+    "slug": "tech",
+    "path": "/store/tech",
+    "aliases": [
+      "tech"
+    ],
+    "routeAliases": [],
+    "fallback": false
+  },
+  {
+    "key": "everyday",
+    "label": "Lainnya",
+    "slug": "everyday",
+    "path": "/store/everyday",
+    "aliases": [
+      "everyday",
+      "lainnya",
+      "etc",
+      "other"
+    ],
+    "routeAliases": [
+      "lainnya",
+      "etc"
+    ],
+    "fallback": true
+  }
+].map((entry) => Object.freeze({
+  ...entry,
+  aliases: Object.freeze(entry.aliases || []),
+  routeAliases: Object.freeze(entry.routeAliases || []),
+})));
+// STORE_CATEGORY_REGISTRY_END
+const STORE_CATEGORY_KEYS = Object.freeze(STORE_CATEGORY_REGISTRY.map((entry) => entry.key));
 const STORE_CATEGORY_SET = new Set(STORE_CATEGORY_KEYS);
-const STORE_CATEGORY_ALIASES = new Map([
-  ["lainnya", "everyday"],
-  ["etc", "everyday"],
-]);
+const STORE_CATEGORY_ALIASES = new Map(
+  STORE_CATEGORY_REGISTRY.flatMap((entry) => (
+    (entry.routeAliases || []).map((alias) => [String(alias || "").trim().toLowerCase(), entry.key])
+  ))
+);
 const YELLOWCART_LEGACY_PUBLIC_PATH = "/yellowcart";
 const YELLOWCART_LEGACY_INTERNAL_PATH = "/yellowcart.html";
 const YELLOWCARD_LEGACY_PUBLIC_PATH = "/yellowcard";
@@ -349,6 +421,19 @@ function isStoreCleanRoutePath(pathname) {
 function normalizeStoreCategoryKey(value) {
   const key = String(value || "").trim().toLowerCase();
   return STORE_CATEGORY_ALIASES.get(key) || key;
+}
+
+function storeCategoryAliasPaths() {
+  return STORE_CATEGORY_REGISTRY.flatMap((entry) => (
+    (entry.routeAliases || []).map((alias) => `${STORE_PUBLIC_PATH}/${alias}`)
+  ));
+}
+
+function storeCategoryAliasRedirects() {
+  return Object.fromEntries(storeCategoryAliasPaths().map((aliasPath) => {
+    const alias = aliasPath.slice(`${STORE_PUBLIC_PATH}/`.length);
+    return [aliasPath, storeCategoryPublicPath(normalizeStoreCategoryKey(alias))];
+  }));
 }
 
 function storeCategoryNestedAssetPath(categoryKey, pageNumber = 1) {
@@ -1029,8 +1114,7 @@ function pwaDiagnostics(flags) {
           `${STORE_PUBLIC_PATH}/:category/`,
           `${STORE_PUBLIC_PATH}/:category/page/1`,
           `${STORE_PUBLIC_PATH}/:category/page/02`,
-          `${STORE_PUBLIC_PATH}/lainnya`,
-          `${STORE_PUBLIC_PATH}/etc`,
+          ...storeCategoryAliasPaths(),
           YELLOWCART_LEGACY_PUBLIC_PATH,
           YELLOWCART_LEGACY_INTERNAL_PATH,
           YELLOWCARD_LEGACY_PUBLIC_PATH,
@@ -1084,8 +1168,7 @@ function diagnosticsPayload(request, flags) {
         redirects: [
           STORE_INTERNAL_PATH,
           `${STORE_PUBLIC_PATH}/`,
-          `${STORE_PUBLIC_PATH}/lainnya`,
-          `${STORE_PUBLIC_PATH}/etc`,
+          ...storeCategoryAliasPaths(),
           `${STORE_PUBLIC_PATH}/:category/`,
           `${STORE_PUBLIC_PATH}/:category/page/1`,
           `${STORE_PUBLIC_PATH}/:category/page/02`,
@@ -1136,8 +1219,7 @@ async function handleDiagnostics(request, flags) {
         mobileQueryNormalizationStatus: { development: 302, staging: 302, production: 302 },
         alwaysRedirected: {
           [`${STORE_PUBLIC_PATH}/`]: STORE_PUBLIC_PATH,
-          [`${STORE_PUBLIC_PATH}/lainnya`]: `${STORE_PUBLIC_PATH}/everyday`,
-          [`${STORE_PUBLIC_PATH}/etc`]: `${STORE_PUBLIC_PATH}/everyday`,
+          ...storeCategoryAliasRedirects(),
           [`${STORE_PUBLIC_PATH}/:category/`]: `${STORE_PUBLIC_PATH}/:category`,
           [`${STORE_PUBLIC_PATH}/:category/page/1`]: `${STORE_PUBLIC_PATH}/:category`,
           [`${STORE_PUBLIC_PATH}/:category/page/02`]: `${STORE_PUBLIC_PATH}/:category/page/2`,

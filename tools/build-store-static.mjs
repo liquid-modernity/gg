@@ -13,6 +13,11 @@ import {
   SYSTEM_LABELS,
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
+import {
+  renderStoreRuntimeCategoryConfig,
+  renderWorkerStoreCategoryRegistry,
+  storeCategoryFilterEntries,
+} from "../src/store/store-categories.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
 import { buildStoreManifest } from "../src/store/lib/build-store-manifest.mjs";
 import { paginateStoreCategories } from "../src/store/lib/paginate-products.mjs";
@@ -38,6 +43,7 @@ import { isDummyProduct, validateStoreProduct } from "../src/store/lib/validate-
 const ROOT = process.cwd();
 const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_PATH = path.resolve(ROOT, "store.html");
+const WORKER_PATH = path.resolve(ROOT, "worker.js");
 const LCP_FALLBACK_PATH = path.resolve(ROOT, "config/store-lcp-product.json");
 const STORE_SOURCE_DIR = path.resolve(ROOT, "src/store");
 const STORE_CRITICAL_CSS_PATH = path.resolve(STORE_SOURCE_DIR, "store.critical.css");
@@ -242,10 +248,31 @@ function buildRuntimeScriptTag() {
   return `  <script src="${STORE_ASSET_JS_HREF}" defer></script>`;
 }
 
+function buildStoreFilterChips(indent = "") {
+  return storeCategoryFilterEntries().map((entry, index) => (
+    `${indent}<button class="store-chip" type="button" data-store-filter="${escapeHtmlAttr(entry.key)}" data-copy="${escapeHtmlAttr(entry.labelKey)}" aria-pressed="${index === 0 ? "true" : "false"}">${escapeHtmlText(entry.label)}</button>`
+  )).join("\n");
+}
+
+function replaceStoreFilterScope(source, scope) {
+  const pattern = new RegExp(`(<div class="store-chip-row" data-store-filter-scope="${scope}">)\\n[\\s\\S]*?(\\n\\s*</div>)`);
+  if (!pattern.test(source)) fail(`missing Store filter scope: ${scope}`);
+
+  return source.replace(pattern, (match, open, close) => {
+    const closeIndent = close.match(/\n(\s*)<\/div>/)?.[1] || "        ";
+    return `${open}\n${buildStoreFilterChips(`${closeIndent}  `)}${close}`;
+  });
+}
+
 function syncStoreAssets() {
   const criticalCss = read(STORE_CRITICAL_CSS_PATH);
   const storeCss = read(STORE_CSS_SOURCE_PATH);
-  const storeJs = read(STORE_JS_SOURCE_PATH);
+  const storeJs = replaceMarkedRegion(
+    read(STORE_JS_SOURCE_PATH),
+    "// STORE_CATEGORY_CONFIG_START",
+    "// STORE_CATEGORY_CONFIG_END",
+    renderStoreRuntimeCategoryConfig()
+  );
 
   mkdirSync(STORE_ASSET_DIR, { recursive: true });
 
@@ -254,6 +281,17 @@ function syncStoreAssets() {
     storeCss: normalizeTextFile(storeCss),
     storeJs: normalizeTextFile(storeJs),
   };
+}
+
+function syncWorkerStoreCategoryRegistry() {
+  const workerSource = read(WORKER_PATH);
+  const nextWorkerSource = replaceMarkedRegion(
+    workerSource,
+    "// STORE_CATEGORY_REGISTRY_START",
+    "// STORE_CATEGORY_REGISTRY_END",
+    renderWorkerStoreCategoryRegistry()
+  );
+  writeTextFile(WORKER_PATH, nextWorkerSource);
 }
 
 function decodeHtmlEntities(value) {
@@ -873,6 +911,7 @@ if (fatalError) {
 
 const firstProduct = products[0];
 const { criticalCss, storeCss, storeJs } = syncStoreAssets();
+syncWorkerStoreCategoryRegistry();
 const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
 const manifest = buildStoreManifest(products, { source });
 const manifestContent = normalizeTextFile(JSON.stringify(manifest, null, 2));
@@ -921,6 +960,8 @@ writeTextFile(STORE_MANIFEST_PATH, manifestContent);
 writeTextFile(STORE_MANIFEST_DIST_PATH, manifestContent);
 
 let nextStoreSource = originalStoreSource;
+nextStoreSource = replaceStoreFilterScope(nextStoreSource, "outline");
+nextStoreSource = replaceStoreFilterScope(nextStoreSource, "discovery");
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->", buildCriticalCssBlock(criticalCss));
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_ASSET_CSS_START -->", "<!-- STORE_ASSET_CSS_END -->", buildAssetCssLink());
 nextStoreSource = replaceMarkedRegion(nextStoreSource, "<!-- STORE_LCP_PRELOAD_START -->", "<!-- STORE_LCP_PRELOAD_END -->", buildPreloadBlock(firstProduct));

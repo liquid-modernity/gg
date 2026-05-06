@@ -334,86 +334,111 @@
       alt: "Foldable Reusable Bag"
     };
     // STORE_LCP_PRODUCT_END
+    // STORE_CATEGORY_CONFIG_START
     var STORE_CATEGORY_CONFIG = {
-      all: {
-        labelKey: 'filterAllLabel',
-        icon: 'filter_list',
-        title: {
-          id: 'Semua Kurasi',
-          en: 'All Picks'
-        },
-        description: {
-          id: 'Kumpulan produk pilihan Yellow Cart untuk gaya hidup, kerja, dan kebutuhan harian yang dikurasi secara editorial.',
-          en: 'A curated Yellow Cart selection for lifestyle, work, and everyday use.'
-        },
-        keywords: ['yellow cart', 'kurasi produk', 'affiliate store']
-      },
-      fashion: {
-        labelKey: 'filterFashionLabel',
-        icon: 'checkroom',
-        title: {
-          id: 'Fashion',
-          en: 'Fashion'
-        },
-        description: {
-          id: 'Pilihan fashion dengan tampilan bersih, netral, dan mudah dipadukan untuk kerja, perjalanan, dan gaya harian.',
-          en: 'Clean, neutral, and wearable fashion picks for work, travel, and daily style.'
-        },
-        keywords: ['fashion minimalis', 'daily wear', 'workwear']
-      },
-      skincare: {
-        labelKey: 'filterSkincareLabel',
-        icon: 'spa',
-        title: {
-          id: 'Skincare',
-          en: 'Skincare'
-        },
-        description: {
-          id: 'Kurasi skincare sederhana untuk rutinitas yang realistis, termasuk kebutuhan dasar kulit di iklim tropis.',
-          en: 'Simple skincare picks for realistic routines, including basic needs in tropical climates.'
-        },
-        keywords: ['skincare tropis', 'skin barrier', 'daily skincare']
-      },
-      workspace: {
-        labelKey: 'filterWorkspaceLabel',
-        icon: 'desktop_windows',
-        title: {
-          id: 'Workspace',
-          en: 'Workspace'
-        },
-        description: {
-          id: 'Produk untuk setup kerja remote, meja kecil, dan ruang kerja yang rapi tanpa terasa berlebihan.',
-          en: 'Products for remote work setups, small desks, and calm workspaces.'
-        },
-        keywords: ['remote work setup', 'workspace minimalis', 'WFH']
-      },
-      tech: {
-        labelKey: 'filterTechLabel',
-        icon: 'devices',
-        title: {
-          id: 'Tech',
-          en: 'Tech'
-        },
-        description: {
-          id: 'Perangkat dan aksesori teknologi yang dipilih untuk fungsi, kerapian, dan kemudahan penggunaan harian.',
-          en: 'Tech devices and accessories selected for function, neatness, and everyday usability.'
-        },
-        keywords: ['tech accessories', 'minimal setup', 'daily tech']
-      },
-      everyday: {
-        labelKey: 'filterEverydayLabel',
-        icon: 'category',
-        title: {
-          id: 'Lainnya',
-          en: 'Other'
-        },
-        description: {
-          id: 'Produk lintas kategori yang tetap relevan dengan prinsip kurasi Yellow Cart.',
-          en: 'Cross-category products that still fit the Yellow Cart curation logic.'
-        },
-        keywords: ['daily essentials', 'curated picks']
-      }
+          "all": {
+                "labelKey": "filterAllLabel",
+                "icon": "filter_list",
+                "title": {
+                      "id": "Semua Kurasi",
+                      "en": "All Picks"
+                },
+                "description": {
+                      "id": "Kumpulan produk pilihan Yellow Cart untuk gaya hidup, kerja, dan kebutuhan harian yang dikurasi secara editorial.",
+                      "en": "A curated Yellow Cart selection for lifestyle, work, and everyday use."
+                },
+                "keywords": [
+                      "yellow cart",
+                      "kurasi produk",
+                      "affiliate store"
+                ]
+          },
+          "fashion": {
+                "labelKey": "filterFashionLabel",
+                "icon": "checkroom",
+                "title": {
+                      "id": "Fashion",
+                      "en": "Fashion"
+                },
+                "description": {
+                      "id": "Pilihan fashion dengan tampilan bersih, netral, dan mudah dipadukan untuk kerja, perjalanan, dan gaya harian.",
+                      "en": "Clean, neutral, and wearable fashion picks for work, travel, and daily style."
+                },
+                "keywords": [
+                      "fashion minimalis",
+                      "daily wear",
+                      "workwear"
+                ]
+          },
+          "skincare": {
+                "labelKey": "filterSkincareLabel",
+                "icon": "spa",
+                "title": {
+                      "id": "Skincare",
+                      "en": "Skincare"
+                },
+                "description": {
+                      "id": "Kurasi skincare sederhana untuk rutinitas yang realistis, termasuk kebutuhan dasar kulit di iklim tropis.",
+                      "en": "Simple skincare picks for realistic routines, including basic needs in tropical climates."
+                },
+                "keywords": [
+                      "skincare tropis",
+                      "skin barrier",
+                      "daily skincare"
+                ]
+          },
+          "workspace": {
+                "labelKey": "filterWorkspaceLabel",
+                "icon": "desktop_windows",
+                "title": {
+                      "id": "Workspace",
+                      "en": "Workspace"
+                },
+                "description": {
+                      "id": "Produk untuk setup kerja remote, meja kecil, dan ruang kerja yang rapi tanpa terasa berlebihan.",
+                      "en": "Products for remote work setups, small desks, and calm workspaces."
+                },
+                "keywords": [
+                      "remote work setup",
+                      "workspace minimalis",
+                      "WFH"
+                ]
+          },
+          "tech": {
+                "labelKey": "filterTechLabel",
+                "icon": "devices",
+                "title": {
+                      "id": "Tech",
+                      "en": "Tech"
+                },
+                "description": {
+                      "id": "Perangkat dan aksesori teknologi yang dipilih untuk fungsi, kerapian, dan kemudahan penggunaan harian.",
+                      "en": "Tech devices and accessories selected for function, neatness, and everyday usability."
+                },
+                "keywords": [
+                      "tech accessories",
+                      "minimal setup",
+                      "daily tech"
+                ]
+          },
+          "everyday": {
+                "labelKey": "filterEverydayLabel",
+                "icon": "category",
+                "title": {
+                      "id": "Lainnya",
+                      "en": "Other"
+                },
+                "description": {
+                      "id": "Produk lintas kategori yang tetap relevan dengan prinsip kurasi Yellow Cart.",
+                      "en": "Cross-category products that still fit the Yellow Cart curation logic."
+                },
+                "keywords": [
+                      "daily essentials",
+                      "curated picks"
+                ]
+          }
     };
+    // STORE_CATEGORY_CONFIG_END
     var PUBLIC_FILTERS = Object.keys(STORE_CATEGORY_CONFIG);
     var DISCOVERY_PRICE_BANDS = ['all', 'under-50k', '50k-100k', '100k-200k', '200k-500k', 'over-500k', 'unknown'];
     var DISCOVERY_SORTS = ['recommended', 'newest', 'price-asc', 'price-desc', 'az'];

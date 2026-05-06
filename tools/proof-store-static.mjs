@@ -815,7 +815,7 @@ if (staticProducts.length) {
 }
 
 if (staticProducts.length) {
-  const syntheticKey = "fashion";
+  const syntheticKey = CATEGORY_ORDER.find((key) => !CATEGORY_CONFIG[key]?.fallback) || CATEGORY_ORDER[0];
   const syntheticBaseRoute = storeCategoryRoutes().find((route) => route.key === syntheticKey);
   const baseProduct = staticProducts.find((product) => productCategoryKey(product) === syntheticKey) || staticProducts[0];
   const baseImages = Array.isArray(baseProduct?.images) && baseProduct.images.length ? baseProduct.images : ["https://www.pakrpp.com/favicon.ico"];
@@ -841,6 +841,9 @@ if (staticProducts.length) {
     };
   });
   const syntheticPagination = paginateCategoryProducts(syntheticProducts, syntheticKey, STORE_CATEGORY_PAGE_SIZE);
+  const expectedNestedPageTwoPath = `store/${syntheticKey}/page/2/index.html`;
+  const expectedFlatPageTwoPath = `store-${syntheticKey}-page-2.html`;
+  const expectedPageTwoTitle = `${syntheticBaseRoute.h1} · Page 2 · Yellow Cart`;
 
   if (syntheticPagination.totalPages !== 3) {
     fail(`synthetic pagination expected 3 pages, found ${syntheticPagination.totalPages}`);
@@ -884,13 +887,13 @@ if (staticProducts.length) {
     }
     if (route.prevPath && !hasAnchorRelHref(pageSource, "prev", route.prevPath)) fail(`${label}: previous link is missing`);
     if (route.nextPath && !hasAnchorRelHref(pageSource, "next", route.nextPath)) fail(`${label}: next link is missing`);
-    if (route.pageNumber === 2 && route.nestedOutputPath !== "store/fashion/page/2/index.html") {
+    if (route.pageNumber === 2 && route.nestedOutputPath !== expectedNestedPageTwoPath) {
       fail(`${label}: nested output path is wrong (${route.nestedOutputPath})`);
     }
-    if (route.pageNumber === 2 && route.flatOutputPath !== "store-fashion-page-2.html") {
+    if (route.pageNumber === 2 && route.flatOutputPath !== expectedFlatPageTwoPath) {
       fail(`${label}: flat output path is wrong (${route.flatOutputPath})`);
     }
-    if (route.pageNumber === 2 && route.title !== "Fashion Picks · Page 2 · Yellow Cart") {
+    if (route.pageNumber === 2 && route.title !== expectedPageTwoTitle) {
       fail(`${label}: page 2 title is wrong (${route.title})`);
     }
 
@@ -956,6 +959,11 @@ if (existsSync(WORKER_PATH)) {
   if (!/public, max-age=300, stale-while-revalidate=86400/.test(workerSource)) fail("worker.js is missing the production store HTML/manifest SWR cache policy");
   if (!/immutable/.test(workerSource)) fail("worker.js is missing immutable hashed asset cache policy support");
   if (!/STORE_DATA_PREFIX/.test(workerSource) || !/\/store\/data\//.test(workerSource)) fail("worker.js is missing explicit /store/data manifest route readiness");
+  if (!/STORE_CATEGORY_REGISTRY_START/.test(workerSource) || !/STORE_CATEGORY_REGISTRY_END/.test(workerSource)) fail("worker.js is missing generated Store category registry markers");
+  if (!/STORE_CATEGORY_REGISTRY/.test(workerSource) || !/routeAliases/.test(workerSource)) fail("worker.js is missing generated Store category route alias registry");
+  for (const key of CATEGORY_ORDER) {
+    if (!new RegExp(`"key"\\s*:\\s*"${escapeRegExp(key)}"`).test(workerSource)) fail(`worker.js category registry is missing ${key}`);
+  }
   if (!/User-agent: Googlebot/.test(workerSource)) fail("worker.js is missing explicit Googlebot robots allowance");
   if (!/User-agent: OAI-SearchBot/.test(workerSource)) fail("worker.js is missing explicit OAI-SearchBot robots allowance");
 }

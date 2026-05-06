@@ -57,25 +57,11 @@ function deriveIntent(product) {
     .map((value) => lower(value))
     .filter(Boolean)
     .join(" | ");
+  const categoryConfig = CATEGORY_CONFIG[clean(product?.categoryKey)] || CATEGORY_CONFIG.everyday || CATEGORY_CONFIG[CATEGORY_ORDER[0]];
+  const defaultIntent = clean(categoryConfig?.defaultIntent || "daily");
   const intents = [];
 
-  switch (clean(product?.categoryKey)) {
-    case "fashion":
-      intents.push("daily");
-      break;
-    case "skincare":
-      intents.push("skincare-routine");
-      break;
-    case "workspace":
-      intents.push("workspace");
-      break;
-    case "tech":
-      intents.push("portable");
-      break;
-    default:
-      intents.push("daily");
-      break;
-  }
+  if (defaultIntent) intents.push(defaultIntent);
 
   matchedIntent(intents, rawHaystack, "workwear", ["workwear", "office", "meeting", "smart-casual", "overshirt"]);
   matchedIntent(intents, rawHaystack, "travel", ["travel", "trip", "packing", "airplane", "commute"]);
@@ -100,7 +86,7 @@ function buildManifestCategories(products) {
     key,
     label: CATEGORY_CONFIG[key].label,
     count: Number(counts[key] || 0),
-    path: CATEGORY_CONFIG[key].futurePath,
+    path: CATEGORY_CONFIG[key].path || CATEGORY_CONFIG[key].futurePath,
   }));
 }
 
