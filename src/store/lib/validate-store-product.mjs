@@ -50,6 +50,24 @@ export function productionImageUrlIssue(value) {
   return "";
 }
 
+export function imageUrlSyntaxIssue(value) {
+  const raw = String(value || "").trim();
+  let url;
+
+  if (!raw) return "empty image URL";
+  if (/^(?:data|blob):/i.test(raw)) return "data/blob image URL is not allowed";
+  if (/^\/\//.test(raw) || /^\//.test(raw)) return "relative image URL is not allowed";
+
+  try {
+    url = new URL(raw);
+  } catch (_) {
+    return "image URL is not a valid absolute URL";
+  }
+
+  if (!["http:", "https:"].includes(url.protocol)) return "image URL must use http(s)";
+  return "";
+}
+
 export function isDummyProduct(product) {
   return [
     product?.id,
@@ -96,6 +114,11 @@ export function validateStoreProduct(product, options = {}) {
   else if (!absoluteUrl(canonicalUrl)) errors.push("canonicalUrl is not an absolute http(s) URL");
 
   if (!firstImage) errors.push("missing image");
+  else {
+    const imageSyntaxIssues = uniqueProductionImageIssues(images.map(imageUrlSyntaxIssue).filter(Boolean));
+    errors.push(...imageSyntaxIssues);
+  }
+
   if (imageSource === "existing-static-fallback") {
     if (mode === "production") errors.push("used existing static image fallback");
     else warnings.push("used existing static image fallback");

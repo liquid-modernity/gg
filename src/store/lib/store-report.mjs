@@ -19,6 +19,30 @@ export function formatImageSourceSummary(imageSources = {}) {
   return IMAGE_SOURCE_KEYS.map((key) => `${key}:${Number(imageSources[key] || 0)}`).join(", ");
 }
 
+function formatWarningSummary(warnings = []) {
+  const visible = [];
+  const counts = {
+    existingStaticFallback: 0,
+    placeholderImage: 0,
+  };
+
+  for (const warning of warnings) {
+    const message = String(warning || "");
+    if (message.includes("used existing static image fallback")) {
+      counts.existingStaticFallback += 1;
+    } else if (message.includes("placeholder image URL remains in non-production data")) {
+      counts.placeholderImage += 1;
+    } else {
+      visible.push(message);
+    }
+  }
+
+  if (counts.existingStaticFallback) visible.push(`existingStaticFallbackWarnings=${counts.existingStaticFallback}`);
+  if (counts.placeholderImage) visible.push(`placeholderImageWarnings=${counts.placeholderImage}`);
+
+  return visible.length ? visible.join(" | ") : "none";
+}
+
 export function buildStoreReport({
   products,
   productEntries = [],
@@ -67,7 +91,7 @@ export function formatStoreReport(report) {
     ? report.removedInvalidProducts.map((entry) => `${entry.slug || entry.name || "unknown"} [${entry.reason}]`).join("; ")
     : "none";
   const duplicates = report.duplicateSlugs.length ? report.duplicateSlugs.join(", ") : "none";
-  const warnings = report.warnings.length ? report.warnings.join(" | ") : "none";
+  const warnings = formatWarningSummary(report.warnings);
 
   return [
     "FEED EXTRACTION REPORT",

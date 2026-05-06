@@ -20,7 +20,7 @@ import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../sr
 import { paginateCategoryProducts, paginateStoreCategories } from "../src/store/lib/paginate-products.mjs";
 import { renderCategoryPage } from "../src/store/lib/render-category-page.mjs";
 import { productCategoryKey, storeCategoryRoutes } from "../src/store/lib/store-routes.mjs";
-import { isDummyProduct, isPlaceholderImageUrl, productionImageUrlIssue, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
+import { imageUrlSyntaxIssue, isDummyProduct, isPlaceholderImageUrl, productionImageUrlIssue, validateStoreProduct } from "../src/store/lib/validate-store-product.mjs";
 
 const ROOT = process.cwd();
 const TARGET_PATH = path.resolve(ROOT, process.argv[2] || "store.html");
@@ -33,17 +33,41 @@ const STORE_MANIFEST_PATH = path.resolve(TARGET_ROOT, "store/data/manifest.json"
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 const warnings = [];
-const STORE_CI = isTruthyEnv(process.env.STORE_CI);
+const developmentNotes = {
+  existingStaticSource: false,
+  existingStaticFallbackImages: 0,
+  placeholderImages: 0,
+};
+const EXPLICIT_STORE_MODE = normalizeStoreMode(process.env.GG_STORE_MODE);
+const STORE_PRODUCTION_READINESS = isTruthyEnv(process.env.GG_STORE_PRODUCTION_READINESS);
+const STORE_CI = isTruthyEnv(process.env.STORE_CI) || EXPLICIT_STORE_MODE === "ci";
 const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
 const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
-let STORE_PRODUCTION = isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production";
-let STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
-let STORE_PROOF_MODE = STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development";
+let STORE_PRODUCTION = EXPLICIT_STORE_MODE === "production" || STORE_PRODUCTION_READINESS || isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production";
+let STORE_STRICT_MODE = EXPLICIT_STORE_MODE === "strict" || STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
+let STORE_PROOF_MODE = resolveStoreMode();
 const STORE_ALLOW_EXISTING_STATIC = isTruthyEnv(process.env.STORE_ALLOW_EXISTING_STATIC) || isTruthyEnv(process.env.STORE_PROOF_ALLOW_EXISTING_STATIC);
 const STORE_PROOF_ALLOW_REPORT_DRIFT = isTruthyEnv(process.env.STORE_PROOF_ALLOW_REPORT_DRIFT);
 
 function isTruthyEnv(value) {
   return ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+}
+
+function normalizeStoreMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+  return ["development", "ci", "strict", "production"].includes(mode) ? mode : "";
+}
+
+function resolveStoreMode() {
+  if (EXPLICIT_STORE_MODE) return EXPLICIT_STORE_MODE;
+  if (STORE_PRODUCTION) return "production";
+  if (STORE_STRICT_MODE) return "strict";
+  if (STORE_CI) return "ci";
+  return "development";
+}
+
+function isDevelopmentWarningMode() {
+  return STORE_PROOF_MODE === "development" || STORE_PROOF_MODE === "ci";
 }
 
 function fail(message) {
@@ -56,17 +80,56 @@ function warn(message) {
 
 function modeFailOrWarn(message) {
   if (STORE_STRICT_MODE) fail(message);
+  else if (isDevelopmentWarningMode() && recordDevelopmentNote(message)) return;
   else warn(message);
 }
 
 function staticFallbackFailOrWarn(message) {
   if (STORE_STRICT_MODE && !STORE_ALLOW_EXISTING_STATIC) fail(message);
+  else if (isDevelopmentWarningMode() && recordDevelopmentNote(message)) return;
   else warn(STORE_ALLOW_EXISTING_STATIC ? `${message} (allowed by STORE_ALLOW_EXISTING_STATIC)` : message);
 }
 
 function reportDrift(message) {
   if (STORE_PROOF_ALLOW_REPORT_DRIFT) warn(message);
   else fail(message);
+}
+
+function recordDevelopmentNote(message) {
+  const text = String(message || "");
+  const fallbackMatch = text.match(/existing-static-fallback images \((\d+)\)/);
+
+  if (fallbackMatch) {
+    developmentNotes.existingStaticFallbackImages = Math.max(
+      developmentNotes.existingStaticFallbackImages,
+      Number.parseInt(fallbackMatch[1], 10) || 0
+    );
+    return true;
+  }
+
+  if (text.includes("sourceType is existing-static") || text.includes("source is existing-static")) {
+    developmentNotes.existingStaticSource = true;
+    return true;
+  }
+
+  if (text.includes("store manifest image uses a placeholder host")) {
+    developmentNotes.placeholderImages += 1;
+    return true;
+  }
+
+  return text.includes("used existing static image fallback") || text.includes("placeholder image URL remains in non-production data");
+}
+
+function printDevelopmentNotes() {
+  if (!isDevelopmentWarningMode()) return;
+
+  const parts = [];
+  if (developmentNotes.placeholderImages) parts.push(`placeholderImages=${developmentNotes.placeholderImages}`);
+  if (developmentNotes.existingStaticFallbackImages) parts.push(`existingStaticFallbackImages=${developmentNotes.existingStaticFallbackImages}`);
+  if (developmentNotes.existingStaticSource) parts.push("existingStaticSource=true");
+  if (!parts.length) return;
+
+  console.log(`STORE STATIC PROOF NOTE ${parts.join(" ")} allowedInMode=${STORE_PROOF_MODE}`);
 }
 
 function byteLength(value) {
@@ -103,6 +166,12 @@ function checkNoProductionNoindex(pageSource, pageLabel) {
 }
 
 function checkProductionImageUrl(value, label) {
+  const syntaxIssue = imageUrlSyntaxIssue(value);
+  if (syntaxIssue) {
+    fail(`${label}: ${syntaxIssue}`);
+    return;
+  }
+
   const issue = productionImageUrlIssue(value);
   if (!issue) return;
   if (STORE_STRICT_MODE) fail(`${label}: ${issue}`);
@@ -211,8 +280,8 @@ if (existsSync(FLAGS_PATH)) {
   }
 }
 if (mode === "production") STORE_PRODUCTION = true;
-STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
-STORE_PROOF_MODE = STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development";
+STORE_STRICT_MODE = EXPLICIT_STORE_MODE === "strict" || STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
+STORE_PROOF_MODE = resolveStoreMode();
 
 const gridRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
 const staticProductsRegion = extractMarkedRegion(source, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
@@ -563,7 +632,11 @@ for (const product of staticProducts) {
   if (seenSlugs.has(product.slug)) duplicateSlugs.push(product.slug);
   else seenSlugs.add(product.slug);
   for (const message of validation.errors) fail(`${label}: ${message}`);
-  for (const message of validation.warnings) warn(`${label}: ${message}`);
+  for (const message of validation.warnings) {
+    const formattedMessage = `${label}: ${message}`;
+    if (isDevelopmentWarningMode() && recordDevelopmentNote(formattedMessage)) continue;
+    warn(formattedMessage);
+  }
 }
 if (duplicateSlugs.length) fail(`duplicate slugs remain: ${Array.from(new Set(duplicateSlugs)).join(", ")}`);
 
@@ -975,5 +1048,6 @@ if (failures.length) {
 }
 
 for (const message of warnings) console.warn(`STORE STATIC PROOF WARN ${message}`);
+printDevelopmentNotes();
 
 console.log(`STORE STATIC PROOF PASS mode=${STORE_PROOF_MODE} path=${path.relative(ROOT, TARGET_PATH) || TARGET_PATH} products=${staticProducts.length} itemList=${itemListNode?.itemListElement?.length || 0}`);

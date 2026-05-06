@@ -59,11 +59,12 @@ const STORE_BUILD_REPORT_PATH = path.resolve(ROOT, "dist/store-build-report.json
 const STORE_FEED_CACHE_PATH = clean(process.env.GG_STORE_FEED_JSON_PATH || "");
 const STORE_FEED_PROBE_WARNING = clean(process.env.GG_STORE_FEED_PROBE_WARNING || "");
 const SOFT_MODE = process.argv.includes("--soft");
-const STORE_CI = isTruthyEnv(process.env.STORE_CI);
+const STORE_MODE = resolveStoreMode();
+const STORE_CI = isTruthyEnv(process.env.STORE_CI) || STORE_MODE === "ci";
 const STORE_REQUIRE_LIVE_FEED = isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED);
 const STORE_STRICT_IMAGES = isTruthyEnv(process.env.STORE_STRICT_IMAGES);
-const STORE_PRODUCTION = isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production";
-const STORE_STRICT_MODE = STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
+const STORE_PRODUCTION = STORE_MODE === "production";
+const STORE_STRICT_MODE = STORE_MODE === "strict" || STORE_REQUIRE_LIVE_FEED || STORE_STRICT_IMAGES || STORE_PRODUCTION;
 const STORE_SKIP_NETWORK_FEED = isTruthyEnv(process.env.GG_STORE_SKIP_NETWORK_FEED);
 const STORE_FEED_TIMEOUT_MS = parseTimeoutMs(process.env.STORE_FEED_TIMEOUT_SECONDS, 20);
 const LEGACY_PRODUCT_REPLACEMENTS = new Map([
@@ -73,6 +74,35 @@ let LAST_MACHINE_REPORT = null;
 
 function isTruthyEnv(value) {
   return ["1", "true", "yes", "on"].includes(String(value || "").trim().toLowerCase());
+}
+
+function normalizeStoreMode(value) {
+  const mode = String(value || "").trim().toLowerCase();
+  return ["development", "ci", "strict", "production"].includes(mode) ? mode : "";
+}
+
+function resolveStoreMode() {
+  const explicitMode = normalizeStoreMode(process.env.GG_STORE_MODE);
+  if (explicitMode) return explicitMode;
+  if (isTruthyEnv(process.env.GG_STORE_PRODUCTION_READINESS)) return "production";
+  if (isTruthyEnv(process.env.STORE_PRODUCTION) || String(process.env.GG_EDGE_MODE || "").trim().toLowerCase() === "production") return "production";
+  if (isTruthyEnv(process.env.STORE_REQUIRE_LIVE_FEED) || isTruthyEnv(process.env.STORE_STRICT_IMAGES)) return "strict";
+  if (isTruthyEnv(process.env.STORE_CI)) return "ci";
+  return "development";
+}
+
+function isDevelopmentOutputMode() {
+  return STORE_MODE === "development" || STORE_MODE === "ci";
+}
+
+function isDevelopmentBuildNote(message) {
+  const text = String(message || "");
+  return text.includes("live Store feed unavailable") && text.includes("reusing existing static snapshot");
+}
+
+function feedProbeReportMessage() {
+  if (!STORE_FEED_PROBE_WARNING) return "";
+  return `STORE FEED PROBE ${isDevelopmentOutputMode() ? "NOTE" : "WARN"} ${STORE_FEED_PROBE_WARNING}`;
 }
 
 function parseTimeoutMs(value, fallbackSeconds) {
@@ -113,7 +143,7 @@ function buildMachineReport({ source = "unknown", report = null, status = "unkno
     strictImages: STORE_STRICT_IMAGES,
     requireLiveFeed: STORE_REQUIRE_LIVE_FEED,
     production: STORE_PRODUCTION,
-    proofMode: STORE_PRODUCTION ? "production" : STORE_STRICT_MODE ? "strict" : STORE_CI ? "ci" : "development",
+    proofMode: STORE_MODE,
     ci: STORE_CI,
     manifestPath: clean(sourceReport.manifestPath),
     manifestBytes: Number(sourceReport.manifestBytes || 0),
@@ -133,7 +163,7 @@ function fail(message) {
     if (!LAST_MACHINE_REPORT) {
       writeMachineReport(buildMachineReport({
         status: "failed",
-        warnings: [message, STORE_FEED_PROBE_WARNING ? `STORE FEED PROBE WARN ${STORE_FEED_PROBE_WARNING}` : ""],
+        warnings: [message, feedProbeReportMessage()],
         error: message,
       }));
     } else if (LAST_MACHINE_REPORT.status !== "failed") {
@@ -152,7 +182,9 @@ function fail(message) {
 }
 
 function warn(message) {
-  console.warn(`store:build warning: ${message}`);
+  const label = isDevelopmentOutputMode() && isDevelopmentBuildNote(message) ? "note" : "warning";
+  const writer = label === "note" ? console.log : console.warn;
+  writer(`store:build ${label}: ${message}`);
 }
 
 function read(filePath) {
@@ -892,7 +924,7 @@ const originalStoreSource = read(STORE_PATH);
 const { products, source, report, fatalError = "", fallbackReason = "" } = await resolveProducts(originalStoreSource);
 const buildWarnings = unique(arr(report?.warnings).concat([
   fallbackReason,
-  STORE_FEED_PROBE_WARNING ? `STORE FEED PROBE WARN ${STORE_FEED_PROBE_WARNING}` : "",
+  feedProbeReportMessage(),
 ]).filter(Boolean));
 
 if (fatalError) {
