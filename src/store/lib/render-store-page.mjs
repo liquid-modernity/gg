@@ -1,6 +1,10 @@
 import { buildStoreJsonLd } from "./build-store-jsonld.mjs";
 import { clean } from "./normalize-store-product.mjs";
 import { storeCategoryRoutes } from "./store-routes.mjs";
+import {
+  STORE_BUILD_REPORT_HREF,
+  STORE_INLINE_BUILD_REPORT,
+} from "../store.config.mjs";
 
 export function escapeHtmlText(value) {
   return String(value)
@@ -103,8 +107,12 @@ export function buildItemListJsonLdBlock(products, options = {}) {
   return `  <script type="application/ld+json" id="store-itemlist-jsonld">\n${escapeJsonForScript(buildStoreJsonLd(products, options))}\n  </script>`;
 }
 
-export function buildStoreReportBlock(report) {
-  return `  <script type="application/json" id="store-build-report">\n${escapeJsonForScript(report)}\n  </script>`;
+export function buildStoreReportBlock(report, { inline = STORE_INLINE_BUILD_REPORT } = {}) {
+  const metadata = `  <span hidden id="store-build-metadata" data-store-build-id="${escapeHtmlAttr(report?.buildId || "")}" data-store-build-report="${escapeHtmlAttr(STORE_BUILD_REPORT_HREF)}"></span>`;
+
+  if (!inline) return metadata;
+
+  return `${metadata}\n  <script type="application/json" id="store-build-report">\n${escapeJsonForScript(report)}\n  </script>`;
 }
 
 function buildSemanticFact(label, value) {

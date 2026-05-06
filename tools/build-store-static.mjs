@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import https from "node:https";
 import path from "node:path";
@@ -8,8 +9,11 @@ import {
   STORE_ARTIFACT_CONTRACT_VERSION,
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
+  STORE_BUILD_REPORT_ARTIFACT_PATH,
+  STORE_BUILD_REPORT_HREF,
   STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_URL,
+  STORE_INLINE_BUILD_REPORT,
   STORE_PRODUCTION_BUDGETS,
   STORE_REQUIRE_FLAT_TRANSITIONAL,
   SYSTEM_LABELS,
@@ -57,7 +61,9 @@ const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
 const STORE_MANIFEST_REPORT_PATH = "store/data/manifest.json";
 const STORE_MANIFEST_PATH = path.resolve(ROOT, STORE_MANIFEST_REPORT_PATH);
 const STORE_MANIFEST_DIST_PATH = path.resolve(ROOT, "dist/store/data/manifest.json");
-const STORE_BUILD_REPORT_PATH = path.resolve(ROOT, "dist/store-build-report.json");
+const STORE_BUILD_REPORT_PATH = path.resolve(ROOT, STORE_BUILD_REPORT_ARTIFACT_PATH);
+const STORE_BUILD_REPORT_DIST_PATH = path.resolve(ROOT, "dist", STORE_BUILD_REPORT_ARTIFACT_PATH);
+const STORE_MACHINE_BUILD_REPORT_PATH = path.resolve(ROOT, "dist/store-build-report.json");
 const STORE_FEED_CACHE_PATH = clean(process.env.GG_STORE_FEED_JSON_PATH || "");
 const STORE_FEED_PROBE_WARNING = clean(process.env.GG_STORE_FEED_PROBE_WARNING || "");
 const SOFT_MODE = process.argv.includes("--soft");
@@ -122,8 +128,8 @@ function writeMachineReport(report) {
     ...report,
   };
 
-  mkdirSync(path.dirname(STORE_BUILD_REPORT_PATH), { recursive: true });
-  writeFileSync(STORE_BUILD_REPORT_PATH, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
+  mkdirSync(path.dirname(STORE_MACHINE_BUILD_REPORT_PATH), { recursive: true });
+  writeFileSync(STORE_MACHINE_BUILD_REPORT_PATH, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
   LAST_MACHINE_REPORT = normalized;
   return normalized;
 }
@@ -298,6 +304,7 @@ function buildStoreArtifactContract(categoryPagination) {
       artifactHrefPath(STORE_ASSET_CSS_HREF),
       artifactHrefPath(STORE_ASSET_JS_HREF),
     ],
+    buildReportArtifact: STORE_BUILD_REPORT_ARTIFACT_PATH,
     canonicalNested: true,
     canonicalNestedArtifacts: pages.map((page) => page.nestedOutputPath),
     flatTransitionalRequired: STORE_REQUIRE_FLAT_TRANSITIONAL,
@@ -699,7 +706,23 @@ function buildItemListJsonLdBlock(products) {
 }
 
 function buildStoreReportBlock(report) {
-  return `  <script type="application/json" id="store-build-report">\n${escapeJsonForScript(report)}\n  </script>`;
+  const metadata = `  <span hidden id="store-build-metadata" data-store-build-id="${escapeHtmlAttr(report?.buildId || "")}" data-store-build-report="${escapeHtmlAttr(STORE_BUILD_REPORT_HREF)}"></span>`;
+
+  if (!STORE_INLINE_BUILD_REPORT) return metadata;
+
+  return `${metadata}\n  <script type="application/json" id="store-build-report">\n${escapeJsonForScript(report)}\n  </script>`;
+}
+
+function buildStoreBuildId(report) {
+  const { buildId, ...stableReport } = report && typeof report === "object" ? report : {};
+  return createHash("sha256").update(JSON.stringify(stableReport)).digest("hex").slice(0, 16);
+}
+
+function writeStoreBuildReport(report) {
+  const content = normalizeTextFile(JSON.stringify(report, null, 2));
+
+  writeTextFile(STORE_BUILD_REPORT_PATH, content);
+  writeTextFile(STORE_BUILD_REPORT_DIST_PATH, content);
 }
 
 function buildSemanticFact(label, value) {
@@ -1011,11 +1034,15 @@ report.categoryPages = categoryPageSummary.map((entry) => ({ ...entry }));
 report.pagination = paginationSummary;
 report.artifactContract = buildStoreArtifactContract(categoryPagination);
 report.budgets = { ...STORE_PRODUCTION_BUDGETS };
+report.buildReportPath = STORE_BUILD_REPORT_ARTIFACT_PATH;
+report.buildReportHref = STORE_BUILD_REPORT_HREF;
+report.buildId = buildStoreBuildId(report);
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
 writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
 writeTextFile(STORE_MANIFEST_PATH, manifestContent);
 writeTextFile(STORE_MANIFEST_DIST_PATH, manifestContent);
+writeStoreBuildReport(report);
 
 let nextStoreSource = originalStoreSource;
 nextStoreSource = replaceStoreFilterScope(nextStoreSource, "outline");
@@ -1043,6 +1070,7 @@ for (const category of categoryPagination) {
       page: page.pageNumber,
       paginationPage: page,
       report,
+      inlineBuildReport: STORE_INLINE_BUILD_REPORT,
     });
     writeTextFile(path.resolve(ROOT, categoryPage.route.nestedOutputPath), categoryPage.html);
     writeTextFile(path.resolve(ROOT, categoryPage.route.flatOutputPath), categoryPage.html);

@@ -9,15 +9,18 @@ import {
   STORE_ARTIFACT_CONTRACT_VERSION,
   STORE_ASSET_CSS_HREF,
   STORE_ASSET_JS_HREF,
+  STORE_BUILD_REPORT_ARTIFACT_PATH,
+  STORE_BUILD_REPORT_HREF,
   STORE_CATEGORY_PAGE_SIZE,
   STORE_FEED_PATH,
+  STORE_INLINE_BUILD_REPORT,
   STORE_LEGACY_FEED_PATH,
   STORE_PRODUCTION_BUDGETS,
   STORE_REQUIRE_FLAT_TRANSITIONAL,
 } from "../src/store/store.config.mjs";
 import { STORE_MANIFEST_VERSION } from "../src/store/lib/build-store-manifest.mjs";
 import { CATEGORY_CONFIG, CATEGORY_ORDER, categoryCounts } from "../src/store/lib/category-config.mjs";
-import { extractMarkedRegion, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
+import { extractMarkedRegion, extractScriptTextById, extractStaticProductsFromStoreHtml, parseJsonScript } from "../src/store/lib/extract-static-products.mjs";
 import { normalizeStoreProduct, slugEndsWithHtml, slugLooksLikeUrl } from "../src/store/lib/normalize-store-product.mjs";
 import { paginateCategoryProducts, paginateStoreCategories } from "../src/store/lib/paginate-products.mjs";
 import { renderCategoryPage } from "../src/store/lib/render-category-page.mjs";
@@ -32,6 +35,7 @@ const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_ASSET_CSS_PATH = path.resolve(ROOT, "assets/store/store.css");
 const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
 const STORE_MANIFEST_PATH = path.resolve(TARGET_ROOT, "store/data/manifest.json");
+const STORE_BUILD_REPORT_PATH = path.resolve(TARGET_ROOT, STORE_BUILD_REPORT_ARTIFACT_PATH);
 const source = readFileSync(TARGET_PATH, "utf8");
 const failures = [];
 const warnings = [];
@@ -118,6 +122,7 @@ function expectedStoreArtifactContract(categoryPagination) {
       artifactHrefPath(STORE_ASSET_CSS_HREF),
       artifactHrefPath(STORE_ASSET_JS_HREF),
     ],
+    buildReportArtifact: STORE_BUILD_REPORT_ARTIFACT_PATH,
     canonicalNested: true,
     canonicalNestedArtifacts: pages.map((page) => page.nestedOutputPath),
     flatTransitionalRequired: STORE_REQUIRE_FLAT_TRANSITIONAL,
@@ -156,6 +161,9 @@ function checkStoreArtifactContract(report, expected) {
   }
   if (artifactHrefPath(contract.manifestArtifact) !== expected.manifestArtifact) {
     fail(`build report artifactContract manifestArtifact is ${contract.manifestArtifact || "missing"}, expected ${expected.manifestArtifact}`);
+  }
+  if (artifactHrefPath(contract.buildReportArtifact) !== expected.buildReportArtifact) {
+    fail(`build report artifactContract buildReportArtifact is ${contract.buildReportArtifact || "missing"}, expected ${expected.buildReportArtifact}`);
   }
   if (contract.canonicalNested !== true) {
     fail("build report artifactContract canonicalNested must be true");
@@ -382,7 +390,10 @@ checkNoProductionNoindex(source, "/store");
 
 if (!/id=["']store-static-products["']/.test(staticProductsRegion)) fail("STORE_STATIC_PRODUCTS_JSON marker block is missing #store-static-products");
 if (!/id=["']store-itemlist-jsonld["']/.test(jsonLdRegion)) fail("STORE_ITEMLIST_JSONLD marker block is missing #store-itemlist-jsonld");
-if (!/id=["']store-build-report["']/.test(buildReportRegion)) fail("STORE_BUILD_REPORT marker block is missing #store-build-report");
+if (!/id=["']store-build-metadata["']/.test(buildReportRegion)) fail("STORE_BUILD_REPORT marker block is missing #store-build-metadata");
+if (!STORE_INLINE_BUILD_REPORT && /id=["']store-build-report["']/.test(buildReportRegion)) {
+  fail("STORE_BUILD_REPORT marker block inlines #store-build-report while GG_STORE_INLINE_BUILD_REPORT is disabled");
+}
 if (source.includes(STORE_MANIFEST_VERSION)) fail("store manifest must not be injected inline into store.html");
 
 let rawStaticProducts = [];
@@ -400,10 +411,26 @@ try {
 } catch (error) {
   fail(`invalid JSON in script#store-itemlist-jsonld: ${error.message}`);
 }
-try {
-  buildReport = parseJsonScript(source, "store-build-report");
-} catch (error) {
-  fail(`invalid JSON in script#store-build-report: ${error.message}`);
+
+const inlineBuildReportText = extractScriptTextById(source, "store-build-report");
+if (String(inlineBuildReportText || "").trim() && !STORE_INLINE_BUILD_REPORT) {
+  fail("store.html must not inline script#store-build-report unless GG_STORE_INLINE_BUILD_REPORT=1");
+}
+if (!existsSync(STORE_BUILD_REPORT_PATH)) {
+  fail(`store build report is missing at ${path.relative(ROOT, STORE_BUILD_REPORT_PATH) || STORE_BUILD_REPORT_PATH}`);
+} else {
+  try {
+    buildReport = JSON.parse(readFileSync(STORE_BUILD_REPORT_PATH, "utf8"));
+  } catch (error) {
+    fail(`store build report is not valid JSON: ${error.message}`);
+  }
+}
+if (!buildReport && String(inlineBuildReportText || "").trim()) {
+  try {
+    buildReport = JSON.parse(inlineBuildReportText);
+  } catch (error) {
+    fail(`invalid JSON in script#store-build-report: ${error.message}`);
+  }
 }
 if (!existsSync(STORE_MANIFEST_PATH)) {
   fail(`store manifest is missing at ${path.relative(ROOT, STORE_MANIFEST_PATH) || STORE_MANIFEST_PATH}`);
@@ -435,8 +462,22 @@ const themeBootScripts = inlineScriptTags.filter((tag) => {
   if (src || type === "application/ld+json" || type === "application/json") return false;
   return isThemeBootScript(tagBody(tag));
 });
+const buildReportMetadataTag = buildReportRegion.match(/<span\b(?=[^>]*\bid=["']store-build-metadata["'])[^>]*>/i)?.[0] || "";
 
 checkStoreArtifactContract(buildReport, expectedStoreArtifactContract(expectedCategoryPagination));
+
+if (!buildReportMetadataTag) {
+  fail("STORE_BUILD_REPORT marker block is missing metadata tag");
+} else {
+  const metadataHref = tagAttr(buildReportMetadataTag, "data-store-build-report");
+  const metadataBuildId = tagAttr(buildReportMetadataTag, "data-store-build-id");
+  if (metadataHref !== STORE_BUILD_REPORT_HREF) {
+    fail(`store build metadata report path is ${metadataHref || "missing"}, expected ${STORE_BUILD_REPORT_HREF}`);
+  }
+  if (buildReport?.buildId && metadataBuildId !== buildReport.buildId) {
+    fail(`store build metadata id (${metadataBuildId || "missing"}) does not match external build report (${buildReport.buildId})`);
+  }
+}
 
 if (!/<meta\s+name=["']gg-store-contract["']\s+content=["']store-static-prerender-v1["']\s*\/?>/i.test(source)) {
   fail("missing gg-store-contract marker");
@@ -587,6 +628,12 @@ if (!manifest || typeof manifest !== "object") {
   }
   if (String(buildReport?.manifestPath || "") !== "store/data/manifest.json") {
     reportDrift(`build report manifestPath is unexpected (${buildReport?.manifestPath || "missing"})`);
+  }
+  if (String(buildReport?.buildReportPath || "") !== STORE_BUILD_REPORT_ARTIFACT_PATH) {
+    reportDrift(`build report buildReportPath is unexpected (${buildReport?.buildReportPath || "missing"})`);
+  }
+  if (String(buildReport?.buildReportHref || "") !== STORE_BUILD_REPORT_HREF) {
+    reportDrift(`build report buildReportHref is unexpected (${buildReport?.buildReportHref || "missing"})`);
   }
   if (!Array.isArray(buildReport?.manifestCategories)) {
     reportDrift("build report manifestCategories is missing");

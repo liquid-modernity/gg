@@ -16,6 +16,7 @@ import path from "node:path";
 
 import {
   STORE_ARTIFACT_CONTRACT_VERSION,
+  STORE_BUILD_REPORT_ARTIFACT_PATH,
   STORE_REQUIRE_FLAT_TRANSITIONAL,
 } from "../src/store/store.config.mjs";
 
@@ -170,16 +171,7 @@ function copyRelativeFile(relativePath, destinationDir) {
 }
 
 function extractStoreBuildReport() {
-  const storeSource = readFileSync(ensureFile("store.html"), "utf8");
-  const match = storeSource.match(/<script\b(?=[^>]*\bid=["']store-build-report["'])[^>]*>([\s\S]*?)<\/script>/i);
-
-  if (!match) fail("store.html missing script#store-build-report");
-
-  try {
-    return JSON.parse(match[1]);
-  } catch (error) {
-    fail(`store.html script#store-build-report is not valid JSON: ${error.message}`);
-  }
+  return readJsonFile(STORE_BUILD_REPORT_ARTIFACT_PATH);
 }
 
 function storeArtifactContractPaths(report) {
@@ -197,6 +189,7 @@ function storeArtifactContractPaths(report) {
   const paths = new Set([
     contract.rootArtifact || "store.html",
     contract.manifestArtifact || "store/data/manifest.json",
+    contract.buildReportArtifact || STORE_BUILD_REPORT_ARTIFACT_PATH,
     ...(Array.isArray(contract.assetArtifacts) ? contract.assetArtifacts : []),
     ...(Array.isArray(contract.canonicalNestedArtifacts) ? contract.canonicalNestedArtifacts : []),
   ]);

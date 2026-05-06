@@ -16,10 +16,17 @@ case "$store_require_flat_transitional" in
   0|false|no|off) store_require_flat_transitional=0 ;;
   *) store_require_flat_transitional=1 ;;
 esac
+store_inline_build_report="${GG_STORE_INLINE_BUILD_REPORT:-0}"
+store_inline_build_report="$(printf '%s' "$store_inline_build_report" | tr '[:upper:]' '[:lower:]')"
+case "$store_inline_build_report" in
+  1|true|yes|on) store_inline_build_report=1 ;;
+  *) store_inline_build_report=0 ;;
+esac
 
 target_store_js="${target_root}/assets/store/store.js"
 target_store_css="${target_root}/assets/store/store.css"
 target_store_manifest="${target_root}/store/data/manifest.json"
+target_store_build_report="${target_root}/store/data/build-report.json"
 
 log_fail() {
   failures=$((failures + 1))
@@ -87,11 +94,13 @@ check_file_exists "$target_file" "Cloudflare store artifact is missing: ${target
 check_file_exists "$target_store_js" "store runtime asset is missing: ${target_store_js}"
 check_file_exists "$target_store_css" "store stylesheet asset is missing: ${target_store_css}"
 check_file_exists "$target_store_manifest" "store manifest is missing: ${target_store_manifest}"
+check_file_exists "$target_store_build_report" "store build report is missing: ${target_store_build_report}"
 
 check_not_stale "store.html" "$target_file" "store.html"
 check_not_stale "assets/store/store.js" "$target_store_js" "store runtime asset"
 check_not_stale "assets/store/store.css" "$target_store_css" "store stylesheet asset"
 check_not_stale "store/data/manifest.json" "$target_store_manifest" "store manifest"
+check_not_stale "store/data/build-report.json" "$target_store_build_report" "store build report"
 
 if [[ "$store_require_flat_transitional" == "1" ]]; then
   for source_category_artifact in store-*.html; do
@@ -147,6 +156,12 @@ check_pattern 'id=["'"'"']store-category-context["'"'"']' "artifact category con
 check_pattern 'id=["'"'"']store-semantic-products["'"'"']' "artifact semantic product section is missing"
 check_pattern 'id=["'"'"']store-static-products["'"'"']' "artifact static products script is missing"
 check_pattern 'id=["'"'"']store-itemlist-jsonld["'"'"']' "artifact ItemList JSON-LD script is missing"
+check_pattern 'id=["'"'"']store-build-metadata["'"'"']' "artifact build report metadata is missing"
+if [[ "$store_inline_build_report" == "1" ]]; then
+  check_pattern 'id=["'"'"']store-build-report["'"'"']' "artifact inline build report is missing while GG_STORE_INLINE_BUILD_REPORT is enabled"
+else
+  check_absent 'id=["'"'"']store-build-report["'"'"']' "artifact still inlines the Store build report"
+fi
 check_pattern 'STORE_LCP_PRELOAD_START' "artifact STORE_LCP_PRELOAD_START marker is missing"
 check_pattern 'STORE_STATIC_GRID_START' "artifact STORE_STATIC_GRID_START marker is missing"
 check_pattern 'STORE_STATIC_PRODUCTS_JSON_START' "artifact STORE_STATIC_PRODUCTS_JSON_START marker is missing"
@@ -239,6 +254,8 @@ if ! node -e '
     const root = process.argv[1];
     const {
       STORE_ARTIFACT_CONTRACT_VERSION,
+      STORE_BUILD_REPORT_ARTIFACT_PATH,
+      STORE_BUILD_REPORT_HREF,
       STORE_CATEGORY_PAGE_SIZE,
       STORE_REQUIRE_FLAT_TRANSITIONAL,
     } = await import(pathToFileURL(path.resolve("src/store/store.config.mjs")).href);
@@ -253,19 +270,19 @@ if ! node -e '
     }
     const normalizeArtifactPath = (value) => String(value || "").replace(/^\/+/, "");
     const contractList = (values) => new Set((Array.isArray(values) ? values : []).map((entry) => normalizeArtifactPath(entry)).filter(Boolean));
-    const parseJsonScript = (html, id, missingCode) => {
-      const match = html.match(new RegExp("<script\\b[^>]*id=\"" + id + "\"[^>]*>([\\s\\S]*?)<\\/script>", "i"));
-      if (!match) process.exit(missingCode);
-      return JSON.parse(match[1]);
-    };
+    const inlineBuildReport = /^(?:1|true|yes|on)$/i.test(String(process.env.GG_STORE_INLINE_BUILD_REPORT || "").trim());
     const rootHtml = fs.readFileSync(path.join(root, "store.html"), "utf8");
-    const buildReport = parseJsonScript(rootHtml, "store-build-report", 28);
+    if (!rootHtml.match(/id="store-build-metadata"/)) process.exit(28);
+    if (!rootHtml.includes(`data-store-build-report="${STORE_BUILD_REPORT_HREF}"`)) process.exit(29);
+    if (!inlineBuildReport && rootHtml.match(/id="store-build-report"/)) process.exit(30);
+    const buildReport = JSON.parse(fs.readFileSync(path.join(root, STORE_BUILD_REPORT_ARTIFACT_PATH), "utf8"));
     const contract = buildReport && buildReport.artifactContract;
-    if (!contract || typeof contract !== "object") process.exit(29);
-    if (String(contract.version || "") !== STORE_ARTIFACT_CONTRACT_VERSION) process.exit(30);
-    if (normalizeArtifactPath(contract.rootArtifact) !== "store.html") process.exit(31);
-    if (normalizeArtifactPath(contract.manifestArtifact) !== "store/data/manifest.json") process.exit(32);
-    if (Boolean(contract.flatTransitionalRequired) !== STORE_REQUIRE_FLAT_TRANSITIONAL) process.exit(33);
+    if (!contract || typeof contract !== "object") process.exit(31);
+    if (String(contract.version || "") !== STORE_ARTIFACT_CONTRACT_VERSION) process.exit(32);
+    if (normalizeArtifactPath(contract.rootArtifact) !== "store.html") process.exit(33);
+    if (normalizeArtifactPath(contract.manifestArtifact) !== "store/data/manifest.json") process.exit(34);
+    if (normalizeArtifactPath(contract.buildReportArtifact) !== STORE_BUILD_REPORT_ARTIFACT_PATH) process.exit(35);
+    if (Boolean(contract.flatTransitionalRequired) !== STORE_REQUIRE_FLAT_TRANSITIONAL) process.exit(36);
     const canonicalArtifactSet = contractList(contract.canonicalNestedArtifacts);
     const flatArtifactSet = contractList(contract.flatTransitionalArtifacts);
     const parseProducts = (html) => {
@@ -296,6 +313,8 @@ if ! node -e '
       if (!fs.existsSync(nested)) process.exit(10);
       if (STORE_REQUIRE_FLAT_TRANSITIONAL && !fs.existsSync(flat)) process.exit(36);
       const html = fs.readFileSync(nested, "utf8");
+      if (!html.match(/id="store-build-metadata"/)) process.exit(37);
+      if (!inlineBuildReport && html.match(/id="store-build-report"/)) process.exit(38);
       if (!html.includes(`<title>${expectedTitle}</title>`)) process.exit(11);
       if (!html.includes(`href="${canonicalUrl}"`)) process.exit(12);
       if (!html.includes(`data-store-category-key="${key}"`)) process.exit(13);

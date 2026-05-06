@@ -8,6 +8,7 @@ import {
   buildItemListJsonLdBlock,
   buildPreloadBlock,
   buildSemanticProductsBlock,
+  buildStoreReportBlock,
   buildStaticProductsJsonBlock,
   escapeHtmlAttr,
   escapeHtmlText,
@@ -68,7 +69,7 @@ function buildCategoryPaginationNav(route) {
   ].join("\n");
 }
 
-export function renderCategoryPage({ template, products, categoryKey, report, page = 1, paginationPage = null }) {
+export function renderCategoryPage({ template, products, categoryKey, report, page = 1, paginationPage = null, inlineBuildReport = false }) {
   const requestedPage = Math.max(1, Number.parseInt(String(page || paginationPage?.pageNumber || 1), 10) || 1);
   const categoryPagination = paginationPage ? null : paginateCategoryProducts(products, categoryKey, STORE_CATEGORY_PAGE_SIZE);
   const route = paginationPage || categoryPagination?.pages.find((entry) => entry.pageNumber === requestedPage);
@@ -87,7 +88,12 @@ export function renderCategoryPage({ template, products, categoryKey, report, pa
   source = replaceMarkedRegion(source, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->", buildStaticProductsJsonBlock(visibleProducts));
   source = replaceMarkedRegion(source, "<!-- STORE_ITEMLIST_JSONLD_START -->", "<!-- STORE_ITEMLIST_JSONLD_END -->", buildItemListJsonLdBlock(visibleProducts, categoryPageJsonLdOptions(route)));
   source = replaceMarkedRegion(source, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->", buildSemanticProductsBlock(visibleProducts));
-  source = replaceMarkedRegion(source, "<!-- STORE_BUILD_REPORT_START -->", "<!-- STORE_BUILD_REPORT_END -->", `  <script type="application/json" id="store-build-report">\n${JSON.stringify(categoryPageReport(report, route, categoryProducts, visibleProducts), null, 2).replace(/<\/script/gi, "<\\/script")}\n  </script>`);
+  source = replaceMarkedRegion(
+    source,
+    "<!-- STORE_BUILD_REPORT_START -->",
+    "<!-- STORE_BUILD_REPORT_END -->",
+    buildStoreReportBlock(categoryPageReport(report, route, categoryProducts, visibleProducts), { inline: inlineBuildReport })
+  );
 
   source = replaceRequired(
     source,
