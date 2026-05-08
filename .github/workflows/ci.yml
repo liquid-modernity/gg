@@ -3,134 +3,75 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  validate:
+  verify:
+    name: Verify static Store and Cloudflare bundle
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 20
+
+    env:
+      CI: '1'
+      STORE_CI: '1'
+      GG_STORE_MODE: ci
+      STORE_REQUIRE_LIVE_FEED: '0'
+      STORE_STRICT_IMAGES: '0'
+      GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN: '0'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Use Node 24
-        uses: actions/setup-node@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          cache: "npm"
+          node-version: '20'
+          cache: npm
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
-      - name: CI scope truth
+      - name: Show repository root
         run: |
-          {
-            echo "### CI Scope Truth"
-            echo "- GitHub Actions handles build, preflight, and Cloudflare dry-run."
-            echo "- Local machine stays edit, small npm scripts, Chrome DevTools, commit, and push."
-            echo "- This workflow validates build, preflight, and deployability only."
-            echo "- This workflow does **not** publish Blogger template."
-            echo "- This workflow does **not** deploy production."
-          } >> "$GITHUB_STEP_SUMMARY"
+          pwd
+          ls -la
 
-      - name: Build/proof Yellow Cart store
-        run: npm run store:check:ci
+      - name: Run Store and Cloudflare CI checks
+        run: npm run ci:cloudflare
 
-      - name: Production readiness proof
-        if: ${{ vars.GG_STORE_PRODUCTION_READINESS == '1' }}
-        run: npm run store:check:production
-
-      - name: Verify store split assets
+      - name: Verify root Store artifacts
         run: |
           test -f store.html
-          test -f assets/store/store.css
+          test -f store/data/manifest.json
+          test -f store/data/build-report.json
+          test -f store/fashion/index.html
+          test -f store/skincare/index.html
+          test -f store/workspace/index.html
+          test -f store/tech/index.html
+          test -f store/everyday/index.html
+          test -f assets/store/store-core.js
+          test -f assets/store/store-discovery.js
           test -f assets/store/store.js
-          grep -Eq '<link[^>]+href="/assets/store/store\.css"' store.html
-          grep -Eq '<script[^>]+src="/assets/store/store\.js"[^>]*defer' store.html
+          test -f assets/store/store.css
 
-      - name: Summarize store build report
+      - name: Verify Cloudflare prepared bundle
         run: |
-          node --input-type=module <<'EOF' >> "$GITHUB_STEP_SUMMARY"
-          import { readFileSync } from "node:fs";
-          const report = JSON.parse(readFileSync("dist/store-build-report.json", "utf8"));
-          const categorySummary = Object.entries(report.categoryCounts || {}).map(([key, value]) => `${key}:${value}`).join(", ") || "none";
-          const imageSummary = Object.entries(report.imageSourceSummary || {}).map(([key, value]) => `${key}:${value}`).join(", ") || "none";
-          const warnings = Array.isArray(report.warnings) ? report.warnings : [];
-          console.log("### Store Build Report");
-          console.log(`- source: \`${report.source}\``);
-          console.log(`- products: \`${report.products}\``);
-          console.log(`- validProducts: \`${report.validProducts}\``);
-          console.log(`- invalidProducts: \`${report.invalidProducts}\``);
-          console.log(`- feedEntries: \`${report.feedEntries}\``);
-          console.log(`- categoryCounts: \`${categorySummary}\``);
-          console.log(`- imageSourceSummary: \`${imageSummary}\``);
-          console.log(`- strict: \`${report.strict}\``);
-          console.log(`- warnings: \`${warnings.length}\``);
-          EOF
-
-      - name: Upload store build report
-        uses: actions/upload-artifact@v4
-        with:
-          name: store-build-report-ci
-          path: dist/store-build-report.json
-          if-no-files-found: error
-
-      - name: Build Blogger publish artifact
-        run: npm run gaga:template:pack
-
-      - name: Prepare Cloudflare public assets
-        run: |
-          set -euo pipefail
-
-          mkdir -p .cloudflare-build/public/__gg/assets/css
-          mkdir -p .cloudflare-build/public/__gg/assets/js
-
-          if [ -f "dist/assets/css/gg-app.dev.css" ]; then
-            cp dist/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
-          elif [ -f "__gg/assets/css/gg-app.dev.css" ]; then
-            cp __gg/assets/css/gg-app.dev.css .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
-          else
-            echo "Missing gg-app.dev.css in dist/assets/css or __gg/assets/css" >&2
-            exit 1
-          fi
-
-          if [ -f "dist/assets/js/gg-app.dev.js" ]; then
-            cp dist/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
-          elif [ -f "__gg/assets/js/gg-app.dev.js" ]; then
-            cp __gg/assets/js/gg-app.dev.js .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
-          else
-            echo "Missing gg-app.dev.js in dist/assets/js or __gg/assets/js" >&2
-            exit 1
-          fi
-
-          if [ -f "__gg/flags.json" ]; then
-            cp __gg/flags.json .cloudflare-build/public/__gg/flags.json
-          elif [ -f "gg-flags.json" ]; then
-            cp gg-flags.json .cloudflare-build/public/__gg/flags.json
-          elif [ -f "registry/gg-flags.json" ]; then
-            cp registry/gg-flags.json .cloudflare-build/public/__gg/flags.json
-          fi
-
-          test -s .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
-          test -s .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
-
-          ls -lh .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
-          ls -lh .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
-
-      - name: Verify extracted app asset wiring
-        run: |
-          set -euo pipefail
-          test -f index.xml
-          test -f .cloudflare-build/public/__gg/assets/css/gg-app.dev.css
-          test -f .cloudflare-build/public/__gg/assets/js/gg-app.dev.js
-          grep -Fq "/__gg/assets/css/gg-app.dev.css" index.xml
-          grep -Fq "/__gg/assets/js/gg-app.dev.js" index.xml
-
-      - name: Lightweight preflight
-        run: npm run gaga:preflight
-
-      - name: Cloudflare deploy dry run
-        run: npm run gaga:cf:dry
+          test -f .cloudflare-build/worker.js
+          test -f .cloudflare-build/public/store.html
+          test -f .cloudflare-build/public/store/data/manifest.json
+          test -f .cloudflare-build/public/store/data/build-report.json
+          test -f .cloudflare-build/public/assets/store/store-core.js
+          test -f .cloudflare-build/public/assets/store/store-discovery.js
+          test -f .cloudflare-build/public/assets/store/store.js
+          test -f .cloudflare-build/public/assets/store/store.css

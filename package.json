@@ -24,7 +24,11 @@
     "gaga:verify-worker": "npm run gaga:verify-store-artifact",
     "gaga:verify-worker-live": "bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
     "gaga:verify-worker-live:local": "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=1 bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
-    "gaga:verify-worker-live:strict": "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=0 bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\""
+    "gaga:verify-worker-live:strict": "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN=0 bash qa/live-smoke-worker.sh \"${GG_LIVE_BASE_URL:-https://www.pakrpp.com}\"",
+    "ci:store": "npm run store:check:ci && npm run build && bash qa/store-artifact-smoke.sh",
+    "ci:cloudflare": "npm run ci:store && bash -n qa/live-smoke-worker.sh",
+    "deploy:cloudflare": "npm run build && node tools/cloudflare-deploy.mjs deploy",
+    "deploy:cloudflare:dry": "npm run build && node tools/cloudflare-deploy.mjs dry-run"
   },
   "devDependencies": {
     "wrangler": "4.61.1"

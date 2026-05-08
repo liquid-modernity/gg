@@ -723,66 +723,105 @@ check_gg_app_assets() {
 }
 
 check_store_split_assets() {
-  local js_headers_file="$tmp_dir/store_asset_js_headers.txt"
-  local js_body_file="$tmp_dir/store_asset_js.js"
+  local core_headers_file="$tmp_dir/store_asset_core_headers.txt"
+  local core_body_file="$tmp_dir/store_asset_core.js"
+  local discovery_headers_file="$tmp_dir/store_asset_discovery_headers.txt"
+  local discovery_body_file="$tmp_dir/store_asset_discovery.js"
+  local legacy_headers_file="$tmp_dir/store_asset_legacy_headers.txt"
+  local legacy_body_file="$tmp_dir/store_asset_legacy.js"
   local css_headers_file="$tmp_dir/store_asset_css_headers.txt"
   local css_body_file="$tmp_dir/store_asset_css.css"
-  local js_meta css_meta js_status css_status js_content_type css_content_type marker
-  local js_failures_before css_failures_before asset_unreachable_scope="route"
+  local core_meta discovery_meta legacy_meta css_meta
+  local asset_unreachable_scope="route"
 
   if [[ "$store_route_reachable" == "1" ]]; then
     asset_unreachable_scope="store_asset"
   fi
 
-  js_meta="$(fetch_body "/assets/store/store.js" "$js_body_file" "$js_headers_file")"
-  log_route_timing "/assets/store/store.js" "$js_meta" "$js_headers_file"
+  check_store_js_asset() {
+    local path="$1"
+    local body_file="$2"
+    local headers_file="$3"
+    local meta="$4"
+    shift 4
+    local markers=("$@")
+    local status content_type marker failures_before
+
+    asset_checks_attempted=$((asset_checks_attempted + 1))
+    failures_before="$failures"
+    current_failure_scope="$asset_unreachable_scope"
+
+    if meta_is_unreachable "$meta"; then
+      report_unreachable "$path" "$meta"
+      mark_asset_check_result "$failures_before"
+      return
+    fi
+
+    current_failure_scope="store_asset"
+    status="$(meta_status "$meta")"
+    content_type="$(extract_header_value "$headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+
+    if [[ "$status" != "200" ]]; then
+      log_fail "${path} expected status 200 (got ${status:-000})"
+    fi
+
+    if [[ ! -s "$body_file" ]]; then
+      log_fail "${path} is empty"
+    fi
+
+    if [[ -s "$body_file" ]]; then
+      if [[ "$content_type" != *"javascript"* && "$content_type" != *"ecmascript"* && "$content_type" != *"text/plain"* ]]; then
+        log_warn "${path} content-type is unusual (${content_type:-missing})"
+      fi
+
+      for marker in "${markers[@]}"; do
+        grep -Fq "$marker" "$body_file" || log_fail "${path} missing runtime marker: ${marker}"
+      done
+    fi
+
+    check_store_asset_cache_header "$path" "$headers_file"
+    mark_asset_check_result "$failures_before"
+  }
+
+  core_meta="$(fetch_body "/assets/store/store-core.js" "$core_body_file" "$core_headers_file")"
+  log_route_timing "/assets/store/store-core.js" "$core_meta" "$core_headers_file"
+  discovery_meta="$(fetch_body "/assets/store/store-discovery.js" "$discovery_body_file" "$discovery_headers_file")"
+  log_route_timing "/assets/store/store-discovery.js" "$discovery_meta" "$discovery_headers_file"
+  legacy_meta="$(fetch_body "/assets/store/store.js" "$legacy_body_file" "$legacy_headers_file")"
+  log_route_timing "/assets/store/store.js" "$legacy_meta" "$legacy_headers_file"
   css_meta="$(fetch_body "/assets/store/store.css" "$css_body_file" "$css_headers_file")"
   log_route_timing "/assets/store/store.css" "$css_meta" "$css_headers_file"
 
-  asset_checks_attempted=$((asset_checks_attempted + 1))
-  js_failures_before="$failures"
-  current_failure_scope="$asset_unreachable_scope"
-  if meta_is_unreachable "$js_meta"; then
-    report_unreachable "/assets/store/store.js" "$js_meta"
-  else
-    current_failure_scope="store_asset"
-    js_status="$(meta_status "$js_meta")"
-    js_content_type="$(extract_header_value "$js_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
+  check_store_js_asset "/assets/store/store-core.js" "$core_body_file" "$core_headers_file" "$core_meta" \
+    'function loadDiscoveryRuntime(' \
+    'store-discovery.js' \
+    'data-store-discovery-runtime'
 
-    if [[ "$js_status" != "200" ]]; then
-      log_fail "/assets/store/store.js expected status 200 (got ${js_status:-000})"
-    fi
+  check_store_js_asset "/assets/store/store-discovery.js" "$discovery_body_file" "$discovery_headers_file" "$discovery_meta" \
+    'STORE_LCP_PRODUCT_START' \
+    'function readStaticProducts(' \
+    'function hydrateStaticProducts(' \
+    'function loadProducts(' \
+    'data-store-open-preview' \
+    'store-static-products' \
+    'storeManifestCache' \
+    'function fallbackDiscoveryItems(' \
+    'function applyDiscoveryFilters(' \
+    'window.StoreSurface'
 
-    if [[ ! -s "$js_body_file" ]]; then
-      log_fail "/assets/store/store.js is empty"
-    fi
-
-    if [[ -s "$js_body_file" ]]; then
-      if [[ "$js_content_type" != *"javascript"* && "$js_content_type" != *"ecmascript"* && "$js_content_type" != *"text/plain"* ]]; then
-        log_warn "/assets/store/store.js content-type is unusual (${js_content_type:-missing})"
-      fi
-
-      for marker in \
-        'STORE_LCP_PRODUCT_START' \
-        'function readStaticProducts(' \
-        'function hydrateStaticProducts(' \
-        'function loadProducts(' \
-        'data-store-open-preview' \
-        'store-static-products'; do
-        grep -Fq "$marker" "$js_body_file" || log_fail "/assets/store/store.js missing runtime marker: ${marker}"
-      done
-    fi
-    check_store_asset_cache_header "/assets/store/store.js" "$js_headers_file"
-  fi
-  mark_asset_check_result "$js_failures_before"
+  check_store_js_asset "/assets/store/store.js" "$legacy_body_file" "$legacy_headers_file" "$legacy_meta" \
+    'store-core.js' \
+    'appendScript' \
+    'data-store-core-compat'
 
   asset_checks_attempted=$((asset_checks_attempted + 1))
-  css_failures_before="$failures"
+  local css_failures_before="$failures"
   current_failure_scope="$asset_unreachable_scope"
   if meta_is_unreachable "$css_meta"; then
     report_unreachable "/assets/store/store.css" "$css_meta"
   else
     current_failure_scope="store_asset"
+    local css_status css_content_type marker
     css_status="$(meta_status "$css_meta")"
     css_content_type="$(extract_header_value "$css_headers_file" "content-type" | tr '[:upper:]' '[:lower:]')"
 
@@ -943,7 +982,13 @@ check_store_route() {
   grep -Eq 'rel=["'"'"']preload["'"'"'][^>]*as=["'"'"']image["'"'"'][^>]*fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store LCP image preload contract is missing"
   grep -Eq 'fetchpriority=["'"'"']high["'"'"']' "$body_file" || log_fail "/store high fetchpriority marker is missing"
   grep -Eq 'href=["'"'"']/assets/store/store\.css["'"'"']' "$body_file" || log_fail "/store missing /assets/store/store.css reference"
-  grep -Eq '<script[^>]*src=["'"'"']/assets/store/store\.js["'"'"'][^>]*defer[^>]*>|<script[^>]*defer[^>]*src=["'"'"']/assets/store/store\.js["'"'"'][^>]*>' "$body_file" || log_fail "/store missing deferred /assets/store/store.js reference"
+  if ! grep -Fq 'src="/assets/store/store-core.js"' "$body_file" && ! grep -Fq "src='/assets/store/store-core.js'" "$body_file"; then
+    log_fail "/store missing /assets/store/store-core.js reference"
+  fi
+  if ! grep -Fq 'data-store-discovery-src="/assets/store/store-discovery.js"' "$body_file" && ! grep -Fq "data-store-discovery-src='/assets/store/store-discovery.js'" "$body_file"; then
+    log_fail "/store missing /assets/store/store-discovery.js lazy discovery reference"
+  fi
+  grep -Eq '<script[^>]*store-core\.js[^>]*defer|<script[^>]*defer[^>]*store-core\.js' "$body_file" || log_fail "/store missing deferred /assets/store/store-core.js reference"
   grep -Eq 'id=["'"'"']store-grid-skeleton["'"'"']' "$body_file" || log_fail "/store skeleton grid is missing"
   grep -Eq 'id=["'"'"']store-grid["'"'"']' "$body_file" || log_fail "/store main grid is missing"
   grep -Eq 'id=["'"'"']store-category-context["'"'"']' "$body_file" || log_fail "/store category context is missing"
@@ -1014,19 +1059,26 @@ check_store_route() {
   fi
   check_store_html_cache_header "/store" "$headers_file"
 
-  proof_root="$tmp_dir"
-  manifest_dir="$proof_root/store/data"
-  manifest_file="$manifest_dir/manifest.json"
-  mkdir -p "$manifest_dir"
-  if [[ -f "$STORE_MANIFEST_SOURCE" ]]; then
-    cp "$STORE_MANIFEST_SOURCE" "$manifest_file"
+  proof_root="$tmp_dir/store_static_proof"
+  mkdir -p "$proof_root"
+  cp "$body_file" "$proof_root/store.html"
+
+  if [[ -d "store" ]]; then
+    cp -R "store" "$proof_root/store"
   else
-    log_fail "local store manifest is missing at ${STORE_MANIFEST_SOURCE}"
+    log_fail "local store artifact directory is missing at store/"
   fi
 
-  if ! proof_output="$(STORE_PROOF_ALLOW_REPORT_DRIFT=1 node "$PROOF_TOOL" "$body_file" 2>&1)"; then
+  for flat_artifact in store-fashion.html store-skincare.html store-workspace.html store-tech.html store-everyday.html; do
+    if [[ -f "$flat_artifact" ]]; then
+      cp "$flat_artifact" "$proof_root/$flat_artifact"
+    fi
+  done
+
+  if ! proof_output="$(STORE_PROOF_ALLOW_REPORT_DRIFT=1 node "$PROOF_TOOL" "$proof_root/store.html" 2>&1)"; then
     log_fail "/store static proof failed"
-    printf '%s\n' "$proof_output"
+    printf '%s
+' "$proof_output"
   else
     log_info "$proof_output"
   fi
@@ -1235,22 +1287,28 @@ check_diagnostic_mode_contracts() {
   local prod_page_two_file="$tmp_dir/store_fashion_page_two_prod_headers.json"
   local prod_manifest_http="$tmp_dir/store_manifest_prod_headers.http"
   local prod_manifest_file="$tmp_dir/store_manifest_prod_headers.json"
-  local prod_js_http="$tmp_dir/store_js_prod_headers.http"
-  local prod_js_file="$tmp_dir/store_js_prod_headers.json"
+  local prod_core_js_http="$tmp_dir/store_core_js_prod_headers.http"
+  local prod_core_js_file="$tmp_dir/store_core_js_prod_headers.json"
+  local prod_discovery_js_http="$tmp_dir/store_discovery_js_prod_headers.http"
+  local prod_discovery_js_file="$tmp_dir/store_discovery_js_prod_headers.json"
+  local prod_legacy_js_http="$tmp_dir/store_legacy_js_prod_headers.http"
+  local prod_legacy_js_file="$tmp_dir/store_legacy_js_prod_headers.json"
   local prod_css_http="$tmp_dir/store_css_prod_headers.http"
   local prod_css_file="$tmp_dir/store_css_prod_headers.json"
   local prod_slash_file="$tmp_dir/store_prod_slash_headers.json"
   local dev_slash_file="$tmp_dir/store_dev_slash_headers.json"
   local prod_robots_file="$tmp_dir/store_prod_robots.json"
-  local prod_headers_meta dev_headers_meta prod_category_meta prod_page_two_meta prod_manifest_meta prod_js_meta prod_css_meta prod_slash_meta dev_slash_meta prod_robots_meta
-  local prod_mode prod_robots prod_cache dev_robots prod_category_route prod_category_store_route prod_category_robots prod_category_canonical prod_category_cache prod_page_two_route prod_page_two_store_route prod_page_two_robots prod_page_two_canonical prod_page_two_cache prod_manifest_cache prod_js_cache prod_css_cache prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
+  local prod_headers_meta dev_headers_meta prod_category_meta prod_page_two_meta prod_manifest_meta prod_core_js_meta prod_discovery_js_meta prod_legacy_js_meta prod_css_meta prod_slash_meta dev_slash_meta prod_robots_meta
+  local prod_mode prod_robots prod_cache dev_robots prod_category_route prod_category_store_route prod_category_robots prod_category_canonical prod_category_cache prod_page_two_route prod_page_two_store_route prod_page_two_robots prod_page_two_canonical prod_page_two_cache prod_manifest_cache prod_core_js_cache prod_discovery_js_cache prod_legacy_js_cache prod_css_cache prod_slash_to prod_slash_status dev_slash_status prod_robots_txt
 
   current_failure_scope="route"
   prod_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=production" "$prod_headers_file" "$prod_headers_http")"
   dev_headers_meta="$(fetch_body "/__gg/headers?url=/store&mode=development" "$dev_headers_file" "$dev_headers_http")"
   prod_category_meta="$(fetch_body "/__gg/headers?url=/store/fashion&mode=production" "$prod_category_file" "$prod_category_http")"
   prod_manifest_meta="$(fetch_body "/__gg/headers?url=/store/data/manifest.json&mode=production" "$prod_manifest_file" "$prod_manifest_http")"
-  prod_js_meta="$(fetch_body "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_file" "$prod_js_http")"
+  prod_core_js_meta="$(fetch_body "/__gg/headers?url=/assets/store/store-core.js&mode=production" "$prod_core_js_file" "$prod_core_js_http")"
+  prod_discovery_js_meta="$(fetch_body "/__gg/headers?url=/assets/store/store-discovery.js&mode=production" "$prod_discovery_js_file" "$prod_discovery_js_http")"
+  prod_legacy_js_meta="$(fetch_body "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_legacy_js_file" "$prod_legacy_js_http")"
   prod_css_meta="$(fetch_body "/__gg/headers?url=/assets/store/store.css&mode=production" "$prod_css_file" "$prod_css_http")"
   if local_store_category_page_exists "fashion" 2; then
     prod_page_two_meta="$(fetch_body "/__gg/headers?url=/store/fashion/page/2&mode=production" "$prod_page_two_file" "$prod_page_two_http")"
@@ -1263,7 +1321,9 @@ check_diagnostic_mode_contracts() {
   log_route_timing "/__gg/headers?url=/store&mode=production" "$prod_headers_meta" "$prod_headers_http"
   log_route_timing "/__gg/headers?url=/store/fashion&mode=production" "$prod_category_meta" "$prod_category_http"
   log_route_timing "/__gg/headers?url=/store/data/manifest.json&mode=production" "$prod_manifest_meta" "$prod_manifest_http"
-  log_route_timing "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_meta" "$prod_js_http"
+  log_route_timing "/__gg/headers?url=/assets/store/store-core.js&mode=production" "$prod_core_js_meta" "$prod_core_js_http"
+  log_route_timing "/__gg/headers?url=/assets/store/store-discovery.js&mode=production" "$prod_discovery_js_meta" "$prod_discovery_js_http"
+  log_route_timing "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_legacy_js_meta" "$prod_legacy_js_http"
   log_route_timing "/__gg/headers?url=/assets/store/store.css&mode=production" "$prod_css_meta" "$prod_css_http"
 
   if meta_is_unreachable "$prod_headers_meta"; then
@@ -1296,8 +1356,18 @@ check_diagnostic_mode_contracts() {
     return
   fi
 
-  if meta_is_unreachable "$prod_js_meta"; then
-    report_unreachable "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_js_meta"
+  if meta_is_unreachable "$prod_core_js_meta"; then
+    report_unreachable "/__gg/headers?url=/assets/store/store-core.js&mode=production" "$prod_core_js_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_discovery_js_meta"; then
+    report_unreachable "/__gg/headers?url=/assets/store/store-discovery.js&mode=production" "$prod_discovery_js_meta"
+    return
+  fi
+
+  if meta_is_unreachable "$prod_legacy_js_meta"; then
+    report_unreachable "/__gg/headers?url=/assets/store/store.js&mode=production" "$prod_legacy_js_meta"
     return
   fi
 
@@ -1340,7 +1410,9 @@ check_diagnostic_mode_contracts() {
   prod_category_canonical="$(json_field "$prod_category_file" "store.canonical" || true)"
   prod_category_cache="$(json_field "$prod_category_file" "cacheControl" || true)"
   prod_manifest_cache="$(json_field "$prod_manifest_file" "cacheControl" || true)"
-  prod_js_cache="$(json_field "$prod_js_file" "cacheControl" || true)"
+  prod_core_js_cache="$(json_field "$prod_core_js_file" "cacheControl" || true)"
+  prod_discovery_js_cache="$(json_field "$prod_discovery_js_file" "cacheControl" || true)"
+  prod_legacy_js_cache="$(json_field "$prod_legacy_js_file" "cacheControl" || true)"
   prod_css_cache="$(json_field "$prod_css_file" "cacheControl" || true)"
   prod_slash_to="$(json_field "$prod_slash_file" "redirects.to" || true)"
   prod_slash_status="$(json_field "$prod_slash_file" "redirects.status" || true)"
@@ -1388,8 +1460,14 @@ check_diagnostic_mode_contracts() {
   if [[ "$prod_manifest_cache" != *"public"* || "$prod_manifest_cache" != *"max-age=300"* || "$prod_manifest_cache" != *"stale-while-revalidate=86400"* ]]; then
     log_production_cache_drift "production diagnostics preview for /store/data/manifest.json has wrong cache policy (${prod_manifest_cache:-missing})"
   fi
-  if [[ "$prod_js_cache" != *"public"* || "$prod_js_cache" != *"max-age=300"* || "$prod_js_cache" != *"stale-while-revalidate=86400"* ]]; then
-    log_production_cache_drift "production diagnostics preview for /assets/store/store.js has wrong cache policy (${prod_js_cache:-missing})"
+  if [[ "$prod_core_js_cache" != *"public"* || "$prod_core_js_cache" != *"max-age=300"* || "$prod_core_js_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /assets/store/store-core.js has wrong cache policy (${prod_core_js_cache:-missing})"
+  fi
+  if [[ "$prod_discovery_js_cache" != *"public"* || "$prod_discovery_js_cache" != *"max-age=300"* || "$prod_discovery_js_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /assets/store/store-discovery.js has wrong cache policy (${prod_discovery_js_cache:-missing})"
+  fi
+  if [[ "$prod_legacy_js_cache" != *"public"* || "$prod_legacy_js_cache" != *"max-age=300"* || "$prod_legacy_js_cache" != *"stale-while-revalidate=86400"* ]]; then
+    log_production_cache_drift "production diagnostics preview for /assets/store/store.js has wrong cache policy (${prod_legacy_js_cache:-missing})"
   fi
   if [[ "$prod_css_cache" != *"public"* || "$prod_css_cache" != *"max-age=300"* || "$prod_css_cache" != *"stale-while-revalidate=86400"* ]]; then
     log_production_cache_drift "production diagnostics preview for /assets/store/store.css has wrong cache policy (${prod_css_cache:-missing})"
