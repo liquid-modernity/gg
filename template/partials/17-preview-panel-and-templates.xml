@@ -3,24 +3,33 @@
         <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
       </button>
       <section aria-labelledby='gg-preview-title' aria-modal='true' class='gg-content-sheet gg-preview__sheet gg-sheet__panel' role='dialog' tabindex='-1'>
-        <div class='gg-content-sheet__body gg-preview__body'>
-           <div class='gg-preview__media' hidden='hidden' id='gg-preview-media'>
+        <div class='gg-preview__hero'>
+          <div class='gg-preview__media' hidden='hidden' id='gg-preview-media'>
             <img alt='' id='gg-preview-image' loading='lazy' src=''/>
           </div>
-          <header class='gg-content-sheet__content-head gg-preview__content-head'>
+          <div aria-hidden='true' class='gg-preview__shade'/>
+          <header class='gg-preview__intro'>
+            <p class='gg-preview__eyebrow' data-gg-copy='preview.titleFallback'>Article preview</p>
             <h2 class='gg-preview__title' data-gg-copy='preview.titleFallback' id='gg-preview-title'>Article preview</h2>
-            <p class='gg-preview__summary' id='gg-preview-summary'/>
+            <div class='gg-preview__meta' id='gg-preview-meta'/>
           </header>
-          <div class='gg-preview__meta' id='gg-preview-meta'/>
-          <p class='gg-preview__taxonomy' hidden='hidden' id='gg-preview-taxonomy'>
-            <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
-            <span class='gg-taxonomy' id='gg-preview-taxonomy-items'/>
-          </p>
-          <section class='gg-preview__toc' id='gg-preview-toc'>
-            <h3 class='gg-preview__section-title' data-gg-copy='preview.contents'>Contents</h3>
-            <p class='gg-preview__status' data-gg-copy='preview.preparing' id='gg-preview-status'>Preparing preview&#8230;</p>
-            <ol class='gg-preview__toc-list' id='gg-preview-toc-list'/>
-          </section>
+        </div>
+        <div class='gg-content-sheet__body gg-preview__body'>
+          <div class='gg-preview__surface'>
+            <p class='gg-preview__summary' id='gg-preview-summary'/>
+            <p class='gg-preview__taxonomy' hidden='hidden' id='gg-preview-taxonomy'>
+              <span class='gg-meta__cue' data-gg-copy='post.in'>In</span>
+              <span class='gg-taxonomy' id='gg-preview-taxonomy-items'/>
+            </p>
+            <section class='gg-preview__toc' id='gg-preview-toc'>
+              <h3 class='gg-preview__section-title' data-gg-copy='preview.contents'>Contents</h3>
+              <p class='gg-preview__status' data-gg-copy='preview.preparing' id='gg-preview-status'>Preparing preview&#8230;</p>
+              <ol class='gg-preview__toc-list' id='gg-preview-toc-list'/>
+            </section>
+            <div class='gg-preview__footer'>
+              <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
+            </div>
+          </div>
           <template id='gg-preview-meta-item-template'>
             <span class='gg-preview__meta-item'>
               <span class='gg-meta__cue' data-gg-template-part='cue'/>
@@ -43,13 +52,10 @@
             </li>
           </template>
         </div>
-        <div class='gg-preview__footer'>
-            <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
-          </div>
-        <div class='gg-content-sheet__affordance gg-preview__affordance'>
+        <footer class='gg-content-sheet__affordance gg-preview__affordance'>
           <button class='gg-sheet__handle' data-gg-close='preview' data-gg-drag-handle='preview' type='button'>
             <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
           </button>
-        </div>
+        </footer>
       </section>
     </div>
