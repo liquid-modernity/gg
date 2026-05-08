@@ -8,7 +8,8 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gg-toolbar-gap);
-  width: min(calc(100% - 12px), 720px);
+  width: var(--gg-panel-width);
+  max-width: none;
   padding: var(--gg-toolbar-pad);
   border: 1px solid var(--gg-toolbar-border);
   border-radius: var(--gg-toolbar-radius);
@@ -55,4 +56,3 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-dock__item[aria-current='page'] {
   background: var(--gg-toolbar-item-hover-bg);
 }
-
