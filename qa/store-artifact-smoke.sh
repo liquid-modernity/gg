@@ -108,6 +108,24 @@ check_not_stale "assets/store/store.css" "$target_store_css" "store stylesheet a
 check_not_stale "store/data/manifest.json" "$target_store_manifest" "store manifest"
 check_not_stale "store/data/build-report.json" "$target_store_build_report" "store build report"
 
+if [[ -f "$target_file" ]]; then
+  if ! node -e '
+    const fs = require("node:fs");
+    const html = fs.readFileSync(process.argv[1], "utf8");
+    const criticalRegion = (html.match(/<!-- STORE_CRITICAL_CSS_START -->([\s\S]*?)<!-- STORE_CRITICAL_CSS_END -->/) || [])[1] || "";
+    const criticalCss = (criticalRegion.match(/<style\b[^>]*>([\s\S]*?)<\/style>/i) || [])[1] || "";
+    const fontHrefs = html.match(/https:\/\/fonts\.googleapis\.com\/css2\?[^"<>\s]+/g) || [];
+    const materialSymbols = fontHrefs.filter((href) => href.includes("Material+Symbols+Outlined"));
+    if (!criticalCss.trim()) process.exit(2);
+    if (Buffer.byteLength(criticalCss.trim(), "utf8") > 14 * 1024) process.exit(3);
+    if (!/<link\b[^>]*rel=["\x27]stylesheet["\x27][^>]*href=["\x27]\/assets\/store\/store\.css["\x27][^>]*>/i.test(html)) process.exit(4);
+    if (new Set(fontHrefs).size !== fontHrefs.length) process.exit(5);
+    if (materialSymbols.length > 1) process.exit(6);
+  ' "$target_file" >/dev/null 2>&1; then
+    log_fail "store CSS critical/external strategy is invalid"
+  fi
+fi
+
 if [[ "$store_require_flat_transitional" == "1" ]]; then
   for source_category_artifact in store-*.html; do
     [[ -f "$source_category_artifact" ]] || continue

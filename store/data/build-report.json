@@ -256,7 +256,7 @@
   "budgets": {
     "storeHtmlBytes": 256000,
     "categoryHtmlBytes": 358400,
-    "criticalCssBytes": 15360,
+    "criticalCssBytes": 14336,
     "storeCssGzipWarnBytes": 71680,
     "storeCssGzipFailBytes": 122880,
     "storeJsGzipWarnBytes": 92160,
@@ -268,5 +268,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "ac7220700c450dde"
+  "buildId": "13a0aca4362c53dc"
 }

@@ -19,7 +19,7 @@ export const STORE_BUILD_REPORT_HREF = `/${STORE_BUILD_REPORT_ARTIFACT_PATH}`;
 export const STORE_ARTIFACT_CONTRACT_VERSION = "store-artifact-contract-v1";
 export const STORE_REQUIRE_FLAT_TRANSITIONAL = isStoreFlatTransitionalRequired();
 export const STORE_INLINE_BUILD_REPORT = isStoreInlineBuildReportEnabled();
-export const CRITICAL_CSS_BUDGET_BYTES = 15 * 1024;
+export const CRITICAL_CSS_BUDGET_BYTES = 14 * 1024;
 export const STORE_PRODUCTION_BUDGETS = Object.freeze({
   storeHtmlBytes: 250 * 1024,
   categoryHtmlBytes: 350 * 1024,

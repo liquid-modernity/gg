@@ -183,6 +183,29 @@ function checkStoreArtifactContract(report, expected) {
   compareArtifactList(contract.flatTransitionalArtifacts, expected.flatTransitionalArtifacts, "flatTransitionalArtifacts");
 }
 
+function checkStoreCssStrategy(pageSource, pageLabel) {
+  const criticalRegion = extractMarkedRegion(pageSource, "<!-- STORE_CRITICAL_CSS_START -->", "<!-- STORE_CRITICAL_CSS_END -->");
+  const criticalCss = (criticalRegion.match(/<style\b[^>]*>([\s\S]*?)<\/style>/i)?.[1] || "").trim();
+  const criticalCssBytes = Buffer.byteLength(criticalCss, "utf8");
+  const fontStylesheetHrefs = pageSource.match(/https:\/\/fonts\.googleapis\.com\/css2\?[^"'<\s]+/g) || [];
+  const duplicateFontHrefs = Array.from(new Set(fontStylesheetHrefs.filter((href, index) => fontStylesheetHrefs.indexOf(href) !== index)));
+  const materialSymbolsHrefs = fontStylesheetHrefs.filter((href) => href.includes("Material+Symbols+Outlined"));
+
+  if (!criticalRegion) {
+    fail(`${pageLabel}: missing STORE_CRITICAL_CSS markers`);
+  } else if (!criticalCss) {
+    fail(`${pageLabel}: critical CSS marker block is missing its inline <style>`);
+  } else if (criticalCssBytes > CRITICAL_CSS_BUDGET_BYTES) {
+    fail(`${pageLabel}: critical CSS exceeds ${CRITICAL_CSS_BUDGET_BYTES} bytes (${criticalCssBytes} bytes)`);
+  }
+  if (duplicateFontHrefs.length) {
+    fail(`${pageLabel}: duplicate Google Fonts stylesheet references found (${duplicateFontHrefs.join(", ")})`);
+  }
+  if (materialSymbolsHrefs.length > 1) {
+    fail(`${pageLabel}: duplicate Material Symbols stylesheet references found (${materialSymbolsHrefs.length})`);
+  }
+}
+
 function recordDevelopmentNote(message) {
   const text = String(message || "");
   const fallbackMatch = text.match(/existing-static-fallback images \((\d+)\)/);
@@ -494,8 +517,9 @@ if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_PATH}"`)) 
 if (inlineStyleTags.length !== 1) fail(`expected exactly one inline style block, found ${inlineStyleTags.length}`);
 if (!/<style\b[^>]*>[\s\S]*<\/style>/i.test(criticalCssRegion)) fail("critical CSS marker block is missing its inline <style>");
 if (Buffer.byteLength(criticalCssText, "utf8") > CRITICAL_CSS_BUDGET_BYTES) {
-  fail(`critical CSS exceeds 15 KB (${Buffer.byteLength(criticalCssText, "utf8")} bytes)`);
+  fail(`critical CSS exceeds ${CRITICAL_CSS_BUDGET_BYTES} bytes (${Buffer.byteLength(criticalCssText, "utf8")} bytes)`);
 }
+checkStoreCssStrategy(source, "/store");
 if (!/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']\/assets\/store\/store\.css["'][^>]*>/i.test(assetCssRegion)) {
   fail(`store.html does not reference ${STORE_ASSET_CSS_HREF}`);
 }
@@ -899,6 +923,7 @@ if (staticProducts.length) {
       const pageSource = readFileSync(nestedPath, "utf8");
       checkMaxBudget(`${pageLabel} HTML`, byteLength(pageSource), STORE_PRODUCTION_BUDGETS.categoryHtmlBytes, { strictOnly: true });
       checkNoProductionNoindex(pageSource, pageLabel);
+      checkStoreCssStrategy(pageSource, pageLabel);
       const pageStaticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_PRODUCTS_JSON_START -->", "<!-- STORE_STATIC_PRODUCTS_JSON_END -->");
       const pageGridRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_GRID_START -->", "<!-- STORE_STATIC_GRID_END -->");
       const pageSemanticRegion = extractMarkedRegion(pageSource, "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_START -->", "<!-- STORE_STATIC_SEMANTIC_PRODUCTS_END -->");
