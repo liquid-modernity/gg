@@ -5,7 +5,9 @@
       <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-discovery'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='command'/>
+          <button class='gg-sheet__handle' data-gg-close='command' data-gg-drag-handle='command' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='command.title' id='gg-command-title'>Discover</h2>
         </div>
         <div class='gg-discovery__controls'>

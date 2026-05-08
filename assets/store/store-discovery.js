@@ -2576,7 +2576,8 @@
         name: name,
         pointerId: event.pointerId,
         startY: event.clientY,
-        lastY: event.clientY
+        lastY: event.clientY,
+        startedAt: Date.now()
       };
       if (handle && handle.setPointerCapture) {
         try { handle.setPointerCapture(event.pointerId); } catch (error) {}
@@ -2589,10 +2590,15 @@
     function endDragSession(event) {
       if (!state.dragSession || state.dragSession.pointerId !== event.pointerId) return;
       var session = state.dragSession;
-      var deltaY = (session.lastY || event.clientY) - session.startY;
+      var releaseY = typeof event.clientY === 'number' ? event.clientY : session.lastY;
+      var deltaY = releaseY - session.startY;
+      var elapsed = Math.max(1, Date.now() - session.startedAt);
+      var velocityY = deltaY / elapsed;
+      var isTap = Math.abs(deltaY) < 8 && elapsed < 360;
       state.dragSession = null;
-      if (session.name === 'preview' && deltaY <= -84) closePanel('preview');
-      if (session.name !== 'preview' && deltaY >= 84) closePanel(session.name);
+      if (isTap) closePanel(session.name);
+      else if (session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview');
+      else if (session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name);
     }
 
     function openPreviewItem(item, trigger) {

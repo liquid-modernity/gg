@@ -1969,13 +1969,25 @@ window.GG = window.GG || {};
           }
         }
 
+        function getPanelEdge(panel) {
+          if (!panel || !panel.root) return 'bottom';
+          return panel.root.getAttribute('data-gg-edge') === 'top' ? 'top' : 'bottom';
+        }
+
         function applyPanelDrag(panel, offset) {
+          var edge;
           var panelHeight;
           var progress;
-          var resolved = offset < 0 ? offset * 0.28 : offset;
+          var resolved;
 
           if (!panel || !panel.panel) return;
 
+          edge = getPanelEdge(panel);
+          if (edge === 'top') {
+            resolved = offset > 0 ? offset * 0.28 : offset;
+          } else {
+            resolved = offset < 0 ? offset * 0.28 : offset;
+          }
           panelHeight = panel.panel.offsetHeight || 400;
           progress = Math.min(1, Math.abs(resolved) / panelHeight);
           panel.panel.style.setProperty('--gg-sheet-drag-y', resolved.toFixed(2) + 'px');
@@ -5536,6 +5548,16 @@ window.GG = window.GG || {};
           return Math.max(96, Math.round(panel.panel.offsetHeight * 0.16));
         }
 
+        function shouldDismissByDrag(panel, offsetY, velocityY) {
+          var threshold = getDismissThreshold(panel);
+          if (getPanelEdge(panel) === 'top') return offsetY < -threshold || velocityY < -0.75;
+          return offsetY > threshold || velocityY > 0.75;
+        }
+
+        function isHandleTap(offsetY, elapsed) {
+          return Math.abs(offsetY) < 8 && elapsed < 360;
+        }
+
         function startDrag(event) {
           var handle = event.target.closest('[data-gg-drag-handle]');
           var name;
@@ -5585,7 +5607,9 @@ window.GG = window.GG || {};
         function endDrag(event) {
           var drag = state.drag;
           var panel;
+          var offset;
           var shouldClose;
+          var tapRelease;
           var velocity;
           var elapsed;
 
@@ -5595,15 +5619,18 @@ window.GG = window.GG || {};
           state.drag = null;
           if (!panel) return;
 
+          offset = typeof event.clientY === 'number' ? event.clientY - drag.startY : drag.offsetY;
+          drag.offsetY = offset;
           elapsed = Math.max(1, Date.now() - drag.startedAt);
-          velocity = drag.offsetY / elapsed;
-          shouldClose = drag.offsetY > getDismissThreshold(panel) || velocity > 0.75;
+          velocity = offset / elapsed;
+          tapRelease = isHandleTap(offset, elapsed);
+          shouldClose = tapRelease || shouldDismissByDrag(panel, offset, velocity);
 
           if (shouldClose) {
             state.ignoreClickUntil = Date.now() + 320;
             closePanel(drag.name, {
-              returnFocus: false,
-              reason: 'drag-dismiss'
+              returnFocus: tapRelease,
+              reason: tapRelease ? 'handle-tap' : 'drag-dismiss'
             });
           } else {
             restorePanelFromDrag(panel);

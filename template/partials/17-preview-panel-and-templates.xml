@@ -47,7 +47,9 @@
             <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
           </div>
         <div class='gg-content-sheet__affordance gg-preview__affordance'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='preview'/>
+          <button class='gg-sheet__handle' data-gg-close='preview' data-gg-drag-handle='preview' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
+          </button>
         </div>
       </section>
     </div>

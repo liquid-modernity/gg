@@ -4,7 +4,9 @@
       </button>
       <section aria-labelledby='gg-more-title' aria-modal='true' class='gg-more-sheet gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='more'/>
+          <button class='gg-sheet__handle' data-gg-close='more' data-gg-drag-handle='more' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
         </div>
 

@@ -815,7 +815,9 @@ img{max-width:100%;height:auto;display:block}
                 </button>
                 <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
                   <div class='gg-sheet__head'>
-                    <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='comments'/>
+                    <button class='gg-sheet__handle' data-gg-close='comments' data-gg-drag-handle='comments' type='button'>
+                      <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
+                    </button>
                     <span class='gg-sheet__title' id='gg-comments-title'>
                       <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
                     </span>
@@ -1127,7 +1129,9 @@ img{max-width:100%;height:auto;display:block}
       <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-discovery'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='command'/>
+          <button class='gg-sheet__handle' data-gg-close='command' data-gg-drag-handle='command' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='command.title' id='gg-command-title'>Discover</h2>
         </div>
         <div class='gg-discovery__controls'>
@@ -1245,7 +1249,9 @@ img{max-width:100%;height:auto;display:block}
             <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
           </div>
         <div class='gg-content-sheet__affordance gg-preview__affordance'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='preview'/>
+          <button class='gg-sheet__handle' data-gg-close='preview' data-gg-drag-handle='preview' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
+          </button>
         </div>
       </section>
     </div>
@@ -1256,7 +1262,9 @@ img{max-width:100%;height:auto;display:block}
       </button>
       <section aria-labelledby='gg-more-title' aria-modal='true' class='gg-more-sheet gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='more'/>
+          <button class='gg-sheet__handle' data-gg-close='more' data-gg-drag-handle='more' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
         </div>
 

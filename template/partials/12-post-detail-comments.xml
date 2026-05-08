@@ -100,7 +100,9 @@
                 </button>
                 <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
                   <div class='gg-sheet__head'>
-                    <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='comments'/>
+                    <button class='gg-sheet__handle' data-gg-close='comments' data-gg-drag-handle='comments' type='button'>
+                      <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
+                    </button>
                     <span class='gg-sheet__title' id='gg-comments-title'>
                       <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
                     </span>

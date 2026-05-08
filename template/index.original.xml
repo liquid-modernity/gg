@@ -1684,12 +1684,29 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 }
 
 .gg-sheet__handle {
+  display: grid;
+  place-items: center;
+  width: var(--gg-panel-handle-width);
+  min-height: var(--gg-hit-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: ns-resize;
+  touch-action: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gg-sheet__handle::before {
+  content: '';
+  display: block;
   width: var(--gg-panel-handle-width);
   height: var(--gg-panel-handle-height);
-  margin: 0;
   border-radius: 999px;
   background: var(--gg-panel-handle-tone);
-  touch-action: none;
 }
 
 .gg-sheet__head .gg-sheet__handle {
@@ -3027,7 +3044,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
                 </button>
                 <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
                   <div class='gg-sheet__head'>
-                    <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='comments'/>
+                    <button class='gg-sheet__handle' data-gg-close='comments' data-gg-drag-handle='comments' type='button'>
+                      <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
+                    </button>
                     <span class='gg-sheet__title' id='gg-comments-title'>
                       <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
                     </span>
@@ -3339,7 +3358,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-discovery'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='command'/>
+          <button class='gg-sheet__handle' data-gg-close='command' data-gg-drag-handle='command' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='command.title' id='gg-command-title'>Discover</h2>
         </div>
         <div class='gg-discovery__controls'>
@@ -3457,7 +3478,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
           </div>
         <div class='gg-content-sheet__affordance gg-preview__affordance'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='preview'/>
+          <button class='gg-sheet__handle' data-gg-close='preview' data-gg-drag-handle='preview' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
+          </button>
         </div>
       </section>
     </div>
@@ -3468,7 +3491,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       </button>
       <section aria-labelledby='gg-more-title' aria-modal='true' class='gg-more-sheet gg-sheet__panel' role='dialog' tabindex='-1'>
         <div class='gg-sheet__head'>
-          <div aria-hidden='true' class='gg-sheet__handle' data-gg-drag-handle='more'/>
+          <button class='gg-sheet__handle' data-gg-close='more' data-gg-drag-handle='more' type='button'>
+            <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
+          </button>
           <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
         </div>
 
@@ -5478,13 +5503,25 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
         }
 
+        function getPanelEdge(panel) {
+          if (!panel || !panel.root) return 'bottom';
+          return panel.root.getAttribute('data-gg-edge') === 'top' ? 'top' : 'bottom';
+        }
+
         function applyPanelDrag(panel, offset) {
+          var edge;
           var panelHeight;
           var progress;
-          var resolved = offset < 0 ? offset * 0.28 : offset;
+          var resolved;
 
           if (!panel || !panel.panel) return;
 
+          edge = getPanelEdge(panel);
+          if (edge === 'top') {
+            resolved = offset > 0 ? offset * 0.28 : offset;
+          } else {
+            resolved = offset < 0 ? offset * 0.28 : offset;
+          }
           panelHeight = panel.panel.offsetHeight || 400;
           progress = Math.min(1, Math.abs(resolved) / panelHeight);
           panel.panel.style.setProperty('--gg-sheet-drag-y', resolved.toFixed(2) + 'px');
@@ -9045,6 +9082,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           return Math.max(96, Math.round(panel.panel.offsetHeight * 0.16));
         }
 
+        function shouldDismissByDrag(panel, offsetY, velocityY) {
+          var threshold = getDismissThreshold(panel);
+          if (getPanelEdge(panel) === 'top') return offsetY < -threshold || velocityY < -0.75;
+          return offsetY > threshold || velocityY > 0.75;
+        }
+
+        function isHandleTap(offsetY, elapsed) {
+          return Math.abs(offsetY) < 8 && elapsed < 360;
+        }
+
         function startDrag(event) {
           var handle = event.target.closest('[data-gg-drag-handle]');
           var name;
@@ -9094,7 +9141,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         function endDrag(event) {
           var drag = state.drag;
           var panel;
+          var offset;
           var shouldClose;
+          var tapRelease;
           var velocity;
           var elapsed;
 
@@ -9104,15 +9153,18 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           state.drag = null;
           if (!panel) return;
 
+          offset = typeof event.clientY === 'number' ? event.clientY - drag.startY : drag.offsetY;
+          drag.offsetY = offset;
           elapsed = Math.max(1, Date.now() - drag.startedAt);
-          velocity = drag.offsetY / elapsed;
-          shouldClose = drag.offsetY > getDismissThreshold(panel) || velocity > 0.75;
+          velocity = offset / elapsed;
+          tapRelease = isHandleTap(offset, elapsed);
+          shouldClose = tapRelease || shouldDismissByDrag(panel, offset, velocity);
 
           if (shouldClose) {
             state.ignoreClickUntil = Date.now() + 320;
             closePanel(drag.name, {
-              returnFocus: false,
-              reason: 'drag-dismiss'
+              returnFocus: tapRelease,
+              reason: tapRelease ? 'handle-tap' : 'drag-dismiss'
             });
           } else {
             restorePanelFromDrag(panel);

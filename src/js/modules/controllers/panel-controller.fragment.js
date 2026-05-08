@@ -182,13 +182,25 @@
           }
         }
 
+        function getPanelEdge(panel) {
+          if (!panel || !panel.root) return 'bottom';
+          return panel.root.getAttribute('data-gg-edge') === 'top' ? 'top' : 'bottom';
+        }
+
         function applyPanelDrag(panel, offset) {
+          var edge;
           var panelHeight;
           var progress;
-          var resolved = offset < 0 ? offset * 0.28 : offset;
+          var resolved;
 
           if (!panel || !panel.panel) return;
 
+          edge = getPanelEdge(panel);
+          if (edge === 'top') {
+            resolved = offset > 0 ? offset * 0.28 : offset;
+          } else {
+            resolved = offset < 0 ? offset * 0.28 : offset;
+          }
           panelHeight = panel.panel.offsetHeight || 400;
           progress = Math.min(1, Math.abs(resolved) / panelHeight);
           panel.panel.style.setProperty('--gg-sheet-drag-y', resolved.toFixed(2) + 'px');

@@ -1219,23 +1219,27 @@ button.store-button.store-semantic-more {
     }
     .gg-sheet__handle {
       position: relative;
+      display: grid;
+      place-items: center;
       width: 62px;
-      height: 22px;
+      min-height: var(--gg-hit-min);
+      padding: 0;
+      border: 0;
       border-radius: 999px;
-      display: block;
+      background: transparent;
+      color: inherit;
       touch-action: none;
       cursor: ns-resize;
+      -webkit-appearance: none;
+      appearance: none;
     }
     .gg-sheet__handle::before {
       content: '';
-      position: absolute;
-      left: 50%;
-      top: 9px;
+      display: block;
       width: 62px;
       height: 3px;
       border-radius: 999px;
       background: var(--gg-panel-handle-tone);
-      transform: translateX(-50%);
     }
     .gg-sheet__title {
       margin: 0;
@@ -1393,8 +1397,8 @@ button.store-button.store-semantic-more {
       font-variation-settings: 'FILL' 1, 'wght' var(--gg-icon-weight-active), 'GRAD' var(--gg-icon-grade-active), 'opsz' 24;
     }
     .store-preview__footer { position: sticky; bottom: 0; display: grid; justify-items: center; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(0deg, var(--gg-surface-panel) 70%, var(--gg-surface-panel-fade-soft)); border-top: 1px solid var(--gg-divider); }
-    .store-preview__handle { width: 62px; height: 22px; border: 0; background: transparent; position: relative; }
-    .store-preview__handle::before { content: ''; position: absolute; left: 50%; top: 9px; width: 62px; height: 3px; border-radius: 999px; background: var(--gg-panel-handle-tone); transform: translateX(-50%); }
+    .store-preview__handle { display: grid; place-items: center; width: 62px; min-height: var(--gg-hit-min); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; position: relative; touch-action: none; cursor: ns-resize; -webkit-appearance: none; appearance: none; }
+    .store-preview__handle::before { content: ''; display: block; width: 62px; height: 3px; border-radius: 999px; background: var(--gg-panel-handle-tone); }
     @media (min-width: 720px) {
       :root { --store-max: 920px; --store-card-gap: 12px; }
       .store-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }

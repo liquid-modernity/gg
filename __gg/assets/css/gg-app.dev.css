@@ -1593,12 +1593,29 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 }
 
 .gg-sheet__handle {
+  display: grid;
+  place-items: center;
+  width: var(--gg-panel-handle-width);
+  min-height: var(--gg-hit-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: ns-resize;
+  touch-action: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gg-sheet__handle::before {
+  content: '';
+  display: block;
   width: var(--gg-panel-handle-width);
   height: var(--gg-panel-handle-height);
-  margin: 0;
   border-radius: 999px;
   background: var(--gg-panel-handle-tone);
-  touch-action: none;
 }
 
 .gg-sheet__head .gg-sheet__handle {
