@@ -198,6 +198,7 @@
   --gg-dock-track-height: calc(50px + (6px * 2));
   --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 22px);
+  --gg-panel-width: min(calc(100vw - 12px), 600px);
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --gg-ease: 180ms ease;
   --gg-motion-press: 90ms ease;
@@ -208,6 +209,12 @@
   --store-card-aspect: 4 / 5;
   --store-card-min-wide: 240px;
   --store-control-h: 44px;
+}
+
+@supports (width: 100dvw) {
+  :root {
+    --gg-panel-width: min(calc(100dvw - 12px), 600px);
+  }
 }
 
 html[data-gg-theme='light'] { color-scheme: light; }
