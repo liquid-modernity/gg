@@ -12,8 +12,10 @@ import {
   STORE_BUILD_REPORT_ARTIFACT_PATH,
   STORE_BUILD_REPORT_HREF,
   STORE_CATEGORY_PAGE_SIZE,
+  STORE_DISCOVERY_ASSET_JS_HREF,
   STORE_FEED_PATH,
   STORE_INLINE_BUILD_REPORT,
+  STORE_LEGACY_ASSET_JS_HREF,
   STORE_LEGACY_FEED_PATH,
   STORE_PRODUCTION_BUDGETS,
   STORE_REQUIRE_FLAT_TRANSITIONAL,
@@ -33,7 +35,9 @@ const TARGET_ROOT = path.dirname(TARGET_PATH);
 const WORKER_PATH = path.resolve(ROOT, "worker.js");
 const FLAGS_PATH = path.resolve(ROOT, "flags.json");
 const STORE_ASSET_CSS_PATH = path.resolve(ROOT, "assets/store/store.css");
-const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
+const STORE_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store-core.js");
+const STORE_DISCOVERY_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store-discovery.js");
+const STORE_LEGACY_ASSET_JS_PATH = path.resolve(ROOT, "assets/store/store.js");
 const STORE_MANIFEST_PATH = path.resolve(TARGET_ROOT, "store/data/manifest.json");
 const STORE_BUILD_REPORT_PATH = path.resolve(TARGET_ROOT, STORE_BUILD_REPORT_ARTIFACT_PATH);
 const source = readFileSync(TARGET_PATH, "utf8");
@@ -121,6 +125,8 @@ function expectedStoreArtifactContract(categoryPagination) {
     assetArtifacts: [
       artifactHrefPath(STORE_ASSET_CSS_HREF),
       artifactHrefPath(STORE_ASSET_JS_HREF),
+      artifactHrefPath(STORE_DISCOVERY_ASSET_JS_HREF),
+      artifactHrefPath(STORE_LEGACY_ASSET_JS_HREF),
     ],
     buildReportArtifact: STORE_BUILD_REPORT_ARTIFACT_PATH,
     canonicalNested: true,
@@ -493,11 +499,13 @@ if (Buffer.byteLength(criticalCssText, "utf8") > CRITICAL_CSS_BUDGET_BYTES) {
 if (!/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']\/assets\/store\/store\.css["'][^>]*>/i.test(assetCssRegion)) {
   fail(`store.html does not reference ${STORE_ASSET_CSS_HREF}`);
 }
-if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(runtimeAssetRegion)) {
+if (!/<script\b[^>]*src=["']\/assets\/store\/store-core\.js["'][^>]*\bdata-store-discovery-src=["']\/assets\/store\/store-discovery\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(runtimeAssetRegion)) {
   fail(`store.html does not reference ${STORE_ASSET_JS_HREF} with defer`);
 }
 if (countOccurrences(source, STORE_ASSET_CSS_HREF) !== 1) fail(`expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
 if (countOccurrences(source, STORE_ASSET_JS_HREF) !== 1) fail(`expected exactly one ${STORE_ASSET_JS_HREF} reference`);
+if (countOccurrences(source, STORE_DISCOVERY_ASSET_JS_HREF) !== 1) fail(`expected exactly one ${STORE_DISCOVERY_ASSET_JS_HREF} lazy-loader reference`);
+if (countOccurrences(source, STORE_LEGACY_ASSET_JS_HREF) !== 0) fail(`${STORE_LEGACY_ASSET_JS_HREF} must not be referenced by generated HTML`);
 if (themeBootScripts.length !== 1) fail(`expected exactly one inline theme boot script, found ${themeBootScripts.length}`);
 if (themeBootScripts.length === 1) {
   const themeScriptIndex = source.indexOf(themeBootScripts[0]);
@@ -515,7 +523,9 @@ for (const tag of inlineScriptTags) {
 }
 
 let storeCssAsset = "";
-let storeJsAsset = "";
+let storeCoreJsAsset = "";
+let storeDiscoveryJsAsset = "";
+let storeLegacyJsAsset = "";
 if (!existsSync(STORE_ASSET_CSS_PATH)) fail(`${STORE_ASSET_CSS_HREF} is missing`);
 else {
   storeCssAsset = readFileSync(STORE_ASSET_CSS_PATH, "utf8");
@@ -523,23 +533,39 @@ else {
 }
 if (!existsSync(STORE_ASSET_JS_PATH)) fail(`${STORE_ASSET_JS_HREF} is missing`);
 else {
-  storeJsAsset = readFileSync(STORE_ASSET_JS_PATH, "utf8");
-  if (!storeJsAsset.trim()) fail(`${STORE_ASSET_JS_HREF} is empty`);
+  storeCoreJsAsset = readFileSync(STORE_ASSET_JS_PATH, "utf8");
+  if (!storeCoreJsAsset.trim()) fail(`${STORE_ASSET_JS_HREF} is empty`);
 }
-if (storeJsAsset && !/marketplaceAriaLabel\(/.test(storeJsAsset)) fail(`runtime marketplace aria-label helper is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/window\.StoreSurface/.test(storeJsAsset)) fail(`runtime StoreSurface contract is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/\/store\/data\/manifest\.json/.test(storeJsAsset)) fail(`runtime discovery manifest fetch path is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/function loadStoreManifest\(/.test(storeJsAsset)) fail(`runtime discovery manifest loader is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/function validateStoreManifest\(/.test(storeJsAsset)) fail(`runtime discovery manifest validator is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/function applyDiscoveryFilters\(/.test(storeJsAsset)) fail(`runtime discovery filter model is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/function fallbackDiscoveryItems\(/.test(storeJsAsset)) fail(`runtime discovery static fallback is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/storeManifestCache/.test(storeJsAsset)) fail(`runtime discovery manifest cache is missing from ${STORE_ASSET_JS_HREF}`);
-if (storeJsAsset && !/discoveryManifestState = ["']fallback["']/.test(storeJsAsset)) fail(`runtime discovery manifest failure fallback is missing from ${STORE_ASSET_JS_HREF}`);
+if (!existsSync(STORE_DISCOVERY_ASSET_JS_PATH)) fail(`${STORE_DISCOVERY_ASSET_JS_HREF} is missing`);
+else {
+  storeDiscoveryJsAsset = readFileSync(STORE_DISCOVERY_ASSET_JS_PATH, "utf8");
+  if (!storeDiscoveryJsAsset.trim()) fail(`${STORE_DISCOVERY_ASSET_JS_HREF} is empty`);
+}
+if (!existsSync(STORE_LEGACY_ASSET_JS_PATH)) fail(`${STORE_LEGACY_ASSET_JS_HREF} compatibility alias is missing`);
+else {
+  storeLegacyJsAsset = readFileSync(STORE_LEGACY_ASSET_JS_PATH, "utf8");
+  if (!storeLegacyJsAsset.trim()) fail(`${STORE_LEGACY_ASSET_JS_HREF} compatibility alias is empty`);
+}
+if (storeCoreJsAsset && !/store-discovery\.js/.test(storeCoreJsAsset)) fail(`core runtime lazy discovery loader is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeCoreJsAsset && !/loadDiscoveryRuntime\(/.test(storeCoreJsAsset)) fail(`core runtime loadDiscoveryRuntime helper is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeCoreJsAsset && !/data-store-discovery-runtime/.test(storeCoreJsAsset)) fail(`core runtime discovery script marker is missing from ${STORE_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/marketplaceAriaLabel\(/.test(storeDiscoveryJsAsset)) fail(`runtime marketplace aria-label helper is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/window\.StoreSurface/.test(storeDiscoveryJsAsset)) fail(`runtime StoreSurface contract is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/\/store\/data\/manifest\.json/.test(storeDiscoveryJsAsset)) fail(`runtime discovery manifest fetch path is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/function loadStoreManifest\(/.test(storeDiscoveryJsAsset)) fail(`runtime discovery manifest loader is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/function validateStoreManifest\(/.test(storeDiscoveryJsAsset)) fail(`runtime discovery manifest validator is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/function applyDiscoveryFilters\(/.test(storeDiscoveryJsAsset)) fail(`runtime discovery filter model is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/function fallbackDiscoveryItems\(/.test(storeDiscoveryJsAsset)) fail(`runtime discovery static fallback is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/storeManifestCache/.test(storeDiscoveryJsAsset)) fail(`runtime discovery manifest cache is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
+if (storeDiscoveryJsAsset && !/discoveryManifestState = ["']fallback["']/.test(storeDiscoveryJsAsset)) fail(`runtime discovery manifest failure fallback is missing from ${STORE_DISCOVERY_ASSET_JS_HREF}`);
 if (storeCssAsset) {
   checkBudget(`${STORE_ASSET_CSS_HREF} gzip`, gzipByteLength(storeCssAsset), STORE_PRODUCTION_BUDGETS.storeCssGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeCssGzipFailBytes);
 }
-if (storeJsAsset) {
-  checkBudget(`${STORE_ASSET_JS_HREF} gzip`, gzipByteLength(storeJsAsset), STORE_PRODUCTION_BUDGETS.storeJsGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeJsGzipFailBytes);
+if (storeCoreJsAsset) {
+  checkBudget(`${STORE_ASSET_JS_HREF} gzip`, gzipByteLength(storeCoreJsAsset), STORE_PRODUCTION_BUDGETS.storeJsGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeJsGzipFailBytes);
+}
+if (storeDiscoveryJsAsset) {
+  checkBudget(`${STORE_DISCOVERY_ASSET_JS_HREF} gzip`, gzipByteLength(storeDiscoveryJsAsset), STORE_PRODUCTION_BUDGETS.storeJsGzipWarnBytes, STORE_PRODUCTION_BUDGETS.storeJsGzipFailBytes);
 }
 if (manifestSource) {
   checkBudget("store manifest gzip", gzipByteLength(manifestSource), STORE_PRODUCTION_BUDGETS.manifestGzipWarnBytes, STORE_PRODUCTION_BUDGETS.manifestGzipFailBytes);
@@ -549,8 +575,9 @@ if (!/id=["']store-discovery-status["'][^>]*\baria-live=/.test(source)) reportDr
 if (!/data-store-price-band=["']under-50k["']/.test(source)) reportDrift("Discovery price-band filter hooks are missing");
 if (!/data-store-sort=["']recommended["']/.test(source)) reportDrift("Discovery sort hooks are missing");
 
-if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeJsAsset)) fail('public output still contains "Dummy" or "dummy"');
-if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeJsAsset)) fail('public output still contains category "Etc"');
+const storeRuntimeAssets = [storeCoreJsAsset, storeDiscoveryJsAsset, storeLegacyJsAsset].join("\n");
+if (/\bdummy\b/i.test(source) || /\bdummy\b/i.test(storeRuntimeAssets)) fail('public output still contains "Dummy" or "dummy"');
+if (/\bEtc\b/.test(source) || /\bEtc\b/.test(storeRuntimeAssets)) fail('public output still contains category "Etc"');
 
 if (!staticProducts.length) fail("static product JSON is empty");
 if (staticProducts.length > STORE_PRODUCTION_BUDGETS.storeVisibleProducts) {
@@ -921,7 +948,9 @@ if (staticProducts.length) {
       if (route.pageNumber < category.totalPages && !route.nextPath) fail(`${pageLabel}: non-last page has no next path`);
       if (countOccurrences(pageSource, STORE_ASSET_CSS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_CSS_HREF} reference`);
       if (countOccurrences(pageSource, STORE_ASSET_JS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_ASSET_JS_HREF} reference`);
-      if (!/<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(pageSource)) {
+      if (countOccurrences(pageSource, STORE_DISCOVERY_ASSET_JS_HREF) !== 1) fail(`${pageLabel}: expected exactly one ${STORE_DISCOVERY_ASSET_JS_HREF} lazy-loader reference`);
+      if (countOccurrences(pageSource, STORE_LEGACY_ASSET_JS_HREF) !== 0) fail(`${pageLabel}: must not reference ${STORE_LEGACY_ASSET_JS_HREF}`);
+      if (!/<script\b[^>]*src=["']\/assets\/store\/store-core\.js["'][^>]*\bdata-store-discovery-src=["']\/assets\/store\/store-discovery\.js["'][^>]*\bdefer\b[^>]*><\/script>/i.test(pageSource)) {
         fail(`${pageLabel}: misses deferred ${STORE_ASSET_JS_HREF}`);
       }
       validateInlineRuntimeScripts(pageSource, pageLabel);

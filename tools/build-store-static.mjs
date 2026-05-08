@@ -12,8 +12,10 @@ import {
   STORE_BUILD_REPORT_ARTIFACT_PATH,
   STORE_BUILD_REPORT_HREF,
   STORE_CATEGORY_PAGE_SIZE,
+  STORE_DISCOVERY_ASSET_JS_HREF,
   STORE_FEED_URL,
   STORE_INLINE_BUILD_REPORT,
+  STORE_LEGACY_ASSET_JS_HREF,
   STORE_PRODUCTION_BUDGETS,
   STORE_REQUIRE_FLAT_TRANSITIONAL,
   SYSTEM_LABELS,
@@ -55,9 +57,13 @@ const STORE_SOURCE_DIR = path.resolve(ROOT, "src/store");
 const STORE_CRITICAL_CSS_PATH = path.resolve(STORE_SOURCE_DIR, "store.critical.css");
 const STORE_CSS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.css");
 const STORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store.js");
+const STORE_CORE_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store-core.js");
+const STORE_DISCOVERY_JS_SOURCE_PATH = path.resolve(STORE_SOURCE_DIR, "store-discovery.js");
 const STORE_ASSET_DIR = path.resolve(ROOT, "assets/store");
 const STORE_ASSET_CSS_PATH = path.resolve(STORE_ASSET_DIR, "store.css");
 const STORE_ASSET_JS_PATH = path.resolve(STORE_ASSET_DIR, "store.js");
+const STORE_ASSET_CORE_JS_PATH = path.resolve(STORE_ASSET_DIR, "store-core.js");
+const STORE_ASSET_DISCOVERY_JS_PATH = path.resolve(STORE_ASSET_DIR, "store-discovery.js");
 const STORE_MANIFEST_REPORT_PATH = "store/data/manifest.json";
 const STORE_MANIFEST_PATH = path.resolve(ROOT, STORE_MANIFEST_REPORT_PATH);
 const STORE_MANIFEST_DIST_PATH = path.resolve(ROOT, "dist/store/data/manifest.json");
@@ -286,7 +292,7 @@ function buildAssetCssLink() {
 }
 
 function buildRuntimeScriptTag() {
-  return `  <script src="${STORE_ASSET_JS_HREF}" defer></script>`;
+  return `  <script src="${STORE_ASSET_JS_HREF}" data-store-discovery-src="${STORE_DISCOVERY_ASSET_JS_HREF}" defer></script>`;
 }
 
 function artifactHrefPath(value) {
@@ -303,6 +309,8 @@ function buildStoreArtifactContract(categoryPagination) {
     assetArtifacts: [
       artifactHrefPath(STORE_ASSET_CSS_HREF),
       artifactHrefPath(STORE_ASSET_JS_HREF),
+      artifactHrefPath(STORE_DISCOVERY_ASSET_JS_HREF),
+      artifactHrefPath(STORE_LEGACY_ASSET_JS_HREF),
     ],
     buildReportArtifact: STORE_BUILD_REPORT_ARTIFACT_PATH,
     canonicalNested: true,
@@ -331,8 +339,10 @@ function replaceStoreFilterScope(source, scope) {
 function syncStoreAssets() {
   const criticalCss = read(STORE_CRITICAL_CSS_PATH);
   const storeCss = read(STORE_CSS_SOURCE_PATH);
-  const storeJs = replaceMarkedRegion(
-    read(STORE_JS_SOURCE_PATH),
+  const storeCoreJs = read(STORE_CORE_JS_SOURCE_PATH);
+  const storeCompatJs = read(STORE_JS_SOURCE_PATH);
+  const storeDiscoveryJs = replaceMarkedRegion(
+    read(STORE_DISCOVERY_JS_SOURCE_PATH),
     "// STORE_CATEGORY_CONFIG_START",
     "// STORE_CATEGORY_CONFIG_END",
     renderStoreRuntimeCategoryConfig()
@@ -343,7 +353,9 @@ function syncStoreAssets() {
   return {
     criticalCss: normalizeTextFile(criticalCss),
     storeCss: normalizeTextFile(storeCss),
-    storeJs: normalizeTextFile(storeJs),
+    storeCoreJs: normalizeTextFile(storeCoreJs),
+    storeDiscoveryJs: normalizeTextFile(storeDiscoveryJs),
+    storeCompatJs: normalizeTextFile(storeCompatJs),
   };
 }
 
@@ -990,9 +1002,9 @@ if (fatalError) {
 }
 
 const firstProduct = products[0];
-const { criticalCss, storeCss, storeJs } = syncStoreAssets();
+const { criticalCss, storeCss, storeCoreJs, storeDiscoveryJs, storeCompatJs } = syncStoreAssets();
 syncWorkerStoreCategoryRegistry();
-const nextStoreAssetJs = replaceMarkedRegion(storeJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
+const nextStoreDiscoveryAssetJs = replaceMarkedRegion(storeDiscoveryJs, "// STORE_LCP_PRODUCT_START", "// STORE_LCP_PRODUCT_END", buildLcpProductScript(firstProduct));
 const manifest = buildStoreManifest(products, { source });
 const manifestContent = normalizeTextFile(JSON.stringify(manifest, null, 2));
 const manifestBytes = Buffer.byteLength(manifestContent, "utf8");
@@ -1039,7 +1051,9 @@ report.buildReportHref = STORE_BUILD_REPORT_HREF;
 report.buildId = buildStoreBuildId(report);
 
 writeTextFile(STORE_ASSET_CSS_PATH, storeCss);
-writeTextFile(STORE_ASSET_JS_PATH, nextStoreAssetJs);
+writeTextFile(STORE_ASSET_CORE_JS_PATH, storeCoreJs);
+writeTextFile(STORE_ASSET_DISCOVERY_JS_PATH, nextStoreDiscoveryAssetJs);
+writeTextFile(STORE_ASSET_JS_PATH, storeCompatJs);
 writeTextFile(STORE_MANIFEST_PATH, manifestContent);
 writeTextFile(STORE_MANIFEST_DIST_PATH, manifestContent);
 writeStoreBuildReport(report);

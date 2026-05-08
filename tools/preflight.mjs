@@ -341,8 +341,8 @@ assertAssetReference(
 );
 assertAssetReference(
   storeSource,
-  /<script\b[^>]*src=["']\/assets\/store\/store\.js["'][^>]*\bdefer\b[^>]*><\/script>/i,
-  "store.html is missing deferred /assets/store/store.js reference"
+  /<script\b[^>]*src=["']\/assets\/store\/store-core\.js["'][^>]*\bdata-store-discovery-src=["']\/assets\/store\/store-discovery\.js["'][^>]*\bdefer\b[^>]*><\/script>/i,
+  "store.html is missing deferred /assets/store/store-core.js lazy discovery reference"
 );
 for (const marker of [
   "function readStaticProducts(",
@@ -352,11 +352,23 @@ for (const marker of [
   assertNotIncludes(storeSource, marker, `store.html unexpectedly contains re-inlined runtime store function: ${marker}`);
 }
 
-if (!fileExists("assets/store/store.js")) fail("missing required file: assets/store/store.js");
+if (!fileExists("assets/store/store-core.js")) fail("missing required file: assets/store/store-core.js");
+if (!fileExists("assets/store/store-discovery.js")) fail("missing required file: assets/store/store-discovery.js");
+if (!fileExists("assets/store/store.js")) fail("missing required compatibility alias: assets/store/store.js");
 if (!fileExists("assets/store/store.css")) fail("missing required file: assets/store/store.css");
 
-const storeRuntimeSource = read("assets/store/store.js");
+const storeCoreSource = read("assets/store/store-core.js");
+const storeDiscoverySource = read("assets/store/store-discovery.js");
+const storeRuntimeAliasSource = read("assets/store/store.js");
 const storeCssSource = read("assets/store/store.css");
+
+for (const marker of [
+  "function loadDiscoveryRuntime(",
+  "store-discovery.js",
+  "data-store-discovery-runtime",
+]) {
+  assertIncludes(storeCoreSource, marker, `assets/store/store-core.js is missing runtime store marker: ${marker}`);
+}
 
 for (const marker of [
   "// STORE_LCP_PRODUCT_START",
@@ -366,8 +378,9 @@ for (const marker of [
   "data-store-open-preview",
   "store-static-products",
 ]) {
-  assertIncludes(storeRuntimeSource, marker, `assets/store/store.js is missing runtime store marker: ${marker}`);
+  assertIncludes(storeDiscoverySource, marker, `assets/store/store-discovery.js is missing runtime store marker: ${marker}`);
 }
+assertIncludes(storeRuntimeAliasSource, "store-core.js", "assets/store/store.js compatibility alias must load store-core.js");
 
 for (const marker of [
   ".store-app",

@@ -231,6 +231,8 @@
     "manifestArtifact": "store/data/manifest.json",
     "assetArtifacts": [
       "assets/store/store.css",
+      "assets/store/store-core.js",
+      "assets/store/store-discovery.js",
       "assets/store/store.js"
     ],
     "buildReportArtifact": "store/data/build-report.json",
@@ -266,5 +268,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "325cfd7493b7647f"
+  "buildId": "ac7220700c450dde"
 }
