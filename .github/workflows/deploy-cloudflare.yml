@@ -93,9 +93,12 @@ jobs:
           set -euo pipefail
           test -f store.html
           test -f assets/store/store.css
+          test -f assets/store/store-core.js
+          test -f assets/store/store-discovery.js
           test -f assets/store/store.js
           grep -Eq '<link[^>]+href="/assets/store/store\.css"' store.html
-          grep -Eq '<script[^>]+src="/assets/store/store\.js"[^>]*defer' store.html
+          grep -Eq '<script[^>]+src="/assets/store/store-core\.js"[^>]*data-store-discovery-src="/assets/store/store-discovery\.js"[^>]*defer' store.html
+          ! grep -Eq '<script[^>]+src="/assets/store/store\.js"' store.html
 
       - name: Summarize store build report
         run: |

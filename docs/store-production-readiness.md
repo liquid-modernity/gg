@@ -6,10 +6,14 @@ Yellow Cart production readiness is intentionally stricter than local CI.
 
 - `npm run store:proof`: development proof, allows known placeholder/static-fallback image details without per-product warning spam.
 - `npm run store:check:ci`: CI proof (`GG_STORE_MODE=ci`), allows the same development-only placeholder/static fallback policy while still failing malformed product data and artifact contract errors.
+- `npm run store:check:dev10`: final development gate. It runs `store:check:ci`, stages the Cloudflare bundle, and runs `qa/store-artifact-smoke.sh`.
+- `npm run gaga:verify-store-artifact`: alias for `store:check:dev10`; use it when validating the deploy artifact path.
 - `npm run store:check:strict`: staging proof, requires the live Store feed and strict image validation.
 - `npm run store:check:production`: production readiness proof (`GG_STORE_MODE=production`), enables `STORE_PRODUCTION=1`, strict images, and production budgets. Static fallback can be used to complete the local build step, but the proof must fail if the generated Store is still `existing-static`, uses `existing-static-fallback`, or contains placeholder image hosts.
 
-Deploy workflows keep `store:check:ci` as the default gate. Set `GG_STORE_MODE=production` or `GG_STORE_PRODUCTION_READINESS=1` in repository variables to run the production proof in CI/deploy before a real launch. Set `GG_LIVE_PRODUCTION_STRICT=1` to make live worker smoke fail on production cache policy drift even before the edge reports production mode.
+Deploy workflows keep `store:check:ci` as the early build/proof gate and `gaga:verify-store-artifact` as the staged artifact gate. Set `GG_STORE_MODE=production` or `GG_STORE_PRODUCTION_READINESS=1` in repository variables to run the production proof in CI/deploy before a real launch. Set `GG_LIVE_PRODUCTION_STRICT=1` to make live worker smoke fail on production cache policy drift even before the edge reports production mode.
+
+The development contract is documented in `docs/store-development-contract.md`.
 
 ## Cache Policy
 

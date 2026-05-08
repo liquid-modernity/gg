@@ -20,7 +20,8 @@ export function formatImageSourceSummary(imageSources = {}) {
 }
 
 function formatWarningSummary(warnings = []) {
-  const visible = [];
+  const remaining = [];
+  const notes = [];
   const counts = {
     existingStaticFallback: 0,
     placeholderImage: 0,
@@ -33,14 +34,17 @@ function formatWarningSummary(warnings = []) {
     } else if (message.includes("placeholder image URL remains in non-production data")) {
       counts.placeholderImage += 1;
     } else {
-      visible.push(message);
+      remaining.push(message);
     }
   }
 
-  if (counts.existingStaticFallback) visible.push(`existingStaticFallbackWarnings=${counts.existingStaticFallback}`);
-  if (counts.placeholderImage) visible.push(`placeholderImageWarnings=${counts.placeholderImage}`);
+  if (counts.existingStaticFallback) notes.push(`existingStaticFallbackImages=${counts.existingStaticFallback}`);
+  if (counts.placeholderImage) notes.push(`placeholderImages=${counts.placeholderImage}`);
 
-  return visible.length ? visible.join(" | ") : "none";
+  return {
+    notes: notes.length ? notes.join(" | ") : "",
+    warnings: remaining.length ? remaining.join(" | ") : "none",
+  };
 }
 
 export function buildStoreReport({
@@ -91,7 +95,7 @@ export function formatStoreReport(report) {
     ? report.removedInvalidProducts.map((entry) => `${entry.slug || entry.name || "unknown"} [${entry.reason}]`).join("; ")
     : "none";
   const duplicates = report.duplicateSlugs.length ? report.duplicateSlugs.join(", ") : "none";
-  const warnings = formatWarningSummary(report.warnings);
+  const warningSummary = formatWarningSummary(report.warnings);
 
   return [
     "FEED EXTRACTION REPORT",
@@ -108,6 +112,7 @@ export function formatStoreReport(report) {
     paginationSummary ? `pagination=${paginationSummary}` : "",
     `removedInvalidProducts=${removed}`,
     `duplicateSlugs=${duplicates}`,
-    `warnings=${warnings}`,
+    warningSummary.notes ? `developmentNotes=${warningSummary.notes}` : "",
+    `warnings=${warningSummary.warnings}`,
   ].filter(Boolean);
 }
