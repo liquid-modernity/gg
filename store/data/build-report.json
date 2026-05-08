@@ -1,17 +1,17 @@
 {
-  "sourceType": "existing-static",
-  "feedEntries": 20,
+  "sourceType": "live-feed",
+  "feedEntries": 21,
   "productCount": 20,
   "validProducts": 20,
   "invalidProducts": 0,
   "imageSources": {
-    "gg-store-data.images": 0,
+    "gg-store-data.images": 20,
     "post-content-img": 0,
     "media-thumbnail": 0,
-    "existing-static-fallback": 20,
+    "existing-static-fallback": 0,
     "missing": 0
   },
-  "imageSourceSummary": "gg-store-data.images:0, post-content-img:0, media-thumbnail:0, existing-static-fallback:20, missing:0",
+  "imageSourceSummary": "gg-store-data.images:20, post-content-img:0, media-thumbnail:0, existing-static-fallback:0, missing:0",
   "categoryCounts": {
     "Fashion": 4,
     "Skincare": 4,
@@ -19,52 +19,40 @@
     "Tech": 4,
     "Lainnya": 4
   },
-  "removedInvalidProducts": [],
+  "removedInvalidProducts": [
+    {
+      "slug": "desk-tray-organizer",
+      "name": "Desk Tray Organizer",
+      "reason": "replaced by minimal-desk-tray-organizer"
+    }
+  ],
   "duplicateSlugs": [],
   "warnings": [
-    "foldable-reusable-bag: used existing static image fallback",
     "foldable-reusable-bag: placeholder image URL remains in non-production data",
-    "braided-fast-charging-cable: used existing static image fallback",
     "braided-fast-charging-cable: placeholder image URL remains in non-production data",
-    "compact-cable-box: used existing static image fallback",
     "compact-cable-box: placeholder image URL remains in non-production data",
-    "slim-card-holder: used existing static image fallback",
     "slim-card-holder: placeholder image URL remains in non-production data",
-    "quiet-wireless-mouse: used existing static image fallback",
     "quiet-wireless-mouse: placeholder image URL remains in non-production data",
-    "soft-desk-mat: used existing static image fallback",
     "soft-desk-mat: placeholder image URL remains in non-production data",
-    "simple-hydrating-moisturizer: used existing static image fallback",
     "simple-hydrating-moisturizer: placeholder image URL remains in non-production data",
-    "stainless-daily-tumbler: used existing static image fallback",
     "stainless-daily-tumbler: placeholder image URL remains in non-production data",
-    "portable-bluetooth-keyboard: used existing static image fallback",
     "portable-bluetooth-keyboard: placeholder image URL remains in non-production data",
-    "adjustable-laptop-stand: used existing static image fallback",
     "adjustable-laptop-stand: placeholder image URL remains in non-production data",
-    "lightweight-daily-sunscreen: used existing static image fallback",
     "lightweight-daily-sunscreen: placeholder image URL remains in non-production data",
-    "compact-usb-c-hub: used existing static image fallback",
     "compact-usb-c-hub: placeholder image URL remains in non-production data",
-    "minimal-desk-tray-organizer: used existing static image fallback",
     "minimal-desk-tray-organizer: placeholder image URL remains in non-production data",
-    "gentle-gel-cleanser: used existing static image fallback",
     "gentle-gel-cleanser: placeholder image URL remains in non-production data",
-    "compact-crossbody-sling: used existing static image fallback",
     "compact-crossbody-sling: placeholder image URL remains in non-production data",
-    "clean-canvas-sneakers: used existing static image fallback",
     "clean-canvas-sneakers: placeholder image URL remains in non-production data",
-    "relaxed-cotton-t-shirt: used existing static image fallback",
     "relaxed-cotton-t-shirt: placeholder image URL remains in non-production data",
-    "neutral-linen-overshirt: used existing static image fallback",
     "neutral-linen-overshirt: placeholder image URL remains in non-production data",
-    "everyday-canvas-tote: used existing static image fallback",
+    "desk-tray-organizer: placeholder image URL remains in non-production data",
     "everyday-canvas-tote: placeholder image URL remains in non-production data",
-    "minimal-barrier-serum: used existing static image fallback",
     "minimal-barrier-serum: placeholder image URL remains in non-production data"
   ],
+  "pageCount": 1,
   "manifestPath": "store/data/manifest.json",
-  "manifestBytes": 22046,
+  "manifestBytes": 22040,
   "manifestItems": 20,
   "manifestCategories": [
     {
@@ -268,5 +256,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "13a0aca4362c53dc"
+  "buildId": "e2cadd3318a32b2b"
 }
