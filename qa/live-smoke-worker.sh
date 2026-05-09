@@ -641,6 +641,63 @@ check_landing_html_redirect() {
   fi
 }
 
+check_shell_marker_route() {
+  local path="$1"
+  local label="$2"
+  shift 2
+  local body_file="$tmp_dir/shell_$(printf '%s' "$label" | tr -c 'A-Za-z0-9_' '_').html"
+  local headers_file="$tmp_dir/shell_$(printf '%s' "$label" | tr -c 'A-Za-z0-9_' '_').headers.txt"
+  local meta status marker
+
+  current_failure_scope="route"
+  meta="$(fetch_body "$path" "$body_file" "$headers_file")"
+  log_route_timing "$path shell-markers" "$meta" "$headers_file"
+  status="$(meta_status "$meta")"
+
+  if meta_is_unreachable "$meta"; then
+    report_unreachable "$path shell marker check" "$meta"
+    return
+  fi
+
+  if [[ "$status" != "200" ]]; then
+    log_fail "$path shell marker check expected status 200 (got ${status:-000})"
+    return
+  fi
+
+  if ! can_check_body "$meta" "$body_file"; then
+    log_fail "$path shell marker body unavailable despite status 200"
+    return
+  fi
+
+  current_failure_scope="contract"
+  for marker in "$@"; do
+    if grep -Fq -- "$marker" "$body_file"; then
+      log_info "$path shell marker present: $marker"
+    else
+      log_fail "$path shell marker missing: $marker"
+    fi
+  done
+}
+
+check_live_shell_markers() {
+  check_shell_marker_route "/" "root" \
+    "--gg-panel-width" \
+    "gg-preview__hero" \
+    "gg-preview__surface"
+
+  check_shell_marker_route "/landing" "landing" \
+    "--gg-panel-width" \
+    "600px" \
+    "data-gg-surface=\"landing\"" \
+    "gg-sheet__handle"
+
+  check_shell_marker_route "/store" "store" \
+    "--gg-panel-width" \
+    "600px" \
+    "store-preview__handle" \
+    "store-bottom-sheet"
+}
+
 check_gg_app_assets() {
   local css_headers_file="$tmp_dir/gg_app_css_headers.txt"
   local css_body_file="$tmp_dir/gg_app_css.css"
@@ -672,8 +729,8 @@ check_gg_app_assets() {
       log_fail "/__gg/assets/css/gg-app.dev.css content-type must be text/css during normal serving (got ${css_content_type:-missing})"
     fi
     if [[ -s "$css_body_file" ]]; then
-      for marker in '.gg-dock' '.gg-sheet' '.gg-detail-toolbar'; do
-        grep -Fq "$marker" "$css_body_file" || log_fail "/__gg/assets/css/gg-app.dev.css missing expected app CSS marker: ${marker}"
+      for marker in '.gg-dock' '.gg-sheet' '.gg-detail-toolbar' '--gg-panel-width' '600px'; do
+        grep -Fq -- "$marker" "$css_body_file" || log_fail "/__gg/assets/css/gg-app.dev.css missing expected app CSS marker: ${marker}"
       done
       if grep -Fq 'Unknown diagnostic endpoint' "$css_body_file" || grep -Fq '"ok": false' "$css_body_file"; then
         log_fail "/__gg/assets/css/gg-app.dev.css is being answered by diagnostics JSON, not static CSS"
@@ -1629,6 +1686,7 @@ check_gg_app_assets
 check_landing_route
 check_landing_html_redirect
 check_store_route
+check_live_shell_markers
 check_store_category_routes
 check_store_split_assets
 check_store_manifest_route_live
