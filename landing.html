@@ -146,8 +146,8 @@
       --gg-dock-track-height: calc(var(--gg-toolbar-item-min-height) + (var(--gg-toolbar-pad) * 2));
       --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
       --gg-bottom-safezone-breathing: 20px;
-      --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 88px);
-      --gg-detail-outline-width: 540px;
+      --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + var(--gg-bottom-safezone-breathing));
+      --gg-detail-outline-width: 560px;
       --gg-detail-outline-radius: 22px;
       --gg-detail-outline-border: var(--gg-toolbar-border);
       --gg-detail-outline-surface: var(--gg-toolbar-surface);
@@ -205,7 +205,7 @@
         --gg-panel-pad-y: 14px;
         --gg-panel-pad-x: 18px;
         --gg-toolbar-item-size: 13px;
-        --gg-detail-outline-width: 540px;
+        --gg-detail-outline-width: 600px;
         --gg-detail-outline-expanded-max-height: min(40dvh, 340px);
         --gg-detail-outline-peek-title-size: 16px;
         --landing-max: calc(100vw - 24px);
@@ -570,7 +570,8 @@
     .gg-sheet[data-gg-state='closing'] .gg-sheet__scrim { opacity: 0; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__panel { transform: translate3d(0, 18px, 0); transition: transform var(--gg-motion-sheet-close-bottom); }
     .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom); border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
-    .gg-sheet__handle { width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); margin: 0 0 var(--gg-utility-handle-gap); border-radius: 999px; background: var(--gg-panel-handle-tone); touch-action: none; }
+    .gg-sheet__handle { display: grid; place-items: center; width: var(--gg-panel-handle-width); min-height: var(--gg-hit-min); margin: 0 0 var(--gg-utility-handle-gap); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; }
+    .gg-sheet__handle::before { content: ""; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     .gg-sheet__title { margin: 0; max-width: var(--gg-utility-title-max); font: 650 13px/1.2 var(--gg-font-sans); text-align: center; }
     .gg-sheet__body { display: grid; gap: 12px; padding: 12px 0 calc(14px + env(safe-area-inset-bottom)); }
     #gg-more-panel .gg-sheet__body { padding-bottom: 0; }
@@ -645,7 +646,7 @@
     }
   </style>
 </head>
-<body data-gg-page="landing" data-gg-surface="special-identity" data-gg-surface-source="static.landing" data-gg-dock-state="visible" data-gg-panel-active="false" data-gg-scroll-direction="none" data-gg-bottom-zone="false" data-gg-outline-state="peek" data-gg-locale="id">
+<body data-gg-page="landing" data-gg-surface="landing" data-gg-surface-source="static.landing" data-gg-active-panel="" data-gg-dock-state="visible" data-gg-panel-active="false" data-gg-scroll-direction="none" data-gg-scroll-lock="false" data-gg-bottom-zone="false" data-gg-outline-state="peek" data-gg-locale="id">
   <a class="skip-navigation" href="#main" data-copy="skip">Lewati ke konten</a>
 
   <div class="gg-shell" id="gg-shell">
@@ -822,7 +823,7 @@
   <div class="gg-sheet" id="gg-command-panel" data-gg-state="closed" aria-hidden="true" hidden>
     <button class="gg-sheet__scrim" type="button" data-close-panel><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
     <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-command-title" tabindex="-1">
-      <div class="gg-sheet__head"><div class="gg-sheet__handle" aria-hidden="true" data-sheet-handle></div><h2 class="gg-sheet__title" id="gg-command-title" data-copy="command.title">Discovery</h2></div>
+      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="command.title">Discovery</h2></div>
       <div class="gg-sheet__body">
         <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search PakRPP landing</label>
         <input class="gg-field" id="gg-command-input" type="search" autocomplete="off" inputmode="search" data-copy-attr="placeholder:command.placeholder" placeholder="Search sections, routes, and actions" />
@@ -834,7 +835,7 @@
   <div class="gg-sheet" id="gg-more-panel" data-gg-state="closed" aria-hidden="true" hidden>
     <button class="gg-sheet__scrim" type="button" data-close-panel><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
     <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-more-title" tabindex="-1">
-      <div class="gg-sheet__head"><div class="gg-sheet__handle" aria-hidden="true" data-sheet-handle></div><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
+      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
       <div class="gg-sheet__body">
         <div class="gg-more-list" aria-label="Route shortcuts">
           <a class="gg-more-item" href="/store"><strong data-copy="more.storeTitle">Store</strong><span data-copy="more.storeBody">Open Yellow Cart curated commerce.</span></a>
