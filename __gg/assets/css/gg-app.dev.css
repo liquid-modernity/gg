@@ -1168,6 +1168,16 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   border-top: 0;
 }
 
+#gg-comments-sheet .gg-sheet__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding-bottom: 0;
+}
+
+#gg-comments-root {
+  min-height: 0;
+}
+
 .gg-comments--sheet .title,
 .gg-comments--sheet h3.title {
   margin: 0;
