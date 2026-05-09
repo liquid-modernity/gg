@@ -92,6 +92,7 @@
     <b:skin><![CDATA[
 :root {
   color-scheme: light;
+--gg-handler:10px;
   --gg-hit-min: 44px;
   --gg-surface-page: #f4eeef;
   --gg-surface-article: rgba(255,255,255,.16);
