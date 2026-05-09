@@ -66,7 +66,8 @@
   min-height: var(--gg-panel-command-min-height);
 }
 
-#gg-comments-panel .gg-sheet__panel {
+#gg-comments-sheet .gg-sheet__panel,
+.gg-comments-sheet .gg-sheet__panel {
   min-height: var(--gg-panel-comments-min-height);
 }
 

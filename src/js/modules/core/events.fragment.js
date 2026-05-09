@@ -31,9 +31,11 @@
           var previewTrigger;
           var moreTrigger;
           var commentsTrigger;
+          var commentsComposerTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
+          var closeName;
           var discoveryTabTrigger;
           var discoveryTopicToggle;
           var discoveryTopicApply;
@@ -55,10 +57,11 @@
           focusTrigger = event.target.closest('[data-gg-focus="command"]');
           previewTrigger = event.target.closest('[data-gg-open="preview"]');
           moreTrigger = event.target.closest('[data-gg-open="more"]');
-          commentsTrigger = event.target.closest('[data-gg-open="comments"]');
+          commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
+          commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
-          closeTrigger = event.target.closest('[data-gg-close]');
+          closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
           discoveryTabTrigger = event.target.closest('[data-gg-command-tab]');
           discoveryTopicToggle = event.target.closest('[data-gg-topic-group-toggle]');
           discoveryTopicApply = event.target.closest('[data-gg-topic-key]');
@@ -156,6 +159,20 @@
             return;
           }
 
+          if (commentsComposerTrigger) {
+            event.preventDefault();
+            openPanel('comments', {
+              trigger: commentsComposerTrigger,
+              reason: 'comments-composer-trigger'
+            }).then(function () {
+              var target = findCommentsHashTarget('#comment-form');
+              if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ block: 'start' });
+              }
+            });
+            return;
+          }
+
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
@@ -170,10 +187,11 @@
 
           if (closeTrigger) {
             event.preventDefault();
-            if (closeTrigger.getAttribute('data-gg-close') === 'command') {
+            closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
+            if (closeName === 'command') {
               closeCommandPanel('close-trigger');
             } else {
-              closePanel(closeTrigger.getAttribute('data-gg-close'), { reason: 'close-trigger' });
+              closePanel(closeName, { reason: 'close-trigger' });
             }
             return;
           }
@@ -252,4 +270,3 @@
             firstNode.focus();
           }
         });
-

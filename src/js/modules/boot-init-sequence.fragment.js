@@ -1,6 +1,7 @@
         window.addEventListener('hashchange', function () {
           applySurfaceContract();
           syncLaunchPathState();
+          syncCommentsHash();
         });
 
         bindBootStateListeners();
@@ -17,6 +18,7 @@
         initDockVisibility();
         initDetailOutline();
         initPwaClient();
+        syncCommentsHash();
         markShellReady();
         markFirstInteractionReady();
         markHydrationDeferred();

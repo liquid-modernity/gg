@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='4320dad00ff2' name='gg-template-fingerprint'/>
+<meta content='0562acdcfc90' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -1252,10 +1252,22 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments {
   display: grid;
-  gap: 14px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0;
+  min-height: 0;
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
+}
+
+#gg-comments-sheet .gg-sheet__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding-bottom: 0;
+}
+
+#gg-comments-root {
+  min-height: 0;
 }
 
 .gg-comments--sheet .title,
@@ -1267,10 +1279,18 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments .comments,
 .gg-comments .comments-content,
+.gg-comments .gg-comments__content,
+.gg-comments .gg-comments__list,
+.gg-comments #gg-comments-list,
 .gg-comments #comment-holder,
 .gg-comments #comments-block {
   display: grid;
   gap: 0;
+}
+
+.gg-comments .gg-comments__content {
+  min-height: 0;
+  padding-bottom: 18px;
 }
 
 .gg-comments .comment-thread,
@@ -1283,6 +1303,19 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments .comment-thread ol {
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-replies > .comment-thread,
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-replies ol,
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-thread li ol {
+  display: none;
+}
+
+.gg-comments-sheet--replies .gg-comments .comment-thread ol,
+[data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
   margin-left: calc(var(--gg-comment-avatar-size) * .24);
   padding-left: calc(var(--gg-comment-indent) - 4px);
   border-left: 1px solid var(--gg-comment-thread-guide);
@@ -1301,17 +1334,17 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   align-items: start;
   gap: var(--gg-comment-gap);
   padding: var(--gg-comment-pad-y) 0;
-  border-top: 1px solid var(--gg-comment-divider);
+  border-bottom: 1px solid var(--gg-comment-divider);
 }
 
-.gg-comments #comments-block > .comment:first-child,
-.gg-comments .comment-thread > li:first-child > .comment,
-.gg-comments .comment-thread > .comment:first-child {
-  padding-top: 0;
-  border-top: 0;
+.gg-comments #comments-block > .comment:last-child,
+.gg-comments .comment-thread > li:last-child > .comment,
+.gg-comments .comment-thread > .comment:last-child {
+  border-bottom: 0;
 }
 
 .gg-comments .avatar-image-container {
+  grid-column: 1;
   width: var(--gg-comment-avatar-size);
   height: var(--gg-comment-avatar-size);
   overflow: hidden;
@@ -1386,6 +1419,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   color: var(--gg-ink);
   font: 400 14px/1.6 var(--gg-font-sans);
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .gg-comments .comment-body p,
@@ -1405,6 +1439,25 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   align-items: center;
   gap: var(--gg-comment-action-gap);
   margin-top: 4px;
+}
+
+.gg-comments .thread-toggle,
+.gg-comments .thread-count,
+.gg-comments .continue {
+  grid-column: 2;
+  min-width: 0;
+  margin: 2px 0 0;
+  color: var(--gg-comment-action-tone);
+  font: 600 12px/1.35 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comments .thread-toggle a,
+.gg-comments .continue a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: inherit;
 }
 
 .gg-comments .comment-actions a,
@@ -1459,6 +1512,40 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   border-top: 1px solid var(--gg-comment-divider);
 }
 
+#gg-comments-footer,
+.gg-comments__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  display: grid;
+  gap: 10px;
+  margin: 8px calc(var(--gg-panel-pad-x) * -1) 0;
+  padding: 10px var(--gg-panel-pad-x) calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gg-divider);
+  background: var(--gg-surface-panel);
+}
+
+.gg-comments__footer .comment-form {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.gg-comments__footer [data-gg-action='comments-open-composer'] {
+  justify-self: start;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 650 13px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comments__footer [data-gg-action='comments-open-composer']:hover {
+  color: var(--gg-comment-action-hover-tone);
+}
+
 .gg-comments .comment-form h4,
 .gg-comments #comment-post-message {
   margin: 0;
@@ -1475,10 +1562,29 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments #comment-editor,
 .gg-comments .blogger-comment-from-post {
+  display: block;
+  width: 100%;
   min-height: 120px;
   border: 1px solid var(--gg-divider);
-  border-radius: 18px;
+  border-radius: 12px;
   background: var(--gg-field-surface);
+}
+
+@media (max-width: 380px) {
+  #gg-comments-sheet {
+    --gg-comment-avatar-size: 32px;
+    --gg-comment-gap: 10px;
+    --gg-comment-pad-y: 14px;
+  }
+
+  .gg-comments .comment-author .datetime,
+  .gg-comments .comment-author .comment-timestamp,
+  .gg-comments .comment-header .datetime,
+  .gg-comments .comment-header .comment-timestamp {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
 }
 
 .gg-dock {
@@ -1609,7 +1715,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   min-height: var(--gg-panel-command-min-height);
 }
 
-#gg-comments-panel .gg-sheet__panel {
+#gg-comments-sheet .gg-sheet__panel,
+.gg-comments-sheet .gg-sheet__panel {
   min-height: var(--gg-panel-comments-min-height);
 }
 
@@ -2523,7 +2630,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='4320dad00ff2' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='0562acdcfc90' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -3010,7 +3117,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             <b:includable id='postDetail' var='post'>
               <div aria-labelledby='gg-detail-toolbar-title' class='gg-detail-toolbar' role='toolbar'>
                 <span class='gg-visually-hidden' data-gg-copy='detail.toolbar' id='gg-detail-toolbar-title'>Detail actions</span>
-                <button aria-controls='gg-comments-panel' aria-expanded='false' class='gg-detail-toolbar__action' data-gg-open='comments' type='button'>
+                <button aria-controls='gg-comments-sheet' aria-expanded='false' class='gg-detail-toolbar__action' data-gg-action='comments-open' type='button'>
                   <span class='gg-detail-toolbar__count' id='gg-detail-comments-count'><data:post.numberOfComments/></span>
                   <span aria-hidden='true' class='gg-icon'>comment</span>
                   <span data-gg-copy='comments.launch' id='gg-detail-comments-label'>Comments</span>
@@ -3103,22 +3210,66 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
                 </template>
               </nav>
 
-              <div class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='comments' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-comments-panel'>
-                <button class='gg-sheet__scrim' data-gg-close='comments' type='button'>
+              <div aria-hidden='true' class='gg-comments-sheet gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comments-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comments' data-gg-state='closed' hidden='hidden' id='gg-comments-sheet' inert='' tabindex='-1'>
+                <button class='gg-comments-sheet__scrim gg-sheet__scrim' data-gg-action='comments-close' type='button'>
                   <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
                 </button>
-                <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-sheet__panel' role='dialog' tabindex='-1'>
-                  <div class='gg-sheet__head'>
-                    <button class='gg-sheet__handle' data-gg-close='comments' data-gg-drag-handle='comments' type='button'>
+                <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-comments-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
+                  <header class='gg-comments-sheet__head gg-sheet__head'>
+                    <button class='gg-comments-sheet__handle gg-sheet__handle' data-gg-action='comments-close' data-gg-drag-handle='comments' type='button'>
                       <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
                     </button>
-                    <span class='gg-sheet__title' id='gg-comments-title'>
+                    <h2 class='gg-comments-sheet__title gg-sheet__title' id='gg-comments-title'>
                       <span data-gg-copy='comments.title' id='gg-comments-title-text'>Comments</span>
-                    </span>
-                  </div>
-                  <div class='gg-comments gg-comments--sheet'>
-                    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
-                  </div>
+                    </h2>
+                  </header>
+                  <section class='gg-comments gg-comments--sheet comments2 threaded' data-gg-comment-engine='blogger-native' data-gg-module='gg-comments' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='gg-comments-root'>
+                    <a id='comments' name='comments'/>
+                    <div class='gg-comments__content'>
+                      <b:if cond='data:post.embedCommentForm'>
+                        <b:include data='post' name='threadedCommentJs'/>
+                      </b:if>
+                      <div class='gg-comments__list' data-gg-role='comments-list' id='gg-comments-list'>
+                        <data:post.commentHtml/>
+                      </div>
+                    </div>
+                    <footer class='gg-comments__footer' data-gg-role='comments-footer' id='gg-comments-footer'>
+                      <b:if cond='data:post.allowNewComments'>
+                        <button data-gg-action='comments-open-composer' type='button'>Add comment</button>
+                      </b:if>
+                      <div data-gg-slot='gg-comments-reply' id='gg-comments-reply-slot'/>
+                      <div data-gg-slot='gg-comments-composer' id='gg-comments-composer-slot'>
+                        <div class='gg-comments__composer' id='gg-comments-composer'>
+                          <b:if cond='data:post.allowNewComments'>
+                            <div class='comment-form' data-gg-native-plumbing='composer' id='top-ce'>
+                              <a id='comment-form' name='comment-form'/>
+                              <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+                              <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+                                <p><data:this.messages.blogComment/></p>
+                              </b:if>
+                              <b:include data='post' name='commentFormIframeSrc'/>
+                              <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+                              <data:post.cmtfpIframe/>
+                              <script type='text/javascript'>
+                                BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+                              </script>
+                            </div>
+                          <b:else/>
+                            <p class='gg-comments__closed'><data:post.noNewCommentsText/></p>
+                          </b:if>
+                        </div>
+                      </div>
+                      <b:if cond='data:post.showManageComments'>
+                        <b:include data='post' name='manageComments'/>
+                      </b:if>
+                    </footer>
+                    <b:if cond='data:showCmtPopup'>
+                      <div id='comment-popup'>
+                        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+                        </iframe>
+                      </div>
+                    </b:if>
+                  </section>
                 </section>
               </div>
             </b:includable>
@@ -4221,6 +4372,16 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           '.gg-preview__cta'
         ].join(', ');
 
+        var COMMENTS_SHEET_SELECTOR = '#gg-comments-sheet, #ggPanelComments, #gg-comments-panel, [data-gg-sheet="comments"], [data-gg-panel="comments"]';
+
+        function getCommentsSheet(root) {
+          // Legacy selectors are temporary migration bridges; #gg-comments-sheet is the official contract.
+          var scope = root || document;
+          return scope.querySelector(COMMENTS_SHEET_SELECTOR);
+        }
+
+        var commentsSheet = getCommentsSheet(document);
+
         var ui = {
           fingerprint: document.getElementById('gg-fingerprint'),
           shell: document.getElementById('gg-shell'),
@@ -4283,14 +4444,14 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           morePanel: document.querySelector('#gg-more-panel .gg-sheet__panel'),
           moreScrim: document.querySelector('#gg-more-panel .gg-sheet__scrim'),
           moreHandle: document.querySelector('[data-gg-drag-handle="more"]'),
-          comments: document.getElementById('gg-comments-panel'),
-          commentsPanel: document.querySelector('#gg-comments-panel .gg-sheet__panel'),
-          commentsScrim: document.querySelector('#gg-comments-panel .gg-sheet__scrim'),
+          comments: commentsSheet,
+          commentsPanel: commentsSheet ? commentsSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null,
+          commentsScrim: commentsSheet ? commentsSheet.querySelector('.gg-sheet__scrim, .gg-comments-sheet__scrim') : null,
           commentsHandle: document.querySelector('[data-gg-drag-handle="comments"]'),
           article: document.querySelector('.gg-article'),
           articleBody: document.querySelector('.gg-article .gg-post-body'),
           detailToolbar: document.querySelector('.gg-detail-toolbar'),
-          detailCommentsAction: document.querySelector('.gg-detail-toolbar__action[data-gg-open="comments"]'),
+          detailCommentsAction: document.querySelector('[data-gg-action="comments-open"], .gg-detail-toolbar__action[data-gg-open="comments"], [data-gg-postbar="comments"]'),
           detailCommentsCount: document.getElementById('gg-detail-comments-count'),
           detailCommentsLabel: document.getElementById('gg-detail-comments-label'),
           detailOutline: document.getElementById('gg-detail-outline'),
@@ -5398,8 +5559,15 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         }
 
         function syncExpanded(name, expanded) {
-          var nodes = document.querySelectorAll('[data-gg-open="' + name + '"], [data-gg-panel-trigger="' + name + '"]');
+          var selector = '[data-gg-open="' + name + '"], [data-gg-panel-trigger="' + name + '"]';
+          var nodes;
           var i;
+
+          if (name === 'comments') {
+            selector += ', [data-gg-action="comments-open"], [data-gg-postbar="comments"]';
+          }
+
+          nodes = document.querySelectorAll(selector);
           for (i = 0; i < nodes.length; i += 1) {
             nodes[i].setAttribute('aria-expanded', expanded ? 'true' : 'false');
           }
@@ -5642,6 +5810,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             state.panelLastTrigger = openOptions.trigger || document.activeElement || null;
 
             panel.root.hidden = false;
+            panel.root.removeAttribute('inert');
             panel.root.setAttribute('aria-hidden', 'false');
             panel.root.setAttribute('data-gg-state', 'opening');
             panel.root.setAttribute('data-gg-active', 'true');
@@ -5696,6 +5865,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
               clearPanelTimer(panel.name);
               panel.root.hidden = true;
+              if (panel.name === 'comments') panel.root.setAttribute('inert', '');
               panel.root.setAttribute('aria-hidden', 'true');
               panel.root.setAttribute('data-gg-state', 'closed');
               panel.root.removeAttribute('data-gg-active');
@@ -5750,6 +5920,48 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
                 focusCommandSheet(true);
               }, 24);
             }
+            return panel;
+          });
+        }
+
+        function normalizeHashId(value) {
+          var raw = String(value || '').replace(/^#/, '');
+          try {
+            return decodeURIComponent(raw);
+          } catch (error) {
+            return raw;
+          }
+        }
+
+        function isCommentsHash(value) {
+          var hash = String(value || window.location.hash || '');
+          var id = normalizeHashId(hash);
+          return id === 'comments' || id === 'comment-form' || /^c\d+/.test(id);
+        }
+
+        function findCommentsHashTarget(hash) {
+          var id = normalizeHashId(hash || window.location.hash);
+          if (id === 'comment-form') {
+            return document.getElementById('comment-form') || document.getElementById('top-ce') || document.querySelector('[name="comment-form"]');
+          }
+          return document.getElementById(id);
+        }
+
+        function syncCommentsHash() {
+          var hash = window.location.hash || '';
+
+          if (!isCommentsHash(hash) || !getPanel('comments')) return Promise.resolve(null);
+
+          return openPanel('comments', {
+            focus: false,
+            reason: 'comments-hash'
+          }).then(function (panel) {
+            window.setTimeout(function () {
+              var target = findCommentsHashTarget(hash);
+              if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ block: 'start' });
+              }
+            }, 32);
             return panel;
           });
         }
@@ -9286,9 +9498,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var previewTrigger;
           var moreTrigger;
           var commentsTrigger;
+          var commentsComposerTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
+          var closeName;
           var discoveryTabTrigger;
           var discoveryTopicToggle;
           var discoveryTopicApply;
@@ -9310,10 +9524,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           focusTrigger = event.target.closest('[data-gg-focus="command"]');
           previewTrigger = event.target.closest('[data-gg-open="preview"]');
           moreTrigger = event.target.closest('[data-gg-open="more"]');
-          commentsTrigger = event.target.closest('[data-gg-open="comments"]');
+          commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
+          commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
-          closeTrigger = event.target.closest('[data-gg-close]');
+          closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
           discoveryTabTrigger = event.target.closest('[data-gg-command-tab]');
           discoveryTopicToggle = event.target.closest('[data-gg-topic-group-toggle]');
           discoveryTopicApply = event.target.closest('[data-gg-topic-key]');
@@ -9411,6 +9626,20 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             return;
           }
 
+          if (commentsComposerTrigger) {
+            event.preventDefault();
+            openPanel('comments', {
+              trigger: commentsComposerTrigger,
+              reason: 'comments-composer-trigger'
+            }).then(function () {
+              var target = findCommentsHashTarget('#comment-form');
+              if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ block: 'start' });
+              }
+            });
+            return;
+          }
+
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
@@ -9425,10 +9654,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
           if (closeTrigger) {
             event.preventDefault();
-            if (closeTrigger.getAttribute('data-gg-close') === 'command') {
+            closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
+            if (closeName === 'command') {
               closeCommandPanel('close-trigger');
             } else {
-              closePanel(closeTrigger.getAttribute('data-gg-close'), { reason: 'close-trigger' });
+              closePanel(closeName, { reason: 'close-trigger' });
             }
             return;
           }
@@ -9784,6 +10014,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         window.addEventListener('hashchange', function () {
           applySurfaceContract();
           syncLaunchPathState();
+          syncCommentsHash();
         });
 
         bindBootStateListeners();
@@ -9800,6 +10031,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         initDockVisibility();
         initDetailOutline();
         initPwaClient();
+        syncCommentsHash();
         markShellReady();
         markFirstInteractionReady();
         markHydrationDeferred();

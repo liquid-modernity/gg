@@ -1,9 +1,21 @@
 .gg-comments {
   display: grid;
-  gap: 14px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0;
+  min-height: 0;
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
+}
+
+#gg-comments-sheet .gg-sheet__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding-bottom: 0;
+}
+
+#gg-comments-root {
+  min-height: 0;
 }
 
 .gg-comments--sheet .title,
@@ -15,10 +27,18 @@
 
 .gg-comments .comments,
 .gg-comments .comments-content,
+.gg-comments .gg-comments__content,
+.gg-comments .gg-comments__list,
+.gg-comments #gg-comments-list,
 .gg-comments #comment-holder,
 .gg-comments #comments-block {
   display: grid;
   gap: 0;
+}
+
+.gg-comments .gg-comments__content {
+  min-height: 0;
+  padding-bottom: 18px;
 }
 
 .gg-comments .comment-thread,
@@ -31,6 +51,19 @@
 }
 
 .gg-comments .comment-thread ol {
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-replies > .comment-thread,
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-replies ol,
+#gg-comments-sheet:not(.gg-comments-sheet--replies) .comment-thread li ol {
+  display: none;
+}
+
+.gg-comments-sheet--replies .gg-comments .comment-thread ol,
+[data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
   margin-left: calc(var(--gg-comment-avatar-size) * .24);
   padding-left: calc(var(--gg-comment-indent) - 4px);
   border-left: 1px solid var(--gg-comment-thread-guide);
@@ -49,17 +82,17 @@
   align-items: start;
   gap: var(--gg-comment-gap);
   padding: var(--gg-comment-pad-y) 0;
-  border-top: 1px solid var(--gg-comment-divider);
+  border-bottom: 1px solid var(--gg-comment-divider);
 }
 
-.gg-comments #comments-block > .comment:first-child,
-.gg-comments .comment-thread > li:first-child > .comment,
-.gg-comments .comment-thread > .comment:first-child {
-  padding-top: 0;
-  border-top: 0;
+.gg-comments #comments-block > .comment:last-child,
+.gg-comments .comment-thread > li:last-child > .comment,
+.gg-comments .comment-thread > .comment:last-child {
+  border-bottom: 0;
 }
 
 .gg-comments .avatar-image-container {
+  grid-column: 1;
   width: var(--gg-comment-avatar-size);
   height: var(--gg-comment-avatar-size);
   overflow: hidden;
@@ -134,6 +167,7 @@
   color: var(--gg-ink);
   font: 400 14px/1.6 var(--gg-font-sans);
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .gg-comments .comment-body p,
@@ -153,6 +187,25 @@
   align-items: center;
   gap: var(--gg-comment-action-gap);
   margin-top: 4px;
+}
+
+.gg-comments .thread-toggle,
+.gg-comments .thread-count,
+.gg-comments .continue {
+  grid-column: 2;
+  min-width: 0;
+  margin: 2px 0 0;
+  color: var(--gg-comment-action-tone);
+  font: 600 12px/1.35 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comments .thread-toggle a,
+.gg-comments .continue a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: inherit;
 }
 
 .gg-comments .comment-actions a,
@@ -207,6 +260,40 @@
   border-top: 1px solid var(--gg-comment-divider);
 }
 
+#gg-comments-footer,
+.gg-comments__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  display: grid;
+  gap: 10px;
+  margin: 8px calc(var(--gg-panel-pad-x) * -1) 0;
+  padding: 10px var(--gg-panel-pad-x) calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gg-divider);
+  background: var(--gg-surface-panel);
+}
+
+.gg-comments__footer .comment-form {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.gg-comments__footer [data-gg-action='comments-open-composer'] {
+  justify-self: start;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 650 13px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comments__footer [data-gg-action='comments-open-composer']:hover {
+  color: var(--gg-comment-action-hover-tone);
+}
+
 .gg-comments .comment-form h4,
 .gg-comments #comment-post-message {
   margin: 0;
@@ -223,9 +310,27 @@
 
 .gg-comments #comment-editor,
 .gg-comments .blogger-comment-from-post {
+  display: block;
+  width: 100%;
   min-height: 120px;
   border: 1px solid var(--gg-divider);
-  border-radius: 18px;
+  border-radius: 12px;
   background: var(--gg-field-surface);
 }
 
+@media (max-width: 380px) {
+  #gg-comments-sheet {
+    --gg-comment-avatar-size: 32px;
+    --gg-comment-gap: 10px;
+    --gg-comment-pad-y: 14px;
+  }
+
+  .gg-comments .comment-author .datetime,
+  .gg-comments .comment-author .comment-timestamp,
+  .gg-comments .comment-header .datetime,
+  .gg-comments .comment-header .comment-timestamp {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}

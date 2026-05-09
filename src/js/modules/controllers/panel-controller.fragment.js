@@ -6,8 +6,15 @@
         }
 
         function syncExpanded(name, expanded) {
-          var nodes = document.querySelectorAll('[data-gg-open="' + name + '"], [data-gg-panel-trigger="' + name + '"]');
+          var selector = '[data-gg-open="' + name + '"], [data-gg-panel-trigger="' + name + '"]';
+          var nodes;
           var i;
+
+          if (name === 'comments') {
+            selector += ', [data-gg-action="comments-open"], [data-gg-postbar="comments"]';
+          }
+
+          nodes = document.querySelectorAll(selector);
           for (i = 0; i < nodes.length; i += 1) {
             nodes[i].setAttribute('aria-expanded', expanded ? 'true' : 'false');
           }
@@ -250,6 +257,7 @@
             state.panelLastTrigger = openOptions.trigger || document.activeElement || null;
 
             panel.root.hidden = false;
+            panel.root.removeAttribute('inert');
             panel.root.setAttribute('aria-hidden', 'false');
             panel.root.setAttribute('data-gg-state', 'opening');
             panel.root.setAttribute('data-gg-active', 'true');
@@ -304,6 +312,7 @@
 
               clearPanelTimer(panel.name);
               panel.root.hidden = true;
+              if (panel.name === 'comments') panel.root.setAttribute('inert', '');
               panel.root.setAttribute('aria-hidden', 'true');
               panel.root.setAttribute('data-gg-state', 'closed');
               panel.root.removeAttribute('data-gg-active');
@@ -358,6 +367,48 @@
                 focusCommandSheet(true);
               }, 24);
             }
+            return panel;
+          });
+        }
+
+        function normalizeHashId(value) {
+          var raw = String(value || '').replace(/^#/, '');
+          try {
+            return decodeURIComponent(raw);
+          } catch (error) {
+            return raw;
+          }
+        }
+
+        function isCommentsHash(value) {
+          var hash = String(value || window.location.hash || '');
+          var id = normalizeHashId(hash);
+          return id === 'comments' || id === 'comment-form' || /^c\d+/.test(id);
+        }
+
+        function findCommentsHashTarget(hash) {
+          var id = normalizeHashId(hash || window.location.hash);
+          if (id === 'comment-form') {
+            return document.getElementById('comment-form') || document.getElementById('top-ce') || document.querySelector('[name="comment-form"]');
+          }
+          return document.getElementById(id);
+        }
+
+        function syncCommentsHash() {
+          var hash = window.location.hash || '';
+
+          if (!isCommentsHash(hash) || !getPanel('comments')) return Promise.resolve(null);
+
+          return openPanel('comments', {
+            focus: false,
+            reason: 'comments-hash'
+          }).then(function (panel) {
+            window.setTimeout(function () {
+              var target = findCommentsHashTarget(hash);
+              if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ block: 'start' });
+              }
+            }, 32);
             return panel;
           });
         }
