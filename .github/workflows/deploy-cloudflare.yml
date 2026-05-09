@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build, deploy, and live-smoke Cloudflare Worker
+    name: Verify before deploy, deploy, and live-smoke
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

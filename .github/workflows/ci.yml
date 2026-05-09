@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify static Store and Cloudflare bundle
+    name: Run Store and Cloudflare CI checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -49,6 +49,14 @@ jobs:
 
       - name: Run Store and Cloudflare CI checks
         run: npm run ci:cloudflare
+
+      - name: Verify generated Blogger app artifacts
+        run: |
+          test -f __gg/assets/css/gg-app.dev.css
+          test -f __gg/assets/js/gg-app.dev.js
+          test -f dist/assets/css/gg-app.dev.css
+          test -f dist/assets/js/gg-app.dev.js
+          test -f dist/blogger-template.publish.xml
 
       - name: Verify root Store artifacts
         run: |
