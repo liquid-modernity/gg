@@ -1,5 +1,6 @@
 :root {
   color-scheme: light;
+  --gg-handler: 10px;
   --gg-hit-min: 44px;
   --gg-icon-size: 20px;
   --gg-icon-size-compact: 19px;
@@ -1702,7 +1703,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   place-items: center;
   width: var(--gg-panel-handle-width);
-  min-height: var(--gg-hit-min);
+  min-height: var(--gg-handler);
   margin: 0;
   padding: 0;
   border: 0;
