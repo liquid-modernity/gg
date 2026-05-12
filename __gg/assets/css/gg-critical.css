@@ -23,7 +23,7 @@
   --gg-dock-track-height: calc(var(--gg-toolbar-item-min-height) + (var(--gg-toolbar-pad) * 2));
   --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 20px);
-  --gg-entry-row-pad-y: 16px;
+  --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
   --gg-entry-row-gap: 12px;
   --gg-entry-row-divider: rgba(32,26,28,.14);
@@ -84,9 +84,9 @@ img{max-width:100%;height:auto;display:block}
 .skip-navigation:focus,.skip-navigation:focus-visible{transform:translateY(12px)}
 .gg-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .gg-shell{min-height:100vh;padding:12px 12px var(--gg-shell-bottom-clearance)}
-.gg-main{width:min(100%,720px);margin:0 auto}.gg-site-head{display:grid;gap:0;margin-bottom:8px}.gg-site-head__eyebrow{margin:0 0 6px;color:var(--gg-accent-soft);font:600 11px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.16em;text-transform:uppercase}.gg-site-head__title{margin:0;font-size:clamp(18px,7vw,34px);line-height:1.08;letter-spacing:-.03em}.gg-site-head__summary{margin:8px 0 0;max-width:62ch;color:var(--gg-ink-soft)}
+.gg-main{width:min(100%,600px);margin:0 auto}.gg-site-head{display:grid;gap:0;margin-bottom:8px}.gg-site-head__eyebrow{margin:0 0 6px;color:var(--gg-accent-soft);font:600 11px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.16em;text-transform:uppercase}.gg-site-head__title{margin:0;font-size:clamp(18px,7vw,19px);line-height:1.08;letter-spacing:-.03em}.gg-site-head__summary{margin:8px 0 0;max-width:62ch;color:var(--gg-ink-soft)}
 .gg-entry-list{display:grid;gap:0;background:transparent}.gg-entry-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--gg-entry-row-gap);padding:var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);border-bottom:1px solid var(--gg-entry-row-divider);background:transparent}.gg-entry-row__title{min-width:0;margin:0;color:var(--gg-ink);font:var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans)}.gg-entry-row__title-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}.gg-entry-row__action{display:inline-flex;align-items:center;justify-content:flex-end;min-height:44px;padding:0 6px;border:0;border-radius:12px;background:transparent;color:var(--gg-accent-soft);font:600 12px/1.2 var(--gg-font-sans);white-space:nowrap;cursor:pointer}
 .gg-article{display:grid;gap:0;width:100%;max-width:62ch;justify-self:center;padding:var(--gg-article-pad-y) var(--gg-article-pad-x) calc(28px + var(--gg-detail-bottom-clearance));border-top:1px solid var(--gg-article-border);border-bottom:1px solid var(--gg-article-border);background:var(--gg-surface-article)}.gg-article__title{margin:0 0 10px;font-size:clamp(24px,8vw,42px);line-height:1.1}.gg-post-body{max-width:none;color:var(--gg-ink);font-size:16px}.gg-post-body p,.gg-post-body ul,.gg-post-body ol,.gg-post-body blockquote{margin:0 0 1em}.gg-post-body img{margin:1.5em auto;border-radius:18px}.gg-breadcrumbs{margin:0 0 10px;color:var(--gg-accent-soft);font:500 12px/1.5 var(--gg-font-sans)}
 .gg-dock{position:fixed;left:50%;bottom:var(--gg-dock-offset-bottom);z-index:40;transform:translateX(-50%);max-width:calc(100% - 24px)}.gg-sheet[hidden],.gg-detail-outline[hidden],.gg-search-empty[hidden],.gg-error404[hidden]{display:none!important}
-@media (min-width:769px){:root{--gg-entry-row-pad-y:18px;--gg-entry-row-title-size:20px;--gg-article-pad-y:22px}.gg-shell{padding-left:16px;padding-right:16px}}
+@media (min-width:769px){:root{--gg-entry-row-pad-y:2px;--gg-entry-row-title-size:18px;--gg-article-pad-y:22px}.gg-shell{padding-left:16px;padding-right:16px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

@@ -74,6 +74,7 @@
   <style>
     :root {
       color-scheme: light;
+      --gg-handler:10px;
       --gg-hit-min: 44px;
       --gg-icon-size: 21px;
       --gg-icon-size-compact: 19px;
@@ -570,7 +571,7 @@
     .gg-sheet[data-gg-state='closing'] .gg-sheet__scrim { opacity: 0; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__panel { transform: translate3d(0, 18px, 0); transition: transform var(--gg-motion-sheet-close-bottom); }
     .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom); border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
-    .gg-sheet__handle { display: grid; place-items: center; width: var(--gg-panel-handle-width); min-height: var(--gg-hit-min); margin: 0 0 var(--gg-utility-handle-gap); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; }
+    .gg-sheet__handle { display: grid; place-items: center; width: var(--gg-panel-handle-width); min-height: var(--gg-handler); margin: 0 0 var(--gg-utility-handle-gap); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; }
     .gg-sheet__handle::before { content: ""; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     .gg-sheet__title { margin: 0; max-width: var(--gg-utility-title-max); font: 650 13px/1.2 var(--gg-font-sans); text-align: center; }
     .gg-sheet__body { display: grid; gap: 12px; padding: 12px 0 calc(14px + env(safe-area-inset-bottom)); }
