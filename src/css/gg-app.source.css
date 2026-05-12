@@ -117,16 +117,16 @@
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --gg-site-head-bottom: 8px;
   --gg-entry-list-bg: transparent;
-  --gg-entry-row-pad-y: 16px;
+  --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
   --gg-entry-row-gap: 12px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32, 26, 28, .14);
   --gg-entry-row-surface-hover: rgba(255, 255, 255, .46);
-  --gg-entry-row-title-size: 18px;
+  --gg-entry-row-title-size: 12px;
   --gg-entry-row-title-line: 1.28;
   --gg-entry-row-title-weight: 600;
-  --gg-entry-row-action-size: 12px;
+  --gg-entry-row-action-size: 10px;
   --gg-entry-row-action-weight: 600;
   --gg-entry-row-action-min-height: var(--gg-hit-min);
   --gg-entry-row-action-pad-x: 6px;
@@ -256,11 +256,11 @@
     --gg-utility-head-pad-top: 0px;
     --gg-site-head-bottom: 10px;
     --gg-toolbar-item-size: 13px;
-    --gg-entry-row-pad-y: 18px;
+    --gg-entry-row-pad-y: 2px;
     --gg-entry-row-pad-x: 4px;
     --gg-entry-row-gap: 16px;
-    --gg-entry-row-title-size: 20px;
-    --gg-entry-row-action-size: 13px;
+    --gg-entry-row-title-size: 18px;
+    --gg-entry-row-action-size: 12px;
     --gg-entry-row-action-min-height: var(--gg-hit-min);
     --gg-article-pad-y: 22px;
     --gg-article-pad-bottom-base: 28px;
@@ -521,7 +521,7 @@ img {
 }
 
 .gg-main {
-  width: min(100%, 720px);
+  width: min(100%, 600px);
   margin: 0 auto;
 }
 
@@ -2481,7 +2481,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 
   .gg-main {
-    width: min(100%, 860px);
+    width: min(100%, 600px);
   }
 
   .gg-discovery-search__field {
