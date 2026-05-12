@@ -1,5 +1,6 @@
 :root {
   color-scheme: light;
+  --gg-handler: 10px;
   --gg-hit-min: 44px;
   --gg-icon-size: 20px;
   --gg-icon-size-compact: 19px;
@@ -541,7 +542,7 @@ img {
 
 .gg-site-head__title {
   margin: 0;
-  font-size: clamp(18px, 7vw, 34px);
+  font-size: clamp(18px, 7vw, 19px);
   line-height: 1.08;
   letter-spacing: -.03em;
 }
@@ -1702,7 +1703,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   place-items: center;
   width: var(--gg-panel-handle-width);
-  min-height: var(--gg-hit-min);
+  min-height: var(--gg-handler);
   margin: 0;
   padding: 0;
   border: 0;
