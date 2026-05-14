@@ -123,6 +123,8 @@
           commentComposerPortal: null,
           commentPrefixObserver: null,
           commentPrefixSyncFrame: 0,
+          commentEnhancementScheduled: false,
+          commentEnhancementReason: '',
           commentMoreMenu: null,
           commentStatusTimer: 0,
           dockState: 'visible',
@@ -150,6 +152,72 @@
           ignoreClickUntil: 0,
           suppressCommandFocusUntil: 0,
           specialContract: null
+        };
+
+        GG.commentsProof = function commentsProof() {
+          var result;
+
+          try {
+            var sheet = document.querySelector('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments');
+            var root = document.querySelector('#gg-comments-root, #comments');
+            var list = document.querySelector('#gg-comments-list, #comment-holder, #cmt2-holder');
+            var editor = document.querySelector('#comment-editor');
+            var editorSrc = document.querySelector('#comment-editor-src');
+            var composer = document.querySelector('#top-ce');
+
+            result = {
+              sheet: !!sheet,
+              root: !!root,
+              list: !!list,
+              editor: !!editor,
+              editorSrc: !!editorSrc,
+              composer: !!composer,
+              sheetCount: document.querySelectorAll('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments').length,
+              commentsRootCount: document.querySelectorAll('#comments').length,
+              ggCommentsRootCount: document.querySelectorAll('#gg-comments-root').length,
+              editorCount: document.querySelectorAll('#comment-editor').length,
+              nativeDeleteCount: document.querySelectorAll('.item-control, .comment-delete, .goog-toggle-button').length,
+              replyStructureCount: document.querySelectorAll('.comment-replies, .thread-toggle, .thread-count').length,
+              fallbackSubmitCount: document.querySelectorAll('[data-gg-fallback-composer] button[type="submit"], [data-gg-fallback-composer] input[type="submit"], .gg-comments__fallback button[type="submit"], .gg-comments__fallback input[type="submit"]').length
+            };
+
+            result.ok = !!(
+              result.sheet &&
+              result.root &&
+              result.list &&
+              result.editor &&
+              result.sheetCount === 1 &&
+              result.editorCount === 1 &&
+              result.commentsRootCount === 1 &&
+              result.ggCommentsRootCount <= 1 &&
+              result.fallbackSubmitCount === 0
+            );
+          } catch (error) {
+            result = {
+              sheet: false,
+              root: false,
+              list: false,
+              editor: false,
+              editorSrc: false,
+              composer: false,
+              commentsRootCount: 0,
+              editorCount: 0,
+              nativeDeleteCount: 0,
+              replyStructureCount: 0,
+              fallbackSubmitCount: 0,
+              ok: false,
+              error: error && error.message ? error.message : String(error)
+            };
+          }
+
+          if (document.documentElement) {
+            document.documentElement.setAttribute('data-gg-comments-proof', result.ok ? 'ok' : 'fail');
+            document.documentElement.setAttribute('data-gg-comments-proof-count', String(Object.keys(result).filter(function (key) {
+              return result[key] === false;
+            }).length));
+          }
+
+          return result;
         };
 
         var startupState = GG.__startup && typeof GG.__startup === 'object' ? GG.__startup : {};

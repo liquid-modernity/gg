@@ -17,14 +17,12 @@
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
-        initCommentRepliesControls();
-        ensureCommentMoreMenus();
-        initCommentPrefixObserver();
         initPwaClient();
         syncCommentsHash();
         markShellReady();
         markFirstInteractionReady();
         markHydrationDeferred();
+        scheduleCommentsEnhancement('post-hydration');
         ggIdle(function () {
           initListingGrowth().catch(function () {
             setListingGrowthState('error');

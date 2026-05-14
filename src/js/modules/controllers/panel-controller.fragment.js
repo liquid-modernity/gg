@@ -392,6 +392,33 @@
           });
         }
 
+        function hasCommentsSurface() {
+          return !!(ui.comments || document.getElementById('gg-comments-root') || document.getElementById('comments'));
+        }
+
+        function runCommentsEnhancement(reason) {
+          if (!hasCommentsSurface()) return false;
+          state.commentEnhancementScheduled = false;
+          state.commentEnhancementReason = reason || 'comments-enhancement';
+          initCommentRepliesControls();
+          ensureCommentMoreMenus();
+          initCommentPrefixObserver();
+          requestCommentPrefixSync();
+          return true;
+        }
+
+        function scheduleCommentsEnhancement(reason) {
+          if (!hasCommentsSurface()) return false;
+          if (state.commentEnhancementScheduled) return true;
+
+          state.commentEnhancementScheduled = true;
+          state.commentEnhancementReason = reason || 'comments-hydration';
+          ggIdle(function () {
+            runCommentsEnhancement(state.commentEnhancementReason || reason);
+          }, 900);
+          return true;
+        }
+
         function openCommentsSheet(options) {
           var openOptions = options || {};
 
@@ -402,10 +429,7 @@
             focus: openOptions.focus !== false,
             reason: openOptions.reason || 'comments-open'
           }).then(function (panel) {
-            initCommentRepliesControls();
-            ensureCommentMoreMenus();
-            initCommentPrefixObserver();
-            requestCommentPrefixSync();
+            runCommentsEnhancement(openOptions.reason || 'comments-open');
             return panel;
           });
         }

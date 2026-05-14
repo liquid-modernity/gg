@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='60d153d27e25' name='gg-template-fingerprint'/>
+<meta content='b9d95dd7cf2b' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -2815,7 +2815,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='60d153d27e25' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='b9d95dd7cf2b' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -4714,6 +4714,8 @@ window.GG = window.GG || {};
           commentComposerPortal: null,
           commentPrefixObserver: null,
           commentPrefixSyncFrame: 0,
+          commentEnhancementScheduled: false,
+          commentEnhancementReason: '',
           commentMoreMenu: null,
           commentStatusTimer: 0,
           dockState: 'visible',
@@ -4741,6 +4743,72 @@ window.GG = window.GG || {};
           ignoreClickUntil: 0,
           suppressCommandFocusUntil: 0,
           specialContract: null
+        };
+
+        GG.commentsProof = function commentsProof() {
+          var result;
+
+          try {
+            var sheet = document.querySelector('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments');
+            var root = document.querySelector('#gg-comments-root, #comments');
+            var list = document.querySelector('#gg-comments-list, #comment-holder, #cmt2-holder');
+            var editor = document.querySelector('#comment-editor');
+            var editorSrc = document.querySelector('#comment-editor-src');
+            var composer = document.querySelector('#top-ce');
+
+            result = {
+              sheet: !!sheet,
+              root: !!root,
+              list: !!list,
+              editor: !!editor,
+              editorSrc: !!editorSrc,
+              composer: !!composer,
+              sheetCount: document.querySelectorAll('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments').length,
+              commentsRootCount: document.querySelectorAll('#comments').length,
+              ggCommentsRootCount: document.querySelectorAll('#gg-comments-root').length,
+              editorCount: document.querySelectorAll('#comment-editor').length,
+              nativeDeleteCount: document.querySelectorAll('.item-control, .comment-delete, .goog-toggle-button').length,
+              replyStructureCount: document.querySelectorAll('.comment-replies, .thread-toggle, .thread-count').length,
+              fallbackSubmitCount: document.querySelectorAll('[data-gg-fallback-composer] button[type="submit"], [data-gg-fallback-composer] input[type="submit"], .gg-comments__fallback button[type="submit"], .gg-comments__fallback input[type="submit"]').length
+            };
+
+            result.ok = !!(
+              result.sheet &&
+              result.root &&
+              result.list &&
+              result.editor &&
+              result.sheetCount === 1 &&
+              result.editorCount === 1 &&
+              result.commentsRootCount === 1 &&
+              result.ggCommentsRootCount <= 1 &&
+              result.fallbackSubmitCount === 0
+            );
+          } catch (error) {
+            result = {
+              sheet: false,
+              root: false,
+              list: false,
+              editor: false,
+              editorSrc: false,
+              composer: false,
+              commentsRootCount: 0,
+              editorCount: 0,
+              nativeDeleteCount: 0,
+              replyStructureCount: 0,
+              fallbackSubmitCount: 0,
+              ok: false,
+              error: error && error.message ? error.message : String(error)
+            };
+          }
+
+          if (document.documentElement) {
+            document.documentElement.setAttribute('data-gg-comments-proof', result.ok ? 'ok' : 'fail');
+            document.documentElement.setAttribute('data-gg-comments-proof-count', String(Object.keys(result).filter(function (key) {
+              return result[key] === false;
+            }).length));
+          }
+
+          return result;
         };
 
         var startupState = GG.__startup && typeof GG.__startup === 'object' ? GG.__startup : {};
@@ -6169,6 +6237,33 @@ window.GG = window.GG || {};
           });
         }
 
+        function hasCommentsSurface() {
+          return !!(ui.comments || document.getElementById('gg-comments-root') || document.getElementById('comments'));
+        }
+
+        function runCommentsEnhancement(reason) {
+          if (!hasCommentsSurface()) return false;
+          state.commentEnhancementScheduled = false;
+          state.commentEnhancementReason = reason || 'comments-enhancement';
+          initCommentRepliesControls();
+          ensureCommentMoreMenus();
+          initCommentPrefixObserver();
+          requestCommentPrefixSync();
+          return true;
+        }
+
+        function scheduleCommentsEnhancement(reason) {
+          if (!hasCommentsSurface()) return false;
+          if (state.commentEnhancementScheduled) return true;
+
+          state.commentEnhancementScheduled = true;
+          state.commentEnhancementReason = reason || 'comments-hydration';
+          ggIdle(function () {
+            runCommentsEnhancement(state.commentEnhancementReason || reason);
+          }, 900);
+          return true;
+        }
+
         function openCommentsSheet(options) {
           var openOptions = options || {};
 
@@ -6179,10 +6274,7 @@ window.GG = window.GG || {};
             focus: openOptions.focus !== false,
             reason: openOptions.reason || 'comments-open'
           }).then(function (panel) {
-            initCommentRepliesControls();
-            ensureCommentMoreMenus();
-            initCommentPrefixObserver();
-            requestCommentPrefixSync();
+            runCommentsEnhancement(openOptions.reason || 'comments-open');
             return panel;
           });
         }
@@ -11169,14 +11261,12 @@ window.GG = window.GG || {};
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
-        initCommentRepliesControls();
-        ensureCommentMoreMenus();
-        initCommentPrefixObserver();
         initPwaClient();
         syncCommentsHash();
         markShellReady();
         markFirstInteractionReady();
         markHydrationDeferred();
+        scheduleCommentsEnhancement('post-hydration');
         ggIdle(function () {
           initListingGrowth().catch(function () {
             setListingGrowthState('error');

@@ -20,6 +20,7 @@
     "gaga:cf:deploy": "npm run build && node tools/cloudflare-deploy.mjs deploy",
     "gaga:template:status": "bash qa/template-status.sh",
     "gaga:template:proof": "bash qa/template-proof.sh",
+    "gaga:verify-comments-proof": "node qa/comments-proof-guard.mjs",
     "gaga:verify-sheet-contract": "bash qa/sheet-contract-smoke.sh",
     "gaga:verify-store-artifact": "npm run store:check:dev10",
     "gaga:verify-worker": "npm run gaga:verify-store-artifact",
