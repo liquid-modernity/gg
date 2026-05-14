@@ -81,6 +81,12 @@
               reason: composerOptions.reason || 'comments-api-composer'
             });
           },
+          openReplies: function (trigger) {
+            return openCommentRepliesSheet(trigger);
+          },
+          closeReplies: function (options) {
+            return closeCommentRepliesSheet(options || {});
+          },
           syncHash: syncCommentsHash,
           trapFocusWhileOpen: trapFocusWhileOpen,
           returnFocusOnClose: returnFocusOnClose,

@@ -692,6 +692,12 @@ window.GG = window.GG || {};
           commentsPanel: commentsSheet ? commentsSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null,
           commentsScrim: commentsSheet ? commentsSheet.querySelector('.gg-sheet__scrim, .gg-comments-sheet__scrim') : null,
           commentsHandle: document.querySelector('[data-gg-drag-handle="comments"]'),
+          commentReplies: document.getElementById('gg-comment-replies-sheet'),
+          commentRepliesPanel: document.querySelector('#gg-comment-replies-sheet .gg-sheet__panel, #gg-comment-replies-sheet .gg-comments-sheet__panel'),
+          commentRepliesList: document.getElementById('gg-comment-replies-list'),
+          commentRepliesContext: document.getElementById('gg-comment-replies-context'),
+          commentRepliesTitle: document.getElementById('gg-comment-replies-title'),
+          commentsList: document.getElementById('gg-comments-list'),
           article: document.querySelector('.gg-article'),
           articleBody: document.querySelector('.gg-article .gg-post-body'),
           detailToolbar: document.querySelector('.gg-detail-toolbar'),
@@ -736,6 +742,8 @@ window.GG = window.GG || {};
           panelActive: null,
           panelLastTrigger: null,
           panelTimers: {},
+          commentRepliesPortal: null,
+          commentRepliesTimer: 0,
           dockState: 'visible',
           dockFocused: false,
           dockScrollDirection: 'none',
@@ -2114,6 +2122,13 @@ window.GG = window.GG || {};
             return Promise.resolve(false);
           }
 
+          if (panel.name === 'comments') {
+            closeCommentRepliesSheet({
+              returnFocus: false,
+              reason: 'comments-panel-close'
+            });
+          }
+
           clearPanelTimer(panel.name);
           syncExpanded(panel.name, false);
           panel.root.setAttribute('data-gg-state', 'closing');
@@ -2190,15 +2205,23 @@ window.GG = window.GG || {};
             trigger: openOptions.trigger || document.activeElement || null,
             focus: openOptions.focus !== false,
             reason: openOptions.reason || 'comments-open'
+          }).then(function (panel) {
+            initCommentRepliesControls();
+            return panel;
           });
         }
 
         function closeCommentsSheet(options) {
           var closeOptions = options || {};
 
-          return closePanel('comments', {
-            returnFocus: closeOptions.returnFocus !== false,
-            reason: closeOptions.reason || 'comments-close'
+          return closeCommentRepliesSheet({
+            returnFocus: false,
+            reason: 'comments-parent-close'
+          }).then(function () {
+            return closePanel('comments', {
+              returnFocus: closeOptions.returnFocus !== false,
+              reason: closeOptions.reason || 'comments-close'
+            });
           });
         }
 
@@ -2216,6 +2239,259 @@ window.GG = window.GG || {};
             trigger: toggleOptions.trigger,
             focus: toggleOptions.focus !== false,
             reason: toggleOptions.reason || 'comments-toggle'
+          });
+        }
+
+        function formatRepliesCount(count) {
+          var resolved = Math.max(0, Number(count) || 0);
+          if (state.locale === 'id') return 'Lihat ' + resolved + ' balasan';
+          return 'View ' + resolved + (resolved === 1 ? ' reply' : ' replies');
+        }
+
+        function getCommentReplyCount(repliesNode) {
+          var liComments;
+          if (!repliesNode) return 0;
+          liComments = repliesNode.querySelectorAll('li.comment');
+          if (liComments.length) return liComments.length;
+          return repliesNode.querySelectorAll('.comment-thread .comment, .comment').length;
+        }
+
+        function isNestedRepliesNode(repliesNode) {
+          var parent = repliesNode ? repliesNode.parentElement : null;
+          return !!(parent && parent.closest('.comment-replies'));
+        }
+
+        function initCommentRepliesControls() {
+          var root = ui.commentsList || (ui.comments ? ui.comments.querySelector('#gg-comments-list, [data-gg-role="comments-list"]') : null);
+          var repliesNodes;
+          var i;
+          var repliesNode;
+          var count;
+          var button;
+
+          if (!root) return 0;
+
+          repliesNodes = root.querySelectorAll('.comment-replies');
+          for (i = 0; i < repliesNodes.length; i += 1) {
+            repliesNode = repliesNodes[i];
+            if (isNestedRepliesNode(repliesNode)) continue;
+
+            count = getCommentReplyCount(repliesNode);
+            if (!count) continue;
+
+            button = repliesNode.__ggRepliesButton || null;
+            if (!button || !button.parentNode) {
+              button = document.createElement('button');
+              button.type = 'button';
+              button.setAttribute('data-gg-action', 'comments-open-replies');
+              repliesNode.__ggRepliesButton = button;
+              repliesNode.parentNode.insertBefore(button, repliesNode.nextSibling);
+            }
+
+            button.__ggRepliesNode = repliesNode;
+            button.setAttribute('data-gg-reply-count', String(count));
+            button.setAttribute('aria-expanded', state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode ? 'true' : 'false');
+            button.textContent = formatRepliesCount(count);
+          }
+
+          return repliesNodes.length;
+        }
+
+        function getDirectCommentElement(container, beforeNode) {
+          var node;
+          if (!container) return null;
+          node = beforeNode ? beforeNode.previousElementSibling : null;
+          while (node) {
+            if (node.classList && node.classList.contains('comment')) return node;
+            node = node.previousElementSibling;
+          }
+          if (container.classList && container.classList.contains('comment')) return container;
+          node = container.firstElementChild;
+          while (node) {
+            if (node.classList && node.classList.contains('comment')) return node;
+            node = node.nextElementSibling;
+          }
+          return null;
+        }
+
+        function getTextFromNode(root, selector) {
+          var node = root ? root.querySelector(selector) : null;
+          return node ? node.textContent.replace(/\s+/g, ' ').trim() : '';
+        }
+
+        function renderCommentRepliesContext(commentNode, count) {
+          var author;
+          var body;
+          var authorNode;
+          var bodyNode;
+          var countNode;
+
+          if (!ui.commentRepliesContext) return;
+
+          ui.commentRepliesContext.textContent = '';
+
+          author = getTextFromNode(commentNode, '.comment-author cite, .comment-author, .comment-header cite, .comment-header .user, cite.user') || 'Comment';
+          body = getTextFromNode(commentNode, '.comment-body, .comment-content');
+
+          authorNode = document.createElement('div');
+          authorNode.className = 'gg-comment-replies__context-author';
+          authorNode.textContent = author;
+          ui.commentRepliesContext.appendChild(authorNode);
+
+          if (body) {
+            bodyNode = document.createElement('div');
+            bodyNode.className = 'gg-comment-replies__context-body';
+            bodyNode.textContent = body;
+            ui.commentRepliesContext.appendChild(bodyNode);
+          }
+
+          countNode = document.createElement('div');
+          countNode.className = 'gg-comment-replies__context-count';
+          countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
+          ui.commentRepliesContext.appendChild(countNode);
+        }
+
+        function getRepliesNodeFromTrigger(trigger) {
+          var parent;
+          var repliesNode;
+          if (!trigger) return null;
+          if (trigger.__ggRepliesNode && trigger.__ggRepliesNode.parentNode) return trigger.__ggRepliesNode;
+          parent = trigger.parentNode;
+          repliesNode = trigger.previousElementSibling;
+          if (repliesNode && repliesNode.classList && repliesNode.classList.contains('comment-replies')) return repliesNode;
+          return parent && parent.querySelector ? parent.querySelector(':scope > .comment-replies, .comment-replies') : null;
+        }
+
+        function markReplyLevels(root) {
+          var comments = root ? root.querySelectorAll('li.comment, .comment-thread .comment') : [];
+          var i;
+          var node;
+          var level;
+          var parent;
+
+          for (i = 0; i < comments.length; i += 1) {
+            node = comments[i];
+            level = 1;
+            parent = node.parentElement;
+            while (parent && parent !== root) {
+              if (parent.tagName && parent.tagName.toLowerCase() === 'ol') level += 1;
+              parent = parent.parentElement;
+            }
+            node.setAttribute('data-gg-reply-level', String(Math.min(3, Math.max(1, level))));
+          }
+        }
+
+        function isCommentRepliesSheetOpen() {
+          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') === 'open');
+        }
+
+        function focusCommentRepliesSheet() {
+          var focusRoot = ui.commentRepliesPanel || ui.commentReplies;
+          focusFirst(focusRoot);
+        }
+
+        function openCommentRepliesSheet(trigger) {
+          var repliesNode;
+          var originalParent;
+          var commentNode;
+          var count;
+
+          if (!ui.commentReplies || !ui.commentRepliesList) return Promise.resolve(null);
+
+          initCommentRepliesControls();
+          repliesNode = getRepliesNodeFromTrigger(trigger);
+          if (!repliesNode) return Promise.resolve(null);
+
+          if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode && isCommentRepliesSheetOpen()) {
+            focusCommentRepliesSheet();
+            return Promise.resolve(state.commentRepliesPortal);
+          }
+
+          return closeCommentRepliesSheet({
+            returnFocus: false,
+            reason: 'comment-replies-switch'
+          }).then(function () {
+            originalParent = repliesNode.parentNode;
+            count = getCommentReplyCount(repliesNode);
+            commentNode = getDirectCommentElement(originalParent, repliesNode);
+
+            if (!originalParent || !count) return null;
+
+            state.commentRepliesPortal = {
+              repliesNode: repliesNode,
+              originalParent: originalParent,
+              originalNextSibling: repliesNode.nextSibling,
+              trigger: trigger || document.activeElement || null
+            };
+
+            renderCommentRepliesContext(commentNode, count);
+            markReplyLevels(repliesNode);
+            ui.commentRepliesList.appendChild(repliesNode);
+            if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+            ui.commentReplies.hidden = false;
+            ui.commentReplies.removeAttribute('inert');
+            ui.commentReplies.setAttribute('aria-hidden', 'false');
+            ui.commentReplies.setAttribute('data-gg-state', 'opening');
+            ui.commentReplies.setAttribute('data-gg-active', 'true');
+
+            window.requestAnimationFrame(function () {
+              if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
+                ui.commentReplies.setAttribute('data-gg-state', 'open');
+              }
+            });
+            window.setTimeout(focusCommentRepliesSheet, 24);
+
+            return state.commentRepliesPortal;
+          });
+        }
+
+        function restoreCommentRepliesPortal() {
+          var portal = state.commentRepliesPortal;
+          if (!portal || !portal.repliesNode || !portal.originalParent) return false;
+
+          if (portal.originalNextSibling && portal.originalNextSibling.parentNode === portal.originalParent) {
+            portal.originalParent.insertBefore(portal.repliesNode, portal.originalNextSibling);
+          } else {
+            portal.originalParent.appendChild(portal.repliesNode);
+          }
+
+          if (portal.trigger) portal.trigger.setAttribute('aria-expanded', 'false');
+          state.commentRepliesPortal = null;
+          return true;
+        }
+
+        function closeCommentRepliesSheet(options) {
+          var closeOptions = options || {};
+          var portal = state.commentRepliesPortal;
+          var shouldReturnFocus = closeOptions.returnFocus !== false && portal && portal.trigger && typeof portal.trigger.focus === 'function';
+
+          if (!ui.commentReplies || ui.commentReplies.hidden) {
+            restoreCommentRepliesPortal();
+            return Promise.resolve(false);
+          }
+
+          if (state.commentRepliesTimer) {
+            window.clearTimeout(state.commentRepliesTimer);
+            state.commentRepliesTimer = 0;
+          }
+
+          ui.commentReplies.setAttribute('data-gg-state', 'closing');
+          ui.commentReplies.setAttribute('data-gg-active', 'false');
+
+          return new Promise(function (resolve) {
+            state.commentRepliesTimer = window.setTimeout(function () {
+              state.commentRepliesTimer = 0;
+              restoreCommentRepliesPortal();
+              ui.commentReplies.hidden = true;
+              ui.commentReplies.setAttribute('inert', '');
+              ui.commentReplies.setAttribute('aria-hidden', 'true');
+              ui.commentReplies.setAttribute('data-gg-state', 'closed');
+              ui.commentReplies.removeAttribute('data-gg-active');
+              if (ui.commentRepliesContext) ui.commentRepliesContext.textContent = '';
+              if (shouldReturnFocus) portal.trigger.focus();
+              resolve(true);
+            }, 170);
           });
         }
 
@@ -2299,12 +2575,21 @@ window.GG = window.GG || {};
           var focusable;
           var firstNode;
           var lastNode;
+          var focusRoot;
 
-          if (!event || event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel) {
+          if (!event || event.key !== 'Tab') {
             return false;
           }
 
-          focusable = getFocusableNodes(activePanel.panel);
+          if (isCommentRepliesSheetOpen()) {
+            focusRoot = ui.commentRepliesPanel;
+          } else if (activePanel && activePanel.trapFocus && activePanel.panel) {
+            focusRoot = activePanel.panel;
+          }
+
+          if (!focusRoot) return false;
+
+          focusable = getFocusableNodes(focusRoot);
           if (!focusable.length) return false;
 
           firstNode = focusable[0];
@@ -5858,6 +6143,8 @@ window.GG = window.GG || {};
           var moreTrigger;
           var commentsTrigger;
           var commentsComposerTrigger;
+          var commentsRepliesTrigger;
+          var commentsRepliesCloseTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
@@ -5885,6 +6172,8 @@ window.GG = window.GG || {};
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
+          commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
+          commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
@@ -5990,6 +6279,20 @@ window.GG = window.GG || {};
             return;
           }
 
+          if (commentsRepliesTrigger) {
+            event.preventDefault();
+            openCommentRepliesSheet(commentsRepliesTrigger);
+            return;
+          }
+
+          if (commentsRepliesCloseTrigger) {
+            event.preventDefault();
+            closeCommentRepliesSheet({
+              reason: 'comment-replies-close'
+            });
+            return;
+          }
+
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
@@ -6007,6 +6310,8 @@ window.GG = window.GG || {};
             closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
             if (closeName === 'command') {
               closeCommandPanel('close-trigger');
+            } else if (closeName === 'comments') {
+              closeCommentsSheet({ reason: 'close-trigger' });
             } else {
               closePanel(closeName, { reason: 'close-trigger' });
             }
@@ -6052,7 +6357,9 @@ window.GG = window.GG || {};
           }
 
           if (event.key === 'Escape') {
-            if (state.panelActive === 'command') {
+            if (isCommentRepliesSheetOpen()) {
+              closeCommentRepliesSheet({ reason: 'comment-replies-escape' });
+            } else if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
               clearDetailOutlineManualOpen();
@@ -6149,6 +6456,12 @@ window.GG = window.GG || {};
               focus: composerOptions.focus !== false,
               reason: composerOptions.reason || 'comments-api-composer'
             });
+          },
+          openReplies: function (trigger) {
+            return openCommentRepliesSheet(trigger);
+          },
+          closeReplies: function (options) {
+            return closeCommentRepliesSheet(options || {});
           },
           syncHash: syncCommentsHash,
           trapFocusWhileOpen: trapFocusWhileOpen,
@@ -6401,6 +6714,7 @@ window.GG = window.GG || {};
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
+        initCommentRepliesControls();
         initPwaClient();
         syncCommentsHash();
         markShellReady();

@@ -156,4 +156,24 @@
                   </section>
                 </section>
               </div>
+
+              <div aria-hidden='true' class='gg-comments-sheet gg-comments-sheet--replies gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comment-replies-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comment-replies' data-gg-state='closed' hidden='hidden' id='gg-comment-replies-sheet' inert='' tabindex='-1'>
+                <button class='gg-comments-sheet__scrim gg-sheet__scrim' data-gg-action='comments-replies-close' type='button'>
+                  <span class='gg-visually-hidden'>Dismiss replies</span>
+                </button>
+                <section aria-labelledby='gg-comment-replies-title' aria-modal='true' class='gg-comments-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
+                  <header class='gg-comments-sheet__head gg-sheet__head'>
+                    <button aria-label='Back to comments' class='gg-comments-sheet__back' data-gg-action='comments-replies-close' type='button'>
+                      <span aria-hidden='true'>&#8249;</span>
+                    </button>
+                    <h2 class='gg-comments-sheet__title gg-sheet__title' id='gg-comment-replies-title'>Replies</h2>
+                  </header>
+                  <section class='gg-comments gg-comments--sheet comments2 threaded' data-gg-comment-engine='blogger-native' data-gg-module='gg-comment-replies' id='gg-comment-replies-root'>
+                    <div class='gg-comments__content'>
+                      <div class='gg-comment-replies__context' id='gg-comment-replies-context'/>
+                      <div class='gg-comments__list gg-comment-replies__list' data-gg-role='comment-replies-list' id='gg-comment-replies-list'/>
+                    </div>
+                  </section>
+                </section>
+              </div>
             </b:includable>

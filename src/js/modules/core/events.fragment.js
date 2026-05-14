@@ -32,6 +32,8 @@
           var moreTrigger;
           var commentsTrigger;
           var commentsComposerTrigger;
+          var commentsRepliesTrigger;
+          var commentsRepliesCloseTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
@@ -59,6 +61,8 @@
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
+          commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
+          commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
@@ -164,6 +168,20 @@
             return;
           }
 
+          if (commentsRepliesTrigger) {
+            event.preventDefault();
+            openCommentRepliesSheet(commentsRepliesTrigger);
+            return;
+          }
+
+          if (commentsRepliesCloseTrigger) {
+            event.preventDefault();
+            closeCommentRepliesSheet({
+              reason: 'comment-replies-close'
+            });
+            return;
+          }
+
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
@@ -181,6 +199,8 @@
             closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
             if (closeName === 'command') {
               closeCommandPanel('close-trigger');
+            } else if (closeName === 'comments') {
+              closeCommentsSheet({ reason: 'close-trigger' });
             } else {
               closePanel(closeName, { reason: 'close-trigger' });
             }
@@ -226,7 +246,9 @@
           }
 
           if (event.key === 'Escape') {
-            if (state.panelActive === 'command') {
+            if (isCommentRepliesSheetOpen()) {
+              closeCommentRepliesSheet({ reason: 'comment-replies-escape' });
+            } else if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
               clearDetailOutlineManualOpen();

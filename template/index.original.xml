@@ -8,14 +8,14 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='e6561eb41094' name='gg-template-fingerprint'/>
+<meta content='dbc9931aadc6' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
     <b:include data='blog' name='all-head-content'/>
 
     <script>//<![CDATA[
-    (function () {
+(function () {
       try {
         var theme = window.localStorage && window.localStorage.getItem('gg:theme');
         if (theme === 'light' || theme === 'dark') {
@@ -92,6 +92,7 @@
     <b:skin><![CDATA[
 :root {
   color-scheme: light;
+  --gg-handler: 10px;
   --gg-hit-min: 44px;
   --gg-icon-size: 20px;
   --gg-icon-size-compact: 19px;
@@ -174,7 +175,7 @@
   --gg-bottom-safezone-breathing: 20px;
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + var(--gg-bottom-safezone-breathing));
   --gg-listing-bottom-clearance: var(--gg-bottom-safezone-min);
-  --gg-detail-outline-width: 560px;
+  --gg-detail-outline-width: 540px;
   --gg-detail-outline-radius: 22px;
   --gg-detail-outline-border: var(--gg-toolbar-border);
   --gg-detail-outline-surface: var(--gg-toolbar-surface);
@@ -209,16 +210,16 @@
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --gg-site-head-bottom: 8px;
   --gg-entry-list-bg: transparent;
-  --gg-entry-row-pad-y: 16px;
+  --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
   --gg-entry-row-gap: 12px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32, 26, 28, .14);
   --gg-entry-row-surface-hover: rgba(255, 255, 255, .46);
-  --gg-entry-row-title-size: 18px;
+  --gg-entry-row-title-size: 12px;
   --gg-entry-row-title-line: 1.28;
   --gg-entry-row-title-weight: 600;
-  --gg-entry-row-action-size: 12px;
+  --gg-entry-row-action-size: 10px;
   --gg-entry-row-action-weight: 600;
   --gg-entry-row-action-min-height: var(--gg-hit-min);
   --gg-entry-row-action-pad-x: 6px;
@@ -348,11 +349,11 @@
     --gg-utility-head-pad-top: 0px;
     --gg-site-head-bottom: 10px;
     --gg-toolbar-item-size: 13px;
-    --gg-entry-row-pad-y: 18px;
+    --gg-entry-row-pad-y: 2px;
     --gg-entry-row-pad-x: 4px;
     --gg-entry-row-gap: 16px;
-    --gg-entry-row-title-size: 20px;
-    --gg-entry-row-action-size: 13px;
+    --gg-entry-row-title-size: 18px;
+    --gg-entry-row-action-size: 12px;
     --gg-entry-row-action-min-height: var(--gg-hit-min);
     --gg-article-pad-y: 22px;
     --gg-article-pad-bottom-base: 28px;
@@ -368,7 +369,7 @@
     --gg-discovery-result-title-size: 17px;
     --gg-comment-avatar-size: 38px;
     --gg-comment-indent: 22px;
-    --gg-detail-outline-width: 600px;
+    --gg-detail-outline-width: 540px;
     --gg-detail-outline-expanded-max-height: min(40dvh, 340px);
     --gg-detail-outline-peek-title-size: 16px;
     --gg-detail-outline-micro-min-height: var(--gg-hit-min);
@@ -613,7 +614,7 @@ img {
 }
 
 .gg-main {
-  width: min(100%, 720px);
+  width: min(100%, 600px);
   margin: 0 auto;
 }
 
@@ -633,7 +634,7 @@ img {
 
 .gg-site-head__title {
   margin: 0;
-  font-size: clamp(18px, 7vw, 34px);
+  font-size: clamp(18px, 7vw, 19px);
   line-height: 1.08;
   letter-spacing: -.03em;
 }
@@ -1260,7 +1261,8 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   border-top: 0;
 }
 
-#gg-comments-sheet .gg-sheet__panel {
+#gg-comments-sheet .gg-sheet__panel,
+#gg-comment-replies-sheet .gg-sheet__panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   padding-bottom: 0;
@@ -1315,10 +1317,88 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
+[data-gg-sheet='comment-replies'] .gg-comments .comment-thread ol,
 [data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
   margin-left: calc(var(--gg-comment-avatar-size) * .24);
   padding-left: calc(var(--gg-comment-indent) - 4px);
   border-left: 1px solid var(--gg-comment-thread-guide);
+}
+
+#gg-comment-replies-sheet {
+  z-index: 43;
+}
+
+#gg-comment-replies-sheet .gg-comments__content {
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.gg-comments-sheet__back {
+  position: absolute;
+  left: var(--gg-panel-pad-x);
+  top: 50%;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--gg-ink);
+  font: 700 28px/1 var(--gg-font-sans);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.gg-comments-sheet__back:hover {
+  background: var(--gg-surface-quiet);
+}
+
+.gg-comment-replies__context {
+  display: grid;
+  gap: 6px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--gg-comment-divider);
+}
+
+.gg-comment-replies__context-author {
+  color: var(--gg-ink);
+  font: 650 13px/1.25 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comment-replies__context-body {
+  color: var(--gg-ink);
+  font: 400 14px/1.55 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comment-replies__context-count {
+  color: var(--gg-accent-soft);
+  font: 600 12px/1.25 var(--gg-font-sans);
+}
+
+.gg-comments [data-gg-action='comments-open-replies'] {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 32px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 650 12px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comments [data-gg-action='comments-open-replies']:hover {
+  color: var(--gg-comment-action-hover-tone);
+}
+
+#gg-comment-replies-list .comment-thread ol ol ol {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
 }
 
 .gg-comments .comment-thread li,
@@ -1794,7 +1874,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   place-items: center;
   width: var(--gg-panel-handle-width);
-  min-height: var(--gg-hit-min);
+  min-height: var(--gg-handler);
   margin: 0;
   padding: 0;
   border: 0;
@@ -2573,7 +2653,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 
   .gg-main {
-    width: min(100%, 860px);
+    width: min(100%, 600px);
   }
 
   .gg-discovery-search__field {
@@ -2586,6 +2666,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 }
 
+
     ]]></b:skin>
 
     <b:include data='blog' name='google-analytics'/>
@@ -2594,7 +2675,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   <body data-gg-boot='starting' data-gg-cache-mode='unknown' data-gg-display-mode='browser' data-gg-hydration='critical' data-gg-network='unknown' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))'>
     <script type='text/javascript'>
       //<![CDATA[
-      (function () {
+(function () {
         var GG = window.GG = window.GG || {};
         var startup = GG.__startup = GG.__startup || {};
         var body = document.body;
@@ -2630,7 +2711,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='e6561eb41094' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='dbc9931aadc6' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -3272,6 +3353,26 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
                   </section>
                 </section>
               </div>
+
+              <div aria-hidden='true' class='gg-comments-sheet gg-comments-sheet--replies gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comment-replies-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comment-replies' data-gg-state='closed' hidden='hidden' id='gg-comment-replies-sheet' inert='' tabindex='-1'>
+                <button class='gg-comments-sheet__scrim gg-sheet__scrim' data-gg-action='comments-replies-close' type='button'>
+                  <span class='gg-visually-hidden'>Dismiss replies</span>
+                </button>
+                <section aria-labelledby='gg-comment-replies-title' aria-modal='true' class='gg-comments-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
+                  <header class='gg-comments-sheet__head gg-sheet__head'>
+                    <button aria-label='Back to comments' class='gg-comments-sheet__back' data-gg-action='comments-replies-close' type='button'>
+                      <span aria-hidden='true'>&#8249;</span>
+                    </button>
+                    <h2 class='gg-comments-sheet__title gg-sheet__title' id='gg-comment-replies-title'>Replies</h2>
+                  </header>
+                  <section class='gg-comments gg-comments--sheet comments2 threaded' data-gg-comment-engine='blogger-native' data-gg-module='gg-comment-replies' id='gg-comment-replies-root'>
+                    <div class='gg-comments__content'>
+                      <div class='gg-comment-replies__context' id='gg-comment-replies-context'/>
+                      <div class='gg-comments__list gg-comment-replies__list' data-gg-role='comment-replies-list' id='gg-comment-replies-list'/>
+                    </div>
+                  </section>
+                </section>
+              </div>
             </b:includable>
             <b:includable id='postFooter' var='post'>
   <div class='post-footer'>
@@ -3754,7 +3855,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
     </div>
 
     <script>//<![CDATA[
-      window.GG = window.GG || {};
+window.GG = window.GG || {};
       (function (GG) {
         var COPY = {
           en: {
@@ -4448,6 +4549,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           commentsPanel: commentsSheet ? commentsSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null,
           commentsScrim: commentsSheet ? commentsSheet.querySelector('.gg-sheet__scrim, .gg-comments-sheet__scrim') : null,
           commentsHandle: document.querySelector('[data-gg-drag-handle="comments"]'),
+          commentReplies: document.getElementById('gg-comment-replies-sheet'),
+          commentRepliesPanel: document.querySelector('#gg-comment-replies-sheet .gg-sheet__panel, #gg-comment-replies-sheet .gg-comments-sheet__panel'),
+          commentRepliesList: document.getElementById('gg-comment-replies-list'),
+          commentRepliesContext: document.getElementById('gg-comment-replies-context'),
+          commentRepliesTitle: document.getElementById('gg-comment-replies-title'),
+          commentsList: document.getElementById('gg-comments-list'),
           article: document.querySelector('.gg-article'),
           articleBody: document.querySelector('.gg-article .gg-post-body'),
           detailToolbar: document.querySelector('.gg-detail-toolbar'),
@@ -4492,6 +4599,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           panelActive: null,
           panelLastTrigger: null,
           panelTimers: {},
+          commentRepliesPortal: null,
+          commentRepliesTimer: 0,
           dockState: 'visible',
           dockFocused: false,
           dockScrollDirection: 'none',
@@ -5870,6 +5979,13 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             return Promise.resolve(false);
           }
 
+          if (panel.name === 'comments') {
+            closeCommentRepliesSheet({
+              returnFocus: false,
+              reason: 'comments-panel-close'
+            });
+          }
+
           clearPanelTimer(panel.name);
           syncExpanded(panel.name, false);
           panel.root.setAttribute('data-gg-state', 'closing');
@@ -5946,15 +6062,23 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             trigger: openOptions.trigger || document.activeElement || null,
             focus: openOptions.focus !== false,
             reason: openOptions.reason || 'comments-open'
+          }).then(function (panel) {
+            initCommentRepliesControls();
+            return panel;
           });
         }
 
         function closeCommentsSheet(options) {
           var closeOptions = options || {};
 
-          return closePanel('comments', {
-            returnFocus: closeOptions.returnFocus !== false,
-            reason: closeOptions.reason || 'comments-close'
+          return closeCommentRepliesSheet({
+            returnFocus: false,
+            reason: 'comments-parent-close'
+          }).then(function () {
+            return closePanel('comments', {
+              returnFocus: closeOptions.returnFocus !== false,
+              reason: closeOptions.reason || 'comments-close'
+            });
           });
         }
 
@@ -5972,6 +6096,259 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             trigger: toggleOptions.trigger,
             focus: toggleOptions.focus !== false,
             reason: toggleOptions.reason || 'comments-toggle'
+          });
+        }
+
+        function formatRepliesCount(count) {
+          var resolved = Math.max(0, Number(count) || 0);
+          if (state.locale === 'id') return 'Lihat ' + resolved + ' balasan';
+          return 'View ' + resolved + (resolved === 1 ? ' reply' : ' replies');
+        }
+
+        function getCommentReplyCount(repliesNode) {
+          var liComments;
+          if (!repliesNode) return 0;
+          liComments = repliesNode.querySelectorAll('li.comment');
+          if (liComments.length) return liComments.length;
+          return repliesNode.querySelectorAll('.comment-thread .comment, .comment').length;
+        }
+
+        function isNestedRepliesNode(repliesNode) {
+          var parent = repliesNode ? repliesNode.parentElement : null;
+          return !!(parent && parent.closest('.comment-replies'));
+        }
+
+        function initCommentRepliesControls() {
+          var root = ui.commentsList || (ui.comments ? ui.comments.querySelector('#gg-comments-list, [data-gg-role="comments-list"]') : null);
+          var repliesNodes;
+          var i;
+          var repliesNode;
+          var count;
+          var button;
+
+          if (!root) return 0;
+
+          repliesNodes = root.querySelectorAll('.comment-replies');
+          for (i = 0; i < repliesNodes.length; i += 1) {
+            repliesNode = repliesNodes[i];
+            if (isNestedRepliesNode(repliesNode)) continue;
+
+            count = getCommentReplyCount(repliesNode);
+            if (!count) continue;
+
+            button = repliesNode.__ggRepliesButton || null;
+            if (!button || !button.parentNode) {
+              button = document.createElement('button');
+              button.type = 'button';
+              button.setAttribute('data-gg-action', 'comments-open-replies');
+              repliesNode.__ggRepliesButton = button;
+              repliesNode.parentNode.insertBefore(button, repliesNode.nextSibling);
+            }
+
+            button.__ggRepliesNode = repliesNode;
+            button.setAttribute('data-gg-reply-count', String(count));
+            button.setAttribute('aria-expanded', state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode ? 'true' : 'false');
+            button.textContent = formatRepliesCount(count);
+          }
+
+          return repliesNodes.length;
+        }
+
+        function getDirectCommentElement(container, beforeNode) {
+          var node;
+          if (!container) return null;
+          node = beforeNode ? beforeNode.previousElementSibling : null;
+          while (node) {
+            if (node.classList && node.classList.contains('comment')) return node;
+            node = node.previousElementSibling;
+          }
+          if (container.classList && container.classList.contains('comment')) return container;
+          node = container.firstElementChild;
+          while (node) {
+            if (node.classList && node.classList.contains('comment')) return node;
+            node = node.nextElementSibling;
+          }
+          return null;
+        }
+
+        function getTextFromNode(root, selector) {
+          var node = root ? root.querySelector(selector) : null;
+          return node ? node.textContent.replace(/\s+/g, ' ').trim() : '';
+        }
+
+        function renderCommentRepliesContext(commentNode, count) {
+          var author;
+          var body;
+          var authorNode;
+          var bodyNode;
+          var countNode;
+
+          if (!ui.commentRepliesContext) return;
+
+          ui.commentRepliesContext.textContent = '';
+
+          author = getTextFromNode(commentNode, '.comment-author cite, .comment-author, .comment-header cite, .comment-header .user, cite.user') || 'Comment';
+          body = getTextFromNode(commentNode, '.comment-body, .comment-content');
+
+          authorNode = document.createElement('div');
+          authorNode.className = 'gg-comment-replies__context-author';
+          authorNode.textContent = author;
+          ui.commentRepliesContext.appendChild(authorNode);
+
+          if (body) {
+            bodyNode = document.createElement('div');
+            bodyNode.className = 'gg-comment-replies__context-body';
+            bodyNode.textContent = body;
+            ui.commentRepliesContext.appendChild(bodyNode);
+          }
+
+          countNode = document.createElement('div');
+          countNode.className = 'gg-comment-replies__context-count';
+          countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
+          ui.commentRepliesContext.appendChild(countNode);
+        }
+
+        function getRepliesNodeFromTrigger(trigger) {
+          var parent;
+          var repliesNode;
+          if (!trigger) return null;
+          if (trigger.__ggRepliesNode && trigger.__ggRepliesNode.parentNode) return trigger.__ggRepliesNode;
+          parent = trigger.parentNode;
+          repliesNode = trigger.previousElementSibling;
+          if (repliesNode && repliesNode.classList && repliesNode.classList.contains('comment-replies')) return repliesNode;
+          return parent && parent.querySelector ? parent.querySelector(':scope > .comment-replies, .comment-replies') : null;
+        }
+
+        function markReplyLevels(root) {
+          var comments = root ? root.querySelectorAll('li.comment, .comment-thread .comment') : [];
+          var i;
+          var node;
+          var level;
+          var parent;
+
+          for (i = 0; i < comments.length; i += 1) {
+            node = comments[i];
+            level = 1;
+            parent = node.parentElement;
+            while (parent && parent !== root) {
+              if (parent.tagName && parent.tagName.toLowerCase() === 'ol') level += 1;
+              parent = parent.parentElement;
+            }
+            node.setAttribute('data-gg-reply-level', String(Math.min(3, Math.max(1, level))));
+          }
+        }
+
+        function isCommentRepliesSheetOpen() {
+          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') === 'open');
+        }
+
+        function focusCommentRepliesSheet() {
+          var focusRoot = ui.commentRepliesPanel || ui.commentReplies;
+          focusFirst(focusRoot);
+        }
+
+        function openCommentRepliesSheet(trigger) {
+          var repliesNode;
+          var originalParent;
+          var commentNode;
+          var count;
+
+          if (!ui.commentReplies || !ui.commentRepliesList) return Promise.resolve(null);
+
+          initCommentRepliesControls();
+          repliesNode = getRepliesNodeFromTrigger(trigger);
+          if (!repliesNode) return Promise.resolve(null);
+
+          if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode && isCommentRepliesSheetOpen()) {
+            focusCommentRepliesSheet();
+            return Promise.resolve(state.commentRepliesPortal);
+          }
+
+          return closeCommentRepliesSheet({
+            returnFocus: false,
+            reason: 'comment-replies-switch'
+          }).then(function () {
+            originalParent = repliesNode.parentNode;
+            count = getCommentReplyCount(repliesNode);
+            commentNode = getDirectCommentElement(originalParent, repliesNode);
+
+            if (!originalParent || !count) return null;
+
+            state.commentRepliesPortal = {
+              repliesNode: repliesNode,
+              originalParent: originalParent,
+              originalNextSibling: repliesNode.nextSibling,
+              trigger: trigger || document.activeElement || null
+            };
+
+            renderCommentRepliesContext(commentNode, count);
+            markReplyLevels(repliesNode);
+            ui.commentRepliesList.appendChild(repliesNode);
+            if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+            ui.commentReplies.hidden = false;
+            ui.commentReplies.removeAttribute('inert');
+            ui.commentReplies.setAttribute('aria-hidden', 'false');
+            ui.commentReplies.setAttribute('data-gg-state', 'opening');
+            ui.commentReplies.setAttribute('data-gg-active', 'true');
+
+            window.requestAnimationFrame(function () {
+              if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
+                ui.commentReplies.setAttribute('data-gg-state', 'open');
+              }
+            });
+            window.setTimeout(focusCommentRepliesSheet, 24);
+
+            return state.commentRepliesPortal;
+          });
+        }
+
+        function restoreCommentRepliesPortal() {
+          var portal = state.commentRepliesPortal;
+          if (!portal || !portal.repliesNode || !portal.originalParent) return false;
+
+          if (portal.originalNextSibling && portal.originalNextSibling.parentNode === portal.originalParent) {
+            portal.originalParent.insertBefore(portal.repliesNode, portal.originalNextSibling);
+          } else {
+            portal.originalParent.appendChild(portal.repliesNode);
+          }
+
+          if (portal.trigger) portal.trigger.setAttribute('aria-expanded', 'false');
+          state.commentRepliesPortal = null;
+          return true;
+        }
+
+        function closeCommentRepliesSheet(options) {
+          var closeOptions = options || {};
+          var portal = state.commentRepliesPortal;
+          var shouldReturnFocus = closeOptions.returnFocus !== false && portal && portal.trigger && typeof portal.trigger.focus === 'function';
+
+          if (!ui.commentReplies || ui.commentReplies.hidden) {
+            restoreCommentRepliesPortal();
+            return Promise.resolve(false);
+          }
+
+          if (state.commentRepliesTimer) {
+            window.clearTimeout(state.commentRepliesTimer);
+            state.commentRepliesTimer = 0;
+          }
+
+          ui.commentReplies.setAttribute('data-gg-state', 'closing');
+          ui.commentReplies.setAttribute('data-gg-active', 'false');
+
+          return new Promise(function (resolve) {
+            state.commentRepliesTimer = window.setTimeout(function () {
+              state.commentRepliesTimer = 0;
+              restoreCommentRepliesPortal();
+              ui.commentReplies.hidden = true;
+              ui.commentReplies.setAttribute('inert', '');
+              ui.commentReplies.setAttribute('aria-hidden', 'true');
+              ui.commentReplies.setAttribute('data-gg-state', 'closed');
+              ui.commentReplies.removeAttribute('data-gg-active');
+              if (ui.commentRepliesContext) ui.commentRepliesContext.textContent = '';
+              if (shouldReturnFocus) portal.trigger.focus();
+              resolve(true);
+            }, 170);
           });
         }
 
@@ -6055,12 +6432,21 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var focusable;
           var firstNode;
           var lastNode;
+          var focusRoot;
 
-          if (!event || event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel) {
+          if (!event || event.key !== 'Tab') {
             return false;
           }
 
-          focusable = getFocusableNodes(activePanel.panel);
+          if (isCommentRepliesSheetOpen()) {
+            focusRoot = ui.commentRepliesPanel;
+          } else if (activePanel && activePanel.trapFocus && activePanel.panel) {
+            focusRoot = activePanel.panel;
+          }
+
+          if (!focusRoot) return false;
+
+          focusable = getFocusableNodes(focusRoot);
           if (!focusable.length) return false;
 
           firstNode = focusable[0];
@@ -9614,6 +10000,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           var moreTrigger;
           var commentsTrigger;
           var commentsComposerTrigger;
+          var commentsRepliesTrigger;
+          var commentsRepliesCloseTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
@@ -9641,6 +10029,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
+          commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
+          commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
@@ -9746,6 +10136,20 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             return;
           }
 
+          if (commentsRepliesTrigger) {
+            event.preventDefault();
+            openCommentRepliesSheet(commentsRepliesTrigger);
+            return;
+          }
+
+          if (commentsRepliesCloseTrigger) {
+            event.preventDefault();
+            closeCommentRepliesSheet({
+              reason: 'comment-replies-close'
+            });
+            return;
+          }
+
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
@@ -9763,6 +10167,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
             closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
             if (closeName === 'command') {
               closeCommandPanel('close-trigger');
+            } else if (closeName === 'comments') {
+              closeCommentsSheet({ reason: 'close-trigger' });
             } else {
               closePanel(closeName, { reason: 'close-trigger' });
             }
@@ -9808,7 +10214,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
           }
 
           if (event.key === 'Escape') {
-            if (state.panelActive === 'command') {
+            if (isCommentRepliesSheetOpen()) {
+              closeCommentRepliesSheet({ reason: 'comment-replies-escape' });
+            } else if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
               clearDetailOutlineManualOpen();
@@ -9905,6 +10313,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
               focus: composerOptions.focus !== false,
               reason: composerOptions.reason || 'comments-api-composer'
             });
+          },
+          openReplies: function (trigger) {
+            return openCommentRepliesSheet(trigger);
+          },
+          closeReplies: function (options) {
+            return closeCommentRepliesSheet(options || {});
           },
           syncHash: syncCommentsHash,
           trapFocusWhileOpen: trapFocusWhileOpen,
@@ -10157,6 +10571,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
+        initCommentRepliesControls();
         initPwaClient();
         syncCommentsHash();
         markShellReady();

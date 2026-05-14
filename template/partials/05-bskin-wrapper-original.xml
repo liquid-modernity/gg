@@ -1169,7 +1169,8 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   border-top: 0;
 }
 
-#gg-comments-sheet .gg-sheet__panel {
+#gg-comments-sheet .gg-sheet__panel,
+#gg-comment-replies-sheet .gg-sheet__panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   padding-bottom: 0;
@@ -1224,10 +1225,88 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
+[data-gg-sheet='comment-replies'] .gg-comments .comment-thread ol,
 [data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
   margin-left: calc(var(--gg-comment-avatar-size) * .24);
   padding-left: calc(var(--gg-comment-indent) - 4px);
   border-left: 1px solid var(--gg-comment-thread-guide);
+}
+
+#gg-comment-replies-sheet {
+  z-index: 43;
+}
+
+#gg-comment-replies-sheet .gg-comments__content {
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.gg-comments-sheet__back {
+  position: absolute;
+  left: var(--gg-panel-pad-x);
+  top: 50%;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--gg-ink);
+  font: 700 28px/1 var(--gg-font-sans);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.gg-comments-sheet__back:hover {
+  background: var(--gg-surface-quiet);
+}
+
+.gg-comment-replies__context {
+  display: grid;
+  gap: 6px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--gg-comment-divider);
+}
+
+.gg-comment-replies__context-author {
+  color: var(--gg-ink);
+  font: 650 13px/1.25 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comment-replies__context-body {
+  color: var(--gg-ink);
+  font: 400 14px/1.55 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
+
+.gg-comment-replies__context-count {
+  color: var(--gg-accent-soft);
+  font: 600 12px/1.25 var(--gg-font-sans);
+}
+
+.gg-comments [data-gg-action='comments-open-replies'] {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 32px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 650 12px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comments [data-gg-action='comments-open-replies']:hover {
+  color: var(--gg-comment-action-hover-tone);
+}
+
+#gg-comment-replies-list .comment-thread ol ol ol {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0;
 }
 
 .gg-comments .comment-thread li,

@@ -17,6 +17,7 @@
         setLocale(readPreferredLocale(), true);
         initDockVisibility();
         initDetailOutline();
+        initCommentRepliesControls();
         initPwaClient();
         syncCommentsHash();
         markShellReady();
