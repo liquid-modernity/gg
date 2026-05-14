@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='b9d95dd7cf2b' name='gg-template-fingerprint'/>
+<meta content='4164db76e435' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -1316,6 +1316,14 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   display: none;
 }
 
+#gg-comments-sheet #gg-comments-list .comment-replies {
+  display: none;
+}
+
+#gg-comment-replies-list .comment-replies {
+  display: grid;
+}
+
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
 [data-gg-sheet='comment-replies'] .gg-comments .comment-thread ol,
 [data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
@@ -1385,9 +1393,10 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 .gg-comments__reply-banner {
   display: flex;
   align-items: center;
+  gap: 4px;
   min-width: 0;
   min-height: 34px;
-  padding: 0;
+  padding: 0 0 2px;
   color: var(--gg-accent-soft);
   font: 650 13px/1.3 var(--gg-font-sans);
   overflow-wrap: anywhere;
@@ -1396,6 +1405,27 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 .gg-comments__reply-banner strong {
   color: var(--gg-ink);
   font-weight: 700;
+}
+
+.gg-comments__reply-clear {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 700 18px/1 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comments__reply-clear:hover,
+.gg-comments__reply-clear:focus-visible {
+  background: var(--gg-comment-action-hover-bg);
+  color: var(--gg-comment-action-hover-tone);
 }
 
 .gg-comment-reply-prefix {
@@ -1410,7 +1440,9 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: auto;
+  flex: 0 0 auto;
+  margin-left: 4px;
+  align-self: center;
 }
 
 .gg-comment-more__button {
@@ -1563,7 +1595,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 .gg-comments .comment-author,
 .gg-comments .comment-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: var(--gg-comment-meta-gap);
   color: var(--gg-accent-soft);
@@ -1594,8 +1626,10 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 .gg-comments .comment-author .comment-timestamp,
 .gg-comments .comment-header .datetime,
 .gg-comments .comment-header .comment-timestamp {
+  flex: 1 1 auto;
   margin-left: auto;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .gg-comments .comment-body,
@@ -1634,6 +1668,13 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   color: var(--gg-comment-action-tone);
   font: 600 12px/1.35 var(--gg-font-sans);
   overflow-wrap: anywhere;
+}
+
+.gg-comments .comment .continue,
+.gg-comments .comment .comment-footer .comment-form,
+.gg-comments .comment .comment-footer #comment-editor,
+.gg-comments .comment .comment-footer #top-ce {
+  display: none;
 }
 
 .gg-comments .thread-toggle a,
@@ -1680,6 +1721,21 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   align-items: center;
 }
 
+.gg-comments .comment-actions .comment-delete,
+.gg-comments .comment .comment-footer .comment-delete,
+.gg-comments .comment .item-control,
+.gg-comments .comment .goog-toggle-button {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .gg-comments .comment-actions a:hover,
 .gg-comments a.comment-reply:hover,
 .gg-comments .comment-delete:hover {
@@ -1707,6 +1763,14 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   padding: 10px var(--gg-panel-pad-x) calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--gg-divider);
   background: var(--gg-surface-panel);
+}
+
+.gg-comments__footer[data-gg-comment-composer-mode='empty'] {
+  gap: 12px;
+}
+
+.gg-comments__footer[data-gg-comment-composer-mode='reply'] {
+  gap: 6px;
 }
 
 .gg-comments__footer .comment-form {
@@ -1754,6 +1818,36 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   background: var(--gg-field-surface);
 }
 
+.gg-comments #comments-block > .continue,
+.gg-comments .gg-comments__list > .continue,
+.gg-comments .comment-thread > .continue {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  margin: 10px 0 0;
+}
+
+.gg-comments #comments-block > .continue a,
+.gg-comments .gg-comments__list > .continue a,
+.gg-comments .comment-thread > .continue a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  width: 100%;
+  border: 1px solid var(--gg-divider);
+  border-radius: 999px;
+  background: var(--gg-surface-quiet);
+  color: var(--gg-ink);
+  font: 650 13px/1.2 var(--gg-font-sans);
+}
+
+.gg-comments #comments-block > .continue a:hover,
+.gg-comments .gg-comments__list > .continue a:hover,
+.gg-comments .comment-thread > .continue a:hover {
+  background: var(--gg-comment-action-hover-bg);
+  color: var(--gg-comment-action-hover-tone);
+}
+
 @media (max-width: 380px) {
   #gg-comments-sheet {
     --gg-comment-avatar-size: 32px;
@@ -1768,6 +1862,10 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
+  }
+
+  .gg-comment-more {
+    margin-left: auto;
   }
 }
 
@@ -2815,7 +2913,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='b9d95dd7cf2b' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='4164db76e435' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -6249,6 +6347,7 @@ window.GG = window.GG || {};
           ensureCommentMoreMenus();
           initCommentPrefixObserver();
           requestCommentPrefixSync();
+          syncCommentComposerMode();
           return true;
         }
 
@@ -6400,6 +6499,22 @@ window.GG = window.GG || {};
           return trigger ? trigger.closest('li.comment, .comment-thread .comment, .comment') : null;
         }
 
+        function getTopLevelCommentCount() {
+          var root = ui.commentsList || (ui.comments ? ui.comments.querySelector('#gg-comments-list, [data-gg-role="comments-list"]') : null);
+          var comments;
+          var i;
+          var count = 0;
+
+          if (!root || !root.querySelectorAll) return 0;
+
+          comments = root.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment');
+          for (i = 0; i < comments.length; i += 1) {
+            if (!comments[i].closest('.comment-replies')) count += 1;
+          }
+
+          return count;
+        }
+
         function getCommentNodeId(commentNode) {
           var node = commentNode;
           while (node) {
@@ -6427,21 +6542,33 @@ window.GG = window.GG || {};
           var banner;
           var text;
           var strong;
+          var clearButton;
 
           if (!ui.commentsReplySlot) return;
 
           ui.commentsReplySlot.textContent = '';
 
-          if (!state.commentReplyContext || !state.commentReplyContext.handle) return;
+          if (!state.commentReplyContext || !state.commentReplyContext.handle) {
+            syncCommentComposerMode();
+            return;
+          }
 
           banner = document.createElement('div');
           banner.className = 'gg-comments__reply-banner';
           text = document.createTextNode('Replying to ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
+          clearButton = document.createElement('button');
+          clearButton.type = 'button';
+          clearButton.className = 'gg-comments__reply-clear';
+          clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
+          clearButton.setAttribute('aria-label', 'Clear reply target');
+          clearButton.textContent = '×';
           banner.appendChild(text);
           banner.appendChild(strong);
+          banner.appendChild(clearButton);
           ui.commentsReplySlot.appendChild(banner);
+          syncCommentComposerMode();
         }
 
         function clearCommentReplyContext() {
@@ -6472,6 +6599,22 @@ window.GG = window.GG || {};
           return ui.commentsFooter;
         }
 
+        function getCommentComposerMode() {
+          if (state.commentReplyContext && state.commentReplyContext.handle) return 'reply';
+          return getTopLevelCommentCount() ? 'comment' : 'empty';
+        }
+
+        function syncCommentComposerMode() {
+          var mode = getCommentComposerMode();
+          var activeFooter = getActiveComposerFooter();
+
+          if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
+          if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
+          if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentRepliesFooter ? mode : 'inactive');
+
+          return mode;
+        }
+
         function ensureComposerPortalAnchors() {
           if (state.commentComposerPortal || !ui.commentsReplySlot || !ui.commentsComposerSlot) return;
           if (!ui.commentsReplySlot.parentNode || !ui.commentsComposerSlot.parentNode) return;
@@ -6489,6 +6632,7 @@ window.GG = window.GG || {};
           footer.appendChild(ui.commentsReplySlot);
           footer.appendChild(ui.commentsComposerSlot);
           renderReplyBanner();
+          syncCommentComposerMode();
           return true;
         }
 
@@ -6511,12 +6655,14 @@ window.GG = window.GG || {};
 
           state.commentComposerPortal = null;
           renderReplyBanner();
+          syncCommentComposerMode();
           return true;
         }
 
         function ensureComposerInActiveFooter() {
           var footer = getActiveComposerFooter();
           if (footer && footer !== ui.commentsFooter) return portalComposerToFooter(footer);
+          syncCommentComposerMode();
           return restoreComposerToMainFooter();
         }
 
@@ -10650,6 +10796,7 @@ window.GG = window.GG || {};
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
           var nativeCommentReplyTrigger;
+          var commentReplyClearTrigger;
           var commentMoreTrigger;
           var commentCopyTrigger;
           var commentDeleteTrigger;
@@ -10683,6 +10830,7 @@ window.GG = window.GG || {};
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
+          commentReplyClearTrigger = event.target.closest('[data-gg-action="comments-reply-context-clear"]');
           commentMoreTrigger = event.target.closest('[data-gg-action="comment-more"]');
           commentCopyTrigger = event.target.closest('[data-gg-action="comment-copy-link"]');
           commentDeleteTrigger = event.target.closest('[data-gg-action="comment-native-delete"]');
@@ -10788,6 +10936,13 @@ window.GG = window.GG || {};
               trigger: commentsComposerTrigger,
               reason: 'comments-composer-trigger'
             });
+            return;
+          }
+
+          if (commentReplyClearTrigger) {
+            event.preventDefault();
+            clearCommentReplyContext();
+            ensureComposerInActiveFooter();
             return;
           }
 

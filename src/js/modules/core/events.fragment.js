@@ -35,6 +35,7 @@
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
           var nativeCommentReplyTrigger;
+          var commentReplyClearTrigger;
           var commentMoreTrigger;
           var commentCopyTrigger;
           var commentDeleteTrigger;
@@ -68,6 +69,7 @@
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
+          commentReplyClearTrigger = event.target.closest('[data-gg-action="comments-reply-context-clear"]');
           commentMoreTrigger = event.target.closest('[data-gg-action="comment-more"]');
           commentCopyTrigger = event.target.closest('[data-gg-action="comment-copy-link"]');
           commentDeleteTrigger = event.target.closest('[data-gg-action="comment-native-delete"]');
@@ -173,6 +175,13 @@
               trigger: commentsComposerTrigger,
               reason: 'comments-composer-trigger'
             });
+            return;
+          }
+
+          if (commentReplyClearTrigger) {
+            event.preventDefault();
+            clearCommentReplyContext();
+            ensureComposerInActiveFooter();
             return;
           }
 

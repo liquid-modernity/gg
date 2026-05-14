@@ -2287,6 +2287,7 @@ window.GG = window.GG || {};
           ensureCommentMoreMenus();
           initCommentPrefixObserver();
           requestCommentPrefixSync();
+          syncCommentComposerMode();
           return true;
         }
 
@@ -2438,6 +2439,22 @@ window.GG = window.GG || {};
           return trigger ? trigger.closest('li.comment, .comment-thread .comment, .comment') : null;
         }
 
+        function getTopLevelCommentCount() {
+          var root = ui.commentsList || (ui.comments ? ui.comments.querySelector('#gg-comments-list, [data-gg-role="comments-list"]') : null);
+          var comments;
+          var i;
+          var count = 0;
+
+          if (!root || !root.querySelectorAll) return 0;
+
+          comments = root.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment');
+          for (i = 0; i < comments.length; i += 1) {
+            if (!comments[i].closest('.comment-replies')) count += 1;
+          }
+
+          return count;
+        }
+
         function getCommentNodeId(commentNode) {
           var node = commentNode;
           while (node) {
@@ -2465,21 +2482,33 @@ window.GG = window.GG || {};
           var banner;
           var text;
           var strong;
+          var clearButton;
 
           if (!ui.commentsReplySlot) return;
 
           ui.commentsReplySlot.textContent = '';
 
-          if (!state.commentReplyContext || !state.commentReplyContext.handle) return;
+          if (!state.commentReplyContext || !state.commentReplyContext.handle) {
+            syncCommentComposerMode();
+            return;
+          }
 
           banner = document.createElement('div');
           banner.className = 'gg-comments__reply-banner';
           text = document.createTextNode('Replying to ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
+          clearButton = document.createElement('button');
+          clearButton.type = 'button';
+          clearButton.className = 'gg-comments__reply-clear';
+          clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
+          clearButton.setAttribute('aria-label', 'Clear reply target');
+          clearButton.textContent = '×';
           banner.appendChild(text);
           banner.appendChild(strong);
+          banner.appendChild(clearButton);
           ui.commentsReplySlot.appendChild(banner);
+          syncCommentComposerMode();
         }
 
         function clearCommentReplyContext() {
@@ -2510,6 +2539,22 @@ window.GG = window.GG || {};
           return ui.commentsFooter;
         }
 
+        function getCommentComposerMode() {
+          if (state.commentReplyContext && state.commentReplyContext.handle) return 'reply';
+          return getTopLevelCommentCount() ? 'comment' : 'empty';
+        }
+
+        function syncCommentComposerMode() {
+          var mode = getCommentComposerMode();
+          var activeFooter = getActiveComposerFooter();
+
+          if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
+          if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
+          if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentRepliesFooter ? mode : 'inactive');
+
+          return mode;
+        }
+
         function ensureComposerPortalAnchors() {
           if (state.commentComposerPortal || !ui.commentsReplySlot || !ui.commentsComposerSlot) return;
           if (!ui.commentsReplySlot.parentNode || !ui.commentsComposerSlot.parentNode) return;
@@ -2527,6 +2572,7 @@ window.GG = window.GG || {};
           footer.appendChild(ui.commentsReplySlot);
           footer.appendChild(ui.commentsComposerSlot);
           renderReplyBanner();
+          syncCommentComposerMode();
           return true;
         }
 
@@ -2549,12 +2595,14 @@ window.GG = window.GG || {};
 
           state.commentComposerPortal = null;
           renderReplyBanner();
+          syncCommentComposerMode();
           return true;
         }
 
         function ensureComposerInActiveFooter() {
           var footer = getActiveComposerFooter();
           if (footer && footer !== ui.commentsFooter) return portalComposerToFooter(footer);
+          syncCommentComposerMode();
           return restoreComposerToMainFooter();
         }
 
@@ -6688,6 +6736,7 @@ window.GG = window.GG || {};
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
           var nativeCommentReplyTrigger;
+          var commentReplyClearTrigger;
           var commentMoreTrigger;
           var commentCopyTrigger;
           var commentDeleteTrigger;
@@ -6721,6 +6770,7 @@ window.GG = window.GG || {};
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
+          commentReplyClearTrigger = event.target.closest('[data-gg-action="comments-reply-context-clear"]');
           commentMoreTrigger = event.target.closest('[data-gg-action="comment-more"]');
           commentCopyTrigger = event.target.closest('[data-gg-action="comment-copy-link"]');
           commentDeleteTrigger = event.target.closest('[data-gg-action="comment-native-delete"]');
@@ -6826,6 +6876,13 @@ window.GG = window.GG || {};
               trigger: commentsComposerTrigger,
               reason: 'comments-composer-trigger'
             });
+            return;
+          }
+
+          if (commentReplyClearTrigger) {
+            event.preventDefault();
+            clearCommentReplyContext();
+            ensureComposerInActiveFooter();
             return;
           }
 

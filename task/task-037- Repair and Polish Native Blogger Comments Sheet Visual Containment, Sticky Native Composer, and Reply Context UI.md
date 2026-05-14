@@ -1,4 +1,4 @@
-# TASK-037 — Repair and Polish Native Blogger Comments Sheet Visual Containment, Sticky Native Composer, and Reply Context UI
+# TASK-037 — Repair and Polish Native Blogger Comments Sheet Visual Containment, Sticky Native Composer Modes, and Reply Context UI
 
 ## Objective
 
@@ -9,6 +9,10 @@ The comments system must remain Blogger-native, but the visible experience must 
 - Main comments sheet shows only top-level comments.
 - Replies are opened in a dedicated replies sheet.
 - The native Blogger composer is always available from the sticky footer of the active sheet.
+- The native Blogger composer has three UI modes:
+  1. empty-state post comment;
+  2. add top-level comment;
+  3. reply to comment.
 - Reply mode shows a footer banner: `Replying to @AuthorName ×`.
 - Native Blogger internals remain untouched and functional.
 
@@ -24,6 +28,7 @@ This is a repair/polish task, not a rewrite.
 4. GG More button can fall onto its own row instead of staying aligned with author/timestamp.
 5. Native `Load more...` appears visually unstyled.
 6. Composer footer behavior must be unified for:
+   - empty comment state;
    - new top-level comment;
    - reply to top-level comment;
    - reply to level-1, level-2, or level-3 comment.
@@ -70,7 +75,8 @@ Do not:
 - clone native comment nodes for active reply/delete behavior;
 - permanently remove native delete controls from DOM;
 - create a custom textarea as the actual submit composer;
-- create a custom Send/Publish button as the actual submit action.
+- create a custom Send/Publish button as the actual submit action;
+- replace Blogger account, Notify Me, reCAPTCHA, or Publish controls.
 
 ### One composer only
 
