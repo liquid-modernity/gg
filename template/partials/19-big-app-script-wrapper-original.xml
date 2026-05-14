@@ -751,6 +751,7 @@ window.GG = window.GG || {};
           commentRepliesTimer: 0,
           commentReplyContext: null,
           commentComposerPortal: null,
+          commentComposerOpen: false,
           commentPrefixObserver: null,
           commentPrefixSyncFrame: 0,
           commentEnhancementScheduled: false,
@@ -795,6 +796,17 @@ window.GG = window.GG || {};
             var editor = document.querySelector('#comment-editor');
             var editorSrc = document.querySelector('#comment-editor-src');
             var composer = document.querySelector('#top-ce');
+            var visibleAddCommentControls;
+            var visibleComposer;
+            var composerLauncherConflict;
+            var loadMoreInsideFooter;
+            var replyActionsVertical;
+            var zeroStateDuplicateLabels;
+            var excessiveCommentVerticalGap;
+            var topCeInsideFooter;
+            var topCeInsideComment;
+            var bannerFooter;
+            var composerFooter;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -812,6 +824,7 @@ window.GG = window.GG || {};
             var visibleSheets = [sheet ? sheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null, repliesSheet ? repliesSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null].filter(isVisible).length;
             var visibleFooters = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__footer')).filter(isVisible).length;
             var visibleReplyLeaks = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet #gg-comments-list .comment-replies')).filter(isVisible).length;
+            var visibleFooterNodes = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__footer')).filter(isVisible);
             var moreButtonsInHeader = Array.prototype.slice.call(document.querySelectorAll('.gg-comment-more')).every(function (node) {
               var comment = node.closest ? node.closest('li.comment, .comment-thread .comment, .comment') : null;
               var header = comment && comment.querySelector ? comment.querySelector('.comment-author, .comment-header') : null;
@@ -821,6 +834,36 @@ window.GG = window.GG || {};
               return Math.abs(Math.round(nodeRect.top) - Math.round(headerRect.top)) <= 8;
             });
             var activeCommentsLayer = document.body ? (document.body.getAttribute('data-gg-comments-layer') || '') : '';
+            topCeInsideFooter = !!(composer && composer.closest && composer.closest('.gg-comments__footer'));
+            topCeInsideComment = !!(composer && composer.closest && composer.closest('li.comment, .comment-thread, .comment-replies, #gg-comments-list, #gg-comment-replies-list'));
+            bannerFooter = document.querySelector('.gg-comments__reply-banner');
+            bannerFooter = bannerFooter && bannerFooter.closest ? bannerFooter.closest('.gg-comments__footer') : null;
+            composerFooter = composer && composer.closest ? composer.closest('.gg-comments__footer') : null;
+            visibleAddCommentControls = visibleFooterNodes.reduce(function (count, footer) {
+              return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"]')).filter(isVisible).length;
+            }, 0);
+            visibleComposer = !!(composer && isVisible(composer));
+            composerLauncherConflict = visibleFooterNodes.some(function (footer) {
+              return !!(footer.querySelector('#top-ce') && isVisible(footer.querySelector('#top-ce')) && Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"]')).filter(isVisible).length);
+            });
+            loadMoreInsideFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .continue, #gg-comments-sheet a')).some(function (node) {
+              return /load more/i.test(node.textContent || '') && isVisible(node) && !!(node.closest && node.closest('.gg-comments__footer'));
+            });
+            replyActionsVertical = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .thread-toggle, #gg-comment-replies-sheet .continue, #gg-comment-replies-sheet [data-gg-action="comments-open-replies"]')).filter(isVisible).some(function (node) {
+              var rect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.width <= rect.height));
+            });
+            zeroStateDuplicateLabels = !getTopLevelCommentCount || getTopLevelCommentCount() ? false : (visibleFooterNodes.reduce(function (count, footer) {
+              return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"], #comment-post-message')).filter(isVisible).length;
+            }, 0) > 1);
+            excessiveCommentVerticalGap = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet li.comment, #gg-comments-sheet .comment-thread .comment')).filter(isVisible).slice(0, 6).some(function (commentNode) {
+              var bodyNode = commentNode.querySelector ? commentNode.querySelector('.comment-body, .comment-content') : null;
+              var actionNode = commentNode.querySelector ? commentNode.querySelector('.comment-actions, .comment-footer, [data-gg-action="comments-open-replies"], .continue') : null;
+              var bodyRect = bodyNode && bodyNode.getBoundingClientRect ? bodyNode.getBoundingClientRect() : null;
+              var actionRect = actionNode && actionNode.getBoundingClientRect ? actionNode.getBoundingClientRect() : null;
+              return !!(bodyRect && actionRect && actionRect.top - bodyRect.bottom > 24);
+            });
 
             result = {
               sheet: !!sheet,
@@ -842,7 +885,18 @@ window.GG = window.GG || {};
               visibleFooters: visibleFooters,
               repliesAboveMain: !sheet || !repliesSheet || getZ(repliesSheet) > getZ(sheet),
               visibleReplyLeaks: visibleReplyLeaks,
-              moreButtonsInHeader: moreButtonsInHeader
+              moreButtonsInHeader: moreButtonsInHeader,
+              topCeInsideFooter: topCeInsideFooter,
+              topCeInsideComment: topCeInsideComment,
+              bannerFooterMatchesComposerFooter: !bannerFooter || bannerFooter === composerFooter,
+              composerLauncherConflict: composerLauncherConflict,
+              visibleAddCommentControls: visibleAddCommentControls,
+              visibleComposer: visibleComposer,
+              loadMoreInsideFooter: loadMoreInsideFooter,
+              replyActionsVertical: replyActionsVertical,
+              zeroStateDuplicateLabels: zeroStateDuplicateLabels,
+              excessiveCommentVerticalGap: excessiveCommentVerticalGap,
+              repliesSheetHasHandle: !!document.querySelector('#gg-comment-replies-sheet [data-gg-drag-handle="comment-replies"], #gg-comment-replies-sheet .gg-sheet__handle')
             };
 
             result.ok = !!(
@@ -859,6 +913,16 @@ window.GG = window.GG || {};
               result.repliesAboveMain &&
               result.visibleReplyLeaks === 0 &&
               result.moreButtonsInHeader &&
+              result.topCeInsideFooter &&
+              !result.topCeInsideComment &&
+              result.bannerFooterMatchesComposerFooter &&
+              !result.composerLauncherConflict &&
+              result.visibleAddCommentControls <= 1 &&
+              !result.loadMoreInsideFooter &&
+              !result.replyActionsVertical &&
+              !result.zeroStateDuplicateLabels &&
+              !result.excessiveCommentVerticalGap &&
+              result.repliesSheetHasHandle &&
               (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
             );
           } catch (error) {
@@ -2340,21 +2404,67 @@ window.GG = window.GG || {};
 
         function adoptGeneratedBloggerComposer() {
           var slot = ui.commentsComposerSlot || document.getElementById('gg-comments-composer-slot');
-          var generated = document.querySelector('.comment-replybox-thread#top-ce');
-          var placeholder = slot ? slot.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]') : document.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]');
+          var editor = document.getElementById('comment-editor');
+          var editorComposer = editor && editor.closest ? editor.closest('.comment-form, .comment-replybox-thread, .comment-replybox-single') : null;
+          var generated = document.querySelector('.comment-replybox-thread#top-ce') || document.getElementById('top-ce');
+          var composer = editorComposer || generated;
+          var placeholder = slot ? slot.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"], .comment-replybox-thread[data-gg-native-plumbing="composer"], .comment-replybox-thread[data-gg-native-plumbing="composer-source"], .comment-replybox-single[data-gg-native-plumbing="composer"], .comment-replybox-single[data-gg-native-plumbing="composer-source"]') : document.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"], .comment-replybox-thread[data-gg-native-plumbing="composer"], .comment-replybox-thread[data-gg-native-plumbing="composer-source"], .comment-replybox-single[data-gg-native-plumbing="composer"], .comment-replybox-single[data-gg-native-plumbing="composer-source"]');
 
-          if (generated && placeholder && generated !== placeholder) {
+          if (generated && composer && generated !== composer && generated.id === 'top-ce') {
+            generated.removeAttribute('id');
+            generated.setAttribute('data-gg-native-plumbing', 'composer-source');
+            generated.setAttribute('hidden', 'hidden');
+          }
+
+          if (composer && composer.id !== 'top-ce') composer.id = 'top-ce';
+
+          if (composer && placeholder && composer !== placeholder) {
             if (placeholder.id === 'top-ce') placeholder.removeAttribute('id');
             placeholder.setAttribute('data-gg-native-plumbing', 'composer-source');
             placeholder.setAttribute('hidden', 'hidden');
           }
 
-          if (generated && slot && generated.parentNode !== slot) {
-            slot.insertBefore(generated, slot.firstChild);
-            generated.setAttribute('data-gg-native-plumbing', 'composer');
+          if (composer && slot && composer.parentNode !== slot) {
+            slot.insertBefore(composer, slot.firstChild);
+            composer.setAttribute('data-gg-native-plumbing', 'composer');
           }
 
-          return !!(generated || placeholder);
+          if (composer) {
+            composer.hidden = false;
+            composer.removeAttribute('hidden');
+            if (composer.style) composer.style.display = '';
+          }
+
+          return !!(composer || placeholder);
+        }
+
+        function ensureRepliesSheetHandle() {
+          var head = ui.commentReplies ? ui.commentReplies.querySelector('.gg-comments-sheet__head, .gg-sheet__head') : null;
+          var back = ui.commentReplies ? ui.commentReplies.querySelector('.gg-comments-sheet__back') : null;
+          var handle;
+          var label;
+
+          if (!head) return false;
+          handle = head.querySelector('.gg-sheet__handle');
+          if (handle) return true;
+
+          handle = document.createElement('button');
+          handle.type = 'button';
+          handle.className = 'gg-comments-sheet__handle gg-sheet__handle';
+          handle.setAttribute('data-gg-drag-handle', 'comment-replies');
+          handle.setAttribute('aria-label', 'Drag replies sheet');
+          label = document.createElement('span');
+          label.className = 'gg-visually-hidden';
+          label.textContent = 'Drag replies sheet';
+          handle.appendChild(label);
+          head.insertBefore(handle, back || head.firstChild);
+          return true;
+        }
+
+        function setComposerOpen(open) {
+          state.commentComposerOpen = !!open;
+          syncCommentComposerMode();
+          return state.commentComposerOpen;
         }
 
         function getCommentFromLegacyContinue(continueNode, commentId) {
@@ -2415,7 +2525,9 @@ window.GG = window.GG || {};
           if (!hasCommentsSurface()) return false;
           state.commentEnhancementScheduled = false;
           state.commentEnhancementReason = reason || 'comments-enhancement';
+          ensureRepliesSheetHandle();
           adoptGeneratedBloggerComposer();
+          ensureComposerInActiveFooter();
           cleanupLegacyCommentControls();
           initCommentRepliesControls();
           ensureCommentMoreMenus();
@@ -2668,6 +2780,7 @@ window.GG = window.GG || {};
             parentAuthor: author,
             handle: handle
           };
+          state.commentComposerOpen = true;
           renderReplyBanner();
           return state.commentReplyContext;
         }
@@ -2685,10 +2798,13 @@ window.GG = window.GG || {};
         function syncCommentComposerMode() {
           var mode = getCommentComposerMode();
           var activeFooter = getActiveComposerFooter();
+          var open = state.commentComposerOpen || mode === 'reply';
 
           if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
           if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
           if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentRepliesFooter ? mode : 'inactive');
+          if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-composer-open', activeFooter === ui.commentsFooter && open ? 'true' : 'false');
+          if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-composer-open', activeFooter === ui.commentRepliesFooter && open ? 'true' : 'false');
 
           return mode;
         }
@@ -2784,6 +2900,7 @@ window.GG = window.GG || {};
           if (state.commentPrefixSyncFrame) return;
           state.commentPrefixSyncFrame = window.requestAnimationFrame(function () {
             state.commentPrefixSyncFrame = 0;
+            ensureComposerInActiveFooter();
             ensureCommentMoreMenus();
             applyVisualReplyPrefixes(ui.comments || document);
           });
@@ -2817,6 +2934,7 @@ window.GG = window.GG || {};
           if (!commentNode) return;
 
           setCommentReplyContext(commentNode);
+          setComposerOpen(true);
           ensureComposerInActiveFooter();
 
           window.setTimeout(function () {
@@ -3104,7 +3222,7 @@ window.GG = window.GG || {};
         }
 
         function isCommentRepliesSheetOpen() {
-          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') === 'open');
+          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') !== 'closed' && ui.commentReplies.getAttribute('data-gg-state') !== 'closing');
         }
 
         function focusCommentRepliesSheet() {
@@ -3165,6 +3283,7 @@ window.GG = window.GG || {};
             window.requestAnimationFrame(function () {
               if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
                 ui.commentReplies.setAttribute('data-gg-state', 'open');
+                ensureComposerInActiveFooter();
               }
             });
             window.setTimeout(focusCommentRepliesSheet, 24);
@@ -3270,6 +3389,7 @@ window.GG = window.GG || {};
           var composerOptions = options || {};
 
           if (composerOptions.clearReply !== false) clearCommentReplyContext();
+          setComposerOpen(true);
 
           return openCommentsSheet({
             trigger: composerOptions.trigger,

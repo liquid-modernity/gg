@@ -121,6 +121,7 @@
           commentRepliesTimer: 0,
           commentReplyContext: null,
           commentComposerPortal: null,
+          commentComposerOpen: false,
           commentPrefixObserver: null,
           commentPrefixSyncFrame: 0,
           commentEnhancementScheduled: false,
@@ -165,6 +166,17 @@
             var editor = document.querySelector('#comment-editor');
             var editorSrc = document.querySelector('#comment-editor-src');
             var composer = document.querySelector('#top-ce');
+            var visibleAddCommentControls;
+            var visibleComposer;
+            var composerLauncherConflict;
+            var loadMoreInsideFooter;
+            var replyActionsVertical;
+            var zeroStateDuplicateLabels;
+            var excessiveCommentVerticalGap;
+            var topCeInsideFooter;
+            var topCeInsideComment;
+            var bannerFooter;
+            var composerFooter;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -182,6 +194,7 @@
             var visibleSheets = [sheet ? sheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null, repliesSheet ? repliesSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null].filter(isVisible).length;
             var visibleFooters = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__footer')).filter(isVisible).length;
             var visibleReplyLeaks = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet #gg-comments-list .comment-replies')).filter(isVisible).length;
+            var visibleFooterNodes = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__footer')).filter(isVisible);
             var moreButtonsInHeader = Array.prototype.slice.call(document.querySelectorAll('.gg-comment-more')).every(function (node) {
               var comment = node.closest ? node.closest('li.comment, .comment-thread .comment, .comment') : null;
               var header = comment && comment.querySelector ? comment.querySelector('.comment-author, .comment-header') : null;
@@ -191,6 +204,36 @@
               return Math.abs(Math.round(nodeRect.top) - Math.round(headerRect.top)) <= 8;
             });
             var activeCommentsLayer = document.body ? (document.body.getAttribute('data-gg-comments-layer') || '') : '';
+            topCeInsideFooter = !!(composer && composer.closest && composer.closest('.gg-comments__footer'));
+            topCeInsideComment = !!(composer && composer.closest && composer.closest('li.comment, .comment-thread, .comment-replies, #gg-comments-list, #gg-comment-replies-list'));
+            bannerFooter = document.querySelector('.gg-comments__reply-banner');
+            bannerFooter = bannerFooter && bannerFooter.closest ? bannerFooter.closest('.gg-comments__footer') : null;
+            composerFooter = composer && composer.closest ? composer.closest('.gg-comments__footer') : null;
+            visibleAddCommentControls = visibleFooterNodes.reduce(function (count, footer) {
+              return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"]')).filter(isVisible).length;
+            }, 0);
+            visibleComposer = !!(composer && isVisible(composer));
+            composerLauncherConflict = visibleFooterNodes.some(function (footer) {
+              return !!(footer.querySelector('#top-ce') && isVisible(footer.querySelector('#top-ce')) && Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"]')).filter(isVisible).length);
+            });
+            loadMoreInsideFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .continue, #gg-comments-sheet a')).some(function (node) {
+              return /load more/i.test(node.textContent || '') && isVisible(node) && !!(node.closest && node.closest('.gg-comments__footer'));
+            });
+            replyActionsVertical = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .thread-toggle, #gg-comment-replies-sheet .continue, #gg-comment-replies-sheet [data-gg-action="comments-open-replies"]')).filter(isVisible).some(function (node) {
+              var rect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.width <= rect.height));
+            });
+            zeroStateDuplicateLabels = !getTopLevelCommentCount || getTopLevelCommentCount() ? false : (visibleFooterNodes.reduce(function (count, footer) {
+              return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"], #comment-post-message')).filter(isVisible).length;
+            }, 0) > 1);
+            excessiveCommentVerticalGap = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet li.comment, #gg-comments-sheet .comment-thread .comment')).filter(isVisible).slice(0, 6).some(function (commentNode) {
+              var bodyNode = commentNode.querySelector ? commentNode.querySelector('.comment-body, .comment-content') : null;
+              var actionNode = commentNode.querySelector ? commentNode.querySelector('.comment-actions, .comment-footer, [data-gg-action="comments-open-replies"], .continue') : null;
+              var bodyRect = bodyNode && bodyNode.getBoundingClientRect ? bodyNode.getBoundingClientRect() : null;
+              var actionRect = actionNode && actionNode.getBoundingClientRect ? actionNode.getBoundingClientRect() : null;
+              return !!(bodyRect && actionRect && actionRect.top - bodyRect.bottom > 24);
+            });
 
             result = {
               sheet: !!sheet,
@@ -212,7 +255,18 @@
               visibleFooters: visibleFooters,
               repliesAboveMain: !sheet || !repliesSheet || getZ(repliesSheet) > getZ(sheet),
               visibleReplyLeaks: visibleReplyLeaks,
-              moreButtonsInHeader: moreButtonsInHeader
+              moreButtonsInHeader: moreButtonsInHeader,
+              topCeInsideFooter: topCeInsideFooter,
+              topCeInsideComment: topCeInsideComment,
+              bannerFooterMatchesComposerFooter: !bannerFooter || bannerFooter === composerFooter,
+              composerLauncherConflict: composerLauncherConflict,
+              visibleAddCommentControls: visibleAddCommentControls,
+              visibleComposer: visibleComposer,
+              loadMoreInsideFooter: loadMoreInsideFooter,
+              replyActionsVertical: replyActionsVertical,
+              zeroStateDuplicateLabels: zeroStateDuplicateLabels,
+              excessiveCommentVerticalGap: excessiveCommentVerticalGap,
+              repliesSheetHasHandle: !!document.querySelector('#gg-comment-replies-sheet [data-gg-drag-handle="comment-replies"], #gg-comment-replies-sheet .gg-sheet__handle')
             };
 
             result.ok = !!(
@@ -229,6 +283,16 @@
               result.repliesAboveMain &&
               result.visibleReplyLeaks === 0 &&
               result.moreButtonsInHeader &&
+              result.topCeInsideFooter &&
+              !result.topCeInsideComment &&
+              result.bannerFooterMatchesComposerFooter &&
+              !result.composerLauncherConflict &&
+              result.visibleAddCommentControls <= 1 &&
+              !result.loadMoreInsideFooter &&
+              !result.replyActionsVertical &&
+              !result.zeroStateDuplicateLabels &&
+              !result.excessiveCommentVerticalGap &&
+              result.repliesSheetHasHandle &&
               (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
             );
           } catch (error) {

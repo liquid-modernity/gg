@@ -1,6 +1,7 @@
     <b:skin><![CDATA[
 :root {
   color-scheme: light;
+  --gg-handler: 10px;
   --gg-hit-min: 44px;
   --gg-icon-size: 20px;
   --gg-icon-size-compact: 19px;
@@ -21,7 +22,7 @@
   --gg-surface-panel-fade-strong: rgba(245, 239, 236, .94);
   --gg-surface-panel-fade-muted: rgba(245, 239, 236, .82);
   --gg-divider: rgba(32, 26, 28, .12);
-  --gg-divider-strong: rgba(32, 26, 28, .18);
+  --gg-divider-strong: rgba(32, 26, 28, 0);
   --gg-border-interactive: rgba(32, 26, 28, .18);
   --gg-ink: #201a1c;
   --gg-ink-soft: #5f565b;
@@ -36,13 +37,13 @@
   --gg-shadow-panel-bottom: 0 -16px 48px rgba(32, 26, 28, .105);
   --gg-shadow-panel-top: 0 16px 48px rgba(32, 26, 28, .105);
   --gg-panel-min-height: 260px;
-  --gg-panel-max-height: min(94dvh, 920px);
+  --gg-panel-max-height: min(100dvh, 920px);
   --gg-panel-command-min-height: 340px;
   --gg-panel-comments-min-height: 420px;
   --gg-panel-more-min-height: 260px;
   --gg-panel-preview-min-height: 320px;
   --gg-panel-preview-max-height: min(94dvh, 920px);
-  --gg-panel-width: min(calc(100vw - 12px), 600px);
+  --gg-panel-width: min(calc(100vw - 0px), 600px);
   --gg-panel-radius: 26px;
   --gg-panel-pad-y: 0px;
   --gg-panel-pad-x: 14px;
@@ -52,7 +53,7 @@
   --gg-utility-head-pad-bottom: 6px;
   --gg-utility-head-border: var(--gg-divider);
   --gg-utility-title-max: 24ch;
-  --gg-panel-handle-width: 62px;
+  --gg-panel-handle-width: 33px;
   --gg-panel-handle-height: 3px;
   --gg-utility-handle-gap: 6px;
   --gg-panel-handle-tone: rgba(32, 26, 28, .18);
@@ -83,7 +84,7 @@
   --gg-bottom-safezone-breathing: 20px;
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + var(--gg-bottom-safezone-breathing));
   --gg-listing-bottom-clearance: var(--gg-bottom-safezone-min);
-  --gg-detail-outline-width: 560px;
+  --gg-detail-outline-width: 540px;
   --gg-detail-outline-radius: 22px;
   --gg-detail-outline-border: var(--gg-toolbar-border);
   --gg-detail-outline-surface: var(--gg-toolbar-surface);
@@ -118,16 +119,16 @@
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --gg-site-head-bottom: 8px;
   --gg-entry-list-bg: transparent;
-  --gg-entry-row-pad-y: 16px;
+  --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
   --gg-entry-row-gap: 12px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32, 26, 28, .14);
   --gg-entry-row-surface-hover: rgba(255, 255, 255, .46);
-  --gg-entry-row-title-size: 18px;
+  --gg-entry-row-title-size: 12px;
   --gg-entry-row-title-line: 1.28;
   --gg-entry-row-title-weight: 600;
-  --gg-entry-row-action-size: 12px;
+  --gg-entry-row-action-size: 10px;
   --gg-entry-row-action-weight: 600;
   --gg-entry-row-action-min-height: var(--gg-hit-min);
   --gg-entry-row-action-pad-x: 6px;
@@ -214,15 +215,15 @@
   --gg-more-footer-legal-tone: var(--gg-ink-soft);
   --gg-comment-avatar-size: 36px;
   --gg-comment-gap: 12px;
-  --gg-comment-pad-y: 16px;
+  --gg-comment-pad-y: 12px;
   --gg-comment-divider: var(--gg-divider);
   --gg-comment-thread-guide: rgba(32, 26, 28, .1);
   --gg-comment-indent: 18px;
   --gg-comment-nested-gap: 0px;
-  --gg-comment-body-gap: 8px;
+  --gg-comment-body-gap: 5px;
   --gg-comment-meta-gap: 6px;
   --gg-comment-meta-line: 1.4;
-  --gg-comment-action-gap: 10px;
+  --gg-comment-action-gap: 8px;
   --gg-comment-action-min-height: var(--gg-hit-min);
   --gg-comment-action-pad-x: 0px;
   --gg-comment-action-tone: var(--gg-accent-soft);
@@ -245,7 +246,7 @@
 
 @supports (width: 100dvw) {
   :root {
-    --gg-panel-width: min(calc(100dvw - 12px), 600px);
+    --gg-panel-width: min(calc(100dvw - 0px), 600px);
   }
 }
 
@@ -257,11 +258,11 @@
     --gg-utility-head-pad-top: 0px;
     --gg-site-head-bottom: 10px;
     --gg-toolbar-item-size: 13px;
-    --gg-entry-row-pad-y: 18px;
+    --gg-entry-row-pad-y: 2px;
     --gg-entry-row-pad-x: 4px;
     --gg-entry-row-gap: 16px;
-    --gg-entry-row-title-size: 20px;
-    --gg-entry-row-action-size: 13px;
+    --gg-entry-row-title-size: 18px;
+    --gg-entry-row-action-size: 12px;
     --gg-entry-row-action-min-height: var(--gg-hit-min);
     --gg-article-pad-y: 22px;
     --gg-article-pad-bottom-base: 28px;
@@ -277,7 +278,7 @@
     --gg-discovery-result-title-size: 17px;
     --gg-comment-avatar-size: 38px;
     --gg-comment-indent: 22px;
-    --gg-detail-outline-width: 600px;
+    --gg-detail-outline-width: 540px;
     --gg-detail-outline-expanded-max-height: min(40dvh, 340px);
     --gg-detail-outline-peek-title-size: 16px;
     --gg-detail-outline-micro-min-height: var(--gg-hit-min);
@@ -303,7 +304,7 @@ html[data-gg-theme='dark'] {
   --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
   --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
   --gg-divider: rgba(255, 255, 255, .14);
-  --gg-divider-strong: rgba(255, 255, 255, .22);
+  --gg-divider-strong: rgba(255, 255, 255, 0);
   --gg-border-interactive: rgba(255, 255, 255, .18);
   --gg-ink: #f5f1f3;
   --gg-ink-soft: #c8bec4;
@@ -349,7 +350,7 @@ html[data-gg-theme='dark'] {
     --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
     --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
     --gg-divider: rgba(255, 255, 255, .14);
-    --gg-divider-strong: rgba(255, 255, 255, .22);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .18);
     --gg-ink: #f5f1f3;
     --gg-ink-soft: #c8bec4;
@@ -383,14 +384,14 @@ html[data-gg-theme='dark'] {
 @media (prefers-contrast: more) {
   :root {
     --gg-divider: rgba(32, 26, 28, .26);
-    --gg-divider-strong: rgba(32, 26, 28, .36);
+    --gg-divider-strong: rgba(32, 26, 28, 0);
     --gg-border-interactive: rgba(32, 26, 28, .42);
     --gg-focus-ring: 3px solid var(--gg-accent);
   }
 
   html[data-gg-theme='dark'] {
     --gg-divider: rgba(255, 255, 255, .32);
-    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .5);
   }
 }
@@ -398,7 +399,7 @@ html[data-gg-theme='dark'] {
 @media (prefers-color-scheme: dark) and (prefers-contrast: more) {
   :root:not([data-gg-theme='light']) {
     --gg-divider: rgba(255, 255, 255, .32);
-    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .5);
   }
 }
@@ -522,7 +523,7 @@ img {
 }
 
 .gg-main {
-  width: min(100%, 720px);
+  width: min(100%, 600px);
   margin: 0 auto;
 }
 
@@ -542,7 +543,7 @@ img {
 
 .gg-site-head__title {
   margin: 0;
-  font-size: clamp(18px, 7vw, 34px);
+  font-size: clamp(18px, 7vw, 19px);
   line-height: 1.08;
   letter-spacing: -.03em;
 }
@@ -1160,6 +1161,9 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments {
+  --gg-comment-pad-y: 12px;
+  --gg-comment-body-gap: 5px;
+  --gg-comment-action-gap: 8px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 0;
@@ -1213,6 +1217,10 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   visibility: hidden;
   pointer-events: none;
+}
+
+body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg-legacy-control]) {
+  display: none !important;
 }
 
 .gg-comments--sheet .title,
@@ -1457,12 +1465,17 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   grid-column: 2;
   justify-self: start;
   min-height: 32px;
-  margin: 0 0 10px;
+  width: auto;
+  max-width: 100%;
+  margin: 2px 0 8px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--gg-comment-action-tone);
   font: 650 12px/1.2 var(--gg-font-sans);
+  writing-mode: horizontal-tb;
+  white-space: nowrap;
+  word-break: normal;
   cursor: pointer;
 }
 
@@ -1574,14 +1587,14 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
 .gg-comments .comment-body,
 .gg-comments .comment-content {
   color: var(--gg-ink);
-  font: 400 14px/1.6 var(--gg-font-sans);
+  font: 400 14px/1.5 var(--gg-font-sans);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .gg-comments .comment-body p,
 .gg-comments .comment-content p {
-  margin: 0 0 .85em;
+  margin: 0 0 .45em;
 }
 
 .gg-comments .comment-body p:last-child,
@@ -1595,18 +1608,24 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gg-comment-action-gap);
-  margin-top: 4px;
+  margin-top: 0;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .thread-toggle,
 .gg-comments .thread-count,
 .gg-comments .continue {
   grid-column: 2;
-  min-width: 0;
+  min-width: max-content;
+  width: auto;
+  max-width: 100%;
   margin: 2px 0 0;
   color: var(--gg-comment-action-tone);
   font: 600 12px/1.35 var(--gg-font-sans);
-  overflow-wrap: anywhere;
+  writing-mode: horizontal-tb;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .gg-comments .comment .continue,
@@ -1631,21 +1650,31 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   align-items: center;
   min-height: 32px;
   color: inherit;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .comment-actions a,
+.gg-comments .comment-reply,
+.gg-comments .comment-reply a,
 .gg-comments a.comment-reply,
 .gg-comments .comment-delete {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  min-height: var(--gg-comment-action-min-height);
-  padding: 0 var(--gg-comment-action-pad-x);
+  min-height: 32px;
+  width: auto;
+  max-width: 100%;
+  padding: 0 2px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: transparent;
   color: var(--gg-comment-action-tone);
   font: 600 12px/1.2 var(--gg-font-sans);
+  writing-mode: horizontal-tb;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .gg-comments .comment-timestamp a {
@@ -1685,14 +1714,24 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
 }
 
 .gg-comments .comment-actions a:hover,
+.gg-comments .comment-actions a:focus-visible,
+.gg-comments .comment-reply:hover,
+.gg-comments .comment-reply:focus-visible,
+.gg-comments .comment-reply a:hover,
+.gg-comments .comment-reply a:focus-visible,
 .gg-comments a.comment-reply:hover,
-.gg-comments .comment-delete:hover {
+.gg-comments a.comment-reply:focus-visible,
+.gg-comments .comment-delete:hover,
+.gg-comments .comment-delete:focus-visible {
+  padding-inline: 8px;
+  border-radius: 10px;
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
 }
 
 .gg-comments .comment-form,
 .gg-comments .comment-replybox-thread,
+.gg-comments .comment-replybox-single,
 .gg-comments .comments > .comment-footer .comment-form {
   display: grid;
   gap: 10px;
@@ -1722,6 +1761,18 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   gap: 6px;
 }
 
+.gg-comments__footer[data-gg-composer-open='true'] [data-gg-action='comments-open-composer'] {
+  display: none !important;
+}
+
+.gg-comments__footer[data-gg-composer-open='false'] #gg-comments-composer-slot {
+  display: none !important;
+}
+
+.gg-comments__footer .continue {
+  display: none !important;
+}
+
 .gg-comments__footer .comment-form {
   margin-top: 0;
   padding-top: 0;
@@ -1729,14 +1780,17 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
 }
 
 .gg-comments__footer .comment-replybox-thread,
-#gg-comments-composer-slot > .comment-replybox-thread {
+.gg-comments__footer .comment-replybox-single,
+#gg-comments-composer-slot > .comment-replybox-thread,
+#gg-comments-composer-slot > .comment-replybox-single {
   display: grid;
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
 }
 
-.gg-comments .comment-thread > .comment-replybox-thread {
+.gg-comments .comment-thread > .comment-replybox-thread,
+.gg-comments .comment-thread > .comment-replybox-single {
   display: none;
 }
 
@@ -1784,7 +1838,9 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) {
   grid-column: 1 / -1;
   justify-self: stretch;
-  margin: 10px 0 0;
+  min-width: 0;
+  margin: 8px 0 0;
+  white-space: normal;
 }
 
 .gg-comments #comments-block > .continue a,
@@ -1813,7 +1869,7 @@ body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
   #gg-comments-sheet {
     --gg-comment-avatar-size: 32px;
     --gg-comment-gap: 10px;
-    --gg-comment-pad-y: 14px;
+    --gg-comment-pad-y: 12px;
   }
 
   .gg-comments .comment-author .datetime,
@@ -1985,7 +2041,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='open'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim {
-  opacity: 1;
+
 }
 
 .gg-sheet[data-gg-state='opening'] .gg-sheet__panel,
@@ -2037,7 +2093,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   place-items: center;
   width: var(--gg-panel-handle-width);
-  min-height: var(--gg-hit-min);
+  min-height: var(--gg-handler);
   margin: 0;
   padding: 0;
   border: 0;
@@ -2816,7 +2872,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 
   .gg-main {
-    width: min(100%, 860px);
+    width: min(100%, 600px);
   }
 
   .gg-discovery-search__field {

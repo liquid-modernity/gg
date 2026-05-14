@@ -416,21 +416,67 @@
 
         function adoptGeneratedBloggerComposer() {
           var slot = ui.commentsComposerSlot || document.getElementById('gg-comments-composer-slot');
-          var generated = document.querySelector('.comment-replybox-thread#top-ce');
-          var placeholder = slot ? slot.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]') : document.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]');
+          var editor = document.getElementById('comment-editor');
+          var editorComposer = editor && editor.closest ? editor.closest('.comment-form, .comment-replybox-thread, .comment-replybox-single') : null;
+          var generated = document.querySelector('.comment-replybox-thread#top-ce') || document.getElementById('top-ce');
+          var composer = editorComposer || generated;
+          var placeholder = slot ? slot.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"], .comment-replybox-thread[data-gg-native-plumbing="composer"], .comment-replybox-thread[data-gg-native-plumbing="composer-source"], .comment-replybox-single[data-gg-native-plumbing="composer"], .comment-replybox-single[data-gg-native-plumbing="composer-source"]') : document.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"], .comment-replybox-thread[data-gg-native-plumbing="composer"], .comment-replybox-thread[data-gg-native-plumbing="composer-source"], .comment-replybox-single[data-gg-native-plumbing="composer"], .comment-replybox-single[data-gg-native-plumbing="composer-source"]');
 
-          if (generated && placeholder && generated !== placeholder) {
+          if (generated && composer && generated !== composer && generated.id === 'top-ce') {
+            generated.removeAttribute('id');
+            generated.setAttribute('data-gg-native-plumbing', 'composer-source');
+            generated.setAttribute('hidden', 'hidden');
+          }
+
+          if (composer && composer.id !== 'top-ce') composer.id = 'top-ce';
+
+          if (composer && placeholder && composer !== placeholder) {
             if (placeholder.id === 'top-ce') placeholder.removeAttribute('id');
             placeholder.setAttribute('data-gg-native-plumbing', 'composer-source');
             placeholder.setAttribute('hidden', 'hidden');
           }
 
-          if (generated && slot && generated.parentNode !== slot) {
-            slot.insertBefore(generated, slot.firstChild);
-            generated.setAttribute('data-gg-native-plumbing', 'composer');
+          if (composer && slot && composer.parentNode !== slot) {
+            slot.insertBefore(composer, slot.firstChild);
+            composer.setAttribute('data-gg-native-plumbing', 'composer');
           }
 
-          return !!(generated || placeholder);
+          if (composer) {
+            composer.hidden = false;
+            composer.removeAttribute('hidden');
+            if (composer.style) composer.style.display = '';
+          }
+
+          return !!(composer || placeholder);
+        }
+
+        function ensureRepliesSheetHandle() {
+          var head = ui.commentReplies ? ui.commentReplies.querySelector('.gg-comments-sheet__head, .gg-sheet__head') : null;
+          var back = ui.commentReplies ? ui.commentReplies.querySelector('.gg-comments-sheet__back') : null;
+          var handle;
+          var label;
+
+          if (!head) return false;
+          handle = head.querySelector('.gg-sheet__handle');
+          if (handle) return true;
+
+          handle = document.createElement('button');
+          handle.type = 'button';
+          handle.className = 'gg-comments-sheet__handle gg-sheet__handle';
+          handle.setAttribute('data-gg-drag-handle', 'comment-replies');
+          handle.setAttribute('aria-label', 'Drag replies sheet');
+          label = document.createElement('span');
+          label.className = 'gg-visually-hidden';
+          label.textContent = 'Drag replies sheet';
+          handle.appendChild(label);
+          head.insertBefore(handle, back || head.firstChild);
+          return true;
+        }
+
+        function setComposerOpen(open) {
+          state.commentComposerOpen = !!open;
+          syncCommentComposerMode();
+          return state.commentComposerOpen;
         }
 
         function getCommentFromLegacyContinue(continueNode, commentId) {
@@ -491,7 +537,9 @@
           if (!hasCommentsSurface()) return false;
           state.commentEnhancementScheduled = false;
           state.commentEnhancementReason = reason || 'comments-enhancement';
+          ensureRepliesSheetHandle();
           adoptGeneratedBloggerComposer();
+          ensureComposerInActiveFooter();
           cleanupLegacyCommentControls();
           initCommentRepliesControls();
           ensureCommentMoreMenus();
@@ -744,6 +792,7 @@
             parentAuthor: author,
             handle: handle
           };
+          state.commentComposerOpen = true;
           renderReplyBanner();
           return state.commentReplyContext;
         }
@@ -761,10 +810,13 @@
         function syncCommentComposerMode() {
           var mode = getCommentComposerMode();
           var activeFooter = getActiveComposerFooter();
+          var open = state.commentComposerOpen || mode === 'reply';
 
           if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
           if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
           if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentRepliesFooter ? mode : 'inactive');
+          if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-composer-open', activeFooter === ui.commentsFooter && open ? 'true' : 'false');
+          if (ui.commentRepliesFooter) ui.commentRepliesFooter.setAttribute('data-gg-composer-open', activeFooter === ui.commentRepliesFooter && open ? 'true' : 'false');
 
           return mode;
         }
@@ -860,6 +912,7 @@
           if (state.commentPrefixSyncFrame) return;
           state.commentPrefixSyncFrame = window.requestAnimationFrame(function () {
             state.commentPrefixSyncFrame = 0;
+            ensureComposerInActiveFooter();
             ensureCommentMoreMenus();
             applyVisualReplyPrefixes(ui.comments || document);
           });
@@ -893,6 +946,7 @@
           if (!commentNode) return;
 
           setCommentReplyContext(commentNode);
+          setComposerOpen(true);
           ensureComposerInActiveFooter();
 
           window.setTimeout(function () {
@@ -1180,7 +1234,7 @@
         }
 
         function isCommentRepliesSheetOpen() {
-          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') === 'open');
+          return !!(ui.commentReplies && !ui.commentReplies.hidden && ui.commentReplies.getAttribute('data-gg-state') !== 'closed' && ui.commentReplies.getAttribute('data-gg-state') !== 'closing');
         }
 
         function focusCommentRepliesSheet() {
@@ -1241,6 +1295,7 @@
             window.requestAnimationFrame(function () {
               if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
                 ui.commentReplies.setAttribute('data-gg-state', 'open');
+                ensureComposerInActiveFooter();
               }
             });
             window.setTimeout(focusCommentRepliesSheet, 24);
@@ -1346,6 +1401,7 @@
           var composerOptions = options || {};
 
           if (composerOptions.clearReply !== false) clearCommentReplyContext();
+          setComposerOpen(true);
 
           return openCommentsSheet({
             trigger: composerOptions.trigger,

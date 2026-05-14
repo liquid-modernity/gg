@@ -68,6 +68,16 @@ for (const [file, js] of [
   requireIncludes(js, "visibleReplyLeaks", `${file}: proof checks main sheet reply leaks`, file);
   requireIncludes(js, "moreButtonsInHeader", `${file}: proof checks More button header alignment`, file);
   requireIncludes(js, "data-gg-comments-layer", `${file}: tracks active comments layer`, file);
+  requireIncludes(js, "topCeInsideFooter", `${file}: proof checks native composer footer portal`, file);
+  requireIncludes(js, "topCeInsideComment", `${file}: proof rejects composer in comment list`, file);
+  requireIncludes(js, "bannerFooterMatchesComposerFooter", `${file}: proof checks reply banner/composer footer match`, file);
+  requireIncludes(js, "composerLauncherConflict", `${file}: proof rejects launcher/composer conflicts`, file);
+  requireIncludes(js, "visibleAddCommentControls", `${file}: proof counts visible Add comment controls`, file);
+  requireIncludes(js, "loadMoreInsideFooter", `${file}: proof rejects load more inside footer`, file);
+  requireIncludes(js, "replyActionsVertical", `${file}: proof rejects vertical reply actions`, file);
+  requireIncludes(js, "zeroStateDuplicateLabels", `${file}: proof rejects duplicate zero-state labels`, file);
+  requireIncludes(js, "excessiveCommentVerticalGap", `${file}: proof rejects excessive comment row gaps`, file);
+  requireIncludes(js, "repliesSheetHasHandle", `${file}: proof checks replies sheet handle`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }
