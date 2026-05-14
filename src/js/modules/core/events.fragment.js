@@ -34,6 +34,7 @@
           var commentsComposerTrigger;
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
+          var nativeCommentReplyTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
@@ -63,6 +64,7 @@
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
+          nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
@@ -166,6 +168,10 @@
               reason: 'comments-composer-trigger'
             });
             return;
+          }
+
+          if (nativeCommentReplyTrigger) {
+            handleNativeReplyTrigger(nativeCommentReplyTrigger);
           }
 
           if (commentsRepliesTrigger) {

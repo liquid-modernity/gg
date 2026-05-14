@@ -402,6 +402,8 @@
             reason: openOptions.reason || 'comments-open'
           }).then(function (panel) {
             initCommentRepliesControls();
+            initCommentPrefixObserver();
+            requestCommentPrefixSync();
             return panel;
           });
         }
@@ -514,6 +516,220 @@
           return node ? node.textContent.replace(/\s+/g, ' ').trim() : '';
         }
 
+        function getCommentAuthorName(commentNode) {
+          return getTextFromNode(commentNode, '.comment-author cite, .comment-author .user, .comment-author, .comment-header cite, .comment-header .user, cite.user') || '';
+        }
+
+        function normalizeReplyHandle(author) {
+          var clean = String(author || '').replace(/^@+/, '').replace(/\s+/g, '').replace(/[^\w.\-]/g, '');
+          return clean ? '@' + clean : '';
+        }
+
+        function getCommentNodeFromTrigger(trigger) {
+          return trigger ? trigger.closest('li.comment, .comment-thread .comment, .comment') : null;
+        }
+
+        function getCommentNodeId(commentNode) {
+          var node = commentNode;
+          while (node) {
+            if (node.id) return node.id;
+            node = node.parentElement;
+            if (!node || (ui.comments && node === ui.comments)) break;
+          }
+          return '';
+        }
+
+        function getReplyParentComment(commentNode) {
+          var repliesNode = commentNode ? commentNode.parentElement : null;
+
+          while (repliesNode && repliesNode !== ui.comments && repliesNode !== ui.commentRepliesList) {
+            if (repliesNode.classList && repliesNode.classList.contains('comment-replies')) {
+              return getDirectCommentElement(repliesNode.parentNode, repliesNode);
+            }
+            repliesNode = repliesNode.parentElement;
+          }
+
+          return null;
+        }
+
+        function renderReplyBanner() {
+          var banner;
+          var text;
+          var strong;
+
+          if (!ui.commentsReplySlot) return;
+
+          ui.commentsReplySlot.textContent = '';
+
+          if (!state.commentReplyContext || !state.commentReplyContext.handle) return;
+
+          banner = document.createElement('div');
+          banner.className = 'gg-comments__reply-banner';
+          text = document.createTextNode('Replying to ');
+          strong = document.createElement('strong');
+          strong.textContent = state.commentReplyContext.handle;
+          banner.appendChild(text);
+          banner.appendChild(strong);
+          ui.commentsReplySlot.appendChild(banner);
+        }
+
+        function clearCommentReplyContext() {
+          state.commentReplyContext = null;
+          renderReplyBanner();
+        }
+
+        function setCommentReplyContext(commentNode) {
+          var author = getCommentAuthorName(commentNode);
+          var handle = normalizeReplyHandle(author);
+
+          if (!commentNode || !handle) {
+            clearCommentReplyContext();
+            return null;
+          }
+
+          state.commentReplyContext = {
+            parentId: getCommentNodeId(commentNode),
+            parentAuthor: author,
+            handle: handle
+          };
+          renderReplyBanner();
+          return state.commentReplyContext;
+        }
+
+        function getActiveComposerFooter() {
+          if (isCommentRepliesSheetOpen() && ui.commentRepliesFooter) return ui.commentRepliesFooter;
+          return ui.commentsFooter;
+        }
+
+        function ensureComposerPortalAnchors() {
+          if (state.commentComposerPortal || !ui.commentsReplySlot || !ui.commentsComposerSlot) return;
+          if (!ui.commentsReplySlot.parentNode || !ui.commentsComposerSlot.parentNode) return;
+          state.commentComposerPortal = {
+            replySlotAnchor: document.createComment('gg-comments-reply-slot'),
+            composerSlotAnchor: document.createComment('gg-comments-composer-slot')
+          };
+          ui.commentsReplySlot.parentNode.insertBefore(state.commentComposerPortal.replySlotAnchor, ui.commentsReplySlot);
+          ui.commentsComposerSlot.parentNode.insertBefore(state.commentComposerPortal.composerSlotAnchor, ui.commentsComposerSlot);
+        }
+
+        function portalComposerToFooter(footer) {
+          if (!footer || !ui.commentsReplySlot || !ui.commentsComposerSlot) return false;
+          ensureComposerPortalAnchors();
+          footer.appendChild(ui.commentsReplySlot);
+          footer.appendChild(ui.commentsComposerSlot);
+          renderReplyBanner();
+          return true;
+        }
+
+        function restoreComposerToMainFooter() {
+          var portal = state.commentComposerPortal;
+
+          if (!portal || !ui.commentsReplySlot || !ui.commentsComposerSlot) return false;
+
+          if (portal.replySlotAnchor && portal.replySlotAnchor.parentNode) {
+            portal.replySlotAnchor.parentNode.replaceChild(ui.commentsReplySlot, portal.replySlotAnchor);
+          } else if (ui.commentsFooter) {
+            ui.commentsFooter.appendChild(ui.commentsReplySlot);
+          }
+
+          if (portal.composerSlotAnchor && portal.composerSlotAnchor.parentNode) {
+            portal.composerSlotAnchor.parentNode.replaceChild(ui.commentsComposerSlot, portal.composerSlotAnchor);
+          } else if (ui.commentsFooter) {
+            ui.commentsFooter.appendChild(ui.commentsComposerSlot);
+          }
+
+          state.commentComposerPortal = null;
+          renderReplyBanner();
+          return true;
+        }
+
+        function ensureComposerInActiveFooter() {
+          var footer = getActiveComposerFooter();
+          if (footer && footer !== ui.commentsFooter) return portalComposerToFooter(footer);
+          return restoreComposerToMainFooter();
+        }
+
+        function applyVisualReplyPrefixes(root) {
+          var scope = root || ui.comments || document;
+          var comments = scope.querySelectorAll ? scope.querySelectorAll('.comment-replies li.comment, .comment-replies .comment-thread .comment, .comment-replies > .comment') : [];
+          var i;
+          var commentNode;
+          var bodyNode;
+          var parentComment;
+          var handle;
+          var prefixNode;
+
+          for (i = 0; i < comments.length; i += 1) {
+            commentNode = comments[i];
+            bodyNode = commentNode.querySelector('.comment-body, .comment-content');
+            if (!bodyNode) continue;
+
+            parentComment = getReplyParentComment(commentNode);
+            handle = normalizeReplyHandle(getCommentAuthorName(parentComment));
+            prefixNode = bodyNode.querySelector('.gg-comment-reply-prefix');
+
+            if (!handle) {
+              if (prefixNode) prefixNode.parentNode.removeChild(prefixNode);
+              continue;
+            }
+
+            if (!prefixNode) {
+              prefixNode = document.createElement('span');
+              prefixNode.className = 'gg-comment-reply-prefix';
+              bodyNode.insertBefore(prefixNode, bodyNode.firstChild);
+            }
+
+            prefixNode.setAttribute('data-gg-reply-prefix', handle);
+            prefixNode.textContent = handle;
+          }
+        }
+
+        function requestCommentPrefixSync() {
+          if (state.commentPrefixSyncFrame) return;
+          state.commentPrefixSyncFrame = window.requestAnimationFrame(function () {
+            state.commentPrefixSyncFrame = 0;
+            applyVisualReplyPrefixes(ui.comments || document);
+          });
+        }
+
+        function initCommentPrefixObserver() {
+          var root = ui.commentsList || ui.comments;
+
+          if (!root || state.commentPrefixObserver || !window.MutationObserver) {
+            applyVisualReplyPrefixes(ui.comments || document);
+            return;
+          }
+
+          state.commentPrefixObserver = new MutationObserver(requestCommentPrefixSync);
+          state.commentPrefixObserver.observe(root, {
+            childList: true,
+            subtree: true
+          });
+          if (ui.commentRepliesList) {
+            state.commentPrefixObserver.observe(ui.commentRepliesList, {
+              childList: true,
+              subtree: true
+            });
+          }
+          applyVisualReplyPrefixes(ui.comments || document);
+        }
+
+        function handleNativeReplyTrigger(trigger) {
+          var commentNode = getCommentNodeFromTrigger(trigger);
+
+          if (!commentNode) return;
+
+          setCommentReplyContext(commentNode);
+          ensureComposerInActiveFooter();
+
+          window.setTimeout(function () {
+            ensureComposerInActiveFooter();
+            renderReplyBanner();
+            scrollCommentsHashTarget('#comment-form');
+            requestCommentPrefixSync();
+          }, 32);
+        }
+
         function renderCommentRepliesContext(commentNode, count) {
           var author;
           var body;
@@ -623,6 +839,8 @@
             markReplyLevels(repliesNode);
             ui.commentRepliesList.appendChild(repliesNode);
             if (trigger) trigger.setAttribute('aria-expanded', 'true');
+            portalComposerToFooter(ui.commentRepliesFooter);
+            requestCommentPrefixSync();
 
             ui.commentReplies.hidden = false;
             ui.commentReplies.removeAttribute('inert');
@@ -663,6 +881,7 @@
 
           if (!ui.commentReplies || ui.commentReplies.hidden) {
             restoreCommentRepliesPortal();
+            restoreComposerToMainFooter();
             return Promise.resolve(false);
           }
 
@@ -684,6 +903,8 @@
               ui.commentReplies.setAttribute('data-gg-state', 'closed');
               ui.commentReplies.removeAttribute('data-gg-active');
               if (ui.commentRepliesContext) ui.commentRepliesContext.textContent = '';
+              clearCommentReplyContext();
+              restoreComposerToMainFooter();
               if (shouldReturnFocus) portal.trigger.focus();
               resolve(true);
             }, 170);
@@ -729,11 +950,14 @@
         function openComposer(options) {
           var composerOptions = options || {};
 
+          if (composerOptions.clearReply !== false) clearCommentReplyContext();
+
           return openCommentsSheet({
             trigger: composerOptions.trigger,
             focus: composerOptions.focus !== false,
             reason: composerOptions.reason || 'comments-composer-open'
           }).then(function (panel) {
+            ensureComposerInActiveFooter();
             window.setTimeout(function () {
               scrollCommentsHashTarget('#comment-form');
             }, 32);

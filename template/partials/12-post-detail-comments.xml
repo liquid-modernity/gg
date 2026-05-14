@@ -173,6 +173,7 @@
                       <div class='gg-comment-replies__context' id='gg-comment-replies-context'/>
                       <div class='gg-comments__list gg-comment-replies__list' data-gg-role='comment-replies-list' id='gg-comment-replies-list'/>
                     </div>
+                    <footer class='gg-comments__footer gg-comment-replies__footer' data-gg-role='comment-replies-footer' id='gg-comment-replies-footer'/>
                   </section>
                 </section>
               </div>
