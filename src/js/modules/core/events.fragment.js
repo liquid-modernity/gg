@@ -148,27 +148,18 @@
 
           if (commentsTrigger) {
             event.preventDefault();
-            if (state.panelActive === 'comments') {
-              closePanel('comments', { reason: 'comments-toggle' });
-            } else {
-              openPanel('comments', {
-                trigger: commentsTrigger,
-                reason: 'comments-trigger'
-              });
-            }
+            toggleCommentsSheet({
+              trigger: commentsTrigger,
+              reason: 'comments-trigger'
+            });
             return;
           }
 
           if (commentsComposerTrigger) {
             event.preventDefault();
-            openPanel('comments', {
+            openComposer({
               trigger: commentsComposerTrigger,
               reason: 'comments-composer-trigger'
-            }).then(function () {
-              var target = findCommentsHashTarget('#comment-form');
-              if (target && typeof target.scrollIntoView === 'function') {
-                target.scrollIntoView({ block: 'start' });
-              }
             });
             return;
           }
@@ -225,11 +216,6 @@
         });
 
         document.addEventListener('keydown', function (event) {
-          var activePanel = getPanel(state.panelActive);
-          var focusable;
-          var firstNode;
-          var lastNode;
-
           if ((event.metaKey || event.ctrlKey) && String(event.key).toLowerCase() === 'k') {
             event.preventDefault();
             launchDiscovery(document.querySelector('[data-gg-focus="command"]') || ui.commandSheetInput, 'command-shortcut', {
@@ -252,21 +238,5 @@
             return;
           }
 
-          if (event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel) {
-            return;
-          }
-
-          focusable = getFocusableNodes(activePanel.panel);
-          if (!focusable.length) return;
-
-          firstNode = focusable[0];
-          lastNode = focusable[focusable.length - 1];
-
-          if (event.shiftKey && document.activeElement === firstNode) {
-            event.preventDefault();
-            lastNode.focus();
-          } else if (!event.shiftKey && document.activeElement === lastNode) {
-            event.preventDefault();
-            firstNode.focus();
-          }
+          trapFocusWhileOpen(event);
         });

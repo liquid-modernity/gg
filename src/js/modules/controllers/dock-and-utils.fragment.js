@@ -155,7 +155,7 @@
         function initDockVisibility() {
           writeBodyState('data-gg-active-panel', state.panelActive || '');
           writeBodyState('data-gg-panel-active', state.panelActive ? 'true' : 'false');
-          if (!state.panelActive) writeBodyState('data-gg-scroll-lock', 'false');
+          if (!state.panelActive && document.body) document.body.removeAttribute('data-gg-scroll-lock');
 
           if (!ui.dock) {
             writeBodyState('data-gg-dock-state', 'visible');

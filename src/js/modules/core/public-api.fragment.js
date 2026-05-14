@@ -48,6 +48,48 @@
           }
         };
 
+        GG.commentsSheetController = {
+          open: function (options) {
+            var openOptions = options || {};
+            return openCommentsSheet({
+              trigger: openOptions.trigger,
+              focus: openOptions.focus !== false,
+              reason: openOptions.reason || 'comments-api-open'
+            });
+          },
+          close: function (options) {
+            var closeOptions = options || {};
+            return closeCommentsSheet({
+              returnFocus: closeOptions.returnFocus !== false,
+              reason: closeOptions.reason || 'comments-api-close'
+            });
+          },
+          toggle: function (options) {
+            var toggleOptions = options || {};
+            return toggleCommentsSheet({
+              trigger: toggleOptions.trigger,
+              focus: toggleOptions.focus !== false,
+              returnFocus: toggleOptions.returnFocus !== false,
+              reason: toggleOptions.reason || 'comments-api-toggle'
+            });
+          },
+          openComposer: function (options) {
+            var composerOptions = options || {};
+            return openComposer({
+              trigger: composerOptions.trigger,
+              focus: composerOptions.focus !== false,
+              reason: composerOptions.reason || 'comments-api-composer'
+            });
+          },
+          syncHash: syncCommentsHash,
+          trapFocusWhileOpen: trapFocusWhileOpen,
+          returnFocusOnClose: returnFocusOnClose,
+          lockBodyScrollWhileOpen: lockBodyScrollWhileOpen,
+          isOpen: function () {
+            return state.panelActive === 'comments';
+          }
+        };
+
         GG.detailOutline = {
           open: function () {
             markDetailOutlineManualOpen();

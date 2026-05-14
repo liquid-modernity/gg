@@ -1,8 +1,16 @@
-        function setBodyPanelState(activeName, lockScroll) {
+        function lockBodyScrollWhileOpen(activeName, lockScroll) {
           writeBodyState('data-gg-active-panel', activeName || '');
           writeBodyState('data-gg-panel-active', activeName ? 'true' : 'false');
-          writeBodyState('data-gg-scroll-lock', lockScroll ? 'true' : 'false');
+          if (lockScroll && activeName) {
+            writeBodyState('data-gg-scroll-lock', 'true');
+          } else if (document.body) {
+            document.body.removeAttribute('data-gg-scroll-lock');
+          }
           syncDockVisibility();
+        }
+
+        function setBodyPanelState(activeName, lockScroll) {
+          lockBodyScrollWhileOpen(activeName, lockScroll);
         }
 
         function syncExpanded(name, expanded) {
@@ -234,6 +242,15 @@
           focusFirst(panel.panel || panel.root);
         }
 
+        function returnFocusOnClose(panel, closeOptions) {
+          var shouldReturnFocus = closeOptions.returnFocus !== false && panel && panel.returnFocus !== false && state.panelLastTrigger && typeof state.panelLastTrigger.focus === 'function';
+
+          if (!shouldReturnFocus) return false;
+
+          state.panelLastTrigger.focus();
+          return true;
+        }
+
         function openPanel(name, options) {
           var panel = getPanel(name);
           var openOptions = options || {};
@@ -308,8 +325,6 @@
 
           return new Promise(function (resolve) {
             state.panelTimers[panel.name] = window.setTimeout(function () {
-              var shouldReturnFocus = closeOptions.returnFocus !== false && panel.returnFocus !== false && state.panelLastTrigger && typeof state.panelLastTrigger.focus === 'function';
-
               clearPanelTimer(panel.name);
               panel.root.hidden = true;
               if (panel.name === 'comments') panel.root.setAttribute('inert', '');
@@ -323,9 +338,7 @@
                 setBodyPanelState('', false);
               }
 
-              if (shouldReturnFocus) {
-                state.panelLastTrigger.focus();
-              }
+              returnFocusOnClose(panel, closeOptions);
 
               if (!state.panelActive) {
                 state.panelLastTrigger = null;
@@ -371,6 +384,44 @@
           });
         }
 
+        function openCommentsSheet(options) {
+          var openOptions = options || {};
+
+          if (!getPanel('comments')) return Promise.resolve(null);
+
+          return openPanel('comments', {
+            trigger: openOptions.trigger || document.activeElement || null,
+            focus: openOptions.focus !== false,
+            reason: openOptions.reason || 'comments-open'
+          });
+        }
+
+        function closeCommentsSheet(options) {
+          var closeOptions = options || {};
+
+          return closePanel('comments', {
+            returnFocus: closeOptions.returnFocus !== false,
+            reason: closeOptions.reason || 'comments-close'
+          });
+        }
+
+        function toggleCommentsSheet(options) {
+          var toggleOptions = options || {};
+
+          if (state.panelActive === 'comments') {
+            return closeCommentsSheet({
+              returnFocus: toggleOptions.returnFocus !== false,
+              reason: toggleOptions.reason || 'comments-toggle'
+            });
+          }
+
+          return openCommentsSheet({
+            trigger: toggleOptions.trigger,
+            focus: toggleOptions.focus !== false,
+            reason: toggleOptions.reason || 'comments-toggle'
+          });
+        }
+
         function normalizeHashId(value) {
           var raw = String(value || '').replace(/^#/, '');
           try {
@@ -394,23 +445,87 @@
           return document.getElementById(id);
         }
 
+        function scrollCommentsHashTarget(hash, options) {
+          var scrollOptions = options || {};
+          var target = findCommentsHashTarget(hash);
+
+          if (!target || typeof target.scrollIntoView !== 'function') return null;
+
+          target.scrollIntoView({
+            block: scrollOptions.block || 'start'
+          });
+
+          return target;
+        }
+
+        function openComposer(options) {
+          var composerOptions = options || {};
+
+          return openCommentsSheet({
+            trigger: composerOptions.trigger,
+            focus: composerOptions.focus !== false,
+            reason: composerOptions.reason || 'comments-composer-open'
+          }).then(function (panel) {
+            window.setTimeout(function () {
+              scrollCommentsHashTarget('#comment-form');
+            }, 32);
+            return panel;
+          });
+        }
+
         function syncCommentsHash() {
           var hash = window.location.hash || '';
+          var id = normalizeHashId(hash);
 
           if (!isCommentsHash(hash) || !getPanel('comments')) return Promise.resolve(null);
 
-          return openPanel('comments', {
+          if (id === 'comment-form') {
+            return openComposer({
+              focus: false,
+              reason: 'comments-hash-composer'
+            });
+          }
+
+          return openCommentsSheet({
             focus: false,
             reason: 'comments-hash'
           }).then(function (panel) {
             window.setTimeout(function () {
-              var target = findCommentsHashTarget(hash);
-              if (target && typeof target.scrollIntoView === 'function') {
-                target.scrollIntoView({ block: 'start' });
-              }
+              scrollCommentsHashTarget(hash);
             }, 32);
             return panel;
           });
+        }
+
+        function trapFocusWhileOpen(event) {
+          var activePanel = getPanel(state.panelActive);
+          var focusable;
+          var firstNode;
+          var lastNode;
+
+          if (!event || event.key !== 'Tab' || !activePanel || !activePanel.trapFocus || !activePanel.panel) {
+            return false;
+          }
+
+          focusable = getFocusableNodes(activePanel.panel);
+          if (!focusable.length) return false;
+
+          firstNode = focusable[0];
+          lastNode = focusable[focusable.length - 1];
+
+          if (event.shiftKey && document.activeElement === firstNode) {
+            event.preventDefault();
+            lastNode.focus();
+            return true;
+          }
+
+          if (!event.shiftKey && document.activeElement === lastNode) {
+            event.preventDefault();
+            firstNode.focus();
+            return true;
+          }
+
+          return false;
         }
 
         function launchDiscovery(trigger, reason, options) {
