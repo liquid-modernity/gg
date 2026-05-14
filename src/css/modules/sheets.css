@@ -93,7 +93,7 @@
 .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='open'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim {
-  opacity: 1;
+
 }
 
 .gg-sheet[data-gg-state='opening'] .gg-sheet__panel,

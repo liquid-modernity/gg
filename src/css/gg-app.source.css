@@ -36,13 +36,13 @@
   --gg-shadow-panel-bottom: 0 -16px 48px rgba(32, 26, 28, .105);
   --gg-shadow-panel-top: 0 16px 48px rgba(32, 26, 28, .105);
   --gg-panel-min-height: 260px;
-  --gg-panel-max-height: min(94dvh, 920px);
+  --gg-panel-max-height: min(100dvh, 920px);
   --gg-panel-command-min-height: 340px;
   --gg-panel-comments-min-height: 420px;
   --gg-panel-more-min-height: 260px;
   --gg-panel-preview-min-height: 320px;
   --gg-panel-preview-max-height: min(94dvh, 920px);
-  --gg-panel-width: min(calc(100vw - 12px), 600px);
+  --gg-panel-width: min(calc(100vw - 0px), 600px);
   --gg-panel-radius: 26px;
   --gg-panel-pad-y: 0px;
   --gg-panel-pad-x: 14px;
@@ -245,7 +245,7 @@
 
 @supports (width: 100dvw) {
   :root {
-    --gg-panel-width: min(calc(100dvw - 12px), 600px);
+    --gg-panel-width: min(calc(100dvw - 0px), 600px);
   }
 }
 
@@ -1834,7 +1834,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='open'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim {
-  opacity: 1;
+
 }
 
 .gg-sheet[data-gg-state='opening'] .gg-sheet__panel,
