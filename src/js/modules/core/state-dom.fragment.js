@@ -123,6 +123,8 @@
           commentComposerPortal: null,
           commentPrefixObserver: null,
           commentPrefixSyncFrame: 0,
+          commentMoreMenu: null,
+          commentStatusTimer: 0,
           dockState: 'visible',
           dockFocused: false,
           dockScrollDirection: 'none',

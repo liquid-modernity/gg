@@ -18,6 +18,7 @@
         initDockVisibility();
         initDetailOutline();
         initCommentRepliesControls();
+        ensureCommentMoreMenus();
         initCommentPrefixObserver();
         initPwaClient();
         syncCommentsHash();

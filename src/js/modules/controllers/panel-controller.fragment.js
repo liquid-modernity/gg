@@ -318,6 +318,7 @@
           }
 
           if (panel.name === 'comments') {
+            closeCommentMoreMenu();
             closeCommentRepliesSheet({
               returnFocus: false,
               reason: 'comments-panel-close'
@@ -402,6 +403,7 @@
             reason: openOptions.reason || 'comments-open'
           }).then(function (panel) {
             initCommentRepliesControls();
+            ensureCommentMoreMenus();
             initCommentPrefixObserver();
             requestCommentPrefixSync();
             return panel;
@@ -688,6 +690,7 @@
           if (state.commentPrefixSyncFrame) return;
           state.commentPrefixSyncFrame = window.requestAnimationFrame(function () {
             state.commentPrefixSyncFrame = 0;
+            ensureCommentMoreMenus();
             applyVisualReplyPrefixes(ui.comments || document);
           });
         }
@@ -728,6 +731,217 @@
             scrollCommentsHashTarget('#comment-form');
             requestCommentPrefixSync();
           }, 32);
+        }
+
+        function getNativeDeleteControl(commentNode) {
+          if (!commentNode) return null;
+          return commentNode.querySelector('.comment-delete')
+            || commentNode.querySelector('.item-control a, .item-control button')
+            || commentNode.querySelector('.goog-toggle-button a, .goog-toggle-button button, .goog-toggle-button');
+        }
+
+        function commentHasNativeDelete(commentNode) {
+          return !!(commentNode && commentNode.querySelector('.item-control, .comment-delete, .goog-toggle-button'));
+        }
+
+        function getCommentPermalink(commentNode) {
+          var id = getCommentNodeId(commentNode);
+          var base = ui.article ? ui.article.getAttribute('data-gg-post-url') : '';
+          var url;
+
+          if (!id) return '';
+
+          url = base || window.location.href;
+          try {
+            url = new URL(url, window.location.href).href;
+          } catch (error) {
+            url = window.location.href;
+          }
+
+          return url.replace(/#.*$/, '') + '#' + id;
+        }
+
+        function showCommentStatus(message) {
+          var root = ui.comments || document.getElementById('gg-comments-root');
+          var status;
+
+          if (!root || !message) return;
+
+          status = root.querySelector('.gg-comments__status');
+          if (!status) {
+            status = document.createElement('div');
+            status.className = 'gg-comments__status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            root.appendChild(status);
+          }
+
+          status.hidden = false;
+          status.textContent = message;
+
+          if (state.commentStatusTimer) window.clearTimeout(state.commentStatusTimer);
+          state.commentStatusTimer = window.setTimeout(function () {
+            status.hidden = true;
+            state.commentStatusTimer = 0;
+          }, 1800);
+        }
+
+        function copyTextFallback(value) {
+          var textarea = document.createElement('textarea');
+          textarea.value = value;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.left = '-9999px';
+          textarea.style.top = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+          } finally {
+            textarea.parentNode.removeChild(textarea);
+          }
+          return Promise.resolve();
+        }
+
+        function copyCommentLink(commentNode) {
+          var permalink = getCommentPermalink(commentNode);
+
+          if (!permalink) {
+            showCommentStatus('Comment link unavailable');
+            return Promise.resolve(false);
+          }
+
+          if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
+            return window.navigator.clipboard.writeText(permalink).then(function () {
+              showCommentStatus('Comment link copied');
+              return true;
+            }).catch(function () {
+              return copyTextFallback(permalink).then(function () {
+                showCommentStatus('Comment link copied');
+                return true;
+              });
+            });
+          }
+
+          return copyTextFallback(permalink).then(function () {
+            showCommentStatus('Comment link copied');
+            return true;
+          });
+        }
+
+        function closeCommentMoreMenu(options) {
+          var closeOptions = options || {};
+          var active = state.commentMoreMenu;
+
+          if (!active) return false;
+
+          if (active.menu && active.menu.parentNode) active.menu.parentNode.removeChild(active.menu);
+          if (active.button) active.button.setAttribute('aria-expanded', 'false');
+          if (closeOptions.returnFocus && active.button && typeof active.button.focus === 'function') active.button.focus();
+          state.commentMoreMenu = null;
+          return true;
+        }
+
+        function buildCommentMoreMenu(commentNode) {
+          var menu = document.createElement('div');
+          var copyButton = document.createElement('button');
+          var deleteButton;
+
+          menu.className = 'gg-comment-more__menu';
+          menu.setAttribute('role', 'menu');
+
+          copyButton.type = 'button';
+          copyButton.className = 'gg-comment-more__item';
+          copyButton.setAttribute('role', 'menuitem');
+          copyButton.setAttribute('data-gg-action', 'comment-copy-link');
+          copyButton.textContent = 'Copy link';
+          menu.appendChild(copyButton);
+
+          if (commentHasNativeDelete(commentNode)) {
+            deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'gg-comment-more__item';
+            deleteButton.setAttribute('role', 'menuitem');
+            deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
+            deleteButton.textContent = 'Delete comment';
+            menu.appendChild(deleteButton);
+          }
+
+          return menu;
+        }
+
+        function openCommentMoreMenu(button) {
+          var wrapper = button ? button.closest('.gg-comment-more') : null;
+          var commentNode = button ? getCommentNodeFromTrigger(button) : null;
+          var menu;
+
+          if (!button || !wrapper || !commentNode) return;
+
+          if (state.commentMoreMenu && state.commentMoreMenu.button === button) {
+            closeCommentMoreMenu({ returnFocus: true });
+            return;
+          }
+
+          closeCommentMoreMenu();
+          menu = buildCommentMoreMenu(commentNode);
+          wrapper.appendChild(menu);
+          button.setAttribute('aria-expanded', 'true');
+          state.commentMoreMenu = {
+            button: button,
+            menu: menu,
+            commentNode: commentNode
+          };
+
+          window.setTimeout(function () {
+            var first = menu.querySelector('[role="menuitem"]');
+            if (first) first.focus();
+          }, 0);
+        }
+
+        function ensureCommentMoreMenus() {
+          var root = ui.comments || document.getElementById('gg-comments-root');
+          var comments;
+          var i;
+          var commentNode;
+          var header;
+          var wrapper;
+          var button;
+
+          if (!root) return 0;
+
+          comments = root.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment');
+          for (i = 0; i < comments.length; i += 1) {
+            commentNode = comments[i];
+            if (!commentNode || commentNode.__ggCommentMoreReady) continue;
+
+            header = commentNode.querySelector('.comment-header, .comment-author, .comment-block, .comment-footer');
+            if (!header) continue;
+
+            wrapper = document.createElement('span');
+            wrapper.className = 'gg-comment-more';
+            button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'gg-comment-more__button';
+            button.setAttribute('data-gg-action', 'comment-more');
+            button.setAttribute('aria-haspopup', 'menu');
+            button.setAttribute('aria-expanded', 'false');
+            button.setAttribute('aria-label', 'More comment actions');
+            button.textContent = '...';
+            wrapper.appendChild(button);
+            header.appendChild(wrapper);
+            commentNode.__ggCommentMoreReady = true;
+          }
+
+          return comments.length;
+        }
+
+        function delegateNativeDelete(commentNode) {
+          var control = getNativeDeleteControl(commentNode);
+
+          if (!control || typeof control.click !== 'function') return false;
+
+          control.click();
+          return true;
         }
 
         function renderCommentRepliesContext(commentNode, count) {
@@ -839,6 +1053,7 @@
             markReplyLevels(repliesNode);
             ui.commentRepliesList.appendChild(repliesNode);
             if (trigger) trigger.setAttribute('aria-expanded', 'true');
+            ensureCommentMoreMenus();
             portalComposerToFooter(ui.commentRepliesFooter);
             requestCommentPrefixSync();
 
@@ -892,6 +1107,7 @@
 
           ui.commentReplies.setAttribute('data-gg-state', 'closing');
           ui.commentReplies.setAttribute('data-gg-active', 'false');
+          closeCommentMoreMenu();
 
           return new Promise(function (resolve) {
             state.commentRepliesTimer = window.setTimeout(function () {

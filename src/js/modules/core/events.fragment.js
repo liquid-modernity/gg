@@ -35,6 +35,9 @@
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
           var nativeCommentReplyTrigger;
+          var commentMoreTrigger;
+          var commentCopyTrigger;
+          var commentDeleteTrigger;
           var langTrigger;
           var themeTrigger;
           var closeTrigger;
@@ -65,6 +68,9 @@
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
+          commentMoreTrigger = event.target.closest('[data-gg-action="comment-more"]');
+          commentCopyTrigger = event.target.closest('[data-gg-action="comment-copy-link"]');
+          commentDeleteTrigger = event.target.closest('[data-gg-action="comment-native-delete"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
@@ -170,6 +176,31 @@
             return;
           }
 
+          if (commentMoreTrigger) {
+            event.preventDefault();
+            openCommentMoreMenu(commentMoreTrigger);
+            return;
+          }
+
+          if (commentCopyTrigger) {
+            event.preventDefault();
+            if (state.commentMoreMenu) {
+              copyCommentLink(state.commentMoreMenu.commentNode).then(function () {
+                closeCommentMoreMenu();
+              });
+            }
+            return;
+          }
+
+          if (commentDeleteTrigger) {
+            event.preventDefault();
+            if (state.commentMoreMenu && !delegateNativeDelete(state.commentMoreMenu.commentNode)) {
+              showCommentStatus('Delete unavailable');
+            }
+            closeCommentMoreMenu();
+            return;
+          }
+
           if (nativeCommentReplyTrigger) {
             handleNativeReplyTrigger(nativeCommentReplyTrigger);
           }
@@ -239,6 +270,10 @@
           if (state.panelActive === 'command' && !event.target.closest('#gg-command-panel')) {
             closeCommandPanel('command-outside');
           }
+
+          if (state.commentMoreMenu && !event.target.closest('.gg-comment-more')) {
+            closeCommentMoreMenu();
+          }
         });
 
         document.addEventListener('keydown', function (event) {
@@ -252,7 +287,9 @@
           }
 
           if (event.key === 'Escape') {
-            if (isCommentRepliesSheetOpen()) {
+            if (state.commentMoreMenu) {
+              closeCommentMoreMenu({ returnFocus: true });
+            } else if (isCommentRepliesSheetOpen()) {
               closeCommentRepliesSheet({ reason: 'comment-replies-escape' });
             } else if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
