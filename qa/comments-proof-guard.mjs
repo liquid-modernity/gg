@@ -78,6 +78,12 @@ for (const [file, js] of [
   requireIncludes(js, "zeroStateDuplicateLabels", `${file}: proof rejects duplicate zero-state labels`, file);
   requireIncludes(js, "excessiveCommentVerticalGap", `${file}: proof rejects excessive comment row gaps`, file);
   requireIncludes(js, "repliesSheetHasHandle", `${file}: proof checks replies sheet handle`, file);
+  requireIncludes(js, "composerStateMatchesVisibility", `${file}: proof checks composer state matches editor visibility`, file);
+  requireIncludes(js, "onlyOneActiveSheet", `${file}: proof enforces one semantically active sheet`, file);
+  requireIncludes(js, "nativeThreadToggleHiddenInReplies", `${file}: proof hides native thread toggles in replies`, file);
+  requireIncludes(js, "inlineReplyVertical", `${file}: proof rejects vertical inline reply controls`, file);
+  requireIncludes(js, "topContinueVisible", `${file}: proof hides top native continue control`, file);
+  requireIncludes(js, "duplicateExternalComposerLabels", `${file}: proof rejects duplicate external composer labels`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }

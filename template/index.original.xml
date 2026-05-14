@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='8269d5e36989' name='gg-template-fingerprint'/>
+<meta content='b4238fe603ce' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -1252,8 +1252,8 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments {
-  --gg-comment-pad-y: 12px;
-  --gg-comment-body-gap: 5px;
+  --gg-comment-pad-y: 10px;
+  --gg-comment-body-gap: 4px;
   --gg-comment-action-gap: 8px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -1364,6 +1364,13 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 #gg-comment-replies-list .comment-replies {
   display: grid;
+}
+
+#gg-comments-sheet #top-continue,
+#gg-comment-replies-sheet .thread-toggle,
+#gg-comment-replies-sheet .thread-count,
+#gg-comment-replies-sheet .thread-arrow {
+  display: none !important;
 }
 
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
@@ -1558,7 +1565,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   min-height: 32px;
   width: auto;
   max-width: 100%;
-  margin: 2px 0 8px;
+  margin: 0 0 6px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1685,7 +1692,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments .comment-body p,
 .gg-comments .comment-content p {
-  margin: 0 0 .45em;
+  margin: 0 0 .35em;
 }
 
 .gg-comments .comment-body p:last-child,
@@ -1732,14 +1739,22 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comments .comment .gg-comment-inline-reply {
+  grid-column: 2;
   display: inline-flex;
+  width: max-content;
+  min-width: 44px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .thread-toggle a,
 .gg-comments .continue a {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: 30px;
   color: inherit;
   white-space: nowrap;
   writing-mode: horizontal-tb;
@@ -1818,6 +1833,17 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   border-radius: 10px;
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
+}
+
+.gg-comments .gg-comment-inline-reply a.comment-reply {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .comment-form,
@@ -1926,6 +1952,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue,
 .gg-comments .gg-comments__list > .continue,
+.gg-comments .loadmore,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) {
   grid-column: 1 / -1;
   justify-self: stretch;
@@ -1936,6 +1963,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue a,
 .gg-comments .gg-comments__list > .continue a,
+.gg-comments .loadmore a,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a {
   display: flex;
   align-items: center;
@@ -1951,6 +1979,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue a:hover,
 .gg-comments .gg-comments__list > .continue a:hover,
+.gg-comments .loadmore a:hover,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a:hover {
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
@@ -1960,7 +1989,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   #gg-comments-sheet {
     --gg-comment-avatar-size: 32px;
     --gg-comment-gap: 10px;
-    --gg-comment-pad-y: 12px;
+    --gg-comment-pad-y: 10px;
   }
 
   .gg-comments .comment-author .datetime,
@@ -2976,6 +3005,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 }
 
+
+
     ]]></b:skin>
 
     <b:include data='blog' name='google-analytics'/>
@@ -3020,7 +3051,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='8269d5e36989' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='b4238fe603ce' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -4976,6 +5007,15 @@ window.GG = window.GG || {};
             var topCeInsideComment;
             var bannerFooter;
             var composerFooter;
+            var activeFooter;
+            var activeFooterEditor;
+            var editorVisible;
+            var activeFooterComposerOpen;
+            var activeSheetCount;
+            var nativeThreadToggleHiddenInReplies;
+            var inlineReplyVertical;
+            var topContinueVisible;
+            var duplicateExternalComposerLabels;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -5003,6 +5043,13 @@ window.GG = window.GG || {};
               return Math.abs(Math.round(nodeRect.top) - Math.round(headerRect.top)) <= 8;
             });
             var activeCommentsLayer = document.body ? (document.body.getAttribute('data-gg-comments-layer') || '') : '';
+            activeFooter = visibleFooterNodes[0] || null;
+            activeFooterEditor = activeFooter ? activeFooter.querySelector('#comment-editor') : null;
+            editorVisible = !!(activeFooterEditor && isVisible(activeFooterEditor));
+            activeFooterComposerOpen = activeFooter ? activeFooter.getAttribute('data-gg-composer-open') : '';
+            activeSheetCount = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet, #gg-comment-replies-sheet')).filter(function (node) {
+              return node.getAttribute('data-gg-active') === 'true' && !node.hidden && node.getAttribute('aria-hidden') !== 'true' && !node.hasAttribute('inert');
+            }).length;
             topCeInsideFooter = !!(composer && composer.closest && composer.closest('.gg-comments__footer'));
             topCeInsideComment = !!(composer && composer.closest && composer.closest('li.comment, .comment-thread, .comment-replies, #gg-comments-list, #gg-comment-replies-list'));
             bannerFooter = document.querySelector('.gg-comments__reply-banner');
@@ -5018,14 +5065,28 @@ window.GG = window.GG || {};
             loadMoreInsideFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .continue, #gg-comments-sheet a')).some(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node) && !!(node.closest && node.closest('.gg-comments__footer'));
             });
-            replyActionsVertical = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .thread-toggle, #gg-comment-replies-sheet .continue, #gg-comment-replies-sheet [data-gg-action="comments-open-replies"]')).filter(isVisible).some(function (node) {
+            replyActionsVertical = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .thread-toggle, #gg-comment-replies-sheet .continue, #gg-comment-replies-sheet [data-gg-action="comments-open-replies"]')).filter(isVisible).filter(function (node) {
+              return !(node.closest && node.closest('.gg-comment-inline-reply'));
+            }).some(function (node) {
               var rect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
               var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
-              return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.width <= rect.height));
+              return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.height > rect.width));
             });
+            nativeThreadToggleHiddenInReplies = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet .thread-toggle, #gg-comment-replies-sheet .thread-count, #gg-comment-replies-sheet .thread-arrow')).every(function (node) {
+              return !isVisible(node);
+            });
+            inlineReplyVertical = Array.prototype.slice.call(document.querySelectorAll('.gg-comment-inline-reply')).filter(isVisible).some(function (node) {
+              var rect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.height > rect.width));
+            });
+            topContinueVisible = isVisible(document.querySelector('#top-continue'));
             zeroStateDuplicateLabels = !getTopLevelCommentCount || getTopLevelCommentCount() ? false : (visibleFooterNodes.reduce(function (count, footer) {
               return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"], #comment-post-message')).filter(isVisible).length;
             }, 0) > 1);
+            duplicateExternalComposerLabels = visibleFooterNodes.reduce(function (count, footer) {
+              return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"], #comment-post-message')).filter(isVisible).length;
+            }, 0) > 1;
             excessiveCommentVerticalGap = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet li.comment, #gg-comments-sheet .comment-thread .comment')).filter(isVisible).slice(0, 6).some(function (commentNode) {
               var bodyNode = commentNode.querySelector ? commentNode.querySelector('.comment-body, .comment-content') : null;
               var actionNode = commentNode.querySelector ? commentNode.querySelector('.comment-actions, .comment-footer, [data-gg-action="comments-open-replies"], .continue') : null;
@@ -5061,10 +5122,17 @@ window.GG = window.GG || {};
               composerLauncherConflict: composerLauncherConflict,
               visibleAddCommentControls: visibleAddCommentControls,
               visibleComposer: visibleComposer,
+              composerStateMatchesVisibility: !activeFooter || (editorVisible ? activeFooterComposerOpen === 'true' : activeFooterComposerOpen === 'false'),
+              onlyOneActiveSheet: activeSheetCount <= 1,
+              nativeThreadToggleHiddenInReplies: nativeThreadToggleHiddenInReplies,
+              inlineReplyVertical: inlineReplyVertical,
+              topContinueVisible: topContinueVisible,
               loadMoreInsideFooter: loadMoreInsideFooter,
               replyActionsVertical: replyActionsVertical,
               zeroStateDuplicateLabels: zeroStateDuplicateLabels,
+              duplicateExternalComposerLabels: duplicateExternalComposerLabels,
               excessiveCommentVerticalGap: excessiveCommentVerticalGap,
+              excessiveVerticalGap: excessiveCommentVerticalGap,
               repliesSheetHasHandle: !!document.querySelector('#gg-comment-replies-sheet [data-gg-drag-handle="comment-replies"], #gg-comment-replies-sheet .gg-sheet__handle')
             };
 
@@ -5087,9 +5155,15 @@ window.GG = window.GG || {};
               result.bannerFooterMatchesComposerFooter &&
               !result.composerLauncherConflict &&
               result.visibleAddCommentControls <= 1 &&
+              result.composerStateMatchesVisibility &&
+              result.onlyOneActiveSheet &&
+              result.nativeThreadToggleHiddenInReplies &&
+              !result.inlineReplyVertical &&
+              !result.topContinueVisible &&
               !result.loadMoreInsideFooter &&
               !result.replyActionsVertical &&
               !result.zeroStateDuplicateLabels &&
+              !result.duplicateExternalComposerLabels &&
               !result.excessiveCommentVerticalGap &&
               result.repliesSheetHasHandle &&
               (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
@@ -6564,8 +6638,34 @@ window.GG = window.GG || {};
 
           if (value === 'closed') {
             document.body.removeAttribute('data-gg-comments-layer');
+            if (ui.commentsFooter) ui.commentsFooter.hidden = true;
+            if (ui.commentRepliesFooter) ui.commentRepliesFooter.hidden = true;
+            if (ui.comments) {
+              ui.comments.setAttribute('data-gg-active', 'false');
+              ui.comments.setAttribute('aria-hidden', 'true');
+              ui.comments.setAttribute('inert', '');
+            }
+            if (ui.commentReplies) {
+              ui.commentReplies.setAttribute('data-gg-active', 'false');
+              ui.commentReplies.setAttribute('aria-hidden', 'true');
+              ui.commentReplies.setAttribute('inert', '');
+            }
           } else {
             document.body.setAttribute('data-gg-comments-layer', value);
+            if (ui.commentsFooter) ui.commentsFooter.hidden = value === 'replies';
+            if (ui.commentRepliesFooter) ui.commentRepliesFooter.hidden = value !== 'replies';
+            if (ui.comments) {
+              ui.comments.setAttribute('data-gg-active', value === 'main' ? 'true' : 'false');
+              ui.comments.setAttribute('aria-hidden', value === 'main' ? 'false' : 'true');
+              if (value === 'main') ui.comments.removeAttribute('inert');
+              else ui.comments.setAttribute('inert', '');
+            }
+            if (ui.commentReplies) {
+              ui.commentReplies.setAttribute('data-gg-active', value === 'replies' ? 'true' : 'false');
+              ui.commentReplies.setAttribute('aria-hidden', value === 'replies' ? 'false' : 'true');
+              if (value === 'replies') ui.commentReplies.removeAttribute('inert');
+              else ui.commentReplies.setAttribute('inert', '');
+            }
           }
 
           return value;
@@ -6634,6 +6734,16 @@ window.GG = window.GG || {};
           state.commentComposerOpen = !!open;
           syncCommentComposerMode();
           return state.commentComposerOpen;
+        }
+
+        function isElementVisible(element) {
+          var style;
+          var rect;
+          if (!element || element.hidden) return false;
+          style = window.getComputedStyle ? window.getComputedStyle(element) : null;
+          if (style && (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')) return false;
+          rect = element.getBoundingClientRect ? element.getBoundingClientRect() : null;
+          return !rect || (rect.width > 0 && rect.height > 0);
         }
 
         function getCommentFromLegacyContinue(continueNode, commentId) {
@@ -6967,7 +7077,9 @@ window.GG = window.GG || {};
         function syncCommentComposerMode() {
           var mode = getCommentComposerMode();
           var activeFooter = getActiveComposerFooter();
-          var open = state.commentComposerOpen || mode === 'reply';
+          var editor = activeFooter ? activeFooter.querySelector('#comment-editor') : null;
+          var editorVisible = isElementVisible(editor);
+          var open = state.commentComposerOpen || mode === 'reply' || editorVisible;
 
           if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
           if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
@@ -11807,7 +11919,6 @@ window.GG = window.GG || {};
             refreshPwaDiagnostics();
           });
         }, 1200);
-      }(window.GG));
-//]]></script>
+      }(window.GG));//]]></script>
   </body>
 </html>

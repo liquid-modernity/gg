@@ -407,8 +407,34 @@
 
           if (value === 'closed') {
             document.body.removeAttribute('data-gg-comments-layer');
+            if (ui.commentsFooter) ui.commentsFooter.hidden = true;
+            if (ui.commentRepliesFooter) ui.commentRepliesFooter.hidden = true;
+            if (ui.comments) {
+              ui.comments.setAttribute('data-gg-active', 'false');
+              ui.comments.setAttribute('aria-hidden', 'true');
+              ui.comments.setAttribute('inert', '');
+            }
+            if (ui.commentReplies) {
+              ui.commentReplies.setAttribute('data-gg-active', 'false');
+              ui.commentReplies.setAttribute('aria-hidden', 'true');
+              ui.commentReplies.setAttribute('inert', '');
+            }
           } else {
             document.body.setAttribute('data-gg-comments-layer', value);
+            if (ui.commentsFooter) ui.commentsFooter.hidden = value === 'replies';
+            if (ui.commentRepliesFooter) ui.commentRepliesFooter.hidden = value !== 'replies';
+            if (ui.comments) {
+              ui.comments.setAttribute('data-gg-active', value === 'main' ? 'true' : 'false');
+              ui.comments.setAttribute('aria-hidden', value === 'main' ? 'false' : 'true');
+              if (value === 'main') ui.comments.removeAttribute('inert');
+              else ui.comments.setAttribute('inert', '');
+            }
+            if (ui.commentReplies) {
+              ui.commentReplies.setAttribute('data-gg-active', value === 'replies' ? 'true' : 'false');
+              ui.commentReplies.setAttribute('aria-hidden', value === 'replies' ? 'false' : 'true');
+              if (value === 'replies') ui.commentReplies.removeAttribute('inert');
+              else ui.commentReplies.setAttribute('inert', '');
+            }
           }
 
           return value;
@@ -477,6 +503,16 @@
           state.commentComposerOpen = !!open;
           syncCommentComposerMode();
           return state.commentComposerOpen;
+        }
+
+        function isElementVisible(element) {
+          var style;
+          var rect;
+          if (!element || element.hidden) return false;
+          style = window.getComputedStyle ? window.getComputedStyle(element) : null;
+          if (style && (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')) return false;
+          rect = element.getBoundingClientRect ? element.getBoundingClientRect() : null;
+          return !rect || (rect.width > 0 && rect.height > 0);
         }
 
         function getCommentFromLegacyContinue(continueNode, commentId) {
@@ -810,7 +846,9 @@
         function syncCommentComposerMode() {
           var mode = getCommentComposerMode();
           var activeFooter = getActiveComposerFooter();
-          var open = state.commentComposerOpen || mode === 'reply';
+          var editor = activeFooter ? activeFooter.querySelector('#comment-editor') : null;
+          var editorVisible = isElementVisible(editor);
+          var open = state.commentComposerOpen || mode === 'reply' || editorVisible;
 
           if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
           if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');

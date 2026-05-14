@@ -1,6 +1,6 @@
 .gg-comments {
-  --gg-comment-pad-y: 12px;
-  --gg-comment-body-gap: 5px;
+  --gg-comment-pad-y: 10px;
+  --gg-comment-body-gap: 4px;
   --gg-comment-action-gap: 8px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -111,6 +111,13 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 #gg-comment-replies-list .comment-replies {
   display: grid;
+}
+
+#gg-comments-sheet #top-continue,
+#gg-comment-replies-sheet .thread-toggle,
+#gg-comment-replies-sheet .thread-count,
+#gg-comment-replies-sheet .thread-arrow {
+  display: none !important;
 }
 
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
@@ -305,7 +312,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   min-height: 32px;
   width: auto;
   max-width: 100%;
-  margin: 2px 0 8px;
+  margin: 0 0 6px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -432,7 +439,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments .comment-body p,
 .gg-comments .comment-content p {
-  margin: 0 0 .45em;
+  margin: 0 0 .35em;
 }
 
 .gg-comments .comment-body p:last-child,
@@ -479,14 +486,22 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comments .comment .gg-comment-inline-reply {
+  grid-column: 2;
   display: inline-flex;
+  width: max-content;
+  min-width: 44px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .thread-toggle a,
 .gg-comments .continue a {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: 30px;
   color: inherit;
   white-space: nowrap;
   writing-mode: horizontal-tb;
@@ -565,6 +580,17 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   border-radius: 10px;
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
+}
+
+.gg-comments .gg-comment-inline-reply a.comment-reply {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
 }
 
 .gg-comments .comment-form,
@@ -673,6 +699,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue,
 .gg-comments .gg-comments__list > .continue,
+.gg-comments .loadmore,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) {
   grid-column: 1 / -1;
   justify-self: stretch;
@@ -683,6 +710,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue a,
 .gg-comments .gg-comments__list > .continue a,
+.gg-comments .loadmore a,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a {
   display: flex;
   align-items: center;
@@ -698,6 +726,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comments #comments-block > .continue a:hover,
 .gg-comments .gg-comments__list > .continue a:hover,
+.gg-comments .loadmore a:hover,
 .gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a:hover {
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
@@ -707,7 +736,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   #gg-comments-sheet {
     --gg-comment-avatar-size: 32px;
     --gg-comment-gap: 10px;
-    --gg-comment-pad-y: 12px;
+    --gg-comment-pad-y: 10px;
   }
 
   .gg-comments .comment-author .datetime,
