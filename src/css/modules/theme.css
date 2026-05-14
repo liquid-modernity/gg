@@ -17,7 +17,7 @@ html[data-gg-theme='dark'] {
   --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
   --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
   --gg-divider: rgba(255, 255, 255, .14);
-  --gg-divider-strong: rgba(255, 255, 255, .22);
+  --gg-divider-strong: rgba(255, 255, 255, 0);
   --gg-border-interactive: rgba(255, 255, 255, .18);
   --gg-ink: #f5f1f3;
   --gg-ink-soft: #c8bec4;
@@ -63,7 +63,7 @@ html[data-gg-theme='dark'] {
     --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
     --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
     --gg-divider: rgba(255, 255, 255, .14);
-    --gg-divider-strong: rgba(255, 255, 255, .22);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .18);
     --gg-ink: #f5f1f3;
     --gg-ink-soft: #c8bec4;
@@ -97,14 +97,14 @@ html[data-gg-theme='dark'] {
 @media (prefers-contrast: more) {
   :root {
     --gg-divider: rgba(32, 26, 28, .26);
-    --gg-divider-strong: rgba(32, 26, 28, .36);
+    --gg-divider-strong: rgba(32, 26, 28, 0);
     --gg-border-interactive: rgba(32, 26, 28, .42);
     --gg-focus-ring: 3px solid var(--gg-accent);
   }
 
   html[data-gg-theme='dark'] {
     --gg-divider: rgba(255, 255, 255, .32);
-    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .5);
   }
 }
@@ -112,7 +112,7 @@ html[data-gg-theme='dark'] {
 @media (prefers-color-scheme: dark) and (prefers-contrast: more) {
   :root:not([data-gg-theme='light']) {
     --gg-divider: rgba(255, 255, 255, .32);
-    --gg-divider-strong: rgba(255, 255, 255, .44);
+    --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .5);
   }
 }
