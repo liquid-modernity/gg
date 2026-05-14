@@ -396,10 +396,85 @@
           return !!(ui.comments || document.getElementById('gg-comments-root') || document.getElementById('comments'));
         }
 
+        function adoptGeneratedBloggerComposer() {
+          var slot = ui.commentsComposerSlot || document.getElementById('gg-comments-composer-slot');
+          var generated = document.querySelector('.comment-replybox-thread#top-ce');
+          var placeholder = slot ? slot.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]') : document.querySelector('.comment-form[data-gg-native-plumbing="composer"], .comment-form[data-gg-native-plumbing="composer-source"]');
+
+          if (generated && placeholder && generated !== placeholder) {
+            if (placeholder.id === 'top-ce') placeholder.removeAttribute('id');
+            placeholder.setAttribute('data-gg-native-plumbing', 'composer-source');
+            placeholder.setAttribute('hidden', 'hidden');
+          }
+
+          if (generated && slot && generated.parentNode !== slot) {
+            slot.insertBefore(generated, slot.firstChild);
+            generated.setAttribute('data-gg-native-plumbing', 'composer');
+          }
+
+          return !!(generated || placeholder);
+        }
+
+        function getCommentFromLegacyContinue(continueNode, commentId) {
+          var byId = commentId ? document.getElementById('c' + commentId) : null;
+          var node = continueNode ? continueNode.previousElementSibling : null;
+
+          if (byId && byId.matches && byId.matches('li.comment, .comment-thread .comment, .comment')) return byId;
+
+          while (node) {
+            if (node.matches && node.matches('li.comment, .comment-thread .comment, .comment')) return node;
+            node = node.previousElementSibling;
+          }
+          return null;
+        }
+
+        function cleanupLegacyCommentControls() {
+          var root = ui.commentsList || ui.comments || document.getElementById('gg-comments-root');
+          var replyLinks;
+          var i;
+          var link;
+          var continueNode;
+          var commentNode;
+          var actionRoot;
+          var commentId;
+          var existingReply;
+
+          if (!root || !root.querySelectorAll) return 0;
+
+          replyLinks = root.querySelectorAll('.continue > a.comment-reply[data-comment-id]');
+          for (i = 0; i < replyLinks.length; i += 1) {
+            link = replyLinks[i];
+            continueNode = link.parentElement;
+            if (!continueNode || continueNode.getAttribute('data-gg-legacy-control-ready') === 'true') continue;
+
+            commentId = link.getAttribute('data-comment-id') || '';
+            commentNode = getCommentFromLegacyContinue(continueNode, commentId);
+            if (!commentNode) continue;
+
+            existingReply = commentId ? commentNode.querySelector('.comment-actions a.comment-reply[data-comment-id="' + commentId + '"], .comment-footer a.comment-reply[data-comment-id="' + commentId + '"]') : null;
+            continueNode.setAttribute('data-gg-legacy-control-ready', 'true');
+
+            if (existingReply && existingReply !== link) {
+              continueNode.setAttribute('data-gg-legacy-control', 'duplicate-reply');
+              continueNode.hidden = true;
+              continue;
+            }
+
+            actionRoot = commentNode.querySelector('.comment-actions, .comment-footer') || commentNode.querySelector('.comment-block, .comment-content, .comment-body') || commentNode;
+            continueNode.classList.add('gg-comment-inline-reply');
+            continueNode.setAttribute('data-gg-legacy-control', 'inline-reply');
+            actionRoot.appendChild(continueNode);
+          }
+
+          return replyLinks.length;
+        }
+
         function runCommentsEnhancement(reason) {
           if (!hasCommentsSurface()) return false;
           state.commentEnhancementScheduled = false;
           state.commentEnhancementReason = reason || 'comments-enhancement';
+          adoptGeneratedBloggerComposer();
+          cleanupLegacyCommentControls();
           initCommentRepliesControls();
           ensureCommentMoreMenus();
           initCommentPrefixObserver();
@@ -718,6 +793,7 @@
 
         function ensureComposerInActiveFooter() {
           var footer = getActiveComposerFooter();
+          adoptGeneratedBloggerComposer();
           if (footer && footer !== ui.commentsFooter) return portalComposerToFooter(footer);
           syncCommentComposerMode();
           return restoreComposerToMainFooter();

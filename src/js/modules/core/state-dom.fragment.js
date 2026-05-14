@@ -175,6 +175,7 @@
               sheetCount: document.querySelectorAll('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments').length,
               commentsRootCount: document.querySelectorAll('#comments').length,
               ggCommentsRootCount: document.querySelectorAll('#gg-comments-root').length,
+              composerCount: document.querySelectorAll('#top-ce').length,
               editorCount: document.querySelectorAll('#comment-editor').length,
               nativeDeleteCount: document.querySelectorAll('.item-control, .comment-delete, .goog-toggle-button').length,
               replyStructureCount: document.querySelectorAll('.comment-replies, .thread-toggle, .thread-count').length,
@@ -188,6 +189,7 @@
               result.editor &&
               result.sheetCount === 1 &&
               result.editorCount === 1 &&
+              result.composerCount <= 1 &&
               result.commentsRootCount === 1 &&
               result.ggCommentsRootCount <= 1 &&
               result.fallbackSubmitCount === 0
@@ -201,6 +203,7 @@
               editorSrc: false,
               composer: false,
               commentsRootCount: 0,
+              composerCount: 0,
               editorCount: 0,
               nativeDeleteCount: 0,
               replyStructureCount: 0,

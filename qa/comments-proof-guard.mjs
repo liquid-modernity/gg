@@ -59,8 +59,11 @@ for (const [file, js] of [
   requireIncludes(js, "data-gg-comments-proof", `${file}: proof writes status attribute`, file);
   requireIncludes(js, "data-gg-comments-proof-count", `${file}: proof writes failure count`, file);
   requireIncludes(js, "result.editorCount === 1", `${file}: proof enforces one native iframe`, file);
+  requireIncludes(js, "result.composerCount <= 1", `${file}: proof enforces one native composer wrapper`, file);
   requireIncludes(js, "result.commentsRootCount === 1", `${file}: proof enforces one comments hash anchor`, file);
   requireIncludes(js, "result.sheetCount === 1", `${file}: proof enforces one comments sheet`, file);
+  requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
+  requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }
 
 requireIncludes(indexXml, "<script defer='defer' src='/__gg/assets/js/gg-app.dev.js'></script>", "index.xml loads external app JS", "index.xml");

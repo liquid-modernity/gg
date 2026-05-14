@@ -1585,6 +1585,15 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   display: none;
 }
 
+.gg-comments [data-gg-legacy-control='duplicate-reply'],
+.gg-comments [data-gg-native-plumbing='composer-source'] {
+  display: none !important;
+}
+
+.gg-comments .comment .gg-comment-inline-reply {
+  display: inline-flex;
+}
+
 .gg-comments .thread-toggle a,
 .gg-comments .continue a {
   display: inline-flex;
@@ -1652,6 +1661,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-comments .comment-form,
+.gg-comments .comment-replybox-thread,
 .gg-comments .comments > .comment-footer .comment-form {
   display: grid;
   gap: 10px;
@@ -1685,6 +1695,18 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
+}
+
+.gg-comments__footer .comment-replybox-thread,
+#gg-comments-composer-slot > .comment-replybox-thread {
+  display: grid;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.gg-comments .comment-thread > .comment-replybox-thread {
+  display: none;
 }
 
 .gg-comments__footer [data-gg-action='comments-open-composer'] {
@@ -1728,7 +1750,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments #comments-block > .continue,
 .gg-comments .gg-comments__list > .continue,
-.gg-comments .comment-thread > .continue {
+.gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) {
   grid-column: 1 / -1;
   justify-self: stretch;
   margin: 10px 0 0;
@@ -1736,7 +1758,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments #comments-block > .continue a,
 .gg-comments .gg-comments__list > .continue a,
-.gg-comments .comment-thread > .continue a {
+.gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1751,7 +1773,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 
 .gg-comments #comments-block > .continue a:hover,
 .gg-comments .gg-comments__list > .continue a:hover,
-.gg-comments .comment-thread > .continue a:hover {
+.gg-comments .comment-thread > .continue:not([data-gg-legacy-control]) a:hover {
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
 }
