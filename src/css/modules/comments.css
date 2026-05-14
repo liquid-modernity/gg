@@ -12,11 +12,46 @@
 #gg-comment-replies-sheet .gg-sheet__panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
   padding-bottom: 0;
 }
 
 #gg-comments-root {
   min-height: 0;
+}
+
+#gg-comments-sheet .gg-comments--sheet,
+#gg-comment-replies-sheet .gg-comments--sheet {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#gg-comments-sheet .gg-comments__content,
+#gg-comment-replies-sheet .gg-comments__content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#gg-comments-sheet {
+  z-index: 92;
+}
+
+#gg-comment-replies-sheet {
+  z-index: 96;
+}
+
+body[data-gg-comments-layer='replies'] #gg-comments-sheet .gg-sheet__panel,
+body[data-gg-comments-layer='replies'] #gg-comments-sheet .gg-comments-sheet__panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-gg-comments-layer='replies'] #gg-comments-footer,
+body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg-legacy-control]),
+body[data-gg-comments-layer='main'] #gg-comment-replies-footer {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .gg-comments--sheet .title,
@@ -77,10 +112,6 @@
   margin-left: calc(var(--gg-comment-avatar-size) * .24);
   padding-left: calc(var(--gg-comment-indent) - 4px);
   border-left: 1px solid var(--gg-comment-thread-guide);
-}
-
-#gg-comment-replies-sheet {
-  z-index: 43;
 }
 
 #gg-comment-replies-sheet .gg-comments__content {

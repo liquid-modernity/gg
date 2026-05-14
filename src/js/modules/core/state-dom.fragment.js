@@ -159,11 +159,38 @@
 
           try {
             var sheet = document.querySelector('#gg-comments-sheet, #gg-comments-panel, #ggPanelComments');
+            var repliesSheet = document.querySelector('#gg-comment-replies-sheet');
             var root = document.querySelector('#gg-comments-root, #comments');
             var list = document.querySelector('#gg-comments-list, #comment-holder, #cmt2-holder');
             var editor = document.querySelector('#comment-editor');
             var editorSrc = document.querySelector('#comment-editor-src');
             var composer = document.querySelector('#top-ce');
+            var isVisible = function (element) {
+              var style;
+              var rect;
+              if (!element || element.hidden) return false;
+              style = window.getComputedStyle ? window.getComputedStyle(element) : null;
+              if (style && (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')) return false;
+              rect = element.getBoundingClientRect ? element.getBoundingClientRect() : null;
+              return !rect || (rect.width > 0 && rect.height > 0);
+            };
+            var getZ = function (element) {
+              var value = element && window.getComputedStyle ? window.getComputedStyle(element).zIndex : '';
+              var parsed = Number(value);
+              return Number.isFinite(parsed) ? parsed : 0;
+            };
+            var visibleSheets = [sheet ? sheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null, repliesSheet ? repliesSheet.querySelector('.gg-sheet__panel, .gg-comments-sheet__panel') : null].filter(isVisible).length;
+            var visibleFooters = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__footer')).filter(isVisible).length;
+            var visibleReplyLeaks = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet #gg-comments-list .comment-replies')).filter(isVisible).length;
+            var moreButtonsInHeader = Array.prototype.slice.call(document.querySelectorAll('.gg-comment-more')).every(function (node) {
+              var comment = node.closest ? node.closest('li.comment, .comment-thread .comment, .comment') : null;
+              var header = comment && comment.querySelector ? comment.querySelector('.comment-author, .comment-header') : null;
+              var nodeRect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+              var headerRect = header && header.getBoundingClientRect ? header.getBoundingClientRect() : null;
+              if (!comment || !header || !nodeRect || !headerRect) return true;
+              return Math.abs(Math.round(nodeRect.top) - Math.round(headerRect.top)) <= 8;
+            });
+            var activeCommentsLayer = document.body ? (document.body.getAttribute('data-gg-comments-layer') || '') : '';
 
             result = {
               sheet: !!sheet,
@@ -179,7 +206,13 @@
               editorCount: document.querySelectorAll('#comment-editor').length,
               nativeDeleteCount: document.querySelectorAll('.item-control, .comment-delete, .goog-toggle-button').length,
               replyStructureCount: document.querySelectorAll('.comment-replies, .thread-toggle, .thread-count').length,
-              fallbackSubmitCount: document.querySelectorAll('[data-gg-fallback-composer] button[type="submit"], [data-gg-fallback-composer] input[type="submit"], .gg-comments__fallback button[type="submit"], .gg-comments__fallback input[type="submit"]').length
+              fallbackSubmitCount: document.querySelectorAll('[data-gg-fallback-composer] button[type="submit"], [data-gg-fallback-composer] input[type="submit"], .gg-comments__fallback button[type="submit"], .gg-comments__fallback input[type="submit"]').length,
+              activeCommentsLayer: activeCommentsLayer,
+              visibleSheets: visibleSheets,
+              visibleFooters: visibleFooters,
+              repliesAboveMain: !sheet || !repliesSheet || getZ(repliesSheet) > getZ(sheet),
+              visibleReplyLeaks: visibleReplyLeaks,
+              moreButtonsInHeader: moreButtonsInHeader
             };
 
             result.ok = !!(
@@ -192,7 +225,11 @@
               result.composerCount <= 1 &&
               result.commentsRootCount === 1 &&
               result.ggCommentsRootCount <= 1 &&
-              result.fallbackSubmitCount === 0
+              result.fallbackSubmitCount === 0 &&
+              result.repliesAboveMain &&
+              result.visibleReplyLeaks === 0 &&
+              result.moreButtonsInHeader &&
+              (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
             );
           } catch (error) {
             result = {

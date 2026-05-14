@@ -62,6 +62,12 @@ for (const [file, js] of [
   requireIncludes(js, "result.composerCount <= 1", `${file}: proof enforces one native composer wrapper`, file);
   requireIncludes(js, "result.commentsRootCount === 1", `${file}: proof enforces one comments hash anchor`, file);
   requireIncludes(js, "result.sheetCount === 1", `${file}: proof enforces one comments sheet`, file);
+  requireIncludes(js, "visibleFooters", `${file}: proof counts visible comments footers`, file);
+  requireIncludes(js, "visibleSheets", `${file}: proof counts active foreground sheets`, file);
+  requireIncludes(js, "repliesAboveMain", `${file}: proof checks replies z-index above main`, file);
+  requireIncludes(js, "visibleReplyLeaks", `${file}: proof checks main sheet reply leaks`, file);
+  requireIncludes(js, "moreButtonsInHeader", `${file}: proof checks More button header alignment`, file);
+  requireIncludes(js, "data-gg-comments-layer", `${file}: tracks active comments layer`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }

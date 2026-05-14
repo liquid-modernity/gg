@@ -258,6 +258,7 @@
           if (!panel) return Promise.resolve(null);
 
           if (state.panelActive === name && !panel.root.hidden && panel.root.getAttribute('data-gg-state') === 'open') {
+            if (panel.name === 'comments') setCommentsLayer('main');
             if (openOptions.trigger) state.panelLastTrigger = openOptions.trigger;
             if (openOptions.focus !== false) focusPanel(panel);
             return Promise.resolve(panel);
@@ -272,6 +273,7 @@
             }
             state.panelActive = name;
             state.panelLastTrigger = openOptions.trigger || document.activeElement || null;
+            if (panel.name === 'comments') setCommentsLayer('main');
 
             panel.root.hidden = false;
             panel.root.removeAttribute('inert');
@@ -318,6 +320,7 @@
           }
 
           if (panel.name === 'comments') {
+            setCommentsLayer('closed');
             closeCommentMoreMenu();
             closeCommentRepliesSheet({
               returnFocus: false,
@@ -339,6 +342,7 @@
               panel.root.setAttribute('aria-hidden', 'true');
               panel.root.setAttribute('data-gg-state', 'closed');
               panel.root.removeAttribute('data-gg-active');
+              if (panel.name === 'comments') setCommentsLayer('closed');
               resetPanelDrag(panel, true);
 
               if (state.panelActive === panel.name) {
@@ -394,6 +398,20 @@
 
         function hasCommentsSurface() {
           return !!(ui.comments || document.getElementById('gg-comments-root') || document.getElementById('comments'));
+        }
+
+        function setCommentsLayer(layer) {
+          var value = layer || 'closed';
+
+          if (!document.body) return value;
+
+          if (value === 'closed') {
+            document.body.removeAttribute('data-gg-comments-layer');
+          } else {
+            document.body.setAttribute('data-gg-comments-layer', value);
+          }
+
+          return value;
         }
 
         function adoptGeneratedBloggerComposer() {
@@ -505,6 +523,7 @@
             focus: openOptions.focus !== false,
             reason: openOptions.reason || 'comments-open'
           }).then(function (panel) {
+            setCommentsLayer('main');
             runCommentsEnhancement(openOptions.reason || 'comments-open');
             return panel;
           });
@@ -520,6 +539,9 @@
             return closePanel('comments', {
               returnFocus: closeOptions.returnFocus !== false,
               reason: closeOptions.reason || 'comments-close'
+            }).then(function (closed) {
+              setCommentsLayer('closed');
+              return closed;
             });
           });
         }
@@ -1060,23 +1082,26 @@
           comments = root.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment');
           for (i = 0; i < comments.length; i += 1) {
             commentNode = comments[i];
-            if (!commentNode || commentNode.__ggCommentMoreReady) continue;
+            if (!commentNode) continue;
 
-            header = commentNode.querySelector('.comment-header, .comment-author, .comment-block, .comment-footer');
+            header = commentNode.querySelector('.comment-author, .comment-header') || commentNode.querySelector('.comment-block, .comment-footer');
             if (!header) continue;
 
-            wrapper = document.createElement('span');
-            wrapper.className = 'gg-comment-more';
-            button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'gg-comment-more__button';
-            button.setAttribute('data-gg-action', 'comment-more');
-            button.setAttribute('aria-haspopup', 'menu');
-            button.setAttribute('aria-expanded', 'false');
-            button.setAttribute('aria-label', 'More comment actions');
-            button.textContent = '...';
-            wrapper.appendChild(button);
-            header.appendChild(wrapper);
+            wrapper = commentNode.querySelector(':scope .gg-comment-more');
+            if (!wrapper) {
+              wrapper = document.createElement('span');
+              wrapper.className = 'gg-comment-more';
+              button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'gg-comment-more__button';
+              button.setAttribute('data-gg-action', 'comment-more');
+              button.setAttribute('aria-haspopup', 'menu');
+              button.setAttribute('aria-expanded', 'false');
+              button.setAttribute('aria-label', 'More comment actions');
+              button.textContent = '...';
+              wrapper.appendChild(button);
+            }
+            if (wrapper.parentNode !== header) header.appendChild(wrapper);
             commentNode.__ggCommentMoreReady = true;
           }
 
@@ -1176,6 +1201,7 @@
           if (!repliesNode) return Promise.resolve(null);
 
           if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode && isCommentRepliesSheetOpen()) {
+            setCommentsLayer('replies');
             focusCommentRepliesSheet();
             return Promise.resolve(state.commentRepliesPortal);
           }
@@ -1210,6 +1236,7 @@
             ui.commentReplies.setAttribute('aria-hidden', 'false');
             ui.commentReplies.setAttribute('data-gg-state', 'opening');
             ui.commentReplies.setAttribute('data-gg-active', 'true');
+            setCommentsLayer('replies');
 
             window.requestAnimationFrame(function () {
               if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
@@ -1245,6 +1272,8 @@
           if (!ui.commentReplies || ui.commentReplies.hidden) {
             restoreCommentRepliesPortal();
             restoreComposerToMainFooter();
+            if (ui.comments && !ui.comments.hidden && ui.comments.getAttribute('data-gg-state') !== 'closed') setCommentsLayer('main');
+            else setCommentsLayer('closed');
             return Promise.resolve(false);
           }
 
@@ -1269,6 +1298,8 @@
               if (ui.commentRepliesContext) ui.commentRepliesContext.textContent = '';
               clearCommentReplyContext();
               restoreComposerToMainFooter();
+              if (ui.comments && !ui.comments.hidden && ui.comments.getAttribute('data-gg-state') !== 'closed' && ui.comments.getAttribute('data-gg-state') !== 'closing') setCommentsLayer('main');
+              else setCommentsLayer('closed');
               if (shouldReturnFocus) portal.trigger.focus();
               resolve(true);
             }, 170);
