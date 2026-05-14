@@ -21,7 +21,7 @@
   --gg-surface-panel-fade-strong: rgba(245, 239, 236, .94);
   --gg-surface-panel-fade-muted: rgba(245, 239, 236, .82);
   --gg-divider: rgba(32, 26, 28, .12);
-  --gg-divider-strong: rgba(32, 26, 28, .18);
+  --gg-divider-strong: rgba(255, 255, 255, 0);
   --gg-border-interactive: rgba(32, 26, 28, .18);
   --gg-ink: #201a1c;
   --gg-ink-soft: #5f565b;
@@ -52,7 +52,7 @@
   --gg-utility-head-pad-bottom: 6px;
   --gg-utility-head-border: var(--gg-divider);
   --gg-utility-title-max: 24ch;
-  --gg-panel-handle-width: 62px;
+  --gg-panel-handle-width: 33px;
   --gg-panel-handle-height: 3px;
   --gg-utility-handle-gap: 6px;
   --gg-panel-handle-tone: rgba(32, 26, 28, .18);
