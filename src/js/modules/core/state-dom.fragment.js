@@ -186,6 +186,17 @@
             var inlineReplyVertical;
             var topContinueVisible;
             var duplicateExternalComposerLabels;
+            var moreMenu;
+            var moreMenuPanel;
+            var moreMenuInsideSheet;
+            var moreMenuPlacement;
+            var moreMenuHasIcons;
+            var deleteMenuUsesDangerStyle;
+            var repliesParentContextCardVisible;
+            var repliesParentContextSticky;
+            var replyBannerSplitLayout;
+            var loadMoreFunctionalAndAboveFooter;
+            var composerWellVisibleWhenOpen;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -264,6 +275,43 @@
               var actionRect = actionNode && actionNode.getBoundingClientRect ? actionNode.getBoundingClientRect() : null;
               return !!(bodyRect && actionRect && actionRect.top - bodyRect.bottom > 24);
             });
+            moreMenu = Array.prototype.slice.call(document.querySelectorAll('.gg-comment-more__menu')).filter(isVisible)[0] || null;
+            moreMenuPanel = moreMenu && moreMenu.closest ? moreMenu.closest('.gg-sheet__panel, .gg-comments-sheet__panel') : null;
+            moreMenuPlacement = moreMenu ? (moreMenu.getAttribute('data-gg-menu-placement') || '') : '';
+            moreMenuInsideSheet = !moreMenu || !moreMenuPanel || (function () {
+              var menuRect = moreMenu.getBoundingClientRect();
+              var panelRect = moreMenuPanel.getBoundingClientRect();
+              return menuRect.left >= panelRect.left && menuRect.right <= panelRect.right && menuRect.top >= panelRect.top && menuRect.bottom <= panelRect.bottom;
+            }());
+            moreMenuHasIcons = !moreMenu || Array.prototype.slice.call(moreMenu.querySelectorAll('.gg-comment-more__item')).every(function (item) {
+              return !!item.querySelector('.gg-comment-more__icon, .gg-icon');
+            });
+            deleteMenuUsesDangerStyle = !moreMenu || Array.prototype.slice.call(moreMenu.querySelectorAll('[data-gg-comment-action="delete"]')).every(function (item) {
+              var style = window.getComputedStyle ? window.getComputedStyle(item) : null;
+              return !!(style && style.color && style.color !== 'rgb(32, 26, 28)');
+            });
+            repliesParentContextCardVisible = activeCommentsLayer !== 'replies' || isVisible(document.querySelector('#gg-comment-replies-context'));
+            repliesParentContextSticky = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).some(function (node) {
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(style && (style.position === 'sticky' || style.position === 'fixed'));
+            });
+            replyBannerSplitLayout = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
+              var clear = banner.querySelector('[data-gg-action="comments-reply-context-clear"]');
+              var bannerRect = banner.getBoundingClientRect ? banner.getBoundingClientRect() : null;
+              var clearRect = clear && clear.getBoundingClientRect ? clear.getBoundingClientRect() : null;
+              var style = window.getComputedStyle ? window.getComputedStyle(banner) : null;
+              return !!(style && bannerRect && clearRect && style.display === 'grid' && clearRect.right >= bannerRect.right - 2);
+            });
+            loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
+              return /load more/i.test(node.textContent || '') && isVisible(node);
+            }).every(function (node) {
+              var footer = document.querySelector('#gg-comments-footer:not([hidden])');
+              var nodeRect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+              var footerRect = footer && footer.getBoundingClientRect ? footer.getBoundingClientRect() : null;
+              var inViewport = !!(nodeRect && nodeRect.bottom > 0 && nodeRect.top < window.innerHeight);
+              return !!(node.closest && !node.closest('.gg-comments__footer') && (!inViewport || !footerRect || !nodeRect || nodeRect.bottom <= footerRect.top + 1));
+            });
+            composerWellVisibleWhenOpen = !activeFooter || activeFooterComposerOpen !== 'true' || isVisible(activeFooter.querySelector('#gg-comments-composer-slot, #top-ce'));
 
             result = {
               sheet: !!sheet,
@@ -303,6 +351,15 @@
               duplicateExternalComposerLabels: duplicateExternalComposerLabels,
               excessiveCommentVerticalGap: excessiveCommentVerticalGap,
               excessiveVerticalGap: excessiveCommentVerticalGap,
+              moreMenuInsideSheet: moreMenuInsideSheet,
+              moreMenuPlacement: moreMenuPlacement,
+              moreMenuHasIcons: moreMenuHasIcons,
+              deleteMenuUsesDangerStyle: deleteMenuUsesDangerStyle,
+              repliesParentContextCardVisible: repliesParentContextCardVisible,
+              repliesParentContextSticky: repliesParentContextSticky,
+              replyBannerSplitLayout: replyBannerSplitLayout,
+              loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
+              composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               repliesSheetHasHandle: !!document.querySelector('#gg-comment-replies-sheet [data-gg-drag-handle="comment-replies"], #gg-comment-replies-sheet .gg-sheet__handle')
             };
 
@@ -335,6 +392,14 @@
               !result.zeroStateDuplicateLabels &&
               !result.duplicateExternalComposerLabels &&
               !result.excessiveCommentVerticalGap &&
+              result.moreMenuInsideSheet &&
+              result.moreMenuHasIcons &&
+              result.deleteMenuUsesDangerStyle &&
+              result.repliesParentContextCardVisible &&
+              !result.repliesParentContextSticky &&
+              result.replyBannerSplitLayout &&
+              result.loadMoreFunctionalAndAboveFooter &&
+              result.composerWellVisibleWhenOpen &&
               result.repliesSheetHasHandle &&
               (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
             );

@@ -84,6 +84,14 @@ for (const [file, js] of [
   requireIncludes(js, "inlineReplyVertical", `${file}: proof rejects vertical inline reply controls`, file);
   requireIncludes(js, "topContinueVisible", `${file}: proof hides top native continue control`, file);
   requireIncludes(js, "duplicateExternalComposerLabels", `${file}: proof rejects duplicate external composer labels`, file);
+  requireIncludes(js, "moreMenuInsideSheet", `${file}: proof keeps More menu inside sheet`, file);
+  requireIncludes(js, "moreMenuHasIcons", `${file}: proof checks More menu icons`, file);
+  requireIncludes(js, "deleteMenuUsesDangerStyle", `${file}: proof checks delete danger styling`, file);
+  requireIncludes(js, "repliesParentContextCardVisible", `${file}: proof checks replies parent context card`, file);
+  requireIncludes(js, "repliesParentContextSticky", `${file}: proof rejects sticky replies context`, file);
+  requireIncludes(js, "replyBannerSplitLayout", `${file}: proof checks split reply banner`, file);
+  requireIncludes(js, "loadMoreFunctionalAndAboveFooter", `${file}: proof checks load more above footer`, file);
+  requireIncludes(js, "composerWellVisibleWhenOpen", `${file}: proof checks native composer well visibility`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }

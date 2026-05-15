@@ -778,6 +778,7 @@
 
         function renderReplyBanner() {
           var banner;
+          var label;
           var text;
           var strong;
           var clearButton;
@@ -793,17 +794,20 @@
 
           banner = document.createElement('div');
           banner.className = 'gg-comments__reply-banner';
+          label = document.createElement('span');
+          label.className = 'gg-comments__reply-label';
           text = document.createTextNode('Replying to ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
+          label.appendChild(text);
+          label.appendChild(strong);
           clearButton = document.createElement('button');
           clearButton.type = 'button';
           clearButton.className = 'gg-comments__reply-clear';
           clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
-          clearButton.setAttribute('aria-label', 'Clear reply target');
+          clearButton.setAttribute('aria-label', 'Cancel reply');
           clearButton.textContent = '×';
-          banner.appendChild(text);
-          banner.appendChild(strong);
+          banner.appendChild(label);
           banner.appendChild(clearButton);
           ui.commentsReplySlot.appendChild(banner);
           syncCommentComposerMode();
@@ -1104,6 +1108,21 @@
           return true;
         }
 
+        function buildCommentMoreMenuIcon(name) {
+          var icon = document.createElement('span');
+          icon.className = 'gg-comment-more__icon gg-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.textContent = name;
+          return icon;
+        }
+
+        function buildCommentMoreMenuLabel(text) {
+          var label = document.createElement('span');
+          label.className = 'gg-comment-more__label';
+          label.textContent = text;
+          return label;
+        }
+
         function buildCommentMoreMenu(commentNode) {
           var menu = document.createElement('div');
           var copyButton = document.createElement('button');
@@ -1116,7 +1135,9 @@
           copyButton.className = 'gg-comment-more__item';
           copyButton.setAttribute('role', 'menuitem');
           copyButton.setAttribute('data-gg-action', 'comment-copy-link');
-          copyButton.textContent = 'Copy link';
+          copyButton.setAttribute('data-gg-comment-action', 'copy');
+          copyButton.appendChild(buildCommentMoreMenuIcon('link'));
+          copyButton.appendChild(buildCommentMoreMenuLabel('Copy link'));
           menu.appendChild(copyButton);
 
           if (commentHasNativeDelete(commentNode)) {
@@ -1125,16 +1146,90 @@
             deleteButton.className = 'gg-comment-more__item';
             deleteButton.setAttribute('role', 'menuitem');
             deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
-            deleteButton.textContent = 'Delete comment';
+            deleteButton.setAttribute('data-gg-comment-action', 'delete');
+            deleteButton.appendChild(buildCommentMoreMenuIcon('delete'));
+            deleteButton.appendChild(buildCommentMoreMenuLabel('Delete comment'));
             menu.appendChild(deleteButton);
           }
 
           return menu;
         }
 
+        function clampNumber(value, min, max) {
+          if (max < min) return min;
+          return Math.max(min, Math.min(max, value));
+        }
+
+        function positionCommentMoreMenu(button, menu) {
+          var wrapper = button ? button.closest('.gg-comment-more') : null;
+          var panel = button ? button.closest('.gg-sheet__panel, .gg-comments-sheet__panel') : null;
+          var header = panel ? panel.querySelector('.gg-sheet__head, .gg-comments-sheet__head') : null;
+          var footer = panel ? panel.querySelector('.gg-comments__footer:not([hidden])') : null;
+          var buttonRect;
+          var panelRect;
+          var headerRect;
+          var footerRect;
+          var menuRect;
+          var safeTop;
+          var safeBottom;
+          var safeLeft;
+          var safeRight;
+          var belowTop;
+          var aboveTop;
+          var left;
+          var top;
+          var placement = 'bottom-end';
+
+          if (!button || !menu || !panel) return placement;
+
+          menu.style.left = '0px';
+          menu.style.top = '0px';
+          menu.style.right = 'auto';
+          menu.style.bottom = 'auto';
+          menu.style.maxWidth = '';
+
+          buttonRect = button.getBoundingClientRect();
+          panelRect = panel.getBoundingClientRect();
+          headerRect = header && header.getBoundingClientRect ? header.getBoundingClientRect() : null;
+          footerRect = footer && footer.getBoundingClientRect ? footer.getBoundingClientRect() : null;
+          menuRect = menu.getBoundingClientRect();
+          safeTop = Math.max(panelRect.top + 8, headerRect ? headerRect.bottom + 6 : panelRect.top + 8);
+          safeBottom = Math.min(panelRect.bottom - 8, footerRect ? footerRect.top - 6 : panelRect.bottom - 8);
+          safeLeft = panelRect.left + 8;
+          safeRight = panelRect.right - 8;
+
+          if (safeRight - safeLeft < menuRect.width) {
+            menu.style.maxWidth = Math.max(160, safeRight - safeLeft) + 'px';
+            menuRect = menu.getBoundingClientRect();
+          }
+
+          left = clampNumber(buttonRect.right - menuRect.width, safeLeft, safeRight - menuRect.width);
+          belowTop = buttonRect.bottom + 6;
+          aboveTop = buttonRect.top - menuRect.height - 6;
+
+          if (belowTop + menuRect.height <= safeBottom) {
+            top = belowTop;
+            placement = 'bottom-end';
+          } else if (aboveTop >= safeTop) {
+            top = aboveTop;
+            placement = 'top-end';
+          } else {
+            top = clampNumber(buttonRect.top + (buttonRect.height / 2) - (menuRect.height / 2), safeTop, safeBottom - menuRect.height);
+            left = clampNumber(panelRect.left + (panelRect.width / 2) - (menuRect.width / 2), safeLeft, safeRight - menuRect.width);
+            placement = 'center';
+          }
+
+          menu.style.left = Math.round(left - panelRect.left) + 'px';
+          menu.style.top = Math.round(top - panelRect.top) + 'px';
+          menu.setAttribute('data-gg-menu-placement', placement);
+          if (wrapper) wrapper.setAttribute('data-gg-menu-placement', placement);
+          return placement;
+        }
+
         function openCommentMoreMenu(button) {
           var wrapper = button ? button.closest('.gg-comment-more') : null;
           var commentNode = button ? getCommentNodeFromTrigger(button) : null;
+          var panel = button ? button.closest('.gg-sheet__panel, .gg-comments-sheet__panel') : null;
           var menu;
 
           if (!button || !wrapper || !commentNode) return;
@@ -1146,16 +1241,19 @@
 
           closeCommentMoreMenu();
           menu = buildCommentMoreMenu(commentNode);
-          wrapper.appendChild(menu);
+          (panel || wrapper).appendChild(menu);
           button.setAttribute('aria-expanded', 'true');
           state.commentMoreMenu = {
             button: button,
             menu: menu,
-            commentNode: commentNode
+            commentNode: commentNode,
+            wrapper: wrapper
           };
+          positionCommentMoreMenu(button, menu);
 
           window.setTimeout(function () {
             var first = menu.querySelector('[role="menuitem"]');
+            positionCommentMoreMenu(button, menu);
             if (first) first.focus();
           }, 0);
         }
