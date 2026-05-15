@@ -931,6 +931,7 @@ button.store-button.store-semantic-more {
       background: var(--gg-surface-panel);
       color: var(--gg-ink);
       box-shadow: var(--gg-shadow-panel-bottom);
+      scrollbar-width: none;
     }
     .gg-sheet[data-gg-state='open'] .gg-sheet__scrim { opacity: 1; }
 
@@ -1345,7 +1346,7 @@ button.store-button.store-semantic-more {
       z-index: 39;
       display: grid;
       gap: 0;
-      width: min(calc(100% - 66px), 600px);
+      width: min(calc(100% - 66px), 540px);
       border: 1px solid var(--gg-toolbar-border);
       border-radius: 22px 22px 0 0;
       background: var(--gg-toolbar-surface);
