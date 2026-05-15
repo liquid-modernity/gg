@@ -1,20 +1,21 @@
 .gg-detail-toolbar {
   position: sticky;
-  top: var(--gg-detail-toolbar-offset-top);
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: var(--gg-toolbar-gap);
-  width: max-content;
-  max-width: 100%;
-  margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
-  padding: var(--gg-toolbar-pad);
-  border: 1px solid var(--gg-toolbar-border);
-  border-radius: var(--gg-toolbar-radius);
-  background: var(--gg-toolbar-surface);
-  box-shadow: var(--gg-shadow-soft);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+    top: var(--gg-detail-toolbar-offset-top);
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--gg-toolbar-gap);
+    margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
+    padding: var(--gg-toolbar-pad);
+    border: 1px solid var(--gg-toolbar-border);
+    border-radius: var(--gg-toolbar-radius);
+    background: rgb(74 75 72 / 76%);
+    box-shadow: var(--gg-shadow-soft);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    width: 44px;
+    height: 44px;
+    justify-content: center;
 }
 
 .gg-detail-toolbar__action {
