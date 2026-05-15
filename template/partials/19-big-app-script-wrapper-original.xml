@@ -827,6 +827,13 @@ window.GG = window.GG || {};
             var replyBannerSplitLayout;
             var loadMoreFunctionalAndAboveFooter;
             var composerWellVisibleWhenOpen;
+            var moreMenuItemsAligned;
+            var parentContextHasAvatar;
+            var parentContextLabelIsOriginalComment;
+            var replyBannerHasReplyIcon;
+            var replyBannerCancelRightAligned;
+            var sheetScrollbarsHidden;
+            var iconButtonsCentered;
             var toolbarCommentsAction;
             var toolbarCommentsIcon;
             var toolbarCommentsBadge;
@@ -939,17 +946,55 @@ window.GG = window.GG || {};
               var style = window.getComputedStyle ? window.getComputedStyle(item) : null;
               return !!(style && style.color && style.color !== 'rgb(32, 26, 28)');
             });
+            moreMenuItemsAligned = !moreMenu || Array.prototype.slice.call(moreMenu.querySelectorAll('.gg-comment-more__item')).every(function (item) {
+              var icon = item.querySelector('.gg-comment-more__item-icon, .gg-comment-more__icon, .gg-icon');
+              var label = item.querySelector('.gg-comment-more__item-label, .gg-comment-more__label');
+              var style = window.getComputedStyle ? window.getComputedStyle(item) : null;
+              var iconStyle = icon && window.getComputedStyle ? window.getComputedStyle(icon) : null;
+              var itemRect = item.getBoundingClientRect ? item.getBoundingClientRect() : null;
+              var iconRect = icon && icon.getBoundingClientRect ? icon.getBoundingClientRect() : null;
+              var labelRect = label && label.getBoundingClientRect ? label.getBoundingClientRect() : null;
+              return !!(style && iconStyle && itemRect && iconRect && labelRect && style.display === 'flex' && style.justifyContent === 'flex-start' && Math.round(iconRect.width) >= 18 && Math.round(labelRect.left) > Math.round(iconRect.right) && labelRect.right <= itemRect.right);
+            });
             repliesParentContextCardVisible = activeCommentsLayer !== 'replies' || isVisible(document.querySelector('#gg-comment-replies-context'));
             repliesParentContextSticky = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).some(function (node) {
               var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
               return !!(style && (style.position === 'sticky' || style.position === 'fixed'));
+            });
+            parentContextHasAvatar = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).every(function (node) {
+              return !!node.querySelector('.gg-comment-replies__context-avatar') || !!node.querySelector('.gg-comment-replies__context-row--no-avatar');
+            });
+            parentContextLabelIsOriginalComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).every(function (node) {
+              var label = node.querySelector('.gg-comment-replies__context-label');
+              return !!(label && label.textContent.trim() === 'Original comment');
             });
             replyBannerSplitLayout = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
               var clear = banner.querySelector('[data-gg-action="comments-reply-context-clear"]');
               var bannerRect = banner.getBoundingClientRect ? banner.getBoundingClientRect() : null;
               var clearRect = clear && clear.getBoundingClientRect ? clear.getBoundingClientRect() : null;
               var style = window.getComputedStyle ? window.getComputedStyle(banner) : null;
-              return !!(style && bannerRect && clearRect && style.display === 'grid' && clearRect.right >= bannerRect.right - 2);
+              return !!(style && bannerRect && clearRect && (style.display === 'flex' || style.display === 'grid') && clearRect.right >= bannerRect.right - 14);
+            });
+            replyBannerHasReplyIcon = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
+              var icon = banner.querySelector('.gg-comments__reply-icon');
+              return !!(icon && icon.textContent.trim() === 'reply' && icon.getAttribute('aria-hidden') === 'true');
+            });
+            replyBannerCancelRightAligned = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
+              var clear = banner.querySelector('.gg-comments__reply-clear');
+              var bannerRect = banner.getBoundingClientRect ? banner.getBoundingClientRect() : null;
+              var clearRect = clear && clear.getBoundingClientRect ? clear.getBoundingClientRect() : null;
+              return !!(bannerRect && clearRect && clearRect.left > bannerRect.left && clearRect.right >= bannerRect.right - 14);
+            });
+            sheetScrollbarsHidden = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .gg-comments__content, #gg-comment-replies-sheet .gg-comments__content')).every(function (node) {
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(style && (style.overflowY === 'auto' || style.overflowY === 'scroll') && style.overscrollBehaviorY === 'contain' && style.scrollbarWidth === 'none');
+            });
+            iconButtonsCentered = Array.prototype.slice.call(document.querySelectorAll('.gg-detail-toolbar__action--comments, .gg-comments__reply-clear, .gg-comment-more__button, .gg-detail-toolbar__count, .gg-comment-more__item-icon')).filter(isVisible).every(function (node) {
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              if (!style) return false;
+              if (style.display.indexOf('grid') !== -1) return style.placeItems === 'center' || (style.alignItems === 'center' && style.justifyItems === 'center');
+              if (style.display.indexOf('flex') !== -1) return style.alignItems === 'center' && style.justifyContent === 'center';
+              return false;
             });
             loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node);
@@ -1017,9 +1062,16 @@ window.GG = window.GG || {};
               moreMenuPlacement: moreMenuPlacement,
               moreMenuHasIcons: moreMenuHasIcons,
               deleteMenuUsesDangerStyle: deleteMenuUsesDangerStyle,
+              moreMenuItemsAligned: moreMenuItemsAligned,
               repliesParentContextCardVisible: repliesParentContextCardVisible,
               repliesParentContextSticky: repliesParentContextSticky,
+              parentContextHasAvatar: parentContextHasAvatar,
+              parentContextLabelIsOriginalComment: parentContextLabelIsOriginalComment,
               replyBannerSplitLayout: replyBannerSplitLayout,
+              replyBannerHasReplyIcon: replyBannerHasReplyIcon,
+              replyBannerCancelRightAligned: replyBannerCancelRightAligned,
+              sheetScrollbarsHidden: sheetScrollbarsHidden,
+              iconButtonsCentered: iconButtonsCentered,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               toolbarCommentsIconOnly: toolbarCommentsIconOnly,
@@ -1064,9 +1116,16 @@ window.GG = window.GG || {};
               result.moreMenuInsideSheet &&
               result.moreMenuHasIcons &&
               result.deleteMenuUsesDangerStyle &&
+              result.moreMenuItemsAligned &&
               result.repliesParentContextCardVisible &&
               !result.repliesParentContextSticky &&
+              result.parentContextHasAvatar &&
+              result.parentContextLabelIsOriginalComment &&
               result.replyBannerSplitLayout &&
+              result.replyBannerHasReplyIcon &&
+              result.replyBannerCancelRightAligned &&
+              result.sheetScrollbarsHidden &&
+              result.iconButtonsCentered &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
               result.toolbarCommentsIconOnly &&
@@ -2921,6 +2980,8 @@ window.GG = window.GG || {};
         function renderReplyBanner() {
           var banner;
           var label;
+          var icon;
+          var textWrap;
           var text;
           var strong;
           var clearButton;
@@ -2936,13 +2997,22 @@ window.GG = window.GG || {};
 
           banner = document.createElement('div');
           banner.className = 'gg-comments__reply-banner';
+          banner.setAttribute('role', 'status');
           label = document.createElement('span');
-          label.className = 'gg-comments__reply-label';
+          label.className = 'gg-comments__reply-context gg-comments__reply-label';
+          icon = document.createElement('span');
+          icon.className = 'gg-icon gg-comments__reply-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.textContent = 'reply';
+          textWrap = document.createElement('span');
+          textWrap.className = 'gg-comments__reply-text';
           text = document.createTextNode('Replying to ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
-          label.appendChild(text);
-          label.appendChild(strong);
+          textWrap.appendChild(text);
+          textWrap.appendChild(strong);
+          label.appendChild(icon);
+          label.appendChild(textWrap);
           clearButton = document.createElement('button');
           clearButton.type = 'button';
           clearButton.className = 'gg-comments__reply-clear';
@@ -3252,7 +3322,7 @@ window.GG = window.GG || {};
 
         function buildCommentMoreMenuIcon(name) {
           var icon = document.createElement('span');
-          icon.className = 'gg-comment-more__icon gg-icon';
+          icon.className = 'gg-comment-more__icon gg-comment-more__item-icon gg-icon';
           icon.setAttribute('aria-hidden', 'true');
           icon.textContent = name;
           return icon;
@@ -3260,7 +3330,7 @@ window.GG = window.GG || {};
 
         function buildCommentMoreMenuLabel(text) {
           var label = document.createElement('span');
-          label.className = 'gg-comment-more__label';
+          label.className = 'gg-comment-more__label gg-comment-more__item-label';
           label.textContent = text;
           return label;
         }
@@ -3285,7 +3355,7 @@ window.GG = window.GG || {};
           if (commentHasNativeDelete(commentNode)) {
             deleteButton = document.createElement('button');
             deleteButton.type = 'button';
-            deleteButton.className = 'gg-comment-more__item';
+            deleteButton.className = 'gg-comment-more__item gg-comment-more__item--danger';
             deleteButton.setAttribute('role', 'menuitem');
             deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
             deleteButton.setAttribute('data-gg-comment-action', 'delete');
@@ -3452,7 +3522,16 @@ window.GG = window.GG || {};
         function renderCommentRepliesContext(commentNode, count) {
           var author;
           var body;
+          var timestamp;
+          var avatar;
+          var avatarSrc;
+          var labelNode;
+          var rowNode;
+          var avatarNode;
+          var copyNode;
+          var metaNode;
           var authorNode;
+          var timeNode;
           var bodyNode;
           var countNode;
 
@@ -3461,24 +3540,61 @@ window.GG = window.GG || {};
           ui.commentRepliesContext.textContent = '';
 
           author = getTextFromNode(commentNode, '.comment-author cite, .comment-author, .comment-header cite, .comment-header .user, cite.user') || 'Comment';
+          timestamp = getTextFromNode(commentNode, '.datetime, .comment-timestamp, .comment-header time');
           body = getTextFromNode(commentNode, '.comment-body, .comment-content');
+          avatar = commentNode ? commentNode.querySelector('.avatar-image-container img, img.author-avatar, .comment-author img, .comment-header img') : null;
+          avatarSrc = avatar ? (avatar.currentSrc || avatar.src || avatar.getAttribute('src') || '') : '';
 
-          authorNode = document.createElement('div');
+          labelNode = document.createElement('div');
+          labelNode.className = 'gg-comment-replies__context-label';
+          labelNode.textContent = 'Original comment';
+          ui.commentRepliesContext.appendChild(labelNode);
+
+          rowNode = document.createElement('div');
+          rowNode.className = 'gg-comment-replies__context-row';
+
+          if (avatarSrc) {
+            avatarNode = document.createElement('img');
+            avatarNode.className = 'gg-comment-replies__context-avatar';
+            avatarNode.alt = '';
+            avatarNode.src = avatarSrc;
+            rowNode.appendChild(avatarNode);
+          } else {
+            rowNode.classList.add('gg-comment-replies__context-row--no-avatar');
+          }
+
+          copyNode = document.createElement('div');
+          copyNode.className = 'gg-comment-replies__context-copy';
+
+          metaNode = document.createElement('div');
+          metaNode.className = 'gg-comment-replies__context-meta';
+
+          authorNode = document.createElement('strong');
           authorNode.className = 'gg-comment-replies__context-author';
           authorNode.textContent = author;
-          ui.commentRepliesContext.appendChild(authorNode);
+          metaNode.appendChild(authorNode);
+
+          if (timestamp) {
+            timeNode = document.createElement('span');
+            timeNode.textContent = timestamp;
+            metaNode.appendChild(timeNode);
+          }
+
+          copyNode.appendChild(metaNode);
 
           if (body) {
             bodyNode = document.createElement('div');
             bodyNode.className = 'gg-comment-replies__context-body';
             bodyNode.textContent = body;
-            ui.commentRepliesContext.appendChild(bodyNode);
+            copyNode.appendChild(bodyNode);
           }
 
           countNode = document.createElement('div');
           countNode.className = 'gg-comment-replies__context-count';
           countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
-          ui.commentRepliesContext.appendChild(countNode);
+          copyNode.appendChild(countNode);
+          rowNode.appendChild(copyNode);
+          ui.commentRepliesContext.appendChild(rowNode);
         }
 
         function getRepliesNodeFromTrigger(trigger) {

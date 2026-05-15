@@ -779,6 +779,8 @@
         function renderReplyBanner() {
           var banner;
           var label;
+          var icon;
+          var textWrap;
           var text;
           var strong;
           var clearButton;
@@ -794,13 +796,22 @@
 
           banner = document.createElement('div');
           banner.className = 'gg-comments__reply-banner';
+          banner.setAttribute('role', 'status');
           label = document.createElement('span');
-          label.className = 'gg-comments__reply-label';
+          label.className = 'gg-comments__reply-context gg-comments__reply-label';
+          icon = document.createElement('span');
+          icon.className = 'gg-icon gg-comments__reply-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.textContent = 'reply';
+          textWrap = document.createElement('span');
+          textWrap.className = 'gg-comments__reply-text';
           text = document.createTextNode('Replying to ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
-          label.appendChild(text);
-          label.appendChild(strong);
+          textWrap.appendChild(text);
+          textWrap.appendChild(strong);
+          label.appendChild(icon);
+          label.appendChild(textWrap);
           clearButton = document.createElement('button');
           clearButton.type = 'button';
           clearButton.className = 'gg-comments__reply-clear';
@@ -1110,7 +1121,7 @@
 
         function buildCommentMoreMenuIcon(name) {
           var icon = document.createElement('span');
-          icon.className = 'gg-comment-more__icon gg-icon';
+          icon.className = 'gg-comment-more__icon gg-comment-more__item-icon gg-icon';
           icon.setAttribute('aria-hidden', 'true');
           icon.textContent = name;
           return icon;
@@ -1118,7 +1129,7 @@
 
         function buildCommentMoreMenuLabel(text) {
           var label = document.createElement('span');
-          label.className = 'gg-comment-more__label';
+          label.className = 'gg-comment-more__label gg-comment-more__item-label';
           label.textContent = text;
           return label;
         }
@@ -1143,7 +1154,7 @@
           if (commentHasNativeDelete(commentNode)) {
             deleteButton = document.createElement('button');
             deleteButton.type = 'button';
-            deleteButton.className = 'gg-comment-more__item';
+            deleteButton.className = 'gg-comment-more__item gg-comment-more__item--danger';
             deleteButton.setAttribute('role', 'menuitem');
             deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
             deleteButton.setAttribute('data-gg-comment-action', 'delete');
@@ -1310,7 +1321,16 @@
         function renderCommentRepliesContext(commentNode, count) {
           var author;
           var body;
+          var timestamp;
+          var avatar;
+          var avatarSrc;
+          var labelNode;
+          var rowNode;
+          var avatarNode;
+          var copyNode;
+          var metaNode;
           var authorNode;
+          var timeNode;
           var bodyNode;
           var countNode;
 
@@ -1319,24 +1339,61 @@
           ui.commentRepliesContext.textContent = '';
 
           author = getTextFromNode(commentNode, '.comment-author cite, .comment-author, .comment-header cite, .comment-header .user, cite.user') || 'Comment';
+          timestamp = getTextFromNode(commentNode, '.datetime, .comment-timestamp, .comment-header time');
           body = getTextFromNode(commentNode, '.comment-body, .comment-content');
+          avatar = commentNode ? commentNode.querySelector('.avatar-image-container img, img.author-avatar, .comment-author img, .comment-header img') : null;
+          avatarSrc = avatar ? (avatar.currentSrc || avatar.src || avatar.getAttribute('src') || '') : '';
 
-          authorNode = document.createElement('div');
+          labelNode = document.createElement('div');
+          labelNode.className = 'gg-comment-replies__context-label';
+          labelNode.textContent = 'Original comment';
+          ui.commentRepliesContext.appendChild(labelNode);
+
+          rowNode = document.createElement('div');
+          rowNode.className = 'gg-comment-replies__context-row';
+
+          if (avatarSrc) {
+            avatarNode = document.createElement('img');
+            avatarNode.className = 'gg-comment-replies__context-avatar';
+            avatarNode.alt = '';
+            avatarNode.src = avatarSrc;
+            rowNode.appendChild(avatarNode);
+          } else {
+            rowNode.classList.add('gg-comment-replies__context-row--no-avatar');
+          }
+
+          copyNode = document.createElement('div');
+          copyNode.className = 'gg-comment-replies__context-copy';
+
+          metaNode = document.createElement('div');
+          metaNode.className = 'gg-comment-replies__context-meta';
+
+          authorNode = document.createElement('strong');
           authorNode.className = 'gg-comment-replies__context-author';
           authorNode.textContent = author;
-          ui.commentRepliesContext.appendChild(authorNode);
+          metaNode.appendChild(authorNode);
+
+          if (timestamp) {
+            timeNode = document.createElement('span');
+            timeNode.textContent = timestamp;
+            metaNode.appendChild(timeNode);
+          }
+
+          copyNode.appendChild(metaNode);
 
           if (body) {
             bodyNode = document.createElement('div');
             bodyNode.className = 'gg-comment-replies__context-body';
             bodyNode.textContent = body;
-            ui.commentRepliesContext.appendChild(bodyNode);
+            copyNode.appendChild(bodyNode);
           }
 
           countNode = document.createElement('div');
           countNode.className = 'gg-comment-replies__context-count';
           countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
-          ui.commentRepliesContext.appendChild(countNode);
+          copyNode.appendChild(countNode);
+          rowNode.appendChild(copyNode);
+          ui.commentRepliesContext.appendChild(rowNode);
         }
 
         function getRepliesNodeFromTrigger(trigger) {

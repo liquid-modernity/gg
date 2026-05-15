@@ -87,9 +87,16 @@ for (const [file, js] of [
   requireIncludes(js, "moreMenuInsideSheet", `${file}: proof keeps More menu inside sheet`, file);
   requireIncludes(js, "moreMenuHasIcons", `${file}: proof checks More menu icons`, file);
   requireIncludes(js, "deleteMenuUsesDangerStyle", `${file}: proof checks delete danger styling`, file);
+  requireIncludes(js, "moreMenuItemsAligned", `${file}: proof checks More menu row alignment`, file);
   requireIncludes(js, "repliesParentContextCardVisible", `${file}: proof checks replies parent context card`, file);
   requireIncludes(js, "repliesParentContextSticky", `${file}: proof rejects sticky replies context`, file);
+  requireIncludes(js, "parentContextHasAvatar", `${file}: proof checks replies parent avatar handling`, file);
+  requireIncludes(js, "parentContextLabelIsOriginalComment", `${file}: proof checks replies parent context label`, file);
   requireIncludes(js, "replyBannerSplitLayout", `${file}: proof checks split reply banner`, file);
+  requireIncludes(js, "replyBannerHasReplyIcon", `${file}: proof checks reply banner icon`, file);
+  requireIncludes(js, "replyBannerCancelRightAligned", `${file}: proof checks reply banner cancel alignment`, file);
+  requireIncludes(js, "sheetScrollbarsHidden", `${file}: proof checks comments sheet scrollbar hiding`, file);
+  requireIncludes(js, "iconButtonsCentered", `${file}: proof checks icon button centering`, file);
   requireIncludes(js, "loadMoreFunctionalAndAboveFooter", `${file}: proof checks load more above footer`, file);
   requireIncludes(js, "composerWellVisibleWhenOpen", `${file}: proof checks native composer well visibility`, file);
   requireIncludes(js, "toolbarCommentsIconOnly", `${file}: proof checks comments toolbar icon-only rendering`, file);

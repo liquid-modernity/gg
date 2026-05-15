@@ -41,7 +41,15 @@
 #gg-comments-sheet .gg-comments__content,
 #gg-comment-replies-sheet .gg-comments__content {
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#gg-comments-sheet .gg-comments__content::-webkit-scrollbar,
+#gg-comment-replies-sheet .gg-comments__content::-webkit-scrollbar {
+  display: none;
 }
 
 #gg-comments-sheet {
@@ -164,25 +172,70 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 
 .gg-comment-replies__context {
   display: grid;
-  gap: 5px;
-  margin: 6px 0 10px;
+  gap: 8px;
+  margin: 4px 0 12px;
   padding: 10px 12px;
   border: 1px solid var(--gg-divider);
   border-radius: 14px;
   background: var(--gg-surface-quiet);
 }
 
-.gg-comment-replies__context::before {
-  content: 'Parent comment';
-  color: var(--gg-accent-soft);
-  font: 650 10px/1.2 var(--gg-font-sans);
+.gg-comment-replies__context-label {
+  color: var(--gg-ink-soft);
+  font: 700 10px/1.2 var(--gg-font-sans);
   letter-spacing: .08em;
   text-transform: uppercase;
 }
 
+.gg-comment-replies__context-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.gg-comment-replies__context-row--no-avatar {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gg-comment-replies__context-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: var(--gg-surface-quiet);
+}
+
+.gg-comment-replies__context-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.gg-comment-replies__context-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gg-comment-replies__context-meta span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--gg-ink-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 500 11px/1.25 var(--gg-font-sans);
+}
+
 .gg-comment-replies__context-author {
+  min-width: 0;
   color: var(--gg-ink);
   font: 650 13px/1.25 var(--gg-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   overflow-wrap: anywhere;
 }
 
@@ -202,16 +255,16 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comments__reply-banner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  min-height: 30px;
-  padding: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--gg-divider);
   color: var(--gg-accent-soft);
   font: 600 12px/1.3 var(--gg-font-sans);
-  overflow-wrap: anywhere;
 }
 
 .gg-comments__reply-banner strong {
@@ -219,18 +272,35 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   font-weight: 700;
 }
 
+.gg-comments__reply-context,
 .gg-comments__reply-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  overflow-wrap: anywhere;
+}
+
+.gg-comments__reply-icon {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+  opacity: .78;
+}
+
+.gg-comments__reply-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gg-comments__reply-clear {
   display: inline-grid;
-  justify-self: end;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  margin-left: 2px;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -264,9 +334,8 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comment-more__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
   min-width: 34px;
   min-height: 30px;
   padding: 0 8px;
@@ -290,7 +359,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   top: 0;
   z-index: 18;
   display: grid;
-  min-width: 168px;
+  min-width: 176px;
   max-width: calc(100% - 16px);
   padding: 6px;
   border: 1px solid var(--gg-divider);
@@ -300,13 +369,13 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comment-more__item {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
+  display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
+  min-height: 44px;
+  padding: 0 12px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -317,12 +386,23 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comment-more__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
   font-size: 18px;
+  line-height: 1;
   color: currentColor;
 }
 
 .gg-comment-more__label {
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gg-comment-more__item:hover,
@@ -330,10 +410,13 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   background: var(--gg-comment-action-hover-bg);
 }
 
+.gg-comment-more__item--danger,
 .gg-comment-more__item[data-gg-comment-action='delete'] {
   color: var(--gg-danger);
 }
 
+.gg-comment-more__item--danger:hover,
+.gg-comment-more__item--danger:focus-visible,
 .gg-comment-more__item[data-gg-comment-action='delete']:hover,
 .gg-comment-more__item[data-gg-comment-action='delete']:focus-visible {
   background: var(--gg-danger-soft);
@@ -776,6 +859,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comments .deleted-comment,
+.gg-comments .comment-content:has(.deleted-comment),
 .gg-comments .comment-deleted,
 .gg-comments .deleted .comment-body,
 .gg-comments .deleted .comment-content {

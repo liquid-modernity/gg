@@ -197,6 +197,13 @@
             var replyBannerSplitLayout;
             var loadMoreFunctionalAndAboveFooter;
             var composerWellVisibleWhenOpen;
+            var moreMenuItemsAligned;
+            var parentContextHasAvatar;
+            var parentContextLabelIsOriginalComment;
+            var replyBannerHasReplyIcon;
+            var replyBannerCancelRightAligned;
+            var sheetScrollbarsHidden;
+            var iconButtonsCentered;
             var toolbarCommentsAction;
             var toolbarCommentsIcon;
             var toolbarCommentsBadge;
@@ -309,17 +316,55 @@
               var style = window.getComputedStyle ? window.getComputedStyle(item) : null;
               return !!(style && style.color && style.color !== 'rgb(32, 26, 28)');
             });
+            moreMenuItemsAligned = !moreMenu || Array.prototype.slice.call(moreMenu.querySelectorAll('.gg-comment-more__item')).every(function (item) {
+              var icon = item.querySelector('.gg-comment-more__item-icon, .gg-comment-more__icon, .gg-icon');
+              var label = item.querySelector('.gg-comment-more__item-label, .gg-comment-more__label');
+              var style = window.getComputedStyle ? window.getComputedStyle(item) : null;
+              var iconStyle = icon && window.getComputedStyle ? window.getComputedStyle(icon) : null;
+              var itemRect = item.getBoundingClientRect ? item.getBoundingClientRect() : null;
+              var iconRect = icon && icon.getBoundingClientRect ? icon.getBoundingClientRect() : null;
+              var labelRect = label && label.getBoundingClientRect ? label.getBoundingClientRect() : null;
+              return !!(style && iconStyle && itemRect && iconRect && labelRect && style.display === 'flex' && style.justifyContent === 'flex-start' && Math.round(iconRect.width) >= 18 && Math.round(labelRect.left) > Math.round(iconRect.right) && labelRect.right <= itemRect.right);
+            });
             repliesParentContextCardVisible = activeCommentsLayer !== 'replies' || isVisible(document.querySelector('#gg-comment-replies-context'));
             repliesParentContextSticky = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).some(function (node) {
               var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
               return !!(style && (style.position === 'sticky' || style.position === 'fixed'));
+            });
+            parentContextHasAvatar = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).every(function (node) {
+              return !!node.querySelector('.gg-comment-replies__context-avatar') || !!node.querySelector('.gg-comment-replies__context-row--no-avatar');
+            });
+            parentContextLabelIsOriginalComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).every(function (node) {
+              var label = node.querySelector('.gg-comment-replies__context-label');
+              return !!(label && label.textContent.trim() === 'Original comment');
             });
             replyBannerSplitLayout = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
               var clear = banner.querySelector('[data-gg-action="comments-reply-context-clear"]');
               var bannerRect = banner.getBoundingClientRect ? banner.getBoundingClientRect() : null;
               var clearRect = clear && clear.getBoundingClientRect ? clear.getBoundingClientRect() : null;
               var style = window.getComputedStyle ? window.getComputedStyle(banner) : null;
-              return !!(style && bannerRect && clearRect && style.display === 'grid' && clearRect.right >= bannerRect.right - 2);
+              return !!(style && bannerRect && clearRect && (style.display === 'flex' || style.display === 'grid') && clearRect.right >= bannerRect.right - 14);
+            });
+            replyBannerHasReplyIcon = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
+              var icon = banner.querySelector('.gg-comments__reply-icon');
+              return !!(icon && icon.textContent.trim() === 'reply' && icon.getAttribute('aria-hidden') === 'true');
+            });
+            replyBannerCancelRightAligned = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
+              var clear = banner.querySelector('.gg-comments__reply-clear');
+              var bannerRect = banner.getBoundingClientRect ? banner.getBoundingClientRect() : null;
+              var clearRect = clear && clear.getBoundingClientRect ? clear.getBoundingClientRect() : null;
+              return !!(bannerRect && clearRect && clearRect.left > bannerRect.left && clearRect.right >= bannerRect.right - 14);
+            });
+            sheetScrollbarsHidden = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .gg-comments__content, #gg-comment-replies-sheet .gg-comments__content')).every(function (node) {
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              return !!(style && (style.overflowY === 'auto' || style.overflowY === 'scroll') && style.overscrollBehaviorY === 'contain' && style.scrollbarWidth === 'none');
+            });
+            iconButtonsCentered = Array.prototype.slice.call(document.querySelectorAll('.gg-detail-toolbar__action--comments, .gg-comments__reply-clear, .gg-comment-more__button, .gg-detail-toolbar__count, .gg-comment-more__item-icon')).filter(isVisible).every(function (node) {
+              var style = window.getComputedStyle ? window.getComputedStyle(node) : null;
+              if (!style) return false;
+              if (style.display.indexOf('grid') !== -1) return style.placeItems === 'center' || (style.alignItems === 'center' && style.justifyItems === 'center');
+              if (style.display.indexOf('flex') !== -1) return style.alignItems === 'center' && style.justifyContent === 'center';
+              return false;
             });
             loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node);
@@ -387,9 +432,16 @@
               moreMenuPlacement: moreMenuPlacement,
               moreMenuHasIcons: moreMenuHasIcons,
               deleteMenuUsesDangerStyle: deleteMenuUsesDangerStyle,
+              moreMenuItemsAligned: moreMenuItemsAligned,
               repliesParentContextCardVisible: repliesParentContextCardVisible,
               repliesParentContextSticky: repliesParentContextSticky,
+              parentContextHasAvatar: parentContextHasAvatar,
+              parentContextLabelIsOriginalComment: parentContextLabelIsOriginalComment,
               replyBannerSplitLayout: replyBannerSplitLayout,
+              replyBannerHasReplyIcon: replyBannerHasReplyIcon,
+              replyBannerCancelRightAligned: replyBannerCancelRightAligned,
+              sheetScrollbarsHidden: sheetScrollbarsHidden,
+              iconButtonsCentered: iconButtonsCentered,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               toolbarCommentsIconOnly: toolbarCommentsIconOnly,
@@ -434,9 +486,16 @@
               result.moreMenuInsideSheet &&
               result.moreMenuHasIcons &&
               result.deleteMenuUsesDangerStyle &&
+              result.moreMenuItemsAligned &&
               result.repliesParentContextCardVisible &&
               !result.repliesParentContextSticky &&
+              result.parentContextHasAvatar &&
+              result.parentContextLabelIsOriginalComment &&
               result.replyBannerSplitLayout &&
+              result.replyBannerHasReplyIcon &&
+              result.replyBannerCancelRightAligned &&
+              result.sheetScrollbarsHidden &&
+              result.iconButtonsCentered &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
               result.toolbarCommentsIconOnly &&
