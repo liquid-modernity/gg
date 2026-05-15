@@ -127,7 +127,6 @@
   display: grid;
   justify-items: center;
   gap: var(--gg-utility-head-gap);
-  margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0;
   padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom);
   border-bottom: 1px solid var(--gg-utility-head-border);
   background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%);

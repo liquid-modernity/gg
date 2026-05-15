@@ -1487,12 +1487,12 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   min-height: 42px;
   padding: 0 12px;
   border-bottom: 1px solid var(--gg-divider);
-  color: var(--gg-accent-soft);
+  color: #1c1a1e;
   font: 600 12px/1.3 var(--gg-font-sans);
 }
 
 .gg-comments__reply-banner strong {
-  color: var(--gg-ink);
+  color: #1c1a1e;
   font-weight: 700;
 }
 
@@ -1529,7 +1529,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--gg-comment-action-tone);
+  color: #1c1a1e;
   font: 700 18px/1 var(--gg-font-sans);
   cursor: pointer;
 }
@@ -2355,7 +2355,6 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   justify-items: center;
   gap: var(--gg-utility-head-gap);
-  margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0;
   padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom);
   border-bottom: 1px solid var(--gg-utility-head-border);
   background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%);
