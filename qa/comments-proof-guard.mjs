@@ -92,6 +92,13 @@ for (const [file, js] of [
   requireIncludes(js, "replyBannerSplitLayout", `${file}: proof checks split reply banner`, file);
   requireIncludes(js, "loadMoreFunctionalAndAboveFooter", `${file}: proof checks load more above footer`, file);
   requireIncludes(js, "composerWellVisibleWhenOpen", `${file}: proof checks native composer well visibility`, file);
+  requireIncludes(js, "toolbarCommentsIconOnly", `${file}: proof checks comments toolbar icon-only rendering`, file);
+  requireIncludes(js, "toolbarCommentsBadgeVisibleWhenCountPositive", `${file}: proof checks comments toolbar badge for positive count`, file);
+  requireIncludes(js, "toolbarCommentsBadgeHiddenWhenZero", `${file}: proof checks comments toolbar zero-count badge hiding`, file);
+  requireIncludes(js, "toolbarCommentsUsesAddIconWhenZero", `${file}: proof checks comments toolbar zero-count icon`, file);
+  requireIncludes(js, "toolbarCommentsUsesDisabledIconWhenDisabled", `${file}: proof checks comments toolbar disabled icon`, file);
+  requireIncludes(js, "toolbarCommentsSemanticLabelPresent", `${file}: proof checks comments toolbar semantic label`, file);
+  requireIncludes(js, "toolbarCommentsVisibleTextHidden", `${file}: proof checks comments toolbar visible text hiding`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }

@@ -197,6 +197,19 @@
             var replyBannerSplitLayout;
             var loadMoreFunctionalAndAboveFooter;
             var composerWellVisibleWhenOpen;
+            var toolbarCommentsAction;
+            var toolbarCommentsIcon;
+            var toolbarCommentsBadge;
+            var toolbarCommentsLabel;
+            var toolbarCommentsState;
+            var toolbarCommentsCount;
+            var toolbarCommentsIconOnly;
+            var toolbarCommentsBadgeVisibleWhenCountPositive;
+            var toolbarCommentsBadgeHiddenWhenZero;
+            var toolbarCommentsUsesAddIconWhenZero;
+            var toolbarCommentsUsesDisabledIconWhenDisabled;
+            var toolbarCommentsSemanticLabelPresent;
+            var toolbarCommentsVisibleTextHidden;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -205,6 +218,12 @@
               if (style && (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')) return false;
               rect = element.getBoundingClientRect ? element.getBoundingClientRect() : null;
               return !rect || (rect.width > 0 && rect.height > 0);
+            };
+            var isVisuallyHidden = function (element) {
+              var style;
+              if (!element) return true;
+              style = window.getComputedStyle ? window.getComputedStyle(element) : null;
+              return !!(element.classList && element.classList.contains('gg-visually-hidden')) || !!(style && (style.clip === 'rect(0px, 0px, 0px, 0px)' || style.position === 'absolute' && style.width === '1px' && style.height === '1px' && style.overflow === 'hidden'));
             };
             var getZ = function (element) {
               var value = element && window.getComputedStyle ? window.getComputedStyle(element).zIndex : '';
@@ -312,6 +331,19 @@
               return !!(node.closest && !node.closest('.gg-comments__footer') && (!inViewport || !footerRect || !nodeRect || nodeRect.bottom <= footerRect.top + 1));
             });
             composerWellVisibleWhenOpen = !activeFooter || activeFooterComposerOpen !== 'true' || isVisible(activeFooter.querySelector('#gg-comments-composer-slot, #top-ce'));
+            toolbarCommentsAction = document.querySelector('.gg-detail-toolbar__action--comments[data-gg-action="comments-open"], .gg-detail-toolbar [data-gg-action="comments-open"]');
+            toolbarCommentsIcon = toolbarCommentsAction ? toolbarCommentsAction.querySelector('.gg-detail-toolbar__comments-icon, .gg-icon') : null;
+            toolbarCommentsBadge = toolbarCommentsAction ? toolbarCommentsAction.querySelector('#gg-detail-comments-count, .gg-detail-toolbar__count') : null;
+            toolbarCommentsLabel = toolbarCommentsAction ? toolbarCommentsAction.querySelector('#gg-detail-comments-label') : null;
+            toolbarCommentsState = toolbarCommentsAction ? (toolbarCommentsAction.getAttribute('data-gg-comments-state') || '') : '';
+            toolbarCommentsCount = toolbarCommentsAction ? parseCommentCount(toolbarCommentsAction.getAttribute('data-gg-comments-count')) : 0;
+            toolbarCommentsIconOnly = !toolbarCommentsAction || (!!toolbarCommentsIcon && isVisible(toolbarCommentsIcon) && isVisuallyHidden(toolbarCommentsLabel) && toolbarCommentsAction.classList.contains('gg-detail-toolbar__action--comments'));
+            toolbarCommentsBadgeVisibleWhenCountPositive = !toolbarCommentsAction || toolbarCommentsState !== 'has-comments' || (toolbarCommentsCount > 0 && !!toolbarCommentsBadge && isVisible(toolbarCommentsBadge));
+            toolbarCommentsBadgeHiddenWhenZero = !toolbarCommentsAction || toolbarCommentsState !== 'empty' || !isVisible(toolbarCommentsBadge);
+            toolbarCommentsUsesAddIconWhenZero = !toolbarCommentsAction || toolbarCommentsState !== 'empty' || (toolbarCommentsIcon && toolbarCommentsIcon.textContent === 'add_comment');
+            toolbarCommentsUsesDisabledIconWhenDisabled = !toolbarCommentsAction || toolbarCommentsState !== 'disabled' || (toolbarCommentsIcon && toolbarCommentsIcon.textContent === 'comments_disabled' && !isVisible(toolbarCommentsBadge));
+            toolbarCommentsSemanticLabelPresent = !toolbarCommentsAction || !!(toolbarCommentsAction.getAttribute('aria-label') && toolbarCommentsLabel && toolbarCommentsLabel.textContent.trim());
+            toolbarCommentsVisibleTextHidden = !toolbarCommentsAction || isVisuallyHidden(toolbarCommentsLabel);
 
             result = {
               sheet: !!sheet,
@@ -360,6 +392,13 @@
               replyBannerSplitLayout: replyBannerSplitLayout,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
+              toolbarCommentsIconOnly: toolbarCommentsIconOnly,
+              toolbarCommentsBadgeVisibleWhenCountPositive: toolbarCommentsBadgeVisibleWhenCountPositive,
+              toolbarCommentsBadgeHiddenWhenZero: toolbarCommentsBadgeHiddenWhenZero,
+              toolbarCommentsUsesAddIconWhenZero: toolbarCommentsUsesAddIconWhenZero,
+              toolbarCommentsUsesDisabledIconWhenDisabled: toolbarCommentsUsesDisabledIconWhenDisabled,
+              toolbarCommentsSemanticLabelPresent: toolbarCommentsSemanticLabelPresent,
+              toolbarCommentsVisibleTextHidden: toolbarCommentsVisibleTextHidden,
               repliesSheetHasHandle: !!document.querySelector('#gg-comment-replies-sheet [data-gg-drag-handle="comment-replies"], #gg-comment-replies-sheet .gg-sheet__handle')
             };
 
@@ -400,6 +439,13 @@
               result.replyBannerSplitLayout &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
+              result.toolbarCommentsIconOnly &&
+              result.toolbarCommentsBadgeVisibleWhenCountPositive &&
+              result.toolbarCommentsBadgeHiddenWhenZero &&
+              result.toolbarCommentsUsesAddIconWhenZero &&
+              result.toolbarCommentsUsesDisabledIconWhenDisabled &&
+              result.toolbarCommentsSemanticLabelPresent &&
+              result.toolbarCommentsVisibleTextHidden &&
               result.repliesSheetHasHandle &&
               (activeCommentsLayer !== 'main' && activeCommentsLayer !== 'replies' || (result.visibleSheets <= 1 && result.visibleFooters === 1))
             );

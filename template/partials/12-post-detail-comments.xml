@@ -1,10 +1,10 @@
             <b:includable id='postDetail' var='post'>
               <div aria-labelledby='gg-detail-toolbar-title' class='gg-detail-toolbar' role='toolbar'>
                 <span class='gg-visually-hidden' data-gg-copy='detail.toolbar' id='gg-detail-toolbar-title'>Detail actions</span>
-                <button aria-controls='gg-comments-sheet' aria-expanded='false' class='gg-detail-toolbar__action' data-gg-action='comments-open' type='button'>
-                  <span class='gg-detail-toolbar__count' id='gg-detail-comments-count'><data:post.numberOfComments/></span>
-                  <span aria-hidden='true' class='gg-icon'>comment</span>
-                  <span data-gg-copy='comments.launch' id='gg-detail-comments-label'>Comments</span>
+                <button aria-controls='gg-comments-sheet' aria-expanded='false' aria-label='Add comment' class='gg-detail-toolbar__action gg-detail-toolbar__action--comments' data-gg-action='comments-open' data-gg-comments-count='0' data-gg-comments-state='empty' title='Add comment' type='button'>
+                  <span aria-hidden='true' class='gg-icon gg-detail-toolbar__comments-icon' data-gg-comments-icon='1'>add_comment</span>
+                  <span aria-hidden='true' class='gg-detail-toolbar__count' hidden='hidden' id='gg-detail-comments-count'><data:post.numberOfComments/></span>
+                  <span class='gg-visually-hidden' data-gg-copy='comments.launch' id='gg-detail-comments-label'>Add comment</span>
                 </button>
               </div>
 

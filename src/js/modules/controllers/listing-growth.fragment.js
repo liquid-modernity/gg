@@ -423,14 +423,30 @@
 
         function syncDetailCommentCopy() {
           var count = ui.article ? parseCommentCount(ui.article.getAttribute('data-gg-post-comments')) : 0;
-          var actionLabel = formatCommentCopy(count, 'action');
+          var commentsDisabled = !document.querySelector('#gg-comments-footer [data-gg-action="comments-open-composer"], #comment-editor');
+          var actionLabel = commentsDisabled ? 'Comments disabled' : (count > 0 ? String(count) + ' comments' : 'Add comment');
           var titleLabel = formatCommentCopy(count, 'title');
+          var commentsState = commentsDisabled ? 'disabled' : (count > 0 ? 'has-comments' : 'empty');
+          var icon = ui.detailCommentsAction ? ui.detailCommentsAction.querySelector('.gg-detail-toolbar__comments-icon, .gg-icon') : null;
 
           if (ui.detailCommentsLabel) ui.detailCommentsLabel.textContent = actionLabel;
-          if (ui.detailCommentsAction) ui.detailCommentsAction.setAttribute('aria-label', actionLabel);
+          if (ui.detailCommentsAction) {
+            ui.detailCommentsAction.classList.add('gg-detail-toolbar__action--comments');
+            ui.detailCommentsAction.setAttribute('aria-label', actionLabel);
+            ui.detailCommentsAction.setAttribute('title', actionLabel);
+            ui.detailCommentsAction.setAttribute('data-gg-comments-state', commentsState);
+            ui.detailCommentsAction.setAttribute('data-gg-comments-count', String(count));
+          }
+          if (icon) {
+            icon.classList.add('gg-detail-toolbar__comments-icon');
+            icon.textContent = commentsDisabled ? 'comments_disabled' : (count > 0 ? 'comment' : 'add_comment');
+            icon.setAttribute('aria-hidden', 'true');
+          }
+          if (ui.detailCommentsLabel) ui.detailCommentsLabel.classList.add('gg-visually-hidden');
 
           if (ui.detailCommentsCount) {
-            if (count > 0) {
+            ui.detailCommentsCount.setAttribute('aria-hidden', 'true');
+            if (count > 0 && !commentsDisabled) {
               ui.detailCommentsCount.hidden = false;
               ui.detailCommentsCount.textContent = String(count);
             } else {
