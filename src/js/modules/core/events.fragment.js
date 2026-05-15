@@ -220,7 +220,7 @@
           if (commentDeleteTrigger) {
             event.preventDefault();
             if (state.commentMoreMenu && !delegateNativeDelete(state.commentMoreMenu.commentNode)) {
-              showCommentStatus('Delete unavailable');
+              showCommentStatus(getCopy('comments.status.failed'));
             }
             closeCommentMoreMenu();
             return;

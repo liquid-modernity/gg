@@ -84,12 +84,57 @@ window.GG = window.GG || {};
               launch: 'Comments',
               title: 'Comments',
               dismiss: 'Dismiss comments panel',
+              action: {
+                add: 'Add comment',
+                addReply: 'Add a reply',
+                addReplyToOriginal: 'Add a reply to original comment',
+                cancelReply: 'Cancel reply',
+                copyLink: 'Copy link',
+                delete: 'Delete comment',
+                more: 'More comment actions',
+                reply: 'Reply',
+                replyToOriginal: 'Reply to original comment'
+              },
               actionZero: 'Post a comment',
               actionOne: 'Comment',
               actionMany: 'Comments',
+              empty: {
+                body: 'Be the first to add one.',
+                title: 'No comments yet'
+              },
+              loadMore: 'Load more comments',
+              loadMoreReplies: 'Load more replies',
+              originalComment: 'Original comment',
+              replies: {
+                count: {
+                  one: '1 reply',
+                  many: '{count} replies'
+                },
+                dismiss: 'Dismiss replies',
+                drag: 'Drag replies sheet',
+                title: 'Replies',
+                view: {
+                  one: 'View 1 reply',
+                  many: 'View {count} replies'
+                }
+              },
+              replyingTo: 'Replying to',
+              status: {
+                copied: 'Comment link copied',
+                copying: 'Copying comment link...',
+                failed: 'Comment action failed'
+              },
               titleZero: 'Post a comment',
               titleOne: '{count} Comment',
-              titleMany: '{count} Comments'
+              titleMany: '{count} Comments',
+              toolbar: {
+                add: 'Add comment',
+                count: {
+                  one: '1 comment',
+                  many: '{count} comments'
+                },
+                disabled: 'Comments disabled'
+              }
             },
             post: {
               breadcrumb: 'Breadcrumb',
@@ -223,12 +268,57 @@ window.GG = window.GG || {};
               launch: 'Komentar',
               title: 'Komentar',
               dismiss: 'Tutup panel komentar',
+              action: {
+                add: 'Tambah komentar',
+                addReply: 'Tambah balasan',
+                addReplyToOriginal: 'Tambah balasan ke komentar awal',
+                cancelReply: 'Batalkan balasan',
+                copyLink: 'Salin tautan',
+                delete: 'Hapus komentar',
+                more: 'Aksi komentar lainnya',
+                reply: 'Balas',
+                replyToOriginal: 'Balas komentar awal'
+              },
               actionZero: 'Tulis komentar',
               actionOne: 'Komentar',
               actionMany: 'Komentar',
+              empty: {
+                body: 'Jadilah yang pertama berkomentar.',
+                title: 'Belum ada komentar'
+              },
+              loadMore: 'Muat komentar lainnya',
+              loadMoreReplies: 'Muat balasan lainnya',
+              originalComment: 'Komentar awal',
+              replies: {
+                count: {
+                  one: '1 balasan',
+                  many: '{count} balasan'
+                },
+                dismiss: 'Tutup balasan',
+                drag: 'Geser lembar balasan',
+                title: 'Balasan',
+                view: {
+                  one: 'Lihat 1 balasan',
+                  many: 'Lihat {count} balasan'
+                }
+              },
+              replyingTo: 'Membalas',
+              status: {
+                copied: 'Tautan komentar disalin',
+                copying: 'Menyalin tautan komentar...',
+                failed: 'Aksi komentar gagal'
+              },
               titleZero: 'Tulis komentar',
               titleOne: '{count} Komentar',
-              titleMany: '{count} Komentar'
+              titleMany: '{count} Komentar',
+              toolbar: {
+                add: 'Tambah komentar',
+                count: {
+                  one: '1 komentar',
+                  many: '{count} komentar'
+                },
+                disabled: 'Komentar dinonaktifkan'
+              }
             },
             post: {
               breadcrumb: 'Jejak navigasi',
@@ -1001,7 +1091,7 @@ window.GG = window.GG || {};
             });
             parentContextLabelIsOriginalComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-context')).filter(isVisible).every(function (node) {
               var label = node.querySelector('.gg-comment-replies__context-label');
-              return !!(label && label.textContent.trim() === 'Original comment');
+              return !!(label && label.textContent.trim() === getCopy('comments.originalComment'));
             });
             replyBannerSplitLayout = Array.prototype.slice.call(document.querySelectorAll('.gg-comments__reply-banner')).filter(isVisible).every(function (banner) {
               var clear = banner.querySelector('[data-gg-action="comments-reply-context-clear"]');
@@ -1041,8 +1131,8 @@ window.GG = window.GG || {};
             viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !!replyContextActive || state.commentRepliesExplicitReplyStarted || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
             repliesParentId = getCommentNodeId(state.commentRepliesParentComment || (state.commentRepliesPortal && state.commentRepliesPortal.parentComment));
             viewRepliesDoesNotAutoReply = activeCommentsLayer !== 'replies' || !!replyContextActive || (!!state.commentRepliesAutoReplySafe && !replyBannerActive && !commentSrcHasParentId(editorCurrentSrc) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
-            parentReplyActionExists = activeCommentsLayer !== 'replies' || !!document.querySelector('#gg-comment-replies-context [data-gg-action="comments-reply-parent"][aria-label="Reply to original comment"]');
-            addReplyLauncherTargetsParent = activeCommentsLayer !== 'replies' || !!(repliesParentId && document.querySelector('#gg-comment-replies-footer [data-gg-action="comments-add-reply"][aria-label="Add a reply to original comment"][data-gg-reply-target="' + repliesParentId + '"]'));
+            parentReplyActionExists = activeCommentsLayer !== 'replies' || !!document.querySelector('#gg-comment-replies-context [data-gg-action="comments-reply-parent"][aria-label="' + getCopy('comments.action.replyToOriginal') + '"]');
+            addReplyLauncherTargetsParent = activeCommentsLayer !== 'replies' || !!(repliesParentId && document.querySelector('#gg-comment-replies-footer [data-gg-action="comments-add-reply"][aria-label="' + getCopy('comments.action.addReplyToOriginal') + '"][data-gg-reply-target="' + repliesParentId + '"]'));
             replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).filter(isVisible).every(function (node) {
               var commentNode = getCommentNodeFromTrigger(node);
               return !!(commentNode && getCommentNodeId(commentNode));
@@ -2888,10 +2978,10 @@ window.GG = window.GG || {};
           handle.type = 'button';
           handle.className = 'gg-comments-sheet__handle gg-sheet__handle';
           handle.setAttribute('data-gg-drag-handle', 'comment-replies');
-          handle.setAttribute('aria-label', 'Drag replies sheet');
+          handle.setAttribute('aria-label', getCopy('comments.replies.drag'));
           label = document.createElement('span');
           label.className = 'gg-visually-hidden';
-          label.textContent = 'Drag replies sheet';
+          label.textContent = getCopy('comments.replies.drag');
           handle.appendChild(label);
           head.insertBefore(handle, back || head.firstChild);
           return true;
@@ -3056,8 +3146,14 @@ window.GG = window.GG || {};
 
         function formatRepliesCount(count) {
           var resolved = Math.max(0, Number(count) || 0);
-          if (state.locale === 'id') return 'Lihat ' + resolved + ' balasan';
-          return 'View ' + resolved + (resolved === 1 ? ' reply' : ' replies');
+          if (resolved === 1) return getCopy('comments.replies.view.one');
+          return formatCopy('comments.replies.view.many', { count: String(resolved) });
+        }
+
+        function formatRepliesSummary(count) {
+          var resolved = Math.max(0, Number(count) || 0);
+          if (resolved === 1) return getCopy('comments.replies.count.one');
+          return formatCopy('comments.replies.count.many', { count: String(resolved) });
         }
 
         function getCommentReplyCount(repliesNode) {
@@ -3212,7 +3308,7 @@ window.GG = window.GG || {};
           icon.textContent = 'reply';
           textWrap = document.createElement('span');
           textWrap.className = 'gg-comments__reply-text';
-          text = document.createTextNode('Replying to ');
+          text = document.createTextNode(getCopy('comments.replyingTo') + ' ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
           textWrap.appendChild(text);
@@ -3223,7 +3319,7 @@ window.GG = window.GG || {};
           clearButton.type = 'button';
           clearButton.className = 'gg-comments__reply-clear';
           clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
-          clearButton.setAttribute('aria-label', 'Cancel reply');
+          clearButton.setAttribute('aria-label', getCopy('comments.action.cancelReply'));
           clearButton.textContent = '×';
           banner.appendChild(label);
           banner.appendChild(clearButton);
@@ -3617,18 +3713,18 @@ window.GG = window.GG || {};
 
           if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
             return window.navigator.clipboard.writeText(permalink).then(function () {
-              showCommentStatus('Comment link copied');
+              showCommentStatus(getCopy('comments.status.copied'));
               return true;
             }).catch(function () {
               return copyTextFallback(permalink).then(function () {
-                showCommentStatus('Comment link copied');
+                showCommentStatus(getCopy('comments.status.copied'));
                 return true;
               });
             });
           }
 
           return copyTextFallback(permalink).then(function () {
-            showCommentStatus('Comment link copied');
+            showCommentStatus(getCopy('comments.status.copied'));
             return true;
           });
         }
@@ -3675,7 +3771,7 @@ window.GG = window.GG || {};
           copyButton.setAttribute('data-gg-action', 'comment-copy-link');
           copyButton.setAttribute('data-gg-comment-action', 'copy');
           copyButton.appendChild(buildCommentMoreMenuIcon('link'));
-          copyButton.appendChild(buildCommentMoreMenuLabel('Copy link'));
+          copyButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.copyLink')));
           menu.appendChild(copyButton);
 
           if (commentHasNativeDelete(commentNode)) {
@@ -3686,7 +3782,7 @@ window.GG = window.GG || {};
             deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
             deleteButton.setAttribute('data-gg-comment-action', 'delete');
             deleteButton.appendChild(buildCommentMoreMenuIcon('delete'));
-            deleteButton.appendChild(buildCommentMoreMenuLabel('Delete comment'));
+            deleteButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.delete')));
             menu.appendChild(deleteButton);
           }
 
@@ -3826,7 +3922,7 @@ window.GG = window.GG || {};
               button.setAttribute('data-gg-action', 'comment-more');
               button.setAttribute('aria-haspopup', 'menu');
               button.setAttribute('aria-expanded', 'false');
-              button.setAttribute('aria-label', 'More comment actions');
+              button.setAttribute('aria-label', getCopy('comments.action.more'));
               button.textContent = '...';
               wrapper.appendChild(button);
               enhanced += 1;
@@ -3880,7 +3976,7 @@ window.GG = window.GG || {};
 
           labelNode = document.createElement('div');
           labelNode.className = 'gg-comment-replies__context-label';
-          labelNode.textContent = 'Original comment';
+          labelNode.textContent = getCopy('comments.originalComment');
           ui.commentRepliesContext.appendChild(labelNode);
 
           rowNode = document.createElement('div');
@@ -3924,15 +4020,15 @@ window.GG = window.GG || {};
 
           countNode = document.createElement('div');
           countNode.className = 'gg-comment-replies__context-count';
-          countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
+          countNode.textContent = formatRepliesSummary(count);
           copyNode.appendChild(countNode);
 
           replyNode = document.createElement('button');
           replyNode.type = 'button';
           replyNode.className = 'gg-comment-replies__context-reply';
           replyNode.setAttribute('data-gg-action', 'comments-reply-parent');
-          replyNode.setAttribute('aria-label', 'Reply to original comment');
-          replyNode.textContent = 'Reply';
+          replyNode.setAttribute('aria-label', getCopy('comments.action.replyToOriginal'));
+          replyNode.textContent = getCopy('comments.action.reply');
           if (commentNode) replyNode.setAttribute('data-gg-reply-target', getCommentNodeId(commentNode));
           copyNode.appendChild(replyNode);
           rowNode.appendChild(copyNode);
@@ -3951,10 +4047,10 @@ window.GG = window.GG || {};
             button = document.createElement('button');
             button.type = 'button';
             button.setAttribute('data-gg-action', 'comments-add-reply');
-            button.textContent = 'Add a reply';
+            button.textContent = getCopy('comments.action.addReply');
             ui.commentRepliesFooter.insertBefore(button, ui.commentRepliesFooter.firstChild);
           }
-          button.setAttribute('aria-label', 'Add a reply to original comment');
+          button.setAttribute('aria-label', getCopy('comments.action.addReplyToOriginal'));
           if (parentId) button.setAttribute('data-gg-reply-target', parentId);
           else button.removeAttribute('data-gg-reply-target');
           return button;
@@ -5347,7 +5443,7 @@ window.GG = window.GG || {};
         function syncDetailCommentCopy() {
           var count = ui.article ? parseCommentCount(ui.article.getAttribute('data-gg-post-comments')) : 0;
           var commentsDisabled = !document.querySelector('#gg-comments-footer [data-gg-action="comments-open-composer"], #comment-editor');
-          var actionLabel = commentsDisabled ? 'Comments disabled' : (count > 0 ? String(count) + ' comments' : 'Add comment');
+          var actionLabel = commentsDisabled ? getCopy('comments.toolbar.disabled') : (count === 1 ? getCopy('comments.toolbar.count.one') : (count > 1 ? formatCopy('comments.toolbar.count.many', { count: String(count) }) : getCopy('comments.toolbar.add')));
           var titleLabel = formatCommentCopy(count, 'title');
           var commentsState = commentsDisabled ? 'disabled' : (count > 0 ? 'has-comments' : 'empty');
           var icon = ui.detailCommentsAction ? ui.detailCommentsAction.querySelector('.gg-detail-toolbar__comments-icon, .gg-icon') : null;
@@ -7998,7 +8094,7 @@ window.GG = window.GG || {};
           if (commentDeleteTrigger) {
             event.preventDefault();
             if (state.commentMoreMenu && !delegateNativeDelete(state.commentMoreMenu.commentNode)) {
-              showCommentStatus('Delete unavailable');
+              showCommentStatus(getCopy('comments.status.failed'));
             }
             closeCommentMoreMenu();
             return;

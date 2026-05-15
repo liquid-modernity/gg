@@ -1492,7 +1492,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comments__reply-banner strong {
-  color:#1c1a1e;
+  color: #1c1a1e;
   font-weight: 700;
 }
 
@@ -1529,7 +1529,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color:#1c1a1e;
+  color: #1c1a1e;
   font: 700 18px/1 var(--gg-font-sans);
   cursor: pointer;
 }
@@ -2076,7 +2076,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comments .comment-form h4,
 .gg-comments #comment-post-message {
   margin: 0;
-  color:#1c1a1e;
+  color: #1c1a1e;
   font: 600 13px/1.25 var(--gg-font-sans);
 }
 

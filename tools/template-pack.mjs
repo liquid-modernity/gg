@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-/* tools/template-pack.mjs — GG Blogger template packer v10.3
+/* tools/template-pack.mjs — GG Blogger template packer v10.4
  *
  * Purpose:
- * - Copy index.xml into dist/blogger-template.publish.xml.
+ * - Copy index.xml into dist/blogger-template.publish.xml with critical CSS in b:skin.
  * - Synchronize Blogger app source assets into both runtime staging locations:
  *   __gg/assets/* and dist/assets/*.
  * - Write metadata for manual Blogger publishing.
@@ -20,6 +20,15 @@ const sourceFile = path.resolve(ROOT, "index.xml");
 const outDir = path.resolve(ROOT, "dist");
 const artifactFile = path.join(outDir, "blogger-template.publish.xml");
 const metaFile = path.join(outDir, "blogger-template.publish.txt");
+const inlineCssMode =
+  process.argv.includes("--full-inline-css") || process.env.GG_TEMPLATE_INLINE_CSS === "full"
+    ? "full"
+    : "critical";
+const externalCssMode = process.env.GG_TEMPLATE_CSS_MODE === "development" ? "development" : "production";
+const inlineCssSource =
+  inlineCssMode === "full" ? "src/css/gg-app.source.css" : "src/css/gg-critical.source.css";
+const externalCssHref =
+  externalCssMode === "development" ? "/__gg/assets/css/gg-app.dev.css" : "/__gg/assets/css/gg-app.min.css";
 
 const appAssetCopies = [
   {
@@ -30,6 +39,10 @@ const appAssetCopies = [
       "dist/assets/css/gg-app.dev.css",
       "dist/assets/css/gg-app.min.css",
     ],
+  },
+  {
+    source: "src/css/gg-critical.source.css",
+    outputs: ["__gg/assets/css/gg-critical.css", "dist/assets/css/gg-critical.css"],
   },
   {
     source: "src/js/gg-app.source.js",
@@ -86,11 +99,29 @@ function copyAssetGroup(group) {
   };
 }
 
+function replaceBSkin(templateText, cssText) {
+  const nextText = templateText.replace(
+    /(<b:skin><!\[CDATA\[\n)[\s\S]*?(\n\s*\]\]><\/b:skin>)/,
+    (_match, open, close) => `${open}${cssText.replace(/\s+$/u, "")}\n${close.trimStart()}`
+  );
+
+  if (nextText === templateText) {
+    fail("could not replace b:skin CSS block");
+  }
+
+  return nextText;
+}
+
+function replaceExternalCssHref(templateText) {
+  return templateText.replace(/\/__gg\/assets\/css\/gg-app\.(?:dev|min)\.css/g, externalCssHref);
+}
+
 if (!existsSync(sourceFile) || !statSync(sourceFile).isFile()) {
   fail(`missing template source: ${rel(sourceFile)}`);
 }
 
 const sourceText = readFileSync(sourceFile, "utf8");
+const inlineCssText = readFileSync(requireFile(inlineCssSource), "utf8");
 
 if (!sourceText.includes("<html") || !sourceText.includes("<b:skin")) {
   fail("index.xml does not look like a Blogger XML template");
@@ -113,7 +144,8 @@ for (const marker of requiredMarkers) {
 
 mkdirSync(outDir, { recursive: true });
 const syncedAssets = appAssetCopies.map(copyAssetGroup);
-copyFileSync(sourceFile, artifactFile);
+const artifactText = replaceExternalCssHref(replaceBSkin(sourceText, inlineCssText));
+writeFileSync(artifactFile, artifactText, "utf8");
 
 const artifactBuffer = readFileSync(artifactFile);
 const artifactSha256 = sha256Buffer(artifactBuffer);
@@ -126,6 +158,10 @@ writeFileSync(
     `generated_at_utc=${generatedAtUtc}`,
     `source_file=${rel(sourceFile)}`,
     `artifact_file=${rel(artifactFile)}`,
+    `inline_css_mode=${inlineCssMode}`,
+    `inline_css_source=${inlineCssSource}`,
+    `external_css_mode=${externalCssMode}`,
+    `external_css_href=${externalCssHref}`,
     `source_sha256=${sourceSha256}`,
     `artifact_sha256=${artifactSha256}`,
     `artifact_size_bytes=${artifactBuffer.byteLength}`,
@@ -135,6 +171,7 @@ writeFileSync(
       `asset_outputs=${entry.copied.join(",")}`,
     ]),
     "publish_scope=manual_blogger_publish_only",
+    "rollback_note=Set GG_TEMPLATE_INLINE_CSS=full or pass --full-inline-css to inline the full app CSS again.",
     "workflow_note=This script builds the Blogger XML artifact and synchronizes app assets. Cloudflare is handled separately.",
   ].join("\n") + "\n",
   "utf8"
@@ -144,6 +181,9 @@ console.log("TEMPLATE PACK OK");
 console.log(`source=${rel(sourceFile)}`);
 console.log(`artifact=${rel(artifactFile)}`);
 console.log(`metadata=${rel(metaFile)}`);
+console.log(`inline_css_mode=${inlineCssMode}`);
+console.log(`inline_css_source=${inlineCssSource}`);
+console.log(`external_css_href=${externalCssHref}`);
 for (const entry of syncedAssets) {
   console.log(`asset_source=${entry.source}`);
   console.log(`asset_outputs=${entry.copied.join(",")}`);

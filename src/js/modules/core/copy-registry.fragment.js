@@ -84,12 +84,57 @@
               launch: 'Comments',
               title: 'Comments',
               dismiss: 'Dismiss comments panel',
+              action: {
+                add: 'Add comment',
+                addReply: 'Add a reply',
+                addReplyToOriginal: 'Add a reply to original comment',
+                cancelReply: 'Cancel reply',
+                copyLink: 'Copy link',
+                delete: 'Delete comment',
+                more: 'More comment actions',
+                reply: 'Reply',
+                replyToOriginal: 'Reply to original comment'
+              },
               actionZero: 'Post a comment',
               actionOne: 'Comment',
               actionMany: 'Comments',
+              empty: {
+                body: 'Be the first to add one.',
+                title: 'No comments yet'
+              },
+              loadMore: 'Load more comments',
+              loadMoreReplies: 'Load more replies',
+              originalComment: 'Original comment',
+              replies: {
+                count: {
+                  one: '1 reply',
+                  many: '{count} replies'
+                },
+                dismiss: 'Dismiss replies',
+                drag: 'Drag replies sheet',
+                title: 'Replies',
+                view: {
+                  one: 'View 1 reply',
+                  many: 'View {count} replies'
+                }
+              },
+              replyingTo: 'Replying to',
+              status: {
+                copied: 'Comment link copied',
+                copying: 'Copying comment link...',
+                failed: 'Comment action failed'
+              },
               titleZero: 'Post a comment',
               titleOne: '{count} Comment',
-              titleMany: '{count} Comments'
+              titleMany: '{count} Comments',
+              toolbar: {
+                add: 'Add comment',
+                count: {
+                  one: '1 comment',
+                  many: '{count} comments'
+                },
+                disabled: 'Comments disabled'
+              }
             },
             post: {
               breadcrumb: 'Breadcrumb',
@@ -223,12 +268,57 @@
               launch: 'Komentar',
               title: 'Komentar',
               dismiss: 'Tutup panel komentar',
+              action: {
+                add: 'Tambah komentar',
+                addReply: 'Tambah balasan',
+                addReplyToOriginal: 'Tambah balasan ke komentar awal',
+                cancelReply: 'Batalkan balasan',
+                copyLink: 'Salin tautan',
+                delete: 'Hapus komentar',
+                more: 'Aksi komentar lainnya',
+                reply: 'Balas',
+                replyToOriginal: 'Balas komentar awal'
+              },
               actionZero: 'Tulis komentar',
               actionOne: 'Komentar',
               actionMany: 'Komentar',
+              empty: {
+                body: 'Jadilah yang pertama berkomentar.',
+                title: 'Belum ada komentar'
+              },
+              loadMore: 'Muat komentar lainnya',
+              loadMoreReplies: 'Muat balasan lainnya',
+              originalComment: 'Komentar awal',
+              replies: {
+                count: {
+                  one: '1 balasan',
+                  many: '{count} balasan'
+                },
+                dismiss: 'Tutup balasan',
+                drag: 'Geser lembar balasan',
+                title: 'Balasan',
+                view: {
+                  one: 'Lihat 1 balasan',
+                  many: 'Lihat {count} balasan'
+                }
+              },
+              replyingTo: 'Membalas',
+              status: {
+                copied: 'Tautan komentar disalin',
+                copying: 'Menyalin tautan komentar...',
+                failed: 'Aksi komentar gagal'
+              },
               titleZero: 'Tulis komentar',
               titleOne: '{count} Komentar',
-              titleMany: '{count} Komentar'
+              titleMany: '{count} Komentar',
+              toolbar: {
+                add: 'Tambah komentar',
+                count: {
+                  one: '1 komentar',
+                  many: '{count} komentar'
+                },
+                disabled: 'Komentar dinonaktifkan'
+              }
             },
             post: {
               breadcrumb: 'Jejak navigasi',
@@ -280,4 +370,3 @@
             },
           }
         };
-

@@ -424,7 +424,7 @@
         function syncDetailCommentCopy() {
           var count = ui.article ? parseCommentCount(ui.article.getAttribute('data-gg-post-comments')) : 0;
           var commentsDisabled = !document.querySelector('#gg-comments-footer [data-gg-action="comments-open-composer"], #comment-editor');
-          var actionLabel = commentsDisabled ? 'Comments disabled' : (count > 0 ? String(count) + ' comments' : 'Add comment');
+          var actionLabel = commentsDisabled ? getCopy('comments.toolbar.disabled') : (count === 1 ? getCopy('comments.toolbar.count.one') : (count > 1 ? formatCopy('comments.toolbar.count.many', { count: String(count) }) : getCopy('comments.toolbar.add')));
           var titleLabel = formatCommentCopy(count, 'title');
           var commentsState = commentsDisabled ? 'disabled' : (count > 0 ? 'has-comments' : 'empty');
           var icon = ui.detailCommentsAction ? ui.detailCommentsAction.querySelector('.gg-detail-toolbar__comments-icon, .gg-icon') : null;

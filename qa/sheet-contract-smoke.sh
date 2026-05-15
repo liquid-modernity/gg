@@ -168,6 +168,31 @@ function checkHashGroup(label, files) {
   addPass(`${label} hash parity ${[...unique][0].slice(0, 12)}`);
 }
 
+function normalizedBloggerTemplateSource(file) {
+  let source = read(file);
+  source = source.replace(
+    /<b:skin><!\[CDATA\[\n[\s\S]*?\n\s*\]\]><\/b:skin>/,
+    "<b:skin><![CDATA[\n/* gg inline css intentionally normalized */\n]]></b:skin>",
+  );
+  source = source.replace(/\/__gg\/assets\/css\/gg-app\.(?:dev|min)\.css/g, "/__gg/assets/css/gg-app.css");
+  return source;
+}
+
+function checkGeneratedBloggerTemplate() {
+  const files = ["index.xml", "dist/blogger-template.publish.xml"];
+  if (!files.every(requireFile)) return;
+
+  const [sourceFile, artifactFile] = files;
+  const sourceHash = createHash("sha256").update(normalizedBloggerTemplateSource(sourceFile)).digest("hex");
+  const artifactHash = createHash("sha256").update(normalizedBloggerTemplateSource(artifactFile)).digest("hex");
+
+  if (sourceHash === artifactHash) {
+    addPass(`generated Blogger template normalized parity ${sourceHash.slice(0, 12)}`);
+  } else {
+    fail(`generated Blogger template drift outside critical-css extraction: ${sourceFile}=${sourceHash.slice(0, 12)} ${artifactFile}=${artifactHash.slice(0, 12)}`);
+  }
+}
+
 const flatStoreFiles = readdirSync(".")
   .filter((name) => /^store-[a-z0-9-]+\.html$/i.test(name))
   .sort();
@@ -252,10 +277,7 @@ checkHashGroup("store core js source/asset", [
   "src/store/store-core.js",
   "assets/store/store-core.js",
 ]);
-checkHashGroup("generated Blogger template", [
-  "index.xml",
-  "dist/blogger-template.publish.xml",
-]);
+checkGeneratedBloggerTemplate();
 
 if (requireFile("src/store/store-discovery.js") && requireFile("assets/store/store-discovery.js")) {
   const discoverySource = read("src/store/store-discovery.js");

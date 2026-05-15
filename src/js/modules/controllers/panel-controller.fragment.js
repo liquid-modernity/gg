@@ -600,10 +600,10 @@
           handle.type = 'button';
           handle.className = 'gg-comments-sheet__handle gg-sheet__handle';
           handle.setAttribute('data-gg-drag-handle', 'comment-replies');
-          handle.setAttribute('aria-label', 'Drag replies sheet');
+          handle.setAttribute('aria-label', getCopy('comments.replies.drag'));
           label = document.createElement('span');
           label.className = 'gg-visually-hidden';
-          label.textContent = 'Drag replies sheet';
+          label.textContent = getCopy('comments.replies.drag');
           handle.appendChild(label);
           head.insertBefore(handle, back || head.firstChild);
           return true;
@@ -768,8 +768,14 @@
 
         function formatRepliesCount(count) {
           var resolved = Math.max(0, Number(count) || 0);
-          if (state.locale === 'id') return 'Lihat ' + resolved + ' balasan';
-          return 'View ' + resolved + (resolved === 1 ? ' reply' : ' replies');
+          if (resolved === 1) return getCopy('comments.replies.view.one');
+          return formatCopy('comments.replies.view.many', { count: String(resolved) });
+        }
+
+        function formatRepliesSummary(count) {
+          var resolved = Math.max(0, Number(count) || 0);
+          if (resolved === 1) return getCopy('comments.replies.count.one');
+          return formatCopy('comments.replies.count.many', { count: String(resolved) });
         }
 
         function getCommentReplyCount(repliesNode) {
@@ -924,7 +930,7 @@
           icon.textContent = 'reply';
           textWrap = document.createElement('span');
           textWrap.className = 'gg-comments__reply-text';
-          text = document.createTextNode('Replying to ');
+          text = document.createTextNode(getCopy('comments.replyingTo') + ' ');
           strong = document.createElement('strong');
           strong.textContent = state.commentReplyContext.handle;
           textWrap.appendChild(text);
@@ -935,7 +941,7 @@
           clearButton.type = 'button';
           clearButton.className = 'gg-comments__reply-clear';
           clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
-          clearButton.setAttribute('aria-label', 'Cancel reply');
+          clearButton.setAttribute('aria-label', getCopy('comments.action.cancelReply'));
           clearButton.textContent = '×';
           banner.appendChild(label);
           banner.appendChild(clearButton);
@@ -1329,18 +1335,18 @@
 
           if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
             return window.navigator.clipboard.writeText(permalink).then(function () {
-              showCommentStatus('Comment link copied');
+              showCommentStatus(getCopy('comments.status.copied'));
               return true;
             }).catch(function () {
               return copyTextFallback(permalink).then(function () {
-                showCommentStatus('Comment link copied');
+                showCommentStatus(getCopy('comments.status.copied'));
                 return true;
               });
             });
           }
 
           return copyTextFallback(permalink).then(function () {
-            showCommentStatus('Comment link copied');
+            showCommentStatus(getCopy('comments.status.copied'));
             return true;
           });
         }
@@ -1387,7 +1393,7 @@
           copyButton.setAttribute('data-gg-action', 'comment-copy-link');
           copyButton.setAttribute('data-gg-comment-action', 'copy');
           copyButton.appendChild(buildCommentMoreMenuIcon('link'));
-          copyButton.appendChild(buildCommentMoreMenuLabel('Copy link'));
+          copyButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.copyLink')));
           menu.appendChild(copyButton);
 
           if (commentHasNativeDelete(commentNode)) {
@@ -1398,7 +1404,7 @@
             deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
             deleteButton.setAttribute('data-gg-comment-action', 'delete');
             deleteButton.appendChild(buildCommentMoreMenuIcon('delete'));
-            deleteButton.appendChild(buildCommentMoreMenuLabel('Delete comment'));
+            deleteButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.delete')));
             menu.appendChild(deleteButton);
           }
 
@@ -1538,7 +1544,7 @@
               button.setAttribute('data-gg-action', 'comment-more');
               button.setAttribute('aria-haspopup', 'menu');
               button.setAttribute('aria-expanded', 'false');
-              button.setAttribute('aria-label', 'More comment actions');
+              button.setAttribute('aria-label', getCopy('comments.action.more'));
               button.textContent = '...';
               wrapper.appendChild(button);
               enhanced += 1;
@@ -1592,7 +1598,7 @@
 
           labelNode = document.createElement('div');
           labelNode.className = 'gg-comment-replies__context-label';
-          labelNode.textContent = 'Original comment';
+          labelNode.textContent = getCopy('comments.originalComment');
           ui.commentRepliesContext.appendChild(labelNode);
 
           rowNode = document.createElement('div');
@@ -1636,15 +1642,15 @@
 
           countNode = document.createElement('div');
           countNode.className = 'gg-comment-replies__context-count';
-          countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
+          countNode.textContent = formatRepliesSummary(count);
           copyNode.appendChild(countNode);
 
           replyNode = document.createElement('button');
           replyNode.type = 'button';
           replyNode.className = 'gg-comment-replies__context-reply';
           replyNode.setAttribute('data-gg-action', 'comments-reply-parent');
-          replyNode.setAttribute('aria-label', 'Reply to original comment');
-          replyNode.textContent = 'Reply';
+          replyNode.setAttribute('aria-label', getCopy('comments.action.replyToOriginal'));
+          replyNode.textContent = getCopy('comments.action.reply');
           if (commentNode) replyNode.setAttribute('data-gg-reply-target', getCommentNodeId(commentNode));
           copyNode.appendChild(replyNode);
           rowNode.appendChild(copyNode);
@@ -1663,10 +1669,10 @@
             button = document.createElement('button');
             button.type = 'button';
             button.setAttribute('data-gg-action', 'comments-add-reply');
-            button.textContent = 'Add a reply';
+            button.textContent = getCopy('comments.action.addReply');
             ui.commentRepliesFooter.insertBefore(button, ui.commentRepliesFooter.firstChild);
           }
-          button.setAttribute('aria-label', 'Add a reply to original comment');
+          button.setAttribute('aria-label', getCopy('comments.action.addReplyToOriginal'));
           if (parentId) button.setAttribute('data-gg-reply-target', parentId);
           else button.removeAttribute('data-gg-reply-target');
           return button;
