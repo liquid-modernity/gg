@@ -228,6 +228,7 @@
 
           if (nativeCommentReplyTrigger) {
             state.commentRepliesLastReplySource = state.commentRepliesProgrammaticReplySource || 'native';
+            state.commentRepliesExplicitReplyStarted = true;
             handleNativeReplyTrigger(nativeCommentReplyTrigger);
           }
 

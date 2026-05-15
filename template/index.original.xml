@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='prod' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='30912c0b83be' name='gg-template-fingerprint'/>
+<meta content='1d09e033c291' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -1668,7 +1668,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
     justify-items: center;
     flex-wrap: nowrap;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .gg-comment-more__button:hover,
@@ -3257,6 +3257,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   }
 }
 
+
+
     ]]></b:skin>
 
     <b:include data='blog' name='google-analytics'/>
@@ -3301,7 +3303,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='30912c0b83be' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='1d09e033c291' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -5204,6 +5206,7 @@ window.GG = window.GG || {};
           commentRepliesReadOnlyEditorSrcBefore: '',
           commentRepliesParentComment: null,
           commentRepliesAutoReplySafe: true,
+          commentRepliesExplicitReplyStarted: false,
           commentRepliesLastReplySource: '',
           commentRepliesLastReplyTargetId: '',
           commentRepliesProgrammaticReplySource: '',
@@ -5488,17 +5491,17 @@ window.GG = window.GG || {};
             replyCancelResetsNativeParent = !editor || replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
             editorSrcHasNoParentIdAfterCancel = !editor || replyContextActive || !commentSrcHasParentId(editorCurrentSrc);
             replyModeClearsNativeTarget = !editor || replyContextActive || (!replyFooterModeActive && !commentSrcHasParentId(editorCurrentSrc));
-            viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
+            viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !!replyContextActive || state.commentRepliesExplicitReplyStarted || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
             repliesParentId = getCommentNodeId(state.commentRepliesParentComment || (state.commentRepliesPortal && state.commentRepliesPortal.parentComment));
             viewRepliesDoesNotAutoReply = activeCommentsLayer !== 'replies' || !!replyContextActive || (!!state.commentRepliesAutoReplySafe && !replyBannerActive && !commentSrcHasParentId(editorCurrentSrc) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
             parentReplyActionExists = activeCommentsLayer !== 'replies' || !!document.querySelector('#gg-comment-replies-context [data-gg-action="comments-reply-parent"][aria-label="Reply to original comment"]');
             addReplyLauncherTargetsParent = activeCommentsLayer !== 'replies' || !!(repliesParentId && document.querySelector('#gg-comment-replies-footer [data-gg-action="comments-add-reply"][aria-label="Add a reply to original comment"][data-gg-reply-target="' + repliesParentId + '"]'));
-            replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).every(function (node) {
+            replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).filter(isVisible).every(function (node) {
               var commentNode = getCommentNodeFromTrigger(node);
               return !!(commentNode && getCommentNodeId(commentNode));
             });
             cancelReplyClearsNativeTarget = !!replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
-            composerMoveCountBounded = state.commentComposerMoveCount <= Math.max(2, state.commentRepliesOpenCount + 2);
+            composerMoveCountBounded = state.commentComposerMoveCount <= Math.max(2, state.commentRepliesOpenCount + state.commentReplyResetCount + 3);
             commentsEnhanceRunsBounded = state.commentEnhanceRunCount <= 8;
             repliesNodeCountsStable = document.querySelectorAll('#top-ce').length <= 1 && document.querySelectorAll('#comment-editor').length <= 1 && document.querySelectorAll('#gg-comment-replies-context').length === 1 && document.querySelectorAll('#gg-comments-composer-slot').length === 1 && document.querySelectorAll('#gg-comments-reply-slot').length === 1;
             noDuplicateMoreButtonsAfterRepliesOpen = Array.prototype.slice.call(document.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment')).every(function (commentNode) {
@@ -7885,22 +7888,85 @@ window.GG = window.GG || {};
             || commentNode.querySelector('a.comment-reply, .comment-reply a');
         }
 
+        function getNativeReplyCommentId(commentNode, nativeReply) {
+          var raw = nativeReply ? nativeReply.getAttribute('data-comment-id') : '';
+          var nodeId = getCommentNodeId(commentNode);
+
+          if (raw) return raw;
+          return nodeId ? nodeId.replace(/^c/, '') : '';
+        }
+
+        function withCommentParentId(src, parentId) {
+          var raw = String(src || '');
+          var hash = '';
+          var hashIndex;
+          var separator;
+
+          if (!raw || !parentId) return raw;
+
+          try {
+            var url = new URL(raw, window.location.href);
+            url.searchParams.set('parentID', parentId);
+            return url.toString();
+          } catch (error) {
+            hashIndex = raw.indexOf('#');
+            if (hashIndex >= 0) {
+              hash = raw.slice(hashIndex);
+              raw = raw.slice(0, hashIndex);
+            }
+            raw = stripParentIdFromCommentSrc(raw);
+            separator = raw.indexOf('?') >= 0 ? '&' : '?';
+            return raw + separator + 'parentID=' + encodeURIComponent(parentId) + hash;
+          }
+        }
+
+        function fallbackNativeReplyTarget(commentNode, nativeReply) {
+          var editor = document.getElementById('comment-editor');
+          var editorSrc = document.getElementById('comment-editor-src');
+          var parentId = getNativeReplyCommentId(commentNode, nativeReply);
+          var base = cacheTopLevelCommentEditorSrc() || (editor ? stripParentIdFromCommentSrc(editor.getAttribute('src') || editor.src || '') : '');
+          var target = withCommentParentId(base, parentId);
+          var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+
+          if (!editor || !parentId || !target || commentSrcHasParentId(current)) return false;
+
+          if (editorSrc && base) editorSrc.setAttribute('href', base);
+          editor.setAttribute('src', target);
+          state.commentIframeSrcChangeCount += 1;
+          bumpCommentsDebugCounter('iframeSrcChanges');
+          return true;
+        }
+
         function replyToCommentNode(commentNode, source) {
           var nativeReply = getNativeReplyControl(commentNode);
+          var retryNativeReply;
 
           if (!commentNode) return false;
 
           state.commentRepliesLastReplySource = source || 'native';
+          state.commentRepliesExplicitReplyStarted = true;
           state.commentRepliesProgrammaticReplySource = source || '';
           handleNativeReplyTrigger(nativeReply || commentNode);
 
           if (nativeReply && typeof nativeReply.click === 'function') {
             nativeReply.click();
+            retryNativeReply = function () {
+              var editor = document.getElementById('comment-editor');
+              var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+              if (state.commentReplyContext && state.commentReplyContext.parentId === getCommentNodeId(commentNode) && !commentSrcHasParentId(current)) {
+                nativeReply.click();
+              }
+            };
+            window.setTimeout(retryNativeReply, 120);
+            window.setTimeout(function () {
+              retryNativeReply();
+              fallbackNativeReplyTarget(commentNode, nativeReply);
+            }, 320);
           }
           if (state.commentRepliesProgrammaticReplySource) {
             window.setTimeout(function () {
               state.commentRepliesProgrammaticReplySource = '';
-            }, 0);
+            }, 500);
           }
 
           return true;
@@ -8439,6 +8505,7 @@ window.GG = window.GG || {};
             };
             state.commentRepliesParentComment = commentNode;
             state.commentRepliesAutoReplySafe = true;
+            state.commentRepliesExplicitReplyStarted = false;
 
             renderCommentRepliesContext(commentNode, count);
             ensureCommentRepliesAddReplyLauncher();
@@ -12392,6 +12459,7 @@ window.GG = window.GG || {};
 
           if (nativeCommentReplyTrigger) {
             state.commentRepliesLastReplySource = state.commentRepliesProgrammaticReplySource || 'native';
+            state.commentRepliesExplicitReplyStarted = true;
             handleNativeReplyTrigger(nativeCommentReplyTrigger);
           }
 

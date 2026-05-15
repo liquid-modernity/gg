@@ -124,6 +124,7 @@
           commentRepliesReadOnlyEditorSrcBefore: '',
           commentRepliesParentComment: null,
           commentRepliesAutoReplySafe: true,
+          commentRepliesExplicitReplyStarted: false,
           commentRepliesLastReplySource: '',
           commentRepliesLastReplyTargetId: '',
           commentRepliesProgrammaticReplySource: '',
@@ -408,17 +409,17 @@
             replyCancelResetsNativeParent = !editor || replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
             editorSrcHasNoParentIdAfterCancel = !editor || replyContextActive || !commentSrcHasParentId(editorCurrentSrc);
             replyModeClearsNativeTarget = !editor || replyContextActive || (!replyFooterModeActive && !commentSrcHasParentId(editorCurrentSrc));
-            viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
+            viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !!replyContextActive || state.commentRepliesExplicitReplyStarted || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
             repliesParentId = getCommentNodeId(state.commentRepliesParentComment || (state.commentRepliesPortal && state.commentRepliesPortal.parentComment));
             viewRepliesDoesNotAutoReply = activeCommentsLayer !== 'replies' || !!replyContextActive || (!!state.commentRepliesAutoReplySafe && !replyBannerActive && !commentSrcHasParentId(editorCurrentSrc) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
             parentReplyActionExists = activeCommentsLayer !== 'replies' || !!document.querySelector('#gg-comment-replies-context [data-gg-action="comments-reply-parent"][aria-label="Reply to original comment"]');
             addReplyLauncherTargetsParent = activeCommentsLayer !== 'replies' || !!(repliesParentId && document.querySelector('#gg-comment-replies-footer [data-gg-action="comments-add-reply"][aria-label="Add a reply to original comment"][data-gg-reply-target="' + repliesParentId + '"]'));
-            replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).every(function (node) {
+            replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).filter(isVisible).every(function (node) {
               var commentNode = getCommentNodeFromTrigger(node);
               return !!(commentNode && getCommentNodeId(commentNode));
             });
             cancelReplyClearsNativeTarget = !!replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
-            composerMoveCountBounded = state.commentComposerMoveCount <= Math.max(2, state.commentRepliesOpenCount + 2);
+            composerMoveCountBounded = state.commentComposerMoveCount <= Math.max(2, state.commentRepliesOpenCount + state.commentReplyResetCount + 3);
             commentsEnhanceRunsBounded = state.commentEnhanceRunCount <= 8;
             repliesNodeCountsStable = document.querySelectorAll('#top-ce').length <= 1 && document.querySelectorAll('#comment-editor').length <= 1 && document.querySelectorAll('#gg-comment-replies-context').length === 1 && document.querySelectorAll('#gg-comments-composer-slot').length === 1 && document.querySelectorAll('#gg-comments-reply-slot').length === 1;
             noDuplicateMoreButtonsAfterRepliesOpen = Array.prototype.slice.call(document.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment')).every(function (commentNode) {

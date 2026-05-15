@@ -1147,22 +1147,85 @@
             || commentNode.querySelector('a.comment-reply, .comment-reply a');
         }
 
+        function getNativeReplyCommentId(commentNode, nativeReply) {
+          var raw = nativeReply ? nativeReply.getAttribute('data-comment-id') : '';
+          var nodeId = getCommentNodeId(commentNode);
+
+          if (raw) return raw;
+          return nodeId ? nodeId.replace(/^c/, '') : '';
+        }
+
+        function withCommentParentId(src, parentId) {
+          var raw = String(src || '');
+          var hash = '';
+          var hashIndex;
+          var separator;
+
+          if (!raw || !parentId) return raw;
+
+          try {
+            var url = new URL(raw, window.location.href);
+            url.searchParams.set('parentID', parentId);
+            return url.toString();
+          } catch (error) {
+            hashIndex = raw.indexOf('#');
+            if (hashIndex >= 0) {
+              hash = raw.slice(hashIndex);
+              raw = raw.slice(0, hashIndex);
+            }
+            raw = stripParentIdFromCommentSrc(raw);
+            separator = raw.indexOf('?') >= 0 ? '&' : '?';
+            return raw + separator + 'parentID=' + encodeURIComponent(parentId) + hash;
+          }
+        }
+
+        function fallbackNativeReplyTarget(commentNode, nativeReply) {
+          var editor = document.getElementById('comment-editor');
+          var editorSrc = document.getElementById('comment-editor-src');
+          var parentId = getNativeReplyCommentId(commentNode, nativeReply);
+          var base = cacheTopLevelCommentEditorSrc() || (editor ? stripParentIdFromCommentSrc(editor.getAttribute('src') || editor.src || '') : '');
+          var target = withCommentParentId(base, parentId);
+          var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+
+          if (!editor || !parentId || !target || commentSrcHasParentId(current)) return false;
+
+          if (editorSrc && base) editorSrc.setAttribute('href', base);
+          editor.setAttribute('src', target);
+          state.commentIframeSrcChangeCount += 1;
+          bumpCommentsDebugCounter('iframeSrcChanges');
+          return true;
+        }
+
         function replyToCommentNode(commentNode, source) {
           var nativeReply = getNativeReplyControl(commentNode);
+          var retryNativeReply;
 
           if (!commentNode) return false;
 
           state.commentRepliesLastReplySource = source || 'native';
+          state.commentRepliesExplicitReplyStarted = true;
           state.commentRepliesProgrammaticReplySource = source || '';
           handleNativeReplyTrigger(nativeReply || commentNode);
 
           if (nativeReply && typeof nativeReply.click === 'function') {
             nativeReply.click();
+            retryNativeReply = function () {
+              var editor = document.getElementById('comment-editor');
+              var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+              if (state.commentReplyContext && state.commentReplyContext.parentId === getCommentNodeId(commentNode) && !commentSrcHasParentId(current)) {
+                nativeReply.click();
+              }
+            };
+            window.setTimeout(retryNativeReply, 120);
+            window.setTimeout(function () {
+              retryNativeReply();
+              fallbackNativeReplyTarget(commentNode, nativeReply);
+            }, 320);
           }
           if (state.commentRepliesProgrammaticReplySource) {
             window.setTimeout(function () {
               state.commentRepliesProgrammaticReplySource = '';
-            }, 0);
+            }, 500);
           }
 
           return true;
@@ -1701,6 +1764,7 @@
             };
             state.commentRepliesParentComment = commentNode;
             state.commentRepliesAutoReplySafe = true;
+            state.commentRepliesExplicitReplyStarted = false;
 
             renderCommentRepliesContext(commentNode, count);
             ensureCommentRepliesAddReplyLauncher();

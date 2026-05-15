@@ -1576,7 +1576,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
     justify-items: center;
     flex-wrap: nowrap;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .gg-comment-more__button:hover,
