@@ -749,6 +749,8 @@ window.GG = window.GG || {};
           commentRepliesPortal: null,
           commentRepliesTimer: 0,
           commentReplyContext: null,
+          commentTopLevelEditorSrc: '',
+          commentReplyResetCount: 0,
           commentComposerPortal: null,
           commentComposerOpen: false,
           commentPrefixObserver: null,
@@ -833,6 +835,13 @@ window.GG = window.GG || {};
             var replyBannerCancelRightAligned;
             var sheetScrollbarsHidden;
             var iconButtonsCentered;
+            var editorCurrentSrc;
+            var replyContextActive;
+            var replyFooterModeActive;
+            var replyBannerActive;
+            var replyCancelResetsNativeParent;
+            var editorSrcHasNoParentIdAfterCancel;
+            var replyModeClearsNativeTarget;
             var toolbarCommentsAction;
             var toolbarCommentsIcon;
             var toolbarCommentsBadge;
@@ -995,6 +1004,13 @@ window.GG = window.GG || {};
               if (style.display.indexOf('flex') !== -1) return style.alignItems === 'center' && style.justifyContent === 'center';
               return false;
             });
+            editorCurrentSrc = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+            replyContextActive = !!(state.commentReplyContext && state.commentReplyContext.handle);
+            replyFooterModeActive = !!document.querySelector('.gg-comments__footer[data-gg-comment-composer-mode="reply"]');
+            replyBannerActive = isVisible(document.querySelector('.gg-comments__reply-banner'));
+            replyCancelResetsNativeParent = !editor || replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
+            editorSrcHasNoParentIdAfterCancel = !editor || replyContextActive || !commentSrcHasParentId(editorCurrentSrc);
+            replyModeClearsNativeTarget = !editor || replyContextActive || (!replyFooterModeActive && !commentSrcHasParentId(editorCurrentSrc));
             loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node);
             }).every(function (node) {
@@ -1071,6 +1087,9 @@ window.GG = window.GG || {};
               replyBannerCancelRightAligned: replyBannerCancelRightAligned,
               sheetScrollbarsHidden: sheetScrollbarsHidden,
               iconButtonsCentered: iconButtonsCentered,
+              replyCancelResetsNativeParent: replyCancelResetsNativeParent,
+              editorSrcHasNoParentIdAfterCancel: editorSrcHasNoParentIdAfterCancel,
+              replyModeClearsNativeTarget: replyModeClearsNativeTarget,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               toolbarCommentsIconOnly: toolbarCommentsIconOnly,
@@ -1125,6 +1144,9 @@ window.GG = window.GG || {};
               result.replyBannerCancelRightAligned &&
               result.sheetScrollbarsHidden &&
               result.iconButtonsCentered &&
+              result.replyCancelResetsNativeParent &&
+              result.editorSrcHasNoParentIdAfterCancel &&
+              result.replyModeClearsNativeTarget &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
               result.toolbarCommentsIconOnly &&
@@ -2673,7 +2695,97 @@ window.GG = window.GG || {};
             if (composer.style) composer.style.display = '';
           }
 
+          cacheTopLevelCommentEditorSrc();
+
           return !!(composer || placeholder);
+        }
+
+        function stripParentIdFromCommentSrc(src) {
+          var raw = String(src || '');
+          var hash = '';
+          var hashIndex;
+          var cleaned;
+
+          if (!raw) return raw;
+
+          try {
+            var url = new URL(raw, window.location.href);
+            url.searchParams.forEach(function (value, key) {
+              if (String(key).toLowerCase() === 'parentid') url.searchParams.delete(key);
+            });
+            return url.toString();
+          } catch (error) {
+            var queryIndex;
+            var basePath;
+            var query;
+            hashIndex = raw.indexOf('#');
+            if (hashIndex >= 0) {
+              hash = raw.slice(hashIndex);
+              raw = raw.slice(0, hashIndex);
+            }
+            queryIndex = raw.indexOf('?');
+            if (queryIndex < 0) return raw + hash;
+            basePath = raw.slice(0, queryIndex);
+            query = raw.slice(queryIndex + 1).split('&').filter(function (part) {
+              return part && !/^parentID=/i.test(part);
+            }).join('&');
+            cleaned = basePath + (query ? '?' + query : '');
+            return cleaned + hash;
+          }
+        }
+
+        function commentSrcHasParentId(src) {
+          var raw = String(src || '');
+
+          if (!raw) return false;
+
+          try {
+            var url = new URL(raw, window.location.href);
+            var hasParentId = false;
+            url.searchParams.forEach(function (value, key) {
+              if (String(key).toLowerCase() === 'parentid') hasParentId = true;
+            });
+            return hasParentId;
+          } catch (error) {
+            return /[?&]parentID=/i.test(raw);
+          }
+        }
+
+        function cacheTopLevelCommentEditorSrc() {
+          var editor = document.getElementById('comment-editor');
+          var editorSrc = document.getElementById('comment-editor-src');
+          var href = editorSrc ? (editorSrc.getAttribute('href') || editorSrc.href || '') : '';
+          var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+          var base = stripParentIdFromCommentSrc(href || state.commentTopLevelEditorSrc || current);
+
+          if (base) {
+            state.commentTopLevelEditorSrc = base;
+            if (editorSrc && (editorSrc.getAttribute('href') || editorSrc.href || '') !== base) {
+              editorSrc.setAttribute('href', base);
+            }
+          }
+
+          return state.commentTopLevelEditorSrc;
+        }
+
+        function resetNativeComposerToTopLevel() {
+          var editor = document.getElementById('comment-editor');
+          var editorSrc = document.getElementById('comment-editor-src');
+          var current = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+          var base = cacheTopLevelCommentEditorSrc() || stripParentIdFromCommentSrc(current);
+          var target = base || stripParentIdFromCommentSrc(current);
+
+          if (editorSrc && target) editorSrc.setAttribute('href', target);
+
+          if (editor && target && (commentSrcHasParentId(current) || !current)) {
+            editor.setAttribute('src', target);
+          } else if (editor && current && commentSrcHasParentId(current)) {
+            editor.setAttribute('src', stripParentIdFromCommentSrc(current));
+          }
+
+          state.commentReplyResetCount += 1;
+
+          return !commentSrcHasParentId(editor ? (editor.getAttribute('src') || editor.src || '') : '');
         }
 
         function ensureRepliesSheetHandle() {
@@ -3026,6 +3138,7 @@ window.GG = window.GG || {};
 
         function clearCommentReplyContext() {
           state.commentReplyContext = null;
+          resetNativeComposerToTopLevel();
           renderReplyBanner();
         }
 

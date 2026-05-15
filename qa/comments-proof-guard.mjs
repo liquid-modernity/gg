@@ -97,6 +97,9 @@ for (const [file, js] of [
   requireIncludes(js, "replyBannerCancelRightAligned", `${file}: proof checks reply banner cancel alignment`, file);
   requireIncludes(js, "sheetScrollbarsHidden", `${file}: proof checks comments sheet scrollbar hiding`, file);
   requireIncludes(js, "iconButtonsCentered", `${file}: proof checks icon button centering`, file);
+  requireIncludes(js, "replyCancelResetsNativeParent", `${file}: proof checks reply cancel resets native parent`, file);
+  requireIncludes(js, "editorSrcHasNoParentIdAfterCancel", `${file}: proof checks editor src parentID clearing`, file);
+  requireIncludes(js, "replyModeClearsNativeTarget", `${file}: proof checks reply mode native target clearing`, file);
   requireIncludes(js, "loadMoreFunctionalAndAboveFooter", `${file}: proof checks load more above footer`, file);
   requireIncludes(js, "composerWellVisibleWhenOpen", `${file}: proof checks native composer well visibility`, file);
   requireIncludes(js, "toolbarCommentsIconOnly", `${file}: proof checks comments toolbar icon-only rendering`, file);

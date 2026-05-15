@@ -120,6 +120,8 @@
           commentRepliesPortal: null,
           commentRepliesTimer: 0,
           commentReplyContext: null,
+          commentTopLevelEditorSrc: '',
+          commentReplyResetCount: 0,
           commentComposerPortal: null,
           commentComposerOpen: false,
           commentPrefixObserver: null,
@@ -204,6 +206,13 @@
             var replyBannerCancelRightAligned;
             var sheetScrollbarsHidden;
             var iconButtonsCentered;
+            var editorCurrentSrc;
+            var replyContextActive;
+            var replyFooterModeActive;
+            var replyBannerActive;
+            var replyCancelResetsNativeParent;
+            var editorSrcHasNoParentIdAfterCancel;
+            var replyModeClearsNativeTarget;
             var toolbarCommentsAction;
             var toolbarCommentsIcon;
             var toolbarCommentsBadge;
@@ -366,6 +375,13 @@
               if (style.display.indexOf('flex') !== -1) return style.alignItems === 'center' && style.justifyContent === 'center';
               return false;
             });
+            editorCurrentSrc = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+            replyContextActive = !!(state.commentReplyContext && state.commentReplyContext.handle);
+            replyFooterModeActive = !!document.querySelector('.gg-comments__footer[data-gg-comment-composer-mode="reply"]');
+            replyBannerActive = isVisible(document.querySelector('.gg-comments__reply-banner'));
+            replyCancelResetsNativeParent = !editor || replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
+            editorSrcHasNoParentIdAfterCancel = !editor || replyContextActive || !commentSrcHasParentId(editorCurrentSrc);
+            replyModeClearsNativeTarget = !editor || replyContextActive || (!replyFooterModeActive && !commentSrcHasParentId(editorCurrentSrc));
             loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node);
             }).every(function (node) {
@@ -442,6 +458,9 @@
               replyBannerCancelRightAligned: replyBannerCancelRightAligned,
               sheetScrollbarsHidden: sheetScrollbarsHidden,
               iconButtonsCentered: iconButtonsCentered,
+              replyCancelResetsNativeParent: replyCancelResetsNativeParent,
+              editorSrcHasNoParentIdAfterCancel: editorSrcHasNoParentIdAfterCancel,
+              replyModeClearsNativeTarget: replyModeClearsNativeTarget,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               toolbarCommentsIconOnly: toolbarCommentsIconOnly,
@@ -496,6 +515,9 @@
               result.replyBannerCancelRightAligned &&
               result.sheetScrollbarsHidden &&
               result.iconButtonsCentered &&
+              result.replyCancelResetsNativeParent &&
+              result.editorSrcHasNoParentIdAfterCancel &&
+              result.replyModeClearsNativeTarget &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
               result.toolbarCommentsIconOnly &&
