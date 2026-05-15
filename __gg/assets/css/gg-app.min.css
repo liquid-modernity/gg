@@ -2060,7 +2060,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   border: 1px solid var(--gg-divider);
   border-radius: 999px;
   background: var(--gg-surface-quiet);
-  color: var(--gg-ink);
+  color: #1c1a1e;
   font: 650 13px/1.2 var(--gg-font-sans);
   cursor: pointer;
 }
@@ -2076,7 +2076,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comments .comment-form h4,
 .gg-comments #comment-post-message {
   margin: 0;
-  color: var(--gg-ink);
+  color:#1c1a1e;
   font: 600 13px/1.25 var(--gg-font-sans);
 }
 
