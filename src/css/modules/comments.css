@@ -884,12 +884,10 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comments #comment-editor,
 .gg-comments .blogger-comment-from-post {
   display: block;
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid var(--gg-divider);
-  border-radius: 26px 26px 0px 0px;
-  background: var(--gg-field-surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid var(--gg-divider);
+    border-radius: 26px 26px 0px 0px;
 }
 
 .gg-comments__footer #gg-comments-composer-slot,
