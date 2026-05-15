@@ -1346,7 +1346,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
 [data-gg-sheet='comment-replies'] .gg-comments .comment-thread ol,
 [data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
-
+ 
 }
 
 #gg-comment-replies-sheet .gg-comments__content {
@@ -1453,6 +1453,25 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comment-replies__context-count {
   color: var(--gg-accent-soft);
   font: 600 12px/1.25 var(--gg-font-sans);
+}
+
+.gg-comment-replies__context-reply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-ink-muted);
+  font: 650 12px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comment-replies__context-reply:hover,
+.gg-comment-replies__context-reply:focus-visible {
+  color: var(--gg-ink);
 }
 
 .gg-comment-replies__footer {
@@ -1989,6 +2008,10 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   display: none !important;
 }
 
+.gg-comments__footer[data-gg-composer-open='true'] [data-gg-action='comments-add-reply'] {
+  display: none !important;
+}
+
 .gg-comments__footer[data-gg-composer-open='false'] #gg-comments-composer-slot {
   display: none !important;
 }
@@ -2029,8 +2052,23 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   cursor: pointer;
 }
 
+#gg-comment-replies-footer [data-gg-action='comments-add-reply'],
+#gg-comment-replies-footer [data-gg-action='comments-open-composer'] {
+  justify-self: stretch;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--gg-divider);
+  border-radius: 999px;
+  background: var(--gg-surface-quiet);
+  color: var(--gg-ink);
+  font: 650 13px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
 .gg-comments__footer [data-gg-action='comments-open-composer']:hover,
-.gg-comments__footer [data-gg-action='comments-open-composer']:focus-visible {
+.gg-comments__footer [data-gg-action='comments-open-composer']:focus-visible,
+#gg-comment-replies-footer [data-gg-action='comments-add-reply']:hover,
+#gg-comment-replies-footer [data-gg-action='comments-add-reply']:focus-visible {
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
 }
@@ -2096,7 +2134,6 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   justify-content: center;
   min-height: 36px;
   width: 100%;
-  
   font: 650 13px/1.2 var(--gg-font-sans);
 }
 
@@ -2139,7 +2176,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gg-toolbar-gap);
-  width:min(calc(100vw - 20px), 600px);
+  width: min(calc(100vw - 20px), 600px);
   max-width: none;
   padding: var(--gg-toolbar-pad);
   border: 1px solid var(--gg-toolbar-border);

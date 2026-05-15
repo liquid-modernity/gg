@@ -100,6 +100,17 @@ for (const [file, js] of [
   requireIncludes(js, "replyCancelResetsNativeParent", `${file}: proof checks reply cancel resets native parent`, file);
   requireIncludes(js, "editorSrcHasNoParentIdAfterCancel", `${file}: proof checks editor src parentID clearing`, file);
   requireIncludes(js, "replyModeClearsNativeTarget", `${file}: proof checks reply mode native target clearing`, file);
+  requireIncludes(js, "viewRepliesDoesNotChangeIframeSrc", `${file}: proof checks View replies does not retarget iframe`, file);
+  requireIncludes(js, "viewRepliesDoesNotAutoReply", `${file}: proof checks View replies does not auto-enter reply mode`, file);
+  requireIncludes(js, "parentReplyActionExists", `${file}: proof checks parent context Reply action`, file);
+  requireIncludes(js, "addReplyLauncherTargetsParent", `${file}: proof checks Add a reply targets parent`, file);
+  requireIncludes(js, "replySpecificCommentTargetsDirectComment", `${file}: proof checks direct reply target`, file);
+  requireIncludes(js, "cancelReplyClearsNativeTarget", `${file}: proof checks cancel clears native target`, file);
+  requireIncludes(js, "composerMoveCountBounded", `${file}: proof checks composer moves are bounded`, file);
+  requireIncludes(js, "commentsEnhanceRunsBounded", `${file}: proof checks comments enhancement runs are bounded`, file);
+  requireIncludes(js, "repliesNodeCountsStable", `${file}: proof checks replies node counts are stable`, file);
+  requireIncludes(js, "noDuplicateMoreButtonsAfterRepliesOpen", `${file}: proof checks no duplicate More buttons after replies open`, file);
+  requireIncludes(js, "repliesOpenIsIdempotent", `${file}: proof checks replies open idempotence`, file);
   requireIncludes(js, "loadMoreFunctionalAndAboveFooter", `${file}: proof checks load more above footer`, file);
   requireIncludes(js, "composerWellVisibleWhenOpen", `${file}: proof checks native composer well visibility`, file);
   requireIncludes(js, "toolbarCommentsIconOnly", `${file}: proof checks comments toolbar icon-only rendering`, file);

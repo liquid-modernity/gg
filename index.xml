@@ -8,7 +8,7 @@
     <title><data:view.title.escaped/></title>
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='8d70b590c693' name='gg-template-fingerprint'/>
+<meta content='20d404f83770' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -843,23 +843,23 @@ img {
 }
 
 .gg-detail-toolbar {
- position: sticky;
-    top: var(--gg-detail-toolbar-offset-top);
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    gap: var(--gg-toolbar-gap);
-    margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
-    padding: var(--gg-toolbar-pad);
-    border: 1px solid var(--gg-toolbar-border);
-    border-radius: var(--gg-toolbar-radius);
-    background: rgb(74 75 72 / 76%);
-    box-shadow: var(--gg-shadow-soft);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    width: 44px;
-    height: 44px;
-    justify-content: center;
+  position: sticky;
+  top: var(--gg-detail-toolbar-offset-top);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--gg-toolbar-gap);
+  margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
+  padding: var(--gg-toolbar-pad);
+  border: 1px solid var(--gg-toolbar-border);
+  border-radius: var(--gg-toolbar-radius);
+  background: rgb(74 75 72 / 76%);
+  box-shadow: var(--gg-shadow-soft);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  width: 44px;
+  height: 44px;
+  justify-content: center;
 }
 
 .gg-detail-toolbar__action {
@@ -1438,7 +1438,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 .gg-comments-sheet--replies .gg-comments .comment-thread ol,
 [data-gg-sheet='comment-replies'] .gg-comments .comment-thread ol,
 [data-gg-sheet='comments-replies'] .gg-comments .comment-thread ol {
-  
+ 
 }
 
 #gg-comment-replies-sheet .gg-comments__content {
@@ -1547,6 +1547,25 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   font: 600 12px/1.25 var(--gg-font-sans);
 }
 
+.gg-comment-replies__context-reply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gg-ink-muted);
+  font: 650 12px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-comment-replies__context-reply:hover,
+.gg-comment-replies__context-reply:focus-visible {
+  color: var(--gg-ink);
+}
+
 .gg-comment-replies__footer {
   margin-top: 0;
 }
@@ -1622,19 +1641,19 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
 }
 
 .gg-comment-more {
-position: relative;
-    display: flex;
-    flex: 0 0 auto;
-    margin-left: 4px;
-    align-self: center;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  margin-left: 4px;
+  align-self: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .gg-comment-more__button {
-display: flex;
+  display: flex;
     place-items: center;
     min-width: 34px;
     min-height: 30px;
@@ -2059,14 +2078,14 @@ display: flex;
 #gg-comments-footer,
 .gg-comments__footer {
   position: sticky;
-    bottom: 0;
-    z-index: 8;
-    display: grid;
-    padding: 9px var(--gg-panel-pad-x) calc(9px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--gg-divider);
-    background: var(--gg-surface-panel);
-    border-radius: 22px 22px 0px 0px;
-    padding-top: 0px;
+  bottom: 0;
+  z-index: 8;
+  display: grid;
+  padding: 9px var(--gg-panel-pad-x) calc(9px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gg-divider);
+  background: var(--gg-surface-panel);
+  border-radius: 22px 22px 0px 0px;
+  padding-top: 0px;
 }
 
 .gg-comments__footer[data-gg-comment-composer-mode='empty'] {
@@ -2078,6 +2097,10 @@ display: flex;
 }
 
 .gg-comments__footer[data-gg-composer-open='true'] [data-gg-action='comments-open-composer'] {
+  display: none !important;
+}
+
+.gg-comments__footer[data-gg-composer-open='true'] [data-gg-action='comments-add-reply'] {
   display: none !important;
 }
 
@@ -2121,8 +2144,23 @@ display: flex;
   cursor: pointer;
 }
 
+#gg-comment-replies-footer [data-gg-action='comments-add-reply'],
+#gg-comment-replies-footer [data-gg-action='comments-open-composer'] {
+  justify-self: stretch;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--gg-divider);
+  border-radius: 999px;
+  background: var(--gg-surface-quiet);
+  color: var(--gg-ink);
+  font: 650 13px/1.2 var(--gg-font-sans);
+  cursor: pointer;
+}
+
 .gg-comments__footer [data-gg-action='comments-open-composer']:hover,
-.gg-comments__footer [data-gg-action='comments-open-composer']:focus-visible {
+.gg-comments__footer [data-gg-action='comments-open-composer']:focus-visible,
+#gg-comment-replies-footer [data-gg-action='comments-add-reply']:hover,
+#gg-comment-replies-footer [data-gg-action='comments-add-reply']:focus-visible {
   background: var(--gg-comment-action-hover-bg);
   color: var(--gg-comment-action-hover-tone);
 }
@@ -3218,6 +3256,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
     max-width: 64ch;
   }
 }
+
 ]]></b:skin>
 
     <!-- GG external non-critical app CSS: served by Cloudflare/edge in extracted mode. -->
@@ -3266,7 +3305,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='8d70b590c693' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='20d404f83770' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>

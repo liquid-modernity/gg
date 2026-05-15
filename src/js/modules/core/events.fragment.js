@@ -32,6 +32,8 @@
           var moreTrigger;
           var commentsTrigger;
           var commentsComposerTrigger;
+          var commentsAddReplyTrigger;
+          var commentsParentReplyTrigger;
           var commentsRepliesTrigger;
           var commentsRepliesCloseTrigger;
           var nativeCommentReplyTrigger;
@@ -66,6 +68,8 @@
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
+          commentsAddReplyTrigger = event.target.closest('[data-gg-action="comments-add-reply"]');
+          commentsParentReplyTrigger = event.target.closest('[data-gg-action="comments-reply-parent"]');
           commentsRepliesTrigger = event.target.closest('[data-gg-action="comments-open-replies"]');
           commentsRepliesCloseTrigger = event.target.closest('[data-gg-action="comments-replies-close"]');
           nativeCommentReplyTrigger = event.target.closest('.gg-comments a.comment-reply, .gg-comments .comment-reply a, .gg-comments [data-comment-id].comment-reply');
@@ -178,6 +182,18 @@
             return;
           }
 
+          if (commentsParentReplyTrigger) {
+            event.preventDefault();
+            handleCommentRepliesParentReply('parent-context');
+            return;
+          }
+
+          if (commentsAddReplyTrigger) {
+            event.preventDefault();
+            handleCommentRepliesParentReply('add-reply');
+            return;
+          }
+
           if (commentReplyClearTrigger) {
             event.preventDefault();
             clearCommentReplyContext();
@@ -211,6 +227,7 @@
           }
 
           if (nativeCommentReplyTrigger) {
+            state.commentRepliesLastReplySource = state.commentRepliesProgrammaticReplySource || 'native';
             handleNativeReplyTrigger(nativeCommentReplyTrigger);
           }
 

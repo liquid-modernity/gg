@@ -119,9 +119,23 @@
           panelTimers: {},
           commentRepliesPortal: null,
           commentRepliesTimer: 0,
+          commentRepliesOpenCount: 0,
+          commentRepliesIdempotent: true,
+          commentRepliesReadOnlyEditorSrcBefore: '',
+          commentRepliesParentComment: null,
+          commentRepliesAutoReplySafe: true,
+          commentRepliesLastReplySource: '',
+          commentRepliesLastReplyTargetId: '',
+          commentRepliesProgrammaticReplySource: '',
           commentReplyContext: null,
           commentTopLevelEditorSrc: '',
           commentReplyResetCount: 0,
+          commentEnhanceRunCount: 0,
+          commentMutationCount: 0,
+          commentComposerMoveCount: 0,
+          commentIframeSrcChangeCount: 0,
+          commentMoreEnhancementCount: 0,
+          commentInlineReplyEnhancementCount: 0,
           commentComposerPortal: null,
           commentComposerOpen: false,
           commentPrefixObserver: null,
@@ -213,6 +227,17 @@
             var replyCancelResetsNativeParent;
             var editorSrcHasNoParentIdAfterCancel;
             var replyModeClearsNativeTarget;
+            var viewRepliesDoesNotChangeIframeSrc;
+            var viewRepliesDoesNotAutoReply;
+            var parentReplyActionExists;
+            var addReplyLauncherTargetsParent;
+            var replySpecificCommentTargetsDirectComment;
+            var cancelReplyClearsNativeTarget;
+            var composerMoveCountBounded;
+            var commentsEnhanceRunsBounded;
+            var repliesNodeCountsStable;
+            var noDuplicateMoreButtonsAfterRepliesOpen;
+            var repliesOpenIsIdempotent;
             var toolbarCommentsAction;
             var toolbarCommentsIcon;
             var toolbarCommentsBadge;
@@ -226,6 +251,7 @@
             var toolbarCommentsUsesDisabledIconWhenDisabled;
             var toolbarCommentsSemanticLabelPresent;
             var toolbarCommentsVisibleTextHidden;
+            var repliesParentId;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -382,6 +408,23 @@
             replyCancelResetsNativeParent = !editor || replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
             editorSrcHasNoParentIdAfterCancel = !editor || replyContextActive || !commentSrcHasParentId(editorCurrentSrc);
             replyModeClearsNativeTarget = !editor || replyContextActive || (!replyFooterModeActive && !commentSrcHasParentId(editorCurrentSrc));
+            viewRepliesDoesNotChangeIframeSrc = activeCommentsLayer !== 'replies' || !state.commentRepliesReadOnlyEditorSrcBefore || (editorCurrentSrc === state.commentRepliesReadOnlyEditorSrcBefore && !commentSrcHasParentId(editorCurrentSrc) && !isVisible(document.querySelector('#gg-comment-replies-sheet .gg-comments__reply-banner')) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
+            repliesParentId = getCommentNodeId(state.commentRepliesParentComment || (state.commentRepliesPortal && state.commentRepliesPortal.parentComment));
+            viewRepliesDoesNotAutoReply = activeCommentsLayer !== 'replies' || !!replyContextActive || (!!state.commentRepliesAutoReplySafe && !replyBannerActive && !commentSrcHasParentId(editorCurrentSrc) && (!ui.commentRepliesFooter || ui.commentRepliesFooter.getAttribute('data-gg-composer-open') === 'false'));
+            parentReplyActionExists = activeCommentsLayer !== 'replies' || !!document.querySelector('#gg-comment-replies-context [data-gg-action="comments-reply-parent"][aria-label="Reply to original comment"]');
+            addReplyLauncherTargetsParent = activeCommentsLayer !== 'replies' || !!(repliesParentId && document.querySelector('#gg-comment-replies-footer [data-gg-action="comments-add-reply"][aria-label="Add a reply to original comment"][data-gg-reply-target="' + repliesParentId + '"]'));
+            replySpecificCommentTargetsDirectComment = Array.prototype.slice.call(document.querySelectorAll('#gg-comment-replies-sheet a.comment-reply, #gg-comment-replies-sheet .comment-reply a, #gg-comment-replies-sheet [data-comment-id].comment-reply')).every(function (node) {
+              var commentNode = getCommentNodeFromTrigger(node);
+              return !!(commentNode && getCommentNodeId(commentNode));
+            });
+            cancelReplyClearsNativeTarget = !!replyContextActive || (!replyBannerActive && !commentSrcHasParentId(editorCurrentSrc));
+            composerMoveCountBounded = state.commentComposerMoveCount <= Math.max(2, state.commentRepliesOpenCount + 2);
+            commentsEnhanceRunsBounded = state.commentEnhanceRunCount <= 8;
+            repliesNodeCountsStable = document.querySelectorAll('#top-ce').length <= 1 && document.querySelectorAll('#comment-editor').length <= 1 && document.querySelectorAll('#gg-comment-replies-context').length === 1 && document.querySelectorAll('#gg-comments-composer-slot').length === 1 && document.querySelectorAll('#gg-comments-reply-slot').length === 1;
+            noDuplicateMoreButtonsAfterRepliesOpen = Array.prototype.slice.call(document.querySelectorAll('li.comment, .comment-thread .comment, #comments-block > .comment')).every(function (commentNode) {
+              return commentNode.querySelectorAll(':scope > .gg-comment-more, :scope > .comment-block > .gg-comment-more, :scope > .comment-header > .gg-comment-more, :scope > .comment-author > .gg-comment-more, :scope > .comment-footer > .gg-comment-more').length <= 1;
+            });
+            repliesOpenIsIdempotent = !!state.commentRepliesIdempotent && document.querySelectorAll('#gg-comment-replies-sheet').length === 1 && document.querySelectorAll('#gg-comment-replies-context').length === 1;
             loadMoreFunctionalAndAboveFooter = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet .loadmore, #gg-comments-sheet .continue')).filter(function (node) {
               return /load more/i.test(node.textContent || '') && isVisible(node);
             }).every(function (node) {
@@ -461,6 +504,17 @@
               replyCancelResetsNativeParent: replyCancelResetsNativeParent,
               editorSrcHasNoParentIdAfterCancel: editorSrcHasNoParentIdAfterCancel,
               replyModeClearsNativeTarget: replyModeClearsNativeTarget,
+              viewRepliesDoesNotChangeIframeSrc: viewRepliesDoesNotChangeIframeSrc,
+              viewRepliesDoesNotAutoReply: viewRepliesDoesNotAutoReply,
+              parentReplyActionExists: parentReplyActionExists,
+              addReplyLauncherTargetsParent: addReplyLauncherTargetsParent,
+              replySpecificCommentTargetsDirectComment: replySpecificCommentTargetsDirectComment,
+              cancelReplyClearsNativeTarget: cancelReplyClearsNativeTarget,
+              composerMoveCountBounded: composerMoveCountBounded,
+              commentsEnhanceRunsBounded: commentsEnhanceRunsBounded,
+              repliesNodeCountsStable: repliesNodeCountsStable,
+              noDuplicateMoreButtonsAfterRepliesOpen: noDuplicateMoreButtonsAfterRepliesOpen,
+              repliesOpenIsIdempotent: repliesOpenIsIdempotent,
               loadMoreFunctionalAndAboveFooter: loadMoreFunctionalAndAboveFooter,
               composerWellVisibleWhenOpen: composerWellVisibleWhenOpen,
               toolbarCommentsIconOnly: toolbarCommentsIconOnly,
@@ -518,6 +572,17 @@
               result.replyCancelResetsNativeParent &&
               result.editorSrcHasNoParentIdAfterCancel &&
               result.replyModeClearsNativeTarget &&
+              result.viewRepliesDoesNotChangeIframeSrc &&
+              result.viewRepliesDoesNotAutoReply &&
+              result.parentReplyActionExists &&
+              result.addReplyLauncherTargetsParent &&
+              result.replySpecificCommentTargetsDirectComment &&
+              result.cancelReplyClearsNativeTarget &&
+              result.composerMoveCountBounded &&
+              result.commentsEnhanceRunsBounded &&
+              result.repliesNodeCountsStable &&
+              result.noDuplicateMoreButtonsAfterRepliesOpen &&
+              result.repliesOpenIsIdempotent &&
               result.loadMoreFunctionalAndAboveFooter &&
               result.composerWellVisibleWhenOpen &&
               result.toolbarCommentsIconOnly &&

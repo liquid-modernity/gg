@@ -400,6 +400,20 @@
           return !!(ui.comments || document.getElementById('gg-comments-root') || document.getElementById('comments'));
         }
 
+        function getCommentsDebugCounters() {
+          var enabled = !!(window.__GG_COMMENTS_DEBUG__ || window.__GG_COMMENTS_DEBUG_ENABLED__);
+          if (!enabled) return null;
+          window.__GG_COMMENTS_DEBUG__ = window.__GG_COMMENTS_DEBUG__ || {};
+          return window.__GG_COMMENTS_DEBUG__;
+        }
+
+        function bumpCommentsDebugCounter(name, amount) {
+          var debug = getCommentsDebugCounters();
+          var delta = typeof amount === 'number' ? amount : 1;
+          if (!debug) return;
+          debug[name] = (Number(debug[name]) || 0) + delta;
+        }
+
         function setCommentsLayer(layer) {
           var value = layer || 'closed';
 
@@ -465,6 +479,8 @@
           if (composer && slot && composer.parentNode !== slot) {
             slot.insertBefore(composer, slot.firstChild);
             composer.setAttribute('data-gg-native-plumbing', 'composer');
+            state.commentComposerMoveCount += 1;
+            bumpCommentsDebugCounter('composerMoves');
           }
 
           if (composer) {
@@ -557,8 +573,12 @@
 
           if (editor && target && (commentSrcHasParentId(current) || !current)) {
             editor.setAttribute('src', target);
+            state.commentIframeSrcChangeCount += 1;
+            bumpCommentsDebugCounter('iframeSrcChanges');
           } else if (editor && current && commentSrcHasParentId(current)) {
             editor.setAttribute('src', stripParentIdFromCommentSrc(current));
+            state.commentIframeSrcChangeCount += 1;
+            bumpCommentsDebugCounter('iframeSrcChanges');
           }
 
           state.commentReplyResetCount += 1;
@@ -628,6 +648,7 @@
           var actionRoot;
           var commentId;
           var existingReply;
+          var enhanced = 0;
 
           if (!root || !root.querySelectorAll) return 0;
 
@@ -654,8 +675,13 @@
             continueNode.classList.add('gg-comment-inline-reply');
             continueNode.setAttribute('data-gg-legacy-control', 'inline-reply');
             actionRoot.appendChild(continueNode);
+            enhanced += 1;
           }
 
+          if (enhanced) {
+            state.commentInlineReplyEnhancementCount += enhanced;
+            bumpCommentsDebugCounter('inlineReplyEnhancements', enhanced);
+          }
           return replyLinks.length;
         }
 
@@ -663,9 +689,12 @@
           if (!hasCommentsSurface()) return false;
           state.commentEnhancementScheduled = false;
           state.commentEnhancementReason = reason || 'comments-enhancement';
+          state.commentEnhanceRunCount += 1;
+          bumpCommentsDebugCounter('enhanceRuns');
           ensureRepliesSheetHandle();
           adoptGeneratedBloggerComposer();
-          ensureComposerInActiveFooter();
+          if (!isCommentRepliesSheetOpen() || state.commentReplyContext) ensureComposerInActiveFooter();
+          else syncCommentComposerMode();
           cleanupLegacyCommentControls();
           initCommentRepliesControls();
           ensureCommentMoreMenus();
@@ -914,8 +943,15 @@
           syncCommentComposerMode();
         }
 
-        function clearCommentReplyContext() {
+        function clearCommentReplyContext(options) {
+          var clearOptions = options || {};
           state.commentReplyContext = null;
+          state.commentRepliesLastReplySource = '';
+          state.commentRepliesLastReplyTargetId = '';
+          state.commentRepliesProgrammaticReplySource = '';
+          if (clearOptions.collapseComposer !== false && isCommentRepliesSheetOpen()) {
+            state.commentComposerOpen = false;
+          }
           resetNativeComposerToTopLevel();
           renderReplyBanner();
         }
@@ -934,6 +970,7 @@
             parentAuthor: author,
             handle: handle
           };
+          state.commentRepliesLastReplyTargetId = state.commentReplyContext.parentId;
           state.commentComposerOpen = true;
           renderReplyBanner();
           return state.commentReplyContext;
@@ -954,7 +991,7 @@
           var activeFooter = getActiveComposerFooter();
           var editor = activeFooter ? activeFooter.querySelector('#comment-editor') : null;
           var editorVisible = isElementVisible(editor);
-          var open = state.commentComposerOpen || mode === 'reply' || editorVisible;
+          var open = state.commentComposerOpen || mode === 'reply' || (editorVisible && state.commentComposerOpen);
 
           if (ui.comments) ui.comments.setAttribute('data-gg-comment-composer-mode', mode);
           if (ui.commentsFooter) ui.commentsFooter.setAttribute('data-gg-comment-composer-mode', activeFooter === ui.commentsFooter ? mode : 'inactive');
@@ -977,13 +1014,28 @@
         }
 
         function portalComposerToFooter(footer) {
+          var moved = false;
           if (!footer || !ui.commentsReplySlot || !ui.commentsComposerSlot) return false;
+          if (ui.commentsReplySlot.parentNode === footer && ui.commentsComposerSlot.parentNode === footer) {
+            syncCommentComposerMode();
+            return false;
+          }
           ensureComposerPortalAnchors();
-          footer.appendChild(ui.commentsReplySlot);
-          footer.appendChild(ui.commentsComposerSlot);
+          if (ui.commentsReplySlot.parentNode !== footer) {
+            footer.appendChild(ui.commentsReplySlot);
+            moved = true;
+          }
+          if (ui.commentsComposerSlot.parentNode !== footer) {
+            footer.appendChild(ui.commentsComposerSlot);
+            moved = true;
+          }
+          if (moved) {
+            state.commentComposerMoveCount += 1;
+            bumpCommentsDebugCounter('composerMoves');
+          }
           renderReplyBanner();
           syncCommentComposerMode();
-          return true;
+          return moved;
         }
 
         function restoreComposerToMainFooter() {
@@ -1056,7 +1108,6 @@
           if (state.commentPrefixSyncFrame) return;
           state.commentPrefixSyncFrame = window.requestAnimationFrame(function () {
             state.commentPrefixSyncFrame = 0;
-            ensureComposerInActiveFooter();
             ensureCommentMoreMenus();
             applyVisualReplyPrefixes(ui.comments || document);
           });
@@ -1070,7 +1121,11 @@
             return;
           }
 
-          state.commentPrefixObserver = new MutationObserver(requestCommentPrefixSync);
+          state.commentPrefixObserver = new MutationObserver(function () {
+            state.commentMutationCount += 1;
+            bumpCommentsDebugCounter('mutations');
+            requestCommentPrefixSync();
+          });
           state.commentPrefixObserver.observe(root, {
             childList: true,
             subtree: true
@@ -1084,11 +1139,41 @@
           applyVisualReplyPrefixes(ui.comments || document);
         }
 
+        function getNativeReplyControl(commentNode) {
+          if (!commentNode || !commentNode.querySelector) return null;
+          return commentNode.querySelector('a.comment-reply[data-comment-id]')
+            || commentNode.querySelector('.comment-reply a[data-comment-id]')
+            || commentNode.querySelector('[data-comment-id].comment-reply')
+            || commentNode.querySelector('a.comment-reply, .comment-reply a');
+        }
+
+        function replyToCommentNode(commentNode, source) {
+          var nativeReply = getNativeReplyControl(commentNode);
+
+          if (!commentNode) return false;
+
+          state.commentRepliesLastReplySource = source || 'native';
+          state.commentRepliesProgrammaticReplySource = source || '';
+          handleNativeReplyTrigger(nativeReply || commentNode);
+
+          if (nativeReply && typeof nativeReply.click === 'function') {
+            nativeReply.click();
+          }
+          if (state.commentRepliesProgrammaticReplySource) {
+            window.setTimeout(function () {
+              state.commentRepliesProgrammaticReplySource = '';
+            }, 0);
+          }
+
+          return true;
+        }
+
         function handleNativeReplyTrigger(trigger) {
           var commentNode = getCommentNodeFromTrigger(trigger);
 
           if (!commentNode) return;
 
+          state.commentRepliesLastReplySource = state.commentRepliesLastReplySource || 'native';
           setCommentReplyContext(commentNode);
           setComposerOpen(true);
           ensureComposerInActiveFooter();
@@ -1368,6 +1453,7 @@
           var header;
           var wrapper;
           var button;
+          var enhanced = 0;
 
           if (!root) return 0;
 
@@ -1392,11 +1478,16 @@
               button.setAttribute('aria-label', 'More comment actions');
               button.textContent = '...';
               wrapper.appendChild(button);
+              enhanced += 1;
             }
             if (wrapper.parentNode !== header) header.appendChild(wrapper);
             commentNode.__ggCommentMoreReady = true;
           }
 
+          if (enhanced) {
+            state.commentMoreEnhancementCount += enhanced;
+            bumpCommentsDebugCounter('moreMenuEnhancements', enhanced);
+          }
           return comments.length;
         }
 
@@ -1424,6 +1515,7 @@
           var timeNode;
           var bodyNode;
           var countNode;
+          var replyNode;
 
           if (!ui.commentRepliesContext) return;
 
@@ -1483,8 +1575,45 @@
           countNode.className = 'gg-comment-replies__context-count';
           countNode.textContent = formatRepliesCount(count).replace(/^View /, '').replace(/^Lihat /, '');
           copyNode.appendChild(countNode);
+
+          replyNode = document.createElement('button');
+          replyNode.type = 'button';
+          replyNode.className = 'gg-comment-replies__context-reply';
+          replyNode.setAttribute('data-gg-action', 'comments-reply-parent');
+          replyNode.setAttribute('aria-label', 'Reply to original comment');
+          replyNode.textContent = 'Reply';
+          if (commentNode) replyNode.setAttribute('data-gg-reply-target', getCommentNodeId(commentNode));
+          copyNode.appendChild(replyNode);
           rowNode.appendChild(copyNode);
           ui.commentRepliesContext.appendChild(rowNode);
+        }
+
+        function ensureCommentRepliesAddReplyLauncher() {
+          var button;
+          var parentComment = state.commentRepliesParentComment;
+          var parentId = getCommentNodeId(parentComment);
+
+          if (!ui.commentRepliesFooter) return null;
+
+          button = ui.commentRepliesFooter.querySelector('[data-gg-action="comments-add-reply"]');
+          if (!button) {
+            button = document.createElement('button');
+            button.type = 'button';
+            button.setAttribute('data-gg-action', 'comments-add-reply');
+            button.textContent = 'Add a reply';
+            ui.commentRepliesFooter.insertBefore(button, ui.commentRepliesFooter.firstChild);
+          }
+          button.setAttribute('aria-label', 'Add a reply to original comment');
+          if (parentId) button.setAttribute('data-gg-reply-target', parentId);
+          else button.removeAttribute('data-gg-reply-target');
+          return button;
+        }
+
+        function handleCommentRepliesParentReply(source) {
+          var parentComment = state.commentRepliesParentComment || (state.commentRepliesPortal && state.commentRepliesPortal.parentComment);
+
+          if (!parentComment) return false;
+          return replyToCommentNode(parentComment, source || 'parent-context');
         }
 
         function getRepliesNodeFromTrigger(trigger) {
@@ -1531,6 +1660,7 @@
           var originalParent;
           var commentNode;
           var count;
+          var editor;
 
           if (!ui.commentReplies || !ui.commentRepliesList) return Promise.resolve(null);
 
@@ -1539,7 +1669,11 @@
           if (!repliesNode) return Promise.resolve(null);
 
           if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode && isCommentRepliesSheetOpen()) {
+            state.commentRepliesIdempotent = true;
             setCommentsLayer('replies');
+            state.commentComposerOpen = false;
+            ensureCommentRepliesAddReplyLauncher();
+            syncCommentComposerMode();
             focusCommentRepliesSheet();
             return Promise.resolve(state.commentRepliesPortal);
           }
@@ -1548,6 +1682,10 @@
             returnFocus: false,
             reason: 'comment-replies-switch'
           }).then(function () {
+            editor = document.getElementById('comment-editor');
+            state.commentRepliesReadOnlyEditorSrcBefore = editor ? (editor.getAttribute('src') || editor.src || '') : '';
+            state.commentRepliesOpenCount += 1;
+            bumpCommentsDebugCounter('repliesOpens');
             originalParent = repliesNode.parentNode;
             count = getCommentReplyCount(repliesNode);
             commentNode = getDirectCommentElement(originalParent, repliesNode);
@@ -1558,15 +1696,20 @@
               repliesNode: repliesNode,
               originalParent: originalParent,
               originalNextSibling: repliesNode.nextSibling,
+              parentComment: commentNode,
               trigger: trigger || document.activeElement || null
             };
+            state.commentRepliesParentComment = commentNode;
+            state.commentRepliesAutoReplySafe = true;
 
             renderCommentRepliesContext(commentNode, count);
+            ensureCommentRepliesAddReplyLauncher();
             markReplyLevels(repliesNode);
             ui.commentRepliesList.appendChild(repliesNode);
             if (trigger) trigger.setAttribute('aria-expanded', 'true');
             ensureCommentMoreMenus();
-            portalComposerToFooter(ui.commentRepliesFooter);
+            state.commentComposerOpen = false;
+            syncCommentComposerMode();
             requestCommentPrefixSync();
 
             ui.commentReplies.hidden = false;
@@ -1579,7 +1722,8 @@
             window.requestAnimationFrame(function () {
               if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
                 ui.commentReplies.setAttribute('data-gg-state', 'open');
-                ensureComposerInActiveFooter();
+                state.commentComposerOpen = false;
+                syncCommentComposerMode();
               }
             });
             window.setTimeout(focusCommentRepliesSheet, 24);
@@ -1600,6 +1744,7 @@
 
           if (portal.trigger) portal.trigger.setAttribute('aria-expanded', 'false');
           state.commentRepliesPortal = null;
+          state.commentRepliesParentComment = null;
           return true;
         }
 
