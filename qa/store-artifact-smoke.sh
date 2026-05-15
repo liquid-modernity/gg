@@ -205,8 +205,21 @@ check_pattern 'id=["'"'"']store-discovery-search["'"'"'][^>]*aria-label=' "artif
 check_pattern 'id=["'"'"']store-discovery-status["'"'"'][^>]*aria-live=' "artifact Discovery aria-live status is missing"
 check_pattern 'data-store-price-band=["'"'"']under-50k["'"'"']' "artifact Discovery price-band hooks are missing"
 check_pattern 'data-store-sort=["'"'"']recommended["'"'"']' "artifact Discovery sort hooks are missing"
-check_pattern '<a[^>]*data-store-dock=["'"'"']store["'"'"'][^>]*href=["'"'"']/store["'"'"']' "artifact dock Store href contract is missing"
-check_pattern '<a[^>]*data-store-dock=["'"'"']contact["'"'"'][^>]*href=["'"'"']/store#contact["'"'"']' "artifact dock Contact href contract is missing"
+# TASK-NAV-001 dock contract: Store is no longer a primary dock item.
+# Primary Store dock order must be Home | Contact | Search | Blog | More.
+check_pattern '<a[^>]*data-store-dock=["'"'"']home["'"'"'][^>]*href=["'"'"']/landing["'"'"']' "artifact dock Home href contract is missing"
+check_pattern '<a[^>]*data-store-dock=["'"'"']contact["'"'"'][^>]*href=["'"'"']/landing#contact["'"'"']' "artifact dock Contact href contract is missing"
+check_pattern '<button[^>]*data-store-dock=["'"'"']search["'"'"'][^>]*aria-controls=["'"'"']store-discovery-sheet["'"'"']' "artifact dock Search discovery contract is missing"
+check_pattern '<a[^>]*data-store-dock=["'"'"']blog["'"'"'][^>]*href=["'"'"']/["'"'"']' "artifact dock Blog href contract is missing"
+check_pattern '<button[^>]*data-store-dock=["'"'"']more["'"'"'][^>]*aria-controls=["'"'"']store-more-sheet["'"'"']' "artifact dock More sheet contract is missing"
+
+# Store is available through the More sheet global bridge, not the primary Store dock.
+check_pattern '<a[^>]*data-store-more-link=["'"'"']store["'"'"'][^>]*href=["'"'"']/store["'"'"']' "artifact More sheet Store bridge is missing"
+check_pattern '<a[^>]*data-store-more-link=["'"'"']contact["'"'"'][^>]*href=["'"'"']/landing#contact["'"'"']' "artifact More sheet Contact bridge is missing"
+check_pattern 'data-copy=["'"'"']more\.commerceNote["'"'"']' "artifact store-only commerce note copy hook is missing"
+
+check_absent '<a[^>]*data-store-dock=["'"'"']store["'"'"']' "artifact still exposes Store as a primary dock item after TASK-NAV-001"
+check_absent 'href=["'"'"']/store#contact["'"'"']' "artifact still routes Store contact to /store#contact after TASK-NAV-001"
 check_pattern 'id=["'"'"']store-link-shopee["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "artifact Shopee CTA rel/target contract is missing"
 check_pattern 'id=["'"'"']store-link-tiktok["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "artifact TikTok CTA rel/target contract is missing"
 check_pattern 'id=["'"'"']store-link-tokopedia["'"'"'][^>]*target=["'"'"']_blank["'"'"'][^>]*rel=["'"'"'][^"'"'"']*sponsored[^"'"'"']*nofollow[^"'"'"']*noopener[^"'"'"']*noreferrer[^"'"'"']*["'"'"']' "artifact Tokopedia CTA rel/target contract is missing"

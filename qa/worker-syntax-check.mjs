@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const workerPath = path.resolve("src/worker.js");
+const workerPath = path.resolve(process.env.GG_WORKER_PATH || "worker.js");
 
 let source = "";
 try {
