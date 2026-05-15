@@ -1275,6 +1275,7 @@ button.store-button.store-semantic-more {
     .store-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .store-setting-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
     .store-setting-grid--three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .store-setting-list { display: grid; gap: 0; border-top: 1px solid var(--gg-divider); }
     .store-setting {
       min-height: 48px;
       border: 1px solid var(--gg-border-interactive);
@@ -1282,8 +1283,28 @@ button.store-button.store-semantic-more {
       background: color-mix(in srgb, var(--gg-surface-interactive) 36%, transparent);
       color: var(--gg-ink);
       font: 720 13px/1.2 var(--gg-font-sans);
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
     }
-    .store-setting[aria-pressed='true'] { background: var(--gg-accent); color: var(--gg-accent-contrast); border-color: var(--gg-accent); }
+    .store-setting--list {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 50px;
+      padding: 0 2px;
+      border: 0;
+      border-bottom: 1px solid var(--gg-divider);
+      border-radius: 0;
+      background: transparent;
+      text-align: left;
+    }
+    .store-setting[aria-pressed='true'],
+    .store-setting[aria-current='page'] {
+      background: var(--gg-surface-interactive-strong);
+      color: var(--gg-ink);
+      border-color: var(--gg-line-strong);
+    }
     .store-footer {
       display: grid;
       justify-items: center;
@@ -1294,6 +1315,13 @@ button.store-button.store-semantic-more {
       text-align: center;
       font: 600 12px/1.45 var(--gg-font-sans);
     }
+    .store-footer__label {
+      color: var(--gg-accent-soft);
+      font: 750 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .store-commerce-note { max-width: 48ch; }
     .store-social { display: flex; gap: 8px; }
     .store-social a {
       display: inline-grid;

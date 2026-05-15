@@ -53,6 +53,14 @@
               blog: 'Blog',
               more: 'More'
             },
+            nav: {
+              home: 'Home',
+              blog: 'Blog',
+              store: 'Store',
+              contact: 'Contact',
+              search: 'Search',
+              more: 'More'
+            },
             listing: {
               details: 'Details'
             },
@@ -163,10 +171,26 @@
             more: {
               title: 'More',
               dismiss: 'Dismiss more panel',
+              section: {
+                navigation: 'Navigation',
+                discover: 'Discover',
+                info: 'Info',
+                language: 'Language',
+                appearance: 'Appearance'
+              },
+              home: 'Home',
               blog: 'Blog',
+              store: 'Store',
+              contact: 'Contact',
               search: 'Search',
               sitemap: 'Sitemap',
               rss: 'RSS',
+              about: 'About PakRPP',
+              privacy: 'Privacy Policy',
+              terms: 'Terms of Use',
+              disclaimer: 'Disclaimer',
+              shareSite: 'Share site',
+              commerceNote: 'Some outbound links may be affiliate links. Prices and availability may change.',
               channelsLabel: 'Share site',
               shareX: 'Share on X',
               shareFacebook: 'Share on Facebook',
@@ -175,14 +199,19 @@
             },
             language: {
               label: 'Language',
-              en: 'EN',
-              id: 'ID'
+              en: 'English',
+              id: 'Indonesia',
+              english: 'English',
+              indonesia: 'Indonesia'
             },
             appearance: {
               label: 'Appearance',
               system: 'System',
               light: 'Light',
               dark: 'Dark'
+            },
+            footer: {
+              copyright: 'Copyright © 2026 PakRPP. All rights reserved.'
             },
           },
           id: {
@@ -235,6 +264,14 @@
               contact: 'Kontak',
               search: 'Cari',
               blog: 'Blog',
+              more: 'Lainnya'
+            },
+            nav: {
+              home: 'Beranda',
+              blog: 'Blog',
+              store: 'Store',
+              contact: 'Kontak',
+              search: 'Cari',
               more: 'Lainnya'
             },
             listing: {
@@ -347,26 +384,47 @@
             more: {
               title: 'Lainnya',
               dismiss: 'Tutup panel lainnya',
+              section: {
+                navigation: 'Navigasi',
+                discover: 'Jelajah',
+                info: 'Info',
+                language: 'Bahasa',
+                appearance: 'Tampilan'
+              },
+              home: 'Beranda',
               blog: 'Blog',
+              store: 'Store',
+              contact: 'Kontak',
               search: 'Cari',
               sitemap: 'Peta situs',
               rss: 'RSS',
+              about: 'Tentang PakRPP',
+              privacy: 'Kebijakan Privasi',
+              terms: 'Syarat Penggunaan',
+              disclaimer: 'Disclaimer',
+              shareSite: 'Bagikan situs',
+              commerceNote: 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
               channelsLabel: 'Bagikan situs',
               shareX: 'Bagikan ke X',
               shareFacebook: 'Bagikan ke Facebook',
               shareWhatsApp: 'Bagikan ke WhatsApp',
-              rights: 'Hak Cipta © 2026 PakRPP. Seluruh hak dilindungi undang-undang.'
+              rights: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
             },
             language: {
               label: 'Bahasa',
-              en: 'EN',
-              id: 'ID'
+              en: 'English',
+              id: 'Indonesia',
+              english: 'English',
+              indonesia: 'Indonesia'
             },
             appearance: {
               label: 'Tampilan',
               system: 'Sistem',
               light: 'Terang',
               dark: 'Gelap'
+            },
+            footer: {
+              copyright: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
             },
           }
         };

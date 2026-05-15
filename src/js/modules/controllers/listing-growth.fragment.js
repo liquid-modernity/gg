@@ -341,6 +341,8 @@
             if (expected && navKey === expected) node.setAttribute('aria-current', 'page');
             else node.removeAttribute('aria-current');
           }
+
+          syncMoreRouteState();
         }
 
         function applySurfaceContract() {

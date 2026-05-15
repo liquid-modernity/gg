@@ -16,6 +16,67 @@
           return state.dockState === 'hidden-by-scroll' || readBodyState('data-gg-dock-state', '') === 'hidden-by-scroll';
         }
 
+        function prefersReducedMotion() {
+          try {
+            return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          } catch (error) {
+            return false;
+          }
+        }
+
+        function scrollDocumentToTop() {
+          try {
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+            });
+          } catch (error) {
+            window.scrollTo(0, 0);
+          }
+        }
+
+        function isRootListingSurface() {
+          return !!(state.surfaceContext && state.surfaceContext.isRootListing);
+        }
+
+        function isLandingSurface() {
+          return !!(state.surfaceContext && state.surfaceContext.surface === 'landing');
+        }
+
+        function syncMoreRouteState() {
+          var nodes = document.querySelectorAll('[data-gg-more-route]');
+          var expected = expectedDockKey();
+          var i;
+          var node;
+          var routeKey;
+
+          for (i = 0; i < nodes.length; i += 1) {
+            node = nodes[i];
+            routeKey = node.getAttribute('data-gg-more-route');
+            if (expected && routeKey === expected) {
+              node.setAttribute('aria-current', 'page');
+              node.setAttribute('data-gg-active', 'true');
+            } else {
+              node.removeAttribute('aria-current');
+              node.removeAttribute('data-gg-active');
+            }
+          }
+        }
+
+        function handlePrimaryRouteTrigger(trigger) {
+          var routeKey = trigger && (trigger.getAttribute('data-gg-more-route') || trigger.getAttribute('data-gg-nav'));
+
+          if (!routeKey) return false;
+          if (!((routeKey === 'blog' && isRootListingSurface()) || (routeKey === 'home' && isLandingSurface()))) return false;
+
+          closePanel(state.panelActive, {
+            returnFocus: false,
+            reason: 'current-route-top'
+          }).then(scrollDocumentToTop);
+          return true;
+        }
+
         function getCopy(key) {
           var parts = String(key || '').split('.');
           var current = COPY[state.locale] || COPY.en;

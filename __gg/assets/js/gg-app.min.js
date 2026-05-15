@@ -53,6 +53,14 @@ window.GG = window.GG || {};
               blog: 'Blog',
               more: 'More'
             },
+            nav: {
+              home: 'Home',
+              blog: 'Blog',
+              store: 'Store',
+              contact: 'Contact',
+              search: 'Search',
+              more: 'More'
+            },
             listing: {
               details: 'Details'
             },
@@ -163,10 +171,26 @@ window.GG = window.GG || {};
             more: {
               title: 'More',
               dismiss: 'Dismiss more panel',
+              section: {
+                navigation: 'Navigation',
+                discover: 'Discover',
+                info: 'Info',
+                language: 'Language',
+                appearance: 'Appearance'
+              },
+              home: 'Home',
               blog: 'Blog',
+              store: 'Store',
+              contact: 'Contact',
               search: 'Search',
               sitemap: 'Sitemap',
               rss: 'RSS',
+              about: 'About PakRPP',
+              privacy: 'Privacy Policy',
+              terms: 'Terms of Use',
+              disclaimer: 'Disclaimer',
+              shareSite: 'Share site',
+              commerceNote: 'Some outbound links may be affiliate links. Prices and availability may change.',
               channelsLabel: 'Share site',
               shareX: 'Share on X',
               shareFacebook: 'Share on Facebook',
@@ -175,14 +199,19 @@ window.GG = window.GG || {};
             },
             language: {
               label: 'Language',
-              en: 'EN',
-              id: 'ID'
+              en: 'English',
+              id: 'Indonesia',
+              english: 'English',
+              indonesia: 'Indonesia'
             },
             appearance: {
               label: 'Appearance',
               system: 'System',
               light: 'Light',
               dark: 'Dark'
+            },
+            footer: {
+              copyright: 'Copyright © 2026 PakRPP. All rights reserved.'
             },
           },
           id: {
@@ -235,6 +264,14 @@ window.GG = window.GG || {};
               contact: 'Kontak',
               search: 'Cari',
               blog: 'Blog',
+              more: 'Lainnya'
+            },
+            nav: {
+              home: 'Beranda',
+              blog: 'Blog',
+              store: 'Store',
+              contact: 'Kontak',
+              search: 'Cari',
               more: 'Lainnya'
             },
             listing: {
@@ -347,26 +384,47 @@ window.GG = window.GG || {};
             more: {
               title: 'Lainnya',
               dismiss: 'Tutup panel lainnya',
+              section: {
+                navigation: 'Navigasi',
+                discover: 'Jelajah',
+                info: 'Info',
+                language: 'Bahasa',
+                appearance: 'Tampilan'
+              },
+              home: 'Beranda',
               blog: 'Blog',
+              store: 'Store',
+              contact: 'Kontak',
               search: 'Cari',
               sitemap: 'Peta situs',
               rss: 'RSS',
+              about: 'Tentang PakRPP',
+              privacy: 'Kebijakan Privasi',
+              terms: 'Syarat Penggunaan',
+              disclaimer: 'Disclaimer',
+              shareSite: 'Bagikan situs',
+              commerceNote: 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
               channelsLabel: 'Bagikan situs',
               shareX: 'Bagikan ke X',
               shareFacebook: 'Bagikan ke Facebook',
               shareWhatsApp: 'Bagikan ke WhatsApp',
-              rights: 'Hak Cipta © 2026 PakRPP. Seluruh hak dilindungi undang-undang.'
+              rights: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
             },
             language: {
               label: 'Bahasa',
-              en: 'EN',
-              id: 'ID'
+              en: 'English',
+              id: 'Indonesia',
+              english: 'English',
+              indonesia: 'Indonesia'
             },
             appearance: {
               label: 'Tampilan',
               system: 'Sistem',
               light: 'Terang',
               dark: 'Gelap'
+            },
+            footer: {
+              copyright: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
             },
           }
         };
@@ -1596,6 +1654,67 @@ window.GG = window.GG || {};
 
         function isDockHiddenByScroll() {
           return state.dockState === 'hidden-by-scroll' || readBodyState('data-gg-dock-state', '') === 'hidden-by-scroll';
+        }
+
+        function prefersReducedMotion() {
+          try {
+            return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          } catch (error) {
+            return false;
+          }
+        }
+
+        function scrollDocumentToTop() {
+          try {
+            window.scrollTo({
+              top: 0,
+              left: 0,
+              behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+            });
+          } catch (error) {
+            window.scrollTo(0, 0);
+          }
+        }
+
+        function isRootListingSurface() {
+          return !!(state.surfaceContext && state.surfaceContext.isRootListing);
+        }
+
+        function isLandingSurface() {
+          return !!(state.surfaceContext && state.surfaceContext.surface === 'landing');
+        }
+
+        function syncMoreRouteState() {
+          var nodes = document.querySelectorAll('[data-gg-more-route]');
+          var expected = expectedDockKey();
+          var i;
+          var node;
+          var routeKey;
+
+          for (i = 0; i < nodes.length; i += 1) {
+            node = nodes[i];
+            routeKey = node.getAttribute('data-gg-more-route');
+            if (expected && routeKey === expected) {
+              node.setAttribute('aria-current', 'page');
+              node.setAttribute('data-gg-active', 'true');
+            } else {
+              node.removeAttribute('aria-current');
+              node.removeAttribute('data-gg-active');
+            }
+          }
+        }
+
+        function handlePrimaryRouteTrigger(trigger) {
+          var routeKey = trigger && (trigger.getAttribute('data-gg-more-route') || trigger.getAttribute('data-gg-nav'));
+
+          if (!routeKey) return false;
+          if (!((routeKey === 'blog' && isRootListingSurface()) || (routeKey === 'home' && isLandingSurface()))) return false;
+
+          closePanel(state.panelActive, {
+            returnFocus: false,
+            reason: 'current-route-top'
+          }).then(scrollDocumentToTop);
+          return true;
         }
 
         function getCopy(key) {
@@ -5360,6 +5479,8 @@ window.GG = window.GG || {};
             if (expected && navKey === expected) node.setAttribute('aria-current', 'page');
             else node.removeAttribute('aria-current');
           }
+
+          syncMoreRouteState();
         }
 
         function applySurfaceContract() {
@@ -7168,6 +7289,7 @@ window.GG = window.GG || {};
           if (state.surfaceContext.surface === 'search') return 'search';
           if (state.surfaceContext.surface === 'landing' && state.surfaceContext.source === 'url.landing.contact') return 'contact';
           if (state.surfaceContext.surface === 'landing') return 'home';
+          if (state.surfaceContext.surface === 'post' || state.surfaceContext.surface === 'page') return 'blog';
           return '';
         }
 
@@ -7902,6 +8024,7 @@ window.GG = window.GG || {};
 
         document.addEventListener('click', function (event) {
           var focusTrigger;
+          var primaryRouteTrigger;
           var previewTrigger;
           var moreTrigger;
           var commentsTrigger;
@@ -7938,6 +8061,7 @@ window.GG = window.GG || {};
           }
 
           focusTrigger = event.target.closest('[data-gg-focus="command"]');
+          primaryRouteTrigger = event.target.closest('[data-gg-more-route], [data-gg-nav]');
           previewTrigger = event.target.closest('[data-gg-open="preview"]');
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
@@ -7965,6 +8089,11 @@ window.GG = window.GG || {};
           error404Action = event.target.closest('[data-gg-error404-action]');
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
+
+          if (primaryRouteTrigger && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
+            event.preventDefault();
+            return;
+          }
 
           if (focusTrigger) {
             event.preventDefault();

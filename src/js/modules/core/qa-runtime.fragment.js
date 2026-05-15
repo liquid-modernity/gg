@@ -4,6 +4,7 @@
           if (state.surfaceContext.surface === 'search') return 'search';
           if (state.surfaceContext.surface === 'landing' && state.surfaceContext.source === 'url.landing.contact') return 'contact';
           if (state.surfaceContext.surface === 'landing') return 'home';
+          if (state.surfaceContext.surface === 'post' || state.surfaceContext.surface === 'page') return 'blog';
           return '';
         }
 

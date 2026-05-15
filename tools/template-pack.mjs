@@ -100,12 +100,16 @@ function copyAssetGroup(group) {
 }
 
 function replaceBSkin(templateText, cssText) {
+  let replaced = false;
   const nextText = templateText.replace(
     /(<b:skin><!\[CDATA\[\n)[\s\S]*?(\n\s*\]\]><\/b:skin>)/,
-    (_match, open, close) => `${open}${cssText.replace(/\s+$/u, "")}\n${close.trimStart()}`
+    (_match, open, close) => {
+      replaced = true;
+      return `${open}${cssText.replace(/\s+$/u, "")}\n${close.trimStart()}`;
+    }
   );
 
-  if (nextText === templateText) {
+  if (!replaced) {
     fail("could not replace b:skin CSS block");
   }
 

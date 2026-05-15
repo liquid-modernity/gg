@@ -10,36 +10,62 @@
           <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
         </div>
 
-        <div class='gg-more-list'>
-          <a class='gg-more-list__link' data-gg-copy='more.blog' href='/'>Blog</a>
-          <a class='gg-more-list__link' data-gg-copy='more.search' expr:href='data:blog.searchUrl'>Search</a>
-          <a class='gg-more-list__link' data-gg-copy='more.sitemap' href='/sitemap.xml'>Sitemap</a>
-          <a class='gg-more-list__link' data-gg-copy='more.rss' href='/feeds/posts/default?alt=rss'>RSS</a>
+        <div class='gg-more-body'>
+          <section aria-labelledby='gg-more-navigation-title' class='gg-more-section gg-more-section--navigation'>
+            <h3 class='gg-more-section__title' data-gg-copy='more.section.navigation' id='gg-more-navigation-title'>Navigation</h3>
+            <div class='gg-more-grid'>
+              <a class='gg-more-list__link' data-gg-copy='nav.home' data-gg-more-route='home' href='/landing'>Home</a>
+              <a class='gg-more-list__link' data-gg-copy='nav.blog' data-gg-more-route='blog' href='/'>Blog</a>
+              <a class='gg-more-list__link' data-gg-copy='nav.store' data-gg-more-route='store' href='/store'>Store</a>
+              <a class='gg-more-list__link' data-gg-copy='nav.contact' data-gg-more-route='contact' href='/landing#contact'>Contact</a>
+            </div>
+          </section>
+
+          <section aria-labelledby='gg-more-discover-title' class='gg-more-section'>
+            <h3 class='gg-more-section__title' data-gg-copy='more.section.discover' id='gg-more-discover-title'>Discover</h3>
+            <div class='gg-more-list'>
+              <button class='gg-more-list__link' data-gg-copy='more.search' data-gg-focus='command' type='button'>Search</button>
+              <a class='gg-more-list__link' data-gg-copy='more.sitemap' href='/sitemap.xml'>Sitemap</a>
+              <a class='gg-more-list__link' data-gg-copy='more.rss' href='/feeds/posts/default?alt=rss'>RSS</a>
+            </div>
+          </section>
+
+          <section aria-labelledby='gg-more-info-title' class='gg-more-section gg-more-section--info'>
+            <h3 class='gg-more-section__title' data-gg-copy='more.section.info' id='gg-more-info-title'>Info</h3>
+            <div class='gg-more-list'>
+              <a class='gg-more-list__link' data-gg-copy='more.about' href='/p/about.html'>About PakRPP</a>
+              <a class='gg-more-list__link' data-gg-copy='more.privacy' href='/p/privacy-policy.html'>Privacy Policy</a>
+              <a class='gg-more-list__link' data-gg-copy='more.terms' href='/p/terms-of-use.html'>Terms of Use</a>
+              <a class='gg-more-list__link' data-gg-copy='more.disclaimer' href='/p/disclaimer.html'>Disclaimer</a>
+            </div>
+          </section>
+
+          <div class='gg-langswitch gg-more-section' data-gg-module='language'>
+            <p class='gg-langswitch__title' data-gg-copy='more.section.language' id='gg-language-title'>Language</p>
+            <div aria-labelledby='gg-language-title' class='gg-langswitch__actions' role='group'>
+              <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.english' data-gg-lang-option='en' type='button'>English</button>
+              <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.indonesia' data-gg-lang-option='id' type='button'>Indonesia</button>
+            </div>
+          </div>
+
+          <div class='gg-appearance gg-more-section' data-gg-module='appearance'>
+            <p class='gg-appearance__title' data-gg-copy='more.section.appearance' id='gg-appearance-title'>Appearance</p>
+            <div aria-labelledby='gg-appearance-title' class='gg-appearance__actions' role='group'>
+              <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
+              <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
+              <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
+            </div>
+          </div>
         </div>
 
-        <div class='gg-langswitch' data-gg-module='language'>
-          <p class='gg-langswitch__title' data-gg-copy='language.label' id='gg-language-title'>Language</p>
-          <div aria-labelledby='gg-language-title' class='gg-langswitch__actions' role='group'>
-            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.en' data-gg-lang-option='en' type='button'>EN</button>
-            <button aria-pressed='false' class='gg-langswitch__button' data-gg-active='false' data-gg-copy='language.id' data-gg-lang-option='id' type='button'>ID</button>
-          </div>
-        </div>
-        <div class='gg-appearance' data-gg-module='appearance'>
-          <p class='gg-appearance__title' data-gg-copy='appearance.label' id='gg-appearance-title'>Appearance</p>
-          <div aria-labelledby='gg-appearance-title' class='gg-appearance__actions' role='group'>
-            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.system' data-gg-theme-option='system' type='button'>System</button>
-            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
-            <button aria-pressed='false' class='gg-appearance__button' data-gg-active='false' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
-          </div>
-        </div>
         <footer class='gg-more-footer'>
+          <span class='gg-more-footer__label' data-gg-copy='more.shareSite' id='gg-more-footer-social-title'>Share site</span>
           <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
-            <span class='gg-visually-hidden' data-gg-copy='more.channelsLabel' id='gg-more-footer-social-title'>Share site</span>
             <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'>X</a>
-            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'>Fb</a>
-            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'>Wa</a>
+            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'>FB</a>
+            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'>WA</a>
           </div>
-          <small class='gg-more-footer__legal' data-gg-copy='more.rights'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
+          <small class='gg-more-footer__legal' data-gg-copy='footer.copyright'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
         </footer>
       </section>
     </div>

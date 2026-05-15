@@ -28,6 +28,7 @@
 
         document.addEventListener('click', function (event) {
           var focusTrigger;
+          var primaryRouteTrigger;
           var previewTrigger;
           var moreTrigger;
           var commentsTrigger;
@@ -64,6 +65,7 @@
           }
 
           focusTrigger = event.target.closest('[data-gg-focus="command"]');
+          primaryRouteTrigger = event.target.closest('[data-gg-more-route], [data-gg-nav]');
           previewTrigger = event.target.closest('[data-gg-open="preview"]');
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
@@ -91,6 +93,11 @@
           error404Action = event.target.closest('[data-gg-error404-action]');
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
+
+          if (primaryRouteTrigger && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
+            event.preventDefault();
+            return;
+          }
 
           if (focusTrigger) {
             event.preventDefault();

@@ -2104,25 +2104,25 @@ input:focus-visible {
   </main>
 
   <nav class="gg-dock store-dock" id="gg-dock" aria-label="Store navigation" data-copy-aria="storeNavigationLabel">
-    <a class="gg-dock__item" data-store-dock="store" href="/store" aria-current="page">
+    <a class="gg-dock__item" data-store-dock="home" href="/landing">
       <span class="gg-icon" aria-hidden="true">home_app_logo</span>
-      <span class="gg-dock__label" data-copy="storeLabel">Store</span>
+      <span class="gg-dock__label" data-copy="nav.home">Home</span>
     </a>
-    <a class="gg-dock__item" id="store-contact-link" data-store-dock="contact" href="/store#contact">
-      <span class="gg-icon" aria-hidden="true">chat</span>
-      <span class="gg-dock__label" data-copy="contactLabel">Contact</span>
+    <a class="gg-dock__item" id="store-contact-link" data-store-dock="contact" href="/landing#contact">
+      <span class="gg-icon" aria-hidden="true">calendar_add_on</span>
+      <span class="gg-dock__label" data-copy="nav.contact">Contact</span>
     </a>
-    <button class="gg-dock__item" id="store-dock-discover" data-store-dock="discover" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
+    <button class="gg-dock__item" id="store-dock-discover" data-store-dock="search" type="button" aria-haspopup="dialog" aria-controls="store-discovery-sheet">
       <span class="gg-icon" aria-hidden="true">search</span>
-      <span class="gg-dock__label" data-copy="discoverLabel">Discover</span>
+      <span class="gg-dock__label" data-copy="nav.search">Search</span>
     </button>
-    <button class="gg-dock__item" id="store-saved-open" data-store-dock="saved" type="button" aria-haspopup="dialog" aria-controls="store-saved-sheet">
-      <span class="gg-icon" aria-hidden="true">bookmark</span>
-      <span class="gg-dock__label" data-copy="savedDockLabel">Saved</span>
-    </button>
+    <a class="gg-dock__item" data-store-dock="blog" href="/">
+      <span class="gg-icon" aria-hidden="true">newsmode</span>
+      <span class="gg-dock__label" data-copy="nav.blog">Blog</span>
+    </a>
     <button class="gg-dock__item" id="store-more-open" data-store-dock="more" type="button" aria-haspopup="dialog" aria-controls="store-more-sheet">
       <span class="gg-icon" aria-hidden="true">menu</span>
-      <span class="gg-dock__label" data-copy="moreDockLabel">More</span>
+      <span class="gg-dock__label" data-copy="nav.more">More</span>
     </button>
   </nav>
 
@@ -2286,39 +2286,59 @@ input:focus-visible {
     <section class="gg-sheet__panel" id="store-more-panel" tabindex="-1">
       <header class="gg-sheet__head">
         <button class="gg-sheet__handle" type="button" data-store-close="more" data-store-drag-handle="more" aria-label="Close more panel" data-copy-aria="closeMore"></button>
-        <h2 class="gg-sheet__title" id="store-more-title" data-copy="moreTitle">More</h2>
+        <h2 class="gg-sheet__title" id="store-more-title" data-copy="more.title">More</h2>
       </header>
       <div class="store-sheet-body">
         <section class="store-sheet-section" aria-labelledby="store-navigation-label">
-          <p class="store-sheet-section__label" id="store-navigation-label" data-copy="navigateLabel">Navigate</p>
+          <p class="store-sheet-section__label" id="store-navigation-label" data-copy="more.section.navigation">Navigation</p>
           <div class="store-setting-grid">
-            <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing" data-copy="homeLabel">Home</a>
-<a class="store-setting store-setting--link" data-store-more-link="blog" href="/" data-copy="blogLabel">Blog</a>
+            <a class="store-setting store-setting--link" data-store-more-link="home" href="/landing" data-copy="nav.home">Home</a>
+            <a class="store-setting store-setting--link" data-store-more-link="blog" href="/" data-copy="nav.blog">Blog</a>
+            <a class="store-setting store-setting--link" data-store-more-link="store" href="/store" data-copy="nav.store" aria-current="page">Store</a>
+            <a class="store-setting store-setting--link" data-store-more-link="contact" href="/landing#contact" data-copy="nav.contact">Contact</a>
+          </div>
+        </section>
+        <section class="store-sheet-section" aria-labelledby="store-discover-label">
+          <p class="store-sheet-section__label" id="store-discover-label" data-copy="more.section.discover">Discover</p>
+          <div class="store-setting-list">
+            <button class="store-setting store-setting--list" id="store-more-search" type="button" data-copy="more.search">Search</button>
+            <a class="store-setting store-setting--list" href="/sitemap.xml" data-copy="more.sitemap">Sitemap</a>
+            <a class="store-setting store-setting--list" href="/feeds/posts/default?alt=rss" data-copy="more.rss">RSS</a>
+          </div>
+        </section>
+        <section class="store-sheet-section" aria-labelledby="store-info-label">
+          <p class="store-sheet-section__label" id="store-info-label" data-copy="more.section.info">Info</p>
+          <div class="store-setting-list">
+            <a class="store-setting store-setting--list" href="/p/about.html" data-copy="more.about">About PakRPP</a>
+            <a class="store-setting store-setting--list" href="/p/privacy-policy.html" data-copy="more.privacy">Privacy Policy</a>
+            <a class="store-setting store-setting--list" href="/p/terms-of-use.html" data-copy="more.terms">Terms of Use</a>
+            <a class="store-setting store-setting--list" href="/p/disclaimer.html" data-copy="more.disclaimer">Disclaimer</a>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-language-label">
-          <p class="store-sheet-section__label" id="store-language-label" data-copy="languageLabel">Language</p>
+          <p class="store-sheet-section__label" id="store-language-label" data-copy="more.section.language">Language</p>
           <div class="store-setting-grid">
-            <button class="store-setting" type="button" data-store-lang="en" aria-pressed="false">EN</button>
-            <button class="store-setting" type="button" data-store-lang="id" aria-pressed="true">ID</button>
+            <button class="store-setting" type="button" data-store-lang="en" data-copy="language.english" aria-pressed="false">English</button>
+            <button class="store-setting" type="button" data-store-lang="id" data-copy="language.indonesia" aria-pressed="true">Indonesia</button>
           </div>
         </section>
         <section class="store-sheet-section" aria-labelledby="store-appearance-label">
-          <p class="store-sheet-section__label" id="store-appearance-label" data-copy="appearanceLabel">Appearance</p>
+          <p class="store-sheet-section__label" id="store-appearance-label" data-copy="more.section.appearance">Appearance</p>
           <div class="store-setting-grid store-setting-grid--three">
-            <button class="store-setting" type="button" data-store-theme="system" data-copy="systemLabel" aria-pressed="true">System</button>
-            <button class="store-setting" type="button" data-store-theme="light" data-copy="lightLabel" aria-pressed="false">Light</button>
-            <button class="store-setting" type="button" data-store-theme="dark" data-copy="darkLabel" aria-pressed="false">Dark</button>
+            <button class="store-setting" type="button" data-store-theme="system" data-copy="appearance.system" aria-pressed="true">System</button>
+            <button class="store-setting" type="button" data-store-theme="light" data-copy="appearance.light" aria-pressed="false">Light</button>
+            <button class="store-setting" type="button" data-store-theme="dark" data-copy="appearance.dark" aria-pressed="false">Dark</button>
           </div>
         </section>
         <footer class="store-footer">
+          <span class="store-footer__label" data-copy="more.shareSite">Share site</span>
           <div class="store-social" aria-label="Social links" data-copy-aria="socialLinksLabel">
             <a id="store-share-x" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Fstore&text=Yellow%20Cart%20%C2%B7%20PakRPP" target="_blank" rel="noopener noreferrer" aria-label="Share to X" data-copy-aria="shareXLabel">X</a>
             <a id="store-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to Facebook" data-copy-aria="shareFacebookLabel">FB</a>
             <a id="store-share-wa" href="https://wa.me/?text=Yellow%20Cart%20%C2%B7%20PakRPP%20https%3A%2F%2Fwww.pakrpp.com%2Fstore" target="_blank" rel="noopener noreferrer" aria-label="Share to WhatsApp" data-copy-aria="shareWhatsAppLabel">WA</a>
           </div>
-          <span data-copy="legalText">Some outbound links may be affiliate links. Prices and availability may change.</span>
-          <span data-copy="copyrightText">Copyright © 2026 PakRPP. All rights reserved.</span>
+          <span class="store-commerce-note" data-copy="more.commerceNote">Some outbound links may be affiliate links. Prices and availability may change.</span>
+          <span data-copy="footer.copyright">Copyright © 2026 PakRPP. All rights reserved.</span>
         </footer>
       </div>
     </section>

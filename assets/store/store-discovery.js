@@ -15,7 +15,7 @@
       previewDots: 'synced-to-carousel',
       previewSecondaryActions: ['save', 'copy-links'],
       utilitySheets: ['discovery', 'saved', 'more'],
-      dock: ['store', 'contact', 'discover', 'saved', 'more'],
+      dock: ['home', 'contact', 'search', 'blog', 'more'],
       dockRule: 'preview-active-beats-dock-and-near-bottom',
       gridAspectRatio: '4:5',
       savedPersistence: 'localStorage',
@@ -43,7 +43,7 @@
       'Preview active hides and inerts dock.',
       'Discover opens a command center with search, quick intents, and live result rows.',
       'Saved opens local saved picks from localStorage.',
-      'More sheet contains Blog, Home, language switcher, theme switcher, social links, and legal text.',
+      'More sheet uses the unified Home, Blog, Store, Contact, Discover, Info, language, appearance, social, and store commerce sections.',
       'Marketplace CTAs stay primary and open in a new tab with sponsored/nofollow/noopener/noreferrer.',
       'Hidden sheets use hidden, aria-hidden, and inert, and reduced motion is respected.',
       'Escape, scrim, and footer handle dismiss active sheets and restore focus.'
@@ -119,6 +119,33 @@
         systemLabel: 'Sistem',
         lightLabel: 'Terang',
         darkLabel: 'Gelap',
+        'nav.home': 'Beranda',
+        'nav.contact': 'Kontak',
+        'nav.search': 'Cari',
+        'nav.blog': 'Blog',
+        'nav.more': 'Lainnya',
+        'nav.store': 'Store',
+        'more.title': 'Lainnya',
+        'more.section.navigation': 'Navigasi',
+        'more.section.discover': 'Jelajah',
+        'more.section.info': 'Info',
+        'more.section.language': 'Bahasa',
+        'more.section.appearance': 'Tampilan',
+        'more.search': 'Cari',
+        'more.sitemap': 'Peta situs',
+        'more.rss': 'RSS',
+        'more.about': 'Tentang PakRPP',
+        'more.privacy': 'Kebijakan Privasi',
+        'more.terms': 'Syarat Penggunaan',
+        'more.disclaimer': 'Disclaimer',
+        'more.shareSite': 'Bagikan situs',
+        'more.commerceNote': 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
+        'language.english': 'English',
+        'language.indonesia': 'Indonesia',
+        'appearance.system': 'Sistem',
+        'appearance.light': 'Terang',
+        'appearance.dark': 'Gelap',
+        'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
         homeLabel: 'Home',
         blogLabel: 'Blog',
         storeLabel: 'Store',
@@ -250,6 +277,33 @@
         systemLabel: 'System',
         lightLabel: 'Light',
         darkLabel: 'Dark',
+        'nav.home': 'Home',
+        'nav.contact': 'Contact',
+        'nav.search': 'Search',
+        'nav.blog': 'Blog',
+        'nav.more': 'More',
+        'nav.store': 'Store',
+        'more.title': 'More',
+        'more.section.navigation': 'Navigation',
+        'more.section.discover': 'Discover',
+        'more.section.info': 'Info',
+        'more.section.language': 'Language',
+        'more.section.appearance': 'Appearance',
+        'more.search': 'Search',
+        'more.sitemap': 'Sitemap',
+        'more.rss': 'RSS',
+        'more.about': 'About PakRPP',
+        'more.privacy': 'Privacy Policy',
+        'more.terms': 'Terms of Use',
+        'more.disclaimer': 'Disclaimer',
+        'more.shareSite': 'Share site',
+        'more.commerceNote': 'Some outbound links may be affiliate links. Prices and availability may change.',
+        'language.english': 'English',
+        'language.indonesia': 'Indonesia',
+        'appearance.system': 'System',
+        'appearance.light': 'Light',
+        'appearance.dark': 'Dark',
+        'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
         homeLabel: 'Home',
         blogLabel: 'Blog',
         storeLabel: 'Store',
@@ -473,6 +527,7 @@
     var moreSheet = document.getElementById('store-more-sheet');
     var morePanel = document.getElementById('store-more-panel');
     var discoverOpen = document.getElementById('store-dock-discover');
+    var moreSearchOpen = document.getElementById('store-more-search');
     var moreOpen = document.getElementById('store-more-open');
     var storeDockLink = document.querySelector('[data-store-dock="store"]');
     var contactLink = document.getElementById('store-contact-link');
@@ -2639,6 +2694,7 @@
     });
     if (discoverySearch) discoverySearch.addEventListener('input', function () { syncQuery(discoverySearch.value); });
     if (discoverOpen) discoverOpen.addEventListener('click', function () { openDiscovery(discoverOpen); });
+    if (moreSearchOpen) moreSearchOpen.addEventListener('click', function () { openDiscovery(moreSearchOpen); });
     if (savedOpen) savedOpen.addEventListener('click', function () { renderSavedResults(); openPanel('saved', savedOpen); });
     if (filterToggle) filterToggle.addEventListener('click', function () {
       var expanded = filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded';
@@ -2729,7 +2785,9 @@
     window.addEventListener('pointercancel', endDragSession);
     if (moreOpen) moreOpen.addEventListener('click', function () { openPanel('more', moreOpen); });
     if (contactLink) contactLink.addEventListener('click', function (event) {
+      var href = contactLink.getAttribute('href') || '';
       if (!isStorePath()) return;
+      if (href !== '#contact' && href.indexOf('/store#contact') !== 0) return;
       event.preventDefault();
       scrollToStoreTarget('contact', '/store#contact');
     });

@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="PakRPP · Editorial System, Knowledge Surface, Store, and Discovery" />
-  <meta property="og:description" content="A mobile-first semantic landing surface for PakRPP: editorial systems, knowledge products, curated Store, discovery, and search-ready digital experience." />
+  <meta property="og:description" content="A mobile-first semantic home surface for PakRPP: editorial systems, knowledge products, curated Store, discovery, and search-ready digital experience." />
   <meta property="og:url" content="https://www.pakrpp.com/landing" />
   <meta property="og:site_name" content="PakRPP" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -55,7 +55,7 @@
       {
         "@type": "WebPage",
         "@id": "https://www.pakrpp.com/landing#webpage",
-        "name": "PakRPP Landing",
+        "name": "PakRPP Home",
         "url": "https://www.pakrpp.com/landing",
         "isPartOf": { "@id": "https://www.pakrpp.com/#website" },
         "publisher": { "@id": "https://www.pakrpp.com/#organization" },
@@ -579,11 +579,57 @@
     #gg-more-panel .gg-sheet__panel { min-height: var(--gg-panel-min-height); }
     .gg-field { width: 100%; min-height: 54px; padding: 0 14px; border: 1px solid var(--gg-line); border-radius: 16px; background: color-mix(in srgb, var(--gg-surface-interactive) 60%, transparent); color: var(--gg-ink); font: 520 15px/1.2 var(--gg-font-sans); }
     .gg-results, .gg-more-list { display: grid; gap: 0; }
+    .gg-more-body { display: grid; gap: 14px; padding: 12px 0 0; }
+    .gg-more-section { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--gg-divider); }
+    .gg-more-section:first-child { padding-top: 0; border-top: 0; }
+    .gg-more-section__title {
+      margin: 0;
+      color: var(--gg-accent-soft);
+      font: 760 11px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .gg-more-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
     .gg-result, .gg-more-item { display: grid; gap: 3px; min-height: var(--gg-hit-min); padding: 13px 2px; border-top: 1px solid var(--gg-divider); background: transparent; color: var(--gg-ink); text-align: left; }
     .gg-result:first-child, .gg-more-item:first-child { border-top: 0; }
     .gg-result strong, .gg-more-item strong { font: 700 15px/1.22 var(--gg-font-sans); letter-spacing: -.025em; }
     .gg-result span, .gg-more-item span { color: var(--gg-ink-soft); font: 520 13px/1.45 var(--gg-font-sans); }
+    .gg-more-list__link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      min-height: 50px;
+      padding: 0 2px;
+      border: 0;
+      border-bottom: 1px solid var(--gg-divider);
+      background: transparent;
+      color: var(--gg-ink);
+      font: 650 14px/1.2 var(--gg-font-sans);
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: transform var(--gg-motion-press), background-color var(--gg-motion-inline-open), border-color var(--gg-motion-inline-open);
+    }
+    .gg-more-grid .gg-more-list__link {
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 10px;
+      border: 1px solid var(--gg-border-interactive);
+      border-radius: 16px;
+      background: var(--gg-surface-interactive);
+      font: 740 13px/1.1 var(--gg-font-sans);
+      text-align: center;
+    }
+    .gg-more-list__link[aria-current='page'], .gg-more-list__link[data-gg-active='true'] {
+      border-color: var(--gg-line-strong);
+      background: var(--gg-surface-interactive-strong);
+      color: var(--gg-ink);
+    }
     .gg-segment { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--gg-divider); }
+    .gg-segment.gg-more-section { padding-top: 14px; }
     .gg-segment__label { margin: 0; color: var(--gg-accent-soft); font: 760 11px/1.2 var(--gg-font-sans); letter-spacing: .12em; text-transform: uppercase; }
     .gg-segment__row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
     .gg-segment__row--two { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -604,6 +650,7 @@
       text-align: center;
     }
     .gg-more-footer__social { display: flex; align-items: center; justify-content: center; gap: var(--gg-more-footer-icon-gap); }
+    .gg-more-footer__label { color: var(--gg-accent-soft); font: 650 11px/1.2 var(--gg-font-sans); letter-spacing: .08em; text-transform: uppercase; }
     .gg-more-footer__link {
       display: inline-flex;
       align-items: center;
@@ -652,7 +699,7 @@
 
   <div class="gg-shell" id="gg-shell">
     <header class="gg-topbar" aria-label="PakRPP identity bar">
-      <a class="gg-topbar__brand" href="/landing" aria-label="PakRPP landing">
+      <a class="gg-topbar__brand" href="/landing" aria-label="PakRPP home">
         <span class="gg-topbar__mark" aria-hidden="true">GG</span>
         <span class="gg-topbar__text">
           <span class="gg-topbar__title">PakRPP</span>
@@ -666,7 +713,7 @@
       <section class="gg-section" id="hero" data-section-key="hero" data-section-order="1">
         <div class="gg-card gg-hero gg-reveal">
           <div class="gg-panel__head">
-            <p class="gg-kicker" data-copy="hero.kicker">PAKRPP · SEMANTIC LANDING</p>
+            <p class="gg-kicker" data-copy="hero.kicker">PAKRPP · SEMANTIC HOME</p>
             <h1 class="gg-display" data-copy="hero.title">Editorial system, not a decorative homepage.</h1>
             <p class="gg-lead" data-copy="hero.lead">PakRPP menyatukan blog, kurasi Store, knowledge surface, dan discovery layer dalam halaman yang bisa dibaca manusia, mesin pencari, dan AI crawler tanpa bergantung pada gimmick visual.</p>
             <div class="gg-actions">
@@ -705,10 +752,10 @@
           <div class="gg-panel__head">
             <p class="gg-kicker" data-copy="routes.kicker">Routes</p>
             <h2 class="gg-panel__title" data-copy="routes.title">One ecosystem, three public surfaces.</h2>
-            <p class="gg-panel__body" data-copy="routes.body">Landing explains the system, Blog holds the editorial archive, and Store handles curated affiliate discovery. The dock exposes these surfaces without forcing the user to think.</p>
+            <p class="gg-panel__body" data-copy="routes.body">Home explains the system, Blog holds the editorial archive, and Store handles curated affiliate discovery. The dock exposes these surfaces without forcing the user to think.</p>
           </div>
           <div class="gg-grid gg-grid--two">
-            <article class="gg-cell"><h3 data-copy="routes.landingTitle">Landing</h3><p data-copy="routes.landingBody">Identity, value proposition, interaction model, and contact. This page is the orientation layer.</p><a href="/landing" data-copy="routes.openLanding">Open landing</a></article>
+            <article class="gg-cell"><h3 data-copy="routes.landingTitle">Home</h3><p data-copy="routes.landingBody">Identity, value proposition, interaction model, and contact. This page is the orientation layer.</p><a href="/landing" data-copy="routes.openLanding" data-landing-route="home">Open home</a></article>
             <article class="gg-cell"><h3 data-copy="routes.blogTitle">Blog</h3><p data-copy="routes.blogBody">The root listing surface for public articles, archive discovery, and editorial reading.</p><a href="/" data-copy="routes.openBlog">Open blog</a></article>
             <article class="gg-cell"><h3 data-copy="routes.storeTitle">Store</h3><p data-copy="routes.storeBody">Yellow Cart: curated product discovery with preview, filters, saved picks, and marketplace links.</p><a href="/store" data-copy="routes.openStore">Open store</a></article>
             <article class="gg-cell"><h3 data-copy="routes.contactTitle">Contact</h3><p data-copy="routes.contactBody">A lightweight brief path for collaborations, corrections, products, editorial systems, or technical work.</p><a href="#contact" data-copy="routes.openContact">Go to contact</a></article>
@@ -769,7 +816,7 @@
           <dt data-copy="machine.dt1">Primary purpose</dt>
           <dd data-copy="machine.dd1">PakRPP is a publishing and discovery ecosystem connecting editorial writing, knowledge products, curated Store, and contact flow.</dd>
           <dt data-copy="machine.dt2">Routes</dt>
-          <dd data-copy="machine.dd2">/landing is the identity surface, / is the Blog listing surface, and /store is the curated commerce surface.</dd>
+          <dd data-copy="machine.dd2">/landing is the Home surface, / is the Blog listing surface, and /store is the curated commerce surface.</dd>
           <dt data-copy="machine.dt3">Navigation model</dt>
           <dd data-copy="machine.dd3">A bottom dock handles primary routes; a dock-attached contents outline handles section navigation; bottom sheets handle discovery, language, theme, and more actions.</dd>
         </dl>
@@ -794,7 +841,7 @@
       <ol class="gg-detail-outline__list">
         <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="hero" aria-current="true"><span class="gg-detail-outline__item-label" data-copy="outline.hero">Intro</span><span class="gg-detail-outline__item-note" data-copy="outline.heroNote">Identity and route truth</span></button></li>
         <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="structure"><span class="gg-detail-outline__item-label" data-copy="outline.structure">Structure</span><span class="gg-detail-outline__item-note" data-copy="outline.structureNote">HTML, CSS, JS separation</span></button></li>
-        <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="routes"><span class="gg-detail-outline__item-label" data-copy="outline.routes">Routes</span><span class="gg-detail-outline__item-note" data-copy="outline.routesNote">Landing, Blog, Store, Contact</span></button></li>
+        <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="routes"><span class="gg-detail-outline__item-label" data-copy="outline.routes">Routes</span><span class="gg-detail-outline__item-note" data-copy="outline.routesNote">Home, Blog, Store, Contact</span></button></li>
         <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="interaction"><span class="gg-detail-outline__item-label" data-copy="outline.interaction">Interaction</span><span class="gg-detail-outline__item-note" data-copy="outline.interactionNote">Dock, outline, gestures</span></button></li>
         <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="discoverability"><span class="gg-detail-outline__item-label" data-copy="outline.discoverability">Discoverability</span><span class="gg-detail-outline__item-note" data-copy="outline.discoverabilityNote">SEO, GEO, GEA, AI searchability</span></button></li>
         <li class="gg-detail-outline__item"><button class="gg-detail-outline__item-button" type="button" data-section-target="contact"><span class="gg-detail-outline__item-label" data-copy="outline.contact">Contact</span><span class="gg-detail-outline__item-note" data-copy="outline.contactNote">Brief and route options</span></button></li>
@@ -804,20 +851,20 @@
 
   <nav class="gg-dock" id="gg-dock" data-gg-module="gg-dock" aria-labelledby="gg-dock-title">
     <span class="gg-visually-hidden" id="gg-dock-title" data-copy="dock.label">Primary navigation</span>
-    <a class="gg-dock__item" data-gg-nav="home" href="/landing" aria-current="page">
-      <span class="gg-icon" aria-hidden="true">home_app_logo</span><span class="gg-dock__label" data-copy="dock.home">Home</span>
-    </a>
-    <a class="gg-dock__item" data-gg-nav="contact" href="#contact">
-      <span class="gg-icon" aria-hidden="true">calendar_add_on</span><span class="gg-dock__label" data-copy="dock.contact">Contact</span>
+    <button class="gg-dock__item" data-gg-nav="home" type="button" aria-current="page" data-landing-route="home">
+      <span class="gg-icon" aria-hidden="true">home_app_logo</span><span class="gg-dock__label" data-copy="nav.home">Home</span>
+    </button>
+    <a class="gg-dock__item" data-gg-nav="contact" href="#contact" data-landing-route="contact">
+      <span class="gg-icon" aria-hidden="true">calendar_add_on</span><span class="gg-dock__label" data-copy="nav.contact">Contact</span>
     </a>
     <button class="gg-dock__item" data-gg-nav="search" type="button" aria-controls="gg-command-panel" aria-expanded="false">
-      <span class="gg-icon" aria-hidden="true">explore</span><span class="gg-dock__label" data-copy="dock.search">Search</span>
+      <span class="gg-icon" aria-hidden="true">explore</span><span class="gg-dock__label" data-copy="nav.search">Search</span>
     </button>
     <a class="gg-dock__item" data-gg-nav="blog" href="/">
-      <span class="gg-icon" aria-hidden="true">newsmode</span><span class="gg-dock__label" data-copy="dock.blog">Blog</span>
+      <span class="gg-icon" aria-hidden="true">newsmode</span><span class="gg-dock__label" data-copy="nav.blog">Blog</span>
     </a>
     <button class="gg-dock__item" data-gg-nav="more" type="button" aria-controls="gg-more-panel" aria-expanded="false">
-      <span class="gg-icon" aria-hidden="true">menu</span><span class="gg-dock__label" data-copy="dock.more">More</span>
+      <span class="gg-icon" aria-hidden="true">menu</span><span class="gg-dock__label" data-copy="nav.more">More</span>
     </button>
   </nav>
 
@@ -826,7 +873,7 @@
     <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-command-title" tabindex="-1">
       <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="command.title">Discovery</h2></div>
       <div class="gg-sheet__body">
-        <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search PakRPP landing</label>
+        <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search PakRPP home</label>
         <input class="gg-field" id="gg-command-input" type="search" autocomplete="off" inputmode="search" data-copy-attr="placeholder:command.placeholder" placeholder="Search sections, routes, and actions" />
         <div class="gg-results" id="gg-command-results" aria-live="polite"></div>
       </div>
@@ -838,35 +885,57 @@
     <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-more-title" tabindex="-1">
       <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
       <div class="gg-sheet__body">
-        <div class="gg-more-list" aria-label="Route shortcuts">
-          <a class="gg-more-item" href="/store"><strong data-copy="more.storeTitle">Store</strong><span data-copy="more.storeBody">Open Yellow Cart curated commerce.</span></a>
-          <a class="gg-more-item" href="/"><strong data-copy="more.blogTitle">Blog</strong><span data-copy="more.blogBody">Open the editorial archive.</span></a>
-          <a class="gg-more-item" href="/landing"><strong data-copy="more.homeTitle">Landing</strong><span data-copy="more.homeBody">Return to this identity surface.</span></a>
-          <a class="gg-more-item" href="#contact"><strong data-copy="more.contactTitle">Contact</strong><span data-copy="more.contactBody">Jump to the brief path.</span></a>
-        </div>
-        <div class="gg-segment" aria-label="Language selector">
-          <p class="gg-segment__label" data-copy="more.language">Language</p>
-          <div class="gg-segment__row gg-segment__row--two">
-            <button class="gg-control" type="button" data-gg-lang="id" aria-pressed="true">Indonesia</button>
-            <button class="gg-control" type="button" data-gg-lang="en" aria-pressed="false">English</button>
+        <div class="gg-more-body">
+          <section class="gg-more-section gg-more-section--navigation" aria-labelledby="landing-more-navigation-title">
+            <h3 class="gg-more-section__title" id="landing-more-navigation-title" data-copy="more.section.navigation">Navigation</h3>
+            <div class="gg-more-grid">
+              <a class="gg-more-list__link" href="/landing" data-copy="nav.home" data-landing-route="home">Home</a>
+              <a class="gg-more-list__link" href="/" data-copy="nav.blog" data-landing-route="blog">Blog</a>
+              <a class="gg-more-list__link" href="/store" data-copy="nav.store" data-landing-route="store">Store</a>
+              <a class="gg-more-list__link" href="#contact" data-copy="nav.contact" data-landing-route="contact">Contact</a>
+            </div>
+          </section>
+          <section class="gg-more-section" aria-labelledby="landing-more-discover-title">
+            <h3 class="gg-more-section__title" id="landing-more-discover-title" data-copy="more.section.discover">Discover</h3>
+            <div class="gg-more-list">
+              <button class="gg-more-list__link" type="button" data-copy="more.search" data-open-command>Search</button>
+              <a class="gg-more-list__link" href="/sitemap.xml" data-copy="more.sitemap">Sitemap</a>
+              <a class="gg-more-list__link" href="/feeds/posts/default?alt=rss" data-copy="more.rss">RSS</a>
+            </div>
+          </section>
+          <section class="gg-more-section" aria-labelledby="landing-more-info-title">
+            <h3 class="gg-more-section__title" id="landing-more-info-title" data-copy="more.section.info">Info</h3>
+            <div class="gg-more-list">
+              <a class="gg-more-list__link" href="/p/about.html" data-copy="more.about">About PakRPP</a>
+              <a class="gg-more-list__link" href="/p/privacy-policy.html" data-copy="more.privacy">Privacy Policy</a>
+              <a class="gg-more-list__link" href="/p/terms-of-use.html" data-copy="more.terms">Terms of Use</a>
+              <a class="gg-more-list__link" href="/p/disclaimer.html" data-copy="more.disclaimer">Disclaimer</a>
+            </div>
+          </section>
+          <div class="gg-segment gg-more-section" aria-label="Language selector">
+            <p class="gg-segment__label" data-copy="more.section.language">Language</p>
+            <div class="gg-segment__row gg-segment__row--two">
+              <button class="gg-control" type="button" data-gg-lang="en" aria-pressed="false" data-copy="language.english">English</button>
+              <button class="gg-control" type="button" data-gg-lang="id" aria-pressed="true" data-copy="language.indonesia">Indonesia</button>
+            </div>
           </div>
-        </div>
-        <div class="gg-segment" aria-label="Theme selector">
-          <p class="gg-segment__label" data-copy="more.theme">Theme</p>
-          <div class="gg-segment__row">
-            <button class="gg-control" type="button" data-gg-theme-option="system" aria-pressed="true" data-copy="theme.system">System</button>
-            <button class="gg-control" type="button" data-gg-theme-option="light" aria-pressed="false" data-copy="theme.light">Light</button>
-            <button class="gg-control" type="button" data-gg-theme-option="dark" aria-pressed="false" data-copy="theme.dark">Dark</button>
+          <div class="gg-segment gg-more-section" aria-label="Theme selector">
+            <p class="gg-segment__label" data-copy="more.section.appearance">Appearance</p>
+            <div class="gg-segment__row">
+              <button class="gg-control" type="button" data-gg-theme-option="system" aria-pressed="true" data-copy="appearance.system">System</button>
+              <button class="gg-control" type="button" data-gg-theme-option="light" aria-pressed="false" data-copy="appearance.light">Light</button>
+              <button class="gg-control" type="button" data-gg-theme-option="dark" aria-pressed="false" data-copy="appearance.dark">Dark</button>
+            </div>
           </div>
         </div>
         <footer class="gg-more-footer">
+          <span class="gg-more-footer__label" id="gg-more-footer-social-title" data-copy="more.shareSite">Share site</span>
           <div class="gg-more-footer__social" aria-labelledby="gg-more-footer-social-title">
-            <span class="gg-visually-hidden" id="gg-more-footer-social-title" data-copy="more.channelsLabel">Share site</span>
             <a class="gg-more-footer__link" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareX;title:more.shareX" aria-label="Share on X" title="Share on X">X</a>
             <a class="gg-more-footer__link" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareFacebook;title:more.shareFacebook" aria-label="Share on Facebook" title="Share on Facebook">Fb</a>
             <a class="gg-more-footer__link" href="https://api.whatsapp.com/send?text=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareWhatsApp;title:more.shareWhatsApp" aria-label="Share on WhatsApp" title="Share on WhatsApp">Wa</a>
           </div>
-          <small class="gg-more-footer__legal" data-copy="more.rights">Copyright © 2026 PakRPP. All rights reserved.</small>
+          <small class="gg-more-footer__legal" data-copy="footer.copyright">Copyright © 2026 PakRPP. All rights reserved.</small>
         </footer>
       </div>
     </section>
@@ -900,7 +969,7 @@
       'Dock icon rhythm matches GG store/index grammar: home_app_logo, calendar_add_on, explore, newsmode, menu.',
       'Contents outline attaches above dock and drops to bottom when dock is hidden by scroll.',
       'Outline supports tap, swipe up/down, keyboard focus, Escape collapse, and section buttons.',
-      'More sheet includes Store, Blog, Landing, Contact, language, theme switchers, and sticky footer.',
+      'More sheet includes Home, Store, Blog, Contact, language, theme switchers, and sticky footer.',
       'Tablet and desktop landing surfaces stay expansive, while topbar, dock, outline, and sheets remain capped and proportionate.',
       'Theme persists in gg:theme and language persists in gg:lang.',
       'Main content remains semantic and readable without JavaScript.'
@@ -911,7 +980,7 @@
         skip: 'Lewati ke konten',
         'topbar.sub': 'Editorial · Store · Discovery',
         'topbar.cta': 'Kontak',
-        'hero.kicker': 'PAKRPP · SEMANTIC LANDING',
+        'hero.kicker': 'PAKRPP · SEMANTIC HOME',
         'hero.title': 'Editorial system, not a decorative homepage.',
         'hero.lead': 'PakRPP menyatukan blog, kurasi Store, knowledge surface, dan discovery layer dalam halaman yang bisa dibaca manusia, mesin pencari, dan AI crawler tanpa bergantung pada gimmick visual.',
         'hero.blog': 'Buka Blog',
@@ -928,8 +997,8 @@
         'structure.cssTitle': 'CSS/style', 'structure.cssBody': 'Visual system mewarisi kontrak GG untuk dock, outline, sheet, token, contrast, reduced motion, dan responsive behavior.',
         'structure.jsTitle': 'JS/script', 'structure.jsBody': 'JavaScript hanya meningkatkan permukaan dengan panel, gesture, keyboard handling, bahasa, theme, scroll state, dan discovery.',
         'structure.nojsTitle': 'No-JS truth', 'structure.nojsBody': 'Konten penting tetap terbaca tanpa script. Interaksi adalah enhancement, bukan sumber kebenaran.',
-        'routes.kicker': 'Routes', 'routes.title': 'One ecosystem, three public surfaces.', 'routes.body': 'Landing menjelaskan sistem, Blog menyimpan arsip editorial, dan Store menangani curated affiliate discovery. Dock memperlihatkan rute utama tanpa membuat user berpikir keras.',
-        'routes.landingTitle': 'Landing', 'routes.landingBody': 'Identity, value proposition, interaction model, dan contact. Halaman ini adalah orientation layer.', 'routes.openLanding': 'Open landing',
+        'routes.kicker': 'Routes', 'routes.title': 'One ecosystem, three public surfaces.', 'routes.body': 'Home menjelaskan sistem, Blog menyimpan arsip editorial, dan Store menangani curated affiliate discovery. Dock memperlihatkan rute utama tanpa membuat user berpikir keras.',
+        'routes.landingTitle': 'Home', 'routes.landingBody': 'Identity, value proposition, interaction model, dan contact. Halaman ini adalah orientation layer.', 'routes.openLanding': 'Open home',
         'routes.blogTitle': 'Blog', 'routes.blogBody': 'Root listing surface untuk artikel publik, archive discovery, dan editorial reading.', 'routes.openBlog': 'Open blog',
         'routes.storeTitle': 'Store', 'routes.storeBody': 'Yellow Cart: curated product discovery dengan preview, filters, saved picks, dan marketplace links.', 'routes.openStore': 'Open store',
         'routes.contactTitle': 'Contact', 'routes.contactBody': 'Brief path untuk kolaborasi, koreksi, produk, editorial systems, atau technical work.', 'routes.openContact': 'Go to contact',
@@ -947,19 +1016,21 @@
         'contact.email': 'Email brief', 'contact.store': 'Open Store', 'contact.more': 'More options',
         'machine.title': 'Machine-readable summary',
         'machine.dt1': 'Primary purpose', 'machine.dd1': 'PakRPP adalah publishing dan discovery ecosystem yang menghubungkan editorial writing, knowledge products, curated Store, dan contact flow.',
-        'machine.dt2': 'Routes', 'machine.dd2': '/landing adalah identity surface, / adalah Blog listing surface, dan /store adalah curated commerce surface.',
+        'machine.dt2': 'Routes', 'machine.dd2': '/landing adalah Home surface, / adalah Blog listing surface, dan /store adalah curated commerce surface.',
         'machine.dt3': 'Navigation model', 'machine.dd3': 'Bottom dock menangani primary routes; dock-attached contents outline menangani section navigation; bottom sheets menangani discovery, language, theme, dan more actions.',
         'footer.copy': 'PakRPP · Semantic document, mobile-first product surface, and discovery object.',
         'dock.label': 'Primary navigation', 'dock.home': 'Home', 'dock.contact': 'Contact', 'dock.search': 'Search', 'dock.blog': 'Blog', 'dock.more': 'More',
-        'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Landing, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
-        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP landing', 'command.placeholder': 'Cari section, route, atau action',
-        'more.channelsLabel': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.storeTitle': 'Store', 'more.storeBody': 'Buka Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Buka arsip editorial.', 'more.homeTitle': 'Landing', 'more.homeBody': 'Kembali ke identity surface ini.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Lompat ke brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
+        'nav.home': 'Beranda', 'nav.contact': 'Kontak', 'nav.search': 'Cari', 'nav.blog': 'Blog', 'nav.more': 'Lainnya', 'nav.store': 'Store',
+        'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Home, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
+        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP home', 'command.placeholder': 'Cari section, route, atau action',
+        'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'Sistem', 'appearance.light': 'Terang', 'appearance.dark': 'Gelap', 'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
+        'more.channelsLabel': 'Share site', 'more.shareSite': 'Bagikan situs', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'Lainnya', 'more.section.navigation': 'Navigasi', 'more.section.discover': 'Jelajah', 'more.section.info': 'Info', 'more.section.language': 'Bahasa', 'more.section.appearance': 'Tampilan', 'more.search': 'Cari', 'more.sitemap': 'Peta situs', 'more.rss': 'RSS', 'more.about': 'Tentang PakRPP', 'more.privacy': 'Kebijakan Privasi', 'more.terms': 'Syarat Penggunaan', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Buka Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Buka arsip editorial.', 'more.homeTitle': 'Home', 'more.homeBody': 'Kembali ke identity surface ini.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Lompat ke brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
       },
       en: {
         skip: 'Skip to content',
         'topbar.sub': 'Editorial · Store · Discovery',
         'topbar.cta': 'Contact',
-        'hero.kicker': 'PAKRPP · SEMANTIC LANDING',
+        'hero.kicker': 'PAKRPP · SEMANTIC HOME',
         'hero.title': 'Editorial system, not a decorative homepage.',
         'hero.lead': 'PakRPP connects the blog, curated Store, knowledge surface, and discovery layer in a page that can be read by humans, search engines, and AI crawlers without depending on visual gimmicks.',
         'hero.blog': 'Open Blog', 'hero.store': 'Open Store', 'hero.search': 'Discovery',
@@ -969,8 +1040,8 @@
         'structure.cssTitle': 'CSS/style', 'structure.cssBody': 'The visual system inherits GG contracts for dock, outline, sheet, tokens, contrast, reduced motion, and responsive behavior.',
         'structure.jsTitle': 'JS/script', 'structure.jsBody': 'JavaScript upgrades the surface with panels, gestures, keyboard handling, language, theme, scroll state, and discovery.',
         'structure.nojsTitle': 'No-JS truth', 'structure.nojsBody': 'Important content remains readable without script. Interaction is enhancement, not the source of truth.',
-        'routes.kicker': 'Routes', 'routes.title': 'One ecosystem, three public surfaces.', 'routes.body': 'Landing explains the system, Blog holds the editorial archive, and Store handles curated affiliate discovery. The dock exposes these routes without making the user think.',
-        'routes.landingTitle': 'Landing', 'routes.landingBody': 'Identity, value proposition, interaction model, and contact. This page is the orientation layer.', 'routes.openLanding': 'Open landing',
+        'routes.kicker': 'Routes', 'routes.title': 'One ecosystem, three public surfaces.', 'routes.body': 'Home explains the system, Blog holds the editorial archive, and Store handles curated affiliate discovery. The dock exposes these routes without making the user think.',
+        'routes.landingTitle': 'Home', 'routes.landingBody': 'Identity, value proposition, interaction model, and contact. This page is the orientation layer.', 'routes.openLanding': 'Open home',
         'routes.blogTitle': 'Blog', 'routes.blogBody': 'The root listing surface for public articles, archive discovery, and editorial reading.', 'routes.openBlog': 'Open blog',
         'routes.storeTitle': 'Store', 'routes.storeBody': 'Yellow Cart: curated product discovery with preview, filters, saved picks, and marketplace links.', 'routes.openStore': 'Open store',
         'routes.contactTitle': 'Contact', 'routes.contactBody': 'A brief path for collaborations, corrections, products, editorial systems, or technical work.', 'routes.openContact': 'Go to contact',
@@ -983,12 +1054,14 @@
         'discover.aiTitle': 'AI discovery', 'discover.aiBody': 'The machine summary exposes intent, routes, interaction model, and content scope for retrieval and summarisation.',
         'contact.kicker': 'Contact', 'contact.title': 'Start with the surface and the job.', 'contact.body': 'For editorial systems, Blogger surfaces, Store/affiliate curation, knowledge products, search-ready copy, or UI/UX refactor, send a concise brief: route, audience, proof, action, and deadline.',
         'contact.email': 'Email brief', 'contact.store': 'Open Store', 'contact.more': 'More options',
-        'machine.title': 'Machine-readable summary', 'machine.dt1': 'Primary purpose', 'machine.dd1': 'PakRPP is a publishing and discovery ecosystem connecting editorial writing, knowledge products, curated Store, and contact flow.', 'machine.dt2': 'Routes', 'machine.dd2': '/landing is the identity surface, / is the Blog listing surface, and /store is the curated commerce surface.', 'machine.dt3': 'Navigation model', 'machine.dd3': 'A bottom dock handles primary routes; a dock-attached contents outline handles section navigation; bottom sheets handle discovery, language, theme, and more actions.',
+        'machine.title': 'Machine-readable summary', 'machine.dt1': 'Primary purpose', 'machine.dd1': 'PakRPP is a publishing and discovery ecosystem connecting editorial writing, knowledge products, curated Store, and contact flow.', 'machine.dt2': 'Routes', 'machine.dd2': '/landing is the Home surface, / is the Blog listing surface, and /store is the curated commerce surface.', 'machine.dt3': 'Navigation model', 'machine.dd3': 'A bottom dock handles primary routes; a dock-attached contents outline handles section navigation; bottom sheets handle discovery, language, theme, and more actions.',
         'footer.copy': 'PakRPP · Semantic document, mobile-first product surface, and discovery object.',
         'dock.label': 'Primary navigation', 'dock.home': 'Home', 'dock.contact': 'Contact', 'dock.search': 'Search', 'dock.blog': 'Blog', 'dock.more': 'More',
-        'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Landing, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
-        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP landing', 'command.placeholder': 'Search sections, routes, or actions',
-        'more.channelsLabel': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.storeTitle': 'Store', 'more.storeBody': 'Open Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Open the editorial archive.', 'more.homeTitle': 'Landing', 'more.homeBody': 'Return to this identity surface.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Jump to the brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
+        'nav.home': 'Home', 'nav.contact': 'Contact', 'nav.search': 'Search', 'nav.blog': 'Blog', 'nav.more': 'More', 'nav.store': 'Store',
+        'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Home, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
+        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP home', 'command.placeholder': 'Search sections, routes, or actions',
+        'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'System', 'appearance.light': 'Light', 'appearance.dark': 'Dark', 'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
+        'more.channelsLabel': 'Share site', 'more.shareSite': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.section.navigation': 'Navigation', 'more.section.discover': 'Discover', 'more.section.info': 'Info', 'more.section.language': 'Language', 'more.section.appearance': 'Appearance', 'more.search': 'Search', 'more.sitemap': 'Sitemap', 'more.rss': 'RSS', 'more.about': 'About PakRPP', 'more.privacy': 'Privacy Policy', 'more.terms': 'Terms of Use', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Open Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Open the editorial archive.', 'more.homeTitle': 'Home', 'more.homeBody': 'Return to this identity surface.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Jump to the brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
       }
     };
 
@@ -1108,6 +1181,7 @@
           if (nav === 'contact') item.setAttribute('aria-current', state.activeSection === 'contact' ? 'page' : 'false');
         });
       }
+      syncLandingRouteState();
     }
 
     function collapseOutline() {
@@ -1168,6 +1242,44 @@
     }
 
     function prefersReducedMotion() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+    function scrollDocumentToTop() {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      } catch (error) {
+        window.scrollTo(0, 0);
+      }
+      state.activeSection = 'hero';
+      updateOutlineCopy();
+    }
+
+    function scrollToLandingTarget(id) {
+      var node = document.getElementById(id);
+      if (!node) return;
+      node.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      state.activeSection = id;
+      updateOutlineCopy();
+    }
+
+    function afterPanelSettles(callback) {
+      var delay = state.activePanel ? (prefersReducedMotion() ? 1 : 210) : 1;
+      if (state.activePanel) closePanel();
+      window.setTimeout(callback, delay);
+    }
+
+    function syncLandingRouteState() {
+      document.querySelectorAll('[data-landing-route]').forEach(function (node) {
+        var route = node.getAttribute('data-landing-route');
+        var active = (route === 'home' && state.activeSection !== 'contact') || (route === 'contact' && state.activeSection === 'contact');
+        if (active) {
+          node.setAttribute('aria-current', 'page');
+          node.setAttribute('data-gg-active', 'true');
+        } else {
+          node.removeAttribute('aria-current');
+          node.removeAttribute('data-gg-active');
+        }
+      });
+    }
 
     function resolveDockDirection(top) {
       var previous = state.dockLastScrollTop;
@@ -1302,6 +1414,18 @@
       });
       document.querySelectorAll('[data-open-command]').forEach(function (button) { button.addEventListener('click', function () { openPanel('command', button); }); });
       document.querySelectorAll('[data-open-more]').forEach(function (button) { button.addEventListener('click', function () { openPanel('more', button); }); });
+      document.querySelectorAll('[data-landing-route]').forEach(function (node) {
+        node.addEventListener('click', function (event) {
+          var route = node.getAttribute('data-landing-route');
+          if (route === 'home') {
+            event.preventDefault();
+            afterPanelSettles(scrollDocumentToTop);
+          } else if (route === 'contact') {
+            event.preventDefault();
+            afterPanelSettles(function () { scrollToLandingTarget('contact'); });
+          }
+        });
+      });
       document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
           if (state.activePanel) closePanel();
