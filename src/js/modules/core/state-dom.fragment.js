@@ -106,7 +106,7 @@
           discoveryIndex: null,
           discoveryIndexPromise: null,
           discoveryQuery: '',
-          discoveryTab: 'results',
+          discoveryTab: 'all',
           discoveryTopic: '',
           discoveryActiveIndex: -1,
           discoveryExpandedGroups: {},

@@ -17,9 +17,9 @@ window.GG = window.GG || {};
               collapse: 'Collapse contents outline'
             },
             command: {
-              inputLabel: 'Search articles and topics',
-              placeholder: 'Search articles and topics',
-              title: 'Discover',
+              inputLabel: 'Search articles, topics, routes, sections, or actions',
+              placeholder: 'Search articles, topics, routes, sections, or actions',
+              title: 'Discovery',
               dismiss: 'Dismiss discovery sheet',
               tabs: {
                 label: 'Discovery modes',
@@ -50,10 +50,10 @@ window.GG = window.GG || {};
               title: 'Discovery',
               store: {
                 title: 'Store Discovery',
-                placeholder: 'Search products, categories, and store routes'
+                placeholder: 'Search products, categories, or store routes'
               },
               global: {
-                placeholder: 'Search articles, routes, topics, sections, and actions'
+                placeholder: 'Search articles, topics, routes, sections, or actions'
               },
               filter: {
                 all: 'All',
@@ -65,9 +65,18 @@ window.GG = window.GG || {};
                 products: 'Products',
                 categories: 'Categories'
               },
+              type: {
+                article: 'Article',
+                topic: 'Topic',
+                route: 'Route',
+                section: 'Section',
+                action: 'Action',
+                product: 'Product',
+                category: 'Category'
+              },
               empty: {
-                title: 'No discovery results',
-                body: 'Try another search or open a route directly.'
+                title: 'No results',
+                body: 'Try another keyword.'
               }
             },
             dock: {
@@ -254,8 +263,8 @@ window.GG = window.GG || {};
               collapse: 'Tutup daftar isi'
             },
             command: {
-              inputLabel: 'Cari artikel dan topik',
-              placeholder: 'Cari artikel dan topik',
+              inputLabel: 'Cari artikel, topik, rute, bagian, atau aksi',
+              placeholder: 'Cari artikel, topik, rute, bagian, atau aksi',
               title: 'Jelajah',
               dismiss: 'Tutup lembar jelajah',
               tabs: {
@@ -284,27 +293,36 @@ window.GG = window.GG || {};
               }
             },
             discovery: {
-              title: 'Discovery',
+              title: 'Jelajah',
               store: {
-                title: 'Store Discovery',
-                placeholder: 'Cari produk, kategori, dan rute Store'
+                title: 'Jelajah Store',
+                placeholder: 'Cari produk, kategori, atau rute Store'
               },
               global: {
-                placeholder: 'Cari artikel, rute, topik, section, dan aksi'
+                placeholder: 'Cari artikel, topik, rute, bagian, atau aksi'
               },
               filter: {
                 all: 'Semua',
                 articles: 'Artikel',
                 topics: 'Topik',
                 routes: 'Rute',
-                sections: 'Section',
+                sections: 'Bagian',
                 actions: 'Aksi',
                 products: 'Produk',
                 categories: 'Kategori'
               },
+              type: {
+                article: 'Artikel',
+                topic: 'Topik',
+                route: 'Rute',
+                section: 'Bagian',
+                action: 'Aksi',
+                product: 'Produk',
+                category: 'Kategori'
+              },
               empty: {
-                title: 'Tidak ada hasil discovery',
-                body: 'Coba pencarian lain atau buka rute langsung.'
+                title: 'Tidak ada hasil',
+                body: 'Coba kata kunci lain.'
               }
             },
             dock: {
@@ -931,7 +949,7 @@ window.GG = window.GG || {};
           discoveryIndex: null,
           discoveryIndexPromise: null,
           discoveryQuery: '',
-          discoveryTab: 'results',
+          discoveryTab: 'all',
           discoveryTopic: '',
           discoveryActiveIndex: -1,
           discoveryExpandedGroups: {},
@@ -4530,7 +4548,7 @@ window.GG = window.GG || {};
           var query = Object.prototype.hasOwnProperty.call(launchOptions, 'query') ? String(launchOptions.query || '') : getCommandValue();
 
           if (launchOptions.tab) {
-            state.discoveryTab = launchOptions.tab === 'topics' ? 'topics' : 'results';
+            state.discoveryTab = normalizeDiscoveryFilter(launchOptions.tab);
           }
           if (launchOptions.clearTopic) state.discoveryTopic = '';
           if (launchOptions.resetActiveIndex !== false) state.discoveryActiveIndex = -1;
@@ -6742,27 +6760,238 @@ window.GG = window.GG || {};
           return null;
         }
 
+        function createGlobalDiscoveryItem(config) {
+          var item = config || {};
+          var keywords = Array.isArray(item.keywords) ? item.keywords : [];
+          var title = stripHtml(item.title || '');
+          var meta = stripHtml(item.meta || '');
+          return {
+            id: String(item.id || item.href || item.action || title || ''),
+            domain: 'global',
+            type: String(item.type || 'action'),
+            title: title,
+            meta: meta,
+            href: item.href || '',
+            action: item.action || '',
+            target: item.target || '',
+            keywords: keywords.map(function (keyword) { return String(keyword || ''); }).filter(Boolean),
+            priority: Number(item.priority || 0),
+            text: searchText([title, meta, keywords.join(' ')].join(' '))
+          };
+        }
+
+        function globalArticlesAdapter(index) {
+          var posts = index && index.posts ? index.posts : [];
+          return posts.map(function (post, index) {
+            return createGlobalDiscoveryItem({
+              id: 'article:' + (post.href || post.title || index),
+              type: 'article',
+              title: post.title,
+              meta: post.labelTexts && post.labelTexts.length ? post.labelTexts.join(' · ') : (post.summary || getCopy('command.results.article')),
+              href: post.href,
+              keywords: (post.labelTexts || []).concat([post.summary || '']),
+              priority: 50 - Math.min(index, 20)
+            });
+          }).filter(function (item) {
+            return !!(item.title && item.href);
+          });
+        }
+
+        function globalTopicsAdapter(index) {
+          var topics = index && index.topics ? index.topics : [];
+          return topics.map(function (topic, index) {
+            return createGlobalDiscoveryItem({
+              id: 'topic:' + (topic.key || topic.title || index),
+              type: 'topic',
+              title: topic.title,
+              meta: formatCopy('command.topics.countLabel', { count: String(topic.count || 0) }),
+              href: topic.href,
+              keywords: [topic.key || '', 'label', 'topic', 'archive'],
+              priority: 34 - Math.min(index, 20)
+            });
+          }).filter(function (item) {
+            return !!item.title;
+          });
+        }
+
+        function globalRoutesAdapter() {
+          return [
+            createGlobalDiscoveryItem({
+              id: 'route:home',
+              type: 'route',
+              title: getCopy('nav.home'),
+              meta: '/landing',
+              href: makeHomeUrl('landing'),
+              action: 'navigateHome',
+              keywords: ['home', 'beranda', 'landing', 'intro'],
+              priority: 100
+            }),
+            createGlobalDiscoveryItem({
+              id: 'route:blog',
+              type: 'route',
+              title: getCopy('nav.blog'),
+              meta: '/',
+              href: makeHomeUrl(''),
+              action: 'navigateBlog',
+              keywords: ['blog', 'articles', 'artikel', 'archive'],
+              priority: 98
+            }),
+            createGlobalDiscoveryItem({
+              id: 'route:store',
+              type: 'route',
+              title: getCopy('nav.store'),
+              meta: '/store',
+              href: makeHomeUrl('store'),
+              action: 'navigateStore',
+              keywords: ['store', 'yellow cart', 'products', 'produk'],
+              priority: 96
+            }),
+            createGlobalDiscoveryItem({
+              id: 'route:contact',
+              type: 'route',
+              title: getCopy('nav.contact'),
+              meta: '/landing#contact',
+              href: makeHomeUrl('landing#contact'),
+              action: 'navigateContact',
+              keywords: ['contact', 'kontak', 'email', 'brief'],
+              priority: 94
+            })
+          ];
+        }
+
+        function globalLandingSectionsAdapter() {
+          var sections = [
+            ['hero', 'Intro', 'Beranda, identity, route truth'],
+            ['structure', 'Structure', 'HTML, CSS, JS separation'],
+            ['routes', 'Routes', 'Home, Blog, Store, Contact'],
+            ['interaction', 'Interaction', 'Dock, outline, gestures'],
+            ['discoverability', 'Discoverability', 'SEO, GEO, GEA, AI searchability'],
+            ['contact', 'Contact', 'Brief and route options']
+          ];
+          return sections.map(function (entry, index) {
+            return createGlobalDiscoveryItem({
+              id: 'section:' + entry[0],
+              type: 'section',
+              title: entry[1],
+              meta: '/landing#' + entry[0],
+              href: makeHomeUrl('landing#' + entry[0]),
+              action: entry[0] === 'contact' ? 'navigateContact' : 'navigateHomeSection',
+              target: entry[0],
+              keywords: entry[2].split(/[\s,]+/),
+              priority: 80 - index
+            });
+          });
+        }
+
+        function globalActionsAdapter() {
+          return [
+            createGlobalDiscoveryItem({
+              id: 'action:contact',
+              type: 'action',
+              title: getCopy('nav.contact') + ' PakRPP',
+              meta: '/landing#contact',
+              href: makeHomeUrl('landing#contact'),
+              action: 'navigateContact',
+              keywords: ['contact', 'kontak', 'pakrpp', 'brief'],
+              priority: 72
+            }),
+            createGlobalDiscoveryItem({
+              id: 'action:more',
+              type: 'action',
+              title: getCopy('more.title'),
+              meta: getCopy('more.search') + ' · ' + getCopy('more.sitemap') + ' · ' + getCopy('more.rss'),
+              action: 'openMore',
+              keywords: ['more', 'lainnya', 'language', 'theme', 'rss', 'sitemap'],
+              priority: 70
+            }),
+            createGlobalDiscoveryItem({
+              id: 'action:store',
+              type: 'action',
+              title: 'Open ' + getCopy('nav.store'),
+              meta: '/store',
+              href: makeHomeUrl('store'),
+              action: 'navigateStore',
+              keywords: ['store', 'open store', 'yellow cart'],
+              priority: 68
+            }),
+            createGlobalDiscoveryItem({
+              id: 'action:blog',
+              type: 'action',
+              title: 'Open ' + getCopy('nav.blog'),
+              meta: '/',
+              href: makeHomeUrl(''),
+              action: 'navigateBlog',
+              keywords: ['blog', 'open blog', 'articles'],
+              priority: 66
+            })
+          ];
+        }
+
+        function getGlobalDiscoveryItems() {
+          var index = state.discoveryIndex || { posts: [], topics: [] };
+          return []
+            .concat(globalRoutesAdapter())
+            .concat(globalLandingSectionsAdapter())
+            .concat(globalActionsAdapter())
+            .concat(globalArticlesAdapter(index))
+            .concat(globalTopicsAdapter(index));
+        }
+
+        function normalizeDiscoveryFilter(filter) {
+          var value = String(filter || 'all');
+          return ['all', 'articles', 'topics', 'routes', 'sections', 'actions'].indexOf(value) > -1 ? value : 'all';
+        }
+
+        function discoveryFilterMatches(item, filter) {
+          var active = normalizeDiscoveryFilter(filter);
+          if (active === 'all') return true;
+          if (active === 'articles') return item.type === 'article';
+          if (active === 'topics') return item.type === 'topic';
+          if (active === 'routes') return item.type === 'route';
+          if (active === 'sections') return item.type === 'section';
+          if (active === 'actions') return item.type === 'action';
+          return true;
+        }
+
+        function scoreGlobalDiscoveryItem(item, query) {
+          return scoreDiscoveryText(item && item.text, item && item.title, query);
+        }
+
         function buildDiscoveryResults(query) {
-          var posts = state.discoveryIndex && state.discoveryIndex.posts ? state.discoveryIndex.posts.slice() : [];
+          var items = getGlobalDiscoveryItems();
           var q = String(query || '').trim();
           var topicKey = state.discoveryTopic;
 
           if (topicKey) {
-            posts = posts.filter(function (post) {
-              return post.topicKeys && post.topicKeys.indexOf(topicKey) > -1;
+            items = globalArticlesAdapter(state.discoveryIndex || { posts: [] }).filter(function (item) {
+              var posts = state.discoveryIndex && state.discoveryIndex.posts ? state.discoveryIndex.posts : [];
+              var i;
+              for (i = 0; i < posts.length; i += 1) {
+                if ((posts[i].href || '') !== item.href) continue;
+                return posts[i].topicKeys && posts[i].topicKeys.indexOf(topicKey) > -1;
+              }
+              return false;
             });
           }
 
-          if (!q) return posts.slice(0, 8);
+          items = items.filter(function (item) {
+            return discoveryFilterMatches(item, state.discoveryTab);
+          });
 
-          return posts.map(function (post) {
-            post._score = scoreDiscoveryPost(post, q);
-            return post;
-          }).filter(function (post) {
-            return post._score > 0;
+          if (!q) {
+            return items.sort(function (a, b) {
+              return (b.priority || 0) - (a.priority || 0) || a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+            }).slice(0, 14);
+          }
+
+          return items.map(function (item) {
+            item._score = scoreGlobalDiscoveryItem(item, q);
+            return item;
+          }).filter(function (item) {
+            return item._score > 0;
           }).sort(function (a, b) {
-            return b._score - a._score;
-          }).slice(0, 10);
+            return b._score - a._score || (b.priority || 0) - (a.priority || 0);
+          }).slice(0, 14);
         }
 
         function buildDiscoveryTopics(query) {
@@ -6904,23 +7133,21 @@ window.GG = window.GG || {};
         }
 
         function syncDiscoveryTabState() {
-          var activeTab = state.discoveryTab === 'topics' ? 'topics' : 'results';
-          var isResults = activeTab === 'results';
+          var activeTab = normalizeDiscoveryFilter(state.discoveryTab);
+          var tabNodes = ui.commandPanel ? Array.prototype.slice.call(ui.commandPanel.querySelectorAll('[data-gg-command-tab]')) : [];
+          var i;
 
           state.discoveryTab = activeTab;
 
-          if (ui.commandTabResults) {
-            ui.commandTabResults.setAttribute('aria-selected', isResults ? 'true' : 'false');
-            ui.commandTabResults.setAttribute('tabindex', isResults ? '0' : '-1');
+          for (i = 0; i < tabNodes.length; i += 1) {
+            tabNodes[i].setAttribute('aria-selected', tabNodes[i].getAttribute('data-gg-command-tab') === activeTab ? 'true' : 'false');
+            tabNodes[i].setAttribute('tabindex', tabNodes[i].getAttribute('data-gg-command-tab') === activeTab ? '0' : '-1');
           }
-          if (ui.commandTabTopics) {
-            ui.commandTabTopics.setAttribute('aria-selected', isResults ? 'false' : 'true');
-            ui.commandTabTopics.setAttribute('tabindex', isResults ? '-1' : '0');
-          }
-          if (ui.commandResultsPanel) ui.commandResultsPanel.hidden = !isResults;
-          if (ui.commandTopicsPanel) ui.commandTopicsPanel.hidden = isResults;
+
+          if (ui.commandResultsPanel) ui.commandResultsPanel.hidden = false;
+          if (ui.commandTopicsPanel) ui.commandTopicsPanel.hidden = true;
           if (ui.commandSheetInput) {
-            ui.commandSheetInput.setAttribute('aria-controls', isResults ? 'gg-discovery-panel-results' : 'gg-discovery-panel-topics');
+            ui.commandSheetInput.setAttribute('aria-controls', 'gg-discovery-panel-results');
           }
         }
 
@@ -6929,7 +7156,9 @@ window.GG = window.GG || {};
           var textNode = getTemplatePart(node, 'text');
 
           if (!node || !textNode) return null;
-          textNode.textContent = getCopy(copyKey);
+          textNode.textContent = copyKey === 'discovery.empty'
+            ? (getCopy('discovery.empty.title') + '. ' + getCopy('discovery.empty.body'))
+            : getCopy(copyKey);
           return node;
         }
 
@@ -6945,6 +7174,15 @@ window.GG = window.GG || {};
           typeNode.textContent = options.typeText || '';
           titleNode.textContent = options.titleText || '';
           metaNode.textContent = options.metaText || '';
+
+          if (options.type) node.setAttribute('data-gg-discovery-type', options.type);
+          else node.removeAttribute('data-gg-discovery-type');
+
+          if (options.action) node.setAttribute('data-gg-discovery-action', options.action);
+          else node.removeAttribute('data-gg-discovery-action');
+
+          if (options.target) node.setAttribute('data-gg-discovery-target', options.target);
+          else node.removeAttribute('data-gg-discovery-target');
 
           if (options.href) node.setAttribute('data-gg-discovery-href', options.href);
           else node.removeAttribute('data-gg-discovery-href');
@@ -6986,38 +7224,25 @@ window.GG = window.GG || {};
           var nodes = [];
           var topic = getDiscoveryActiveTopic();
           var i;
-          var metaLabel;
 
           if (!ui.commandResults) return;
 
           renderDiscoveryContext(topic);
 
           if (!items.length) {
-            if (!topic) {
-              nodes.push(createDiscoveryResultNode({
-                submit: true,
-                typeText: getCopy('command.results.search'),
-                titleText: formatCopy('command.results.openSearchResults', { query: q || getCopy('command.results.allPosts') }),
-                metaText: getCopy('command.results.noDirectMatch')
-              }));
-              replaceNodeChildren(ui.commandResults, nodes);
-              return;
-            }
-
-            replaceNodeChildren(ui.commandResults, [createDiscoveryEmptyNode('command.results.empty')]);
+            replaceNodeChildren(ui.commandResults, [createDiscoveryEmptyNode('discovery.empty')]);
             return;
           }
 
           for (i = 0; i < items.length; i += 1) {
-            metaLabel = items[i].labelTexts && items[i].labelTexts.length
-              ? items[i].labelTexts.join(' · ')
-              : (items[i].summary || getCopy('command.results.article'));
-
             nodes.push(createDiscoveryResultNode({
               href: items[i].href,
-              typeText: getCopy('command.results.postType'),
+              action: items[i].action,
+              target: items[i].target,
+              type: items[i].type,
+              typeText: getCopy('discovery.type.' + items[i].type),
               titleText: items[i].title,
-              metaText: metaLabel
+              metaText: items[i].meta
             }));
           }
 
@@ -7108,7 +7333,7 @@ window.GG = window.GG || {};
         }
 
         function setDiscoveryTab(tab) {
-          var nextTab = tab === 'topics' ? 'topics' : 'results';
+          var nextTab = normalizeDiscoveryFilter(tab);
           if (state.discoveryTab === nextTab) return;
           state.discoveryTab = nextTab;
           state.discoveryActiveIndex = -1;
@@ -7125,7 +7350,7 @@ window.GG = window.GG || {};
           state.discoveryTopic = topicKey;
 
           query = nextOptions.clearQuery ? syncCommandInputs('') : getCommandValue();
-          if (nextOptions.switchToResults !== false) state.discoveryTab = 'results';
+          if (nextOptions.switchToResults !== false) state.discoveryTab = 'all';
           state.discoveryActiveIndex = -1;
           renderDiscovery(query, {
             open: false
@@ -7166,8 +7391,8 @@ window.GG = window.GG || {};
         }
 
         function getDiscoveryItems() {
-          var selector = state.discoveryTab === 'topics' ? DISCOVERY_TOPIC_SELECTOR : DISCOVERY_RESULT_SELECTOR;
-          var root = state.discoveryTab === 'topics' ? ui.commandTopics : ui.commandResults;
+          var selector = DISCOVERY_RESULT_SELECTOR;
+          var root = ui.commandResults;
           if (!root) return [];
           return Array.prototype.slice.call(root.querySelectorAll(selector));
         }
@@ -7208,6 +7433,92 @@ window.GG = window.GG || {};
           window.location.href = buildCommandSearchUrl(query);
         }
 
+        function isCurrentRootBlog() {
+          return !!(state.surfaceContext && state.surfaceContext.isRootListing);
+        }
+
+        function isCurrentLanding() {
+          return !!(state.surfaceContext && state.surfaceContext.surface === 'landing');
+        }
+
+        function scrollLandingSectionIfPresent(target) {
+          var id = String(target || '').replace(/^#/, '');
+          var node = id ? document.getElementById(id) : null;
+          if (!node || typeof node.scrollIntoView !== 'function') return false;
+          node.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+          return true;
+        }
+
+        function navigateAfterCommandClose(href) {
+          closeCommandPanel('discovery-route', { returnFocus: false }).then(function () {
+            if (href) window.location.href = href;
+          });
+        }
+
+        function resolveGlobalDiscoveryAction(action, href, target) {
+          var nextAction = String(action || '');
+          var nextHref = href || '';
+          var nextTarget = String(target || '');
+
+          if (nextAction === 'openMore') {
+            closeCommandPanel('discovery-open-more', { returnFocus: false }).then(function () {
+              openPanel('more', {
+                trigger: document.querySelector('[data-gg-open="more"]') || document.querySelector('[data-gg-nav="more"]') || document.activeElement,
+                reason: 'discovery-open-more'
+              });
+            });
+            return true;
+          }
+
+          if (nextAction === 'navigateBlog') {
+            if (isCurrentRootBlog()) {
+              closeCommandPanel('discovery-scroll-blog', { returnFocus: false }).then(scrollDocumentToTop);
+            } else {
+              navigateAfterCommandClose(makeHomeUrl(''));
+            }
+            return true;
+          }
+
+          if (nextAction === 'navigateHome') {
+            if (isCurrentLanding()) {
+              closeCommandPanel('discovery-scroll-home', { returnFocus: false }).then(scrollDocumentToTop);
+            } else {
+              navigateAfterCommandClose(makeHomeUrl('landing'));
+            }
+            return true;
+          }
+
+          if (nextAction === 'navigateContact') {
+            if (isCurrentLanding() && scrollLandingSectionIfPresent('contact')) {
+              closeCommandPanel('discovery-scroll-contact', { returnFocus: false });
+            } else {
+              navigateAfterCommandClose(makeHomeUrl('landing#contact'));
+            }
+            return true;
+          }
+
+          if (nextAction === 'navigateHomeSection') {
+            if (isCurrentLanding() && scrollLandingSectionIfPresent(nextTarget)) {
+              closeCommandPanel('discovery-scroll-section', { returnFocus: false });
+            } else {
+              navigateAfterCommandClose(makeHomeUrl('landing#' + nextTarget));
+            }
+            return true;
+          }
+
+          if (nextAction === 'navigateStore') {
+            navigateAfterCommandClose(makeHomeUrl('store'));
+            return true;
+          }
+
+          if (nextHref) {
+            navigateAfterCommandClose(nextHref);
+            return true;
+          }
+
+          return false;
+        }
+
         function handleSearchEmptyAction(action) {
           var trigger = document.querySelector('[data-gg-focus="command"]') || ui.commandSheetInput || document.activeElement || null;
           var nextAction = String(action || '');
@@ -7223,7 +7534,7 @@ window.GG = window.GG || {};
           }
 
           launchDiscovery(trigger, 'search-empty-search', {
-            tab: 'results',
+            tab: 'all',
             query: getCurrentSearchQuery(),
             clearTopic: true,
             focusSheet: true,
@@ -7237,7 +7548,7 @@ window.GG = window.GG || {};
           if (String(action || '') !== 'search') return;
 
           launchDiscovery(trigger, 'error404-search', {
-            tab: 'results',
+            tab: 'all',
             query: '',
             clearTopic: true,
             focusSheet: true,
@@ -7264,7 +7575,7 @@ window.GG = window.GG || {};
             return;
           }
 
-          if (state.discoveryTab === 'results' && !state.discoveryTopic) {
+          if (!state.discoveryTopic) {
             submitCommandSearch(query);
           }
         }
@@ -8131,7 +8442,7 @@ window.GG = window.GG || {};
           discoveryTopicApply = event.target.closest('[data-gg-topic-key]');
           discoveryTopicBack = event.target.closest('[data-gg-topic-back]');
           discoveryTopicClear = event.target.closest('[data-gg-topic-clear]');
-          discoveryResult = event.target.closest('[data-gg-discovery-href]');
+          discoveryResult = event.target.closest('[data-gg-discovery-href], [data-gg-discovery-action]');
           discoverySubmit = event.target.closest('[data-gg-discovery-submit]');
           searchEmptyAction = event.target.closest('[data-gg-search-empty-action]');
           error404Action = event.target.closest('[data-gg-error404-action]');
@@ -8323,7 +8634,12 @@ window.GG = window.GG || {};
           }
 
           if (discoveryResult) {
-            window.location.href = discoveryResult.getAttribute('data-gg-discovery-href');
+            event.preventDefault();
+            resolveGlobalDiscoveryAction(
+              discoveryResult.getAttribute('data-gg-discovery-action'),
+              discoveryResult.getAttribute('data-gg-discovery-href'),
+              discoveryResult.getAttribute('data-gg-discovery-target')
+            );
             return;
           }
 

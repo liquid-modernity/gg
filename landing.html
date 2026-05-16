@@ -566,6 +566,7 @@
     .gg-sheet[hidden] { display: none !important; }
     .gg-sheet__scrim { position: absolute; inset: 0; border: 0; background: var(--gg-panel-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; pointer-events: auto; transition: opacity var(--gg-motion-sheet-open-bottom); }
     .gg-sheet__panel { position: relative; pointer-events: auto; width: var(--gg-panel-width); max-width: none; min-height: var(--gg-panel-min-height); max-height: var(--gg-panel-max-height); overflow: auto; padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom); border: 1px solid var(--gg-line-strong); border-bottom: 0; border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0; background: var(--gg-surface-panel); color: var(--gg-ink); box-shadow: var(--gg-shadow-panel-bottom); transform: translate3d(0, 22px, 0); transition: transform var(--gg-motion-sheet-open-bottom), box-shadow var(--gg-motion-sheet-open-bottom); overscroll-behavior: contain; }
+    #gg-command-panel .gg-sheet__panel { display: grid; overflow: hidden; }
     .gg-sheet[data-gg-state='open'] .gg-sheet__scrim, .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim { opacity: 1; }
     .gg-sheet[data-gg-state='open'] .gg-sheet__panel, .gg-sheet[data-gg-state='opening'] .gg-sheet__panel { transform: translate3d(0,0,0); }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__scrim { opacity: 0; }
@@ -575,6 +576,9 @@
     .gg-sheet__handle::before { content: ""; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     .gg-sheet__title { margin: 0; max-width: var(--gg-utility-title-max); font: 650 13px/1.2 var(--gg-font-sans); text-align: center; }
     .gg-sheet__body { display: grid; gap: 12px; padding: 12px 0 calc(14px + env(safe-area-inset-bottom)); }
+    .gg-discovery-body { min-height: 0; overflow: auto; padding: 12px 0 10px; overscroll-behavior: contain; }
+    .gg-discovery-command { position: sticky; bottom: 0; z-index: 2; display: grid; gap: 10px; margin: 0 calc(var(--gg-panel-pad-x) * -1) calc(var(--gg-panel-pad-bottom) * -1); padding: 10px var(--gg-panel-pad-x) calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--gg-divider); background: linear-gradient(0deg, var(--gg-surface-panel) 82%, var(--gg-surface-panel-fade-soft) 100%); }
+    .gg-discovery-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     #gg-more-panel .gg-sheet__body { padding-bottom: 0; }
     #gg-more-panel .gg-sheet__panel { min-height: var(--gg-panel-min-height); }
     .gg-field { width: 100%; min-height: 54px; padding: 0 14px; border: 1px solid var(--gg-line); border-radius: 16px; background: color-mix(in srgb, var(--gg-surface-interactive) 60%, transparent); color: var(--gg-ink); font: 520 15px/1.2 var(--gg-font-sans); }
@@ -590,8 +594,9 @@
       text-transform: uppercase;
     }
     .gg-more-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-    .gg-result, .gg-more-item { display: grid; gap: 3px; min-height: var(--gg-hit-min); padding: 13px 2px; border-top: 1px solid var(--gg-divider); background: transparent; color: var(--gg-ink); text-align: left; }
+    .gg-result, .gg-more-item { display: grid; gap: 3px; min-height: var(--gg-hit-min); padding: 13px 2px; border: 0; border-top: 1px solid var(--gg-divider); background: transparent; color: var(--gg-ink); text-align: left; cursor: pointer; }
     .gg-result:first-child, .gg-more-item:first-child { border-top: 0; }
+    .gg-result__type { color: var(--gg-accent-soft); font: 720 10px/1.2 var(--gg-font-sans); letter-spacing: .08em; text-transform: uppercase; }
     .gg-result strong, .gg-more-item strong { font: 700 15px/1.22 var(--gg-font-sans); letter-spacing: -.025em; }
     .gg-result span, .gg-more-item span { color: var(--gg-ink-soft); font: 520 13px/1.45 var(--gg-font-sans); }
     .gg-more-list__link {
@@ -868,14 +873,24 @@
     </button>
   </nav>
 
-  <div class="gg-sheet" id="gg-command-panel" data-gg-state="closed" aria-hidden="true" hidden>
+  <div class="gg-sheet" id="gg-command-panel" data-gg-state="closed" data-gg-discovery-domain="global" data-gg-discovery-index="global-discovery-v1" data-gg-discovery-command-placement="bottom" data-gg-discovery-shell="bottom-command" aria-hidden="true" hidden>
     <button class="gg-sheet__scrim" type="button" data-close-panel><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
-    <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-command-title" tabindex="-1">
-      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="command.title">Discovery</h2></div>
-      <div class="gg-sheet__body">
-        <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search PakRPP home</label>
-        <input class="gg-field" id="gg-command-input" type="search" autocomplete="off" inputmode="search" data-copy-attr="placeholder:command.placeholder" placeholder="Search sections, routes, and actions" />
+    <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-command-title" data-gg-discovery-shell-panel="global" tabindex="-1">
+      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="discovery.title">Discovery</h2></div>
+      <div class="gg-sheet__body gg-discovery-body">
         <div class="gg-results" id="gg-command-results" aria-live="polite"></div>
+      </div>
+      <div class="gg-discovery-command" data-gg-discovery-command="bottom">
+        <div class="gg-discovery-filters" role="tablist" aria-label="Discovery filters">
+          <button class="gg-control" type="button" data-discovery-filter="all" data-copy="discovery.filter.all" aria-pressed="true">All</button>
+          <button class="gg-control" type="button" data-discovery-filter="articles" data-copy="discovery.filter.articles" aria-pressed="false">Articles</button>
+          <button class="gg-control" type="button" data-discovery-filter="topics" data-copy="discovery.filter.topics" aria-pressed="false">Topics</button>
+          <button class="gg-control" type="button" data-discovery-filter="routes" data-copy="discovery.filter.routes" aria-pressed="false">Routes</button>
+          <button class="gg-control" type="button" data-discovery-filter="sections" data-copy="discovery.filter.sections" aria-pressed="false">Sections</button>
+          <button class="gg-control" type="button" data-discovery-filter="actions" data-copy="discovery.filter.actions" aria-pressed="false">Actions</button>
+        </div>
+        <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search articles, topics, routes, sections, or actions</label>
+        <input class="gg-field" id="gg-command-input" type="search" autocomplete="off" inputmode="search" data-copy-attr="placeholder:discovery.global.placeholder" placeholder="Search articles, topics, routes, sections, or actions" />
       </div>
     </section>
   </div>
@@ -1022,7 +1037,8 @@
         'dock.label': 'Primary navigation', 'dock.home': 'Home', 'dock.contact': 'Contact', 'dock.search': 'Search', 'dock.blog': 'Blog', 'dock.more': 'More',
         'nav.home': 'Beranda', 'nav.contact': 'Kontak', 'nav.search': 'Cari', 'nav.blog': 'Blog', 'nav.more': 'Lainnya', 'nav.store': 'Store',
         'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Home, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
-        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP home', 'command.placeholder': 'Cari section, route, atau action',
+        'sheet.close': 'Close panel', 'command.title': 'Jelajah', 'command.label': 'Cari artikel, topik, rute, bagian, atau aksi', 'command.placeholder': 'Cari artikel, topik, rute, bagian, atau aksi',
+        'discovery.title': 'Jelajah', 'discovery.global.placeholder': 'Cari artikel, topik, rute, bagian, atau aksi', 'discovery.filter.all': 'Semua', 'discovery.filter.articles': 'Artikel', 'discovery.filter.topics': 'Topik', 'discovery.filter.routes': 'Rute', 'discovery.filter.sections': 'Bagian', 'discovery.filter.actions': 'Aksi', 'discovery.type.article': 'Artikel', 'discovery.type.topic': 'Topik', 'discovery.type.route': 'Rute', 'discovery.type.section': 'Bagian', 'discovery.type.action': 'Aksi', 'discovery.empty.title': 'Tidak ada hasil', 'discovery.empty.body': 'Coba kata kunci lain.',
         'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'Sistem', 'appearance.light': 'Terang', 'appearance.dark': 'Gelap', 'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
         'more.channelsLabel': 'Share site', 'more.shareSite': 'Bagikan situs', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'Lainnya', 'more.section.navigation': 'Navigasi', 'more.section.discover': 'Jelajah', 'more.section.info': 'Info', 'more.section.language': 'Bahasa', 'more.section.appearance': 'Tampilan', 'more.search': 'Cari', 'more.sitemap': 'Peta situs', 'more.rss': 'RSS', 'more.about': 'Tentang PakRPP', 'more.privacy': 'Kebijakan Privasi', 'more.terms': 'Syarat Penggunaan', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Buka Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Buka arsip editorial.', 'more.homeTitle': 'Home', 'more.homeBody': 'Kembali ke identity surface ini.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Lompat ke brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
       },
@@ -1059,7 +1075,8 @@
         'dock.label': 'Primary navigation', 'dock.home': 'Home', 'dock.contact': 'Contact', 'dock.search': 'Search', 'dock.blog': 'Blog', 'dock.more': 'More',
         'nav.home': 'Home', 'nav.contact': 'Contact', 'nav.search': 'Search', 'nav.blog': 'Blog', 'nav.more': 'More', 'nav.store': 'Store',
         'outline.label': 'CONTENTS', 'outline.hero': 'Intro', 'outline.heroNote': 'Identity and route truth', 'outline.structure': 'Structure', 'outline.structureNote': 'HTML, CSS, JS separation', 'outline.routes': 'Routes', 'outline.routesNote': 'Home, Blog, Store, Contact', 'outline.interaction': 'Interaction', 'outline.interactionNote': 'Dock, outline, gestures', 'outline.discoverability': 'Discoverability', 'outline.discoverabilityNote': 'SEO, GEO, GEA, AI searchability', 'outline.contact': 'Contact', 'outline.contactNote': 'Brief and route options',
-        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search PakRPP home', 'command.placeholder': 'Search sections, routes, or actions',
+        'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search articles, topics, routes, sections, or actions', 'command.placeholder': 'Search articles, topics, routes, sections, or actions',
+        'discovery.title': 'Discovery', 'discovery.global.placeholder': 'Search articles, topics, routes, sections, or actions', 'discovery.filter.all': 'All', 'discovery.filter.articles': 'Articles', 'discovery.filter.topics': 'Topics', 'discovery.filter.routes': 'Routes', 'discovery.filter.sections': 'Sections', 'discovery.filter.actions': 'Actions', 'discovery.type.article': 'Article', 'discovery.type.topic': 'Topic', 'discovery.type.route': 'Route', 'discovery.type.section': 'Section', 'discovery.type.action': 'Action', 'discovery.empty.title': 'No results', 'discovery.empty.body': 'Try another keyword.',
         'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'System', 'appearance.light': 'Light', 'appearance.dark': 'Dark', 'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
         'more.channelsLabel': 'Share site', 'more.shareSite': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.section.navigation': 'Navigation', 'more.section.discover': 'Discover', 'more.section.info': 'Info', 'more.section.language': 'Language', 'more.section.appearance': 'Appearance', 'more.search': 'Search', 'more.sitemap': 'Sitemap', 'more.rss': 'RSS', 'more.about': 'About PakRPP', 'more.privacy': 'Privacy Policy', 'more.terms': 'Terms of Use', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Open Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Open the editorial archive.', 'more.homeTitle': 'Home', 'more.homeBody': 'Return to this identity surface.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Jump to the brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
       }
@@ -1074,20 +1091,16 @@
       { id: 'contact', key: 'outline.contact', search: 'contact brief email collaboration' }
     ];
 
-    var ACTIONS = [
-      { title: 'Blog', body: 'Open editorial archive', href: '/', terms: 'blog article archive editorial' },
-      { title: 'Store', body: 'Open Yellow Cart curated commerce', href: '/store', terms: 'store yellow cart product affiliate commerce' },
-      { title: 'Contact', body: 'Jump to brief path', href: '#contact', terms: 'contact email brief collaboration' },
-      { title: 'Theme', body: 'Open More to change system/light/dark', panel: 'more', terms: 'theme dark light system' },
-      { title: 'Language', body: 'Open More to switch ID/EN copy', panel: 'more', terms: 'language english indonesia copy' }
-    ];
-
     var state = {
       locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
       activePanel: '',
       lastFocus: null,
       activeSection: 'hero',
+      discoveryFilter: 'all',
+      discoveryArticles: [],
+      discoveryTopics: [],
+      discoveryFeedPromise: null,
       outlineExpanded: false,
       dockLastScrollTop: 0,
       dockDirectionStart: 0,
@@ -1110,6 +1123,7 @@
     var outlineIcon = document.getElementById('gg-outline-icon');
     var commandInput = document.getElementById('gg-command-input');
     var commandResults = document.getElementById('gg-command-results');
+    var commandFilterButtons = Array.from(document.querySelectorAll('[data-discovery-filter]'));
 
     function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
@@ -1440,37 +1454,239 @@
       });
     }
 
+    function normalizeDiscoveryItem(item) {
+      var source = item || {};
+      var title = source.title || '';
+      var meta = source.meta || '';
+      var keywords = Array.isArray(source.keywords) ? source.keywords.join(' ') : '';
+      return {
+        id: source.id || source.href || source.action || title,
+        domain: 'global',
+        type: source.type || 'action',
+        title: title,
+        meta: meta,
+        href: source.href || '',
+        action: source.action || '',
+        target: source.target || '',
+        keywords: Array.isArray(source.keywords) ? source.keywords : [],
+        priority: Number(source.priority || 0),
+        haystack: (title + ' ' + meta + ' ' + keywords).toLowerCase()
+      };
+    }
+
+    function normalizeTopicKey(value) {
+      return String(value || '').toLowerCase().trim();
+    }
+
+    function extractFeedHref(entry) {
+      var links = (entry && entry.link) || [];
+      for (var i = 0; i < links.length; i += 1) {
+        if (links[i].rel === 'alternate' && links[i].href) return links[i].href;
+      }
+      return '';
+    }
+
+    function buildLandingTopics(articles) {
+      var topicMap = {};
+      var topics = [];
+      articles.forEach(function (article) {
+        (article.labels || []).forEach(function (label) {
+          var key = normalizeTopicKey(label);
+          if (!key) return;
+          if (!topicMap[key]) {
+            topicMap[key] = { key: key, title: label, count: 0, href: '/search/label/' + encodeURIComponent(label) };
+            topics.push(topicMap[key]);
+          }
+          topicMap[key].count += 1;
+        });
+      });
+      topics.sort(function (a, b) { return a.title.localeCompare(b.title); });
+      return topics;
+    }
+
+    function ensureLandingDiscoveryFeed() {
+      if (state.discoveryArticles.length || state.discoveryFeedPromise || !window.fetch) return state.discoveryFeedPromise || Promise.resolve();
+      state.discoveryFeedPromise = fetch('/feeds/posts/default?alt=json&max-results=24', { credentials: 'same-origin' }).then(function (response) {
+        if (!response.ok) throw new Error('landing-discovery-feed');
+        return response.json();
+      }).then(function (payload) {
+        var entries = ((payload || {}).feed || {}).entry || [];
+        state.discoveryArticles = entries.map(function (entry) {
+          var labels = (entry.category || []).map(function (category) { return category.term || ''; }).filter(Boolean);
+          return {
+            title: (entry.title && entry.title.$t) || '',
+            href: extractFeedHref(entry),
+            summary: entry.summary && entry.summary.$t ? entry.summary.$t.replace(/<[^>]+>/g, ' ') : '',
+            labels: labels
+          };
+        }).filter(function (article) { return article.title && article.href; });
+        state.discoveryTopics = buildLandingTopics(state.discoveryArticles);
+        renderCommand(commandInput ? commandInput.value : '');
+      }).catch(function () {
+        state.discoveryArticles = [];
+        state.discoveryTopics = [];
+      }).then(function () {
+        state.discoveryFeedPromise = null;
+      });
+      return state.discoveryFeedPromise;
+    }
+
+    function globalArticlesAdapter() {
+      return state.discoveryArticles.map(function (article, index) {
+        return normalizeDiscoveryItem({
+          id: 'article:' + article.href,
+          type: 'article',
+          title: article.title,
+          meta: article.labels.length ? article.labels.join(' · ') : article.summary,
+          href: article.href,
+          keywords: article.labels.concat([article.summary]),
+          priority: 50 - Math.min(index, 20)
+        });
+      });
+    }
+
+    function globalTopicsAdapter() {
+      return state.discoveryTopics.map(function (topic, index) {
+        return normalizeDiscoveryItem({
+          id: 'topic:' + topic.key,
+          type: 'topic',
+          title: topic.title,
+          meta: String(topic.count || 0) + ' articles',
+          href: topic.href,
+          keywords: [topic.key, 'topic', 'label'],
+          priority: 34 - Math.min(index, 20)
+        });
+      });
+    }
+
+    function globalRoutesAdapter() {
+      return [
+        normalizeDiscoveryItem({ id: 'route:home', type: 'route', title: text('nav.home'), meta: '/landing', href: '/landing', action: 'navigateHome', keywords: ['home', 'beranda', 'landing'], priority: 100 }),
+        normalizeDiscoveryItem({ id: 'route:blog', type: 'route', title: text('nav.blog'), meta: '/', href: '/', action: 'navigateBlog', keywords: ['blog', 'articles', 'artikel'], priority: 98 }),
+        normalizeDiscoveryItem({ id: 'route:store', type: 'route', title: text('nav.store'), meta: '/store', href: '/store', action: 'navigateStore', keywords: ['store', 'yellow cart', 'product'], priority: 96 }),
+        normalizeDiscoveryItem({ id: 'route:contact', type: 'route', title: text('nav.contact'), meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'brief'], priority: 94 })
+      ];
+    }
+
+    function globalLandingSectionsAdapter() {
+      return SECTIONS.map(function (section, index) {
+        return normalizeDiscoveryItem({
+          id: 'section:' + section.id,
+          type: 'section',
+          title: text(section.key),
+          meta: '/landing#' + section.id,
+          href: '/landing#' + section.id,
+          action: section.id === 'contact' ? 'navigateContact' : 'navigateHomeSection',
+          target: section.id,
+          keywords: section.search.split(/\s+/),
+          priority: 80 - index
+        });
+      });
+    }
+
+    function globalActionsAdapter() {
+      return [
+        normalizeDiscoveryItem({ id: 'action:contact', type: 'action', title: text('nav.contact') + ' PakRPP', meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', keywords: ['contact', 'pakrpp', 'brief'], priority: 72 }),
+        normalizeDiscoveryItem({ id: 'action:more', type: 'action', title: text('more.title'), meta: text('more.search') + ' · ' + text('more.sitemap') + ' · ' + text('more.rss'), action: 'openMore', keywords: ['more', 'language', 'theme', 'rss', 'sitemap'], priority: 70 }),
+        normalizeDiscoveryItem({ id: 'action:store', type: 'action', title: 'Open ' + text('nav.store'), meta: '/store', href: '/store', action: 'navigateStore', keywords: ['open store', 'yellow cart'], priority: 68 }),
+        normalizeDiscoveryItem({ id: 'action:blog', type: 'action', title: 'Open ' + text('nav.blog'), meta: '/', href: '/', action: 'navigateBlog', keywords: ['open blog', 'articles'], priority: 66 })
+      ];
+    }
+
+    function globalDiscoveryIndex() {
+      return []
+        .concat(globalRoutesAdapter())
+        .concat(globalLandingSectionsAdapter())
+        .concat(globalActionsAdapter())
+        .concat(globalArticlesAdapter())
+        .concat(globalTopicsAdapter());
+    }
+
+    function normalizeDiscoveryFilter(value) {
+      return ['all', 'articles', 'topics', 'routes', 'sections', 'actions'].indexOf(value) > -1 ? value : 'all';
+    }
+
+    function discoveryFilterMatches(item) {
+      var filter = normalizeDiscoveryFilter(state.discoveryFilter);
+      if (filter === 'all') return true;
+      if (filter === 'articles') return item.type === 'article';
+      if (filter === 'topics') return item.type === 'topic';
+      if (filter === 'routes') return item.type === 'route';
+      if (filter === 'sections') return item.type === 'section';
+      if (filter === 'actions') return item.type === 'action';
+      return true;
+    }
+
+    function resolveDiscoveryItem(item, trigger) {
+      if (!item) return;
+      if (item.action === 'navigateHome') {
+        afterPanelSettles(scrollDocumentToTop);
+      } else if (item.action === 'navigateContact') {
+        afterPanelSettles(function () { scrollToLandingTarget('contact'); });
+      } else if (item.action === 'navigateHomeSection') {
+        afterPanelSettles(function () { scrollToLandingTarget(item.target); });
+      } else if (item.action === 'openMore') {
+        closePanel();
+        window.setTimeout(function () { openPanel('more', trigger); }, prefersReducedMotion() ? 1 : 210);
+      } else if (item.href) {
+        window.location.href = item.href;
+      }
+    }
+
+    function syncDiscoveryFilters() {
+      commandFilterButtons.forEach(function (button) {
+        var active = normalizeDiscoveryFilter(button.getAttribute('data-discovery-filter')) === normalizeDiscoveryFilter(state.discoveryFilter);
+        button.setAttribute('aria-pressed', String(active));
+      });
+    }
+
     function renderCommand(query) {
       if (!commandResults) return;
       var q = String(query || '').toLowerCase().trim();
-      var items = [];
-      SECTIONS.forEach(function (section) {
-        var title = text(section.key);
-        var haystack = (title + ' ' + section.search).toLowerCase();
-        if (!q || haystack.indexOf(q) > -1) items.push({ title: title, body: 'Section · #' + section.id, id: section.id });
-      });
-      ACTIONS.forEach(function (action) {
-        var haystack = (action.title + ' ' + action.body + ' ' + action.terms).toLowerCase();
-        if (!q || haystack.indexOf(q) > -1) items.push(action);
+      var items = globalDiscoveryIndex().filter(function (item) {
+        return discoveryFilterMatches(item) && (!q || item.haystack.indexOf(q) > -1);
+      }).sort(function (a, b) {
+        return (b.priority || 0) - (a.priority || 0) || a.title.localeCompare(b.title);
       });
       commandResults.innerHTML = '';
-      items.slice(0, 8).forEach(function (item) {
-        var button = document.createElement(item.href ? 'a' : 'button');
+      syncDiscoveryFilters();
+      if (!items.length) {
+        var empty = document.createElement('p');
+        empty.className = 'gg-result';
+        empty.textContent = text('discovery.empty.title') + '. ' + text('discovery.empty.body');
+        commandResults.appendChild(empty);
+        return;
+      }
+      items.slice(0, 14).forEach(function (item) {
+        var button = document.createElement('button');
         button.className = 'gg-result';
-        if (item.href) button.href = item.href;
-        else button.type = 'button';
-        button.innerHTML = '<strong></strong><span></span>';
+        button.type = 'button';
+        button.setAttribute('data-gg-discovery-type', item.type);
+        button.innerHTML = '<span class="gg-result__type"></span><strong></strong><span></span>';
+        button.querySelector('.gg-result__type').textContent = text('discovery.type.' + item.type);
         button.querySelector('strong').textContent = item.title;
-        button.querySelector('span').textContent = item.body;
-        if (item.id) button.addEventListener('click', function () { closePanel(); window.setTimeout(function () { var node = document.getElementById(item.id); if (node) node.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' }); }, 1); });
-        if (item.panel) button.addEventListener('click', function () { closePanel(); window.setTimeout(function () { openPanel(item.panel, button); }, 210); });
+        button.querySelector('span:last-child').textContent = item.meta;
+        button.addEventListener('click', function () { resolveDiscoveryItem(item, button); });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            resolveDiscoveryItem(item, button);
+          }
+        });
         commandResults.appendChild(button);
       });
     }
 
     function setupCommand() {
       if (commandInput) commandInput.addEventListener('input', function () { renderCommand(commandInput.value); });
+      commandFilterButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          state.discoveryFilter = normalizeDiscoveryFilter(button.getAttribute('data-discovery-filter'));
+          renderCommand(commandInput ? commandInput.value : '');
+        });
+      });
       renderCommand('');
+      ensureLandingDiscoveryFeed();
     }
 
     function setupPreferences() {

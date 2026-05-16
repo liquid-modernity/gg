@@ -89,21 +89,28 @@
         feedLegacy: 'Feed: arsip Store cadangan',
         filterActive: 'Filter aktif',
         allVisible: 'Semua produk ditampilkan.',
-        discoveryTitle: 'Discovery',
-        'discovery.title': 'Discovery',
-        'discovery.store.title': 'Store Discovery',
-        'discovery.global.placeholder': 'Cari artikel, rute, topik, section, dan aksi',
-        'discovery.store.placeholder': 'Cari produk, kategori, dan rute Store',
+        discoveryTitle: 'Jelajah Store',
+        'discovery.title': 'Jelajah',
+        'discovery.store.title': 'Jelajah Store',
+        'discovery.global.placeholder': 'Cari artikel, topik, rute, bagian, atau aksi',
+        'discovery.store.placeholder': 'Cari produk, kategori, atau rute Store',
         'discovery.filter.all': 'Semua',
         'discovery.filter.articles': 'Artikel',
         'discovery.filter.topics': 'Topik',
         'discovery.filter.routes': 'Rute',
-        'discovery.filter.sections': 'Section',
+        'discovery.filter.sections': 'Bagian',
         'discovery.filter.actions': 'Aksi',
         'discovery.filter.products': 'Produk',
         'discovery.filter.categories': 'Kategori',
-        'discovery.empty.title': 'Tidak ada hasil discovery',
-        'discovery.empty.body': 'Coba pencarian lain atau buka rute langsung.',
+        'discovery.type.article': 'Artikel',
+        'discovery.type.topic': 'Topik',
+        'discovery.type.route': 'Rute',
+        'discovery.type.section': 'Bagian',
+        'discovery.type.action': 'Aksi',
+        'discovery.type.product': 'Produk',
+        'discovery.type.category': 'Kategori',
+        'discovery.empty.title': 'Tidak ada hasil',
+        'discovery.empty.body': 'Coba kata kunci lain.',
         resultsLabel: 'Hasil',
         quickIntentsLabel: 'Pilihan cepat',
         featuredLabel: 'Unggulan',
@@ -261,11 +268,11 @@
         feedLegacy: 'Feed: Store archive fallback',
         filterActive: 'Active filter',
         allVisible: 'All products are visible.',
-        discoveryTitle: 'Discovery',
+        discoveryTitle: 'Store Discovery',
         'discovery.title': 'Discovery',
         'discovery.store.title': 'Store Discovery',
-        'discovery.global.placeholder': 'Search articles, routes, topics, sections, and actions',
-        'discovery.store.placeholder': 'Search products, categories, and store routes',
+        'discovery.global.placeholder': 'Search articles, topics, routes, sections, or actions',
+        'discovery.store.placeholder': 'Search products, categories, or store routes',
         'discovery.filter.all': 'All',
         'discovery.filter.articles': 'Articles',
         'discovery.filter.topics': 'Topics',
@@ -274,8 +281,15 @@
         'discovery.filter.actions': 'Actions',
         'discovery.filter.products': 'Products',
         'discovery.filter.categories': 'Categories',
-        'discovery.empty.title': 'No discovery results',
-        'discovery.empty.body': 'Try another search or open a route directly.',
+        'discovery.type.article': 'Article',
+        'discovery.type.topic': 'Topic',
+        'discovery.type.route': 'Route',
+        'discovery.type.section': 'Section',
+        'discovery.type.action': 'Action',
+        'discovery.type.product': 'Product',
+        'discovery.type.category': 'Category',
+        'discovery.empty.title': 'No results',
+        'discovery.empty.body': 'Try another keyword.',
         resultsLabel: 'Results',
         quickIntentsLabel: 'Quick intents',
         featuredLabel: 'Featured',
@@ -585,6 +599,7 @@
     var langButtons = [].slice.call(document.querySelectorAll('[data-store-lang]'));
     var themeButtons = [].slice.call(document.querySelectorAll('[data-store-theme]'));
     var closeButtons = [].slice.call(document.querySelectorAll('[data-store-close]'));
+    var discoveryKindButtons = [].slice.call(document.querySelectorAll('[data-store-discovery-kind]'));
 
     var preview = {
       carousel: document.getElementById('store-preview-carousel'),
@@ -623,6 +638,7 @@
       discoveryItems: [],
       discoveryFiltered: [],
       discoveryManifestState: 'idle',
+      discoveryKind: 'all',
       discoveryPrice: 'all',
       discoverySort: 'recommended',
       query: '',
@@ -1269,7 +1285,7 @@
       [].slice.call(document.querySelectorAll('[data-copy-aria]')).forEach(function (node) { node.setAttribute('aria-label', copy(node.getAttribute('data-copy-aria'))); });
       [].slice.call(document.querySelectorAll('[data-copy-title]')).forEach(function (node) { node.setAttribute('title', copy(node.getAttribute('data-copy-title'))); });
       [].slice.call(document.querySelectorAll('[data-copy-value]')).forEach(function (node) { node.value = copy(node.getAttribute('data-copy-value')); });
-      if (discoverySearch) discoverySearch.setAttribute('aria-label', copy('searchPlaceholder'));
+      if (discoverySearch) discoverySearch.setAttribute('aria-label', copy('discovery.store.placeholder'));
       if (discoveryStatus) discoveryStatus.setAttribute('aria-live', 'polite');
       langButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-lang') === state.locale ? 'true' : 'false'); });
       document.documentElement.lang = normalizeLocale(state.locale);
@@ -1642,6 +1658,8 @@
       if (!Number.isFinite(price)) price = parsePriceValue(raw && raw.priceText);
       if (!Number.isFinite(sortPrice)) sortPrice = price || 0;
       return {
+        domain: 'store',
+        type: 'product',
         id: clean(raw && (raw.url || raw.storeUrl || raw.slug)),
         slug: slugify(raw && raw.slug),
         name: clean(raw && raw.name),
@@ -1701,6 +1719,8 @@
       var image = arr(item && item.images)[0] || PLACEHOLDER_IMAGE;
       var price = Number(item && item.price ? item.price : 0) || priceNumber(item && item.priceText);
       return {
+        domain: 'store',
+        type: 'product',
         id: itemKey(item),
         slug: slugify(item && item.slug),
         name: displayProductTitle(item),
@@ -1741,11 +1761,96 @@
       if (state.discoveryManifestState === 'ready') return state.discoveryItems;
       return fallbackDiscoveryItems();
     }
+    function normalizeStoreDiscoveryKind(value) {
+      var kind = clean(value);
+      return ['all', 'products', 'categories', 'routes'].indexOf(kind) > -1 ? kind : 'all';
+    }
+    function normalizeStoreDiscoveryItem(item) {
+      var source = item || {};
+      var keywords = cleanTextList(source.keywords || source.tags || source.intent);
+      var title = clean(source.title || source.name);
+      var meta = clean(source.meta || [source.category, source.priceText, source.summary].filter(Boolean).join(' · '));
+      return Object.assign({}, source, {
+        domain: 'store',
+        type: clean(source.type) || 'product',
+        title: title,
+        name: clean(source.name || title),
+        meta: meta,
+        keywords: keywords,
+        searchText: searchText([title, meta, keywords.join(' ')].join(' '))
+      });
+    }
+    function storeProductsAdapter() {
+      return discoverySourceItems().map(function (item) {
+        return normalizeStoreDiscoveryItem(Object.assign({}, item, {
+          type: 'product',
+          meta: [item && item.category, item && item.priceText, item && item.summary].filter(Boolean).join(' · ')
+        }));
+      }).filter(function (item) {
+        return !!(item && item.title);
+      });
+    }
+    function storeCategoriesAdapter() {
+      var keys = Object.keys(STORE_CATEGORY_CONFIG).filter(function (key) { return key !== 'all'; });
+      if (!keys.length) keys = ['fashion', 'skincare', 'workspace', 'tech', 'everyday'];
+      return keys.map(function (key, index) {
+        var title = categoryLocaleValue('title', key) || key;
+        var description = categoryLocaleValue('description', key);
+        return normalizeStoreDiscoveryItem({
+          id: 'category:' + key,
+          type: 'category',
+          title: title,
+          name: title,
+          categoryKey: key,
+          href: '/store/' + key,
+          storeUrl: '/store/' + key,
+          meta: description || ('/store/' + key),
+          keywords: [key, title, description, 'category', 'kategori'],
+          sort: { score: 40 - index, name: searchText(title), price: 0, date: '' }
+        });
+      });
+    }
+    function storeRoutesAdapter() {
+      return [
+        { id: 'route:all-products', title: copy('filterAllLabel'), href: '/store', meta: '/store', keywords: ['all products', 'semua produk', 'store'], score: 70 },
+        { id: 'route:fashion', title: 'Fashion', href: '/store/fashion', meta: '/store/fashion', keywords: ['fashion', 'category'], score: 68 },
+        { id: 'route:skincare', title: 'Skincare', href: '/store/skincare', meta: '/store/skincare', keywords: ['skincare', 'category'], score: 67 },
+        { id: 'route:workspace', title: 'Workspace', href: '/store/workspace', meta: '/store/workspace', keywords: ['workspace', 'category'], score: 66 },
+        { id: 'route:tech', title: 'Tech', href: '/store/tech', meta: '/store/tech', keywords: ['tech', 'category'], score: 65 },
+        { id: 'route:everyday', title: 'Everyday', href: '/store/everyday', meta: '/store/everyday', keywords: ['everyday', 'lainnya', 'category'], score: 64 },
+        { id: 'route:blog', title: copy('nav.blog'), href: '/', meta: '/', keywords: ['blog', 'artikel'], score: 50 },
+        { id: 'route:home', title: copy('nav.home'), href: '/landing', meta: '/landing', keywords: ['home', 'beranda'], score: 49 },
+        { id: 'route:contact', title: copy('nav.contact'), href: '/landing#contact', meta: '/landing#contact', keywords: ['contact', 'kontak'], score: 48 }
+      ].map(function (item) {
+        return normalizeStoreDiscoveryItem({
+          id: item.id,
+          type: 'route',
+          title: item.title,
+          href: item.href,
+          storeUrl: item.href,
+          meta: item.meta,
+          keywords: item.keywords,
+          sort: { score: item.score, name: searchText(item.title), price: 0, date: '' }
+        });
+      });
+    }
+    function storeActionsAdapter() {
+      return [];
+    }
+    function storeDiscoveryItems() {
+      return []
+        .concat(storeProductsAdapter())
+        .concat(storeCategoriesAdapter())
+        .concat(storeRoutesAdapter())
+        .concat(storeActionsAdapter());
+    }
     function discoverySearchHaystack(item) {
-      return searchText([
+      return clean(item && item.searchText) || searchText([
         item && (item.name || item.title),
+        item && item.meta,
         item && (item.categoryLabel || item.category),
         item && item.summary,
+        cleanTextList(item && item.keywords).join(' '),
         cleanTextList(item && item.tags).join(' '),
         cleanTextList(item && item.intent).join(' '),
         item && item.priceText
@@ -1799,13 +1904,16 @@
     function applyDiscoveryFilters() {
       var q = searchText(state.query);
       var priceFilter = DISCOVERY_PRICE_BANDS.indexOf(state.discoveryPrice) > -1 ? state.discoveryPrice : 'all';
-      state.discoveryFiltered = discoverySourceItems().filter(function (item) {
+      var kind = normalizeStoreDiscoveryKind(state.discoveryKind);
+      state.discoveryFiltered = storeDiscoveryItems().filter(function (item) {
         var categoryKey = normalizeDiscoveryCategoryKey(item && (item.categoryKey || item.filter), item && item.category);
+        var type = clean(item && item.type) || 'product';
         var matchesQuery = !q || discoverySearchHaystack(item).indexOf(q) !== -1;
-        var matchesFilter = state.filter === 'all' || categoryKey === state.filter;
-        var matchesPrice = priceFilter === 'all' || clean(item && item.priceBand) === priceFilter;
-        var matchesIntent = matchDiscoveryIntent(item, state.intent);
-        return matchesQuery && matchesFilter && matchesPrice && matchesIntent;
+        var matchesKind = kind === 'all' || (kind === 'products' && type === 'product') || (kind === 'categories' && type === 'category') || (kind === 'routes' && type === 'route');
+        var matchesFilter = type !== 'product' || state.filter === 'all' || categoryKey === state.filter;
+        var matchesPrice = type !== 'product' || priceFilter === 'all' || clean(item && item.priceBand) === priceFilter;
+        var matchesIntent = type !== 'product' || matchDiscoveryIntent(item, state.intent);
+        return matchesQuery && matchesKind && matchesFilter && matchesPrice && matchesIntent;
       });
       state.discoveryFiltered = sortDiscoveryItems(state.discoveryFiltered);
       renderDiscoveryResults();
@@ -1814,13 +1922,13 @@
     }
     function updateDiscoveryCounts() {
       var unit = productUnit();
-      var active = state.query || state.filter !== 'all' || state.intent || state.discoveryPrice !== 'all' || state.discoverySort !== 'recommended';
+      var active = state.query || state.discoveryKind !== 'all' || state.filter !== 'all' || state.intent || state.discoveryPrice !== 'all' || state.discoverySort !== 'recommended';
       if (!discoveryStatus) return;
       if (state.discoveryManifestState === 'loading' && !state.discoveryFiltered.length) {
         setNodeText(discoveryStatus, copy('countLoading'));
         return;
       }
-      setNodeText(discoveryStatus, active ? (state.discoveryFiltered.length + ' ' + unit) : copy('allVisible'));
+      setNodeText(discoveryStatus, active ? (state.discoveryFiltered.length + ' ' + (state.discoveryKind === 'products' ? unit : 'results')) : copy('allVisible'));
     }
     function ensureDiscoveryManifest() {
       if (state.discoveryManifestState === 'ready' || state.discoveryManifestState === 'loading' || state.discoveryManifestState === 'fallback') return;
@@ -1895,6 +2003,9 @@
       sortButtons.forEach(function (button) {
         button.setAttribute('aria-pressed', button.getAttribute('data-store-sort') === state.discoverySort ? 'true' : 'false');
       });
+      discoveryKindButtons.forEach(function (button) {
+        button.setAttribute('aria-pressed', normalizeStoreDiscoveryKind(button.getAttribute('data-store-discovery-kind')) === normalizeStoreDiscoveryKind(state.discoveryKind) ? 'true' : 'false');
+      });
     }
     function titleCase(value) {
       value = clean(value || 'All');
@@ -1963,14 +2074,17 @@
       var title = node.querySelector('[data-store-result-title]');
       var meta = node.querySelector('[data-store-result-meta]');
       var displayTitle = displayProductTitle(item);
+      var type = clean(item && item.type) || 'product';
+      var typeLabel = copy('discovery.type.' + type);
 
       node.dataset.storeResultIndex = String(index);
       if (action) node.setAttribute('data-store-result-action', action);
-      node.setAttribute('aria-label', copy('previewProductLabel') + ': ' + displayTitle);
-      img.src = item.images[0] || PLACEHOLDER_IMAGE;
+      node.setAttribute('aria-label', typeLabel + ': ' + displayTitle);
+      node.setAttribute('data-store-discovery-type', type);
+      img.src = (item.images && item.images[0]) || PLACEHOLDER_IMAGE;
       img.alt = displayTitle;
       title.textContent = displayTitle;
-      meta.textContent = [item.category, item.priceText, action === 'preview' ? item.summary : ''].filter(Boolean).join(' · ');
+      meta.textContent = [typeLabel, item.meta || item.category, item.priceText, type === 'product' && action === 'preview' ? item.summary : ''].filter(Boolean).join(' · ');
 
       return node;
     }
@@ -2006,10 +2120,10 @@
       var fragment = document.createDocumentFragment();
       if (rows.length) {
         rows.forEach(function (item, index) {
-          fragment.appendChild(renderResultRowNode(item, index, 'preview'));
+          fragment.appendChild(renderResultRowNode(item, index, clean(item && item.type) === 'product' ? 'preview' : 'navigate'));
         });
       } else {
-        fragment.appendChild(renderEmptyRowNode(copy('emptyTitle')));
+        fragment.appendChild(renderEmptyRowNode(copy('discovery.empty.title') + '. ' + copy('discovery.empty.body')));
       }
       discoveryResults.replaceChildren(fragment);
     }
@@ -2693,10 +2807,11 @@
     }
     function previewItemForDiscovery(item) {
       if (!item) return null;
+      if (clean(item.type) && clean(item.type) !== 'product') return null;
       return item.sourceProduct || findItemBySlug(item.slug);
     }
     function navigateToDiscoveryItem(item) {
-      var target = productStoreUrl(item) || canonicalProductUrl(item);
+      var target = clean(item && (item.href || item.storeUrl)) || productStoreUrl(item) || canonicalProductUrl(item);
       if (!target) return;
       window.location.assign(target);
     }
@@ -2821,6 +2936,12 @@
     });
     filterButtons.forEach(function (button) {
       button.addEventListener('click', function () { setFilter(button.getAttribute('data-store-filter')); });
+    });
+    discoveryKindButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.discoveryKind = normalizeStoreDiscoveryKind(button.getAttribute('data-store-discovery-kind'));
+        applyDiscoveryFilters();
+      });
     });
     quickIntentButtons.forEach(function (button) {
       button.addEventListener('click', function () {

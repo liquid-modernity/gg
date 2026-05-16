@@ -17,9 +17,9 @@
               collapse: 'Collapse contents outline'
             },
             command: {
-              inputLabel: 'Search articles and topics',
-              placeholder: 'Search articles and topics',
-              title: 'Discover',
+              inputLabel: 'Search articles, topics, routes, sections, or actions',
+              placeholder: 'Search articles, topics, routes, sections, or actions',
+              title: 'Discovery',
               dismiss: 'Dismiss discovery sheet',
               tabs: {
                 label: 'Discovery modes',
@@ -50,10 +50,10 @@
               title: 'Discovery',
               store: {
                 title: 'Store Discovery',
-                placeholder: 'Search products, categories, and store routes'
+                placeholder: 'Search products, categories, or store routes'
               },
               global: {
-                placeholder: 'Search articles, routes, topics, sections, and actions'
+                placeholder: 'Search articles, topics, routes, sections, or actions'
               },
               filter: {
                 all: 'All',
@@ -65,9 +65,18 @@
                 products: 'Products',
                 categories: 'Categories'
               },
+              type: {
+                article: 'Article',
+                topic: 'Topic',
+                route: 'Route',
+                section: 'Section',
+                action: 'Action',
+                product: 'Product',
+                category: 'Category'
+              },
               empty: {
-                title: 'No discovery results',
-                body: 'Try another search or open a route directly.'
+                title: 'No results',
+                body: 'Try another keyword.'
               }
             },
             dock: {
@@ -254,8 +263,8 @@
               collapse: 'Tutup daftar isi'
             },
             command: {
-              inputLabel: 'Cari artikel dan topik',
-              placeholder: 'Cari artikel dan topik',
+              inputLabel: 'Cari artikel, topik, rute, bagian, atau aksi',
+              placeholder: 'Cari artikel, topik, rute, bagian, atau aksi',
               title: 'Jelajah',
               dismiss: 'Tutup lembar jelajah',
               tabs: {
@@ -284,27 +293,36 @@
               }
             },
             discovery: {
-              title: 'Discovery',
+              title: 'Jelajah',
               store: {
-                title: 'Store Discovery',
-                placeholder: 'Cari produk, kategori, dan rute Store'
+                title: 'Jelajah Store',
+                placeholder: 'Cari produk, kategori, atau rute Store'
               },
               global: {
-                placeholder: 'Cari artikel, rute, topik, section, dan aksi'
+                placeholder: 'Cari artikel, topik, rute, bagian, atau aksi'
               },
               filter: {
                 all: 'Semua',
                 articles: 'Artikel',
                 topics: 'Topik',
                 routes: 'Rute',
-                sections: 'Section',
+                sections: 'Bagian',
                 actions: 'Aksi',
                 products: 'Produk',
                 categories: 'Kategori'
               },
+              type: {
+                article: 'Artikel',
+                topic: 'Topik',
+                route: 'Rute',
+                section: 'Bagian',
+                action: 'Aksi',
+                product: 'Produk',
+                category: 'Kategori'
+              },
               empty: {
-                title: 'Tidak ada hasil discovery',
-                body: 'Coba pencarian lain atau buka rute langsung.'
+                title: 'Tidak ada hasil',
+                body: 'Coba kata kunci lain.'
               }
             },
             dock: {

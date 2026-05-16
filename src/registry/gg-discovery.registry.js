@@ -5,8 +5,10 @@ export const GG_DISCOVERY = Object.freeze({
     titleKey: "discovery.title",
     placeholderKey: "discovery.global.placeholder",
     filters: Object.freeze(["all", "articles", "topics", "routes", "sections", "actions"]),
+    itemTypes: Object.freeze(["article", "topic", "route", "section", "action"]),
     sources: Object.freeze(["articles", "topics", "routes", "landingSections", "actions"]),
-    commandPlacement: "bottom"
+    commandPlacement: "bottom",
+    indexId: "global-discovery-v1"
   }),
   store: Object.freeze({
     id: "store",
@@ -14,7 +16,9 @@ export const GG_DISCOVERY = Object.freeze({
     titleKey: "discovery.store.title",
     placeholderKey: "discovery.store.placeholder",
     filters: Object.freeze(["all", "products", "categories", "routes"]),
+    itemTypes: Object.freeze(["product", "category", "route", "action"]),
     sources: Object.freeze(["products", "categories", "storeRoutes"]),
-    commandPlacement: "bottom"
+    commandPlacement: "bottom",
+    indexId: "store-discovery-v1"
   })
 });

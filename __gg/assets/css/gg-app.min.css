@@ -2289,7 +2289,9 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 }
 
 #gg-command-panel .gg-sheet__panel {
+  display: grid;
   min-height: var(--gg-panel-command-min-height);
+  overflow: hidden;
 }
 
 #gg-comments-sheet .gg-sheet__panel,
@@ -2398,20 +2400,23 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
 .gg-discovery {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   align-content: start;
   gap: 0;
+  min-height: min(var(--gg-panel-command-min-height), calc(100dvh - env(safe-area-inset-bottom)));
+  max-height: calc(var(--gg-panel-max-height) - var(--gg-panel-pad-y) - var(--gg-panel-pad-bottom));
 }
 
 .gg-discovery__controls {
   position: sticky;
-  top: var(--gg-discovery-controls-top);
+  bottom: 0;
   z-index: 2;
   display: grid;
   gap: var(--gg-discovery-controls-gap);
   margin: 0 calc(var(--gg-panel-pad-x) * -1);
-  padding: var(--gg-discovery-controls-pad-top) var(--gg-panel-pad-x) var(--gg-discovery-controls-pad-bottom);
-  border-bottom: 1px solid var(--gg-discovery-controls-border);
-  background: linear-gradient(180deg, var(--gg-surface-panel) 82%, var(--gg-surface-panel-fade-strong) 100%);
+  padding: var(--gg-discovery-controls-pad-top) var(--gg-panel-pad-x) calc(var(--gg-discovery-controls-pad-bottom) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gg-discovery-controls-border);
+  background: linear-gradient(0deg, var(--gg-surface-panel) 82%, var(--gg-surface-panel-fade-strong) 100%);
 }
 
 .gg-discovery-search {
@@ -2420,7 +2425,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 
 .gg-discovery-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gg-discovery-tab-gap);
 }
 
@@ -2450,7 +2455,10 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-discovery__body {
   display: grid;
   gap: var(--gg-discovery-body-gap);
-  padding-bottom: var(--gg-discovery-body-pad-bottom);
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: calc(var(--gg-discovery-body-pad-bottom) + 10px);
+  overscroll-behavior: contain;
 }
 
 .gg-discovery-view {

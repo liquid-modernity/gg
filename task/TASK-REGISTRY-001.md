@@ -16,19 +16,20 @@ This task does **not** redesign the dock, More sheet, or Discovery UI. It centra
 
 ## Non-Negotiables
 
-- Do not modify threaded comment behavior.
-- Do not modify Blogger native comment plumbing.
-- Do not change `parentID`, native composer handling, replies sheet logic, or comment proof semantics.
-- Do not change the public route truth:
-  - `/landing` = Home / Beranda
-  - `/` = Blog
-  - `/store` = Store
-  - `/landing#contact` = Contact / Kontak
-- Do not expose the public label `Landing`.
-- Do not introduce a dashboard, control plane, remote config, Google Sheet config, OAuth, Blogger API integration, or user-editable runtime config.
-- Do not create free-form function execution from registry values.
-- Do not weaken existing QA guards.
-- Keep development robots/indexing policy unchanged.
+* Do not modify threaded comment behavior.
+* Do not modify Blogger native comment plumbing.
+* Do not change `parentID`, native composer handling, replies sheet logic, or comment proof semantics.
+* Do not change the public route truth:
+
+  * `/landing` = Home / Beranda
+  * `/` = Blog
+  * `/store` = Store
+  * `/landing#contact` = Contact / Kontak
+* Do not expose the public label `Landing`.
+* Do not introduce a dashboard, control plane, remote config, Google Sheet config, OAuth, Blogger API integration, or user-editable runtime config.
+* Do not create free-form function execution from registry values.
+* Do not weaken existing QA guards.
+* Keep development robots/indexing policy unchanged.
 
 ## Core Architecture Decision
 
@@ -212,10 +213,10 @@ export const GG_DOCK = {
 
 Important behavior:
 
-- On `/landing`, Home scrolls to top and does not reload.
-- On `/`, Blog scrolls to top and does not reload.
-- On `/store`, Search opens Store Discovery, not Global Discovery.
-- On `/landing`, `/`, post detail, and page detail, Search opens Global Discovery.
+* On `/landing`, Home scrolls to top and does not reload.
+* On `/`, Blog scrolls to top and does not reload.
+* On `/store`, Search opens Store Discovery, not Global Discovery.
+* On `/landing`, `/`, post detail, and page detail, Search opens Global Discovery.
 
 ## 3. Action Resolver Registry
 
@@ -329,8 +330,8 @@ export const GG_MORE_SHEET = {
 
 Required route-specific note:
 
-- Store route only shows `more.commerceNote`.
-- Non-store routes must not show the commerce note unless the route explicitly contains commerce/affiliate content.
+* Store route only shows `more.commerceNote`.
+* Non-store routes must not show the commerce note unless the route explicitly contains commerce/affiliate content.
 
 ## 5. Discovery Registry Skeleton
 
@@ -465,26 +466,26 @@ discovery.empty.body
 
 The registry must be available to:
 
-- Blogger template build / publish artifact where needed;
-- landing static surface;
-- store static surface;
-- runtime JS;
-- QA guards.
+* Blogger template build / publish artifact where needed;
+* landing static surface;
+* store static surface;
+* runtime JS;
+* QA guards.
 
 Do not duplicate route/order definitions separately in root, landing, and store if a central registry can emit or expose them.
 
 Acceptable transitional implementation:
 
-- registry is introduced as source of truth;
-- existing HTML still contains rendered output;
-- QA verifies rendered output matches registry;
-- full renderer consolidation can be deferred.
+* registry is introduced as source of truth;
+* existing HTML still contains rendered output;
+* QA verifies rendered output matches registry;
+* full renderer consolidation can be deferred.
 
 Unacceptable implementation:
 
-- registry exists but is not used by anything;
-- old hardcoded dock/sheet definitions remain authoritative;
-- QA checks continue to assert stale contracts.
+* registry exists but is not used by anything;
+* old hardcoded dock/sheet definitions remain authoritative;
+* QA checks continue to assert stale contracts.
 
 ## 8. QA Requirements
 
@@ -497,18 +498,18 @@ qa/discovery-contract-guard.mjs
 
 The guard must validate:
 
-- public UI does not expose `Landing` as a nav label;
-- dock order is `home, contact, search, blog, more`;
-- `/landing` Home action is `scrollTop`;
-- `/` Blog action is `scrollTop`;
-- `/store` Search action is `openStoreDiscovery`;
-- `/landing` and `/` Search action is `openGlobalDiscovery`;
-- More sheet sections are `navigation`, `discover`, `info`, `language`, `appearance`;
-- More sheet Navigation items include `home`, `blog`, `store`, `contact`;
-- More sheet Info items include `about`, `privacy`, `terms`, `disclaimer`;
-- store-only commerce note is configured only for store;
-- Global Discovery surfaces include landing and blog;
-- Store Discovery surface includes store only.
+* public UI does not expose `Landing` as a nav label;
+* dock order is `home, contact, search, blog, more`;
+* `/landing` Home action is `scrollTop`;
+* `/` Blog action is `scrollTop`;
+* `/store` Search action is `openStoreDiscovery`;
+* `/landing` and `/` Search action is `openGlobalDiscovery`;
+* More sheet sections are `navigation`, `discover`, `info`, `language`, `appearance`;
+* More sheet Navigation items include `home`, `blog`, `store`, `contact`;
+* More sheet Info items include `about`, `privacy`, `terms`, `disclaimer`;
+* store-only commerce note is configured only for store;
+* Global Discovery surfaces include landing and blog;
+* Store Discovery surface includes store only.
 
 ## Required Commands
 
@@ -544,26 +545,27 @@ one static page detail
 
 Check:
 
-- dock order unchanged;
-- More sheet unchanged visually from accepted TASK-NAV-001 state;
-- Store note still appears only in `/store`;
-- Search still opens the current existing discovery implementations;
-- no threaded comments regression.
+* dock order unchanged;
+* More sheet unchanged visually from accepted TASK-NAV-001 state;
+* Store note still appears only in `/store`;
+* Search still opens the current existing discovery implementations;
+* no threaded comments regression.
 
 ## Acceptance Criteria
 
 Task is accepted only if:
 
-- route truth is centralized;
-- dock contract is registry-driven;
-- More sheet IA is registry-driven;
-- Discovery split contract exists:
-  - `/` + `/landing` + detail/page = Global Discovery;
-  - `/store` = Store Discovery;
-- registry values are QA-guarded;
-- output remains visually equivalent to accepted TASK-NAV-001;
-- CI/CD still passes;
-- no threaded comment behavior changes.
+* route truth is centralized;
+* dock contract is registry-driven;
+* More sheet IA is registry-driven;
+* Discovery split contract exists:
+
+  * `/` + `/landing` + detail/page = Global Discovery;
+  * `/store` = Store Discovery;
+* registry values are QA-guarded;
+* output remains visually equivalent to accepted TASK-NAV-001;
+* CI/CD still passes;
+* no threaded comment behavior changes.
 
 ## Required Final Report
 
@@ -598,14 +600,14 @@ Notes:
 
 ## Out of Scope
 
-- Discovery UI rewrite.
-- Search algorithm rewrite.
-- Store product search redesign.
-- More sheet redesign.
-- Dock redesign.
-- Threaded comments.
-- Worker canonical rewrites.
-- Control plane / dashboard.
-- Lighthouse thresholds.
+* Discovery UI rewrite.
+* Search algorithm rewrite.
+* Store product search redesign.
+* More sheet redesign.
+* Dock redesign.
+* Threaded comments.
+* Worker canonical rewrites.
+* Control plane / dashboard.
+* Lighthouse thresholds.
 
 ---

@@ -1191,19 +1191,20 @@ input:focus-visible {
     </article>
   </section>
 
-  <section class="gg-sheet store-bottom-sheet" id="store-discovery-sheet" data-gg-panel="discovery" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-discovery-title" aria-hidden="true" inert hidden>
+  <section class="gg-sheet store-bottom-sheet" id="store-discovery-sheet" data-gg-panel="discovery" data-gg-state="closed" data-gg-discovery-domain="store" data-gg-discovery-index="store-discovery-v1" data-gg-discovery-command-placement="bottom" data-gg-discovery-shell="bottom-command" role="dialog" aria-modal="true" aria-labelledby="store-discovery-title" aria-hidden="true" inert hidden>
     <button class="gg-sheet__scrim" type="button" data-store-close="discovery" aria-label="Tutup discovery" data-copy-aria="closeDiscovery"></button>
     <section class="gg-sheet__panel" id="store-discovery-panel" tabindex="-1">
       <header class="gg-sheet__head">
         <button class="gg-sheet__handle" type="button" data-store-close="discovery" data-store-drag-handle="discovery" aria-label="Close discovery" data-copy-aria="closeDiscovery"></button>
-        <h2 class="gg-sheet__title" id="store-discovery-title" data-copy="discoveryTitle">Discovery</h2>
+        <h2 class="gg-sheet__title" id="store-discovery-title" data-copy="discovery.store.title">Store Discovery</h2>
       </header>
-      <div class="store-sheet-body">
-        <label class="store-field" for="store-discovery-search">
-          <span class="gg-icon" aria-hidden="true">search</span>
-          <input id="store-discovery-search" type="search" placeholder="Cari produk atau kategori" autocomplete="off" aria-label="Cari produk atau kategori" data-copy-placeholder="searchPlaceholder" />
-        </label>
+      <div class="store-sheet-body store-discovery-body">
+        <p class="store-summary" id="store-discovery-status" data-copy="allVisible" aria-live="polite">All products are visible.</p>
         <section class="store-sheet-section">
+          <p class="store-sheet-section__label" data-copy="resultsLabel">Results</p>
+          <div class="store-discovery-results" id="store-discovery-results"></div>
+        </section>
+        <section class="store-sheet-section" data-store-discovery-advanced>
           <p class="store-sheet-section__label" data-copy="filtersLabel">Filter</p>
           <div class="store-chip-row" data-store-filter-scope="discovery">
             <button class="store-chip" type="button" data-store-filter="all" data-copy="filterAllLabel" aria-pressed="true">All</button>
@@ -1244,11 +1245,18 @@ input:focus-visible {
             <button class="store-chip" type="button" data-store-sort="az" data-copy="sortAzLabel" aria-pressed="false">A-Z</button>
           </div>
         </section>
-        <p class="store-summary" id="store-discovery-status" data-copy="allVisible" aria-live="polite">All products are visible.</p>
-        <section class="store-sheet-section">
-          <p class="store-sheet-section__label" data-copy="resultsLabel">Results</p>
-          <div class="store-discovery-results" id="store-discovery-results"></div>
-        </section>
+      </div>
+      <div class="store-discovery-command" data-gg-discovery-command="bottom">
+        <div class="store-chip-row store-discovery-kind-row" role="tablist" aria-label="Store Discovery filters">
+          <button class="store-chip" type="button" data-store-discovery-kind="all" data-copy="discovery.filter.all" aria-pressed="true">All</button>
+          <button class="store-chip" type="button" data-store-discovery-kind="products" data-copy="discovery.filter.products" aria-pressed="false">Products</button>
+          <button class="store-chip" type="button" data-store-discovery-kind="categories" data-copy="discovery.filter.categories" aria-pressed="false">Categories</button>
+          <button class="store-chip" type="button" data-store-discovery-kind="routes" data-copy="discovery.filter.routes" aria-pressed="false">Routes</button>
+        </div>
+        <label class="store-field" for="store-discovery-search">
+          <span class="gg-icon" aria-hidden="true">search</span>
+          <input id="store-discovery-search" type="search" placeholder="Search products, categories, or store routes" autocomplete="off" aria-label="Search products, categories, or store routes" data-copy-placeholder="discovery.store.placeholder" />
+        </label>
       </div>
     </section>
   </section>
