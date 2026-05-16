@@ -1091,6 +1091,24 @@
       { id: 'contact', key: 'outline.contact', search: 'contact brief email collaboration' }
     ];
 
+    var GLOBAL_DISCOVERY_FEED_MAX_RESULTS = 80;
+    var GLOBAL_DISCOVERY_STATIC_BASE_ITEM_IDS = [
+      'route:home',
+      'route:blog',
+      'route:store',
+      'route:contact',
+      'section:hero',
+      'section:structure',
+      'section:routes',
+      'section:interaction',
+      'section:discoverability',
+      'section:contact',
+      'action:contact',
+      'action:more',
+      'action:store',
+      'action:blog'
+    ];
+
     var state = {
       locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
@@ -1506,7 +1524,7 @@
 
     function ensureLandingDiscoveryFeed() {
       if (state.discoveryArticles.length || state.discoveryFeedPromise || !window.fetch) return state.discoveryFeedPromise || Promise.resolve();
-      state.discoveryFeedPromise = fetch('/feeds/posts/default?alt=json&max-results=24', { credentials: 'same-origin' }).then(function (response) {
+      state.discoveryFeedPromise = fetch('/feeds/posts/default?alt=json&max-results=' + GLOBAL_DISCOVERY_FEED_MAX_RESULTS, { credentials: 'same-origin' }).then(function (response) {
         if (!response.ok) throw new Error('landing-discovery-feed');
         return response.json();
       }).then(function (payload) {

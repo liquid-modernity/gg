@@ -86,6 +86,30 @@ function assertNaturalCopy(label, copy, issues) {
   if (copy['discovery.empty.body'] !== 'Coba kata kunci lain.') issues.push(`${label} discovery.empty.body must be Coba kata kunci lain.`);
 }
 
+function extractNumber(label, text, pattern, issues) {
+  const match = text.match(pattern);
+  if (!match) {
+    issues.push(`${label} missing numeric contract`);
+    return null;
+  }
+  return Number(match[1]);
+}
+
+function assertSourceOrder(label, text, first, second, issues) {
+  const firstIndex = text.indexOf(first);
+  const secondIndex = text.indexOf(second);
+  if (firstIndex === -1 || secondIndex === -1 || firstIndex > secondIndex) {
+    issues.push(`${label} expected ${first} before ${second}`);
+  }
+}
+
+function assertStaticBaseIds(label, text, expectedIds, issues) {
+  for (const id of expectedIds) {
+    if (!text.includes(id)) issues.push(`${label} missing static Global Discovery base id ${id}`);
+  }
+}
+
+
 function main() {
   const issues = [];
   const rootEn = parseJson('registry/copy/gg-copy-en.json');
@@ -110,6 +134,28 @@ function main() {
   if (GG_DISCOVERY.store.commandPlacement !== 'bottom') issues.push(`store commandPlacement expected bottom got ${GG_DISCOVERY.store.commandPlacement || '(missing)'}`);
   if (GG_DISCOVERY.global.indexId !== 'global-discovery-v1') issues.push('global indexId must be global-discovery-v1');
   if (GG_DISCOVERY.store.indexId !== 'store-discovery-v1') issues.push('store indexId must be store-discovery-v1');
+  if (!GG_DISCOVERY.global.feed || GG_DISCOVERY.global.feed.endpointPath !== '/feeds/posts/default?alt=json') {
+    issues.push('global feed endpoint must be registry-defined as /feeds/posts/default?alt=json');
+  }
+  if (!GG_DISCOVERY.global.feed || GG_DISCOVERY.global.feed.maxResults !== 80) {
+    issues.push(`global feed maxResults expected 80 got ${GG_DISCOVERY.global.feed ? GG_DISCOVERY.global.feed.maxResults : '(missing)'}`);
+  }
+  assertSameArray('GG_DISCOVERY.global.staticBaseItemIds', GG_DISCOVERY.global.staticBaseItemIds, [
+    'route:home',
+    'route:blog',
+    'route:store',
+    'route:contact',
+    'section:hero',
+    'section:structure',
+    'section:routes',
+    'section:interaction',
+    'section:discoverability',
+    'section:contact',
+    'action:contact',
+    'action:more',
+    'action:store',
+    'action:blog'
+  ], issues);
 
   if (GG_DOCK.surfaces.store.actions.search !== 'openStoreDiscovery') {
     issues.push(`store search action expected openStoreDiscovery got ${GG_DOCK.surfaces.store.actions.search || '(missing)'}`);
@@ -140,6 +186,27 @@ function main() {
   if (!appRuntime.includes('function getFeedJsonUrl') || !landingHtml.includes('/feeds/posts/default?alt=json')) {
     issues.push('/ and /landing must use the same Blogger post feed source for Global Discovery articles/topics');
   }
+  const rootFeedMax = extractNumber('root global feed maxResults', appRuntime, /search:\s*{[\s\S]*?maxResults:\s*(\d+)/, issues);
+  const landingFeedMax = extractNumber('landing global feed maxResults', landingHtml, /GLOBAL_DISCOVERY_FEED_MAX_RESULTS\s*=\s*(\d+)/, issues);
+  const registryFeedMax = GG_DISCOVERY.global.feed ? Number(GG_DISCOVERY.global.feed.maxResults) : null;
+  if (rootFeedMax !== null && registryFeedMax !== null && rootFeedMax !== registryFeedMax) {
+    issues.push(`root global feed maxResults ${rootFeedMax} does not match registry ${registryFeedMax}`);
+  }
+  if (landingFeedMax !== null && registryFeedMax !== null && landingFeedMax !== registryFeedMax) {
+    issues.push(`landing global feed maxResults ${landingFeedMax} does not match registry ${registryFeedMax}`);
+  }
+  if (rootFeedMax !== null && landingFeedMax !== null && rootFeedMax !== landingFeedMax) {
+    issues.push(`root/landing Global Discovery feed max-results drift: root=${rootFeedMax} landing=${landingFeedMax}`);
+  }
+  if (landingHtml.includes('max-results=24')) {
+    issues.push('landing.html still carries stale max-results=24 Global Discovery feed limit');
+  }
+  assertSourceOrder('root immediate Global Discovery base render', appRuntime, "reason: 'pre-index-base'", 'return ensureDiscoveryIndex()', issues);
+  if (!appRuntime.includes('Articles/topics may enhance asynchronously')) {
+    issues.push('root launchDiscovery must document immediate static base render before async feed enhancement');
+  }
+  assertStaticBaseIds('root Global Discovery source', appRuntime, GG_DISCOVERY.global.staticBaseItemIds || [], issues);
+  assertStaticBaseIds('landing Global Discovery source', landingHtml, GG_DISCOVERY.global.staticBaseItemIds || [], issues);
 
   for (const [file, text, resultsMarker] of [['landing.html', landingHtml, 'gg-command-results'], ['index.xml', indexXml, 'gg-discovery-results']]) {
     assertAttr(file, text, 'data-gg-discovery-domain', 'global', issues);

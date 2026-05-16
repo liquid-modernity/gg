@@ -707,6 +707,22 @@ window.GG = window.GG || {};
         var LISTING_ROOT_ID = 'gg-entry-list';
         var LISTING_ROW_SELECTOR = '.gg-entry-row[data-gg-post-url]';
         var LISTING_ROW_BASE_SELECTOR = '.gg-entry-row';
+        var GLOBAL_DISCOVERY_STATIC_BASE_ITEM_IDS = [
+          'route:home',
+          'route:blog',
+          'route:store',
+          'route:contact',
+          'section:hero',
+          'section:structure',
+          'section:routes',
+          'section:interaction',
+          'section:discoverability',
+          'section:contact',
+          'action:contact',
+          'action:more',
+          'action:store',
+          'action:blog'
+        ];
         var DISCOVERY_RESULT_SELECTOR = '.gg-discovery-result';
         var DISCOVERY_TOPIC_SELECTOR = '.gg-discovery-topic__apply, .gg-discovery-topic__archive, .gg-discovery-topic-group__toggle';
         var DISCOVERY_TOPIC_LAYOUT_CONTRACT = {
@@ -4559,11 +4575,22 @@ window.GG = window.GG || {};
             focusSheet: launchOptions.focusSheet !== false,
             selectText: !!launchOptions.selectText
           }).then(function (panel) {
+            /*
+             * Render the static Global Discovery base immediately.
+             * Articles/topics may enhance asynchronously, but / must never open
+             * with an empty result body while routes, sections, and actions exist.
+             */
+            renderDiscovery(getCommandValue(), {
+              open: false,
+              reason: 'pre-index-base'
+            });
+
             return ensureDiscoveryIndex().catch(function () {
               return state.discoveryIndex;
             }).then(function () {
               renderDiscovery(getCommandValue(), {
-                open: false
+                open: false,
+                reason: 'post-index-enhancement'
               });
               return panel;
             });
