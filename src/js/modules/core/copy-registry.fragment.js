@@ -46,6 +46,30 @@
                 countLabel: '{count} articles'
               }
             },
+            discovery: {
+              title: 'Discovery',
+              store: {
+                title: 'Store Discovery',
+                placeholder: 'Search products, categories, and store routes'
+              },
+              global: {
+                placeholder: 'Search articles, routes, topics, sections, and actions'
+              },
+              filter: {
+                all: 'All',
+                articles: 'Articles',
+                topics: 'Topics',
+                routes: 'Routes',
+                sections: 'Sections',
+                actions: 'Actions',
+                products: 'Products',
+                categories: 'Categories'
+              },
+              empty: {
+                title: 'No discovery results',
+                body: 'Try another search or open a route directly.'
+              }
+            },
             dock: {
               home: 'Home',
               contact: 'Contact',
@@ -257,6 +281,30 @@
                 showResults: 'Lihat hasil',
                 openArchive: 'Arsip',
                 countLabel: '{count} artikel'
+              }
+            },
+            discovery: {
+              title: 'Discovery',
+              store: {
+                title: 'Store Discovery',
+                placeholder: 'Cari produk, kategori, dan rute Store'
+              },
+              global: {
+                placeholder: 'Cari artikel, rute, topik, section, dan aksi'
+              },
+              filter: {
+                all: 'Semua',
+                articles: 'Artikel',
+                topics: 'Topik',
+                routes: 'Rute',
+                sections: 'Section',
+                actions: 'Aksi',
+                products: 'Produk',
+                categories: 'Kategori'
+              },
+              empty: {
+                title: 'Tidak ada hasil discovery',
+                body: 'Coba pencarian lain atau buka rute langsung.'
               }
             },
             dock: {

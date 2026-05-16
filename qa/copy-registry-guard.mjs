@@ -62,7 +62,21 @@ const REQUIRED = {
     'appearance.system': 'System',
     'appearance.light': 'Light',
     'appearance.dark': 'Dark',
-    'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.'
+    'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
+    'discovery.title': 'Discovery',
+    'discovery.store.title': 'Store Discovery',
+    'discovery.global.placeholder': 'Search articles, routes, topics, sections, and actions',
+    'discovery.store.placeholder': 'Search products, categories, and store routes',
+    'discovery.filter.all': 'All',
+    'discovery.filter.articles': 'Articles',
+    'discovery.filter.topics': 'Topics',
+    'discovery.filter.routes': 'Routes',
+    'discovery.filter.sections': 'Sections',
+    'discovery.filter.actions': 'Actions',
+    'discovery.filter.products': 'Products',
+    'discovery.filter.categories': 'Categories',
+    'discovery.empty.title': 'No discovery results',
+    'discovery.empty.body': 'Try another search or open a route directly.'
   },
   id: {
     'comments.title': 'Komentar',
@@ -120,7 +134,21 @@ const REQUIRED = {
     'appearance.system': 'Sistem',
     'appearance.light': 'Terang',
     'appearance.dark': 'Gelap',
-    'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
+    'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
+    'discovery.title': 'Discovery',
+    'discovery.store.title': 'Store Discovery',
+    'discovery.global.placeholder': 'Cari artikel, rute, topik, section, dan aksi',
+    'discovery.store.placeholder': 'Cari produk, kategori, dan rute Store',
+    'discovery.filter.all': 'Semua',
+    'discovery.filter.articles': 'Artikel',
+    'discovery.filter.topics': 'Topik',
+    'discovery.filter.routes': 'Rute',
+    'discovery.filter.sections': 'Section',
+    'discovery.filter.actions': 'Aksi',
+    'discovery.filter.products': 'Produk',
+    'discovery.filter.categories': 'Kategori',
+    'discovery.empty.title': 'Tidak ada hasil discovery',
+    'discovery.empty.body': 'Coba pencarian lain atau buka rute langsung.'
   }
 };
 
