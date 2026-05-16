@@ -6778,7 +6778,7 @@ window.GG = window.GG || {};
             target: item.target || '',
             keywords: keywords.map(function (keyword) { return String(keyword || ''); }).filter(Boolean),
             priority: Number(item.priority || 0),
-            text: searchText([title, meta, keywords.join(' ')].join(' '))
+            text: String([title, meta, keywords.join(' ')].join(' ')).toLowerCase().replace(/\s+/g, ' ').trim()
           };
         }
 

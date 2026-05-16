@@ -135,6 +135,7 @@ function main() {
     if (!storeRuntime.includes(`function ${adapter}`)) issues.push(`store adapter missing: ${adapter}`);
   }
   if (!appRuntime.includes('function createGlobalDiscoveryItem')) issues.push('global normalized discovery item model is missing');
+  if (/\bsearchText\s*\(/.test(appRuntime)) issues.push('global discovery runtime references undefined searchText helper');
   if (!storeRuntime.includes('function normalizeStoreDiscoveryItem')) issues.push('store normalized discovery item model is missing');
   if (!appRuntime.includes('function resolveGlobalDiscoveryAction')) issues.push('global route-aware discovery resolver is missing');
   if (!appRuntime.includes('function hasStaticGlobalDiscoveryItems')) issues.push('global discovery must expose a static base index guard for routes/sections/actions');
