@@ -4549,8 +4549,10 @@ window.GG = window.GG || {};
 
           if (launchOptions.tab) {
             state.discoveryTab = normalizeDiscoveryFilter(launchOptions.tab);
+          } else if (reason === 'command-trigger' || reason === 'command-shortcut' || reason === 'command-api-open' || reason === 'qa-command-open') {
+            state.discoveryTab = 'all';
           }
-          if (launchOptions.clearTopic) state.discoveryTopic = '';
+          if (launchOptions.clearTopic || reason === 'command-trigger' || reason === 'command-shortcut' || reason === 'command-api-open' || reason === 'qa-command-open') state.discoveryTopic = '';
           if (launchOptions.resetActiveIndex !== false) state.discoveryActiveIndex = -1;
 
           syncCommandInputs(query);
@@ -6697,8 +6699,12 @@ window.GG = window.GG || {};
             });
         }
 
+        function hasStaticGlobalDiscoveryItems() {
+          return !!(globalRoutesAdapter().length || globalLandingSectionsAdapter().length || globalActionsAdapter().length);
+        }
+
         function ensureDiscoveryIndex() {
-          if (state.discoveryIndex) {
+          if (state.discoveryIndex && (state.discoveryIndex.posts.length || hasStaticGlobalDiscoveryItems())) {
             requestCommandFeedEnhancement(false);
             return Promise.resolve(state.discoveryIndex);
           }

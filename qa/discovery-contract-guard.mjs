@@ -137,18 +137,16 @@ function main() {
   if (!appRuntime.includes('function createGlobalDiscoveryItem')) issues.push('global normalized discovery item model is missing');
   if (!storeRuntime.includes('function normalizeStoreDiscoveryItem')) issues.push('store normalized discovery item model is missing');
   if (!appRuntime.includes('function resolveGlobalDiscoveryAction')) issues.push('global route-aware discovery resolver is missing');
+  if (!appRuntime.includes('function hasStaticGlobalDiscoveryItems')) issues.push('global discovery must expose a static base index guard for routes/sections/actions');
+  if (!appRuntime.includes('static-global-base')) issues.push('root Global Discovery must mark/use static-global-base when article rows are unavailable');
+  if (/return\s+requestCommandFeedEnhancement\(true\)/.test(appRuntime)) {
+    issues.push('ensureDiscoveryIndex must not block first render by returning requestCommandFeedEnhancement(true)');
+  }
+  if (!appRuntime.includes("reason === 'command-trigger'") || !appRuntime.includes("state.discoveryTab = 'all'")) {
+    issues.push('dock Search launch must reset Global Discovery to All so static base items are visible immediately');
+  }
   if (!appRuntime.includes('function getFeedJsonUrl') || !landingHtml.includes('/feeds/posts/default?alt=json')) {
     issues.push('/ and /landing must use the same Blogger post feed source for Global Discovery articles/topics');
-  }
-
-  if (!appRuntime.includes("ui.shell.setAttribute('data-gg-feed-source', state.discoveryIndex.posts.length ? 'listing-dom-local' : 'static-global-base')")) {
-    issues.push('root Global Discovery must set static-global-base when listing rows are absent');
-  }
-  if (!appRuntime.includes('requestCommandFeedEnhancement(!state.discoveryIndex.posts.length);')) {
-    issues.push('root Global Discovery must enhance feed asynchronously after static base render');
-  }
-  if (/return\s+requestCommandFeedEnhancement\(true\);/.test(appRuntime)) {
-    issues.push('root Global Discovery must not wait for feed before rendering static base results');
   }
 
   for (const [file, text, resultsMarker] of [['landing.html', landingHtml, 'gg-command-results'], ['index.xml', indexXml, 'gg-discovery-results']]) {
