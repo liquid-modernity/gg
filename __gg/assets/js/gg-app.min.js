@@ -8879,24 +8879,28 @@ window.GG = window.GG || {};
           if (langTrigger) {
             event.preventDefault();
             setLocale(langTrigger.getAttribute('data-gg-lang-option'));
+            if (state.panelActive === 'more') closeMorePreferencePanel();
             return;
           }
 
           if (themeTrigger) {
             event.preventDefault();
             setTheme(themeTrigger.getAttribute('data-gg-theme-option'));
+            if (state.panelActive === 'more') closeMorePreferencePanel();
             return;
           }
 
           if (readingTrigger) {
             event.preventDefault();
             setReading(readingTrigger.getAttribute('data-gg-reading-option'));
+            if (state.panelActive === 'more') closeMorePreferencePanel();
             return;
           }
 
           if (motionTrigger) {
             event.preventDefault();
             setMotion(motionTrigger.getAttribute('data-gg-motion-option'));
+            if (state.panelActive === 'more') closeMorePreferencePanel();
             return;
           }
 

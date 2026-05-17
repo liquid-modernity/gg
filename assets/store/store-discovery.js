@@ -3087,24 +3087,28 @@
         state.locale = normalizeLocale(button.getAttribute('data-store-lang'));
         writeStorage('gg:lang', state.locale);
         refreshLocaleUI();
+        closeMorePreferencePanel();
       });
     });
     themeButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         state.theme = button.getAttribute('data-store-theme') || 'system';
         applyTheme();
+        closeMorePreferencePanel();
       });
     });
     [].slice.call(document.querySelectorAll('[data-gg-reading-option]')).forEach(function (button) {
       button.addEventListener('click', function () {
         state.reading = normalizeReading(button.getAttribute('data-gg-reading-option'));
         applyReadingMotion();
+        closeMorePreferencePanel();
       });
     });
     [].slice.call(document.querySelectorAll('[data-gg-motion-option]')).forEach(function (button) {
       button.addEventListener('click', function () {
         state.motion = normalizeMotion(button.getAttribute('data-gg-motion-option'));
         applyReadingMotion();
+        closeMorePreferencePanel();
       });
     });
     [].slice.call(document.querySelectorAll('[data-gg-pref-open]')).forEach(function (button) {

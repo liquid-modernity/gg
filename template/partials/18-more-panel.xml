@@ -27,43 +27,44 @@
           <section aria-labelledby='gg-more-navigation-title' class='gg-more-section gg-more-section--navigation'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.navigation' id='gg-more-navigation-title'>Navigation</h3>
             <div class='gg-more-grid'>
-              <a class='gg-more-list__link' data-gg-more-route='home' href='/landing'><span aria-hidden='true' class='gg-more-row__icon'>⌂</span><span class='gg-more-row__label' data-gg-copy='nav.home'>Home</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span aria-hidden='true' class='gg-more-row__icon'>□</span><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='store' href='/store'><span aria-hidden='true' class='gg-more-row__icon'>▱</span><span class='gg-more-row__label' data-gg-copy='nav.store'>Store</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='contact' href='/landing#contact'><span aria-hidden='true' class='gg-more-row__icon'>✉</span><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='home' href='/landing'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>home</span><span class='gg-more-row__label' data-gg-copy='nav.home'>Home</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>article</span><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='store' href='/store'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shopping_bag</span><span class='gg-more-row__label' data-gg-copy='nav.store'>Store</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='contact' href='/landing#contact'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>mail</span><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-discover-title' class='gg-more-section gg-more-section--discover'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.discover' id='gg-more-discover-title'>Discover</h3>
             <div class='gg-more-list'>
-              <button class='gg-more-list__link' data-gg-focus='command' type='button'><span aria-hidden='true' class='gg-more-row__icon'>⌕</span><span class='gg-more-row__label' data-gg-copy='more.search'>Search</span></button>
-              <a class='gg-more-list__link' href='/sitemap.xml'><span aria-hidden='true' class='gg-more-row__icon'>⌗</span><span class='gg-more-row__label' data-gg-copy='more.sitemap'>Sitemap</span></a>
-              <a class='gg-more-list__link' href='/feeds/posts/default?alt=rss'><span aria-hidden='true' class='gg-more-row__icon'>◜</span><span class='gg-more-row__label' data-gg-copy='more.rss'>RSS</span></a>
+              <button class='gg-more-list__link' data-gg-focus='command' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>search</span><span class='gg-more-row__label' data-gg-copy='more.search'>Search</span></button>
+              <a class='gg-more-list__link' href='/sitemap.xml'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>account_tree</span><span class='gg-more-row__label' data-gg-copy='more.sitemap'>Sitemap</span></a>
+              <a class='gg-more-list__link' href='/feeds/posts/default?alt=rss'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>rss_feed</span><span class='gg-more-row__label' data-gg-copy='more.rss'>RSS</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-info-title' class='gg-more-section gg-more-section--info'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.info' id='gg-more-info-title'>Info</h3>
             <div class='gg-more-list'>
-              <a class='gg-more-list__link' href='/p/about.html'><span aria-hidden='true' class='gg-more-row__icon'>ⓘ</span><span class='gg-more-row__label' data-gg-copy='more.about'>About PakRPP</span></a>
-              <a class='gg-more-list__link' href='/p/privacy-policy.html'><span aria-hidden='true' class='gg-more-row__icon'>◇</span><span class='gg-more-row__label' data-gg-copy='more.privacy'>Privacy Policy</span></a>
-              <a class='gg-more-list__link' href='/p/terms-of-use.html'><span aria-hidden='true' class='gg-more-row__icon'>▤</span><span class='gg-more-row__label' data-gg-copy='more.terms'>Terms of Use</span></a>
-              <a class='gg-more-list__link' href='/p/disclaimer.html'><span aria-hidden='true' class='gg-more-row__icon'>△</span><span class='gg-more-row__label' data-gg-copy='more.disclaimer'>Disclaimer</span></a>
+              <a class='gg-more-list__link' href='/p/about.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>info</span><span class='gg-more-row__label' data-gg-copy='more.about'>About PakRPP</span></a>
+              <a class='gg-more-list__link' href='/p/privacy-policy.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shield</span><span class='gg-more-row__label' data-gg-copy='more.privacy'>Privacy Policy</span></a>
+              <a class='gg-more-list__link' href='/p/terms-of-use.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>description</span><span class='gg-more-row__label' data-gg-copy='more.terms'>Terms of Use</span></a>
+              <a class='gg-more-list__link' href='/p/disclaimer.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>warning</span><span class='gg-more-row__label' data-gg-copy='more.disclaimer'>Disclaimer</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-preferences-title' class='gg-more-section gg-more-section--preferences'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.preferences' id='gg-more-preferences-title'>Preferences</h3>
             <div class='gg-more-list gg-more-preferences-list'>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon'>◎</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon'>◐</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>System</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon'>Aa</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon'>↝</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>System</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
             </div>
           </section>
 
           <div class='gg-more-pref-panels' data-gg-pref-panels='true' hidden='hidden'>
+            <button aria-label='Close preferences' class='gg-more-pref-scrim' data-gg-pref-back='true' type='button'><span class='gg-visually-hidden'>Close preferences</span></button>
             <section aria-labelledby='gg-more-pref-language-title' class='gg-more-pref-panel' data-gg-pref-panel='language' hidden='hidden'>
               <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.language' id='gg-more-pref-language-title'>Language</h4></header>
               <div aria-label='Language' class='gg-more-pref-panel__options' role='group'>
@@ -95,24 +96,25 @@
               </div>
             </section>
           </div>
+        </div>
 
+        <div class='gg-more-bottom'>
           <div class='gg-more-local-search' data-gg-module='more-local-search'>
             <label class='gg-more-local-search__label' data-gg-copy='more.localSearch.label' for='gg-more-local-search-input'>Search More</label>
             <div class='gg-more-local-search__field'>
-              <span aria-hidden='true' class='gg-more-local-search__icon'>⌕</span>
+              <span aria-hidden='true' class='gg-more-local-search__icon gg-icon'>search</span>
               <input autocomplete='off' class='gg-more-local-search__input' data-gg-copy-placeholder='more.localSearch.placeholder' data-gg-more-search-input='true' id='gg-more-local-search-input' placeholder='Search' type='search'/>
             </div>
           </div>
+          <footer class='gg-more-footer'>
+            <span class='gg-more-footer__label' data-gg-copy='more.shareSite' id='gg-more-footer-social-title'>Share site</span>
+            <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
+              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'><span aria-hidden='true'>𝕏</span><span data-gg-copy='more.shareXShort'>X</span></a>
+              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'><span aria-hidden='true'>f</span><span data-gg-copy='more.shareFacebookShort'>Facebook</span></a>
+              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>◌</span><span data-gg-copy='more.shareWhatsAppShort'>WhatsApp</span></a>
+            </div>
+            <small class='gg-more-footer__legal' data-gg-copy='footer.copyright'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
+          </footer>
         </div>
-
-        <footer class='gg-more-footer'>
-          <span class='gg-more-footer__label' data-gg-copy='more.shareSite' id='gg-more-footer-social-title'>Share site</span>
-          <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
-            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'><span aria-hidden='true'>𝕏</span><span data-gg-copy='more.shareXShort'>X</span></a>
-            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'><span aria-hidden='true'>f</span><span data-gg-copy='more.shareFacebookShort'>Facebook</span></a>
-            <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>◌</span><span data-gg-copy='more.shareWhatsAppShort'>WhatsApp</span></a>
-          </div>
-          <small class='gg-more-footer__legal' data-gg-copy='footer.copyright'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
-        </footer>
       </section>
     </div>
