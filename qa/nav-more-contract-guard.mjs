@@ -10,17 +10,29 @@ const { GG_ACTIONS, GG_DOCK, GG_MORE_SHEET, GG_ROUTES } = await import(REGISTRY_
 const DOCK_ORDER = GG_DOCK.order;
 const MORE_ITEM_COPY_KEYS = {
   search: 'more.search',
-  english: 'language.english',
-  indonesia: 'language.indonesia',
-  system: 'appearance.system',
-  light: 'appearance.light',
-  dark: 'appearance.dark'
+  sitemap: 'more.sitemap',
+  rss: 'more.rss',
+  about: 'more.about',
+  privacy: 'more.privacy',
+  terms: 'more.terms',
+  disclaimer: 'more.disclaimer',
+  language: 'more.section.language',
+  appearance: 'more.section.appearance',
+  reading: 'more.section.reading',
+  motion: 'more.section.motion'
 };
 
 const MORE_KEYS = GG_MORE_SHEET.sections.flatMap((section) => {
   return [section.titleKey].concat(section.items.map((item) => MORE_ITEM_COPY_KEYS[item] || (GG_ROUTES[item] && GG_ROUTES[item].labelKey)).filter(Boolean));
 }).concat([
+  GG_MORE_SHEET.profile.nameKey,
+  GG_MORE_SHEET.profile.metaKey,
+  GG_MORE_SHEET.localSearch.labelKey,
+  GG_MORE_SHEET.localSearch.placeholderKey,
   GG_MORE_SHEET.share.labelKey,
+  'more.shareXShort',
+  'more.shareFacebookShort',
+  'more.shareWhatsAppShort',
   GG_MORE_SHEET.copyright.key
 ]);
 
@@ -95,10 +107,48 @@ function main() {
   assertContains('landing.html', landing, MORE_KEYS, issues);
   assertContains('store.html', store, MORE_KEYS.concat([GG_MORE_SHEET.routeNotes.store.key]), issues);
 
+  assertContains('template/partials/18-more-panel.xml structure', morePartial, [
+    'gg-more-profile__card',
+    'gg-more-section--navigation',
+    'gg-more-section--preferences',
+    "data-gg-pref-panel=\'language\'",
+    "data-gg-pref-panel=\'appearance\'",
+    "data-gg-pref-panel=\'reading\'",
+    "data-gg-pref-panel=\'motion\'",
+    'data-gg-more-search-input',
+    "data-gg-more-route=\'home\'",
+    "data-gg-more-route=\'blog\'",
+    "data-gg-more-route=\'store\'",
+    "data-gg-more-route=\'contact\'"
+  ], issues);
+  assertContains('landing.html More structure', landing, [
+    'gg-more-profile__card',
+    'gg-more-section--navigation',
+    'gg-more-section--preferences',
+    'data-gg-pref-panel="language"',
+    'data-gg-more-search-input',
+    'data-gg-more-route="home"',
+    'data-gg-more-route="blog"',
+    'data-gg-more-route="store"',
+    'data-gg-more-route="contact"'
+  ], issues);
+  assertContains('store.html More structure', store, [
+    'gg-more-profile__card',
+    'gg-more-section--navigation',
+    'gg-more-section--preferences',
+    'data-gg-pref-panel="language"',
+    'data-gg-more-search-input',
+    'data-gg-more-route="home"',
+    'data-gg-more-route="blog"',
+    'data-gg-more-route="store"',
+    'data-gg-more-route="contact"'
+  ], issues);
+
   assertSameArray('GG_DOCK.order', GG_DOCK.order, ['home', 'contact', 'search', 'blog', 'more'], issues);
-  assertSameArray('GG_MORE_SHEET.sections', moreSectionIds, ['navigation', 'discover', 'info', 'language', 'appearance'], issues);
+  assertSameArray('GG_MORE_SHEET.sections', moreSectionIds, ['navigation', 'discover', 'info', 'preferences'], issues);
   assertSameArray('GG_MORE_SHEET navigation items', moreSection('navigation').items, ['home', 'blog', 'store', 'contact'], issues);
   assertSameArray('GG_MORE_SHEET info items', moreSection('info').items, ['about', 'privacy', 'terms', 'disclaimer'], issues);
+  assertSameArray('GG_MORE_SHEET preferences items', moreSection('preferences').items, ['language', 'appearance', 'reading', 'motion'], issues);
   assertAction('landing', 'home', 'scrollTop', issues);
   assertAction('landing', 'search', 'openGlobalDiscovery', issues);
   assertAction('blog', 'blog', 'scrollTop', issues);

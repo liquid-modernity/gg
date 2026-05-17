@@ -1,9 +1,14 @@
 export const GG_MORE_SHEET = Object.freeze({
+  profile: Object.freeze({
+    nameKey: "more.profile.name",
+    metaKey: "more.profile.meta",
+    href: "/p/about.html"
+  }),
   sections: Object.freeze([
     Object.freeze({
       id: "navigation",
       titleKey: "more.section.navigation",
-      layout: "grid",
+      layout: "list",
       items: Object.freeze(["home", "blog", "store", "contact"])
     }),
     Object.freeze({
@@ -19,18 +24,16 @@ export const GG_MORE_SHEET = Object.freeze({
       items: Object.freeze(["about", "privacy", "terms", "disclaimer"])
     }),
     Object.freeze({
-      id: "language",
-      titleKey: "more.section.language",
-      layout: "segmented",
-      items: Object.freeze(["english", "indonesia"])
-    }),
-    Object.freeze({
-      id: "appearance",
-      titleKey: "more.section.appearance",
-      layout: "segmented",
-      items: Object.freeze(["system", "light", "dark"])
+      id: "preferences",
+      titleKey: "more.section.preferences",
+      layout: "rows",
+      items: Object.freeze(["language", "appearance", "reading", "motion"])
     })
   ]),
+  localSearch: Object.freeze({
+    labelKey: "more.localSearch.label",
+    placeholderKey: "more.localSearch.placeholder"
+  }),
   share: Object.freeze({
     labelKey: "more.shareSite"
   }),

@@ -147,11 +147,18 @@
         'nav.more': 'Lainnya',
         'nav.store': 'Store',
         'more.title': 'Lainnya',
+        'more.profile.name': 'PakRPP',
+        'more.profile.meta': 'Perangkat editorial, sumber belajar, dan ruang kerja digital',
+        'more.localSearch.label': 'Cari di Lainnya',
+        'more.localSearch.placeholder': 'Cari',
         'more.section.navigation': 'Navigasi',
         'more.section.discover': 'Jelajah',
         'more.section.info': 'Info',
+        'more.section.preferences': 'Preferensi',
         'more.section.language': 'Bahasa',
         'more.section.appearance': 'Tampilan',
+        'more.section.reading': 'Bacaan',
+        'more.section.motion': 'Gerak',
         'more.search': 'Cari',
         'more.sitemap': 'Peta situs',
         'more.rss': 'RSS',
@@ -160,12 +167,20 @@
         'more.terms': 'Syarat Penggunaan',
         'more.disclaimer': 'Disclaimer',
         'more.shareSite': 'Bagikan situs',
+        'more.shareXShort': 'X',
+        'more.shareFacebookShort': 'Facebook',
+        'more.shareWhatsAppShort': 'WhatsApp',
         'more.commerceNote': 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
         'language.english': 'English',
         'language.indonesia': 'Indonesia',
         'appearance.system': 'Sistem',
         'appearance.light': 'Terang',
         'appearance.dark': 'Gelap',
+        'reading.comfortable': 'Nyaman',
+        'reading.compact': 'Padat',
+        'reading.focus': 'Fokus',
+        'motion.balanced': 'Seimbang',
+        'motion.reduced': 'Dikurangi',
         'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
         homeLabel: 'Home',
         blogLabel: 'Blog',
@@ -326,11 +341,18 @@
         'nav.more': 'More',
         'nav.store': 'Store',
         'more.title': 'More',
+        'more.profile.name': 'PakRPP',
+        'more.profile.meta': 'Editorial tools, learning resources, and digital workspace',
+        'more.localSearch.label': 'Search More',
+        'more.localSearch.placeholder': 'Search',
         'more.section.navigation': 'Navigation',
         'more.section.discover': 'Discover',
         'more.section.info': 'Info',
+        'more.section.preferences': 'Preferences',
         'more.section.language': 'Language',
         'more.section.appearance': 'Appearance',
+        'more.section.reading': 'Reading',
+        'more.section.motion': 'Motion',
         'more.search': 'Search',
         'more.sitemap': 'Sitemap',
         'more.rss': 'RSS',
@@ -339,12 +361,20 @@
         'more.terms': 'Terms of Use',
         'more.disclaimer': 'Disclaimer',
         'more.shareSite': 'Share site',
+        'more.shareXShort': 'X',
+        'more.shareFacebookShort': 'Facebook',
+        'more.shareWhatsAppShort': 'WhatsApp',
         'more.commerceNote': 'Some outbound links may be affiliate links. Prices and availability may change.',
         'language.english': 'English',
         'language.indonesia': 'Indonesia',
         'appearance.system': 'System',
         'appearance.light': 'Light',
         'appearance.dark': 'Dark',
+        'reading.comfortable': 'Comfortable',
+        'reading.compact': 'Compact',
+        'reading.focus': 'Focus',
+        'motion.balanced': 'Balanced',
+        'motion.reduced': 'Reduced',
         'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
         homeLabel: 'Home',
         blogLabel: 'Blog',
@@ -656,6 +686,8 @@
       lastFocus: null,
       locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
+      reading: readStorage('gg:reading') || 'comfortable',
+      motion: readStorage('gg:motion') || 'balanced',
       feedSource: 'Store',
       storeDeepLinkSlug: '',
       dockLastScrollTop: 0,
@@ -693,6 +725,8 @@
     }
 
     function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
+    function normalizeReading(value) { return value === 'compact' || value === 'focus' ? value : 'comfortable'; }
+    function normalizeMotion(value) { return value === 'reduced' ? 'reduced' : 'balanced'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
@@ -1287,15 +1321,33 @@
       [].slice.call(document.querySelectorAll('[data-copy-value]')).forEach(function (node) { node.value = copy(node.getAttribute('data-copy-value')); });
       if (discoverySearch) discoverySearch.setAttribute('aria-label', copy('discovery.store.placeholder'));
       if (discoveryStatus) discoveryStatus.setAttribute('aria-live', 'polite');
-      langButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-lang') === state.locale ? 'true' : 'false'); });
+      langButtons.forEach(function (button) {
+        var active = button.getAttribute('data-store-lang') === state.locale;
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.setAttribute('data-gg-active', active ? 'true' : 'false');
+      });
+      syncMorePreferenceValues();
       document.documentElement.lang = normalizeLocale(state.locale);
       setPreviewCopyState(preview.copy && preview.copy.getAttribute('data-copy-state') === 'copied' ? 'copied' : 'idle');
       setPreviewSaveState(preview.save && preview.save.getAttribute('aria-pressed') === 'true');
       syncFilterToggleState(filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded');
       updateCounts();
     }
+    function setMorePrefValue(key, value) {
+      [].slice.call(document.querySelectorAll('[data-gg-pref-value="' + key + '"]')).forEach(function (node) { node.textContent = value; });
+    }
+    function syncMorePreferenceValues() {
+      setMorePrefValue('language', state.locale === 'en' ? copy('language.english') : copy('language.indonesia'));
+      setMorePrefValue('appearance', copy('appearance.' + state.theme));
+      setMorePrefValue('reading', copy('reading.' + state.reading));
+      setMorePrefValue('motion', copy('motion.' + state.motion));
+    }
     function applyTheme() {
-      themeButtons.forEach(function (button) { button.setAttribute('aria-pressed', button.getAttribute('data-store-theme') === state.theme ? 'true' : 'false'); });
+      themeButtons.forEach(function (button) {
+        var active = button.getAttribute('data-store-theme') === state.theme;
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.setAttribute('data-gg-active', active ? 'true' : 'false');
+      });
       if (state.theme === 'light' || state.theme === 'dark') {
         document.documentElement.setAttribute('data-gg-theme', state.theme);
         writeStorage('gg:theme', state.theme);
@@ -1303,6 +1355,64 @@
         document.documentElement.removeAttribute('data-gg-theme');
         removeStorage('gg:theme');
       }
+      syncMorePreferenceValues();
+    }
+    function applyReadingMotion() {
+      state.reading = normalizeReading(state.reading);
+      state.motion = normalizeMotion(state.motion);
+      document.documentElement.setAttribute('data-gg-reading', state.reading);
+      document.documentElement.setAttribute('data-gg-motion', state.motion);
+      [].slice.call(document.querySelectorAll('[data-gg-reading-option]')).forEach(function (button) {
+        var active = button.getAttribute('data-gg-reading-option') === state.reading;
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.setAttribute('data-gg-active', active ? 'true' : 'false');
+      });
+      [].slice.call(document.querySelectorAll('[data-gg-motion-option]')).forEach(function (button) {
+        var active = button.getAttribute('data-gg-motion-option') === state.motion;
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.setAttribute('data-gg-active', active ? 'true' : 'false');
+      });
+      writeStorage('gg:reading', state.reading);
+      writeStorage('gg:motion', state.motion);
+      syncMorePreferenceValues();
+    }
+    function openMorePreferencePanel(name) {
+      var panelRoot = document.querySelector('#store-more-sheet [data-gg-pref-panels]');
+      if (!panelRoot || !name) return false;
+      panelRoot.hidden = false;
+      [].slice.call(panelRoot.querySelectorAll('[data-gg-pref-panel]')).forEach(function (panel) { panel.hidden = panel.getAttribute('data-gg-pref-panel') !== name; });
+      if (morePanel) morePanel.setAttribute('data-gg-pref-active', name);
+      return true;
+    }
+    function closeMorePreferencePanel() {
+      var panelRoot = document.querySelector('#store-more-sheet [data-gg-pref-panels]');
+      if (!panelRoot || panelRoot.hidden) return false;
+      panelRoot.hidden = true;
+      [].slice.call(panelRoot.querySelectorAll('[data-gg-pref-panel]')).forEach(function (panel) { panel.hidden = true; });
+      if (morePanel) morePanel.removeAttribute('data-gg-pref-active');
+      return true;
+    }
+    function setupMoreLocalSearch() {
+      [].slice.call(document.querySelectorAll('.gg-more-body')).forEach(function (root) {
+        var input = root.querySelector('[data-gg-more-search-input]');
+        if (!input || root.getAttribute('data-gg-local-search-ready') === 'true') return;
+        root.setAttribute('data-gg-local-search-ready', 'true');
+        input.addEventListener('input', function () {
+          var q = clean(input.value).toLowerCase();
+          [].slice.call(root.querySelectorAll('.gg-more-profile, .gg-more-section')).forEach(function (section) {
+            var hasMatch = false;
+            [].slice.call(section.querySelectorAll('.gg-more-list__link, .gg-more-profile__card')).forEach(function (row) {
+              if (!q) { row.hidden = false; hasMatch = true; return; }
+              var haystack = [row.textContent || '', row.getAttribute('data-gg-more-route') || '', row.getAttribute('data-gg-pref-open') || '', row.getAttribute('href') || ''].join(' ').toLowerCase();
+              var match = haystack.indexOf(q) !== -1;
+              row.hidden = !match;
+              if (match) hasMatch = true;
+            });
+            if (!q) section.removeAttribute('data-gg-filter-empty');
+            else section.toggleAttribute('data-gg-filter-empty', !hasMatch);
+          });
+        });
+      });
     }
 
     function labels(entry) {
@@ -2649,6 +2759,7 @@
       clearToastTimer();
       hideAllToasts();
       if (panelName === 'preview') clearPreviewUrl();
+      if (panelName === 'more') closeMorePreferencePanel();
       setPanelEnvironment(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
@@ -2984,13 +3095,35 @@
         applyTheme();
       });
     });
+    [].slice.call(document.querySelectorAll('[data-gg-reading-option]')).forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.reading = normalizeReading(button.getAttribute('data-gg-reading-option'));
+        applyReadingMotion();
+      });
+    });
+    [].slice.call(document.querySelectorAll('[data-gg-motion-option]')).forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.motion = normalizeMotion(button.getAttribute('data-gg-motion-option'));
+        applyReadingMotion();
+      });
+    });
+    [].slice.call(document.querySelectorAll('[data-gg-pref-open]')).forEach(function (button) {
+      button.addEventListener('click', function () { openMorePreferencePanel(button.getAttribute('data-gg-pref-open')); });
+    });
+    [].slice.call(document.querySelectorAll('[data-gg-pref-back]')).forEach(function (button) {
+      button.addEventListener('click', closeMorePreferencePanel);
+    });
+    setupMoreLocalSearch();
     window.addEventListener('popstate', function () {
       if (!isStorePath()) return;
       if (requestedItemSlug()) syncRequestedPreview();
       else if (state.panelActive === 'preview') closePanel('preview', { restoreFocus: false });
     });
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && state.panelActive) closePanel(state.panelActive);
+      if (event.key === 'Escape' && state.panelActive) {
+        if (state.panelActive === 'more' && closeMorePreferencePanel()) return;
+        closePanel(state.panelActive);
+      }
       trapFocus(event);
       if (state.panelActive === 'preview' && !isEditableElement(event.target)) {
         if (event.key === 'ArrowLeft') {

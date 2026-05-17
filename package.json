@@ -22,6 +22,7 @@
     "gaga:template:proof": "bash qa/template-proof.sh",
     "gaga:verify-comments-proof": "node qa/comments-proof-guard.mjs",
     "gaga:verify-nav-more": "node qa/nav-more-contract-guard.mjs",
+    "gaga:verify-more-global": "node qa/nav-more-contract-guard.mjs && bash qa/sheet-contract-smoke.sh",
     "gaga:verify-discovery-contract": "node qa/discovery-contract-guard.mjs",
     "gaga:verify-sheet-contract": "bash qa/sheet-contract-smoke.sh",
     "gaga:verify-store-artifact": "npm run store:check:dev10",

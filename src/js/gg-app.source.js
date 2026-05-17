@@ -204,12 +204,23 @@ window.GG = window.GG || {};
             more: {
               title: 'More',
               dismiss: 'Dismiss more panel',
+              profile: {
+                name: 'PakRPP',
+                meta: 'Editorial tools, learning resources, and digital workspace'
+              },
+              localSearch: {
+                label: 'Search More',
+                placeholder: 'Search'
+              },
               section: {
                 navigation: 'Navigation',
                 discover: 'Discover',
                 info: 'Info',
+                preferences: 'Preferences',
                 language: 'Language',
-                appearance: 'Appearance'
+                appearance: 'Appearance',
+                reading: 'Reading',
+                motion: 'Motion'
               },
               home: 'Home',
               blog: 'Blog',
@@ -228,6 +239,9 @@ window.GG = window.GG || {};
               shareX: 'Share on X',
               shareFacebook: 'Share on Facebook',
               shareWhatsApp: 'Share on WhatsApp',
+              shareXShort: 'X',
+              shareFacebookShort: 'Facebook',
+              shareWhatsAppShort: 'WhatsApp',
               rights: 'Copyright © 2026 PakRPP. All rights reserved.'
             },
             language: {
@@ -242,6 +256,17 @@ window.GG = window.GG || {};
               system: 'System',
               light: 'Light',
               dark: 'Dark'
+            },
+            reading: {
+              label: 'Reading',
+              comfortable: 'Comfortable',
+              compact: 'Compact',
+              focus: 'Focus'
+            },
+            motion: {
+              label: 'Motion',
+              balanced: 'Balanced',
+              reduced: 'Reduced'
             },
             footer: {
               copyright: 'Copyright © 2026 PakRPP. All rights reserved.'
@@ -450,12 +475,23 @@ window.GG = window.GG || {};
             more: {
               title: 'Lainnya',
               dismiss: 'Tutup panel lainnya',
+              profile: {
+                name: 'PakRPP',
+                meta: 'Perangkat editorial, sumber belajar, dan ruang kerja digital'
+              },
+              localSearch: {
+                label: 'Cari di Lainnya',
+                placeholder: 'Cari'
+              },
               section: {
                 navigation: 'Navigasi',
                 discover: 'Jelajah',
                 info: 'Info',
+                preferences: 'Preferensi',
                 language: 'Bahasa',
-                appearance: 'Tampilan'
+                appearance: 'Tampilan',
+                reading: 'Bacaan',
+                motion: 'Gerak'
               },
               home: 'Beranda',
               blog: 'Blog',
@@ -474,6 +510,9 @@ window.GG = window.GG || {};
               shareX: 'Bagikan ke X',
               shareFacebook: 'Bagikan ke Facebook',
               shareWhatsApp: 'Bagikan ke WhatsApp',
+              shareXShort: 'X',
+              shareFacebookShort: 'Facebook',
+              shareWhatsAppShort: 'WhatsApp',
               rights: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
             },
             language: {
@@ -488,6 +527,17 @@ window.GG = window.GG || {};
               system: 'Sistem',
               light: 'Terang',
               dark: 'Gelap'
+            },
+            reading: {
+              label: 'Bacaan',
+              comfortable: 'Nyaman',
+              compact: 'Padat',
+              focus: 'Fokus'
+            },
+            motion: {
+              label: 'Gerak',
+              balanced: 'Seimbang',
+              reduced: 'Dikurangi'
             },
             footer: {
               copyright: 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.'
@@ -935,12 +985,17 @@ window.GG = window.GG || {};
           detailOutlineItemTemplate: document.getElementById('gg-detail-outline-item-template'),
           commentsTitleText: document.getElementById('gg-comments-title-text'),
           langButtons: document.querySelectorAll('[data-gg-lang-option]'),
-          themeButtons: document.querySelectorAll('[data-gg-theme-option]')
+          themeButtons: document.querySelectorAll('[data-gg-theme-option]'),
+          readingButtons: document.querySelectorAll('[data-gg-reading-option]'),
+          motionButtons: document.querySelectorAll('[data-gg-motion-option]'),
+          moreBodies: document.querySelectorAll('.gg-more-body')
         };
 
         var state = {
           locale: 'en',
           theme: 'system',
+          reading: 'comfortable',
+          motion: 'balanced',
           surfaceContext: null,
           errorContract: null,
           previewCache: {},
@@ -1705,6 +1760,8 @@ window.GG = window.GG || {};
         startupState.launchPath = startupState.launchPath || readBodyState('data-gg-launch-path', '/');
         startupState.displayMode = startupState.displayMode || readBodyState('data-gg-display-mode', 'browser');
         var THEME_STORAGE_KEY = 'gg:theme';
+        var READING_STORAGE_KEY = 'gg:reading';
+        var MOTION_STORAGE_KEY = 'gg:motion';
 
         function normalizeLocale(value) {
           var locale = String(value || '').toLowerCase();
@@ -1716,6 +1773,18 @@ window.GG = window.GG || {};
           var theme = String(value || '').toLowerCase();
           if (theme === 'light' || theme === 'dark') return theme;
           return 'system';
+        }
+
+        function normalizeReading(value) {
+          var reading = String(value || '').toLowerCase();
+          if (reading === 'compact' || reading === 'focus') return reading;
+          return 'comfortable';
+        }
+
+        function normalizeMotion(value) {
+          var motion = String(value || '').toLowerCase();
+          if (motion === 'reduced') return 'reduced';
+          return 'balanced';
         }
 
         function isDockHiddenByScroll() {
@@ -1857,6 +1926,26 @@ window.GG = window.GG || {};
           return normalizeTheme(stored);
         }
 
+        function readPreferredReading() {
+          var stored = '';
+          try {
+            stored = window.localStorage ? window.localStorage.getItem(READING_STORAGE_KEY) : '';
+          } catch (error) {
+            stored = '';
+          }
+          return normalizeReading(stored);
+        }
+
+        function readPreferredMotion() {
+          var stored = '';
+          try {
+            stored = window.localStorage ? window.localStorage.getItem(MOTION_STORAGE_KEY) : '';
+          } catch (error) {
+            stored = '';
+          }
+          return normalizeMotion(stored);
+        }
+
         function applyCopy(scope) {
           var root = scope || document;
           var textNodes = root.querySelectorAll('[data-gg-copy]');
@@ -1908,6 +1997,145 @@ window.GG = window.GG || {};
           }
         }
 
+        function syncReadingButtons() {
+          var i;
+          var node;
+          var active;
+
+          for (i = 0; i < ui.readingButtons.length; i += 1) {
+            node = ui.readingButtons[i];
+            active = node.getAttribute('data-gg-reading-option') === state.reading;
+            node.setAttribute('data-gg-active', active ? 'true' : 'false');
+            node.setAttribute('aria-pressed', active ? 'true' : 'false');
+          }
+        }
+
+        function syncMotionButtons() {
+          var i;
+          var node;
+          var active;
+
+          for (i = 0; i < ui.motionButtons.length; i += 1) {
+            node = ui.motionButtons[i];
+            active = node.getAttribute('data-gg-motion-option') === state.motion;
+            node.setAttribute('data-gg-active', active ? 'true' : 'false');
+            node.setAttribute('aria-pressed', active ? 'true' : 'false');
+          }
+        }
+
+        function setMorePrefValue(key, label) {
+          var nodes = document.querySelectorAll('[data-gg-pref-value="' + key + '"]');
+          var i;
+          for (i = 0; i < nodes.length; i += 1) nodes[i].textContent = label;
+        }
+
+        function syncMorePreferenceValues() {
+          setMorePrefValue('language', state.locale === 'id' ? getCopy('language.indonesia') : getCopy('language.english'));
+          setMorePrefValue('appearance', getCopy('appearance.' + state.theme));
+          setMorePrefValue('reading', getCopy('reading.' + state.reading));
+          setMorePrefValue('motion', getCopy('motion.' + state.motion));
+        }
+
+        function initMoreLocalSearch() {
+          var roots = ui.moreBodies || [];
+          var i;
+
+          for (i = 0; i < roots.length; i += 1) {
+            (function (root) {
+              var input;
+              if (!root || root.getAttribute('data-gg-local-search-ready') === 'true') return;
+              input = root.querySelector('[data-gg-more-search-input]');
+              if (!input) return;
+              root.setAttribute('data-gg-local-search-ready', 'true');
+              input.addEventListener('input', function () {
+                var q = String(input.value || '').trim().toLowerCase();
+                var sections = root.querySelectorAll('.gg-more-profile, .gg-more-section');
+                var sIndex;
+
+                for (sIndex = 0; sIndex < sections.length; sIndex += 1) {
+                  (function (section) {
+                    var rows = section.querySelectorAll('.gg-more-list__link, .gg-more-profile__card');
+                    var hasMatch = false;
+                    var rIndex;
+
+                    if (!q) {
+                      section.removeAttribute('data-gg-filter-empty');
+                      for (rIndex = 0; rIndex < rows.length; rIndex += 1) rows[rIndex].hidden = false;
+                      return;
+                    }
+
+                    for (rIndex = 0; rIndex < rows.length; rIndex += 1) {
+                      (function (row) {
+                        var haystack = [
+                          row.textContent || '',
+                          row.getAttribute('data-gg-copy') || '',
+                          row.getAttribute('data-gg-more-route') || '',
+                          row.getAttribute('data-gg-pref-open') || '',
+                          row.getAttribute('href') || ''
+                        ].join(' ').toLowerCase();
+                        var match = haystack.indexOf(q) !== -1;
+                        row.hidden = !match;
+                        if (match) hasMatch = true;
+                      }(rows[rIndex]));
+                    }
+
+                    section.toggleAttribute('data-gg-filter-empty', !hasMatch);
+                  }(sections[sIndex]));
+                }
+              });
+            }(roots[i]));
+          }
+        }
+
+        function openMorePreferencePanel(name) {
+          var panelRoot = document.querySelector('#gg-more-panel [data-gg-pref-panels]');
+          var panels;
+          var i;
+          if (!panelRoot || !name) return false;
+          panels = panelRoot.querySelectorAll('[data-gg-pref-panel]');
+          panelRoot.hidden = false;
+          for (i = 0; i < panels.length; i += 1) {
+            panels[i].hidden = panels[i].getAttribute('data-gg-pref-panel') !== name;
+          }
+          if (ui.morePanel) ui.morePanel.setAttribute('data-gg-pref-active', name);
+          return true;
+        }
+
+        function closeMorePreferencePanel() {
+          var panelRoot = document.querySelector('#gg-more-panel [data-gg-pref-panels]');
+          var panels;
+          var i;
+          if (!panelRoot || panelRoot.hidden) return false;
+          panels = panelRoot.querySelectorAll('[data-gg-pref-panel]');
+          panelRoot.hidden = true;
+          for (i = 0; i < panels.length; i += 1) panels[i].hidden = true;
+          if (ui.morePanel) ui.morePanel.removeAttribute('data-gg-pref-active');
+          return true;
+        }
+
+        function initMorePreferences() {
+          var root = ui.morePanel;
+          var openers;
+          var backs;
+          var i;
+          if (!root || root.getAttribute('data-gg-pref-ready') === 'true') return;
+          root.setAttribute('data-gg-pref-ready', 'true');
+          openers = root.querySelectorAll('[data-gg-pref-open]');
+          backs = root.querySelectorAll('[data-gg-pref-back]');
+          for (i = 0; i < openers.length; i += 1) {
+            openers[i].addEventListener('click', function (event) {
+              event.preventDefault();
+              openMorePreferencePanel(event.currentTarget.getAttribute('data-gg-pref-open'));
+            });
+          }
+          for (i = 0; i < backs.length; i += 1) {
+            backs[i].addEventListener('click', function (event) {
+              event.preventDefault();
+              closeMorePreferencePanel();
+            });
+          }
+        }
+
         function setLocale(locale, skipPersist) {
           state.locale = normalizeLocale(locale);
           if (ui.shell) ui.shell.setAttribute('data-gg-lang', state.locale);
@@ -1924,6 +2152,7 @@ window.GG = window.GG || {};
           GG.copy.locale = state.locale;
           applyCopy(document);
           syncLanguageButtons();
+          syncMorePreferenceValues();
           syncLoadMoreCopy();
           syncDetailCommentCopy();
           syncArticleMetaDates();
@@ -1957,6 +2186,39 @@ window.GG = window.GG || {};
           }
 
           syncThemeButtons();
+          syncMorePreferenceValues();
+        }
+
+        function setReading(reading, skipPersist) {
+          state.reading = normalizeReading(reading);
+          document.documentElement.setAttribute('data-gg-reading', state.reading);
+
+          if (!skipPersist) {
+            try {
+              if (window.localStorage) window.localStorage.setItem(READING_STORAGE_KEY, state.reading);
+            } catch (error) {
+              /* ignore storage failures */
+            }
+          }
+
+          syncReadingButtons();
+          syncMorePreferenceValues();
+        }
+
+        function setMotion(motion, skipPersist) {
+          state.motion = normalizeMotion(motion);
+          document.documentElement.setAttribute('data-gg-motion', state.motion);
+
+          if (!skipPersist) {
+            try {
+              if (window.localStorage) window.localStorage.setItem(MOTION_STORAGE_KEY, state.motion);
+            } catch (error) {
+              /* ignore storage failures */
+            }
+          }
+
+          syncMotionButtons();
+          syncMorePreferenceValues();
         }
 
         function safeUrl(value) {
@@ -8401,6 +8663,8 @@ window.GG = window.GG || {};
           var commentDeleteTrigger;
           var langTrigger;
           var themeTrigger;
+          var readingTrigger;
+          var motionTrigger;
           var closeTrigger;
           var closeName;
           var discoveryTabTrigger;
@@ -8438,6 +8702,8 @@ window.GG = window.GG || {};
           commentDeleteTrigger = event.target.closest('[data-gg-action="comment-native-delete"]');
           langTrigger = event.target.closest('[data-gg-lang-option]');
           themeTrigger = event.target.closest('[data-gg-theme-option]');
+          readingTrigger = event.target.closest('[data-gg-reading-option]');
+          motionTrigger = event.target.closest('[data-gg-motion-option]');
           closeTrigger = event.target.closest('[data-gg-close], [data-gg-action="comments-close"]');
           discoveryTabTrigger = event.target.closest('[data-gg-command-tab]');
           discoveryTopicToggle = event.target.closest('[data-gg-topic-group-toggle]');
@@ -8622,6 +8888,18 @@ window.GG = window.GG || {};
             return;
           }
 
+          if (readingTrigger) {
+            event.preventDefault();
+            setReading(readingTrigger.getAttribute('data-gg-reading-option'));
+            return;
+          }
+
+          if (motionTrigger) {
+            event.preventDefault();
+            setMotion(motionTrigger.getAttribute('data-gg-motion-option'));
+            return;
+          }
+
           if (closeTrigger) {
             event.preventDefault();
             closeName = closeTrigger.getAttribute('data-gg-close') || (closeTrigger.getAttribute('data-gg-action') === 'comments-close' ? 'comments' : '');
@@ -8689,6 +8967,8 @@ window.GG = window.GG || {};
               closeCommentRepliesSheet({ reason: 'comment-replies-escape' });
             } else if (state.panelActive === 'command') {
               closeCommandPanel('command-escape');
+            } else if (state.panelActive === 'more' && closeMorePreferencePanel()) {
+              focusPanel(getPanel('more')); 
             } else if (!state.panelActive && isDetailOutlineExpanded()) {
               clearDetailOutlineManualOpen();
               setDetailOutlineState(resolveDetailOutlineCompactState());
@@ -9040,6 +9320,10 @@ window.GG = window.GG || {};
         applySurfaceContract();
         setTheme(readPreferredTheme(), true);
         setLocale(readPreferredLocale(), true);
+        setReading(readPreferredReading(), true);
+        setMotion(readPreferredMotion(), true);
+        initMoreLocalSearch();
+        initMorePreferences();
         initDockVisibility();
         initDetailOutline();
         initPwaClient();

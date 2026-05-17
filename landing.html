@@ -676,6 +676,438 @@
     .gg-more-footer__link:active { transform: scale(var(--gg-press-scale)); }
     .gg-more-footer__legal { color: var(--gg-more-footer-legal-tone); font: 500 var(--gg-more-footer-legal-size)/1.4 var(--gg-font-sans); }
 
+    /* GG More native settings override */
+.gg-more-sheet {
+      position: relative;
+      display: grid;
+      align-content: start;
+    }
+    
+    .gg-more-body {
+      display: grid;
+      gap: 18px;
+      padding: 14px 0 8px;
+    }
+    
+    .gg-more-profile {
+      display: grid;
+    }
+    
+    .gg-more-profile__card {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 86px;
+      padding: 14px 18px;
+      border: 1px solid var(--gg-divider);
+      border-radius: 18px;
+      background: var(--gg-surface-interactive);
+      color: var(--gg-ink);
+      text-decoration: none;
+    }
+    
+    .gg-more-profile__avatar {
+      width: 58px;
+      height: 58px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--gg-surface-interactive-strong);
+      box-shadow: inset 0 0 0 1px var(--gg-divider);
+    }
+    
+    .gg-more-profile__image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .gg-more-profile__copy {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+    
+    .gg-more-profile__name {
+      overflow: hidden;
+      color: var(--gg-ink);
+      font: 650 20px/1.15 var(--gg-font-sans);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .gg-more-profile__meta {
+      overflow: hidden;
+      color: var(--gg-accent-soft);
+      font: 500 13px/1.25 var(--gg-font-sans);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .gg-more-profile__chevron {
+      color: var(--gg-accent-soft);
+      font: 400 24px/1 var(--gg-font-sans);
+    }
+    
+    .gg-more-section {
+      display: grid;
+      gap: 7px;
+      padding-top: 0;
+      border-top: 0;
+    }
+    
+    .gg-more-section__title,
+    .gg-more-footer__label {
+      margin: 0;
+      padding: 0 3px;
+      color: var(--gg-accent-soft);
+      font: 600 12px/1.2 var(--gg-font-sans);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    
+    .gg-more-grid,
+    .gg-more-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      overflow: hidden;
+      border: 1px solid var(--gg-divider);
+      border-radius: 16px;
+      background: var(--gg-surface-interactive);
+    }
+    
+    .gg-more-list__link,
+    .gg-more-grid .gg-more-list__link {
+      position: relative;
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      min-height: 52px;
+      width: 100%;
+      padding: 0 38px 0 15px;
+      border: 0;
+      border-bottom: 1px solid var(--gg-divider);
+      border-radius: 0;
+      background: transparent;
+      color: var(--gg-ink);
+      font: 500 15px/1.25 var(--gg-font-sans);
+      text-align: left;
+      text-decoration: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    
+    .gg-more-list__link:last-child,
+    .gg-more-grid .gg-more-list__link:last-child {
+      border-bottom: 0;
+    }
+    
+    .gg-more-list__link::after,
+    .gg-more-grid .gg-more-list__link::after {
+      content: "›";
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      color: var(--gg-accent-soft);
+      font: 400 23px/1 var(--gg-font-sans);
+      opacity: .82;
+      transform: translateY(-52%);
+    }
+    
+    .gg-more-list__link[aria-current='page'],
+    .gg-more-list__link[data-gg-active='true'] {
+      background: color-mix(in srgb, var(--gg-surface-interactive-strong) 72%, transparent);
+    }
+    
+    .gg-more-list__link[aria-current='page']::before,
+    .gg-more-list__link[data-gg-active='true']::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 11px;
+      bottom: 11px;
+      width: 3px;
+      border-radius: 999px;
+      background: var(--gg-accent);
+    }
+    
+    .gg-more-list__link:hover,
+    .gg-more-list__link:focus-visible {
+      background: var(--gg-surface-quiet);
+      outline: 0;
+    }
+    
+    .gg-more-row__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      color: var(--gg-accent-soft);
+      font: 500 16px/1 var(--gg-font-sans);
+    }
+    
+    .gg-more-row__label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .gg-more-row__value {
+      color: var(--gg-accent-soft);
+      font: 500 14px/1.25 var(--gg-font-sans);
+      white-space: nowrap;
+    }
+    
+    .gg-more-pref-panels {
+      display: grid;
+    }
+    
+    .gg-more-pref-panels[hidden],
+    .gg-more-pref-panel[hidden] {
+      display: none !important;
+    }
+    
+    .gg-more-pref-panel {
+      display: grid;
+      gap: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gg-divider);
+      border-radius: 16px;
+      background: var(--gg-surface-interactive);
+    }
+    
+    .gg-more-pref-panel__head {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      align-items: center;
+      min-height: 48px;
+      padding: 0 6px;
+      border-bottom: 1px solid var(--gg-divider);
+    }
+    
+    .gg-more-pref-panel__back {
+      display: inline-grid;
+      place-items: center;
+      min-width: 44px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--gg-ink);
+      font: 500 25px/1 var(--gg-font-sans);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    
+    .gg-more-pref-panel__back:hover,
+    .gg-more-pref-panel__back:focus-visible {
+      background: var(--gg-surface-quiet);
+      outline: 0;
+    }
+    
+    .gg-more-pref-panel__title {
+      margin: 0;
+      color: var(--gg-ink);
+      font: 650 15px/1.2 var(--gg-font-sans);
+      text-align: center;
+    }
+    
+    .gg-more-pref-panel__options {
+      display: grid;
+      gap: 6px;
+      padding: 0 10px 10px;
+    }
+    
+    .gg-more-pref-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      padding: 0 13px;
+      border: 1px solid var(--gg-divider);
+      border-radius: 13px;
+      background: transparent;
+      color: var(--gg-ink);
+      font: 600 14px/1.2 var(--gg-font-sans);
+      text-align: left;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    
+    .gg-more-pref-option::after {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: transparent;
+      box-shadow: inset 0 0 0 1px var(--gg-divider);
+    }
+    
+    .gg-more-pref-option[aria-pressed='true'],
+    .gg-more-pref-option[data-gg-active='true'] {
+      background: var(--gg-surface-interactive-strong);
+    }
+    
+    .gg-more-pref-option[aria-pressed='true']::after,
+    .gg-more-pref-option[data-gg-active='true']::after {
+      background: var(--gg-accent);
+      box-shadow: none;
+    }
+    
+    .gg-more-local-search {
+      position: sticky;
+      bottom: calc(var(--gg-more-footer-height, 96px) + 8px);
+      z-index: 3;
+      display: grid;
+      gap: 0;
+    }
+    
+    .gg-more-local-search__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    
+    .gg-more-local-search__field {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      align-items: center;
+      min-height: 48px;
+      padding: 0 14px;
+      border: 1px solid var(--gg-divider);
+      border-radius: 14px;
+      background: var(--gg-surface-interactive);
+    }
+    
+    .gg-more-local-search__icon {
+      color: var(--gg-accent-soft);
+      font: 500 18px/1 var(--gg-font-sans);
+    }
+    
+    .gg-more-local-search__input {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--gg-ink);
+      font: 500 15px/1.25 var(--gg-font-sans);
+      outline: 0;
+    }
+    
+    .gg-more-local-search__input::placeholder {
+      color: var(--gg-accent-soft);
+    }
+    
+    .gg-more-footer {
+      display: grid;
+      gap: 8px;
+      margin-top: 0;
+      padding: 0 0 6px;
+      border-top: 0;
+    }
+    
+    .gg-more-footer__social {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    
+    .gg-more-footer__link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--gg-divider);
+      border-radius: 13px;
+      background: var(--gg-surface-interactive);
+      color: var(--gg-ink);
+      font: 600 13px/1.2 var(--gg-font-sans);
+      text-decoration: none;
+    }
+    
+    .gg-more-footer__link:hover,
+    .gg-more-footer__link:focus-visible {
+      background: var(--gg-surface-quiet);
+      outline: 0;
+    }
+    
+    .gg-more-footer__legal,
+    .store-commerce-note {
+      display: block;
+      margin: 6px 0 0;
+      color: var(--gg-accent-soft);
+      font: 500 11px/1.45 var(--gg-font-sans);
+      text-align: center;
+      opacity: .72;
+    }
+    
+    .gg-more-profile[data-gg-filter-empty='true'],
+    .gg-more-section[data-gg-filter-empty='true'],
+    .gg-more-list__link[hidden],
+    .gg-more-grid .gg-more-list__link[hidden],
+    .gg-more-profile__card[hidden] {
+      display: none !important;
+    }
+    
+    .gg-more-profile__card,
+    .gg-more-list__link,
+    .gg-more-pref-panel__back,
+    .gg-more-pref-option,
+    .gg-more-footer__link {
+      transition:
+        transform var(--gg-motion-press),
+        background-color var(--gg-motion-inline-open),
+        color var(--gg-motion-inline-open),
+        border-color var(--gg-motion-inline-open),
+        box-shadow var(--gg-motion-inline-open);
+    }
+    
+    .gg-more-profile__card[data-gg-press='active'],
+    .gg-more-list__link[data-gg-press='active'],
+    .gg-more-pref-option[data-gg-press='active'],
+    .gg-more-footer__link[data-gg-press='active'] {
+      transform: scale(var(--gg-press-scale));
+    }
+    
+    html[data-gg-reading='compact'] { --gg-entry-density-scale: .92; }
+    html[data-gg-reading='comfortable'] { --gg-entry-density-scale: 1; }
+    html[data-gg-reading='focus'] { --gg-entry-density-scale: 1.05; }
+    
+    .gg-article .gg-post-body,
+    .gg-preview__summary,
+    .gg-listing__summary {
+      font-size: calc(1em * var(--gg-entry-density-scale, 1));
+    }
+    
+    html[data-gg-motion='reduced'] *,
+    html[data-gg-motion='reduced'] *::before,
+    html[data-gg-motion='reduced'] *::after {
+      scroll-behavior: auto !important;
+      transition-duration: .01ms !important;
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      html:not([data-gg-motion='balanced']) *,
+      html:not([data-gg-motion='balanced']) *::before,
+      html:not([data-gg-motion='balanced']) *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    
+
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       .gg-dock { background: var(--gg-dock-surface-fallback); }
       .gg-detail-outline { background: var(--gg-detail-outline-surface-fallback); }
@@ -897,58 +1329,66 @@
 
   <div class="gg-sheet" id="gg-more-panel" data-gg-state="closed" aria-hidden="true" hidden>
     <button class="gg-sheet__scrim" type="button" data-close-panel><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
-    <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-more-title" tabindex="-1">
+    <section class="gg-more-sheet gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-more-title" tabindex="-1">
       <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-close-panel data-sheet-handle><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
       <div class="gg-sheet__body">
         <div class="gg-more-body">
+          <section class="gg-more-profile" data-gg-module="profile">
+            <a class="gg-more-profile__card" href="/p/about.html" aria-label="Open profile">
+              <span class="gg-more-profile__avatar" aria-hidden="true"><img class="gg-more-profile__image" src="/gg-pwa-icon/icon-192.png" alt="" width="96" height="96" loading="lazy" /></span>
+              <span class="gg-more-profile__copy"><span class="gg-more-profile__name" data-copy="more.profile.name">PakRPP</span><span class="gg-more-profile__meta" data-copy="more.profile.meta">Editorial tools, learning resources, and digital workspace</span></span>
+              <span class="gg-more-profile__chevron" aria-hidden="true">›</span>
+            </a>
+          </section>
           <section class="gg-more-section gg-more-section--navigation" aria-labelledby="landing-more-navigation-title">
             <h3 class="gg-more-section__title" id="landing-more-navigation-title" data-copy="more.section.navigation">Navigation</h3>
             <div class="gg-more-grid">
-              <a class="gg-more-list__link" href="/landing" data-copy="nav.home" data-landing-route="home">Home</a>
-              <a class="gg-more-list__link" href="/" data-copy="nav.blog" data-landing-route="blog">Blog</a>
-              <a class="gg-more-list__link" href="/store" data-copy="nav.store" data-landing-route="store">Store</a>
-              <a class="gg-more-list__link" href="#contact" data-copy="nav.contact" data-landing-route="contact">Contact</a>
+              <a class="gg-more-list__link" href="/landing" data-copy-key="nav.home" data-landing-route="home" data-gg-more-route="home"><span class="gg-more-row__icon" aria-hidden="true">⌂</span><span class="gg-more-row__label" data-copy="nav.home">Home</span></a>
+              <a class="gg-more-list__link" href="/" data-copy-key="nav.blog" data-landing-route="blog" data-gg-more-route="blog"><span class="gg-more-row__icon" aria-hidden="true">□</span><span class="gg-more-row__label" data-copy="nav.blog">Blog</span></a>
+              <a class="gg-more-list__link" href="/store" data-copy-key="nav.store" data-landing-route="store" data-gg-more-route="store"><span class="gg-more-row__icon" aria-hidden="true">▱</span><span class="gg-more-row__label" data-copy="nav.store">Store</span></a>
+              <a class="gg-more-list__link" href="/landing#contact" data-copy-key="nav.contact" data-landing-route="contact" data-gg-more-route="contact"><span class="gg-more-row__icon" aria-hidden="true">✉</span><span class="gg-more-row__label" data-copy="nav.contact">Contact</span></a>
             </div>
           </section>
-          <section class="gg-more-section" aria-labelledby="landing-more-discover-title">
+          <section class="gg-more-section gg-more-section--discover" aria-labelledby="landing-more-discover-title">
             <h3 class="gg-more-section__title" id="landing-more-discover-title" data-copy="more.section.discover">Discover</h3>
             <div class="gg-more-list">
-              <button class="gg-more-list__link" type="button" data-copy="more.search" data-open-command>Search</button>
-              <a class="gg-more-list__link" href="/sitemap.xml" data-copy="more.sitemap">Sitemap</a>
-              <a class="gg-more-list__link" href="/feeds/posts/default?alt=rss" data-copy="more.rss">RSS</a>
+              <button class="gg-more-list__link" type="button" data-open-command><span class="gg-more-row__icon" aria-hidden="true">⌕</span><span class="gg-more-row__label" data-copy="more.search">Search</span></button>
+              <a class="gg-more-list__link" href="/sitemap.xml"><span class="gg-more-row__icon" aria-hidden="true">⌗</span><span class="gg-more-row__label" data-copy="more.sitemap">Sitemap</span></a>
+              <a class="gg-more-list__link" href="/feeds/posts/default?alt=rss"><span class="gg-more-row__icon" aria-hidden="true">◜</span><span class="gg-more-row__label" data-copy="more.rss">RSS</span></a>
             </div>
           </section>
-          <section class="gg-more-section" aria-labelledby="landing-more-info-title">
+          <section class="gg-more-section gg-more-section--info" aria-labelledby="landing-more-info-title">
             <h3 class="gg-more-section__title" id="landing-more-info-title" data-copy="more.section.info">Info</h3>
             <div class="gg-more-list">
-              <a class="gg-more-list__link" href="/p/about.html" data-copy="more.about">About PakRPP</a>
-              <a class="gg-more-list__link" href="/p/privacy-policy.html" data-copy="more.privacy">Privacy Policy</a>
-              <a class="gg-more-list__link" href="/p/terms-of-use.html" data-copy="more.terms">Terms of Use</a>
-              <a class="gg-more-list__link" href="/p/disclaimer.html" data-copy="more.disclaimer">Disclaimer</a>
+              <a class="gg-more-list__link" href="/p/about.html"><span class="gg-more-row__icon" aria-hidden="true">ⓘ</span><span class="gg-more-row__label" data-copy="more.about">About PakRPP</span></a>
+              <a class="gg-more-list__link" href="/p/privacy-policy.html"><span class="gg-more-row__icon" aria-hidden="true">◇</span><span class="gg-more-row__label" data-copy="more.privacy">Privacy Policy</span></a>
+              <a class="gg-more-list__link" href="/p/terms-of-use.html"><span class="gg-more-row__icon" aria-hidden="true">▤</span><span class="gg-more-row__label" data-copy="more.terms">Terms of Use</span></a>
+              <a class="gg-more-list__link" href="/p/disclaimer.html"><span class="gg-more-row__icon" aria-hidden="true">△</span><span class="gg-more-row__label" data-copy="more.disclaimer">Disclaimer</span></a>
             </div>
           </section>
-          <div class="gg-segment gg-more-section" aria-label="Language selector">
-            <p class="gg-segment__label" data-copy="more.section.language">Language</p>
-            <div class="gg-segment__row gg-segment__row--two">
-              <button class="gg-control" type="button" data-gg-lang="en" aria-pressed="false" data-copy="language.english">English</button>
-              <button class="gg-control" type="button" data-gg-lang="id" aria-pressed="true" data-copy="language.indonesia">Indonesia</button>
+          <section class="gg-more-section gg-more-section--preferences" aria-labelledby="landing-more-preferences-title">
+            <h3 class="gg-more-section__title" id="landing-more-preferences-title" data-copy="more.section.preferences">Preferences</h3>
+            <div class="gg-more-list gg-more-preferences-list">
+              <button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="language"><span class="gg-more-row__icon" aria-hidden="true">◎</span><span class="gg-more-row__label" data-copy="more.section.language">Language</span><span class="gg-more-row__value" data-gg-pref-value="language">English</span></button>
+              <button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="appearance"><span class="gg-more-row__icon" aria-hidden="true">◐</span><span class="gg-more-row__label" data-copy="more.section.appearance">Appearance</span><span class="gg-more-row__value" data-gg-pref-value="appearance">System</span></button>
+              <button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="reading"><span class="gg-more-row__icon" aria-hidden="true">Aa</span><span class="gg-more-row__label" data-copy="more.section.reading">Reading</span><span class="gg-more-row__value" data-gg-pref-value="reading">Comfortable</span></button>
+              <button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="motion"><span class="gg-more-row__icon" aria-hidden="true">↝</span><span class="gg-more-row__label" data-copy="more.section.motion">Motion</span><span class="gg-more-row__value" data-gg-pref-value="motion">Balanced</span></button>
             </div>
+          </section>
+          <div class="gg-more-pref-panels" data-gg-pref-panels hidden>
+            <section class="gg-more-pref-panel" data-gg-pref-panel="language" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.language">Language</h4></header><div class="gg-more-pref-panel__options" role="group" aria-label="Language"><button class="gg-more-pref-option" type="button" data-gg-lang="en" data-gg-lang-option="en" data-copy="language.english" aria-pressed="false">English</button><button class="gg-more-pref-option" type="button" data-gg-lang="id" data-gg-lang-option="id" data-copy="language.indonesia" aria-pressed="false">Indonesia</button></div></section>
+            <section class="gg-more-pref-panel" data-gg-pref-panel="appearance" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.appearance">Appearance</h4></header><div class="gg-more-pref-panel__options" role="group" aria-label="Appearance"><button class="gg-more-pref-option" type="button" data-gg-theme-option="system" data-copy="appearance.system" aria-pressed="false">System</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="light" data-copy="appearance.light" aria-pressed="false">Light</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="dark" data-copy="appearance.dark" aria-pressed="false">Dark</button></div></section>
+            <section class="gg-more-pref-panel" data-gg-pref-panel="reading" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.reading">Reading</h4></header><div class="gg-more-pref-panel__options" role="group" aria-label="Reading"><button class="gg-more-pref-option" type="button" data-gg-reading-option="comfortable" data-copy="reading.comfortable" aria-pressed="false">Comfortable</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="compact" data-copy="reading.compact" aria-pressed="false">Compact</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="focus" data-copy="reading.focus" aria-pressed="false">Focus</button></div></section>
+            <section class="gg-more-pref-panel" data-gg-pref-panel="motion" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.motion">Motion</h4></header><div class="gg-more-pref-panel__options" role="group" aria-label="Motion"><button class="gg-more-pref-option" type="button" data-gg-motion-option="balanced" data-copy="motion.balanced" aria-pressed="false">Balanced</button><button class="gg-more-pref-option" type="button" data-gg-motion-option="reduced" data-copy="motion.reduced" aria-pressed="false">Reduced</button></div></section>
           </div>
-          <div class="gg-segment gg-more-section" aria-label="Theme selector">
-            <p class="gg-segment__label" data-copy="more.section.appearance">Appearance</p>
-            <div class="gg-segment__row">
-              <button class="gg-control" type="button" data-gg-theme-option="system" aria-pressed="true" data-copy="appearance.system">System</button>
-              <button class="gg-control" type="button" data-gg-theme-option="light" aria-pressed="false" data-copy="appearance.light">Light</button>
-              <button class="gg-control" type="button" data-gg-theme-option="dark" aria-pressed="false" data-copy="appearance.dark">Dark</button>
-            </div>
-          </div>
+          <div class="gg-more-local-search" data-gg-module="more-local-search"><label class="gg-more-local-search__label" for="landing-more-local-search-input" data-copy="more.localSearch.label">Search More</label><div class="gg-more-local-search__field"><span class="gg-more-local-search__icon" aria-hidden="true">⌕</span><input class="gg-more-local-search__input" id="landing-more-local-search-input" data-gg-more-search-input type="search" autocomplete="off" placeholder="Search" data-copy-placeholder="more.localSearch.placeholder" /></div></div>
         </div>
         <footer class="gg-more-footer">
           <span class="gg-more-footer__label" id="gg-more-footer-social-title" data-copy="more.shareSite">Share site</span>
           <div class="gg-more-footer__social" aria-labelledby="gg-more-footer-social-title">
-            <a class="gg-more-footer__link" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareX;title:more.shareX" aria-label="Share on X" title="Share on X">X</a>
-            <a class="gg-more-footer__link" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareFacebook;title:more.shareFacebook" aria-label="Share on Facebook" title="Share on Facebook">Fb</a>
-            <a class="gg-more-footer__link" href="https://api.whatsapp.com/send?text=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareWhatsApp;title:more.shareWhatsApp" aria-label="Share on WhatsApp" title="Share on WhatsApp">Wa</a>
+            <a class="gg-more-footer__link" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareX;title:more.shareX" aria-label="Share on X" title="Share on X"><span aria-hidden="true">𝕏</span><span data-copy="more.shareXShort">X</span></a>
+            <a class="gg-more-footer__link" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareFacebook;title:more.shareFacebook" aria-label="Share on Facebook" title="Share on Facebook"><span aria-hidden="true">f</span><span data-copy="more.shareFacebookShort">Facebook</span></a>
+            <a class="gg-more-footer__link" href="https://api.whatsapp.com/send?text=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareWhatsApp;title:more.shareWhatsApp" aria-label="Share on WhatsApp" title="Share on WhatsApp"><span aria-hidden="true">◌</span><span data-copy="more.shareWhatsAppShort">WhatsApp</span></a>
           </div>
           <small class="gg-more-footer__legal" data-copy="footer.copyright">Copyright © 2026 PakRPP. All rights reserved.</small>
         </footer>
@@ -1040,7 +1480,7 @@
         'sheet.close': 'Close panel', 'command.title': 'Jelajah', 'command.label': 'Cari artikel, topik, rute, bagian, atau aksi', 'command.placeholder': 'Cari artikel, topik, rute, bagian, atau aksi',
         'discovery.title': 'Jelajah', 'discovery.global.placeholder': 'Cari artikel, topik, rute, bagian, atau aksi', 'discovery.filter.all': 'Semua', 'discovery.filter.articles': 'Artikel', 'discovery.filter.topics': 'Topik', 'discovery.filter.routes': 'Rute', 'discovery.filter.sections': 'Bagian', 'discovery.filter.actions': 'Aksi', 'discovery.type.article': 'Artikel', 'discovery.type.topic': 'Topik', 'discovery.type.route': 'Rute', 'discovery.type.section': 'Bagian', 'discovery.type.action': 'Aksi', 'discovery.empty.title': 'Tidak ada hasil', 'discovery.empty.body': 'Coba kata kunci lain.',
         'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'Sistem', 'appearance.light': 'Terang', 'appearance.dark': 'Gelap', 'footer.copyright': 'Hak Cipta © 2026 PakRPP. Semua hak dilindungi.',
-        'more.channelsLabel': 'Share site', 'more.shareSite': 'Bagikan situs', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'Lainnya', 'more.section.navigation': 'Navigasi', 'more.section.discover': 'Jelajah', 'more.section.info': 'Info', 'more.section.language': 'Bahasa', 'more.section.appearance': 'Tampilan', 'more.search': 'Cari', 'more.sitemap': 'Peta situs', 'more.rss': 'RSS', 'more.about': 'Tentang PakRPP', 'more.privacy': 'Kebijakan Privasi', 'more.terms': 'Syarat Penggunaan', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Buka Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Buka arsip editorial.', 'more.homeTitle': 'Home', 'more.homeBody': 'Kembali ke identity surface ini.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Lompat ke brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
+        'more.channelsLabel': 'Share site', 'more.shareSite': 'Bagikan situs', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'Lainnya', 'more.section.navigation': 'Navigasi', 'more.section.discover': 'Jelajah', 'more.section.info': 'Info', 'more.section.language': 'Bahasa', 'more.section.appearance': 'Tampilan', 'more.search': 'Cari', 'more.sitemap': 'Peta situs', 'more.rss': 'RSS', 'more.about': 'Tentang PakRPP', 'more.privacy': 'Kebijakan Privasi', 'more.terms': 'Syarat Penggunaan', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Buka Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Buka arsip editorial.', 'more.homeTitle': 'Home', 'more.homeBody': 'Kembali ke identity surface ini.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Lompat ke brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark', 'reading.comfortable': 'Comfortable', 'reading.compact': 'Compact', 'reading.focus': 'Focus', 'motion.balanced': 'Balanced', 'motion.reduced': 'Reduced'
       },
       en: {
         skip: 'Skip to content',
@@ -1078,7 +1518,7 @@
         'sheet.close': 'Close panel', 'command.title': 'Discovery', 'command.label': 'Search articles, topics, routes, sections, or actions', 'command.placeholder': 'Search articles, topics, routes, sections, or actions',
         'discovery.title': 'Discovery', 'discovery.global.placeholder': 'Search articles, topics, routes, sections, or actions', 'discovery.filter.all': 'All', 'discovery.filter.articles': 'Articles', 'discovery.filter.topics': 'Topics', 'discovery.filter.routes': 'Routes', 'discovery.filter.sections': 'Sections', 'discovery.filter.actions': 'Actions', 'discovery.type.article': 'Article', 'discovery.type.topic': 'Topic', 'discovery.type.route': 'Route', 'discovery.type.section': 'Section', 'discovery.type.action': 'Action', 'discovery.empty.title': 'No results', 'discovery.empty.body': 'Try another keyword.',
         'language.english': 'English', 'language.indonesia': 'Indonesia', 'appearance.system': 'System', 'appearance.light': 'Light', 'appearance.dark': 'Dark', 'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
-        'more.channelsLabel': 'Share site', 'more.shareSite': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.section.navigation': 'Navigation', 'more.section.discover': 'Discover', 'more.section.info': 'Info', 'more.section.language': 'Language', 'more.section.appearance': 'Appearance', 'more.search': 'Search', 'more.sitemap': 'Sitemap', 'more.rss': 'RSS', 'more.about': 'About PakRPP', 'more.privacy': 'Privacy Policy', 'more.terms': 'Terms of Use', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Open Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Open the editorial archive.', 'more.homeTitle': 'Home', 'more.homeBody': 'Return to this identity surface.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Jump to the brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark'
+        'more.channelsLabel': 'Share site', 'more.shareSite': 'Share site', 'more.shareX': 'Share on X', 'more.shareFacebook': 'Share on Facebook', 'more.shareWhatsApp': 'Share on WhatsApp', 'more.shareXShort': 'X', 'more.shareFacebookShort': 'Facebook', 'more.shareWhatsAppShort': 'WhatsApp', 'more.rights': 'Copyright © 2026 PakRPP. All rights reserved.', 'more.title': 'More', 'more.profile.name': 'PakRPP', 'more.profile.meta': 'Editorial tools, learning resources, and digital workspace', 'more.localSearch.label': 'Search More', 'more.localSearch.placeholder': 'Search', 'more.section.navigation': 'Navigation', 'more.section.discover': 'Discover', 'more.section.info': 'Info', 'more.section.preferences': 'Preferences', 'more.section.language': 'Language', 'more.section.appearance': 'Appearance', 'more.section.reading': 'Reading', 'more.section.motion': 'Motion', 'more.search': 'Search', 'more.sitemap': 'Sitemap', 'more.rss': 'RSS', 'more.about': 'About PakRPP', 'more.privacy': 'Privacy Policy', 'more.terms': 'Terms of Use', 'more.disclaimer': 'Disclaimer', 'more.storeTitle': 'Store', 'more.storeBody': 'Open Yellow Cart curated commerce.', 'more.blogTitle': 'Blog', 'more.blogBody': 'Open the editorial archive.', 'more.homeTitle': 'Home', 'more.homeBody': 'Return to this identity surface.', 'more.contactTitle': 'Contact', 'more.contactBody': 'Jump to the brief path.', 'more.language': 'Language', 'more.theme': 'Theme', 'theme.system': 'System', 'theme.light': 'Light', 'theme.dark': 'Dark', 'reading.comfortable': 'Comfortable', 'reading.compact': 'Compact', 'reading.focus': 'Focus', 'motion.balanced': 'Balanced', 'motion.reduced': 'Reduced'
       }
     };
 
@@ -1112,6 +1552,8 @@
     var state = {
       locale: normalizeLocale(readStorage('gg:lang')),
       theme: readStorage('gg:theme') || 'system',
+      reading: readStorage('gg:reading') || 'comfortable',
+      motion: readStorage('gg:motion') || 'balanced',
       activePanel: '',
       lastFocus: null,
       activeSection: 'hero',
@@ -1144,6 +1586,8 @@
     var commandFilterButtons = Array.from(document.querySelectorAll('[data-discovery-filter]'));
 
     function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
+    function normalizeReading(value) { return value === 'compact' || value === 'focus' ? value : 'comfortable'; }
+    function normalizeMotion(value) { return value === 'reduced' ? 'reduced' : 'balanced'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
@@ -1154,13 +1598,44 @@
     function maxScroll() { return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
     function isBottomZone(top) { return (maxScroll() - top) < 100; }
 
+    function setMorePrefValue(key, value) {
+      document.querySelectorAll('[data-gg-pref-value="' + key + '"]').forEach(function (node) { node.textContent = value; });
+    }
+
+    function syncMorePreferenceValues() {
+      setMorePrefValue('language', state.locale === 'en' ? text('language.english') : text('language.indonesia'));
+      setMorePrefValue('appearance', text('appearance.' + state.theme) || text('theme.' + state.theme));
+      setMorePrefValue('reading', text('reading.' + state.reading));
+      setMorePrefValue('motion', text('motion.' + state.motion));
+    }
+
     function applyTheme() {
       if (state.theme === 'light' || state.theme === 'dark') document.documentElement.setAttribute('data-gg-theme', state.theme);
       else document.documentElement.removeAttribute('data-gg-theme');
       document.querySelectorAll('[data-gg-theme-option]').forEach(function (button) {
         var active = button.getAttribute('data-gg-theme-option') === state.theme;
         button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('data-gg-active', String(active));
       });
+      syncMorePreferenceValues();
+    }
+
+    function applyReadingMotion() {
+      state.reading = normalizeReading(state.reading);
+      state.motion = normalizeMotion(state.motion);
+      document.documentElement.setAttribute('data-gg-reading', state.reading);
+      document.documentElement.setAttribute('data-gg-motion', state.motion);
+      document.querySelectorAll('[data-gg-reading-option]').forEach(function (button) {
+        var active = button.getAttribute('data-gg-reading-option') === state.reading;
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('data-gg-active', String(active));
+      });
+      document.querySelectorAll('[data-gg-motion-option]').forEach(function (button) {
+        var active = button.getAttribute('data-gg-motion-option') === state.motion;
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('data-gg-active', String(active));
+      });
+      syncMorePreferenceValues();
     }
 
     function applyCopy() {
@@ -1184,7 +1659,9 @@
       document.querySelectorAll('[data-gg-lang]').forEach(function (button) {
         var active = button.getAttribute('data-gg-lang') === state.locale;
         button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('data-gg-active', String(active));
       });
+      syncMorePreferenceValues();
       updateOutlineCopy();
       renderCommand(commandInput ? commandInput.value : '');
     }
@@ -1460,6 +1937,7 @@
       });
       document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
+          if (state.activePanel === 'more' && closeMorePreferencePanel()) return;
           if (state.activePanel) closePanel();
           else collapseOutline();
         }
@@ -1707,6 +2185,50 @@
       ensureLandingDiscoveryFeed();
     }
 
+    function openMorePreferencePanel(name) {
+      var panelRoot = document.querySelector('#gg-more-panel [data-gg-pref-panels]');
+      if (!panelRoot) return false;
+      panelRoot.hidden = false;
+      panelRoot.querySelectorAll('[data-gg-pref-panel]').forEach(function (panel) { panel.hidden = panel.getAttribute('data-gg-pref-panel') !== name; });
+      var panel = document.querySelector('#gg-more-panel .gg-more-sheet');
+      if (panel) panel.setAttribute('data-gg-pref-active', name);
+      return true;
+    }
+
+    function closeMorePreferencePanel() {
+      var panelRoot = document.querySelector('#gg-more-panel [data-gg-pref-panels]');
+      if (!panelRoot || panelRoot.hidden) return false;
+      panelRoot.hidden = true;
+      panelRoot.querySelectorAll('[data-gg-pref-panel]').forEach(function (panel) { panel.hidden = true; });
+      var panel = document.querySelector('#gg-more-panel .gg-more-sheet');
+      if (panel) panel.removeAttribute('data-gg-pref-active');
+      return true;
+    }
+
+    function setupMoreLocalSearch() {
+      document.querySelectorAll('.gg-more-body').forEach(function (root) {
+        var input = root.querySelector('[data-gg-more-search-input]');
+        if (!input || root.getAttribute('data-gg-local-search-ready') === 'true') return;
+        root.setAttribute('data-gg-local-search-ready', 'true');
+        input.addEventListener('input', function () {
+          var q = String(input.value || '').trim().toLowerCase();
+          root.querySelectorAll('.gg-more-profile, .gg-more-section').forEach(function (section) {
+            var rows = section.querySelectorAll('.gg-more-list__link, .gg-more-profile__card');
+            var hasMatch = false;
+            rows.forEach(function (row) {
+              if (!q) { row.hidden = false; hasMatch = true; return; }
+              var haystack = [row.textContent || '', row.getAttribute('data-gg-more-route') || '', row.getAttribute('data-gg-pref-open') || '', row.getAttribute('href') || ''].join(' ').toLowerCase();
+              var match = haystack.indexOf(q) !== -1;
+              row.hidden = !match;
+              if (match) hasMatch = true;
+            });
+            if (!q) section.removeAttribute('data-gg-filter-empty');
+            else section.toggleAttribute('data-gg-filter-empty', !hasMatch);
+          });
+        });
+      });
+    }
+
     function setupPreferences() {
       document.querySelectorAll('[data-gg-lang]').forEach(function (button) {
         button.addEventListener('click', function () {
@@ -1723,6 +2245,27 @@
           applyTheme();
         });
       });
+      document.querySelectorAll('[data-gg-reading-option]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          state.reading = normalizeReading(button.getAttribute('data-gg-reading-option'));
+          writeStorage('gg:reading', state.reading);
+          applyReadingMotion();
+        });
+      });
+      document.querySelectorAll('[data-gg-motion-option]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          state.motion = normalizeMotion(button.getAttribute('data-gg-motion-option'));
+          writeStorage('gg:motion', state.motion);
+          applyReadingMotion();
+        });
+      });
+      document.querySelectorAll('[data-gg-pref-open]').forEach(function (button) {
+        button.addEventListener('click', function () { openMorePreferencePanel(button.getAttribute('data-gg-pref-open')); });
+      });
+      document.querySelectorAll('[data-gg-pref-back]').forEach(function (button) {
+        button.addEventListener('click', closeMorePreferencePanel);
+      });
+      setupMoreLocalSearch();
     }
 
     function setupSectionObserver() {
@@ -1751,6 +2294,7 @@
 
     function init() {
       applyTheme();
+      applyReadingMotion();
       applyCopy();
       setupDock();
       setupOutline();
