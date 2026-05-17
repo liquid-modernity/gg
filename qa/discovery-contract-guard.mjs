@@ -188,9 +188,23 @@ function main() {
     issues.push('public Landing label is exposed in nav/discovery markup');
   }
 
-  if (!GG_MORE_SHEET.sections || GG_MORE_SHEET.sections.map((section) => section.id).join('|') !== 'navigation|discover|info|language|appearance') {
-    issues.push('More sheet registry sections changed unexpectedly');
-  }
+  const moreSections = Array.isArray(GG_MORE_SHEET.sections) ? GG_MORE_SHEET.sections : [];
+  const moreSectionIds = moreSections.map((section) => section && section.id).filter(Boolean);
+  const expectedMoreSectionIds = ['navigation', 'discover', 'info', 'preferences'];
+  assertSameArray('GG_MORE_SHEET.sections', moreSectionIds, expectedMoreSectionIds, issues);
+
+  const moreProfile = GG_MORE_SHEET.profile || {};
+  if (moreProfile.nameKey !== 'more.profile.name') issues.push('More sheet profile nameKey must be more.profile.name');
+  if (moreProfile.metaKey !== 'more.profile.meta') issues.push('More sheet profile metaKey must be more.profile.meta');
+  if (moreProfile.href !== '/p/about.html') issues.push(`More sheet profile href expected /p/about.html got ${moreProfile.href || '(missing)'}`);
+
+  const preferencesSection = moreSections.find((section) => section && section.id === 'preferences') || {};
+  assertSameArray('GG_MORE_SHEET.preferences.items', preferencesSection.items, ['language', 'appearance', 'reading', 'motion'], issues);
+  if (preferencesSection.layout !== 'rows') issues.push(`More sheet preferences layout expected rows got ${preferencesSection.layout || '(missing)'}`);
+
+  const localSearch = GG_MORE_SHEET.localSearch || {};
+  if (localSearch.labelKey !== 'more.localSearch.label') issues.push('More sheet localSearch labelKey must be more.localSearch.label');
+  if (localSearch.placeholderKey !== 'more.localSearch.placeholder') issues.push('More sheet localSearch placeholderKey must be more.localSearch.placeholder');
 
   if (issues.length) {
     console.error('DISCOVERY CONTRACT GUARD RESULT: FAIL');
