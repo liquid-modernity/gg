@@ -8,6 +8,8 @@
   align-items: center;
   justify-content: center;
   font-family: "Material Symbols Outlined";
+  font-feature-settings: "liga";
+  text-transform: none;
   font-size: var(--gg-icon-size);
   font-style: normal;
   font-weight: 400;

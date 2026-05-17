@@ -195,6 +195,8 @@
       align-items: center;
       justify-content: center;
       font-family: "Material Symbols Outlined";
+      font-feature-settings: "liga";
+      text-transform: none;
       font-size: var(--gg-icon-size);
       font-style: normal;
       font-weight: 400;
@@ -684,6 +686,8 @@
       background: color-mix(in srgb, var(--gg-surface-interactive) 48%, transparent);
       color: var(--gg-accent-soft);
       font-family: "Material Symbols Outlined";
+      font-feature-settings: "liga";
+      text-transform: none;
       font-size: 20px;
       font-variation-settings: 'FILL' 0, 'wght' var(--gg-icon-weight), 'GRAD' var(--gg-icon-grade), 'opsz' 24;
     }
