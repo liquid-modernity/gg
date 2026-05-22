@@ -1078,9 +1078,14 @@ check_store_route() {
   grep -Eq '<a[^>]*data-store-more-link=["'"'"']contact["'"'"'][^>]*href=["'"'"']/landing#contact["'"'"']|<a[^>]*href=["'"'"']/landing#contact["'"'"'][^>]*data-store-more-link=["'"'"']contact["'"'"']' "$body_file" || log_fail "/store More sheet Contact href is not /landing#contact"
   grep -Eq 'data-store-lang=["'"'"']en["'"'"']' "$body_file" || log_fail "/store EN switch is missing"
   grep -Eq 'data-store-lang=["'"'"']id["'"'"']' "$body_file" || log_fail "/store ID switch is missing"
-  grep -Eq 'data-store-theme=["'"'"']system["'"'"']' "$body_file" || log_fail "/store System theme switch is missing"
+  # TASK-THEME-001 collapsed the public theme switch to Kindle-like Light/Dark only.
+  # `system` may remain as an internal compatibility alias elsewhere, but it must not
+  # appear as a Store theme switch.
   grep -Eq 'data-store-theme=["'"'"']light["'"'"']' "$body_file" || log_fail "/store Light theme switch is missing"
   grep -Eq 'data-store-theme=["'"'"']dark["'"'"']' "$body_file" || log_fail "/store Dark theme switch is missing"
+  if grep -Eq 'data-store-theme=["'"'"']system["'"'"']' "$body_file"; then
+    log_fail "/store still exposes legacy System theme switch after TASK-THEME-001"
+  fi
   grep -Eq 'class=["'"'"'][^"'"'"']*store-grid[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store catalogue surface is missing"
   grep -Eq 'class=["'"'"']gg-sheet store-preview-sheet["'"'"']' "$body_file" || log_fail "/store preview sheet is missing"
   grep -Eq 'id=["'"'"']store-preview-dots["'"'"']' "$body_file" || log_fail "/store preview dots container is missing"
