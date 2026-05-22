@@ -90,6 +90,7 @@ const REQUIRED = {
     'discovery.filter.actions': 'Actions',
     'discovery.filter.products': 'Products',
     'discovery.filter.categories': 'Categories',
+    'discovery.filter.saved': 'Saved',
     'discovery.type.article': 'Article',
     'discovery.type.topic': 'Topic',
     'discovery.type.route': 'Route',
@@ -98,7 +99,9 @@ const REQUIRED = {
     'discovery.type.product': 'Product',
     'discovery.type.category': 'Category',
     'discovery.empty.title': 'No results',
-    'discovery.empty.body': 'Try another keyword.'
+    'discovery.empty.body': 'Try another keyword.',
+    'discovery.saved.empty.title': 'No saved items yet.',
+    'discovery.saved.empty.body': 'Save articles or products to find them here.'
   },
   id: {
     'comments.title': 'Komentar',
@@ -182,6 +185,7 @@ const REQUIRED = {
     'discovery.filter.actions': 'Aksi',
     'discovery.filter.products': 'Produk',
     'discovery.filter.categories': 'Kategori',
+    'discovery.filter.saved': 'Tersimpan',
     'discovery.type.article': 'Artikel',
     'discovery.type.topic': 'Topik',
     'discovery.type.route': 'Rute',
@@ -190,7 +194,9 @@ const REQUIRED = {
     'discovery.type.product': 'Produk',
     'discovery.type.category': 'Kategori',
     'discovery.empty.title': 'Tidak ada hasil',
-    'discovery.empty.body': 'Coba kata kunci lain.'
+    'discovery.empty.body': 'Coba kata kunci lain.',
+    'discovery.saved.empty.title': 'Belum ada item tersimpan.',
+    'discovery.saved.empty.body': 'Simpan artikel atau produk untuk menemukannya di sini.'
   }
 };
 

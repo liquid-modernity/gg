@@ -8,8 +8,8 @@
 
         function normalizeTheme(value) {
           var theme = String(value || '').toLowerCase();
-          if (theme === 'light' || theme === 'dark') return theme;
-          return 'system';
+          if (theme === 'dark') return 'dark';
+          return 'light';
         }
 
         function isDockHiddenByScroll() {
@@ -143,12 +143,21 @@
 
         function readPreferredTheme() {
           var stored = '';
+          var normalized;
           try {
             stored = window.localStorage ? window.localStorage.getItem(THEME_STORAGE_KEY) : '';
           } catch (error) {
             stored = '';
           }
-          return normalizeTheme(stored);
+          normalized = normalizeTheme(stored);
+          if (stored !== normalized) {
+            try {
+              if (window.localStorage) window.localStorage.setItem(THEME_STORAGE_KEY, normalized);
+            } catch (error) {
+              /* ignore storage failures */
+            }
+          }
+          return normalized;
         }
 
         function applyCopy(scope) {
@@ -235,12 +244,7 @@
 
         function setTheme(theme, skipPersist) {
           state.theme = normalizeTheme(theme);
-
-          if (state.theme === 'light' || state.theme === 'dark') {
-            document.documentElement.setAttribute('data-gg-theme', state.theme);
-          } else {
-            document.documentElement.removeAttribute('data-gg-theme');
-          }
+          document.documentElement.setAttribute('data-gg-theme', state.theme);
 
           if (!skipPersist) {
             try {

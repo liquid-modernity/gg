@@ -11,8 +11,7 @@
   <link rel="alternate" hreflang="en" href="https://www.pakrpp.com/landing?lang=en" />
   <link rel="alternate" hreflang="x-default" href="https://www.pakrpp.com/landing" />
   <meta name="gg-landing-contract" content="landing-personal-notes-v1.3" />
-  <meta name="theme-color" content="#f3efe4" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f3efe4" />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content="PakRPP · The Unfiltered Notes" />
@@ -32,7 +31,11 @@
     (function () {
       try {
         var theme = window.localStorage && window.localStorage.getItem('gg:theme');
-        if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-gg-theme', theme);
+        if (theme !== 'dark') {
+          theme = 'light';
+          if (window.localStorage) window.localStorage.setItem('gg:theme', theme);
+        }
+        document.documentElement.setAttribute('data-gg-theme', theme);
       } catch (error) {}
     }());
   </script>
@@ -225,8 +228,8 @@
       --gg-icon-grade: -25;
       --gg-icon-weight-active: 520;
       --gg-icon-grade-active: 0;
-      --gg-surface-page: #f4eeef;
-      --gg-surface-panel: #f5efec;
+      --gg-surface-page: #f3efe4;
+      --gg-surface-panel: #f6f1e6;
       --gg-toolbar-surface-fallback: var(--gg-surface-panel);
       --gg-detail-outline-surface-fallback: var(--gg-surface-panel);
       --gg-dock-surface-fallback: var(--gg-surface-panel);
@@ -238,12 +241,12 @@
       --gg-divider: rgba(32,26,28,.12);
       --gg-divider-strong: rgba(32,26,28,.18);
       --gg-border-interactive: rgba(32,26,28,.18);
-      --gg-ink: #201a1c;
-      --gg-ink-soft: #5f565b;
+      --gg-ink: #171512;
+      --gg-ink-soft: #5c564b;
       --gg-line: var(--gg-divider);
       --gg-line-strong: var(--gg-divider-strong);
-      --gg-accent: #2d2529;
-      --gg-accent-soft: #6a5f66;
+      --gg-accent: #171512;
+      --gg-accent-soft: #6d6457;
       --gg-accent-contrast: #fff;
       --gg-accent-hover: #171315;
       --gg-focus-ring: 2px solid var(--gg-accent);
@@ -352,8 +355,8 @@
     html[data-gg-theme='light'] { color-scheme: light; }
     html[data-gg-theme='dark'] {
       color-scheme: dark;
-      --gg-surface-page: #000000;
-      --gg-surface-panel: #1c1a1e;
+      --gg-surface-page: #050505;
+      --gg-surface-panel: #0d0d0b;
       --gg-toolbar-surface-fallback: #201d22;
       --gg-detail-outline-surface-fallback: #201d22;
       --gg-dock-surface-fallback: #201d22;
@@ -365,10 +368,10 @@
       --gg-divider: rgba(255,255,255,.14);
       --gg-divider-strong: rgba(255,255,255,.22);
       --gg-border-interactive: rgba(255,255,255,.18);
-      --gg-ink: #f5f1f3;
-      --gg-ink-soft: #c8bec4;
-      --gg-accent: #f4eff1;
-      --gg-accent-soft: #d5c8cf;
+      --gg-ink: #eee8db;
+      --gg-ink-soft: #c7bda9;
+      --gg-accent: #f4eddf;
+      --gg-accent-soft: #d2c6b0;
       --gg-accent-contrast: #111013;
       --gg-accent-hover: #ffffff;
       --gg-shadow-soft: 0 12px 28px rgba(0,0,0,.24);
@@ -379,8 +382,7 @@
       --gg-detail-outline-micro-surface: rgba(255,255,255,.08);
       --gg-detail-outline-progress-track: rgba(255,255,255,.12);
     }
-    @media (prefers-color-scheme: dark) { :root:not([data-gg-theme='light']) { color-scheme: dark; --gg-surface-page:#000; --gg-surface-panel:#1c1a1e; --gg-toolbar-surface-fallback:#201d22; --gg-detail-outline-surface-fallback:#201d22; --gg-dock-surface-fallback:#201d22; --gg-surface-quiet:rgba(255,255,255,.08); --gg-surface-interactive:rgba(255,255,255,.10); --gg-surface-interactive-strong:rgba(255,255,255,.14); --gg-surface-panel-fade-soft:rgba(28,26,30,.92); --gg-surface-panel-fade-strong:rgba(28,26,30,.96); --gg-divider:rgba(255,255,255,.14); --gg-divider-strong:rgba(255,255,255,.22); --gg-border-interactive:rgba(255,255,255,.18); --gg-ink:#f5f1f3; --gg-ink-soft:#c8bec4; --gg-accent:#f4eff1; --gg-accent-soft:#d5c8cf; --gg-accent-contrast:#111013; --gg-accent-hover:#fff; --gg-shadow-soft:0 12px 28px rgba(0,0,0,.24); --gg-shadow-panel-bottom:0 -20px 52px rgba(0,0,0,.32); --gg-panel-handle-tone:rgba(255,255,255,.22); --gg-panel-scrim:rgba(5,4,6,.56); --gg-panel-scrim-fallback:rgba(5,4,6,.7); --gg-detail-outline-micro-surface:rgba(255,255,255,.08); --gg-detail-outline-progress-track:rgba(255,255,255,.12); } }
-    @media (prefers-contrast: more) { :root { --gg-divider: rgba(32,26,28,.26); --gg-divider-strong: rgba(32,26,28,.36); --gg-border-interactive: rgba(32,26,28,.42); --gg-focus-ring: 3px solid var(--gg-accent); } html[data-gg-theme='dark'] { --gg-divider: rgba(255,255,255,.32); --gg-divider-strong: rgba(255,255,255,.44); --gg-border-interactive: rgba(255,255,255,.5); } }
+        @media (prefers-contrast: more) { :root { --gg-divider: rgba(32,26,28,.26); --gg-divider-strong: rgba(32,26,28,.36); --gg-border-interactive: rgba(32,26,28,.42); --gg-focus-ring: 3px solid var(--gg-accent); } html[data-gg-theme='dark'] { --gg-divider: rgba(255,255,255,.32); --gg-divider-strong: rgba(255,255,255,.44); --gg-border-interactive: rgba(255,255,255,.5); } }
     @media (forced-colors: active) { a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid CanvasText !important; } .gg-dock, .gg-detail-outline, .gg-sheet__panel, .gg-card, .gg-button, .gg-control { border: 1px solid CanvasText !important; forced-color-adjust: auto !important; } }
 
     * { box-sizing: border-box; }
@@ -1362,37 +1364,6 @@ html[data-gg-theme='dark'] {
   --gg-detail-outline-micro-surface: rgba(255,255,255,.08);
   --gg-detail-outline-progress-track: rgba(238,232,219,.13);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-gg-theme='light']) {
-    color-scheme: dark;
-    --gg-surface-page: #050505;
-    --gg-surface-panel: #0d0d0b;
-    --gg-toolbar-surface-fallback: #10100e;
-    --gg-detail-outline-surface-fallback: #10100e;
-    --gg-dock-surface-fallback: #10100e;
-    --gg-surface-quiet: rgba(255,255,255,.055);
-    --gg-surface-interactive: rgba(255,255,255,.075);
-    --gg-surface-interactive-strong: rgba(255,255,255,.12);
-    --gg-surface-panel-fade-soft: rgba(13,13,11,.94);
-    --gg-surface-panel-fade-strong: rgba(13,13,11,.98);
-    --gg-divider: rgba(238,232,219,.16);
-    --gg-divider-strong: rgba(238,232,219,.28);
-    --gg-border-interactive: rgba(238,232,219,.24);
-    --gg-ink: #eee8db;
-    --gg-ink-soft: #c7bda9;
-    --gg-accent: #f4eddf;
-    --gg-accent-soft: #d2c6b0;
-    --gg-accent-contrast: #080807;
-    --gg-accent-hover: #ffffff;
-    --gg-shadow-soft: 0 12px 28px rgba(0,0,0,.28);
-    --gg-shadow-panel-bottom: 0 -20px 52px rgba(0,0,0,.44);
-    --gg-panel-handle-tone: rgba(238,232,219,.26);
-    --gg-panel-scrim: rgba(0,0,0,.62);
-    --gg-panel-scrim-fallback: rgba(0,0,0,.72);
-    --gg-detail-outline-micro-surface: rgba(255,255,255,.08);
-    --gg-detail-outline-progress-track: rgba(238,232,219,.13);
-  }
-}
 html[data-gg-reading='compact'] {
   --landing-v5-display: clamp(58px, 8.2vw, 138px);
   --landing-v5-title: clamp(46px, 6.2vw, 98px);
@@ -1554,9 +1525,6 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
           <button class="gg-control" type="button" data-discovery-filter="all" data-copy="discovery.filter.all" aria-pressed="true">All</button>
           <button class="gg-control" type="button" data-discovery-filter="articles" data-copy="discovery.filter.articles" aria-pressed="false">Articles</button>
           <button class="gg-control" type="button" data-discovery-filter="topics" data-copy="discovery.filter.topics" aria-pressed="false">Topics</button>
-          <button class="gg-control" type="button" data-discovery-filter="sections" data-copy="discovery.filter.sections" aria-pressed="false">Sections</button>
-          <button class="gg-control" type="button" data-discovery-filter="routes" data-copy="discovery.filter.routes" aria-pressed="false">Routes</button>
-          <button class="gg-control" type="button" data-discovery-filter="actions" data-copy="discovery.filter.actions" aria-pressed="false">Actions</button>
         </div>
         <label class="gg-visually-hidden" for="gg-command-input" data-copy="command.label">Search notes, rubrics, governance, sustainability, culture, technology, or contact</label>
         <input class="gg-field" id="gg-command-input" type="search" autocomplete="off" inputmode="search" data-copy-attr="placeholder:discovery.global.placeholder" placeholder="Search notes, rubrics, governance, sustainability, culture, technology, or contact" />
@@ -1574,8 +1542,8 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
           <section class="gg-more-section gg-more-section--navigation" aria-labelledby="landing-more-navigation-title"><h3 class="gg-more-section__title" id="landing-more-navigation-title" data-copy="more.section.navigation">Navigation</h3><div class="gg-more-grid"><a class="gg-more-list__link" href="/landing" data-copy-key="nav.home" data-landing-route="home" data-gg-more-route="home"><span class="gg-more-row__icon gg-icon" aria-hidden="true">home</span><span class="gg-more-row__label" data-copy="nav.home">Home</span></a><a class="gg-more-list__link" href="/" data-copy-key="nav.blog" data-landing-route="blog" data-gg-more-route="blog"><span class="gg-more-row__icon gg-icon" aria-hidden="true">article</span><span class="gg-more-row__label" data-copy="nav.blog">Blog</span></a><a class="gg-more-list__link" href="/store" data-copy-key="nav.store" data-landing-route="store" data-gg-more-route="store"><span class="gg-more-row__icon gg-icon" aria-hidden="true">shopping_bag</span><span class="gg-more-row__label" data-copy="nav.store">Store</span></a><a class="gg-more-list__link" href="/landing#contact" data-copy-key="nav.contact" data-landing-route="contact" data-gg-more-route="contact"><span class="gg-more-row__icon gg-icon" aria-hidden="true">mail</span><span class="gg-more-row__label" data-copy="nav.contact">Contact</span></a></div></section>
           <section class="gg-more-section gg-more-section--discover" aria-labelledby="landing-more-discover-title"><h3 class="gg-more-section__title" id="landing-more-discover-title" data-copy="more.section.discover">Discover</h3><div class="gg-more-list"><button class="gg-more-list__link" type="button" data-open-command><span class="gg-more-row__icon gg-icon" aria-hidden="true">search</span><span class="gg-more-row__label" data-copy="more.search">Search</span></button><a class="gg-more-list__link" href="/sitemap.xml"><span class="gg-more-row__icon gg-icon" aria-hidden="true">account_tree</span><span class="gg-more-row__label" data-copy="more.sitemap">Sitemap</span></a><a class="gg-more-list__link" href="/feeds/posts/default?alt=rss"><span class="gg-more-row__icon gg-icon" aria-hidden="true">rss_feed</span><span class="gg-more-row__label" data-copy="more.rss">RSS</span></a></div></section>
           <section class="gg-more-section gg-more-section--info" aria-labelledby="landing-more-info-title"><h3 class="gg-more-section__title" id="landing-more-info-title" data-copy="more.section.info">Info</h3><div class="gg-more-list"><a class="gg-more-list__link" href="/p/about.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">info</span><span class="gg-more-row__label" data-copy="more.about">About PakRPP</span></a><a class="gg-more-list__link" href="/p/privacy-policy.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">shield</span><span class="gg-more-row__label" data-copy="more.privacy">Privacy Policy</span></a><a class="gg-more-list__link" href="/p/terms-of-use.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">description</span><span class="gg-more-row__label" data-copy="more.terms">Terms of Use</span></a><a class="gg-more-list__link" href="/p/disclaimer.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">warning</span><span class="gg-more-row__label" data-copy="more.disclaimer">Disclaimer</span></a></div></section>
-          <section class="gg-more-section gg-more-section--preferences" aria-labelledby="landing-more-preferences-title"><h3 class="gg-more-section__title" id="landing-more-preferences-title" data-copy="more.section.preferences">Preferences</h3><div class="gg-more-list gg-more-preferences-list"><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="language"><span class="gg-more-row__icon gg-icon" aria-hidden="true">language</span><span class="gg-more-row__label" data-copy="more.section.language">Language</span><span class="gg-more-row__value" data-gg-pref-value="language">English</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="appearance"><span class="gg-more-row__icon gg-icon" aria-hidden="true">contrast</span><span class="gg-more-row__label" data-copy="more.section.appearance">Appearance</span><span class="gg-more-row__value" data-gg-pref-value="appearance">System</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="reading"><span class="gg-more-row__icon gg-icon" aria-hidden="true">format_size</span><span class="gg-more-row__label" data-copy="more.section.reading">Reading</span><span class="gg-more-row__value" data-gg-pref-value="reading">Comfortable</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="motion"><span class="gg-more-row__icon gg-icon" aria-hidden="true">animation</span><span class="gg-more-row__label" data-copy="more.section.motion">Motion</span><span class="gg-more-row__value" data-gg-pref-value="motion">Balanced</span></button></div></section>
-          <div class="gg-more-pref-panels" data-gg-pref-panels hidden><button class="gg-more-pref-scrim" type="button" data-gg-pref-back aria-label="Close preferences"><span class="gg-visually-hidden">Close preferences</span></button><section class="gg-more-pref-panel" data-gg-pref-panel="language" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.language">Language</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Language"><button class="gg-more-pref-option" type="button" data-gg-lang="en" data-gg-lang-option="en" data-copy="language.english" aria-pressed="false">English</button><button class="gg-more-pref-option" type="button" data-gg-lang="id" data-gg-lang-option="id" data-copy="language.indonesia" aria-pressed="false">Indonesia</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="appearance" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.appearance">Appearance</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Appearance"><button class="gg-more-pref-option" type="button" data-gg-theme-option="system" data-copy="appearance.system" aria-pressed="false">System</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="light" data-copy="appearance.light" aria-pressed="false">Paper</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="dark" data-copy="appearance.dark" aria-pressed="false">Ink</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="reading" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.reading">Reading</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Reading"><button class="gg-more-pref-option" type="button" data-gg-reading-option="comfortable" data-copy="reading.comfortable" aria-pressed="false">Comfortable</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="compact" data-copy="reading.compact" aria-pressed="false">Compact</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="focus" data-copy="reading.focus" aria-pressed="false">Focus</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="motion" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.motion">Motion</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Motion"><button class="gg-more-pref-option" type="button" data-gg-motion-option="balanced" data-copy="motion.balanced" aria-pressed="false">Balanced</button><button class="gg-more-pref-option" type="button" data-gg-motion-option="reduced" data-copy="motion.reduced" aria-pressed="false">Reduced</button></div></section></div>
+          <section class="gg-more-section gg-more-section--preferences" aria-labelledby="landing-more-preferences-title"><h3 class="gg-more-section__title" id="landing-more-preferences-title" data-copy="more.section.preferences">Preferences</h3><div class="gg-more-list gg-more-preferences-list"><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="language"><span class="gg-more-row__icon gg-icon" aria-hidden="true">language</span><span class="gg-more-row__label" data-copy="more.section.language">Language</span><span class="gg-more-row__value" data-gg-pref-value="language">English</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="appearance"><span class="gg-more-row__icon gg-icon" aria-hidden="true">contrast</span><span class="gg-more-row__label" data-copy="more.section.appearance">Appearance</span><span class="gg-more-row__value" data-gg-pref-value="appearance">Light</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="reading"><span class="gg-more-row__icon gg-icon" aria-hidden="true">format_size</span><span class="gg-more-row__label" data-copy="more.section.reading">Reading</span><span class="gg-more-row__value" data-gg-pref-value="reading">Comfortable</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="motion"><span class="gg-more-row__icon gg-icon" aria-hidden="true">animation</span><span class="gg-more-row__label" data-copy="more.section.motion">Motion</span><span class="gg-more-row__value" data-gg-pref-value="motion">Balanced</span></button></div></section>
+          <div class="gg-more-pref-panels" data-gg-pref-panels hidden><button class="gg-more-pref-scrim" type="button" data-gg-pref-back aria-label="Close preferences"><span class="gg-visually-hidden">Close preferences</span></button><section class="gg-more-pref-panel" data-gg-pref-panel="language" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.language">Language</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Language"><button class="gg-more-pref-option" type="button" data-gg-lang="en" data-gg-lang-option="en" data-copy="language.english" aria-pressed="false">English</button><button class="gg-more-pref-option" type="button" data-gg-lang="id" data-gg-lang-option="id" data-copy="language.indonesia" aria-pressed="false">Indonesia</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="appearance" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.appearance">Appearance</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Appearance"><button class="gg-more-pref-option" type="button" data-gg-theme-option="light" data-copy="appearance.light" aria-pressed="false">Light</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="dark" data-copy="appearance.dark" aria-pressed="false">Dark</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="reading" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.reading">Reading</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Reading"><button class="gg-more-pref-option" type="button" data-gg-reading-option="comfortable" data-copy="reading.comfortable" aria-pressed="false">Comfortable</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="compact" data-copy="reading.compact" aria-pressed="false">Compact</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="focus" data-copy="reading.focus" aria-pressed="false">Focus</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="motion" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.motion">Motion</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Motion"><button class="gg-more-pref-option" type="button" data-gg-motion-option="balanced" data-copy="motion.balanced" aria-pressed="false">Balanced</button><button class="gg-more-pref-option" type="button" data-gg-motion-option="reduced" data-copy="motion.reduced" aria-pressed="false">Reduced</button></div></section></div>
         </div>
         <div class="gg-more-bottom"><div class="gg-more-local-search" data-gg-module="more-local-search"><label class="gg-more-local-search__label" for="landing-more-local-search-input" data-copy="more.localSearch.label">Search More</label><div class="gg-more-local-search__field"><span class="gg-more-local-search__icon gg-icon" aria-hidden="true">search</span><input class="gg-more-local-search__input" id="landing-more-local-search-input" data-gg-more-search-input type="search" autocomplete="off" placeholder="Search" data-copy-placeholder="more.localSearch.placeholder" /></div></div><footer class="gg-more-footer"><span class="gg-more-footer__label" id="gg-more-footer-social-title" data-copy="more.shareSite">Share site</span><div class="gg-more-footer__social" aria-labelledby="gg-more-footer-social-title"><a class="gg-more-footer__link" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareX;title:more.shareX" aria-label="Share on X" title="Share on X"><span aria-hidden="true">𝕏</span><span data-copy="more.shareXShort">X</span></a><a class="gg-more-footer__link" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareFacebook;title:more.shareFacebook" aria-label="Share on Facebook" title="Share on Facebook"><span aria-hidden="true">f</span><span data-copy="more.shareFacebookShort">Facebook</span></a><a class="gg-more-footer__link" href="https://api.whatsapp.com/send?text=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareWhatsApp;title:more.shareWhatsApp" aria-label="Share on WhatsApp" title="Share on WhatsApp"><span aria-hidden="true">◌</span><span data-copy="more.shareWhatsAppShort">WhatsApp</span></a></div><small class="gg-more-footer__legal" data-copy="footer.copyright">Copyright © 2026 PakRPP. All rights reserved.</small></footer></div>
       </div>
@@ -1594,7 +1562,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
       outline: 'dock-attached-contents-outline',
       hiddenState: 'hidden + aria-hidden + inert',
       locale: 'id/en via gg:lang',
-      theme: 'system/paper(light)/ink(dark) via gg:theme',
+      theme: 'light/dark via gg:theme',
       progressiveEnhancement: true,
       visibleSections: ['hero', 'rubrics', 'faq', 'contact']
     };
@@ -1675,12 +1643,13 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
           'sheet.close': 'Close panel',
           'discovery.title': 'Discovery',
           'discovery.global.placeholder': 'Search articles, topics, routes, sections, or actions',
-          'discovery.filter.all': 'All', 'discovery.filter.articles': 'Articles', 'discovery.filter.topics': 'Topics', 'discovery.filter.sections': 'Sections', 'discovery.filter.routes': 'Routes', 'discovery.filter.actions': 'Actions',
+          'discovery.filter.all': 'All', 'discovery.filter.articles': 'Articles', 'discovery.filter.topics': 'Topics', 'discovery.filter.sections': 'Sections', 'discovery.filter.routes': 'Routes', 'discovery.filter.actions': 'Actions', 'discovery.filter.saved': 'Saved',
           'discovery.type.article': 'Article', 'discovery.type.topic': 'Topic', 'discovery.type.route': 'Route', 'discovery.type.section': 'Section', 'discovery.type.action': 'Action',
           'discovery.empty.title': 'Tidak ada hasil', 'discovery.empty.body': 'Coba kata kunci lain.',
+          'discovery.saved.empty.title': 'No saved items yet.', 'discovery.saved.empty.body': 'Save articles or products to find them here.',
           'command.label': 'Search notes, rubrics, governance, sustainability, culture, technology, or contact',
           'language.english': 'English', 'language.indonesia': 'Indonesia',
-          'appearance.system': 'System', 'appearance.light': 'Paper', 'appearance.dark': 'Ink',
+          'appearance.system': 'System', 'appearance.light': 'Light', 'appearance.dark': 'Dark',
           'footer.copyright': 'Copyright © 2026 PakRPP. All rights reserved.',
           'more.title': 'More', 'more.profile.name': 'PakRPP', 'more.profile.meta': 'Notes on systems, value, culture, and words',
           'more.localSearch.label': 'Search More', 'more.localSearch.placeholder': 'Search',
@@ -1720,7 +1689,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
 
     var state = {
       locale: normalizeLocale(readStorage('gg:lang')),
-      theme: readStorage('gg:theme') || 'system',
+      theme: readPreferredTheme(),
       reading: readStorage('gg:reading') || 'comfortable',
       motion: readStorage('gg:motion') || 'balanced',
       activePanel: '',
@@ -1752,13 +1721,52 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     var commandFilterButtons = Array.from(document.querySelectorAll('[data-discovery-filter]'));
     var discoveryFeedIndex = { posts: [], topics: [] };
     var discoveryFeedRequested = false;
+    var GLOBAL_DISCOVERY_FEED_MAX = 80;
+    var STORE_DOMAIN = {
+      rootLabel: 'Store',
+      labelPrefixes: ['Store ', 'Store:', 'Store/'],
+      categorySlugs: ['fashion', 'skincare', 'workspace', 'tech', 'everyday'],
+      categoryLabels: ['Fashion', 'Skincare', 'Workspace', 'Tech', 'Everyday', 'Etc', 'Lainnya'],
+      payloadMarkers: ['gg-store-data', 'gg-yellowcard-data', 'store-static-products', 'store-product', 'data-store-product']
+    };
+
+    var GG_GLOBAL_DISCOVERY_CONFIG = {
+      domain: 'global',
+      feedMax: GLOBAL_DISCOVERY_FEED_MAX,
+      filterIds: ['all', 'articles', 'topics'],
+      routeIds: ['home', 'blog', 'store', 'contact'],
+      sectionIds: ['hero', 'rubrics', 'faq', 'contact'],
+      actionIds: ['contactPakrpp', 'openMore', 'openStore', 'openBlog'],
+      routes: [
+        { id: 'home', titleKey: 'nav.home', meta: '/landing', href: '/landing', action: 'navigateHome', keywords: ['home', 'beranda', 'landing', 'intro'], priority: 100 },
+        { id: 'blog', titleKey: 'nav.blog', meta: '/', href: '/', action: 'navigateBlog', keywords: ['blog', 'articles', 'artikel', 'archive'], priority: 98 },
+        { id: 'store', titleKey: 'nav.store', meta: '/store', href: '/store', action: 'navigateStore', keywords: ['store', 'yellow cart', 'products', 'produk'], priority: 96 },
+        { id: 'contact', titleKey: 'nav.contact', meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'email', 'brief'], priority: 94 }
+      ],
+      sections: [
+        { id: 'hero', title: 'Intro', meta: '/landing#hero', href: '/landing#hero', action: 'navigateHomeSection', target: 'hero', keywords: ['unfiltered', 'notes', 'systems', 'value', 'culture', 'words'], priority: 80 },
+        { id: 'rubrics', title: 'Rubrics', meta: '/landing#rubrics', href: '/landing#rubrics', action: 'navigateHomeSection', target: 'rubrics', keywords: ['insight', 'perspective', 'case', 'notes', 'lab'], priority: 79 },
+        { id: 'faq', title: 'FAQ', meta: '/landing#faq', href: '/landing#faq', action: 'navigateHomeSection', target: 'faq', keywords: ['questions', 'collaboration', 'writing', 'reporting', 'disclosure'], priority: 78 },
+        { id: 'contact', title: 'Contact', meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', target: 'contact', keywords: ['brief', 'contact', 'email', 'context'], priority: 77 }
+      ],
+      actions: [
+        { id: 'contactPakrpp', titleKey: 'nav.contact', titleSuffix: ' PakRPP', meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'pakrpp', 'brief'], priority: 72 },
+        { id: 'openMore', titleKey: 'more.title', metaKeys: ['more.search', 'more.sitemap', 'more.rss'], action: 'openMore', keywords: ['more', 'lainnya', 'language', 'theme', 'rss', 'sitemap'], priority: 70 },
+        { id: 'openStore', titlePrefix: 'Open ', titleKey: 'nav.store', meta: '/store', href: '/store', action: 'navigateStore', keywords: ['store', 'open store', 'yellow cart'], priority: 68 },
+        { id: 'openBlog', titlePrefix: 'Open ', titleKey: 'nav.blog', meta: '/', href: '/', action: 'navigateBlog', keywords: ['blog', 'open blog', 'articles'], priority: 66 }
+      ],
+      storeExclusion: STORE_DOMAIN,
+      emptyCopyKey: 'discovery.empty'
+    };
 
     function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
+    function normalizeTheme(value) { return String(value || '').toLowerCase() === 'dark' ? 'dark' : 'light'; }
     function normalizeReading(value) { return value === 'compact' || value === 'focus' ? value : 'comfortable'; }
     function normalizeMotion(value) { return value === 'reduced' ? 'reduced' : 'balanced'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
+    function readPreferredTheme() { var stored = readStorage('gg:theme'); var normalized = normalizeTheme(stored); if (stored !== normalized) writeStorage('gg:theme', normalized); return normalized; }
     function setBodyAttr(name, value) { if (body.getAttribute(name) !== String(value)) body.setAttribute(name, String(value)); }
     function dict() { return COPY[state.locale] || COPY.id; }
     function text(key) { return dict()[key] || COPY.id[key] || key; }
@@ -1814,8 +1822,9 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
       setMorePrefValue('motion', text('motion.' + state.motion));
     }
     function applyTheme() {
-      if (state.theme === 'light' || state.theme === 'dark') document.documentElement.setAttribute('data-gg-theme', state.theme);
-      else document.documentElement.removeAttribute('data-gg-theme');
+      state.theme = normalizeTheme(state.theme);
+      document.documentElement.setAttribute('data-gg-theme', state.theme);
+      writeStorage('gg:theme', state.theme);
       document.querySelectorAll('[data-gg-theme-option]').forEach(function (button) {
         var active = button.getAttribute('data-gg-theme-option') === state.theme;
         button.setAttribute('aria-pressed', String(active));
@@ -1939,19 +1948,31 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     }
     function stripDiscoveryHtml(value) { var node = document.createElement('div'); node.innerHTML = String(value || ''); return (node.textContent || node.innerText || '').replace(/\s+/g, ' ').trim(); }
     function extractEntryHref(entry) { var links = entry && entry.link ? entry.link : []; for (var i = 0; i < links.length; i += 1) { if (links[i].rel === 'alternate' && links[i].href) return links[i].href; } return ''; }
-    function normalizeFeedLabelKey(value) { return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
-    function getFeedJsonUrl() { return '/feeds/posts/default?alt=json&max-results=24'; }
+    function normalizeFeedLabelKey(value) { return String(value || '').toLowerCase().trim(); }
+    function sanitizeDiscoveryLabels(values) { var source = Array.isArray(values) ? values : []; var seen = {}; var labels = []; source.forEach(function (value) { var textValue = stripDiscoveryHtml(value || ''); var key = normalizeFeedLabelKey(textValue); if (!textValue || !key || seen[key]) return; seen[key] = true; labels.push(textValue); }); return labels; }
+    function storeDomainConfig() { return GG_GLOBAL_DISCOVERY_CONFIG.storeExclusion || STORE_DOMAIN; }
+    function isStoreLabel(label) { var value = String(label || '').trim().toLowerCase(); var root = String(storeDomainConfig().rootLabel || 'Store').toLowerCase(); return !!value && value === root; }
+    function isStoreChildLabel(label) { var value = String(label || '').trim().toLowerCase(); var prefixes = storeDomainConfig().labelPrefixes || []; if (!value) return false; return prefixes.some(function (prefix) { return value.indexOf(String(prefix || '').toLowerCase()) === 0; }); }
+    function hasStoreDataPayload(entry) { var source = entry && typeof entry === 'object' ? [entry.summary, entry.content, entry.raw, entry.body, entry.html, entry.payload, entry.data].join(' ') : entry; var textValue = String(source || '').toLowerCase(); var markers = storeDomainConfig().payloadMarkers || []; return !!textValue && markers.some(function (marker) { return textValue.indexOf(String(marker || '').toLowerCase()) > -1; }); }
+    function getContentDomain(entry) { var labels = sanitizeDiscoveryLabels(entry && (entry.labelTexts || entry.labels) ? (entry.labelTexts || entry.labels) : []); if (labels.some(function (label) { return isStoreLabel(label) || isStoreChildLabel(label); })) return 'store'; if (hasStoreDataPayload(entry)) return 'store'; if (entry && entry.domain === 'store') return 'store'; return 'blog'; }
+    function isStoreContent(entry) { return getContentDomain(entry) === 'store'; }
+    function isStoreDiscoveryLabel(label) { return isStoreLabel(label) || isStoreChildLabel(label); }
+    function hasStoreDiscoveryPayload(value) { return hasStoreDataPayload(value); }
+    function isStoreDiscoveryPost(post) { return isStoreContent(post); }
+    function getFeedJsonUrl() { return '/feeds/posts/default?alt=json&max-results=' + GG_GLOBAL_DISCOVERY_CONFIG.feedMax; }
     function buildDiscoveryIndexFromFeed(feed) {
       var entries = ((feed || {}).feed || {}).entry || [];
       var posts = [];
       var topicMap = {};
       entries.forEach(function (entry, index) {
-        var labels = (entry.category || []).map(function (category) { return category.term || ''; }).filter(Boolean);
+        var labels = sanitizeDiscoveryLabels((entry.category || []).map(function (category) { return category.term || ''; }).filter(Boolean));
         var href = extractEntryHref(entry);
         var title = entry.title ? entry.title.$t : '';
-        var summary = entry.summary ? stripDiscoveryHtml(entry.summary.$t) : '';
+        var summary = entry.summary ? stripDiscoveryHtml(entry.summary.$t) : (entry.content && entry.content.$t ? stripDiscoveryHtml(entry.content.$t) : '');
+        if (isStoreContent({ title: title, href: href, summary: summary, labelTexts: labels, content: entry.content && entry.content.$t ? entry.content.$t : '', raw: JSON.stringify(entry) })) return;
         if (title && href) posts.push({ title: title, href: href, summary: summary, labelTexts: labels, priority: 58 - Math.min(index, 20) });
         labels.forEach(function (label) {
+          if (isStoreDiscoveryLabel(label)) return;
           var key = normalizeFeedLabelKey(label);
           if (!key) return;
           if (!topicMap[key]) topicMap[key] = { title: label, key: key, href: '/search/label/' + encodeURIComponent(label), count: 0 };
@@ -1971,16 +1992,17 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
         renderCommand(commandInput ? commandInput.value : '');
       }).catch(function () {});
     }
-    function normalizeDiscoveryItem(item) { var source = item || {}; var title = source.title || ''; var meta = source.meta || ''; var keywords = Array.isArray(source.keywords) ? source.keywords.join(' ') : ''; return { id: source.id || source.href || source.action || title, type: source.type || 'action', title: title, meta: meta, href: source.href || '', action: source.action || '', target: source.target || '', keywords: source.keywords || [], priority: Number(source.priority || 0), haystack: (title + ' ' + meta + ' ' + keywords).toLowerCase() }; }
-    function globalRoutesAdapter() { return [ normalizeDiscoveryItem({ id: 'route:home', type: 'route', title: text('nav.home'), meta: '/landing', href: '/landing', action: 'navigateHome', keywords: ['home', 'beranda', 'landing'], priority: 100 }), normalizeDiscoveryItem({ id: 'route:blog', type: 'route', title: text('nav.blog'), meta: '/', href: '/', action: 'navigateBlog', keywords: ['blog', 'articles', 'artikel'], priority: 98 }), normalizeDiscoveryItem({ id: 'route:store', type: 'route', title: text('nav.store'), meta: '/store', href: '/store', action: 'navigateStore', keywords: ['store', 'yellow cart', 'product'], priority: 96 }), normalizeDiscoveryItem({ id: 'route:contact', type: 'route', title: text('nav.contact'), meta: '/landing#contact', href: '/landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'brief'], priority: 94 }) ]; }
-    function globalLandingSectionsAdapter() { return SECTIONS.map(function (section, index) { return normalizeDiscoveryItem({ id: 'section:' + section.id, type: 'section', title: section.title, meta: section.note, href: '/landing#' + section.id, action: section.id === 'contact' ? 'navigateContact' : 'navigateHomeSection', target: section.id, keywords: section.search.split(/\s+/), priority: 80 - index }); }); }
-    function globalRubricsAdapter() { return [ normalizeDiscoveryItem({ id:'topic:rubric-insight', type:'topic', title:'Insight', meta:'Analysis', href:'/search/label/Insight', keywords:['insight','analysis','analisis','governance','sustainability'], priority:92 }), normalizeDiscoveryItem({ id:'topic:rubric-perspective', type:'topic', title:'Perspective', meta:'Position', href:'/search/label/Perspective', keywords:['perspective','opinion','sikap','view'], priority:91 }), normalizeDiscoveryItem({ id:'topic:rubric-case-notes', type:'topic', title:'Case Notes', meta:'Context', href:'/search/label/Case%20Notes', keywords:['case notes','cases','context','fenomena','studi kasus'], priority:90 }), normalizeDiscoveryItem({ id:'topic:rubric-lab', type:'topic', title:'Lab', meta:'Experiment', href:'/search/label/Lab', keywords:['lab','language','diction','writing','experiment'], priority:89 }) ]; }
-    function globalArticlesAdapter() { var posts = discoveryFeedIndex.posts || []; return posts.map(function (post, index) { return normalizeDiscoveryItem({ id:'article:' + (post.href || post.title || index), type:'article', title:post.title, meta:post.labelTexts && post.labelTexts.length ? post.labelTexts.join(' · ') : post.summary, href:post.href, keywords:(post.labelTexts || []).concat([post.summary || '']), priority:post.priority || (58 - Math.min(index, 20)) }); }).filter(function (item) { return !!(item.title && item.href); }); }
-    function globalTopicsAdapter() { var staticTopics = [ normalizeDiscoveryItem({ id:'topic:governance', type:'topic', title:'Governance', meta:'GCG, disclosure, institutions, accountability', href:'/search/label/Governance', keywords:['governance','gcg','disclosure','accountability','systems'], priority:86 }), normalizeDiscoveryItem({ id:'topic:sustainability', type:'topic', title:'Sustainability', meta:'ESG, CSV, CSR, TJSL, impact', href:'/search/label/Sustainability', keywords:['sustainability','esg','csv','csr','tjsl','value'], priority:85 }), normalizeDiscoveryItem({ id:'topic:technology', type:'topic', title:'Technology', meta:'AI, web, automation, infrastructure', href:'/search/label/Technology', keywords:['technology','ai','web','automation','systems'], priority:84 }), normalizeDiscoveryItem({ id:'topic:culture', type:'topic', title:'Culture', meta:'Society, media, identity, public behavior', href:'/search/label/Culture', keywords:['culture','society','media','identity','words'], priority:83 }) ]; var feedTopics = (discoveryFeedIndex.topics || []).map(function (topic, index) { return normalizeDiscoveryItem({ id:'topic:feed-' + (topic.key || index), type:'topic', title:topic.title, meta:String(topic.count || 0) + ' articles', href:topic.href, keywords:[topic.key || '', 'label', 'topic', 'archive'], priority:48 - Math.min(index, 20) }); }); return staticTopics.concat(feedTopics); }
-    function globalActionsAdapter() { return [ normalizeDiscoveryItem({ id:'action:contact', type:'action', title:'Start a conversation', meta:'/landing#contact', href:'/landing#contact', action:'navigateContact', keywords:['contact','brief','email','collaboration','context'], priority:72 }), normalizeDiscoveryItem({ id:'action:more', type:'action', title:text('more.title'), meta:text('more.search') + ' · ' + text('more.sitemap') + ' · ' + text('more.rss'), action:'openMore', keywords:['more','language','theme','rss','sitemap'], priority:70 }) ]; }
-    function globalDiscoveryIndex() { return [].concat(globalRoutesAdapter()).concat(globalLandingSectionsAdapter()).concat(globalActionsAdapter()).concat(globalArticlesAdapter()).concat(globalRubricsAdapter()).concat(globalTopicsAdapter()); }
-    function normalizeDiscoveryFilter(value) { return ['all','articles','topics','routes','sections','actions'].indexOf(value) > -1 ? value : 'all'; }
-    function discoveryFilterMatches(item) { var filter = normalizeDiscoveryFilter(state.discoveryFilter); if (filter === 'all') return true; if (filter === 'articles') return item.type === 'article'; if (filter === 'topics') return item.type === 'topic'; if (filter === 'routes') return item.type === 'route'; if (filter === 'sections') return item.type === 'section'; if (filter === 'actions') return item.type === 'action'; return true; }
+    function createGlobalDiscoveryItem(item) { var source = item || {}; var keywords = Array.isArray(source.keywords) ? source.keywords : []; var title = stripDiscoveryHtml(source.title || ''); var meta = stripDiscoveryHtml(source.meta || ''); var textValue = (title + ' ' + meta + ' ' + keywords.join(' ')).toLowerCase().replace(/\s+/g, ' ').trim(); return { id: String(source.id || source.href || source.action || title || ''), domain: 'global', type: String(source.type || 'action'), title: title, meta: meta, href: source.href || '', action: source.action || '', target: source.target || '', keywords: keywords.map(function (keyword) { return String(keyword || ''); }).filter(Boolean), priority: Number(source.priority || 0), text: textValue, haystack: textValue }; }
+    function normalizeGlobalDiscoveryItem(raw) { var source = raw || {}; var titleValue = source.title || (source.titleKey ? text(source.titleKey) : ''); var metaValue = source.meta || ''; if (source.titlePrefix) titleValue = source.titlePrefix + titleValue; if (source.titleSuffix) titleValue += source.titleSuffix; if (!metaValue && Array.isArray(source.metaKeys)) metaValue = source.metaKeys.map(text).join(' · '); return createGlobalDiscoveryItem({ id: source.id, type: source.type, title: titleValue, meta: metaValue, href: source.href, action: source.action, target: source.target, keywords: source.keywords, priority: source.priority }); }
+    function globalRoutesAdapter() { return GG_GLOBAL_DISCOVERY_CONFIG.routes.map(function (route) { return normalizeGlobalDiscoveryItem({ id: 'route:' + route.id, type: 'route', titleKey: route.titleKey, meta: route.meta, href: route.href, action: route.action, keywords: route.keywords, priority: route.priority }); }); }
+    function globalLandingSectionsAdapter() { return GG_GLOBAL_DISCOVERY_CONFIG.sections.map(function (section) { return normalizeGlobalDiscoveryItem({ id: 'section:' + section.id, type: 'section', title: section.title, meta: section.meta, href: section.href, action: section.action, target: section.target, keywords: section.keywords, priority: section.priority }); }); }
+    function globalActionsAdapter() { return GG_GLOBAL_DISCOVERY_CONFIG.actions.map(function (action) { return normalizeGlobalDiscoveryItem({ id: 'action:' + action.id, type: 'action', titleKey: action.titleKey, titlePrefix: action.titlePrefix, titleSuffix: action.titleSuffix, meta: action.meta, metaKeys: action.metaKeys, href: action.href, action: action.action, keywords: action.keywords, priority: action.priority }); }); }
+    function buildGlobalDiscoveryBaseItems() { return [].concat(globalRoutesAdapter()).concat(globalLandingSectionsAdapter()).concat(globalActionsAdapter()); }
+    function globalArticlesAdapter() { var posts = discoveryFeedIndex.posts || []; return posts.map(function (post, index) { if (isStoreContent(post)) return null; return createGlobalDiscoveryItem({ id:'article:' + (post.href || post.title || index), type:'article', title:post.title, meta:post.labelTexts && post.labelTexts.length ? post.labelTexts.join(' · ') : post.summary, href:post.href, keywords:(post.labelTexts || []).concat([post.summary || '']), priority:post.priority || (58 - Math.min(index, 20)) }); }).filter(function (item) { return !!(item && item.title && item.href); }); }
+    function globalTopicsAdapter() { return (discoveryFeedIndex.topics || []).map(function (topic, index) { if (isStoreDiscoveryLabel(topic.title || topic.key)) return null; return createGlobalDiscoveryItem({ id:'topic:' + (topic.key || index), type:'topic', title:topic.title, meta:String(topic.count || 0) + ' articles', href:topic.href, keywords:[topic.key || '', 'label', 'topic', 'archive'], priority:34 - Math.min(index, 20) }); }).filter(function (item) { return !!(item && item.title); }); }
+    function globalDiscoveryIndex() { return buildGlobalDiscoveryBaseItems().concat(globalArticlesAdapter()).concat(globalTopicsAdapter()); }
+    function normalizeDiscoveryFilter(value) { return GG_GLOBAL_DISCOVERY_CONFIG.filterIds.indexOf(value) > -1 ? value : 'all'; }
+    function discoveryFilterMatches(item) { var filter = normalizeDiscoveryFilter(state.discoveryFilter); if (filter === 'all') return true; if (filter === 'articles') return item.type === 'article'; if (filter === 'topics') return item.type === 'topic'; return true; }
     function resolveDiscoveryItem(item, trigger) { if (!item) return; if (item.action === 'navigateHome') afterPanelSettles(scrollDocumentToTop); else if (item.action === 'navigateContact') afterPanelSettles(function(){scrollToLandingTarget('contact');}); else if (item.action === 'navigateHomeSection') afterPanelSettles(function(){scrollToLandingTarget(item.target);}); else if (item.action === 'openMore') { closePanel(); window.setTimeout(function(){openPanel('more', trigger);}, prefersReducedMotion()?1:210); } else if (item.href) window.location.href = item.href; }
     function syncDiscoveryFilters() { commandFilterButtons.forEach(function (button) { var active = normalizeDiscoveryFilter(button.getAttribute('data-discovery-filter')) === normalizeDiscoveryFilter(state.discoveryFilter); button.setAttribute('aria-pressed', String(active)); }); }
     function renderCommand(query) { if (!commandResults) return; var q = String(query || '').toLowerCase().trim(); var items = globalDiscoveryIndex().filter(function (item) { return discoveryFilterMatches(item) && (!q || item.haystack.indexOf(q) > -1); }).sort(function(a,b){ return (b.priority||0)-(a.priority||0) || a.title.localeCompare(b.title); }); commandResults.innerHTML = ''; syncDiscoveryFilters(); if (!items.length) { var empty=document.createElement('p'); empty.className='gg-result'; empty.textContent=text('discovery.empty.title') + '. ' + text('discovery.empty.body'); commandResults.appendChild(empty); return; } items.slice(0,14).forEach(function(item){ var button=document.createElement('button'); button.className='gg-result'; button.type='button'; button.setAttribute('data-gg-discovery-type', item.type); button.innerHTML='<span class="gg-result__type"></span><strong></strong><span></span>'; button.querySelector('.gg-result__type').textContent=text('discovery.type.' + item.type); button.querySelector('strong').textContent=item.title; button.querySelector('span:last-child').textContent=item.meta; button.addEventListener('click', function(){ resolveDiscoveryItem(item, button); }); commandResults.appendChild(button); }); }
@@ -1990,7 +2012,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     function setupMoreLocalSearch() { document.querySelectorAll('.gg-more-body').forEach(function (root) { var input = document.querySelector('[data-gg-more-search-input]'); if (!input || root.getAttribute('data-gg-local-search-ready') === 'true') return; root.setAttribute('data-gg-local-search-ready','true'); input.addEventListener('input', function(){ var q=String(input.value||'').trim().toLowerCase(); root.querySelectorAll('.gg-more-profile, .gg-more-section').forEach(function(section){ var rows=section.querySelectorAll('.gg-more-list__link, .gg-more-profile__card'); var hasMatch=false; rows.forEach(function(row){ if(!q){ row.hidden=false; hasMatch=true; return; } var haystack=[row.textContent||'', row.getAttribute('data-gg-more-route')||'', row.getAttribute('data-gg-pref-open')||'', row.getAttribute('href')||''].join(' ').toLowerCase(); var match=haystack.indexOf(q)!==-1; row.hidden=!match; if(match) hasMatch=true; }); if(!q) section.removeAttribute('data-gg-filter-empty'); else section.toggleAttribute('data-gg-filter-empty', !hasMatch); }); }); }); }
     function setupPreferences() {
       document.querySelectorAll('[data-gg-lang]').forEach(function (button) { button.addEventListener('click', function () { state.locale = normalizeLocale(button.getAttribute('data-gg-lang')); writeStorage('gg:lang', state.locale); applyCopy(); closeMorePreferencePanel(); }); });
-      document.querySelectorAll('[data-gg-theme-option]').forEach(function (button) { button.addEventListener('click', function () { state.theme = button.getAttribute('data-gg-theme-option') || 'system'; if (state.theme === 'system') removeStorage('gg:theme'); else writeStorage('gg:theme', state.theme); applyTheme(); closeMorePreferencePanel(); }); });
+      document.querySelectorAll('[data-gg-theme-option]').forEach(function (button) { button.addEventListener('click', function () { state.theme = normalizeTheme(button.getAttribute('data-gg-theme-option')); applyTheme(); closeMorePreferencePanel(); }); });
       document.querySelectorAll('[data-gg-reading-option]').forEach(function (button) { button.addEventListener('click', function () { state.reading = normalizeReading(button.getAttribute('data-gg-reading-option')); writeStorage('gg:reading', state.reading); applyReadingMotion(); closeMorePreferencePanel(); }); });
       document.querySelectorAll('[data-gg-motion-option]').forEach(function (button) { button.addEventListener('click', function () { state.motion = normalizeMotion(button.getAttribute('data-gg-motion-option')); writeStorage('gg:motion', state.motion); applyReadingMotion(); closeMorePreferencePanel(); }); });
       document.querySelectorAll('[data-gg-pref-open]').forEach(function (button) { button.addEventListener('click', function () { openMorePreferencePanel(button.getAttribute('data-gg-pref-open')); }); });

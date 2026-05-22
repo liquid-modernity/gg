@@ -16,7 +16,7 @@
     </b:if>
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='d5028a2122d0' name='gg-template-fingerprint'/>
+<meta content='0445ddab969b' name='gg-template-fingerprint'/>
     <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
@@ -26,9 +26,11 @@
     (function () {
       try {
         var theme = window.localStorage && window.localStorage.getItem('gg:theme');
-        if (theme === 'light' || theme === 'dark') {
-          document.documentElement.setAttribute('data-gg-theme', theme);
+        if (theme !== 'dark') {
+          theme = 'light';
+          if (window.localStorage) window.localStorage.setItem('gg:theme', theme);
         }
+        document.documentElement.setAttribute('data-gg-theme', theme);
       } catch (error) {}
     }());
     //]]></script>
@@ -102,18 +104,18 @@
   color-scheme: light;
   --gg-handler:10px;
   --gg-hit-min: 44px;
-  --gg-surface-page: #f4eeef;
+  --gg-surface-page: #f3efe4;
   --gg-surface-article: rgba(255,255,255,.16);
-  --gg-surface-panel: #f5efec;
+  --gg-surface-panel: #f6f1e6;
   --gg-surface-interactive: rgba(255,255,255,.48);
   --gg-surface-interactive-strong: rgba(255,255,255,.66);
   --gg-divider: rgba(32,26,28,.12);
   --gg-divider-strong: rgba(32,26,28,.18);
   --gg-border-interactive: rgba(32,26,28,.18);
-  --gg-ink: #201a1c;
-  --gg-ink-soft: #5f565b;
-  --gg-accent: #2d2529;
-  --gg-accent-soft: #6a5f66;
+  --gg-ink: #171512;
+  --gg-ink-soft: #5c564b;
+  --gg-accent: #171512;
+  --gg-accent-soft: #6d6457;
   --gg-focus-ring: 2px solid var(--gg-accent);
   --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.028);
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -138,39 +140,20 @@
 }
 html[data-gg-theme='dark'] {
   color-scheme: dark;
-  --gg-surface-page:#000;
+  --gg-surface-page: #050505;
   --gg-surface-article:rgba(0,0,0,0);
-  --gg-surface-panel:#1c1a1e;
+  --gg-surface-panel: #0d0d0b;
   --gg-surface-interactive:rgba(255,255,255,.1);
   --gg-surface-interactive-strong:rgba(255,255,255,.14);
   --gg-divider:rgba(255,255,255,.14);
   --gg-divider-strong:rgba(255,255,255,.22);
   --gg-border-interactive:rgba(255,255,255,.18);
-  --gg-ink:#f5f1f3;
-  --gg-ink-soft:#c8bec4;
-  --gg-accent:#f4eff1;
-  --gg-accent-soft:#d5c8cf;
+  --gg-ink: #eee8db;
+  --gg-ink-soft: #c7bda9;
+  --gg-accent: #f4eddf;
+  --gg-accent-soft: #d2c6b0;
   --gg-entry-row-divider:rgba(255,255,255,.14);
   --gg-article-border:rgba(255,255,255,.1);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-gg-theme='light']) {
-    color-scheme: dark;
-    --gg-surface-page:#000;
-    --gg-surface-article:rgba(0,0,0,0);
-    --gg-surface-panel:#1c1a1e;
-    --gg-surface-interactive:rgba(255,255,255,.1);
-    --gg-surface-interactive-strong:rgba(255,255,255,.14);
-    --gg-divider:rgba(255,255,255,.14);
-    --gg-divider-strong:rgba(255,255,255,.22);
-    --gg-border-interactive:rgba(255,255,255,.18);
-    --gg-ink:#f5f1f3;
-    --gg-ink-soft:#c8bec4;
-    --gg-accent:#f4eff1;
-    --gg-accent-soft:#d5c8cf;
-    --gg-entry-row-divider:rgba(255,255,255,.14);
-    --gg-article-border:rgba(255,255,255,.1);
-  }
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -238,7 +221,7 @@ img{max-width:100%;height:auto;display:block}
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='d5028a2122d0' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='0445ddab969b' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -286,7 +269,9 @@ img{max-width:100%;height:auto;display:block}
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
                   <b:else/>
-                    <b:include data='post' name='postRow'/>
+                    <b:if cond='not (data:view.isHomepage and ((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;))'>
+                      <b:include data='post' name='postRow'/>
+                    </b:if>
                   </b:if>
                 </b:loop>
               </div>
@@ -1239,15 +1224,6 @@ img{max-width:100%;height:auto;display:block}
           <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='topics' id='gg-discovery-tab-topics' role='tab' type='button'>
             <span data-gg-copy='discovery.filter.topics'>Topics</span>
           </button>
-          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='routes' id='gg-discovery-tab-routes' role='tab' type='button'>
-            <span data-gg-copy='discovery.filter.routes'>Routes</span>
-          </button>
-          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='sections' id='gg-discovery-tab-sections' role='tab' type='button'>
-            <span data-gg-copy='discovery.filter.sections'>Sections</span>
-          </button>
-          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='actions' id='gg-discovery-tab-actions' role='tab' type='button'>
-            <span data-gg-copy='discovery.filter.actions'>Actions</span>
-          </button>
         </div>
         <form class='gg-discovery-search' expr:action='data:blog.searchUrl' id='gg-command-sheet-form' method='get' role='search'>
           <label class='gg-visually-hidden' data-gg-copy='command.inputLabel' for='gg-command-sheet-input'>Search articles, topics, routes, sections, or actions</label>
@@ -1410,7 +1386,7 @@ img{max-width:100%;height:auto;display:block}
             <h3 class='gg-more-section__title' data-gg-copy='more.section.preferences' id='gg-more-preferences-title'>Preferences</h3>
             <div class='gg-more-list gg-more-preferences-list'>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>System</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>Light</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
             </div>
@@ -1428,7 +1404,6 @@ img{max-width:100%;height:auto;display:block}
             <section aria-labelledby='gg-more-pref-appearance-title' class='gg-more-pref-panel' data-gg-pref-panel='appearance' hidden='hidden'>
               <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.appearance' id='gg-more-pref-appearance-title'>Appearance</h4></header>
               <div aria-label='Appearance' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='system' data-gg-copy='appearance.system' type='button'>System</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='light' data-gg-copy='appearance.light' type='button'>Light</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='dark' data-gg-copy='appearance.dark' type='button'>Dark</button>
               </div>

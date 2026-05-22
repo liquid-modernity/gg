@@ -18,9 +18,11 @@
 (function () {
       try {
         var theme = window.localStorage && window.localStorage.getItem('gg:theme');
-        if (theme === 'light' || theme === 'dark') {
-          document.documentElement.setAttribute('data-gg-theme', theme);
+        if (theme !== 'dark') {
+          theme = 'light';
+          if (window.localStorage) window.localStorage.setItem('gg:theme', theme);
         }
+        document.documentElement.setAttribute('data-gg-theme', theme);
       } catch (error) {}
     }());
     //]]></script>
@@ -100,9 +102,9 @@
   --gg-icon-grade: -25;
   --gg-icon-weight-active: 400;
   --gg-icon-grade-active: 0;
-  --gg-surface-page: #f4eeef;
+  --gg-surface-page: #f3efe4;
   --gg-surface-article: rgba(255, 255, 255, .16);
-  --gg-surface-panel: #f5efec;
+  --gg-surface-panel: #f6f1e6;
   --gg-toolbar-surface-fallback: var(--gg-surface-panel);
   --gg-detail-outline-surface-fallback: var(--gg-surface-panel);
   --gg-dock-surface-fallback: var(--gg-surface-panel);
@@ -115,12 +117,12 @@
   --gg-divider: rgba(32, 26, 28, .12);
   --gg-divider-strong: rgba(32, 26, 28, 0);
   --gg-border-interactive: rgba(32, 26, 28, .18);
-  --gg-ink: #201a1c;
-  --gg-ink-soft: #5f565b;
+  --gg-ink: #171512;
+  --gg-ink-soft: #5c564b;
   --gg-line: var(--gg-divider);
   --gg-line-strong: var(--gg-divider-strong);
-  --gg-accent: #2d2529;
-  --gg-accent-soft: #6a5f66;
+  --gg-accent: #171512;
+  --gg-accent-soft: #6d6457;
   --gg-accent-contrast: #fff;
   --gg-accent-hover: #241d21;
   --gg-focus-ring: 2px solid var(--gg-accent);
@@ -382,9 +384,9 @@ html[data-gg-theme='light'] {
 
 html[data-gg-theme='dark'] {
   color-scheme: dark;
-  --gg-surface-page: #000000;
+  --gg-surface-page: #050505;
   --gg-surface-article: rgba(0, 0, 0, 0);
-  --gg-surface-panel: #1c1a1e;
+  --gg-surface-panel: #0d0d0b;
   --gg-toolbar-surface-fallback: #201d22;
   --gg-detail-outline-surface-fallback: #201d22;
   --gg-dock-surface-fallback: #201d22;
@@ -397,10 +399,10 @@ html[data-gg-theme='dark'] {
   --gg-divider: rgba(255, 255, 255, .14);
   --gg-divider-strong: rgba(255, 255, 255, 0);
   --gg-border-interactive: rgba(255, 255, 255, .18);
-  --gg-ink: #f5f1f3;
-  --gg-ink-soft: #c8bec4;
-  --gg-accent: #f4eff1;
-  --gg-accent-soft: #d5c8cf;
+  --gg-ink: #eee8db;
+  --gg-ink-soft: #c7bda9;
+  --gg-accent: #f4eddf;
+  --gg-accent-soft: #d2c6b0;
   --gg-accent-contrast: #111013;
   --gg-accent-hover: #ffffff;
   --gg-shadow-soft: 0 12px 28px rgba(0, 0, 0, .24);
@@ -425,53 +427,6 @@ html[data-gg-theme='dark'] {
   --gg-hairline-subtle: rgba(255, 255, 255, .08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-gg-theme='light']) {
-    color-scheme: dark;
-  --gg-surface-page: #000000;
-  --gg-surface-article: rgba(0, 0, 0, 0);
-    --gg-surface-panel: #1c1a1e;
-    --gg-toolbar-surface-fallback: #201d22;
-    --gg-detail-outline-surface-fallback: #201d22;
-    --gg-dock-surface-fallback: #201d22;
-    --gg-surface-quiet: rgba(255, 255, 255, .08);
-    --gg-surface-interactive: rgba(255, 255, 255, .1);
-    --gg-surface-interactive-strong: rgba(255, 255, 255, .14);
-    --gg-surface-panel-fade-soft: rgba(28, 26, 30, .92);
-    --gg-surface-panel-fade-strong: rgba(28, 26, 30, .94);
-    --gg-surface-panel-fade-muted: rgba(28, 26, 30, .82);
-    --gg-divider: rgba(255, 255, 255, .14);
-    --gg-divider-strong: rgba(255, 255, 255, 0);
-    --gg-border-interactive: rgba(255, 255, 255, .18);
-    --gg-ink: #f5f1f3;
-    --gg-ink-soft: #c8bec4;
-    --gg-accent: #f4eff1;
-    --gg-accent-soft: #d5c8cf;
-    --gg-accent-contrast: #111013;
-    --gg-accent-hover: #ffffff;
-    --gg-shadow-soft: 0 12px 28px rgba(0, 0, 0, .24);
-    --gg-shadow-panel-bottom: 0 -20px 52px rgba(0, 0, 0, .32);
-    --gg-shadow-panel-top: 0 20px 52px rgba(0, 0, 0, .32);
-    --gg-panel-handle-tone: rgba(255, 255, 255, .22);
-    --gg-panel-scrim: rgba(5, 4, 6, .56);
-    --gg-panel-scrim-fallback: rgba(5, 4, 6, .7);
-    --gg-detail-outline-micro-surface: rgba(255, 255, 255, .08);
-    --gg-detail-outline-progress-track: rgba(255, 255, 255, .12);
-    --gg-entry-row-divider: rgba(255, 255, 255, .14);
-    --gg-entry-row-surface-hover: rgba(255, 255, 255, .08);
-    --gg-entry-row-action-hover-bg: rgba(255, 255, 255, .08);
-    --gg-article-border: rgba(255, 255, 255, .1);
-    --gg-article-tail-divider: rgba(255, 255, 255, .14);
-    --gg-discovery-tab-surface: rgba(255, 255, 255, .06);
-    --gg-discovery-tab-active-surface: rgba(255, 255, 255, .12);
-    --gg-comment-thread-guide: rgba(255, 255, 255, .14);
-    --gg-comment-action-hover-bg: rgba(255, 255, 255, .08);
-    --gg-comment-avatar-ring: rgba(255, 255, 255, .14);
-    --gg-field-surface: rgba(255, 255, 255, .08);
-    --gg-hairline-subtle: rgba(255, 255, 255, .08);
-  }
-}
-
 @media (prefers-contrast: more) {
   :root {
     --gg-divider: rgba(32, 26, 28, .26);
@@ -481,14 +436,6 @@ html[data-gg-theme='dark'] {
   }
 
   html[data-gg-theme='dark'] {
-    --gg-divider: rgba(255, 255, 255, .32);
-    --gg-divider-strong: rgba(255, 255, 255, 0);
-    --gg-border-interactive: rgba(255, 255, 255, .5);
-  }
-}
-
-@media (prefers-color-scheme: dark) and (prefers-contrast: more) {
-  :root:not([data-gg-theme='light']) {
     --gg-divider: rgba(255, 255, 255, .32);
     --gg-divider-strong: rgba(255, 255, 255, 0);
     --gg-border-interactive: rgba(255, 255, 255, .5);
@@ -4697,7 +4644,7 @@ html[data-gg-motion='reduced'] *::after {
             <h3 class='gg-more-section__title' data-gg-copy='more.section.preferences' id='gg-more-preferences-title'>Preferences</h3>
             <div class='gg-more-list gg-more-preferences-list'>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>System</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>Light</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
             </div>
@@ -4715,7 +4662,6 @@ html[data-gg-motion='reduced'] *::after {
             <section aria-labelledby='gg-more-pref-appearance-title' class='gg-more-pref-panel' data-gg-pref-panel='appearance' hidden='hidden'>
               <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.appearance' id='gg-more-pref-appearance-title'>Appearance</h4></header>
               <div aria-label='Appearance' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='system' data-gg-copy='appearance.system' type='button'>System</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='light' data-gg-copy='appearance.light' type='button'>Light</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='dark' data-gg-copy='appearance.dark' type='button'>Dark</button>
               </div>

@@ -2,18 +2,18 @@
   color-scheme: light;
   --gg-handler:10px;
   --gg-hit-min: 44px;
-  --gg-surface-page: #f4eeef;
+  --gg-surface-page: #f3efe4;
   --gg-surface-article: rgba(255,255,255,.16);
-  --gg-surface-panel: #f5efec;
+  --gg-surface-panel: #f6f1e6;
   --gg-surface-interactive: rgba(255,255,255,.48);
   --gg-surface-interactive-strong: rgba(255,255,255,.66);
   --gg-divider: rgba(32,26,28,.12);
   --gg-divider-strong: rgba(32,26,28,.18);
   --gg-border-interactive: rgba(32,26,28,.18);
-  --gg-ink: #201a1c;
-  --gg-ink-soft: #5f565b;
-  --gg-accent: #2d2529;
-  --gg-accent-soft: #6a5f66;
+  --gg-ink: #171512;
+  --gg-ink-soft: #5c564b;
+  --gg-accent: #171512;
+  --gg-accent-soft: #6d6457;
   --gg-focus-ring: 2px solid var(--gg-accent);
   --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.028);
   --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -38,39 +38,20 @@
 }
 html[data-gg-theme='dark'] {
   color-scheme: dark;
-  --gg-surface-page:#000;
+  --gg-surface-page: #050505;
   --gg-surface-article:rgba(0,0,0,0);
-  --gg-surface-panel:#1c1a1e;
+  --gg-surface-panel: #0d0d0b;
   --gg-surface-interactive:rgba(255,255,255,.1);
   --gg-surface-interactive-strong:rgba(255,255,255,.14);
   --gg-divider:rgba(255,255,255,.14);
   --gg-divider-strong:rgba(255,255,255,.22);
   --gg-border-interactive:rgba(255,255,255,.18);
-  --gg-ink:#f5f1f3;
-  --gg-ink-soft:#c8bec4;
-  --gg-accent:#f4eff1;
-  --gg-accent-soft:#d5c8cf;
+  --gg-ink: #eee8db;
+  --gg-ink-soft: #c7bda9;
+  --gg-accent: #f4eddf;
+  --gg-accent-soft: #d2c6b0;
   --gg-entry-row-divider:rgba(255,255,255,.14);
   --gg-article-border:rgba(255,255,255,.1);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-gg-theme='light']) {
-    color-scheme: dark;
-    --gg-surface-page:#000;
-    --gg-surface-article:rgba(0,0,0,0);
-    --gg-surface-panel:#1c1a1e;
-    --gg-surface-interactive:rgba(255,255,255,.1);
-    --gg-surface-interactive-strong:rgba(255,255,255,.14);
-    --gg-divider:rgba(255,255,255,.14);
-    --gg-divider-strong:rgba(255,255,255,.22);
-    --gg-border-interactive:rgba(255,255,255,.18);
-    --gg-ink:#f5f1f3;
-    --gg-ink-soft:#c8bec4;
-    --gg-accent:#f4eff1;
-    --gg-accent-soft:#d5c8cf;
-    --gg-entry-row-divider:rgba(255,255,255,.14);
-    --gg-article-border:rgba(255,255,255,.1);
-  }
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}

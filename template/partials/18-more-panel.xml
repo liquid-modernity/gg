@@ -57,7 +57,7 @@
             <h3 class='gg-more-section__title' data-gg-copy='more.section.preferences' id='gg-more-preferences-title'>Preferences</h3>
             <div class='gg-more-list gg-more-preferences-list'>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>System</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>Light</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
               <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
             </div>
@@ -75,7 +75,6 @@
             <section aria-labelledby='gg-more-pref-appearance-title' class='gg-more-pref-panel' data-gg-pref-panel='appearance' hidden='hidden'>
               <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.appearance' id='gg-more-pref-appearance-title'>Appearance</h4></header>
               <div aria-label='Appearance' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='system' data-gg-copy='appearance.system' type='button'>System</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='light' data-gg-copy='appearance.light' type='button'>Light</button>
                 <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='dark' data-gg-copy='appearance.dark' type='button'>Dark</button>
               </div>

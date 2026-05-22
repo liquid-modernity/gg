@@ -97,7 +97,7 @@
 
         var state = {
           locale: 'en',
-          theme: 'system',
+          theme: 'light',
           surfaceContext: null,
           errorContract: null,
           previewCache: {},

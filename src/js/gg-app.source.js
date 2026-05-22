@@ -63,7 +63,8 @@ window.GG = window.GG || {};
                 sections: 'Sections',
                 actions: 'Actions',
                 products: 'Products',
-                categories: 'Categories'
+                categories: 'Categories',
+                saved: 'Saved'
               },
               type: {
                 article: 'Article',
@@ -77,6 +78,12 @@ window.GG = window.GG || {};
               empty: {
                 title: 'No results',
                 body: 'Try another keyword.'
+              },
+              saved: {
+                empty: {
+                  title: 'No saved items yet.',
+                  body: 'Save articles or products to find them here.'
+                }
               }
             },
             dock: {
@@ -334,7 +341,8 @@ window.GG = window.GG || {};
                 sections: 'Bagian',
                 actions: 'Aksi',
                 products: 'Produk',
-                categories: 'Kategori'
+                categories: 'Kategori',
+                saved: 'Tersimpan'
               },
               type: {
                 article: 'Artikel',
@@ -348,6 +356,12 @@ window.GG = window.GG || {};
               empty: {
                 title: 'Tidak ada hasil',
                 body: 'Coba kata kunci lain.'
+              },
+              saved: {
+                empty: {
+                  title: 'Belum ada item tersimpan.',
+                  body: 'Simpan artikel atau produk untuk menemukannya di sini.'
+                }
               }
             },
             dock: {
@@ -636,6 +650,44 @@ window.GG = window.GG || {};
             primary: 'same-origin-article-fetch',
             fallback: 'listing-title-and-url-only'
           }
+        };
+
+        var GLOBAL_DISCOVERY_FEED_MAX = 80;
+        var STORE_DOMAIN = {
+          rootLabel: 'Store',
+          labelPrefixes: ['Store ', 'Store:', 'Store/'],
+          categorySlugs: ['fashion', 'skincare', 'workspace', 'tech', 'everyday'],
+          categoryLabels: ['Fashion', 'Skincare', 'Workspace', 'Tech', 'Everyday', 'Etc', 'Lainnya'],
+          payloadMarkers: ['gg-store-data', 'gg-yellowcard-data', 'store-static-products', 'store-product', 'data-store-product']
+        };
+
+        var GG_GLOBAL_DISCOVERY_CONFIG = {
+          domain: 'global',
+          feedMax: GLOBAL_DISCOVERY_FEED_MAX,
+          filterIds: ['all', 'articles', 'topics'],
+          routeIds: ['home', 'blog', 'store', 'contact'],
+          sectionIds: ['hero', 'rubrics', 'faq', 'contact'],
+          actionIds: ['contactPakrpp', 'openMore', 'openStore', 'openBlog'],
+          routes: [
+            { id: 'home', titleKey: 'nav.home', meta: '/landing', href: 'landing', action: 'navigateHome', keywords: ['home', 'beranda', 'landing', 'intro'], priority: 100 },
+            { id: 'blog', titleKey: 'nav.blog', meta: '/', href: '', action: 'navigateBlog', keywords: ['blog', 'articles', 'artikel', 'archive'], priority: 98 },
+            { id: 'store', titleKey: 'nav.store', meta: '/store', href: 'store', action: 'navigateStore', keywords: ['store', 'yellow cart', 'products', 'produk'], priority: 96 },
+            { id: 'contact', titleKey: 'nav.contact', meta: '/landing#contact', href: 'landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'email', 'brief'], priority: 94 }
+          ],
+          sections: [
+            { id: 'hero', title: 'Intro', meta: '/landing#hero', href: 'landing#hero', action: 'navigateHomeSection', target: 'hero', keywords: ['unfiltered', 'notes', 'systems', 'value', 'culture', 'words'], priority: 80 },
+            { id: 'rubrics', title: 'Rubrics', meta: '/landing#rubrics', href: 'landing#rubrics', action: 'navigateHomeSection', target: 'rubrics', keywords: ['insight', 'perspective', 'case', 'notes', 'lab'], priority: 79 },
+            { id: 'faq', title: 'FAQ', meta: '/landing#faq', href: 'landing#faq', action: 'navigateHomeSection', target: 'faq', keywords: ['questions', 'collaboration', 'writing', 'reporting', 'disclosure'], priority: 78 },
+            { id: 'contact', title: 'Contact', meta: '/landing#contact', href: 'landing#contact', action: 'navigateContact', target: 'contact', keywords: ['brief', 'contact', 'email', 'context'], priority: 77 }
+          ],
+          actions: [
+            { id: 'contactPakrpp', titleKey: 'nav.contact', titleSuffix: ' PakRPP', meta: '/landing#contact', href: 'landing#contact', action: 'navigateContact', keywords: ['contact', 'kontak', 'pakrpp', 'brief'], priority: 72 },
+            { id: 'openMore', titleKey: 'more.title', metaKeys: ['more.search', 'more.sitemap', 'more.rss'], action: 'openMore', keywords: ['more', 'lainnya', 'language', 'theme', 'rss', 'sitemap'], priority: 70 },
+            { id: 'openStore', titlePrefix: 'Open ', titleKey: 'nav.store', meta: '/store', href: 'store', action: 'navigateStore', keywords: ['store', 'open store', 'yellow cart'], priority: 68 },
+            { id: 'openBlog', titlePrefix: 'Open ', titleKey: 'nav.blog', meta: '/', href: '', action: 'navigateBlog', keywords: ['blog', 'open blog', 'articles'], priority: 66 }
+          ],
+          storeExclusion: STORE_DOMAIN,
+          emptyCopyKey: 'discovery.empty'
         };
 
         var COMMAND_PANEL_CONTRACT = {
@@ -993,7 +1045,7 @@ window.GG = window.GG || {};
 
         var state = {
           locale: 'en',
-          theme: 'system',
+          theme: 'light',
           reading: 'comfortable',
           motion: 'balanced',
           surfaceContext: null,
@@ -1771,8 +1823,8 @@ window.GG = window.GG || {};
 
         function normalizeTheme(value) {
           var theme = String(value || '').toLowerCase();
-          if (theme === 'light' || theme === 'dark') return theme;
-          return 'system';
+          if (theme === 'dark') return 'dark';
+          return 'light';
         }
 
         function normalizeReading(value) {
@@ -1918,12 +1970,21 @@ window.GG = window.GG || {};
 
         function readPreferredTheme() {
           var stored = '';
+          var normalized;
           try {
             stored = window.localStorage ? window.localStorage.getItem(THEME_STORAGE_KEY) : '';
           } catch (error) {
             stored = '';
           }
-          return normalizeTheme(stored);
+          normalized = normalizeTheme(stored);
+          if (stored !== normalized) {
+            try {
+              if (window.localStorage) window.localStorage.setItem(THEME_STORAGE_KEY, normalized);
+            } catch (error) {
+              /* ignore storage failures */
+            }
+          }
+          return normalized;
         }
 
         function readPreferredReading() {
@@ -2170,12 +2231,7 @@ window.GG = window.GG || {};
 
         function setTheme(theme, skipPersist) {
           state.theme = normalizeTheme(theme);
-
-          if (state.theme === 'light' || state.theme === 'dark') {
-            document.documentElement.setAttribute('data-gg-theme', state.theme);
-          } else {
-            document.documentElement.removeAttribute('data-gg-theme');
-          }
+          document.documentElement.setAttribute('data-gg-theme', state.theme);
 
           if (!skipPersist) {
             try {
@@ -6761,6 +6817,83 @@ window.GG = window.GG || {};
           return sanitized;
         }
 
+        function storeDomainConfig() {
+          return GG_GLOBAL_DISCOVERY_CONFIG.storeExclusion || STORE_DOMAIN;
+        }
+
+        function isStoreLabel(label) {
+          var value = String(label || '').trim().toLowerCase();
+          var config = storeDomainConfig();
+          var root = String(config.rootLabel || 'Store').toLowerCase();
+
+          return !!value && value === root;
+        }
+
+        function isStoreChildLabel(label) {
+          var value = String(label || '').trim().toLowerCase();
+          var config = storeDomainConfig();
+          var prefixes = config.labelPrefixes || [];
+          var i;
+
+          if (!value) return false;
+          for (i = 0; i < prefixes.length; i += 1) {
+            if (value.indexOf(String(prefixes[i] || '').toLowerCase()) === 0) return true;
+          }
+          return false;
+        }
+
+        function hasStoreDataPayload(entry) {
+          var source = entry && typeof entry === 'object'
+            ? [
+                entry.summary,
+                entry.content,
+                entry.raw,
+                entry.body,
+                entry.html,
+                entry.payload,
+                entry.data
+              ].join(' ')
+            : entry;
+          var text = String(source || '').toLowerCase();
+          var markers = (storeDomainConfig()).payloadMarkers || [];
+          var i;
+
+          if (!text) return false;
+          for (i = 0; i < markers.length; i += 1) {
+            if (text.indexOf(String(markers[i] || '').toLowerCase()) > -1) return true;
+          }
+          return false;
+        }
+
+        function getContentDomain(entry) {
+          var labels = sanitizeTopicTexts(entry && (entry.labelTexts || entry.labels) ? (entry.labelTexts || entry.labels) : []);
+          var i;
+
+          for (i = 0; i < labels.length; i += 1) {
+            if (isStoreLabel(labels[i]) || isStoreChildLabel(labels[i])) return 'store';
+          }
+
+          if (hasStoreDataPayload(entry)) return 'store';
+          if (entry && entry.domain === 'store') return 'store';
+          return 'blog';
+        }
+
+        function isStoreContent(entry) {
+          return getContentDomain(entry) === 'store';
+        }
+
+        function isStoreDiscoveryLabel(label) {
+          return isStoreLabel(label) || isStoreChildLabel(label);
+        }
+
+        function hasStoreDiscoveryPayload(value) {
+          return hasStoreDataPayload(value);
+        }
+
+        function isStoreDiscoveryPost(post) {
+          return isStoreContent(post);
+        }
+
         function refreshDiscoveryPostSearchText(post) {
           var resolved = post || {};
           resolved.title = stripHtml(resolved.title || '');
@@ -6784,10 +6917,14 @@ window.GG = window.GG || {};
             title: post && post.title ? post.title : '',
             href: post && post.href ? post.href : '',
             summary: post && post.summary ? post.summary : '',
-            labelTexts: post && post.labelTexts ? post.labelTexts : []
+            labelTexts: post && post.labelTexts ? post.labelTexts : [],
+            content: post && post.content ? post.content : '',
+            raw: post && post.raw ? post.raw : ''
           });
           var key = hydrated.href || hydrated.title || ('discovery-' + target.posts.length);
           var existing = target.postMap[key];
+
+          if (isStoreContent(hydrated)) return null;
 
           if (existing) {
             existing.title = existing.title || hydrated.title;
@@ -6818,6 +6955,7 @@ window.GG = window.GG || {};
             refreshDiscoveryPostSearchText(posts[i]);
             for (j = 0; j < posts[i].labelTexts.length; j += 1) {
               label = posts[i].labelTexts[j];
+              if (isStoreDiscoveryLabel(label)) continue;
               key = normalizeTopicKey(label);
               if (!key) continue;
               topic = topicMap[key];
@@ -6864,6 +7002,7 @@ window.GG = window.GG || {};
             title = entry.title ? entry.title.$t : '';
             href = extractHref(entry);
             summary = entry.summary ? stripHtml(entry.summary.$t) : '';
+            if (!summary && entry.content && entry.content.$t) summary = stripHtml(entry.content.$t);
             category = entry.category || [];
             labelTexts = [];
 
@@ -6877,7 +7016,9 @@ window.GG = window.GG || {};
               title: title,
               href: href,
               summary: summary,
-              labelTexts: labelTexts
+              labelTexts: labelTexts,
+              content: entry.content && entry.content.$t ? entry.content.$t : '',
+              raw: JSON.stringify(entry)
             });
           }
 
@@ -6914,7 +7055,7 @@ window.GG = window.GG || {};
         }
 
         function getFeedJsonUrl() {
-          return makeHomeUrl('feeds/posts/default?alt=json&max-results=' + FEED_PREREQUISITES.search.maxResults);
+          return makeHomeUrl('feeds/posts/default?alt=json&max-results=' + GG_GLOBAL_DISCOVERY_CONFIG.feedMax);
         }
 
         function hasDiscoveryTopics(index) {
@@ -7044,9 +7185,48 @@ window.GG = window.GG || {};
           };
         }
 
+        function normalizeGlobalDiscoveryItem(raw, context) {
+          var source = raw || {};
+          var runtimeContext = context || {};
+          var title = source.title || (source.titleKey ? getCopy(source.titleKey) : '');
+          var meta = source.meta || '';
+          var metaKeys = Array.isArray(source.metaKeys) ? source.metaKeys : [];
+          var href = source.href || '';
+          var i;
+
+          if (source.titlePrefix) title = source.titlePrefix + title;
+          if (source.titleSuffix) title += source.titleSuffix;
+          if (!meta && metaKeys.length) {
+            for (i = 0; i < metaKeys.length; i += 1) {
+              meta += (meta ? ' · ' : '') + getCopy(metaKeys[i]);
+            }
+          }
+          if (href && runtimeContext.resolveHref !== false) href = makeHomeUrl(href);
+
+          return createGlobalDiscoveryItem({
+            id: source.id,
+            type: source.type,
+            title: title,
+            meta: meta,
+            href: href,
+            action: source.action,
+            target: source.target,
+            keywords: source.keywords,
+            priority: source.priority
+          });
+        }
+
+        function buildGlobalDiscoveryBaseItems(context) {
+          return []
+            .concat(globalRoutesAdapter(context))
+            .concat(globalLandingSectionsAdapter(context))
+            .concat(globalActionsAdapter(context));
+        }
+
         function globalArticlesAdapter(index) {
           var posts = index && index.posts ? index.posts : [];
           return posts.map(function (post, index) {
+            if (isStoreContent(post)) return null;
             return createGlobalDiscoveryItem({
               id: 'article:' + (post.href || post.title || index),
               type: 'article',
@@ -7057,13 +7237,14 @@ window.GG = window.GG || {};
               priority: 50 - Math.min(index, 20)
             });
           }).filter(function (item) {
-            return !!(item.title && item.href);
+            return !!(item && item.title && item.href);
           });
         }
 
         function globalTopicsAdapter(index) {
           var topics = index && index.topics ? index.topics : [];
           return topics.map(function (topic, index) {
+            if (isStoreDiscoveryLabel(topic.title || topic.key)) return null;
             return createGlobalDiscoveryItem({
               id: 'topic:' + (topic.key || topic.title || index),
               type: 'topic',
@@ -7074,136 +7255,69 @@ window.GG = window.GG || {};
               priority: 34 - Math.min(index, 20)
             });
           }).filter(function (item) {
-            return !!item.title;
+            return !!(item && item.title);
           });
         }
 
-        function globalRoutesAdapter() {
-          return [
-            createGlobalDiscoveryItem({
-              id: 'route:home',
+        function globalRoutesAdapter(context) {
+          return GG_GLOBAL_DISCOVERY_CONFIG.routes.map(function (route) {
+            return normalizeGlobalDiscoveryItem({
+              id: 'route:' + route.id,
               type: 'route',
-              title: getCopy('nav.home'),
-              meta: '/landing',
-              href: makeHomeUrl('landing'),
-              action: 'navigateHome',
-              keywords: ['home', 'beranda', 'landing', 'intro'],
-              priority: 100
-            }),
-            createGlobalDiscoveryItem({
-              id: 'route:blog',
-              type: 'route',
-              title: getCopy('nav.blog'),
-              meta: '/',
-              href: makeHomeUrl(''),
-              action: 'navigateBlog',
-              keywords: ['blog', 'articles', 'artikel', 'archive'],
-              priority: 98
-            }),
-            createGlobalDiscoveryItem({
-              id: 'route:store',
-              type: 'route',
-              title: getCopy('nav.store'),
-              meta: '/store',
-              href: makeHomeUrl('store'),
-              action: 'navigateStore',
-              keywords: ['store', 'yellow cart', 'products', 'produk'],
-              priority: 96
-            }),
-            createGlobalDiscoveryItem({
-              id: 'route:contact',
-              type: 'route',
-              title: getCopy('nav.contact'),
-              meta: '/landing#contact',
-              href: makeHomeUrl('landing#contact'),
-              action: 'navigateContact',
-              keywords: ['contact', 'kontak', 'email', 'brief'],
-              priority: 94
-            })
-          ];
+              titleKey: route.titleKey,
+              meta: route.meta,
+              href: route.href,
+              action: route.action,
+              keywords: route.keywords,
+              priority: route.priority
+            }, context);
+          });
         }
 
-        function globalLandingSectionsAdapter() {
-          var sections = [
-            ['hero', 'Intro', 'Beranda, identity, route truth'],
-            ['structure', 'Structure', 'HTML, CSS, JS separation'],
-            ['routes', 'Routes', 'Home, Blog, Store, Contact'],
-            ['interaction', 'Interaction', 'Dock, outline, gestures'],
-            ['discoverability', 'Discoverability', 'SEO, GEO, GEA, AI searchability'],
-            ['contact', 'Contact', 'Brief and route options']
-          ];
-          return sections.map(function (entry, index) {
-            return createGlobalDiscoveryItem({
-              id: 'section:' + entry[0],
+        function globalLandingSectionsAdapter(context) {
+          return GG_GLOBAL_DISCOVERY_CONFIG.sections.map(function (section) {
+            return normalizeGlobalDiscoveryItem({
+              id: 'section:' + section.id,
               type: 'section',
-              title: entry[1],
-              meta: '/landing#' + entry[0],
-              href: makeHomeUrl('landing#' + entry[0]),
-              action: entry[0] === 'contact' ? 'navigateContact' : 'navigateHomeSection',
-              target: entry[0],
-              keywords: entry[2].split(/[\s,]+/),
-              priority: 80 - index
-            });
+              title: section.title,
+              meta: section.meta,
+              href: section.href,
+              action: section.action,
+              target: section.target,
+              keywords: section.keywords,
+              priority: section.priority
+            }, context);
           });
         }
 
-        function globalActionsAdapter() {
-          return [
-            createGlobalDiscoveryItem({
-              id: 'action:contact',
+        function globalActionsAdapter(context) {
+          return GG_GLOBAL_DISCOVERY_CONFIG.actions.map(function (action) {
+            return normalizeGlobalDiscoveryItem({
+              id: 'action:' + action.id,
               type: 'action',
-              title: getCopy('nav.contact') + ' PakRPP',
-              meta: '/landing#contact',
-              href: makeHomeUrl('landing#contact'),
-              action: 'navigateContact',
-              keywords: ['contact', 'kontak', 'pakrpp', 'brief'],
-              priority: 72
-            }),
-            createGlobalDiscoveryItem({
-              id: 'action:more',
-              type: 'action',
-              title: getCopy('more.title'),
-              meta: getCopy('more.search') + ' · ' + getCopy('more.sitemap') + ' · ' + getCopy('more.rss'),
-              action: 'openMore',
-              keywords: ['more', 'lainnya', 'language', 'theme', 'rss', 'sitemap'],
-              priority: 70
-            }),
-            createGlobalDiscoveryItem({
-              id: 'action:store',
-              type: 'action',
-              title: 'Open ' + getCopy('nav.store'),
-              meta: '/store',
-              href: makeHomeUrl('store'),
-              action: 'navigateStore',
-              keywords: ['store', 'open store', 'yellow cart'],
-              priority: 68
-            }),
-            createGlobalDiscoveryItem({
-              id: 'action:blog',
-              type: 'action',
-              title: 'Open ' + getCopy('nav.blog'),
-              meta: '/',
-              href: makeHomeUrl(''),
-              action: 'navigateBlog',
-              keywords: ['blog', 'open blog', 'articles'],
-              priority: 66
-            })
-          ];
+              titleKey: action.titleKey,
+              titlePrefix: action.titlePrefix,
+              titleSuffix: action.titleSuffix,
+              meta: action.meta,
+              metaKeys: action.metaKeys,
+              href: action.href,
+              action: action.action,
+              keywords: action.keywords,
+              priority: action.priority
+            }, context);
+          });
         }
 
         function getGlobalDiscoveryItems() {
           var index = state.discoveryIndex || { posts: [], topics: [] };
-          return []
-            .concat(globalRoutesAdapter())
-            .concat(globalLandingSectionsAdapter())
-            .concat(globalActionsAdapter())
+          return buildGlobalDiscoveryBaseItems()
             .concat(globalArticlesAdapter(index))
             .concat(globalTopicsAdapter(index));
         }
 
         function normalizeDiscoveryFilter(filter) {
           var value = String(filter || 'all');
-          return ['all', 'articles', 'topics', 'routes', 'sections', 'actions'].indexOf(value) > -1 ? value : 'all';
+          return GG_GLOBAL_DISCOVERY_CONFIG.filterIds.indexOf(value) > -1 ? value : 'all';
         }
 
         function discoveryFilterMatches(item, filter) {
@@ -8407,8 +8521,8 @@ window.GG = window.GG || {};
             },
             {
               id: 'appearance-switcher',
-              run: 'Open More sheet, toggle System, Light, and Dark, then inspect html[data-gg-theme] plus GG.qa.snapshot().theme.',
-              expected: 'System removes html[data-gg-theme] and follows OS, while Light and Dark persist in gg:theme with matching aria-pressed state.'
+              run: 'Open More sheet, toggle Light and Dark, then inspect html[data-gg-theme] plus GG.qa.snapshot().theme.',
+              expected: 'Only Light and Dark are visible options, both persist in gg:theme, and html[data-gg-theme] always matches the active state.'
             },
             {
               id: 'panel-behavior',

@@ -4,7 +4,9 @@
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
                   <b:else/>
-                    <b:include data='post' name='postRow'/>
+                    <b:if cond='not (data:view.isHomepage and ((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;))'>
+                      <b:include data='post' name='postRow'/>
+                    </b:if>
                   </b:if>
                 </b:loop>
               </div>

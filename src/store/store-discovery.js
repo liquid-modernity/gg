@@ -102,6 +102,7 @@
         'discovery.filter.actions': 'Aksi',
         'discovery.filter.products': 'Produk',
         'discovery.filter.categories': 'Kategori',
+        'discovery.filter.saved': 'Tersimpan',
         'discovery.type.article': 'Artikel',
         'discovery.type.topic': 'Topik',
         'discovery.type.route': 'Rute',
@@ -111,6 +112,8 @@
         'discovery.type.category': 'Kategori',
         'discovery.empty.title': 'Tidak ada hasil',
         'discovery.empty.body': 'Coba kata kunci lain.',
+        'discovery.saved.empty.title': 'Belum ada item tersimpan.',
+        'discovery.saved.empty.body': 'Simpan artikel atau produk untuk menemukannya di sini.',
         resultsLabel: 'Hasil',
         quickIntentsLabel: 'Pilihan cepat',
         featuredLabel: 'Unggulan',
@@ -296,6 +299,7 @@
         'discovery.filter.actions': 'Actions',
         'discovery.filter.products': 'Products',
         'discovery.filter.categories': 'Categories',
+        'discovery.filter.saved': 'Saved',
         'discovery.type.article': 'Article',
         'discovery.type.topic': 'Topic',
         'discovery.type.route': 'Route',
@@ -583,7 +587,7 @@
       panelActive: '',
       lastFocus: null,
       locale: normalizeLocale(readStorage('gg:lang')),
-      theme: readStorage('gg:theme') || 'system',
+      theme: readPreferredTheme(),
       reading: readStorage('gg:reading') || 'comfortable',
       motion: readStorage('gg:motion') || 'balanced',
       feedSource: 'Store',
@@ -623,11 +627,18 @@
     }
 
     function normalizeLocale(value) { return value === 'en' ? 'en' : 'id'; }
+    function normalizeTheme(value) { return String(value || '').toLowerCase() === 'dark' ? 'dark' : 'light'; }
     function normalizeReading(value) { return value === 'compact' || value === 'focus' ? value : 'comfortable'; }
     function normalizeMotion(value) { return value === 'reduced' ? 'reduced' : 'balanced'; }
     function readStorage(key) { try { return window.localStorage && window.localStorage.getItem(key); } catch (error) { return null; } }
     function writeStorage(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (error) {} }
     function removeStorage(key) { try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {} }
+    function readPreferredTheme() {
+      var stored = readStorage('gg:theme');
+      var normalized = normalizeTheme(stored);
+      if (stored !== normalized) writeStorage('gg:theme', normalized);
+      return normalized;
+    }
     function readSaved() {
       try {
         var raw = window.localStorage && window.localStorage.getItem('store:saved');
@@ -1241,18 +1252,14 @@
       setMorePrefValue('motion', copy('motion.' + state.motion));
     }
     function applyTheme() {
+      state.theme = normalizeTheme(state.theme);
       themeButtons.forEach(function (button) {
         var active = button.getAttribute('data-store-theme') === state.theme;
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
         button.setAttribute('data-gg-active', active ? 'true' : 'false');
       });
-      if (state.theme === 'light' || state.theme === 'dark') {
-        document.documentElement.setAttribute('data-gg-theme', state.theme);
-        writeStorage('gg:theme', state.theme);
-      } else {
-        document.documentElement.removeAttribute('data-gg-theme');
-        removeStorage('gg:theme');
-      }
+      document.documentElement.setAttribute('data-gg-theme', state.theme);
+      writeStorage('gg:theme', state.theme);
       syncMorePreferenceValues();
     }
     function applyReadingMotion() {
@@ -1771,7 +1778,7 @@
     }
     function normalizeStoreDiscoveryKind(value) {
       var kind = clean(value);
-      return ['all', 'products', 'categories', 'routes'].indexOf(kind) > -1 ? kind : 'all';
+      return ['all', 'products', 'categories'].indexOf(kind) > -1 ? kind : 'all';
     }
     function normalizeStoreDiscoveryItem(item) {
       var source = item || {};
@@ -1795,7 +1802,7 @@
           meta: [item && item.category, item && item.priceText, item && item.summary].filter(Boolean).join(' · ')
         }));
       }).filter(function (item) {
-        return !!(item && item.title);
+        return !!(item && item.title && item.domain === 'store');
       });
     }
     function storeCategoriesAdapter() {
@@ -1917,7 +1924,7 @@
         var categoryKey = normalizeDiscoveryCategoryKey(item && (item.categoryKey || item.filter), item && item.category);
         var type = clean(item && item.type) || 'product';
         var matchesQuery = !q || discoverySearchHaystack(item).indexOf(q) !== -1;
-        var matchesKind = kind === 'all' || (kind === 'products' && type === 'product') || (kind === 'categories' && type === 'category') || (kind === 'routes' && type === 'route');
+        var matchesKind = kind === 'all' || (kind === 'products' && type === 'product') || (kind === 'categories' && type === 'category');
         var matchesFilter = type !== 'product' || state.filter === 'all' || categoryKey === state.filter;
         var matchesPrice = type !== 'product' || priceFilter === 'all' || clean(item && item.priceBand) === priceFilter;
         var matchesIntent = type !== 'product' || matchDiscoveryIntent(item, state.intent);
@@ -2990,7 +2997,7 @@
     });
     themeButtons.forEach(function (button) {
       button.addEventListener('click', function () {
-        state.theme = button.getAttribute('data-store-theme') || 'system';
+        state.theme = normalizeTheme(button.getAttribute('data-store-theme'));
         applyTheme();
         closeMorePreferencePanel();
       });
