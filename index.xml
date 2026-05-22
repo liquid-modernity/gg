@@ -269,9 +269,9 @@ img{max-width:100%;height:auto;display:block}
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
                   <b:else/>
-                    <b:if cond='not (data:view.isHomepage and ((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;))'>
-                      <b:include data='post' name='postRow'/>
-                    </b:if>
+                  <b:if cond='data:view.isLabelSearch or not ((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;)'>
+  <b:include data='post' name='postRow'/>
+</b:if>
                   </b:if>
                 </b:loop>
               </div>
@@ -976,7 +976,7 @@ img{max-width:100%;height:auto;display:block}
   <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
 </b:includable>
             <b:includable id='postRow' var='post'>
-              <article class='gg-entry-row' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-url='data:post.url'>
+              <article class='gg-entry-row' expr:data-gg-content-domain='((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;) ? &quot;store&quot; : &quot;blog&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-url='data:post.url'>
                 <h2 class='gg-entry-row__title'>
                   <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__title-trigger' data-gg-open='preview' type='button'><data:post.title/></button>
                 </h2>
@@ -1395,32 +1395,32 @@ img{max-width:100%;height:auto;display:block}
           <div class='gg-more-pref-panels' data-gg-pref-panels='true' hidden='hidden'>
             <button aria-label='Close preferences' class='gg-more-pref-scrim' data-gg-pref-back='true' type='button'><span class='gg-visually-hidden'>Close preferences</span></button>
             <section aria-labelledby='gg-more-pref-language-title' class='gg-more-pref-panel' data-gg-pref-panel='language' hidden='hidden'>
-              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.language' id='gg-more-pref-language-title'>Language</h4></header>
+              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>&#8249;</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.language' id='gg-more-pref-language-title'>Language</h4></header>
               <div aria-label='Language' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-lang-option='en' data-gg-copy='language.english' type='button'>English</button>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-lang-option='id' data-gg-copy='language.indonesia' type='button'>Indonesia</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='language.english' data-gg-lang-option='en' type='button'>English</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='language.indonesia' data-gg-lang-option='id' type='button'>Indonesia</button>
               </div>
             </section>
             <section aria-labelledby='gg-more-pref-appearance-title' class='gg-more-pref-panel' data-gg-pref-panel='appearance' hidden='hidden'>
-              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.appearance' id='gg-more-pref-appearance-title'>Appearance</h4></header>
+              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>&#8249;</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.appearance' id='gg-more-pref-appearance-title'>Appearance</h4></header>
               <div aria-label='Appearance' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='light' data-gg-copy='appearance.light' type='button'>Light</button>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-theme-option='dark' data-gg-copy='appearance.dark' type='button'>Dark</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='appearance.light' data-gg-theme-option='light' type='button'>Light</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='appearance.dark' data-gg-theme-option='dark' type='button'>Dark</button>
               </div>
             </section>
             <section aria-labelledby='gg-more-pref-reading-title' class='gg-more-pref-panel' data-gg-pref-panel='reading' hidden='hidden'>
-              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.reading' id='gg-more-pref-reading-title'>Reading</h4></header>
+              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>&#8249;</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.reading' id='gg-more-pref-reading-title'>Reading</h4></header>
               <div aria-label='Reading' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-reading-option='comfortable' data-gg-copy='reading.comfortable' type='button'>Comfortable</button>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-reading-option='compact' data-gg-copy='reading.compact' type='button'>Compact</button>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-reading-option='focus' data-gg-copy='reading.focus' type='button'>Focus</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='reading.comfortable' data-gg-reading-option='comfortable' type='button'>Comfortable</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='reading.compact' data-gg-reading-option='compact' type='button'>Compact</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='reading.focus' data-gg-reading-option='focus' type='button'>Focus</button>
               </div>
             </section>
             <section aria-labelledby='gg-more-pref-motion-title' class='gg-more-pref-panel' data-gg-pref-panel='motion' hidden='hidden'>
-              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>‹</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.motion' id='gg-more-pref-motion-title'>Motion</h4></header>
+              <header class='gg-more-pref-panel__head'><button aria-label='Back' class='gg-more-pref-panel__back' data-gg-pref-back='true' type='button'>&#8249;</button><h4 class='gg-more-pref-panel__title' data-gg-copy='more.section.motion' id='gg-more-pref-motion-title'>Motion</h4></header>
               <div aria-label='Motion' class='gg-more-pref-panel__options' role='group'>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-motion-option='balanced' data-gg-copy='motion.balanced' type='button'>Balanced</button>
-                <button aria-pressed='false' class='gg-more-pref-option' data-gg-motion-option='reduced' data-gg-copy='motion.reduced' type='button'>Reduced</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='motion.balanced' data-gg-motion-option='balanced' type='button'>Balanced</button>
+                <button aria-pressed='false' class='gg-more-pref-option' data-gg-copy='motion.reduced' data-gg-motion-option='reduced' type='button'>Reduced</button>
               </div>
             </section>
           </div>
@@ -1439,7 +1439,7 @@ img{max-width:100%;height:auto;display:block}
             <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
               <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'><span aria-hidden='true'>𝕏</span><span data-gg-copy='more.shareXShort'>X</span></a>
               <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'><span aria-hidden='true'>f</span><span data-gg-copy='more.shareFacebookShort'>Facebook</span></a>
-              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>◌</span><span data-gg-copy='more.shareWhatsAppShort'>WhatsApp</span></a>
+              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>&#9676;</span><span data-gg-copy='more.shareWhatsAppShort'>WhatsApp</span></a>
             </div>
             <small class='gg-more-footer__legal' data-gg-copy='footer.copyright'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
           </footer>
@@ -1447,6 +1447,6 @@ img{max-width:100%;height:auto;display:block}
       </section>
     </div>
         <!-- GG non-critical app JS moved out of critical HTML. -->
-    <script defer='defer' src='/__gg/assets/js/gg-app.dev.js'></script>
+    <script defer='defer' src='/__gg/assets/js/gg-app.dev.js'/>
   </body>
 </html>
