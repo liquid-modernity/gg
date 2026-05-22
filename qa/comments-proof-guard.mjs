@@ -26,6 +26,24 @@ function requireIncludes(source, marker, label, file) {
   else fail(`${label}: missing ${marker} in ${file}`);
 }
 
+function requireExternalAppScript(indexSource, file) {
+  // The template may load either dev or min app JS depending on the build lane.
+  // The guard must prove that the external app bundle is loaded; it must not
+  // hardcode only gg-app.dev.js, because production/deploy templates may point
+  // to gg-app.min.js while still preserving the same app contract.
+  const externalAppScriptPattern = /<script\b(?=[^>]*\bdefer=(['"])defer\1)(?=[^>]*\bsrc=(['"])\/__gg\/assets\/js\/gg-app\.(?:dev|min)\.js\2)[^>]*>\s*<\/script>/;
+  const match = indexSource.match(externalAppScriptPattern);
+
+  if (match) {
+    const bundle = match[0].includes('gg-app.min.js') ? 'gg-app.min.js' : 'gg-app.dev.js';
+    pass(`index.xml loads external app JS (${bundle})`);
+  } else {
+    fail(
+      `${file} loads external app JS: missing <script defer='defer' src='/__gg/assets/js/gg-app.dev.js'></script> or <script defer='defer' src='/__gg/assets/js/gg-app.min.js'></script> in ${file}`
+    );
+  }
+}
+
 function countMatches(source, pattern) {
   return (source.match(pattern) || []).length;
 }
@@ -124,7 +142,7 @@ for (const [file, js] of [
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
 }
 
-requireIncludes(indexXml, "<script defer='defer' src='/__gg/assets/js/gg-app.dev.js'></script>", "index.xml loads external app JS", "index.xml");
+requireExternalAppScript(indexXml, "index.xml");
 requireIncludes(packageJson, "\"gaga:verify-comments-proof\"", "package script exposes comments proof guard", "package.json");
 
 const commentsController = sliceBetween(sourceJs, "function initCommentRepliesControls()", "function syncCommentsHash()");
