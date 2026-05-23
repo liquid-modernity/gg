@@ -44,7 +44,7 @@
   --gg-panel-preview-max-height: min(94dvh, 920px);
   --gg-preview-max-height: var(--gg-panel-preview-max-height);
   --gg-preview-initial-height: min(72dvh, 720px);
-  --gg-preview-hero-min: clamp(300px, 58dvh, 520px);
+  --gg-preview-hero-min: min(58dvh, 560px);
   --gg-preview-overlay-lift: clamp(104px, 18vw, 142px);
   --gg-preview-footer-height: 56px;
   --gg-preview-footer-safe-area: env(safe-area-inset-bottom);

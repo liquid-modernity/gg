@@ -50,7 +50,6 @@
   max-height: var(--gg-panel-max-height);
   height: auto;
   overflow: auto;
-  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
   border: 0;
   border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
   background: var(--gg-surface-panel);
