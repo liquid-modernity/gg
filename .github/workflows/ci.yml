@@ -83,3 +83,15 @@ jobs:
           test -f .cloudflare-build/public/assets/store/store-discovery.js
           test -f .cloudflare-build/public/assets/store/store.js
           test -f .cloudflare-build/public/assets/store/store.css
+
+      - name: Upload CI diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diagnostics
+          if-no-files-found: ignore
+          path: |
+            dist/
+            .cloudflare-build/
+            store/data/build-report.json
+            store/data/manifest.json

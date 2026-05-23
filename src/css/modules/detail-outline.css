@@ -6,12 +6,12 @@
   display: grid;
   gap: 0;
   width: min(calc(100% - 66px), var(--gg-detail-outline-width));
-  border: 1px solid var(--gg-detail-outline-border);
+  border: 0;
   border-radius: 22px 22px 0px 0px;
   background: var(--gg-detail-outline-surface);
   box-shadow: var(--gg-detail-outline-shadow);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
   transform: translateX(-50%);
   overflow: hidden;
   transition: transform var(--gg-motion-inline-open), opacity var(--gg-motion-inline-open), box-shadow var(--gg-motion-inline-open);
@@ -246,4 +246,3 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   color: var(--gg-detail-outline-muted-tone);
   font: 500 13px/1.5 var(--gg-font-sans);
 }
-

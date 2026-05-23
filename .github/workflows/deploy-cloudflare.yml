@@ -58,3 +58,15 @@ jobs:
 
       - name: Live smoke test
         run: npm run gaga:verify-worker-live:strict
+
+      - name: Upload deploy diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-deploy-diagnostics
+          if-no-files-found: ignore
+          path: |
+            dist/
+            .cloudflare-build/
+            store/data/build-report.json
+            store/data/manifest.json

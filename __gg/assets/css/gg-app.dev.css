@@ -806,12 +806,12 @@ img {
   display: grid;
   gap: 0;
   width: min(calc(100% - 66px), var(--gg-detail-outline-width));
-  border: 1px solid var(--gg-detail-outline-border);
+  border: 0;
   border-radius: 22px 22px 0px 0px;
   background: var(--gg-detail-outline-surface);
   box-shadow: var(--gg-detail-outline-shadow);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
   transform: translateX(-50%);
   overflow: hidden;
   transition: transform var(--gg-motion-inline-open), opacity var(--gg-motion-inline-open), box-shadow var(--gg-motion-inline-open);
@@ -2124,12 +2124,12 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   width: min(calc(100vw - 20px), 600px);
   max-width: none;
   padding: var(--gg-toolbar-pad);
-  border: 1px solid var(--gg-toolbar-border);
+  border: 0;
   border-radius: var(--gg-toolbar-radius);
   background: var(--gg-toolbar-surface);
   box-shadow: var(--gg-shadow-soft);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
   transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-motion-inline-open);
   will-change: transform, opacity;
 }
@@ -2224,11 +2224,12 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   height: auto;
   overflow: auto;
   padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
-  border: 1px solid var(--gg-line-strong);
-  border-bottom: 0;
+  border: 0;
   border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
   background: var(--gg-surface-panel);
   box-shadow: var(--gg-shadow-panel-bottom);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
   transform: translate3d(0, calc(var(--gg-sheet-rest-y) + var(--gg-sheet-drag-y)), 0);
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
@@ -2259,8 +2260,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   --gg-sheet-transition: var(--gg-motion-sheet-open-top);
   min-height: var(--gg-panel-preview-min-height);
   max-height: var(--gg-panel-preview-max-height);
-  border-top: 0;
-  border-bottom: 1px solid var(--gg-line-strong);
+  border: 0;
   border-radius: 0 0 var(--gg-panel-radius) var(--gg-panel-radius);
   box-shadow: var(--gg-shadow-panel-top);
 }

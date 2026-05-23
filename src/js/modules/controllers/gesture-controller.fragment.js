@@ -91,4 +91,10 @@
           }
         }
 
+        var ggSheetGestureController = {
+          start: startDrag,
+          move: moveDrag,
+          end: endDrag
+        };
+
         function clearPressState() {

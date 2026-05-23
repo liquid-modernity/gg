@@ -1,6 +1,6 @@
 {
   "version": "store-manifest-v1",
-  "generatedAt": "2026-05-22T16:51:01.572Z",
+  "generatedAt": "2026-05-23T04:25:45.991Z",
   "source": "live-feed",
   "count": 20,
   "categories": [
@@ -36,6 +36,40 @@
     }
   ],
   "items": [
+    {
+      "slug": "neutral-linen-overshirt",
+      "name": "Neutral Linen Overshirt",
+      "categoryKey": "fashion",
+      "categoryLabel": "Fashion",
+      "price": 159000,
+      "priceText": "Rp159.000",
+      "priceBand": "100k-200k",
+      "summary": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
+      "image": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+      "url": "https://www.pakrpp.com/2026/05/neutral-linen-overshirt.html",
+      "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+      "tags": [
+        "linen-overshirt",
+        "neutral-outfit",
+        "daily-casual",
+        "minimal-fashion"
+      ],
+      "intent": [
+        "daily",
+        "workwear",
+        "travel",
+        "portable",
+        "compact"
+      ],
+      "datePublished": "2026-05-23",
+      "dateModified": "2026-05-23",
+      "sort": {
+        "name": "neutral linen overshirt",
+        "date": "2026-05-23",
+        "price": 159000,
+        "score": 0
+      }
+    },
     {
       "slug": "foldable-reusable-bag",
       "name": "Foldable Reusable Bag",
@@ -604,40 +638,6 @@
         "name": "relaxed cotton t-shirt",
         "date": "2026-05-04",
         "price": 99000,
-        "score": 0
-      }
-    },
-    {
-      "slug": "neutral-linen-overshirt",
-      "name": "Neutral Linen Overshirt",
-      "categoryKey": "fashion",
-      "categoryLabel": "Fashion",
-      "price": 159000,
-      "priceText": "Rp159.000",
-      "priceBand": "100k-200k",
-      "summary": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
-      "image": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/04/neutral-linen-overshirt.html",
-      "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
-      "tags": [
-        "linen-overshirt",
-        "neutral-outfit",
-        "daily-casual",
-        "minimal-fashion"
-      ],
-      "intent": [
-        "daily",
-        "workwear",
-        "travel",
-        "portable",
-        "compact"
-      ],
-      "datePublished": "2026-04-27",
-      "dateModified": "2026-05-04",
-      "sort": {
-        "name": "neutral linen overshirt",
-        "date": "2026-05-04",
-        "price": 159000,
         "score": 0
       }
     },

@@ -174,7 +174,10 @@
               rowCount: getListingRowCount(),
               olderPageUrl: getCurrentOlderPageUrl(),
               minimumVisualCount: LISTING_GROWTH_CONTRACT.minimumVisualCount,
-              viewportSatisfied: listingViewportSatisfied()
+              viewportSatisfied: listingViewportSatisfied(),
+              storeAppendGuardEnabled: !!state.storeAppendGuardEnabled,
+              rootListingAppendGuardActive: !!(state.surfaceContext && state.surfaceContext.isRootListing),
+              storeRowsSkippedFromRoot: state.storeRowsSkippedFromRoot || 0
             }
           };
         }

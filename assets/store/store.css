@@ -843,7 +843,7 @@ button.store-button.store-semantic-more {
       width: var(--gg-panel-width);
       max-width: none;
       padding: var(--gg-toolbar-pad);
-      border: 1px solid var(--gg-toolbar-border);
+      border: 0;
       border-radius: var(--gg-toolbar-radius);
       background: var(--gg-toolbar-surface);
       box-shadow: var(--gg-shadow-soft);
@@ -899,15 +899,19 @@ button.store-button.store-semantic-more {
     }
     .gg-sheet__panel {
       position: relative;
+      --gg-sheet-drag-y: 0px;
       pointer-events: auto;
       max-width: none;
       overflow: auto;
       overscroll-behavior: contain;
-      border: 1px solid var(--gg-line-strong);
+      border: 0;
       background: var(--gg-surface-panel);
       color: var(--gg-ink);
       box-shadow: var(--gg-shadow-panel-bottom);
+      -webkit-backdrop-filter: blur(18px) saturate(145%);
+      backdrop-filter: blur(18px) saturate(145%);
       scrollbar-width: none;
+      will-change: transform;
     }
     .gg-sheet[data-gg-state='open'] .gg-sheet__scrim { opacity: 1; }
 
@@ -921,13 +925,15 @@ button.store-button.store-semantic-more {
       max-width: none;
       max-height: var(--store-preview-max-height);
       min-height: var(--store-preview-initial-height);
-      border-top: 0;
       border-radius: 0 0 var(--gg-panel-radius) var(--gg-panel-radius);
       box-shadow: var(--gg-shadow-panel-top);
-      transform: translate3d(0,-26px,0);
+      transform: translate3d(0, calc(-26px + var(--gg-sheet-drag-y)), 0);
       transition: transform var(--gg-motion-sheet-open-top), box-shadow var(--gg-motion-sheet-open-top);
     }
-    .store-preview-sheet[data-gg-state='open'] .gg-sheet__panel { transform: translate3d(0,0,0); }
+    .store-preview-sheet[data-gg-state='open'] .gg-sheet__panel,
+    .store-preview-sheet[data-gg-state='dragging'] .gg-sheet__panel { transform: translate3d(0,var(--gg-sheet-drag-y),0); }
+    .gg-sheet[data-gg-state='dragging'] .gg-sheet__panel,
+    .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim { transition: none; }
     .store-preview__hero {
       position: sticky;
       top: 0;
@@ -1180,9 +1186,8 @@ button.store-button.store-semantic-more {
       width: var(--store-bottom-sheet-width);
       max-width: none;
       max-height: min(92dvh, 780px);
-      border-bottom: 0;
       border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
-      transform: translate3d(0,24px,0);
+      transform: translate3d(0, calc(24px + var(--gg-sheet-drag-y)), 0);
       transition: transform var(--gg-motion-sheet-open-bottom), box-shadow var(--gg-motion-sheet-open-bottom);
     }
     #store-discovery-sheet .gg-sheet__panel {
@@ -1190,7 +1195,8 @@ button.store-button.store-semantic-more {
       grid-template-rows: auto minmax(0, 1fr) auto;
       overflow: hidden;
     }
-    .store-bottom-sheet[data-gg-state='open'] .gg-sheet__panel { transform: translate3d(0,0,0); }
+    .store-bottom-sheet[data-gg-state='open'] .gg-sheet__panel,
+    .store-bottom-sheet[data-gg-state='dragging'] .gg-sheet__panel { transform: translate3d(0,var(--gg-sheet-drag-y),0); }
     .gg-sheet__head {
       position: sticky;
       top: 0;
@@ -1350,7 +1356,7 @@ button.store-button.store-semantic-more {
       display: grid;
       gap: 0;
       width: min(calc(100% - 66px), 540px);
-      border: 1px solid var(--gg-toolbar-border);
+      border: 0;
       border-radius: 22px 22px 0 0;
       background: var(--gg-toolbar-surface);
       box-shadow: var(--gg-shadow-soft);

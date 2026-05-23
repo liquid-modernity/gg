@@ -11,12 +11,12 @@
   width:min(calc(100vw - 20px), 600px);
   max-width: none;
   padding: var(--gg-toolbar-pad);
-  border: 1px solid var(--gg-toolbar-border);
+  border: 0;
   border-radius: var(--gg-toolbar-radius);
   background: var(--gg-toolbar-surface);
   box-shadow: var(--gg-shadow-soft);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
   transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-motion-inline-open);
   will-change: transform, opacity;
 }

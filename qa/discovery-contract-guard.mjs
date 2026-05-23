@@ -156,12 +156,12 @@ function main() {
 
   assertSameArray('GG_DISCOVERY.global.surfaces', GG_DISCOVERY.global.surfaces, ['landing', 'blog', 'detail', 'page'], issues);
   assertSameArray('GG_DISCOVERY.store.surfaces', GG_DISCOVERY.store.surfaces, ['store'], issues);
-  assertSameArray('GG_DISCOVERY.global.filters', GG_DISCOVERY.global.filters, ['all', 'articles', 'topics'], issues);
+  assertSameArray('GG_DISCOVERY.global.filters', GG_DISCOVERY.global.filters, ['all', 'articles', 'topics', 'saved'], issues);
   assertSameArray('GG_DISCOVERY.global.routeIds', GG_DISCOVERY.global.routeIds, ['home', 'blog', 'store', 'contact'], issues);
   assertSameArray('GG_DISCOVERY.global.sectionIds', GG_DISCOVERY.global.sectionIds, ['hero', 'rubrics', 'faq', 'contact'], issues);
   assertSameArray('GG_DISCOVERY.global.actionIds', GG_DISCOVERY.global.actionIds, ['contactPakrpp', 'openMore', 'openStore', 'openBlog'], issues);
   if (GG_DISCOVERY.global.feedMax !== 80) issues.push(`GG_DISCOVERY.global.feedMax expected 80 got ${GG_DISCOVERY.global.feedMax || '(missing)'}`);
-  assertSameArray('GG_DISCOVERY.store.filters', GG_DISCOVERY.store.filters, ['all', 'products', 'categories'], issues);
+  assertSameArray('GG_DISCOVERY.store.filters', GG_DISCOVERY.store.filters, ['all', 'products', 'categories', 'saved'], issues);
   assertSameArray('GG_DISCOVERY.global.itemTypes', GG_DISCOVERY.global.itemTypes, ['article', 'topic', 'route', 'section', 'action'], issues);
   assertSameArray('GG_DISCOVERY.store.itemTypes', GG_DISCOVERY.store.itemTypes, ['product', 'category', 'route', 'action'], issues);
   assertIncludesAll('GG_DISCOVERY.global.sources', GG_DISCOVERY.global.sources, ['articles', 'topics', 'routes', 'landingSections', 'actions'], issues);
@@ -251,7 +251,7 @@ function main() {
     assertAttr(file, text, 'data-gg-discovery-command-placement', 'bottom', issues);
     assertAttr(file, text, 'data-gg-discovery-command', 'bottom', issues);
     assertOrder(`${file} bottom command shell`, text, resultsMarker, 'data-gg-discovery-command=', issues);
-    for (const filter of ['all', 'articles', 'topics']) {
+    for (const filter of ['all', 'articles', 'topics', 'saved']) {
       if (!text.includes(`discovery.filter.${filter}`)) issues.push(`${file} missing global discovery filter ${filter}`);
     }
     for (const filter of ['routes', 'sections', 'actions']) {
@@ -265,8 +265,11 @@ function main() {
   assertAttr('store.html', storeHtml, 'data-gg-discovery-index', 'store-discovery-v1', issues);
   assertAttr('store.html', storeHtml, 'data-gg-discovery-command-placement', 'bottom', issues);
   assertAttr('store.html', storeHtml, 'data-gg-discovery-command', 'bottom', issues);
-  for (const kind of ['all', 'products', 'categories']) {
+  for (const kind of ['all', 'products', 'categories', 'saved']) {
     assertContains('store.html', storeHtml, `data-store-discovery-kind="${kind}"`, issues);
+  }
+  if (!storeRuntime.includes("kind === 'saved'") || !storeRuntime.includes('isSaved(item)')) {
+    issues.push('Store Discovery Saved filter must use local saved products');
   }
   if (storeHtml.includes('data-store-discovery-kind="routes"')) issues.push('store discovery must not expose routes as a primary filter');
   if (storeHtml.includes('data-store-discovery-kind="sections"')) issues.push('store discovery must not expose landing sections as a store kind');

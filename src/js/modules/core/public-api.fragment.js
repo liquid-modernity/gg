@@ -176,7 +176,10 @@
             return {
               state: state.listingGrowthState,
               rowCount: getListingRowCount(),
-              olderPageUrl: getCurrentOlderPageUrl()
+              olderPageUrl: getCurrentOlderPageUrl(),
+              storeAppendGuardEnabled: !!state.storeAppendGuardEnabled,
+              rootListingAppendGuardActive: !!(state.surfaceContext && state.surfaceContext.isRootListing),
+              storeRowsSkippedFromRoot: state.storeRowsSkippedFromRoot || 0
             };
           }
         };

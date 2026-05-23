@@ -107,6 +107,7 @@
           var appended = [];
           var i;
           var imported;
+          var domain;
           var href;
           var appendedCount;
 
@@ -114,6 +115,11 @@
 
           for (i = 0; i < (rowNodes || []).length; i += 1) {
             imported = document.importNode ? document.importNode(rowNodes[i], true) : rowNodes[i].cloneNode(true);
+            domain = imported.getAttribute('data-gg-content-domain');
+            if (state.surfaceContext && state.surfaceContext.isRootListing && domain === 'store') {
+              state.storeRowsSkippedFromRoot = (state.storeRowsSkippedFromRoot || 0) + 1;
+              continue;
+            }
             href = toAbsoluteUrl(imported.getAttribute('data-gg-post-url') || '', responseUrl);
             if (!href || state.listingSeenUrls[href]) continue;
             imported.setAttribute('data-gg-post-url', href);

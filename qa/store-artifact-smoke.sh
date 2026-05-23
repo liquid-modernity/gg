@@ -205,6 +205,10 @@ check_pattern 'id=["'"'"']store-discovery-search["'"'"'][^>]*aria-label=' "artif
 check_pattern 'id=["'"'"']store-discovery-status["'"'"'][^>]*aria-live=' "artifact Discovery aria-live status is missing"
 check_pattern 'data-store-price-band=["'"'"']under-50k["'"'"']' "artifact Discovery price-band hooks are missing"
 check_pattern 'data-store-sort=["'"'"']recommended["'"'"']' "artifact Discovery sort hooks are missing"
+check_pattern 'data-store-discovery-kind=["'"'"']all["'"'"']' "artifact Store Discovery All filter is missing"
+check_pattern 'data-store-discovery-kind=["'"'"']products["'"'"']' "artifact Store Discovery Products filter is missing"
+check_pattern 'data-store-discovery-kind=["'"'"']categories["'"'"']' "artifact Store Discovery Categories filter is missing"
+check_pattern 'data-store-discovery-kind=["'"'"']saved["'"'"']' "artifact Store Discovery Saved filter is missing"
 # TASK-NAV-001 dock contract: Store is no longer a primary dock item.
 # Primary Store dock order must be Home | Contact | Search | Blog | More.
 check_pattern '<a[^>]*data-store-dock=["'"'"']home["'"'"'][^>]*href=["'"'"']/landing["'"'"']' "artifact dock Home href contract is missing"

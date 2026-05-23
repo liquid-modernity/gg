@@ -45,9 +45,9 @@ function main() {
   const landingVisible = valuesFromRegex(landingHtml, /data-discovery-filter=['"]([^'"]+)['"]/g);
   const storeVisible = valuesFromRegex(storeHtml, /data-store-discovery-kind=['"]([^'"]+)['"]/g);
 
-  sameArray('Root Global Discovery visible filters', rootVisible, ['all', 'articles', 'topics'], issues);
-  sameArray('Landing Global Discovery visible filters', landingVisible, ['all', 'articles', 'topics'], issues);
-  sameArray('Store Discovery visible filters', storeVisible, ['all', 'products', 'categories'], issues);
+  sameArray('Root Global Discovery visible filters', rootVisible, ['all', 'articles', 'topics', 'saved'], issues);
+  sameArray('Landing Global Discovery visible filters', landingVisible, ['all', 'articles', 'topics', 'saved'], issues);
+  sameArray('Store Discovery visible filters', storeVisible, ['all', 'products', 'categories', 'saved'], issues);
 
   for (const hidden of ['routes', 'sections', 'actions']) {
     if (rootVisible.includes(hidden)) issues.push(`Root exposes developer filter ${hidden}`);
@@ -56,10 +56,6 @@ function main() {
   if (storeVisible.includes('routes') || storeVisible.includes('actions')) {
     issues.push('Store exposes route/action as a primary filter');
   }
-  if (rootVisible.includes('saved') || landingVisible.includes('saved') || storeVisible.includes('saved')) {
-    issues.push('Saved filter is visible even though Saved is intentionally deferred');
-  }
-
   for (const marker of ['function globalRoutesAdapter', 'function globalLandingSectionsAdapter', 'function globalActionsAdapter']) {
     if (!appRuntime.includes(marker)) issues.push(`Global runtime missing internal searchable adapter: ${marker}`);
     if (!landingHtml.includes(marker)) issues.push(`Landing runtime missing internal searchable adapter: ${marker}`);
@@ -75,6 +71,12 @@ function main() {
   }
   if (!storeRuntime.includes("kind === 'all'")) {
     issues.push('Store All filter must continue including routes/actions');
+  }
+  if (!appRuntime.includes("active === 'saved'") || !landingHtml.includes("filter === 'saved'")) {
+    issues.push('Global Saved filter must be normalized and handled explicitly');
+  }
+  if (!storeRuntime.includes("kind === 'saved'") || !storeRuntime.includes('isSaved(item)')) {
+    issues.push('Store Saved filter must use local saved products');
   }
 
   if (!appRuntime.includes('isStoreDiscoveryPost(post)')) {

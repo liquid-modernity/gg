@@ -20,6 +20,26 @@ function assertIncludes(label, text, marker, issues) {
   if (!text.includes(marker)) issues.push(`${label} missing ${marker}`);
 }
 
+function assertJsAppendGuard(label, text, issues) {
+  const appendMatch = text.match(/function appendListingRows\([^)]*\)\s*\{[\s\S]*?\n\s*function finishListingGrowthState/);
+  const appendBlock = appendMatch ? appendMatch[0] : '';
+
+  if (!appendBlock) {
+    issues.push(`${label} missing appendListingRows block`);
+    return;
+  }
+
+  assertIncludes(`${label} appendListingRows`, appendBlock, "getAttribute('data-gg-content-domain')", issues);
+  assertIncludes(`${label} appendListingRows`, appendBlock, 'state.surfaceContext && state.surfaceContext.isRootListing', issues);
+  assertIncludes(`${label} appendListingRows`, appendBlock, "domain === 'store'", issues);
+  assertIncludes(`${label} appendListingRows`, appendBlock, 'continue;', issues);
+  assertIncludes(`${label} appendListingRows`, appendBlock, 'storeRowsSkippedFromRoot', issues);
+
+  if (appendBlock.indexOf("domain === 'store'") > appendBlock.indexOf('fragment.appendChild(imported)')) {
+    issues.push(`${label} checks Store domain after append; guard must run before DOM insertion`);
+  }
+}
+
 function main() {
   const issues = [];
   const packageJson = JSON.parse(read('package.json'));
@@ -33,9 +53,14 @@ function main() {
     issues.push('package.json missing gaga:verify-store-isolation alias');
   }
 
-  const rootLoop = blockBetween(indexXml, "<b:loop values='data:posts' var='post'>", "</b:loop>");
-  assertIncludes('root listing loop', rootLoop, 'data:view.isHomepage', issues);
+  const rootLoop = blockBetween(indexXml, "<b:includable id='main'>", "<section aria-live='polite'");
+  const postRow = blockBetween(indexXml, "<b:includable id='postRow' var='post'>", "</b:includable>");
+  if (!rootLoop.includes('data:view.isLabelSearch or not') && !rootLoop.includes('data:view.isHomepage')) {
+    issues.push('root listing loop missing listing-scoped Store isolation condition');
+  }
   assertIncludes('root listing loop', rootLoop, 'data:post.labels any', issues);
+  assertIncludes('root listing row', postRow, 'data-gg-content-domain', issues);
+  assertIncludes('root listing row', postRow, '&quot;store&quot; : &quot;blog&quot;', issues);
   for (const label of ['Store', 'Store Fashion', 'Store Skincare', 'Store Workspace', 'Store Tech', 'Store Everyday', 'Store Etc', 'Store Lainnya']) {
     assertIncludes('root listing loop', rootLoop, label, issues);
   }
@@ -76,6 +101,11 @@ function main() {
     assertIncludes(label, text, 'isStoreContent(post)', issues);
     assertIncludes(label, text, 'isStoreDiscoveryLabel(topic.title || topic.key)', issues);
   }
+
+  assertJsAppendGuard('src/js/gg-app.source.js', appRuntime, issues);
+  assertIncludes('src/js/gg-app.source.js', appRuntime, 'storeAppendGuardEnabled', issues);
+  assertIncludes('src/js/gg-app.source.js', appRuntime, 'rootListingAppendGuardActive', issues);
+  assertIncludes('src/js/gg-app.source.js', appRuntime, 'storeRowsSkippedFromRoot', issues);
 
   assertIncludes('store.html', storeHtml, 'data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"', issues);
   assertIncludes('store.html', storeHtml, 'STORE_STATIC_GRID_START', issues);

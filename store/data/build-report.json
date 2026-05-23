@@ -28,6 +28,7 @@
   ],
   "duplicateSlugs": [],
   "warnings": [
+    "neutral-linen-overshirt: placeholder image URL remains in non-production data",
     "foldable-reusable-bag: placeholder image URL remains in non-production data",
     "braided-fast-charging-cable: placeholder image URL remains in non-production data",
     "compact-cable-box: placeholder image URL remains in non-production data",
@@ -45,7 +46,6 @@
     "compact-crossbody-sling: placeholder image URL remains in non-production data",
     "clean-canvas-sneakers: placeholder image URL remains in non-production data",
     "relaxed-cotton-t-shirt: placeholder image URL remains in non-production data",
-    "neutral-linen-overshirt: placeholder image URL remains in non-production data",
     "desk-tray-organizer: placeholder image URL remains in non-production data",
     "everyday-canvas-tote: placeholder image URL remains in non-production data",
     "minimal-barrier-serum: placeholder image URL remains in non-production data"
@@ -256,5 +256,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "e2cadd3318a32b2b"
+  "buildId": "8f89d5085119fa1f"
 }

@@ -664,7 +664,7 @@ window.GG = window.GG || {};
         var GG_GLOBAL_DISCOVERY_CONFIG = {
           domain: 'global',
           feedMax: GLOBAL_DISCOVERY_FEED_MAX,
-          filterIds: ['all', 'articles', 'topics'],
+          filterIds: ['all', 'articles', 'topics', 'saved'],
           routeIds: ['home', 'blog', 'store', 'contact'],
           sectionIds: ['hero', 'rubrics', 'faq', 'contact'],
           actionIds: ['contactPakrpp', 'openMore', 'openStore', 'openBlog'],
@@ -1064,6 +1064,8 @@ window.GG = window.GG || {};
           listingFetchPromise: null,
           listingObserver: null,
           listingGrowthState: 'fallback',
+          storeAppendGuardEnabled: true,
+          storeRowsSkippedFromRoot: 0,
           panelActive: null,
           panelLastTrigger: null,
           panelTimers: {},
@@ -5631,6 +5633,7 @@ window.GG = window.GG || {};
           var appended = [];
           var i;
           var imported;
+          var domain;
           var href;
           var appendedCount;
 
@@ -5638,6 +5641,11 @@ window.GG = window.GG || {};
 
           for (i = 0; i < (rowNodes || []).length; i += 1) {
             imported = document.importNode ? document.importNode(rowNodes[i], true) : rowNodes[i].cloneNode(true);
+            domain = imported.getAttribute('data-gg-content-domain');
+            if (state.surfaceContext && state.surfaceContext.isRootListing && domain === 'store') {
+              state.storeRowsSkippedFromRoot = (state.storeRowsSkippedFromRoot || 0) + 1;
+              continue;
+            }
             href = toAbsoluteUrl(imported.getAttribute('data-gg-post-url') || '', responseUrl);
             if (!href || state.listingSeenUrls[href]) continue;
             imported.setAttribute('data-gg-post-url', href);
@@ -7325,6 +7333,7 @@ window.GG = window.GG || {};
           if (active === 'all') return true;
           if (active === 'articles') return item.type === 'article';
           if (active === 'topics') return item.type === 'topic';
+          if (active === 'saved') return item.saved === true;
           if (active === 'routes') return item.type === 'route';
           if (active === 'sections') return item.type === 'section';
           if (active === 'actions') return item.type === 'action';
@@ -7534,9 +7543,13 @@ window.GG = window.GG || {};
           var textNode = getTemplatePart(node, 'text');
 
           if (!node || !textNode) return null;
-          textNode.textContent = copyKey === 'discovery.empty'
-            ? (getCopy('discovery.empty.title') + '. ' + getCopy('discovery.empty.body'))
-            : getCopy(copyKey);
+          if (copyKey === 'discovery.saved') {
+            textNode.textContent = getCopy('discovery.saved.empty.title') + ' ' + getCopy('discovery.saved.empty.body');
+          } else if (copyKey === 'discovery.empty') {
+            textNode.textContent = getCopy('discovery.empty.title') + '. ' + getCopy('discovery.empty.body');
+          } else {
+            textNode.textContent = getCopy(copyKey);
+          }
           return node;
         }
 
@@ -7608,7 +7621,7 @@ window.GG = window.GG || {};
           renderDiscoveryContext(topic);
 
           if (!items.length) {
-            replaceNodeChildren(ui.commandResults, [createDiscoveryEmptyNode('discovery.empty')]);
+            replaceNodeChildren(ui.commandResults, [createDiscoveryEmptyNode(state.discoveryTab === 'saved' ? 'discovery.saved' : 'discovery.empty')]);
             return;
           }
 
@@ -8196,7 +8209,10 @@ window.GG = window.GG || {};
               rowCount: getListingRowCount(),
               olderPageUrl: getCurrentOlderPageUrl(),
               minimumVisualCount: LISTING_GROWTH_CONTRACT.minimumVisualCount,
-              viewportSatisfied: listingViewportSatisfied()
+              viewportSatisfied: listingViewportSatisfied(),
+              storeAppendGuardEnabled: !!state.storeAppendGuardEnabled,
+              rootListingAppendGuardActive: !!(state.surfaceContext && state.surfaceContext.isRootListing),
+              storeRowsSkippedFromRoot: state.storeRowsSkippedFromRoot || 0
             }
           };
         }
@@ -8720,6 +8736,12 @@ window.GG = window.GG || {};
           }
         }
 
+        var ggSheetGestureController = {
+          start: startDrag,
+          move: moveDrag,
+          end: endDrag
+        };
+
         function clearPressState() {
           if (!state.pressTarget) return;
           state.pressTarget.removeAttribute('data-gg-press');
@@ -8743,19 +8765,19 @@ window.GG = window.GG || {};
             target.setAttribute('data-gg-press', 'active');
           }
           startDetailOutlineGesture(event);
-          startDrag(event);
+          ggSheetGestureController.start(event);
         }, true);
 
-        document.addEventListener('pointermove', moveDrag, { passive: false });
+        document.addEventListener('pointermove', ggSheetGestureController.move, { passive: false });
         document.addEventListener('pointerup', function (event) {
           clearPressState();
           endDetailOutlineGesture(event);
-          endDrag(event);
+          ggSheetGestureController.end(event);
         }, true);
         document.addEventListener('pointercancel', function (event) {
           clearPressState();
           state.detailOutlineGesture = null;
-          endDrag(event);
+          ggSheetGestureController.end(event);
         }, true);
         window.addEventListener('blur', clearPressState);
 
@@ -9278,7 +9300,10 @@ window.GG = window.GG || {};
             return {
               state: state.listingGrowthState,
               rowCount: getListingRowCount(),
-              olderPageUrl: getCurrentOlderPageUrl()
+              olderPageUrl: getCurrentOlderPageUrl(),
+              storeAppendGuardEnabled: !!state.storeAppendGuardEnabled,
+              rootListingAppendGuardActive: !!(state.surfaceContext && state.surfaceContext.isRootListing),
+              storeRowsSkippedFromRoot: state.storeRowsSkippedFromRoot || 0
             };
           }
         };

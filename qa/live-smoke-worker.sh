@@ -692,11 +692,17 @@ check_live_shell_markers() {
     "--gg-panel-width" \
     "600px" \
     "data-gg-surface=\"landing\"" \
+    "data-gg-discovery-domain=\"global\"" \
+    "data-discovery-filter=\"saved\"" \
     "gg-sheet__handle"
 
   check_shell_marker_route "/store" "store" \
     "--gg-panel-width" \
     "600px" \
+    "data-gg-discovery-domain=\"store\"" \
+    "data-store-discovery-kind=\"products\"" \
+    "data-store-discovery-kind=\"categories\"" \
+    "data-store-discovery-kind=\"saved\"" \
     "store-preview__handle" \
     "store-bottom-sheet"
 }
@@ -1648,12 +1654,12 @@ resolve_failure_class() {
   fi
 
   if (( has_gg_app_asset_failure )); then
-    failure_class="GG_APP_ASSET_FAILURE"
+    failure_class="STALE_DEPLOYMENT"
     return
   fi
 
   if (( has_store_asset_failure )); then
-    failure_class="STORE_ASSET_FAILURE"
+    failure_class="STALE_DEPLOYMENT"
     return
   fi
 

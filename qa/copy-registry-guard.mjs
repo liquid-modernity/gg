@@ -69,7 +69,6 @@ const REQUIRED = {
     'more.commerceNote': 'Some outbound links may be affiliate links. Prices and availability may change.',
     'language.english': 'English',
     'language.indonesia': 'Indonesia',
-    'appearance.system': 'System',
     'appearance.light': 'Light',
     'appearance.dark': 'Dark',
     'reading.comfortable': 'Comfortable',
@@ -164,7 +163,6 @@ const REQUIRED = {
     'more.commerceNote': 'Beberapa tautan keluar dapat bersifat afiliasi. Harga dan ketersediaan dapat berubah.',
     'language.english': 'English',
     'language.indonesia': 'Indonesia',
-    'appearance.system': 'Sistem',
     'appearance.light': 'Terang',
     'appearance.dark': 'Gelap',
     'reading.comfortable': 'Nyaman',
@@ -300,6 +298,37 @@ function assertNoHardcodedSourceStrings(issues) {
   }
 }
 
+function assertCurrentPublicCopyContracts(issues) {
+  const visibleSources = [
+    ['index.xml', read('index.xml')],
+    ['landing.html', read('landing.html')],
+    ['store.html', read('store.html')]
+  ];
+  for (const [label, text] of visibleSources) {
+    if (/data-(?:gg-)?copy=['"]nav\.landing['"][^>]*>\s*Landing\s*</i.test(text)) {
+      issues.push(`${label} exposes public Landing copy`);
+    }
+    if (/data-(?:gg-)?theme-option=['"]system['"]|data-store-theme=['"]system['"]/i.test(text)) {
+      issues.push(`${label} exposes visible System theme option`);
+    }
+    if (/data-(?:gg-)?command-tab=['"](?:routes|sections|actions)['"]|data-discovery-filter=['"](?:routes|sections|actions)['"]|data-store-discovery-kind=['"](?:routes|sections|actions|articles|topics)['"]/i.test(text)) {
+      issues.push(`${label} exposes stale visitor-facing Discovery filter copy`);
+    }
+  }
+
+  const visibleFilterContracts = [
+    ['index.xml', read('index.xml'), /data-gg-command-tab=['"]([^'"]+)['"]/g, ['all', 'articles', 'topics', 'saved']],
+    ['landing.html', read('landing.html'), /data-discovery-filter=['"]([^'"]+)['"]/g, ['all', 'articles', 'topics', 'saved']],
+    ['store.html', read('store.html'), /data-store-discovery-kind=['"]([^'"]+)['"]/g, ['all', 'products', 'categories', 'saved']]
+  ];
+  for (const [label, text, pattern, expected] of visibleFilterContracts) {
+    const actual = Array.from(text.matchAll(pattern)).map((match) => match[1]);
+    if (actual.join('|') !== expected.join('|')) {
+      issues.push(`${label} visible Discovery filters expected ${expected.join(' | ')} got ${actual.join(' | ') || '(none)'}`);
+    }
+  }
+}
+
 function main() {
   const issues = [];
   const rootEn = parseWrappedCopy('gg-copy-en.json', 'en', issues);
@@ -317,6 +346,7 @@ function main() {
   assertRequired('registry EN', regEn, 'en', issues);
   assertRequired('registry ID', regId, 'id', issues);
   assertNoHardcodedSourceStrings(issues);
+  assertCurrentPublicCopyContracts(issues);
 
   if (issues.length) {
     console.error('COPY REGISTRY GUARD RESULT: FAIL');

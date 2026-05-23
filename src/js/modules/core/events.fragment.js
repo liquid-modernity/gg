@@ -10,19 +10,19 @@
             target.setAttribute('data-gg-press', 'active');
           }
           startDetailOutlineGesture(event);
-          startDrag(event);
+          ggSheetGestureController.start(event);
         }, true);
 
-        document.addEventListener('pointermove', moveDrag, { passive: false });
+        document.addEventListener('pointermove', ggSheetGestureController.move, { passive: false });
         document.addEventListener('pointerup', function (event) {
           clearPressState();
           endDetailOutlineGesture(event);
-          endDrag(event);
+          ggSheetGestureController.end(event);
         }, true);
         document.addEventListener('pointercancel', function (event) {
           clearPressState();
           state.detailOutlineGesture = null;
-          endDrag(event);
+          ggSheetGestureController.end(event);
         }, true);
         window.addEventListener('blur', clearPressState);
 

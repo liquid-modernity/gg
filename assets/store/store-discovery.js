@@ -456,12 +456,12 @@
     // Static featured card seed. Build-time prerender sync keeps this aligned with the first snapshot product.
     // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
-      slug: "foldable-reusable-bag",
-      name: "Foldable Reusable Bag",
-      category: "Lainnya",
-      priceText: "Rp39.000",
-      image: "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
-      alt: "Foldable Reusable Bag"
+      slug: "neutral-linen-overshirt",
+      name: "Neutral Linen Overshirt",
+      category: "Fashion",
+      priceText: "Rp159.000",
+      image: "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
+      alt: "Neutral Linen Overshirt"
     };
     // STORE_LCP_PRODUCT_END
     // STORE_CATEGORY_CONFIG_START
@@ -625,7 +625,7 @@
     var staticProductsScript = document.getElementById('store-static-products');
     var itemListJsonLd = document.getElementById('store-itemlist-jsonld');
     var dock = document.getElementById('gg-dock');
-    var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle]'));
+    var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle], [data-gg-drag-handle]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
     var priceBandButtons = [].slice.call(document.querySelectorAll('[data-store-price-band]'));
     var sortButtons = [].slice.call(document.querySelectorAll('[data-store-sort]'));
@@ -1880,7 +1880,7 @@
     }
     function normalizeStoreDiscoveryKind(value) {
       var kind = clean(value);
-      return ['all', 'products', 'categories'].indexOf(kind) > -1 ? kind : 'all';
+      return ['all', 'products', 'categories', 'saved'].indexOf(kind) > -1 ? kind : 'all';
     }
     function normalizeStoreDiscoveryItem(item) {
       var source = item || {};
@@ -2026,7 +2026,7 @@
         var categoryKey = normalizeDiscoveryCategoryKey(item && (item.categoryKey || item.filter), item && item.category);
         var type = clean(item && item.type) || 'product';
         var matchesQuery = !q || discoverySearchHaystack(item).indexOf(q) !== -1;
-        var matchesKind = kind === 'all' || (kind === 'products' && type === 'product') || (kind === 'categories' && type === 'category');
+        var matchesKind = kind === 'all' || (kind === 'products' && type === 'product') || (kind === 'categories' && type === 'category') || (kind === 'saved' && type === 'product' && isSaved(item));
         var matchesFilter = type !== 'product' || state.filter === 'all' || categoryKey === state.filter;
         var matchesPrice = type !== 'product' || priceFilter === 'all' || clean(item && item.priceBand) === priceFilter;
         var matchesIntent = type !== 'product' || matchDiscoveryIntent(item, state.intent);
@@ -2754,6 +2754,8 @@
       var panelName = name || state.panelActive;
       var config = getPanel(panelName);
       if (!config || !config.sheet) return;
+      state.dragSession = null;
+      if (config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
       config.sheet.setAttribute('data-gg-state', 'closed');
       config.sheet.setAttribute('aria-hidden', 'true');
       config.sheet.setAttribute('inert', '');
@@ -2788,6 +2790,19 @@
       var last = nodes[nodes.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+
+    function panelDragEdge(name) {
+      return name === 'preview' ? 'top' : 'bottom';
+    }
+    function applyPanelDrag(config, offsetY) {
+      var edge = panelDragEdge(state.dragSession && state.dragSession.name);
+      var next = edge === 'top' ? Math.min(0, offsetY) : Math.max(0, offsetY);
+      if (config && config.panel) config.panel.style.setProperty('--gg-sheet-drag-y', next + 'px');
+    }
+    function resetPanelDrag(config) {
+      if (config && config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
+      if (config && config.sheet && state.panelActive) config.sheet.setAttribute('data-gg-state', 'open');
     }
 
     function openDiscovery(trigger) {
@@ -2885,6 +2900,8 @@
       return nextSaved;
     }
     function beginDragSession(name, handle, event) {
+      var config = getPanel(name);
+      if (!config || state.panelActive !== name) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       event.preventDefault();
       state.dragSession = {
@@ -2894,15 +2911,24 @@
         lastY: event.clientY,
         startedAt: Date.now()
       };
+      config.sheet.setAttribute('data-gg-state', 'dragging');
+      applyPanelDrag(config, 0);
       if (handle && handle.setPointerCapture) {
         try { handle.setPointerCapture(event.pointerId); } catch (error) {}
       }
     }
     function moveDragSession(event) {
+      var config;
+      var deltaY;
       if (!state.dragSession || state.dragSession.pointerId !== event.pointerId) return;
       state.dragSession.lastY = event.clientY;
+      config = getPanel(state.dragSession.name);
+      deltaY = event.clientY - state.dragSession.startY;
+      applyPanelDrag(config, deltaY);
+      event.preventDefault();
     }
     function endDragSession(event) {
+      var config;
       if (!state.dragSession || state.dragSession.pointerId !== event.pointerId) return;
       var session = state.dragSession;
       var releaseY = typeof event.clientY === 'number' ? event.clientY : session.lastY;
@@ -2911,10 +2937,17 @@
       var velocityY = deltaY / elapsed;
       var isTap = Math.abs(deltaY) < 8 && elapsed < 360;
       state.dragSession = null;
+      config = getPanel(session.name);
       if (isTap) closePanel(session.name);
       else if (session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview');
       else if (session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name);
+      else resetPanelDrag(config);
     }
+    var ggSheetGestureController = {
+      start: beginDragSession,
+      move: moveDragSession,
+      end: endDragSession
+    };
 
     function openPreviewItem(item, trigger) {
       if (!item) return;
@@ -3037,13 +3070,13 @@
       if (!button) return;
       goToPreviewImage(Number(button.getAttribute('data-store-preview-dot')), smoothBehavior());
     });
-    if (preview.handle) preview.handle.addEventListener('pointerdown', function (event) { beginDragSession('preview', preview.handle, event); });
+    if (preview.handle && dragHandles.indexOf(preview.handle) === -1) preview.handle.addEventListener('pointerdown', function (event) { ggSheetGestureController.start('preview', preview.handle, event); });
     dragHandles.forEach(function (handle) {
-      handle.addEventListener('pointerdown', function (event) { beginDragSession(handle.getAttribute('data-store-drag-handle'), handle, event); });
+      handle.addEventListener('pointerdown', function (event) { ggSheetGestureController.start(handle.getAttribute('data-store-drag-handle') || handle.getAttribute('data-gg-drag-handle'), handle, event); });
     });
-    window.addEventListener('pointermove', moveDragSession, { passive: true });
-    window.addEventListener('pointerup', endDragSession);
-    window.addEventListener('pointercancel', endDragSession);
+    window.addEventListener('pointermove', ggSheetGestureController.move, { passive: false });
+    window.addEventListener('pointerup', ggSheetGestureController.end);
+    window.addEventListener('pointercancel', ggSheetGestureController.end);
     if (moreOpen) moreOpen.addEventListener('click', function () { openPanel('more', moreOpen); });
     if (contactLink) contactLink.addEventListener('click', function (event) {
       var href = contactLink.getAttribute('href') || '';

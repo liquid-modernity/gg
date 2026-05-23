@@ -51,11 +51,12 @@
   height: auto;
   overflow: auto;
   padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
-  border: 1px solid var(--gg-line-strong);
-  border-bottom: 0;
+  border: 0;
   border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
   background: var(--gg-surface-panel);
   box-shadow: var(--gg-shadow-panel-bottom);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
   transform: translate3d(0, calc(var(--gg-sheet-rest-y) + var(--gg-sheet-drag-y)), 0);
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
@@ -84,8 +85,7 @@
   --gg-sheet-transition: var(--gg-motion-sheet-open-top);
   min-height: var(--gg-panel-preview-min-height);
   max-height: var(--gg-panel-preview-max-height);
-  border-top: 0;
-  border-bottom: 1px solid var(--gg-line-strong);
+  border: 0;
   border-radius: 0 0 var(--gg-panel-radius) var(--gg-panel-radius);
   box-shadow: var(--gg-shadow-panel-top);
 }

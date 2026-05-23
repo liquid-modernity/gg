@@ -114,6 +114,8 @@
           listingFetchPromise: null,
           listingObserver: null,
           listingGrowthState: 'fallback',
+          storeAppendGuardEnabled: true,
+          storeRowsSkippedFromRoot: 0,
           panelActive: null,
           panelLastTrigger: null,
           panelTimers: {},
