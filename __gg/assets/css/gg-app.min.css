@@ -1442,7 +1442,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   min-width: 0;
   min-height: 42px;
   padding: 0 12px;
-  border-bottom: 1px solid var(--gg-divider);
+  border-bottom: 0px solid var(--gg-divider);
   color: #1c1a1e;
   font: 600 12px/1.3 var(--gg-font-sans);
 }
@@ -1935,7 +1935,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   display: grid;
   gap: 8px;
   margin-top: 8px;
-  border-top: 1px solid var(--gg-comment-divider);
+  border-top: 0px solid var(--gg-comment-divider);
 }
 
 #gg-comments-footer,
@@ -2012,7 +2012,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   justify-self: stretch;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--gg-divider);
+  border: 0px solid var(--gg-divider);
   border-radius: 999px;
   background: var(--gg-surface-quiet);
   color: #1c1a1e;
@@ -2048,7 +2048,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   display: block;
     width: 100%;
     min-height: 120px;
-    border: 1px solid var(--gg-divider);
+    border: 0px solid var(--gg-divider);
     border-radius: 26px 26px 0px 0px;
 }
 
