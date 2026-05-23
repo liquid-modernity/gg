@@ -2933,7 +2933,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   gap: 10px;
   padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
-  padding-bottom: 10px;
+  padding-top: 14px;
+  padding-bottom: 16px;
   border-top: 1px solid var(--gg-divider);
   background: linear-gradient(0deg, var(--gg-surface-panel) 84%, color-mix(in srgb, var(--gg-surface-panel) 88%, transparent) 100%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);

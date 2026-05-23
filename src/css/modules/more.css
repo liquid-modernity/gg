@@ -37,8 +37,9 @@
   z-index: 6;
   display: grid;
   gap: 10px;
-  padding: var(--gg-discovery-controls-pad-top) var(--gg-panel-pad-x) calc(var(--gg-discovery-controls-pad-bottom) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--gg-divider);
+  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+  padding-top: 14px;
+  padding-bottom: 16px;  border-top: 1px solid var(--gg-divider);
   background: linear-gradient(0deg, var(--gg-surface-panel) 84%, color-mix(in srgb, var(--gg-surface-panel) 88%, transparent) 100%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   backdrop-filter: blur(18px) saturate(150%);
