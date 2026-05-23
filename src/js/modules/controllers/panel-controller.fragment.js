@@ -173,6 +173,22 @@
           return result;
         }
 
+        function sheetControllerSnapshot() {
+          var panelCount = Object.keys(panelDefs).filter(function (name) {
+            return !!getPanel(name);
+          }).length;
+          return {
+            surface: 'root',
+            openSheet: state.panelActive || null,
+            sheetCount: panelCount,
+            dragHandleCount: document.querySelectorAll('[data-gg-drag-handle]').length,
+            focusTrapActive: !!state.panelActive,
+            bodyScrollLocked: document.body && document.body.getAttribute('data-gg-scroll-lock') === 'true',
+            lastCloseReason: state.panelLastCloseReason || null,
+            panels: panelSnapshot().panels
+          };
+        }
+
         function emitPanelEvent(kind, name, detail) {
           document.dispatchEvent(new CustomEvent('gg:panel:' + kind, {
             detail: detail || {
@@ -312,6 +328,7 @@
           var panel = getPanel(name || state.panelActive);
 
           if (!panel || panel.root.hidden) {
+            state.panelLastCloseReason = closeOptions.reason || 'api';
             if (!name || state.panelActive === name) {
               state.panelActive = null;
               setBodyPanelState('', false);
@@ -333,6 +350,7 @@
           panel.root.setAttribute('data-gg-state', 'closing');
           panel.root.setAttribute('data-gg-active', 'false');
           state.drag = state.drag && state.drag.name === panel.name ? null : state.drag;
+          state.panelLastCloseReason = closeOptions.reason || 'api';
 
           return new Promise(function (resolve) {
             state.panelTimers[panel.name] = window.setTimeout(function () {

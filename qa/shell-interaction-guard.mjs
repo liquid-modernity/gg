@@ -84,6 +84,61 @@ function assertInteractiveHandle(source, name, fileLabel) {
   if (!re.test(source)) fail(`${fileLabel}: missing interactive drag handle for ${name}`);
 }
 
+function buttonTags(source) {
+  return source.match(/<button\b[^>]*>/gi) || [];
+}
+
+function attrValue(tag, attr) {
+  const escaped = attr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = tag.match(new RegExp(`\\b${escaped}=(['"])(.*?)\\1`, "i"));
+  return match ? match[2] : "";
+}
+
+function hasAttr(tag, attr) {
+  const escaped = attr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}(?:\\s|=|>|/)`, "i").test(tag);
+}
+
+function assertLandingHandleContract() {
+  const handles = buttonTags(text.landing).filter((tag) => /\bgg-sheet__handle\b/.test(attrValue(tag, "class")));
+  if (!text.landing.includes("data-gg-drag-handle=")) fail("landing.html: missing data-gg-drag-handle contract");
+  if (!text.landing.includes("data-gg-close=")) fail("landing.html: missing data-gg-close contract");
+  handles.forEach((tag) => {
+    if (hasAttr(tag, "data-sheet-handle") && !hasAttr(tag, "data-gg-drag-handle")) {
+      fail(`landing.html: legacy-only data-sheet-handle remains (${tag})`);
+    }
+    if (hasAttr(tag, "data-close-panel") && !hasAttr(tag, "data-gg-drag-handle")) {
+      fail(`landing.html: data-close-panel handle lacks data-gg-drag-handle (${tag})`);
+    }
+    if (hasAttr(tag, "data-close-panel") && !hasAttr(tag, "data-gg-close")) {
+      fail(`landing.html: data-close-panel handle lacks data-gg-close mirror (${tag})`);
+    }
+  });
+}
+
+function assertStoreMirrorContract() {
+  buttonTags(text.store).forEach((tag) => {
+    if (hasAttr(tag, "data-store-drag-handle") && !hasAttr(tag, "data-gg-drag-handle")) {
+      fail(`store.html: data-store-drag-handle lacks data-gg-drag-handle mirror (${tag})`);
+    }
+    if (hasAttr(tag, "data-store-close") && !hasAttr(tag, "data-gg-close")) {
+      fail(`store.html: data-store-close lacks data-gg-close mirror (${tag})`);
+    }
+  });
+}
+
+function assertSheetControllerSnapshots() {
+  if (!text.appJs.includes("function sheetControllerSnapshot") || !text.appJs.includes("GG.sheetController") || !text.appJs.includes("snapshot: sheetControllerSnapshot")) {
+    fail("src/js/gg-app.source.js: missing GG.sheetController.snapshot proof");
+  }
+  if (!text.landing.includes("function sheetControllerSnapshot") || !text.landing.includes("window.LandingSurface") || !text.landing.includes("sheetController: {")) {
+    fail("landing.html: missing LandingSurface.sheetController.snapshot proof");
+  }
+  if (!text.storeJs.includes("function sheetControllerSnapshot") || !text.storeJs.includes("window.StoreDiscovery") || !text.storeJs.includes("sheetController: {")) {
+    fail("src/store/store-discovery.js: missing StoreDiscovery.sheetController.snapshot proof");
+  }
+}
+
 assertIncludes(text.packageJson, '"gaga:verify-shell"', "package.json: missing gaga:verify-shell script");
 
 assertDockOrder(text.index, "index.xml", "data-gg-nav");
@@ -122,6 +177,28 @@ assertDockOrder(text.store, "store.html", "data-store-dock");
 if (text.landing.includes("document.querySelectorAll('[data-sheet-handle]')")) {
   fail("landing.html: duplicate data-sheet-handle gesture loop is still present");
 }
+
+assertLandingHandleContract();
+assertStoreMirrorContract();
+assertSheetControllerSnapshots();
+
+[
+  ["landing.html", text.landing],
+  ["src/js/gg-app.source.js", text.appJs],
+  ["src/store/store-discovery.js", text.storeJs],
+  ["src/css/gg-app.source.css", text.appCss],
+  ["src/css/modules/sheets.css", text.sheetsCss],
+  ["src/store/store.css", text.storeCss],
+].forEach(([file, source]) => assertIncludes(source, "--gg-sheet-drag-y", `${file}: missing shared --gg-sheet-drag-y drag variable`));
+
+[
+  ["src/js/gg-app.source.js", text.appJs],
+  ["landing.html", text.landingJs],
+  ["src/store/store-discovery.js", text.storeJs],
+].forEach(([file, source]) => assertIncludes(source, "Escape", `${file}: missing Escape close contract`));
+
+assertIncludes(text.packageJson, '"gaga:verify-comments-proof"', "package.json: comments proof script missing");
+assertIncludes(text.appJs, "commentsPanel", "src/js/gg-app.source.js: comments sheet proof disappeared");
 
 assertFlatGlass(text.dockCss, ".gg-dock", "src/css/modules/dock.css");
 assertFlatGlass(text.outlineCss, ".gg-detail-outline", "src/css/modules/detail-outline.css");

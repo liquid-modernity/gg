@@ -703,6 +703,7 @@
       toastTimer: 0,
       activeToastNode: null,
       dragSession: null,
+      lastCloseReason: null,
       resizeSyncFrame: 0
     };
     var DEBUG_FLAGS = {
@@ -2734,6 +2735,7 @@
       hideAllToasts();
       state.panelActive = name;
       state.lastFocus = trigger || document.activeElement;
+      state.lastCloseReason = null;
       config.sheet.hidden = false;
       config.sheet.removeAttribute('inert');
       config.sheet.setAttribute('aria-hidden', 'false');
@@ -2755,6 +2757,7 @@
       var config = getPanel(panelName);
       if (!config || !config.sheet) return;
       state.dragSession = null;
+      state.lastCloseReason = (options && options.reason) || 'api';
       if (config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
       config.sheet.setAttribute('data-gg-state', 'closed');
       config.sheet.setAttribute('aria-hidden', 'true');
@@ -2938,9 +2941,9 @@
       var isTap = Math.abs(deltaY) < 8 && elapsed < 360;
       state.dragSession = null;
       config = getPanel(session.name);
-      if (isTap) closePanel(session.name);
-      else if (session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview');
-      else if (session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name);
+      if (isTap) closePanel(session.name, { reason: 'handle' });
+      else if (session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview', { reason: 'drag' });
+      else if (session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name, { reason: 'drag' });
       else resetPanelDrag(config);
     }
     var ggSheetGestureController = {
@@ -3120,7 +3123,7 @@
       });
     });
     closeButtons.forEach(function (button) {
-      button.addEventListener('click', function () { closePanel(button.getAttribute('data-store-close')); });
+      button.addEventListener('click', function () { closePanel(button.getAttribute('data-store-close') || button.getAttribute('data-gg-close'), { reason: button.classList.contains('gg-sheet__scrim') ? 'scrim' : 'handle' }); });
     });
     langButtons.forEach(function (button) {
       button.addEventListener('click', function () {
@@ -3166,7 +3169,7 @@
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.panelActive) {
         if (state.panelActive === 'more' && closeMorePreferencePanel()) return;
-        closePanel(state.panelActive);
+        closePanel(state.panelActive, { reason: 'escape' });
       }
       trapFocus(event);
       if (state.panelActive === 'preview' && !isEditableElement(event.target)) {
@@ -3216,6 +3219,18 @@
       if (document.visibilityState === 'hidden') reportDebugVitals('visibility-hidden');
     });
 
+    function sheetControllerSnapshot() {
+      return {
+        surface: 'store',
+        openSheet: state.panelActive || null,
+        sheetCount: document.querySelectorAll('.gg-sheet[data-gg-panel]').length,
+        storeDragHandleCount: document.querySelectorAll('[data-store-drag-handle]').length,
+        ggDragHandleCount: document.querySelectorAll('[data-gg-drag-handle]').length,
+        focusTrapActive: !!state.panelActive,
+        lastCloseReason: state.lastCloseReason || null
+      };
+    }
+
     window.StoreSurface = {
       contracts: {
         surface: STORE_SURFACE_CONTRACT,
@@ -3230,6 +3245,11 @@
       openMore: function () { openPanel('more', moreOpen); },
       openSaved: function () { renderSavedResults(); openPanel('saved', savedOpen); },
       close: function () { if (state.panelActive) closePanel(state.panelActive); },
+      sheetController: {
+        open: openPanel,
+        close: closePanel,
+        snapshot: sheetControllerSnapshot
+      },
       snapshot: function () {
         return {
           products: state.products.length,
@@ -3244,6 +3264,7 @@
           query: state.query,
           saved: state.saved.length,
           panelActive: state.panelActive,
+          sheetController: sheetControllerSnapshot(),
           theme: state.theme,
           locale: state.locale,
           feedSource: state.feedSource,
@@ -3251,6 +3272,7 @@
         };
       }
     };
+    window.StoreDiscovery = window.StoreSurface;
 
     setCopy();
     applyTheme();

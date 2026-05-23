@@ -139,7 +139,14 @@
           }
         };
 
-        GG.sheetController = GG.panelController;
+        GG.sheetController = {
+          open: GG.panelController.open,
+          close: GG.panelController.close,
+          snapshot: sheetControllerSnapshot,
+          panelSnapshot: panelSnapshot,
+          isOpen: GG.panelController.isOpen,
+          active: GG.panelController.active
+        };
 
         GG.contracts = {
           command: COMMAND_PANEL_CONTRACT,

@@ -118,6 +118,7 @@
           storeRowsSkippedFromRoot: 0,
           panelActive: null,
           panelLastTrigger: null,
+          panelLastCloseReason: null,
           panelTimers: {},
           commentRepliesPortal: null,
           commentRepliesTimer: 0,
