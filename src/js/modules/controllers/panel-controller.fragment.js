@@ -177,6 +177,9 @@
           var panelCount = Object.keys(panelDefs).filter(function (name) {
             return !!getPanel(name);
           }).length;
+          var previewPanel = getPanel('preview');
+          var previewSheet = previewPanel ? previewPanel.root : null;
+          var previewBody = previewSheet ? (previewSheet.querySelector('[data-gg-scroll-container]') || previewSheet.querySelector('.gg-preview__body') || previewSheet.querySelector('.gg-content-sheet__body')) : null;
           return {
             surface: 'root',
             openSheet: state.panelActive || null,
@@ -185,6 +188,18 @@
             focusTrapActive: !!state.panelActive,
             bodyScrollLocked: document.body && document.body.getAttribute('data-gg-scroll-lock') === 'true',
             lastCloseReason: state.panelLastCloseReason || null,
+            previewSheetPresent: !!previewSheet,
+            previewOpen: state.panelActive === 'preview',
+            previewEdge: previewSheet ? previewSheet.getAttribute('data-gg-edge') : null,
+            previewFamily: previewSheet ? previewSheet.getAttribute('data-gg-panel-family') : null,
+            previewDragHandleCount: previewSheet ? previewSheet.querySelectorAll('[data-gg-drag-handle="preview"]').length : 0,
+            previewCloseHandleCount: previewSheet ? previewSheet.querySelectorAll('[data-gg-close="preview"]').length : 0,
+            previewFooterAffordance: !!(previewSheet && previewSheet.querySelector('.gg-content-sheet__affordance')),
+            previewIntroInScrollFlow: !!(previewSheet && previewSheet.querySelector('.gg-preview__body .gg-preview__intro[data-gg-preview-intro-flow="true"]')),
+            previewScrollResetEnabled: !!(previewSheet && (previewSheet.getAttribute('data-gg-scroll-reset-enabled') === 'true' || (previewSheet.dataset && previewSheet.dataset.ggScrollResetEnabled === 'true'))),
+            previewScrollTop: previewSheet ? previewSheet.scrollTop : 0,
+            previewBodyScrollTop: previewBody ? previewBody.scrollTop : 0,
+            previewLastResetReason: previewSheet ? (previewSheet.getAttribute('data-gg-last-scroll-reset-reason') || (previewSheet.dataset && previewSheet.dataset.ggLastScrollResetReason) || null) : null,
             panels: panelSnapshot().panels
           };
         }
@@ -211,6 +226,55 @@
               panel.panel.style.removeProperty('transition');
             });
           }
+        }
+
+        function normalizePreviewResetReason(reason) {
+          if (reason === 'drag-dismiss') return 'drag-close';
+          if (reason === 'escape-close') return 'escape';
+          if (reason === 'close-trigger') return 'close';
+          return reason || 'unknown';
+        }
+
+        function resetSheetScroll(sheet, reason) {
+          var containers;
+          var resetReason = normalizePreviewResetReason(reason);
+
+          if (!sheet) return;
+
+          containers = [
+            sheet,
+            sheet.querySelector('.gg-content-sheet__panel'),
+            sheet.querySelector('.gg-content-sheet__body'),
+            sheet.querySelector('.gg-preview__body'),
+            sheet.querySelector('.gg-preview__surface'),
+            sheet.querySelector('.store-preview__body'),
+            sheet.querySelector('.store-preview__surface'),
+            sheet.querySelector('.store-preview__content'),
+            sheet.querySelector('.store-bottom-sheet__body'),
+            sheet.querySelector('[data-gg-scroll-container]'),
+            sheet.querySelector('[role="dialog"]')
+          ].filter(Boolean);
+
+          containers.forEach(function (node) {
+            if (!node) return;
+            if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            else {
+              node.scrollTop = 0;
+              node.scrollLeft = 0;
+            }
+          });
+
+          if (sheet.dataset) {
+            sheet.dataset.ggScrollResetEnabled = 'true';
+            sheet.dataset.ggLastScrollResetReason = resetReason;
+          } else {
+            sheet.setAttribute('data-gg-scroll-reset-enabled', 'true');
+            sheet.setAttribute('data-gg-last-scroll-reset-reason', resetReason);
+          }
+        }
+
+        function resetPreviewScroll(reason) {
+          resetSheetScroll(ui.preview, reason);
         }
 
         function getPanelEdge(panel) {
@@ -272,6 +336,7 @@
           var openOptions = options || {};
 
           if (!panel) return Promise.resolve(null);
+          if (panel.name === 'preview') resetSheetScroll(panel.root, 'open-before-render');
 
           if (state.panelActive === name && !panel.root.hidden && panel.root.getAttribute('data-gg-state') === 'open') {
             if (panel.name === 'comments') setCommentsLayer('main');
@@ -304,6 +369,7 @@
               if (state.panelActive === name) {
                 panel.root.setAttribute('data-gg-state', 'open');
               }
+              if (panel.name === 'preview') resetSheetScroll(panel.root, 'open-after-render');
             });
 
             if (openOptions.focus !== false) {
@@ -351,6 +417,7 @@
           panel.root.setAttribute('data-gg-active', 'false');
           state.drag = state.drag && state.drag.name === panel.name ? null : state.drag;
           state.panelLastCloseReason = closeOptions.reason || 'api';
+          if (panel.name === 'preview') resetSheetScroll(panel.root, closeOptions.reason || 'close');
 
           return new Promise(function (resolve) {
             state.panelTimers[panel.name] = window.setTimeout(function () {
@@ -362,6 +429,7 @@
               panel.root.removeAttribute('data-gg-active');
               if (panel.name === 'comments') setCommentsLayer('closed');
               resetPanelDrag(panel, true);
+              if (panel.name === 'preview') resetSheetScroll(panel.root, closeOptions.reason || 'close');
 
               if (state.panelActive === panel.name) {
                 state.panelActive = null;

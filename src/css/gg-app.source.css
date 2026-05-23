@@ -42,6 +42,15 @@
   --gg-panel-more-min-height: 260px;
   --gg-panel-preview-min-height: 320px;
   --gg-panel-preview-max-height: min(94dvh, 920px);
+  --gg-preview-max-height: var(--gg-panel-preview-max-height);
+  --gg-preview-initial-height: min(72dvh, 720px);
+  --gg-preview-hero-min: clamp(300px, 58dvh, 520px);
+  --gg-preview-overlay-lift: clamp(104px, 18vw, 142px);
+  --gg-preview-footer-height: 56px;
+  --gg-preview-footer-safe-area: env(safe-area-inset-bottom);
+  --gg-preview-radius: 24px;
+  --gg-preview-surface: var(--gg-surface-panel);
+  --gg-preview-shadow: var(--gg-shadow-panel-top);
   --gg-panel-width: min(calc(100vw - 0px), 600px);
   --gg-panel-radius: 26px;
   --gg-panel-pad-y: 0px;
@@ -2658,7 +2667,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   align-content: start;
   gap: 0;
   overflow: auto;
-  background: var(--gg-surface-panel);
+  background: var(--gg-preview-surface);
+  box-shadow: var(--gg-preview-shadow);
 }
 
 .gg-content-sheet__affordance {
@@ -2668,7 +2678,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   display: grid;
   justify-items: center;
   margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0;
-  padding: var(--gg-preview-affordance-pad-top) var(--gg-panel-pad-x) var(--gg-preview-affordance-pad-bottom);
+  min-height: var(--gg-preview-footer-height);
+  padding: var(--gg-preview-affordance-pad-top) var(--gg-panel-pad-x) calc(var(--gg-preview-affordance-pad-bottom) + var(--gg-preview-footer-safe-area));
   border-top: 1px solid var(--gg-divider);
   background: linear-gradient(0deg, var(--gg-surface-panel) 70%, var(--gg-surface-panel-fade-soft));
 }
@@ -2686,7 +2697,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   position: sticky;
   top: 0;
   z-index: 0;
-  min-height: clamp(300px, 58dvh, 520px);
+  min-height: var(--gg-preview-hero-min);
   overflow: hidden;
   background: #201a1c;
   background:
@@ -2698,7 +2709,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   position: relative;
   z-index: 1;
   gap: var(--gg-preview-content-gap);
-  margin-top: calc(-1 * clamp(104px, 18vw, 142px));
+  margin-top: calc(-1 * var(--gg-preview-overlay-lift));
   padding: 0;
 }
 
@@ -2729,9 +2740,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 }
 
 .gg-preview__intro {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(124px, 19vw, 164px);
+  justify-self: center;
   z-index: 2;
   display: grid;
   justify-items: center;
@@ -2740,7 +2749,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   color: #fff;
   text-align: center;
   text-shadow: 0 2px 18px rgba(0,0,0,.42);
-  transform: translateX(-50%);
+  padding: 0 8px 18px;
 }
 
 .gg-preview__eyebrow {
@@ -2792,8 +2801,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-preview__surface {
   display: grid;
   gap: 16px;
-  background: var(--gg-surface-panel);
-  border-radius: 24px 24px 0 0;
+  background: var(--gg-preview-surface);
+  border-radius: var(--gg-preview-radius) var(--gg-preview-radius) 0 0;
   box-shadow: 0 -1px 0 var(--gg-line-strong);
   padding: 20px 18px 20px;
 }
@@ -2861,7 +2870,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   font: 600 14px/1.4 var(--gg-font-sans);
 }
 
-.gg-preview__footer {
+.gg-preview__cta-row {
   padding-top: var(--gg-preview-cta-gap);
   padding-bottom: var(--gg-preview-cta-bottom);
 }

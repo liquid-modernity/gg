@@ -187,6 +187,7 @@
 
         function fillPreviewSkeleton(payload) {
           if (!ui.previewTitle) return;
+          resetPreviewScroll('item-change');
           state.previewPayload = payload;
           state.previewUrl = payload.url;
           ui.previewTitle.textContent = payload.title || getCopy('preview.titleFallback');
@@ -198,6 +199,7 @@
           ui.previewCta.href = payload.url || '#';
           ui.previewImage.removeAttribute('src');
           ui.previewMedia.hidden = true;
+          window.requestAnimationFrame(function () { resetPreviewScroll('open-after-render'); });
         }
 
         function renderPreviewData(payload, detail) {
@@ -226,6 +228,7 @@
             ui.previewStatus.textContent = getCopy('preview.noHeadings');
             syncPreviewTocItems([]);
           }
+          window.requestAnimationFrame(function () { resetPreviewScroll('open-after-render'); });
         }
 
         function parsePreviewHtml(html, url) {
@@ -597,4 +600,3 @@
           } else {
             clearDetailOutlineManualOpen();
           }
-

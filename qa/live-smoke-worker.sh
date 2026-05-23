@@ -1093,10 +1093,10 @@ check_store_route() {
     log_fail "/store still exposes legacy System theme switch after TASK-THEME-001"
   fi
   grep -Eq 'class=["'"'"'][^"'"'"']*store-grid[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store catalogue surface is missing"
-  grep -Eq 'class=["'"'"']gg-sheet store-preview-sheet["'"'"']' "$body_file" || log_fail "/store preview sheet is missing"
+  grep -Eq 'class=["'"'"'][^"'"'"']*\bgg-sheet\b[^"'"'"']*\bstore-preview-sheet\b[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store preview sheet is missing"
   grep -Eq 'id=["'"'"']store-preview-dots["'"'"']' "$body_file" || log_fail "/store preview dots container is missing"
-  grep -Eq 'class=["'"'"']store-preview__footer["'"'"']' "$body_file" || log_fail "/store preview footer handle container is missing"
-  grep -Eq 'class=["'"'"']store-preview__handle["'"'"']' "$body_file" || log_fail "/store preview footer handle is missing"
+  grep -Eq 'class=["'"'"'][^"'"'"']*\bstore-preview__footer\b[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store preview footer handle container is missing"
+  grep -Eq 'class=["'"'"'][^"'"'"']*\bstore-preview__handle\b[^"'"'"']*["'"'"']' "$body_file" || log_fail "/store preview footer handle is missing"
   grep -Eq 'class=["'"'"']store-preview__secondary-actions["'"'"']' "$body_file" || log_fail "/store preview secondary actions are missing"
   grep -Eq 'id=["'"'"']store-preview-save["'"'"'][^>]*aria-pressed=["'"'"']false["'"'"']' "$body_file" || log_fail "/store Save button missing aria-pressed contract"
   grep -Eq 'id=["'"'"']store-copy-links["'"'"']' "$body_file" || log_fail "/store Copy Links button is missing"

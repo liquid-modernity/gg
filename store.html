@@ -2125,15 +2125,15 @@ input:focus-visible {
     </div>
   </section>
 
-  <section class="gg-sheet store-preview-sheet" id="store-preview-sheet" data-gg-panel="preview" data-gg-edge="top" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-preview-title" aria-hidden="true" inert hidden>
+  <section class="gg-content-sheet gg-preview gg-sheet store-preview-sheet" id="store-preview-sheet" data-gg-panel="preview" data-gg-panel-family="content-sheet" data-gg-edge="top" data-gg-state="closed" role="dialog" aria-modal="true" aria-labelledby="store-preview-title" aria-hidden="true" inert hidden>
     <button class="gg-sheet__scrim" type="button" data-store-close="preview" data-gg-close="preview" aria-label="Tutup pratinjau produk" data-copy-aria="closePreview"></button>
-    <article class="gg-sheet__panel" id="store-preview-panel" tabindex="-1">
+    <article class="gg-content-sheet__panel gg-sheet__panel" id="store-preview-panel" data-gg-preview-panel tabindex="-1">
       <section class="store-preview__hero" aria-label="Product preview hero" data-copy-aria="previewHeroLabel">
         <div class="store-preview__carousel" id="store-preview-carousel" aria-label="Product images" data-copy-aria="productImagesLabel"></div>
         <div class="store-preview__shade" aria-hidden="true"></div>
         <div class="store-preview__dots" id="store-preview-dots" aria-label="Product image position" data-copy-aria="productImagePositionLabel" hidden></div>
       </section>
-      <div class="store-preview__body">
+      <div class="gg-content-sheet__body store-preview__body" data-gg-scroll-container>
         <header class="store-preview__intro">
           <p class="store-preview__category" id="store-preview-category" data-copy="storeLabel">Store</p>
           <h2 class="store-preview__title" id="store-preview-title">Yellow Cart</h2>
@@ -2175,8 +2175,8 @@ input:focus-visible {
           </section>
         </div>
       </div>
-      <footer class="store-preview__footer">
-        <button class="store-preview__handle" type="button" data-store-close="preview" data-gg-close="preview" data-store-drag-handle="preview" data-gg-drag-handle="preview" aria-label="Close preview" data-copy-aria="closePreview"></button>
+      <footer class="gg-content-sheet__affordance store-preview__footer">
+        <button class="gg-sheet__handle store-preview__handle" type="button" data-store-close="preview" data-gg-close="preview" data-store-drag-handle="preview" data-gg-drag-handle="preview" aria-label="Drag to close preview" data-copy-aria="closePreview"></button>
       </footer>
     </article>
   </section>

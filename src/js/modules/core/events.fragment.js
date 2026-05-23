@@ -273,7 +273,7 @@
             } else if (closeName === 'comments') {
               closeCommentsSheet({ reason: 'close-trigger' });
             } else {
-              closePanel(closeName, { reason: 'close-trigger' });
+              closePanel(closeName, { reason: closeTrigger.classList.contains('gg-sheet__scrim') ? 'scrim' : (closeTrigger.hasAttribute('data-gg-drag-handle') ? 'handle' : 'close-trigger') });
             }
             return;
           }

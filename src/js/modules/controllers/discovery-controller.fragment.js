@@ -129,6 +129,7 @@
 
           if (!payload || !payload.url) return Promise.resolve(null);
 
+          resetPreviewScroll('open-before-render');
           fillPreviewSkeleton(payload);
           return openPanel('preview', {
             trigger: trigger || row,
