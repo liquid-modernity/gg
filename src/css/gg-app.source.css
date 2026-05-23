@@ -1178,7 +1178,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
   min-height: 0;
   margin-top: 0;
   padding-top: 0;
-  border-top: 0;
+  border-top: 0;padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
 }
 
 #gg-comments-sheet .gg-sheet__panel,
@@ -1520,7 +1520,6 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   display: flex;
     place-items: center;
     min-width: 34px;
-    min-height: 30px;
     padding: 0 8px;
     border: 0;
     border-radius: 999px;
@@ -2000,7 +1999,7 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   justify-self: normal;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--gg-divider);
+  border: 0px solid var(--gg-divider);
   border-radius: 999px;
   background: var(--gg-surface-quiet);
   color: #1c1a1e;
