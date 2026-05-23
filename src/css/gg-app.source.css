@@ -2919,6 +2919,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   padding: 14px 0 16px;
   scrollbar-width: none;
   padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+  padding-top: 14px;
+  padding-bottom: 16px;
 }
 
 .gg-more-body::-webkit-scrollbar {

@@ -1250,12 +1250,12 @@ button.store-button.store-semantic-more {
       letter-spacing: .12em;
       text-transform: uppercase;
     }
-    .store-sheet-body { display: grid; gap: 16px; padding: 16px 18px calc(18px + env(safe-area-inset-bottom)); }
     .store-discovery-body {
       min-height: 0;
       overflow: auto;
+      overscroll-behavior: contain;padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+      padding-top: 14px;
       padding-bottom: 16px;
-      overscroll-behavior: contain;
     }
     .store-discovery-command {
       position: sticky;
@@ -1519,8 +1519,8 @@ button.store-button.store-semantic-more {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 14px 0 16px;
-  scrollbar-width: none;padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+  scrollbar-width: none;padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);padding-top: 14px;
+  padding-bottom: 16px;
 }
 
 .gg-more-body::-webkit-scrollbar {
@@ -2015,5 +2015,4 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 
-.store-bottom-sheet .gg-more-body { padding-bottom: 8px; }
 .store-bottom-sheet .gg-more-footer { padding-bottom: 6px; }
