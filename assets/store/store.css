@@ -1151,8 +1151,6 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   justify-items: center;
   padding: 0;
   pointer-events: none;
-  min-height: var(--gg-panel-preview-min-height, var(--gg-panel-min-height));
-  max-height: var(--gg-panel-preview-max-height, var(--gg-panel-max-height));
 }
 
 .gg-sheet[hidden] {
@@ -1380,7 +1378,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
       min-height: var(--gg-preview-hero-height);
       aspect-ratio: var(--gg-preview-hero-aspect);
       overflow: hidden;
-      background: #201a1c;
+      background: #201a1c;min-height: var(--gg-preview-panel-initial-height);
+      max-height: var(--gg-preview-panel-max-height);
     }
     .store-preview__carousel {
       display: flex;
