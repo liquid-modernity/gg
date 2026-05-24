@@ -52,6 +52,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   background: rgba(18, 18, 16, .52);
 }
 
+/* BEGIN GENERATED: gg-sheet-modal */
 body[data-gg-panel-active='true'] .gg-dock {
   transform: translate3d(-50%, 4px, 0) scale(.985);
   opacity: .42;
@@ -62,6 +63,14 @@ body[data-gg-panel-active='true'] .gg-dock {
 body[data-gg-panel-active='true'] .gg-dock::after {
   opacity: 1;
 }
+/* END GENERATED: gg-sheet-modal */
+
+
+
+
+
+
+
 
 .gg-dock__item {
   display: inline-flex;

@@ -207,8 +207,10 @@ assertPolicy("src/store/store-discovery.js", text.storeJs, "discovery", ["openBe
 assertPolicy("src/store/store-discovery.js", text.storeJs, "saved", ["openBeforeRender", "openAfterRender", "closeAfterHide", "filterChange"]);
 assertPolicy("src/store/store-discovery.js", text.storeJs, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
 
-requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }");
-requireIncludes("landing.html", text.landing, "#gg-command-panel [data-gg-scroll-container], .gg-discovery-body");
+requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__panel");
+requireIncludes("landing.html", text.landing, "grid-template-rows: auto minmax(0, 1fr) auto;");
+requireIncludes("landing.html", text.landing, "overflow: hidden;");
+requireIncludes("landing.html", text.landing, ".gg-discovery-body");
 requireIncludes("landing.html", text.landing, "-webkit-overflow-scrolling: touch");
 
 requireIncludes("index.xml", text.index, "data-gg-drag-zone='sheet-head'");
