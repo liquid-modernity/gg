@@ -1,6 +1,7 @@
         function lockBodyScrollWhileOpen(activeName, lockScroll) {
           writeBodyState('data-gg-active-panel', activeName || '');
           writeBodyState('data-gg-panel-active', activeName ? 'true' : 'false');
+          setDockInert(!!activeName);
           if (lockScroll && activeName) {
             writeBodyState('data-gg-scroll-lock', 'true');
           } else if (document.body) {
@@ -11,6 +12,17 @@
 
         function setBodyPanelState(activeName, lockScroll) {
           lockBodyScrollWhileOpen(activeName, lockScroll);
+        }
+
+        function setDockInert(isPanelActive) {
+          if (!ui.dock) return;
+          if (isPanelActive) {
+            ui.dock.setAttribute('aria-hidden', 'true');
+            ui.dock.setAttribute('inert', '');
+          } else {
+            ui.dock.removeAttribute('aria-hidden');
+            ui.dock.removeAttribute('inert');
+          }
         }
 
         function syncExpanded(name, expanded) {
@@ -739,6 +751,7 @@
           var label;
 
           if (!head) return false;
+          head.setAttribute('data-gg-drag-zone', 'sheet-head');
           handle = head.querySelector('.gg-sheet__handle');
           if (handle) return true;
 

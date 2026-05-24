@@ -69,7 +69,10 @@ function assertCssHitTarget(label, source) {
   requireIncludes(label, source, "--gg-hit-min: 44px");
   requireNotIncludes(label, source, "--gg-hit-min: 10px");
   requireIncludes(label, source, "--gg-sheet-handle-hit: 44px");
-  requireIncludes(label, source, "--gg-sheet-handle-visual-height: 3px");
+  requireIncludes(label, source, "--gg-sheet-head-height: 44px");
+  requireNotIncludes(label, source, "--gg-sheet-head-height: 56px");
+  requireIncludes(label, source, "--gg-sheet-handle-visual-width: 30px");
+  requireIncludes(label, source, "--gg-sheet-handle-visual-height: 2.5px");
   requireIncludes(label, source, "min-width: var(--gg-sheet-handle-hit)");
   requireIncludes(label, source, "min-height: var(--gg-sheet-handle-hit)");
   requireIncludes(label, source, "height: var(--gg-panel-handle-height)");
@@ -77,18 +80,77 @@ function assertCssHitTarget(label, source) {
 
 function assertSheetTokens(label, source) {
   requireIncludes(label, source, "--gg-shell-edge-gap: 10px");
+  requireIncludes(label, source, "--gg-dock-edge-gap:");
+  requireIncludes(label, source, "--gg-sheet-edge-gap: 0px");
   requireIncludes(label, source, "--gg-dock-width:");
-  requireIncludes(label, source, "--gg-panel-width: var(--gg-dock-width)");
+  requireIncludes(label, source, "--gg-panel-width: min(calc(100");
+  requireNotIncludes(label, source, "--gg-panel-width: var(--gg-dock-width)");
   requireIncludes(label, source, "--gg-sheet-utility-max-height");
   requireIncludes(label, source, "--gg-sheet-content-max-height");
   requireIncludes(label, source, "width: var(--gg-dock-width)");
+  if (!source.includes("width: var(--gg-panel-width)") && !source.includes("--store-sheet-width: var(--gg-panel-width)")) {
+    fail(`${label} missing sheet width usage from --gg-panel-width`);
+  }
 }
 
 function assertPreviewMediaTokens(label, source) {
-  requireIncludes(label, source, "--gg-preview-hero-min: clamp(300px, 58dvh, 540px)");
+  requireIncludes(label, source, "--gg-preview-panel-initial-height: min(72dvh, 720px)");
+  requireIncludes(label, source, "--gg-preview-hero-height: clamp(360px, 58dvh, 540px)");
+  requireIncludes(label, source, "--gg-preview-hero-aspect: 4 / 5");
   requireIncludes(label, source, "--gg-preview-overlay-lift: clamp(108px, 18vw, 148px)");
   requireIncludes(label, source, "--gg-preview-media-fit: cover");
+  requireIncludes(label, source, "aspect-ratio: var(--gg-preview-hero-aspect)");
   requireIncludes(label, source, "object-fit: var(--gg-preview-media-fit)");
+}
+
+function assertDockDemotion(label, source) {
+  requireIncludes(label, source, "body[data-gg-panel-active='true'] .gg-dock");
+  requireIncludes(label, source, "pointer-events: none");
+  requireIncludes(label, source, "user-select: none");
+  requireIncludes(label, source, ".gg-dock::after");
+  requireIncludes(label, source, "body[data-gg-panel-active='true'] .gg-dock::after");
+  requireNotIncludes(label, source, "body[data-gg-dock-state='hidden-by-scroll'] .gg-dock, body[data-gg-panel-active='true'] .gg-dock");
+}
+
+function assertDockInert(label, source) {
+  requireIncludes(label, source, "setDockInert");
+  requireIncludes(label, source, "setAttribute('aria-hidden', 'true')");
+  requireIncludes(label, source, "setAttribute('inert', '')");
+  requireIncludes(label, source, "removeAttribute('inert')");
+}
+
+function assertDragZoneRuntime(label, source) {
+  requireIncludes(label, source, "data-gg-drag-zone");
+  requireIncludes(label, source, "resolveDragCandidate");
+  requireIncludes(label, source, "isInteractiveDragZoneTarget");
+  requireIncludes(label, source, "fromHandle");
+  if (!source.includes("session.active") && !source.includes("drag.active") && !source.includes("state.dragSession.active")) {
+    fail(`${label} missing drag threshold active-state tracking`);
+  }
+}
+
+function assertScrimActivation(label, source) {
+  requireIncludes(label, source, "[data-gg-state='opening']");
+  requireIncludes(label, source, "[data-gg-state='open']");
+  requireIncludes(label, source, "[data-gg-state='dragging']");
+  requireIncludes(label, source, "opacity: 1");
+}
+
+function assertStoreDots(label, source) {
+  const dotsIndex = source.indexOf("store-preview__dots");
+  if (dotsIndex === -1) {
+    fail(`${label} missing store-preview__dots`);
+    return;
+  }
+  const dotsBlock = source.slice(dotsIndex, dotsIndex + 700);
+  if (dotsBlock.includes("gg-sheet__handle")) fail(`${label} store-preview__dots must not include gg-sheet__handle`);
+  if (dotsBlock.includes("data-gg-drag-handle")) fail(`${label} store-preview__dots must not include data-gg-drag-handle`);
+  if (dotsBlock.includes("data-gg-drag-zone")) fail(`${label} store-preview__dots must not include data-gg-drag-zone`);
+  if (dotsBlock.includes("position:")) {
+    requireIncludes(label, dotsBlock, "right:");
+    requireIncludes(label, dotsBlock, "background: transparent");
+    requireIncludes(label, dotsBlock, "transform: none");
+  }
 }
 
 function assertResetTargets(label, source) {
@@ -123,6 +185,8 @@ for (const [label, source] of [
 ]) {
   requireIncludes(label, source, "function resetPanelScroll");
   assertResetTargets(label, source);
+  assertDockInert(label, source);
+  assertDragZoneRuntime(label, source);
   requireIncludes(label, source, "data-gg-scroll-container");
   requireIncludes(label, source, "open-before-render");
   requireIncludes(label, source, "query-change");
@@ -147,6 +211,12 @@ requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__pane
 requireIncludes("landing.html", text.landing, "#gg-command-panel [data-gg-scroll-container], .gg-discovery-body");
 requireIncludes("landing.html", text.landing, "-webkit-overflow-scrolling: touch");
 
+requireIncludes("index.xml", text.index, "data-gg-drag-zone='sheet-head'");
+requireIncludes("index.xml", text.index, "data-gg-drag-zone='preview-affordance'");
+requireIncludes("landing.html", text.landing, 'data-gg-drag-zone="sheet-head"');
+requireIncludes("store.html", text.store, 'data-gg-drag-zone="sheet-head"');
+requireIncludes("store.html", text.store, 'data-gg-drag-zone="preview-affordance"');
+
 assertCssHitTarget("src/css/gg-app.source.css", text.appCss);
 if (text.appCssAsset) assertCssHitTarget("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
 assertCssHitTarget("src/store/store.css", text.storeCss);
@@ -158,14 +228,33 @@ assertSheetTokens("src/store/store.css", text.storeCss);
 if (text.appCssAsset) assertSheetTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
 if (text.storeCssAsset) assertSheetTokens("assets/store/store.css", text.storeCssAsset);
 
+assertDockDemotion("src/css/gg-app.source.css", text.appCss);
+assertDockDemotion("landing.html", text.landing);
+assertDockDemotion("src/store/store.css", text.storeCss);
+if (text.appCssAsset) assertDockDemotion("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
+if (text.storeCssAsset) assertDockDemotion("assets/store/store.css", text.storeCssAsset);
+
+assertScrimActivation("src/css/gg-app.source.css", text.appCss);
+assertScrimActivation("landing.html", text.landing);
+assertScrimActivation("src/store/store.css", text.storeCss);
+if (text.appCssAsset) assertScrimActivation("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
+if (text.storeCssAsset) assertScrimActivation("assets/store/store.css", text.storeCssAsset);
+
 assertPreviewMediaTokens("src/css/gg-app.source.css", text.appCss);
 assertPreviewMediaTokens("src/store/store.css", text.storeCss);
 if (text.appCssAsset) assertPreviewMediaTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
 if (text.storeCssAsset) assertPreviewMediaTokens("assets/store/store.css", text.storeCssAsset);
 
+assertStoreDots("store.html", text.store);
+assertStoreDots("src/store/store.css", text.storeCss);
+if (text.storeCssAsset) assertStoreDots("assets/store/store.css", text.storeCssAsset);
+
 requireNotIncludes("src/css/gg-app.source.css", text.appCss, "width: min(calc(100vw - 20px), 600px)");
 requireNotIncludes("src/store/store.css", text.storeCss, "--gg-panel-width: min(calc(100vw - 12px), 600px)");
 requireNotIncludes("landing.html", text.landing, "--gg-panel-width: min(calc(100vw - 0px), 600px)");
+requireNotIncludes("src/css/gg-app.source.css", text.appCss, "--gg-panel-width: var(--gg-dock-width)");
+requireNotIncludes("src/store/store.css", text.storeCss, "--gg-panel-width: var(--gg-dock-width)");
+requireNotIncludes("landing.html", text.landing, "--gg-panel-width: var(--gg-dock-width)");
 
 requireIncludes("package.json", text.packageJson, '"gaga:verify-sheet-lifecycle"');
 requireIncludes("package.json", text.packageJson, "gaga:verify-preview-sheet && npm run gaga:verify-sheet-lifecycle");

@@ -1779,6 +1779,7 @@ window.GG = window.GG || {};
         function initDockVisibility() {
           writeBodyState('data-gg-active-panel', state.panelActive || '');
           writeBodyState('data-gg-panel-active', state.panelActive ? 'true' : 'false');
+          setDockInert(!!state.panelActive);
           if (!state.panelActive && document.body) document.body.removeAttribute('data-gg-scroll-lock');
 
           if (!ui.dock) {
@@ -2885,6 +2886,7 @@ window.GG = window.GG || {};
         function lockBodyScrollWhileOpen(activeName, lockScroll) {
           writeBodyState('data-gg-active-panel', activeName || '');
           writeBodyState('data-gg-panel-active', activeName ? 'true' : 'false');
+          setDockInert(!!activeName);
           if (lockScroll && activeName) {
             writeBodyState('data-gg-scroll-lock', 'true');
           } else if (document.body) {
@@ -2895,6 +2897,17 @@ window.GG = window.GG || {};
 
         function setBodyPanelState(activeName, lockScroll) {
           lockBodyScrollWhileOpen(activeName, lockScroll);
+        }
+
+        function setDockInert(isPanelActive) {
+          if (!ui.dock) return;
+          if (isPanelActive) {
+            ui.dock.setAttribute('aria-hidden', 'true');
+            ui.dock.setAttribute('inert', '');
+          } else {
+            ui.dock.removeAttribute('aria-hidden');
+            ui.dock.removeAttribute('inert');
+          }
         }
 
         function syncExpanded(name, expanded) {
@@ -3623,6 +3636,7 @@ window.GG = window.GG || {};
           var label;
 
           if (!head) return false;
+          head.setAttribute('data-gg-drag-zone', 'sheet-head');
           handle = head.querySelector('.gg-sheet__handle');
           if (handle) return true;
 
@@ -8814,31 +8828,53 @@ window.GG = window.GG || {};
           return Math.abs(offsetY) < 8 && elapsed < 360;
         }
 
+        function isInteractiveDragZoneTarget(target, explicitHandle) {
+          if (!target || explicitHandle || typeof target.closest !== 'function') return false;
+          return !!target.closest('a[href], button, input, select, textarea, summary, [role="button"], [contenteditable="true"]');
+        }
+
+        function resolveDragCandidate(event) {
+          var target = event && event.target;
+          var handle = target && target.closest ? target.closest('[data-gg-drag-handle]') : null;
+          var zone = target && target.closest ? target.closest('[data-gg-drag-zone]') : null;
+          var sheet;
+          var name = '';
+
+          if (!handle && !zone) return null;
+          if (isInteractiveDragZoneTarget(target, handle)) return null;
+          if (handle) {
+            name = handle.getAttribute('data-gg-drag-handle') || '';
+          } else {
+            sheet = zone.closest ? zone.closest('.gg-sheet') : null;
+            name = sheet ? (sheet.getAttribute('data-gg-panel') || sheet.getAttribute('data-gg-sheet') || '') : '';
+          }
+          return name ? { name: name, captureTarget: handle || zone, fromHandle: !!handle } : null;
+        }
+
         function startDrag(event) {
-          var handle = event.target.closest('[data-gg-drag-handle]');
-          var name;
+          var candidate = resolveDragCandidate(event);
           var panel;
 
-          if (!handle) return;
-          name = handle.getAttribute('data-gg-drag-handle');
-          panel = getPanel(name);
-          if (!panel || state.panelActive !== name) return;
+          if (!candidate) return;
+          panel = getPanel(candidate.name);
+          if (!panel || state.panelActive !== candidate.name) return;
           if (event.pointerType === 'mouse' && event.button !== 0) return;
 
           state.drag = {
-            name: name,
+            name: candidate.name,
             pointerId: event.pointerId,
             startY: event.clientY,
             offsetY: 0,
-            startedAt: Date.now()
+            startedAt: Date.now(),
+            fromHandle: candidate.fromHandle,
+            active: false
           };
 
           state.ignoreClickUntil = Date.now() + 180;
-          panel.root.setAttribute('data-gg-state', 'dragging');
           resetPanelDrag(panel, true);
-          if (handle.setPointerCapture) {
+          if (candidate.captureTarget.setPointerCapture) {
             try {
-              handle.setPointerCapture(event.pointerId);
+              candidate.captureTarget.setPointerCapture(event.pointerId);
             } catch (error) {
               /* ignore pointer capture failures */
             }
@@ -8856,6 +8892,11 @@ window.GG = window.GG || {};
 
           offset = event.clientY - state.drag.startY;
           state.drag.offsetY = offset;
+          if (!state.drag.active && Math.abs(offset) < 8) return;
+          if (!state.drag.active) {
+            state.drag.active = true;
+            panel.root.setAttribute('data-gg-state', 'dragging');
+          }
           applyPanelDrag(panel, offset);
           event.preventDefault();
         }
@@ -8880,7 +8921,7 @@ window.GG = window.GG || {};
           elapsed = Math.max(1, Date.now() - drag.startedAt);
           velocity = offset / elapsed;
           tapRelease = isHandleTap(offset, elapsed);
-          shouldClose = tapRelease || shouldDismissByDrag(panel, offset, velocity);
+          shouldClose = (tapRelease && drag.fromHandle) || (drag.active && shouldDismissByDrag(panel, offset, velocity));
 
           if (shouldClose) {
             state.ignoreClickUntil = Date.now() + 320;

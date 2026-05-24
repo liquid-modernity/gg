@@ -38,6 +38,7 @@
   top: 0;
   z-index: 0;
   min-height: var(--gg-preview-hero-min);
+  aspect-ratio: var(--gg-preview-hero-aspect);
   overflow: hidden;
   background: #201a1c;
   background:

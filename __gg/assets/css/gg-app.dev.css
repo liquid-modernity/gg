@@ -36,27 +36,32 @@
   --gg-shadow-panel-bottom: 0 -16px 48px rgba(32, 26, 28, .105);
   --gg-shadow-panel-top: 0 16px 48px rgba(32, 26, 28, .105);
   --gg-shell-edge-gap: 10px;
-  --gg-dock-width: min(calc(100vw - (var(--gg-shell-edge-gap) * 2)), 600px);
-  --gg-panel-width: var(--gg-dock-width);
+  --gg-dock-edge-gap: var(--gg-shell-edge-gap);
+  --gg-sheet-edge-gap: 0px;
+  --gg-dock-width: min(calc(100vw - (var(--gg-dock-edge-gap) * 2)), 600px);
+  --gg-panel-width: min(calc(100vw - (var(--gg-sheet-edge-gap) * 2)), 600px);
   --gg-sheet-max-height: min(94dvh, 920px);
   --gg-sheet-utility-max-height: min(94dvh, 780px);
   --gg-sheet-content-max-height: min(94dvh, 920px);
   --gg-sheet-compact-max-height: min(86dvh, 680px);
-  --gg-sheet-head-height: 56px;
+  --gg-sheet-head-height: 44px;
   --gg-sheet-handle-hit: 44px;
-  --gg-sheet-handle-visual-width: 34px;
-  --gg-sheet-handle-visual-height: 3px;
-  --gg-sheet-handle-top: 4px;
+  --gg-sheet-handle-visual-width: 30px;
+  --gg-sheet-handle-visual-height: 2.5px;
+  --gg-sheet-handle-top: 6px;
   --gg-panel-min-height: 260px;
   --gg-panel-max-height: var(--gg-sheet-utility-max-height);
   --gg-panel-command-min-height: 340px;
   --gg-panel-comments-min-height: 420px;
   --gg-panel-more-min-height: 260px;
-  --gg-panel-preview-min-height: 320px;
+  --gg-panel-preview-min-height: var(--gg-preview-panel-initial-height);
   --gg-panel-preview-max-height: var(--gg-sheet-content-max-height);
   --gg-preview-max-height: var(--gg-panel-preview-max-height);
-  --gg-preview-initial-height: min(72dvh, 720px);
-  --gg-preview-hero-min: clamp(300px, 58dvh, 540px);
+  --gg-preview-panel-initial-height: min(72dvh, 720px);
+  --gg-preview-initial-height: var(--gg-preview-panel-initial-height);
+  --gg-preview-hero-height: clamp(360px, 58dvh, 540px);
+  --gg-preview-hero-min: var(--gg-preview-hero-height);
+  --gg-preview-hero-aspect: 4 / 5;
   --gg-preview-overlay-lift: clamp(108px, 18vw, 148px);
   --gg-preview-media-fit: cover;
   --gg-preview-surface-radius: 24px;
@@ -80,6 +85,7 @@
   --gg-panel-handle-tone: rgba(32, 26, 28, .18);
   --gg-panel-scrim: rgba(22, 17, 20, .24);
   --gg-panel-scrim-fallback: rgba(22, 17, 20, .38);
+  --gg-more-body-pad-top: 18px;
   --gg-toolbar-gap: 4px;
   --gg-toolbar-pad: 6px;
   --gg-toolbar-radius: 999px;
@@ -267,7 +273,14 @@
 
 @supports (width: 100dvw) {
   :root {
-    --gg-dock-width: min(calc(100dvw - (var(--gg-shell-edge-gap) * 2)), 600px);
+    --gg-dock-width: min(calc(100dvw - (var(--gg-dock-edge-gap) * 2)), 600px);
+    --gg-panel-width: min(calc(100dvw - (var(--gg-sheet-edge-gap) * 2)), 600px);
+  }
+}
+
+@media (min-width: 720px) {
+  :root {
+    --gg-sheet-edge-gap: 10px;
   }
 }
 
@@ -2169,6 +2182,34 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   pointer-events: auto;
 }
 
+.gg-dock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(245, 242, 234, .48);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--gg-motion-inline-open);
+}
+
+[data-gg-theme='dark'] .gg-dock::after {
+  background: rgba(18, 18, 16, .52);
+}
+
+body[data-gg-panel-active='true'] .gg-dock {
+  transform: translate3d(-50%, 4px, 0) scale(.985);
+  opacity: .42;
+  pointer-events: none;
+  user-select: none;
+}
+
+body[data-gg-panel-active='true'] .gg-dock::after {
+  opacity: 1;
+}
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2289,7 +2330,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='open'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim {
-
+  opacity: 1;
 }
 
 .gg-sheet[data-gg-state='opening'] .gg-sheet__panel,
@@ -2324,7 +2365,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   justify-items: center;
   gap: var(--gg-utility-head-gap);
   min-height: var(--gg-sheet-head-height);
-  padding: 18px var(--gg-panel-pad-x, 18px) 8px;
+  padding: 16px var(--gg-panel-pad-x, 18px) 6px;
   border-bottom: 1px solid var(--gg-utility-head-border);
   background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%);
   text-align: center;
@@ -2715,6 +2756,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   top: 0;
   z-index: 0;
   min-height: var(--gg-preview-hero-min);
+  aspect-ratio: var(--gg-preview-hero-aspect);
   overflow: hidden;
   background: #201a1c;
   background:
@@ -2937,11 +2979,8 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 14px 0 16px;
   scrollbar-width: none;
-  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
-  padding-top: 14px;
-  padding-bottom: 16px;
+  padding: var(--gg-more-body-pad-top) var(--gg-panel-pad-x) 16px;
 }
 
 .gg-more-body::-webkit-scrollbar {

@@ -35,6 +35,34 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   pointer-events: auto;
 }
 
+.gg-dock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(245, 242, 234, .48);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--gg-motion-inline-open);
+}
+
+[data-gg-theme='dark'] .gg-dock::after {
+  background: rgba(18, 18, 16, .52);
+}
+
+body[data-gg-panel-active='true'] .gg-dock {
+  transform: translate3d(-50%, 4px, 0) scale(.985);
+  opacity: .42;
+  pointer-events: none;
+  user-select: none;
+}
+
+body[data-gg-panel-active='true'] .gg-dock::after {
+  opacity: 1;
+}
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;

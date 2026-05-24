@@ -23,9 +23,8 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 14px 0 16px;
   scrollbar-width: none;
-  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+  padding: var(--gg-more-body-pad-top) var(--gg-panel-pad-x) 16px;
 }
 
 .gg-more-body::-webkit-scrollbar {

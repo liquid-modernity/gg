@@ -253,17 +253,19 @@
       --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.035);
       --gg-shadow-panel-bottom: 0 -16px 48px rgba(32,26,28,.105);
       --gg-shell-edge-gap: 10px;
-      --gg-dock-width: min(calc(100vw - (var(--gg-shell-edge-gap) * 2)), 600px);
-      --gg-panel-width: var(--gg-dock-width);
+      --gg-dock-edge-gap: var(--gg-shell-edge-gap);
+      --gg-sheet-edge-gap: 0px;
+      --gg-dock-width: min(calc(100vw - (var(--gg-dock-edge-gap) * 2)), 600px);
+      --gg-panel-width: min(calc(100vw - (var(--gg-sheet-edge-gap) * 2)), 600px);
       --gg-sheet-max-height: min(94dvh, 920px);
       --gg-sheet-utility-max-height: min(94dvh, 780px);
       --gg-sheet-content-max-height: min(94dvh, 920px);
       --gg-sheet-compact-max-height: min(86dvh, 680px);
-      --gg-sheet-head-height: 56px;
+      --gg-sheet-head-height: 44px;
       --gg-sheet-handle-hit: 44px;
-      --gg-sheet-handle-visual-width: 34px;
-      --gg-sheet-handle-visual-height: 3px;
-      --gg-sheet-handle-top: 4px;
+      --gg-sheet-handle-visual-width: 30px;
+      --gg-sheet-handle-visual-height: 2.5px;
+      --gg-sheet-handle-top: 6px;
       --gg-panel-min-height: 260px;
       --gg-panel-max-height: var(--gg-sheet-utility-max-height);
       --gg-panel-radius: 26px;
@@ -281,6 +283,7 @@
       --gg-panel-handle-tone: rgba(32,26,28,.18);
       --gg-panel-scrim: rgba(22,17,20,.24);
       --gg-panel-scrim-fallback: rgba(22,17,20,.38);
+      --gg-more-body-pad-top: 18px;
       --gg-more-footer-pad-top: 12px;
       --gg-more-footer-pad-bottom: calc(12px + env(safe-area-inset-bottom));
       --gg-more-footer-divider: var(--gg-divider);
@@ -348,7 +351,8 @@
       --landing-h2: clamp(28px, 10.5vw, 54px);
       --landing-pad: clamp(18px, 5vw, 64px);
     }
-    @supports (width: 100dvw) { :root { --gg-dock-width: min(calc(100dvw - (var(--gg-shell-edge-gap) * 2)), 600px); } }
+    @supports (width: 100dvw) { :root { --gg-dock-width: min(calc(100dvw - (var(--gg-dock-edge-gap) * 2)), 600px); --gg-panel-width: min(calc(100dvw - (var(--gg-sheet-edge-gap) * 2)), 600px); } }
+    @media (min-width: 720px) { :root { --gg-sheet-edge-gap: 10px; } }
     @media (min-width: 769px) {
       :root {
         --gg-panel-pad-y: 14px;
@@ -543,8 +547,12 @@
     .gg-detail-outline__item-note { display: block; color: var(--gg-ink-soft); font: 520 12px/1.35 var(--gg-font-sans); }
 
     .gg-dock { position: fixed; left: 50%; bottom: var(--gg-dock-offset-bottom); z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gg-toolbar-gap); width: var(--gg-dock-width); max-width: none; padding: var(--gg-toolbar-pad); border: 0; border-radius: var(--gg-toolbar-radius); background: var(--gg-toolbar-surface); box-shadow: var(--gg-shadow-soft); -webkit-backdrop-filter: blur(16px) saturate(145%); backdrop-filter: blur(16px) saturate(145%); transform: translate3d(-50%, 0, 0); opacity: 1; transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-ease); will-change: transform, opacity; }
-    body[data-gg-dock-state='hidden-by-scroll'] .gg-dock, body[data-gg-panel-active='true'] .gg-dock { transform: translate3d(-50%, calc(100% + var(--gg-dock-offset-bottom) + 16px), 0); opacity: 0; pointer-events: none; }
+    body[data-gg-dock-state='hidden-by-scroll'] .gg-dock { transform: translate3d(-50%, calc(100% + var(--gg-dock-offset-bottom) + 16px), 0); opacity: 0; pointer-events: none; }
     body[data-gg-dock-state='visible'] .gg-dock, body[data-gg-dock-state='forced-visible'] .gg-dock, body[data-gg-dock-state='panel-locked'] .gg-dock { transform: translate3d(-50%,0,0); opacity: 1; pointer-events: auto; }
+    .gg-dock::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: rgba(245,242,234,.48); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity var(--gg-ease); }
+    [data-gg-theme='dark'] .gg-dock::after { background: rgba(18,18,16,.52); }
+    body[data-gg-panel-active='true'] .gg-dock { transform: translate3d(-50%,4px,0) scale(.985); opacity: .42; pointer-events: none; user-select: none; }
+    body[data-gg-panel-active='true'] .gg-dock::after { opacity: 1; }
     .gg-dock__item { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: var(--gg-toolbar-item-min-height); padding: 0 var(--gg-toolbar-item-pad-x); border: 0; border-radius: var(--gg-toolbar-item-radius); background: transparent; color: var(--gg-ink); font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans); cursor: pointer; transition: transform var(--gg-motion-press), background-color var(--gg-motion-inline-open), color var(--gg-motion-inline-open); touch-action: manipulation; }
     .gg-dock__item:hover, .gg-dock__item:focus-visible, .gg-dock__item[aria-current='page'], .gg-dock__item[data-gg-active='true'] { background: var(--gg-toolbar-item-hover-bg); }
     .gg-dock__label { font: var(--gg-toolbar-item-weight) 11px/1.1 var(--gg-font-sans); letter-spacing: .02em; }
@@ -554,12 +562,12 @@
     .gg-sheet__scrim { position: absolute; inset: 0; border: 0; background: var(--gg-panel-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; pointer-events: auto; transition: opacity var(--gg-motion-sheet-open-bottom); }
     .gg-sheet__panel { --gg-sheet-drag-y: 0px; position: relative; pointer-events: auto; width: var(--gg-panel-width); max-width: none; min-height: var(--gg-panel-min-height); max-height: var(--gg-panel-max-height); overflow: auto; padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom); border: 0; border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0; background: var(--gg-surface-panel); color: var(--gg-ink); box-shadow: var(--gg-shadow-panel-bottom); -webkit-backdrop-filter: blur(18px) saturate(145%); backdrop-filter: blur(18px) saturate(145%); transform: translate3d(0, calc(22px + var(--gg-sheet-drag-y)), 0); transition: transform var(--gg-motion-sheet-open-bottom), box-shadow var(--gg-motion-sheet-open-bottom); overscroll-behavior: contain; will-change: transform; }
     #gg-command-panel .gg-sheet__panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
-    .gg-sheet[data-gg-state='open'] .gg-sheet__scrim, .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim { opacity: 1; }
+    .gg-sheet[data-gg-state='open'] .gg-sheet__scrim, .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim, .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim { opacity: 1; }
     .gg-sheet[data-gg-state='open'] .gg-sheet__panel, .gg-sheet[data-gg-state='opening'] .gg-sheet__panel { transform: translate3d(0,var(--gg-sheet-drag-y),0); }
     .gg-sheet[data-gg-state='dragging'] .gg-sheet__panel, .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim { transition: none; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__scrim { opacity: 0; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__panel { transform: translate3d(0, 18px, 0); transition: transform var(--gg-motion-sheet-close-bottom); }
-    .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); min-height: var(--gg-sheet-head-height); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: 18px var(--gg-panel-pad-x, 18px) 8px; border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
+    .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); min-height: var(--gg-sheet-head-height); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: 16px var(--gg-panel-pad-x, 18px) 6px; border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
     .gg-sheet__handle { display: grid; place-items: start center; position: absolute; top: var(--gg-sheet-handle-top); left: 50%; width: var(--gg-sheet-handle-hit); min-width: var(--gg-sheet-handle-hit); height: var(--gg-sheet-handle-hit); min-height: var(--gg-sheet-handle-hit); margin: 0; padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; transform: translateX(-50%); }
     .gg-sheet__handle::before { content: ""; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     .gg-sheet__title { margin: 0; max-width: var(--gg-utility-title-max); font: 650 13px/1.2 var(--gg-font-sans); text-align: center; }
@@ -581,7 +589,7 @@
     #gg-more-panel .gg-sheet__panel { min-height: var(--gg-panel-min-height); }
     .gg-more-sheet { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; overflow: hidden; }
     #gg-more-panel .gg-sheet__head, #store-more-sheet .gg-sheet__head { z-index: 8; border-bottom: 1px solid var(--gg-divider); background: var(--gg-surface-panel); box-shadow: 0 1px 0 var(--gg-divider), 0 16px 32px rgba(32,26,28,.04); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
-    .gg-more-body { display: grid; align-content: start; gap: 18px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 0 16px; scrollbar-width: none; }
+    .gg-more-body { display: grid; align-content: start; gap: 18px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--gg-more-body-pad-top) var(--gg-panel-pad-x) 16px; scrollbar-width: none; }
     .gg-more-body::-webkit-scrollbar { display: none; }
     .gg-more-bottom { position: relative; z-index: 6; display: grid; gap: 10px; padding: 10px 0 calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--gg-divider); background: linear-gradient(0deg, var(--gg-surface-panel) 84%, color-mix(in srgb, var(--gg-surface-panel) 88%, transparent) 100%); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
     .gg-more-profile { display: grid; }
@@ -1528,7 +1536,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
   <div class="gg-sheet" id="gg-command-panel" data-gg-panel="command" data-gg-edge="bottom" data-gg-state="closed" data-gg-discovery-domain="global" data-gg-discovery-index="global-discovery-v1" data-gg-discovery-command-placement="bottom" data-gg-discovery-shell="bottom-command" aria-hidden="true" inert hidden>
     <button class="gg-sheet__scrim" type="button" data-gg-close="command" aria-label="Close sheet"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
     <section class="gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-command-title" data-gg-discovery-shell-panel="global" tabindex="-1">
-      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-gg-drag-handle="command" data-gg-close="command" aria-label="Drag to close"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="discovery.title">Discovery</h2></div>
+      <div class="gg-sheet__head" data-gg-drag-zone="sheet-head"><button class="gg-sheet__handle" type="button" data-gg-drag-handle="command" data-gg-close="command" aria-label="Drag to close"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-command-title" data-copy="discovery.title">Discovery</h2></div>
       <div class="gg-sheet__body gg-discovery-body" data-gg-scroll-container>
         <div class="gg-results" id="gg-command-results" aria-live="polite"></div>
       </div>
@@ -1548,7 +1556,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
   <div class="gg-sheet" id="gg-more-panel" data-gg-panel="more" data-gg-edge="bottom" data-gg-state="closed" aria-hidden="true" inert hidden>
     <button class="gg-sheet__scrim" type="button" data-gg-close="more" aria-label="Close sheet"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button>
     <section class="gg-more-sheet gg-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="gg-more-title" tabindex="-1">
-      <div class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-gg-drag-handle="more" data-gg-close="more" aria-label="Drag to close"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
+      <div class="gg-sheet__head" data-gg-drag-zone="sheet-head"><button class="gg-sheet__handle" type="button" data-gg-drag-handle="more" data-gg-close="more" aria-label="Drag to close"><span class="gg-visually-hidden" data-copy="sheet.close">Close panel</span></button><h2 class="gg-sheet__title" id="gg-more-title" data-copy="more.title">More</h2></div>
       <div class="gg-sheet__body">
         <div class="gg-more-body" data-gg-scroll-container>
           <section class="gg-more-profile" data-gg-module="profile"><a class="gg-more-profile__card" href="/p/about.html" aria-label="Open profile"><span class="gg-more-profile__avatar" aria-hidden="true"><img class="gg-more-profile__image" src="/gg-pwa-icon/icon-192.png" alt="" width="96" height="96" loading="lazy" /></span><span class="gg-more-profile__copy"><span class="gg-more-profile__name" data-copy="more.profile.name">PakRPP</span><span class="gg-more-profile__meta" data-copy="more.profile.meta">Notes on systems, value, culture, and words</span></span><span class="gg-more-profile__chevron" aria-hidden="true">›</span></a></section>
@@ -1948,10 +1956,12 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     function resetPanelScroll(panelRoot, reason) { var containers; if (!panelRoot) return; containers = collectPanelScrollTargets(panelRoot); containers.forEach(function (node) { try { node.scrollTop = 0; node.scrollLeft = 0; if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (error) {} }); panelRoot.setAttribute('data-gg-scroll-reset-enabled', 'true'); panelRoot.setAttribute('data-gg-last-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-at', String(Date.now())); }
     function resetPanelByName(name, key, reason) { var panel = document.getElementById(name === 'more' ? 'gg-more-panel' : 'gg-command-panel'); if (shouldResetPanel(name, key)) resetPanelScroll(panel, reason || key || 'reset'); }
     function resetMoreTransientState() { var root = document.querySelector('#gg-more-panel .gg-more-body'); var input; if (!root) return; if (shouldResetPanel('more', 'closePreferencePanelOnClose')) closeMorePreferencePanel(); if (!shouldResetPanel('more', 'clearLocalSearchOnClose')) return; input = root.querySelector('[data-gg-more-search-input]'); if (input) input.value = ''; root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card').forEach(function (row) { row.hidden = false; }); root.querySelectorAll('.gg-more-profile, .gg-more-section').forEach(function (section) { section.removeAttribute('data-gg-filter-empty'); }); }
+    function setDockInert(isPanelActive) { if (!dock) return; if (isPanelActive) { dock.setAttribute('aria-hidden', 'true'); dock.setAttribute('inert', ''); } else { dock.removeAttribute('aria-hidden'); dock.removeAttribute('inert'); } }
     function openPanel(name, trigger) {
       var panel = name === 'more' ? document.getElementById('gg-more-panel') : document.getElementById('gg-command-panel'); if (!panel) return;
       resetPanelByName(name, 'openBeforeRender', 'open-before-render');
       state.lastFocus = trigger || document.activeElement; state.activePanel = name; state.lastCloseReason = null; setBodyAttr('data-gg-active-panel', name); setBodyAttr('data-gg-panel-active', 'true'); setBodyAttr('data-gg-scroll-lock', 'true');
+      setDockInert(true);
       document.querySelectorAll('.gg-sheet').forEach(function (sheet) { sheet.hidden = true; sheet.setAttribute('aria-hidden', 'true'); sheet.setAttribute('inert', ''); sheet.setAttribute('data-gg-state', 'closed'); });
       panel.hidden = false; panel.removeAttribute('aria-hidden'); panel.removeAttribute('inert'); panel.setAttribute('data-gg-state', 'opening'); setSurfaceInert(true);
       document.querySelectorAll('.gg-dock__item[aria-controls]').forEach(function (button) { button.setAttribute('aria-expanded', String(button.getAttribute('data-gg-nav') === name || (name === 'command' && button.getAttribute('data-gg-nav') === 'search'))); });
@@ -1960,23 +1970,24 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     function closePanel(options) {
       var closeOptions = typeof options === 'string' ? { reason: options } : (options || {});
       var active = document.querySelector('.gg-sheet[data-gg-state="open"], .gg-sheet[data-gg-state="opening"], .gg-sheet[data-gg-state="dragging"]'); if (!active) return;
-      state.dragSession = null; state.lastCloseReason = closeOptions.reason || 'api'; var closingName = active.getAttribute('data-gg-panel') || state.activePanel || ''; var activePanel = active.querySelector('.gg-sheet__panel'); if (activePanel) activePanel.style.removeProperty('--gg-sheet-drag-y'); if (closingName === 'more') resetMoreTransientState(); active.setAttribute('data-gg-state', 'closing'); state.activePanel = ''; setBodyAttr('data-gg-active-panel', ''); setBodyAttr('data-gg-panel-active', 'false'); setBodyAttr('data-gg-scroll-lock', 'false'); setSurfaceInert(false); document.querySelectorAll('.gg-dock__item[aria-controls]').forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
+      state.dragSession = null; state.lastCloseReason = closeOptions.reason || 'api'; var closingName = active.getAttribute('data-gg-panel') || state.activePanel || ''; var activePanel = active.querySelector('.gg-sheet__panel'); if (activePanel) activePanel.style.removeProperty('--gg-sheet-drag-y'); if (closingName === 'more') resetMoreTransientState(); active.setAttribute('data-gg-state', 'closing'); state.activePanel = ''; setBodyAttr('data-gg-active-panel', ''); setBodyAttr('data-gg-panel-active', 'false'); setBodyAttr('data-gg-scroll-lock', 'false'); setDockInert(false); setSurfaceInert(false); document.querySelectorAll('.gg-dock__item[aria-controls]').forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
       window.setTimeout(function () { var closedPanel = active.querySelector('.gg-sheet__panel'); active.hidden = true; active.setAttribute('aria-hidden', 'true'); active.setAttribute('inert', ''); active.setAttribute('data-gg-state', 'closed'); if (closedPanel) closedPanel.style.removeProperty('--gg-sheet-drag-y'); resetPanelByName(closingName, 'closeAfterHide', state.lastCloseReason || 'close-after-hide'); if (state.lastFocus && state.lastFocus.focus) state.lastFocus.focus({ preventScroll: true }); state.lastFocus = null; syncDockState(); }, prefersReducedMotion() ? 1 : 190);
     }
     function getSheetForPanel(name) { return name === 'more' ? document.getElementById('gg-more-panel') : document.getElementById('gg-command-panel'); }
     function resetSheetDrag(sheet) { var panel = sheet ? sheet.querySelector('.gg-sheet__panel') : null; if (panel) panel.style.removeProperty('--gg-sheet-drag-y'); if (sheet && state.activePanel) sheet.setAttribute('data-gg-state', 'open'); }
     function applySheetDrag(sheet, offsetY) { var panel = sheet ? sheet.querySelector('.gg-sheet__panel') : null; if (!panel) return; panel.style.setProperty('--gg-sheet-drag-y', Math.max(0, offsetY) + 'px'); }
     function landingDismissThreshold(sheet) { var panel = sheet ? sheet.querySelector('.gg-sheet__panel') : null; return Math.max(84, Math.round(((panel && panel.offsetHeight) || 520) * 0.14)); }
+    function isInteractiveDragZoneTarget(target, explicitHandle) { if (!target || explicitHandle || typeof target.closest !== 'function') return false; return !!target.closest('a[href], button, input, select, textarea, summary, [role="button"], [contenteditable="true"]'); }
+    function resolveDragCandidate(target, explicitHandle) { var handle = explicitHandle || (target && target.closest ? target.closest('[data-gg-drag-handle]') : null); var zone = target && target.closest ? target.closest('[data-gg-drag-zone]') : null; var sheet; var name = ''; if (!handle && !zone) return null; if (isInteractiveDragZoneTarget(target, handle)) return null; if (handle) name = handle.getAttribute('data-gg-drag-handle') || ''; if (!name && zone) { sheet = zone.closest ? zone.closest('.gg-sheet') : null; name = sheet ? (sheet.getAttribute('data-gg-panel') || '') : ''; } return name ? { name: name, captureTarget: handle || zone, fromHandle: !!handle } : null; }
     var ggSheetGestureController = {
       start: function (handle, event) {
-        var name = handle ? handle.getAttribute('data-gg-drag-handle') : '';
-        var sheet = getSheetForPanel(name);
-        if (!handle || !sheet || state.activePanel !== name) return;
+        var candidate = resolveDragCandidate(event && event.target, handle);
+        var sheet = getSheetForPanel(candidate && candidate.name);
+        if (!candidate || state.dragSession || !sheet || state.activePanel !== candidate.name) return;
         if (event.pointerType === 'mouse' && event.button !== 0) return;
-        state.dragSession = { name: name, pointerId: event.pointerId, startY: event.clientY, offsetY: 0, startedAt: Date.now() };
-        sheet.setAttribute('data-gg-state', 'dragging');
+        state.dragSession = { name: candidate.name, pointerId: event.pointerId, startY: event.clientY, offsetY: 0, startedAt: Date.now(), fromHandle: candidate.fromHandle, active: false };
         applySheetDrag(sheet, 0);
-        if (handle.setPointerCapture) { try { handle.setPointerCapture(event.pointerId); } catch (error) {} }
+        if (candidate.captureTarget.setPointerCapture) { try { candidate.captureTarget.setPointerCapture(event.pointerId); } catch (error) {} }
         event.preventDefault();
       },
       move: function (event) {
@@ -1984,6 +1995,8 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
         var sheet = getSheetForPanel(state.dragSession.name);
         var offsetY = event.clientY - state.dragSession.startY;
         state.dragSession.offsetY = offsetY;
+        if (!state.dragSession.active && Math.abs(offsetY) < 8) return;
+        if (!state.dragSession.active) { state.dragSession.active = true; if (sheet) sheet.setAttribute('data-gg-state', 'dragging'); }
         applySheetDrag(sheet, offsetY);
         event.preventDefault();
       },
@@ -1993,9 +2006,10 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
         var sheet = getSheetForPanel(session.name);
         var offsetY = typeof event.clientY === 'number' ? event.clientY - session.startY : session.offsetY;
         var elapsed = Math.max(1, Date.now() - session.startedAt);
-        var shouldClose = (Math.abs(offsetY) < 8 && elapsed < 360) || offsetY > landingDismissThreshold(sheet) || (offsetY / elapsed) > 0.75;
+        var isTap = Math.abs(offsetY) < 8 && elapsed < 360;
+        var shouldClose = (isTap && session.fromHandle) || (session.active && (offsetY > landingDismissThreshold(sheet) || (offsetY / elapsed) > 0.75));
         state.dragSession = null;
-        if (shouldClose) closePanel({ reason: Math.abs(offsetY) < 8 && elapsed < 360 ? 'handle' : 'drag' });
+        if (shouldClose) closePanel({ reason: isTap ? 'handle' : 'drag' });
         else resetSheetDrag(sheet);
       }
     };
@@ -2008,6 +2022,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
       document.querySelectorAll('[data-landing-route]').forEach(function (node) { node.addEventListener('click', function (event) { var route = node.getAttribute('data-landing-route'); if (route === 'home') { event.preventDefault(); afterPanelSettles(scrollDocumentToTop); } else if (route === 'contact') { event.preventDefault(); afterPanelSettles(function () { scrollToLandingTarget('contact'); }); } }); });
       document.addEventListener('keydown', function (event) { if (event.key === 'Escape') { if (state.activePanel === 'more' && closeMorePreferencePanel()) return; if (state.activePanel) closePanel({ reason: 'escape' }); else collapseOutline(); } trapFocus(event); });
       document.querySelectorAll('[data-gg-drag-handle]').forEach(function (handle) { handle.addEventListener('pointerdown', function (event) { ggSheetGestureController.start(handle, event); }); });
+      document.querySelectorAll('[data-gg-drag-zone]').forEach(function (zone) { zone.addEventListener('pointerdown', function (event) { ggSheetGestureController.start(null, event); }); });
       window.addEventListener('pointermove', ggSheetGestureController.move, { passive: false });
       window.addEventListener('pointerup', ggSheetGestureController.end);
       window.addEventListener('pointercancel', ggSheetGestureController.end);

@@ -95,7 +95,7 @@
 .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='open'] .gg-sheet__scrim,
 .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim {
-
+  opacity: 1;
 }
 
 .gg-sheet[data-gg-state='opening'] .gg-sheet__panel,
@@ -130,7 +130,7 @@
   justify-items: center;
   gap: var(--gg-utility-head-gap);
   min-height: var(--gg-sheet-head-height);
-  padding: 18px var(--gg-panel-pad-x, 18px) 8px;
+  padding: 16px var(--gg-panel-pad-x, 18px) 6px;
   border-bottom: 1px solid var(--gg-utility-head-border);
   background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%);
   text-align: center;

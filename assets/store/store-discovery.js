@@ -626,6 +626,7 @@
     var itemListJsonLd = document.getElementById('store-itemlist-jsonld');
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle], [data-gg-drag-handle]'));
+    var dragZones = [].slice.call(document.querySelectorAll('[data-gg-drag-zone]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
     var priceBandButtons = [].slice.call(document.querySelectorAll('[data-store-price-band]'));
     var sortButtons = [].slice.call(document.querySelectorAll('[data-store-sort]'));
@@ -2822,6 +2823,7 @@
       document.body.setAttribute('data-gg-panel-active', 'true');
       document.body.setAttribute('data-gg-scroll-lock', 'true');
       document.body.setAttribute('data-gg-dock-state', 'panel-locked');
+      setDockInert(true);
       setPanelEnvironment(true);
       window.requestAnimationFrame(function () {
         config.sheet.setAttribute('data-gg-state', 'open');
@@ -2848,6 +2850,7 @@
       document.body.setAttribute('data-gg-active-panel', '');
       document.body.setAttribute('data-gg-panel-active', 'false');
       document.body.setAttribute('data-gg-scroll-lock', 'false');
+      setDockInert(false);
       clearPreviewScrollSettleTimer();
       clearToastTimer();
       hideAllToasts();
@@ -2946,6 +2949,16 @@
       if (force) document.body.setAttribute('data-gg-dock-state', 'visible');
       else document.body.setAttribute('data-gg-dock-state', resolveDockState());
     }
+    function setDockInert(isPanelActive) {
+      if (!dock) return;
+      if (isPanelActive) {
+        dock.setAttribute('aria-hidden', 'true');
+        dock.setAttribute('inert', '');
+      } else {
+        dock.removeAttribute('aria-hidden');
+        dock.removeAttribute('inert');
+      }
+    }
     function resolveDockState() {
       var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
       var viewport = window.innerHeight || document.documentElement.clientHeight || 0;
@@ -2986,22 +2999,44 @@
       showToast(copy(nextSaved ? 'savedToast' : 'removedToast'), 'preview');
       return nextSaved;
     }
+    function isInteractiveDragZoneTarget(target, explicitHandle) {
+      if (!target || explicitHandle || typeof target.closest !== 'function') return false;
+      return !!target.closest('a[href], button, input, select, textarea, summary, [role="button"], [contenteditable="true"]');
+    }
+    function resolveDragCandidate(target, explicitName, explicitTarget) {
+      var handle = explicitTarget || (target && target.closest ? target.closest('[data-store-drag-handle], [data-gg-drag-handle]') : null);
+      var zone = target && target.closest ? target.closest('[data-gg-drag-zone]') : null;
+      var sheet;
+      var name = explicitName || '';
+      if (!handle && !zone) return null;
+      if (isInteractiveDragZoneTarget(target, handle)) return null;
+      if (!name && handle) name = handle.getAttribute('data-store-drag-handle') || handle.getAttribute('data-gg-drag-handle') || '';
+      if (!name && zone) {
+        sheet = zone.closest ? zone.closest('.gg-sheet') : null;
+        name = sheet ? (sheet.getAttribute('data-gg-panel') || '') : '';
+      }
+      return name ? { name: name, captureTarget: handle || zone, fromHandle: !!handle } : null;
+    }
     function beginDragSession(name, handle, event) {
-      var config = getPanel(name);
-      if (!config || state.panelActive !== name) return;
+      var candidate = resolveDragCandidate(event && event.target, name, handle);
+      var config = getPanel(candidate && candidate.name);
+      if (!candidate) return;
+      if (state.dragSession) return;
+      if (!config || state.panelActive !== candidate.name) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       event.preventDefault();
       state.dragSession = {
-        name: name,
+        name: candidate.name,
         pointerId: event.pointerId,
         startY: event.clientY,
         lastY: event.clientY,
-        startedAt: Date.now()
+        startedAt: Date.now(),
+        fromHandle: candidate.fromHandle,
+        active: false
       };
-      config.sheet.setAttribute('data-gg-state', 'dragging');
       applyPanelDrag(config, 0);
-      if (handle && handle.setPointerCapture) {
-        try { handle.setPointerCapture(event.pointerId); } catch (error) {}
+      if (candidate.captureTarget && candidate.captureTarget.setPointerCapture) {
+        try { candidate.captureTarget.setPointerCapture(event.pointerId); } catch (error) {}
       }
     }
     function moveDragSession(event) {
@@ -3011,6 +3046,11 @@
       state.dragSession.lastY = event.clientY;
       config = getPanel(state.dragSession.name);
       deltaY = event.clientY - state.dragSession.startY;
+      if (!state.dragSession.active && Math.abs(deltaY) < 8) return;
+      if (!state.dragSession.active) {
+        state.dragSession.active = true;
+        if (config && config.sheet) config.sheet.setAttribute('data-gg-state', 'dragging');
+      }
       applyPanelDrag(config, deltaY);
       event.preventDefault();
     }
@@ -3025,9 +3065,9 @@
       var isTap = Math.abs(deltaY) < 8 && elapsed < 360;
       state.dragSession = null;
       config = getPanel(session.name);
-      if (isTap) closePanel(session.name, { reason: 'handle' });
-      else if (session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview', { reason: 'drag' });
-      else if (session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name, { reason: 'drag' });
+      if (isTap && session.fromHandle) closePanel(session.name, { reason: 'handle' });
+      else if (session.active && session.name === 'preview' && (deltaY <= -84 || velocityY < -0.75)) closePanel('preview', { reason: 'drag' });
+      else if (session.active && session.name !== 'preview' && (deltaY >= 84 || velocityY > 0.75)) closePanel(session.name, { reason: 'drag' });
       else resetPanelDrag(config);
     }
     var ggSheetGestureController = {
@@ -3160,6 +3200,9 @@
     if (preview.handle && dragHandles.indexOf(preview.handle) === -1) preview.handle.addEventListener('pointerdown', function (event) { ggSheetGestureController.start('preview', preview.handle, event); });
     dragHandles.forEach(function (handle) {
       handle.addEventListener('pointerdown', function (event) { ggSheetGestureController.start(handle.getAttribute('data-store-drag-handle') || handle.getAttribute('data-gg-drag-handle'), handle, event); });
+    });
+    dragZones.forEach(function (zone) {
+      zone.addEventListener('pointerdown', function (event) { ggSheetGestureController.start('', null, event); });
     });
     window.addEventListener('pointermove', ggSheetGestureController.move, { passive: false });
     window.addEventListener('pointerup', ggSheetGestureController.end);
