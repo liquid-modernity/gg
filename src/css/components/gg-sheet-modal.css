@@ -5,6 +5,13 @@ body[data-gg-panel-active='true'] .gg-dock {
   user-select: none;
 }
 
+body[data-gg-panel-active='true'][data-gg-dock-state] .gg-dock {
+  transform: translate3d(-50%, 4px, 0) scale(.985);
+  opacity: .42;
+  pointer-events: none;
+  user-select: none;
+}
+
 body[data-gg-panel-active='true'] .gg-dock::after {
   opacity: 1;
 }
