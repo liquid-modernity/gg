@@ -52,6 +52,8 @@
       --gg-panel-pad-y: 0px;
       --gg-panel-pad-x: 14px;
       --gg-panel-pad-bottom: calc(0px + env(safe-area-inset-bottom));
+      --gg-panel-preview-min-height: var(--gg-preview-panel-initial-height);
+      --gg-panel-preview-max-height: var(--gg-sheet-content-max-height);
       --gg-toolbar-gap: 4px;
       --gg-toolbar-pad: 6px;
       --gg-toolbar-radius: 999px;
@@ -1149,6 +1151,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   justify-items: center;
   padding: 0;
   pointer-events: none;
+  min-height: var(--gg-panel-preview-min-height, var(--gg-panel-min-height));
+  max-height: var(--gg-panel-preview-max-height, var(--gg-panel-max-height));
 }
 
 .gg-sheet[hidden] {
