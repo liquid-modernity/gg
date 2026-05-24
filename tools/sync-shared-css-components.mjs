@@ -56,6 +56,18 @@ function stripRootDiscoveryDuplicates(contents) {
     .replace(/\n  \.gg-discovery-search__field \{\n[\s\S]*?\n  \}\n(?=\n  \.gg-article \{)/, '\n');
 }
 
+function stripStoreSheetCoreDuplicates(contents) {
+  return contents
+    .replace(
+      /\n    \.gg-sheet\[data-gg-state='dragging'\] \.gg-sheet__panel,\n    \.gg-sheet\[data-gg-state='dragging'\] \.gg-sheet__scrim \{ transition: none; \}\n/g,
+      '\n'
+    )
+    .replace(
+      /\n    \.gg-sheet__head \{[\s\S]*?\n    \.gg-sheet__title \{[\s\S]*?\n    \}\n(?=\s*\.store-discovery-body)/,
+      '\n'
+    );
+}
+
 for (const source of Object.values(components)) component(path.basename(source, '.css'));
 
 write('src/css/modules/sheets.css', `${component('gg-sheet-core')}\n`);
@@ -123,6 +135,12 @@ syncFile('src/store/store.css', [
     'gg-sheet-modal',
     /    body\[data-gg-panel-active='true'\] \.gg-dock \{[\s\S]*?    body\[data-gg-panel-active='true'\] \.gg-dock::after \{\n      opacity: 1;\n    \}\n/
   ),
+  (contents) => replaceOrFallback(
+    contents,
+    'gg-sheet-core',
+    /    \.gg-sheet \{[\s\S]*?    \.gg-sheet\[data-gg-state='opening'\] \.gg-sheet__scrim,\n    \.gg-sheet\[data-gg-state='open'\] \.gg-sheet__scrim,\n    \.gg-sheet\[data-gg-state='dragging'\] \.gg-sheet__scrim \{ opacity: 1; \}\n/
+  ),
+  (contents) => stripStoreSheetCoreDuplicates(contents),
   (contents) => replaceOrFallback(
     contents,
     'gg-more-sheet',

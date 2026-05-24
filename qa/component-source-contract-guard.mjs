@@ -16,6 +16,7 @@ const components = {
 const generatedTargets = [
   { file: 'src/css/gg-app.source.css', marker: 'gg-sheet-core' },
   { file: 'landing.html', marker: 'gg-sheet-core' },
+  { file: 'src/store/store.css', marker: 'gg-sheet-core' },
   { file: 'src/css/modules/dock.css', marker: 'gg-sheet-modal' },
   { file: 'src/css/gg-app.source.css', marker: 'gg-sheet-modal' },
   { file: 'landing.html', marker: 'gg-sheet-modal' },
@@ -60,6 +61,14 @@ function blocks(contents, marker) {
 
 function stripGenerated(contents) {
   return contents.replace(/\/\* BEGIN GENERATED: [^*]+ \*\/[\s\S]*?\/\* END GENERATED: [^*]+ \*\//g, '');
+}
+
+function firstInlineCriticalCss(contents) {
+  const styles = Array.from(contents.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi));
+  const critical = styles.find((match) =>
+    match[1].includes('--gg-panel-width') && match[1].includes('--gg-panel-handle-tone')
+  );
+  return critical?.[1] || '';
 }
 
 for (const [marker, componentPath] of Object.entries(components)) {
@@ -125,17 +134,73 @@ if (/(^|\n)\s*\.gg-discovery(?:[\s.#:{\[]|__|-)/m.test(stripGenerated(storeCss))
 for (const stale of [
   '100vw - 12px',
   '--gg-panel-handle-width: 62px',
+  '--gg-panel-handle-height: 3px',
   '--gg-panel-width: var(--gg-dock-width)',
 ]) {
-  if (storeCss.includes(stale)) fail(`Store critical CSS still contains stale token pattern: ${stale}`);
+  if (storeCss.includes(stale)) fail(`Store CSS still contains stale token pattern: ${stale}`);
+}
+
+const storeManualCss = stripGenerated(storeCss);
+for (const [label, pattern] of [
+  ['unscoped .gg-sheet rule', /(^|\n)\s*\.gg-sheet\s*\{/m],
+  ['unscoped .gg-sheet[hidden] rule', /(^|\n)\s*\.gg-sheet\[hidden\]\s*\{/m],
+  ['unscoped .gg-sheet__scrim rule', /(^|\n)\s*\.gg-sheet__scrim\s*\{/m],
+  ['unscoped .gg-sheet__panel rule', /(^|\n)\s*\.gg-sheet__panel\s*\{/m],
+  ['unscoped .gg-sheet__head rule', /(^|\n)\s*\.gg-sheet__head\s*\{/m],
+  ['unscoped .gg-sheet__handle rule', /(^|\n)\s*\.gg-sheet__handle\s*\{/m],
+  ['unscoped .gg-sheet__handle::before rule', /(^|\n)\s*\.gg-sheet__handle::before\s*\{/m],
+]) {
+  if (pattern.test(storeManualCss)) fail(`Store CSS contains local sheet-core drift outside generated block: ${label}`);
+}
+if (/\.gg-sheet__title\s*\{[^}]*text-transform:\s*uppercase/s.test(storeManualCss)) {
+  fail('Store CSS contains local .gg-sheet__title uppercase styling outside generated core');
+}
+if (/\.gg-sheet__title\s*\{[^}]*letter-spacing:\s*\.12em/s.test(storeManualCss)) {
+  fail('Store CSS contains local .gg-sheet__title .12em letter-spacing outside generated core');
+}
+
+const criticalTargets = [
+  ['src/store/store.critical.css', read('src/store/store.critical.css')],
+  ['store.html inline critical CSS', firstInlineCriticalCss(read('store.html'))],
+];
+for (const [label, contents] of criticalTargets) {
+  if (!contents) {
+    fail(`${label} is missing`);
+    continue;
+  }
+  for (const stale of [
+    '100vw - 12px',
+    '--gg-panel-handle-width: 62px',
+    '--gg-panel-handle-height: 3px',
+    '--gg-panel-width: var(--gg-dock-width)',
+  ]) {
+    if (contents.includes(stale)) fail(`${label} contains stale critical token pattern: ${stale}`);
+  }
+  for (const expected of [
+    '--gg-dock-edge-gap: 10px',
+    '--gg-sheet-edge-gap: 0px',
+    '--gg-dock-width: min(calc(100dvw - (var(--gg-dock-edge-gap) * 2)), 600px)',
+    '--gg-panel-width: min(calc(100dvw - (var(--gg-sheet-edge-gap) * 2)), 600px)',
+    '--gg-sheet-handle-hit: 44px',
+    '--gg-sheet-handle-visual-width: 30px',
+    '--gg-sheet-handle-visual-height: 2.5px',
+  ]) {
+    if (!contents.includes(expected)) fail(`${label} is missing critical sheet token: ${expected}`);
+  }
 }
 
 const packageJson = JSON.parse(read('package.json'));
 if (packageJson.scripts?.['gaga:verify-component-source'] !== 'node qa/component-source-contract-guard.mjs') {
   fail('package.json must define gaga:verify-component-source');
 }
+if (packageJson.scripts?.['gaga:verify-sheet-core-source'] !== 'node qa/component-source-contract-guard.mjs') {
+  fail('package.json must define gaga:verify-sheet-core-source');
+}
 if (!String(packageJson.scripts?.['ci:qa'] || '').includes('npm run gaga:verify-component-source')) {
   fail('ci:qa must include npm run gaga:verify-component-source');
+}
+if (!String(packageJson.scripts?.['ci:qa'] || '').includes('npm run gaga:verify-sheet-core-source')) {
+  fail('ci:qa must include npm run gaga:verify-sheet-core-source');
 }
 if (!exists('tools/sync-shared-css-components.mjs')) {
   fail('Missing tools/sync-shared-css-components.mjs');
