@@ -100,6 +100,11 @@
               lockScroll: true,
               trapFocus: true,
               returnFocus: true,
+              scrollReset: {
+                openBeforeRender: true,
+                queryChange: true,
+                filterChange: true
+              },
               openDuration: 220,
               closeDuration: 170
             },
@@ -113,6 +118,12 @@
               lockScroll: true,
               trapFocus: true,
               returnFocus: true,
+              scrollReset: {
+                openBeforeRender: true,
+                openAfterRender: true,
+                closeBeforeHide: true,
+                itemChange: true
+              },
               openDuration: 240,
               closeDuration: 180
             },
@@ -126,6 +137,12 @@
               lockScroll: true,
               trapFocus: true,
               returnFocus: true,
+              scrollReset: {
+                openBeforeRender: true,
+                closeAfterHide: true,
+                clearLocalSearchOnClose: true,
+                closePreferencePanelOnClose: true
+              },
               openDuration: 220,
               closeDuration: 170
             },
@@ -228,32 +245,37 @@
           }
         }
 
-        function normalizePreviewResetReason(reason) {
+        function normalizePanelResetReason(reason) {
           if (reason === 'drag-dismiss') return 'drag-close';
           if (reason === 'escape-close') return 'escape';
           if (reason === 'close-trigger') return 'close';
           return reason || 'unknown';
         }
 
-        function resetSheetScroll(sheet, reason) {
+        function resetPanelScroll(sheet, reason) {
           var containers;
-          var resetReason = normalizePreviewResetReason(reason);
+          var resetReason = normalizePanelResetReason(reason);
 
           if (!sheet) return;
 
-          containers = [
-            sheet,
-            sheet.querySelector('.gg-content-sheet__panel'),
-            sheet.querySelector('.gg-content-sheet__body'),
-            sheet.querySelector('.gg-preview__body'),
-            sheet.querySelector('.gg-preview__surface'),
-            sheet.querySelector('.store-preview__body'),
-            sheet.querySelector('.store-preview__surface'),
-            sheet.querySelector('.store-preview__content'),
-            sheet.querySelector('.store-bottom-sheet__body'),
-            sheet.querySelector('[data-gg-scroll-container]'),
-            sheet.querySelector('[role="dialog"]')
-          ].filter(Boolean);
+          containers = sheet.matches && sheet.matches('[data-gg-scroll-container]')
+            ? [sheet]
+            : Array.prototype.slice.call(sheet.querySelectorAll('[data-gg-scroll-container]'));
+
+          if (!containers.length) {
+            containers = [
+              sheet,
+              sheet.querySelector('.gg-content-sheet__panel'),
+              sheet.querySelector('.gg-content-sheet__body'),
+              sheet.querySelector('.gg-preview__body'),
+              sheet.querySelector('.gg-preview__surface'),
+              sheet.querySelector('.store-preview__body'),
+              sheet.querySelector('.store-preview__surface'),
+              sheet.querySelector('.store-preview__content'),
+              sheet.querySelector('.store-bottom-sheet__body'),
+              sheet.querySelector('[role="dialog"]')
+            ].filter(Boolean);
+          }
 
           containers.forEach(function (node) {
             if (!node) return;
@@ -271,10 +293,41 @@
             sheet.setAttribute('data-gg-scroll-reset-enabled', 'true');
             sheet.setAttribute('data-gg-last-scroll-reset-reason', resetReason);
           }
+          sheet.setAttribute('data-gg-scroll-reset-reason', resetReason);
+          sheet.setAttribute('data-gg-scroll-reset-at', String(Date.now()));
+        }
+
+        function shouldResetPanel(panel, key) {
+          return !!(panel && panel.scrollReset && panel.scrollReset[key]);
+        }
+
+        function resetPanelByName(name, key, reason) {
+          var panel = getPanel(name);
+          if (!shouldResetPanel(panel, key)) return;
+          resetPanelScroll(panel.root, reason || key || 'reset');
         }
 
         function resetPreviewScroll(reason) {
-          resetSheetScroll(ui.preview, reason);
+          resetPanelByName('preview', 'itemChange', reason || 'item-change');
+        }
+
+        function resetMoreTransientState(panel) {
+          var root = panel && panel.root ? panel.root : ui.more;
+          var input;
+          var rows;
+          var sections;
+          var i;
+
+          if (!root) return;
+          if (shouldResetPanel(panel, 'closePreferencePanelOnClose')) closeMorePreferencePanel();
+          if (!shouldResetPanel(panel, 'clearLocalSearchOnClose')) return;
+
+          input = root.querySelector('[data-gg-more-search-input]');
+          if (input) input.value = '';
+          rows = root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card');
+          for (i = 0; i < rows.length; i += 1) rows[i].hidden = false;
+          sections = root.querySelectorAll('.gg-more-profile, .gg-more-section');
+          for (i = 0; i < sections.length; i += 1) sections[i].removeAttribute('data-gg-filter-empty');
         }
 
         function getPanelEdge(panel) {
@@ -336,7 +389,7 @@
           var openOptions = options || {};
 
           if (!panel) return Promise.resolve(null);
-          if (panel.name === 'preview') resetSheetScroll(panel.root, 'open-before-render');
+          if (shouldResetPanel(panel, 'openBeforeRender')) resetPanelScroll(panel.root, 'open-before-render');
 
           if (state.panelActive === name && !panel.root.hidden && panel.root.getAttribute('data-gg-state') === 'open') {
             if (panel.name === 'comments') setCommentsLayer('main');
@@ -369,7 +422,7 @@
               if (state.panelActive === name) {
                 panel.root.setAttribute('data-gg-state', 'open');
               }
-              if (panel.name === 'preview') resetSheetScroll(panel.root, 'open-after-render');
+              if (shouldResetPanel(panel, 'openAfterRender')) resetPanelScroll(panel.root, 'open-after-render');
             });
 
             if (openOptions.focus !== false) {
@@ -417,7 +470,8 @@
           panel.root.setAttribute('data-gg-active', 'false');
           state.drag = state.drag && state.drag.name === panel.name ? null : state.drag;
           state.panelLastCloseReason = closeOptions.reason || 'api';
-          if (panel.name === 'preview') resetSheetScroll(panel.root, closeOptions.reason || 'close');
+          if (shouldResetPanel(panel, 'closePreferencePanelOnClose') || shouldResetPanel(panel, 'clearLocalSearchOnClose')) resetMoreTransientState(panel);
+          if (shouldResetPanel(panel, 'closeBeforeHide')) resetPanelScroll(panel.root, closeOptions.reason || 'close-before-hide');
 
           return new Promise(function (resolve) {
             state.panelTimers[panel.name] = window.setTimeout(function () {
@@ -429,7 +483,7 @@
               panel.root.removeAttribute('data-gg-active');
               if (panel.name === 'comments') setCommentsLayer('closed');
               resetPanelDrag(panel, true);
-              if (panel.name === 'preview') resetSheetScroll(panel.root, closeOptions.reason || 'close');
+              if (shouldResetPanel(panel, 'closeAfterHide')) resetPanelScroll(panel.root, closeOptions.reason || 'close-after-hide');
 
               if (state.panelActive === panel.name) {
                 state.panelActive = null;

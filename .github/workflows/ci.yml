@@ -47,6 +47,12 @@ jobs:
           pwd
           ls -la
 
+      - name: Build project artifacts
+        run: npm run build
+
+      - name: Run aggregate QA guards
+        run: npm run ci:qa
+
       - name: Run Store and Cloudflare CI checks
         run: npm run ci:cloudflare
 

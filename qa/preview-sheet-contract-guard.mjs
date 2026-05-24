@@ -103,12 +103,12 @@ if (!/class=(['"])[^'"]*gg-preview__body[^'"]*\1[\s\S]*?<header\b[^>]*class=(['"
   ["src/js/gg-app.source.js", text.appJs],
   ["src/store/store-discovery.js", text.storeJs],
 ].forEach(([file, source]) => {
-  assertIncludes(source, "function resetSheetScroll", `${file}: missing resetSheetScroll helper`);
+  assertIncludes(source, "function resetPanelScroll", `${file}: missing resetPanelScroll helper`);
   assertIncludes(source, "data-gg-scroll-container", `${file}: reset helper must target sheet/body containers`);
   assertIncludes(source, "open-before-render", `${file}: preview open path does not reset scroll before render`);
   assertIncludes(source, "open-after-render", `${file}: preview open path does not reset scroll after render`);
   assertIncludes(source, "item-change", `${file}: preview item-change path does not reset scroll`);
-  if (!source.includes("resetSheetScroll(config.sheet") && !source.includes("resetSheetScroll(panel.root")) {
+  if (!source.includes("resetPanelScroll(config.sheet") && !source.includes("resetPanelScroll(panel.root")) {
     fail(`${file}: preview close path does not reset sheet scroll`);
   }
   if (/window\.scrollTo\s*\(/.test(source) && !source.includes("sheet.querySelector('.gg-content-sheet__body')")) {

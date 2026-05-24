@@ -604,6 +604,12 @@
       lastCloseReason: null,
       resizeSyncFrame: 0
     };
+    var PANEL_SCROLL_POLICY = {
+      preview: { openBeforeRender: true, openAfterRender: true, closeBeforeHide: true, itemChange: true },
+      discovery: { openBeforeRender: true, queryChange: true, filterChange: true },
+      saved: { openBeforeRender: true, filterChange: true },
+      more: { openBeforeRender: true, closeAfterHide: true, clearLocalSearchOnClose: true, closePreferencePanelOnClose: true }
+    };
     var DEBUG_FLAGS = {
       overflow: queryFlag('debugOverflow'),
       vitals: queryFlag('debugVitals')
@@ -2624,30 +2630,34 @@
       if (name === 'more') return { sheet: moreSheet, panel: morePanel };
       return null;
     }
-    function normalizePreviewResetReason(reason) {
+    function normalizePanelResetReason(reason) {
       if (reason === 'drag') return 'drag-close';
       if (reason === 'handle') return 'handle';
       if (reason === 'escape') return 'escape';
       if (reason === 'scrim') return 'scrim';
       return reason || 'unknown';
     }
-    function resetSheetScroll(sheet, reason) {
-      var resetReason = normalizePreviewResetReason(reason);
+    function resetPanelScroll(sheet, reason) {
+      var resetReason = normalizePanelResetReason(reason);
       var containers;
       if (!sheet) return;
-      containers = [
-        sheet,
-        sheet.querySelector('.gg-content-sheet__panel'),
-        sheet.querySelector('.gg-content-sheet__body'),
-        sheet.querySelector('.gg-preview__body'),
-        sheet.querySelector('.gg-preview__surface'),
-        sheet.querySelector('.store-preview__body'),
-        sheet.querySelector('.store-preview__surface'),
-        sheet.querySelector('.store-preview__content'),
-        sheet.querySelector('.store-bottom-sheet__body'),
-        sheet.querySelector('[data-gg-scroll-container]'),
-        sheet.querySelector('[role="dialog"]')
-      ].filter(Boolean);
+      containers = sheet.matches && sheet.matches('[data-gg-scroll-container]')
+        ? [sheet]
+        : [].slice.call(sheet.querySelectorAll('[data-gg-scroll-container]'));
+      if (!containers.length) {
+        containers = [
+          sheet,
+          sheet.querySelector('.gg-content-sheet__panel'),
+          sheet.querySelector('.gg-content-sheet__body'),
+          sheet.querySelector('.gg-preview__body'),
+          sheet.querySelector('.gg-preview__surface'),
+          sheet.querySelector('.store-preview__body'),
+          sheet.querySelector('.store-preview__surface'),
+          sheet.querySelector('.store-preview__content'),
+          sheet.querySelector('.store-bottom-sheet__body'),
+          sheet.querySelector('[role="dialog"]')
+        ].filter(Boolean);
+      }
       containers.forEach(function (node) {
         if (!node) return;
         if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -2663,9 +2673,30 @@
         sheet.setAttribute('data-gg-scroll-reset-enabled', 'true');
         sheet.setAttribute('data-gg-last-scroll-reset-reason', resetReason);
       }
+      sheet.setAttribute('data-gg-scroll-reset-reason', resetReason);
+      sheet.setAttribute('data-gg-scroll-reset-at', String(Date.now()));
+    }
+    function shouldResetPanelName(name, key) {
+      return !!(PANEL_SCROLL_POLICY[name] && PANEL_SCROLL_POLICY[name][key]);
+    }
+    function resetPanelByName(name, key, reason) {
+      var config = getPanel(name);
+      if (!config || !config.sheet || !shouldResetPanelName(name, key)) return;
+      resetPanelScroll(config.sheet, reason || key || 'reset');
     }
     function resetPreviewScroll(reason) {
-      resetSheetScroll(previewSheet, reason);
+      resetPanelByName('preview', 'itemChange', reason || 'item-change');
+    }
+    function resetMoreTransientState() {
+      var root = moreSheet;
+      var input;
+      if (!root) return;
+      if (shouldResetPanelName('more', 'closePreferencePanelOnClose')) closeMorePreferencePanel();
+      if (!shouldResetPanelName('more', 'clearLocalSearchOnClose')) return;
+      input = root.querySelector('[data-gg-more-search-input]');
+      if (input) input.value = '';
+      [].slice.call(root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card')).forEach(function (row) { row.hidden = false; });
+      [].slice.call(root.querySelectorAll('.gg-more-profile, .gg-more-section')).forEach(function (section) { section.removeAttribute('data-gg-filter-empty'); });
     }
     function focusable(panel) {
       return [].slice.call(panel.querySelectorAll('a[href]:not([aria-disabled="true"]):not([hidden]), button:not([disabled]):not([hidden]), input:not([disabled]):not([hidden]), [tabindex]:not([tabindex="-1"]):not([hidden])')).filter(function (el) {
@@ -2676,7 +2707,7 @@
       var config = getPanel(name);
       if (!config || !config.sheet || !config.panel) return;
       if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false });
-      if (name === 'preview') resetSheetScroll(config.sheet, 'open-before-render');
+      if (shouldResetPanelName(name, 'openBeforeRender')) resetPanelScroll(config.sheet, 'open-before-render');
       clearToastTimer();
       hideAllToasts();
       state.panelActive = name;
@@ -2693,7 +2724,7 @@
       setPanelEnvironment(true);
       window.requestAnimationFrame(function () {
         config.sheet.setAttribute('data-gg-state', 'open');
-        if (name === 'preview') resetSheetScroll(config.sheet, 'open-after-render');
+        if (shouldResetPanelName(name, 'openAfterRender')) resetPanelScroll(config.sheet, 'open-after-render');
         var target = options && options.focusTarget ? options.focusTarget : (focusable(config.panel)[0] || config.panel);
         try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
         if (options && options.selectText && target.select) target.select();
@@ -2705,7 +2736,8 @@
       if (!config || !config.sheet) return;
       state.dragSession = null;
       state.lastCloseReason = (options && options.reason) || 'api';
-      if (panelName === 'preview') resetSheetScroll(config.sheet, state.lastCloseReason);
+      if (panelName === 'more') resetMoreTransientState();
+      if (shouldResetPanelName(panelName, 'closeBeforeHide')) resetPanelScroll(config.sheet, state.lastCloseReason || 'close-before-hide');
       if (config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
       config.sheet.setAttribute('data-gg-state', 'closed');
       config.sheet.setAttribute('aria-hidden', 'true');
@@ -2719,7 +2751,7 @@
       clearToastTimer();
       hideAllToasts();
       if (panelName === 'preview') clearPreviewUrl();
-      if (panelName === 'more') closeMorePreferencePanel();
+      if (shouldResetPanelName(panelName, 'closeAfterHide')) resetPanelScroll(config.sheet, state.lastCloseReason || 'close-after-hide');
       setPanelEnvironment(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
@@ -2796,6 +2828,7 @@
       if (discoverySearch && discoverySearch.value !== value) discoverySearch.value = value;
       state.visibleLimit = initialVisibleLimit();
       state.hasLoadedMore = false;
+      resetPanelByName('discovery', 'queryChange', 'query-change');
       applyFilters();
     }
     function setFilter(filter) {
@@ -2803,6 +2836,8 @@
       state.filter = state.routeFilter || (PUBLIC_FILTERS.indexOf(filter) > -1 ? filter : 'all');
       state.visibleLimit = initialVisibleLimit();
       state.hasLoadedMore = false;
+      resetPanelByName('discovery', 'filterChange', 'filter-change');
+      resetPanelByName('saved', 'filterChange', 'filter-change');
       applyFilters();
     }
     function syncDockState(force) {
@@ -3042,6 +3077,7 @@
     discoveryKindButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         state.discoveryKind = normalizeStoreDiscoveryKind(button.getAttribute('data-store-discovery-kind'));
+        resetPanelByName('discovery', 'filterChange', 'filter-change');
         applyDiscoveryFilters();
       });
     });
@@ -3053,6 +3089,7 @@
         if (discoverySearch) discoverySearch.value = '';
         state.visibleLimit = initialVisibleLimit();
         state.hasLoadedMore = false;
+        resetPanelByName('discovery', 'filterChange', 'filter-change');
         applyFilters();
       });
     });
@@ -3060,6 +3097,7 @@
       button.addEventListener('click', function () {
         var next = button.getAttribute('data-store-price-band') || 'all';
         state.discoveryPrice = DISCOVERY_PRICE_BANDS.indexOf(next) > -1 ? next : 'all';
+        resetPanelByName('discovery', 'filterChange', 'filter-change');
         applyDiscoveryFilters();
       });
     });
@@ -3067,6 +3105,8 @@
       button.addEventListener('click', function () {
         var next = button.getAttribute('data-store-sort') || 'recommended';
         state.discoverySort = DISCOVERY_SORTS.indexOf(next) > -1 ? next : 'recommended';
+        resetPanelByName('discovery', 'filterChange', 'filter-change');
+        resetPanelByName('saved', 'filterChange', 'filter-change');
         applyDiscoveryFilters();
       });
     });

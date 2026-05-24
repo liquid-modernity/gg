@@ -2188,7 +2188,7 @@ input:focus-visible {
         <button class="gg-sheet__handle" type="button" data-store-close="discovery" data-gg-close="discovery" data-store-drag-handle="discovery" data-gg-drag-handle="discovery" aria-label="Close discovery" data-copy-aria="closeDiscovery"></button>
         <h2 class="gg-sheet__title" id="store-discovery-title" data-copy="discovery.store.title">Store Discovery</h2>
       </header>
-      <div class="store-sheet-body store-discovery-body">
+      <div class="store-sheet-body store-discovery-body" data-gg-scroll-container>
         <p class="store-summary" id="store-discovery-status" data-copy="allVisible" aria-live="polite">All products are visible.</p>
         <section class="store-sheet-section">
           <p class="store-sheet-section__label" data-copy="resultsLabel">Results</p>
@@ -2259,7 +2259,7 @@ input:focus-visible {
         <button class="gg-sheet__handle" type="button" data-store-close="saved" data-gg-close="saved" data-store-drag-handle="saved" data-gg-drag-handle="saved" aria-label="Close saved" data-copy-aria="closeSaved"></button>
         <h2 class="gg-sheet__title" id="store-saved-title" data-copy="savedDockLabel">Saved</h2>
       </header>
-      <div class="store-sheet-body">
+      <div class="store-sheet-body" data-gg-scroll-container>
         <p class="store-summary" data-copy="savedOnDevice">Saved on this device.</p>
         <div class="store-inline-toast" id="store-saved-toast" role="status" aria-live="polite" hidden></div>
         <div class="store-saved-results" id="store-saved-results"></div>
@@ -2271,7 +2271,7 @@ input:focus-visible {
     <button class="gg-sheet__scrim" type="button" data-store-close="more" data-gg-close="more" aria-label="Tutup panel lainnya" data-copy-aria="closeMore"></button>
     <section class="gg-more-sheet gg-sheet__panel" id="store-more-panel" tabindex="-1">
       <header class="gg-sheet__head"><button class="gg-sheet__handle" type="button" data-store-close="more" data-gg-close="more" data-store-drag-handle="more" data-gg-drag-handle="more" aria-label="Close more panel" data-copy-aria="closeMore"></button><h2 class="gg-sheet__title" id="store-more-title" data-copy="more.title">More</h2></header>
-      <div class="store-sheet-body gg-more-body">
+      <div class="store-sheet-body gg-more-body" data-gg-scroll-container>
         <section class="gg-more-profile" data-gg-module="profile"><a class="gg-more-profile__card" href="/p/about.html" aria-label="Open profile"><span class="gg-more-profile__avatar" aria-hidden="true"><img class="gg-more-profile__image" src="/gg-pwa-icon/icon-192.png" alt="" width="96" height="96" loading="lazy" /></span><span class="gg-more-profile__copy"><span class="gg-more-profile__name" data-copy="more.profile.name">PakRPP</span><span class="gg-more-profile__meta" data-copy="more.profile.meta">Editorial tools, learning resources, and digital workspace</span></span><span class="gg-more-profile__chevron" aria-hidden="true">›</span></a></section>
         <section class="gg-more-section gg-more-section--navigation" aria-labelledby="store-navigation-label"><h3 class="gg-more-section__title" id="store-navigation-label" data-copy="more.section.navigation">Navigation</h3><div class="gg-more-grid"><a class="gg-more-list__link" data-store-more-link="home" data-gg-more-route="home" href="/landing"><span class="gg-more-row__icon gg-icon" aria-hidden="true">home</span><span class="gg-more-row__label" data-copy="nav.home">Home</span></a><a class="gg-more-list__link" data-store-more-link="blog" data-gg-more-route="blog" href="/"><span class="gg-more-row__icon gg-icon" aria-hidden="true">article</span><span class="gg-more-row__label" data-copy="nav.blog">Blog</span></a><a class="gg-more-list__link" data-store-more-link="store" data-gg-more-route="store" href="/store" aria-current="page" data-gg-active="true"><span class="gg-more-row__icon gg-icon" aria-hidden="true">shopping_bag</span><span class="gg-more-row__label" data-copy="nav.store">Store</span></a><a class="gg-more-list__link" data-store-more-link="contact" data-gg-more-route="contact" href="/landing#contact"><span class="gg-more-row__icon gg-icon" aria-hidden="true">mail</span><span class="gg-more-row__label" data-copy="nav.contact">Contact</span></a></div></section>
         <section class="gg-more-section gg-more-section--discover" aria-labelledby="store-discover-label"><h3 class="gg-more-section__title" id="store-discover-label" data-copy="more.section.discover">Discover</h3><div class="gg-more-list"><button class="gg-more-list__link" id="store-more-search" type="button"><span class="gg-more-row__icon gg-icon" aria-hidden="true">search</span><span class="gg-more-row__label" data-copy="more.search">Search</span></button><a class="gg-more-list__link" href="/sitemap.xml"><span class="gg-more-row__icon gg-icon" aria-hidden="true">account_tree</span><span class="gg-more-row__label" data-copy="more.sitemap">Sitemap</span></a><a class="gg-more-list__link" href="/feeds/posts/default?alt=rss"><span class="gg-more-row__icon gg-icon" aria-hidden="true">rss_feed</span><span class="gg-more-row__label" data-copy="more.rss">RSS</span></a></div></section>
@@ -3474,7 +3474,7 @@ input:focus-visible {
   </template>
 
   <!-- STORE_BUILD_REPORT_START -->
-  <span hidden id="store-build-metadata" data-store-build-id="8f89d5085119fa1f" data-store-build-report="/store/data/build-report.json"></span>
+  <span hidden id="store-build-metadata" data-store-build-id="18de517eafa965d8" data-store-build-report="/store/data/build-report.json"></span>
   <!-- STORE_BUILD_REPORT_END -->
 
   <!-- STORE_RUNTIME_JS_START -->

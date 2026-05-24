@@ -227,8 +227,7 @@ const SOURCE_FILES = [
   'src/js/modules/controllers/panel-controller.fragment.js',
   'src/js/modules/controllers/listing-growth.fragment.js',
   'src/js/modules/core/events.fragment.js',
-  'src/js/modules/core/state-dom.fragment.js',
-  'template/partials/19-big-app-script-wrapper-original.xml'
+  'src/js/modules/core/state-dom.fragment.js'
 ];
 
 function read(file) {

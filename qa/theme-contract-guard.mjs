@@ -89,7 +89,6 @@ function main() {
 
   const publicSurfaces = [
     ['index.xml', read('index.xml'), 'data-gg-theme-option'],
-    ['template/partials/18-more-panel.xml', read('template/partials/18-more-panel.xml'), 'data-gg-theme-option'],
     ['landing.html', read('landing.html'), 'data-gg-theme-option'],
     ['store.html', read('store.html'), 'data-store-theme']
   ];
@@ -100,7 +99,6 @@ function main() {
 
   for (const [label, text] of [
     ['src/js/boot/theme-preboot.js', read('src/js/boot/theme-preboot.js')],
-    ['template/partials/02-head-theme-preboot-script.xml', read('template/partials/02-head-theme-preboot-script.xml')],
     ['index.xml', read('index.xml')],
     ['landing.html', read('landing.html')],
     ['store.html', read('store.html')]

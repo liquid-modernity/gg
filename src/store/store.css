@@ -1,6 +1,6 @@
 :root {
       color-scheme: light;
-      --gg-hit-min: 10px;
+      --gg-hit-min: 44px;
       --gg-icon-size: 21px;
       --gg-icon-weight: 360;
       --gg-icon-grade: -25;
@@ -1224,7 +1224,9 @@ button.store-button.store-semantic-more {
       position: relative;
       display: grid;
       place-items: center;
-      width: var(--gg-panel-handle-width);
+      width: var(--gg-hit-min);
+      min-width: var(--gg-hit-min);
+      height: var(--gg-hit-min);
       min-height: var(--gg-hit-min);
       padding: 0;
       border: 0;
@@ -1450,7 +1452,7 @@ button.store-button.store-semantic-more {
       font-variation-settings: 'FILL' 1, 'wght' var(--gg-icon-weight-active), 'GRAD' var(--gg-icon-grade-active), 'opsz' 24;
     }
     .store-preview__footer { position: sticky; bottom: 0; display: grid; justify-items: center; min-height: var(--store-preview-footer-height); padding: 8px 0 calc(8px + var(--gg-preview-footer-safe-area)); background: linear-gradient(0deg, var(--gg-preview-surface) 70%, var(--gg-surface-panel-fade-soft)); z-index: 1; }
-    .store-preview__handle { display: grid; place-items: center; width: var(--gg-panel-handle-width); min-height: var(--gg-hit-min); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; position: relative; touch-action: none; cursor: ns-resize; -webkit-appearance: none; appearance: none; }
+    .store-preview__handle { display: grid; place-items: center; width: var(--gg-hit-min); min-width: var(--gg-hit-min); height: var(--gg-hit-min); min-height: var(--gg-hit-min); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; position: relative; touch-action: none; cursor: ns-resize; -webkit-appearance: none; appearance: none; }
     .store-preview__handle::before { content: ''; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     @media (min-width: 720px) {
       :root { --store-max: 920px; --store-card-gap: 12px; }

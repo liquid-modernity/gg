@@ -89,8 +89,6 @@ function publicMarkupText(text) {
 function main() {
   const issues = [];
   const index = read('index.xml');
-  const dockPartial = read('template/partials/15-dock.xml');
-  const morePartial = read('template/partials/18-more-panel.xml');
   const landing = read('landing.html');
   const store = read('store.html');
   const storeRuntime = read('src/store/store-discovery.js');
@@ -98,16 +96,14 @@ function main() {
   const moreSectionIds = GG_MORE_SHEET.sections.map((section) => section.id);
 
   assertDockOrder('index.xml', index, 'data-gg-nav', issues);
-  assertDockOrder('template/partials/15-dock.xml', dockPartial, 'data-gg-nav', issues);
   assertDockOrder('landing.html', landing, 'data-gg-nav', issues);
   assertDockOrder('store.html', store, 'data-store-dock', issues);
 
-  assertContains('template/partials/18-more-panel.xml', morePartial, MORE_KEYS, issues);
   assertContains('index.xml', index, MORE_KEYS, issues);
   assertContains('landing.html', landing, MORE_KEYS, issues);
   assertContains('store.html', store, MORE_KEYS.concat([GG_MORE_SHEET.routeNotes.store.key]), issues);
 
-  assertContains('template/partials/18-more-panel.xml structure', morePartial, [
+  assertContains('index.xml More structure', index, [
     'gg-more-profile__card',
     'gg-more-section--navigation',
     'gg-more-section--preferences',
@@ -158,7 +154,7 @@ function main() {
   if (publicMarkupText(landing).includes('Landing')) issues.push('landing.html exposes public Landing text outside runtime code');
   if (publicMarkupText(store).includes('Landing')) issues.push('store.html exposes public Landing text outside runtime code');
   if (landing.includes('more.commerceNote')) issues.push('landing.html must not show the store-only commerce note');
-  if (morePartial.includes('more.commerceNote')) issues.push('Blogger More panel must not show the store-only commerce note');
+  if (index.includes('more.commerceNote')) issues.push('Blogger More panel must not show the store-only commerce note');
   if (Object.keys(GG_MORE_SHEET.routeNotes).join('|') !== 'store') issues.push('GG_MORE_SHEET route notes must be store-only');
 
   assertContains('src/js/gg-app.source.js', appRuntime, [

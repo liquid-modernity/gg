@@ -142,8 +142,11 @@
 .gg-sheet__handle {
   display: grid;
   place-items: center;
-  width: var(--gg-panel-handle-width);
-  min-height: var(--gg-handler);
+  position: relative;
+  width: var(--gg-hit-min);
+  min-width: var(--gg-hit-min);
+  height: var(--gg-hit-min);
+  min-height: var(--gg-hit-min);
   margin: 0;
   padding: 0;
   border: 0;

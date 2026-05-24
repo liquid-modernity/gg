@@ -2325,8 +2325,11 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-sheet__handle {
   display: grid;
   place-items: center;
-  width: var(--gg-panel-handle-width);
-  min-height: var(--gg-handler);
+  position: relative;
+  width: var(--gg-hit-min);
+  min-width: var(--gg-hit-min);
+  height: var(--gg-hit-min);
+  min-height: var(--gg-hit-min);
   margin: 0;
   padding: 0;
   border: 0;
@@ -2367,8 +2370,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
   z-index: 2;
   display: grid;
   gap: var(--gg-discovery-controls-gap);
-  padding: var(--gg-discovery-controls-pad-top) var(--gg-panel-pad-x) calc(var(--gg-discovery-controls-pad-bottom) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--gg-discovery-controls-border);
+  padding: var(--gg-discovery-controls-pad-top) var(--gg-panel-pad-x) calc(var(--gg-discovery-controls-pad-bottom) + env(safe-area-inset-bottom));  border-top: 1px solid var(--gg-discovery-controls-border);
   background: linear-gradient(0deg, var(--gg-surface-panel) 82%, var(--gg-surface-panel-fade-strong) 100%);
 }
 
@@ -2480,8 +2482,7 @@ body[data-gg-dock-state='panel-locked'] .gg-dock {
 .gg-discovery-results {
   display: grid;
   gap: 0;
-  border-top: 1px solid var(--gg-discovery-result-divider);
-  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
+  border-top: 1px solid var(--gg-discovery-result-divider);  padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom);
 }
 
 .gg-discovery-result {

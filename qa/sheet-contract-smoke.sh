@@ -201,7 +201,6 @@ const widthRoots = [
   "index.xml",
   "landing.html",
   "store.html",
-  "template",
   "src/css",
   "src/store",
   "assets/store",
@@ -215,17 +214,12 @@ checkWidthContracts(widthFiles);
 
 const handleFiles = [
   "index.xml",
-  "template/index.original.xml",
-  "template/partials/12-post-detail-comments.xml",
-  "template/partials/16-discovery-panel-and-templates.xml",
-  "template/partials/17-preview-panel-and-templates.xml",
-  "template/partials/18-more-panel.xml",
   "store.html",
   "landing.html",
 ].filter(requireFile);
 checkInteractiveHandles(handleFiles);
 
-for (const file of ["index.xml", "template/partials/17-preview-panel-and-templates.xml"]) {
+for (const file of ["index.xml"]) {
   for (const marker of [
     "gg-preview__hero",
     "gg-preview__shade",
