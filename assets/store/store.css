@@ -52,6 +52,8 @@
       --gg-panel-pad-y: 0px;
       --gg-panel-pad-x: 14px;
       --gg-panel-pad-bottom: calc(0px + env(safe-area-inset-bottom));
+      --gg-preview-panel-initial-height: min(72dvh, 720px);
+      --gg-sheet-content-max-height: min(94dvh, 920px);
       --gg-panel-preview-min-height: var(--gg-preview-panel-initial-height);
       --gg-panel-preview-max-height: var(--gg-sheet-content-max-height);
       --gg-toolbar-gap: 4px;
