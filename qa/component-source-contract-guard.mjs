@@ -7,13 +7,18 @@ const root = process.cwd();
 const failures = [];
 
 const components = {
+  'gg-visual-tokens': 'src/css/components/gg-visual-tokens.css',
   'gg-sheet-core': 'src/css/components/gg-sheet-core.css',
+  'gg-preview-frame': 'src/css/components/gg-preview-frame.css',
   'gg-more-sheet': 'src/css/components/gg-more-sheet.css',
   'gg-discovery-sheet': 'src/css/components/gg-discovery-sheet.css',
   'gg-sheet-modal': 'src/css/components/gg-sheet-modal.css',
 };
 
 const generatedTargets = [
+  { file: 'src/css/gg-app.source.css', marker: 'gg-visual-tokens' },
+  { file: 'landing.html', marker: 'gg-visual-tokens' },
+  { file: 'src/store/store.css', marker: 'gg-visual-tokens' },
   { file: 'src/css/gg-app.source.css', marker: 'gg-sheet-core' },
   { file: 'landing.html', marker: 'gg-sheet-core' },
   { file: 'src/store/store.css', marker: 'gg-sheet-core' },
@@ -21,6 +26,8 @@ const generatedTargets = [
   { file: 'src/css/gg-app.source.css', marker: 'gg-sheet-modal' },
   { file: 'landing.html', marker: 'gg-sheet-modal' },
   { file: 'src/store/store.css', marker: 'gg-sheet-modal' },
+  { file: 'src/css/gg-app.source.css', marker: 'gg-preview-frame' },
+  { file: 'src/store/store.css', marker: 'gg-preview-frame' },
   { file: 'src/css/gg-app.source.css', marker: 'gg-more-sheet' },
   { file: 'landing.html', marker: 'gg-more-sheet' },
   { file: 'src/store/store.css', marker: 'gg-more-sheet' },
@@ -94,6 +101,8 @@ for (const target of generatedTargets) {
 
 for (const [modulePath, marker] of [
   ['src/css/modules/sheets.css', 'gg-sheet-core'],
+  ['src/css/modules/visual-tokens.css', 'gg-visual-tokens'],
+  ['src/css/modules/preview-frame.css', 'gg-preview-frame'],
   ['src/css/modules/more.css', 'gg-more-sheet'],
   ['src/css/modules/discovery.css', 'gg-discovery-sheet'],
 ]) {

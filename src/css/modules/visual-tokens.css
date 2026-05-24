@@ -1,0 +1,19 @@
+:root {
+  --gg-color-bg: var(--gg-surface-page);
+  --gg-color-surface: var(--gg-surface-panel);
+  --gg-color-surface-elevated: var(--gg-surface-interactive-strong);
+  --gg-color-text: var(--gg-ink);
+  --gg-color-muted: var(--gg-ink-soft);
+  --gg-color-hairline: var(--gg-divider);
+  --gg-color-active-row: var(--gg-surface-quiet);
+  --gg-color-scrim: var(--gg-panel-scrim);
+  --gg-sheet-radius: var(--gg-panel-radius);
+  --gg-preview-panel-initial-height: min(72dvh, 720px);
+  --gg-preview-panel-max-height: var(--gg-sheet-content-max-height);
+  --gg-preview-hero-height: clamp(360px, 58dvh, 540px);
+  --gg-preview-hero-aspect: 4 / 5;
+  --gg-preview-content-lift: var(--gg-preview-overlay-lift);
+  --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
+  --gg-discovery-row-min-height: var(--gg-hit-min);
+  --gg-discovery-input-height: 54px;
+}

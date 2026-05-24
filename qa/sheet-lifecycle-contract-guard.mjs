@@ -170,7 +170,7 @@ assertPanelScrollContainer("index.xml command", text.index, "gg-command-panel", 
 assertPanelScrollContainer("index.xml more", text.index, "gg-more-panel", "gg-more-body");
 assertPanelScrollContainer("index.xml preview", text.index, "gg-preview-sheet", "gg-preview__body");
 
-assertPanelScrollContainer("landing.html command", text.landing, "gg-command-panel", "gg-discovery-body");
+assertPanelScrollContainer("landing.html command", text.landing, "gg-command-panel", "gg-discovery__body");
 assertPanelScrollContainer("landing.html more", text.landing, "gg-more-panel", "gg-more-body");
 
 assertPanelScrollContainer("store.html preview", text.store, "store-preview-sheet", "store-preview__body");
@@ -210,7 +210,7 @@ assertPolicy("src/store/store-discovery.js", text.storeJs, "more", ["openBeforeR
 requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__panel");
 requireIncludes("landing.html", text.landing, "grid-template-rows: auto minmax(0, 1fr) auto;");
 requireIncludes("landing.html", text.landing, "overflow: hidden;");
-requireIncludes("landing.html", text.landing, ".gg-discovery-body");
+requireIncludes("landing.html", text.landing, ".gg-discovery__body");
 requireIncludes("landing.html", text.landing, "-webkit-overflow-scrolling: touch");
 
 requireIncludes("index.xml", text.index, "data-gg-drag-zone='sheet-head'");

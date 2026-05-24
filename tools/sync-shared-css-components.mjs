@@ -6,8 +6,10 @@ import process from 'node:process';
 const root = process.cwd();
 
 const components = {
+  'gg-visual-tokens': 'src/css/components/gg-visual-tokens.css',
   'gg-sheet-core': 'src/css/components/gg-sheet-core.css',
   'gg-sheet-modal': 'src/css/components/gg-sheet-modal.css',
+  'gg-preview-frame': 'src/css/components/gg-preview-frame.css',
   'gg-more-sheet': 'src/css/components/gg-more-sheet.css',
   'gg-discovery-sheet': 'src/css/components/gg-discovery-sheet.css',
 };
@@ -38,6 +40,17 @@ function replaceOrFallback(contents, name, fallbackPattern) {
   if (generatedPattern.test(contents)) return contents.replace(generatedPattern, next);
   if (!fallbackPattern.test(contents)) throw new Error(`Could not find ${name} insertion point`);
   return contents.replace(fallbackPattern, next);
+}
+
+function insertOrReplaceAfter(contents, name, anchorPattern) {
+  const begin = `/* BEGIN GENERATED: ${name} */`;
+  const end = `/* END GENERATED: ${name} */`;
+  const generatedPattern = new RegExp(`${escapeRegExp(begin)}[\\s\\S]*?${escapeRegExp(end)}`, 'g');
+  const next = block(name);
+  if (generatedPattern.test(contents)) return contents.replace(generatedPattern, next);
+  const match = contents.match(anchorPattern);
+  if (!match) throw new Error(`Could not find ${name} insertion point`);
+  return contents.replace(anchorPattern, `${match[0]}\n${next}`);
 }
 
 function escapeRegExp(value) {
@@ -73,6 +86,8 @@ for (const source of Object.values(components)) component(path.basename(source, 
 write('src/css/modules/sheets.css', `${component('gg-sheet-core')}\n`);
 write('src/css/modules/more.css', `${component('gg-more-sheet')}\n`);
 write('src/css/modules/discovery.css', `${component('gg-discovery-sheet')}\n`);
+write('src/css/modules/visual-tokens.css', `${component('gg-visual-tokens')}\n`);
+write('src/css/modules/preview-frame.css', `${component('gg-preview-frame')}\n`);
 
 syncFile('src/css/modules/dock.css', [
   (contents) => replaceOrFallback(
@@ -84,6 +99,11 @@ syncFile('src/css/modules/dock.css', [
 
 syncFile('src/css/gg-app.source.css', [
   (contents) => stripRootDiscoveryDuplicates(contents),
+  (contents) => insertOrReplaceAfter(
+    contents,
+    'gg-visual-tokens',
+    /html\[data-gg-theme='light'\]\s*\{\s*color-scheme:\s*light;\s*\}\n/
+  ),
   (contents) => replaceOrFallback(
     contents,
     'gg-sheet-modal',
@@ -101,12 +121,22 @@ syncFile('src/css/gg-app.source.css', [
   ),
   (contents) => replaceOrFallback(
     contents,
+    'gg-preview-frame',
+    /\.gg-preview \{[\s\S]*?\.gg-preview__surface \{[\s\S]*?\n\}\n(?=\n\.gg-preview__summary \{)/
+  ),
+  (contents) => replaceOrFallback(
+    contents,
     'gg-more-sheet',
     /\.gg-more-sheet \{[\s\S]*?\n\}\n(?=\n@media \(max-width: 480px\) \{)/
   ),
 ]);
 
 syncFile('landing.html', [
+  (contents) => insertOrReplaceAfter(
+    contents,
+    'gg-visual-tokens',
+    /    html\[data-gg-theme='light'\]\s*\{\s*color-scheme:\s*light;\s*\}\n/
+  ),
   (contents) => replaceOrFallback(
     contents,
     'gg-sheet-modal',
@@ -130,6 +160,11 @@ syncFile('landing.html', [
 ]);
 
 syncFile('src/store/store.css', [
+  (contents) => insertOrReplaceAfter(
+    contents,
+    'gg-visual-tokens',
+    /    html\[data-gg-theme='light'\]\s*\{\s*color-scheme:\s*light;\s*\}\n/
+  ),
   (contents) => replaceOrFallback(
     contents,
     'gg-sheet-modal',
@@ -141,6 +176,11 @@ syncFile('src/store/store.css', [
     /    \.gg-sheet \{[\s\S]*?    \.gg-sheet\[data-gg-state='opening'\] \.gg-sheet__scrim,\n    \.gg-sheet\[data-gg-state='open'\] \.gg-sheet__scrim,\n    \.gg-sheet\[data-gg-state='dragging'\] \.gg-sheet__scrim \{ opacity: 1; \}\n/
   ),
   (contents) => stripStoreSheetCoreDuplicates(contents),
+  (contents) => insertOrReplaceAfter(
+    contents,
+    'gg-preview-frame',
+    /    \.gg-dock__label \{[^\n]*\}\n/
+  ),
   (contents) => replaceOrFallback(
     contents,
     'gg-more-sheet',
