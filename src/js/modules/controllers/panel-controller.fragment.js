@@ -102,6 +102,8 @@
               returnFocus: true,
               scrollReset: {
                 openBeforeRender: true,
+                openAfterRender: true,
+                closeAfterHide: true,
                 queryChange: true,
                 filterChange: true
               },
@@ -122,6 +124,7 @@
                 openBeforeRender: true,
                 openAfterRender: true,
                 closeBeforeHide: true,
+                closeAfterHide: true,
                 itemChange: true
               },
               openDuration: 240,
@@ -139,6 +142,7 @@
               returnFocus: true,
               scrollReset: {
                 openBeforeRender: true,
+                openAfterRender: true,
                 closeAfterHide: true,
                 clearLocalSearchOnClose: true,
                 closePreferencePanelOnClose: true
@@ -252,37 +256,39 @@
           return reason || 'unknown';
         }
 
+        function collectPanelScrollTargets(root) {
+          var targets = [];
+          var directPanel;
+
+          if (!root) return targets;
+          targets.push(root);
+          directPanel = root.matches && root.matches('.gg-sheet__panel, .gg-content-sheet__panel')
+            ? root
+            : (root.querySelector && root.querySelector('.gg-sheet__panel, .gg-content-sheet__panel'));
+          if (directPanel) targets.push(directPanel);
+          if (root.querySelectorAll) {
+            targets = targets.concat(Array.prototype.slice.call(root.querySelectorAll('[data-gg-scroll-container], .gg-sheet__panel, .gg-content-sheet__panel')));
+          }
+          return targets.filter(function (node, index) {
+            return !!node && targets.indexOf(node) === index;
+          });
+        }
+
         function resetPanelScroll(sheet, reason) {
           var containers;
           var resetReason = normalizePanelResetReason(reason);
 
           if (!sheet) return;
 
-          containers = sheet.matches && sheet.matches('[data-gg-scroll-container]')
-            ? [sheet]
-            : Array.prototype.slice.call(sheet.querySelectorAll('[data-gg-scroll-container]'));
-
-          if (!containers.length) {
-            containers = [
-              sheet,
-              sheet.querySelector('.gg-content-sheet__panel'),
-              sheet.querySelector('.gg-content-sheet__body'),
-              sheet.querySelector('.gg-preview__body'),
-              sheet.querySelector('.gg-preview__surface'),
-              sheet.querySelector('.store-preview__body'),
-              sheet.querySelector('.store-preview__surface'),
-              sheet.querySelector('.store-preview__content'),
-              sheet.querySelector('.store-bottom-sheet__body'),
-              sheet.querySelector('[role="dialog"]')
-            ].filter(Boolean);
-          }
+          containers = collectPanelScrollTargets(sheet);
 
           containers.forEach(function (node) {
             if (!node) return;
-            if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-            else {
+            try {
               node.scrollTop = 0;
               node.scrollLeft = 0;
+              if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            } catch (error) {
             }
           });
 

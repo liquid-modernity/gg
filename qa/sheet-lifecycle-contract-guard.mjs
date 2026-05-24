@@ -68,9 +68,34 @@ function assertPolicy(label, source, panelName, keys) {
 function assertCssHitTarget(label, source) {
   requireIncludes(label, source, "--gg-hit-min: 44px");
   requireNotIncludes(label, source, "--gg-hit-min: 10px");
-  requireIncludes(label, source, "min-width: var(--gg-hit-min)");
-  requireIncludes(label, source, "min-height: var(--gg-hit-min)");
-  requireIncludes(label, source, "--gg-panel-handle-height");
+  requireIncludes(label, source, "--gg-sheet-handle-hit: 44px");
+  requireIncludes(label, source, "--gg-sheet-handle-visual-height: 3px");
+  requireIncludes(label, source, "min-width: var(--gg-sheet-handle-hit)");
+  requireIncludes(label, source, "min-height: var(--gg-sheet-handle-hit)");
+  requireIncludes(label, source, "height: var(--gg-panel-handle-height)");
+}
+
+function assertSheetTokens(label, source) {
+  requireIncludes(label, source, "--gg-shell-edge-gap: 10px");
+  requireIncludes(label, source, "--gg-dock-width:");
+  requireIncludes(label, source, "--gg-panel-width: var(--gg-dock-width)");
+  requireIncludes(label, source, "--gg-sheet-utility-max-height");
+  requireIncludes(label, source, "--gg-sheet-content-max-height");
+  requireIncludes(label, source, "width: var(--gg-dock-width)");
+}
+
+function assertPreviewMediaTokens(label, source) {
+  requireIncludes(label, source, "--gg-preview-hero-min: clamp(300px, 58dvh, 540px)");
+  requireIncludes(label, source, "--gg-preview-overlay-lift: clamp(108px, 18vw, 148px)");
+  requireIncludes(label, source, "--gg-preview-media-fit: cover");
+  requireIncludes(label, source, "object-fit: var(--gg-preview-media-fit)");
+}
+
+function assertResetTargets(label, source) {
+  requireIncludes(label, source, "function collectPanelScrollTargets");
+  requireIncludes(label, source, ".gg-sheet__panel, .gg-content-sheet__panel");
+  requireIncludes(label, source, "[data-gg-scroll-container], .gg-sheet__panel, .gg-content-sheet__panel");
+  requireIncludes(label, source, "collectPanelScrollTargets");
 }
 
 requireIncludes("landing.html", text.landing, 'data-gg-preview-surface="none"');
@@ -97,6 +122,7 @@ for (const [label, source] of [
   ["src/store/store-discovery.js", text.storeJs],
 ]) {
   requireIncludes(label, source, "function resetPanelScroll");
+  assertResetTargets(label, source);
   requireIncludes(label, source, "data-gg-scroll-container");
   requireIncludes(label, source, "open-before-render");
   requireIncludes(label, source, "query-change");
@@ -107,20 +133,39 @@ for (const [label, source] of [
 requireNotIncludes("src/js/gg-app.source.js", text.appJs, "function resetSheetScroll");
 requireNotIncludes("src/store/store-discovery.js", text.storeJs, "function resetSheetScroll");
 
-assertPolicy("src/js/gg-app.source.js", text.appJs, "command", ["openBeforeRender", "queryChange", "filterChange"]);
-assertPolicy("src/js/gg-app.source.js", text.appJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "itemChange"]);
-assertPolicy("src/js/gg-app.source.js", text.appJs, "more", ["openBeforeRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
-assertPolicy("landing.html", text.landing, "command", ["openBeforeRender", "queryChange", "filterChange"]);
-assertPolicy("landing.html", text.landing, "more", ["openBeforeRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "itemChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "discovery", ["openBeforeRender", "queryChange", "filterChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "saved", ["openBeforeRender", "filterChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "more", ["openBeforeRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
+assertPolicy("src/js/gg-app.source.js", text.appJs, "command", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
+assertPolicy("src/js/gg-app.source.js", text.appJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "closeAfterHide", "itemChange"]);
+assertPolicy("src/js/gg-app.source.js", text.appJs, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
+assertPolicy("landing.html", text.landing, "command", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
+assertPolicy("landing.html", text.landing, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
+assertPolicy("src/store/store-discovery.js", text.storeJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "closeAfterHide", "itemChange"]);
+assertPolicy("src/store/store-discovery.js", text.storeJs, "discovery", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
+assertPolicy("src/store/store-discovery.js", text.storeJs, "saved", ["openBeforeRender", "openAfterRender", "closeAfterHide", "filterChange"]);
+assertPolicy("src/store/store-discovery.js", text.storeJs, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
+
+requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }");
+requireIncludes("landing.html", text.landing, "#gg-command-panel [data-gg-scroll-container], .gg-discovery-body");
+requireIncludes("landing.html", text.landing, "-webkit-overflow-scrolling: touch");
 
 assertCssHitTarget("src/css/gg-app.source.css", text.appCss);
 if (text.appCssAsset) assertCssHitTarget("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
 assertCssHitTarget("src/store/store.css", text.storeCss);
 if (text.storeCssAsset) assertCssHitTarget("assets/store/store.css", text.storeCssAsset);
+
+assertSheetTokens("src/css/gg-app.source.css", text.appCss);
+assertSheetTokens("landing.html", text.landing);
+assertSheetTokens("src/store/store.css", text.storeCss);
+if (text.appCssAsset) assertSheetTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
+if (text.storeCssAsset) assertSheetTokens("assets/store/store.css", text.storeCssAsset);
+
+assertPreviewMediaTokens("src/css/gg-app.source.css", text.appCss);
+assertPreviewMediaTokens("src/store/store.css", text.storeCss);
+if (text.appCssAsset) assertPreviewMediaTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
+if (text.storeCssAsset) assertPreviewMediaTokens("assets/store/store.css", text.storeCssAsset);
+
+requireNotIncludes("src/css/gg-app.source.css", text.appCss, "width: min(calc(100vw - 20px), 600px)");
+requireNotIncludes("src/store/store.css", text.storeCss, "--gg-panel-width: min(calc(100vw - 12px), 600px)");
+requireNotIncludes("landing.html", text.landing, "--gg-panel-width: min(calc(100vw - 0px), 600px)");
 
 requireIncludes("package.json", text.packageJson, '"gaga:verify-sheet-lifecycle"');
 requireIncludes("package.json", text.packageJson, "gaga:verify-preview-sheet && npm run gaga:verify-sheet-lifecycle");

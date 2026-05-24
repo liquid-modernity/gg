@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gg-toolbar-gap);
-  width:min(calc(100vw - 20px), 600px);
+  width: var(--gg-dock-width);
   max-width: none;
   padding: var(--gg-toolbar-pad);
   border: 0;

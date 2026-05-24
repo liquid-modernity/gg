@@ -278,7 +278,7 @@ function main() {
   if (!appCss.includes('position: sticky') || !appCss.includes('bottom: 0') || !appCss.includes('100dvh') || !appCss.includes('env(safe-area-inset-bottom)')) {
     issues.push('global discovery CSS must include sticky bottom, 100dvh, and safe-area behavior');
   }
-  if (!storeCss.includes('position: sticky') || !storeCss.includes('bottom: 0') || !storeCss.includes('92dvh') || !storeCss.includes('env(safe-area-inset-bottom)')) {
+  if (!storeCss.includes('position: sticky') || !storeCss.includes('bottom: 0') || !storeCss.includes('--gg-sheet-utility-max-height: min(94dvh, 780px)') || !storeCss.includes('max-height: var(--gg-sheet-utility-max-height)') || !storeCss.includes('env(safe-area-inset-bottom)')) {
     issues.push('store discovery CSS must include sticky bottom, dvh max-height, and safe-area behavior');
   }
 

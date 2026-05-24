@@ -63,7 +63,10 @@
 }
 
 #gg-command-panel .gg-sheet__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: var(--gg-panel-command-min-height);
+  overflow: hidden;
 }
 
 #gg-comments-sheet .gg-sheet__panel,
@@ -126,7 +129,8 @@
   display: grid;
   justify-items: center;
   gap: var(--gg-utility-head-gap);
-  padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom);
+  min-height: var(--gg-sheet-head-height);
+  padding: 18px var(--gg-panel-pad-x, 18px) 8px;
   border-bottom: 1px solid var(--gg-utility-head-border);
   background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%);
   text-align: center;
@@ -141,14 +145,17 @@
 
 .gg-sheet__handle {
   display: grid;
-  place-items: center;
-  position: relative;
-  width: var(--gg-hit-min);
-  min-width: var(--gg-hit-min);
-  height: var(--gg-hit-min);
-  min-height: var(--gg-hit-min);
+  place-items: start center;
+  position: absolute;
+  top: var(--gg-sheet-handle-top);
+  left: 50%;
+  width: var(--gg-sheet-handle-hit);
+  min-width: var(--gg-sheet-handle-hit);
+  height: var(--gg-sheet-handle-hit);
+  min-height: var(--gg-sheet-handle-hit);
   margin: 0;
   padding: 0;
+  transform: translateX(-50%);
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -169,5 +176,5 @@
 }
 
 .gg-sheet__head .gg-sheet__handle {
-  margin-bottom: var(--gg-utility-handle-gap);
+  margin-bottom: 0;
 }

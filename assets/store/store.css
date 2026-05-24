@@ -28,12 +28,25 @@
       --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.035);
       --gg-shadow-panel-bottom: 0 -16px 48px rgba(32,26,28,.105);
       --gg-shadow-panel-top: 0 16px 48px rgba(32,26,28,.105);
+      --gg-shell-edge-gap: 10px;
+      --gg-dock-width: min(calc(100vw - (var(--gg-shell-edge-gap) * 2)), 600px);
+      --gg-panel-width: var(--gg-dock-width);
+      --gg-sheet-max-height: min(94dvh, 920px);
+      --gg-sheet-utility-max-height: min(94dvh, 780px);
+      --gg-sheet-content-max-height: min(94dvh, 920px);
+      --gg-sheet-compact-max-height: min(86dvh, 680px);
+      --gg-sheet-head-height: 56px;
+      --gg-sheet-handle-hit: 44px;
+      --gg-sheet-handle-visual-width: 34px;
+      --gg-sheet-handle-visual-height: 3px;
+      --gg-sheet-handle-top: 4px;
       --gg-panel-scrim: rgba(22,17,20,.24);
       --gg-panel-scrim-fallback: rgba(22,17,20,.38);
       --gg-panel-handle-tone: rgba(32,26,28,.18);
       --gg-panel-radius: 26px;
-      --gg-panel-handle-width: 62px;
-      --gg-panel-handle-height: 3px;--gg-panel-pad-y: 0px;
+      --gg-panel-handle-width: var(--gg-sheet-handle-visual-width);
+      --gg-panel-handle-height: var(--gg-sheet-handle-visual-height);
+      --gg-panel-pad-y: 0px;
       --gg-panel-pad-x: 14px;
       --gg-panel-pad-bottom: calc(0px + env(safe-area-inset-bottom));
       --gg-toolbar-gap: 4px;
@@ -51,7 +64,6 @@
       --gg-dock-track-height: calc(var(--gg-toolbar-item-min-height) + (var(--gg-toolbar-pad) * 2));
       --gg-dock-clearance: calc(var(--gg-dock-track-height) + var(--gg-dock-offset-bottom));
       --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 22px);
-      --gg-panel-width: min(calc(100vw - 12px), 600px);
       --gg-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --gg-ease: 180ms ease;
       --gg-motion-press: 90ms ease;
@@ -67,13 +79,15 @@
       --store-card-min-wide: 240px;
       --store-sheet-width: var(--gg-panel-width);
       --store-bottom-sheet-width: var(--gg-panel-width);
-      --gg-preview-max-height: min(92dvh, 900px);
+      --gg-preview-max-height: var(--gg-sheet-content-max-height);
       --gg-preview-initial-height: min(72dvh, 720px);
-      --gg-preview-hero-min: min(58dvh, 560px);
-      --gg-preview-overlay-lift: clamp(116px, 18vw, 152px);
+      --gg-preview-hero-min: clamp(300px, 58dvh, 540px);
+      --gg-preview-overlay-lift: clamp(108px, 18vw, 148px);
+      --gg-preview-media-fit: cover;
+      --gg-preview-surface-radius: 24px;
       --gg-preview-footer-height: 56px;
       --gg-preview-footer-safe-area: env(safe-area-inset-bottom);
-      --gg-preview-radius: 24px;
+      --gg-preview-radius: var(--gg-preview-surface-radius);
       --gg-preview-surface: var(--gg-surface-panel);
       --gg-preview-shadow: var(--gg-shadow-panel-top);
       --store-preview-max-height: var(--gg-preview-max-height);
@@ -87,7 +101,7 @@
 
     @supports (width: 100dvw) {
       :root {
-        --gg-panel-width: min(calc(100dvw - 0px), 600px);
+        --gg-dock-width: min(calc(100dvw - (var(--gg-shell-edge-gap) * 2)), 600px);
       }
     }
 
@@ -332,7 +346,7 @@
     .store-card__media img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: var(--gg-preview-media-fit);
       transform: scale(1.001);
       transition: transform 420ms cubic-bezier(.22,1,.36,1), filter var(--gg-ease);
     }
@@ -852,7 +866,7 @@ button.store-button.store-semantic-more {
       display: grid;
       grid-template-columns: repeat(5, minmax(0,1fr));
       gap: var(--gg-toolbar-gap);
-      width: var(--gg-panel-width);
+      width: var(--gg-dock-width);
       max-width: none;
       padding: var(--gg-toolbar-pad);
       border: 0;
@@ -977,7 +991,7 @@ button.store-button.store-semantic-more {
       width: 100%;
       height: 100%;
       min-height: inherit;
-      object-fit: cover;
+      object-fit: var(--gg-preview-media-fit);
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -1197,7 +1211,7 @@ button.store-button.store-semantic-more {
     .store-bottom-sheet .gg-sheet__panel {
       width: var(--store-bottom-sheet-width);
       max-width: none;
-      max-height: min(92dvh, 780px);
+      max-height: var(--gg-sheet-utility-max-height);
       border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
       transform: translate3d(0, calc(24px + var(--gg-sheet-drag-y)), 0);
       transition: transform var(--gg-motion-sheet-open-bottom), box-shadow var(--gg-motion-sheet-open-bottom);
@@ -1216,18 +1230,21 @@ button.store-button.store-semantic-more {
       display: grid;
       justify-items: center;
       gap: 6px;
-      padding: 8px 14px 6px;
+      min-height: var(--gg-sheet-head-height);
+      padding: 18px var(--gg-panel-pad-x, 18px) 8px;
       background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft));
       border-bottom: 1px solid var(--gg-divider);
     }
     .gg-sheet__handle {
-      position: relative;
+      position: absolute;
+      top: var(--gg-sheet-handle-top);
+      left: 50%;
       display: grid;
-      place-items: center;
-      width: var(--gg-hit-min);
-      min-width: var(--gg-hit-min);
-      height: var(--gg-hit-min);
-      min-height: var(--gg-hit-min);
+      place-items: start center;
+      width: var(--gg-sheet-handle-hit);
+      min-width: var(--gg-sheet-handle-hit);
+      height: var(--gg-sheet-handle-hit);
+      min-height: var(--gg-sheet-handle-hit);
       padding: 0;
       border: 0;
       border-radius: 999px;
@@ -1235,6 +1252,7 @@ button.store-button.store-semantic-more {
       color: inherit;
       touch-action: none;
       cursor: ns-resize;
+      transform: translateX(-50%);
       -webkit-appearance: none;
       appearance: none;
     }
@@ -1452,7 +1470,7 @@ button.store-button.store-semantic-more {
       font-variation-settings: 'FILL' 1, 'wght' var(--gg-icon-weight-active), 'GRAD' var(--gg-icon-grade-active), 'opsz' 24;
     }
     .store-preview__footer { position: sticky; bottom: 0; display: grid; justify-items: center; min-height: var(--store-preview-footer-height); padding: 8px 0 calc(8px + var(--gg-preview-footer-safe-area)); background: linear-gradient(0deg, var(--gg-preview-surface) 70%, var(--gg-surface-panel-fade-soft)); z-index: 1; }
-    .store-preview__handle { display: grid; place-items: center; width: var(--gg-hit-min); min-width: var(--gg-hit-min); height: var(--gg-hit-min); min-height: var(--gg-hit-min); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; position: relative; touch-action: none; cursor: ns-resize; -webkit-appearance: none; appearance: none; }
+    .store-preview__handle { display: grid; place-items: start center; width: var(--gg-sheet-handle-hit); min-width: var(--gg-sheet-handle-hit); height: var(--gg-sheet-handle-hit); min-height: var(--gg-sheet-handle-hit); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; position: absolute; top: var(--gg-sheet-handle-top); left: 50%; transform: translateX(-50%); touch-action: none; cursor: ns-resize; -webkit-appearance: none; appearance: none; }
     .store-preview__handle::before { content: ''; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     @media (min-width: 720px) {
       :root { --store-max: 920px; --store-card-gap: 12px; }

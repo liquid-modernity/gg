@@ -252,9 +252,20 @@
       --gg-focus-ring: 2px solid var(--gg-accent);
       --gg-shadow-soft: 0 8px 24px rgba(32,26,28,.035);
       --gg-shadow-panel-bottom: 0 -16px 48px rgba(32,26,28,.105);
+      --gg-shell-edge-gap: 10px;
+      --gg-dock-width: min(calc(100vw - (var(--gg-shell-edge-gap) * 2)), 600px);
+      --gg-panel-width: var(--gg-dock-width);
+      --gg-sheet-max-height: min(94dvh, 920px);
+      --gg-sheet-utility-max-height: min(94dvh, 780px);
+      --gg-sheet-content-max-height: min(94dvh, 920px);
+      --gg-sheet-compact-max-height: min(86dvh, 680px);
+      --gg-sheet-head-height: 56px;
+      --gg-sheet-handle-hit: 44px;
+      --gg-sheet-handle-visual-width: 34px;
+      --gg-sheet-handle-visual-height: 3px;
+      --gg-sheet-handle-top: 4px;
       --gg-panel-min-height: 260px;
-      --gg-panel-max-height: min(94dvh, 920px);
-      --gg-panel-width: min(calc(100vw - 0px), 600px);
+      --gg-panel-max-height: var(--gg-sheet-utility-max-height);
       --gg-panel-radius: 26px;
       --gg-panel-pad-y: 0px;
       --gg-panel-pad-x: 14px;
@@ -264,9 +275,9 @@
       --gg-utility-head-pad-bottom: 6px;
       --gg-utility-head-border: var(--gg-divider);
       --gg-utility-title-max: 24ch;
-      --gg-panel-handle-width: 62px;
-      --gg-panel-handle-height: 3px;
-      --gg-utility-handle-gap: 6px;
+      --gg-panel-handle-width: var(--gg-sheet-handle-visual-width);
+      --gg-panel-handle-height: var(--gg-sheet-handle-visual-height);
+      --gg-utility-handle-gap: 0px;
       --gg-panel-handle-tone: rgba(32,26,28,.18);
       --gg-panel-scrim: rgba(22,17,20,.24);
       --gg-panel-scrim-fallback: rgba(22,17,20,.38);
@@ -337,7 +348,7 @@
       --landing-h2: clamp(28px, 10.5vw, 54px);
       --landing-pad: clamp(18px, 5vw, 64px);
     }
-    @supports (width: 100dvw) { :root { --gg-panel-width: min(calc(100dvw - 0px), 600px); } }
+    @supports (width: 100dvw) { :root { --gg-dock-width: min(calc(100dvw - (var(--gg-shell-edge-gap) * 2)), 600px); } }
     @media (min-width: 769px) {
       :root {
         --gg-panel-pad-y: 14px;
@@ -482,7 +493,7 @@
       .landing-grid__item { padding-right: 22px; }
       .landing-lines--columns { grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 36px; }
       .landing-lines--columns .landing-line { padding-right: 22px; }
-      .gg-dock { width: var(--gg-panel-width); max-width: none; }
+      .gg-dock { width: var(--gg-dock-width); max-width: none; }
       .gg-detail-outline { width: min(calc(100% - 66px), var(--gg-detail-outline-width)); max-width: none; }
       .gg-sheet__panel { width: var(--gg-panel-width); max-width: none; }
     }
@@ -531,7 +542,7 @@
     .gg-detail-outline__item-label { display: block; font: 650 14px/1.35 var(--gg-font-sans); }
     .gg-detail-outline__item-note { display: block; color: var(--gg-ink-soft); font: 520 12px/1.35 var(--gg-font-sans); }
 
-    .gg-dock { position: fixed; left: 50%; bottom: var(--gg-dock-offset-bottom); z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gg-toolbar-gap); width: var(--gg-panel-width); max-width: none; padding: var(--gg-toolbar-pad); border: 0; border-radius: var(--gg-toolbar-radius); background: var(--gg-toolbar-surface); box-shadow: var(--gg-shadow-soft); -webkit-backdrop-filter: blur(16px) saturate(145%); backdrop-filter: blur(16px) saturate(145%); transform: translate3d(-50%, 0, 0); opacity: 1; transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-ease); will-change: transform, opacity; }
+    .gg-dock { position: fixed; left: 50%; bottom: var(--gg-dock-offset-bottom); z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gg-toolbar-gap); width: var(--gg-dock-width); max-width: none; padding: var(--gg-toolbar-pad); border: 0; border-radius: var(--gg-toolbar-radius); background: var(--gg-toolbar-surface); box-shadow: var(--gg-shadow-soft); -webkit-backdrop-filter: blur(16px) saturate(145%); backdrop-filter: blur(16px) saturate(145%); transform: translate3d(-50%, 0, 0); opacity: 1; transition: transform var(--gg-motion-sheet-open-bottom), opacity var(--gg-ease); will-change: transform, opacity; }
     body[data-gg-dock-state='hidden-by-scroll'] .gg-dock, body[data-gg-panel-active='true'] .gg-dock { transform: translate3d(-50%, calc(100% + var(--gg-dock-offset-bottom) + 16px), 0); opacity: 0; pointer-events: none; }
     body[data-gg-dock-state='visible'] .gg-dock, body[data-gg-dock-state='forced-visible'] .gg-dock, body[data-gg-dock-state='panel-locked'] .gg-dock { transform: translate3d(-50%,0,0); opacity: 1; pointer-events: auto; }
     .gg-dock__item { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: var(--gg-toolbar-item-min-height); padding: 0 var(--gg-toolbar-item-pad-x); border: 0; border-radius: var(--gg-toolbar-item-radius); background: transparent; color: var(--gg-ink); font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans); cursor: pointer; transition: transform var(--gg-motion-press), background-color var(--gg-motion-inline-open), color var(--gg-motion-inline-open); touch-action: manipulation; }
@@ -542,18 +553,18 @@
     .gg-sheet[hidden] { display: none !important; }
     .gg-sheet__scrim { position: absolute; inset: 0; border: 0; background: var(--gg-panel-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; pointer-events: auto; transition: opacity var(--gg-motion-sheet-open-bottom); }
     .gg-sheet__panel { --gg-sheet-drag-y: 0px; position: relative; pointer-events: auto; width: var(--gg-panel-width); max-width: none; min-height: var(--gg-panel-min-height); max-height: var(--gg-panel-max-height); overflow: auto; padding: var(--gg-panel-pad-y) var(--gg-panel-pad-x) var(--gg-panel-pad-bottom); border: 0; border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0; background: var(--gg-surface-panel); color: var(--gg-ink); box-shadow: var(--gg-shadow-panel-bottom); -webkit-backdrop-filter: blur(18px) saturate(145%); backdrop-filter: blur(18px) saturate(145%); transform: translate3d(0, calc(22px + var(--gg-sheet-drag-y)), 0); transition: transform var(--gg-motion-sheet-open-bottom), box-shadow var(--gg-motion-sheet-open-bottom); overscroll-behavior: contain; will-change: transform; }
-    #gg-command-panel .gg-sheet__panel { display: grid; overflow: hidden; }
+    #gg-command-panel .gg-sheet__panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
     .gg-sheet[data-gg-state='open'] .gg-sheet__scrim, .gg-sheet[data-gg-state='opening'] .gg-sheet__scrim { opacity: 1; }
     .gg-sheet[data-gg-state='open'] .gg-sheet__panel, .gg-sheet[data-gg-state='opening'] .gg-sheet__panel { transform: translate3d(0,var(--gg-sheet-drag-y),0); }
     .gg-sheet[data-gg-state='dragging'] .gg-sheet__panel, .gg-sheet[data-gg-state='dragging'] .gg-sheet__scrim { transition: none; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__scrim { opacity: 0; }
     .gg-sheet[data-gg-state='closing'] .gg-sheet__panel { transform: translate3d(0, 18px, 0); transition: transform var(--gg-motion-sheet-close-bottom); }
-    .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: var(--gg-utility-head-pad-top) var(--gg-panel-pad-x) var(--gg-utility-head-pad-bottom); border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
-    .gg-sheet__handle { display: grid; place-items: center; position: relative; width: var(--gg-hit-min); min-width: var(--gg-hit-min); height: var(--gg-hit-min); min-height: var(--gg-hit-min); margin: 0 0 var(--gg-utility-handle-gap); padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; }
+    .gg-sheet__head { position: sticky; top: 0; z-index: 2; display: grid; justify-items: center; gap: var(--gg-utility-head-gap); min-height: var(--gg-sheet-head-height); margin: calc(var(--gg-panel-pad-y) * -1) calc(var(--gg-panel-pad-x) * -1) 0; padding: 18px var(--gg-panel-pad-x, 18px) 8px; border-bottom: 1px solid var(--gg-utility-head-border); background: linear-gradient(180deg, var(--gg-surface-panel) 86%, var(--gg-surface-panel-fade-soft) 100%); text-align: center; }
+    .gg-sheet__handle { display: grid; place-items: start center; position: absolute; top: var(--gg-sheet-handle-top); left: 50%; width: var(--gg-sheet-handle-hit); min-width: var(--gg-sheet-handle-hit); height: var(--gg-sheet-handle-hit); min-height: var(--gg-sheet-handle-hit); margin: 0; padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: ns-resize; touch-action: none; appearance: none; -webkit-appearance: none; transform: translateX(-50%); }
     .gg-sheet__handle::before { content: ""; display: block; width: var(--gg-panel-handle-width); height: var(--gg-panel-handle-height); border-radius: 999px; background: var(--gg-panel-handle-tone); }
     .gg-sheet__title { margin: 0; max-width: var(--gg-utility-title-max); font: 650 13px/1.2 var(--gg-font-sans); text-align: center; }
     .gg-sheet__body { display: grid; gap: 12px; padding: 12px 0 calc(14px + env(safe-area-inset-bottom)); }
-    .gg-discovery-body { min-height: 0; overflow: auto; padding: 12px 0 10px; overscroll-behavior: contain; }
+    #gg-command-panel [data-gg-scroll-container], .gg-discovery-body { min-height: 0; overflow: auto; padding: 12px 0 10px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     .gg-discovery-command { position: sticky; bottom: 0; z-index: 2; display: grid; gap: 10px; margin: 0 calc(var(--gg-panel-pad-x) * -1) calc(var(--gg-panel-pad-bottom) * -1); padding: 10px var(--gg-panel-pad-x) calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--gg-divider); background: linear-gradient(0deg, var(--gg-surface-panel) 82%, var(--gg-surface-panel-fade-soft) 100%); }
     .gg-discovery-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
     .gg-field { width: 100%; min-height: 54px; padding: 0 14px; border: 1px solid var(--gg-line); border-radius: 16px; background: color-mix(in srgb, var(--gg-surface-interactive) 60%, transparent); color: var(--gg-ink); font: 520 15px/1.2 var(--gg-font-sans); }
@@ -1711,8 +1722,8 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     };
 
     var PANEL_SCROLL_POLICY = {
-      command: { openBeforeRender: true, queryChange: true, filterChange: true },
-      more: { openBeforeRender: true, closeAfterHide: true, clearLocalSearchOnClose: true, closePreferencePanelOnClose: true }
+      command: { openBeforeRender: true, openAfterRender: true, closeAfterHide: true, queryChange: true, filterChange: true },
+      more: { openBeforeRender: true, openAfterRender: true, closeAfterHide: true, clearLocalSearchOnClose: true, closePreferencePanelOnClose: true }
     };
 
     var body = document.body;
@@ -1933,7 +1944,8 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     function setupDock() { if (!dock) return; state.dockLastScrollTop = scrollTop(); dock.addEventListener('focusin', function () { state.dockFocused = true; syncDockState(); }); dock.addEventListener('focusout', function () { window.setTimeout(function () { state.dockFocused = dock.contains(document.activeElement); syncDockState(); }, 0); }); window.addEventListener('scroll', requestDockSync, { passive: true }); window.addEventListener('resize', requestDockSync, { passive: true }); syncDockState(); }
     function setSurfaceInert(active) { [shell, outline, dock].forEach(function (node) { if (!node) return; if (active) { node.setAttribute('inert', ''); node.setAttribute('aria-hidden', 'true'); } else { node.removeAttribute('inert'); node.removeAttribute('aria-hidden'); } }); }
     function shouldResetPanel(name, key) { return !!(PANEL_SCROLL_POLICY[name] && PANEL_SCROLL_POLICY[name][key]); }
-    function resetPanelScroll(panelRoot, reason) { var containers; if (!panelRoot) return; containers = panelRoot.matches && panelRoot.matches('[data-gg-scroll-container]') ? [panelRoot] : Array.from(panelRoot.querySelectorAll('[data-gg-scroll-container]')); if (!containers.length) containers = [panelRoot]; containers.forEach(function (node) { try { if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' }); else { node.scrollTop = 0; node.scrollLeft = 0; } } catch (error) {} }); panelRoot.setAttribute('data-gg-scroll-reset-enabled', 'true'); panelRoot.setAttribute('data-gg-last-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-at', String(Date.now())); }
+    function collectPanelScrollTargets(panelRoot) { var targets = []; var directPanel; if (!panelRoot) return targets; targets.push(panelRoot); directPanel = panelRoot.matches && panelRoot.matches('.gg-sheet__panel, .gg-content-sheet__panel') ? panelRoot : panelRoot.querySelector && panelRoot.querySelector('.gg-sheet__panel, .gg-content-sheet__panel'); if (directPanel) targets.push(directPanel); if (panelRoot.querySelectorAll) targets = targets.concat(Array.from(panelRoot.querySelectorAll('[data-gg-scroll-container], .gg-sheet__panel, .gg-content-sheet__panel'))); return targets.filter(function (node, index) { return !!node && targets.indexOf(node) === index; }); }
+    function resetPanelScroll(panelRoot, reason) { var containers; if (!panelRoot) return; containers = collectPanelScrollTargets(panelRoot); containers.forEach(function (node) { try { node.scrollTop = 0; node.scrollLeft = 0; if (typeof node.scrollTo === 'function') node.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (error) {} }); panelRoot.setAttribute('data-gg-scroll-reset-enabled', 'true'); panelRoot.setAttribute('data-gg-last-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-reason', reason || 'reset'); panelRoot.setAttribute('data-gg-scroll-reset-at', String(Date.now())); }
     function resetPanelByName(name, key, reason) { var panel = document.getElementById(name === 'more' ? 'gg-more-panel' : 'gg-command-panel'); if (shouldResetPanel(name, key)) resetPanelScroll(panel, reason || key || 'reset'); }
     function resetMoreTransientState() { var root = document.querySelector('#gg-more-panel .gg-more-body'); var input; if (!root) return; if (shouldResetPanel('more', 'closePreferencePanelOnClose')) closeMorePreferencePanel(); if (!shouldResetPanel('more', 'clearLocalSearchOnClose')) return; input = root.querySelector('[data-gg-more-search-input]'); if (input) input.value = ''; root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card').forEach(function (row) { row.hidden = false; }); root.querySelectorAll('.gg-more-profile, .gg-more-section').forEach(function (section) { section.removeAttribute('data-gg-filter-empty'); }); }
     function openPanel(name, trigger) {
@@ -1943,7 +1955,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
       document.querySelectorAll('.gg-sheet').forEach(function (sheet) { sheet.hidden = true; sheet.setAttribute('aria-hidden', 'true'); sheet.setAttribute('inert', ''); sheet.setAttribute('data-gg-state', 'closed'); });
       panel.hidden = false; panel.removeAttribute('aria-hidden'); panel.removeAttribute('inert'); panel.setAttribute('data-gg-state', 'opening'); setSurfaceInert(true);
       document.querySelectorAll('.gg-dock__item[aria-controls]').forEach(function (button) { button.setAttribute('aria-expanded', String(button.getAttribute('data-gg-nav') === name || (name === 'command' && button.getAttribute('data-gg-nav') === 'search'))); });
-      window.requestAnimationFrame(function () { panel.setAttribute('data-gg-state', 'open'); var focusTarget = name === 'command' ? commandInput : panel.querySelector('.gg-sheet__panel'); if (focusTarget && focusTarget.focus) focusTarget.focus({ preventScroll: true }); }); syncDockState();
+      window.requestAnimationFrame(function () { panel.setAttribute('data-gg-state', 'open'); resetPanelByName(name, 'openAfterRender', 'open-after-render'); var focusTarget = name === 'command' ? commandInput : panel.querySelector('.gg-sheet__panel'); if (focusTarget && focusTarget.focus) focusTarget.focus({ preventScroll: true }); }); syncDockState();
     }
     function closePanel(options) {
       var closeOptions = typeof options === 'string' ? { reason: options } : (options || {});
