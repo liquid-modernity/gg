@@ -135,6 +135,8 @@
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
   --gg-discovery-input-height: 54px;
+  --gg-panel-preview-min-height: var(--gg-preview-panel-initial-height);
+  --gg-panel-preview-max-height: var(--gg-sheet-content-max-height);
 }
 /* END GENERATED: gg-visual-tokens */
 
@@ -1373,7 +1375,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
       position: sticky;
       top: 0;
       z-index: 0;
-      min-height: var(--gg-preview-hero-height);
+      min-height: var(--gg-preview-panel-initial-height);
+      max-height: var(--gg-preview-panel-max-height);
       aspect-ratio: var(--gg-preview-hero-aspect);
       overflow: hidden;
       background: #201a1c;
