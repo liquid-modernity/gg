@@ -328,8 +328,7 @@ img{max-width:100%;height:auto;display:block}
             </b:widget-settings>
             <b:includable id='main'>
               <b:if cond='data:view.isHomepage and not data:view.isSingleItem'>
-                <b:with value='data:posts filter (p =&gt; not ((p.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or p.body contains &quot;gg-store-data&quot; or p.body contains &quot;gg-yellowcard-data&quot;))' var='schemaPosts'>
-                  <script id='gg-root-jsonld' type='application/ld+json'>
+                <script id='gg-root-jsonld' type='application/ld+json'>
 {
   &quot;@context&quot;: &quot;https://schema.org&quot;,
   &quot;@graph&quot;: [
@@ -340,31 +339,7 @@ img{max-width:100%;height:auto;display:block}
       &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;,
       &quot;isPartOf&quot;: {
         &quot;@id&quot;: &quot;<data:blog.homepageUrl/>#website&quot;
-      },
-      &quot;mainEntity&quot;: {
-        &quot;@id&quot;: &quot;<data:blog.homepageUrl/>#itemlist&quot;
       }
-    },
-    {
-      &quot;@type&quot;: &quot;ItemList&quot;,
-      &quot;@id&quot;: &quot;<data:blog.homepageUrl/>#itemlist&quot;,
-      &quot;name&quot;: &quot;Recent Blog Articles&quot;,
-      &quot;url&quot;: &quot;<data:blog.homepageUrl/>&quot;,
-      &quot;numberOfItems&quot;: <b:eval expr='data:schemaPosts.length'/>,
-      &quot;itemListElement&quot;: [
-        <b:loop index='i' values='data:schemaPosts' var='schemaPost'>
-        {
-          &quot;@type&quot;: &quot;ListItem&quot;,
-          &quot;position&quot;: <b:eval expr='data:i + 1'/>,
-          &quot;url&quot;: &quot;<data:schemaPost.url/>&quot;,
-          &quot;item&quot;: {
-            &quot;@type&quot;: &quot;Article&quot;,
-            &quot;headline&quot;: &quot;<data:schemaPost.title.escaped/>&quot;,
-            &quot;url&quot;: &quot;<data:schemaPost.url/>&quot;
-          }
-        }<b:if cond='data:i + 1 != data:schemaPosts.length'>,</b:if>
-        </b:loop>
-      ]
     },
     {
       &quot;@type&quot;: &quot;BreadcrumbList&quot;,
@@ -386,8 +361,7 @@ img{max-width:100%;height:auto;display:block}
     }
   ]
 }
-                  </script>
-                </b:with>
+                </script>
               </b:if>
               <div class='gg-entry-list' data-gg-listing-budget='essential' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='gg-entry-list'>
                 <b:loop values='data:posts' var='post'>
