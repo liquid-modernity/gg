@@ -9,7 +9,7 @@ const files = {
   appJs: "src/js/gg-app.source.js",
   storeJs: "src/store/store-discovery.js",
   appCss: "src/css/gg-app.source.css",
-  previewCss: "src/css/modules/preview.css",
+  previewCss: "src/css/modules/preview-frame.css",
   storeCss: "src/store/store.css",
 };
 

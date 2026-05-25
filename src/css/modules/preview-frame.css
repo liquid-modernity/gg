@@ -8,12 +8,20 @@
   align-content: start;
   gap: 0;
   width: var(--gg-panel-width);
-  max-width: none;
+  max-width: 100dvw;
   min-height: var(--gg-preview-panel-initial-height);
   max-height: var(--gg-preview-panel-max-height);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: clip;
   background: var(--gg-preview-surface);
   box-shadow: var(--gg-preview-shadow);
+}
+
+@supports not (overflow-x: clip) {
+  .gg-preview__sheet,
+  .store-preview-sheet .gg-sheet__panel {
+    overflow-x: hidden;
+  }
 }
 
 .gg-content-sheet__affordance {
@@ -59,6 +67,8 @@
   z-index: 1;
   display: grid;
   gap: var(--gg-preview-content-gap);
+  min-width: 0;
+  max-width: 100%;
   margin-top: calc(-1 * var(--gg-preview-content-lift));
   padding: 0;
 }
@@ -113,6 +123,8 @@
 .store-preview__surface {
   display: grid;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
   background: var(--gg-preview-surface);
   border-radius: var(--gg-preview-radius) var(--gg-preview-radius) 0 0;
   box-shadow: 0 -1px 0 var(--gg-line-strong);

@@ -8,6 +8,9 @@
   --gg-color-active-row: var(--gg-surface-quiet);
   --gg-color-scrim: var(--gg-panel-scrim);
   --gg-sheet-radius: var(--gg-panel-radius);
+  --gg-outline-viewport-gap: 70px;
+  --gg-outline-max-width: 545px;
+  --gg-attached-outline-width: min(calc(100% - var(--gg-outline-viewport-gap)), var(--gg-outline-max-width));
   --gg-preview-panel-initial-height: min(72dvh, 720px);
   --gg-preview-panel-max-height: var(--gg-sheet-content-max-height);
   --gg-preview-hero-height: clamp(360px, 58dvh, 540px);

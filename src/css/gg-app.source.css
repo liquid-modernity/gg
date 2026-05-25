@@ -111,7 +111,10 @@
   --gg-bottom-safezone-breathing: 20px;
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + var(--gg-bottom-safezone-breathing));
   --gg-listing-bottom-clearance: var(--gg-bottom-safezone-min);
-  --gg-detail-outline-width: 540px;
+  --gg-outline-viewport-gap: 70px;
+  --gg-outline-max-width: 545px;
+  --gg-attached-outline-width: min(calc(100% - var(--gg-outline-viewport-gap)), var(--gg-outline-max-width));
+  --gg-detail-outline-width: var(--gg-outline-max-width);
   --gg-detail-outline-radius: 22px;
   --gg-detail-outline-border: var(--gg-toolbar-border);
   --gg-detail-outline-surface: var(--gg-toolbar-surface);
@@ -312,7 +315,7 @@
     --gg-discovery-result-title-size: 17px;
     --gg-comment-avatar-size: 38px;
     --gg-comment-indent: 22px;
-    --gg-detail-outline-width: 540px;
+    --gg-detail-outline-width: var(--gg-outline-max-width);
     --gg-detail-outline-expanded-max-height: min(40dvh, 340px);
     --gg-detail-outline-peek-title-size: 16px;
     --gg-detail-outline-micro-min-height: var(--gg-hit-min);
@@ -334,6 +337,9 @@ html[data-gg-theme='light'] {
   --gg-color-active-row: var(--gg-surface-quiet);
   --gg-color-scrim: var(--gg-panel-scrim);
   --gg-sheet-radius: var(--gg-panel-radius);
+  --gg-outline-viewport-gap: 70px;
+  --gg-outline-max-width: 545px;
+  --gg-attached-outline-width: min(calc(100% - var(--gg-outline-viewport-gap)), var(--gg-outline-max-width));
   --gg-preview-panel-initial-height: min(72dvh, 720px);
   --gg-preview-panel-max-height: var(--gg-sheet-content-max-height);
   --gg-preview-hero-height: clamp(360px, 58dvh, 540px);
@@ -344,6 +350,11 @@ html[data-gg-theme='light'] {
   --gg-discovery-input-height: 54px;
 }
 /* END GENERATED: gg-visual-tokens */
+
+
+
+
+
 
 
 
@@ -862,7 +873,7 @@ img {
   z-index: 39;
   display: grid;
   gap: 0;
-  width: min(calc(100% - 66px), var(--gg-detail-outline-width));
+  width: var(--gg-attached-outline-width);
   border: 0;
   border-radius: 22px 22px 0px 0px;
   background: var(--gg-detail-outline-surface);
@@ -880,7 +891,7 @@ img {
 
 body[data-gg-dock-state='hidden-by-scroll'] .gg-detail-outline {
   bottom: 0;
-  width: min(calc(100% - 66px), var(--gg-detail-outline-width));
+  width: var(--gg-attached-outline-width);
   border-bottom: 0;
   border-radius: var(--gg-detail-outline-radius) var(--gg-detail-outline-radius) 0 0;
   transform: translateX(-50%);
@@ -2269,6 +2280,11 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
+
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2347,7 +2363,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   min-height: var(--gg-panel-min-height);
   max-height: var(--gg-panel-max-height);
   height: auto;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: clip;
   border: 0;
   border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
   background: var(--gg-surface-panel);
@@ -2359,6 +2376,12 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
   will-change: transform;
+}
+
+@supports not (overflow-x: clip) {
+  .gg-sheet__panel {
+    overflow-x: hidden;
+  }
 }
 
 #gg-command-panel .gg-sheet__panel {
@@ -2488,6 +2511,11 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
+
+
+
 
 
 
@@ -2882,6 +2910,11 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
+
+
 /* BEGIN GENERATED: gg-preview-frame */
 .gg-preview {
   z-index: 94;
@@ -2893,12 +2926,20 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   align-content: start;
   gap: 0;
   width: var(--gg-panel-width);
-  max-width: none;
+  max-width: 100dvw;
   min-height: var(--gg-preview-panel-initial-height);
   max-height: var(--gg-preview-panel-max-height);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: clip;
   background: var(--gg-preview-surface);
   box-shadow: var(--gg-preview-shadow);
+}
+
+@supports not (overflow-x: clip) {
+  .gg-preview__sheet,
+  .store-preview-sheet .gg-sheet__panel {
+    overflow-x: hidden;
+  }
 }
 
 .gg-content-sheet__affordance {
@@ -2944,6 +2985,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   z-index: 1;
   display: grid;
   gap: var(--gg-preview-content-gap);
+  min-width: 0;
+  max-width: 100%;
   margin-top: calc(-1 * var(--gg-preview-content-lift));
   padding: 0;
 }
@@ -2998,12 +3041,19 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 .store-preview__surface {
   display: grid;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
   background: var(--gg-preview-surface);
   border-radius: var(--gg-preview-radius) var(--gg-preview-radius) 0 0;
   box-shadow: 0 -1px 0 var(--gg-line-strong);
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
+
+
+
+
 
 
 
@@ -3627,6 +3677,11 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
+
+
 
 
 

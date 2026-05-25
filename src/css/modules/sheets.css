@@ -53,7 +53,8 @@
   min-height: var(--gg-panel-min-height);
   max-height: var(--gg-panel-max-height);
   height: auto;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: clip;
   border: 0;
   border-radius: var(--gg-panel-radius) var(--gg-panel-radius) 0 0;
   background: var(--gg-surface-panel);
@@ -65,6 +66,12 @@
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
   will-change: transform;
+}
+
+@supports not (overflow-x: clip) {
+  .gg-sheet__panel {
+    overflow-x: hidden;
+  }
 }
 
 #gg-command-panel .gg-sheet__panel {

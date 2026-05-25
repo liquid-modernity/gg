@@ -539,6 +539,9 @@
   --gg-dock-edge-gap: 10px;
   --gg-sheet-edge-gap: 0px;
   --gg-dock-width: min(calc(100vw - (var(--gg-dock-edge-gap) * 2)), 600px);
+  --gg-outline-viewport-gap: 70px;
+  --gg-outline-max-width: 545px;
+  --gg-attached-outline-width: min(calc(100% - var(--gg-outline-viewport-gap)), var(--gg-outline-max-width));
   --gg-sheet-handle-hit: 44px;
   --gg-sheet-handle-visual-width: 30px;
   --gg-sheet-handle-visual-height: 2.5px;
@@ -561,10 +564,6 @@
   --store-card-aspect: 4 / 5;
   --store-card-min-wide: 240px;
   --store-control-h: 44px;
---gg-preview-panel-initial-height: min(72dvh, 720px);
---gg-sheet-content-max-height: min(94dvh, 920px);
---gg-panel-preview-min-height: var(--gg-preview-panel-initial-height);
---gg-panel-preview-max-height: var(--gg-sheet-content-max-height);
 }
 
 @supports (width: 100dvw) {

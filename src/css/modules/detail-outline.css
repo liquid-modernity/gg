@@ -5,7 +5,7 @@
   z-index: 39;
   display: grid;
   gap: 0;
-  width: min(calc(100% - 66px), var(--gg-detail-outline-width));
+  width: var(--gg-attached-outline-width);
   border: 0;
   border-radius: 22px 22px 0px 0px;
   background: var(--gg-detail-outline-surface);
@@ -23,7 +23,7 @@
 
 body[data-gg-dock-state='hidden-by-scroll'] .gg-detail-outline {
   bottom: 0;
-  width: min(calc(100% - 66px), var(--gg-detail-outline-width));
+  width: var(--gg-attached-outline-width);
   border-bottom: 0;
   border-radius: var(--gg-detail-outline-radius) var(--gg-detail-outline-radius) 0 0;
   transform: translateX(-50%);

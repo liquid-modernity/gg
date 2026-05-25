@@ -2703,32 +2703,48 @@
         return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
       });
     }
+    function restorePageScrollPosition(x, y) {
+      var currentX = window.scrollX || window.pageXOffset || 0;
+      var currentY = window.scrollY || window.pageYOffset || 0;
+      if (currentX === x && currentY === y) return;
+      window.scrollTo(x, y);
+    }
+    function preservePageScrollDuring(fn) {
+      var x = window.scrollX || window.pageXOffset || 0;
+      var y = window.scrollY || window.pageYOffset || 0;
+      fn();
+      window.requestAnimationFrame(function () {
+        restorePageScrollPosition(x, y);
+      });
+    }
     function openPanel(name, trigger, options) {
       var config = getPanel(name);
       if (!config || !config.sheet || !config.panel) return;
-      if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false });
-      if (shouldResetPanelName(name, 'openBeforeRender')) resetPanelScroll(config.sheet, 'open-before-render');
-      clearToastTimer();
-      hideAllToasts();
-      state.panelActive = name;
-      state.lastFocus = trigger || document.activeElement;
-      state.lastCloseReason = null;
-      config.sheet.hidden = false;
-      config.sheet.removeAttribute('inert');
-      config.sheet.setAttribute('aria-hidden', 'false');
-      config.sheet.setAttribute('data-gg-state', 'opening');
-      document.body.setAttribute('data-gg-active-panel', name);
-      document.body.setAttribute('data-gg-panel-active', 'true');
-      document.body.setAttribute('data-gg-scroll-lock', 'true');
-      document.body.setAttribute('data-gg-dock-state', 'panel-locked');
-      setDockInert(true);
-      setPanelEnvironment(true);
-      window.requestAnimationFrame(function () {
-        config.sheet.setAttribute('data-gg-state', 'open');
-        if (shouldResetPanelName(name, 'openAfterRender')) resetPanelScroll(config.sheet, 'open-after-render');
-        var target = options && options.focusTarget ? options.focusTarget : (focusable(config.panel)[0] || config.panel);
-        try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
-        if (options && options.selectText && target.select) target.select();
+      preservePageScrollDuring(function () {
+        if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false });
+        if (shouldResetPanelName(name, 'openBeforeRender')) resetPanelScroll(config.sheet, 'open-before-render');
+        clearToastTimer();
+        hideAllToasts();
+        state.panelActive = name;
+        state.lastFocus = trigger || document.activeElement;
+        state.lastCloseReason = null;
+        config.sheet.hidden = false;
+        config.sheet.removeAttribute('inert');
+        config.sheet.setAttribute('aria-hidden', 'false');
+        config.sheet.setAttribute('data-gg-state', 'opening');
+        document.body.setAttribute('data-gg-active-panel', name);
+        document.body.setAttribute('data-gg-panel-active', 'true');
+        document.body.setAttribute('data-gg-scroll-lock', 'true');
+        document.body.setAttribute('data-gg-dock-state', 'panel-locked');
+        setDockInert(true);
+        setPanelEnvironment(true);
+        window.requestAnimationFrame(function () {
+          config.sheet.setAttribute('data-gg-state', 'open');
+          if (shouldResetPanelName(name, 'openAfterRender')) resetPanelScroll(config.sheet, 'open-after-render');
+          var target = options && options.focusTarget ? options.focusTarget : (focusable(config.panel)[0] || config.panel);
+          try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
+          if (options && options.selectText && target.select) target.select();
+        });
       });
     }
     function closePanel(name, options) {
@@ -2773,8 +2789,13 @@
       if (!nodes.length) return;
       var first = nodes[0];
       var last = nodes[nodes.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        try { last.focus({ preventScroll: true }); } catch (error) { last.focus(); }
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        try { first.focus({ preventScroll: true }); } catch (error) { first.focus(); }
+      }
     }
 
     function panelDragEdge(name) {
