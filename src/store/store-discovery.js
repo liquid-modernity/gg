@@ -603,7 +603,10 @@
       activeToastNode: null,
       dragSession: null,
       lastCloseReason: null,
-      resizeSyncFrame: 0
+      resizeSyncFrame: 0,
+      modalBackgroundLocked: false,
+      lockedScrollX: 0,
+      lockedScrollY: 0
     };
     var PANEL_SCROLL_POLICY = {
       preview: { openBeforeRender: true, openAfterRender: true, closeBeforeHide: true, closeAfterHide: true, itemChange: true },
@@ -1209,26 +1212,6 @@
       if (filterCurrent) setNodeText(filterCurrent, label);
       if (filterCount) setNodeText(filterCount, countLabel || (state.filtered.length + ' ' + productUnit()));
       syncFilterToggleState(filterOutline && filterOutline.getAttribute('data-store-filter-state') === 'expanded');
-    }
-    function setPanelEnvironment(active) {
-      if (dock) {
-        if (active) {
-          dock.setAttribute('inert', '');
-          dock.setAttribute('aria-hidden', 'true');
-        } else {
-          dock.removeAttribute('inert');
-          dock.removeAttribute('aria-hidden');
-        }
-      }
-      if (filterOutline) {
-        if (active) {
-          filterOutline.setAttribute('inert', '');
-          filterOutline.setAttribute('aria-hidden', 'true');
-        } else {
-          filterOutline.removeAttribute('inert');
-          filterOutline.removeAttribute('aria-hidden');
-        }
-      }
     }
     function setCopy() {
       [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function (node) { node.textContent = copy(node.getAttribute('data-copy')); });
@@ -2703,19 +2686,95 @@
         return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
       });
     }
+    function pageScrollSnapshot() {
+      var doc = document.documentElement;
+      var body = document.body;
+      return {
+        x: window.scrollX || window.pageXOffset || doc.scrollLeft || (body && body.scrollLeft) || 0,
+        y: window.scrollY || window.pageYOffset || doc.scrollTop || (body && body.scrollTop) || 0
+      };
+    }
     function restorePageScrollPosition(x, y) {
-      var currentX = window.scrollX || window.pageXOffset || 0;
-      var currentY = window.scrollY || window.pageYOffset || 0;
-      if (currentX === x && currentY === y) return;
-      window.scrollTo(x, y);
+      var doc = document.documentElement;
+      var body = document.body;
+      try { window.scrollTo(x, y); } catch (error) {}
+      if (doc) {
+        doc.scrollLeft = x;
+        doc.scrollTop = y;
+      }
+      if (body) {
+        body.scrollLeft = x;
+        body.scrollTop = y;
+      }
     }
     function preservePageScrollDuring(fn) {
-      var x = window.scrollX || window.pageXOffset || 0;
-      var y = window.scrollY || window.pageYOffset || 0;
-      fn();
+      var snapshot = pageScrollSnapshot();
+      var result;
+      restorePageScrollPosition(snapshot.x, snapshot.y);
+      result = fn();
+      restorePageScrollPosition(snapshot.x, snapshot.y);
       window.requestAnimationFrame(function () {
-        restorePageScrollPosition(x, y);
+        restorePageScrollPosition(snapshot.x, snapshot.y);
+        window.requestAnimationFrame(function () {
+          restorePageScrollPosition(snapshot.x, snapshot.y);
+        });
       });
+      window.setTimeout(function () {
+        restorePageScrollPosition(snapshot.x, snapshot.y);
+      }, 90);
+      return result;
+    }
+    function isStoreModalActive() {
+      return !!state.panelActive || document.body.getAttribute('data-gg-panel-active') === 'true';
+    }
+    function eventInsideActiveSheet(event) {
+      var target = event && event.target;
+      return !!(target && target.closest && target.closest('.gg-sheet__panel, [data-gg-scroll-container]'));
+    }
+    function preventBackgroundScroll(event) {
+      if (!isStoreModalActive() || eventInsideActiveSheet(event)) return;
+      event.preventDefault();
+    }
+    function setBackgroundNodeLocked(node, isLocked) {
+      if (!node) return;
+      if (isLocked) {
+        node.setAttribute('inert', '');
+        node.setAttribute('aria-hidden', 'true');
+      } else {
+        node.removeAttribute('inert');
+        node.removeAttribute('aria-hidden');
+      }
+    }
+    function setStoreModalBackgroundLocked(isLocked) {
+      var snapshot;
+      if (isLocked) {
+        snapshot = pageScrollSnapshot();
+        if (!state.modalBackgroundLocked) {
+          state.lockedScrollX = snapshot.x;
+          state.lockedScrollY = snapshot.y;
+          window.addEventListener('wheel', preventBackgroundScroll, { passive: false });
+          window.addEventListener('touchmove', preventBackgroundScroll, { passive: false });
+        }
+        state.modalBackgroundLocked = true;
+        document.body.setAttribute('data-gg-scroll-lock', 'true');
+        document.body.setAttribute('data-gg-dock-state', 'panel-locked');
+      } else {
+        document.body.setAttribute('data-gg-scroll-lock', 'false');
+        if (state.modalBackgroundLocked) {
+          window.removeEventListener('wheel', preventBackgroundScroll, { passive: false });
+          window.removeEventListener('touchmove', preventBackgroundScroll, { passive: false });
+        }
+        state.modalBackgroundLocked = false;
+      }
+      setBackgroundNodeLocked(app, isLocked);
+      setBackgroundNodeLocked(filterOutline, isLocked);
+      setDockInert(isLocked);
+      if (!isLocked) {
+        restorePageScrollPosition(state.lockedScrollX, state.lockedScrollY);
+        window.requestAnimationFrame(function () {
+          restorePageScrollPosition(state.lockedScrollX, state.lockedScrollY);
+        });
+      }
     }
     function openPanel(name, trigger, options) {
       var config = getPanel(name);
@@ -2734,10 +2793,7 @@
         config.sheet.setAttribute('data-gg-state', 'opening');
         document.body.setAttribute('data-gg-active-panel', name);
         document.body.setAttribute('data-gg-panel-active', 'true');
-        document.body.setAttribute('data-gg-scroll-lock', 'true');
-        document.body.setAttribute('data-gg-dock-state', 'panel-locked');
-        setDockInert(true);
-        setPanelEnvironment(true);
+        setStoreModalBackgroundLocked(true);
         window.requestAnimationFrame(function () {
           config.sheet.setAttribute('data-gg-state', 'open');
           if (shouldResetPanelName(name, 'openAfterRender')) resetPanelScroll(config.sheet, 'open-after-render');
@@ -2763,14 +2819,12 @@
       if (!name || state.panelActive === name) state.panelActive = '';
       document.body.setAttribute('data-gg-active-panel', '');
       document.body.setAttribute('data-gg-panel-active', 'false');
-      document.body.setAttribute('data-gg-scroll-lock', 'false');
-      setDockInert(false);
       clearPreviewScrollSettleTimer();
       clearToastTimer();
       hideAllToasts();
       if (panelName === 'preview') clearPreviewUrl();
       if (shouldResetPanelName(panelName, 'closeAfterHide')) resetPanelScroll(config.sheet, state.lastCloseReason || 'close-after-hide');
-      setPanelEnvironment(false);
+      setStoreModalBackgroundLocked(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
     }
@@ -3002,6 +3056,44 @@
       openPanel('preview', trigger || document.activeElement);
       syncPreviewUrl(item);
     }
+    function isModifiedPreviewActivation(event) {
+      return !!(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || (typeof event.button === 'number' && event.button !== 0));
+    }
+    function productPreviewItemFromTrigger(trigger) {
+      var index;
+      var slug;
+      var item;
+      if (!trigger) return null;
+      slug = trigger.getAttribute('data-store-product-slug');
+      if (slug) {
+        item = findItemBySlug(slug);
+        if (item) return item;
+      }
+      index = Number(trigger.getAttribute('data-store-open-preview'));
+      return activeItem(index);
+    }
+    function openStorePreviewFromTrigger(trigger) {
+      var item = productPreviewItemFromTrigger(trigger);
+      if (!item) return;
+      openPreviewItem(item, trigger);
+    }
+    function onStorePreviewTrigger(event) {
+      var trigger;
+      if (event.defaultPrevented || isModifiedPreviewActivation(event)) return;
+      trigger = event.target && event.target.closest ? event.target.closest('[data-store-open-preview]') : null;
+      if (!trigger || !grid.contains(trigger)) return;
+      event.preventDefault();
+      openStorePreviewFromTrigger(trigger);
+    }
+    function onStorePreviewTriggerKeydown(event) {
+      var trigger;
+      if (event.defaultPrevented || isModifiedPreviewActivation(event)) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      trigger = event.target && event.target.closest ? event.target.closest('[data-store-open-preview]') : null;
+      if (!trigger || !grid.contains(trigger)) return;
+      event.preventDefault();
+      openStorePreviewFromTrigger(trigger);
+    }
     function previewItemForDiscovery(item) {
       if (!item) return null;
       if (clean(item.type) && clean(item.type) !== 'product') return null;
@@ -3013,15 +3105,8 @@
       window.location.assign(target);
     }
 
-    grid.addEventListener('click', function (event) {
-      var trigger = event.target.closest('[data-store-open-preview]');
-      if (!trigger) return;
-      var index = Number(trigger.getAttribute('data-store-open-preview'));
-      var item = activeItem(index);
-      if (!item) return;
-      event.preventDefault();
-      openPreviewItem(item, trigger);
-    });
+    grid.addEventListener('click', onStorePreviewTrigger);
+    grid.addEventListener('keydown', onStorePreviewTriggerKeydown);
     if (storeDockLink) storeDockLink.addEventListener('click', function (event) {
       if (!isStorePath()) return;
       event.preventDefault();
@@ -3342,4 +3427,5 @@
     applyTheme();
     updateCategoryContext();
     loadProducts();
+    document.documentElement.setAttribute('data-store-js', 'ready');
 }());

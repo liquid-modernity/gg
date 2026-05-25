@@ -35,6 +35,7 @@
     "gaga:verify-sheet-core-source": "node qa/component-source-contract-guard.mjs",
     "gaga:verify-visual-system": "node qa/visual-system-contract-guard.mjs",
     "gaga:verify-sheet-runtime-overflow": "node qa/sheet-runtime-overflow-viewport-guard.mjs",
+    "gaga:verify-store-modal-preview": "node qa/store-modal-preview-reliability-guard.mjs",
     "gaga:verify-shell-contract": "node qa/shell-interaction-guard.mjs",
     "gaga:verify-theme-contract": "node qa/theme-contract-guard.mjs",
     "gaga:verify-sheet-contract": "bash qa/sheet-contract-smoke.sh",
@@ -47,7 +48,7 @@
     "ci:cloudflare": "npm run ci:store && npm run ci:qa && bash -n qa/live-smoke-worker.sh",
     "deploy:cloudflare": "npm run build && node tools/cloudflare-deploy.mjs deploy",
     "deploy:cloudflare:dry": "npm run build && node tools/cloudflare-deploy.mjs dry-run",
-    "ci:qa": "npm run gaga:verify-comments-proof && node qa/copy-registry-guard.mjs && npm run gaga:verify-nav-more && npm run gaga:verify-discovery-contract && npm run gaga:verify-discovery-filters && npm run gaga:verify-store-isolation && npm run gaga:verify-theme && npm run gaga:verify-shell && npm run gaga:verify-preview-sheet && npm run gaga:verify-sheet-lifecycle && npm run gaga:verify-component-source && npm run gaga:verify-sheet-core-source && npm run gaga:verify-visual-system && npm run gaga:verify-sheet-runtime-overflow && node qa/template-fingerprint.mjs --check && node qa/worker-syntax-check.mjs"
+    "ci:qa": "npm run gaga:verify-comments-proof && node qa/copy-registry-guard.mjs && npm run gaga:verify-nav-more && npm run gaga:verify-discovery-contract && npm run gaga:verify-discovery-filters && npm run gaga:verify-store-isolation && npm run gaga:verify-theme && npm run gaga:verify-shell && npm run gaga:verify-preview-sheet && npm run gaga:verify-sheet-lifecycle && npm run gaga:verify-component-source && npm run gaga:verify-sheet-core-source && npm run gaga:verify-visual-system && npm run gaga:verify-sheet-runtime-overflow && npm run gaga:verify-store-modal-preview && node qa/template-fingerprint.mjs --check && node qa/worker-syntax-check.mjs"
   },
   "devDependencies": {
     "wrangler": "4.61.1"

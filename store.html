@@ -646,7 +646,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-body[data-gg-scroll-lock='true'] { overflow: hidden; }
+body[data-gg-scroll-lock='true'] {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body[data-gg-panel-active='true'] [data-store-background],
+body[data-gg-panel-active='true'] .store-filter-outline {
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-store-js='booting'] [data-store-open-preview] {
+  pointer-events: none;
+}
 
 a {
   color: inherit;
@@ -1090,6 +1103,7 @@ input:focus-visible {
   <main
     id="store-app"
     class="store-app"
+    data-store-background
     data-store-module="store"
     data-store-state="loading"
     data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"

@@ -141,7 +141,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-body[data-gg-scroll-lock='true'] { overflow: hidden; }
+body[data-gg-scroll-lock='true'] {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body[data-gg-panel-active='true'] [data-store-background],
+body[data-gg-panel-active='true'] .store-filter-outline {
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-store-js='booting'] [data-store-open-preview] {
+  pointer-events: none;
+}
 
 a {
   color: inherit;

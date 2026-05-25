@@ -10,8 +10,18 @@
   var discoveryPromise = null;
   var discoveryFailed = false;
 
+  document.documentElement.setAttribute('data-store-js', 'booting');
+
   function enhancedRuntimeReady() {
     return !!(window.StoreSurface && typeof window.StoreSurface.snapshot === 'function');
+  }
+
+  function setStoreJsState(value) {
+    document.documentElement.setAttribute('data-store-js', value);
+  }
+
+  function isModifiedActivation(event) {
+    return !!(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || (typeof event.button === 'number' && event.button !== 0));
   }
 
   function setCoreState(value) {
@@ -39,6 +49,7 @@
     if (discoveryFailed) return Promise.reject(new Error('store-discovery-failed'));
     if (discoveryPromise) return discoveryPromise;
 
+    setStoreJsState('loading');
     setCoreState('loading-discovery');
     discoveryPromise = new Promise(function (resolve, reject) {
       script = document.createElement('script');
@@ -48,6 +59,7 @@
       script.setAttribute('data-store-discovery-runtime', 'true');
       script.onload = function () {
         setCoreState('ready');
+        setStoreJsState(enhancedRuntimeReady() ? 'ready' : 'core-ready');
         resolve(window.StoreSurface || null);
       };
       script.onerror = function () {
@@ -91,6 +103,7 @@
     if (enhancedRuntimeReady()) return;
     trigger = lazyTriggerFromEvent(event);
     if (!trigger) return;
+    if (isModifiedActivation(event)) return;
 
     href = trigger.getAttribute && trigger.getAttribute('href');
     event.preventDefault();
@@ -119,4 +132,5 @@
   }
 
   setCoreState('ready');
+  setStoreJsState('core-ready');
 }());

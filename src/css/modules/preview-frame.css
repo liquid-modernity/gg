@@ -52,8 +52,10 @@
   position: sticky;
   top: 0;
   z-index: 0;
-  min-height: var(--gg-preview-hero-height);
-  aspect-ratio: var(--gg-preview-hero-aspect);
+  height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
+  min-height: 0;
+  max-height: var(--gg-preview-hero-max-height);
+  aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
   background:
@@ -69,8 +71,15 @@
   gap: var(--gg-preview-content-gap);
   min-width: 0;
   max-width: 100%;
-  margin-top: calc(-1 * var(--gg-preview-content-lift));
   padding: 0;
+}
+
+.gg-preview__body {
+  margin-top: calc(-1 * var(--gg-preview-content-lift));
+}
+
+.store-preview__body {
+  margin-top: calc(-1 * var(--gg-preview-store-content-lift));
 }
 
 .gg-preview__media,
