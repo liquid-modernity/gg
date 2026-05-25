@@ -25,7 +25,6 @@
   padding: 0 var(--gg-toolbar-item-pad-x);
   border: 0;
   border-radius: var(--gg-toolbar-item-radius);
-  background: transparent;
   color: var(--gg-ink);
   font: var(--gg-toolbar-item-weight) var(--gg-toolbar-item-size)/1.2 var(--gg-font-sans);
   cursor: pointer;
@@ -34,6 +33,8 @@
   flex-wrap: wrap;
   align-content: center;
   align-items: center;
+  background: var(--gg-toolbar-surface);
+  backdrop-filter: blur(16px) saturate(145%);
 }
 
 .gg-detail-toolbar__action--comments {
@@ -67,8 +68,8 @@
 
 .gg-detail-toolbar__action--comments .gg-detail-toolbar__count {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  bottom: 30px;
+  left: 25px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
