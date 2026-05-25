@@ -107,8 +107,6 @@
 .gg-sheet[data-gg-edge='top'] .gg-sheet__panel {
   --gg-sheet-rest-y: -24px;
   --gg-sheet-transition: var(--gg-motion-sheet-open-top);
-  min-height: var(--gg-panel-preview-min-height, var(--gg-panel-min-height));
-  max-height: var(--gg-panel-preview-max-height, var(--gg-panel-max-height));
   border: 0;
   border-radius: 0 0 var(--gg-panel-radius) var(--gg-panel-radius);
   box-shadow: var(--gg-shadow-panel-top);
