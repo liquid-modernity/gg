@@ -1,14 +1,24 @@
 # TASK-ARCH-LOCK-001 — Document Surface Contracts, Agent Rules, and Source-of-Truth Boundaries
 
 
-Baseline assumption: Store Isolation, Store Isolation JS, Discovery 002/003, Theme 001, Shell 001/002, Preview 001, and CI/CD hardening are already stable.
+Baseline assumption: Store Isolation, Store Isolation JS, Discovery 002/003, Theme 001, Shell 001/002, Preview 001, comments proof, and current CI/CD hardening are already stable.
 
 Global rule for every task:
 - Treat this as hardening/audit/contract work.
+- Work one task only; do not start the next task.
 - Do not rewrite stable Store/Discovery/Shell/Preview controllers unless a guard proves a real defect.
 - Preserve Blog1 detail, Blogger native comments, threaded comments, Store isolation, Discovery taxonomy, Theme Light/Dark, global sheet controller, preview contract, preview scroll reset, and current passing CI.
 - Do not hardblock post titles, URLs, or slugs.
 - Do not weaken QA guards.
+- Do not add override-only CSS/JS.
+- Do not edit generated output as the only fix.
+
+Rewrite definition:
+- Rewrite means consolidate duplicated behavior/configuration into one documented contract.
+- Rewrite does not mean rebuilding stable systems from scratch.
+
+QA/CI rule:
+- Any new major guard must be wired into package.json, ci:qa or the relevant aggregate script, and QA-COMMANDS.md per TASK-QA-CI-RECONCILIATION-001.
 
 
 ## Strategic Purpose
