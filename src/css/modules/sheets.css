@@ -22,6 +22,7 @@
   opacity: 0;
   pointer-events: auto;
   transition: opacity var(--gg-motion-sheet-open-bottom);
+  border-color: #ffffff00;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
