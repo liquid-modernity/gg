@@ -798,8 +798,6 @@ img {
   padding: var(--gg-toolbar-pad);
   border: 1px solid var(--gg-toolbar-border);
   border-radius: var(--gg-toolbar-radius);
-  background: rgb(74 75 72 / 76%);
-  box-shadow: var(--gg-shadow-soft);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   width: 44px;
