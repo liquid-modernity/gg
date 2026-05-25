@@ -38,7 +38,7 @@ Worker non-goals:
 
 ## Static Assets Role
 
-Blogger app CSS/JS source lives in `src/css/*` and `src/js/*`. `tools/template-pack.mjs` copies the app bundles into `__gg/assets/*` and `dist/assets/*`. The Blogger publish artifact links runtime CSS/JS through `/__gg/assets/*`.
+Blogger app CSS/JS source lives in `src/css/*` and `src/js/*`. `tools/template-pack.mjs` copies the app bundles into `__gg/assets/*` and `dist/assets/*`. The Blogger publish artifact links runtime CSS/JS through `/__gg/assets/*`. `ASSET-ARCHITECTURE.md` owns the detailed source/generated asset map, critical/external CSS role split, and deployment artifact discipline.
 
 PWA/static files such as `manifest.webmanifest`, `sw.js`, `offline.html`, `robots.txt`, `_headers`, icons, copy registries, flags, and static route HTML are staged for Cloudflare by `tools/cloudflare-prepare.mjs`.
 

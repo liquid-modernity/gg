@@ -20,6 +20,7 @@ const requiredScripts = [
 
 const majorGuardFiles = [
   "qa/a11y-static-guard.mjs",
+  "qa/asset-architecture-guard.mjs",
   "qa/ci-reconciliation-guard.mjs",
   "qa/comments-proof-guard.mjs",
   "qa/component-source-contract-guard.mjs",

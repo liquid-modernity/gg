@@ -17,6 +17,7 @@ Primary source files include:
 - `src/landing/*`, `src/dashboard/*`, and `src/knowledge base/*`: static-surface source assets where applicable.
 - `worker.js`: Cloudflare Worker edge governance source, including generated Store registry blocks only when rebuilt by Store tooling.
 - `flags.json`, `registry/runtime/*`, and root copy JSON files used as runtime inputs.
+- `ASSET-ARCHITECTURE.md`: asset source/generated boundary, loading map, cache/deploy discipline, and parity guard scope.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs.
 
 ## Generated Files
@@ -104,6 +105,7 @@ Examples of mandatory read-only guards:
 
 - `qa/ci-reconciliation-guard.mjs`
 - `qa/a11y-static-guard.mjs`
+- `qa/asset-architecture-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`

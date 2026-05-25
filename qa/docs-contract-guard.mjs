@@ -51,6 +51,17 @@ const requiredDocs = {
     "npm run ci:qa",
     "npm run ci:cloudflare",
   ],
+  "ASSET-ARCHITECTURE.md": [
+    "source files",
+    "generated files",
+    "template-pack output",
+    "store-build output",
+    "cloudflare-prepare output",
+    "critical css purpose",
+    "external css purpose",
+    "route asset map",
+    "production switch expectations",
+  ],
 };
 
 const globalMarkers = [
