@@ -4,84 +4,96 @@ export const GG_ROUTES = Object.freeze({
     surface: "landing",
     href: "/landing",
     labelKey: "nav.home",
-    publicName: "Home"
+    publicName: "Home",
+    icon: "home"
   }),
   blog: Object.freeze({
     id: "blog",
     surface: "blog",
     href: "/",
     labelKey: "nav.blog",
-    publicName: "Blog"
+    publicName: "Blog",
+    icon: "article"
   }),
   store: Object.freeze({
     id: "store",
     surface: "store",
     href: "/store",
     labelKey: "nav.store",
-    publicName: "Store"
+    publicName: "Store",
+    icon: "shopping_bag"
   }),
   contact: Object.freeze({
     id: "contact",
     surface: "landing-section",
     href: "/landing#contact",
     labelKey: "nav.contact",
-    publicName: "Contact"
+    publicName: "Contact",
+    icon: "mail"
   }),
   search: Object.freeze({
     id: "search",
     surface: "utility",
     href: "",
     labelKey: "nav.search",
-    publicName: "Search"
+    publicName: "Search",
+    icon: "search"
   }),
   more: Object.freeze({
     id: "more",
     surface: "utility",
     href: "",
     labelKey: "nav.more",
-    publicName: "More"
+    publicName: "More",
+    icon: "expand_more"
   }),
   sitemap: Object.freeze({
     id: "sitemap",
     surface: "system",
     href: "/sitemap.xml",
     labelKey: "more.sitemap",
-    publicName: "Sitemap"
+    publicName: "Sitemap",
+    icon: "account_tree"
   }),
   rss: Object.freeze({
     id: "rss",
     surface: "feed",
     href: "/feeds/posts/default?alt=rss",
     labelKey: "more.rss",
-    publicName: "RSS"
+    publicName: "RSS",
+    icon: "rss_feed"
   }),
   about: Object.freeze({
     id: "about",
     surface: "page",
     href: "/p/about.html",
     labelKey: "more.about",
-    publicName: "About PakRPP"
+    publicName: "About PakRPP",
+    icon: "info"
   }),
   privacy: Object.freeze({
     id: "privacy",
     surface: "page",
     href: "/p/privacy-policy.html",
     labelKey: "more.privacy",
-    publicName: "Privacy Policy"
+    publicName: "Privacy Policy",
+    icon: "shield"
   }),
   terms: Object.freeze({
     id: "terms",
     surface: "page",
     href: "/p/terms-of-use.html",
     labelKey: "more.terms",
-    publicName: "Terms of Use"
+    publicName: "Terms of Use",
+    icon: "description"
   }),
   disclaimer: Object.freeze({
     id: "disclaimer",
     surface: "page",
     href: "/p/disclaimer.html",
     labelKey: "more.disclaimer",
-    publicName: "Disclaimer"
+    publicName: "Disclaimer",
+    icon: "warning"
   })
 });
 

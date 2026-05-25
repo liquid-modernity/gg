@@ -1,5 +1,42 @@
 export const GG_DOCK = Object.freeze({
   order: Object.freeze(["home", "contact", "search", "blog", "more"]),
+  icons: Object.freeze({
+    landing: Object.freeze({
+      home: "home_app_logo",
+      contact: "calendar_add_on",
+      search: "explore",
+      blog: "newsmode",
+      more: "menu"
+    }),
+    blog: Object.freeze({
+      home: "home_app_logo",
+      contact: "calendar_add_on",
+      search: "explore",
+      blog: "newsmode",
+      more: "menu"
+    }),
+    detail: Object.freeze({
+      home: "home_app_logo",
+      contact: "calendar_add_on",
+      search: "explore",
+      blog: "newsmode",
+      more: "menu"
+    }),
+    page: Object.freeze({
+      home: "home_app_logo",
+      contact: "calendar_add_on",
+      search: "explore",
+      blog: "newsmode",
+      more: "menu"
+    }),
+    store: Object.freeze({
+      home: "home_app_logo",
+      contact: "calendar_add_on",
+      search: "search",
+      blog: "newsmode",
+      more: "menu"
+    })
+  }),
   surfaces: Object.freeze({
     landing: Object.freeze({
       active: "home",

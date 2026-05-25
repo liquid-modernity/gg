@@ -10,6 +10,7 @@ npm run gaga:verify-docs-contract
 npm run gaga:verify-ci-reconciliation
 npm run gaga:verify-semantic-ssr
 npm run gaga:verify-schema-jsonld
+npm run gaga:verify-registry-contract
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
 node qa/copy-registry-guard.mjs
@@ -108,6 +109,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
+- `qa/registry-contract-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
 - `qa/sheet-lifecycle-contract-guard.mjs`

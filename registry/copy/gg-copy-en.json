@@ -1,7 +1,6 @@
 {
   "appearance.dark": "Dark",
   "appearance.light": "Light",
-  "appearance.system": "System",
   "banner.offline.body": "Some features may be unavailable until the connection returns.",
   "banner.offline.title": "You are offline",
   "banner.update.body": "Refresh to use the newest version.",

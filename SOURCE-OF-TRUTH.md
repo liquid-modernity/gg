@@ -106,6 +106,7 @@ Examples of mandatory read-only guards:
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
+- `qa/registry-contract-guard.mjs`
 - `qa/comments-proof-guard.mjs`
 - `qa/discovery-contract-guard.mjs`
 - `qa/discovery-filter-taxonomy-guard.mjs`

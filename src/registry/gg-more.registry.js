@@ -32,7 +32,8 @@ export const GG_MORE_SHEET = Object.freeze({
   ]),
   localSearch: Object.freeze({
     labelKey: "more.localSearch.label",
-    placeholderKey: "more.localSearch.placeholder"
+    placeholderKey: "more.localSearch.placeholder",
+    icon: "search"
   }),
   share: Object.freeze({
     labelKey: "more.shareSite"
@@ -45,5 +46,11 @@ export const GG_MORE_SHEET = Object.freeze({
       key: "more.commerceNote",
       placement: "beforeCopyright"
     })
+  }),
+  preferenceIcons: Object.freeze({
+    language: "language",
+    appearance: "contrast",
+    reading: "format_size",
+    motion: "animation"
   })
 });

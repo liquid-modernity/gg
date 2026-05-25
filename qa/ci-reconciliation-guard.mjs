@@ -28,6 +28,7 @@ const majorGuardFiles = [
   "qa/docs-contract-guard.mjs",
   "qa/semantic-ssr-guard.mjs",
   "qa/schema-jsonld-guard.mjs",
+  "qa/registry-contract-guard.mjs",
   "qa/nav-more-contract-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
   "qa/sheet-lifecycle-contract-guard.mjs",
