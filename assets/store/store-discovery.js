@@ -2716,6 +2716,18 @@
       if (name === 'more') return { sheet: moreSheet, panel: morePanel };
       return null;
     }
+    function getPanelTrigger(name) {
+      if (name === 'discovery') return discoverOpen;
+      if (name === 'saved') return savedOpen;
+      if (name === 'more') return moreOpen;
+      return null;
+    }
+    function syncPanelTriggerState(activeName) {
+      ['discovery', 'saved', 'more'].forEach(function (name) {
+        var trigger = getPanelTrigger(name);
+        if (trigger) trigger.setAttribute('aria-expanded', activeName === name ? 'true' : 'false');
+      });
+    }
     function normalizePanelResetReason(reason) {
       if (reason === 'drag') return 'drag-close';
       if (reason === 'handle') return 'handle';
@@ -2889,6 +2901,7 @@
         state.panelActive = name;
         state.lastFocus = trigger || document.activeElement;
         state.lastCloseReason = null;
+        syncPanelTriggerState(name);
         config.sheet.hidden = false;
         config.sheet.removeAttribute('inert');
         config.sheet.setAttribute('aria-hidden', 'false');
@@ -2919,6 +2932,7 @@
       config.sheet.setAttribute('inert', '');
       config.sheet.hidden = true;
       if (!name || state.panelActive === name) state.panelActive = '';
+      syncPanelTriggerState(state.panelActive);
       document.body.setAttribute('data-gg-active-panel', '');
       document.body.setAttribute('data-gg-panel-active', 'false');
       clearPreviewScrollSettleTimer();

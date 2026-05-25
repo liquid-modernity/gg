@@ -103,6 +103,7 @@ Read-only guards verify contracts and must not write source, generated, or deplo
 Examples of mandatory read-only guards:
 
 - `qa/ci-reconciliation-guard.mjs`
+- `qa/a11y-static-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`

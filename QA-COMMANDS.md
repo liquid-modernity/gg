@@ -11,6 +11,7 @@ npm run gaga:verify-ci-reconciliation
 npm run gaga:verify-semantic-ssr
 npm run gaga:verify-schema-jsonld
 npm run gaga:verify-registry-contract
+npm run gaga:verify-a11y-static
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
 node qa/copy-registry-guard.mjs
@@ -101,6 +102,7 @@ npm run ci:cloudflare
 These read-only guards are mandatory and must remain wired through `package.json` and the aggregate `ci:qa`/`ci:cloudflare` chain:
 
 - `qa/ci-reconciliation-guard.mjs`
+- `qa/a11y-static-guard.mjs`
 - `qa/comments-proof-guard.mjs`
 - `qa/component-source-contract-guard.mjs`
 - `qa/copy-registry-guard.mjs`
