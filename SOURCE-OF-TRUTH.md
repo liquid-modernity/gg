@@ -95,3 +95,37 @@ For production Store readiness, use the strict production gate without weakening
 ```bash
 GG_STORE_PRODUCTION_READINESS=1 npm run store:check:production
 ```
+
+## Read-Only Guards
+
+Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
+
+Examples of mandatory read-only guards:
+
+- `qa/ci-reconciliation-guard.mjs`
+- `qa/docs-contract-guard.mjs`
+- `qa/comments-proof-guard.mjs`
+- `qa/discovery-contract-guard.mjs`
+- `qa/discovery-filter-taxonomy-guard.mjs`
+- `qa/store-isolation-guard.mjs`
+- `qa/theme-contract-guard.mjs`
+- `qa/shell-interaction-guard.mjs`
+- `qa/preview-sheet-contract-guard.mjs`
+- `qa/sheet-lifecycle-contract-guard.mjs`
+- `qa/component-source-contract-guard.mjs`
+- `qa/visual-system-contract-guard.mjs`
+- `qa/sheet-runtime-overflow-viewport-guard.mjs`
+- `qa/store-modal-preview-reliability-guard.mjs`
+- `qa/template-fingerprint.mjs --check`
+- `qa/worker-syntax-check.mjs`
+
+## Mutating Build Tools
+
+These tools intentionally write generated or staging artifacts and must not be treated as read-only guards:
+
+- `tools/sync-shared-css-components.mjs`: syncs shared CSS component source blocks into app/landing/store CSS targets.
+- `tools/build-store-static.mjs`: rebuilds Store HTML, Store data, Store runtime assets, and Store build reports from source/config/feed inputs.
+- `tools/template-pack.mjs`: rebuilds Blogger publish artifacts and synchronized app CSS/JS runtime assets.
+- `tools/cloudflare-prepare.mjs`: rebuilds `.cloudflare-build/*` deployment staging from source and generated artifacts.
+- `tools/cloudflare-deploy.mjs`: runs preflight, prepares the Cloudflare bundle, then invokes Wrangler.
+- `tools/sync-store-lcp.mjs`: syncs the Store LCP product source config into guarded Store markup blocks.

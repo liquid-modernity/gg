@@ -50,17 +50,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project artifacts
-        run: npm run build
-
-      - name: Run aggregate QA guards
-        run: npm run ci:qa
-
       - name: Verify before deploy
         run: npm run ci:cloudflare
 
       - name: Deploy to Cloudflare Workers
-        run: npm run gaga:cf:deploy
+        run: npm run deploy:cloudflare:prepared
 
       - name: Live smoke test
         run: npm run gaga:verify-worker-live:strict

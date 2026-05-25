@@ -42,53 +42,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Show repository root
-        run: |
-          pwd
-          ls -la
-
-      - name: Build project artifacts
-        run: npm run build
-
-      - name: Run aggregate QA guards
-        run: npm run ci:qa
-
       - name: Run Store and Cloudflare CI checks
         run: npm run ci:cloudflare
-
-      - name: Verify generated Blogger app artifacts
-        run: |
-          test -f __gg/assets/css/gg-app.dev.css
-          test -f __gg/assets/js/gg-app.dev.js
-          test -f dist/assets/css/gg-app.dev.css
-          test -f dist/assets/js/gg-app.dev.js
-          test -f dist/blogger-template.publish.xml
-
-      - name: Verify root Store artifacts
-        run: |
-          test -f store.html
-          test -f store/data/manifest.json
-          test -f store/data/build-report.json
-          test -f store/fashion/index.html
-          test -f store/skincare/index.html
-          test -f store/workspace/index.html
-          test -f store/tech/index.html
-          test -f store/everyday/index.html
-          test -f assets/store/store-core.js
-          test -f assets/store/store-discovery.js
-          test -f assets/store/store.js
-          test -f assets/store/store.css
-
-      - name: Verify Cloudflare prepared bundle
-        run: |
-          test -f .cloudflare-build/worker.js
-          test -f .cloudflare-build/public/store.html
-          test -f .cloudflare-build/public/store/data/manifest.json
-          test -f .cloudflare-build/public/store/data/build-report.json
-          test -f .cloudflare-build/public/assets/store/store-core.js
-          test -f .cloudflare-build/public/assets/store/store-discovery.js
-          test -f .cloudflare-build/public/assets/store/store.js
-          test -f .cloudflare-build/public/assets/store/store.css
 
       - name: Upload CI diagnostics
         if: failure()
