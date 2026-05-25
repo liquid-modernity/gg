@@ -110,6 +110,30 @@ export function buildStoreJsonLd(products, options = {}) {
         itemListOrder: "https://schema.org/ItemListOrderDescending",
         itemListElement: itemListElements,
       },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${routeUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${STORE_ORIGIN}/landing`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Blog",
+            item: `${STORE_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: collectionName,
+            item: routeUrl,
+          },
+        ],
+      },
     ],
   };
 }

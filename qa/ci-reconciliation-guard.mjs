@@ -27,6 +27,7 @@ const majorGuardFiles = [
   "qa/discovery-filter-taxonomy-guard.mjs",
   "qa/docs-contract-guard.mjs",
   "qa/semantic-ssr-guard.mjs",
+  "qa/schema-jsonld-guard.mjs",
   "qa/nav-more-contract-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
   "qa/sheet-lifecycle-contract-guard.mjs",
