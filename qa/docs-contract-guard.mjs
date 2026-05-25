@@ -62,6 +62,21 @@ const requiredDocs = {
     "route asset map",
     "production switch expectations",
   ],
+  "CLEANUP-REPORT.md": [
+    "removed",
+    "why it was unused/stale",
+    "how usage was checked",
+    "regression protection",
+    "intentionally not removed",
+  ],
+  "READINESS-85-REPORT.md": [
+    "what is complete",
+    "what is advisory",
+    "known warnings",
+    "intentionally deferred items",
+    "what blocks production indexing",
+    "what must be checked before production mode",
+  ],
 };
 
 const globalMarkers = [

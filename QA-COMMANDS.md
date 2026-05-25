@@ -13,6 +13,8 @@ npm run gaga:verify-schema-jsonld
 npm run gaga:verify-registry-contract
 npm run gaga:verify-a11y-static
 npm run gaga:verify-asset-architecture
+npm run gaga:verify-cleanup
+npm run gaga:verify-85
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
 node qa/copy-registry-guard.mjs
@@ -26,6 +28,7 @@ npm run gaga:verify-preview-sheet
 npm run store:build
 npm run store:proof
 npm run ci:qa
+npm run ci:85
 ```
 
 ## Store Development Set
@@ -94,9 +97,12 @@ GG_LIVE_BASE_URL=https://www.pakrpp.com npm run gaga:verify-worker-live:strict
 npm run ci:qa
 npm run ci:store
 npm run ci:cloudflare
+npm run ci:85
 ```
 
 `PASS_WITH_WARNINGS` is acceptable only for known non-blocking warnings. `CONTRACT_FAILURE` or command exit failure must be treated as failing.
+
+`npm run gaga:verify-85` is the final readiness gate for crawlability, production/development indexing flags, route truth, performance budget notes, artifact parity, and deploy readiness. It is read-only and may return `PASS_WITH_WARNINGS` for documented development-mode or advisory Lighthouse/performance warnings.
 
 ## Mandatory Guards
 
@@ -105,6 +111,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/ci-reconciliation-guard.mjs`
 - `qa/a11y-static-guard.mjs`
 - `qa/asset-architecture-guard.mjs`
+- `qa/cleanup-regression-guard.mjs`
 - `qa/comments-proof-guard.mjs`
 - `qa/component-source-contract-guard.mjs`
 - `qa/copy-registry-guard.mjs`
@@ -116,6 +123,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/registry-contract-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
+- `qa/readiness-85-guard.mjs`
 - `qa/sheet-lifecycle-contract-guard.mjs`
 - `qa/sheet-runtime-overflow-viewport-guard.mjs`
 - `qa/shell-interaction-guard.mjs`

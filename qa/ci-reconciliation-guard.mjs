@@ -16,12 +16,15 @@ const requiredScripts = [
   "gaga:template:pack",
   "gaga:verify-worker-live:strict",
   "gaga:verify-ci-reconciliation",
+  "gaga:verify-85",
+  "ci:85",
 ];
 
 const majorGuardFiles = [
   "qa/a11y-static-guard.mjs",
   "qa/asset-architecture-guard.mjs",
   "qa/ci-reconciliation-guard.mjs",
+  "qa/cleanup-regression-guard.mjs",
   "qa/comments-proof-guard.mjs",
   "qa/component-source-contract-guard.mjs",
   "qa/copy-registry-guard.mjs",
@@ -33,6 +36,7 @@ const majorGuardFiles = [
   "qa/registry-contract-guard.mjs",
   "qa/nav-more-contract-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
+  "qa/readiness-85-guard.mjs",
   "qa/sheet-lifecycle-contract-guard.mjs",
   "qa/sheet-runtime-overflow-viewport-guard.mjs",
   "qa/shell-interaction-guard.mjs",
@@ -144,6 +148,24 @@ if (!scriptIncludes(scripts, "ci:cloudflare", "npm run ci:store")) {
   fail("ci:cloudflare must include npm run ci:store");
 } else {
   pass("ci:cloudflare includes aggregate ci:store");
+}
+
+if (!scriptIncludes(scripts, "gaga:verify-85", "node qa/readiness-85-guard.mjs")) {
+  fail("gaga:verify-85 must run node qa/readiness-85-guard.mjs");
+} else {
+  pass("gaga:verify-85 points at qa/readiness-85-guard.mjs");
+}
+
+if (!scriptIncludes(scripts, "ci:qa", "npm run gaga:verify-85")) {
+  fail("ci:qa must include npm run gaga:verify-85");
+} else {
+  pass("ci:qa includes final readiness guard");
+}
+
+if (!scriptIncludes(scripts, "ci:85", "npm run ci:cloudflare") || !scriptIncludes(scripts, "ci:85", "npm run gaga:verify-85")) {
+  fail("ci:85 must run npm run ci:cloudflare and npm run gaga:verify-85");
+} else {
+  pass("ci:85 is aggregate-driven through ci:cloudflare and readiness guard");
 }
 
 for (const file of majorGuardFiles) {

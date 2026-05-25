@@ -18,6 +18,8 @@ Primary source files include:
 - `worker.js`: Cloudflare Worker edge governance source, including generated Store registry blocks only when rebuilt by Store tooling.
 - `flags.json`, `registry/runtime/*`, and root copy JSON files used as runtime inputs.
 - `ASSET-ARCHITECTURE.md`: asset source/generated boundary, loading map, cache/deploy discipline, and parity guard scope.
+- `CLEANUP-REPORT.md`: deletion proof, usage checks, regression guards, and intentional non-removals for cleanup tasks.
+- `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs.
 
 ## Generated Files
@@ -106,6 +108,8 @@ Examples of mandatory read-only guards:
 - `qa/ci-reconciliation-guard.mjs`
 - `qa/a11y-static-guard.mjs`
 - `qa/asset-architecture-guard.mjs`
+- `qa/cleanup-regression-guard.mjs`
+- `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
