@@ -8,6 +8,7 @@ This file is the command index for local hardening, deploy preparation, and live
 git diff --check
 npm run gaga:verify-docs-contract
 npm run gaga:verify-ci-reconciliation
+npm run gaga:verify-semantic-ssr
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
 node qa/copy-registry-guard.mjs
@@ -104,6 +105,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/discovery-contract-guard.mjs`
 - `qa/discovery-filter-taxonomy-guard.mjs`
 - `qa/docs-contract-guard.mjs`
+- `qa/semantic-ssr-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
 - `qa/sheet-lifecycle-contract-guard.mjs`
