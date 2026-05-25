@@ -167,6 +167,10 @@ const FLAGS_LEGACY_PATH = "/flags.json";
 const ORIGIN_MOBILE_NORMALIZED_HEADER = "X-GG-Origin-Mobile-Normalized";
 // Legacy internal name: "home" here means root listing (/), not public Home (/landing).
 const ROOT_LISTING_LEGACY_ROUTE = "home";
+// Internal Blogger origin window for root Blog listing only.
+// Blogger limits data:posts before XML can filter Store/product posts, so root needs
+// a larger candidate window while keeping the public URL unchanged.
+const ROOT_LISTING_ORIGIN_MAX_RESULTS = "33";
 
 const STATIC_ROUTE_ASSET_MAP = new Map([
   ["/manifest.webmanifest", "/manifest.webmanifest"],
@@ -1388,6 +1392,19 @@ function shouldAddInternalMobileZero(request, route) {
   return !url.searchParams.has("m");
 }
 
+function shouldExpandRootListingOriginWindow(request, route) {
+  if (!isSafeMethod(request)) return false;
+  if (route !== ROOT_LISTING_LEGACY_ROUTE) return false;
+
+  const url = new URL(request.url);
+
+  // Respect explicit caller intent and do not affect search-like root requests.
+  if (url.searchParams.has("max-results")) return false;
+  if (url.searchParams.has("q")) return false;
+
+  return true;
+}
+
 function buildOriginRequest(request, route, flags, options = {}) {
   const originUrl = new URL(request.url);
   const headers = new Headers(request.headers);
@@ -1397,6 +1414,10 @@ function buildOriginRequest(request, route, flags, options = {}) {
   if (shouldNormalizeMobile) {
     originUrl.searchParams.set("m", "0");
     headers.set(ORIGIN_MOBILE_NORMALIZED_HEADER, "1");
+  }
+
+  if (shouldExpandRootListingOriginWindow(request, route)) {
+    originUrl.searchParams.set("max-results", ROOT_LISTING_ORIGIN_MAX_RESULTS);
   }
 
   const init = {
