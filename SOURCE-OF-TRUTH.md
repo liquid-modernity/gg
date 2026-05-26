@@ -19,6 +19,7 @@ Primary source files include:
 - `flags.json`, `registry/runtime/*`, and root copy JSON files used as runtime inputs.
 - `ASSET-ARCHITECTURE.md`: asset source/generated boundary, loading map, cache/deploy discipline, and parity guard scope.
 - `CLEANUP-REPORT.md`: deletion proof, usage checks, regression guards, and intentional non-removals for cleanup tasks.
+- `CSS-SOURCE-OF-TRUTH-REPORT.md`: CSS/JS folder classification, stale-file deletion proof, and intentionally kept source/generated boundaries.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs.
 
@@ -36,6 +37,7 @@ Generated output includes:
 - generated Store category and pagination pages under `store/*/index.html` and `store/*/page/*/index.html`
 - transitional Store flat artifacts such as `store-fashion.html` and `store-fashion-page-2.html` when the artifact contract requires them
 - runtime Store asset copies in `assets/store/*` when produced by `npm run store:build`
+- generated or copied runtime assets under `assets/` only when their owning source/build tool is documented
 
 Generated files may be committed when the project expects committed artifacts, but they must be produced from source. Do not manually edit them as the primary fix.
 
@@ -99,6 +101,12 @@ For production Store readiness, use the strict production gate without weakening
 GG_STORE_PRODUCTION_READINESS=1 npm run store:check:production
 ```
 
+Run CSS/JS source-of-truth cleanup verification:
+
+```bash
+npm run gaga:verify-css-sot-cleanup
+```
+
 ## Read-Only Guards
 
 Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
@@ -109,6 +117,7 @@ Examples of mandatory read-only guards:
 - `qa/a11y-static-guard.mjs`
 - `qa/asset-architecture-guard.mjs`
 - `qa/cleanup-regression-guard.mjs`
+- `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`

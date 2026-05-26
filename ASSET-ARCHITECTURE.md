@@ -13,6 +13,7 @@ Edited manually:
 - `landing.html` and `src/landing/*`: Home route source.
 - `store.html`: Store root source/build input.
 - `worker.js`, `manifest.webmanifest`, `sw.js`, `offline.html`, `robots.txt`, `_headers`, `flags.json`, icons, registries, docs, `qa/*`, `tools/*`, `.github/workflows/*`, and `package.json`.
+- `CSS-SOURCE-OF-TRUTH-REPORT.md`: CSS/JS source/generated classification and stale-file deletion proof.
 
 ## Generated Files
 
@@ -25,6 +26,8 @@ Never edit manually as the primary fix:
 - `store/data/manifest.json`, `store/data/build-report.json`, and `dist/store/data/*`: Store generated data.
 - `store/{category}/index.html`, `store/{category}/page/{n}/index.html`, and transitional `store-*.html`: Store generated category artifacts.
 - `.cloudflare-build/*`: Cloudflare deployment staging from `tools/cloudflare-prepare.mjs`.
+
+`assets/` is public runtime space, not a blanket source folder. `assets/store/*` is generated from Store source, while route-specific public assets such as `assets/landing/*`, `assets/dashboard/*`, and `assets/knowledge base/*` are classified in `CSS-SOURCE-OF-TRUTH-REPORT.md`.
 
 Generated files may be committed when the repository expects committed artifacts, but the fix belongs in source plus a rebuild.
 
@@ -134,3 +137,11 @@ npm run gaga:verify-asset-architecture
 ```
 
 The guard is read-only and verifies asset hash parity, Blogger publish parity, Store asset freshness, Cloudflare staging parity when staging exists, package/CI wiring, and the Blog1-safe schema asset boundary.
+
+Run the CSS/JS source-of-truth cleanup guard with:
+
+```bash
+npm run gaga:verify-css-sot-cleanup
+```
+
+That guard blocks known stale editable-looking files from returning, requires CSS module classification coverage, verifies generated CSS/JS parity, and preserves the Blog1-safe schema boundary.

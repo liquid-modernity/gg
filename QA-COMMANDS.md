@@ -14,6 +14,7 @@ npm run gaga:verify-registry-contract
 npm run gaga:verify-a11y-static
 npm run gaga:verify-asset-architecture
 npm run gaga:verify-cleanup
+npm run gaga:verify-css-sot-cleanup
 npm run gaga:verify-85
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
@@ -115,6 +116,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/comments-proof-guard.mjs`
 - `qa/component-source-contract-guard.mjs`
 - `qa/copy-registry-guard.mjs`
+- `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/discovery-contract-guard.mjs`
 - `qa/discovery-filter-taxonomy-guard.mjs`
 - `qa/docs-contract-guard.mjs`
