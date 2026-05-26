@@ -11,7 +11,7 @@ Primary source files include:
 - `store.html`: Store root source/build input.
 - `src/js/gg-app.source.js` and `src/js/modules/*`: Blogger app source JavaScript.
 - `src/js/boot/*`: early boot scripts.
-- `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources.
+- `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, wired `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources. Module files are canonical only when wired or explicitly documented.
 - `src/store/*`: Store source CSS, JS, config, rendering, validation, manifest, JSON-LD, route, and report logic.
 - `src/registry/*`, `registry/copy/*`, `registry/content/*`, and `registry/store/*`: route/copy/action/icon/content/store registries.
 - `src/landing/*`, `src/dashboard/*`, and `src/knowledge base/*`: static-surface source assets where applicable.
@@ -20,6 +20,9 @@ Primary source files include:
 - `ASSET-ARCHITECTURE.md`: asset source/generated boundary, loading map, cache/deploy discipline, and parity guard scope.
 - `CLEANUP-REPORT.md`: deletion proof, usage checks, regression guards, and intentional non-removals for cleanup tasks.
 - `CSS-SOURCE-OF-TRUTH-REPORT.md`: CSS/JS folder classification, stale-file deletion proof, and intentionally kept source/generated boundaries.
+- `CSS-MODULE-BUNDLE-WIRING-REPORT.md`: module/component CSS wiring status, detail-toolbar decision, and non-canonical manual module map.
+- `REPO-STRUCTURE.md`: conservative repository map, edit/generated/commit policy, and runtime path stability notes.
+- `REPO-TIDY-REPORT.md`: repo tidy proof, ignored clutter handling, intentionally unmoved runtime folders, and QA record.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs.
 
@@ -107,6 +110,18 @@ Run CSS/JS source-of-truth cleanup verification:
 npm run gaga:verify-css-sot-cleanup
 ```
 
+Run CSS module bundle wiring verification:
+
+```bash
+npm run gaga:verify-css-module-wiring
+```
+
+Run repo structure tidy verification:
+
+```bash
+npm run gaga:verify-repo-structure-tidy
+```
+
 ## Read-Only Guards
 
 Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
@@ -117,7 +132,9 @@ Examples of mandatory read-only guards:
 - `qa/a11y-static-guard.mjs`
 - `qa/asset-architecture-guard.mjs`
 - `qa/cleanup-regression-guard.mjs`
+- `qa/css-module-bundle-wiring-guard.mjs`
 - `qa/css-source-of-truth-cleanup-guard.mjs`
+- `qa/repo-structure-tidy-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
@@ -142,7 +159,7 @@ Examples of mandatory read-only guards:
 
 These tools intentionally write generated or staging artifacts and must not be treated as read-only guards:
 
-- `tools/sync-shared-css-components.mjs`: syncs shared CSS component source blocks into app/landing/store CSS targets.
+- `tools/sync-shared-css-components.mjs`: syncs shared CSS component source blocks and wired module blocks into app/landing/store CSS targets.
 - `tools/build-store-static.mjs`: rebuilds Store HTML, Store data, Store runtime assets, and Store build reports from source/config/feed inputs.
 - `tools/template-pack.mjs`: rebuilds Blogger publish artifacts and synchronized app CSS/JS runtime assets.
 - `tools/cloudflare-prepare.mjs`: rebuilds `.cloudflare-build/*` deployment staging from source and generated artifacts.

@@ -107,3 +107,4 @@ Regression protection:
 - `appearance.system` runtime copy remnants were not removed in this task because no deletion proof showed they are unreachable in every runtime copy path; guards already protect public Light/Dark-only UI.
 - Landing, Store, Discovery, Preview, Shell, Theme, and Worker route behavior were not changed.
 - `CSS-SOURCE-OF-TRUTH-REPORT.md` documents current CSS/JS source/generated classifications and files intentionally kept for future cleanup discipline.
+- `CSS-MODULE-BUNDLE-WIRING-REPORT.md` documents module/component CSS wiring status. `src/css/modules/detail-toolbar.css` was wired instead of deleted; non-canonical manual module maps were explicitly classified instead of removed.

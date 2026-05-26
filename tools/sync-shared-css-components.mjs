@@ -14,6 +14,10 @@ const components = {
   'gg-discovery-sheet': 'src/css/components/gg-discovery-sheet.css',
 };
 
+const modules = {
+  'module-detail-toolbar': 'src/css/modules/detail-toolbar.css',
+};
+
 function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
 }
@@ -28,8 +32,15 @@ function component(name) {
   return value;
 }
 
+function moduleSource(name) {
+  const value = read(modules[name]).trim();
+  if (!value) throw new Error(`${modules[name]} is empty`);
+  return value;
+}
+
 function block(name) {
-  return `/* BEGIN GENERATED: ${name} */\n${component(name)}\n/* END GENERATED: ${name} */\n`;
+  const source = Object.prototype.hasOwnProperty.call(components, name) ? component(name) : moduleSource(name);
+  return `/* BEGIN GENERATED: ${name} */\n${source}\n/* END GENERATED: ${name} */\n`;
 }
 
 function replaceOrFallback(contents, name, fallbackPattern) {
@@ -82,6 +93,7 @@ function stripStoreSheetCoreDuplicates(contents) {
 }
 
 for (const source of Object.values(components)) component(path.basename(source, '.css'));
+for (const source of Object.values(modules)) moduleSource(`module-${path.basename(source, '.css')}`);
 
 write('src/css/modules/sheets.css', `${component('gg-sheet-core')}\n`);
 write('src/css/modules/more.css', `${component('gg-more-sheet')}\n`);
@@ -108,6 +120,11 @@ syncFile('src/css/gg-app.source.css', [
     contents,
     'gg-sheet-modal',
     /body\[data-gg-panel-active='true'\] \.gg-dock \{[\s\S]*?\n\}\n(?=\n\.gg-dock__item \{)/
+  ),
+  (contents) => replaceOrFallback(
+    contents,
+    'module-detail-toolbar',
+    /\.gg-detail-toolbar \{[\s\S]*?\.gg-detail-toolbar__action:focus-visible \{\n  background: var\(--gg-toolbar-item-hover-bg\);\n\}/
   ),
   (contents) => replaceOrFallback(
     contents,

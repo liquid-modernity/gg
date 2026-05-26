@@ -25,24 +25,24 @@ Scope: `TASK-CSS-SOURCE-OF-TRUTH-CLEANUP-001` only.
 | `src/css/components/gg-sheet-core.css` | CANONICAL_SOURCE | Read by `tools/sync-shared-css-components.mjs`; mirrored to `src/css/modules/sheets.css`. |
 | `src/css/components/gg-sheet-modal.css` | CANONICAL_SOURCE | Read by `tools/sync-shared-css-components.mjs`; injected into app, landing, Store, and dock CSS. |
 | `src/css/components/gg-visual-tokens.css` | CANONICAL_SOURCE | Read by `tools/sync-shared-css-components.mjs`; mirrored to `src/css/modules/visual-tokens.css`. |
-| `src/css/modules/base.css` | CANONICAL_SOURCE | App CSS source slice; represented in `src/css/gg-app.source.css`; documented and guarded against becoming unclassified. |
-| `src/css/modules/comments.css` | CANONICAL_SOURCE | Blogger-native comments styling source slice; represented in `src/css/gg-app.source.css`; intentionally kept. |
-| `src/css/modules/detail-outline.css` | CANONICAL_SOURCE | Detail outline source slice; represented in app CSS and read by shell/overflow guards. |
-| `src/css/modules/detail-toolbar.css` | CANONICAL_SOURCE | Detail toolbar source slice; represented in `src/css/gg-app.source.css`; kept for post-detail toolbar contract. |
-| `src/css/modules/detail.css` | CANONICAL_SOURCE | Detail article source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/discovery.css` | CANONICAL_SOURCE | Generated mirror of `src/css/components/gg-discovery-sheet.css`. |
-| `src/css/modules/dock.css` | CANONICAL_SOURCE | Dock source slice with generated modal block from `gg-sheet-modal`; read by shell guard. |
-| `src/css/modules/feedback.css` | CANONICAL_SOURCE | Search/404 feedback source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/listing.css` | CANONICAL_SOURCE | Listing source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/more.css` | CANONICAL_SOURCE | Generated mirror of `src/css/components/gg-more-sheet.css`. |
-| `src/css/modules/motion.css` | CANONICAL_SOURCE | Motion/reduced-motion source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/preview-frame.css` | CANONICAL_SOURCE | Generated mirror of `src/css/components/gg-preview-frame.css`. |
-| `src/css/modules/responsive.css` | CANONICAL_SOURCE | Responsive source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/sheets.css` | CANONICAL_SOURCE | Generated mirror of `src/css/components/gg-sheet-core.css`. |
-| `src/css/modules/shell.css` | CANONICAL_SOURCE | Shell/layout source slice; represented in `src/css/gg-app.source.css`. |
-| `src/css/modules/theme.css` | CANONICAL_SOURCE | Theme source slice; read by theme guard and represented in app/critical CSS. |
-| `src/css/modules/tokens.css` | CANONICAL_SOURCE | Token source slice; represented in `src/css/gg-app.source.css`; read by Store modal preview guard. |
-| `src/css/modules/visual-tokens.css` | CANONICAL_SOURCE | Generated mirror of `src/css/components/gg-visual-tokens.css`. |
+| `src/css/modules/base.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of the app CSS base section; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/comments.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of Blogger-native comments styling; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/detail-outline.css` | ADVISORY_OR_MANUAL | Non-canonical manual map read by focused guards; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/detail-toolbar.css` | CANONICAL_SOURCE | Wired by `tools/sync-shared-css-components.mjs` into `src/css/gg-app.source.css` as `module-detail-toolbar`; edits reach generated app CSS after `npm run gaga:template:pack`. |
+| `src/css/modules/detail.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of detail article CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/discovery.css` | GENERATED_OUTPUT | Generated mirror of `src/css/components/gg-discovery-sheet.css`; do not edit manually. |
+| `src/css/modules/dock.css` | ADVISORY_OR_MANUAL | Non-canonical manual map with a generated modal sub-block; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/feedback.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of search/404 feedback CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/listing.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of listing CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/more.css` | GENERATED_OUTPUT | Generated mirror of `src/css/components/gg-more-sheet.css`; do not edit manually. |
+| `src/css/modules/motion.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of motion/reduced-motion CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/preview-frame.css` | GENERATED_OUTPUT | Generated mirror of `src/css/components/gg-preview-frame.css`; do not edit manually. |
+| `src/css/modules/responsive.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of responsive CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/sheets.css` | GENERATED_OUTPUT | Generated mirror of `src/css/components/gg-sheet-core.css`; do not edit manually. |
+| `src/css/modules/shell.css` | ADVISORY_OR_MANUAL | Non-canonical manual map of shell/layout CSS; edit `src/css/gg-app.source.css` for live bundle changes. |
+| `src/css/modules/theme.css` | ADVISORY_OR_MANUAL | Non-canonical manual map read by theme guard; edit `src/css/gg-app.source.css` and critical CSS for live theme changes. |
+| `src/css/modules/tokens.css` | ADVISORY_OR_MANUAL | Non-canonical manual token map; edit `src/css/gg-app.source.css` and route critical CSS for live token changes. |
+| `src/css/modules/visual-tokens.css` | GENERATED_OUTPUT | Generated mirror of `src/css/components/gg-visual-tokens.css`; do not edit manually. |
 | `src/store/store.css` | ROUTE_SPECIFIC_SOURCE | Store source CSS; copied to `assets/store/store.css` by `npm run store:build`. |
 | `src/store/store.critical.css` | CRITICAL_INLINE_SOURCE | Store first-paint CSS; injected into guarded Store markup by Store build. |
 | `assets/store/store.css` | PUBLIC_RUNTIME_ASSET | Generated Store runtime asset from `src/store/store.css`; do not edit manually. |
@@ -129,7 +129,7 @@ Scope: `TASK-CSS-SOURCE-OF-TRUTH-CLEANUP-001` only.
 ## Suspicious But Not Deleted
 
 - `src/js/modules/*`: fragment/reference source is not currently built by an automated JS concatenator. It is retained as documented Blogger app source and future cleanup should either add a deterministic JS fragment packer or collapse the fragments after proof.
-- CSS module slices that are not exact full-file mirrors of `src/css/gg-app.source.css`: retained because they document current source families and several are read by focused guards. Future cleanup can add a deterministic CSS module packer, but this task did not rewrite the app CSS pipeline.
+- Non-canonical manual CSS module maps under `src/css/modules/*`: retained only where `CSS-MODULE-BUNDLE-WIRING-REPORT.md` and `qa/css-module-bundle-wiring-guard.mjs` explicitly classify them. They are not live bundle inputs unless wired by `tools/sync-shared-css-components.mjs`.
 - Advisory/manual QA helpers: retained because `QA-COMMANDS.md` and `SOURCE-OF-TRUTH.md` classify them as advisory/manual.
 
 ## Commands Used For Verification
@@ -147,5 +147,5 @@ Scope: `TASK-CSS-SOURCE-OF-TRUTH-CLEANUP-001` only.
 ## Future Cleanup Candidates
 
 - Add a deterministic JS fragment packer if `src/js/modules/*` should become the executable source of `src/js/gg-app.source.js`.
-- Add a deterministic CSS module packer if every `src/css/modules/*` file should become mechanically assembled into `src/css/gg-app.source.css`.
+- Add a deterministic CSS module packer if every `src/css/modules/*` file should become mechanically assembled into `src/css/gg-app.source.css`; until then, only `src/css/modules/detail-toolbar.css` and generated component mirrors are wired.
 - Revisit advisory/manual QA helpers only with proof that current package/CI guards fully supersede them.

@@ -6,7 +6,7 @@ PakRPP assets are owned by source files, generated artifacts, and deployment sta
 
 Edited manually:
 
-- `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources.
+- `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, wired `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources. Module files are canonical only when wired or explicitly documented.
 - `src/js/gg-app.source.js`, `src/js/modules/*`, and `src/js/boot/*`: Blogger app JavaScript sources.
 - `src/store/store.css`, `src/store/store.critical.css`, `src/store/store-core.js`, `src/store/store-discovery.js`, `src/store/store.js`, `src/store/store-categories.config.mjs`, and `src/store/lib/*`: Store source assets and build logic.
 - `index.xml`: Blogger template source.
@@ -14,6 +14,7 @@ Edited manually:
 - `store.html`: Store root source/build input.
 - `worker.js`, `manifest.webmanifest`, `sw.js`, `offline.html`, `robots.txt`, `_headers`, `flags.json`, icons, registries, docs, `qa/*`, `tools/*`, `.github/workflows/*`, and `package.json`.
 - `CSS-SOURCE-OF-TRUTH-REPORT.md`: CSS/JS source/generated classification and stale-file deletion proof.
+- `CSS-MODULE-BUNDLE-WIRING-REPORT.md`: module/component CSS bundle wiring status and non-canonical module map.
 
 ## Generated Files
 
@@ -34,6 +35,8 @@ Generated files may be committed when the repository expects committed artifacts
 ## Build Outputs
 
 Template-pack output, store-build output, and cloudflare-prepare output are the only accepted generated asset paths for this phase.
+
+`npm run gaga:sync-components` reads canonical component CSS and wired module CSS such as `src/css/modules/detail-toolbar.css`, then writes generated blocks into `src/css/gg-app.source.css`, `landing.html`, `src/store/store.css`, and selected generated module mirrors.
 
 `npm run gaga:template:pack` reads `index.xml`, `src/css/gg-critical.source.css`, `src/css/gg-app.source.css`, and `src/js/gg-app.source.js`. It writes:
 
@@ -145,3 +148,11 @@ npm run gaga:verify-css-sot-cleanup
 ```
 
 That guard blocks known stale editable-looking files from returning, requires CSS module classification coverage, verifies generated CSS/JS parity, and preserves the Blog1-safe schema boundary.
+
+Run the CSS module bundle wiring guard with:
+
+```bash
+npm run gaga:verify-css-module-wiring
+```
+
+That guard verifies every CSS module/component is wired, generated, or explicitly documented as non-canonical/manual, and it protects the `src/css/modules/detail-toolbar.css` to app CSS generated block.

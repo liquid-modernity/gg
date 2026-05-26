@@ -1,19 +1,19 @@
 .gg-detail-toolbar {
   position: sticky;
-    top: var(--gg-detail-toolbar-offset-top);
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    gap: var(--gg-toolbar-gap);
-    margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
-    padding: var(--gg-toolbar-pad);
-    border: 1px solid var(--gg-toolbar-border);
-    border-radius: var(--gg-toolbar-radius);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    width: 44px;
-    height: 44px;
-    justify-content: center;
+  top: var(--gg-detail-toolbar-offset-top);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--gg-toolbar-gap);
+  margin: 0 0 var(--gg-detail-toolbar-offset-bottom) auto;
+  padding: var(--gg-toolbar-pad);
+  border: 1px solid var(--gg-toolbar-border);
+  border-radius: var(--gg-toolbar-radius);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  width: 44px;
+  height: 44px;
+  justify-content: center;
 }
 
 .gg-detail-toolbar__action {
