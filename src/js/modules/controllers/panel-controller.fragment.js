@@ -331,6 +331,7 @@
 
         function resetMoreTransientState(panel) {
           var root = panel && panel.root ? panel.root : ui.more;
+          var scope;
           var input;
           var rows;
           var sections;
@@ -340,7 +341,8 @@
           if (shouldResetPanel(panel, 'closePreferencePanelOnClose')) closeMorePreferencePanel();
           if (!shouldResetPanel(panel, 'clearLocalSearchOnClose')) return;
 
-          input = root.querySelector('[data-gg-more-search-input]');
+          scope = root.closest('.gg-more-sheet') || root.closest('[data-gg-panel="more"]') || root;
+          input = scope.querySelector('[data-gg-more-search-input]');
           if (input) input.value = '';
           rows = root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card');
           for (i = 0; i < rows.length; i += 1) rows[i].hidden = false;

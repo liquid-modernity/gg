@@ -2107,9 +2107,11 @@ window.GG = window.GG || {};
 
           for (i = 0; i < roots.length; i += 1) {
             (function (root) {
+              var scope;
               var input;
               if (!root || root.getAttribute('data-gg-local-search-ready') === 'true') return;
-              input = root.querySelector('[data-gg-more-search-input]');
+              scope = root.closest('.gg-more-sheet') || root.closest('[data-gg-panel="more"]') || root;
+              input = scope.querySelector('[data-gg-more-search-input]');
               if (!input) return;
               root.setAttribute('data-gg-local-search-ready', 'true');
               input.addEventListener('input', function () {
@@ -2134,6 +2136,8 @@ window.GG = window.GG || {};
                         var haystack = [
                           row.textContent || '',
                           row.getAttribute('data-gg-copy') || '',
+                          row.getAttribute('data-copy') || '',
+                          row.getAttribute('data-copy-key') || '',
                           row.getAttribute('data-gg-more-route') || '',
                           row.getAttribute('data-gg-pref-open') || '',
                           row.getAttribute('href') || ''
@@ -3216,6 +3220,7 @@ window.GG = window.GG || {};
 
         function resetMoreTransientState(panel) {
           var root = panel && panel.root ? panel.root : ui.more;
+          var scope;
           var input;
           var rows;
           var sections;
@@ -3225,7 +3230,8 @@ window.GG = window.GG || {};
           if (shouldResetPanel(panel, 'closePreferencePanelOnClose')) closeMorePreferencePanel();
           if (!shouldResetPanel(panel, 'clearLocalSearchOnClose')) return;
 
-          input = root.querySelector('[data-gg-more-search-input]');
+          scope = root.closest('.gg-more-sheet') || root.closest('[data-gg-panel="more"]') || root;
+          input = scope.querySelector('[data-gg-more-search-input]');
           if (input) input.value = '';
           rows = root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card');
           for (i = 0; i < rows.length; i += 1) rows[i].hidden = false;

@@ -21,4 +21,11 @@
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
   --gg-discovery-input-height: 54px;
+  --gg-sheet-search-height: var(--gg-discovery-input-height);
+  --gg-sheet-search-radius: 16px;
+  --gg-sheet-search-pad-x: 14px;
+  --gg-sheet-search-border: var(--gg-line);
+  --gg-sheet-search-border-active: var(--gg-line-strong);
+  --gg-sheet-search-surface: var(--gg-field-surface);
+  --gg-sheet-search-focus-ring: 0 0 0 2px color-mix(in srgb, var(--gg-accent) 12%, transparent);
 }

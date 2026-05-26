@@ -37,6 +37,7 @@ const majorGuardFiles = [
   "qa/schema-jsonld-guard.mjs",
   "qa/registry-contract-guard.mjs",
   "qa/repo-structure-tidy-guard.mjs",
+  "qa/sheet-search-visual-parity-guard.mjs",
   "qa/nav-more-contract-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
   "qa/readiness-85-guard.mjs",

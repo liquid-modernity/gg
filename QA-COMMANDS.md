@@ -17,6 +17,7 @@ npm run gaga:verify-cleanup
 npm run gaga:verify-css-sot-cleanup
 npm run gaga:verify-css-module-wiring
 npm run gaga:verify-repo-structure-tidy
+npm run gaga:verify-sheet-search-visual-parity
 npm run gaga:verify-85
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
@@ -127,6 +128,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/schema-jsonld-guard.mjs`
 - `qa/registry-contract-guard.mjs`
 - `qa/repo-structure-tidy-guard.mjs`
+- `qa/sheet-search-visual-parity-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
 - `qa/readiness-85-guard.mjs`

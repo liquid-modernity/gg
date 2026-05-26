@@ -122,6 +122,12 @@ Run repo structure tidy verification:
 npm run gaga:verify-repo-structure-tidy
 ```
 
+Run sheet search visual parity verification:
+
+```bash
+npm run gaga:verify-sheet-search-visual-parity
+```
+
 ## Read-Only Guards
 
 Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
@@ -135,6 +141,7 @@ Examples of mandatory read-only guards:
 - `qa/css-module-bundle-wiring-guard.mjs`
 - `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/repo-structure-tidy-guard.mjs`
+- `qa/sheet-search-visual-parity-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`

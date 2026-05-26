@@ -117,6 +117,13 @@ for (const token of [
   '--gg-discovery-control-height',
   '--gg-discovery-row-min-height',
   '--gg-discovery-input-height',
+  '--gg-sheet-search-height',
+  '--gg-sheet-search-radius',
+  '--gg-sheet-search-pad-x',
+  '--gg-sheet-search-border',
+  '--gg-sheet-search-border-active',
+  '--gg-sheet-search-surface',
+  '--gg-sheet-search-focus-ring',
 ]) {
   if (!visualTokens.includes(token)) fail(`gg-visual-tokens missing ${token}`);
 }
@@ -191,7 +198,7 @@ for (const expected of [
   'var(--gg-discovery-controls-pad-bottom',
   'var(--gg-discovery-controls-border',
   'var(--gg-discovery-tab-gap',
-  'var(--gg-discovery-input-height',
+  'var(--gg-sheet-search-height',
 ]) {
   if (!storeDiscoveryCss.includes(expected)) fail(`Store Discovery shell is missing global token use: ${expected}`);
 }

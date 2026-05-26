@@ -1392,7 +1392,8 @@
     }
     function setupMoreLocalSearch() {
       [].slice.call(document.querySelectorAll('.gg-more-body')).forEach(function (root) {
-        var input = root.querySelector('[data-gg-more-search-input]');
+        var scope = root.closest('.gg-more-sheet') || root.closest('[data-gg-panel="more"]') || root;
+        var input = scope.querySelector('[data-gg-more-search-input]');
         if (!input || root.getAttribute('data-gg-local-search-ready') === 'true') return;
         root.setAttribute('data-gg-local-search-ready', 'true');
         input.addEventListener('input', function () {
@@ -1401,7 +1402,7 @@
             var hasMatch = false;
             [].slice.call(section.querySelectorAll('.gg-more-list__link, .gg-more-profile__card')).forEach(function (row) {
               if (!q) { row.hidden = false; hasMatch = true; return; }
-              var haystack = [row.textContent || '', row.getAttribute('data-gg-more-route') || '', row.getAttribute('data-gg-pref-open') || '', row.getAttribute('href') || ''].join(' ').toLowerCase();
+              var haystack = [row.textContent || '', row.getAttribute('data-copy') || '', row.getAttribute('data-store-more-link') || '', row.getAttribute('data-gg-more-route') || '', row.getAttribute('data-gg-pref-open') || '', row.getAttribute('href') || ''].join(' ').toLowerCase();
               var match = haystack.indexOf(q) !== -1;
               row.hidden = !match;
               if (match) hasMatch = true;
@@ -2786,11 +2787,13 @@
     }
     function resetMoreTransientState() {
       var root = moreSheet;
+      var scope;
       var input;
       if (!root) return;
       if (shouldResetPanelName('more', 'closePreferencePanelOnClose')) closeMorePreferencePanel();
       if (!shouldResetPanelName('more', 'clearLocalSearchOnClose')) return;
-      input = root.querySelector('[data-gg-more-search-input]');
+      scope = root.closest('.gg-more-sheet') || root.closest('[data-gg-panel="more"]') || root;
+      input = scope.querySelector('[data-gg-more-search-input]');
       if (input) input.value = '';
       [].slice.call(root.querySelectorAll('.gg-more-list__link, .gg-more-profile__card')).forEach(function (row) { row.hidden = false; });
       [].slice.call(root.querySelectorAll('.gg-more-profile, .gg-more-section')).forEach(function (section) { section.removeAttribute('data-gg-filter-empty'); });

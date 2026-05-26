@@ -388,10 +388,21 @@
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
   align-items: center;
-  min-height: 48px;
-  padding: 0 14px;
-  border-radius: 14px;
-  background: var(--gg-surface-interactive);
+  min-height: var(--gg-sheet-search-height);
+  padding: 0 var(--gg-sheet-search-pad-x);
+  border: 1px solid var(--gg-sheet-search-border);
+  border-radius: var(--gg-sheet-search-radius);
+  background: var(--gg-sheet-search-surface);
+  transition: border-color var(--gg-motion-inline-open), box-shadow var(--gg-motion-inline-open), background-color var(--gg-motion-inline-open);
+}
+
+.gg-more-local-search__field:hover {
+  border-color: var(--gg-sheet-search-border-active);
+}
+
+.gg-more-local-search__field:focus-within {
+  border-color: var(--gg-sheet-search-border-active);
+  box-shadow: var(--gg-sheet-search-focus-ring);
 }
 
 .gg-more-local-search__icon {
