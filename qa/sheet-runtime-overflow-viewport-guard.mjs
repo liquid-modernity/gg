@@ -100,8 +100,8 @@ for (const [label, source] of [
   }
 }
 
-if (/\.store-preview__hero\s*\{[\s\S]*?--gg-preview-panel-(?:initial|max)-height/m.test(files.storeCss)) {
-  fail('Store preview hero still uses panel height tokens');
+if (/\.store-preview__hero\s*\{(?:(?!\}).)*--gg-preview-panel-(?:initial|max)-height/s.test(files.storeCss)) {
+  fail('Store preview hero still uses old panel-driven hero max-height');
 }
 
 const storeManualCss = stripGenerated(files.storeCss);

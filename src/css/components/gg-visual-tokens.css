@@ -37,6 +37,9 @@
   min-height: 0;
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
+
+
+
 }
 
 .gg-preview__surface {
@@ -48,9 +51,15 @@
 }
 
 .gg-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-content-lift);
+
+
+
 }
 
 .store-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-store-content-lift);
+
+
+
 }

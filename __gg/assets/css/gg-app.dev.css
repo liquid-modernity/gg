@@ -369,6 +369,9 @@ html[data-gg-theme='light'] {
   min-height: 0;
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
+
+
+
 }
 
 .gg-preview__surface {
@@ -380,13 +383,22 @@ html[data-gg-theme='light'] {
 }
 
 .gg-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-content-lift);
+
+
+
 }
 
 .store-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-store-content-lift);
+
+
+
 }
 /* END GENERATED: gg-visual-tokens */
+
+
+
 
 
 
@@ -892,6 +904,9 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
+
+
 
 
 
@@ -2320,6 +2335,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2598,6 +2616,9 @@ body::-webkit-scrollbar,
 }
 /* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
+
+
+
 
 
 
@@ -2956,7 +2977,17 @@ body::-webkit-scrollbar,
 
 
 
+
+
+
 /* BEGIN GENERATED: gg-preview-frame */
+:root {
+  --gg-preview-store-content-lift: clamp(360px, 56dvh, 520px);
+  --gg-preview-content-lift: clamp(380px, 59dvh, 540px);
+  --gg-preview-hero-max-height: min(72dvh, 760px);
+  --gg-preview-hero-aspect: 4 / 5;
+}
+
 .gg-preview {
   z-index: 94;
 }
@@ -3020,6 +3051,9 @@ body::-webkit-scrollbar,
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
   background: #201a1c;
+
+
+
 }
 
 .gg-preview__media {
@@ -3061,15 +3095,27 @@ body::-webkit-scrollbar,
 
 .gg-preview__body,
 .store-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-store-content-lift);
+
+
+
+
+
+
 }
 
 .gg-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-content-lift);
+
+
+
 }
 
 .store-preview__body {
   margin-top: var(--gg-preview-store-content-lift);
+
+
+
 }
 
 .gg-preview__intro,
@@ -3143,6 +3189,9 @@ body::-webkit-scrollbar,
 }
 /* END gg-preview-bottom-handle-contract */
 /* END GENERATED: gg-preview-frame */
+
+
+
 
 
 
@@ -3778,6 +3827,9 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
 
 
 

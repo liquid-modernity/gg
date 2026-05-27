@@ -421,6 +421,9 @@
   min-height: 0;
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
+
+
+
 }
 
 .gg-preview__surface {
@@ -432,13 +435,22 @@
 }
 
 .gg-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-content-lift);
+
+
+
 }
 
 .store-preview__body {
-  margin-top: 0;
+  margin-top: var(--gg-preview-store-content-lift);
+
+
+
 }
 /* END GENERATED: gg-visual-tokens */
+
+
+
 
 
 
@@ -731,6 +743,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   opacity: 1;
 }
 /* END GENERATED: gg-sheet-modal */
+
+
+
 
 
 
@@ -1207,6 +1222,9 @@ body::-webkit-scrollbar,
 
 
 
+
+
+
 /* BEGIN GENERATED: gg-discovery-sheet */
 .gg-discovery {
   display: grid;
@@ -1555,6 +1573,9 @@ body::-webkit-scrollbar,
   }
 }
 /* END GENERATED: gg-discovery-sheet */
+
+
+
 
 
 
@@ -2198,6 +2219,9 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
 
 
 
