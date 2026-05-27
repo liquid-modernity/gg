@@ -93,6 +93,57 @@ function assertSheetTokens(label, source) {
   }
 }
 
+function findCssRuleBlocks(source, selectorNeedle) {
+  const escaped = selectorNeedle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`[^{}]*${escaped}[^{}]*\\{[^{}]*\\}`, "g");
+  return [...source.matchAll(pattern)].map((match) => match[0]);
+}
+
+function assertPreviewHeroAspectContract(label, source) {
+  const heroBlocks = findCssRuleBlocks(source, ".gg-preview__hero")
+    .filter((block) => block.includes(".store-preview__hero"));
+  if (!heroBlocks.length) {
+    fail(`${label} missing shared preview hero/store preview hero rule`);
+    return;
+  }
+  const hasTokenAspect = heroBlocks.some((block) =>
+    block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
+  );
+  if (!hasTokenAspect) {
+    fail(`${label} preview hero media must use aspect-ratio: var(--gg-preview-hero-aspect)`);
+  }
+  const staleAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
+  if (staleAuto) {
+    fail(`${label} preview hero media must not keep stale aspect-ratio: auto`);
+  }
+}
+
+function assertNoPreviewAspectOnLifecycleContainers(label, source) {
+  const lifecycleSelectors = [
+    ".gg-sheet__panel",
+    ".gg-content-sheet__panel",
+    ".gg-command-panel",
+    ".gg-more-panel",
+    ".gg-comments-sheet",
+    ".gg-comment-replies-sheet",
+    ".store-preview-sheet .gg-sheet__panel",
+    ".store-discovery-sheet",
+    ".store-saved-sheet",
+    ".store-more-sheet",
+    ".gg-discovery__body",
+    ".gg-more-body",
+    ".store-sheet-body",
+  ];
+  for (const selector of lifecycleSelectors) {
+    const badBlocks = findCssRuleBlocks(source, selector).filter((block) =>
+      block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
+    );
+    if (badBlocks.length) {
+      fail(`${label} lifecycle container ${selector} must not use --gg-preview-hero-aspect`);
+    }
+  }
+}
+
 function assertPreviewMediaTokens(label, source) {
   requireIncludes(label, source, "--gg-preview-panel-initial-height: min(72dvh, 720px)");
   requireIncludes(label, source, "--gg-preview-hero-height: clamp(300px, 50dvh, 500px)");
@@ -101,8 +152,9 @@ function assertPreviewMediaTokens(label, source) {
   requireIncludes(label, source, "--gg-preview-content-lift: clamp(56px, 10vw, 88px)");
   requireIncludes(label, source, "--gg-preview-store-content-lift: clamp(48px, 9vw, 76px)");
   requireIncludes(label, source, "--gg-preview-media-fit: cover");
-  requireIncludes(label, source, "aspect-ratio: auto");
   requireIncludes(label, source, "object-fit: var(--gg-preview-media-fit)");
+  assertPreviewHeroAspectContract(label, source);
+  assertNoPreviewAspectOnLifecycleContainers(label, source);
 }
 
 function assertDockDemotion(label, source) {
