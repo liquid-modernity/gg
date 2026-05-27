@@ -3,16 +3,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 const root = process.cwd();
 const failures = [];
-function read(rel) { try { return fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n'); } catch (err) { failures.push(rel + ' is missing'); return ''; } }
+function normalize(text) { return text.split(String.fromCharCode(13) + String.fromCharCode(10)).join(String.fromCharCode(10)).split(String.fromCharCode(13)).join(String.fromCharCode(10)); }
+function read(rel) { try { return normalize(fs.readFileSync(path.join(root, rel), 'utf8')); } catch (err) { failures.push(rel + ' is missing'); return ''; } }
 function fail(message) { failures.push(message); }
 function blocks(source, selector) {
-  const escaped = selector.replace(/[.*+?^\$()|[\]\\]/g, '\\$&');
+  const escaped = selector.replace(/[.*+?^\\$()|[\]\\]/g, '\\$&');
   const re = new RegExp('[^{}]*' + escaped + '[^{}]*\\{[^{}]*\\}', 'g');
-  return Array.from(source.matchAll(re)).map(function (match) { return match[0]; });
+  return Array.from(source.matchAll(re)).map((match) => match[0]);
 }
-function anyBlock(source, selector, pattern) { return blocks(source, selector).some(function (block) { return pattern.test(block); }); }
+function anyBlock(source, selector, pattern) { return blocks(source, selector).some((block) => pattern.test(block)); }
 function generatedBlock(source, marker) {
-  const safe = marker.replace(/[.*+?^\$()|[\]\\]/g, '\\$&');
+  const safe = marker.replace(/[.*+?^\\$()|[\]\\]/g, '\\$&');
   const re = new RegExp('/\\* BEGIN GENERATED: ' + safe + ' \\*/[\\s\\S]*?/\\* END GENERATED: ' + safe + ' \\*/');
   const match = source.match(re);
   return match ? match[0] : source;
@@ -27,28 +28,28 @@ const storeFrame = generatedBlock(read('src/store/store.css'), 'gg-preview-frame
   ['src/css/modules/preview-frame.css', moduleFrame],
   ['src/css/gg-app.source.css generated preview-frame', appFrame],
   ['src/store/store.css generated preview-frame', storeFrame],
-].forEach(function (entry) {
-  const label = entry[0];
-  const css = entry[1];
+].forEach(([label, css]) => {
   if (!css.includes('.gg-preview__hero') || !css.includes('.store-preview__hero')) fail(label + ' missing shared preview hero selectors');
   if (!anyBlock(css, '.gg-preview__hero', /aspect-ratio:\s*var\(--gg-preview-hero-aspect\)/)) fail(label + ' missing 4/5 hero aspect contract');
   if (!anyBlock(css, '.gg-preview__hero', /max-height:\s*min\(var\(--gg-preview-hero-max-height\),\s*72dvh\)/)) fail(label + ' missing viewport-safe hero max-height boundary');
   if (!anyBlock(css, '.gg-preview__hero', /overflow:\s*hidden/)) fail(label + ' preview hero must hide media overflow');
-  if (!anyBlock(css, '.gg-preview__body', /margin-top:\s*var\(--gg-preview-content-lift\)/)) fail(label + ' root preview body must own content lift');
-  if (!anyBlock(css, '.store-preview__body', /margin-top:\s*var\(--gg-preview-store-content-lift\)/)) fail(label + ' Store preview body must own content lift');
+  if (!anyBlock(css, '.gg-preview__body', /margin-top:\s*calc\(var\(--gg-preview-content-lift\)\s*\*\s*-1\)/)) fail(label + ' root preview body must use content lift as upward card overlap');
+  if (!anyBlock(css, '.store-preview__body', /margin-top:\s*calc\(var\(--gg-preview-store-content-lift\)\s*\*\s*-1\)/)) fail(label + ' Store preview body must use content lift as upward card overlap');
   if (anyBlock(css, '.gg-preview__surface', /margin-top:\s*var\(--gg-preview-content-lift\)/)) fail(label + ' has double-lift: .gg-preview__surface must not use --gg-preview-content-lift');
   if (anyBlock(css, '.store-preview__surface', /margin-top:\s*var\(--gg-preview-store-content-lift\)/)) fail(label + ' has double-lift: .store-preview__surface must not use --gg-preview-store-content-lift');
+  if (!anyBlock(css, '.gg-preview__surface', /border-radius:/)) fail(label + ' content surface must be a rounded card overlay');
+  if (!anyBlock(css, '.gg-preview__surface', /padding:/)) fail(label + ' content surface must own readable padding');
   if (!anyBlock(css, '.gg-content-sheet__affordance', /order:\s*99/) && !anyBlock(css, '.gg-preview__affordance', /order:\s*99/)) fail(label + ' preview handle/affordance must be ordered at the bottom');
   if (!css.includes('counter-reset: gg-preview-toc')) fail(label + ' missing polished TOC counter contract');
 });
 if (!/--gg-preview-hero-aspect:\s*4\s*\/\s*5\s*;/.test(visual)) fail('visual tokens missing --gg-preview-hero-aspect: 4 / 5');
-['.gg-preview__hero', '.store-preview__hero', '.gg-preview__body', '.store-preview__body', '.gg-preview__surface', '.store-preview__surface'].forEach(function (selector) {
+['.gg-preview__hero', '.store-preview__hero', '.gg-preview__body', '.store-preview__body', '.gg-preview__surface', '.store-preview__surface'].forEach((selector) => {
   if (visual.includes(selector)) fail('visual tokens must remain token-only; found ' + selector);
 });
 if (previewFrame.trim() !== moduleFrame.trim()) fail('src/css/modules/preview-frame.css must mirror src/css/components/gg-preview-frame.css; run npm run gaga:sync-components');
 if (failures.length) {
   console.error('STORE MODAL PREVIEW RELIABILITY GUARD FAIL');
-  failures.forEach(function (failure) { console.error('- ' + failure); });
+  failures.forEach((failure) => console.error('- ' + failure));
   process.exit(1);
 }
 console.log('STORE MODAL PREVIEW RELIABILITY GUARD PASS');
