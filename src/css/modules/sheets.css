@@ -13,6 +13,41 @@
   display: none !important;
 }
 
+
+/* Global scrollbar visibility contract: scrolling remains enabled; visible rails are suppressed. */
+html,
+body,
+.gg-sheet__panel,
+.gg-preview__sheet,
+.gg-comments__content,
+.gg-discovery__body,
+.gg-more-body,
+.store-preview-sheet .gg-sheet__panel,
+.store-bottom-sheet .gg-sheet__panel,
+.store-discovery-body,
+.store-preview__carousel,
+.store-semantic-category-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.gg-sheet__panel::-webkit-scrollbar,
+.gg-preview__sheet::-webkit-scrollbar,
+.gg-comments__content::-webkit-scrollbar,
+.gg-discovery__body::-webkit-scrollbar,
+.gg-more-body::-webkit-scrollbar,
+.store-preview-sheet .gg-sheet__panel::-webkit-scrollbar,
+.store-bottom-sheet .gg-sheet__panel::-webkit-scrollbar,
+.store-discovery-body::-webkit-scrollbar,
+.store-preview__carousel::-webkit-scrollbar,
+.store-semantic-category-rail::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 .gg-sheet__scrim {
   position: absolute;
   inset: 0;

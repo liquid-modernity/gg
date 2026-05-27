@@ -113,11 +113,11 @@
 }
 
 .gg-preview__body {
-  margin-top: calc(-1 * var(--gg-preview-content-lift));
+  margin-top: var(--gg-preview-content-lift);
 }
 
 .store-preview__body {
-  margin-top: calc(-1 * var(--gg-preview-store-content-lift));
+  margin-top: var(--gg-preview-store-content-lift);
 }
 
 .gg-preview__intro,
