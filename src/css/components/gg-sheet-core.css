@@ -102,6 +102,8 @@ body::-webkit-scrollbar,
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
   will-change: transform;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @supports not (overflow-x: clip) {
@@ -234,3 +236,19 @@ body::-webkit-scrollbar,
 .gg-sheet__head .gg-sheet__handle {
   margin-bottom: 0;
 }
+
+/* BEGIN gg-global-sheet-scrollbar-hidden-contract */
+.gg-sheet__panel::-webkit-scrollbar,
+.gg-sheet__body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-global-sheet-scrollbar-hidden-contract */
+
+/* BEGIN gg-top-edge-panel-bottom-handle-contract */
+.gg-sheet[data-gg-edge='top'] .gg-sheet__panel > .gg-sheet__handle {
+  top: auto;
+  bottom: var(--gg-sheet-handle-bottom, 8px);
+}
+/* END gg-top-edge-panel-bottom-handle-contract */

@@ -89,11 +89,11 @@
       --gg-preview-panel-initial-height: min(72dvh, 720px);
       --gg-preview-initial-height: var(--gg-preview-panel-initial-height);
   --gg-preview-hero-height: clamp(300px, 50dvh, 500px);
-  --gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62);
+  --gg-preview-hero-max-height: min(72dvh, 760px);
       --gg-preview-hero-min: var(--gg-preview-hero-height);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(56px, 10vw, 88px);
-  --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
+  --gg-preview-content-lift: clamp(380px, 59dvh, 540px);
+  --gg-preview-store-content-lift: clamp(360px, 56dvh, 520px);
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
       --gg-preview-media-fit: cover;
       --gg-preview-surface-radius: 28px;
@@ -138,10 +138,10 @@
   --gg-preview-panel-initial-height: min(72dvh, 720px);
   --gg-preview-panel-max-height: var(--gg-sheet-content-max-height);
   --gg-preview-hero-height: clamp(300px, 50dvh, 500px);
-  --gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62);
+  --gg-preview-hero-max-height: min(72dvh, 760px);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(96px, 18dvh, 220px);
-  --gg-preview-store-content-lift: clamp(88px, 16dvh, 196px);
+  --gg-preview-content-lift: clamp(380px, 59dvh, 540px);
+  --gg-preview-store-content-lift: clamp(360px, 56dvh, 520px);
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
@@ -154,88 +154,31 @@
   --gg-sheet-search-surface: var(--gg-field-surface);
   --gg-sheet-search-focus-ring: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 18%, transparent), 0 4px 14px color-mix(in srgb, var(--gg-accent) 7%, transparent);
 }
+
+.gg-preview__hero,
+.store-preview__hero {
+  aspect-ratio: var(--gg-preview-hero-aspect);
+  min-height: 0;
+  max-height: min(var(--gg-preview-hero-max-height), 72dvh);
+  overflow: hidden;
+}
+
+.gg-preview__surface {
+  margin-top: var(--gg-preview-content-lift);
+}
+
+.store-preview__surface {
+  margin-top: var(--gg-preview-store-content-lift);
+}
+
+.gg-preview__body {
+  margin-top: 0;
+}
+
+.store-preview__body {
+  margin-top: 0;
+}
 /* END GENERATED: gg-visual-tokens */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -836,7 +779,6 @@
     }
 
 
-
     /* Human-clean semantic layer: semantic content stays available, but the default view is quieter. */
     .store-semantic-products { gap: 12px; padding-top: 20px; }
     .store-semantic-products__head { padding-inline: 2px; }
@@ -1069,104 +1011,6 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1203,6 +1047,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   overflow-x: clip;
   background: var(--gg-preview-surface);
   box-shadow: var(--gg-preview-shadow);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @supports not (overflow-x: clip) {
@@ -1242,14 +1088,11 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   z-index: 0;
   width: 100%;
   height: auto;
-  aspect-ratio: var(--gg-preview-hero-aspect);
   min-height: 0;
+  aspect-ratio: var(--gg-preview-hero-aspect);
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
   background: #201a1c;
-  background:
-    radial-gradient(circle at 22% 14%, color-mix(in srgb, var(--gg-accent-soft) 24%, transparent), transparent 32%),
-    linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
 }
 
 .gg-preview__media {
@@ -1291,17 +1134,11 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 .gg-preview__body,
 .store-preview__body {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: var(--gg-preview-content-gap);
-  min-width: 0;
-  max-width: 100%;
-  padding: 0;
+  margin-top: 0;
 }
 
 .gg-preview__body {
-  margin-top: var(--gg-preview-content-lift);
+  margin-top: 0;
 }
 
 .store-preview__body {
@@ -1346,98 +1183,39 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 }
 
 .gg-preview__surface,
-.store-preview__surface {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
-  max-width: 100%;
-  padding: 20px 18px;
-  border-radius: var(--gg-preview-radius) var(--gg-preview-radius) 0 0;
-  background: var(--gg-preview-surface);
-  box-shadow: 0 -1px 0 var(--gg-line-strong);
+
+.gg-preview__surface {
+  margin-top: var(--gg-preview-content-lift);
 }
+
+.store-preview__surface {
+  margin-top: var(--gg-preview-store-content-lift);
+}
+
+/* BEGIN gg-preview-scrollbar-hidden-contract */
+.gg-preview__sheet::-webkit-scrollbar,
+.store-preview-sheet .gg-sheet__panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-preview-scrollbar-hidden-contract */
+
+/* BEGIN gg-preview-bottom-handle-contract */
+.gg-content-sheet__affordance .gg-sheet__handle,
+.gg-preview__affordance .gg-sheet__handle,
+.store-preview__footer .gg-sheet__handle {
+  position: relative;
+  inset: auto;
+  left: auto;
+  top: auto;
+  order: 99;
+  place-items: center;
+  transform: none;
+  margin: 8px auto 0;
+}
+/* END gg-preview-bottom-handle-contract */
 /* END GENERATED: gg-preview-frame */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1548,6 +1326,8 @@ body::-webkit-scrollbar,
   transition: transform var(--gg-sheet-transition), box-shadow var(--gg-sheet-transition);
   overscroll-behavior: contain;
   will-change: transform;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @supports not (overflow-x: clip) {
@@ -1680,77 +1460,23 @@ body::-webkit-scrollbar,
 .gg-sheet__head .gg-sheet__handle {
   margin-bottom: 0;
 }
+
+/* BEGIN gg-global-sheet-scrollbar-hidden-contract */
+.gg-sheet__panel::-webkit-scrollbar,
+.gg-sheet__body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-global-sheet-scrollbar-hidden-contract */
+
+/* BEGIN gg-top-edge-panel-bottom-handle-contract */
+.gg-sheet[data-gg-edge='top'] .gg-sheet__panel > .gg-sheet__handle {
+  top: auto;
+  bottom: var(--gg-sheet-handle-bottom, 8px);
+}
+/* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2102,7 +1828,6 @@ body::-webkit-scrollbar,
       font-weight: 750;
       font-size: 12px;
     }
-
 
 
     .store-filter-outline {
@@ -2770,3 +2495,46 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
+
+/* BEGIN gg-preview-scrollbar-hidden-contract */
+.gg-preview__sheet::-webkit-scrollbar,
+.store-preview-sheet .gg-sheet__panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-preview-scrollbar-hidden-contract */
+
+/* BEGIN gg-preview-bottom-handle-contract */
+.gg-content-sheet__affordance .gg-sheet__handle,
+.gg-preview__affordance .gg-sheet__handle,
+.store-preview__footer .gg-sheet__handle {
+  position: relative;
+  inset: auto;
+  left: auto;
+  top: auto;
+  order: 99;
+  place-items: center;
+  transform: none;
+  margin: 8px auto 0;
+}
+/* END gg-preview-bottom-handle-contract */
+
+/* BEGIN gg-global-sheet-scrollbar-hidden-contract */
+.gg-sheet__panel::-webkit-scrollbar,
+.gg-sheet__body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-global-sheet-scrollbar-hidden-contract */
+
+/* BEGIN gg-top-edge-panel-bottom-handle-contract */
+.gg-sheet[data-gg-edge='top'] .gg-sheet__panel > .gg-sheet__handle {
+  top: auto;
+  bottom: var(--gg-sheet-handle-bottom, 8px);
+}
+/* END gg-top-edge-panel-bottom-handle-contract */

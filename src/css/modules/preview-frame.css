@@ -15,6 +15,8 @@
   overflow-x: clip;
   background: var(--gg-preview-surface);
   box-shadow: var(--gg-preview-shadow);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @supports not (overflow-x: clip) {
@@ -54,14 +56,11 @@
   z-index: 0;
   width: 100%;
   height: auto;
-  aspect-ratio: var(--gg-preview-hero-aspect);
   min-height: 0;
+  aspect-ratio: var(--gg-preview-hero-aspect);
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
   background: #201a1c;
-  background:
-    radial-gradient(circle at 22% 14%, color-mix(in srgb, var(--gg-accent-soft) 24%, transparent), transparent 32%),
-    linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
 }
 
 .gg-preview__media {
@@ -103,17 +102,11 @@
 
 .gg-preview__body,
 .store-preview__body {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: var(--gg-preview-content-gap);
-  min-width: 0;
-  max-width: 100%;
-  padding: 0;
+  margin-top: 0;
 }
 
 .gg-preview__body {
-  margin-top: var(--gg-preview-content-lift);
+  margin-top: 0;
 }
 
 .store-preview__body {
@@ -158,13 +151,35 @@
 }
 
 .gg-preview__surface,
-.store-preview__surface {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
-  max-width: 100%;
-  padding: 20px 18px;
-  border-radius: var(--gg-preview-radius) var(--gg-preview-radius) 0 0;
-  background: var(--gg-preview-surface);
-  box-shadow: 0 -1px 0 var(--gg-line-strong);
+
+.gg-preview__surface {
+  margin-top: var(--gg-preview-content-lift);
 }
+
+.store-preview__surface {
+  margin-top: var(--gg-preview-store-content-lift);
+}
+
+/* BEGIN gg-preview-scrollbar-hidden-contract */
+.gg-preview__sheet::-webkit-scrollbar,
+.store-preview-sheet .gg-sheet__panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* END gg-preview-scrollbar-hidden-contract */
+
+/* BEGIN gg-preview-bottom-handle-contract */
+.gg-content-sheet__affordance .gg-sheet__handle,
+.gg-preview__affordance .gg-sheet__handle,
+.store-preview__footer .gg-sheet__handle {
+  position: relative;
+  inset: auto;
+  left: auto;
+  top: auto;
+  order: 99;
+  place-items: center;
+  transform: none;
+  margin: 8px auto 0;
+}
+/* END gg-preview-bottom-handle-contract */
