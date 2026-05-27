@@ -233,6 +233,8 @@
 
 
 
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1151,6 +1153,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1341,6 +1345,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   box-shadow: 0 -1px 0 var(--gg-line-strong);
 }
 /* END GENERATED: gg-preview-frame */
+
+
 
 
 
@@ -1657,6 +1663,8 @@ body::-webkit-scrollbar,
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 

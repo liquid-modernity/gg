@@ -169,8 +169,8 @@ function assertPreviewMediaTokens(label, source) {
   requireIncludes(label, source, "--gg-preview-hero-height: clamp(300px, 50dvh, 500px)");
   requireIncludes(label, source, "--gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62)");
   requireIncludes(label, source, "--gg-preview-hero-aspect: 4 / 5");
-  requireIncludes(label, source, "--gg-preview-content-lift: clamp(56px, 10vw, 88px)");
-  requireIncludes(label, source, "--gg-preview-store-content-lift: clamp(48px, 9vw, 76px)");
+  requireIncludes(label, source, "--gg-preview-content-lift: clamp(96px, 18dvh, 220px)");
+  requireIncludes(label, source, "--gg-preview-store-content-lift: clamp(88px, 16dvh, 196px)");
   requireIncludes(label, source, "--gg-preview-media-fit: cover");
   requireIncludes(label, source, "object-fit: var(--gg-preview-media-fit)");
   assertPreviewHeroAspectContract(label, source);
