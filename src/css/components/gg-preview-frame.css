@@ -53,8 +53,8 @@
   top: 0;
   z-index: 0;
   height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
-  min-height: 0;
   max-height: var(--gg-preview-hero-max-height);
+  min-height: 0;
   aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
@@ -105,7 +105,14 @@
   user-select: none;
   -webkit-user-drag: none;
 }
-
+/* Visual/media di dalamnya: boleh 4/5 */
+.gg-preview__media,
+.gg-preview__image,
+.store-preview__media,
+.store-preview__image {
+  aspect-ratio: var(--gg-preview-hero-aspect);
+  object-fit: cover;
+}
 .gg-preview__shade,
 .store-preview__shade {
   position: absolute;
