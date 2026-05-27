@@ -106,15 +106,33 @@ function assertPreviewHeroAspectContract(label, source) {
     fail(`${label} missing shared preview hero/store preview hero rule`);
     return;
   }
-  const hasTokenAspect = heroBlocks.some((block) =>
+
+  // Reconciled contract:
+  // - The shared preview hero/container must be viewport-height driven so Store modal
+  //   preview remains reliable on short/mobile viewports.
+  // - Therefore the shared .gg-preview__hero/.store-preview__hero block may keep
+  //   aspect-ratio:auto and must not use --gg-preview-hero-aspect as its height driver.
+  // - The aspect token remains valid for inner media/visual use and is verified as a token
+  //   by assertPreviewMediaTokens(), not forced onto the container block here.
+  const hasViewportHeight = heroBlocks.some((block) =>
+    block.includes("height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height))") &&
+    block.includes("min-height: 0") &&
+    block.includes("max-height: var(--gg-preview-hero-max-height)")
+  );
+  if (!hasViewportHeight) {
+    fail(`${label} preview hero container must use viewport-safe hero height`);
+  }
+
+  const containerUsesAspectToken = heroBlocks.some((block) =>
     block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
   );
-  if (!hasTokenAspect) {
-    fail(`${label} preview hero media must use aspect-ratio: var(--gg-preview-hero-aspect)`);
+  if (containerUsesAspectToken) {
+    fail(`${label} preview hero container must not use --gg-preview-hero-aspect as height driver`);
   }
-  const staleAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
-  if (staleAuto) {
-    fail(`${label} preview hero media must not keep stale aspect-ratio: auto`);
+
+  const hasContainerAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
+  if (!hasContainerAuto) {
+    fail(`${label} preview hero container should explicitly keep aspect-ratio:auto`);
   }
 }
 
