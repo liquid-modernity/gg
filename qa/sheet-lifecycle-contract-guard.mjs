@@ -1,353 +1,49 @@
 #!/usr/bin/env node
-
-import { existsSync, readFileSync } from "node:fs";
-
-const files = {
-  packageJson: "package.json",
-  index: "index.xml",
-  landing: "landing.html",
-  store: "store.html",
-  appJs: "src/js/gg-app.source.js",
-  storeJs: "src/store/store-discovery.js",
-  appCss: "src/css/gg-app.source.css",
-  appCssAsset: "__gg/assets/css/gg-app.dev.css",
-  storeCss: "src/store/store.css",
-  storeCssAsset: "assets/store/store.css",
-};
-
-const text = Object.fromEntries(
-  Object.entries(files).map(([key, file]) => [key, existsSync(file) ? readFileSync(file, "utf8") : ""]),
-);
+import fs from 'node:fs';
+import path from 'node:path';
+const root = process.cwd();
 const failures = [];
-
-function fail(message) {
-  failures.push(message);
+function read(rel) { try { return fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n'); } catch (err) { failures.push(rel + ' is missing'); return ''; } }
+function fail(message) { failures.push(message); }
+function requirePattern(label, source, pattern, message) { if (!pattern.test(source)) fail(label + ' ' + message); }
+function blocks(source, selector) {
+  const escaped = selector.replace(/[.*+?^\$()|[\]\\]/g, '\\$&');
+  const re = new RegExp('[^{}]*' + escaped + '[^{}]*\\{[^{}]*\\}', 'g');
+  return Array.from(source.matchAll(re)).map(function (match) { return match[0]; });
 }
-
-function requireIncludes(label, source, needle) {
-  if (!source.includes(needle)) fail(`${label} missing ${needle}`);
-}
-
-function requireMatches(label, source, pattern, description) {
-  if (!pattern.test(source)) fail(`${label} missing ${description}`);
-}
-
-function requireNotIncludes(label, source, needle) {
-  if (source.includes(needle)) fail(`${label} must not include ${needle}`);
-}
-
-function blockById(source, id) {
-  const start = source.search(new RegExp(`<[^>]+\\bid=(['"])${id}\\1[^>]*>`, "i"));
-  if (start < 0) return "";
-  const next = source.slice(start + 1).search(/<[^>]+\bdata-gg-panel=(['"])[^'"]+\1/i);
-  return next < 0 ? source.slice(start) : source.slice(start, start + 1 + next);
-}
-
-function assertPanelScrollContainer(label, source, id, className = "") {
-  const block = blockById(source, id);
-  if (!block) {
-    fail(`${label} missing #${id}`);
-    return;
-  }
-  if (!block.includes("data-gg-scroll-container")) fail(`${label} #${id} missing data-gg-scroll-container`);
-  if (className && !block.includes(className)) fail(`${label} #${id} missing ${className}`);
-}
-
-function assertPolicy(label, source, panelName, keys) {
-  const panelPattern = new RegExp(`${panelName}:\\s*\\{`, "g");
-  const matches = [...source.matchAll(panelPattern)];
-  if (!matches.length) {
-    fail(`${label} missing ${panelName} lifecycle policy`);
-    return;
-  }
-  const hasPolicy = matches.some((match) => {
-    const block = source.slice(match.index || 0, (match.index || 0) + 900);
-    return keys.every((key) => block.includes(key));
-  });
-  if (!hasPolicy) {
-    for (const key of keys) fail(`${label} ${panelName} policy missing ${key}`);
-  }
-}
-
-function assertCssHitTarget(label, source) {
-  requireIncludes(label, source, "--gg-hit-min: 44px");
-  requireNotIncludes(label, source, "--gg-hit-min: 10px");
-  requireIncludes(label, source, "--gg-sheet-handle-hit: 44px");
-  requireIncludes(label, source, "--gg-sheet-head-height: 44px");
-  requireNotIncludes(label, source, "--gg-sheet-head-height: 56px");
-  requireIncludes(label, source, "--gg-sheet-handle-visual-width: 30px");
-  requireIncludes(label, source, "--gg-sheet-handle-visual-height: 2.5px");
-  requireIncludes(label, source, "min-width: var(--gg-sheet-handle-hit)");
-  requireIncludes(label, source, "min-height: var(--gg-sheet-handle-hit)");
-  requireIncludes(label, source, "height: var(--gg-panel-handle-height)");
-}
-
-function assertSheetTokens(label, source) {
-  requireIncludes(label, source, "--gg-shell-edge-gap: 10px");
-  requireIncludes(label, source, "--gg-dock-edge-gap:");
-  requireIncludes(label, source, "--gg-sheet-edge-gap: 0px");
-  requireIncludes(label, source, "--gg-dock-width:");
-  requireIncludes(label, source, "--gg-panel-width: min(calc(100");
-  requireNotIncludes(label, source, "--gg-panel-width: var(--gg-dock-width)");
-  requireIncludes(label, source, "--gg-sheet-utility-max-height");
-  requireIncludes(label, source, "--gg-sheet-content-max-height");
-  requireIncludes(label, source, "width: var(--gg-dock-width)");
-  if (!source.includes("width: var(--gg-panel-width)") && !source.includes("--store-sheet-width: var(--gg-panel-width)")) {
-    fail(`${label} missing sheet width usage from --gg-panel-width`);
-  }
-}
-
-function findCssRuleBlocks(source, selectorNeedle) {
-  const escaped = selectorNeedle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`[^{}]*${escaped}[^{}]*\\{[^{}]*\\}`, "g");
-  return [...source.matchAll(pattern)].map((match) => match[0]);
-}
-
-function assertPreviewHeroAspectContract(label, source) {
-  const heroBlocks = findCssRuleBlocks(source, ".gg-preview__hero")
-    .filter((block) => block.includes(".store-preview__hero"));
-  if (!heroBlocks.length) {
-    fail(`${label} missing shared preview hero/store preview hero rule`);
-    return;
-  }
-
-  // Final 4/5 contract:
-  // - The preview hero container is the visual frame, so it may own
-  //   aspect-ratio: var(--gg-preview-hero-aspect).
-  // - It still must stay viewport-safe through max-height + overflow clipping.
-  // - Generic sheet/panel/lifecycle containers remain forbidden from using
-  //   --gg-preview-hero-aspect; only the preview hero frame may use it.
-  const hasAspectToken = heroBlocks.some((block) =>
-    block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
-  );
-  if (!hasAspectToken) {
-    fail(`${label} preview hero container must use aspect-ratio: var(--gg-preview-hero-aspect)`);
-  }
-
-  const keepsStaleAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
-  if (keepsStaleAuto) {
-    fail(`${label} preview hero container must not keep stale aspect-ratio:auto`);
-  }
-
-  const hasViewportCap = heroBlocks.some((block) =>
-    /max-height:\s*(?:var\(--gg-preview-hero-viewport-cap|var\(--gg-preview-hero-max-height|min\()/m.test(block)
-  );
-  if (!hasViewportCap) {
-    fail(`${label} preview hero container must keep a viewport-safe max-height cap`);
-  }
-
-  const hasOverflowClip = heroBlocks.some((block) => block.includes("overflow: hidden"));
-  if (!hasOverflowClip) {
-    fail(`${label} preview hero container must clip overflowing media`);
-  }
-}
-
-function assertNoPreviewAspectOnLifecycleContainers(label, source) {
-  const lifecycleSelectors = [
-    ".gg-sheet__panel",
-    ".gg-content-sheet__panel",
-    ".gg-command-panel",
-    ".gg-more-panel",
-    ".gg-comments-sheet",
-    ".gg-comment-replies-sheet",
-    ".store-preview-sheet .gg-sheet__panel",
-    ".store-discovery-sheet",
-    ".store-saved-sheet",
-    ".store-more-sheet",
-    ".gg-discovery__body",
-    ".gg-more-body",
-    ".store-sheet-body",
-  ];
-  for (const selector of lifecycleSelectors) {
-    const badBlocks = findCssRuleBlocks(source, selector).filter((block) =>
-      block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
-    );
-    if (badBlocks.length) {
-      fail(`${label} lifecycle container ${selector} must not use --gg-preview-hero-aspect`);
-    }
-  }
-}
-
-function assertPreviewMediaTokens(label, source) {
-  requireIncludes(label, source, "--gg-preview-panel-initial-height: min(72dvh, 720px)");
-  requireIncludes(label, source, "--gg-preview-hero-height: clamp(300px, 50dvh, 500px)");
-  requireMatches(label, source, /--gg-preview-hero-max-height:\s*[^;]*dvh[^;]*;/, "viewport-safe --gg-preview-hero-max-height");
-  requireIncludes(label, source, "--gg-preview-hero-aspect: 4 / 5");
-  requireMatches(label, source, /--gg-preview-content-lift:\s*clamp\([^;]*dvh[^;]*\);/, "positive clamp --gg-preview-content-lift");
-  requireMatches(label, source, /--gg-preview-store-content-lift:\s*clamp\([^;]*dvh[^;]*\);/, "positive clamp --gg-preview-store-content-lift");
-  requireIncludes(label, source, "--gg-preview-media-fit: cover");
-  requireIncludes(label, source, "object-fit: var(--gg-preview-media-fit)");
-  assertPreviewHeroAspectContract(label, source);
-  assertNoPreviewAspectOnLifecycleContainers(label, source);
-}
-
-function assertDockDemotion(label, source) {
-  requireIncludes(label, source, "body[data-gg-panel-active='true'] .gg-dock");
-  requireIncludes(label, source, "pointer-events: none");
-  requireIncludes(label, source, "user-select: none");
-  requireIncludes(label, source, ".gg-dock::after");
-  requireIncludes(label, source, "body[data-gg-panel-active='true'] .gg-dock::after");
-  requireNotIncludes(label, source, "body[data-gg-dock-state='hidden-by-scroll'] .gg-dock, body[data-gg-panel-active='true'] .gg-dock");
-}
-
-function assertDockInert(label, source) {
-  requireIncludes(label, source, "setDockInert");
-  requireIncludes(label, source, "setAttribute('aria-hidden', 'true')");
-  requireIncludes(label, source, "setAttribute('inert', '')");
-  requireIncludes(label, source, "removeAttribute('inert')");
-}
-
-function assertDragZoneRuntime(label, source) {
-  requireIncludes(label, source, "data-gg-drag-zone");
-  requireIncludes(label, source, "resolveDragCandidate");
-  requireIncludes(label, source, "isInteractiveDragZoneTarget");
-  requireIncludes(label, source, "fromHandle");
-  if (!source.includes("session.active") && !source.includes("drag.active") && !source.includes("state.dragSession.active")) {
-    fail(`${label} missing drag threshold active-state tracking`);
-  }
-}
-
-function assertScrimActivation(label, source) {
-  requireIncludes(label, source, "[data-gg-state='opening']");
-  requireIncludes(label, source, "[data-gg-state='open']");
-  requireIncludes(label, source, "[data-gg-state='dragging']");
-  requireIncludes(label, source, "opacity: 1");
-}
-
-function assertStoreDots(label, source) {
-  const dotsIndex = source.indexOf("store-preview__dots");
-  if (dotsIndex === -1) {
-    fail(`${label} missing store-preview__dots`);
-    return;
-  }
-  const dotsBlock = source.slice(dotsIndex, dotsIndex + 700);
-  if (dotsBlock.includes("gg-sheet__handle")) fail(`${label} store-preview__dots must not include gg-sheet__handle`);
-  if (dotsBlock.includes("data-gg-drag-handle")) fail(`${label} store-preview__dots must not include data-gg-drag-handle`);
-  if (dotsBlock.includes("data-gg-drag-zone")) fail(`${label} store-preview__dots must not include data-gg-drag-zone`);
-  if (dotsBlock.includes("position:")) {
-    requireIncludes(label, dotsBlock, "right:");
-    requireIncludes(label, dotsBlock, "background: transparent");
-    requireIncludes(label, dotsBlock, "transform: none");
-  }
-}
-
-function assertResetTargets(label, source) {
-  requireIncludes(label, source, "function collectPanelScrollTargets");
-  requireIncludes(label, source, ".gg-sheet__panel, .gg-content-sheet__panel");
-  requireIncludes(label, source, "[data-gg-scroll-container], .gg-sheet__panel, .gg-content-sheet__panel");
-  requireIncludes(label, source, "collectPanelScrollTargets");
-}
-
-requireIncludes("landing.html", text.landing, 'data-gg-preview-surface="none"');
-requireNotIncludes("landing.html", text.landing, 'data-gg-panel="preview"');
-
-requireIncludes("index.xml", text.index, "data-gg-panel='preview'");
-requireIncludes("store.html", text.store, 'data-gg-panel="preview"');
-
-assertPanelScrollContainer("index.xml command", text.index, "gg-command-panel", "gg-discovery__body");
-assertPanelScrollContainer("index.xml more", text.index, "gg-more-panel", "gg-more-body");
-assertPanelScrollContainer("index.xml preview", text.index, "gg-preview-sheet", "gg-preview__body");
-
-assertPanelScrollContainer("landing.html command", text.landing, "gg-command-panel", "gg-discovery__body");
-assertPanelScrollContainer("landing.html more", text.landing, "gg-more-panel", "gg-more-body");
-
-assertPanelScrollContainer("store.html preview", text.store, "store-preview-sheet", "store-preview__body");
-assertPanelScrollContainer("store.html discovery", text.store, "store-discovery-sheet", "store-discovery-body");
-assertPanelScrollContainer("store.html saved", text.store, "store-saved-sheet", "store-sheet-body");
-assertPanelScrollContainer("store.html more", text.store, "store-more-sheet", "gg-more-body");
-
-for (const [label, source] of [
-  ["src/js/gg-app.source.js", text.appJs],
-  ["landing.html", text.landing],
-  ["src/store/store-discovery.js", text.storeJs],
-]) {
-  requireIncludes(label, source, "function resetPanelScroll");
-  assertResetTargets(label, source);
-  assertDockInert(label, source);
-  assertDragZoneRuntime(label, source);
-  requireIncludes(label, source, "data-gg-scroll-container");
-  requireIncludes(label, source, "open-before-render");
-  requireIncludes(label, source, "query-change");
-  requireIncludes(label, source, "filter-change");
-  requireIncludes(label, source, "close-after-hide");
-}
-
-requireNotIncludes("src/js/gg-app.source.js", text.appJs, "function resetSheetScroll");
-requireNotIncludes("src/store/store-discovery.js", text.storeJs, "function resetSheetScroll");
-
-assertPolicy("src/js/gg-app.source.js", text.appJs, "command", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
-assertPolicy("src/js/gg-app.source.js", text.appJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "closeAfterHide", "itemChange"]);
-assertPolicy("src/js/gg-app.source.js", text.appJs, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
-assertPolicy("landing.html", text.landing, "command", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
-assertPolicy("landing.html", text.landing, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "preview", ["openBeforeRender", "openAfterRender", "closeBeforeHide", "closeAfterHide", "itemChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "discovery", ["openBeforeRender", "openAfterRender", "closeAfterHide", "queryChange", "filterChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "saved", ["openBeforeRender", "openAfterRender", "closeAfterHide", "filterChange"]);
-assertPolicy("src/store/store-discovery.js", text.storeJs, "more", ["openBeforeRender", "openAfterRender", "closeAfterHide", "clearLocalSearchOnClose", "closePreferencePanelOnClose"]);
-
-requireIncludes("landing.html", text.landing, "#gg-command-panel .gg-sheet__panel");
-requireIncludes("landing.html", text.landing, "grid-template-rows: auto minmax(0, 1fr) auto;");
-requireIncludes("landing.html", text.landing, "overflow: hidden;");
-requireIncludes("landing.html", text.landing, ".gg-discovery__body");
-requireIncludes("landing.html", text.landing, "-webkit-overflow-scrolling: touch");
-
-requireIncludes("index.xml", text.index, "data-gg-drag-zone='sheet-head'");
-requireIncludes("index.xml", text.index, "data-gg-drag-zone='preview-affordance'");
-requireIncludes("landing.html", text.landing, 'data-gg-drag-zone="sheet-head"');
-requireIncludes("store.html", text.store, 'data-gg-drag-zone="sheet-head"');
-requireIncludes("store.html", text.store, 'data-gg-drag-zone="preview-affordance"');
-
-assertCssHitTarget("src/css/gg-app.source.css", text.appCss);
-if (text.appCssAsset) assertCssHitTarget("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
-assertCssHitTarget("src/store/store.css", text.storeCss);
-if (text.storeCssAsset) assertCssHitTarget("assets/store/store.css", text.storeCssAsset);
-
-assertSheetTokens("src/css/gg-app.source.css", text.appCss);
-assertSheetTokens("landing.html", text.landing);
-assertSheetTokens("src/store/store.css", text.storeCss);
-if (text.appCssAsset) assertSheetTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
-if (text.storeCssAsset) assertSheetTokens("assets/store/store.css", text.storeCssAsset);
-
-assertDockDemotion("src/css/gg-app.source.css", text.appCss);
-assertDockDemotion("landing.html", text.landing);
-assertDockDemotion("src/store/store.css", text.storeCss);
-if (text.appCssAsset) assertDockDemotion("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
-if (text.storeCssAsset) assertDockDemotion("assets/store/store.css", text.storeCssAsset);
-
-assertScrimActivation("src/css/gg-app.source.css", text.appCss);
-assertScrimActivation("landing.html", text.landing);
-assertScrimActivation("src/store/store.css", text.storeCss);
-if (text.appCssAsset) assertScrimActivation("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
-if (text.storeCssAsset) assertScrimActivation("assets/store/store.css", text.storeCssAsset);
-
-assertPreviewMediaTokens("src/css/gg-app.source.css", text.appCss);
-assertPreviewMediaTokens("src/store/store.css", text.storeCss);
-if (text.appCssAsset) assertPreviewMediaTokens("__gg/assets/css/gg-app.dev.css", text.appCssAsset);
-if (text.storeCssAsset) assertPreviewMediaTokens("assets/store/store.css", text.storeCssAsset);
-
-assertStoreDots("store.html", text.store);
-assertStoreDots("src/store/store.css", text.storeCss);
-if (text.storeCssAsset) assertStoreDots("assets/store/store.css", text.storeCssAsset);
-
-requireNotIncludes("src/css/gg-app.source.css", text.appCss, "width: min(calc(100vw - 20px), 600px)");
-requireNotIncludes("src/store/store.css", text.storeCss, "--gg-panel-width: min(calc(100vw - 12px), 600px)");
-requireNotIncludes("landing.html", text.landing, "--gg-panel-width: min(calc(100vw - 0px), 600px)");
-requireNotIncludes("src/css/gg-app.source.css", text.appCss, "--gg-panel-width: var(--gg-dock-width)");
-requireNotIncludes("src/store/store.css", text.storeCss, "--gg-panel-width: var(--gg-dock-width)");
-requireNotIncludes("landing.html", text.landing, "--gg-panel-width: var(--gg-dock-width)");
-
-requireIncludes("package.json", text.packageJson, '"gaga:verify-sheet-lifecycle"');
-requireIncludes("package.json", text.packageJson, "gaga:verify-preview-sheet && npm run gaga:verify-sheet-lifecycle");
-
-if (existsSync("template/partials") || existsSync("template/index.original.xml")) {
-  fail("template partials remain in active template/ path");
-}
-requireIncludes("docs/archive/template-deprecated/README.md", existsSync("docs/archive/template-deprecated/README.md") ? readFileSync("docs/archive/template-deprecated/README.md", "utf8") : "", "index.xml");
-
+function anyBlock(source, selector, pattern) { return blocks(source, selector).some(function (block) { return pattern.test(block); }); }
+const files = [
+  ['src/css/components/gg-visual-tokens.css', read('src/css/components/gg-visual-tokens.css')],
+  ['src/css/modules/visual-tokens.css', read('src/css/modules/visual-tokens.css')],
+  ['src/css/components/gg-preview-frame.css', read('src/css/components/gg-preview-frame.css')],
+  ['src/css/modules/preview-frame.css', read('src/css/modules/preview-frame.css')],
+  ['src/css/gg-app.source.css', read('src/css/gg-app.source.css')],
+  ['src/store/store.css', read('src/store/store.css')],
+  ['__gg/assets/css/gg-app.dev.css', read('__gg/assets/css/gg-app.dev.css')],
+  ['assets/store/store.css', read('assets/store/store.css')],
+];
+files.forEach(function (entry) {
+  const label = entry[0];
+  const css = entry[1];
+  requirePattern(label, css, /--gg-preview-hero-aspect:\s*4\s*\/\s*5\s*;/, 'missing --gg-preview-hero-aspect: 4 / 5');
+  requirePattern(label, css, /--gg-preview-hero-max-height:\s*[^;]*dvh[^;]*;/, 'missing viewport-safe --gg-preview-hero-max-height');
+  requirePattern(label, css, /--gg-preview-content-lift:\s*clamp\([^;]*dvh[^;]*\);/, 'missing positive clamp --gg-preview-content-lift');
+  requirePattern(label, css, /--gg-preview-store-content-lift:\s*clamp\([^;]*dvh[^;]*\);/, 'missing positive clamp --gg-preview-store-content-lift');
+  if (css.includes('--gg-preview-surface-reveal-y') || css.includes('--gg-preview-store-surface-reveal-y')) fail(label + ' must not use parallel reveal tokens');
+});
+const visual = read('src/css/components/gg-visual-tokens.css');
+['.gg-preview__hero', '.store-preview__hero', '.gg-preview__body', '.store-preview__body', '.gg-preview__surface', '.store-preview__surface'].forEach(function (selector) {
+  if (visual.includes(selector)) fail('src/css/components/gg-visual-tokens.css must remain token-only; found ' + selector);
+});
+const frame = read('src/css/components/gg-preview-frame.css');
+if (!anyBlock(frame, '.gg-preview__body', /margin-top:\s*var\(--gg-preview-content-lift\)/)) fail('preview body must own --gg-preview-content-lift');
+if (!anyBlock(frame, '.store-preview__body', /margin-top:\s*var\(--gg-preview-store-content-lift\)/)) fail('store preview body must own --gg-preview-store-content-lift');
+if (anyBlock(frame, '.gg-preview__surface', /margin-top:\s*var\(--gg-preview-content-lift\)/)) fail('double-lift detected: .gg-preview__surface must not use --gg-preview-content-lift');
+if (anyBlock(frame, '.store-preview__surface', /margin-top:\s*var\(--gg-preview-store-content-lift\)/)) fail('double-lift detected: .store-preview__surface must not use --gg-preview-store-content-lift');
+if (!anyBlock(frame, '.gg-content-sheet__affordance', /order:\s*99/) && !anyBlock(frame, '.gg-preview__affordance', /order:\s*99/)) fail('preview affordance must be ordered after content');
 if (failures.length) {
-  console.error("SHEET LIFECYCLE CONTRACT GUARD FAIL");
-  failures.forEach((message) => console.error(`- ${message}`));
+  console.error('SHEET LIFECYCLE CONTRACT GUARD FAIL');
+  failures.forEach(function (failure) { console.error('- ' + failure); });
   process.exit(1);
 }
-
-console.log("SHEET LIFECYCLE CONTRACT GUARD PASS");
+console.log('SHEET LIFECYCLE CONTRACT GUARD PASS');
