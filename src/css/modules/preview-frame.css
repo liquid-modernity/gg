@@ -127,7 +127,23 @@
   text-shadow: 0 2px 18px rgba(0,0,0,.42);
   padding: 0 8px 18px;
 }
-
+.gg-preview__eyebrow, .store-preview__category {
+  margin: 0;
+  font: 820 11px/1.1 var(--gg-font-sans);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.gg-preview__title, .store-preview__title {
+  margin: 0;
+  font: 780 clamp(28px, 8vw, 52px)/1 var(--gg-font-sans);
+  letter-spacing: 0;
+}
+.gg-preview__meta, .store-preview__meta {
+  margin: 0;
+  color: rgba(255,255,255,.86);
+  font: 650 13px/1.35 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+}
 .gg-preview__surface,
 .store-preview__surface {
   display: grid;
