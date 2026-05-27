@@ -46,6 +46,12 @@ function widthDeclaration(rule) {
   return rule.match(/(?:^|[;\s{])width:\s*([^;}]+)/m)?.[1]?.trim() || '';
 }
 
+function cssRuleBlocksForSelector(source, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp("[^{}]*" + escaped + "[^{}]*\\{[^{}]*\\}", "g");
+  return Array.from(source.matchAll(pattern)).map((match) => match[0]);
+}
+
 const files = {
   packageJson: read('package.json'),
   previewFrame: read('src/css/components/gg-preview-frame.css'),
@@ -100,8 +106,10 @@ for (const [label, source] of [
   }
 }
 
-if (/\.store-preview__hero\s*\{(?:(?!\}).)*--gg-preview-panel-(?:initial|max)-height/s.test(files.storeCss)) {
-  fail('Store preview hero still uses old panel-driven hero max-height');
+for (const block of cssRuleBlocksForSelector(files.storeCss, '.store-preview__hero')) {
+  if (/--gg-preview-panel-(?:initial|max)-height|var\(--gg-preview-panel-(?:initial|max)-height\)/.test(block)) {
+    fail('Store preview hero still uses old panel-driven hero max-height');
+  }
 }
 
 const storeManualCss = stripGenerated(files.storeCss);

@@ -62,15 +62,16 @@
   top: 0;
   z-index: 0;
   width: 100%;
+  min-
+  max-
+  background: #201a1c;
+  min-
+  max-
   height: auto;
   min-height: 0;
   aspect-ratio: var(--gg-preview-hero-aspect);
   max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
-  background: #201a1c;
-
-
-
 }
 
 .gg-preview__media {
@@ -112,27 +113,15 @@
 
 .gg-preview__body,
 .store-preview__body {
-  margin-top: var(--gg-preview-store-content-lift);
-
-
-
-
-
-
+  min-height: 0;
 }
 
 .gg-preview__body {
   margin-top: var(--gg-preview-content-lift);
-
-
-
 }
 
 .store-preview__body {
   margin-top: var(--gg-preview-store-content-lift);
-
-
-
 }
 
 .gg-preview__intro,
@@ -173,13 +162,8 @@
 }
 
 .gg-preview__surface,
-
-.gg-preview__surface {
-  margin-top: var(--gg-preview-content-lift);
-}
-
 .store-preview__surface {
-  margin-top: var(--gg-preview-store-content-lift);
+  margin-top: 0;
 }
 
 /* BEGIN gg-preview-scrollbar-hidden-contract */
@@ -190,6 +174,53 @@
   display: none;
 }
 /* END gg-preview-scrollbar-hidden-contract */
+
+/* BEGIN gg-preview-toc-polish-contract */
+.gg-preview__toc {
+  margin: 18px 0 0;
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--gg-divider);
+}
+
+.gg-preview__toc-list {
+  display: grid;
+  gap: 0;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: gg-preview-toc;
+}
+
+.gg-preview__toc-list > li,
+.gg-preview__toc-item {
+  counter-increment: gg-preview-toc;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-height: 40px;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--gg-divider) 72%, transparent);
+}
+
+.gg-preview__toc-list > li::before,
+.gg-preview__toc-item::before {
+  content: counter(gg-preview-toc) '.';
+  color: var(--gg-ink-soft);
+  font: 650 13px/1.45 var(--gg-font-sans);
+  letter-spacing: 0;
+}
+
+.gg-preview__toc-link {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  color: var(--gg-ink);
+  font: 650 14px/1.45 var(--gg-font-sans);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+/* END gg-preview-toc-polish-contract */
 
 /* BEGIN gg-preview-bottom-handle-contract */
 .gg-content-sheet__affordance .gg-sheet__handle,
