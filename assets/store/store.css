@@ -220,6 +220,9 @@
 
 
 
+
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1125,6 +1128,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1199,16 +1205,14 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   top: 0;
   z-index: 0;
   height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
-  max-height: var(--gg-preview-hero-max-height);
   min-height: 0;
+  max-height: var(--gg-preview-hero-max-height);
   aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
   background:
     radial-gradient(circle at 22% 14%, color-mix(in srgb, var(--gg-accent-soft) 24%, transparent), transparent 32%),
     linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
-    justify-self: center;
-    width: 100%;
 }
 
 .gg-preview__body,
@@ -1235,6 +1239,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   overflow: hidden;
   background: #201a1c;
   background: color-mix(in srgb, var(--gg-accent) 82%, #000);
+  aspect-ratio: var(--gg-preview-hero-aspect);
 }
 
 .gg-preview__media {
@@ -1311,6 +1316,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
+
+
 
 
 
@@ -1579,6 +1587,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
+
 
 
 
