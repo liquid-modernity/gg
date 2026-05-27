@@ -348,7 +348,7 @@ html[data-gg-theme='light'] {
   --gg-preview-hero-height: clamp(300px, 50dvh, 500px);
   --gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(56px, 36vw, 260px);
+  --gg-preview-content-lift: clamp(56px, 10vw, 88px);
   --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
@@ -362,6 +362,7 @@ html[data-gg-theme='light'] {
   --gg-sheet-search-focus-ring: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 18%, transparent), 0 4px 14px color-mix(in srgb, var(--gg-accent) 7%, transparent);
 }
 /* END GENERATED: gg-visual-tokens */
+
 
 
 
@@ -913,6 +914,7 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
 
 
 
@@ -2418,6 +2420,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2713,6 +2716,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
 /* BEGIN GENERATED: gg-discovery-sheet */
 .gg-discovery {
   display: grid;
@@ -2755,7 +2759,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   border-color: var(--gg-sheet-search-border-active);
   outline: none;
 }
-
+.gg-discovery-search__field:focus {
+  outline: none;
+}
 
 .gg-discovery-search__field:focus-visible {
   border-color: var(--gg-sheet-search-border-active);
@@ -3128,6 +3134,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
 /* BEGIN GENERATED: gg-preview-frame */
 .gg-preview {
   z-index: 94;
@@ -3287,6 +3294,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
 
 
 
@@ -3851,7 +3859,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 .gg-more-local-search__input:hover {
   outline:0;
   }
-
+  .gg-more-local-search__input:focus {
+    outline:0;
+    }
 .gg-more-local-search__input::placeholder {
   color: var(--gg-accent-soft);
 }
@@ -3958,6 +3968,7 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
 
 
 
