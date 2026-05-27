@@ -414,6 +414,7 @@ html[data-gg-theme='light'] {
 
 
 
+
 html[data-gg-theme='dark'] {
   color-scheme: dark;
   --gg-surface-page: #050505;
@@ -914,6 +915,7 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
 
 
 
@@ -2421,6 +2423,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2646,6 +2649,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
 
 
 
@@ -3135,6 +3139,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
 /* BEGIN GENERATED: gg-preview-frame */
 .gg-preview {
   z-index: 94;
@@ -3294,6 +3299,7 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
 
 
 
@@ -3968,6 +3974,7 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
 
 
 
