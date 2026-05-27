@@ -18,6 +18,7 @@
   --gg-preview-hero-aspect: 4 / 5;
   --gg-preview-content-lift: clamp(56px, 10vw, 88px);
   --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
+  --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
   --gg-discovery-input-height: 54px;

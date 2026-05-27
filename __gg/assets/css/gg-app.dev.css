@@ -350,6 +350,7 @@ html[data-gg-theme='light'] {
   --gg-preview-hero-aspect: 4 / 5;
   --gg-preview-content-lift: clamp(56px, 10vw, 88px);
   --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
+  --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
   --gg-discovery-input-height: 54px;
@@ -362,6 +363,8 @@ html[data-gg-theme='light'] {
   --gg-sheet-search-focus-ring: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 18%, transparent), 0 4px 14px color-mix(in srgb, var(--gg-accent) 7%, transparent);
 }
 /* END GENERATED: gg-visual-tokens */
+
+
 
 
 
@@ -917,6 +920,8 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
+
 
 
 
@@ -2430,6 +2435,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2655,6 +2662,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 
@@ -3150,6 +3159,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
 /* BEGIN GENERATED: gg-preview-frame */
 .gg-preview {
   z-index: 94;
@@ -3205,6 +3216,10 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   position: sticky;
   top: 0;
   z-index: 0;
+  height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
+  min-height: 0;
+  max-height: var(--gg-preview-hero-max-height);
+  aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
   background:
@@ -3212,8 +3227,6 @@ body[data-gg-panel-active='true'] .gg-dock::after {
     linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
     justify-self: center;
     width: 100%;
-    height: fit-content;
-    aspect-ratio: var(--gg-preview-hero-aspect);
 }
 
 .gg-preview__body,
@@ -3309,6 +3322,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
+
 
 
 
@@ -3986,6 +4001,8 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
 
 
 

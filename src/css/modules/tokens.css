@@ -63,7 +63,7 @@
   --gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62);
   --gg-preview-hero-min: var(--gg-preview-hero-height);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(56px, 36vw, 260px);
+  --gg-preview-content-lift: clamp(56px, 10vw, 88px);
   --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-preview-media-fit: cover;

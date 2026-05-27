@@ -52,6 +52,10 @@
   position: sticky;
   top: 0;
   z-index: 0;
+  height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
+  min-height: 0;
+  max-height: var(--gg-preview-hero-max-height);
+  aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
   background:
@@ -59,8 +63,6 @@
     linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
     justify-self: center;
     width: 100%;
-    height: fit-content;
-    aspect-ratio: var(--gg-preview-hero-aspect);
 }
 
 .gg-preview__body,
