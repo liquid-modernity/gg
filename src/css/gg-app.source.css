@@ -63,7 +63,7 @@
   --gg-preview-hero-max-height: calc(var(--gg-preview-panel-max-height) * .62);
   --gg-preview-hero-min: var(--gg-preview-hero-height);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(56px, 10vw, 88px);
+  --gg-preview-content-lift: clamp(56px, 36vw, 260px);
   --gg-preview-store-content-lift: clamp(48px, 9vw, 76px);
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-preview-media-fit: cover;
@@ -3183,15 +3183,15 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   position: sticky;
   top: 0;
   z-index: 0;
-  height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height));
-  min-height: 0;
-  max-height: var(--gg-preview-hero-max-height);
-  aspect-ratio: auto;
   overflow: hidden;
   background: #201a1c;
   background:
     radial-gradient(circle at 22% 14%, color-mix(in srgb, var(--gg-accent-soft) 24%, transparent), transparent 32%),
     linear-gradient(135deg, color-mix(in srgb, var(--gg-accent) 92%, #000), #141012 72%);
+    justify-self: center;
+    width: 100%;
+    height: fit-content;
+    aspect-ratio: var(--gg-preview-hero-aspect);
 }
 
 .gg-preview__body,
