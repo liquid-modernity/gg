@@ -443,6 +443,8 @@ html[data-gg-theme='light'] {
 
 
 
+
+
 html[data-gg-theme='dark'] {
   color-scheme: dark;
   --gg-surface-page: #050505;
@@ -943,6 +945,8 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
+
 
 
 
@@ -2506,6 +2510,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2766,6 +2772,8 @@ body::-webkit-scrollbar,
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 
@@ -3311,6 +3319,8 @@ body::-webkit-scrollbar,
 
 
 
+
+
 /* BEGIN GENERATED: gg-preview-frame */
 .gg-preview {
   z-index: 94;
@@ -3368,9 +3378,9 @@ body::-webkit-scrollbar,
   z-index: 0;
   width: 100%;
   height: auto;
-  min-height: 0;
-  max-height: var(--gg-preview-hero-viewport-cap, min(82dvh, 760px));
   aspect-ratio: var(--gg-preview-hero-aspect);
+  min-height: 0;
+  max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
   background: #201a1c;
   background:
@@ -3483,6 +3493,8 @@ body::-webkit-scrollbar,
   box-shadow: 0 -1px 0 var(--gg-line-strong);
 }
 /* END GENERATED: gg-preview-frame */
+
+
 
 
 
@@ -4185,6 +4197,8 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
 
 
 

@@ -54,9 +54,9 @@
   z-index: 0;
   width: 100%;
   height: auto;
-  min-height: 0;
-  max-height: var(--gg-preview-hero-viewport-cap, min(82dvh, 760px));
   aspect-ratio: var(--gg-preview-hero-aspect);
+  min-height: 0;
+  max-height: min(var(--gg-preview-hero-max-height), 72dvh);
   overflow: hidden;
   background: #201a1c;
   background:
