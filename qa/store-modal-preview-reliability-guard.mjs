@@ -115,8 +115,25 @@ for (const [label, source] of [
   if (/\.gg-preview__sheet,\s*\.store-preview-sheet\s+\.gg-sheet__panel\s*\{[\s\S]*?overflow:\s*auto\s*;/m.test(source)) fail(`${label} must not use overflow:auto on preview panel`);
   if (!source.includes('overflow-x: clip')) fail(`${label} missing overflow-x:clip`);
   if (!source.includes('overflow-x: hidden')) fail(`${label} missing overflow-x fallback`);
-  if (!/\.gg-preview__hero,\s*\.store-preview__hero\s*\{[\s\S]*?height:\s*min\(var\(--gg-preview-hero-height\), var\(--gg-preview-hero-max-height\)\)[\s\S]*?min-height:\s*0[\s\S]*?max-height:\s*var\(--gg-preview-hero-max-height\)[\s\S]*?aspect-ratio:\s*auto/m.test(source)) {
-    fail(`${label} must use viewport-safe hero height and not aspect-ratio as height driver`);
+  const heroBlock = (source.match(/\.gg-preview__hero,\s*\.store-preview__hero\s*\{[\s\S]*?\}/m) || [])[0] || '';
+  if (!heroBlock) {
+    fail(`${label} missing shared preview hero/store preview hero rule`);
+  } else {
+    if (!heroBlock.includes('aspect-ratio: var(--gg-preview-hero-aspect)')) {
+      fail(`${label} preview hero must use aspect-ratio: var(--gg-preview-hero-aspect)`);
+    }
+    if (heroBlock.includes('aspect-ratio: auto')) {
+      fail(`${label} preview hero must not keep stale aspect-ratio:auto`);
+    }
+    if (!/height:\s*auto\b/m.test(heroBlock)) {
+      fail(`${label} preview hero should keep height:auto so aspect ratio can define the visual frame`);
+    }
+    if (!/max-height:\s*(?:var\(--gg-preview-hero-viewport-cap|var\(--gg-preview-hero-max-height|min\()/m.test(heroBlock)) {
+      fail(`${label} preview hero must keep a viewport-safe max-height cap`);
+    }
+    if (!heroBlock.includes('overflow: hidden')) {
+      fail(`${label} preview hero must clip overflowing media`);
+    }
   }
   if (!source.includes('margin-top: calc(-1 * var(--gg-preview-content-lift))')) fail(`${label} missing root preview content lift`);
   if (!source.includes('margin-top: calc(-1 * var(--gg-preview-store-content-lift))')) fail(`${label} missing Store preview adapter lift`);

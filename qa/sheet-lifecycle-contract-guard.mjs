@@ -107,32 +107,34 @@ function assertPreviewHeroAspectContract(label, source) {
     return;
   }
 
-  // Reconciled contract:
-  // - The shared preview hero/container must be viewport-height driven so Store modal
-  //   preview remains reliable on short/mobile viewports.
-  // - Therefore the shared .gg-preview__hero/.store-preview__hero block may keep
-  //   aspect-ratio:auto and must not use --gg-preview-hero-aspect as its height driver.
-  // - The aspect token remains valid for inner media/visual use and is verified as a token
-  //   by assertPreviewMediaTokens(), not forced onto the container block here.
-  const hasViewportHeight = heroBlocks.some((block) =>
-    block.includes("height: min(var(--gg-preview-hero-height), var(--gg-preview-hero-max-height))") &&
-    block.includes("min-height: 0") &&
-    block.includes("max-height: var(--gg-preview-hero-max-height)")
-  );
-  if (!hasViewportHeight) {
-    fail(`${label} preview hero container must use viewport-safe hero height`);
-  }
-
-  const containerUsesAspectToken = heroBlocks.some((block) =>
+  // Final 4/5 contract:
+  // - The preview hero container is the visual frame, so it may own
+  //   aspect-ratio: var(--gg-preview-hero-aspect).
+  // - It still must stay viewport-safe through max-height + overflow clipping.
+  // - Generic sheet/panel/lifecycle containers remain forbidden from using
+  //   --gg-preview-hero-aspect; only the preview hero frame may use it.
+  const hasAspectToken = heroBlocks.some((block) =>
     block.includes("aspect-ratio: var(--gg-preview-hero-aspect)")
   );
-  if (containerUsesAspectToken) {
-    fail(`${label} preview hero container must not use --gg-preview-hero-aspect as height driver`);
+  if (!hasAspectToken) {
+    fail(`${label} preview hero container must use aspect-ratio: var(--gg-preview-hero-aspect)`);
   }
 
-  const hasContainerAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
-  if (!hasContainerAuto) {
-    fail(`${label} preview hero container should explicitly keep aspect-ratio:auto`);
+  const keepsStaleAuto = heroBlocks.some((block) => block.includes("aspect-ratio: auto"));
+  if (keepsStaleAuto) {
+    fail(`${label} preview hero container must not keep stale aspect-ratio:auto`);
+  }
+
+  const hasViewportCap = heroBlocks.some((block) =>
+    /max-height:\s*(?:var\(--gg-preview-hero-viewport-cap|var\(--gg-preview-hero-max-height|min\()/m.test(block)
+  );
+  if (!hasViewportCap) {
+    fail(`${label} preview hero container must keep a viewport-safe max-height cap`);
+  }
+
+  const hasOverflowClip = heroBlocks.some((block) => block.includes("overflow: hidden"));
+  if (!hasOverflowClip) {
+    fail(`${label} preview hero container must clip overflowing media`);
   }
 }
 
