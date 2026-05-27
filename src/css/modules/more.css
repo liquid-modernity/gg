@@ -420,6 +420,9 @@
   outline: 0;
 }
 
+.gg-more-local-search__input:hover {
+  outline:0;
+  }
 .gg-more-local-search__input::placeholder {
   color: var(--gg-accent-soft);
 }

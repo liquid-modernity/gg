@@ -37,6 +37,7 @@
 
 .gg-discovery-search__field:hover {
   border-color: var(--gg-sheet-search-border-active);
+  outline: none;
 }
 
 .gg-discovery-search__field:focus-visible {
