@@ -5724,6 +5724,7 @@ window.GG = window.GG || {};
 
         function getTemplatePart(root, name) {
           if (!root || !name || typeof root.querySelector !== 'function') return null;
+          if (root.matches && root.matches('[data-gg-template-part="' + name + '"]')) return root;
           return root.querySelector('[data-gg-template-part="' + name + '"]');
         }
 
@@ -7840,9 +7841,16 @@ window.GG = window.GG || {};
         function createDiscoveryEmptyNode(copyKey) {
           var node = cloneTemplateRoot(ui.discoveryEmptyTemplate);
           var textNode = getTemplatePart(node, 'text');
+          var isSavedEmpty = copyKey === 'discovery.saved';
 
           if (!node || !textNode) return null;
-          if (copyKey === 'discovery.saved') {
+          node.setAttribute('data-gg-discovery-empty', 'true');
+          node.setAttribute('data-gg-discovery-empty-kind', isSavedEmpty ? 'saved' : 'generic');
+          node.setAttribute('data-gg-discovery-empty-copy', copyKey || '');
+          if (isSavedEmpty) {
+            node.setAttribute('data-gg-saved-empty', 'true');
+            node.setAttribute('data-gg-empty-copy-title', 'discovery.saved.empty.title');
+            node.setAttribute('data-gg-empty-copy-body', 'discovery.saved.empty.body');
             textNode.textContent = getCopy('discovery.saved.empty.title') + ' ' + getCopy('discovery.saved.empty.body');
           } else if (copyKey === 'discovery.empty') {
             textNode.textContent = getCopy('discovery.empty.title') + '. ' + getCopy('discovery.empty.body');
@@ -7917,12 +7925,16 @@ window.GG = window.GG || {};
 
           if (!ui.commandResults) return;
 
+          ui.commandResults.setAttribute('data-gg-discovery-active-filter', normalizeDiscoveryFilter(state.discoveryTab));
           renderDiscoveryContext(topic);
 
           if (!items.length) {
+            ui.commandResults.setAttribute('data-gg-discovery-results-state', 'empty');
             replaceNodeChildren(ui.commandResults, [createDiscoveryEmptyNode(state.discoveryTab === 'saved' ? 'discovery.saved' : 'discovery.empty')]);
             return;
           }
+
+          ui.commandResults.setAttribute('data-gg-discovery-results-state', 'results');
 
           for (i = 0; i < items.length; i += 1) {
             nodes.push(createDiscoveryResultNode({

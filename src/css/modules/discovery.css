@@ -40,6 +40,7 @@
   outline: none;
 }
 
+
 .gg-discovery-search__field:focus-visible {
   border-color: var(--gg-sheet-search-border-active);
   box-shadow: var(--gg-sheet-search-focus-ring);

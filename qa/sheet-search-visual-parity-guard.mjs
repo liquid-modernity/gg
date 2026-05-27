@@ -150,6 +150,15 @@ assertIncludes(discovery, "text-align: center", "Saved/empty state centers empty
 assertIncludes(registryCopyEn, `"discovery.saved.empty.title": "${canonicalSavedEmptyTitle}"`, "registry copy owns canonical Saved empty title");
 assertIncludes(registryCopyEn, `"discovery.saved.empty.body": "${canonicalSavedEmptyBody}"`, "registry copy owns canonical Saved empty body");
 assertIncludes(appJs, "getCopy('discovery.saved.empty.title') + ' ' + getCopy('discovery.saved.empty.body')", "root Discovery uses canonical Saved empty copy keys");
+assertIncludes(indexXml, "id='gg-discovery-empty-template'", "root Discovery has an empty-state template");
+assertIncludes(indexXml, "data-gg-discovery-empty='true' data-gg-template-part='text'", "root Discovery empty template root is a real empty-state node");
+assertIncludes(appJs, "root.matches && root.matches('[data-gg-template-part=\"' + name + '\"]')", "root Discovery template helper can resolve root-level template parts");
+assertIncludes(appJs, "data-gg-discovery-active-filter", "root Discovery results container records active filter state");
+assertIncludes(appJs, "data-gg-discovery-results-state", "root Discovery results container records rendered result state");
+assertIncludes(appJs, "data-gg-saved-empty", "root Discovery Saved empty state gets a DOM marker");
+assertIncludes(appJs, "data-gg-empty-copy-title", "root Discovery Saved empty state records title copy key");
+assertIncludes(appJs, "data-gg-empty-copy-body", "root Discovery Saved empty state records body copy key");
+assertIncludes(appJs, "state.discoveryTab === 'saved' ? 'discovery.saved' : 'discovery.empty'", "root Discovery routes Saved zero-results through Saved empty node");
 assertIncludes(landing, `'discovery.saved.empty.title': '${canonicalSavedEmptyTitle}'`, "landing includes canonical Saved empty title");
 assertIncludes(landing, `'discovery.saved.empty.body': '${canonicalSavedEmptyBody}'`, "landing includes canonical Saved empty body");
 assertIncludes(storeJs, `'discovery.saved.empty.title': '${canonicalSavedEmptyTitle}'`, "Store copy table includes canonical Saved empty title");
