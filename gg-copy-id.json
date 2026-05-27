@@ -18,7 +18,7 @@
   &quot;comments.action.replyToOriginal&quot;: &quot;Balas komentar awal&quot;,
   &quot;comments.dismiss&quot;: &quot;Tutup panel komentar&quot;,
   &quot;comments.empty.body&quot;: &quot;Jadilah yang pertama berkomentar.&quot;,
-  &quot;comments.empty.title&quot;: &quot;Belum ada komentar&quot;,
+  &quot;comments.empty.title&quot;: &quot;Belum ada komentar.&quot;,
   &quot;comments.loadMore&quot;: &quot;Muat komentar lainnya&quot;,
   &quot;comments.loadMoreReplies&quot;: &quot;Muat balasan lainnya&quot;,
   &quot;comments.originalComment&quot;: &quot;Komentar awal&quot;,

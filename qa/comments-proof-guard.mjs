@@ -103,6 +103,9 @@ const sourceJs = read("src/js/gg-app.source.js");
 const devJs = read("__gg/assets/js/gg-app.dev.js");
 const indexXml = read("index.xml");
 const packageJson = read("package.json");
+const commentsCss = read("src/css/gg-app.source.css");
+const copyEn = read("registry/copy/gg-copy-en.json");
+const copyId = read("registry/copy/gg-copy-id.json");
 
 for (const [file, js] of [
   ["src/js/gg-app.source.js", sourceJs],
@@ -145,6 +148,11 @@ for (const [file, js] of [
   requireIncludes(js, "nativeThreadToggleHiddenInReplies", `${file}: proof hides native thread toggles in replies`, file);
   requireIncludes(js, "inlineReplyVertical", `${file}: proof rejects vertical inline reply controls`, file);
   requireIncludes(js, "topContinueVisible", `${file}: proof hides top native continue control`, file);
+  requireIncludes(js, "commentsEmptyState", `${file}: proof checks comments empty state`, file);
+  requireIncludes(js, "commentsEmptyStateCopy", `${file}: proof checks comments empty-state copy`, file);
+  requireIncludes(js, "commentsEmptyStateVisibleMatchesCount", `${file}: proof checks comments empty-state visibility`, file);
+  requireIncludes(js, "commentsEmptyStatePreservesNativeList", `${file}: proof checks empty state preserves native list`, file);
+  requireIncludes(js, "invalidLoadMoreHidden", `${file}: proof hides invalid non-paged load more`, file);
   requireIncludes(js, "duplicateExternalComposerLabels", `${file}: proof rejects duplicate external composer labels`, file);
   requireIncludes(js, "moreMenuInsideSheet", `${file}: proof keeps More menu inside sheet`, file);
   requireIncludes(js, "moreMenuHasIcons", `${file}: proof checks More menu icons`, file);
@@ -184,10 +192,23 @@ for (const [file, js] of [
   requireIncludes(js, "toolbarCommentsVisibleTextHidden", `${file}: proof checks comments toolbar visible text hiding`, file);
   requireIncludes(js, "function adoptGeneratedBloggerComposer()", `${file}: adopts generated native Blogger composer`, file);
   requireIncludes(js, "function cleanupLegacyCommentControls()", `${file}: cleans legacy inline reply controls`, file);
+  requireIncludes(js, "function syncCommentsEmptyState()", `${file}: syncs comments empty state through comments controller`, file);
+  requireIncludes(js, "function syncCommentsContinuationState()", `${file}: syncs comments continuation through comments controller`, file);
+  requireIncludes(js, "data-gg-invalid-continuation", `${file}: marks invalid non-paged continuation controls`, file);
 }
 
 requireExternalAppScript(indexXml, "index.xml");
 requireIncludes(packageJson, "\"gaga:verify-comments-proof\"", "package script exposes comments proof guard", "package.json");
+requireIncludes(indexXml, "id='gg-comments-empty'", "index.xml: comments sheet includes empty-state node", "index.xml");
+requireIncludes(indexXml, "data-gg-comments-empty='true'", "index.xml: empty state has stable contract marker", "index.xml");
+requireIncludes(indexXml, "data-gg-copy='comments.empty.title'", "index.xml: empty title is registry-bound", "index.xml");
+requireIncludes(indexXml, "data-gg-copy='comments.empty.body'", "index.xml: empty body is registry-bound", "index.xml");
+requireIncludes(indexXml, "expr:data-gg-comment-paging-required='data:post.commentPagingRequired'", "index.xml: sheet preserves Blogger paging signal", "index.xml");
+requireIncludes(copyEn, "\"comments.empty.title\": \"No comments yet.\"", "English copy uses required empty title", "registry/copy/gg-copy-en.json");
+requireIncludes(copyEn, "\"comments.empty.body\": \"Be the first to comment.\"", "English copy uses required empty body", "registry/copy/gg-copy-en.json");
+requireIncludes(copyId, "\"comments.empty.title\": \"Belum ada komentar.\"", "Indonesian copy keeps localized empty title", "registry/copy/gg-copy-id.json");
+requireIncludes(copyId, "\"comments.empty.body\": \"Jadilah yang pertama berkomentar.\"", "Indonesian copy keeps localized empty body", "registry/copy/gg-copy-id.json");
+requireIncludes(commentsCss, ".gg-comments__empty[hidden]", "CSS hides comments empty state only through explicit hidden attribute", "src/css/gg-app.source.css");
 
 const commentsController = sliceBetween(sourceJs, "function initCommentRepliesControls()", "function syncCommentsHash()");
 if (!commentsController) {

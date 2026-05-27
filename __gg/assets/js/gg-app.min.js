@@ -147,8 +147,8 @@ window.GG = window.GG || {};
               actionOne: 'Comment',
               actionMany: 'Comments',
               empty: {
-                body: 'Be the first to add one.',
-                title: 'No comments yet'
+                body: 'Be the first to comment.',
+                title: 'No comments yet.'
               },
               loadMore: 'Load more comments',
               loadMoreReplies: 'Load more replies',
@@ -426,7 +426,7 @@ window.GG = window.GG || {};
               actionMany: 'Komentar',
               empty: {
                 body: 'Jadilah yang pertama berkomentar.',
-                title: 'Belum ada komentar'
+                title: 'Belum ada komentar.'
               },
               loadMore: 'Muat komentar lainnya',
               loadMoreReplies: 'Muat balasan lainnya',
@@ -1036,6 +1036,7 @@ window.GG = window.GG || {};
           detailOutlineGroupTemplate: document.getElementById('gg-detail-outline-group-template'),
           detailOutlineItemTemplate: document.getElementById('gg-detail-outline-item-template'),
           commentsTitleText: document.getElementById('gg-comments-title-text'),
+          commentsEmpty: document.getElementById('gg-comments-empty'),
           langButtons: document.querySelectorAll('[data-gg-lang-option]'),
           themeButtons: document.querySelectorAll('[data-gg-theme-option]'),
           readingButtons: document.querySelectorAll('[data-gg-reading-option]'),
@@ -1133,6 +1134,7 @@ window.GG = window.GG || {};
             var repliesSheet = document.querySelector('#gg-comment-replies-sheet');
             var root = document.querySelector('#gg-comments-root, #comments');
             var list = document.querySelector('#gg-comments-list, #comment-holder, #cmt2-holder');
+            var emptyState = document.querySelector('#gg-comments-empty');
             var editor = document.querySelector('#comment-editor');
             var editorSrc = document.querySelector('#comment-editor-src');
             var composer = document.querySelector('#top-ce');
@@ -1155,6 +1157,10 @@ window.GG = window.GG || {};
             var nativeThreadToggleHiddenInReplies;
             var inlineReplyVertical;
             var topContinueVisible;
+            var commentsEmptyStateCopy;
+            var commentsEmptyStateVisibleMatchesCount;
+            var commentsEmptyStatePreservesNativeList;
+            var invalidLoadMoreVisible;
             var duplicateExternalComposerLabels;
             var moreMenu;
             var moreMenuPanel;
@@ -1206,6 +1212,7 @@ window.GG = window.GG || {};
             var toolbarCommentsSemanticLabelPresent;
             var toolbarCommentsVisibleTextHidden;
             var repliesParentId;
+            var commentCount;
             var isVisible = function (element) {
               var style;
               var rect;
@@ -1277,6 +1284,11 @@ window.GG = window.GG || {};
               return !!(rect && style && (style.writingMode !== 'horizontal-tb' || rect.height > rect.width));
             });
             topContinueVisible = isVisible(document.querySelector('#top-continue'));
+            commentCount = getTopLevelCommentCount ? getTopLevelCommentCount() : 0;
+            commentsEmptyStateCopy = !!(emptyState && emptyState.textContent.indexOf(getCopy('comments.empty.title')) !== -1 && emptyState.textContent.indexOf(getCopy('comments.empty.body')) !== -1);
+            commentsEmptyStateVisibleMatchesCount = !!emptyState && (commentCount ? !isVisible(emptyState) : isVisible(emptyState));
+            commentsEmptyStatePreservesNativeList = !!(emptyState && list && emptyState.parentNode === list.parentNode && !emptyState.contains(list));
+            invalidLoadMoreVisible = Array.prototype.slice.call(document.querySelectorAll('#gg-comments-sheet [data-gg-invalid-continuation="true"]')).some(isVisible);
             zeroStateDuplicateLabels = !getTopLevelCommentCount || getTopLevelCommentCount() ? false : (visibleFooterNodes.reduce(function (count, footer) {
               return count + Array.prototype.slice.call(footer.querySelectorAll('[data-gg-action="comments-open-composer"], #comment-post-message')).filter(isVisible).length;
             }, 0) > 1);
@@ -1435,6 +1447,11 @@ window.GG = window.GG || {};
               nativeThreadToggleHiddenInReplies: nativeThreadToggleHiddenInReplies,
               inlineReplyVertical: inlineReplyVertical,
               topContinueVisible: topContinueVisible,
+              commentsEmptyState: !!emptyState,
+              commentsEmptyStateCopy: commentsEmptyStateCopy,
+              commentsEmptyStateVisibleMatchesCount: commentsEmptyStateVisibleMatchesCount,
+              commentsEmptyStatePreservesNativeList: commentsEmptyStatePreservesNativeList,
+              invalidLoadMoreHidden: !invalidLoadMoreVisible,
               loadMoreInsideFooter: loadMoreInsideFooter,
               replyActionsVertical: replyActionsVertical,
               zeroStateDuplicateLabels: zeroStateDuplicateLabels,
@@ -1505,6 +1522,11 @@ window.GG = window.GG || {};
               result.nativeThreadToggleHiddenInReplies &&
               !result.inlineReplyVertical &&
               !result.topContinueVisible &&
+              result.commentsEmptyState &&
+              result.commentsEmptyStateCopy &&
+              result.commentsEmptyStateVisibleMatchesCount &&
+              result.commentsEmptyStatePreservesNativeList &&
+              result.invalidLoadMoreHidden &&
               !result.loadMoreInsideFooter &&
               !result.replyActionsVertical &&
               !result.zeroStateDuplicateLabels &&
@@ -3735,6 +3757,110 @@ window.GG = window.GG || {};
           return replyLinks.length;
         }
 
+        function syncCommentsEmptyState() {
+          var empty = ui.commentsEmpty || document.getElementById('gg-comments-empty');
+          var root = document.getElementById('gg-comments-root');
+          var title;
+          var body;
+          var isEmpty;
+
+          if (!empty) return false;
+
+          title = empty.querySelector('[data-gg-copy="comments.empty.title"]');
+          body = empty.querySelector('[data-gg-copy="comments.empty.body"]');
+          isEmpty = getTopLevelCommentCount() === 0;
+
+          if (title) title.textContent = getCopy('comments.empty.title');
+          if (body) body.textContent = getCopy('comments.empty.body');
+
+          empty.hidden = !isEmpty;
+          if (isEmpty) empty.removeAttribute('aria-hidden');
+          else empty.setAttribute('aria-hidden', 'true');
+
+          if (root) root.setAttribute('data-gg-comments-empty-state', isEmpty ? 'true' : 'false');
+          if (ui.comments) ui.comments.setAttribute('data-gg-comments-empty-state', isEmpty ? 'true' : 'false');
+
+          return isEmpty;
+        }
+
+        function hasCommentPagingRequired() {
+          var root = document.getElementById('gg-comments-root');
+          var value = root ? String(root.getAttribute('data-gg-comment-paging-required') || '').toLowerCase() : '';
+          return value === 'true' || value === '1';
+        }
+
+        function isCommentContinuationActionable(node) {
+          var links;
+          var i;
+          var link;
+          var href;
+          var onclick;
+          var attributes;
+          var j;
+          var name;
+
+          if (!node) return false;
+
+          links = node.matches && node.matches('a') ? [node] : Array.prototype.slice.call(node.querySelectorAll ? node.querySelectorAll('a, button') : []);
+          if (!links.length) links = [node];
+
+          for (i = 0; i < links.length; i += 1) {
+            link = links[i];
+            href = link.getAttribute ? String(link.getAttribute('href') || '').trim() : '';
+            onclick = link.getAttribute ? String(link.getAttribute('onclick') || '').trim() : '';
+
+            if (onclick && !/^return\s+false;?$/i.test(onclick)) return true;
+            if (href && href !== '#' && !/^javascript:\s*(?:void\s*\(?0?\)?|;)?$/i.test(href)) return true;
+
+            attributes = link.attributes || [];
+            for (j = 0; j < attributes.length; j += 1) {
+              name = attributes[j].name || '';
+              if (/^data-(?:url|href|cursor|continuation|page|token|load|next)/i.test(name) && attributes[j].value) return true;
+            }
+          }
+
+          return false;
+        }
+
+        function isCommentLoadMoreNode(node) {
+          var text = node ? String(node.textContent || '').replace(/\s+/g, ' ').trim() : '';
+          var id = node && node.id ? node.id : '';
+          var className = node && node.className ? String(node.className) : '';
+
+          return id === 'top-continue' || /\bloadmore\b/.test(className) || /\bload\s+more\b/i.test(text) || /\bmuat\b.*\bkomentar\b/i.test(text);
+        }
+
+        function syncCommentsContinuationState() {
+          var root = ui.commentsList || ui.comments || document.getElementById('gg-comments-root');
+          var pagingRequired = hasCommentPagingRequired();
+          var nodes;
+          var i;
+          var node;
+          var invalid;
+          var hiddenCount = 0;
+
+          if (!root || !root.querySelectorAll) return 0;
+
+          nodes = root.querySelectorAll('#top-continue, .loadmore, .gg-comments__list > .continue, #comments-block > .continue');
+
+          for (i = 0; i < nodes.length; i += 1) {
+            node = nodes[i];
+            if (!isCommentLoadMoreNode(node)) continue;
+
+            invalid = !pagingRequired && !isCommentContinuationActionable(node);
+            if (invalid) {
+              node.setAttribute('data-gg-invalid-continuation', 'true');
+              node.hidden = true;
+              hiddenCount += 1;
+            } else if (node.getAttribute('data-gg-invalid-continuation') === 'true') {
+              node.removeAttribute('data-gg-invalid-continuation');
+              node.hidden = false;
+            }
+          }
+
+          return hiddenCount;
+        }
+
         function runCommentsEnhancement(reason) {
           if (!hasCommentsSurface()) return false;
           state.commentEnhancementScheduled = false;
@@ -3746,6 +3872,8 @@ window.GG = window.GG || {};
           if (!isCommentRepliesSheetOpen() || state.commentReplyContext) ensureComposerInActiveFooter();
           else syncCommentComposerMode();
           cleanupLegacyCommentControls();
+          syncCommentsEmptyState();
+          syncCommentsContinuationState();
           initCommentRepliesControls();
           ensureCommentMoreMenus();
           initCommentPrefixObserver();

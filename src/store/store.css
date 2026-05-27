@@ -204,6 +204,8 @@
 
 
 
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1094,6 +1096,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1255,6 +1259,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   padding: 20px 18px 20px;
 }
 /* END GENERATED: gg-preview-frame */
+
+
 
 
 
@@ -1508,6 +1514,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   margin-bottom: 0;
 }
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 

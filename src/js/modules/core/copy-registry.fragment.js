@@ -140,8 +140,8 @@
               actionOne: 'Comment',
               actionMany: 'Comments',
               empty: {
-                body: 'Be the first to add one.',
-                title: 'No comments yet'
+                body: 'Be the first to comment.',
+                title: 'No comments yet.'
               },
               loadMore: 'Load more comments',
               loadMoreReplies: 'Load more replies',
@@ -387,7 +387,7 @@
               actionMany: 'Komentar',
               empty: {
                 body: 'Jadilah yang pertama berkomentar.',
-                title: 'Belum ada komentar'
+                title: 'Belum ada komentar.'
               },
               loadMore: 'Muat komentar lainnya',
               loadMoreReplies: 'Muat balasan lainnya',
