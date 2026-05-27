@@ -24,8 +24,8 @@
   --gg-sheet-search-height: var(--gg-discovery-input-height);
   --gg-sheet-search-radius: 16px;
   --gg-sheet-search-pad-x: 14px;
-  --gg-sheet-search-border: var(--gg-line);
-  --gg-sheet-search-border-active: var(--gg-line-strong);
+  --gg-sheet-search-border: color-mix(in srgb, var(--gg-line) 86%, transparent);
+  --gg-sheet-search-border-active: color-mix(in srgb, var(--gg-accent) 24%, var(--gg-line-strong));
   --gg-sheet-search-surface: var(--gg-field-surface);
-  --gg-sheet-search-focus-ring: 0 0 0 2px color-mix(in srgb, var(--gg-accent) 12%, transparent);
+  --gg-sheet-search-focus-ring: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 18%, transparent), 0 4px 14px color-mix(in srgb, var(--gg-accent) 7%, transparent);
 }

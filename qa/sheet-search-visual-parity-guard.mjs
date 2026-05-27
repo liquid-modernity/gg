@@ -103,6 +103,11 @@ const qaCommands = read("QA-COMMANDS.md");
 const sourceOfTruth = read("SOURCE-OF-TRUTH.md");
 const liveSmoke = read("qa/live-smoke.sh");
 const worker = read("worker.js");
+const registryCopyEn = read("registry/copy/gg-copy-en.json");
+
+const canonicalSavedEmptyTitle = "No saved items yet.";
+const canonicalSavedEmptyBody = "Save articles or products to find them here.";
+const canonicalSavedEmptyCopy = `${canonicalSavedEmptyTitle} ${canonicalSavedEmptyBody}`;
 
 for (const token of [
   "--gg-sheet-search-height",
@@ -115,7 +120,8 @@ for (const token of [
 ]) {
   assertIncludes(tokens, token, `shared sheet search token exists: ${token}`);
 }
-assertIncludes(tokens, "--gg-sheet-search-focus-ring: 0 0 0 2px", "shared sheet search focus ring is thin");
+assertIncludes(tokens, "--gg-sheet-search-focus-ring: 0 0 0 1px", "shared sheet search focus ring uses a subtle 1px ring");
+assertNoPattern(tokens, /--gg-sheet-search-focus-ring:[^;]*0\s+0\s+0\s+2px/iu, "shared sheet search focus ring does not use a harsh 2px ring");
 
 for (const [label, source] of [
   ["Discovery component", discovery],
@@ -123,6 +129,7 @@ for (const [label, source] of [
   ["Store CSS", storeCss],
 ]) {
   assertNoPattern(source, /0\s+0\s+0\s+3px[^;}]*/u, `${label} does not use thick 3px search focus ring`);
+  assertNoPattern(source, /border:\s*(?:2|3)px\s+solid[^;}]*/u, `${label} does not hard-code a thick search border`);
 }
 
 for (const needle of [
@@ -139,6 +146,16 @@ for (const needle of [
 }
 assertIncludes(discovery, "min-height: var(--gg-discovery-empty-min-height, 148px)", "Saved/empty state has shared minimum height");
 assertIncludes(discovery, "text-align: center", "Saved/empty state centers empty copy");
+
+assertIncludes(registryCopyEn, `"discovery.saved.empty.title": "${canonicalSavedEmptyTitle}"`, "registry copy owns canonical Saved empty title");
+assertIncludes(registryCopyEn, `"discovery.saved.empty.body": "${canonicalSavedEmptyBody}"`, "registry copy owns canonical Saved empty body");
+assertIncludes(appJs, "getCopy('discovery.saved.empty.title') + ' ' + getCopy('discovery.saved.empty.body')", "root Discovery uses canonical Saved empty copy keys");
+assertIncludes(landing, `'discovery.saved.empty.title': '${canonicalSavedEmptyTitle}'`, "landing includes canonical Saved empty title");
+assertIncludes(landing, `'discovery.saved.empty.body': '${canonicalSavedEmptyBody}'`, "landing includes canonical Saved empty body");
+assertIncludes(storeJs, `'discovery.saved.empty.title': '${canonicalSavedEmptyTitle}'`, "Store copy table includes canonical Saved empty title");
+assertIncludes(storeJs, `'discovery.saved.empty.body': '${canonicalSavedEmptyBody}'`, "Store copy table includes canonical Saved empty body");
+assertIncludes(storeJs, "return copy('discovery.saved.empty.title') + ' ' + copy('discovery.saved.empty.body');", "Store Saved sheet uses canonical Saved empty copy keys");
+assertIncludes(storeJs, "state.discoveryKind === 'saved' ? (copy('discovery.saved.empty.title') + ' ' + copy('discovery.saved.empty.body'))", "Store Discovery saved filter uses canonical Saved empty copy");
 
 for (const needle of [
   "min-height: var(--gg-sheet-search-height)",

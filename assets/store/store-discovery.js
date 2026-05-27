@@ -73,8 +73,8 @@
         saveLabel: 'Simpan',
         savedLabel: 'Tersimpan',
         savedOnDevice: 'Tersimpan di perangkat ini.',
-        savedEmptyTitle: 'Belum ada produk tersimpan.',
-        savedEmptyBody: 'Buka produk dan tekan Simpan.',
+        savedEmptyTitle: 'Belum ada item tersimpan.',
+        savedEmptyBody: 'Simpan artikel atau produk untuk menemukannya di sini.',
         savedToast: 'Disimpan',
         removedToast: 'Dihapus dari Saved',
         copyToast: 'Tautan tersalin',
@@ -270,8 +270,8 @@
         saveLabel: 'Save',
         savedLabel: 'Saved',
         savedOnDevice: 'Saved on this device.',
-        savedEmptyTitle: 'No saved picks yet.',
-        savedEmptyBody: 'Open a product and tap Save.',
+        savedEmptyTitle: 'No saved items yet.',
+        savedEmptyBody: 'Save articles or products to find them here.',
         savedToast: 'Saved',
         removedToast: 'Removed from Saved',
         copyToast: 'Copied links',
@@ -309,6 +309,8 @@
         'discovery.type.category': 'Category',
         'discovery.empty.title': 'No results',
         'discovery.empty.body': 'Try another keyword.',
+        'discovery.saved.empty.title': 'No saved items yet.',
+        'discovery.saved.empty.body': 'Save articles or products to find them here.',
         resultsLabel: 'Results',
         quickIntentsLabel: 'Quick intents',
         featuredLabel: 'Featured',
@@ -1101,7 +1103,7 @@
       return clean(item && item.verdict ? item.verdict : '') || previewSummaryText(item);
     }
     function savedEmptyLabel() {
-      return copy('savedEmptyTitle') + ' ' + copy('savedEmptyBody');
+      return copy('discovery.saved.empty.title') + ' ' + copy('discovery.saved.empty.body');
     }
     function semanticSummaryText(item) {
       return previewSummaryText(item);
@@ -2232,7 +2234,7 @@
           fragment.appendChild(renderResultRowNode(item, index, clean(item && item.type) === 'product' ? 'preview' : 'navigate'));
         });
       } else {
-        fragment.appendChild(renderEmptyRowNode(copy('discovery.empty.title') + '. ' + copy('discovery.empty.body')));
+        fragment.appendChild(renderEmptyRowNode(state.discoveryKind === 'saved' ? (copy('discovery.saved.empty.title') + ' ' + copy('discovery.saved.empty.body')) : (copy('discovery.empty.title') + '. ' + copy('discovery.empty.body'))));
       }
       discoveryResults.replaceChildren(fragment);
     }
