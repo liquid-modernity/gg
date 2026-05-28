@@ -16,8 +16,8 @@
   --gg-preview-hero-height: clamp(300px, 50dvh, 500px);
   --gg-preview-hero-max-height: min(72dvh, 760px);
   --gg-preview-hero-aspect: 4 / 5;
-  --gg-preview-content-lift: clamp(28px, 5dvh, 64px);
-  --gg-preview-store-content-lift: clamp(28px, 5dvh, 64px);
+  --gg-preview-content-lift: clamp(48px, 9dvh, 96px);
+  --gg-preview-store-content-lift: clamp(48px, 9dvh, 96px);
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-discovery-control-height: var(--gg-discovery-tab-height, var(--gg-hit-min));
   --gg-discovery-row-min-height: var(--gg-hit-min);
