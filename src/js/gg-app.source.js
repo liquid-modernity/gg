@@ -6581,7 +6581,8 @@ window.GG = window.GG || {};
           var doc = new DOMParser().parseFromString(html, 'text/html');
           var article = doc.querySelector('.gg-article');
           var body = doc.querySelector('.gg-post-body, .entry-content');
-          var metaDescription = doc.querySelector('meta[name="description"]');
+          var metaDescriptionNodes = doc.querySelectorAll('meta[name="description"]');
+          var jsonLdNodes = doc.querySelectorAll('script[type="application/ld+json"]');
           var firstParagraph = body ? body.querySelector('p') : null;
           var firstImage = body ? body.querySelector('img') : null;
           var labelNodes = doc.querySelectorAll('.gg-taxonomy__link, .post-labels a[rel="tag"]');
@@ -6591,12 +6592,91 @@ window.GG = window.GG || {};
             limit: 8,
             prefix: 'gg-preview-section'
           });
-          var summary = metaDescription ? stripHtml(metaDescription.getAttribute('content') || '') : '';
           var i;
           var text;
           var href;
+          var articleSummary;
+          var summary;
 
-          if (!summary && firstParagraph) summary = stripHtml(firstParagraph.innerHTML || '');
+          function normalizePreviewSummary(value) {
+            return stripHtml(value || '').replace(/\s+/g, ' ').trim();
+          }
+
+          function isPreviewDummySummary(value) {
+            var clean = normalizePreviewSummary(value).toLowerCase();
+            return clean.indexOf("mary's simple recipe for maple bacon donuts") !== -1 && clean.indexOf('coming back for') !== -1;
+          }
+
+          function cleanPreviewSummary(value) {
+            var clean = normalizePreviewSummary(value);
+            return clean && !isPreviewDummySummary(clean) ? clean : '';
+          }
+
+          function collectJsonLdObjects(value, target) {
+            var key;
+            if (!value) return;
+            if (Array.isArray(value)) {
+              for (key = 0; key < value.length; key += 1) collectJsonLdObjects(value[key], target);
+              return;
+            }
+            if (typeof value !== 'object') return;
+            target.push(value);
+            if (value['@graph']) collectJsonLdObjects(value['@graph'], target);
+            if (value.mainEntity) collectJsonLdObjects(value.mainEntity, target);
+            if (value.mainEntityOfPage) collectJsonLdObjects(value.mainEntityOfPage, target);
+          }
+
+          function getJsonLdType(item) {
+            var type = item ? item['@type'] : '';
+            if (Array.isArray(type)) type = type.join(' ');
+            return String(type || '').toLowerCase();
+          }
+
+          function descriptionFromJsonLd() {
+            var objects = [];
+            var fallback = '';
+            var raw;
+            var parsed;
+            var type;
+            var description;
+            var j;
+
+            for (j = 0; j < jsonLdNodes.length; j += 1) {
+              raw = String(jsonLdNodes[j].textContent || '').trim();
+              if (!raw) continue;
+              if (raw.indexOf('&quot;') !== -1 || raw.indexOf('&#34;') !== -1) raw = stripHtml(raw);
+              try {
+                parsed = JSON.parse(raw);
+              } catch (error) {
+                continue;
+              }
+              collectJsonLdObjects(parsed, objects);
+            }
+
+            for (j = 0; j < objects.length; j += 1) {
+              type = getJsonLdType(objects[j]);
+              description = cleanPreviewSummary(objects[j].description || '');
+              if (!description) continue;
+              if (/\b(blogposting|article|newsarticle|product|webpage)\b/.test(type)) return description;
+              if (!fallback) fallback = description;
+            }
+
+            return fallback;
+          }
+
+          function descriptionFromMeta() {
+            var candidate;
+            var j;
+            for (j = 0; j < metaDescriptionNodes.length; j += 1) {
+              candidate = cleanPreviewSummary(metaDescriptionNodes[j].getAttribute('content') || '');
+              if (candidate) return candidate;
+            }
+            return '';
+          }
+
+          articleSummary = article ? cleanPreviewSummary(article.getAttribute('data-gg-post-summary') || '') : '';
+          summary = articleSummary || descriptionFromJsonLd() || descriptionFromMeta();
+          if (!summary && firstParagraph) summary = cleanPreviewSummary(firstParagraph.innerHTML || firstParagraph.textContent || '');
 
           for (i = 0; i < labelNodes.length; i += 1) {
             text = stripHtml(labelNodes[i].textContent || '');

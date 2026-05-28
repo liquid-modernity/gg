@@ -3,10 +3,9 @@
 <html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 
   <head>
-    <meta content='Mary&apos;s simple recipe for maple bacon donuts            makes a sticky, sweet treat with just a hint            of salt that you&apos;ll keep coming back for.' name='description'/>
     <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
     <b:if cond='data:view.isHomepage'>
-      <title><data:blog.title/> &#8226; Mary&#39;s simple recipe for maple bacon donuts makes a sticky, sweet treat with just a hint of salt that you&#39;ll keep coming back for.</title>
+      <title><data:blog.title/></title>
     <b:else/>
       <b:if cond='data:view.isPost'>
         <title><data:view.title.escaped/> &#8226; <data:blog.title/></title>
@@ -816,7 +815,7 @@ img{max-width:100%;height:auto;display:block}
                 </button>
               </div>
 
-              <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url'>
+              <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url' expr:data-gg-post-summary='data:post.snippet.escaped'>
                 <nav aria-labelledby='gg-breadcrumb-title' class='gg-breadcrumbs'>
                   <span class='gg-visually-hidden' data-gg-copy='post.breadcrumb' id='gg-breadcrumb-title'>Breadcrumb</span>
                   <a data-gg-copy='post.blog' href='/'>Blog</a>
