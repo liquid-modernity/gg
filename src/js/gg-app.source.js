@@ -6223,7 +6223,8 @@ window.GG = window.GG || {};
           if (!row) return null;
           return {
             url: row.getAttribute('data-gg-post-url') || '',
-            title: row.getAttribute('data-gg-post-title') || ''
+            title: row.getAttribute('data-gg-post-title') || '',
+            summary: stripHtml(row.getAttribute('data-gg-post-summary') || '')
           };
         }
 
@@ -6550,10 +6551,15 @@ window.GG = window.GG || {};
 
         function renderPreviewData(payload, detail) {
           var metaItems;
+          var summary;
           if (!ui.previewTitle) return;
 
+          payload = payload || {};
+          detail = detail || {};
+          summary = detail.summary || payload.summary || getCopy('preview.noSummary');
+
           ui.previewTitle.textContent = detail.title || payload.title || getCopy('preview.titleFallback');
-          ui.previewSummary.textContent = detail.summary || getCopy('preview.noSummary');
+          ui.previewSummary.textContent = summary;
           metaItems = buildPreviewMetaItems(detail);
           syncPreviewMeta(metaItems);
           syncPreviewTaxonomy(detail.labels);
@@ -6583,7 +6589,6 @@ window.GG = window.GG || {};
           var body = doc.querySelector('.gg-post-body, .entry-content');
           var metaDescriptionNodes = doc.querySelectorAll('meta[name="description"]');
           var jsonLdNodes = doc.querySelectorAll('script[type="application/ld+json"]');
-          var firstParagraph = body ? body.querySelector('p') : null;
           var firstImage = body ? body.querySelector('img') : null;
           var labelNodes = doc.querySelectorAll('.gg-taxonomy__link, .post-labels a[rel="tag"]');
           var labels = [];
@@ -6607,9 +6612,17 @@ window.GG = window.GG || {};
             return clean.indexOf("mary's simple recipe for maple bacon donuts") !== -1 && clean.indexOf('coming back for') !== -1;
           }
 
-          function cleanPreviewSummary(value) {
+          function isPreviewGenericSiteSummary(value) {
+            var clean = normalizePreviewSummary(value).toLowerCase();
+            return clean === 'pak rpp publishes practical articles, project notes, and curated resources for learning, work, and digital production.';
+          }
+
+          function cleanPreviewSummary(value, options) {
             var clean = normalizePreviewSummary(value);
-            return clean && !isPreviewDummySummary(clean) ? clean : '';
+            var allowGeneric = !!(options && options.allowGeneric);
+            if (!clean || isPreviewDummySummary(clean)) return '';
+            if (!allowGeneric && isPreviewGenericSiteSummary(clean)) return '';
+            return clean;
           }
 
           function collectJsonLdObjects(value, target) {
@@ -6664,19 +6677,32 @@ window.GG = window.GG || {};
             return fallback;
           }
 
+          function descriptionFromBody() {
+            var nodes;
+            var candidate;
+            var j;
+            if (!body) return '';
+            nodes = body.querySelectorAll('p, li, blockquote');
+            for (j = 0; j < nodes.length; j += 1) {
+              candidate = cleanPreviewSummary(nodes[j].textContent || nodes[j].innerHTML || '');
+              if (candidate && candidate.length >= 36) return candidate.slice(0, 260);
+            }
+            candidate = cleanPreviewSummary(body.textContent || '');
+            return candidate ? candidate.slice(0, 260) : '';
+          }
+
           function descriptionFromMeta() {
             var candidate;
             var j;
             for (j = 0; j < metaDescriptionNodes.length; j += 1) {
-              candidate = cleanPreviewSummary(metaDescriptionNodes[j].getAttribute('content') || '');
+              candidate = cleanPreviewSummary(metaDescriptionNodes[j].getAttribute('content') || '', { allowGeneric: false });
               if (candidate) return candidate;
             }
             return '';
           }
 
           articleSummary = article ? cleanPreviewSummary(article.getAttribute('data-gg-post-summary') || '') : '';
-          summary = articleSummary || descriptionFromJsonLd() || descriptionFromMeta();
-          if (!summary && firstParagraph) summary = cleanPreviewSummary(firstParagraph.innerHTML || firstParagraph.textContent || '');
+          summary = articleSummary || descriptionFromJsonLd() || descriptionFromBody() || descriptionFromMeta();
 
           for (i = 0; i < labelNodes.length; i += 1) {
             text = stripHtml(labelNodes[i].textContent || '');
@@ -6720,7 +6746,7 @@ window.GG = window.GG || {};
             })
             .catch(function () {
               ui.previewStatus.textContent = getCopy('preview.fetchFailed');
-              ui.previewSummary.textContent = getCopy('preview.noSummary');
+              ui.previewSummary.textContent = (payload && payload.summary) || getCopy('preview.noSummary');
               syncPreviewMeta([]);
               syncPreviewTaxonomy([]);
               syncPreviewTocItems([]);
