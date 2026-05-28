@@ -68,7 +68,7 @@
   --gg-preview-overlay-lift: var(--gg-preview-content-lift);
   --gg-preview-media-fit: cover;
   --gg-preview-surface-radius: 28px;
-  --gg-preview-footer-height: 56px;
+  --gg-preview-footer-height: 30px;
   --gg-preview-footer-safe-area: env(safe-area-inset-bottom);
   --gg-preview-radius: var(--gg-preview-surface-radius);
   --gg-preview-surface: var(--gg-surface-panel);
