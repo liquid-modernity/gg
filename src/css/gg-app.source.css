@@ -2549,7 +2549,7 @@ body::-webkit-scrollbar,
   margin: 0;
   max-width: var(--gg-utility-title-max);
   font: 600 13px/1.2 var(--gg-font-sans);
-  text-align: center;
+  text-align: center;align-content: center;
 }
 
 .gg-sheet__handle {
