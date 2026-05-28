@@ -102,7 +102,6 @@
   justify-items: center;
   gap: 8px;
   width: min(100% - 32px, 34rem);
-  padding: 0 8px calc(var(--gg-preview-content-lift) + 18px);
   color: #fff;
   text-align: center;
   text-shadow: 0 2px 18px rgba(0,0,0,.42);
@@ -177,8 +176,6 @@
   justify-items: center;
   margin: 0 calc(var(--gg-panel-pad-x) * -1) 0;
   min-height: var(--gg-preview-footer-height);
-  padding: var(--gg-preview-affordance-pad-top) var(--gg-panel-pad-x) calc(var(--gg-preview-affordance-pad-bottom) + var(--gg-preview-footer-safe-area));
-  border-top: 1px solid var(--gg-divider);
   background: linear-gradient(0deg, var(--gg-surface-panel) 74%, var(--gg-surface-panel-fade-soft));
 }
 
@@ -192,7 +189,6 @@
   order: 99;
   place-items: center;
   transform: none;
-  margin: 8px auto 0;
 }
 
 /* BEGIN gg-preview-scrollbar-hidden-contract */

@@ -209,8 +209,8 @@ body::-webkit-scrollbar,
   left: 50%;
   width: var(--gg-sheet-handle-hit);
   min-width: var(--gg-sheet-handle-hit);
-  height: var(--gg-sheet-handle-hit);
-  min-height: var(--gg-sheet-handle-hit);
+  height: 30px;
+    min-height: 0;
   margin: 0;
   padding: 0;
   transform: translateX(-50%);
