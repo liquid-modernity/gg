@@ -16,7 +16,11 @@
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
 <meta content='41f45cb61414' name='gg-template-fingerprint'/>
-    <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
+    <b:if cond='data:view.isPost'>
+      <meta expr:content='data:view.description ?: data:post.snippet.escaped ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
+    <b:else/>
+      <meta expr:content='data:view.description ?: data:blog.metaDescription ?: data:blog.title.escaped' name='description'/>
+    </b:if>
     <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
     <b:include data='blog' name='all-head-content'/>
