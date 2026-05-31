@@ -16,6 +16,7 @@ const requiredScripts = [
   "gaga:template:pack",
   "gaga:verify-worker-live:strict",
   "gaga:verify-ci-reconciliation",
+  "gaga:verify-handoff-hygiene",
   "gaga:verify-85",
   "ci:85",
 ];
@@ -33,6 +34,7 @@ const majorGuardFiles = [
   "qa/discovery-contract-guard.mjs",
   "qa/discovery-filter-taxonomy-guard.mjs",
   "qa/docs-contract-guard.mjs",
+  "qa/handoff-hygiene-guard.mjs",
   "qa/semantic-ssr-guard.mjs",
   "qa/schema-jsonld-guard.mjs",
   "qa/registry-contract-guard.mjs",
@@ -140,6 +142,12 @@ if (!scriptIncludes(scripts, "ci:qa", "npm run gaga:verify-ci-reconciliation")) 
   fail("ci:qa must include npm run gaga:verify-ci-reconciliation");
 } else {
   pass("ci:qa includes CI reconciliation guard");
+}
+
+if (!scriptIncludes(scripts, "ci:qa", "npm run gaga:verify-handoff-hygiene")) {
+  fail("ci:qa must include npm run gaga:verify-handoff-hygiene");
+} else {
+  pass("ci:qa includes handoff hygiene guard");
 }
 
 if (!scriptIncludes(scripts, "ci:cloudflare", "npm run ci:qa")) {

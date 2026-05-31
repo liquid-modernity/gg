@@ -8,6 +8,7 @@ This file is the command index for local hardening, deploy preparation, and live
 git diff --check
 npm run gaga:verify-docs-contract
 npm run gaga:verify-ci-reconciliation
+npm run gaga:verify-handoff-hygiene
 npm run gaga:verify-semantic-ssr
 npm run gaga:verify-schema-jsonld
 npm run gaga:verify-registry-contract
@@ -108,6 +109,22 @@ npm run ci:85
 
 `npm run gaga:verify-85` is the final readiness gate for crawlability, production/development indexing flags, route truth, performance budget notes, artifact parity, and deploy readiness. It is read-only and may return `PASS_WITH_WARNINGS` for documented development-mode or advisory Lighthouse/performance warnings.
 
+## Handoff And Archive Hygiene Set
+
+```bash
+npm run gaga:verify-handoff-hygiene
+npm run gaga:handoff:pack
+npm run gaga:handoff:audit
+npm run gaga:audit -- dist/gg-handoff.zip
+npm run gaga:audit:pack -- <task-id> --zip dist/gg-audit.zip
+```
+
+`npm run gaga:handoff:pack` creates `dist/gg-handoff.zip` from git-visible source files with `tools/handoff-archive.mjs`, including non-ignored untracked files during pre-commit handoff. The CLI packer preserves dotfiles and dotfolders such as `.github/workflows/*` and `.gitignore`, excludes ignored local files, strips ZIP extra metadata with `zip -X`, and fails if macOS/OS junk such as `__MACOSX/`, `.DS_Store`, or `._*` appears in the archive.
+
+`npm run gaga:handoff:audit` packs the deployable repo archive and audits it with `qa/gaga-audit.mjs`. Use `HANDOFF_FAILURE` for archive/package problems such as missing workflows in deployable archive mode, missing `.gitignore`, missing `package-lock.json`, or OS junk in package output. Use `CONTRACT_FAILURE` for source/architecture problems. A limited task pack may omit `.github/workflows/*` only when its `HANDOFF-MANIFEST.md` explicitly declares that it is not a deployable repo archive.
+
+`npm run gaga:audit:pack` creates task-scoped audit ZIPs from a manifest in `qa/audit-output/*`. It is not the deployable repo archive path.
+
 ## Mandatory Guards
 
 These read-only guards are mandatory and must remain wired through `package.json` and the aggregate `ci:qa`/`ci:cloudflare` chain:
@@ -124,6 +141,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/discovery-contract-guard.mjs`
 - `qa/discovery-filter-taxonomy-guard.mjs`
 - `qa/docs-contract-guard.mjs`
+- `qa/handoff-hygiene-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
 - `qa/registry-contract-guard.mjs`

@@ -29,16 +29,31 @@ Default ZIP fallback (if no ZIP path arg):
   4) if exactly one ZIP exists under dist/, use it
 `;
 
-const CRITICAL_TARGETS = [
-  "package.json",
-  "package-lock.json",
-  "wrangler.jsonc",
-  "index.xml",
-  "src/worker.js",
-  "public/manifest.webmanifest",
-  "public/_headers",
-  "public/robots.txt",
-  "public/llms.txt",
+const REQUIRED_DEPLOYABLE_GROUPS = [
+  { label: ".github/workflows/ci.yml", paths: [".github/workflows/ci.yml"] },
+  {
+    label: ".github/workflows/deploy-cloudflare.yml",
+    paths: [".github/workflows/deploy-cloudflare.yml"],
+  },
+  {
+    label: ".github/workflows/lighthouse-ci.yml",
+    paths: [".github/workflows/lighthouse-ci.yml"],
+  },
+  { label: ".gitignore", paths: [".gitignore"] },
+  { label: "package.json", paths: ["package.json"] },
+  { label: "package-lock.json", paths: ["package-lock.json"] },
+  { label: "QA-COMMANDS.md", paths: ["QA-COMMANDS.md"] },
+  {
+    label: "architecture contract",
+    paths: ["ARCHITECTURE-CONTRACT.md", "ARCHITECTURE.md", "SURFACE-CONTRACT.md"],
+  },
+  { label: "wrangler config", paths: ["wrangler.jsonc", "wrangler.toml"] },
+  { label: "index.xml", paths: ["index.xml"] },
+  { label: "worker.js", paths: ["worker.js"] },
+  { label: "manifest.webmanifest", paths: ["manifest.webmanifest"] },
+  { label: "_headers", paths: ["_headers"] },
+  { label: "robots.txt", paths: ["robots.txt"] },
+  { label: "llms.txt", paths: ["llms.txt"] },
 ];
 
 const PATH_EXT_RE =
@@ -296,6 +311,15 @@ function hasPath(index, logicalPath) {
   return Boolean(firstEntryFor(index, logicalPath));
 }
 
+function firstEntryNamed(index, fileName) {
+  for (const [normalized, files] of index.entries()) {
+    if (normalized === fileName || normalized.endsWith(`/${fileName}`)) {
+      return files[0] || "";
+    }
+  }
+  return "";
+}
+
 function listByPrefix(index, prefix) {
   const originals = new Set();
   for (const [normalized, files] of index.entries()) {
@@ -303,6 +327,34 @@ function listByPrefix(index, prefix) {
     for (const file of files) originals.add(file);
   }
   return [...originals].sort();
+}
+
+function detectHandoffMode(zipPath, index) {
+  const manifestEntry = firstEntryFor(index, "HANDOFF-MANIFEST.md") || firstEntryNamed(index, "HANDOFF-MANIFEST.md");
+  const manifestText = manifestEntry ? readZipFileText(zipPath, manifestEntry) : "";
+  const limitedTaskPack =
+    /task pack only/i.test(manifestText) &&
+    /not a deployable repo archive/i.test(manifestText);
+  const hasDeployableRepoSignals =
+    hasPath(index, "package.json") &&
+    hasPath(index, ".gitignore") &&
+    Boolean(firstEntryFor(index, ".github/workflows/ci.yml"));
+
+  if (limitedTaskPack && !hasDeployableRepoSignals) {
+    return {
+      mode: "task-pack",
+      deployable: false,
+      manifestEntry,
+      explicitLimitedManifest: true,
+    };
+  }
+
+  return {
+    mode: "deployable-repo",
+    deployable: true,
+    manifestEntry,
+    explicitLimitedManifest: false,
+  };
 }
 
 function detectJunk(fileEntries) {
@@ -834,6 +886,8 @@ function buildFindings({
 }) {
   const warnings = [];
   const criticalFailures = [];
+  const handoffFailure = (message) => criticalFailures.push(`HANDOFF_FAILURE: ${message}`);
+  const contractFailure = (message) => criticalFailures.push(`CONTRACT_FAILURE: ${message}`);
 
   const missingScriptFiles = uniqueBy(
     packageSummary.scriptFileRefs
@@ -895,46 +949,46 @@ function buildFindings({
 
   if (criticalMissing.length) {
     for (const missing of criticalMissing) {
-      criticalFailures.push(`Missing required file in ZIP: ${missing}`);
+      handoffFailure(`Missing required file in ZIP: ${missing}`);
     }
   }
 
   if (packageSummary.parseError) {
-    criticalFailures.push(`package.json parse error: ${packageSummary.parseError}`);
+    handoffFailure(`package.json parse error: ${packageSummary.parseError}`);
   }
 
   for (const row of missingScriptFiles) {
-    criticalFailures.push(
+    handoffFailure(
       `package.json script '${row.script}' references missing file '${row.normalizedPath}' (${row.runner})`
     );
   }
 
   for (const row of missingScriptTargets) {
-    criticalFailures.push(
+    contractFailure(
       `package.json script '${row.script}' calls missing npm script '${row.target}'`
     );
   }
 
   for (const row of missingWorkflowScripts) {
-    criticalFailures.push(
+    contractFailure(
       `workflow '${row.workflow}' calls missing npm script '${row.script}'`
     );
   }
 
   for (const row of missingWorkflowFiles) {
-    criticalFailures.push(
+    handoffFailure(
       `workflow '${row.workflow}' references missing file '${row.normalizedPath}' (${row.runner})`
     );
   }
 
   for (const row of deadLegacyRefs) {
-    criticalFailures.push(
+    contractFailure(
       `legacy dead reference (${row.where}) '${row.owner}' -> '${row.path}' (${row.runner})`
     );
   }
 
   if (junkEntries.length) {
-    warnings.push(
+    handoffFailure(
       `Archive contains junk entries: ${junkEntries.slice(0, 8).join(", ")}${
         junkEntries.length > 8 ? " ..." : ""
       }`
@@ -961,21 +1015,21 @@ function buildFindings({
 
   if (taskSummary?.enabled) {
     if (!taskSummary.exists.md) {
-      criticalFailures.push(`Missing required task artifact in ZIP: ${taskSummary.expected.md}`);
+      handoffFailure(`Missing required task artifact in ZIP: ${taskSummary.expected.md}`);
     }
     if (!taskSummary.exists.json) {
-      criticalFailures.push(`Missing required task artifact in ZIP: ${taskSummary.expected.json}`);
+      handoffFailure(`Missing required task artifact in ZIP: ${taskSummary.expected.json}`);
     }
     if (!taskSummary.exists.liveSmoke) {
-      criticalFailures.push(
+      handoffFailure(
         `Missing required task artifact in ZIP: ${taskSummary.expected.liveSmoke}`
       );
     }
     if (taskSummary.manifestParseError) {
-      criticalFailures.push(taskSummary.manifestParseError);
+      handoffFailure(taskSummary.manifestParseError);
     }
     if (taskSummary.exists.json && !taskSummary.zipEntries.length) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing a non-empty zip_entries list`
       );
     }
@@ -985,49 +1039,49 @@ function buildFindings({
       canonicalTaskToken(taskSummary.manifestFields.task) !==
         canonicalTaskToken(taskSummary.taskId)
     ) {
-      criticalFailures.push(
+      contractFailure(
         `task manifest task id mismatch: expected '${taskSummary.taskId}', saw '${taskSummary.manifestFields.task}'`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.commit) {
-      criticalFailures.push(`task manifest '${taskSummary.expected.json}' is missing commit hash data`);
+      handoffFailure(`task manifest '${taskSummary.expected.json}' is missing commit hash data`);
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.changedFilesCount) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing changed_files entries`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.ciUrl) {
-      criticalFailures.push(`task manifest '${taskSummary.expected.json}' is missing CI workflow URL`);
+      handoffFailure(`task manifest '${taskSummary.expected.json}' is missing CI workflow URL`);
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.deployUrl) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing Deploy workflow URL`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.liveSmokeLog) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing live smoke log path`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.freezeEnabled) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing freeze_mode.enabled=true`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.freezeNote) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing freeze_mode.note`
       );
     }
     if (taskSummary.exists.json && !taskSummary.manifestFields.acceptedLimitationsCount) {
-      criticalFailures.push(
+      handoffFailure(
         `task manifest '${taskSummary.expected.json}' is missing accepted_limitations entries`
       );
     }
     for (const row of taskSummary.zipEntryPresence) {
       if (!row.exists) {
-        criticalFailures.push(`task manifest zip entry missing in archive: ${row.path}`);
+        handoffFailure(`task manifest zip entry missing in archive: ${row.path}`);
       }
     }
   }
@@ -1053,6 +1107,7 @@ function renderMarkdown(report) {
   lines.push("# ZIP Audit Report");
   lines.push("");
   lines.push(`- Enforcement mode: ${report.enforcement.mode}`);
+  lines.push(`- Handoff mode: ${report.enforcement.handoffMode}`);
   lines.push(`- Result: ${report.enforcement.result}`);
   lines.push(
     `- Counts: ${report.warnings.length} warning(s), ${report.criticalFailures.length} critical failure(s)`
@@ -1236,6 +1291,7 @@ function printHumanSummary(report) {
   console.log("ZIP AUDIT");
   console.log(`- input: ${report.input.path}`);
   console.log(`- enforcement: ${report.enforcement.mode}`);
+  console.log(`- handoff mode: ${report.enforcement.handoffMode}`);
   console.log(`- result: ${report.enforcement.result}`);
   console.log(`- size: ${report.input.sizeBytes} bytes (${report.input.sizeHuman})`);
   console.log(`- roots: ${report.archive.topLevelRoots.join(", ") || "(none)"}`);
@@ -1274,18 +1330,27 @@ function main() {
   const topLevelRoots = getTopLevelRoots(entries);
   const index = buildNormalizedIndex(fileEntries, topLevelRoots);
   const junkEntries = detectJunk(fileEntries);
+  const handoffMode = detectHandoffMode(args.zipPath, index);
 
-  const criticalFiles = CRITICAL_TARGETS.map((logicalPath) => ({
-    path: logicalPath,
-    exists: hasPath(index, logicalPath),
-    entry: firstEntryFor(index, logicalPath),
-  }));
-  const workflowEntries = listByPrefix(index, ".github/workflows/");
-  criticalFiles.push({
-    path: ".github/workflows/*",
-    exists: workflowEntries.length > 0,
-    entry: workflowEntries.length ? workflowEntries[0] : "",
-  });
+  const criticalFiles = [];
+  if (handoffMode.deployable) {
+    for (const group of REQUIRED_DEPLOYABLE_GROUPS) {
+      const entry = group.paths.map((candidate) => firstEntryFor(index, candidate)).find(Boolean) || "";
+      criticalFiles.push({
+        path: group.label,
+        alternatives: group.paths,
+        exists: Boolean(entry),
+        entry,
+      });
+    }
+  } else {
+    criticalFiles.push({
+      path: "HANDOFF-MANIFEST.md task-pack declaration",
+      alternatives: ["HANDOFF-MANIFEST.md"],
+      exists: handoffMode.explicitLimitedManifest,
+      entry: handoffMode.manifestEntry,
+    });
+  }
   const criticalMissing = criticalFiles
     .filter((row) => !row.exists)
     .map((row) => row.path);
@@ -1316,9 +1381,22 @@ function main() {
   const jsonPath = `${outputPrefix}.json`;
 
   const shouldFail = findings.criticalFailures.length > 0 && !args.warnOnly;
-  const result = shouldFail ? "FAIL" : "PASS";
+  const hasHandoffFailure = findings.criticalFailures.some((item) =>
+    String(item).startsWith("HANDOFF_FAILURE:")
+  );
+  const hasContractFailure = findings.criticalFailures.some((item) =>
+    String(item).startsWith("CONTRACT_FAILURE:")
+  );
+  const result = shouldFail
+    ? hasHandoffFailure
+      ? "HANDOFF_FAILURE"
+      : hasContractFailure
+        ? "CONTRACT_FAILURE"
+        : "FAIL"
+    : "PASS";
   const report = {
     generatedAt: new Date().toISOString(),
+    handoff: handoffMode,
     input: {
       path: args.zipPath,
       sizeBytes: st.size,
@@ -1356,6 +1434,7 @@ function main() {
     contractFindings: findings.details,
     enforcement: {
       mode: args.warnOnly ? "warn-only" : "fail-on-critical",
+      handoffMode: handoffMode.mode,
       result,
       failed: shouldFail,
     },

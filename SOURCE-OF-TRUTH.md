@@ -24,7 +24,7 @@ Primary source files include:
 - `REPO-STRUCTURE.md`: conservative repository map, edit/generated/commit policy, and runtime path stability notes.
 - `REPO-TIDY-REPORT.md`: repo tidy proof, ignored clutter handling, intentionally unmoved runtime folders, and QA record.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
-- `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs.
+- `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs. `qa/handoff-hygiene-guard.mjs` verifies archive handoff contracts, and `tools/handoff-archive.mjs` creates deployable repo archives from git-visible source files.
 
 ## Generated Files
 
@@ -122,6 +122,13 @@ Run repo structure tidy verification:
 npm run gaga:verify-repo-structure-tidy
 ```
 
+Run handoff archive hygiene verification:
+
+```bash
+npm run gaga:verify-handoff-hygiene
+npm run gaga:handoff:audit
+```
+
 Run sheet search visual parity verification:
 
 ```bash
@@ -144,6 +151,7 @@ Examples of mandatory read-only guards:
 - `qa/sheet-search-visual-parity-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
+- `qa/handoff-hygiene-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
 - `qa/registry-contract-guard.mjs`
@@ -171,4 +179,5 @@ These tools intentionally write generated or staging artifacts and must not be t
 - `tools/template-pack.mjs`: rebuilds Blogger publish artifacts and synchronized app CSS/JS runtime assets.
 - `tools/cloudflare-prepare.mjs`: rebuilds `.cloudflare-build/*` deployment staging from source and generated artifacts.
 - `tools/cloudflare-deploy.mjs`: runs preflight, prepares the Cloudflare bundle, then invokes Wrangler.
+- `tools/handoff-archive.mjs`: creates Handoff Archives from git-visible source files, preserving dotfiles/dotfolders while excluding ignored local OS junk and workspace files.
 - `tools/sync-store-lcp.mjs`: syncs the Store LCP product source config into guarded Store markup blocks.
