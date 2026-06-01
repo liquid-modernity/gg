@@ -348,7 +348,7 @@ function main() {
   assertCurrentPublicCopyContracts(issues);
 
   if (issues.length) {
-    console.error('COPY REGISTRY GUARD RESULT: FAIL');
+    console.error('COPY REGISTRY GUARD CONTRACT_FAILURE');
     issues.forEach((issue, index) => console.error(`${index + 1}. ${issue}`));
     process.exit(1);
   }

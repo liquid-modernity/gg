@@ -29,5 +29,5 @@ files.forEach(([label, css]) => {
   forbidAny(label, css, '.gg-preview__hero', /var\(--gg-preview-panel-(?:initial|max)-height\)/, 'preview hero still uses panel height tokens');
   forbidAny(label, css, '.store-preview__hero', /var\(--gg-preview-panel-(?:initial|max)-height\)/, 'Store preview hero still uses panel height tokens');
 });
-if (failures.length) { console.error('SHEET RUNTIME OVERFLOW VIEWPORT GUARD FAIL'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
+if (failures.length) { console.error('SHEET RUNTIME OVERFLOW VIEWPORT GUARD CONTRACT_FAILURE'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
 console.log('SHEET RUNTIME OVERFLOW VIEWPORT GUARD PASS');

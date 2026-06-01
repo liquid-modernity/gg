@@ -41,5 +41,5 @@ const storeLift = /margin-top:\s*calc\(\s*(?:-1\s*\*\s*)?var\(--gg-preview-store
 if (!/--gg-preview-hero-aspect:\s*4\s*\/\s*5\s*;/.test(visual)) fail('visual tokens missing --gg-preview-hero-aspect: 4 / 5');
 ['.gg-preview__hero', '.store-preview__hero', '.gg-preview__body', '.store-preview__body', '.gg-preview__surface', '.store-preview__surface'].forEach((selector) => { if (visual.includes(selector)) fail('visual tokens must remain token-only; found ' + selector); });
 if (previewFrame.trim() !== moduleFrame.trim()) fail('src/css/modules/preview-frame.css must mirror src/css/components/gg-preview-frame.css; run npm run gaga:sync-components');
-if (failures.length) { console.error('STORE MODAL PREVIEW RELIABILITY GUARD FAIL'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
+if (failures.length) { console.error('STORE MODAL PREVIEW RELIABILITY GUARD CONTRACT_FAILURE'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
 console.log('STORE MODAL PREVIEW RELIABILITY GUARD PASS');

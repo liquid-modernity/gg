@@ -109,6 +109,91 @@ npm run ci:85
 
 `npm run gaga:verify-85` is the final readiness gate for crawlability, production/development indexing flags, route truth, performance budget notes, artifact parity, and deploy readiness. It is read-only and may return `PASS_WITH_WARNINGS` for documented development-mode or advisory Lighthouse/performance warnings.
 
+## Script Inventory
+
+All script names in this table are mapped in `package.json`. Read-only commands must not write source, generated, or staging files. Mutating commands are build, package, staging, or deploy tools and must not be described as verifiers.
+
+| Script | Purpose | Mode | Gate | CI | Deploy | Expected output / failure class |
+| --- | --- | --- | --- | --- | --- | --- |
+| `build` | Sync shared CSS, rebuild Store, rebuild Blogger template assets, and prepare Cloudflare staging. | Mutating | Blocking build | Indirect via `ci:store` | Yes, before prepared deploy paths | Build tool output; failures are `BUILD_FAILURE`/command failure. |
+| `store:build` | Generate Store HTML/data/runtime assets from source/config/feed inputs. | Mutating | Blocking build | Yes via `store:check:*` | Yes via `build` | `STORE STATIC BUILD OK`; failures are `BUILD_FAILURE`/command failure. |
+| `store:proof` | Verify generated Store static artifacts. | Read-only | Blocking contract | Yes via `store:check:*` | Yes via `ci:cloudflare` | `STORE STATIC PROOF PASS`; failures are `CONTRACT_FAILURE`/command failure. |
+| `store:check` | Build Store then run Store proof. | Mutating aggregate | Blocking build + contract | No direct CI call | No direct deploy call | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
+| `store:check:ci` | Store CI mode with live-feed optional and strict image checks disabled. | Mutating aggregate | Blocking build + contract | Yes via `ci:store` | Yes via `ci:cloudflare` | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
+| `store:check:dev10` | Store CI check, full build, Store artifact smoke, and sheet contract smoke. | Mutating aggregate | Blocking build + contract | No direct CI call | No direct deploy call | Smoke/proof `PASS`; failures are `CONTRACT_FAILURE`/command failure. |
+| `store:check:strict` | Strict Store CI requiring live feed and strict images. | Mutating aggregate | Blocking strict contract | No | Manual pre-release only | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
+| `store:check:production` | Production Store readiness with strict images and production mode. | Mutating aggregate | Blocking production contract | No | Manual pre-release only | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
+| `gaga:template:pack` | Generate Blogger publish XML/text and synced app assets from source. | Mutating | Blocking build | Indirect via `build` | Yes via `build` | `TEMPLATE PACK OK`; failures are `BUILD_FAILURE`/command failure. |
+| `gaga:sync-components` | Sync shared CSS component/module blocks into declared source targets. | Mutating | Blocking build | Indirect via `build` | Yes via `build` | Sync output; failures are `BUILD_FAILURE`/command failure. |
+| `gaga:cf:prepare` | Alias for `build`. | Mutating aggregate | Blocking build | No | Manual staging | Build output; failures are `BUILD_FAILURE`/command failure. |
+| `gaga:cf:dry` | Build then run Cloudflare deploy wrapper in dry-run mode. | Mutating aggregate | Blocking deploy rehearsal | No | Manual deploy rehearsal | Deploy wrapper output; failures are `BUILD_FAILURE`/`CI_FAILURE`. |
+| `gaga:cf:deploy` | Build then deploy through the Cloudflare wrapper. | Mutating deploy | Blocking deploy | No | Manual deploy | Deploy wrapper output; failures are `BUILD_FAILURE`/`CI_FAILURE`. |
+| `deploy:cloudflare` | Build then deploy through the Cloudflare wrapper. | Mutating deploy | Blocking deploy | No | Manual deploy | Deploy wrapper output; failures are `BUILD_FAILURE`/`CI_FAILURE`. |
+| `deploy:cloudflare:prepared` | Deploy the already verified prepared artifact path. | Mutating deploy | Blocking deploy | No | Yes in deploy workflow | Deploy wrapper output; failures are `CI_FAILURE`/command failure. |
+| `deploy:cloudflare:dry` | Build then dry-run Cloudflare deploy wrapper. | Mutating aggregate | Blocking deploy rehearsal | No | Manual deploy rehearsal | Deploy wrapper output; failures are `BUILD_FAILURE`/`CI_FAILURE`. |
+| `ci:qa` | Aggregate read-only contract guard chain. | Read-only aggregate | Blocking contracts, advisory warnings allowed | Yes via `ci:cloudflare` | Yes via `ci:cloudflare` | Guard `PASS`/`PASS_WITH_WARNINGS`; failures use `CONTRACT_FAILURE`, `SCHEMA_FAILURE`, `SSR_FAILURE`, or command failure. |
+| `ci:store` | Store CI, full build, Store artifact smoke, and sheet contract smoke. | Mutating aggregate | Blocking build + contract | Yes via `ci:cloudflare` | Yes via `ci:cloudflare` | Store/smoke `PASS`; failures are `BUILD_FAILURE`/`CONTRACT_FAILURE`. |
+| `ci:cloudflare` | Store CI, aggregate QA, and Worker smoke script syntax check. | Mutating aggregate | Blocking CI | Yes in `.github/workflows/ci.yml` | Yes before deploy | `ci:store` + `ci:qa` output; failures are `CI_FAILURE`/command failure. |
+| `ci:85` | Full Cloudflare CI plus final readiness guard. | Mutating aggregate | Blocking release readiness, advisory warnings allowed | Manual/optional | Manual pre-release | `PASS`/`PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`/`CI_FAILURE`. |
+| `gaga:verify-store-artifact` / `gaga:verify-worker` | Legacy verify-named aggregate that runs Store artifact build/proof/smoke checks. | Mutating aggregate | Blocking build + contract | No direct CI call | Manual/legacy | Store artifact/sheet smoke `PASS`; failures are `BUILD_FAILURE`/`CONTRACT_FAILURE`. |
+| `gaga` / `gaga:dry` / `gaga:push` | Release wrapper aliases. | Mutating release | Blocking release wrapper | No | Manual release | Release wrapper output; failures are `CI_FAILURE`/command failure. |
+| `gaga:preflight` | Local preflight for release/deploy wrapper prerequisites. | Read-only | Blocking preflight | No | Indirect through deploy wrapper | Preflight output; failures are `CI_FAILURE`/command failure. |
+| `gaga:audit` | Audit an existing ZIP/archive. | Read-only | Blocking when explicitly invoked, otherwise manual | No | Handoff/manual | `ZIP AUDIT` `PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
+| `gaga:audit:pack` | Create a task-scoped audit ZIP from an audit manifest. | Mutating package tool | Blocking handoff package | No | Handoff/manual | Audit pack output; failures are `HANDOFF_FAILURE`/command failure. |
+| `gaga:handoff:pack` | Create deployable repo handoff ZIP from git-visible source files. | Mutating package tool | Blocking handoff package | No | Handoff/manual | `HANDOFF PACK PASS`; failures are `HANDOFF_FAILURE`. |
+| `gaga:handoff:audit` | Pack deployable repo archive and audit it. | Mutating aggregate | Blocking handoff package + contract | No | Handoff/manual | Handoff pack + ZIP audit `PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
+
+### Read-Only Verifier Scripts
+
+| Script | Purpose | Gate | CI | Deploy | Expected output / failure class |
+| --- | --- | --- | --- | --- | --- |
+| `gaga:verify-docs-contract` | Verify source/generated/deploy documentation contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DOCS CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-ci-reconciliation` | Verify QA script wiring, workflow aggregation, and guard classification docs. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CI RECONCILIATION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-handoff-hygiene` | Verify handoff/archive hygiene docs, ignores, and package mappings. | Blocking handoff contract | Yes | Yes via `ci:cloudflare` | `HANDOFF HYGIENE GUARD PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
+| `gaga:verify-semantic-ssr` | Verify Blogger SSR semantics and fallback contracts. | Blocking SSR contract | Yes | Yes via `ci:cloudflare` | `SEMANTIC SSR GUARD PASS`; failures are `SSR_FAILURE`/`CONTRACT_FAILURE`. |
+| `gaga:verify-schema-jsonld` | Verify JSON-LD/schema route truth and validity. | Blocking schema contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `SCHEMA JSON-LD GUARD PASS`; failures are `SCHEMA_FAILURE`/`CONTRACT_FAILURE`. |
+| `gaga:verify-registry-contract` | Verify runtime/content registry contracts. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `REGISTRY CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-a11y-static` | Static accessibility contract with non-blocking advisory warnings. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `A11Y STATIC GUARD PASS`; failures are `CONTRACT_FAILURE`; warnings are `ADVISORY_WARNING`. |
+| `gaga:verify-asset-architecture` | Verify source/generated asset parity, generated artifact boundaries, and architecture-level CSS wiring. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `ASSET ARCHITECTURE GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-cleanup` | Verify cleanup regression boundaries and intentional non-removals. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `CLEANUP REGRESSION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-css-sot-cleanup` | Verify CSS source-of-truth cleanup boundaries. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS SOURCE OF TRUTH CLEANUP GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-css-module-wiring` | Verify required CSS module registration and generated bundle parity. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS MODULE BUNDLE WIRING GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-repo-structure-tidy` | Verify repo structure tidy contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `REPO STRUCTURE TIDY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-sheet-search-visual-parity` | Verify Search/More sheet visual parity contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET SEARCH VISUAL PARITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-comments-proof` | Verify Blogger native comments/threaded composer contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `COMMENTS PROOF GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-nav-more` / `gaga:verify-more-global` | Verify global More navigation and sheet contract. | Blocking contract | Yes for `gaga:verify-nav-more` | Yes via `ci:cloudflare` | `NAV MORE CONTRACT GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-discovery-contract` | Verify Discovery contract and taxonomy ownership. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DISCOVERY CONTRACT GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-discovery-filters` | Verify Discovery filter taxonomy contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DISCOVERY FILTER TAXONOMY GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-store-isolation` | Verify Store isolation from Blog/shell systems. | Blocking contract | Yes | Yes via `ci:cloudflare` | `STORE ISOLATION GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-theme` / `gaga:verify-theme-contract` | Verify Light/Dark theme contract and no system-mode public UI. | Blocking contract | Yes for `gaga:verify-theme` | Yes via `ci:cloudflare` | `THEME CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-shell` / `gaga:verify-shell-contract` | Verify shell interaction contract. | Blocking contract | Yes for `gaga:verify-shell` | Yes via `ci:cloudflare` | `SHELL INTERACTION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-preview-sheet` | Verify root article preview sheet contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `PREVIEW SHEET CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-sheet-lifecycle` | Verify sheet lifecycle, preview lift, and token contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET LIFECYCLE CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-component-source` / `gaga:verify-sheet-core-source` | Verify component/source ownership for shared sheet core. | Blocking contract | Yes | Yes via `ci:cloudflare` | Component source guard `PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-visual-system` | Verify visual-system source contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | Visual-system guard `PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-sheet-runtime-overflow` | Verify viewport-safe sheet overflow behavior. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET RUNTIME OVERFLOW VIEWPORT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-store-modal-preview` | Verify Store modal preview reliability contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `STORE MODAL PREVIEW RELIABILITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-sheet-contract` | Browserless sheet contract smoke. | Blocking contract | Yes via `ci:store` | Yes via `ci:cloudflare` | `SHEET CONTRACT SMOKE RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-worker-live` / `gaga:verify-worker-live:local` / `gaga:verify-worker-live:strict` | Live Worker smoke after deploy or Worker/static route changes. | Read-only live smoke | No normal CI | Yes after deploy for strict variant | `LIVE SMOKE WORKER RESULT: PASS`; failures are `CONTRACT_FAILURE`; local variant may allow known timeout warnings. |
+
+### Failure Labels
+
+Use these labels for command failures:
+
+- `CONTRACT_FAILURE`: source, architecture, route truth, ownership, CSS boundary, comments, sheet, Store isolation, Worker contract, or deploy contract violation.
+- `HANDOFF_FAILURE`: archive, ZIP, package, ignored junk, missing workflow/dotfile, or handoff manifest violation.
+- `BUILD_FAILURE`: mutating build, bundling, template generation, Store generation, or staging failure.
+- `SCHEMA_FAILURE`: JSON-LD/schema validity or route-truth schema failure.
+- `SSR_FAILURE`: Blogger SSR/fallback semantic rendering failure.
+- `CI_FAILURE`: workflow/deploy wrapper/preflight failure that is not a source contract defect.
+- `ADVISORY_WARNING`: non-blocking budget, Lighthouse, token consistency, naming, rhythm, or optimization warning.
+
+## CSS Guard Scope
+
+Mandatory CSS guards are architecture-level. They may fail normal CI only for generated CSS edited manually, source CSS missing from a declared build path, obvious duplicate override/patch files, forbidden emergency CSS layers, missing required CSS module registration, or clearly unused large CSS artifacts.
+
+CSS checks for selector style, spacing tokens, border-radius preferences, color values, component file granularity, declaration order, and otherwise valid manual edits under `src/css/*` or `src/store/*` are advisory only. Advisory CSS findings must emit `ADVISORY_WARNING`, `WARN`, or `PASS_WITH_WARNINGS` and must not block `ci:qa`.
+
 ## Handoff And Archive Hygiene Set
 
 ```bash

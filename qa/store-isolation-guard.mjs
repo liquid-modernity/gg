@@ -122,7 +122,7 @@ function main() {
   }
 
   if (issues.length) {
-    console.error('STORE ISOLATION GUARD RESULT: FAIL');
+    console.error('STORE ISOLATION GUARD CONTRACT_FAILURE');
     issues.forEach((issue, index) => console.error(`${index + 1}. ${issue}`));
     process.exit(1);
   }

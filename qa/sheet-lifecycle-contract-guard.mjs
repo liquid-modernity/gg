@@ -51,5 +51,5 @@ frameFiles.forEach(([label, css]) => {
 const frame = read('src/css/components/gg-preview-frame.css');
 if (!anyBlock(frame, '.gg-content-sheet__affordance', /order:\s*99/)) fail('preview affordance must be ordered after content');
 if (!frame.includes('counter-reset: gg-preview-toc')) fail('preview TOC must keep polished counter contract');
-if (failures.length) { console.error('SHEET LIFECYCLE CONTRACT GUARD FAIL'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
+if (failures.length) { console.error('SHEET LIFECYCLE CONTRACT GUARD CONTRACT_FAILURE'); failures.forEach((failure) => console.error('- ' + failure)); process.exit(1); }
 console.log('SHEET LIFECYCLE CONTRACT GUARD PASS');

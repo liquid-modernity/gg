@@ -311,7 +311,7 @@ function main() {
   if (localSearch.placeholderKey !== 'more.localSearch.placeholder') issues.push('More sheet localSearch placeholderKey must be more.localSearch.placeholder');
 
   if (issues.length) {
-    console.error('DISCOVERY CONTRACT GUARD RESULT: FAIL');
+    console.error('DISCOVERY CONTRACT GUARD CONTRACT_FAILURE');
     issues.forEach((issue, index) => console.error(`${index + 1}. ${issue}`));
     process.exit(1);
   }

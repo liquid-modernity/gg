@@ -14,7 +14,7 @@ function parseJson(file) {
 }
 
 function fail(issues) {
-  console.error('THEME CONTRACT FAIL');
+  console.error('THEME CONTRACT GUARD CONTRACT_FAILURE');
   for (const issue of issues) console.error(`- ${issue}`);
   process.exit(1);
 }
@@ -133,7 +133,7 @@ function main() {
   }
 
   if (issues.length) fail(issues);
-  console.log('THEME CONTRACT OK');
+  console.log('THEME CONTRACT GUARD PASS');
 }
 
 main();

@@ -170,7 +170,7 @@ function main() {
   ], issues);
 
   if (issues.length) {
-    console.error('NAV MORE CONTRACT GUARD RESULT: FAIL');
+    console.error('NAV MORE CONTRACT GUARD CONTRACT_FAILURE');
     issues.forEach((issue, index) => console.error(`${index + 1}. ${issue}`));
     process.exit(1);
   }

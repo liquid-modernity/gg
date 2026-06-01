@@ -163,7 +163,7 @@ assertIncludes(text.packageJson, '"gaga:verify-comments-proof"', "package.json: 
 assertIncludes(text.packageJson, '"gaga:verify-preview-sheet"', "package.json: preview sheet guard script missing");
 
 if (failures.length) {
-  console.error("PREVIEW SHEET CONTRACT GUARD FAIL");
+  console.error("PREVIEW SHEET CONTRACT GUARD CONTRACT_FAILURE");
   failures.forEach((message) => console.error(`- ${message}`));
   process.exit(1);
 }

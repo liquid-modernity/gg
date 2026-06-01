@@ -221,7 +221,7 @@ if (!text.landing.includes('data-gg-discovery-domain="global"')) fail("landing.h
 if (!text.store.includes('data-gg-discovery-domain="store"')) fail("store.html: store discovery domain marker missing");
 
 if (failures.length) {
-  console.error("SHELL INTERACTION GUARD FAIL");
+  console.error("SHELL INTERACTION GUARD CONTRACT_FAILURE");
   failures.forEach((message) => console.error(`- ${message}`));
   process.exit(1);
 }

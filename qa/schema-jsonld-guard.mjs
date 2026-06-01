@@ -277,7 +277,7 @@ if (sourceOfTruth.includes("qa/schema-jsonld-guard.mjs")) pass("SOURCE-OF-TRUTH 
 else warn("SOURCE-OF-TRUTH.md does not list qa/schema-jsonld-guard.mjs");
 
 if (failures.length) {
-  console.error("SCHEMA JSON-LD GUARD CONTRACT_FAILURE");
+  console.error("SCHEMA JSON-LD GUARD SCHEMA_FAILURE");
   for (const failure of failures) console.error(`- ${failure}`);
   if (warnings.length) {
     console.error("Warnings:");

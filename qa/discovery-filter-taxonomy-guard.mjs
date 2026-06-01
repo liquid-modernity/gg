@@ -111,7 +111,7 @@ function main() {
   requireCopy(id, 'discovery.saved.empty.body', 'Simpan artikel atau produk untuk menemukannya di sini.', 'ID copy', issues);
 
   if (issues.length) {
-    console.error('DISCOVERY FILTER TAXONOMY GUARD RESULT: FAIL');
+    console.error('DISCOVERY FILTER TAXONOMY GUARD CONTRACT_FAILURE');
     issues.forEach((issue, index) => console.error(`${index + 1}. ${issue}`));
     process.exit(1);
   }

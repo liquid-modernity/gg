@@ -63,6 +63,12 @@ const advisoryFiles = [
   "qa/verify-css-sot.mjs",
 ];
 
+const ciWiredLabelFiles = [
+  ...majorGuardFiles,
+  "qa/sheet-contract-smoke.sh",
+  "qa/store-artifact-smoke.sh",
+];
+
 function rel(file) {
   return path.relative(ROOT, path.resolve(ROOT, file)).replace(/\\/g, "/");
 }
@@ -214,13 +220,26 @@ for (const file of listQaExecutables()) {
 }
 
 for (const marker of [
+  "Script Inventory",
   "Mandatory Guards",
   "Advisory And Manual QA",
   "Read-Only Guards",
   "Mutating Build Tools",
+  "Failure Labels",
+  "CSS Guard Scope",
 ]) {
   if (!qaCommands.includes(marker) && !sourceOfTruth.includes(marker)) {
     fail(`documentation missing required CI reconciliation section marker: ${marker}`);
+  }
+}
+
+const vagueFailureLabel = /\b(?:GUARD FAIL|RESULT:\s+FAIL(?:ED)?|CONTRACT FAIL|CONTRACT OK)\b/u;
+for (const file of ciWiredLabelFiles) {
+  if (file === "qa/ci-reconciliation-guard.mjs") continue;
+  const source = readIfExists(file);
+  if (!source) continue;
+  if (vagueFailureLabel.test(source)) {
+    fail(`CI-wired guard/smoke uses vague failure label instead of *_FAILURE class: ${file}`);
   }
 }
 

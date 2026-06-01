@@ -299,7 +299,7 @@ if (read("src/store/store.css").includes("--store-max-wide: 1040px")) {
 for (const message of passes) console.log(`PASS: ${message}`);
 if (failures.length) {
   for (const message of failures) console.error(`FAIL: ${message}`);
-  console.error(`SHEET CONTRACT SMOKE RESULT: FAILED (${failures.length})`);
+  console.error(`SHEET CONTRACT SMOKE CONTRACT_FAILURE (${failures.length})`);
   process.exit(1);
 }
 console.log(`SHEET CONTRACT SMOKE RESULT: PASS checks=${passes.length}`);

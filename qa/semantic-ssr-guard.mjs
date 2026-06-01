@@ -93,7 +93,7 @@ requireIncludes(packageJson, "npm run gaga:verify-semantic-ssr", "semantic SSR g
 requireIncludes(qaCommands, "npm run gaga:verify-semantic-ssr", "semantic SSR command documented", "QA-COMMANDS.md");
 
 if (failures.length) {
-  console.error("SEMANTIC SSR GUARD CONTRACT_FAILURE");
+  console.error("SEMANTIC SSR GUARD SSR_FAILURE");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }

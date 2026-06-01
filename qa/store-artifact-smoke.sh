@@ -141,7 +141,7 @@ for source_category_artifact in store/*/index.html store/*/page/*/index.html; do
 done
 
 if [[ "$failures" -gt 0 ]]; then
-  printf 'STORE ARTIFACT SMOKE RESULT: FAILED (%s)\n' "$failures" >&2
+  printf 'STORE ARTIFACT SMOKE CONTRACT_FAILURE (%s)\n' "$failures" >&2
   exit 1
 fi
 
@@ -405,7 +405,7 @@ if ! node "$proof_tool" "$target_file"; then
 fi
 
 if [[ "$failures" -gt 0 ]]; then
-  printf 'STORE ARTIFACT SMOKE RESULT: FAILED (%s)\n' "$failures" >&2
+  printf 'STORE ARTIFACT SMOKE CONTRACT_FAILURE (%s)\n' "$failures" >&2
   exit 1
 fi
 

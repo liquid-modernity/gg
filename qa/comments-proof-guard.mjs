@@ -254,7 +254,7 @@ else fail(`expected one delegated document click listener, found ${clickListener
 for (const message of passes) console.log(`PASS: ${message}`);
 if (failures.length) {
   for (const message of failures) console.error(`FAIL: ${message}`);
-  console.error(`COMMENTS PROOF GUARD RESULT: FAILED (${failures.length})`);
+  console.error(`COMMENTS PROOF GUARD CONTRACT_FAILURE (${failures.length})`);
   process.exit(1);
 }
 
