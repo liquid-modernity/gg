@@ -9,6 +9,7 @@ Edited manually:
 - `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, wired `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources. Module files are canonical only when wired or explicitly documented.
 - `src/js/gg-app.source.js`, `src/js/modules/*`, and `src/js/boot/*`: Blogger app JavaScript sources.
 - `src/store/store.css`, `src/store/store.critical.css`, `src/store/store-core.js`, `src/store/store-discovery.js`, `src/store/store.js`, `src/store/store-categories.config.mjs`, and `src/store/lib/*`: Store source assets and build logic.
+- `src/registry/gg-source-boundary.registry.js`: root/editorial and Store CMS source boundary registry.
 - `index.xml`: Blogger template source.
 - `landing.html` and `src/landing/*`: Home route source.
 - `store.html`: Store root source/build input.
@@ -49,7 +50,7 @@ Template-pack output, store-build output, and cloudflare-prepare output are the 
 - `__gg/assets/js/gg-app.min.js`
 - matching `dist/assets/css/*` and `dist/assets/js/*`
 
-`npm run store:build` reads Store source/config/feed inputs and writes:
+`npm run store:build` reads Store source/config/feed inputs, including Store product/content source declared in `src/registry/gg-source-boundary.registry.js`. The Store CMS source is `pakrppstore.blogspot.com`, optional `https://store.pakrpp.com/` is source-only/backend, and the public canonical Store surface remains `https://www.pakrpp.com/store/`. It writes:
 
 - `assets/store/store.css`
 - `assets/store/store-core.js`
@@ -129,7 +130,7 @@ Production switch expectations: production may increase static asset caching onl
 
 The verified artifact should be the deployed artifact. When CI, Cloudflare preparation, and deploy wrappers rebuild staging more than once, the rebuild inputs must be deterministic: source files, generated committed artifacts, Store reports, flags, registries, and Worker source must match before deployment.
 
-Do not manually patch `.cloudflare-build`, `dist`, `__gg/assets`, `assets/store`, or `store/data` as the fix.
+Do not manually patch `.cloudflare-build`, `dist`, `__gg/assets`, `assets/store`, or `store/data` as the fix. Do not use Worker HTMLRewriter behavior as an asset, CMS, schema, or readability repair path.
 
 ## Guard
 

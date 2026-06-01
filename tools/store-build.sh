@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FEED_URL="https://www.pakrpp.com/feeds/posts/default/-/Store?alt=json&max-results=50"
+FEED_URL="$(cd "${ROOT}" && node --input-type=module -e "import { storeSource } from './src/registry/gg-source-boundary.registry.js'; process.stdout.write(storeSource.feed.url);")"
 STORE_CI="${STORE_CI:-0}"
 STORE_REQUIRE_LIVE_FEED="${STORE_REQUIRE_LIVE_FEED:-0}"
 STORE_STRICT_IMAGES="${STORE_STRICT_IMAGES:-0}"

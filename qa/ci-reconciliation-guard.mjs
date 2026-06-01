@@ -28,6 +28,7 @@ const majorGuardFiles = [
   "qa/cleanup-regression-guard.mjs",
   "qa/comments-proof-guard.mjs",
   "qa/component-source-contract-guard.mjs",
+  "qa/content-source-boundary-guard.mjs",
   "qa/copy-registry-guard.mjs",
   "qa/css-module-bundle-wiring-guard.mjs",
   "qa/css-source-of-truth-cleanup-guard.mjs",

@@ -9,6 +9,7 @@ git diff --check
 npm run gaga:verify-docs-contract
 npm run gaga:verify-ci-reconciliation
 npm run gaga:verify-handoff-hygiene
+npm run gaga:verify-content-source-boundary
 npm run gaga:verify-semantic-ssr
 npm run gaga:verify-schema-jsonld
 npm run gaga:verify-registry-contract
@@ -184,6 +185,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-docs-contract` | Verify source/generated/deploy documentation contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DOCS CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-ci-reconciliation` | Verify QA script wiring, workflow aggregation, and guard classification docs. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CI RECONCILIATION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-handoff-hygiene` | Verify handoff/archive hygiene docs, ignores, and package mappings. | Blocking handoff contract | Yes | Yes via `ci:cloudflare` | `HANDOFF HYGIENE GUARD PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
+| `gaga:verify-content-source-boundary` | Verify root/editorial CMS and Store/product CMS source boundary, public canonical Store route, and Worker non-HTMLRewriter contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CONTENT SOURCE BOUNDARY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-semantic-ssr` | Verify Blogger SSR semantics and fallback contracts. | Blocking SSR contract | Yes | Yes via `ci:cloudflare` | `SEMANTIC SSR GUARD PASS`; failures are `SSR_FAILURE`/`CONTRACT_FAILURE`. |
 | `gaga:verify-schema-jsonld` | Verify JSON-LD/schema route truth and validity. | Blocking schema contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `SCHEMA JSON-LD GUARD PASS`; failures are `SCHEMA_FAILURE`/`CONTRACT_FAILURE`. |
 | `gaga:verify-registry-contract` | Verify runtime/content registry contracts. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `REGISTRY CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |

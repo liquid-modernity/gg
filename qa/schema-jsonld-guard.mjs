@@ -110,6 +110,11 @@ function requirePattern(source, pattern, label, file) {
   else fail(`${file}: ${label}`);
 }
 
+function forbidPattern(source, pattern, label, file) {
+  if (pattern.test(source)) fail(`${file}: ${label}`);
+  else pass(label);
+}
+
 function schemaNamesFromItemList(itemList) {
   return itemListElements(itemList)
     .map((entry) => entry?.item?.name || entry?.name || "")
@@ -259,7 +264,8 @@ requireIncludes(indexXml, "data:post.body contains &quot;gg-yellowcard-data&quot
 requireIncludes(appJs, "if (isStoreContent(post)) return null;", "global Discovery Articles exclude Store content", "src/js/gg-app.source.js");
 requireIncludes(appJs, "storeExclusion: STORE_DOMAIN", "global Discovery Topics keep Store exclusion contract", "src/js/gg-app.source.js");
 
-requirePattern(indexXml, /&quot;@type&quot;: &quot;<b:if cond='[\s\S]*?gg-store-data[\s\S]*?'>Product<b:else\/>BlogPosting<\/b:if>&quot;/, "post detail schema switches Store posts to Product and editorial posts to BlogPosting", "index.xml");
+requireIncludes(indexXml, "&quot;@type&quot;: &quot;BlogPosting&quot;", "root post detail schema remains editorial BlogPosting", "index.xml");
+forbidPattern(indexXml, />Product<b:else\/>BlogPosting/, "root post detail schema does not emit Product after Store CMS split", "index.xml");
 requirePattern(indexXml, /<b:if cond='data:view\.isPage'>[\s\S]*?&quot;@type&quot;: &quot;WebPage&quot;[\s\S]*?BreadcrumbList/, "page detail schema is WebPage with breadcrumb", "index.xml");
 requireIncludes(indexXml, "&quot;name&quot;: &quot;<data:post.title.escaped/>&quot;", "detail schema name reflects visible post title", "index.xml");
 requireIncludes(indexXml, "&quot;item&quot;: &quot;https://www.pakrpp.com/landing&quot;", "detail schema breadcrumb starts at Home(/landing)", "index.xml");

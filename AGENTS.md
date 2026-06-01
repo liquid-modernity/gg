@@ -10,7 +10,7 @@ PakRPP serves three public surfaces:
 - `/`: Blog and editorial archive.
 - `/store`: Yellow Cart commerce surface.
 
-Blogger XML is the canonical SSR source for Blog listing, post detail, page detail, labels, search, archive, and Blogger-native comments. Cloudflare Worker serves edge policy, static assets, static landing, static Store, redirects, headers, diagnostics, and development crawler lockdown. JavaScript enhances stable markup; it must not be the only source of meaningful content.
+Blogger XML is the canonical SSR source for Blog listing, post detail, page detail, labels, search, archive, and Blogger-native comments. Root/editorial CMS source is `pakrpp.blogspot.com` with public canonical base `https://www.pakrpp.com/`. Store product/content CMS source is `pakrppstore.blogspot.com`; optional `https://store.pakrpp.com/` is a source-only/backend host, while the public canonical Store route remains `https://www.pakrpp.com/store/`. Cloudflare Worker serves edge policy, static assets, static landing, static Store, redirects, headers, diagnostics, and development crawler lockdown. JavaScript enhances stable markup; it must not be the only source of meaningful content.
 
 ## Surface Route Meaning
 
@@ -98,13 +98,13 @@ Blogger post/page rendering, native comments, threaded replies, labels, search, 
 
 ## Cloudflare Worker And Assets
 
-`worker.js` is an edge governance layer, not a replacement CMS. It handles canonical host/HTTPS policy, static route serving, static Store routing, headers, cache/robots policy, diagnostics, flags, and PWA/static assets. It must not proxy or mutate all Blogger posts to hide Blogger, and it must not author normal healthy Blogger UI.
+`worker.js` is an edge governance layer, not a replacement CMS and not an HTMLRewriter repair path. It handles canonical host/HTTPS policy, static route serving, static Store routing, headers, cache/robots policy, diagnostics, flags, and PWA/static assets. It must not proxy or mutate all Blogger posts to hide Blogger, and it must not author normal healthy Blogger UI.
 
 `tools/cloudflare-prepare.mjs` stages the Worker and static assets into `.cloudflare-build/public`. Treat `.cloudflare-build/*` as deploy staging output.
 
 ## Store Static Build
 
-Store source lives under `src/store/*`, with category route truth in `src/store/store-categories.config.mjs` and route derivation in `src/store/lib/store-routes.mjs`. `npm run store:build` generates Store HTML/data artifacts and syncs Store runtime assets. Do not hand-edit generated Store category pages, Store data output, Worker category registry output, or runtime category config copies.
+Store build/render/static source lives under `src/store/*`, with category route truth in `src/store/store-categories.config.mjs` and route derivation in `src/store/lib/store-routes.mjs`. Store product/content source is declared in `src/registry/gg-source-boundary.registry.js`: `pakrppstore.blogspot.com` and optional source-only `https://store.pakrpp.com/` feed the public canonical Store surface at `https://www.pakrpp.com/store/`. `npm run store:build` generates Store HTML/data artifacts and syncs Store runtime assets. Do not hand-edit generated Store category pages, Store data output, Worker category registry output, or runtime category config copies.
 
 Use:
 

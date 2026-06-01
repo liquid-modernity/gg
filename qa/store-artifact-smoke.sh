@@ -196,7 +196,7 @@ check_pattern 'STORE_STATIC_SEMANTIC_PRODUCTS_START' "artifact STORE_STATIC_SEMA
 check_pattern 'href=["'"'"']/assets/store/store\.css["'"'"']' "artifact store stylesheet reference is missing"
 check_pattern 'src=["'"'"']/assets/store/store-core\.js["'"'"'][^>]*data-store-discovery-src=["'"'"']/assets/store/store-discovery\.js["'"'"'][^>]*defer' "artifact store core runtime asset reference is missing"
 check_absent 'src=["'"'"']/assets/store/store\.js["'"'"']' "artifact still references legacy store runtime directly"
-check_pattern 'data-store-feed-url=["'"'"']/feeds/posts/default/-/Store\?alt=json&amp;max-results=50["'"'"']|data-store-feed-url=["'"'"']/feeds/posts/default/-/Store\?alt=json&max-results=50["'"'"']' "artifact Store feed contract is missing"
+check_pattern 'data-store-feed-url=["'"'"']https://pakrppstore\.blogspot\.com/feeds/posts/default/-/Store\?alt=json&amp;max-results=50["'"'"']|data-store-feed-url=["'"'"']https://pakrppstore\.blogspot\.com/feeds/posts/default/-/Store\?alt=json&max-results=50["'"'"']' "artifact Store source feed contract is missing"
 check_pattern 'data-copy=["'"'"']marketplaceCtaLabel["'"'"']' "artifact preview marketplace CTA label hook is missing"
 check_pattern 'data-copy=["'"'"']marketplaceFootnote["'"'"']' "artifact preview marketplace footnote hook is missing"
 check_pattern 'id=["'"'"']store-preview-why-picked["'"'"']' "artifact preview why-picked block is missing"

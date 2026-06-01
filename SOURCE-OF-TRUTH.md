@@ -12,8 +12,8 @@ Primary source files include:
 - `src/js/gg-app.source.js` and `src/js/modules/*`: Blogger app source JavaScript.
 - `src/js/boot/*`: early boot scripts.
 - `src/css/gg-app.source.css`, `src/css/gg-critical.source.css`, wired `src/css/modules/*`, and `src/css/components/*`: Blogger app CSS sources. Module files are canonical only when wired or explicitly documented.
-- `src/store/*`: Store source CSS, JS, config, rendering, validation, manifest, JSON-LD, route, and report logic.
-- `src/registry/*`, `registry/copy/*`, `registry/content/*`, and `registry/store/*`: route/copy/action/icon/content/store registries.
+- `src/store/*`: Store build/render/static artifact source CSS, JS, config, rendering, validation, manifest, JSON-LD, route, and report logic.
+- `src/registry/*`, `registry/copy/*`, `registry/content/*`, and `registry/store/*`: route/copy/action/icon/content/store registries, including `src/registry/gg-source-boundary.registry.js` for root/editorial and Store CMS source boundaries.
 - `src/landing/*`, `src/dashboard/*`, and `src/knowledge base/*`: static-surface source assets where applicable.
 - `worker.js`: Cloudflare Worker edge governance source, including generated Store registry blocks only when rebuilt by Store tooling.
 - `flags.json`, `registry/runtime/*`, and root copy JSON files used as runtime inputs.
@@ -25,6 +25,15 @@ Primary source files include:
 - `REPO-TIDY-REPORT.md`: repo tidy proof, ignored clutter handling, intentionally unmoved runtime folders, and QA record.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs. `qa/handoff-hygiene-guard.mjs` verifies archive handoff contracts, and `tools/handoff-archive.mjs` creates deployable repo archives from git-visible source files.
+
+## Content Source Boundary
+
+Root/editorial CMS and Store/product CMS are separate source domains while preserving one public frontend contract:
+
+- `rootSource`: Blogger source `pakrpp.blogspot.com`, public canonical base `https://www.pakrpp.com/`, root feed/sitemap declarations, and Article/WebPage schema family.
+- `storeSource`: Blogger source `pakrppstore.blogspot.com`, optional source-only/backend host `https://store.pakrpp.com/`, public canonical Store base `https://www.pakrpp.com/store/`, Store feed/sitemap declarations, and Product/ItemList schema family.
+
+`/store` remains the public canonical Store surface. `store.html` and `src/store/*` own Store build/render/static artifacts. `pakrppstore.blogspot.com` and `store.pakrpp.com` are Store product/content sources, not competing public SEO destinations. Worker remains a router/stager/edge policy layer and must not become an HTMLRewriter/CMS/schema/readability repair path.
 
 ## Generated Files
 
@@ -129,6 +138,12 @@ npm run gaga:verify-handoff-hygiene
 npm run gaga:handoff:audit
 ```
 
+Run content source boundary verification:
+
+```bash
+npm run gaga:verify-content-source-boundary
+```
+
 Run sheet search visual parity verification:
 
 ```bash
@@ -152,6 +167,7 @@ Examples of mandatory read-only guards:
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/handoff-hygiene-guard.mjs`
+- `qa/content-source-boundary-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
 - `qa/registry-contract-guard.mjs`

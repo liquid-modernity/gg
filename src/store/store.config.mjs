@@ -1,9 +1,13 @@
-export const STORE_ORIGIN = "https://www.pakrpp.com";
-export const STORE_PATHNAME = "/store";
-export const STORE_ROUTE_URL = `${STORE_ORIGIN}${STORE_PATHNAME}`;
-export const STORE_FEED_URL = "https://www.pakrpp.com/feeds/posts/default/-/Store?alt=json&max-results=50";
-export const STORE_FEED_PATH = "/feeds/posts/default/-/Store?alt=json&max-results=50";
-export const STORE_LEGACY_FEED_PATH = "/feeds/posts/default/-/yellowcard?alt=json&max-results=50";
+import { storeSource, stripTrailingSlash } from "../registry/gg-source-boundary.registry.js";
+
+export const STORE_ORIGIN = new URL(storeSource.publicCanonicalBase).origin;
+export const STORE_PATHNAME = new URL(storeSource.publicCanonicalBase).pathname.replace(/\/$/u, "") || "/store";
+export const STORE_ROUTE_URL = stripTrailingSlash(storeSource.publicCanonicalBase);
+export const STORE_SOURCE_HOST = storeSource.sourceHost;
+export const STORE_SOURCE_CUSTOM_HOST = storeSource.sourceCustomHost;
+export const STORE_FEED_URL = storeSource.feed.url;
+export const STORE_FEED_PATH = storeSource.feed.url;
+export const STORE_LEGACY_FEED_PATH = storeSource.feed.legacyUrl;
 export const STORE_WEBSITE_ID = `${STORE_ORIGIN}/#website`;
 export const STORE_ORGANIZATION_ID = `${STORE_ORIGIN}/#organization`;
 export const STORE_COLLECTION_ID = `${STORE_ROUTE_URL}#collection`;

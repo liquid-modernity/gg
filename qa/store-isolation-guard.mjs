@@ -107,7 +107,7 @@ function main() {
   assertIncludes('src/js/gg-app.source.js', appRuntime, 'rootListingAppendGuardActive', issues);
   assertIncludes('src/js/gg-app.source.js', appRuntime, 'storeRowsSkippedFromRoot', issues);
 
-  assertIncludes('store.html', storeHtml, 'data-store-feed-url="/feeds/posts/default/-/Store?alt=json&max-results=50"', issues);
+  assertIncludes('store.html', storeHtml, 'data-store-feed-url="https://pakrppstore.blogspot.com/feeds/posts/default/-/Store?alt=json&max-results=50"', issues);
   assertIncludes('store.html', storeHtml, 'STORE_STATIC_GRID_START', issues);
   assertIncludes('store.html', storeHtml, 'STORE_STATIC_PRODUCTS_JSON_START', issues);
   assertIncludes('store.html', storeHtml, 'data-store-discovery-kind="products"', issues);

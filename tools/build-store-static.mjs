@@ -22,8 +22,10 @@ import {
   storeAbsoluteUrl,
 } from "../src/store/store.config.mjs";
 import {
+  STORE_CATEGORIES,
   renderStoreRuntimeCategoryConfig,
   renderWorkerStoreCategoryRegistry,
+  normalizeStoreCategoryKey,
   storeCategoryFilterEntries,
 } from "../src/store/store-categories.config.mjs";
 import { buildStoreJsonLd } from "../src/store/lib/build-store-jsonld.mjs";
@@ -111,7 +113,13 @@ function isDevelopmentOutputMode() {
 
 function isDevelopmentBuildNote(message) {
   const text = String(message || "");
-  return text.includes("live Store feed unavailable") && text.includes("reusing existing static snapshot");
+  return (
+    text.includes("reusing existing static snapshot") &&
+    (
+      text.includes("live Store feed unavailable") ||
+      text.includes("live Store feed does not cover required categories")
+    )
+  );
 }
 
 function feedProbeReportMessage() {
@@ -824,6 +832,17 @@ function readLcpFallbackProducts() {
   return [fallback];
 }
 
+function missingRequiredCategoryKeys(products) {
+  const counts = Object.fromEntries(STORE_CATEGORIES.map((category) => [category.key, 0]));
+  for (const product of arr(products)) {
+    const key = normalizeStoreCategoryKey(product?.categoryKey || product?.category);
+    if (Object.prototype.hasOwnProperty.call(counts, key)) counts[key] += 1;
+  }
+  return STORE_CATEGORIES
+    .filter((category) => Number(counts[category.key] || 0) < 1)
+    .map((category) => category.key);
+}
+
 function reuseExistingSnapshotOrFail(storeSource, reason) {
   const existingStatic = readExistingStaticProducts(storeSource);
   if (existingStatic.length) {
@@ -973,6 +992,11 @@ async function resolveProducts(storeSource) {
     }
 
     if (!governed.products.length) fail("feed returned no valid products after normalization");
+
+    const missingCategoryKeys = missingRequiredCategoryKeys(governed.products);
+    if (missingCategoryKeys.length) {
+      return fallbackResult(`live Store feed does not cover required categories: ${missingCategoryKeys.join(", ")}`);
+    }
 
     return { products: governed.products, source: "live-feed", report: governed.report };
   } catch (error) {

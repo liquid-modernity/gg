@@ -33,6 +33,8 @@ Do not redirect `/` to `/landing`, do not rebrand `/` as Home in schema/breadcru
 
 Store category and pagination truth comes from `src/store/store-categories.config.mjs`, `src/store/lib/store-routes.mjs`, and `store/data/build-report.json`. Worker aliases may normalize legacy Store paths to canonical Store paths, but generated public category output must not be hand-authored.
 
+The public canonical Store base is `https://www.pakrpp.com/store/`. Store product/content CMS input is separate from the root/editorial CMS: `pakrppstore.blogspot.com` is the Store Blogger source and `https://store.pakrpp.com/` is optional source-only/backend host. Neither source host is a competing public SEO destination. Source URLs belong in the source boundary registry/config, while Worker remains static route governance and must not become an HTMLRewriter/CMS/schema/readability repair path.
+
 ## Post Detail Contract
 
 Post detail pages are Blogger-owned SSR pages. They must keep canonical Blogger post URLs, visible content parity with structured data, Blog1 detail behavior, native comments when comments are enabled, threaded replies, preview/share affordances, and the breadcrumb/schema truth `Home(/landing) -> Blog(/) -> current post`.

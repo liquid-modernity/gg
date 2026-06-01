@@ -511,8 +511,8 @@ if (!buildReportMetadataTag) {
 if (!/<meta\s+name=["']gg-store-contract["']\s+content=["']store-static-prerender-v1["']\s*\/?>/i.test(source)) {
   fail("missing gg-store-contract marker");
 }
-if (!source.includes(`data-store-feed-url="${STORE_FEED_PATH}"`)) fail("store feed URL changed or missing");
-if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_PATH}"`)) fail("legacy store feed URL changed or missing");
+if (!source.includes(`data-store-feed-url="${STORE_FEED_PATH}"`)) fail("store source feed URL changed or missing");
+if (!source.includes(`data-store-legacy-feed-url="${STORE_LEGACY_FEED_PATH}"`)) fail("legacy store source feed URL changed or missing");
 
 if (inlineStyleTags.length !== 1) fail(`expected exactly one inline style block, found ${inlineStyleTags.length}`);
 if (!/<style\b[^>]*>[\s\S]*<\/style>/i.test(criticalCssRegion)) fail("critical CSS marker block is missing its inline <style>");

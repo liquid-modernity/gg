@@ -34,6 +34,7 @@ Worker non-goals:
 - authoring normal healthy Blogger UI;
 - replacing Blogger SSR;
 - replacing Blogger-native comments;
+- using HTMLRewriter as a CMS/schema/readability repair path;
 - proxying and mutating all posts as a rendering strategy.
 
 ## Static Assets Role
@@ -44,7 +45,9 @@ PWA/static files such as `manifest.webmanifest`, `sw.js`, `offline.html`, `robot
 
 ## Store Static Artifact Role
 
-Yellow Cart is a static Store surface rooted at `/store`. Store source is under `src/store/*` and the root input is `store.html`. `npm run store:build` generates:
+Yellow Cart is a static Store surface rooted at `/store`. Public Store canonical URLs live under `https://www.pakrpp.com/store/`. Store product/content CMS input is separate from the root/editorial Blogger CMS: source data comes from `pakrppstore.blogspot.com`, with optional `https://store.pakrpp.com/` reserved as a source-only/backend host. These source URLs are declared in `src/registry/gg-source-boundary.registry.js`, not hidden in controllers or Worker repair code.
+
+Store build/render/static artifact source is under `src/store/*` and the root input is `store.html`. `npm run store:build` generates:
 
 - root Store/runtime asset copies;
 - category pages under `store/{category}/index.html`;

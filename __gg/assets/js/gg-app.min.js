@@ -631,18 +631,41 @@ window.GG = window.GG || {};
           }
         };
 
+        var GG_SOURCE_BOUNDARY = {
+          rootSource: {
+            provider: 'blogger',
+            sourceHost: 'pakrpp.blogspot.com',
+            publicCanonicalBase: 'https://www.pakrpp.com/',
+            feed: {
+              endpointPath: '/feeds/posts/default?alt=json',
+              maxResults: 80
+            },
+            sitemap: {
+              publicUrl: 'https://www.pakrpp.com/sitemap.xml'
+            },
+            schemaFamily: ['Article', 'WebPage', 'BlogPosting']
+          },
+          storeSource: {
+            provider: 'blogger',
+            sourceHost: 'pakrppstore.blogspot.com',
+            sourceCustomHost: 'https://store.pakrpp.com/',
+            publicCanonicalBase: 'https://www.pakrpp.com/store/',
+            schemaFamily: ['Product', 'ItemList']
+          }
+        };
+
         var FEED_PREREQUISITES = {
           supportedLocales: ['en', 'id'],
           requiredSettings: [
             'Keep post feeds enabled in Blogger settings.',
-            'Allow same-origin access to /feeds/posts/default?alt=json for search result enhancement when available.',
+            'Allow same-origin access to the declared root feed for search result enhancement when available.',
             'Treat homepage visible count as route plus payload dependent, not a hard guarantee from max-post settings alone.',
             'Keep listing DOM lightweight; preview/search enrichment must come from feed JSON or same-origin article fetch, not hidden row payload.',
             'Fall back gracefully to title-only listing DOM when feed JSON is unavailable.'
           ],
           search: {
-            endpointPath: '/feeds/posts/default?alt=json',
-            maxResults: 80,
+            endpointPath: GG_SOURCE_BOUNDARY.rootSource.feed.endpointPath,
+            maxResults: GG_SOURCE_BOUNDARY.rootSource.feed.maxResults,
             fallback: 'listing-dom-local-first',
             submitFallback: 'native-blogger-search-route'
           },
@@ -7469,7 +7492,8 @@ window.GG = window.GG || {};
         }
 
         function getFeedJsonUrl() {
-          return makeHomeUrl('feeds/posts/default?alt=json&max-results=' + GG_GLOBAL_DISCOVERY_CONFIG.feedMax);
+          var endpointPath = String(GG_SOURCE_BOUNDARY.rootSource.feed.endpointPath || '/feeds/posts/default?alt=json');
+          return makeHomeUrl(endpointPath.replace(/^\//, '') + '&max-results=' + GG_GLOBAL_DISCOVERY_CONFIG.feedMax);
         }
 
         function hasDiscoveryTopics(index) {
