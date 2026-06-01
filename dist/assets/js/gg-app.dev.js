@@ -1669,19 +1669,19 @@ window.GG = window.GG || {};
         var DOCK_SHOW_THRESHOLD_PX = 34;
         var DETAIL_OUTLINE_MANUAL_OPEN_GRACE_MS = 1600;
 
-        function escapeHtml(value) {
+        var controllerCore = GG.core = GG.core || {};
+        controllerCore.helpers = controllerCore.helpers || {};
+        controllerCore.helpers.escapeHtml = function escapeHtmlCore(value) {
           return String(value || '').replace(/[&<>"']/g, function (char) {
             return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
           });
-        }
-
-        function stripHtml(value) {
+        };
+        controllerCore.helpers.stripHtml = function stripHtmlCore(value) {
           var div = document.createElement('div');
           div.innerHTML = value || '';
           return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
-        }
-
-        function debounce(fn, wait) {
+        };
+        controllerCore.helpers.debounce = function debounceCore(fn, wait) {
           var timer = null;
           return function () {
             var context = this;
@@ -1691,32 +1691,60 @@ window.GG = window.GG || {};
               fn.apply(context, args);
             }, wait);
           };
-        }
-
-        function waitMs(duration) {
+        };
+        controllerCore.helpers.waitMs = function waitMsCore(duration) {
           return new Promise(function (resolve) {
             window.setTimeout(resolve, duration);
           });
-        }
-
-        function ggNow() {
+        };
+        controllerCore.helpers.now = function nowCore() {
           return window.performance && typeof window.performance.now === 'function'
             ? window.performance.now()
             : 0;
+        };
+        controllerCore.helpers.roundTiming = function roundTimingCore(value) {
+          return typeof value === 'number' && value >= 0 ? Math.round(value) : null;
+        };
+        controllerCore.helpers.readBodyState = function readBodyStateCore(name, fallback) {
+          if (!document.body) return fallback || '';
+          return document.body.getAttribute(name) || fallback || '';
+        };
+        controllerCore.helpers.writeBodyState = function writeBodyStateCore(name, value) {
+          if (!document.body) return;
+          document.body.setAttribute(name, value);
+        };
+        var coreHelpers = controllerCore.helpers;
+
+        function escapeHtml(value) {
+          return coreHelpers.escapeHtml(value);
+        }
+
+        function stripHtml(value) {
+          return coreHelpers.stripHtml(value);
+        }
+
+        function debounce(fn, wait) {
+          return coreHelpers.debounce(fn, wait);
+        }
+
+        function waitMs(duration) {
+          return coreHelpers.waitMs(duration);
+        }
+
+        function ggNow() {
+          return coreHelpers.now();
         }
 
         function roundTiming(value) {
-          return typeof value === 'number' && value >= 0 ? Math.round(value) : null;
+          return coreHelpers.roundTiming(value);
         }
 
         function readBodyState(name, fallback) {
-          if (!document.body) return fallback || '';
-          return document.body.getAttribute(name) || fallback || '';
+          return coreHelpers.readBodyState(name, fallback);
         }
 
         function writeBodyState(name, value) {
-          if (!document.body) return;
-          document.body.setAttribute(name, value);
+          coreHelpers.writeBodyState(name, value);
         }
 
         function resolveDockScrollTop() {
@@ -9831,6 +9859,60 @@ window.GG = window.GG || {};
           searchEmptyFallback: SEARCH_EMPTY_FALLBACK_CONTRACT,
           error: ERROR_RUNTIME_CONTRACT,
           listingGrowth: LISTING_GROWTH_CONTRACT
+        };
+
+        GG.registry = {
+          copy: COPY,
+          discovery: GG_GLOBAL_DISCOVERY_CONFIG,
+          actions: GG_GLOBAL_DISCOVERY_CONFIG.actions,
+          routes: ROUTE_VOCABULARY_CONTRACT,
+          surfaces: SURFACE_LEDGER,
+          icons: {}
+        };
+
+        GG.sources = {
+          root: GG_SOURCE_BOUNDARY.rootSource,
+          store: GG_SOURCE_BOUNDARY.storeSource
+        };
+
+        GG.route = {
+          vocabulary: ROUTE_VOCABULARY_CONTRACT,
+          targets: getRouteTargets,
+          surface: function () {
+            return state.surfaceContext;
+          }
+        };
+
+        GG.sheet = GG.sheetController;
+
+        GG.a11y = {
+          trapFocusWhileOpen: trapFocusWhileOpen,
+          returnFocusOnClose: returnFocusOnClose,
+          lockBodyScrollWhileOpen: lockBodyScrollWhileOpen
+        };
+
+        GG.adapters = {
+          preview: GG.preview,
+          discovery: GG.command,
+          comments: GG.commentsSheetController,
+          more: {
+            open: function (options) {
+              return openPanel('more', options || {});
+            },
+            close: function (options) {
+              return closePanel('more', options || {});
+            }
+          },
+          store: {
+            surface: 'store',
+            active: false,
+            owner: 'src/store/store-discovery.js'
+          },
+          landing: {
+            surface: 'landing',
+            active: false,
+            owner: 'landing.html'
+          }
         };
 
         GG.runtime = {

@@ -3501,6 +3501,11 @@
       }
     };
     window.StoreDiscovery = window.StoreSurface;
+    window.GG = window.GG || {};
+    window.GG.adapters = window.GG.adapters || {};
+    window.GG.adapters.store = window.StoreSurface;
+    window.GG.sheet = window.GG.sheet || {};
+    window.GG.sheet.store = window.StoreSurface.sheetController;
 
     setCopy();
     applyTheme();

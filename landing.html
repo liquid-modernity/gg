@@ -543,6 +543,9 @@
 
 
 
+
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -745,6 +748,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   opacity: 1;
 }
 /* END GENERATED: gg-sheet-modal */
+
+
+
 
 
 
@@ -1310,6 +1316,9 @@ body::-webkit-scrollbar,
 
 
 
+
+
+
 /* BEGIN GENERATED: gg-discovery-sheet */
 .gg-discovery {
   display: grid;
@@ -1658,6 +1667,9 @@ body::-webkit-scrollbar,
   }
 }
 /* END GENERATED: gg-discovery-sheet */
+
+
+
 
 
 
@@ -2339,6 +2351,9 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
 
 
 
@@ -3959,7 +3974,7 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
     function setupSectionObserver() { if (!('IntersectionObserver' in window)) return; var observer = new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting) { state.activeSection = entry.target.id; updateOutlineCopy(); } }); }, { root: null, threshold: .42, rootMargin: '-14% 0px -42% 0px' }); SECTIONS.forEach(function (section) { var node = document.getElementById(section.id); if (node) observer.observe(node); }); }
     function setupHash() { if (window.location.hash) { var id = window.location.hash.replace('#',''); if (SECTIONS.some(function(section){ return section.id === id; })) { state.activeSection = id; updateOutlineCopy(); window.setTimeout(function(){ scrollToLandingTarget(id); }, 60); } } }
     function sheetControllerSnapshot() { var sheets = Array.from(document.querySelectorAll('.gg-sheet')); return { surface: 'landing', openSheet: state.activePanel || null, sheetCount: sheets.length, activeHandleCount: document.querySelectorAll('.gg-sheet[data-gg-state="open"] [data-gg-drag-handle]').length, legacyHandleOnlyCount: Array.from(document.querySelectorAll('.gg-sheet__handle')).filter(function (handle) { return handle.hasAttribute('data-sheet-handle') && !handle.hasAttribute('data-gg-drag-handle'); }).length, dragHandleCount: document.querySelectorAll('[data-gg-drag-handle]').length, closeHandleCount: document.querySelectorAll('[data-gg-close], [data-close-panel]').length, focusTrapActive: !!state.activePanel, lastCloseReason: state.lastCloseReason || null }; }
-    function init() { applyTheme(); applyReadingMotion(); applyCopy(); setupDock(); setupOutline(); setupPanels(); setupCommand(); setupPreferences(); setupSectionObserver(); setupHash(); updateOutlineCopy(); syncOutlineState(); window.LandingSurface = { contracts: { surface: LANDING_SURFACE_CONTRACT }, openDiscovery: function(){ openPanel('command', document.querySelector('[data-gg-nav="search"]')); }, openMore: function(){ openPanel('more', document.querySelector('[data-gg-nav="more"]')); }, close: closePanel, sheetController: { open: openPanel, close: closePanel, snapshot: sheetControllerSnapshot }, expandOutline: expandOutline, collapseOutline: collapseOutline, snapshot: function(){ return { surface: 'landing', locale: state.locale, theme: state.theme, activeSection: state.activeSection, dockState: body.getAttribute('data-gg-dock-state'), outlineState: outline ? outline.getAttribute('data-gg-outline-state') : '', panelActive: state.activePanel, dockOrder: LANDING_SURFACE_CONTRACT.dock, sheetController: sheetControllerSnapshot() }; } }; window.GG = window.GG || {}; window.GG.qa = window.GG.qa || {}; window.GG.qa.snapshot = function(){ return window.LandingSurface.snapshot(); }; }
+    function init() { applyTheme(); applyReadingMotion(); applyCopy(); setupDock(); setupOutline(); setupPanels(); setupCommand(); setupPreferences(); setupSectionObserver(); setupHash(); updateOutlineCopy(); syncOutlineState(); window.LandingSurface = { contracts: { surface: LANDING_SURFACE_CONTRACT }, openDiscovery: function(){ openPanel('command', document.querySelector('[data-gg-nav="search"]')); }, openMore: function(){ openPanel('more', document.querySelector('[data-gg-nav="more"]')); }, close: closePanel, sheetController: { open: openPanel, close: closePanel, snapshot: sheetControllerSnapshot }, expandOutline: expandOutline, collapseOutline: collapseOutline, snapshot: function(){ return { surface: 'landing', locale: state.locale, theme: state.theme, activeSection: state.activeSection, dockState: body.getAttribute('data-gg-dock-state'), outlineState: outline ? outline.getAttribute('data-gg-outline-state') : '', panelActive: state.activePanel, dockOrder: LANDING_SURFACE_CONTRACT.dock, sheetController: sheetControllerSnapshot() }; } }; window.GG = window.GG || {}; window.GG.adapters = window.GG.adapters || {}; window.GG.adapters.landing = window.LandingSurface; window.GG.sheet = window.GG.sheet || {}; window.GG.sheet.landing = window.LandingSurface.sheetController; window.GG.qa = window.GG.qa || {}; window.GG.qa.snapshot = function(){ return window.LandingSurface.snapshot(); }; }
     init();
   }());
   </script>

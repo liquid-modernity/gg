@@ -19,6 +19,7 @@ Primary source files include:
 - `flags.json`, `registry/runtime/*`, and root copy JSON files used as runtime inputs.
 - `ASSET-ARCHITECTURE.md`: asset source/generated boundary, loading map, cache/deploy discipline, and parity guard scope.
 - `CLEANUP-REPORT.md`: deletion proof, usage checks, regression guards, and intentional non-removals for cleanup tasks.
+- `docs/architecture/controller-inventory-v1.md`: Task 09 controller inventory, public API hooks, event listeners, data/CSS/source dependencies, safe helper extraction, adapter facade boundaries, and deferred runtime split notes.
 - `CSS-SOURCE-OF-TRUTH-REPORT.md`: CSS/JS folder classification, stale-file deletion proof, and intentionally kept source/generated boundaries.
 - `CSS-MODULE-BUNDLE-WIRING-REPORT.md`: module/component CSS wiring status, detail-toolbar decision, and non-canonical manual module map.
 - `REPO-STRUCTURE.md`: conservative repository map, edit/generated/commit policy, and runtime path stability notes.
@@ -150,6 +151,12 @@ Run unified data contract verification:
 npm run gaga:verify-unified-data-contract
 ```
 
+Run controller core/adapters verification:
+
+```bash
+npm run gaga:verify-controller-core-adapters
+```
+
 Run sheet search visual parity verification:
 
 ```bash
@@ -177,6 +184,7 @@ Examples of mandatory read-only guards:
 - `qa/handoff-hygiene-guard.mjs`
 - `qa/content-source-boundary-guard.mjs`
 - `qa/unified-data-contract-guard.mjs`
+- `qa/controller-core-adapters-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/semantic-readable-content-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`

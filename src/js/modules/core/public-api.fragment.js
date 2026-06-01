@@ -163,6 +163,60 @@
           listingGrowth: LISTING_GROWTH_CONTRACT
         };
 
+        GG.registry = {
+          copy: COPY,
+          discovery: GG_GLOBAL_DISCOVERY_CONFIG,
+          actions: GG_GLOBAL_DISCOVERY_CONFIG.actions,
+          routes: ROUTE_VOCABULARY_CONTRACT,
+          surfaces: SURFACE_LEDGER,
+          icons: {}
+        };
+
+        GG.sources = {
+          root: GG_SOURCE_BOUNDARY.rootSource,
+          store: GG_SOURCE_BOUNDARY.storeSource
+        };
+
+        GG.route = {
+          vocabulary: ROUTE_VOCABULARY_CONTRACT,
+          targets: getRouteTargets,
+          surface: function () {
+            return state.surfaceContext;
+          }
+        };
+
+        GG.sheet = GG.sheetController;
+
+        GG.a11y = {
+          trapFocusWhileOpen: trapFocusWhileOpen,
+          returnFocusOnClose: returnFocusOnClose,
+          lockBodyScrollWhileOpen: lockBodyScrollWhileOpen
+        };
+
+        GG.adapters = {
+          preview: GG.preview,
+          discovery: GG.command,
+          comments: GG.commentsSheetController,
+          more: {
+            open: function (options) {
+              return openPanel('more', options || {});
+            },
+            close: function (options) {
+              return closePanel('more', options || {});
+            }
+          },
+          store: {
+            surface: 'store',
+            active: false,
+            owner: 'src/store/store-discovery.js'
+          },
+          landing: {
+            surface: 'landing',
+            active: false,
+            owner: 'landing.html'
+          }
+        };
+
         GG.runtime = {
           surface: function () {
             return state.surfaceContext;

@@ -1,4 +1,4 @@
-generated_at_utc=2026-06-01T18:11:33.598Z
+generated_at_utc=2026-06-01T19:12:11.014Z
 source_file=index.xml
 artifact_file=dist/blogger-template.publish.xml
 inline_css_mode=critical
@@ -15,7 +15,7 @@ asset_source=src/css/gg-critical.source.css
 asset_sha256=269acb7f8c993fae38788817abf7a54e37c9bd3474bed0290488acb43316f7e0
 asset_outputs=__gg/assets/css/gg-critical.css,dist/assets/css/gg-critical.css
 asset_source=src/js/gg-app.source.js
-asset_sha256=4669c39d981b27cc7aa882b662b6bd0a7d5aa55a870ed91b1b24b9b2831f8b63
+asset_sha256=4fbe09c6209724833f9fe8c1496393ad6644e84b21d173ef16020fbd37a470bd
 asset_outputs=__gg/assets/js/gg-app.dev.js,__gg/assets/js/gg-app.min.js,dist/assets/js/gg-app.dev.js,dist/assets/js/gg-app.min.js
 publish_scope=manual_blogger_publish_only
 rollback_note=Set GG_TEMPLATE_INLINE_CSS=full or pass --full-inline-css to inline the full app CSS again.

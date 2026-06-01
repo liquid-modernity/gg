@@ -458,12 +458,12 @@
     // Static featured card seed. Build-time prerender sync keeps this aligned with the first snapshot product.
     // STORE_LCP_PRODUCT_START
     var STORE_LCP_PRODUCT = {
-      slug: "neutral-linen-overshirt",
-      name: "Neutral Linen Overshirt",
-      category: "Fashion",
-      priceText: "Rp159.000",
-      image: "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
-      alt: "Neutral Linen Overshirt"
+      slug: "minimal-desk-tray-organizer",
+      name: "Minimal Desk Tray Organizer",
+      category: "Workspace",
+      priceText: "Rp129.000",
+      image: "https://picsum.photos/seed/yellowcart-desk-tray-1/900/1125",
+      alt: "Minimal Desk Tray Organizer"
     };
     // STORE_LCP_PRODUCT_END
     // STORE_CATEGORY_CONFIG_START
@@ -3603,6 +3603,11 @@
       }
     };
     window.StoreDiscovery = window.StoreSurface;
+    window.GG = window.GG || {};
+    window.GG.adapters = window.GG.adapters || {};
+    window.GG.adapters.store = window.StoreSurface;
+    window.GG.sheet = window.GG.sheet || {};
+    window.GG.sheet.store = window.StoreSurface.sheetController;
 
     setCopy();
     applyTheme();

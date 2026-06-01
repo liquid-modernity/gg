@@ -1,16 +1,16 @@
-        function escapeHtml(value) {
+        var controllerCore = GG.core = GG.core || {};
+        controllerCore.helpers = controllerCore.helpers || {};
+        controllerCore.helpers.escapeHtml = function escapeHtmlCore(value) {
           return String(value || '').replace(/[&<>"']/g, function (char) {
             return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
           });
-        }
-
-        function stripHtml(value) {
+        };
+        controllerCore.helpers.stripHtml = function stripHtmlCore(value) {
           var div = document.createElement('div');
           div.innerHTML = value || '';
           return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
-        }
-
-        function debounce(fn, wait) {
+        };
+        controllerCore.helpers.debounce = function debounceCore(fn, wait) {
           var timer = null;
           return function () {
             var context = this;
@@ -20,32 +20,60 @@
               fn.apply(context, args);
             }, wait);
           };
-        }
-
-        function waitMs(duration) {
+        };
+        controllerCore.helpers.waitMs = function waitMsCore(duration) {
           return new Promise(function (resolve) {
             window.setTimeout(resolve, duration);
           });
-        }
-
-        function ggNow() {
+        };
+        controllerCore.helpers.now = function nowCore() {
           return window.performance && typeof window.performance.now === 'function'
             ? window.performance.now()
             : 0;
+        };
+        controllerCore.helpers.roundTiming = function roundTimingCore(value) {
+          return typeof value === 'number' && value >= 0 ? Math.round(value) : null;
+        };
+        controllerCore.helpers.readBodyState = function readBodyStateCore(name, fallback) {
+          if (!document.body) return fallback || '';
+          return document.body.getAttribute(name) || fallback || '';
+        };
+        controllerCore.helpers.writeBodyState = function writeBodyStateCore(name, value) {
+          if (!document.body) return;
+          document.body.setAttribute(name, value);
+        };
+        var coreHelpers = controllerCore.helpers;
+
+        function escapeHtml(value) {
+          return coreHelpers.escapeHtml(value);
+        }
+
+        function stripHtml(value) {
+          return coreHelpers.stripHtml(value);
+        }
+
+        function debounce(fn, wait) {
+          return coreHelpers.debounce(fn, wait);
+        }
+
+        function waitMs(duration) {
+          return coreHelpers.waitMs(duration);
+        }
+
+        function ggNow() {
+          return coreHelpers.now();
         }
 
         function roundTiming(value) {
-          return typeof value === 'number' && value >= 0 ? Math.round(value) : null;
+          return coreHelpers.roundTiming(value);
         }
 
         function readBodyState(name, fallback) {
-          if (!document.body) return fallback || '';
-          return document.body.getAttribute(name) || fallback || '';
+          return coreHelpers.readBodyState(name, fallback);
         }
 
         function writeBodyState(name, value) {
-          if (!document.body) return;
-          document.body.setAttribute(name, value);
+          coreHelpers.writeBodyState(name, value);
         }
 
         function resolveDockScrollTop() {

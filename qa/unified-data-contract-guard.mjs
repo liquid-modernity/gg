@@ -162,7 +162,7 @@ forbidIncludes("index.xml", indexXml, "data-gg-type='&quot;product&quot;'", "Roo
 for (const item of Array.isArray(manifest.items) ? manifest.items : []) {
   if (!item.url || item.url.startsWith("https://www.pakrpp.com/store")) pass(`manifest ${item.slug}: public URL is Store canonical`);
   else fail(`manifest ${item.slug}: url must use https://www.pakrpp.com/store, got ${item.url}`);
-  if (!item.sourceUrl || item.sourceUrl.startsWith("https://www.pakrpp.com/store") || item.sourceUrl.startsWith("https://www.pakrpp.com/") || item.sourceUrl.includes("blogspot.com")) {
+  if (!item.sourceUrl || item.sourceUrl.startsWith("https://www.pakrpp.com/store") || item.sourceUrl.startsWith("https://www.pakrpp.com/") || item.sourceUrl.includes("blogspot.com") || item.sourceUrl.startsWith("https://store.pakrpp.com/")) {
     pass(`manifest ${item.slug}: source URL separated or absent`);
   } else {
     fail(`manifest ${item.slug}: unexpected sourceUrl ${item.sourceUrl}`);
