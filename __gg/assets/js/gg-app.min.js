@@ -1093,6 +1093,8 @@ window.GG = window.GG || {};
           panelActive: null,
           panelLastTrigger: null,
           panelLastCloseReason: null,
+          panelHistoryArmed: false,
+          panelHistoryIgnoreNextPop: false,
           panelTimers: {},
           commentRepliesPortal: null,
           commentRepliesTimer: 0,
@@ -3295,6 +3297,43 @@ window.GG = window.GG || {};
           root.setAttribute('data-gg-sheet-state', value);
         }
 
+        function canUsePanelHistory() {
+          return !!(window.history && typeof window.history.pushState === 'function' && typeof window.history.back === 'function');
+        }
+
+        function armPanelHistory(name) {
+          var currentState;
+          var nextState;
+
+          if (!canUsePanelHistory() || state.panelHistoryArmed) return;
+          try {
+            currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+            nextState = Object.assign({}, currentState, {
+              ggSheetOpen: name,
+              ggSheetSurface: state.surfaceContext ? state.surfaceContext.surface : 'blog'
+            });
+            window.history.pushState(nextState, document.title, window.location.href);
+            state.panelHistoryArmed = true;
+          } catch (error) {
+            state.panelHistoryArmed = false;
+          }
+        }
+
+        function releasePanelHistory(closeOptions) {
+          if (!state.panelHistoryArmed) return;
+          if (closeOptions && (closeOptions.preserveHistory || closeOptions.reason === 'panel-switch')) return;
+          state.panelHistoryArmed = false;
+          if (closeOptions && closeOptions.fromPopstate) return;
+          if (!canUsePanelHistory()) return;
+          if (!window.history.state || !window.history.state.ggSheetOpen) return;
+          state.panelHistoryIgnoreNextPop = true;
+          try {
+            window.history.back();
+          } catch (error) {
+            state.panelHistoryIgnoreNextPop = false;
+          }
+        }
+
         function applyPanelDrag(panel, offset) {
           var edge;
           var panelHeight;
@@ -3367,6 +3406,7 @@ window.GG = window.GG || {};
             }
             state.panelActive = name;
             state.panelLastTrigger = openOptions.trigger || document.activeElement || null;
+            armPanelHistory(name);
             if (panel.name === 'comments') setCommentsLayer('main');
 
             panel.root.hidden = false;
@@ -3411,6 +3451,7 @@ window.GG = window.GG || {};
             if (!name || state.panelActive === name) {
               state.panelActive = null;
               setBodyPanelState('', false);
+              releasePanelHistory(closeOptions);
             }
             return Promise.resolve(false);
           }
@@ -3448,6 +3489,7 @@ window.GG = window.GG || {};
               if (state.panelActive === panel.name) {
                 state.panelActive = null;
                 setBodyPanelState('', false);
+                releasePanelHistory(closeOptions);
               }
 
               returnFocusOnClose(panel, closeOptions);
@@ -9118,7 +9160,7 @@ window.GG = window.GG || {};
         function resolveDragCandidate(event) {
           var target = event && event.target;
           var handle = target && target.closest ? target.closest('[data-gg-drag-handle]') : null;
-          var zone = target && target.closest ? target.closest('[data-gg-drag-zone]') : null;
+          var zone = target && target.closest ? target.closest('[data-gg-sheet-drag-zone], [data-gg-drag-zone]') : null;
           var sheet;
           var name = '';
 
@@ -9260,6 +9302,21 @@ window.GG = window.GG || {};
           ggSheetGestureController.end(event);
         }, true);
         window.addEventListener('blur', clearPressState);
+        window.addEventListener('popstate', function () {
+          if (state.panelHistoryIgnoreNextPop) {
+            state.panelHistoryIgnoreNextPop = false;
+            return;
+          }
+          if (!state.panelActive) {
+            state.panelHistoryArmed = false;
+            return;
+          }
+          closePanel(state.panelActive, {
+            returnFocus: false,
+            fromPopstate: true,
+            reason: 'browser-back'
+          });
+        });
 
         document.addEventListener('click', function (event) {
           var focusTrigger;

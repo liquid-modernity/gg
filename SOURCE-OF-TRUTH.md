@@ -165,6 +165,7 @@ Examples of mandatory read-only guards:
 - `qa/repo-structure-tidy-guard.mjs`
 - `qa/sheet-search-visual-parity-guard.mjs`
 - `qa/global-sheet-contract-guard.mjs`
+- `qa/sheet-gesture-close-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/handoff-hygiene-guard.mjs`

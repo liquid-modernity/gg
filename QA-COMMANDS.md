@@ -22,6 +22,7 @@ npm run gaga:verify-css-module-wiring
 npm run gaga:verify-repo-structure-tidy
 npm run gaga:verify-sheet-search-visual-parity
 npm run gaga:verify-global-sheet-contract
+npm run gaga:verify-sheet-gesture-close
 npm run gaga:verify-85
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
@@ -200,6 +201,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-repo-structure-tidy` | Verify repo structure tidy contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `REPO STRUCTURE TIDY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-sheet-search-visual-parity` | Verify Search/More sheet visual parity contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET SEARCH VISUAL PARITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-global-sheet-contract` | Verify normalized top/bottom sheet origins, sheet surface/state attributes, accessibility state, and Worker non-repair contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `GLOBAL SHEET CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-sheet-gesture-close` | Verify origin-aware sheet drag zones, close direction, Back/Escape paths, focus restoration, and Worker non-repair contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET GESTURE CLOSE GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-comments-proof` | Verify Blogger native comments/threaded composer contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `COMMENTS PROOF GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-nav-more` / `gaga:verify-more-global` | Verify global More navigation and sheet contract. | Blocking contract | Yes for `gaga:verify-nav-more` | Yes via `ci:cloudflare` | `NAV MORE CONTRACT GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-discovery-contract` | Verify Discovery contract and taxonomy ownership. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DISCOVERY CONTRACT GUARD RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
@@ -275,6 +277,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/repo-structure-tidy-guard.mjs`
 - `qa/sheet-search-visual-parity-guard.mjs`
 - `qa/global-sheet-contract-guard.mjs`
+- `qa/sheet-gesture-close-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
 - `qa/readiness-85-guard.mjs`

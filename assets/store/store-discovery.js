@@ -628,7 +628,7 @@
     var itemListJsonLd = document.getElementById('store-itemlist-jsonld');
     var dock = document.getElementById('gg-dock');
     var dragHandles = [].slice.call(document.querySelectorAll('[data-store-drag-handle], [data-gg-drag-handle]'));
-    var dragZones = [].slice.call(document.querySelectorAll('[data-gg-drag-zone]'));
+    var dragZones = [].slice.call(document.querySelectorAll('[data-gg-sheet-drag-zone], [data-gg-drag-zone]'));
     var quickIntentButtons = [].slice.call(document.querySelectorAll('[data-store-intent]'));
     var priceBandButtons = [].slice.call(document.querySelectorAll('[data-store-price-band]'));
     var sortButtons = [].slice.call(document.querySelectorAll('[data-store-sort]'));
@@ -707,6 +707,8 @@
       activeToastNode: null,
       dragSession: null,
       lastCloseReason: null,
+      panelHistoryArmed: false,
+      panelHistoryIgnoreNextPop: false,
       resizeSyncFrame: 0,
       modalBackgroundLocked: false,
       lockedScrollX: 0,
@@ -1063,8 +1065,12 @@
       return /^item-/.test(hash) ? slugify(hash.slice(5)) : '';
     }
     function updateHistoryUrl(url) {
+      var currentState;
       if (!isStorePath()) return;
-      try { history.replaceState(null, '', url); } catch (error) {}
+      try {
+        currentState = history.state && typeof history.state === 'object' ? history.state : null;
+        history.replaceState(currentState, '', url);
+      } catch (error) {}
     }
     function syncPreviewUrl(item) {
       if (!item || !item.slug) return;
@@ -2900,17 +2906,41 @@
       sheet.setAttribute('data-gg-state', value);
       sheet.setAttribute('data-gg-sheet-state', value);
     }
+    function canUsePanelHistory() {
+      return !!(window.history && typeof window.history.pushState === 'function' && typeof window.history.back === 'function');
+    }
+    function armPanelHistory(name) {
+      var currentState;
+      if (!canUsePanelHistory() || state.panelHistoryArmed) return;
+      try {
+        currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+        window.history.pushState(Object.assign({}, currentState, { ggSheetOpen: name, ggSheetSurface: 'store' }), document.title, window.location.href);
+        state.panelHistoryArmed = true;
+      } catch (error) {
+        state.panelHistoryArmed = false;
+      }
+    }
+    function releasePanelHistory(options) {
+      if (!state.panelHistoryArmed) return;
+      if (options && options.preserveHistory) return;
+      state.panelHistoryArmed = false;
+      if (options && options.fromPopstate) return;
+      if (!canUsePanelHistory() || !window.history.state || !window.history.state.ggSheetOpen) return;
+      state.panelHistoryIgnoreNextPop = true;
+      try { window.history.back(); } catch (error) { state.panelHistoryIgnoreNextPop = false; }
+    }
     function openPanel(name, trigger, options) {
       var config = getPanel(name);
       if (!config || !config.sheet || !config.panel) return;
       preservePageScrollDuring(function () {
-        if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false });
+        if (state.panelActive && state.panelActive !== name) closePanel(state.panelActive, { restoreFocus: false, preserveHistory: true });
         if (shouldResetPanelName(name, 'openBeforeRender')) resetPanelScroll(config.sheet, 'open-before-render');
         clearToastTimer();
         hideAllToasts();
         state.panelActive = name;
         state.lastFocus = trigger || document.activeElement;
         state.lastCloseReason = null;
+        armPanelHistory(name);
         syncPanelTriggerState(name);
         config.sheet.hidden = false;
         config.sheet.removeAttribute('inert');
@@ -2953,6 +2983,7 @@
       setStoreModalBackgroundLocked(false);
       syncDockState(true);
       if (!options || options.restoreFocus !== false) restoreFocus();
+      releasePanelHistory(options || {});
     }
     function restoreFocus() {
       var node = state.lastFocus;
@@ -3104,7 +3135,7 @@
     }
     function resolveDragCandidate(target, explicitName, explicitTarget) {
       var handle = explicitTarget || (target && target.closest ? target.closest('[data-store-drag-handle], [data-gg-drag-handle]') : null);
-      var zone = target && target.closest ? target.closest('[data-gg-drag-zone]') : null;
+      var zone = target && target.closest ? target.closest('[data-gg-sheet-drag-zone], [data-gg-drag-zone]') : null;
       var sheet;
       var name = explicitName || '';
       if (!handle && !zone) return null;
@@ -3425,8 +3456,13 @@
     setupMoreLocalSearch();
     window.addEventListener('popstate', function () {
       if (!isStorePath()) return;
+      if (state.panelHistoryIgnoreNextPop) {
+        state.panelHistoryIgnoreNextPop = false;
+        return;
+      }
       if (requestedItemSlug()) syncRequestedPreview();
-      else if (state.panelActive === 'preview') closePanel('preview', { restoreFocus: false });
+      else if (state.panelActive) closePanel(state.panelActive, { restoreFocus: false, fromPopstate: true, reason: 'browser-back' });
+      else state.panelHistoryArmed = false;
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.panelActive) {
