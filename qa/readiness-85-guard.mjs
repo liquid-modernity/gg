@@ -20,6 +20,7 @@ const commandChecks = [
   ["asset architecture", "npm", ["run", "gaga:verify-asset-architecture"]],
   ["cleanup regression", "npm", ["run", "gaga:verify-cleanup"]],
   ["comments proof", "npm", ["run", "gaga:verify-comments-proof"]],
+  ["global sheet contract", "npm", ["run", "gaga:verify-global-sheet-contract"]],
   ["copy registry", "node", ["qa/copy-registry-guard.mjs"]],
   ["nav-more", "npm", ["run", "gaga:verify-nav-more"]],
   ["discovery contract", "npm", ["run", "gaga:verify-discovery-contract"]],
@@ -50,6 +51,7 @@ const majorGuardFiles = [
   "qa/a11y-static-guard.mjs",
   "qa/asset-architecture-guard.mjs",
   "qa/cleanup-regression-guard.mjs",
+  "qa/global-sheet-contract-guard.mjs",
   "qa/template-fingerprint.mjs",
   "qa/worker-syntax-check.mjs",
 ];

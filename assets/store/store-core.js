@@ -28,6 +28,12 @@
     if (app) app.setAttribute('data-store-core-state', value);
   }
 
+  function setSheetState(sheet, value) {
+    if (!sheet) return;
+    sheet.setAttribute('data-gg-state', value);
+    sheet.setAttribute('data-gg-sheet-state', value);
+  }
+
   function setDiscoveryStatus(message) {
     if (discoveryStatus && message) discoveryStatus.textContent = message;
   }
@@ -39,7 +45,7 @@
     discoverySheet.hidden = false;
     discoverySheet.removeAttribute('inert');
     discoverySheet.setAttribute('aria-hidden', 'false');
-    discoverySheet.setAttribute('data-gg-state', 'open');
+    setSheetState(discoverySheet, 'open');
     if (document.body) document.body.setAttribute('data-gg-panel-active', 'true');
   }
 

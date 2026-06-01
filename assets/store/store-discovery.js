@@ -2895,6 +2895,11 @@
         });
       }
     }
+    function setSheetState(sheet, value) {
+      if (!sheet) return;
+      sheet.setAttribute('data-gg-state', value);
+      sheet.setAttribute('data-gg-sheet-state', value);
+    }
     function openPanel(name, trigger, options) {
       var config = getPanel(name);
       if (!config || !config.sheet || !config.panel) return;
@@ -2910,12 +2915,12 @@
         config.sheet.hidden = false;
         config.sheet.removeAttribute('inert');
         config.sheet.setAttribute('aria-hidden', 'false');
-        config.sheet.setAttribute('data-gg-state', 'opening');
+        setSheetState(config.sheet, 'opening');
         document.body.setAttribute('data-gg-active-panel', name);
         document.body.setAttribute('data-gg-panel-active', 'true');
         setStoreModalBackgroundLocked(true);
         window.requestAnimationFrame(function () {
-          config.sheet.setAttribute('data-gg-state', 'open');
+          setSheetState(config.sheet, 'open');
           if (shouldResetPanelName(name, 'openAfterRender')) resetPanelScroll(config.sheet, 'open-after-render');
           var target = options && options.focusTarget ? options.focusTarget : (focusable(config.panel)[0] || config.panel);
           try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
@@ -2932,7 +2937,7 @@
       if (panelName === 'more') resetMoreTransientState();
       if (shouldResetPanelName(panelName, 'closeBeforeHide')) resetPanelScroll(config.sheet, state.lastCloseReason || 'close-before-hide');
       if (config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
-      config.sheet.setAttribute('data-gg-state', 'closed');
+      setSheetState(config.sheet, 'closed');
       config.sheet.setAttribute('aria-hidden', 'true');
       config.sheet.setAttribute('inert', '');
       config.sheet.hidden = true;
@@ -2983,7 +2988,7 @@
     }
     function resetPanelDrag(config) {
       if (config && config.panel) config.panel.style.removeProperty('--gg-sheet-drag-y');
-      if (config && config.sheet && state.panelActive) config.sheet.setAttribute('data-gg-state', 'open');
+      if (config && config.sheet && state.panelActive) setSheetState(config.sheet, 'open');
     }
 
     function openDiscovery(trigger) {
@@ -3143,7 +3148,7 @@
       if (!state.dragSession.active && Math.abs(deltaY) < 8) return;
       if (!state.dragSession.active) {
         state.dragSession.active = true;
-        if (config && config.sheet) config.sheet.setAttribute('data-gg-state', 'dragging');
+        if (config && config.sheet) setSheetState(config.sheet, 'dragging');
       }
       applyPanelDrag(config, deltaY);
       event.preventDefault();

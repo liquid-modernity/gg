@@ -3289,6 +3289,12 @@ window.GG = window.GG || {};
           return panel.root.getAttribute('data-gg-edge') === 'top' ? 'top' : 'bottom';
         }
 
+        function setSheetState(root, value) {
+          if (!root) return;
+          root.setAttribute('data-gg-state', value);
+          root.setAttribute('data-gg-sheet-state', value);
+        }
+
         function applyPanelDrag(panel, offset) {
           var edge;
           var panelHeight;
@@ -3311,7 +3317,7 @@ window.GG = window.GG || {};
 
         function restorePanelFromDrag(panel) {
           if (!panel || !panel.panel) return;
-          panel.root.setAttribute('data-gg-state', 'open');
+          setSheetState(panel.root, 'open');
           panel.panel.style.transition = 'transform var(--gg-motion-drag-return)';
           panel.panel.style.setProperty('--gg-sheet-drag-y', '0px');
           if (panel.scrim) panel.scrim.style.opacity = '';
@@ -3366,7 +3372,7 @@ window.GG = window.GG || {};
             panel.root.hidden = false;
             panel.root.removeAttribute('inert');
             panel.root.setAttribute('aria-hidden', 'false');
-            panel.root.setAttribute('data-gg-state', 'opening');
+            setSheetState(panel.root, 'opening');
             panel.root.setAttribute('data-gg-active', 'true');
             syncExpanded(name, true);
             resetPanelDrag(panel, true);
@@ -3374,7 +3380,7 @@ window.GG = window.GG || {};
 
             window.requestAnimationFrame(function () {
               if (state.panelActive === name) {
-                panel.root.setAttribute('data-gg-state', 'open');
+                setSheetState(panel.root, 'open');
               }
               if (shouldResetPanel(panel, 'openAfterRender')) resetPanelScroll(panel.root, 'open-after-render');
             });
@@ -3420,7 +3426,7 @@ window.GG = window.GG || {};
 
           clearPanelTimer(panel.name);
           syncExpanded(panel.name, false);
-          panel.root.setAttribute('data-gg-state', 'closing');
+          setSheetState(panel.root, 'closing');
           panel.root.setAttribute('data-gg-active', 'false');
           state.drag = state.drag && state.drag.name === panel.name ? null : state.drag;
           state.panelLastCloseReason = closeOptions.reason || 'api';
@@ -3433,7 +3439,7 @@ window.GG = window.GG || {};
               panel.root.hidden = true;
               if (panel.name === 'comments') panel.root.setAttribute('inert', '');
               panel.root.setAttribute('aria-hidden', 'true');
-              panel.root.setAttribute('data-gg-state', 'closed');
+              setSheetState(panel.root, 'closed');
               panel.root.removeAttribute('data-gg-active');
               if (panel.name === 'comments') setCommentsLayer('closed');
               resetPanelDrag(panel, true);
@@ -4986,13 +4992,13 @@ window.GG = window.GG || {};
             ui.commentReplies.hidden = false;
             ui.commentReplies.removeAttribute('inert');
             ui.commentReplies.setAttribute('aria-hidden', 'false');
-            ui.commentReplies.setAttribute('data-gg-state', 'opening');
+            setSheetState(ui.commentReplies, 'opening');
             ui.commentReplies.setAttribute('data-gg-active', 'true');
             setCommentsLayer('replies');
 
             window.requestAnimationFrame(function () {
               if (state.commentRepliesPortal && state.commentRepliesPortal.repliesNode === repliesNode) {
-                ui.commentReplies.setAttribute('data-gg-state', 'open');
+                setSheetState(ui.commentReplies, 'open');
                 state.commentComposerOpen = false;
                 syncCommentComposerMode();
               }
@@ -5037,7 +5043,7 @@ window.GG = window.GG || {};
             state.commentRepliesTimer = 0;
           }
 
-          ui.commentReplies.setAttribute('data-gg-state', 'closing');
+          setSheetState(ui.commentReplies, 'closing');
           ui.commentReplies.setAttribute('data-gg-active', 'false');
           closeCommentMoreMenu();
 
@@ -5048,7 +5054,7 @@ window.GG = window.GG || {};
               ui.commentReplies.hidden = true;
               ui.commentReplies.setAttribute('inert', '');
               ui.commentReplies.setAttribute('aria-hidden', 'true');
-              ui.commentReplies.setAttribute('data-gg-state', 'closed');
+              setSheetState(ui.commentReplies, 'closed');
               ui.commentReplies.removeAttribute('data-gg-active');
               if (ui.commentRepliesContext) ui.commentRepliesContext.textContent = '';
               clearCommentReplyContext();
@@ -9171,7 +9177,7 @@ window.GG = window.GG || {};
           if (!state.drag.active && Math.abs(offset) < 8) return;
           if (!state.drag.active) {
             state.drag.active = true;
-            panel.root.setAttribute('data-gg-state', 'dragging');
+            setSheetState(panel.root, 'dragging');
           }
           applyPanelDrag(panel, offset);
           event.preventDefault();

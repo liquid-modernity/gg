@@ -182,6 +182,9 @@
 
 
 
+
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1031,6 +1034,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1353,6 +1359,9 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
+
 /* BEGIN GENERATED: gg-sheet-core */
 .gg-sheet {
   position: fixed;
@@ -1494,11 +1503,13 @@ body::-webkit-scrollbar,
   padding: 12px 0 calc(14px + env(safe-area-inset-bottom));
 }
 
-.gg-sheet[data-gg-edge='top'] {
+.gg-sheet[data-gg-edge='top'],
+.gg-sheet[data-gg-sheet-origin='top'] {
   align-items: start;
 }
 
-.gg-sheet[data-gg-edge='top'] .gg-sheet__panel {
+.gg-sheet[data-gg-edge='top'] .gg-sheet__panel,
+.gg-sheet[data-gg-sheet-origin='top'] .gg-sheet__panel {
   --gg-sheet-rest-y: -24px;
   --gg-sheet-transition: var(--gg-motion-sheet-open-top);
   border: 0;
@@ -1522,12 +1533,14 @@ body::-webkit-scrollbar,
   transition: none;
 }
 
-.gg-sheet[data-gg-state='closing'][data-gg-edge='top'] .gg-sheet__panel {
+.gg-sheet[data-gg-state='closing'][data-gg-edge='top'] .gg-sheet__panel,
+.gg-sheet[data-gg-state='closing'][data-gg-sheet-origin='top'] .gg-sheet__panel {
   --gg-sheet-transition: var(--gg-motion-sheet-close-top);
   transform: translate3d(0, calc(-18px + var(--gg-sheet-drag-y)), 0);
 }
 
-.gg-sheet[data-gg-state='closing'][data-gg-edge='bottom'] .gg-sheet__panel {
+.gg-sheet[data-gg-state='closing'][data-gg-edge='bottom'] .gg-sheet__panel,
+.gg-sheet[data-gg-state='closing'][data-gg-sheet-origin='bottom'] .gg-sheet__panel {
   --gg-sheet-transition: var(--gg-motion-sheet-close-bottom);
   transform: translate3d(0, calc(18px + var(--gg-sheet-drag-y)), 0);
 }
@@ -1603,12 +1616,16 @@ body::-webkit-scrollbar,
 /* END gg-global-sheet-scrollbar-hidden-contract */
 
 /* BEGIN gg-top-edge-panel-bottom-handle-contract */
-.gg-sheet[data-gg-edge='top'] .gg-sheet__panel > .gg-sheet__handle {
+.gg-sheet[data-gg-edge='top'] .gg-sheet__panel > .gg-sheet__handle,
+.gg-sheet[data-gg-sheet-origin='top'] .gg-sheet__panel > .gg-sheet__handle {
   top: auto;
   bottom: var(--gg-sheet-handle-bottom, 8px);
 }
 /* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
+
+
+
 
 
 
@@ -2649,6 +2666,9 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
+
 
 
 
