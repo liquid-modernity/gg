@@ -1,6 +1,6 @@
 {
   "version": "store-manifest-v1",
-  "generatedAt": "2026-06-01T16:24:55.759Z",
+  "generatedAt": "2026-06-01T17:37:52.396Z",
   "source": "existing-static",
   "count": 20,
   "categories": [
@@ -46,7 +46,8 @@
       "priceBand": "100k-200k",
       "summary": "Overshirt linen bernuansa netral untuk tampilan bersih, ringan, dan mudah dipadukan dengan gaya kerja maupun kasual.",
       "image": "https://picsum.photos/seed/yellowcart-neutral-linen-overshirt-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/neutral-linen-overshirt.html",
+      "url": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/neutral-linen-overshirt.html",
       "storeUrl": "https://www.pakrpp.com/store?item=neutral-linen-overshirt",
       "tags": [
         "linen-overshirt",
@@ -80,7 +81,8 @@
       "priceBand": "under-50k",
       "summary": "Reusable bag lipat untuk belanja ringan, barang tambahan, atau kebutuhan mendadak tanpa membawa tas besar.",
       "image": "https://picsum.photos/seed/yellowcart-foldable-reusable-bag-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
+      "url": "https://www.pakrpp.com/store?item=foldable-reusable-bag",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/foldable-reusable-bag.html",
       "storeUrl": "https://www.pakrpp.com/store?item=foldable-reusable-bag",
       "tags": [
         "reusable-bag",
@@ -112,7 +114,8 @@
       "priceBand": "under-50k",
       "summary": "Kabel charging braided untuk penggunaan harian yang lebih rapi, tahan tarik ringan, dan mudah dibawa.",
       "image": "https://picsum.photos/seed/yellowcart-braided-fast-charging-cable-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
+      "url": "https://www.pakrpp.com/store?item=braided-fast-charging-cable",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/braided-fast-charging-cable.html",
       "storeUrl": "https://www.pakrpp.com/store?item=braided-fast-charging-cable",
       "tags": [
         "charging-cable",
@@ -147,7 +150,8 @@
       "priceBand": "50k-100k",
       "summary": "Cable box ringkas untuk menyembunyikan stop kontak, adaptor, dan kabel kecil agar area kerja terlihat lebih bersih.",
       "image": "https://picsum.photos/seed/yellowcart-compact-cable-box-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
+      "url": "https://www.pakrpp.com/store?item=compact-cable-box",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/compact-cable-box.html",
       "storeUrl": "https://www.pakrpp.com/store?item=compact-cable-box",
       "tags": [
         "cable-box",
@@ -181,7 +185,8 @@
       "priceBand": "50k-100k",
       "summary": "Card holder tipis untuk menyimpan kartu penting tanpa membawa dompet besar yang memenuhi saku atau tas kecil.",
       "image": "https://picsum.photos/seed/yellowcart-slim-card-holder-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
+      "url": "https://www.pakrpp.com/store?item=slim-card-holder",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/slim-card-holder.html",
       "storeUrl": "https://www.pakrpp.com/store?item=slim-card-holder",
       "tags": [
         "card-holder",
@@ -214,7 +219,8 @@
       "priceBand": "50k-100k",
       "summary": "Mouse wireless dengan klik lebih senyap untuk kerja, belajar, atau penggunaan malam hari tanpa suara yang mengganggu.",
       "image": "https://picsum.photos/seed/yellowcart-quiet-wireless-mouse-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
+      "url": "https://www.pakrpp.com/store?item=quiet-wireless-mouse",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/quiet-wireless-mouse.html",
       "storeUrl": "https://www.pakrpp.com/store?item=quiet-wireless-mouse",
       "tags": [
         "wireless-mouse",
@@ -249,7 +255,8 @@
       "priceBand": "50k-100k",
       "summary": "Desk mat lembut untuk memberi area kerja yang lebih rapi, nyaman, dan visualnya lebih tenang.",
       "image": "https://picsum.photos/seed/yellowcart-soft-desk-mat-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
+      "url": "https://www.pakrpp.com/store?item=soft-desk-mat",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/soft-desk-mat.html",
       "storeUrl": "https://www.pakrpp.com/store?item=soft-desk-mat",
       "tags": [
         "desk-mat",
@@ -283,7 +290,8 @@
       "priceBand": "50k-100k",
       "summary": "Moisturizer ringan untuk menjaga rasa lembap dalam rutinitas sederhana, tanpa menambah terlalu banyak langkah.",
       "image": "https://picsum.photos/seed/yellowcart-simple-hydrating-moisturizer-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
+      "url": "https://www.pakrpp.com/store?item=simple-hydrating-moisturizer",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/simple-hydrating-moisturizer.html",
       "storeUrl": "https://www.pakrpp.com/store?item=simple-hydrating-moisturizer",
       "tags": [
         "moisturizer",
@@ -315,7 +323,8 @@
       "priceBand": "100k-200k",
       "summary": "Tumbler stainless sederhana untuk membawa minuman harian ke kantor, kampus, atau perjalanan pendek.",
       "image": "https://picsum.photos/seed/yellowcart-stainless-daily-tumbler-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
+      "url": "https://www.pakrpp.com/store?item=stainless-daily-tumbler",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/stainless-daily-tumbler.html",
       "storeUrl": "https://www.pakrpp.com/store?item=stainless-daily-tumbler",
       "tags": [
         "daily-tumbler",
@@ -349,7 +358,8 @@
       "priceBand": "100k-200k",
       "summary": "Keyboard Bluetooth ringkas untuk mengetik lebih nyaman di tablet, laptop, atau setup kerja portabel.",
       "image": "https://picsum.photos/seed/yellowcart-portable-bluetooth-keyboard-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
+      "url": "https://www.pakrpp.com/store?item=portable-bluetooth-keyboard",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/portable-bluetooth-keyboard.html",
       "storeUrl": "https://www.pakrpp.com/store?item=portable-bluetooth-keyboard",
       "tags": [
         "bluetooth-keyboard",
@@ -383,7 +393,8 @@
       "priceBand": "100k-200k",
       "summary": "Stand laptop adjustable untuk menaikkan posisi layar dan membuat meja kerja terasa lebih tertata.",
       "image": "https://picsum.photos/seed/yellowcart-adjustable-laptop-stand-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
+      "url": "https://www.pakrpp.com/store?item=adjustable-laptop-stand",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/adjustable-laptop-stand.html",
       "storeUrl": "https://www.pakrpp.com/store?item=adjustable-laptop-stand",
       "tags": [
         "laptop-stand",
@@ -418,7 +429,8 @@
       "priceBand": "50k-100k",
       "summary": "Sunscreen ringan untuk penggunaan harian, terutama bagi pembaca yang ingin perlindungan dasar tanpa rasa terlalu lengket.",
       "image": "https://picsum.photos/seed/yellowcart-lightweight-daily-sunscreen-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
+      "url": "https://www.pakrpp.com/store?item=lightweight-daily-sunscreen",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/lightweight-daily-sunscreen.html",
       "storeUrl": "https://www.pakrpp.com/store?item=lightweight-daily-sunscreen",
       "tags": [
         "daily-sunscreen",
@@ -450,7 +462,8 @@
       "priceBand": "100k-200k",
       "summary": "USB-C hub ringkas untuk menambah port penting pada laptop modern tanpa membuat meja penuh aksesori.",
       "image": "https://picsum.photos/seed/yellowcart-compact-usb-c-hub-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
+      "url": "https://www.pakrpp.com/store?item=compact-usb-c-hub",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/compact-usb-c-hub.html",
       "storeUrl": "https://www.pakrpp.com/store?item=compact-usb-c-hub",
       "tags": [
         "usb-c-hub",
@@ -483,7 +496,8 @@
       "priceBand": "100k-200k",
       "summary": "Desk tray sederhana untuk merapikan alat tulis, kartu, kabel kecil, dan aksesori meja kerja tanpa membuat permukaan meja terlihat ramai.",
       "image": "https://picsum.photos/seed/yellowcart-minimal-desk-tray-organizer-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
+      "url": "https://www.pakrpp.com/store?item=minimal-desk-tray-organizer",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/minimal-desk-tray-organizer.html",
       "storeUrl": "https://www.pakrpp.com/store?item=minimal-desk-tray-organizer",
       "tags": [
         "desk-tray",
@@ -519,7 +533,8 @@
       "priceBand": "50k-100k",
       "summary": "Pembersih wajah berbasis gel untuk rutinitas sederhana yang fokus pada rasa bersih tanpa sensasi terlalu berat.",
       "image": "https://picsum.photos/seed/yellowcart-gentle-gel-cleanser-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
+      "url": "https://www.pakrpp.com/store?item=gentle-gel-cleanser",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/gentle-gel-cleanser.html",
       "storeUrl": "https://www.pakrpp.com/store?item=gentle-gel-cleanser",
       "tags": [
         "gel-cleanser",
@@ -550,7 +565,8 @@
       "priceBand": "100k-200k",
       "summary": "Tas sling ringkas untuk membawa dompet, ponsel, kunci, dan barang kecil tanpa membuat bawaan harian terasa penuh.",
       "image": "https://picsum.photos/seed/yellowcart-compact-crossbody-sling-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
+      "url": "https://www.pakrpp.com/store?item=compact-crossbody-sling",
+      "sourceUrl": "https://www.pakrpp.com/2026/04/compact-crossbody-sling.html",
       "storeUrl": "https://www.pakrpp.com/store?item=compact-crossbody-sling",
       "tags": [
         "crossbody-sling",
@@ -584,7 +600,8 @@
       "priceBand": "100k-200k",
       "summary": "Sneakers kanvas bersiluet bersih untuk gaya harian yang santai, netral, dan mudah masuk ke berbagai kombinasi pakaian.",
       "image": "https://picsum.photos/seed/yellowcart-clean-canvas-sneakers-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
+      "url": "https://www.pakrpp.com/store?item=clean-canvas-sneakers",
+      "sourceUrl": "https://www.pakrpp.com/2026/04/clean-canvas-sneakers.html",
       "storeUrl": "https://www.pakrpp.com/store?item=clean-canvas-sneakers",
       "tags": [
         "canvas-sneakers",
@@ -618,7 +635,8 @@
       "priceBand": "50k-100k",
       "summary": "Kaos katun relaxed fit bernuansa polos untuk tampilan harian yang bersih, ringan, dan mudah dipadukan.",
       "image": "https://picsum.photos/seed/yellowcart-relaxed-cotton-t-shirt-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
+      "url": "https://www.pakrpp.com/store?item=relaxed-cotton-t-shirt",
+      "sourceUrl": "https://www.pakrpp.com/2026/04/relaxed-cotton-t-shirt.html",
       "storeUrl": "https://www.pakrpp.com/store?item=relaxed-cotton-t-shirt",
       "tags": [
         "cotton-t-shirt",
@@ -651,7 +669,8 @@
       "priceBand": "50k-100k",
       "summary": "Tote bag kanvas sederhana untuk membawa buku, dokumen, laptop ringan, atau barang harian tanpa tampilan yang terlalu ramai.",
       "image": "https://picsum.photos/seed/yellowcart-tote-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
+      "url": "https://www.pakrpp.com/store?item=everyday-canvas-tote",
+      "sourceUrl": "https://www.pakrpp.com/2026/05/everyday-canvas-tote.html",
       "storeUrl": "https://www.pakrpp.com/store?item=everyday-canvas-tote",
       "tags": [
         "canvas-tote",
@@ -684,7 +703,8 @@
       "priceBand": "50k-100k",
       "summary": "Serum ringan untuk rutinitas skincare sederhana, dirancang untuk menjaga rasa lembap tanpa membuat tampilan wajah terasa berat.",
       "image": "https://picsum.photos/seed/yellowcart-serum-1/900/1125",
-      "url": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
+      "url": "https://www.pakrpp.com/store?item=minimal-barrier-serum",
+      "sourceUrl": "https://www.pakrpp.com/2026/04/minimal-barrier-serum.html",
       "storeUrl": "https://www.pakrpp.com/store?item=minimal-barrier-serum",
       "tags": [
         "barrier-serum",

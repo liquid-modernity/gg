@@ -70,19 +70,23 @@ function buildCardDots(product) {
 
 export function buildGridBlock(products) {
   return products.map((product, index) => {
-    const href = escapeHtmlAttr(product.canonicalUrl);
+    const detailHref = escapeHtmlAttr(product.sourceUrl || product.canonicalUrl || product.storeUrl);
+    const publicHref = escapeHtmlAttr(product.storeUrl || product.canonicalUrl);
     const name = escapeHtmlText(product.name);
+    const summary = escapeHtmlAttr(product.summary);
     const image = escapeHtmlAttr(product.images[0]);
     const category = escapeHtmlText(product.category);
     const priceText = escapeHtmlText(product.priceText);
     const slug = escapeHtmlAttr(product.slug);
     const cardId = escapeHtmlAttr(product.id || product.slug);
+    const sourceUrl = escapeHtmlAttr(product.sourceUrl || "");
+    const date = escapeHtmlAttr(product.dateModified || product.datePublished || "");
     const loading = index === 0 ? "eager" : "lazy";
     const fetchPriority = index === 0 ? "high" : "auto";
 
     return [
-      `        <article class="store-card" data-store-product-id="${cardId}">`,
-      `          <a class="store-card__button" href="${href}" aria-label="${escapeHtmlAttr(`Buka ${product.name}`)}" data-store-open-preview="${index}" data-store-product-slug="${slug}">`,
+      `        <article class="store-card" data-store-product-id="${cardId}" data-gg-title="${escapeHtmlAttr(product.name)}" data-gg-url="${publicHref}" data-gg-summary="${summary}" data-gg-image="${image}" data-gg-date="${date}" data-gg-author="PakRPP" data-gg-type="product" data-gg-surface="store-listing" data-gg-source="storeSource" data-store-source-url="${sourceUrl}">`,
+      `          <a class="store-card__button" href="${detailHref}" aria-label="${escapeHtmlAttr(`Buka ${product.name}`)}" data-store-open-preview="${index}" data-store-product-slug="${slug}" data-gg-title="${escapeHtmlAttr(product.name)}" data-gg-url="${publicHref}" data-gg-summary="${summary}" data-gg-image="${image}" data-gg-date="${date}" data-gg-author="PakRPP" data-gg-type="product" data-gg-surface="store-listing" data-gg-source="storeSource">`,
       "            <div class=\"store-card__media\">",
       `              <img src="${image}" width="900" height="1125" alt="${escapeHtmlAttr(product.name)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}" draggable="false" />`,
       "              <span class=\"store-card__shade\" aria-hidden=\"true\"></span>",

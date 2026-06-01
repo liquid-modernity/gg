@@ -10,6 +10,7 @@ npm run gaga:verify-docs-contract
 npm run gaga:verify-ci-reconciliation
 npm run gaga:verify-handoff-hygiene
 npm run gaga:verify-content-source-boundary
+npm run gaga:verify-unified-data-contract
 npm run gaga:verify-semantic-ssr
 npm run gaga:verify-semantic-readable-content
 npm run gaga:verify-schema-jsonld
@@ -189,6 +190,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-ci-reconciliation` | Verify QA script wiring, workflow aggregation, and guard classification docs. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CI RECONCILIATION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-handoff-hygiene` | Verify handoff/archive hygiene docs, ignores, and package mappings. | Blocking handoff contract | Yes | Yes via `ci:cloudflare` | `HANDOFF HYGIENE GUARD PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
 | `gaga:verify-content-source-boundary` | Verify root/editorial CMS and Store/product CMS source boundary, public canonical Store route, and Worker non-HTMLRewriter contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CONTENT SOURCE BOUNDARY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-unified-data-contract` | Verify unified preview/detail/store payload attributes, public Store URL normalization, source URL separation, and meta-description fallback priority. | Blocking contract | Yes | Yes via `ci:cloudflare` | `UNIFIED DATA CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-semantic-ssr` | Verify Blogger SSR semantics and fallback contracts. | Blocking SSR contract | Yes | Yes via `ci:cloudflare` | `SEMANTIC SSR GUARD PASS`; failures are `SSR_FAILURE`/`CONTRACT_FAILURE`. |
 | `gaga:verify-semantic-readable-content` | Verify post-readable semantic structure, post-scoped JSON-LD placement, unresolved substitution boundaries, and Worker non-readability repair contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SEMANTIC READABLE CONTENT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-schema-jsonld` | Verify JSON-LD/schema route truth and validity. | Blocking schema contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `SCHEMA JSON-LD GUARD PASS`; failures are `SCHEMA_FAILURE`/`CONTRACT_FAILURE`. |
@@ -270,6 +272,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/docs-contract-guard.mjs`
 - `qa/handoff-hygiene-guard.mjs`
 - `qa/content-source-boundary-guard.mjs`
+- `qa/unified-data-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/semantic-readable-content-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`

@@ -64,7 +64,7 @@
     "minimal-barrier-serum: placeholder image URL remains in non-production data"
   ],
   "manifestPath": "store/data/manifest.json",
-  "manifestBytes": 22046,
+  "manifestBytes": 23621,
   "manifestItems": 20,
   "manifestCategories": [
     {
@@ -268,5 +268,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "18de517eafa965d8"
+  "buildId": "54351f2379a2cae9"
 }

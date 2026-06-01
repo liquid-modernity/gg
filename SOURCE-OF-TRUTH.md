@@ -144,6 +144,12 @@ Run content source boundary verification:
 npm run gaga:verify-content-source-boundary
 ```
 
+Run unified data contract verification:
+
+```bash
+npm run gaga:verify-unified-data-contract
+```
+
 Run sheet search visual parity verification:
 
 ```bash
@@ -170,6 +176,7 @@ Examples of mandatory read-only guards:
 - `qa/docs-contract-guard.mjs`
 - `qa/handoff-hygiene-guard.mjs`
 - `qa/content-source-boundary-guard.mjs`
+- `qa/unified-data-contract-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
 - `qa/semantic-readable-content-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`

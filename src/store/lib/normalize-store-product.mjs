@@ -153,7 +153,7 @@ export function deriveSlug(rawProduct = {}) {
 export function normalizeStoreProduct(rawProduct = {}) {
   const source = rawProduct && typeof rawProduct === "object" ? rawProduct : {};
   const slug = deriveSlug(source);
-  const canonicalUrl = absoluteUrl(source.canonicalUrl || source.url || source.href || source.permalink);
+  const sourceUrl = absoluteUrl(source.sourceUrl || source.canonicalUrl || source.url || source.href || source.permalink);
   const storeUrl = slug ? storeAbsoluteUrl(slug) : absoluteUrl(source.storeUrl);
   const { categoryKey, category } = normalizeCategory(source.categoryKey || source.category || source.filter);
   const images = unique(arr(source.images || source.image).map((value) => absoluteUrl(cleanFirst(value))).filter(Boolean));
@@ -185,7 +185,8 @@ export function normalizeStoreProduct(rawProduct = {}) {
     tags: cleanTextList(source.tags || source.keywords || source.labels || source.topics),
     images,
     links,
-    canonicalUrl: canonicalUrl || storeUrl,
+    canonicalUrl: storeUrl || sourceUrl,
+    sourceUrl,
     storeUrl,
     datePublished: clean(source.datePublished || source.published),
     dateModified: clean(source.dateModified || source.updated),

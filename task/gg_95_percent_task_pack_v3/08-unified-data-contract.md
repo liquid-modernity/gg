@@ -93,7 +93,7 @@ Store source URLs must be normalized to public canonical Store routes when displ
 
 ```txt
 source/backend: pakrppstore.blogspot.com or store.pakrpp.com
-public canonical: https://www.pakrpp.com/store/...
+public canonical: https://www.pakrpp.com/store/... or https://www.pakrpp.com/store
 ```
 
 Root/editorial URLs should remain under:

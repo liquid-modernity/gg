@@ -5585,7 +5585,10 @@ window.GG = window.GG || {};
               title: payload.title,
               href: payload.url,
               labelTexts: [],
-              summary: ''
+              summary: payload.summary || '',
+              type: payload.type || 'post',
+              surface: payload.surface || 'root-listing',
+              source: payload.source || 'rootSource'
             });
           }
 
@@ -6293,9 +6296,15 @@ window.GG = window.GG || {};
         function getRowPayload(row) {
           if (!row) return null;
           return {
-            url: row.getAttribute('data-gg-post-url') || '',
-            title: row.getAttribute('data-gg-post-title') || '',
-            summary: stripHtml(row.getAttribute('data-gg-post-summary') || '')
+            url: row.getAttribute('data-gg-url') || row.getAttribute('data-gg-post-url') || '',
+            title: row.getAttribute('data-gg-title') || row.getAttribute('data-gg-post-title') || '',
+            summary: stripHtml(row.getAttribute('data-gg-summary') || row.getAttribute('data-gg-post-summary') || ''),
+            image: row.getAttribute('data-gg-image') || '',
+            date: row.getAttribute('data-gg-date') || '',
+            author: row.getAttribute('data-gg-author') || '',
+            type: row.getAttribute('data-gg-type') || 'post',
+            surface: row.getAttribute('data-gg-surface') || 'root-listing',
+            source: row.getAttribute('data-gg-source') || 'rootSource'
           };
         }
 
@@ -6627,7 +6636,7 @@ window.GG = window.GG || {};
 
           payload = payload || {};
           detail = detail || {};
-          summary = detail.summary || payload.summary || getCopy('preview.noSummary');
+          summary = payload.summary || detail.summary || getCopy('preview.noSummary');
 
           ui.previewTitle.textContent = detail.title || payload.title || getCopy('preview.titleFallback');
           ui.previewSummary.textContent = summary;
@@ -6772,7 +6781,7 @@ window.GG = window.GG || {};
             return '';
           }
 
-          articleSummary = article ? cleanPreviewSummary(article.getAttribute('data-gg-post-summary') || '') : '';
+          articleSummary = article ? cleanPreviewSummary(article.getAttribute('data-gg-summary') || article.getAttribute('data-gg-post-summary') || '') : '';
           summary = articleSummary || descriptionFromJsonLd() || descriptionFromBody() || descriptionFromMeta();
 
           for (i = 0; i < labelNodes.length; i += 1) {
@@ -6786,9 +6795,9 @@ window.GG = window.GG || {};
           }
 
           return {
-            title: article ? (article.getAttribute('data-gg-post-title') || '') : '',
-            author: article ? (article.getAttribute('data-gg-post-author') || '') : '',
-            published: article ? (article.getAttribute('data-gg-post-published') || '') : '',
+            title: article ? (article.getAttribute('data-gg-title') || article.getAttribute('data-gg-post-title') || '') : '',
+            author: article ? (article.getAttribute('data-gg-author') || article.getAttribute('data-gg-post-author') || '') : '',
+            published: article ? (article.getAttribute('data-gg-date') || article.getAttribute('data-gg-post-published') || '') : '',
             updated: article ? (article.getAttribute('data-gg-post-updated') || '') : '',
             readTime: estimateReadTimeMinutes(body ? (body.textContent || summary) : summary),
             image: firstImage ? toAbsoluteUrl(firstImage.getAttribute('src') || '', url) : '',

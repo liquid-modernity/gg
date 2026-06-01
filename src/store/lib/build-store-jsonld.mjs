@@ -39,9 +39,10 @@ export function buildStoreJsonLd(products, options = {}) {
   const description = clean(options.description) || STORE_SCHEMA_DESCRIPTION;
   const positionOffset = Math.max(0, Number.parseInt(String(options.positionOffset || 0), 10) || 0);
   const itemListElements = products.map((product, index) => {
+    const publicUrl = clean(product.storeUrl) || clean(product.canonicalUrl) || routeUrl;
     const item = {
       "@type": "Product",
-      "@id": `${product.canonicalUrl}#product`,
+      "@id": `${publicUrl}#product`,
       name: product.name,
       description: product.summary,
       image: product.images,
@@ -71,7 +72,7 @@ export function buildStoreJsonLd(products, options = {}) {
     return {
       "@type": "ListItem",
       position: positionOffset + index + 1,
-      url: product.canonicalUrl,
+      url: publicUrl,
       item,
     };
   });

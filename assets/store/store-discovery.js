@@ -1024,8 +1024,25 @@
     function productStoreAbsoluteUrl(item) {
       return absoluteUrl(productStoreUrl(item)) || storeAbsoluteUrl(item && item.slug);
     }
+    function normalizePublicStoreUrl(value, slug) {
+      var raw = clean(value);
+      var url;
+      var resolvedSlug = slugify(slug);
+
+      if (raw) {
+        try {
+          url = new URL(raw, STORE_CANONICAL_ORIGIN);
+          if (url.hostname === 'pakrppstore.blogspot.com' || url.hostname === 'store.pakrpp.com') {
+            resolvedSlug = resolvedSlug || slugify((url.pathname.split('/').filter(Boolean).pop() || '').replace(/\.html?$/i, ''));
+          }
+          if (url.hostname === 'www.pakrpp.com' && url.pathname.indexOf(STORE_CANONICAL_PATH) === 0) return url.toString();
+        } catch (error) {}
+      }
+
+      return storeAbsoluteUrl(resolvedSlug);
+    }
     function canonicalProductUrl(item) {
-      return absoluteUrl(item && (item.canonicalUrl || item.url));
+      return normalizePublicStoreUrl(item && (item.canonicalUrl || item.url || item.sourceUrl), item && item.slug);
     }
     function isNonSpecificOfferUrl(value) {
       var href = clean(value);
@@ -1529,8 +1546,9 @@
         slug: slug,
         name: title,
         title: title,
-        url: altUrl(entry),
-        canonicalUrl: canonicalUrl,
+        url: storeAbsoluteUrl(slug),
+        canonicalUrl: storeAbsoluteUrl(slug),
+        sourceUrl: canonicalUrl || altUrl(entry),
         storeUrl: clean(data.storeUrl) || storeAbsoluteUrl(slug),
         labels: labs,
         category: category,
@@ -1569,7 +1587,7 @@
       var images = arr(raw.images || raw.image).map(clean).filter(Boolean);
       var tags = cleanTextList(raw.tags);
       var notes = cleanTextList(raw.notes || raw.contents);
-      var canonicalUrl = absoluteUrl(raw.canonicalUrl || raw.url || raw.storeUrl);
+      var sourceUrl = absoluteUrl(raw.sourceUrl || raw.canonicalUrl || raw.url);
       var storeUrl = absoluteUrl(raw.storeUrl) || storeAbsoluteUrl(slug);
       var priceText = clean(raw.priceText || raw.priceLabel || raw.price || 'Rp—');
       var price = parsePriceValue(raw.price) || parsePriceValue(priceText);
@@ -1582,12 +1600,13 @@
       });
 
       return {
-        id: clean(raw.id || slug || canonicalUrl || storeUrl),
+        id: clean(raw.id || slug || sourceUrl || storeUrl),
         slug: slug,
         name: title,
         title: title,
-        url: canonicalUrl || storeUrl,
-        canonicalUrl: canonicalUrl || storeUrl,
+        url: storeUrl,
+        canonicalUrl: storeUrl,
+        sourceUrl: sourceUrl,
         storeUrl: storeUrl,
         labels: arr(raw.labels).map(clean).filter(Boolean),
         category: category,
