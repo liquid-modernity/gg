@@ -76,6 +76,40 @@ npm run gaga:verify-worker-live:strict
 
 Deploy only after local contract and Cloudflare CI gates pass. `deploy:cloudflare:prepared` uses the Cloudflare deploy wrapper without rebuilding Store/template artifacts first; this keeps the deploy workflow tied to the artifact state verified by `ci:cloudflare`. The deploy wrapper still reruns preflight and Cloudflare preparation from the verified source/artifact tree.
 
+## GitHub Actions And Cloudflare Environment Contract
+
+GitHub Actions must call aggregate package scripts instead of duplicating long guard chains. The deploy workflow order is checkout, setup Node, `npm ci`, `npm run ci:cloudflare`, `npm run deploy:cloudflare:prepared`, `npm run gaga:verify-worker-live:strict`, then failure-only diagnostics upload.
+
+Required workflow files in a deployable repo/archive are:
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/deploy-cloudflare.yml`
+- `.github/workflows/lighthouse-ci.yml`
+
+Limited task packs may omit workflows only when `HANDOFF-MANIFEST.md` explicitly declares that the archive is not a deployable repo archive.
+
+Required workflow and deploy environment variables:
+
+- `GG_LIVE_BASE_URL`: live base URL for strict Worker smoke; defaults to `https://www.pakrpp.com`.
+- `GG_LIVE_RETRIES`: live smoke retry count.
+- `GG_LIVE_RETRY_DELAY_SECONDS`: delay between live smoke retries.
+- `GG_LIVE_TIMEOUT_SECONDS`: live smoke total request timeout.
+- `GG_LIVE_CONNECT_TIMEOUT_SECONDS`: live smoke connection timeout.
+- `GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN`: must be `0` for strict deploy smoke; local smoke may set `1`.
+- `STORE_CI`: enables Store CI mode for generated Store proof.
+- `GG_STORE_MODE`: explicit Store build/proof mode such as `ci`, `strict`, or `production`.
+- `STORE_REQUIRE_LIVE_FEED`: requires a live Store feed when set to `1`.
+- `STORE_STRICT_IMAGES`: enables strict Store image checks when set to `1`.
+- `CLOUDFLARE_API_TOKEN`: GitHub Actions secret consumed by the Cloudflare deploy wrapper.
+- `CLOUDFLARE_ACCOUNT_ID`: GitHub Actions secret consumed by Wrangler through the deploy wrapper.
+
+Workflow boundaries:
+
+- `ci.yml` runs `npm ci` and `npm run ci:cloudflare`.
+- `deploy-cloudflare.yml` runs `npm ci`, `npm run ci:cloudflare`, `npm run deploy:cloudflare:prepared`, and `npm run gaga:verify-worker-live:strict`.
+- `lighthouse-ci.yml` is scheduled/manual and advisory; it must remain non-blocking during development and must not deploy or publish Blogger artifacts.
+- Workflows must not introduce ad-hoc `wrangler deploy` calls or HTMLRewriter-based post/page repair paths. Worker deploy remains governance/static routing/staging only.
+
 ## Live Smoke Set
 
 Run live smoke after deploy or when a task changes Worker/static assets:

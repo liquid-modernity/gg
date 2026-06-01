@@ -69,6 +69,27 @@ const ciWiredLabelFiles = [
   "qa/store-artifact-smoke.sh",
 ];
 
+const requiredWorkflowFiles = [
+  ".github/workflows/ci.yml",
+  ".github/workflows/deploy-cloudflare.yml",
+  ".github/workflows/lighthouse-ci.yml",
+];
+
+const requiredDeployEnvVars = [
+  "GG_LIVE_BASE_URL",
+  "GG_LIVE_RETRIES",
+  "GG_LIVE_RETRY_DELAY_SECONDS",
+  "GG_LIVE_TIMEOUT_SECONDS",
+  "GG_LIVE_CONNECT_TIMEOUT_SECONDS",
+  "GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN",
+  "STORE_CI",
+  "GG_STORE_MODE",
+  "STORE_REQUIRE_LIVE_FEED",
+  "STORE_STRICT_IMAGES",
+  "CLOUDFLARE_API_TOKEN",
+  "CLOUDFLARE_ACCOUNT_ID",
+];
+
 function rel(file) {
   return path.relative(ROOT, path.resolve(ROOT, file)).replace(/\\/g, "/");
 }
@@ -132,10 +153,24 @@ const scripts = packageJson.scripts || {};
 const packageScriptsText = allPackageScriptText(scripts);
 const qaCommands = read("QA-COMMANDS.md");
 const sourceOfTruth = read("SOURCE-OF-TRUTH.md");
+const handoffManifest = readIfExists("HANDOFF-MANIFEST.md");
+const taskPackOnly = /task pack only|not a deployable repo archive/iu.test(handoffManifest);
 
 for (const scriptName of requiredScripts) {
   if (!scripts[scriptName]) fail(`package.json missing required script: ${scriptName}`);
   else pass(`package.json has ${scriptName}`);
+}
+
+for (const workflowFile of requiredWorkflowFiles) {
+  if (!existsSync(path.resolve(ROOT, workflowFile))) {
+    if (taskPackOnly) {
+      pass(`limited task pack may omit workflow: ${workflowFile}`);
+    } else {
+      fail(`CONTRACT_FAILURE: required GitHub workflow missing: ${workflowFile}`);
+    }
+  } else {
+    pass(`required GitHub workflow exists: ${workflowFile}`);
+  }
 }
 
 if (!scriptIncludes(scripts, "gaga:verify-ci-reconciliation", "node qa/ci-reconciliation-guard.mjs")) {
@@ -227,9 +262,19 @@ for (const marker of [
   "Mutating Build Tools",
   "Failure Labels",
   "CSS Guard Scope",
+  "GitHub Actions And Cloudflare Environment Contract",
 ]) {
   if (!qaCommands.includes(marker) && !sourceOfTruth.includes(marker)) {
     fail(`documentation missing required CI reconciliation section marker: ${marker}`);
+  }
+}
+
+const envDoc = `${qaCommands}\n${sourceOfTruth}`;
+for (const envName of requiredDeployEnvVars) {
+  if (!envDoc.includes(envName)) {
+    fail(`documentation missing required GitHub Actions/Cloudflare env var: ${envName}`);
+  } else {
+    pass(`documentation covers env var ${envName}`);
   }
 }
 
@@ -246,6 +291,11 @@ for (const file of ciWiredLabelFiles) {
 const ciWorkflow = readIfExists(".github/workflows/ci.yml");
 if (ciWorkflow) {
   const ciRuns = workflowRuns(ciWorkflow);
+  if (!ciWorkflow.includes("npm ci")) {
+    fail("ci.yml must install dependencies with npm ci");
+  } else {
+    pass("ci.yml installs dependencies with npm ci");
+  }
   if (!ciWorkflow.includes("npm run ci:cloudflare")) {
     fail(".github/workflows/ci.yml must call npm run ci:cloudflare");
   } else {
@@ -264,18 +314,32 @@ if (ciWorkflow) {
 const deployWorkflow = readIfExists(".github/workflows/deploy-cloudflare.yml");
 if (deployWorkflow) {
   const deployRuns = workflowRuns(deployWorkflow);
+  const checkoutIndex = indexOfRun(deployWorkflow, "actions/checkout");
+  const setupNodeIndex = indexOfRun(deployWorkflow, "actions/setup-node");
+  const npmCiIndex = indexOfRun(deployWorkflow, "npm ci");
   const verifyIndex = indexOfRun(deployWorkflow, "npm run ci:cloudflare");
-  const deployIndex = Math.min(
-    indexOfRun(deployWorkflow, "npm run deploy:cloudflare:prepared"),
-    indexOfRun(deployWorkflow, "node tools/cloudflare-deploy.mjs deploy")
-  );
+  const deployIndex = indexOfRun(deployWorkflow, "npm run deploy:cloudflare:prepared");
   const smokeIndex = indexOfRun(deployWorkflow, "npm run gaga:verify-worker-live:strict");
+  const diagnosticsIndex = indexOfRun(deployWorkflow, "Upload deploy diagnostics");
 
+  if (!deployWorkflow.includes("npm ci")) {
+    fail("deploy-cloudflare.yml must install dependencies with npm ci");
+  } else {
+    pass("deploy-cloudflare.yml installs dependencies with npm ci");
+  }
   if (!deployWorkflow.includes("npm run ci:cloudflare")) {
     fail("deploy-cloudflare.yml must verify with npm run ci:cloudflare before deploy");
   }
+  if (!deployWorkflow.includes("npm run deploy:cloudflare:prepared")) {
+    fail("deploy-cloudflare.yml must deploy with npm run deploy:cloudflare:prepared");
+  }
   if (!deployWorkflow.includes("npm run gaga:verify-worker-live:strict")) {
     fail("deploy-cloudflare.yml must run strict live smoke after deploy");
+  }
+  if (!(checkoutIndex < setupNodeIndex && setupNodeIndex < npmCiIndex && npmCiIndex < verifyIndex && verifyIndex < deployIndex && deployIndex < smokeIndex)) {
+    fail("deploy-cloudflare.yml order must be checkout -> setup node -> npm ci -> npm run ci:cloudflare -> prepared deploy -> strict live smoke");
+  } else {
+    pass("deploy-cloudflare.yml step order is deterministic");
   }
   if (verifyIndex > deployIndex) {
     fail("deploy-cloudflare.yml deploys before npm run ci:cloudflare verification");
@@ -292,8 +356,36 @@ if (deployWorkflow) {
       fail(`deploy-cloudflare.yml duplicates aggregate command outside ci:cloudflare: ${stale}`);
     }
   }
-  if (deployWorkflow.includes("npm run gaga:cf:deploy") || deployWorkflow.includes("npm run deploy:cloudflare\n")) {
+  if (deployWorkflow.includes("npm run gaga:cf:deploy") || deployWorkflow.includes("npm run deploy:cloudflare\n") || deployWorkflow.includes("node tools/cloudflare-deploy.mjs deploy")) {
     fail("deploy-cloudflare.yml must deploy the prepared artifact path, not a build-before-deploy script");
+  }
+  if (/\bwrangler\s+deploy\b/u.test(deployWorkflow)) {
+    fail("deploy-cloudflare.yml must not call ad-hoc wrangler deploy commands; use package scripts");
+  }
+  if (/HTMLRewriter/u.test(deployWorkflow)) {
+    fail("deploy-cloudflare.yml must not introduce HTMLRewriter-based repair paths");
+  }
+  if (!(smokeIndex < diagnosticsIndex) || !/Upload deploy diagnostics[\s\S]*?if:\s*failure\(\)/u.test(deployWorkflow)) {
+    fail("deploy-cloudflare.yml must upload diagnostics on failure after deploy/live-smoke steps");
+  } else {
+    pass("deploy-cloudflare.yml uploads diagnostics on failure after live smoke");
+  }
+  for (const envName of requiredDeployEnvVars) {
+    if (!deployWorkflow.includes(envName) && !packageScriptsText.includes(envName)) {
+      fail(`deploy-cloudflare.yml/package scripts missing required deploy env contract: ${envName}`);
+    }
+  }
+}
+
+const lighthouseWorkflow = readIfExists(".github/workflows/lighthouse-ci.yml");
+if (lighthouseWorkflow) {
+  if (!/continue-on-error:\s*true/u.test(lighthouseWorkflow)) {
+    fail("lighthouse-ci.yml must keep Lighthouse advisory/non-blocking during development");
+  } else {
+    pass("lighthouse-ci.yml keeps Lighthouse advisory/non-blocking");
+  }
+  if (/wrangler\s+deploy|deploy:cloudflare|gaga:cf:deploy/u.test(lighthouseWorkflow)) {
+    fail("lighthouse-ci.yml must not deploy or publish artifacts");
   }
 }
 
