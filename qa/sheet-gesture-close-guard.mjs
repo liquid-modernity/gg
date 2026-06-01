@@ -84,6 +84,8 @@ const storeHtml = read("store.html");
 const appJs = read("src/js/gg-app.source.js");
 const landingJs = landingHtml;
 const storeJs = read("src/store/store-discovery.js");
+const sheetCoreCss = read("src/css/components/gg-sheet-core.css");
+const storeCss = read("src/store/store.css");
 const packageJson = JSON.parse(read("package.json") || "{}");
 const qaCommands = read("QA-COMMANDS.md");
 const sourceOfTruth = read("SOURCE-OF-TRUTH.md");
@@ -127,10 +129,14 @@ requirePattern("src/js/gg-app.source.js", appJs, /edge === 'top'[\s\S]*offset > 
 requirePattern("landing.html", landingJs, /Math\.max\(0,\s*offsetY\)/, "keeps landing bottom sheets downward-only");
 requirePattern("src/store/store-discovery.js", storeJs, /edge === 'top' \? Math\.min\(0,\s*offsetY\) : Math\.max\(0,\s*offsetY\)/, "keeps Store top-up and bottom-down drag application");
 requirePattern("src/store/store-discovery.js", storeJs, /session\.name === 'preview'[\s\S]*deltaY <= -84[\s\S]*session\.name !== 'preview'[\s\S]*deltaY >= 84/, "keeps Store preview upward and bottom sheets downward dismiss");
+requirePattern("src/css/components/gg-sheet-core.css", sheetCoreCss, /data-gg-sheet-drag-zone=['"]head['"][\s\S]*data-gg-sheet-drag-zone=['"]footer['"][\s\S]*data-gg-sheet-drag-zone=['"]handle['"][\s\S]*touch-action:\s*none/, "disables browser panning only on explicit drag zones for touch devices");
+requirePattern("src/store/store.css", storeCss, /data-gg-sheet-drag-zone=['"]head['"][\s\S]*data-gg-sheet-drag-zone=['"]footer['"][\s\S]*data-gg-sheet-drag-zone=['"]handle['"][\s\S]*touch-action:\s*none/, "Store runtime CSS inherits explicit drag-zone touch contract");
 
 forbidPattern("index.xml", indexXml, /data-gg-sheet-drag-zone=(["'])(?:body|content|scroll)\1/i, "does not define body/content drag zones");
 forbidPattern("landing.html", landingHtml, /data-gg-sheet-drag-zone=(["'])(?:body|content|scroll)\1/i, "does not define body/content drag zones");
 forbidPattern("store.html", storeHtml, /data-gg-sheet-drag-zone=(["'])(?:body|content|scroll)\1/i, "does not define body/content drag zones");
+forbidPattern("src/css/components/gg-sheet-core.css", sheetCoreCss, /(?:gg-sheet__body|gg-content-sheet__body|gg-preview__body|store-preview__body)[^{]*\{[^}]*touch-action:\s*none/i, "does not disable touch scrolling on sheet bodies");
+forbidPattern("src/store/store.css", storeCss, /(?:gg-sheet__body|gg-content-sheet__body|gg-preview__body|store-preview__body)[^{]*\{[^}]*touch-action:\s*none/i, "does not disable touch scrolling on Store sheet bodies");
 forbidPattern("worker.js", worker, /HTMLRewriter|data-gg-sheet-drag-zone/i, "does not repair sheet gestures at the edge");
 
 const scripts = packageJson.scripts || {};

@@ -198,6 +198,14 @@ body::-webkit-scrollbar,
   text-align: center;
 }
 
+[data-gg-sheet-drag-zone='head'],
+[data-gg-sheet-drag-zone='footer'],
+[data-gg-sheet-drag-zone='handle'] {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .gg-sheet__title {
   margin: 0;
   max-width: var(--gg-utility-title-max);
