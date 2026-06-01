@@ -1,0 +1,22 @@
+generated_at_utc=2026-06-01T18:11:33.598Z
+source_file=index.xml
+artifact_file=dist/blogger-template.publish.xml
+inline_css_mode=critical
+inline_css_source=src/css/gg-critical.source.css
+external_css_mode=production
+external_css_href=/__gg/assets/css/gg-app.min.css
+source_sha256=0b95c2b8e0fa6e6d7a7936e143c40cb44960dfdd86951a08cae3f133eaa88dc1
+artifact_sha256=0b95c2b8e0fa6e6d7a7936e143c40cb44960dfdd86951a08cae3f133eaa88dc1
+artifact_size_bytes=97103
+asset_source=src/css/gg-app.source.css
+asset_sha256=bdc6d38f344aec91f9706fd257374e2a07b01cefc9ee6b86d6f903960a53b1d0
+asset_outputs=__gg/assets/css/gg-app.dev.css,__gg/assets/css/gg-app.min.css,dist/assets/css/gg-app.dev.css,dist/assets/css/gg-app.min.css
+asset_source=src/css/gg-critical.source.css
+asset_sha256=269acb7f8c993fae38788817abf7a54e37c9bd3474bed0290488acb43316f7e0
+asset_outputs=__gg/assets/css/gg-critical.css,dist/assets/css/gg-critical.css
+asset_source=src/js/gg-app.source.js
+asset_sha256=4669c39d981b27cc7aa882b662b6bd0a7d5aa55a870ed91b1b24b9b2831f8b63
+asset_outputs=__gg/assets/js/gg-app.dev.js,__gg/assets/js/gg-app.min.js,dist/assets/js/gg-app.dev.js,dist/assets/js/gg-app.min.js
+publish_scope=manual_blogger_publish_only
+rollback_note=Set GG_TEMPLATE_INLINE_CSS=full or pass --full-inline-css to inline the full app CSS again.
+workflow_note=This script builds the Blogger XML artifact and synchronizes app assets. Cloudflare is handled separately.

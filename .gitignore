@@ -17,6 +17,7 @@ desktop.ini
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # Node / JS
 node_modules/
@@ -24,15 +25,12 @@ node_modules/
 pnpm-lock.yaml
 yarn.lock
 
-# Generated build, audit, and test output
+# Local cache / temporary output
 .cache/
 .tmp/
 .audit-report/
-dist/
 build/
 coverage/
-# New generated audit reports belong here. Existing qa/custom-audit.*
-# and qa/zip-audit.latest.* are tracked legacy snapshots, not new output paths.
 qa/audit-output/
 qa/audit-input/
 test-results/
@@ -50,6 +48,13 @@ playwright-report/
 *.tar.gz
 *.zip
 
-# Wrangler
+# Dist temporary/archive output
+dist/*.zip
+dist/*.tar
+dist/*.tgz
+dist/handoff/
+dist/tmp/
+
+# Wrangler / Cloudflare staging
 .wrangler/
 .cloudflare-build/
