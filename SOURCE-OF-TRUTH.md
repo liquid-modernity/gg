@@ -169,6 +169,7 @@ Examples of mandatory read-only guards:
 - `qa/handoff-hygiene-guard.mjs`
 - `qa/content-source-boundary-guard.mjs`
 - `qa/semantic-ssr-guard.mjs`
+- `qa/semantic-readable-content-guard.mjs`
 - `qa/schema-jsonld-guard.mjs`
 - `qa/registry-contract-guard.mjs`
 - `qa/comments-proof-guard.mjs`

@@ -62,7 +62,7 @@ requirePattern(indexXml, /<article\b[^>]*class=['"]gg-entry-row['"][^>]*data-gg-
 requirePattern(indexXml, /<a\b(?=[^>]*class=['"]gg-entry-row__title-trigger['"])(?=[^>]*expr:href=['"]data:post\.url['"])(?=[^>]*data-gg-open=['"]preview['"])[^>]*>/is, "root listing title trigger is a real href while preserving preview trigger", "index.xml");
 requirePattern(indexXml, /<b:if cond=['"]data:view\.isLabelSearch or not \(\(/i, "root listing excludes Store posts outside label search", "index.xml");
 requirePattern(indexXml, /<article\b[^>]*class=['"]gg-article['"][^>]*expr:data-gg-post-url=['"]data:post\.url['"][^>]*>/is, "post/page detail uses article semantics with canonical post URL data", "index.xml");
-requirePattern(indexXml, /<link\s+expr:href=['"]data:view\.url\.canonical \?: data:post\.url\.canonical \?: data:blog\.homepageUrl['"]\s+rel=['"]canonical['"]\/>/i, "canonical link remains Blogger-owned", "index.xml");
+requirePattern(indexXml, /<link\s+expr:href=['"]data:view\.url\.canonical \?: data:blog\.homepageUrl['"]\s+rel=['"]canonical['"]\/>/i, "canonical link remains Blogger view-owned", "index.xml");
 requireIncludes(indexXml, "data-gg-comment-engine='blogger-native'", "native Blogger comments marker", "index.xml");
 requireIncludes(indexXml, "href='/landing#contact'", "contact route is a real link", "index.xml");
 requireIncludes(indexXml, "href='/store'", "Store appears as navigation route", "index.xml");

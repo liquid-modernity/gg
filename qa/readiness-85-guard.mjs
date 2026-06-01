@@ -13,6 +13,7 @@ const commandChecks = [
   ["docs contract", "npm", ["run", "gaga:verify-docs-contract"]],
   ["CI reconciliation", "npm", ["run", "gaga:verify-ci-reconciliation"]],
   ["semantic SSR", "npm", ["run", "gaga:verify-semantic-ssr"]],
+  ["semantic readable content", "npm", ["run", "gaga:verify-semantic-readable-content"]],
   ["schema JSON-LD", "npm", ["run", "gaga:verify-schema-jsonld"]],
   ["registry contract", "npm", ["run", "gaga:verify-registry-contract"]],
   ["a11y static", "npm", ["run", "gaga:verify-a11y-static"]],
@@ -43,6 +44,7 @@ const majorGuardFiles = [
   "qa/shell-interaction-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
   "qa/semantic-ssr-guard.mjs",
+  "qa/semantic-readable-content-guard.mjs",
   "qa/schema-jsonld-guard.mjs",
   "qa/registry-contract-guard.mjs",
   "qa/a11y-static-guard.mjs",
@@ -271,7 +273,7 @@ if (String(flags.mode || "") !== "production" && /User-agent:\s*\*[\s\S]*Allow:\
 }
 
 assertIncludes(`${sourceOfTruth}\n${qaCommands}\n${report}`, "Home(/landing) -> Blog(/) -> current", "docs preserve breadcrumb route truth");
-assertIncludes(indexXml, "<link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>", "Blogger canonical remains source-owned");
+assertIncludes(indexXml, "<link expr:href='data:view.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>", "Blogger view canonical remains source-owned");
 assertIncludes(landingHtml, "https://www.pakrpp.com/landing", "landing static HTML carries canonical route identity");
 assertIncludes(storeHtml, "https://www.pakrpp.com/store", "store static HTML carries canonical route identity");
 assertNoPattern(indexXml, /data:schemaPosts/i, "Blog1-safe root schema does not use data:schemaPosts");

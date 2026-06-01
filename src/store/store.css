@@ -180,6 +180,8 @@
 
 
 
+
+
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1027,6 +1029,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1347,6 +1351,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
 /* BEGIN GENERATED: gg-sheet-core */
 .gg-sheet {
   position: fixed;
@@ -1603,6 +1609,8 @@ body::-webkit-scrollbar,
 }
 /* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 
@@ -2641,6 +2649,8 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
 
 
 

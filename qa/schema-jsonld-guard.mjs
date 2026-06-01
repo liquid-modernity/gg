@@ -270,7 +270,7 @@ requirePattern(indexXml, /<b:if cond='data:view\.isPage'>[\s\S]*?&quot;@type&quo
 requireIncludes(indexXml, "&quot;name&quot;: &quot;<data:post.title.escaped/>&quot;", "detail schema name reflects visible post title", "index.xml");
 requireIncludes(indexXml, "&quot;item&quot;: &quot;https://www.pakrpp.com/landing&quot;", "detail schema breadcrumb starts at Home(/landing)", "index.xml");
 requireIncludes(indexXml, "&quot;name&quot;: &quot;Blog&quot;", "detail schema breadcrumb includes Blog(/)", "index.xml");
-requirePattern(indexXml, /<link\s+expr:href=['"]data:view\.url\.canonical \?: data:post\.url\.canonical \?: data:blog\.homepageUrl['"]\s+rel=['"]canonical['"]\/>/, "canonical Blogger URL remains source of truth", "index.xml");
+requirePattern(indexXml, /<link\s+expr:href=['"]data:view\.url\.canonical \?: data:blog\.homepageUrl['"]\s+rel=['"]canonical['"]\/>/, "canonical Blogger view URL remains source of truth", "index.xml");
 
 const scripts = packageJson.scripts || {};
 if (scripts["gaga:verify-schema-jsonld"] === "node qa/schema-jsonld-guard.mjs") pass("package script gaga:verify-schema-jsonld is wired");

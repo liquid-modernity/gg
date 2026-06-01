@@ -37,6 +37,7 @@ const majorGuardFiles = [
   "qa/docs-contract-guard.mjs",
   "qa/handoff-hygiene-guard.mjs",
   "qa/semantic-ssr-guard.mjs",
+  "qa/semantic-readable-content-guard.mjs",
   "qa/schema-jsonld-guard.mjs",
   "qa/registry-contract-guard.mjs",
   "qa/repo-structure-tidy-guard.mjs",

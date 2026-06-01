@@ -388,6 +388,8 @@ html[data-gg-theme='light'] {
 
 
 
+
+
 html[data-gg-theme='dark'] {
   color-scheme: dark;
   --gg-surface-page: #050505;
@@ -888,6 +890,8 @@ img {
   background: var(--gg-toolbar-item-hover-bg);
 }
 /* END GENERATED: module-detail-toolbar */
+
+
 
 
 
@@ -2356,6 +2360,8 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 
 
 
+
+
 .gg-dock__item {
   display: inline-flex;
   flex-direction: column;
@@ -2634,6 +2640,8 @@ body::-webkit-scrollbar,
 }
 /* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
+
+
 
 
 
@@ -3032,6 +3040,8 @@ body::-webkit-scrollbar,
 
 
 
+
+
 /* BEGIN GENERATED: gg-preview-frame */
 :root {
   --gg-preview-hero-aspect: 4 / 5;
@@ -3309,6 +3319,8 @@ body::-webkit-scrollbar,
 }
 /* END gg-preview-toc-polish-contract */
 /* END GENERATED: gg-preview-frame */
+
+
 
 
 
@@ -3964,6 +3976,8 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
+
+
 
 
 
