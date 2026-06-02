@@ -21,6 +21,7 @@ npm run gaga:verify-asset-architecture
 npm run gaga:verify-cleanup
 npm run gaga:verify-css-sot-cleanup
 npm run gaga:verify-css-module-wiring
+npm run gaga:verify-lazy-interaction-budget
 npm run gaga:verify-repo-structure-tidy
 npm run gaga:verify-sheet-search-visual-parity
 npm run gaga:verify-global-sheet-contract
@@ -203,6 +204,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-css-sot-cleanup` | Verify CSS source-of-truth cleanup boundaries. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS SOURCE OF TRUTH CLEANUP GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-css-module-wiring` | Verify required CSS module registration and generated bundle parity. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS MODULE BUNDLE WIRING GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-css-source-visual-rhythm` | Verify CSS ownership categories, build-path parity, module registration, and forbidden patch-layer absence while keeping style checks advisory. | Blocking architecture contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `CSS SOURCE VISUAL RHYTHM GUARD PASS` or `PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-lazy-interaction-budget` | Verify SSR/schema/navigation stay eager, heavy interaction fetches are idle/intent gated where safe, and budgets stay advisory unless strict release mode is explicit. | Blocking architecture contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `LAZY INTERACTION BUDGET GUARD PASS` or `PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-repo-structure-tidy` | Verify repo structure tidy contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `REPO STRUCTURE TIDY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-sheet-search-visual-parity` | Verify Search/More sheet visual parity contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET SEARCH VISUAL PARITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-global-sheet-contract` | Verify normalized top/bottom sheet origins, sheet surface/state attributes, accessibility state, and Worker non-repair contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `GLOBAL SHEET CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |

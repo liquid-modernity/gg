@@ -25,6 +25,7 @@ Primary source files include:
 - `REPO-STRUCTURE.md`: conservative repository map, edit/generated/commit policy, and runtime path stability notes.
 - `REPO-TIDY-REPORT.md`: repo tidy proof, ignored clutter handling, intentionally unmoved runtime folders, and QA record.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
+- `LAZY-INTERACTION-BUDGET-REPORT.md`: source-owned lazy interaction and advisory budget boundary report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs. `qa/handoff-hygiene-guard.mjs` verifies archive handoff contracts, and `tools/handoff-archive.mjs` creates deployable repo archives from git-visible source files.
 
 ## Content Source Boundary
@@ -169,6 +170,12 @@ Run sheet search visual parity verification:
 npm run gaga:verify-sheet-search-visual-parity
 ```
 
+Run lazy interaction budget verification:
+
+```bash
+npm run gaga:verify-lazy-interaction-budget
+```
+
 ## Read-Only Guards
 
 Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
@@ -181,6 +188,7 @@ Examples of mandatory read-only guards:
 - `qa/cleanup-regression-guard.mjs`
 - `qa/css-module-bundle-wiring-guard.mjs`
 - `qa/css-source-visual-rhythm-guard.mjs`
+- `qa/lazy-interaction-budget-guard.mjs`
 - `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/repo-structure-tidy-guard.mjs`
 - `qa/sheet-search-visual-parity-guard.mjs`

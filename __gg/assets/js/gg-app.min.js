@@ -2957,9 +2957,11 @@ window.GG = window.GG || {};
 
           if (!pwaState.supported) return;
 
-          registerPwaServiceWorker().then(function () {
-            return refreshPwaDiagnostics();
-          });
+          ggIdle(function () {
+            registerPwaServiceWorker().then(function () {
+              return refreshPwaDiagnostics();
+            });
+          }, 1800);
         }
 
         function lockBodyScrollWhileOpen(activeName, lockScroll) {

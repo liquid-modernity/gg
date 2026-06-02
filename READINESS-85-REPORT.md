@@ -6,6 +6,7 @@ This report locks the final crawlability, performance, search/AI discoverability
 
 - `qa/readiness-85-guard.mjs` is the read-only final readiness guard.
 - `npm run gaga:verify-85` runs the readiness guard.
+- `npm run gaga:verify-lazy-interaction-budget` verifies lazy interaction and advisory budget boundaries.
 - `npm run ci:85` runs `npm run ci:cloudflare` and then the readiness guard.
 - The guard verifies the existing semantic SSR, schema JSON-LD, registry, a11y, asset architecture, cleanup, comments, navigation, Discovery, Store isolation, Theme, Shell, Preview, Store proof, template fingerprint, Worker syntax, and live-smoke script syntax gates.
 - Route truth remains `/landing = Home`, `/ = Blog`, and breadcrumb `Home(/landing) -> Blog(/) -> current`.
@@ -15,6 +16,7 @@ This report locks the final crawlability, performance, search/AI discoverability
 
 - Lighthouse is advisory during development and remains non-blocking.
 - Performance budgets are practical size checks intended to catch obvious regressions, not force unrealistic score chasing.
+- Lazy interaction budgets are advisory unless strict release mode is explicit through a strict/production command or environment flag.
 - Store product discoverability is guarded by semantic HTML, Store proof, schema parity, real product links, and artifact parity; live marketplace/image availability remains external.
 - AI/search readiness means crawlable, visible, semantic, consistent content when production flags allow it. This task does not add AI-only markup, fake GEO/AI hacks, or new `llms.txt` policy.
 

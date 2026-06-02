@@ -594,6 +594,8 @@
       reading: readStorage('gg:reading') || 'comfortable',
       motion: readStorage('gg:motion') || 'balanced',
       feedSource: 'Store',
+      productFeedRefreshScheduled: false,
+      productFeedRefreshStarted: false,
       storeDeepLinkSlug: '',
       dockLastScrollTop: 0,
       dockDirectionStart: 0,
@@ -1577,10 +1579,17 @@
         return entries;
       });
     }
-    function loadProducts() {
-      var staticProducts = readStaticProducts();
-      var hadStatic = hydrateStaticProducts(staticProducts);
-      if (!hadStatic) {
+    function ggIdle(callback, timeout) {
+      var limit = typeof timeout === 'number' ? timeout : 1200;
+      if ('requestIdleCallback' in window) return window.requestIdleCallback(callback, { timeout: limit });
+      return window.setTimeout(function () { callback({ didTimeout: true, timeRemaining: function () { return 0; } }); }, 64);
+    }
+    function refreshProductsFromFeed(reason) {
+      var hadProducts = !!state.products.length;
+      if (state.productFeedRefreshStarted) return;
+      state.productFeedRefreshStarted = true;
+      state.productFeedRefreshScheduled = false;
+      if (!hadProducts) {
         app.setAttribute('data-store-state', 'loading');
         setSkeletonVisible(true);
         setNodeText(count, copy('countLoading'));
@@ -1591,12 +1600,13 @@
         state.products = entries.map(normalize).filter(Boolean);
         state.visibleLimit = initialVisibleLimit();
         state.hasLoadedMore = false;
+        if (reason && app) app.setAttribute('data-store-feed-refresh', reason);
         applyFilters();
         syncRequestedPreview();
         scheduleOverflowAudit('feed-render');
         scheduleDebugVitalsReport('feed-render');
       }).catch(function () {
-        if (hadStatic || state.products.length) {
+        if (hadProducts || state.products.length) {
           setSkeletonVisible(false);
           empty.hidden = !!state.filtered.length;
           app.setAttribute('data-store-state', state.filtered.length ? 'ready' : 'empty');
@@ -1622,6 +1632,17 @@
         scheduleOverflowAudit('feed-error');
         scheduleDebugVitalsReport('feed-error');
       });
+    }
+    function scheduleProductFeedRefresh(reason) {
+      if (state.productFeedRefreshStarted || state.productFeedRefreshScheduled) return;
+      state.productFeedRefreshScheduled = true;
+      ggIdle(function () { refreshProductsFromFeed(reason || 'idle'); }, 1800);
+    }
+    function loadProducts() {
+      var staticProducts = readStaticProducts();
+      var hadStatic = hydrateStaticProducts(staticProducts);
+      if (hadStatic) scheduleProductFeedRefresh('static-idle');
+      else refreshProductsFromFeed('no-static');
     }
 
     function priceNumber(text) {
@@ -2943,6 +2964,7 @@
       if (discoverySearch) discoverySearch.value = state.query;
       applyDiscoveryFilters();
       openPanel('discovery', trigger, { focusTarget: discoverySearch, selectText: true });
+      if (!state.productFeedRefreshStarted) scheduleProductFeedRefresh('discovery-intent');
       ensureDiscoveryManifest();
     }
     function scrollToStoreTarget(targetId, nextUrl) {
