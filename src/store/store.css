@@ -155,45 +155,6 @@
   --gg-sheet-search-focus-ring: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 18%, transparent), 0 4px 14px color-mix(in srgb, var(--gg-accent) 7%, transparent);
 }
 /* END GENERATED: gg-visual-tokens */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     html[data-gg-theme='dark'] {
       color-scheme: dark;
       --gg-surface-page: #050505;
@@ -1016,45 +977,6 @@ body[data-gg-panel-active='true'] .gg-dock::after {
   opacity: 1;
 }
 /* END GENERATED: gg-sheet-modal */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     .gg-dock__item {
       display: inline-flex;
       flex-direction: column;
@@ -1350,45 +1272,6 @@ body[data-gg-panel-active='true'] .gg-dock::after {
 }
 /* END gg-preview-toc-polish-contract */
 /* END GENERATED: gg-preview-frame */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* BEGIN GENERATED: gg-sheet-core */
 .gg-sheet {
   position: fixed;
@@ -1658,45 +1541,6 @@ body::-webkit-scrollbar,
 }
 /* END gg-top-edge-panel-bottom-handle-contract */
 /* END GENERATED: gg-sheet-core */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     .store-preview__carousel {
       display: flex;
       overflow-x: auto;
@@ -2710,44 +2554,6 @@ html[data-gg-motion='reduced'] *::after {
   }
 }
 /* END GENERATED: gg-more-sheet */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* BEGIN gg-preview-scrollbar-hidden-contract */
 .gg-preview__sheet::-webkit-scrollbar,
 .store-preview-sheet .gg-sheet__panel::-webkit-scrollbar {

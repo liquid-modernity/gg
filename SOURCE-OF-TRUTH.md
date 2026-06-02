@@ -126,6 +126,12 @@ Run CSS module bundle wiring verification:
 npm run gaga:verify-css-module-wiring
 ```
 
+Run CSS source visual rhythm ownership verification:
+
+```bash
+npm run gaga:verify-css-source-visual-rhythm
+```
+
 Run repo structure tidy verification:
 
 ```bash
@@ -174,6 +180,7 @@ Examples of mandatory read-only guards:
 - `qa/asset-architecture-guard.mjs`
 - `qa/cleanup-regression-guard.mjs`
 - `qa/css-module-bundle-wiring-guard.mjs`
+- `qa/css-source-visual-rhythm-guard.mjs`
 - `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/repo-structure-tidy-guard.mjs`
 - `qa/sheet-search-visual-parity-guard.mjs`

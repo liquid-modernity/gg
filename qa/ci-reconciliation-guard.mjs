@@ -32,6 +32,7 @@ const majorGuardFiles = [
   "qa/controller-core-adapters-guard.mjs",
   "qa/copy-registry-guard.mjs",
   "qa/css-module-bundle-wiring-guard.mjs",
+  "qa/css-source-visual-rhythm-guard.mjs",
   "qa/css-source-of-truth-cleanup-guard.mjs",
   "qa/discovery-contract-guard.mjs",
   "qa/discovery-filter-taxonomy-guard.mjs",

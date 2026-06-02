@@ -84,7 +84,7 @@ requirePattern(storeHtml, /class=["']store-semantic-product__title["'][^>]*>[^<]
 requirePattern(storeHtml, /class=["']store-semantic-product__summary["'][^>]*>[^<]+<\/p>/i, "store semantic product summaries exist", "store.html");
 requirePattern(storeHtml, /class=["']store-card__price["'][^>]*>[^<]+<\/span>/i, "store product prices exist in HTML", "store.html");
 requirePattern(storeHtml, /class=["']store-semantic-category-rail["'][^>]*(?:aria-label|role)=/i, "store category navigation exists", "store.html");
-requirePattern(storeHtml, /href=["']https:\/\/www\.pakrpp\.com\/20\d{2}\//i, "store product detail links are real hrefs", "store.html");
+requirePattern(storeHtml, /href=["']https:\/\/www\.pakrpp\.com\/store\?item=[a-z0-9-]+["']/i, "store product detail links are real public Store hrefs", "store.html");
 requirePattern(storeHtml, /rel=["']sponsored nofollow noopener noreferrer["']/i, "marketplace affiliate links keep sponsored disclosure", "store.html");
 requireNoPublicLandingLabel(storeHtml, "store.html");
 

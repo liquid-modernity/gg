@@ -1,4 +1,4 @@
-generated_at_utc=2026-06-01T19:12:11.014Z
+generated_at_utc=2026-06-02T07:45:45.111Z
 source_file=index.xml
 artifact_file=dist/blogger-template.publish.xml
 inline_css_mode=critical
@@ -9,7 +9,7 @@ source_sha256=0b95c2b8e0fa6e6d7a7936e143c40cb44960dfdd86951a08cae3f133eaa88dc1
 artifact_sha256=0b95c2b8e0fa6e6d7a7936e143c40cb44960dfdd86951a08cae3f133eaa88dc1
 artifact_size_bytes=97103
 asset_source=src/css/gg-app.source.css
-asset_sha256=bdc6d38f344aec91f9706fd257374e2a07b01cefc9ee6b86d6f903960a53b1d0
+asset_sha256=69a07a4c8a8924088ed2005c6074e4056f11bea813cb02b248ccf69a36666a20
 asset_outputs=__gg/assets/css/gg-app.dev.css,__gg/assets/css/gg-app.min.css,dist/assets/css/gg-app.dev.css,dist/assets/css/gg-app.min.css
 asset_source=src/css/gg-critical.source.css
 asset_sha256=269acb7f8c993fae38788817abf7a54e37c9bd3474bed0290488acb43316f7e0

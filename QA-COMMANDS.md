@@ -202,6 +202,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-cleanup` | Verify cleanup regression boundaries and intentional non-removals. | Blocking contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `CLEANUP REGRESSION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-css-sot-cleanup` | Verify CSS source-of-truth cleanup boundaries. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS SOURCE OF TRUTH CLEANUP GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-css-module-wiring` | Verify required CSS module registration and generated bundle parity. | Blocking architecture contract | Yes | Yes via `ci:cloudflare` | `CSS MODULE BUNDLE WIRING GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-css-source-visual-rhythm` | Verify CSS ownership categories, build-path parity, module registration, and forbidden patch-layer absence while keeping style checks advisory. | Blocking architecture contract, advisory warnings allowed | Yes | Yes via `ci:cloudflare` | `CSS SOURCE VISUAL RHYTHM GUARD PASS` or `PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-repo-structure-tidy` | Verify repo structure tidy contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `REPO STRUCTURE TIDY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-sheet-search-visual-parity` | Verify Search/More sheet visual parity contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET SEARCH VISUAL PARITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-global-sheet-contract` | Verify normalized top/bottom sheet origins, sheet surface/state attributes, accessibility state, and Worker non-repair contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `GLOBAL SHEET CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
@@ -236,6 +237,12 @@ Use these labels for command failures:
 
 ## CSS Guard Scope
 
+Run the Task 10 CSS source visual rhythm guard with:
+
+```bash
+npm run gaga:verify-css-source-visual-rhythm
+```
+
 Mandatory CSS guards are architecture-level. They may fail normal CI only for generated CSS edited manually, source CSS missing from a declared build path, obvious duplicate override/patch files, forbidden emergency CSS layers, missing required CSS module registration, or clearly unused large CSS artifacts.
 
 CSS checks for selector style, spacing tokens, border-radius preferences, color values, component file granularity, declaration order, and otherwise valid manual edits under `src/css/*` or `src/store/*` are advisory only. Advisory CSS findings must emit `ADVISORY_WARNING`, `WARN`, or `PASS_WITH_WARNINGS` and must not block `ci:qa`.
@@ -268,6 +275,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/component-source-contract-guard.mjs`
 - `qa/copy-registry-guard.mjs`
 - `qa/css-module-bundle-wiring-guard.mjs`
+- `qa/css-source-visual-rhythm-guard.mjs`
 - `qa/css-source-of-truth-cleanup-guard.mjs`
 - `qa/discovery-contract-guard.mjs`
 - `qa/discovery-filter-taxonomy-guard.mjs`

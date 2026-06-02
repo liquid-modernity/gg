@@ -46,7 +46,7 @@ function block(name) {
 function replaceOrFallback(contents, name, fallbackPattern) {
   const begin = `/* BEGIN GENERATED: ${name} */`;
   const end = `/* END GENERATED: ${name} */`;
-  const generatedPattern = new RegExp(`${escapeRegExp(begin)}[\\s\\S]*?${escapeRegExp(end)}`, 'g');
+  const generatedPattern = new RegExp(`${escapeRegExp(begin)}[\\s\\S]*?${escapeRegExp(end)}\\n*`, 'g');
   const next = block(name);
   if (generatedPattern.test(contents)) return contents.replace(generatedPattern, next);
   if (!fallbackPattern.test(contents)) throw new Error(`Could not find ${name} insertion point`);
@@ -56,7 +56,7 @@ function replaceOrFallback(contents, name, fallbackPattern) {
 function insertOrReplaceAfter(contents, name, anchorPattern) {
   const begin = `/* BEGIN GENERATED: ${name} */`;
   const end = `/* END GENERATED: ${name} */`;
-  const generatedPattern = new RegExp(`${escapeRegExp(begin)}[\\s\\S]*?${escapeRegExp(end)}`, 'g');
+  const generatedPattern = new RegExp(`${escapeRegExp(begin)}[\\s\\S]*?${escapeRegExp(end)}\\n*`, 'g');
   const next = block(name);
   if (generatedPattern.test(contents)) return contents.replace(generatedPattern, next);
   const match = contents.match(anchorPattern);

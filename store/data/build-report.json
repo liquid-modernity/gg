@@ -1,17 +1,17 @@
 {
-  "sourceType": "existing-static",
+  "sourceType": "live-feed",
   "feedEntries": 5,
   "productCount": 5,
   "validProducts": 5,
   "invalidProducts": 0,
   "imageSources": {
-    "gg-store-data.images": 0,
+    "gg-store-data.images": 5,
     "post-content-img": 0,
     "media-thumbnail": 0,
-    "existing-static-fallback": 5,
+    "existing-static-fallback": 0,
     "missing": 0
   },
-  "imageSourceSummary": "gg-store-data.images:0, post-content-img:0, media-thumbnail:0, existing-static-fallback:5, missing:0",
+  "imageSourceSummary": "gg-store-data.images:5, post-content-img:0, media-thumbnail:0, existing-static-fallback:0, missing:0",
   "categoryCounts": {
     "Fashion": 1,
     "Skincare": 1,
@@ -22,19 +22,15 @@
   "removedInvalidProducts": [],
   "duplicateSlugs": [],
   "warnings": [
-    "minimal-desk-tray-organizer: used existing static image fallback",
     "minimal-desk-tray-organizer: placeholder image URL remains in non-production data",
-    "neutral-linen-overshirt: used existing static image fallback",
     "neutral-linen-overshirt: placeholder image URL remains in non-production data",
-    "braided-fast-charging-cable: used existing static image fallback",
     "braided-fast-charging-cable: placeholder image URL remains in non-production data",
-    "foldable-reusable-bag: used existing static image fallback",
     "foldable-reusable-bag: placeholder image URL remains in non-production data",
-    "lightweight-daily-sunscreen: used existing static image fallback",
     "lightweight-daily-sunscreen: placeholder image URL remains in non-production data"
   ],
+  "pageCount": 1,
   "manifestPath": "store/data/manifest.json",
-  "manifestBytes": 6638,
+  "manifestBytes": 6640,
   "manifestItems": 5,
   "manifestCategories": [
     {
@@ -238,5 +234,5 @@
   },
   "buildReportPath": "store/data/build-report.json",
   "buildReportHref": "/store/data/build-report.json",
-  "buildId": "0314276d1a0a3a55"
+  "buildId": "76dcea6de75e2b27"
 }

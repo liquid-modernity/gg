@@ -157,3 +157,11 @@ npm run gaga:verify-css-module-wiring
 ```
 
 That guard verifies every CSS module/component is wired, generated, or explicitly documented as non-canonical/manual, and it protects the `src/css/modules/detail-toolbar.css` to app CSS generated block.
+
+Run the CSS source visual rhythm guard with:
+
+```bash
+npm run gaga:verify-css-source-visual-rhythm
+```
+
+That guard verifies Task 10 CSS ownership categories, source-to-generated/runtime parity, required shared CSS registration, absence of obvious patch/override layers, and keeps detailed style checks advisory.

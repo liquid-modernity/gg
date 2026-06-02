@@ -15,6 +15,29 @@ Scope: `TASK-CSS-SOURCE-OF-TRUTH-CLEANUP-001` only.
 
 ## CSS Classification
 
+## Task 10 Visual Rhythm Ownership
+
+Global visual rhythm is owned by shared tokens, source-owned component contracts, and route/surface adapters. It does not require every route to load every rule, and it does not require every component to live in its own CSS file.
+
+| Task 10 category | Active files | Ownership and build path |
+| --- | --- | --- |
+| `critical` | `src/css/gg-critical.source.css`, `src/store/store.critical.css` | First-paint source only. Blogger critical CSS is inlined by `tools/template-pack.mjs`; Store critical CSS is consumed by the Store build. |
+| `tokens/base` | `src/css/components/gg-visual-tokens.css`, `src/css/modules/visual-tokens.css`, `src/css/modules/tokens.css`, `src/css/modules/base.css`, token/base sections inside `src/css/gg-app.source.css`, `landing.html`, and `src/store/store.css` | Visual-token component source is synced by `tools/sync-shared-css-components.mjs`; manual module maps remain advisory unless explicitly wired. |
+| `shared component` | `src/css/components/gg-sheet-core.css`, `src/css/components/gg-sheet-modal.css`, `src/css/components/gg-preview-frame.css`, `src/css/components/gg-more-sheet.css`, `src/css/components/gg-discovery-sheet.css`, `src/css/modules/detail-toolbar.css` | Shared component/module sources are registered in `tools/sync-shared-css-components.mjs` and then copied into app, landing, Store, or generated module mirror outputs. |
+| `surface-specific` | `src/css/modules/comments.css`, `src/css/modules/discovery.css`, `src/css/modules/more.css`, `src/css/modules/preview-frame.css`, `src/css/modules/sheets.css`, `src/css/modules/detail-outline.css`, `src/css/modules/detail.css`, `src/css/modules/dock.css`, `src/css/modules/feedback.css`, `src/css/modules/listing.css`, `src/css/modules/motion.css`, `src/css/modules/responsive.css`, `src/css/modules/shell.css`, `src/css/modules/theme.css` | Surface files are either generated mirrors from shared component source or advisory/manual maps for the current app bundle. Live Blogger bundle edits still land in `src/css/gg-app.source.css` unless a module is explicitly wired. |
+| `route-specific` | `src/css/gg-app.source.css`, `src/store/store.css`, `src/landing/landing.css`, `src/dashboard/dashboard.css`, `src/knowledge base/knowledgebase.css`, `assets/landing/landing.css`, `assets/dashboard/dashboard.css`, `assets/knowledge base/knowledgebase.css` | Blogger app CSS is copied by `tools/template-pack.mjs`; Store CSS is copied by `npm run store:build`; static route CSS under `assets/*` is a public route mirror and must remain byte-identical with its `src/*` counterpart. |
+| `generated` | `src/css/modules/discovery.css`, `src/css/modules/more.css`, `src/css/modules/preview-frame.css`, `src/css/modules/sheets.css`, `src/css/modules/visual-tokens.css`, `assets/store/store.css`, `__gg/assets/css/*`, `dist/assets/css/*`, `.cloudflare-build/public/**/css/*`, Store route HTML | Generated or staged outputs must be rebuilt from source, not patched manually. |
+| `dead/legacy` | No active CSS source is intentionally classified as dead. Deleted stale editable-looking files remain listed below with proof. | Any future dead/legacy CSS file needs usage proof before removal and must stay out of runtime/build paths. |
+| `forbidden patch/override` | No active CSS patch, override, hotfix, or emergency layer is allowed. | Fix the owning source file or registered component instead of adding an override layer. |
+
+Mandatory CSS guards stay architecture-level: generated CSS parity, declared build paths, registered modules/components, obvious patch/override layers, and clearly unused large CSS artifacts. Detailed style checks such as token consistency, visual rhythm drift, selector naming, component spacing, zero-duplication goals, optimization opportunities, and non-critical size warnings are advisory only.
+
+Task 10 guard command:
+
+```bash
+npm run gaga:verify-css-source-visual-rhythm
+```
+
 | Path | Classification | Build/runtime proof |
 | --- | --- | --- |
 | `src/css/gg-app.source.css` | CANONICAL_SOURCE | Copied by `tools/template-pack.mjs` to `__gg/assets/css/*` and `dist/assets/css/*`; linked by `index.xml`. |
@@ -46,9 +69,12 @@ Scope: `TASK-CSS-SOURCE-OF-TRUTH-CLEANUP-001` only.
 | `src/store/store.css` | ROUTE_SPECIFIC_SOURCE | Store source CSS; copied to `assets/store/store.css` by `npm run store:build`. |
 | `src/store/store.critical.css` | CRITICAL_INLINE_SOURCE | Store first-paint CSS; injected into guarded Store markup by Store build. |
 | `assets/store/store.css` | PUBLIC_RUNTIME_ASSET | Generated Store runtime asset from `src/store/store.css`; do not edit manually. |
-| `assets/dashboard/dashboard.css` | ROUTE_SPECIFIC_SOURCE | Dashboard static route asset. |
-| `assets/knowledge base/knowledgebase.css` | ROUTE_SPECIFIC_SOURCE | Knowledge base static route asset. |
-| `assets/landing/landing.css` | ROUTE_SPECIFIC_SOURCE | Landing static route asset. |
+| `src/dashboard/dashboard.css` | ROUTE_SPECIFIC_SOURCE | Dashboard static route CSS source; guarded to match the public route mirror. |
+| `src/knowledge base/knowledgebase.css` | ROUTE_SPECIFIC_SOURCE | Knowledge base static route CSS source; guarded to match the public route mirror. |
+| `src/landing/landing.css` | ROUTE_SPECIFIC_SOURCE | Landing static route CSS source; guarded to match the public route mirror. |
+| `assets/dashboard/dashboard.css` | PUBLIC_RUNTIME_ASSET | Dashboard public route mirror from `src/dashboard/dashboard.css`; do not diverge manually. |
+| `assets/knowledge base/knowledgebase.css` | PUBLIC_RUNTIME_ASSET | Knowledge base public route mirror from `src/knowledge base/knowledgebase.css`; do not diverge manually. |
+| `assets/landing/landing.css` | PUBLIC_RUNTIME_ASSET | Landing public route mirror from `src/landing/landing.css`; do not diverge manually. |
 | `__gg/assets/css/gg-app.dev.css` | GENERATED_OUTPUT | Copied from `src/css/gg-app.source.css` by `tools/template-pack.mjs`. |
 | `__gg/assets/css/gg-app.min.css` | GENERATED_OUTPUT | Copied from `src/css/gg-app.source.css` by `tools/template-pack.mjs`. |
 | `__gg/assets/css/gg-critical.css` | GENERATED_OUTPUT | Copied from `src/css/gg-critical.source.css` by `tools/template-pack.mjs`. |

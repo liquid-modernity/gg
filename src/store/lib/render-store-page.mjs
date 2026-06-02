@@ -70,8 +70,8 @@ function buildCardDots(product) {
 
 export function buildGridBlock(products) {
   return products.map((product, index) => {
-    const detailHref = escapeHtmlAttr(product.sourceUrl || product.canonicalUrl || product.storeUrl);
     const publicHref = escapeHtmlAttr(product.storeUrl || product.canonicalUrl);
+    const detailHref = escapeHtmlAttr(product.storeUrl || product.canonicalUrl || product.sourceUrl);
     const name = escapeHtmlText(product.name);
     const summary = escapeHtmlAttr(product.summary);
     const image = escapeHtmlAttr(product.images[0]);
