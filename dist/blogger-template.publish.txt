@@ -1,4 +1,4 @@
-generated_at_utc=2026-06-02T08:23:07.785Z
+generated_at_utc=2026-06-02T12:45:50.473Z
 source_file=index.xml
 artifact_file=dist/blogger-template.publish.xml
 inline_css_mode=critical

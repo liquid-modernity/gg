@@ -27,6 +27,7 @@ npm run gaga:verify-sheet-search-visual-parity
 npm run gaga:verify-global-sheet-contract
 npm run gaga:verify-sheet-gesture-close
 npm run gaga:verify-85
+npm run gaga:verify-95
 npm run gaga:template:pack
 npm run gaga:verify-comments-proof
 node qa/copy-registry-guard.mjs
@@ -41,6 +42,7 @@ npm run store:build
 npm run store:proof
 npm run ci:qa
 npm run ci:85
+npm run ci:95
 ```
 
 ## Store Development Set
@@ -82,6 +84,21 @@ npm run gaga:verify-worker-live:strict
 ```
 
 Deploy only after local contract and Cloudflare CI gates pass. `deploy:cloudflare:prepared` uses the Cloudflare deploy wrapper without rebuilding Store/template artifacts first; this keeps the deploy workflow tied to the artifact state verified by `ci:cloudflare`. The deploy wrapper still reruns preflight and Cloudflare preparation from the verified source/artifact tree.
+
+## Release Candidate 95 Set
+
+```bash
+npm ci
+npm run build
+npm run ci:qa
+npm run ci:store
+npm run ci:cloudflare
+npm run ci:85
+npm run gaga:verify-95
+npm run ci:95
+```
+
+`npm run gaga:verify-95` is the read-only final release-candidate guard. `npm run ci:95` aggregates `npm run ci:85` and the RC95 guard; run `npm ci` separately first when proving a fresh dependency install. The guard reports blockers vs advisory warnings and keeps advisory budgets advisory unless strict release mode is explicit.
 
 ## GitHub Actions And Cloudflare Environment Contract
 
@@ -144,11 +161,14 @@ npm run ci:qa
 npm run ci:store
 npm run ci:cloudflare
 npm run ci:85
+npm run ci:95
 ```
 
 `PASS_WITH_WARNINGS` is acceptable only for known non-blocking warnings. `CONTRACT_FAILURE` or command exit failure must be treated as failing.
 
 `npm run gaga:verify-85` is the final readiness gate for crawlability, production/development indexing flags, route truth, performance budget notes, artifact parity, and deploy readiness. It is read-only and may return `PASS_WITH_WARNINGS` for documented development-mode or advisory Lighthouse/performance warnings.
+
+`npm run gaga:verify-95` is the release-candidate guard for Tasks 00-12 command wiring, final deploy sequence parity, generated/staged artifact presence after build, Worker non-HTMLRewriter ownership, and blocker/advisory classification. It is read-only and may return `PASS_WITH_WARNINGS` for development indexing lockdown or advisory budgets unless `GG_RC95_STRICT_RELEASE=1` is set.
 
 ## Script Inventory
 
@@ -176,6 +196,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `ci:store` | Store CI, full build, Store artifact smoke, and sheet contract smoke. | Mutating aggregate | Blocking build + contract | Yes via `ci:cloudflare` | Yes via `ci:cloudflare` | Store/smoke `PASS`; failures are `BUILD_FAILURE`/`CONTRACT_FAILURE`. |
 | `ci:cloudflare` | Store CI, aggregate QA, and Worker smoke script syntax check. | Mutating aggregate | Blocking CI | Yes in `.github/workflows/ci.yml` | Yes before deploy | `ci:store` + `ci:qa` output; failures are `CI_FAILURE`/command failure. |
 | `ci:85` | Full Cloudflare CI plus final readiness guard. | Mutating aggregate | Blocking release readiness, advisory warnings allowed | Manual/optional | Manual pre-release | `PASS`/`PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`/`CI_FAILURE`. |
+| `ci:95` | Full 85 gate plus RC95 final guard. | Mutating aggregate | Blocking release-candidate readiness, advisory warnings allowed | Manual/optional | Manual pre-release | `PASS`/`PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`/`CI_FAILURE`. |
 | `gaga:verify-store-artifact` / `gaga:verify-worker` | Legacy verify-named aggregate that runs Store artifact build/proof/smoke checks. | Mutating aggregate | Blocking build + contract | No direct CI call | Manual/legacy | Store artifact/sheet smoke `PASS`; failures are `BUILD_FAILURE`/`CONTRACT_FAILURE`. |
 | `gaga` / `gaga:dry` / `gaga:push` | Release wrapper aliases. | Mutating release | Blocking release wrapper | No | Manual release | Release wrapper output; failures are `CI_FAILURE`/command failure. |
 | `gaga:preflight` | Local preflight for release/deploy wrapper prerequisites. | Read-only | Blocking preflight | No | Indirect through deploy wrapper | Preflight output; failures are `CI_FAILURE`/command failure. |
@@ -224,6 +245,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-store-modal-preview` | Verify Store modal preview reliability contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `STORE MODAL PREVIEW RELIABILITY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-sheet-contract` | Browserless sheet contract smoke. | Blocking contract | Yes via `ci:store` | Yes via `ci:cloudflare` | `SHEET CONTRACT SMOKE RESULT: PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-worker-live` / `gaga:verify-worker-live:local` / `gaga:verify-worker-live:strict` | Live Worker smoke after deploy or Worker/static route changes. | Read-only live smoke | No normal CI | Yes after deploy for strict variant | `LIVE SMOKE WORKER RESULT: PASS`; failures are `CONTRACT_FAILURE`; local variant may allow known timeout warnings. |
+| `gaga:verify-95` | Verify release-candidate command wiring, deploy sequence parity, guard/artifact presence, Worker non-repair ownership, and blocker/advisory classification. | Blocking release-candidate contract, advisory warnings allowed | Yes via `ci:qa` | Yes before deploy through `ci:cloudflare` | `RELEASE CANDIDATE 95 GUARD PASS` or `PASS_WITH_WARNINGS`; failures are `CONTRACT_FAILURE`. |
 
 ### Failure Labels
 

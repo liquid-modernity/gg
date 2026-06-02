@@ -8,6 +8,7 @@ This report locks the final crawlability, performance, search/AI discoverability
 - `npm run gaga:verify-85` runs the readiness guard.
 - `npm run gaga:verify-lazy-interaction-budget` verifies lazy interaction and advisory budget boundaries.
 - `npm run ci:85` runs `npm run ci:cloudflare` and then the readiness guard.
+- `npm run ci:95` runs the full 85 gate and the final release-candidate guard.
 - The guard verifies the existing semantic SSR, schema JSON-LD, registry, a11y, asset architecture, cleanup, comments, navigation, Discovery, Store isolation, Theme, Shell, Preview, Store proof, template fingerprint, Worker syntax, and live-smoke script syntax gates.
 - Route truth remains `/landing = Home`, `/ = Blog`, and breadcrumb `Home(/landing) -> Blog(/) -> current`.
 - Blogger SSR, Blogger native comments, Blog1-safe schema, Store static artifacts, and Cloudflare Worker route policy remain the source-owned contracts.
@@ -50,6 +51,7 @@ This report locks the final crawlability, performance, search/AI discoverability
 - Keep the canonical host and HTTPS redirects enabled.
 - Confirm Worker diagnostics for `/`, `/landing`, `/store`, Store category routes, post detail, and page detail show production route policy with indexable HTML where intended.
 - Run `npm run ci:85`.
+- Run `npm run ci:95` for final release-candidate command/deploy parity and blocker/advisory classification.
 - Deploy only through the prepared Cloudflare path after `npm run ci:cloudflare` passes.
 - After deploy, run `npm run gaga:verify-worker-live:strict` against the production base URL.
 - Re-check live `/robots.txt`, `X-Robots-Tag`, canonical URL, schema parity, sitemap visibility, and post/page detail rendering before considering production indexing open.

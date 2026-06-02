@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-06-02T08:23:02.303Z",
-  "source": "live-feed",
-  "sourceType": "live-feed",
+  "timestamp": "2026-06-02T12:45:49.113Z",
+  "source": "existing-static",
+  "sourceType": "existing-static",
   "products": 5,
   "categoryCounts": {
     "Fashion": 1,
@@ -14,19 +14,26 @@
   "validProducts": 5,
   "invalidProducts": 0,
   "imageSourceSummary": {
-    "gg-store-data.images": 5,
+    "gg-store-data.images": 0,
     "post-content-img": 0,
     "media-thumbnail": 0,
-    "existing-static-fallback": 0,
+    "existing-static-fallback": 5,
     "missing": 0
   },
-  "imageSourceSummaryText": "gg-store-data.images:5, post-content-img:0, media-thumbnail:0, existing-static-fallback:0, missing:0",
+  "imageSourceSummaryText": "gg-store-data.images:0, post-content-img:0, media-thumbnail:0, existing-static-fallback:5, missing:0",
   "warnings": [
+    "minimal-desk-tray-organizer: used existing static image fallback",
     "minimal-desk-tray-organizer: placeholder image URL remains in non-production data",
+    "neutral-linen-overshirt: used existing static image fallback",
     "neutral-linen-overshirt: placeholder image URL remains in non-production data",
+    "braided-fast-charging-cable: used existing static image fallback",
     "braided-fast-charging-cable: placeholder image URL remains in non-production data",
+    "foldable-reusable-bag: used existing static image fallback",
     "foldable-reusable-bag: placeholder image URL remains in non-production data",
-    "lightweight-daily-sunscreen: placeholder image URL remains in non-production data"
+    "lightweight-daily-sunscreen: used existing static image fallback",
+    "lightweight-daily-sunscreen: placeholder image URL remains in non-production data",
+    "live Store feed unavailable; feed probe unavailable: curl: (6) Could not resolve host: pakrppstore.blogspot.com",
+    "STORE FEED PROBE NOTE curl: (6) Could not resolve host: pakrppstore.blogspot.com"
   ],
   "strict": false,
   "strictImages": false,
@@ -35,7 +42,7 @@
   "proofMode": "development",
   "ci": false,
   "manifestPath": "store/data/manifest.json",
-  "manifestBytes": 6640,
+  "manifestBytes": 6646,
   "manifestItems": 5,
   "manifestCategories": [
     {
@@ -238,6 +245,6 @@
     "categoryVisibleProducts": 60
   },
   "status": "unchanged",
-  "pageCount": 1,
+  "pageCount": 0,
   "error": ""
 }

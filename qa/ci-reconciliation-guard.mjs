@@ -18,7 +18,9 @@ const requiredScripts = [
   "gaga:verify-ci-reconciliation",
   "gaga:verify-handoff-hygiene",
   "gaga:verify-85",
+  "gaga:verify-95",
   "ci:85",
+  "ci:95",
 ];
 
 const majorGuardFiles = [
@@ -51,6 +53,7 @@ const majorGuardFiles = [
   "qa/nav-more-contract-guard.mjs",
   "qa/preview-sheet-contract-guard.mjs",
   "qa/readiness-85-guard.mjs",
+  "qa/release-candidate-95-guard.mjs",
   "qa/sheet-lifecycle-contract-guard.mjs",
   "qa/sheet-runtime-overflow-viewport-guard.mjs",
   "qa/shell-interaction-guard.mjs",
@@ -227,6 +230,24 @@ if (!scriptIncludes(scripts, "ci:85", "npm run ci:cloudflare") || !scriptInclude
   fail("ci:85 must run npm run ci:cloudflare and npm run gaga:verify-85");
 } else {
   pass("ci:85 is aggregate-driven through ci:cloudflare and readiness guard");
+}
+
+if (!scriptIncludes(scripts, "gaga:verify-95", "node qa/release-candidate-95-guard.mjs")) {
+  fail("gaga:verify-95 must run node qa/release-candidate-95-guard.mjs");
+} else {
+  pass("gaga:verify-95 points at qa/release-candidate-95-guard.mjs");
+}
+
+if (!scriptIncludes(scripts, "ci:qa", "npm run gaga:verify-95")) {
+  fail("ci:qa must include npm run gaga:verify-95");
+} else {
+  pass("ci:qa includes release candidate guard");
+}
+
+if (!scriptIncludes(scripts, "ci:95", "npm run ci:85") || !scriptIncludes(scripts, "ci:95", "npm run gaga:verify-95")) {
+  fail("ci:95 must run npm run ci:85 and npm run gaga:verify-95");
+} else {
+  pass("ci:95 is aggregate-driven through ci:85 and release candidate guard");
 }
 
 for (const file of majorGuardFiles) {

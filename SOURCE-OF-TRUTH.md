@@ -25,6 +25,7 @@ Primary source files include:
 - `REPO-STRUCTURE.md`: conservative repository map, edit/generated/commit policy, and runtime path stability notes.
 - `REPO-TIDY-REPORT.md`: repo tidy proof, ignored clutter handling, intentionally unmoved runtime folders, and QA record.
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
+- `RELEASE-CANDIDATE-95-REPORT.md`: final release-candidate command sequence, deploy parity, blocker/advisory warning policy, and production-indexing readiness report.
 - `LAZY-INTERACTION-BUDGET-REPORT.md`: source-owned lazy interaction and advisory budget boundary report.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs. `qa/handoff-hygiene-guard.mjs` verifies archive handoff contracts, and `tools/handoff-archive.mjs` creates deployable repo archives from git-visible source files.
 
@@ -176,6 +177,19 @@ Run lazy interaction budget verification:
 npm run gaga:verify-lazy-interaction-budget
 ```
 
+Run release candidate 95 verification:
+
+```bash
+npm ci
+npm run build
+npm run ci:qa
+npm run ci:store
+npm run ci:cloudflare
+npm run ci:85
+npm run gaga:verify-95
+npm run ci:95
+```
+
 ## Read-Only Guards
 
 Read-only guards verify contracts and must not write source, generated, or deployment artifact files. Mandatory guards are wired through `package.json` and `ci:qa`; advisory/manual guards must be documented in `QA-COMMANDS.md`.
@@ -195,6 +209,7 @@ Examples of mandatory read-only guards:
 - `qa/global-sheet-contract-guard.mjs`
 - `qa/sheet-gesture-close-guard.mjs`
 - `qa/readiness-85-guard.mjs`
+- `qa/release-candidate-95-guard.mjs`
 - `qa/docs-contract-guard.mjs`
 - `qa/handoff-hygiene-guard.mjs`
 - `qa/content-source-boundary-guard.mjs`
