@@ -2,6 +2,8 @@
 
 This file is the command index for local hardening, deploy preparation, and live smoke. Run commands from the repository root.
 
+Guard severity and validation authority are defined in `docs/ci-guard-policy.md`. Local macOS 10.15.x `npm ci` failures caused by the current `wrangler -> esbuild` native binary are documented in `docs/local-development.md` and classified as local environment blockers, not CI blockers, when GitHub Actions/Linux Node 20 validation passes.
+
 ## Standard Local Contract Set
 
 ```bash
@@ -99,6 +101,8 @@ npm run ci:95
 ```
 
 `npm run gaga:verify-95` is the read-only final release-candidate guard. `npm run ci:95` aggregates `npm run ci:85` and the RC95 guard; run `npm ci` separately first when proving a fresh dependency install. The guard reports blockers vs advisory warnings and keeps advisory budgets advisory unless strict release mode is explicit.
+
+On macOS 10.15.x, `npm ci` may fail locally because `@esbuild/darwin-x64@0.27.0` requires macOS 12.0. Do not downgrade `wrangler` or `esbuild` for that local-only failure without a separate dependency-risk task. Use GitHub Actions or Linux/Docker Node 20 as validation authority.
 
 ## GitHub Actions And Cloudflare Environment Contract
 

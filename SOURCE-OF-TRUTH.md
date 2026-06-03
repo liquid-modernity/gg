@@ -27,6 +27,8 @@ Primary source files include:
 - `READINESS-85-REPORT.md`: final crawlability, performance, AI/search discoverability, indexing flag, and deploy readiness gate report.
 - `RELEASE-CANDIDATE-95-REPORT.md`: final release-candidate command sequence, deploy parity, blocker/advisory warning policy, and production-indexing readiness report.
 - `LAZY-INTERACTION-BUDGET-REPORT.md`: source-owned lazy interaction and advisory budget boundary report.
+- `docs/ci-guard-policy.md`: blocker/warning/info guard severity policy, CI authority, local command expectations, and future guard classification rules.
+- `docs/local-development.md`: local development caveats, including macOS 10.15.x `npm ci` incompatibility with the current `wrangler -> esbuild` native binary.
 - `qa/*`, `tools/*`, `scripts/*`, `.github/workflows/*`, `package.json`, and docs. `qa/handoff-hygiene-guard.mjs` verifies archive handoff contracts, and `tools/handoff-archive.mjs` creates deployable repo archives from git-visible source files.
 
 ## Content Source Boundary
@@ -189,6 +191,8 @@ npm run ci:85
 npm run gaga:verify-95
 npm run ci:95
 ```
+
+Local macOS 10.15.x note: `npm ci` may fail before validation because the current transitive `@esbuild/darwin-x64@0.27.0` binary targets macOS 12.0. This is documented as a `LOCAL ENVIRONMENT BLOCKER` and `CI NON-BLOCKING LOCAL ISSUE` in `docs/audits/LOCAL_NPM_CI_ESBUILD_COMPATIBILITY_REPORT.md`; use GitHub Actions or Linux/Docker Node 20 for validation authority instead of downgrading package versions.
 
 ## Read-Only Guards
 
