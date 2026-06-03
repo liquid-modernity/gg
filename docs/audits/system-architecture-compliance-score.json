@@ -1,0 +1,44 @@
+{
+  "overallScore": 86,
+  "status": "not-ready",
+  "categories": {
+    "htmlFallbackSeo": 92,
+    "sourceOfTruth": 90,
+    "registryArchitecture": 95,
+    "javascriptController": 90,
+    "cssVisualSystem": 84,
+    "accessibility": 86,
+    "performance": 78,
+    "routeStability": 94,
+    "repoStructure": 84,
+    "sourceGeneratedBoundary": 91,
+    "ciQaGuards": 88,
+    "cloudflareDeploy": 82,
+    "storeReadiness": 78,
+    "repoHygiene": 68,
+    "aiAgentReadability": 88,
+    "humanMaintainability": 84
+  },
+  "blockers": [
+    "Local npm ci fails on esbuild binary validation, so clean local install is not proven.",
+    "Production indexing is intentionally blocked by development flags.",
+    "Store live feed was unreachable in this environment and build reused existing static snapshot.",
+    "Store output still reports placeholder/static fallback images.",
+    "Strict post-deploy live smoke was not run in this audit."
+  ],
+  "warnings": [
+    "ci:qa, ci:85, and ci:95 passed with documented warnings.",
+    "CSS visual rhythm, lazy interaction budget, and a11y static checks have advisory warnings.",
+    "App CSS, app JS, Store CSS, and Store discovery JS exceed advisory budgets.",
+    ".DS_Store and ignored archive files exist locally.",
+    "Generated Store/template artifacts changed timestamp-only fields during audit commands.",
+    "Lighthouse workflow remains advisory/non-blocking."
+  ],
+  "recommendedNextTasks": [
+    "Clean ignored macOS junk and archive clutter with approval.",
+    "Resolve local npm ci/esbuild compatibility.",
+    "Reconcile Store production readiness: live feed, images, strict proof.",
+    "Reduce advisory CSS/JS budget overages.",
+    "Run production flag/deploy readiness and strict live smoke after approved deploy."
+  ]
+}
