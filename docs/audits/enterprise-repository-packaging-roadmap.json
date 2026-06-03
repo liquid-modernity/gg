@@ -1,0 +1,135 @@
+{
+  "task": "enterprise-repository-packaging-roadmap",
+  "status": "planning-only",
+  "goal": "client-ready enterprise-grade repository structure and packaging",
+  "runtimePathsProtected": true,
+  "packageWorkflowProtected": true,
+  "productionFlagsProtected": true,
+  "validationAuthority": "GitHub Actions / Linux Node 20",
+  "localNpmCiClassification": [
+    "LOCAL ENVIRONMENT BLOCKER",
+    "CI NON-BLOCKING LOCAL ISSUE"
+  ],
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Documentation Lifecycle and Root Declutter Policy",
+      "risk": "low",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-2",
+      "name": "Audit and Report Grouping",
+      "risk": "low-medium",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-3",
+      "name": "Root Report Consolidation",
+      "risk": "medium",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-4",
+      "name": "Task Folder Lifecycle",
+      "risk": "medium",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-5",
+      "name": "Archive and ZIP Externalization",
+      "risk": "low-medium",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-6",
+      "name": "Naming Cleanup for Spaces and Ambiguous Paths",
+      "risk": "medium-high",
+      "implementationTaskRequired": true
+    },
+    {
+      "id": "phase-7",
+      "name": "Client-Ready Distribution Package",
+      "risk": "medium",
+      "implementationTaskRequired": true
+    }
+  ],
+  "doNotMove": [
+    "index.xml",
+    "worker.js",
+    "store.html",
+    "landing.html",
+    "flags.json",
+    "gg-flags.json",
+    "package.json",
+    "package-lock.json",
+    ".github/workflows/*",
+    "wrangler.jsonc",
+    "store/data/*",
+    "dist/store/data/*",
+    "dist/blogger-template.publish.*",
+    ".cloudflare-build/*",
+    "__gg/assets/*",
+    "assets/store/*",
+    "registry/*",
+    "src/registry/*",
+    "src/js/modules/*",
+    "src/css/modules/*",
+    "src/store/*",
+    "qa/*",
+    "tools/*",
+    "task/index-backup.xml",
+    "docs/archive/template-deprecated/*"
+  ],
+  "candidateMoves": [
+    {
+      "path": "root reports",
+      "target": "docs/reports/",
+      "risk": "medium"
+    },
+    {
+      "path": "docs/audits/* flat files",
+      "target": "docs/audits/{repository,cleanup,ci,local,architecture}/",
+      "risk": "low-medium"
+    },
+    {
+      "path": "task/* history files",
+      "target": "task/{active,completed,archive}/",
+      "risk": "medium"
+    },
+    {
+      "path": "root ZIP archives",
+      "target": "external archive outside repository",
+      "risk": "low-medium"
+    },
+    {
+      "path": "registry/original/*",
+      "target": "docs/archive/registry-original/",
+      "risk": "medium-high"
+    }
+  ],
+  "candidateRenames": [
+    {
+      "path": "src/knowledge base",
+      "target": "src/knowledge-base",
+      "risk": "medium-high"
+    },
+    {
+      "path": "assets/knowledge base",
+      "target": "assets/knowledge-base",
+      "risk": "high"
+    },
+    {
+      "path": "task/task-004-audit local npm ci esbuild compatibility.md",
+      "target": "task/task-004-audit-local-npm-ci-esbuild-compatibility.md",
+      "risk": "medium"
+    }
+  ],
+  "recommendedNextTask": "Phase 1: create documentation lifecycle and root declutter policy docs without moving files.",
+  "requiredValidation": [
+    "git diff --check",
+    "npm run gaga:verify-docs-contract",
+    "npm run gaga:verify-repo-structure-tidy",
+    "npm run gaga:verify-ci-reconciliation"
+  ]
+}
