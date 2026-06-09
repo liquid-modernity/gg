@@ -11,7 +11,8 @@
   border-radius: var(--gg-toolbar-radius);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  width: 44px;
+  width: auto;
+  min-width: 44px;
   height: 44px;
   justify-content: center;
 }
@@ -45,6 +46,22 @@
   min-height: 44px;
   padding: 0;
   border-radius: 999px;
+}
+
+.gg-detail-toolbar__action--save {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.gg-detail-toolbar__action--save[aria-pressed='true'] {
+  color: var(--gg-accent);
 }
 
 .gg-detail-toolbar__action--comments .gg-detail-toolbar__comments-icon {

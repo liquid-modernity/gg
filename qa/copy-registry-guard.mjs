@@ -100,7 +100,18 @@ const REQUIRED = {
     'discovery.empty.title': 'No results',
     'discovery.empty.body': 'Try another keyword.',
     'discovery.saved.empty.title': 'No saved items yet.',
-    'discovery.saved.empty.body': 'Save articles or products to find them here.'
+    'discovery.saved.empty.body': 'Save articles or products to find them here.',
+    'related.title': 'Related posts',
+    'related.empty': 'No related posts yet.',
+    'saved.action.save': 'Save',
+    'saved.action.saved': 'Saved',
+    'saved.action.saveArticle': 'Save article',
+    'saved.action.savedArticle': 'Saved article',
+    'saved.empty.title': 'No saved articles yet.',
+    'saved.empty.body': 'Save articles from previews or article pages to find them here.',
+    'saved.empty.unavailable': 'Saved articles are unavailable on this browser.',
+    'saved.status.saved': 'Article saved.',
+    'saved.status.removed': 'Article removed from saved articles.'
   },
   id: {
     'comments.title': 'Komentar',
@@ -194,7 +205,18 @@ const REQUIRED = {
     'discovery.empty.title': 'Tidak ada hasil',
     'discovery.empty.body': 'Coba kata kunci lain.',
     'discovery.saved.empty.title': 'Belum ada item tersimpan.',
-    'discovery.saved.empty.body': 'Simpan artikel atau produk untuk menemukannya di sini.'
+    'discovery.saved.empty.body': 'Simpan artikel atau produk untuk menemukannya di sini.',
+    'related.title': 'Posting terkait',
+    'related.empty': 'Belum ada posting terkait.',
+    'saved.action.save': 'Simpan',
+    'saved.action.saved': 'Tersimpan',
+    'saved.action.saveArticle': 'Simpan artikel',
+    'saved.action.savedArticle': 'Artikel tersimpan',
+    'saved.empty.title': 'Belum ada artikel tersimpan.',
+    'saved.empty.body': 'Simpan artikel dari pratinjau atau halaman artikel untuk menemukannya di sini.',
+    'saved.empty.unavailable': 'Artikel tersimpan tidak tersedia di browser ini.',
+    'saved.status.saved': 'Artikel disimpan.',
+    'saved.status.removed': 'Artikel dihapus dari daftar tersimpan.'
   }
 };
 

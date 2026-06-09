@@ -86,6 +86,27 @@ window.GG = window.GG || {};
                 }
               }
             },
+            related: {
+              title: 'Related posts',
+              empty: 'No related posts yet.'
+            },
+            saved: {
+              action: {
+                save: 'Save',
+                saved: 'Saved',
+                saveArticle: 'Save article',
+                savedArticle: 'Saved article'
+              },
+              empty: {
+                title: 'No saved articles yet.',
+                body: 'Save articles from previews or article pages to find them here.',
+                unavailable: 'Saved articles are unavailable on this browser.'
+              },
+              status: {
+                saved: 'Article saved.',
+                removed: 'Article removed from saved articles.'
+              }
+            },
             dock: {
               home: 'Home',
               contact: 'Contact',
@@ -362,6 +383,27 @@ window.GG = window.GG || {};
                   title: 'Belum ada item tersimpan.',
                   body: 'Simpan artikel atau produk untuk menemukannya di sini.'
                 }
+              }
+            },
+            related: {
+              title: 'Posting terkait',
+              empty: 'Belum ada posting terkait.'
+            },
+            saved: {
+              action: {
+                save: 'Simpan',
+                saved: 'Tersimpan',
+                saveArticle: 'Simpan artikel',
+                savedArticle: 'Artikel tersimpan'
+              },
+              empty: {
+                title: 'Belum ada artikel tersimpan.',
+                body: 'Simpan artikel dari pratinjau atau halaman artikel untuk menemukannya di sini.',
+                unavailable: 'Artikel tersimpan tidak tersedia di browser ini.'
+              },
+              status: {
+                saved: 'Artikel disimpan.',
+                removed: 'Artikel dihapus dari daftar tersimpan.'
               }
             },
             dock: {
@@ -753,6 +795,16 @@ window.GG = window.GG || {};
           acceptanceNote: 'Preview now uses a content-sheet contract so the title flows with content instead of inheriting the utility-sheet head.'
         };
 
+        var BLOG_RETENTION_CONTRACT = {
+          savedStorageKey: 'gg:saved:v1',
+          savedRouteHash: '#saved',
+          savedShape: ['title', 'url', 'summary', 'date', 'source', 'surface', 'savedAt'],
+          relatedMin: 3,
+          relatedMax: 6,
+          relatedSourcePriority: ['labels', 'recent'],
+          storeExclusion: 'exclude Store/Yellow Cart content from blog saved and related results'
+        };
+
         var BOTTOM_SAFE_ZONE_CONTRACT = {
           dockClearanceToken: '--gg-dock-clearance',
           sharedSafeZoneToken: '--gg-shell-bottom-clearance',
@@ -943,6 +995,8 @@ window.GG = window.GG || {};
           '.gg-entry-row__title-trigger',
           '.gg-entry-row__action',
           '.gg-detail-toolbar__action',
+          '.gg-preview__save',
+          '.gg-article-save',
           '.gg-detail-outline__peek',
           '.gg-detail-outline__item-button',
           '.gg-discovery-tab',
@@ -1035,6 +1089,7 @@ window.GG = window.GG || {};
           previewTaxonomyItemTemplate: document.getElementById('gg-preview-taxonomy-item-template'),
           previewTocItemTemplate: document.getElementById('gg-preview-toc-item-template'),
           previewCta: document.getElementById('gg-preview-cta'),
+          previewSave: document.querySelector('#gg-preview-sheet [data-gg-save-article]'),
           more: document.getElementById('gg-more-panel'),
           morePanel: document.querySelector('#gg-more-panel .gg-sheet__panel'),
           moreScrim: document.querySelector('#gg-more-panel .gg-sheet__scrim'),
@@ -1055,6 +1110,10 @@ window.GG = window.GG || {};
           commentsComposerSlot: document.getElementById('gg-comments-composer-slot'),
           article: document.querySelector('.gg-article'),
           articleBody: document.querySelector('.gg-article .gg-post-body'),
+          articleSave: document.querySelector('.gg-article-save[data-gg-save-article]'),
+          relatedPosts: document.getElementById('gg-related-posts'),
+          relatedPostsList: document.getElementById('gg-related-posts-list'),
+          relatedPostsEmpty: document.getElementById('gg-related-posts-empty'),
           detailToolbar: document.querySelector('.gg-detail-toolbar'),
           detailCommentsAction: document.querySelector('[data-gg-action="comments-open"], .gg-detail-toolbar__action[data-gg-open="comments"], [data-gg-postbar="comments"]'),
           detailCommentsCount: document.getElementById('gg-detail-comments-count'),
@@ -1089,6 +1148,10 @@ window.GG = window.GG || {};
           previewCache: {},
           previewPayload: null,
           previewUrl: '',
+          savedArticles: [],
+          savedStorageAvailable: true,
+          savedListingActive: false,
+          savedListingOriginalHidden: false,
           discoveryIndex: null,
           discoveryIndexPromise: null,
           discoveryQuery: '',
@@ -1152,6 +1215,9 @@ window.GG = window.GG || {};
           detailOutlineGesture: null,
           detailOutlineManualOpen: false,
           detailOutlineManualOpenAt: 0,
+          relatedPosts: [],
+          relatedSource: 'pending',
+          relatedRenderPromise: null,
           searchEmptyFallbackState: 'idle',
           searchEmptyFallbackRequestId: 0,
           searchEmptyFallbackTimeoutId: 0,
@@ -6244,6 +6310,7 @@ window.GG = window.GG || {};
           appendedCount = appended.length;
           if (appendedCount) {
             ui.listing.appendChild(fragment);
+            if (state.savedListingActive) renderSavedListing();
           }
 
           nextOlderUrl = nextOlderUrl && nextOlderUrl !== responseUrl ? nextOlderUrl : '';
@@ -6522,6 +6589,308 @@ window.GG = window.GG || {};
             surface: row.getAttribute('data-gg-surface') || 'root-listing',
             source: row.getAttribute('data-gg-source') || 'rootSource'
           };
+        }
+
+        function normalizeArticleUrl(url) {
+          var resolved = toAbsoluteUrl(url || '', window.location.href);
+          if (!resolved) return '';
+          return resolved.replace(/#.*$/, '').replace(/\/$/, '');
+        }
+
+        function safeReadSavedArticles() {
+          var raw;
+          var parsed;
+          var items = [];
+          var i;
+          var item;
+
+          try {
+            raw = window.localStorage ? window.localStorage.getItem(BLOG_RETENTION_CONTRACT.savedStorageKey) : null;
+            state.savedStorageAvailable = true;
+          } catch (error) {
+            state.savedStorageAvailable = false;
+            return [];
+          }
+
+          if (!raw) return [];
+
+          try {
+            parsed = JSON.parse(raw);
+          } catch (error) {
+            return [];
+          }
+
+          if (!Array.isArray(parsed)) return [];
+
+          for (i = 0; i < parsed.length; i += 1) {
+            item = sanitizeSavedArticle(parsed[i]);
+            if (item) items.push(item);
+          }
+
+          return items;
+        }
+
+        function safeWriteSavedArticles(items) {
+          try {
+            if (!window.localStorage) throw new Error('localStorage_unavailable');
+            window.localStorage.setItem(BLOG_RETENTION_CONTRACT.savedStorageKey, JSON.stringify(Array.isArray(items) ? items : []));
+            state.savedStorageAvailable = true;
+            return true;
+          } catch (error) {
+            state.savedStorageAvailable = false;
+            return false;
+          }
+        }
+
+        function sanitizeSavedArticle(item) {
+          var source = item || {};
+          var url = normalizeArticleUrl(source.url || source.href || '');
+          var title = stripHtml(source.title || '');
+
+          if (!url || !title) return null;
+
+          return {
+            title: title,
+            url: url,
+            summary: stripHtml(source.summary || '').slice(0, 280),
+            date: source.date || source.published || '',
+            source: source.source || 'rootSource',
+            surface: source.surface || 'blog',
+            savedAt: source.savedAt || (new Date()).toISOString()
+          };
+        }
+
+        function getSavedArticles() {
+          state.savedArticles = safeReadSavedArticles();
+          return state.savedArticles.slice();
+        }
+
+        function isArticleSaved(url) {
+          var key = normalizeArticleUrl(url);
+          var items = state.savedArticles && state.savedArticles.length ? state.savedArticles : getSavedArticles();
+          var i;
+
+          if (!key) return false;
+          for (i = 0; i < items.length; i += 1) {
+            if (normalizeArticleUrl(items[i].url) === key) return true;
+          }
+          return false;
+        }
+
+        function getArticleLabelsFromDom(root) {
+          var scope = root || document;
+          var nodes = scope.querySelectorAll('.gg-taxonomy__link, [rel="tag"]');
+          var labels = [];
+          var seen = {};
+          var i;
+          var text;
+          var key;
+
+          for (i = 0; i < nodes.length; i += 1) {
+            text = stripHtml(nodes[i].textContent || '');
+            key = normalizeTopicKey(text);
+            if (!text || !key || seen[key]) continue;
+            seen[key] = true;
+            labels.push(text);
+          }
+
+          return labels;
+        }
+
+        function getCurrentArticlePayload() {
+          if (!ui.article) return null;
+          return {
+            title: ui.article.getAttribute('data-gg-title') || ui.article.getAttribute('data-gg-post-title') || document.title || '',
+            url: ui.article.getAttribute('data-gg-url') || ui.article.getAttribute('data-gg-post-url') || window.location.href,
+            summary: stripHtml(ui.article.getAttribute('data-gg-summary') || ui.article.getAttribute('data-gg-post-summary') || ''),
+            date: ui.article.getAttribute('data-gg-date') || ui.article.getAttribute('data-gg-post-published') || '',
+            source: ui.article.getAttribute('data-gg-source') || 'rootSource',
+            surface: 'blog',
+            labelTexts: getArticleLabelsFromDom(ui.article)
+          };
+        }
+
+        function getPreviewArticlePayload() {
+          var payload = state.previewPayload || {};
+          var detail = payload.url && state.previewCache[payload.url] ? state.previewCache[payload.url] : {};
+          var labels = Array.isArray(detail.labels) ? detail.labels.map(function (label) {
+            return label && label.text ? label.text : '';
+          }).filter(Boolean) : [];
+
+          if (!payload.url && !detail.title) return null;
+
+          return {
+            title: detail.title || payload.title || '',
+            url: payload.url || '',
+            summary: payload.summary || detail.summary || '',
+            date: detail.published || payload.date || '',
+            source: payload.source || 'rootSource',
+            surface: 'blog',
+            labelTexts: labels
+          };
+        }
+
+        function getSavePayloadForTrigger(trigger) {
+          if (trigger && trigger.closest && trigger.closest('#gg-preview-sheet')) return getPreviewArticlePayload();
+          return getCurrentArticlePayload() || getPreviewArticlePayload();
+        }
+
+        function syncSaveButton(button, payload) {
+          var target = button;
+          var item = payload || getSavePayloadForTrigger(target);
+          var saved = item && item.url ? isArticleSaved(item.url) : false;
+          var icon;
+          var label;
+          var saveKey;
+          var savedKey;
+
+          if (!target) return;
+
+          saveKey = target.classList.contains('gg-article-save') ? 'saved.action.saveArticle' : 'saved.action.save';
+          savedKey = target.classList.contains('gg-article-save') ? 'saved.action.savedArticle' : 'saved.action.saved';
+          target.setAttribute('aria-pressed', saved ? 'true' : 'false');
+          target.setAttribute('data-gg-saved-state', saved ? 'saved' : 'unsaved');
+          target.setAttribute('aria-label', getCopy(saved ? savedKey : saveKey));
+          target.setAttribute('title', getCopy(saved ? savedKey : saveKey));
+          if (!state.savedStorageAvailable) target.setAttribute('data-gg-save-unavailable', 'true');
+          else target.removeAttribute('data-gg-save-unavailable');
+
+          icon = target.querySelector('[data-gg-save-icon]');
+          if (icon) icon.textContent = saved ? 'bookmark' : 'bookmark_border';
+          label = target.querySelector('[data-gg-save-label]');
+          if (label) label.textContent = getCopy(saved ? savedKey : saveKey);
+          else if (!target.classList.contains('gg-article-save')) target.textContent = getCopy(saved ? savedKey : saveKey);
+        }
+
+        function syncSaveButtons() {
+          if (ui.previewSave) syncSaveButton(ui.previewSave, getPreviewArticlePayload());
+          if (ui.articleSave) syncSaveButton(ui.articleSave, getCurrentArticlePayload());
+        }
+
+        function renderSavedListing() {
+          var rows;
+          var i;
+          var node;
+          var items;
+          var fragment;
+
+          if (!ui.listing) return;
+
+          rows = ui.listing.querySelectorAll(LISTING_ROW_SELECTOR + ', [data-gg-saved-row], [data-gg-saved-empty]');
+          for (i = 0; i < rows.length; i += 1) {
+            if (rows[i].hasAttribute('data-gg-saved-row') || rows[i].hasAttribute('data-gg-saved-empty')) {
+              rows[i].remove();
+            } else if (state.savedListingActive) {
+              rows[i].hidden = true;
+            } else {
+              rows[i].hidden = false;
+            }
+          }
+
+          if (!state.savedListingActive) {
+            if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
+            return;
+          }
+
+          if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = true;
+          fragment = document.createDocumentFragment();
+
+          if (!state.savedStorageAvailable) {
+            node = document.createElement('p');
+            node.className = 'gg-saved-listing-empty';
+            node.setAttribute('data-gg-saved-empty', 'unavailable');
+            node.setAttribute('role', 'status');
+            node.textContent = getCopy('saved.empty.unavailable');
+            fragment.appendChild(node);
+            ui.listing.appendChild(fragment);
+            return;
+          }
+
+          items = getSavedArticles();
+
+          if (!items.length) {
+            node = document.createElement('section');
+            node.className = 'gg-saved-listing-empty';
+            node.setAttribute('data-gg-saved-empty', 'true');
+            node.setAttribute('role', 'status');
+            node.setAttribute('aria-live', 'polite');
+            node.innerHTML = '<h2>' + escapeHtml(getCopy('saved.empty.title')) + '</h2><p>' + escapeHtml(getCopy('saved.empty.body')) + '</p>';
+            fragment.appendChild(node);
+            ui.listing.appendChild(fragment);
+            return;
+          }
+
+          for (i = 0; i < items.length; i += 1) {
+            node = document.createElement('article');
+            node.className = 'gg-entry-row gg-entry-row--saved';
+            node.setAttribute('data-gg-saved-row', 'true');
+            node.setAttribute('data-gg-post-url', items[i].url);
+            node.setAttribute('data-gg-url', items[i].url);
+            node.setAttribute('data-gg-title', items[i].title);
+            node.setAttribute('data-gg-summary', items[i].summary || '');
+            node.setAttribute('data-gg-date', items[i].date || '');
+            node.setAttribute('data-gg-source', items[i].source || 'rootSource');
+            node.setAttribute('data-gg-surface', 'saved-listing');
+            node.setAttribute('data-gg-type', 'post');
+            node.setAttribute('role', 'listitem');
+            node.innerHTML = '<h2 class="gg-entry-row__title"><a aria-controls="gg-preview-sheet" aria-expanded="false" class="gg-entry-row__title-trigger" data-gg-open="preview" href="' + escapeHtml(items[i].url) + '">' + escapeHtml(items[i].title) + '</a></h2><button aria-controls="gg-preview-sheet" aria-expanded="false" class="gg-entry-row__action" data-gg-copy="listing.details" data-gg-open="preview" type="button">' + escapeHtml(getCopy('listing.details')) + '</button>';
+            fragment.appendChild(node);
+          }
+
+          ui.listing.appendChild(fragment);
+        }
+
+        function syncSavedListingFromHash() {
+          var active = window.location.hash === BLOG_RETENTION_CONTRACT.savedRouteHash;
+          if (!ui.listing || !(state.surfaceContext && state.surfaceContext.isListing)) return;
+          if (state.savedListingActive === active && active) {
+            renderSavedListing();
+            return;
+          }
+          state.savedListingActive = active;
+          if (ui.shell) ui.shell.setAttribute('data-gg-saved-listing', active ? 'active' : 'inactive');
+          renderSavedListing();
+        }
+
+        function toggleSaveArticle(trigger) {
+          var payload = sanitizeSavedArticle(getSavePayloadForTrigger(trigger));
+          var items = getSavedArticles();
+          var key = payload ? normalizeArticleUrl(payload.url) : '';
+          var next = [];
+          var removed = false;
+          var i;
+
+          if (!payload || !key) return false;
+
+          if (isStoreContent(payload)) return false;
+
+          for (i = 0; i < items.length; i += 1) {
+            if (normalizeArticleUrl(items[i].url) === key) {
+              removed = true;
+              continue;
+            }
+            next.push(items[i]);
+          }
+
+          if (!removed) {
+            payload.savedAt = (new Date()).toISOString();
+            next.unshift(payload);
+          }
+
+          if (!safeWriteSavedArticles(next)) {
+            syncSaveButtons();
+            renderSavedListing();
+            return false;
+          }
+
+          state.savedArticles = next;
+          syncSaveButtons();
+          renderSavedListing();
+          if (state.panelActive === 'command') {
+            renderDiscovery(getCommandValue(), { open: false });
+          }
+          if (ui.shell) ui.shell.setAttribute('data-gg-save-last-action', removed ? 'removed' : 'saved');
+          return true;
         }
 
         function parseCommentCount(value) {
@@ -6842,6 +7211,7 @@ window.GG = window.GG || {};
           ui.previewCta.href = payload.url || '#';
           ui.previewImage.removeAttribute('src');
           ui.previewMedia.hidden = true;
+          syncSaveButtons();
           window.requestAnimationFrame(function () { resetPreviewScroll('open-after-render'); });
         }
 
@@ -6876,6 +7246,7 @@ window.GG = window.GG || {};
             ui.previewStatus.textContent = getCopy('preview.noHeadings');
             syncPreviewTocItems([]);
           }
+          syncSaveButtons();
           window.requestAnimationFrame(function () { resetPreviewScroll('open-after-render'); });
         }
 
@@ -7046,6 +7417,7 @@ window.GG = window.GG || {};
               syncPreviewMeta([]);
               syncPreviewTaxonomy([]);
               syncPreviewTocItems([]);
+              syncSaveButtons();
             });
         }
 
@@ -7628,6 +8000,7 @@ window.GG = window.GG || {};
             href: post && post.href ? post.href : '',
             summary: post && post.summary ? post.summary : '',
             labelTexts: post && post.labelTexts ? post.labelTexts : [],
+            date: post && post.date ? post.date : (post && post.published ? post.published : ''),
             content: post && post.content ? post.content : '',
             raw: post && post.raw ? post.raw : ''
           });
@@ -7640,6 +8013,7 @@ window.GG = window.GG || {};
             existing.title = existing.title || hydrated.title;
             existing.href = existing.href || hydrated.href;
             if (!existing.summary && hydrated.summary) existing.summary = hydrated.summary;
+            if (!existing.date && hydrated.date) existing.date = hydrated.date;
             existing.labelTexts = sanitizeTopicTexts((existing.labelTexts || []).concat(hydrated.labelTexts || []));
             refreshDiscoveryPostSearchText(existing);
             return existing;
@@ -7706,6 +8080,7 @@ window.GG = window.GG || {};
           var category;
           var labelTexts;
           var label;
+          var date;
 
           for (i = 0; i < entries.length; i += 1) {
             entry = entries[i];
@@ -7713,6 +8088,7 @@ window.GG = window.GG || {};
             href = extractHref(entry);
             summary = entry.summary ? stripHtml(entry.summary.$t) : '';
             if (!summary && entry.content && entry.content.$t) summary = stripHtml(entry.content.$t);
+            date = entry.published ? entry.published.$t : (entry.updated ? entry.updated.$t : '');
             category = entry.category || [];
             labelTexts = [];
 
@@ -7726,6 +8102,7 @@ window.GG = window.GG || {};
               title: title,
               href: href,
               summary: summary,
+              date: date,
               labelTexts: labelTexts,
               content: entry.content && entry.content.$t ? entry.content.$t : '',
               raw: JSON.stringify(entry)
@@ -7892,6 +8269,7 @@ window.GG = window.GG || {};
             target: item.target || '',
             keywords: keywords.map(function (keyword) { return String(keyword || ''); }).filter(Boolean),
             priority: Number(item.priority || 0),
+            saved: item.saved === true,
             text: String([title, meta, keywords.join(' ')].join(' ')).toLowerCase().replace(/\s+/g, ' ').trim()
           };
         }
@@ -7946,6 +8324,23 @@ window.GG = window.GG || {};
               href: post.href,
               keywords: (post.labelTexts || []).concat([post.summary || '']),
               priority: 50 - Math.min(index, 20)
+            });
+          }).filter(function (item) {
+            return !!(item && item.title && item.href);
+          });
+        }
+
+        function savedArticlesAdapter() {
+          return getSavedArticles().map(function (item, index) {
+            return createGlobalDiscoveryItem({
+              id: 'saved:' + (item.url || item.title || index),
+              type: 'article',
+              title: item.title,
+              meta: item.summary || getCopy('saved.action.saved'),
+              href: item.url,
+              keywords: [item.summary || '', 'saved', 'bookmark'],
+              priority: 90 - Math.min(index, 40),
+              saved: true
             });
           }).filter(function (item) {
             return !!(item && item.title && item.href);
@@ -8022,6 +8417,7 @@ window.GG = window.GG || {};
         function getGlobalDiscoveryItems() {
           var index = state.discoveryIndex || { posts: [], topics: [] };
           return buildGlobalDiscoveryBaseItems()
+            .concat(savedArticlesAdapter())
             .concat(globalArticlesAdapter(index))
             .concat(globalTopicsAdapter(index));
         }
@@ -8082,6 +8478,167 @@ window.GG = window.GG || {};
           }).sort(function (a, b) {
             return b._score - a._score || (b.priority || 0) - (a.priority || 0);
           }).slice(0, 14);
+        }
+
+        function relatedDateScore(value) {
+          var time = Date.parse(value || '');
+          if (isNaN(time)) return 0;
+          return Math.max(0, Math.min(6, Math.round((time - Date.now() + (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 60))));
+        }
+
+        function getCurrentRelatedContext() {
+          var payload = getCurrentArticlePayload();
+          if (!payload) return null;
+          payload.urlKey = normalizeArticleUrl(payload.url);
+          payload.topicKeys = sanitizeTopicTexts(payload.labelTexts || []).map(normalizeTopicKey);
+          return payload;
+        }
+
+        function scoreRelatedPost(post, context) {
+          var candidate = post || {};
+          var candidateKey = normalizeArticleUrl(candidate.href || candidate.url || '');
+          var labels = sanitizeTopicTexts(candidate.labelTexts || []);
+          var topicKeys = labels.map(normalizeTopicKey);
+          var score = 0;
+          var shared = 0;
+          var i;
+
+          if (!candidateKey || !context || !context.urlKey) return -100;
+          if (candidateKey === context.urlKey) return -100;
+          if (isStoreContent(candidate)) return -100;
+
+          for (i = 0; i < topicKeys.length; i += 1) {
+            if (context.topicKeys.indexOf(topicKeys[i]) > -1) {
+              score += 10;
+              shared += 1;
+            }
+          }
+
+          if (shared) score += 3;
+          score += relatedDateScore(candidate.date || candidate.published || '');
+          if (!score) score += 1;
+          return score;
+        }
+
+        function buildRelatedPosts(index) {
+          var context = getCurrentRelatedContext();
+          var posts = index && index.posts ? index.posts.slice() : [];
+          var scored = [];
+          var i;
+          var post;
+          var score;
+
+          if (!context) return [];
+
+          for (i = 0; i < posts.length; i += 1) {
+            post = posts[i];
+            score = scoreRelatedPost(post, context);
+            if (score <= -100) continue;
+            scored.push({
+              title: stripHtml(post.title || ''),
+              href: post.href || '',
+              summary: stripHtml(post.summary || ''),
+              labelTexts: sanitizeTopicTexts(post.labelTexts || []),
+              date: post.date || post.published || '',
+              score: score
+            });
+          }
+
+          scored.sort(function (a, b) {
+            return b.score - a.score || relatedDateScore(b.date) - relatedDateScore(a.date) || a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+          });
+
+          return scored.slice(0, BLOG_RETENTION_CONTRACT.relatedMax);
+        }
+
+        function createRelatedPostNode(item) {
+          var link = document.createElement('a');
+          var type = document.createElement('span');
+          var title = document.createElement('strong');
+          var meta = document.createElement('span');
+
+          if (!item || !item.href || !item.title) return null;
+
+          link.className = 'gg-related-posts__item';
+          link.setAttribute('role', 'listitem');
+          link.href = item.href;
+
+          type.className = 'gg-related-posts__type';
+          type.textContent = getCopy('discovery.type.article');
+
+          title.className = 'gg-related-posts__title-text';
+          title.textContent = item.title;
+
+          meta.className = 'gg-related-posts__meta';
+          meta.textContent = item.labelTexts && item.labelTexts.length ? item.labelTexts.slice(0, 2).join(' · ') : (item.summary || '');
+
+          link.appendChild(type);
+          link.appendChild(title);
+          link.appendChild(meta);
+          return link;
+        }
+
+        function renderRelatedPosts(items, source) {
+          var list = Array.isArray(items) ? items : [];
+          var nodes = [];
+          var i;
+          var node;
+
+          state.relatedPosts = list;
+          state.relatedSource = source || (list.length ? 'recent' : 'empty');
+
+          if (!ui.relatedPosts || !ui.relatedPostsList) return;
+
+          ui.relatedPosts.setAttribute('data-gg-related-source', state.relatedSource);
+
+          if (!list.length) {
+            replaceNodeChildren(ui.relatedPostsList, []);
+            if (ui.relatedPostsEmpty) {
+              ui.relatedPostsEmpty.hidden = false;
+              ui.relatedPostsEmpty.textContent = getCopy('related.empty');
+            }
+            ui.relatedPosts.hidden = true;
+            return;
+          }
+
+          for (i = 0; i < list.length; i += 1) {
+            node = createRelatedPostNode(list[i]);
+            if (node) nodes.push(node);
+          }
+
+          replaceNodeChildren(ui.relatedPostsList, nodes);
+          if (ui.relatedPostsEmpty) ui.relatedPostsEmpty.hidden = true;
+          ui.relatedPosts.hidden = !nodes.length;
+        }
+
+        function initRelatedPosts() {
+          if (!ui.relatedPosts || !isDetailSurface()) return;
+
+          state.relatedRenderPromise = ensureDiscoveryIndex()
+            .then(function (index) {
+              var localRelated = buildRelatedPosts(index);
+              if (localRelated.length >= BLOG_RETENTION_CONTRACT.relatedMin) {
+                renderRelatedPosts(localRelated, localRelated[0].score >= 10 ? 'labels' : 'recent');
+                return localRelated;
+              }
+              var enhancedPromise = requestCommandFeedEnhancement(true);
+              return enhancedPromise.then(function (enhancedIndex) {
+                var enhancedRelated = buildRelatedPosts(enhancedIndex);
+                renderRelatedPosts(enhancedRelated, enhancedRelated.length && enhancedRelated[0].score >= 10 ? 'labels' : 'recent');
+                return enhancedRelated;
+              });
+            })
+            .catch(function () {
+              renderRelatedPosts([], 'empty');
+              return [];
+            });
+        }
+
+        function initBlogRetention() {
+          state.savedArticles = getSavedArticles();
+          syncSaveButtons();
+          syncSavedListingFromHash();
+          initRelatedPosts();
         }
 
         function buildDiscoveryTopics(query) {
@@ -9587,6 +10144,7 @@ window.GG = window.GG || {};
           var listingFilterScope;
           var detailOutlineToggle;
           var detailOutlineTarget;
+          var saveArticleTrigger;
 
           if (shouldSuppressDocumentClick(event.target)) {
             event.preventDefault();
@@ -9628,6 +10186,7 @@ window.GG = window.GG || {};
           listingFilterScope = event.target.closest('[data-gg-module="listing-toolbar"]');
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
+          saveArticleTrigger = event.target.closest('[data-gg-save-article]');
 
           if (primaryRouteTrigger && !primaryRouteTrigger.hasAttribute('data-gg-open') && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
             event.preventDefault();
@@ -9692,6 +10251,12 @@ window.GG = window.GG || {};
           if (detailOutlineTarget) {
             event.preventDefault();
             scrollToDetailOutlineTarget(detailOutlineTarget.getAttribute('data-gg-outline-target'));
+            return;
+          }
+
+          if (saveArticleTrigger) {
+            event.preventDefault();
+            toggleSaveArticle(saveArticleTrigger);
             return;
           }
 
@@ -10078,6 +10643,7 @@ window.GG = window.GG || {};
           panelHeight: PANEL_HEIGHT_CONTRACT,
           detailToolbar: DETAIL_TOOLBAR_CONTRACT,
           detailOutline: DETAIL_OUTLINE_CONTRACT,
+          blogRetention: BLOG_RETENTION_CONTRACT,
           error404Surface: ERROR404_SURFACE_CONTRACT,
           searchEmptyFallback: SEARCH_EMPTY_FALLBACK_CONTRACT,
           error: ERROR_RUNTIME_CONTRACT,
@@ -10154,6 +10720,16 @@ window.GG = window.GG || {};
           error404: error404Snapshot,
           searchEmpty: searchEmptySnapshot,
           outline: detailOutlineSnapshot,
+          retention: function () {
+            return {
+              savedStorageKey: BLOG_RETENTION_CONTRACT.savedStorageKey,
+              savedStorageAvailable: !!state.savedStorageAvailable,
+              savedCount: (state.savedArticles || []).length,
+              savedListingActive: !!state.savedListingActive,
+              relatedCount: (state.relatedPosts || []).length,
+              relatedSource: state.relatedSource
+            };
+          },
           listingGrowth: function () {
             return {
               state: state.listingGrowthState,
@@ -10308,6 +10884,7 @@ window.GG = window.GG || {};
           applySurfaceContract();
           syncLaunchPathState();
           syncCommentsHash();
+          syncSavedListingFromHash();
         });
 
         bindBootStateListeners();
@@ -10329,6 +10906,7 @@ window.GG = window.GG || {};
         initMorePreferences();
         initDockVisibility();
         initDetailOutline();
+        initBlogRetention();
         initPwaClient();
         syncCommentsHash();
         markShellReady();

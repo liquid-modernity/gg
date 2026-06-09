@@ -1,21 +1,21 @@
-generated_at_utc=2026-06-09T08:34:56.521Z
+generated_at_utc=2026-06-09T11:43:46.293Z
 source_file=index.xml
 artifact_file=dist/blogger-template.publish.xml
 inline_css_mode=critical
 inline_css_source=src/css/gg-critical.source.css
 external_css_mode=production
 external_css_href=/__gg/assets/css/gg-app.min.css
-source_sha256=b80a09d91ba31601b033f7fd87cf357bde44eaf96bc894a270248aa9ea5778b0
-artifact_sha256=b80a09d91ba31601b033f7fd87cf357bde44eaf96bc894a270248aa9ea5778b0
-artifact_size_bytes=109645
+source_sha256=0b6416901e164f2fc902a16ffb2ac2056a9f22250dbdd2d28007e0311b8ce733
+artifact_sha256=0b6416901e164f2fc902a16ffb2ac2056a9f22250dbdd2d28007e0311b8ce733
+artifact_size_bytes=110991
 asset_source=src/css/gg-app.source.css
-asset_sha256=67aaa6ca69e6fdff39ee59ae30b1d63324ca11d74a0d9406e1f4f0d8b7644ab7
+asset_sha256=12a2db372182479b9332c4ae4c6fae8aab0da51d359a542de9ff1387cb8a2f48
 asset_outputs=__gg/assets/css/gg-app.dev.css,__gg/assets/css/gg-app.min.css,dist/assets/css/gg-app.dev.css,dist/assets/css/gg-app.min.css
 asset_source=src/css/gg-critical.source.css
 asset_sha256=2656168360cb3cdc422957820aa8348e97d61c69048f2b6156745d20c312fc98
 asset_outputs=__gg/assets/css/gg-critical.css,dist/assets/css/gg-critical.css
 asset_source=src/js/gg-app.source.js
-asset_sha256=27cfed597c4508a79d3cc846642b5b0d1b9d928b61a0eec9e22d1e83e9f81e23
+asset_sha256=04950685bec93f35cf24c15782a99e0c244607bd0dc29065716d7d21b4352914
 asset_outputs=__gg/assets/js/gg-app.dev.js,__gg/assets/js/gg-app.min.js,dist/assets/js/gg-app.dev.js,dist/assets/js/gg-app.min.js
 publish_scope=manual_blogger_publish_only
 rollback_note=Set GG_TEMPLATE_INLINE_CSS=full or pass --full-inline-css to inline the full app CSS again.
