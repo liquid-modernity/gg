@@ -1368,18 +1368,32 @@ body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagin
   pointer-events: auto;
   transform: none;
 }
+.gg-detail-outline[data-gg-outline-mode='pagination'] {
+  z-index: 16;
+}
+
+body[data-gg-dock-state='hidden-by-scroll'] .gg-detail-outline[data-gg-outline-mode='pagination'],
+body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagination'] {
+  bottom: auto;
+  width: 100%;
+  border-radius: 18px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
 
 .gg-detail-outline[data-gg-outline-mode='pagination'] .gg-detail-outline__peek {
-  grid-template-columns: minmax(0, 1fr) auto;
   cursor: default;
 }
 
 .gg-listing-pagination__pages {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 4px;
   min-width: 0;
+  flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .gg-listing-pagination__link,
@@ -1389,7 +1403,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagin
   align-items: center;
   justify-content: center;
   min-width: 36px;
-  min-height: 36px;
+  min-height: 20px;
   padding: 0 10px;
   border-radius: 999px;
   color: var(--gg-ink);
