@@ -154,7 +154,7 @@
   --gg-entry-list-bg: transparent;
   --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
-  --gg-entry-row-gap: 12px;
+  --gg-entry-row-gap: 2px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32, 26, 28, .14);
   --gg-entry-row-surface-hover: rgba(255, 255, 255, .46);

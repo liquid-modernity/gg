@@ -149,7 +149,7 @@
   --gg-shell-bottom-clearance: calc(var(--gg-dock-clearance) + 20px);
   --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
-  --gg-entry-row-gap: 12px;
+  --gg-entry-row-gap: 2px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32,26,28,.14);
   --gg-entry-row-action-hover-bg: rgba(255,255,255,.36);

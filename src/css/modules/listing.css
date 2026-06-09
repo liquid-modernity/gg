@@ -25,7 +25,6 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: var(--gg-surface-interactive);
   color: var(--gg-accent-soft);
   font-size: 18px;
 }

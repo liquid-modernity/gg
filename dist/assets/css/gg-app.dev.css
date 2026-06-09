@@ -154,7 +154,7 @@
   --gg-entry-list-bg: transparent;
   --gg-entry-row-pad-y: 2px;
   --gg-entry-row-pad-x: 2px;
-  --gg-entry-row-gap: 12px;
+  --gg-entry-row-gap: 2px;
   --gg-entry-row-divider-size: 1px;
   --gg-entry-row-divider: rgba(32, 26, 28, .14);
   --gg-entry-row-surface-hover: rgba(255, 255, 255, .46);
@@ -300,7 +300,7 @@
     --gg-toolbar-item-size: 13px;
     --gg-entry-row-pad-y: 2px;
     --gg-entry-row-pad-x: 4px;
-    --gg-entry-row-gap: 16px;
+    --gg-entry-row-gap: 2px;
     --gg-entry-row-title-size: 18px;
     --gg-entry-row-action-size: 12px;
     --gg-entry-row-action-min-height: var(--gg-hit-min);
@@ -685,7 +685,6 @@ body[data-gg-page='listing'] .gg-entry-list {
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: var(--gg-surface-interactive);
   color: var(--gg-accent-soft);
   font-size: 18px;
 }
