@@ -1390,6 +1390,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagin
   font: 650 12px/1 var(--gg-font-sans);
   white-space: nowrap;
 }
+
 .gg-listing-pagination__page {
   background: var(--gg-accent);
   color: var(--gg-accent-contrast);
