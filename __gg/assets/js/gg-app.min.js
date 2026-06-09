@@ -2231,6 +2231,43 @@ window.GG = window.GG || {};
           }
         }
 
+        function closeListingFilter(toolbar, trigger) {
+          if (!toolbar || !trigger) return;
+          toolbar.removeAttribute('data-gg-filter-open');
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+
+        function closeActiveListingFilter() {
+          var toolbar = document.querySelector('[data-gg-module="listing-toolbar"][data-gg-filter-open="true"]');
+          var trigger = toolbar ? toolbar.querySelector('[data-gg-listing-filter-trigger]') : null;
+          closeListingFilter(toolbar, trigger);
+        }
+
+        function toggleListingFilter(trigger) {
+          var toolbar = trigger ? trigger.closest('[data-gg-module="listing-toolbar"]') : null;
+          var open = toolbar && toolbar.getAttribute('data-gg-filter-open') === 'true';
+          if (!toolbar || !trigger) return false;
+          if (open) {
+            closeListingFilter(toolbar, trigger);
+          } else {
+            toolbar.setAttribute('data-gg-filter-open', 'true');
+            trigger.setAttribute('aria-expanded', 'true');
+          }
+          return true;
+        }
+
+        function initListingFilter() {
+          var toolbar = document.querySelector('[data-gg-module="listing-toolbar"]');
+          var trigger = toolbar ? toolbar.querySelector('[data-gg-listing-filter-trigger]') : null;
+          if (!toolbar || !trigger || toolbar.getAttribute('data-gg-filter-ready') === 'true') return;
+          toolbar.setAttribute('data-gg-filter-ready', 'true');
+
+          document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape') return;
+            closeActiveListingFilter();
+          });
+        }
+
         function openMorePreferencePanel(name) {
           var panelRoot = document.querySelector('#gg-more-panel [data-gg-pref-panels]');
           var panels;
@@ -9388,6 +9425,8 @@ window.GG = window.GG || {};
           var discoverySubmit;
           var searchEmptyAction;
           var error404Action;
+          var listingFilterTrigger;
+          var listingFilterScope;
           var detailOutlineToggle;
           var detailOutlineTarget;
 
@@ -9426,6 +9465,8 @@ window.GG = window.GG || {};
           discoverySubmit = event.target.closest('[data-gg-discovery-submit]');
           searchEmptyAction = event.target.closest('[data-gg-search-empty-action]');
           error404Action = event.target.closest('[data-gg-error404-action]');
+          listingFilterTrigger = event.target.closest('[data-gg-listing-filter-trigger]');
+          listingFilterScope = event.target.closest('[data-gg-module="listing-toolbar"]');
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
 
@@ -9474,6 +9515,14 @@ window.GG = window.GG || {};
             clearDiscoveryTopic();
             return;
           }
+
+          if (listingFilterTrigger) {
+            event.preventDefault();
+            toggleListingFilter(listingFilterTrigger);
+            return;
+          }
+
+          if (!listingFilterScope) closeActiveListingFilter();
 
           if (detailOutlineToggle) {
             event.preventDefault();
@@ -10103,6 +10152,7 @@ window.GG = window.GG || {};
         setReading(readPreferredReading(), true);
         setMotion(readPreferredMotion(), true);
         initMoreLocalSearch();
+        initListingFilter();
         initMorePreferences();
         initDockVisibility();
         initDetailOutline();

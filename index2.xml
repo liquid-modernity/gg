@@ -3,19 +3,32 @@
 <html b:css='false' b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' b:templateVersion='2.0.0' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 
   <head>
-    <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>
+    <meta content='width=device-width, initial-scale=1, viewport-fit=cover' name='viewport'/>   
     <b:if cond='data:view.isHomepage'>
-      <title><data:blog.title/></title>
-    <b:else/>
-      <b:if cond='data:view.isPost'>
-        <title><data:view.title.escaped/> &#8226; <data:blog.title/></title>
-      <b:else/>
-        <title><data:view.title.escaped/> &#8226; <data:blog.title/></title>
-      </b:if>
-    </b:if>
+  <title>Blog &#8226; <data:blog.title/></title>
+<b:elseif cond='data:view.search.label'/>
+  <title><data:view.search.label/> &#8226; <data:blog.title/></title>
+<b:elseif cond='data:view.isPost or data:view.isPage'/>
+  <title><data:view.title.escaped/> &#8226; <data:blog.title/></title>
+<b:elseif cond='data:view.isSearch'/>
+  <title>Hasil Pencarian: &quot;<data:view.search.query/>&quot; &#8226; <data:blog.title/></title>
+<b:elseif cond='data:view.isArchive'/>
+  <title>Arsip Bulan <data:view.archive.name/> &#8226; <data:blog.title/></title>
+<b:elseif cond='data:view.isError'/>
+  <title>404 &#8226; <data:blog.title/></title>
+<b:else/>
+  <title><data:view.title.escaped/> &#8226; <data:blog.title/></title>
+</b:if>
+
+    <b:if cond='data:view.isArchive or data:view.isSearch or data:view.search.label'>
+  <meta content='noindex,noarchive' name='robots'/>
+</b:if>
+
+
+
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='794543905443' name='gg-template-fingerprint'/>
+<meta content='625d02231871' name='gg-template-fingerprint'/>
     <b:if cond='data:view.description'>
     <b:else/>
       <b:if cond='data:blog.metaDescription'>
@@ -31,7 +44,7 @@
         <meta content='Pak RPP publishes practical articles, project notes, and curated resources for learning, work, and digital production.' name='description'/>
       </b:if>
     </b:if>
-    <link expr:href='data:view.url.canonical ?: data:post.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
+    <link expr:href='data:view.url.canonical ?: data:blog.homepageUrl' rel='canonical'/>
 
     <b:include data='blog' name='all-head-content'/>
 
@@ -75,62 +88,6 @@
 }
     </script>
 
-    <b:if cond='data:view.isPost'>
-      <script type='application/ld+json'>
-{
-  &quot;@context&quot;: &quot;https://schema.org&quot;,
-  &quot;@type&quot;: &quot;BlogPosting&quot;,
-  &quot;mainEntityOfPage&quot;: {
-    &quot;@type&quot;: &quot;WebPage&quot;,
-    &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
-  },
-  &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
-  &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
-  &quot;description&quot;: &quot;<data:post.snippet.escaped/>&quot;,
-  <b:if cond='data:post.date and data:post.date.iso8601'>
-  &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,</b:if>
-  <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
-  &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,</b:if>
-  &quot;author&quot;: {
-    &quot;@type&quot;: &quot;Person&quot;,
-    &quot;name&quot;: &quot;<b:if cond='data:post.author and data:post.author.name'><data:post.author.name.escaped/><b:else/><data:blog.title.escaped/></b:if>&quot;
-  },
-  &quot;publisher&quot;: {
-    &quot;@type&quot;: &quot;Organization&quot;,
-    &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;<b:if cond='data:blog.logoUrl'>,
-    &quot;logo&quot;: {
-      &quot;@type&quot;: &quot;ImageObject&quot;,
-      &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
-    }</b:if>
-  },
-  &quot;breadcrumb&quot;: {
-    &quot;@type&quot;: &quot;BreadcrumbList&quot;,
-    &quot;itemListElement&quot;: [
-      {
-        &quot;@type&quot;: &quot;ListItem&quot;,
-        &quot;position&quot;: 1,
-        &quot;name&quot;: &quot;Home&quot;,
-        &quot;item&quot;: &quot;https://www.pakrpp.com/landing&quot;
-      },
-      {
-        &quot;@type&quot;: &quot;ListItem&quot;,
-        &quot;position&quot;: 2,
-        &quot;name&quot;: &quot;Blog&quot;,
-        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
-      },
-      {
-        &quot;@type&quot;: &quot;ListItem&quot;,
-        &quot;position&quot;: 3,
-        &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
-        &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
-      }
-    ]
-  }<b:if cond='data:post.firstImageUrl'>,
-  &quot;image&quot;: [&quot;<data:post.firstImageUrl/>&quot;]</b:if>
-}
-      </script>
-    </b:if>
-
     <b:if cond='data:view.isPage'>
       <script type='application/ld+json'>
 {
@@ -172,8 +129,10 @@
 
     <link href='/manifest.webmanifest' rel='manifest'/>
     <link href='https://fonts.googleapis.com' rel='preconnect'/>
+    <link href='https://googleapis.com' rel='stylesheet'/>
+    <link href='https://fonts.googleapis.com' rel='stylesheet'/>
     <link crossorigin='anonymous' href='https://fonts.gstatic.com' rel='preconnect'/>
-    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=account_tree,add_comment,animation,article,bookmark_add,bookmark_remove,calendar_add_on,category,checkroom,chevron_right,comment,comments_disabled,content_copy,contrast,delete,description,desktop_windows,expand_more,explore,filter_list,format_size,home,home_app_logo,info,keyboard_arrow_down,keyboard_arrow_up,language,link,mail,menu,newsmode,reply,rss_feed,search,shield,shopping_bag,spa,warning&amp;display=block' rel='stylesheet'/>
+    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=account_tree,add_comment,animation,arrow_back_ios_new,arrow_drop_down_circle,article,bookmark_add,bookmark_added,bookmark_remove,calendar_add_on,category,checkroom,chevron_right,comment,comments_disabled,content_copy,contrast,delete,description,desktop_windows,expand_more,explore,filter_list,format_size,home,home_app_logo,inbox_text,info,keyboard_arrow_down,keyboard_arrow_up,language,link,mail,menu,newsmode,read_more,reply,rss_feed,search,shield,shopping_bag,spa,top_panel_open,warning&amp;display=block' rel='stylesheet'/>
 
     <b:skin><![CDATA[
 :root {
@@ -249,6 +208,319 @@ img{max-width:100%;height:auto;display:block}
 .gg-dock{position:fixed;left:50%;bottom:var(--gg-dock-offset-bottom);z-index:40;transform:translateX(-50%);max-width:calc(100% - 24px)}.gg-sheet[hidden],.gg-detail-outline[hidden],.gg-search-empty[hidden],.gg-error404[hidden]{display:none!important}
 @media (min-width:769px){:root{--gg-entry-row-pad-y:2px;--gg-entry-row-title-size:18px;--gg-article-pad-y:22px}.gg-shell{padding-left:16px;padding-right:16px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+.gg-preview__cta-row {
+    padding-top: var(--gg-preview-cta-gap);
+    padding-bottom: unset !important;
+    display: inline-flex;
+    position: sticky;
+    bottom: 0;
+    top: auto;
+    width: var(--gg-panel-width);
+    max-width: 100dvw;
+    gap: 10px;
+    padding-left: clamp(24px, 5.6vw, 34px);
+    padding-right: clamp(24px, 5.6vw, 34px);
+}
+
+/* Mengatur Grid Kolom untuk Header dan Baris Tabel */
+.gg-entry-table-header, 
+.gg-entry-row {
+  display: grid;
+  /* Membagi kolom: Judul (lebar sisa), Tanggal (120px), Kategori (120px), Tombol Aksi (100px) */
+  grid-template-columns: minmax(0, 1fr) 120px;
+  align-items: center;
+  gap: var(--gg-entry-row-gap);
+  padding: 12px var(--gg-entry-row-pad-x);
+}
+
+.gg-entry-row {
+border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider)!important;
+}
+
+/* Desain Khusus untuk Kepala Tabel */
+.gg-entry-table-header {
+  border-bottom: 1px solid var(--gg-entry-row-divider);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gg-accent-soft);
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 1px;
+  border-radius: 13px 13px 0px 0px;
+  background: var(--gg-toolbar-surface);
+    box-shadow: var(--gg-shadow-soft);
+    -webkit-backdrop-filter: blur(16px) saturate(145%);
+    backdrop-filter: blur(16px) saturate(145%);
+  border-color: #ffffff00;
+  overflow-wrap: anywhere;
+  position: fixed;
+  width: var(--gg-dock-width);
+  max-width: none;
+max-height: none;
+    height: 68px;
+}
+
+.gg-entry-table-header::before {
+content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    z-index: -1;
+    background: rgb(243 239 228);
+
+}
+.gg-dock::before {
+    content: ''!important;
+    position: absolute!important;
+    bottom: -20px!important;
+    left: 0;
+    right: 0;
+    height: 20px!important;
+    z-index: -1!important;
+    background: rgb(243 239 228)!important;
+  
+}
+
+
+
+/* Desain Kolom Baru Tanggal Kategori */
+.gg-entry-row__date, 
+.gg-entry-row__meta-label {
+  font-size: 14px;
+  color: var(--gg-ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+     .gg-table-header-menu {
+            position: relative;
+            display: inline-block;
+
+        }
+
+.gg-breadcrumbs-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .gg-table-header-menu button {
+            background-color: fbfaf4;
+            color: #333333;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 0px solid #cccccc;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+flex-wrap: nowrap;
+    text-wrap: nowrap;
+        }
+
+.gg-breadcrumbs-menu button {
+            background-color: transparent;
+            color: #333333;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 0px solid #cccccc;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+flex-wrap: nowrap;
+    text-wrap: nowrap;
+        }
+
+        .gg-table-header-menu button:hover {
+            background-color: #f4f3ed;
+        }
+
+.gg-breadcrumbs-menu button:hover {
+            background-color: #ffffffa8;
+        }
+
+        .gg-table-header-menu .gg-table-header-menu__list {
+ display:none;          
+ position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 18;
+    
+    min-width: 176px;
+    max-width: calc(100% - 16px);
+    padding: 6px;
+    border: 1px solid var(--gg-divider);
+    border-radius: 12px;
+    background: #fbfaf4;
+    box-shadow: var(--gg-shadow-panel);
+    text-align: left;
+    margin-top: 2px;
+text-transform: capitalize;
+        }
+
+.gg-breadcrumbs-menu .gg-breadcrumbs-menu__list {
+ display:none;          
+ position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 18;
+    
+    min-width: 176px;
+    max-width: calc(100% - 16px);
+    padding: 6px;
+    border: 1px solid var(--gg-divider);
+    border-radius: 12px;
+    background: #fbfaf4;
+    box-shadow: var(--gg-shadow-panel);
+    text-align: left;
+    margin-top: 2px;
+text-transform: capitalize;
+        }
+
+        .gg-table-header-menu .gg-table-header-menu__list a {
+            color: #333333;
+            padding: 10px 14px;
+            text-decoration: none;
+            display: block;
+           
+            font-size: 13px;
+        }
+
+.gg-breadcrumbs-menu .gg-breadcrumbs-menu__list a {
+            color: #333333;
+            padding: 10px 14px;
+            text-decoration: none;
+            display: block;
+           
+            font-size: 13px;
+        }
+
+        /* Gaya untuk menu biasa saat disorot */
+        .gg-table-header-menu .gg-table-header-menu__list a:hover {
+            background-color: #f0f0f0;
+            color: #000000;
+            border-radius: 8px;
+        }
+
+.gg-breadcrumbs-menu .gg-breadcrumbs-menu__list a:hover {
+            background-color: #f0f0f0;
+            color: #000000;
+            border-radius: 8px;
+        }
+
+        /* TAMPILAN AKTIF: Warna khusus untuk pilihan yang sedang aktif (Recent) */
+        .gg-table-header-menu .gg-table-header-menu__list a.active {
+display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #f4f3ed;
+    color: var(--gg-ink);
+    font: 600 13px / 1.25 var(--gg-font-sans);
+    text-align: left;
+    cursor: pointer;
+        }
+.gg-breadcrumbs-menu .gg-breadcrumbs-menu__list a.active {
+display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #f4f3ed;
+    color: var(--gg-ink);
+    font: 600 13px / 1.25 var(--gg-font-sans);
+    text-align: left;
+    cursor: pointer;
+        }
+        /* Mengubah sedikit warna hover khusus untuk item yang aktif */
+        .gg-table-header-menu .gg-table-header-menu__list  a.active:hover {
+            background-color: #f4f3ed;
+            border-radius: 8px;
+        }
+.gg-breadcrumbs-menu .gg-breadcrumbs-menu__list a.active:hover {
+            background-color: #f4f3ed;
+            border-radius: 8px;
+        }
+        .gg-table-header-menu:hover .gg-table-header-menu__list {
+            display: block;
+        }
+
+.gg-breadcrumbs-menu:hover .gg-breadcrumbs-menu__list {
+            display: block;
+        }
+
+
+.gg-entry-list {
+padding-top: max(57px, env(safe-area-inset-top));
+}
+
+
+.gg-entry-row__title{
+    display: inline-flex;
+    gap: 5px;
+    padding-left: 5px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: flex-start;
+}
+.gg-root-profile__card {
+display: grid;
+    grid-template-columns: 50px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0px;
+    text-decoration: blink;
+    text-transform: capitalize;
+}
+.gg-root-profilve__avatar {
+width: 44px;
+    height: 44px;
+    overflow: hidden;
+    border-radius: 999px;
+    place-self: center;}
+.gg-root-profile__copy {
+display: grid;
+    min-width: 0;
+}
+.gg-root-profile__name {
+    overflow: hidden;
+    color: var(--gg-ink);
+    font: 650 20px / 1.15 var(--gg-font-sans);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.gg-root-profile__meta {
+    overflow: hidden;
+    color: var(--gg-accent-soft);
+    font: 500 13px / 1.25 var(--gg-font-sans);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gg-shell{
+padding:10px 10px var(--gg-shell-bottom-clearance)!important;
+}
+
 ]]></b:skin>
 
     <!-- GG external non-critical app CSS: served by Cloudflare/edge in extracted mode. -->
@@ -297,16 +569,72 @@ img{max-width:100%;height:auto;display:block}
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='794543905443' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='625d02231871' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
       <main class='gg-main' data-gg-surface-source='pending' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' id='main' role='main' tabindex='-1'>
         <b:if cond='not data:view.isSingleItem'>
-        <header class='gg-site-head'>
+        <header class='gg-site-head'>  
           <p class='gg-site-head__eyebrow' hidden='hidden' id='gg-site-head-eyebrow'/>
-          <h1 class='gg-site-head__title'><data:blog.title/></h1>
+
           <p class='gg-site-head__summary' hidden='hidden' id='gg-site-head-summary'/>
+            <div class='gg-entry-table-header'>
+    <div class='gg-table-th'>
+      
+      
+      <a aria-label='Open profile' class='gg-root-profile__card' href='/p/about.html'>
+              <span aria-hidden='true' class='gg-root-profile__avatar'>
+                <img alt='' class='gg-root-profile__image' height='96' loading='lazy' src='/gg-pwa-icon/icon-192.png' width='96'/>
+              </span>
+              <span class='gg-root-profile__copy'>
+                <span class='gg-root-profile__name' data-gg-copy='more.profile.name'>PakRPP</span>
+                <span class='gg-root-profile__meta' data-gg-copy='more.profile.meta'>Editorial tools, learning resources, and digital workspace</span>
+              </span>
+            </a>   
+         
+         
+         
+         </div>
+    <div class='gg-table-th' style='text-align: right;'>
+      
+<div class='gg-table-header-menu'>
+    <button type='button'>
+
+    <b:if cond='data:view.search.label'>
+        <b:eval expr='data:view.search.label'/>
+    </b:if>
+    
+
+    <b:if cond='data:view.isPage and data:view.title contains &quot;Saved&quot;'>
+        Saved
+    </b:if>
+    
+ 
+    <b:if cond='data:view.isHomepage and !data:view.search.label and !(data:view.isPage and data:view.title contains &quot;Saved&quot;)'>
+        Latest
+    </b:if>  
+    
+    <span aria-hidden='true' class='gg-icon'>arrow_drop_down_circle</span>
+</button>
+
+    
+    <div class='gg-table-header-menu__list'>
+        <a expr:class='data:view.isHomepage ? &quot;active&quot; : &quot;&quot;' href='/'>Latest</a>
+        <a expr:class='data:view.search.label == &quot;Lab&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Lab'>Lab</a>
+        <a expr:class='data:view.search.label == &quot;Insight&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Insight'>Insight</a>
+        <a expr:class='data:view.search.label == &quot;Case Notes&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Case Notes'>Case Notes</a>
+        <a expr:class='data:view.search.label == &quot;Perspective&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Perspective'>Perspective</a>
+        <a expr:class='data:view.isPage and data:view.title contains &quot;Saved&quot; ? &quot;active&quot; : &quot;&quot;' href='#saved'>Saved</a>
+        <a expr:class='data:view.isPage and data:view.title contains &quot;Saved&quot; ? &quot;active&quot; : &quot;&quot;' href='#popularpost'>Popular Posts</a>
+    </div>
+</div>
+
+
+
+      
+    </div>
+  </div>
         </header>
         </b:if>
 
@@ -381,8 +709,10 @@ img{max-width:100%;height:auto;display:block}
                   <b:if cond='data:view.isSingleItem'>
                     <b:include data='post' name='postDetail'/>
                   <b:else/>
+                 
                   <b:if cond='data:view.isLabelSearch or not ((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;)'>
   <b:include data='post' name='postRow'/>
+                    
 </b:if>
                   </b:if>
                 </b:loop>
@@ -405,7 +735,7 @@ img{max-width:100%;height:auto;display:block}
                   <button class='gg-discovery-context__action' data-gg-copy='error404.searchSite' data-gg-error404-action='search' type='button'>Search site</button>
                 </div>
                 <div class='gg-error404__fallback' hidden='hidden' id='gg-error404-fallback'>
-                  <p class='gg-discovery-result__type gg-error404__fallback-title' data-gg-copy='error404.fallbackTitle' id='gg-error404-fallback-title'>Recent articles</p>
+                  <p class='gg-discovery-result__type gg-error404__fallback-title' data-gg-copy='error404.fallbackTitle' id='gg-error404-fallback-title'>Error 404: Recent articles</p>
                   <div class='gg-discovery-results' id='gg-error404-results'/>
                 </div>
                 <p class='gg-error404__status' hidden='hidden' id='gg-error404-status'/>
@@ -829,17 +1159,83 @@ img{max-width:100%;height:auto;display:block}
                 </button>
               </div>
 
-              <article class='gg-article' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-summary='data:post.snippet.escaped' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url'>
+              <article class='gg-article' expr:data-gg-author='data:post.author.name.escaped' expr:data-gg-date='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-author='data:post.author.name.escaped' expr:data-gg-post-comments='data:post.numberOfComments' expr:data-gg-post-published='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-summary='data:post.snippet.escaped' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-updated='data:post.lastUpdated and data:post.lastUpdated.iso8601 and data:post.date and data:post.date.iso8601 and data:post.lastUpdated.iso8601 != data:post.date.iso8601 ? data:post.lastUpdated.iso8601 : &quot;&quot;' expr:data-gg-post-url='data:post.url' expr:data-gg-source='&quot;rootSource&quot;' expr:data-gg-summary='data:post.snippet.escaped' expr:data-gg-surface='data:view.isPage ? &quot;page-detail&quot; : &quot;post-detail&quot;' expr:data-gg-title='data:post.title.escaped' expr:data-gg-type='data:view.isPage ? &quot;page&quot; : &quot;post&quot;' expr:data-gg-url='data:post.url'>
                 <nav aria-labelledby='gg-breadcrumb-title' class='gg-breadcrumbs'>
                   <span class='gg-visually-hidden' data-gg-copy='post.breadcrumb' id='gg-breadcrumb-title'>Breadcrumb</span>
                   <a data-gg-copy='post.blog' href='/'>Blog</a>
                   <b:if cond='data:post.labels'>
-                    <span aria-hidden='true'>/</span>
+                    <span aria-hidden='true' class='gg-icon'>chevron_right</span>
                     <a expr:href='data:post.labels.first.url'><data:post.labels.first.name/></a>
                   </b:if>
+                  
+                  <div class='gg-breadcrumbs-menu'>
+    <button type='button'>
+        <span aria-hidden='true' class='gg-icon'>keyboard_arrow_down</span>
+    </button>
+    <div class='gg-breadcrumbs-menu__list'>
+        <a expr:class='data:view.search.label == &quot;Lab&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Lab'>Lab</a>
+        <a expr:class='data:view.search.label == &quot;Insight&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Insight'>Insight</a>
+        <a expr:class='data:view.search.label == &quot;Case Notes&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Case Notes'>Case Notes</a>
+        <a expr:class='data:view.search.label == &quot;Perspective&quot; ? &quot;active&quot; : &quot;&quot;' href='/search/label/Perspective'>Perspective</a>
+    </div>
+</div>
                 </nav>
 
                 <h1 class='gg-article__title'><data:post.title/></h1>
+
+                <script id='gg-post-jsonld' type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;BlogPosting&quot;,
+  &quot;mainEntityOfPage&quot;: {
+    &quot;@type&quot;: &quot;WebPage&quot;,
+    &quot;@id&quot;: &quot;<data:post.url.canonical/>&quot;
+  },
+  &quot;headline&quot;: &quot;<data:post.title.escaped/>&quot;,
+  &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
+  &quot;description&quot;: &quot;<data:post.snippet.escaped/>&quot;,
+  <b:if cond='data:post.date and data:post.date.iso8601'>
+  &quot;datePublished&quot;: &quot;<data:post.date.iso8601/>&quot;,</b:if>
+  <b:if cond='data:post.lastUpdated and data:post.lastUpdated.iso8601'>
+  &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601/>&quot;,</b:if>
+  &quot;author&quot;: {
+    &quot;@type&quot;: &quot;Person&quot;,
+    &quot;name&quot;: &quot;<b:if cond='data:post.author and data:post.author.name'><data:post.author.name.escaped/><b:else/><data:blog.title.escaped/></b:if>&quot;
+  },
+  &quot;publisher&quot;: {
+    &quot;@type&quot;: &quot;Organization&quot;,
+    &quot;name&quot;: &quot;<data:blog.title.escaped/>&quot;<b:if cond='data:blog.logoUrl'>,
+    &quot;logo&quot;: {
+      &quot;@type&quot;: &quot;ImageObject&quot;,
+      &quot;url&quot;: &quot;<data:blog.logoUrl/>&quot;
+    }</b:if>
+  },
+  &quot;breadcrumb&quot;: {
+    &quot;@type&quot;: &quot;BreadcrumbList&quot;,
+    &quot;itemListElement&quot;: [
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 1,
+        &quot;name&quot;: &quot;Home&quot;,
+        &quot;item&quot;: &quot;https://www.pakrpp.com/landing&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 2,
+        &quot;name&quot;: &quot;Blog&quot;,
+        &quot;item&quot;: &quot;<data:blog.homepageUrl/>&quot;
+      },
+      {
+        &quot;@type&quot;: &quot;ListItem&quot;,
+        &quot;position&quot;: 3,
+        &quot;name&quot;: &quot;<data:post.title.escaped/>&quot;,
+        &quot;item&quot;: &quot;<data:post.url.canonical/>&quot;
+      }
+    ]
+  }<b:if cond='data:post.firstImageUrl'>,
+  &quot;image&quot;: [&quot;<data:post.firstImageUrl/>&quot;]</b:if>
+}
+                </script>
 
                 <b:include data='post' name='postBody'/>
                 <footer class='gg-article__tail'>
@@ -915,13 +1311,13 @@ img{max-width:100%;height:auto;display:block}
                 </template>
               </nav>
 
-              <div aria-hidden='true' class='gg-comments-sheet gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comments-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comments' data-gg-state='closed' hidden='hidden' id='gg-comments-sheet' inert='' tabindex='-1'>
+              <div aria-hidden='true' class='gg-comments-sheet gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comments-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comments' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='comments' data-gg-state='closed' hidden='hidden' id='gg-comments-sheet' inert='' tabindex='-1'>
                 <button class='gg-comments-sheet__scrim gg-sheet__scrim' data-gg-action='comments-close' type='button'>
                   <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
                 </button>
                 <section aria-labelledby='gg-comments-title' aria-modal='true' class='gg-comments-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
-                  <header class='gg-comments-sheet__head gg-sheet__head' data-gg-drag-zone='sheet-head'>
-                    <button class='gg-comments-sheet__handle gg-sheet__handle' data-gg-action='comments-close' data-gg-drag-handle='comments' type='button'>
+                  <header class='gg-comments-sheet__head gg-sheet__head' data-gg-drag-zone='sheet-head' data-gg-sheet-drag-zone='head'>
+                    <button class='gg-comments-sheet__handle gg-sheet__handle' data-gg-action='comments-close' data-gg-drag-handle='comments' data-gg-sheet-drag-zone='handle' type='button'>
                       <span class='gg-visually-hidden' data-gg-copy='comments.dismiss'>Dismiss comments panel</span>
                     </button>
                     <h2 class='gg-comments-sheet__title gg-sheet__title' id='gg-comments-title'>
@@ -984,17 +1380,17 @@ img{max-width:100%;height:auto;display:block}
                 </section>
               </div>
 
-              <div aria-hidden='true' class='gg-comments-sheet gg-comments-sheet--replies gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comment-replies-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comment-replies' data-gg-state='closed' hidden='hidden' id='gg-comment-replies-sheet' inert='' tabindex='-1'>
+              <div aria-hidden='true' class='gg-comments-sheet gg-comments-sheet--replies gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-module='gg-comment-replies-sheet' data-gg-panel-family='utility-sheet' data-gg-sheet='comment-replies' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='comment-replies' data-gg-state='closed' hidden='hidden' id='gg-comment-replies-sheet' inert='' tabindex='-1'>
                 <button class='gg-comments-sheet__scrim gg-sheet__scrim' data-gg-action='comments-replies-close' type='button'>
                   <span class='gg-visually-hidden'>Dismiss replies</span>
                 </button>
                 <section aria-labelledby='gg-comment-replies-title' aria-modal='true' class='gg-comments-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
-                  <header class='gg-comments-sheet__head gg-sheet__head' data-gg-drag-zone='sheet-head'>
-                    <button aria-label='Drag replies sheet' class='gg-comments-sheet__handle gg-sheet__handle' data-gg-drag-handle='comment-replies' type='button'>
+                  <header class='gg-comments-sheet__head gg-sheet__head' data-gg-drag-zone='sheet-head' data-gg-sheet-drag-zone='head'>
+                    <button aria-label='Drag replies sheet' class='gg-comments-sheet__handle gg-sheet__handle' data-gg-drag-handle='comment-replies' data-gg-sheet-drag-zone='handle' type='button'>
                       <span class='gg-visually-hidden'>Drag replies sheet</span>
                     </button>
                     <button aria-label='Back to comments' class='gg-comments-sheet__back' data-gg-action='comments-replies-close' type='button'>
-                      <span aria-hidden='true'>&#8249;</span>
+                      <span aria-hidden='true' class='gg-icon'>arrow_back_ios_new</span>
                     </button>
                     <h2 class='gg-comments-sheet__title gg-sheet__title' id='gg-comment-replies-title'>Replies</h2>
                   </header>
@@ -1094,12 +1490,12 @@ img{max-width:100%;height:auto;display:block}
   <!-- Reaction feature no longer available. The includable is retained for backwards-compatibility. -->
 </b:includable>
             <b:includable id='postRow' var='post'>
-              <article class='gg-entry-row' expr:data-gg-content-domain='((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;) ? &quot;store&quot; : &quot;blog&quot;' expr:data-gg-post-summary='data:post.snippet.escaped' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-url='data:post.url'>
+          <article class='gg-entry-row' expr:data-gg-author='data:post.author.name.escaped' expr:data-gg-content-domain='((data:post.labels any (label =&gt; label.name == &quot;Store&quot; or label.name in {&quot;Store Fashion&quot;, &quot;Store Skincare&quot;, &quot;Store Workspace&quot;, &quot;Store Tech&quot;, &quot;Store Everyday&quot;, &quot;Store Etc&quot;, &quot;Store Lainnya&quot;} or label.name contains &quot;Store:&quot; or label.name contains &quot;Store/&quot;)) or data:post.body contains &quot;gg-store-data&quot; or data:post.body contains &quot;gg-yellowcard-data&quot;) ? &quot;store&quot; : &quot;blog&quot;' expr:data-gg-date='data:post.date and data:post.date.iso8601 ? data:post.date.iso8601 : &quot;&quot;' expr:data-gg-post-summary='data:post.snippet.escaped' expr:data-gg-post-title='data:post.title.escaped' expr:data-gg-post-url='data:post.url' expr:data-gg-source='&quot;rootSource&quot;' expr:data-gg-summary='data:post.snippet.escaped' expr:data-gg-surface='&quot;root-listing&quot;' expr:data-gg-title='data:post.title.escaped' expr:data-gg-type='&quot;post&quot;' expr:data-gg-url='data:post.url'>
                 <h2 class='gg-entry-row__title'>
+                  <span aria-hidden='true' class='gg-icon'>article</span>
                   <a aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__title-trigger' data-gg-open='preview' expr:href='data:post.url'><data:post.title/></a>
                 </h2>
-
-                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-copy='listing.details' data-gg-open='preview' type='button'>Details</button>
+                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-open='preview' type='button'><span aria-hidden='true' class='gg-icon'>top_panel_open</span></button>
               </article>
             </b:includable>
             <b:includable id='postShareButtons'>
@@ -1274,6 +1670,39 @@ img{max-width:100%;height:auto;display:block}
   <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
 </b:includable>
           </b:widget>
+          <b:widget id='ContactForm2' locked='false' title='Contact' type='ContactForm' visible='true'>
+            <b:includable id='main'>
+  <b:include name='widget-title'/>
+  <b:include name='content'/>
+</b:includable>
+            <b:includable id='content'>
+  <div class='contact-form-widget'>
+    <div class='form'>
+      <form name='contact-form'>
+        <p/>
+        <data:contactFormNameMsg/>
+        <br/>
+        <input class='contact-form-name' expr:id='data:widget.instanceId + &quot;_contact-form-name&quot;' name='name' size='30' type='text' value=''/>
+        <p/>
+        <data:contactFormEmailMsg/> <span style='font-weight: bolder;'>*</span>
+        <br/>
+        <input class='contact-form-email' expr:id='data:widget.instanceId + &quot;_contact-form-email&quot;' name='email' size='30' type='text' value=''/>
+        <p/>
+        <data:contactFormMessageMsg/> <span style='font-weight: bolder;'>*</span>
+        <br/>
+        <textarea class='contact-form-email-message' cols='25' expr:id='data:widget.instanceId + &quot;_contact-form-email-message&quot;' name='email-message' rows='5'/>
+        <p/>
+        <input class='contact-form-button contact-form-button-submit' expr:id='data:widget.instanceId + &quot;_contact-form-submit&quot;' expr:value='data:contactFormSendMsg' type='button'/>
+        <p/>
+        <div style='text-align: center; max-width: 222px; width: 100%'>
+          <p class='contact-form-error-message' expr:id='data:widget.instanceId + &quot;_contact-form-error-message&quot;'/>
+          <p class='contact-form-success-message' expr:id='data:widget.instanceId + &quot;_contact-form-success-message&quot;'/>
+        </div>
+      </form>
+    </div>
+  </div>
+</b:includable>
+          </b:widget>
         </b:section>
       </main>
     </div>
@@ -1284,10 +1713,10 @@ img{max-width:100%;height:auto;display:block}
         <span aria-hidden='true' class='gg-icon'>home_app_logo</span>
         <span class='gg-dock__label' data-gg-copy='nav.home'>Home</span>
       </a>
-      <a class='gg-dock__item' data-gg-nav='contact' href='/landing#contact'>
-        <span aria-hidden='true' class='gg-icon'>calendar_add_on</span>
+      <button aria-controls='gg-contact-panel' aria-expanded='false' class='gg-dock__item' data-gg-nav='contact' data-gg-open='contact' type='button'>
+        <span aria-hidden='true' class='gg-icon'>inbox_text</span>
         <span class='gg-dock__label' data-gg-copy='nav.contact'>Contact</span>
-      </a>
+      </button>
       <button aria-controls='gg-command-panel' aria-expanded='false' class='gg-dock__item' data-gg-focus='command' data-gg-nav='search' data-gg-panel-trigger='command' type='button'>
         <span aria-hidden='true' class='gg-icon'>explore</span>
         <span class='gg-dock__label' data-gg-copy='nav.search'>Search</span>
@@ -1301,15 +1730,59 @@ img{max-width:100%;height:auto;display:block}
         <span class='gg-dock__label' data-gg-copy='nav.more'>More</span>
       </button>
     </nav>
+    
+    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='contact' data-gg-panel-family='utility-sheet' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='contact' data-gg-state='closed' hidden='hidden' id='gg-contact-panel' inert=''>
+      <footer class='gg-contact-footer'>
+         <div id='ContactForm1' locked='false' title='Contact' type='ContactForm' visible='true'>
+            <div id='main'>
+  <div name='widget-title'/>
+  <div name='content'/>
+</div>
+            <div id='content'>
+  <div class='contact-form-widget'>
+    <div class='form'>
+      <form name='contact-form'>
+        <p/>
+        <data:contactFormNameMsg/>
+        <br/>
+        <input class='contact-form-name' expr:id='data:widget.instanceId + &quot;_contact-form-name&quot;' name='name' size='30' type='text' value=''/>
+        <p/>
+        <data:contactFormEmailMsg/> <span style='font-weight: bolder;'>*</span>
+        <br/>
+        <input class='contact-form-email' expr:id='data:widget.instanceId + &quot;_contact-form-email&quot;' name='email' size='30' type='text' value=''/>
+        <p/>
+        <data:contactFormMessageMsg/> <span style='font-weight: bolder;'>*</span>
+        <br/>
+        <textarea class='contact-form-email-message' cols='25' expr:id='data:widget.instanceId + &quot;_contact-form-email-message&quot;' name='email-message' rows='5'/>
+        <p/>
+        <input class='contact-form-button contact-form-button-submit' expr:id='data:widget.instanceId + &quot;_contact-form-submit&quot;' expr:value='data:contactFormSendMsg' type='button'/>
+        <p/>
+        <div style='text-align: center; max-width: 222px; width: 100%'>
+          <p class='contact-form-error-message' expr:id='data:widget.instanceId + &quot;_contact-form-error-message&quot;'/>
+          <p class='contact-form-success-message' expr:id='data:widget.instanceId + &quot;_contact-form-success-message&quot;'/>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+          </div>
+            <span class='gg-contact-footer__label' data-gg-copy='contact.shareSite' id='gg-contact-footer-social-title'>Share site</span>
+            <div aria-labelledby='gg-contact-footer-social-title' class='gg-contact-footer__social'>
+              <a class='gg-contact-footer__link' data-gg-copy-aria-label='contact.shareX' data-gg-copy-title='contact.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'><span aria-hidden='true'>𝕏</span><span data-gg-copy='contact.shareXShort'>X</span></a>
+              <a class='gg-contact-footer__link' data-gg-copy-aria-label='contact.shareFacebook' data-gg-copy-title='contact.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'><span aria-hidden='true'>f</span><span data-gg-copy='contact.shareFacebookShort'>Facebook</span></a>
+              <a class='gg-contact-footer__link' data-gg-copy-aria-label='contact.shareWhatsApp' data-gg-copy-title='contact.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>&#9676;</span><span data-gg-copy='contact.shareWhatsAppShort'>WhatsApp</span></a>
+            </div>
+          </footer>
+    </div>
 
-    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom' data-gg-discovery-command-placement='bottom' data-gg-discovery-domain='global' data-gg-discovery-index='global-discovery-v1' data-gg-discovery-shell='bottom-command' data-gg-edge='bottom' data-gg-panel='command' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-command-panel' inert=''>
+    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom' data-gg-discovery-command-placement='bottom' data-gg-discovery-domain='global' data-gg-discovery-index='global-discovery-v1' data-gg-discovery-shell='bottom-command' data-gg-edge='bottom' data-gg-panel='command' data-gg-panel-family='utility-sheet' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='discovery' data-gg-state='closed' hidden='hidden' id='gg-command-panel' inert=''>
       <button class='gg-sheet__scrim' data-gg-close='command' type='button'>
         <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
       </button>
       <section aria-labelledby='gg-command-title' aria-modal='true' class='gg-sheet__panel' data-gg-discovery-shell-panel='global' role='dialog' tabindex='-1'>
         <div class='gg-discovery'>
-        <div class='gg-sheet__head' data-gg-drag-zone='sheet-head'>
-          <button class='gg-sheet__handle' data-gg-close='command' data-gg-drag-handle='command' type='button'>
+        <div class='gg-sheet__head' data-gg-drag-zone='sheet-head' data-gg-sheet-drag-zone='head'>
+          <button class='gg-sheet__handle' data-gg-close='command' data-gg-drag-handle='command' data-gg-sheet-drag-zone='handle' type='button'>
             <span class='gg-visually-hidden' data-gg-copy='command.dismiss'>Dismiss discovery sheet</span>
           </button>
           <h2 class='gg-sheet__title' data-gg-copy='discovery.title' id='gg-command-title'>Discovery</h2>
@@ -1334,15 +1807,31 @@ img{max-width:100%;height:auto;display:block}
         <div class='gg-discovery__controls' data-gg-discovery-command='bottom'>
         <div aria-label='Discovery filters' class='gg-discovery-tabs' data-gg-copy-aria-label='command.tabs.label' role='tablist'>
           <button aria-controls='gg-discovery-panel-results' aria-selected='true' class='gg-discovery-tab' data-gg-command-tab='all' id='gg-discovery-tab-results' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
             <span data-gg-copy='discovery.filter.all'>All</span>
           </button>
           <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='articles' id='gg-discovery-tab-articles' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
             <span data-gg-copy='discovery.filter.articles'>Articles</span>
           </button>
           <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='topics' id='gg-discovery-tab-topics' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
             <span data-gg-copy='discovery.filter.topics'>Topics</span>
           </button>
+          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='popular' id='gg-discovery-tab-popular' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
+            <span data-gg-copy='discovery.filter.articles'>Popular</span>
+          </button>
+          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='trending' id='gg-discovery-tab-trending' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
+            <span data-gg-copy='discovery.filter.articles'>Trending</span>
+          </button>
+          <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='trending' id='gg-discovery-tab-sponsored' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
+            <span data-gg-copy='discovery.filter.articles'>Sponsored</span>
+          </button>
           <button aria-controls='gg-discovery-panel-results' aria-selected='false' class='gg-discovery-tab' data-gg-command-tab='saved' id='gg-discovery-tab-saved' role='tab' type='button'>
+            <span aria-hidden='true' class='gg-icon'>article</span>
             <span data-gg-copy='discovery.filter.saved'>Saved</span>
           </button>
         </div>
@@ -1386,7 +1875,7 @@ img{max-width:100%;height:auto;display:block}
       </section>
     </div>
 
-    <div aria-hidden='true' class='gg-content-sheet gg-preview gg-sheet gg-sheet--top' data-gg-edge='top' data-gg-panel='preview' data-gg-panel-family='content-sheet' data-gg-state='closed' hidden='hidden' id='gg-preview-sheet' inert=''>
+    <div aria-hidden='true' class='gg-content-sheet gg-preview gg-sheet gg-sheet--top' data-gg-edge='top' data-gg-panel='preview' data-gg-panel-family='content-sheet' data-gg-sheet-origin='top' data-gg-sheet-state='closed' data-gg-sheet-surface='preview' data-gg-state='closed' hidden='hidden' id='gg-preview-sheet' inert=''>
       <button class='gg-content-sheet__scrim gg-sheet__scrim' data-gg-close='preview' type='button'>
         <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
       </button>
@@ -1399,9 +1888,9 @@ img{max-width:100%;height:auto;display:block}
         </div>
         <div class='gg-content-sheet__body gg-preview__body' data-gg-scroll-container=''>
           <header class='gg-preview__intro' data-gg-preview-intro-flow='true'>
-            <p class='gg-preview__eyebrow' data-gg-copy='preview.titleFallback'>Article preview</p>
+            <p class='gg-preview__eyebrow' id='gg-preview-taxonomy'><span class='gg-preview__eyebrow' id='gg-preview-taxonomy-items'/></p>
             <h2 class='gg-preview__title' data-gg-copy='preview.titleFallback' id='gg-preview-title'>Article preview</h2>
-            <div class='gg-preview__meta' id='gg-preview-meta'/>
+            <div class='gg-preview__meta' id='gg-preview-meta'/> 
           </header>
           <div class='gg-preview__surface'>
             <p class='gg-preview__summary' id='gg-preview-summary'/>
@@ -1414,9 +1903,6 @@ img{max-width:100%;height:auto;display:block}
               <p class='gg-preview__status' data-gg-copy='preview.preparing' id='gg-preview-status'>Preparing preview&#8230;</p>
               <ol class='gg-preview__toc-list' id='gg-preview-toc-list'/>
             </section>
-            <div class='gg-preview__cta-row'>
-              <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article</a>
-            </div>
           </div>
           <template id='gg-preview-meta-item-template'>
             <span class='gg-preview__meta-item'>
@@ -1440,21 +1926,25 @@ img{max-width:100%;height:auto;display:block}
             </li>
           </template>
         </div>
-        <footer class='gg-content-sheet__affordance gg-preview__footer gg-preview__affordance' data-gg-drag-zone='preview-affordance'>
-          <button aria-label='Drag to close preview' class='gg-sheet__handle gg-preview__handle' data-gg-close='preview' data-gg-drag-handle='preview' type='button'>
+        <footer class='gg-content-sheet__affordance gg-preview__footer gg-preview__affordance' data-gg-drag-zone='preview-affordance' data-gg-sheet-drag-zone='footer'>
+           <div class='gg-preview__cta-row'>
+              <a aria-hidden='true' class='gg-preview__cta gg-icon' data-gg-copy='preview.Save' href='#' id='gg-preview-save'>Save bookmark_add</a>
+              <a aria-hidden='true' class='gg-preview__cta gg-icon' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>Open full article read_more</a>
+            </div>
+          <button aria-label='Drag to close preview' class='gg-sheet__handle gg-preview__handle' data-gg-close='preview' data-gg-drag-handle='preview' data-gg-sheet-drag-zone='handle' type='button'>
             <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
           </button>
         </footer>
       </section>
     </div>
 
-    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='more' data-gg-panel-family='utility-sheet' data-gg-state='closed' hidden='hidden' id='gg-more-panel' inert=''>
+    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom' data-gg-edge='bottom' data-gg-panel='more' data-gg-panel-family='utility-sheet' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='more' data-gg-state='closed' hidden='hidden' id='gg-more-panel' inert=''>
       <button class='gg-sheet__scrim' data-gg-close='more' type='button'>
         <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
       </button>
       <section aria-labelledby='gg-more-title' aria-modal='true' class='gg-more-sheet gg-sheet__panel' role='dialog' tabindex='-1'>
-        <div class='gg-sheet__head' data-gg-drag-zone='sheet-head'>
-          <button class='gg-sheet__handle' data-gg-close='more' data-gg-drag-handle='more' type='button'>
+        <div class='gg-sheet__head' data-gg-drag-zone='sheet-head' data-gg-sheet-drag-zone='head'>
+          <button class='gg-sheet__handle' data-gg-close='more' data-gg-drag-handle='more' data-gg-sheet-drag-zone='handle' type='button'>
             <span class='gg-visually-hidden' data-gg-copy='more.dismiss'>Dismiss more panel</span>
           </button>
           <h2 class='gg-sheet__title' data-gg-copy='more.title' id='gg-more-title'>More</h2>
@@ -1473,14 +1963,13 @@ img{max-width:100%;height:auto;display:block}
               <span aria-hidden='true' class='gg-more-profile__chevron'>&#8250;</span>
             </a>
           </section>
-
           <section aria-labelledby='gg-more-navigation-title' class='gg-more-section gg-more-section--navigation'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.navigation' id='gg-more-navigation-title'>Navigation</h3>
             <div class='gg-more-grid'>
               <a class='gg-more-list__link' data-gg-more-route='home' href='/landing'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>home</span><span class='gg-more-row__label' data-gg-copy='nav.home'>Home</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>article</span><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>newsmode</span><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span></a>
               <a class='gg-more-list__link' data-gg-more-route='store' href='/store'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shopping_bag</span><span class='gg-more-row__label' data-gg-copy='nav.store'>Store</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='contact' href='/landing#contact'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>mail</span><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='contact' href='/landing#contact'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>inbox_text</span><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span></a>
             </div>
           </section>
 
@@ -1556,18 +2045,11 @@ img{max-width:100%;height:auto;display:block}
             </div>
           </div>
           <footer class='gg-more-footer'>
-            <span class='gg-more-footer__label' data-gg-copy='more.shareSite' id='gg-more-footer-social-title'>Share site</span>
-            <div aria-labelledby='gg-more-footer-social-title' class='gg-more-footer__social'>
-              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareX' data-gg-copy-title='more.shareX' expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on X'><span aria-hidden='true'>𝕏</span><span data-gg-copy='more.shareXShort'>X</span></a>
-              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareFacebook' data-gg-copy-title='more.shareFacebook' expr:href='&quot;https://www.facebook.com/sharer/sharer.php?u=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on Facebook'><span aria-hidden='true'>f</span><span data-gg-copy='more.shareFacebookShort'>Facebook</span></a>
-              <a class='gg-more-footer__link' data-gg-copy-aria-label='more.shareWhatsApp' data-gg-copy-title='more.shareWhatsApp' expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank' title='Share on WhatsApp'><span aria-hidden='true'>&#9676;</span><span data-gg-copy='more.shareWhatsAppShort'>WhatsApp</span></a>
-            </div>
             <small class='gg-more-footer__legal' data-gg-copy='footer.copyright'>Copyright &#169; 2026 PakRPP. All rights reserved.</small>
           </footer>
         </div>
       </section>
     </div>
-        <!-- GG non-critical app JS moved out of critical HTML. -->
     <script defer='defer' src='/__gg/assets/js/gg-app.dev.js'/>
   </body>
 </html>
