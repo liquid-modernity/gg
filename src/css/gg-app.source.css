@@ -1349,26 +1349,6 @@ body[data-gg-panel-active='true'] .gg-detail-outline {
 }
 
 .gg-detail-outline[data-gg-outline-mode='pagination'] {
-  position: sticky;
-  left: auto;
-  bottom: auto;
-  z-index: 16;
-  width: 100%;
-  margin: 14px 0 0;
-  border-radius: 18px;
-  transform: none;
-}
-
-body[data-gg-dock-state='hidden-by-scroll'] .gg-detail-outline[data-gg-outline-mode='pagination'],
-body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagination'] {
-  bottom: auto;
-  width: 100%;
-  border-radius: 18px;
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
-}
-.gg-detail-outline[data-gg-outline-mode='pagination'] {
   z-index: 16;
 }
 
