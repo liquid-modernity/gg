@@ -798,11 +798,33 @@ window.GG = window.GG || {};
         var BLOG_RETENTION_CONTRACT = {
           savedStorageKey: 'gg:saved:v1',
           savedRouteHash: '#saved',
+          popularRouteHash: '#popularpost',
+          popularRanges: ['ALL_TIME', 'LAST_YEAR', 'LAST_MONTH', 'LAST_WEEK'],
+          popularSourceWidgets: {
+            ALL_TIME: 'PopularPosts1',
+            LAST_YEAR: 'PopularPosts3',
+            LAST_MONTH: 'PopularPosts2',
+            LAST_WEEK: 'PopularPosts4'
+          },
           savedShape: ['title', 'url', 'summary', 'date', 'source', 'surface', 'savedAt'],
           relatedMin: 3,
           relatedMax: 6,
+          relatedVisibleMax: 3,
           relatedSourcePriority: ['labels', 'recent'],
           storeExclusion: 'exclude Store/Yellow Cart content from blog saved and related results'
+        };
+
+        var ROOT_LISTING_ICON_REGISTRY = {
+          article: { label: 'Article', icon: 'article' },
+          latest: { label: 'Latest', icon: 'update' },
+          lab: { label: 'Lab', icon: 'science' },
+          insight: { label: 'Insight', icon: 'psychology' },
+          'case-notes': { label: 'Case Notes', icon: 'clinical_notes' },
+          perspective: { label: 'Perspective', icon: 'visibility' },
+          saved: { label: 'Saved', icon: 'bookmark' },
+          'popular-posts': { label: 'Popular Posts', icon: 'local_fire_department' },
+          recents: { label: 'Recents', icon: 'history' },
+          details: { label: 'Details', icon: 'top_panel_open' }
         };
 
         var BOTTOM_SAFE_ZONE_CONTRACT = {
@@ -1077,6 +1099,7 @@ window.GG = window.GG || {};
           previewHandle: document.querySelector('[data-gg-drag-handle="preview"]'),
           previewMedia: document.getElementById('gg-preview-media'),
           previewImage: document.getElementById('gg-preview-image'),
+          previewEyebrow: document.querySelector('#gg-preview-sheet .gg-preview__eyebrow'),
           previewTitle: document.getElementById('gg-preview-title'),
           previewMeta: document.getElementById('gg-preview-meta'),
           previewSummary: document.getElementById('gg-preview-summary'),
@@ -1090,6 +1113,7 @@ window.GG = window.GG || {};
           previewTocItemTemplate: document.getElementById('gg-preview-toc-item-template'),
           previewCta: document.getElementById('gg-preview-cta'),
           previewSave: document.querySelector('#gg-preview-sheet [data-gg-save-article]'),
+          popularSource: document.getElementById('gg-popular-source'),
           more: document.getElementById('gg-more-panel'),
           morePanel: document.querySelector('#gg-more-panel .gg-sheet__panel'),
           moreScrim: document.querySelector('#gg-more-panel .gg-sheet__scrim'),
@@ -1152,6 +1176,9 @@ window.GG = window.GG || {};
           savedStorageAvailable: true,
           savedListingActive: false,
           savedListingOriginalHidden: false,
+          popularListingActive: false,
+          popularRange: 'ALL_TIME',
+          popularItems: [],
           discoveryIndex: null,
           discoveryIndexPromise: null,
           discoveryQuery: '',
@@ -1217,6 +1244,7 @@ window.GG = window.GG || {};
           detailOutlineManualOpenAt: 0,
           relatedPosts: [],
           relatedSource: 'pending',
+          relatedPage: 0,
           relatedRenderPromise: null,
           searchEmptyFallbackState: 'idle',
           searchEmptyFallbackRequestId: 0,
@@ -6767,6 +6795,85 @@ window.GG = window.GG || {};
           if (ui.articleSave) syncSaveButton(ui.articleSave, getCurrentArticlePayload());
         }
 
+        function getListingIcon(key) {
+          var entry = ROOT_LISTING_ICON_REGISTRY[key] || ROOT_LISTING_ICON_REGISTRY.article;
+          return entry.icon || ROOT_LISTING_ICON_REGISTRY.article.icon;
+        }
+
+        function createListingRow(item, options) {
+          var source = item || {};
+          var config = options || {};
+          var node = document.createElement('article');
+          var icon = document.createElement('span');
+          var title = document.createElement('h2');
+          var link = document.createElement('a');
+          var action = document.createElement('button');
+          var actionText = document.createElement('span');
+          var actionIcon = document.createElement('span');
+          var labelKey = config.labelKey || source.labelKey || 'article';
+
+          node.className = 'gg-entry-row' + (config.className ? ' ' + config.className : '');
+          node.setAttribute('data-gg-label-key', labelKey);
+          node.setAttribute('data-gg-post-url', source.url || source.href || '');
+          node.setAttribute('data-gg-url', source.url || source.href || '');
+          node.setAttribute('data-gg-title', source.title || '');
+          node.setAttribute('data-gg-summary', source.summary || '');
+          node.setAttribute('data-gg-date', source.date || '');
+          node.setAttribute('data-gg-source', source.source || 'rootSource');
+          node.setAttribute('data-gg-surface', config.surface || source.surface || 'root-listing');
+          node.setAttribute('data-gg-type', source.type || 'post');
+          node.setAttribute('role', 'listitem');
+          if (config.markerName) node.setAttribute(config.markerName, config.markerValue || 'true');
+
+          icon.className = 'gg-entry-row__icon gg-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.setAttribute('data-gg-listing-icon', labelKey);
+          icon.textContent = getListingIcon(labelKey);
+
+          title.className = 'gg-entry-row__title';
+          link.className = 'gg-entry-row__title-trigger';
+          link.setAttribute('aria-controls', 'gg-preview-sheet');
+          link.setAttribute('aria-expanded', 'false');
+          link.setAttribute('data-gg-open', 'preview');
+          link.href = source.url || source.href || '#';
+          link.textContent = source.title || getCopy('preview.titleFallback');
+          title.appendChild(link);
+
+          action.className = 'gg-entry-row__action';
+          action.setAttribute('aria-controls', 'gg-preview-sheet');
+          action.setAttribute('aria-expanded', 'false');
+          action.setAttribute('data-gg-copy', 'listing.details');
+          action.setAttribute('data-gg-open', 'preview');
+          action.type = 'button';
+          actionText.textContent = getCopy('listing.details');
+          actionIcon.className = 'gg-entry-row__action-icon gg-icon';
+          actionIcon.setAttribute('aria-hidden', 'true');
+          actionIcon.textContent = getListingIcon('details');
+          action.appendChild(actionText);
+          action.appendChild(actionIcon);
+
+          node.appendChild(icon);
+          node.appendChild(title);
+          node.appendChild(action);
+          return node;
+        }
+
+        function clearDynamicListingRows() {
+          var rows;
+          var i;
+          if (!ui.listing) return;
+          rows = ui.listing.querySelectorAll('[data-gg-saved-row], [data-gg-saved-empty], [data-gg-popular-row], [data-gg-popular-empty], [data-gg-popular-controls]');
+          for (i = 0; i < rows.length; i += 1) rows[i].remove();
+        }
+
+        function setNativeListingRowsHidden(hidden) {
+          var rows;
+          var i;
+          if (!ui.listing) return;
+          rows = ui.listing.querySelectorAll(LISTING_ROW_SELECTOR);
+          for (i = 0; i < rows.length; i += 1) rows[i].hidden = !!hidden;
+        }
+
         function renderSavedListing() {
           var rows;
           var i;
@@ -6776,19 +6883,11 @@ window.GG = window.GG || {};
 
           if (!ui.listing) return;
 
-          rows = ui.listing.querySelectorAll(LISTING_ROW_SELECTOR + ', [data-gg-saved-row], [data-gg-saved-empty]');
-          for (i = 0; i < rows.length; i += 1) {
-            if (rows[i].hasAttribute('data-gg-saved-row') || rows[i].hasAttribute('data-gg-saved-empty')) {
-              rows[i].remove();
-            } else if (state.savedListingActive) {
-              rows[i].hidden = true;
-            } else {
-              rows[i].hidden = false;
-            }
-          }
+          clearDynamicListingRows();
+          setNativeListingRowsHidden(state.savedListingActive || state.popularListingActive);
 
           if (!state.savedListingActive) {
-            if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
+            if (!state.popularListingActive && ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
             return;
           }
 
@@ -6821,19 +6920,12 @@ window.GG = window.GG || {};
           }
 
           for (i = 0; i < items.length; i += 1) {
-            node = document.createElement('article');
-            node.className = 'gg-entry-row gg-entry-row--saved';
-            node.setAttribute('data-gg-saved-row', 'true');
-            node.setAttribute('data-gg-post-url', items[i].url);
-            node.setAttribute('data-gg-url', items[i].url);
-            node.setAttribute('data-gg-title', items[i].title);
-            node.setAttribute('data-gg-summary', items[i].summary || '');
-            node.setAttribute('data-gg-date', items[i].date || '');
-            node.setAttribute('data-gg-source', items[i].source || 'rootSource');
-            node.setAttribute('data-gg-surface', 'saved-listing');
-            node.setAttribute('data-gg-type', 'post');
-            node.setAttribute('role', 'listitem');
-            node.innerHTML = '<h2 class="gg-entry-row__title"><a aria-controls="gg-preview-sheet" aria-expanded="false" class="gg-entry-row__title-trigger" data-gg-open="preview" href="' + escapeHtml(items[i].url) + '">' + escapeHtml(items[i].title) + '</a></h2><button aria-controls="gg-preview-sheet" aria-expanded="false" class="gg-entry-row__action" data-gg-copy="listing.details" data-gg-open="preview" type="button">' + escapeHtml(getCopy('listing.details')) + '</button>';
+            node = createListingRow(items[i], {
+              className: 'gg-entry-row--saved',
+              labelKey: 'saved',
+              surface: 'saved-listing',
+              markerName: 'data-gg-saved-row'
+            });
             fragment.appendChild(node);
           }
 
@@ -6841,7 +6933,7 @@ window.GG = window.GG || {};
         }
 
         function syncSavedListingFromHash() {
-          var active = window.location.hash === BLOG_RETENTION_CONTRACT.savedRouteHash;
+          var active = window.location.hash === BLOG_RETENTION_CONTRACT.savedRouteHash && !state.popularListingActive;
           if (!ui.listing || !(state.surfaceContext && state.surfaceContext.isListing)) return;
           if (state.savedListingActive === active && active) {
             renderSavedListing();
@@ -6850,6 +6942,150 @@ window.GG = window.GG || {};
           state.savedListingActive = active;
           if (ui.shell) ui.shell.setAttribute('data-gg-saved-listing', active ? 'active' : 'inactive');
           renderSavedListing();
+        }
+
+        function getPopularRangeFromHash() {
+          var hash = window.location.hash || '';
+          var range = '';
+          if (hash.indexOf(BLOG_RETENTION_CONTRACT.popularRouteHash) !== 0) return '';
+          range = hash.split(':')[1] || 'ALL_TIME';
+          return BLOG_RETENTION_CONTRACT.popularRanges.indexOf(range) === -1 ? 'ALL_TIME' : range;
+        }
+
+        function extractPopularItems(range) {
+          var root;
+          var links;
+          var items = [];
+          var seen = {};
+          var i;
+          var link;
+          var row;
+          var title;
+          var summary;
+          var image;
+          var url;
+
+          if (!ui.popularSource) return [];
+          root = ui.popularSource.querySelector('[data-gg-popular-range="' + range + '"]');
+          if (!root) return [];
+          links = root.querySelectorAll('a[href]');
+
+          for (i = 0; i < links.length; i += 1) {
+            link = links[i];
+            url = normalizeArticleUrl(link.href || link.getAttribute('href'));
+            if (!url || seen[url]) continue;
+            row = link.closest('li, .post, .item, article') || link.parentNode || root;
+            title = stripHtml(link.textContent || link.getAttribute('title') || '').trim();
+            if (!title) continue;
+            summary = row ? stripHtml(row.textContent || '').replace(title, '').trim() : '';
+            image = row && row.querySelector ? row.querySelector('img') : null;
+            if (isStoreContent({ href: url, url: url, title: title, summary: summary })) continue;
+            seen[url] = true;
+            items.push({
+              title: title,
+              url: url,
+              href: url,
+              summary: summary,
+              image: image ? image.currentSrc || image.src || image.getAttribute('src') || '' : '',
+              source: 'PopularPosts',
+              surface: 'popular-listing',
+              labelKey: 'popular-posts'
+            });
+          }
+
+          return items.slice(0, 10);
+        }
+
+        function createPopularControls(range) {
+          var section = document.createElement('section');
+          var title = document.createElement('h2');
+          var group = document.createElement('div');
+          var labels = {
+            ALL_TIME: 'All time',
+            LAST_YEAR: 'Last year',
+            LAST_MONTH: 'Last 30 days',
+            LAST_WEEK: 'Last 7 days'
+          };
+
+          section.className = 'gg-popular-controls';
+          section.setAttribute('data-gg-popular-controls', 'true');
+          section.setAttribute('aria-labelledby', 'gg-popular-controls-title');
+          title.id = 'gg-popular-controls-title';
+          title.className = 'gg-popular-controls__title';
+          title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
+          group.className = 'gg-popular-controls__ranges';
+          group.setAttribute('role', 'list');
+
+          BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
+            var link = document.createElement('a');
+            link.className = 'gg-popular-controls__range';
+            link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
+            link.setAttribute('role', 'listitem');
+            link.setAttribute('aria-current', item === range ? 'true' : 'false');
+            link.textContent = labels[item] || item;
+            group.appendChild(link);
+          });
+
+          section.appendChild(title);
+          section.appendChild(group);
+          return section;
+        }
+
+        function renderPopularListing() {
+          var items;
+          var fragment;
+          var node;
+          var i;
+
+          if (!ui.listing) return;
+          clearDynamicListingRows();
+          setNativeListingRowsHidden(state.savedListingActive || state.popularListingActive);
+
+          if (!state.popularListingActive) {
+            if (!state.savedListingActive && ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
+            return;
+          }
+
+          if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = true;
+          fragment = document.createDocumentFragment();
+          fragment.appendChild(createPopularControls(state.popularRange));
+          items = extractPopularItems(state.popularRange);
+          state.popularItems = items;
+
+          if (!items.length) {
+            node = document.createElement('section');
+            node.className = 'gg-saved-listing-empty gg-popular-empty';
+            node.setAttribute('data-gg-popular-empty', 'true');
+            node.setAttribute('role', 'status');
+            node.setAttribute('aria-live', 'polite');
+            node.innerHTML = '<h2>Popular posts are unavailable.</h2><p>Native Blogger PopularPosts data did not render for this range.</p>';
+            fragment.appendChild(node);
+            ui.listing.appendChild(fragment);
+            return;
+          }
+
+          for (i = 0; i < items.length; i += 1) {
+            node = createListingRow(items[i], {
+              className: 'gg-entry-row--popular',
+              labelKey: 'popular-posts',
+              surface: 'popular-listing',
+              markerName: 'data-gg-popular-row'
+            });
+            fragment.appendChild(node);
+          }
+
+          ui.listing.appendChild(fragment);
+        }
+
+        function syncPopularListingFromHash() {
+          var range = getPopularRangeFromHash();
+          var active = !!range;
+          if (!ui.listing || !(state.surfaceContext && state.surfaceContext.isListing)) return;
+          state.popularRange = range || 'ALL_TIME';
+          state.popularListingActive = active;
+          if (active) state.savedListingActive = false;
+          if (ui.shell) ui.shell.setAttribute('data-gg-popular-listing', active ? 'active' : 'inactive');
+          renderPopularListing();
         }
 
         function toggleSaveArticle(trigger) {
@@ -7150,7 +7386,16 @@ window.GG = window.GG || {};
           }
 
           replaceNodeChildren(ui.previewTaxonomyItems, nodes);
-          ui.previewTaxonomy.hidden = !nodes.length;
+          ui.previewTaxonomy.hidden = true;
+        }
+
+        function syncPreviewEyebrow(detail, fallback) {
+          var labels = detail && Array.isArray(detail.labels) ? detail.labels : [];
+          var label = labels.length && labels[0] && labels[0].text ? labels[0].text : '';
+          var value = label || fallback || getCopy('discovery.type.article');
+          if (!ui.previewEyebrow) return;
+          ui.previewEyebrow.textContent = value;
+          ui.previewEyebrow.removeAttribute('data-gg-copy');
         }
 
         function createPreviewTocItemNode(item) {
@@ -7203,6 +7448,7 @@ window.GG = window.GG || {};
           state.previewPayload = payload;
           state.previewUrl = payload.url;
           ui.previewTitle.textContent = payload.title || getCopy('preview.titleFallback');
+          syncPreviewEyebrow(null, getCopy('discovery.type.article'));
           ui.previewSummary.textContent = getCopy('preview.loadingSummary');
           syncPreviewMeta([{ cueKey: '', value: getCopy('preview.loadingMeta') }]);
           syncPreviewTaxonomy([]);
@@ -7225,6 +7471,7 @@ window.GG = window.GG || {};
           summary = payload.summary || detail.summary || getCopy('preview.noSummary');
 
           ui.previewTitle.textContent = detail.title || payload.title || getCopy('preview.titleFallback');
+          syncPreviewEyebrow(detail, getCopy('discovery.type.article'));
           ui.previewSummary.textContent = summary;
           metaItems = buildPreviewMetaItems(detail);
           syncPreviewMeta(metaItems);
@@ -8539,6 +8786,7 @@ window.GG = window.GG || {};
               href: post.href || '',
               summary: stripHtml(post.summary || ''),
               labelTexts: sanitizeTopicTexts(post.labelTexts || []),
+              image: post.image || post.thumbnail || '',
               date: post.date || post.published || '',
               score: score
             });
@@ -8556,6 +8804,7 @@ window.GG = window.GG || {};
           var type = document.createElement('span');
           var title = document.createElement('strong');
           var meta = document.createElement('span');
+          var thumb = document.createElement('span');
 
           if (!item || !item.href || !item.title) return null;
 
@@ -8572,20 +8821,35 @@ window.GG = window.GG || {};
           meta.className = 'gg-related-posts__meta';
           meta.textContent = item.labelTexts && item.labelTexts.length ? item.labelTexts.slice(0, 2).join(' · ') : (item.summary || '');
 
+          thumb.className = 'gg-related-posts__thumb';
+          thumb.setAttribute('aria-hidden', 'true');
+          if (item.image) {
+            thumb.style.backgroundImage = 'url("' + String(item.image).replace(/"/g, '') + '")';
+            thumb.setAttribute('data-gg-related-thumb', 'image');
+          } else {
+            thumb.setAttribute('data-gg-related-thumb', 'placeholder');
+          }
+
           link.appendChild(type);
           link.appendChild(title);
           link.appendChild(meta);
+          link.appendChild(thumb);
           return link;
         }
 
         function renderRelatedPosts(items, source) {
           var list = Array.isArray(items) ? items : [];
+          var pageCount = Math.max(1, Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax));
+          var page = Math.min(Math.max(0, state.relatedPage || 0), pageCount - 1);
+          var visible = list.slice(page * BLOG_RETENTION_CONTRACT.relatedVisibleMax, (page + 1) * BLOG_RETENTION_CONTRACT.relatedVisibleMax);
           var nodes = [];
+          var dots;
           var i;
           var node;
 
           state.relatedPosts = list;
           state.relatedSource = source || (list.length ? 'recent' : 'empty');
+          state.relatedPage = page;
 
           if (!ui.relatedPosts || !ui.relatedPostsList) return;
 
@@ -8601,9 +8865,26 @@ window.GG = window.GG || {};
             return;
           }
 
-          for (i = 0; i < list.length; i += 1) {
-            node = createRelatedPostNode(list[i]);
+          for (i = 0; i < visible.length; i += 1) {
+            node = createRelatedPostNode(visible[i]);
             if (node) nodes.push(node);
+          }
+
+          if (list.length > BLOG_RETENTION_CONTRACT.relatedVisibleMax) {
+            dots = document.createElement('div');
+            dots.className = 'gg-related-posts__dots';
+            dots.setAttribute('role', 'list');
+            for (i = 0; i < Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax); i += 1) {
+              node = document.createElement('button');
+              node.className = 'gg-related-posts__dot';
+              node.type = 'button';
+              node.setAttribute('role', 'listitem');
+              node.setAttribute('aria-label', 'Related posts group ' + String(i + 1));
+              node.setAttribute('aria-current', i === page ? 'true' : 'false');
+              node.setAttribute('data-gg-related-page', String(i));
+              dots.appendChild(node);
+            }
+            nodes.push(dots);
           }
 
           replaceNodeChildren(ui.relatedPostsList, nodes);
@@ -8637,6 +8918,7 @@ window.GG = window.GG || {};
         function initBlogRetention() {
           state.savedArticles = getSavedArticles();
           syncSaveButtons();
+          syncPopularListingFromHash();
           syncSavedListingFromHash();
           initRelatedPosts();
         }
@@ -10145,6 +10427,7 @@ window.GG = window.GG || {};
           var detailOutlineToggle;
           var detailOutlineTarget;
           var saveArticleTrigger;
+          var relatedPageTrigger;
 
           if (shouldSuppressDocumentClick(event.target)) {
             event.preventDefault();
@@ -10187,6 +10470,7 @@ window.GG = window.GG || {};
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
           saveArticleTrigger = event.target.closest('[data-gg-save-article]');
+          relatedPageTrigger = event.target.closest('[data-gg-related-page]');
 
           if (primaryRouteTrigger && !primaryRouteTrigger.hasAttribute('data-gg-open') && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
             event.preventDefault();
@@ -10257,6 +10541,13 @@ window.GG = window.GG || {};
           if (saveArticleTrigger) {
             event.preventDefault();
             toggleSaveArticle(saveArticleTrigger);
+            return;
+          }
+
+          if (relatedPageTrigger) {
+            event.preventDefault();
+            state.relatedPage = parseInt(relatedPageTrigger.getAttribute('data-gg-related-page'), 10) || 0;
+            renderRelatedPosts(state.relatedPosts, state.relatedSource);
             return;
           }
 
@@ -10884,6 +11175,7 @@ window.GG = window.GG || {};
           applySurfaceContract();
           syncLaunchPathState();
           syncCommentsHash();
+          syncPopularListingFromHash();
           syncSavedListingFromHash();
         });
 

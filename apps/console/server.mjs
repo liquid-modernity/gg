@@ -428,6 +428,9 @@ function collectSnapshot() {
 function runCheck() {
   const requiredConsoleFiles = ["index.html", "app.js", "styles.css", "server.mjs"];
   const failures = [];
+  const indexHtml = existsSync(join(CONSOLE_DIR, "index.html")) ? readFileSync(join(CONSOLE_DIR, "index.html"), "utf8") : "";
+  const appJs = existsSync(join(CONSOLE_DIR, "app.js")) ? readFileSync(join(CONSOLE_DIR, "app.js"), "utf8") : "";
+  const stylesCss = existsSync(join(CONSOLE_DIR, "styles.css")) ? readFileSync(join(CONSOLE_DIR, "styles.css"), "utf8") : "";
 
   for (const file of requiredConsoleFiles) {
     const path = join(CONSOLE_DIR, file);
@@ -436,7 +439,21 @@ function runCheck() {
   }
 
   const snapshot = collectSnapshot();
+  try {
+    readAllowed("../package.json");
+    failures.push("snapshot allowlist accepted a path traversal read");
+  } catch {
+    // Expected: the Console snapshot has no arbitrary file read path.
+  }
+
+  if (!indexHtml.includes('href="/styles.css"')) failures.push("Console CSS path is broken or missing");
+  if (!indexHtml.includes('src="/app.js"')) failures.push("Console JS path is broken or missing");
+  if (!appJs.includes('fetch("/api/snapshot"')) failures.push("Console app does not request /api/snapshot");
+  if (!appJs.includes('error-card') || !appJs.includes('Snapshot request failed')) failures.push("Console app must render a styled snapshot error state");
+  if (!stylesCss.includes(".console-shell") || !stylesCss.includes(".error-card")) failures.push("Console CSS does not include shell/error styling");
+  if (indexHtml.includes("GG Blogger Studio MVP") || indexHtml.includes("BloggerApiClient")) failures.push("dashboard.html prototype UI appears to be shipped as Console");
   if (!snapshot.readonly) failures.push("snapshot must be readonly");
+  if (snapshot.sourceMode !== "local-files-whitelist") failures.push("snapshot source mode must be local-files-whitelist");
   if (!snapshot.profile.siteName) failures.push("profile site name missing");
   if (!snapshot.surfaces.length) failures.push("surface list missing");
   if (!snapshot.navigation.dockItems.length) failures.push("navigation dock items missing");

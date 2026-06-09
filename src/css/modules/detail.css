@@ -105,15 +105,15 @@
 
 .gg-related-posts {
   display: grid;
-  gap: 14px;
+  gap: 8px;
   width: 100%;
   max-width: 62ch;
   justify-self: center;
-  margin: 18px auto 0;
-  padding: 18px var(--gg-article-pad-x);
-  border: 1px solid var(--gg-article-border);
-  border-radius: var(--gg-article-radius);
-  background: var(--gg-surface);
+  margin: 14px auto 0;
+  padding: 10px;
+  border: 1px solid var(--gg-divider);
+  border-radius: 16px;
+  background: var(--gg-surface-interactive);
 }
 
 .gg-related-posts[hidden] {
@@ -130,33 +130,72 @@
 
 .gg-related-posts__list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .gg-related-posts__item {
   display: grid;
-  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  grid-template-areas: "type thumb" "title thumb" "meta thumb";
+  gap: 3px 10px;
   min-width: 0;
-  padding: 12px 0;
-  border-top: 1px solid var(--gg-divider);
+  min-height: 58px;
+  padding: 9px;
+  border-radius: 12px;
+  background: var(--gg-surface);
   color: var(--gg-ink);
   text-decoration: none;
 }
 
-.gg-related-posts__item:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
 .gg-related-posts__type,
 .gg-related-posts__meta {
+  grid-area: type;
   color: var(--gg-ink-soft);
   font: 620 11px/1.35 var(--gg-font-sans);
 }
 
+.gg-related-posts__meta {
+  grid-area: meta;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .gg-related-posts__title-text {
+  grid-area: title;
   font: 720 15px/1.35 var(--gg-font-sans);
   overflow-wrap: anywhere;
+}
+
+.gg-related-posts__thumb {
+  grid-area: thumb;
+  width: 46px;
+  height: 46px;
+  align-self: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gg-surface-interactive), var(--gg-divider));
+  background-position: center;
+  background-size: cover;
+}
+
+.gg-related-posts__dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.gg-related-posts__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gg-divider);
+}
+
+.gg-related-posts__dot[aria-current='true'] {
+  background: var(--gg-accent);
 }
 
 .gg-related-posts__item:hover .gg-related-posts__title-text,

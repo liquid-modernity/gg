@@ -41,6 +41,7 @@ npm run gaga:verify-theme
 npm run gaga:verify-shell
 npm run gaga:verify-preview-sheet
 npm run gg:console:check
+npm run gaga:verify-root-ux-polish
 npm run store:build
 npm run store:proof
 npm run ci:qa
@@ -254,6 +255,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `gaga:verify-theme` / `gaga:verify-theme-contract` | Verify Light/Dark theme contract and no system-mode public UI. | Blocking contract | Yes for `gaga:verify-theme` | Yes via `ci:cloudflare` | `THEME CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-shell` / `gaga:verify-shell-contract` | Verify shell interaction contract. | Blocking contract | Yes for `gaga:verify-shell` | Yes via `ci:cloudflare` | `SHELL INTERACTION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-preview-sheet` | Verify root article preview sheet contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `PREVIEW SHEET CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gaga:verify-root-ux-polish` | Verify Task 004B root UX polish, PopularPosts source integration, preview CTA, Contact/More boundary, and Console non-blank contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `ROOT UX POLISH GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-sheet-lifecycle` | Verify sheet lifecycle, preview lift, and token contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | `SHEET LIFECYCLE CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-component-source` / `gaga:verify-sheet-core-source` | Verify component/source ownership for shared sheet core. | Blocking contract | Yes | Yes via `ci:cloudflare` | Component source guard `PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-visual-system` | Verify visual-system source contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | Visual-system guard `PASS`; failures are `CONTRACT_FAILURE`. |
@@ -334,6 +336,7 @@ These read-only guards are mandatory and must remain wired through `package.json
 - `qa/sheet-gesture-close-guard.mjs`
 - `qa/nav-more-contract-guard.mjs`
 - `qa/preview-sheet-contract-guard.mjs`
+- `qa/root-ux-polish-guard.mjs`
 - `qa/readiness-85-guard.mjs`
 - `qa/sheet-lifecycle-contract-guard.mjs`
 - `qa/sheet-runtime-overflow-viewport-guard.mjs`

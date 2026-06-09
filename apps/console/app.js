@@ -279,7 +279,27 @@
     node.dataset.tone = tone || "neutral";
   }
 
+  function clearErrorCard() {
+    var existing = document.querySelector("[data-console-error]");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+  }
+
+  function renderErrorCard(error) {
+    var main = byId("main");
+    var message = error && error.message ? error.message : "Snapshot request failed";
+    clearErrorCard();
+    main.insertBefore(el("section", {
+      className: "error-card",
+      "data-console-error": "true",
+      "role": "alert"
+    }, [
+      el("strong", { text: "Snapshot unavailable" }),
+      el("p", { text: "/api/snapshot: " + message })
+    ]), main.querySelector(".summary-grid"));
+  }
+
   function loadSnapshot() {
+    clearErrorCard();
     setStatus("Loading", "neutral");
     return fetch("/api/snapshot", { cache: "no-store" })
       .then(function (response) {
@@ -292,6 +312,7 @@
         setStatus("Ready", "ok");
       })
       .catch(function (error) {
+        renderErrorCard(error);
         setStatus(error.message, "bad");
       });
   }

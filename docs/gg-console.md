@@ -39,6 +39,8 @@ The MVP inspects local repo state and displays:
 
 The Console does not write files, edit config, publish Blogger content, deploy Cloudflare, or run arbitrary shell commands from the browser.
 
+Public Blogger surfaces remain separate from Console implementation. `index.xml`, `landing.html`, `store.html`, generated Blogger template output, and public runtime assets must keep using the Gaga Design System, `gg-*` hooks, vanilla JavaScript, and project-owned CSS. Do not introduce shadcn/ui, React, Vue, Tailwind, Bootstrap, Radix, or other third-party UI frameworks into public Blogger surfaces.
+
 ## Prototype Boundary
 
 `dashboard.html` remains an experimental GG Blogger Studio prototype. It is not the final GG Console UI.

@@ -29,10 +29,6 @@ const MORE_KEYS = GG_MORE_SHEET.sections.flatMap((section) => {
   GG_MORE_SHEET.profile.metaKey,
   GG_MORE_SHEET.localSearch.labelKey,
   GG_MORE_SHEET.localSearch.placeholderKey,
-  GG_MORE_SHEET.share.labelKey,
-  'more.shareXShort',
-  'more.shareFacebookShort',
-  'more.shareWhatsAppShort',
   GG_MORE_SHEET.copyright.key
 ]);
 
@@ -130,6 +126,14 @@ function main() {
     "data-gg-more-route=\'store\'",
     "data-gg-more-route=\'contact\'"
   ], issues);
+  assertContains('index.xml Contact social', index, [
+    'gg-contact-social',
+    'mailto:chat@pakrpp.com',
+    'api.whatsapp.com/send',
+    'twitter.com/intent/tweet',
+    'facebook.com/sharer'
+  ], issues);
+  assertNoPattern('index.xml More social', index, /gg-more-footer__social/, 'must not keep social links in More sheet', issues);
   assertPattern('index.xml Contact dock', index, /<button\b(?=[^>]*class=['"]gg-dock__item['"])(?=[^>]*data-gg-nav=['"]contact['"])(?=[^>]*data-gg-open=['"]contact['"])(?=[^>]*aria-controls=['"]gg-contact-panel['"])[^>]*>/is, 'must open the Contact sheet instead of linking away', issues);
   assertContains('landing.html More structure', landing, [
     'gg-more-profile__card',

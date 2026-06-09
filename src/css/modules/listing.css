@@ -9,13 +9,25 @@
 
 .gg-entry-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--gg-entry-row-gap);
   padding: var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);
   border-bottom: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
   background: transparent;
   transition: background-color var(--gg-ease);
+}
+
+.gg-entry-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--gg-surface-interactive);
+  color: var(--gg-accent-soft);
+  font-size: 18px;
 }
 
 .gg-entry-row:last-child {
@@ -50,6 +62,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 6px;
   justify-self: end;
   align-self: center;
   min-height: var(--gg-entry-row-action-min-height);
@@ -67,6 +80,10 @@
   transition: transform var(--gg-motion-press), background-color var(--gg-ease), color var(--gg-ease), text-decoration-color var(--gg-ease);
 }
 
+.gg-entry-row__action-icon {
+  font-size: 18px;
+}
+
 @media (hover: hover) {
   .gg-entry-row:hover {
     background: var(--gg-entry-row-surface-hover);
@@ -79,6 +96,7 @@
   }
 }
 
+.gg-site-head__menu,
 .gg-listing-toolbar {
   position: sticky;
   top: max(8px, env(safe-area-inset-top));
@@ -208,11 +226,54 @@
 .gg-listing-filter__item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   min-height: 40px;
   padding: 0 12px;
   border-radius: 8px;
   color: var(--gg-ink);
   font: 600 13px/1.25 var(--gg-font-sans);
+}
+
+.gg-listing-filter__item .gg-icon {
+  color: var(--gg-accent-soft);
+  font-size: 19px;
+}
+
+.gg-popular-controls {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
+  background: var(--gg-surface-interactive);
+}
+
+.gg-popular-controls__title {
+  margin: 0;
+  font: 750 13px/1.2 var(--gg-font-sans);
+}
+
+.gg-popular-controls__ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gg-popular-controls__range {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--gg-surface);
+  color: var(--gg-ink);
+  font: 650 11px/1.1 var(--gg-font-sans);
+}
+
+.gg-popular-controls__range[aria-current='true'] {
+  background: var(--gg-accent);
+  color: var(--gg-accent-contrast);
 }
 
 .gg-listing-filter__item:hover,

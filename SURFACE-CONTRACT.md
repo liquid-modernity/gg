@@ -17,6 +17,12 @@ Home(/landing) -> Blog(/) -> current page/post
 
 Do not redirect `/` to `/landing`, do not rebrand `/` as Home in schema/breadcrumbs, and do not let Worker replace healthy Blogger listing output.
 
+Root listing uses the Gaga Design System only. The canonical visual header is `gg-site-head`; `gg-listing-toolbar` may exist only as a compatibility alias during migration. Listing label/menu icons come from the root listing icon registry in source, with `article` as the unknown-label fallback and `top_panel_open` for Details.
+
+Saved listing mode is local-only and uses `#saved` plus `localStorage` key `gg:saved:v1`. Popular Posts listing mode uses `#popularpost` and native Blogger `PopularPosts` widgets as source data. Required source widgets and ranges are `PopularPosts1`/`ALL_TIME`, `PopularPosts3`/`LAST_YEAR`, `PopularPosts2`/`LAST_MONTH`, and `PopularPosts4`/`LAST_WEEK`. If Blogger does not render native popular data, the public Gaga listing shows a clear unavailable state instead of synthesizing fake popularity.
+
+Root contact owns message intent, WhatsApp, email, and social fallback links. More sheet owns navigation, info, preferences, and search; it must not own social links.
+
 ## `/landing` Route Contract
 
 `/landing` is the Home and identity surface. It is served as static HTML from `landing.html` through Cloudflare/static assets. It introduces PakRPP and links users into the Blog and Store surfaces.
