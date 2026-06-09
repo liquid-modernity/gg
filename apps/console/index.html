@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GG Console</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="console-shell">
+    <aside class="sidebar" aria-label="Console sections">
+      <a class="brand" href="#profile" aria-label="GG Console profile">
+        <span class="brand-mark" aria-hidden="true">GG</span>
+        <span>
+          <strong>GG Console</strong>
+          <small>Read-only local</small>
+        </span>
+      </a>
+      <nav class="nav" id="console-nav">
+        <a href="#profile" data-tab-link="profile">Profile</a>
+        <a href="#surfaces" data-tab-link="surfaces">Surfaces</a>
+        <a href="#navigation" data-tab-link="navigation">Navigation</a>
+        <a href="#copy" data-tab-link="copy">Copy</a>
+        <a href="#a11y" data-tab-link="a11y">A11y</a>
+        <a href="#build" data-tab-link="build">Build / CI</a>
+      </nav>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Local control plane</p>
+          <h1>GG Console</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill" id="snapshot-status">Loading</span>
+          <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh snapshot" title="Refresh snapshot">
+            <span aria-hidden="true">R</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="summary-grid" id="summary-grid" aria-label="Console summary"></section>
+
+      <section class="panel" data-tab-panel="profile">
+        <div class="panel-head">
+          <h2>Profile</h2>
+          <span id="profile-status" class="status-pill">legacy-derived</span>
+        </div>
+        <div class="kv-grid" id="profile-grid"></div>
+        <h3>Prototype Boundary</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Concept</th><th>Status</th></tr></thead>
+            <tbody id="prototype-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-tab-panel="surfaces" hidden>
+        <div class="panel-head">
+          <h2>Surfaces</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Type</th><th>Renderer</th><th>Source</th><th>Canonical</th><th>Status</th></tr></thead>
+            <tbody id="surface-rows"></tbody>
+          </table>
+        </div>
+        <h3>Routes</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Route</th><th>Meaning</th><th>Owner</th></tr></thead>
+            <tbody id="route-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-tab-panel="navigation" hidden>
+        <div class="panel-head">
+          <h2>Navigation</h2>
+        </div>
+        <div class="split">
+          <section>
+            <h3>Dock Items</h3>
+            <div class="token-list" id="dock-items"></div>
+          </section>
+          <section>
+            <h3>Listing Filters</h3>
+            <div class="token-list" id="listing-filters"></div>
+          </section>
+        </div>
+        <h3>More Sheet Links</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Label</th><th>Href</th><th>Copy Key</th></tr></thead>
+            <tbody id="more-link-rows"></tbody>
+          </table>
+        </div>
+        <div class="kv-grid compact" id="contact-grid"></div>
+      </section>
+
+      <section class="panel" data-tab-panel="copy" hidden>
+        <div class="panel-head">
+          <h2>Copy Registry</h2>
+        </div>
+        <div class="summary-grid compact" id="copy-summary"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>File</th><th>Status</th><th>Bytes</th></tr></thead>
+            <tbody id="copy-file-rows"></tbody>
+          </table>
+        </div>
+        <h3>Namespaces</h3>
+        <div class="token-list" id="namespace-list"></div>
+        <h3>Missing Keys</h3>
+        <div class="split">
+          <section>
+            <h4>Missing in ID</h4>
+            <ul class="plain-list" id="missing-id"></ul>
+          </section>
+          <section>
+            <h4>Missing in EN</h4>
+            <ul class="plain-list" id="missing-en"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel" data-tab-panel="a11y" hidden>
+        <div class="panel-head">
+          <h2>A11y</h2>
+        </div>
+        <div class="summary-grid compact" id="a11y-summary"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>File</th><th>Duplicate IDs</th><th>Unnamed Buttons</th><th>Missing Labels</th><th>Trigger Mismatch</th></tr></thead>
+            <tbody id="a11y-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" data-tab-panel="build" hidden>
+        <div class="panel-head">
+          <h2>Build / CI</h2>
+        </div>
+        <h3>Command Checklist</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Status</th></tr></thead>
+            <tbody id="command-rows"></tbody>
+          </table>
+        </div>
+        <h3>GitHub Actions</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Workflow</th><th>Status</th><th>Node 20</th><th>npm ci</th><th>Aggregate</th><th>Deploy Path</th></tr></thead>
+            <tbody id="workflow-rows"></tbody>
+          </table>
+        </div>
+        <div class="split">
+          <section>
+            <h3>Guard Tiers</h3>
+            <div id="policy-lists"></div>
+          </section>
+          <section>
+            <h3>Packaging</h3>
+            <div class="kv-grid compact" id="packaging-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

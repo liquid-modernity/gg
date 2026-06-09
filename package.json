@@ -18,6 +18,8 @@
     "store:check:dev10": "npm run store:check:ci && npm run build && bash qa/store-artifact-smoke.sh && npm run gaga:verify-sheet-contract",
     "store:check:strict": "GG_STORE_MODE=strict STORE_CI=1 STORE_REQUIRE_LIVE_FEED=1 STORE_STRICT_IMAGES=1 npm run store:check",
     "store:check:production": "GG_STORE_MODE=production STORE_CI=1 STORE_PRODUCTION=1 STORE_REQUIRE_LIVE_FEED=0 STORE_STRICT_IMAGES=1 npm run store:check",
+    "gg:console": "node apps/console/server.mjs",
+    "gg:console:check": "node apps/console/server.mjs --check",
     "gaga:template:pack": "node tools/template-pack.mjs",
     "gaga:sync-components": "node tools/sync-shared-css-components.mjs",
     "gaga:cf:prepare": "npm run build",

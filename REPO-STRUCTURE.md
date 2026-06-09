@@ -5,6 +5,7 @@ This map records the current repository shape for conservative maintenance. Runt
 | Path | Role | Editable? | Generated? | Commit? | Owner | Guard | Notes |
 |---|---|---:|---:|---:|---|---|---|
 | `src/` | canonical source for Blogger app CSS/JS, route assets, Store source, registries, and build libraries | yes | no | yes | humans/CODEX | asset, CSS, registry, Store guards | edit source here first |
+| `apps/console/` | local read-only GG Console control-plane dashboard | yes | no | yes | humans/CODEX | `npm run gg:console:check` | not a public runtime dependency; do not turn it into GG Studio/editor UI |
 | `assets/` | public runtime asset space | mixed | mixed | yes for current policy | Store build, route asset owners | asset architecture guard | `assets/store/*` is generated; route-specific assets are public runtime files |
 | `__gg/` | Blogger runtime app assets | no | yes | yes for current policy | `tools/template-pack.mjs` | asset architecture guard | do not edit manually |
 | `dist/` | Blogger publish and build artifacts | no | yes | yes for current policy where tracked | template pack, Store build | asset architecture, template fingerprint | do not edit manually |
@@ -17,6 +18,7 @@ This map records the current repository shape for conservative maintenance. Runt
 | `docs/` | supporting architecture, performance, extraction, and archive docs | yes | no | yes | humans/CODEX | docs guard where listed | documentation only |
 | root reports and maintenance docs | current contract/report documents | yes | no | yes | humans/CODEX | docs, cleanup, readiness, repo tidy guards | keep root names unless all references are updated |
 | root runtime files | Blogger, Store, Cloudflare, PWA, and public route entry points | yes | no | yes | humans/CODEX/build tools | semantic, schema, asset, Worker, Store guards | includes `index.xml`, `landing.html`, `store.html`, `worker.js`, `_headers`, `robots.txt`, `manifest.webmanifest`, `sw.js` |
+| `dashboard.html` | experimental GG Blogger Studio prototype/reference | yes | no | yes | humans/CODEX | Console documentation and task contracts | not the final GG Console UI; extract ideas only |
 
 ## Root Reports And Maintenance Docs
 

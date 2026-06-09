@@ -69,6 +69,7 @@ Normal local hardening commands:
 
 ```bash
 git diff --check
+npm run gg:console:check
 npm run build
 npm run ci:qa
 npm run ci:85

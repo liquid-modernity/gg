@@ -40,6 +40,7 @@ npm run gaga:verify-store-isolation
 npm run gaga:verify-theme
 npm run gaga:verify-shell
 npm run gaga:verify-preview-sheet
+npm run gg:console:check
 npm run store:build
 npm run store:proof
 npm run ci:qa
@@ -56,6 +57,15 @@ npm run store:check:ci
 npm run store:check:dev10
 npm run gaga:verify-store-artifact
 ```
+
+## GG Console Local Set
+
+```bash
+npm run gg:console:check
+npm run gg:console
+```
+
+`npm run gg:console:check` validates the read-only local Console wiring without launching a long-running server. `npm run gg:console` starts the local dashboard at `http://127.0.0.1:8789` by default. The Console does not write files and does not expose arbitrary shell execution from the browser.
 
 ## Blogger Template Set
 
@@ -188,6 +198,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | `store:check:dev10` | Store CI check, full build, Store artifact smoke, and sheet contract smoke. | Mutating aggregate | Blocking build + contract | No direct CI call | No direct deploy call | Smoke/proof `PASS`; failures are `CONTRACT_FAILURE`/command failure. |
 | `store:check:strict` | Strict Store CI requiring live feed and strict images. | Mutating aggregate | Blocking strict contract | No | Manual pre-release only | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
 | `store:check:production` | Production Store readiness with strict images and production mode. | Mutating aggregate | Blocking production contract | No | Manual pre-release only | Store build/proof output; `BUILD_FAILURE` or `CONTRACT_FAILURE`. |
+| `gg:console` | Start the local read-only GG Console on localhost. | Long-running local server | Manual local inspection | No | No | Local URL output; failures are local server/config failures. |
 | `gaga:template:pack` | Generate Blogger publish XML/text and synced app assets from source. | Mutating | Blocking build | Indirect via `build` | Yes via `build` | `TEMPLATE PACK OK`; failures are `BUILD_FAILURE`/command failure. |
 | `gaga:sync-components` | Sync shared CSS component/module blocks into declared source targets. | Mutating | Blocking build | Indirect via `build` | Yes via `build` | Sync output; failures are `BUILD_FAILURE`/command failure. |
 | `gaga:cf:prepare` | Alias for `build`. | Mutating aggregate | Blocking build | No | Manual staging | Build output; failures are `BUILD_FAILURE`/command failure. |
@@ -214,6 +225,7 @@ All script names in this table are mapped in `package.json`. Read-only commands 
 | Script | Purpose | Gate | CI | Deploy | Expected output / failure class |
 | --- | --- | --- | --- | --- | --- |
 | `gaga:verify-docs-contract` | Verify source/generated/deploy documentation contracts. | Blocking contract | Yes | Yes via `ci:cloudflare` | `DOCS CONTRACT GUARD PASS`; failures are `CONTRACT_FAILURE`. |
+| `gg:console:check` | Validate read-only GG Console file wiring, allowlisted snapshot collection, and required build/CI script presence. | Blocking local Console contract | No | No | `GG CONSOLE CHECK PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-ci-reconciliation` | Verify QA script wiring, workflow aggregation, and guard classification docs. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CI RECONCILIATION GUARD PASS`; failures are `CONTRACT_FAILURE`. |
 | `gaga:verify-handoff-hygiene` | Verify handoff/archive hygiene docs, ignores, and package mappings. | Blocking handoff contract | Yes | Yes via `ci:cloudflare` | `HANDOFF HYGIENE GUARD PASS`; failures are `HANDOFF_FAILURE` or `CONTRACT_FAILURE`. |
 | `gaga:verify-content-source-boundary` | Verify root/editorial CMS and Store/product CMS source boundary, public canonical Store route, and Worker non-HTMLRewriter contract. | Blocking contract | Yes | Yes via `ci:cloudflare` | `CONTENT SOURCE BOUNDARY GUARD PASS`; failures are `CONTRACT_FAILURE`. |
