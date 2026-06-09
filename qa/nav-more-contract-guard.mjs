@@ -57,6 +57,14 @@ function assertContains(label, text, keys, issues) {
   }
 }
 
+function assertPattern(label, text, pattern, message, issues) {
+  if (!pattern.test(text)) issues.push(`${label} ${message}`);
+}
+
+function assertNoPattern(label, text, pattern, message, issues) {
+  if (pattern.test(text)) issues.push(`${label} ${message}`);
+}
+
 function assertSameArray(label, actual, expected, issues) {
   if (actual.join('|') !== expected.join('|')) {
     issues.push(`${label} expected ${expected.join(' | ')} got ${actual.join(' | ') || '(none)'}`);
@@ -93,6 +101,8 @@ function main() {
   const store = read('store.html');
   const storeRuntime = read('src/store/store-discovery.js');
   const appRuntime = read('src/js/gg-app.source.js');
+  const appCss = read('src/css/gg-app.source.css');
+  const storeCss = read('src/store/store.css');
   const moreSectionIds = GG_MORE_SHEET.sections.map((section) => section.id);
 
   assertDockOrder('index.xml', index, 'data-gg-nav', issues);
@@ -105,6 +115,9 @@ function main() {
 
   assertContains('index.xml More structure', index, [
     'gg-more-profile__card',
+    'id=\'gg-contact-panel\'',
+    'data-gg-sheet-surface=\'contact\'',
+    'data-gg-contact-state=\'missing-native-plumbing\'',
     'gg-more-section--navigation',
     'gg-more-section--preferences',
     "data-gg-pref-panel=\'language\'",
@@ -117,6 +130,7 @@ function main() {
     "data-gg-more-route=\'store\'",
     "data-gg-more-route=\'contact\'"
   ], issues);
+  assertPattern('index.xml Contact dock', index, /<button\b(?=[^>]*class=['"]gg-dock__item['"])(?=[^>]*data-gg-nav=['"]contact['"])(?=[^>]*data-gg-open=['"]contact['"])(?=[^>]*aria-controls=['"]gg-contact-panel['"])[^>]*>/is, 'must open the Contact sheet instead of linking away', issues);
   assertContains('landing.html More structure', landing, [
     'gg-more-profile__card',
     'gg-more-section--navigation',
@@ -146,10 +160,28 @@ function main() {
   assertSameArray('GG_MORE_SHEET info items', moreSection('info').items, ['about', 'privacy', 'terms', 'disclaimer'], issues);
   assertSameArray('GG_MORE_SHEET preferences items', moreSection('preferences').items, ['language', 'appearance', 'reading', 'motion'], issues);
   assertAction('landing', 'home', 'scrollTop', issues);
+  assertAction('landing', 'contact', 'scrollToContact', issues);
   assertAction('landing', 'search', 'openGlobalDiscovery', issues);
+  assertAction('blog', 'contact', 'openContact', issues);
   assertAction('blog', 'blog', 'scrollTop', issues);
   assertAction('blog', 'search', 'openGlobalDiscovery', issues);
+  assertAction('detail', 'contact', 'openContact', issues);
+  assertAction('page', 'contact', 'openContact', issues);
+  assertAction('store', 'contact', 'navigateContact', issues);
   assertAction('store', 'search', 'openStoreDiscovery', issues);
+
+  [
+    ['index.xml', index],
+    ['landing.html', landing],
+    ['store.html', store]
+  ].forEach(([label, text]) => {
+    assertNoPattern(label, text, /<(?:a|button)\b(?=[^>]*class=['"][^'"]*\bgg-more-list__link\b[^'"]*['"])[^>]*>\s*<span\b[^>]*class=['"][^'"]*\bgg-more-row__icon\b/is, 'More rows must place decorative icons on the right after the label/value', issues);
+  });
+
+  assertNoPattern('src/css/gg-app.source.css', appCss, /\.gg-more-list__link::after/, 'must not use pseudo chevrons for More row icons', issues);
+  assertNoPattern('src/store/store.css', storeCss, /\.gg-more-list__link::after/, 'must not use pseudo chevrons for More row icons', issues);
+  assertPattern('src/css/gg-app.source.css', appCss, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto\s+auto;/, 'must use right-icon More row grid', issues);
+  assertPattern('src/store/store.css', storeCss, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto\s+auto;/, 'must use right-icon More row grid', issues);
 
   if (publicMarkupText(landing).includes('Landing')) issues.push('landing.html exposes public Landing text outside runtime code');
   if (publicMarkupText(store).includes('Landing')) issues.push('store.html exposes public Landing text outside runtime code');

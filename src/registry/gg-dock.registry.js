@@ -52,7 +52,7 @@ export const GG_DOCK = Object.freeze({
       active: "blog",
       actions: Object.freeze({
         home: "navigateHome",
-        contact: "navigateContact",
+        contact: "openContact",
         search: "openGlobalDiscovery",
         blog: "scrollTop",
         more: "openMore"
@@ -62,7 +62,7 @@ export const GG_DOCK = Object.freeze({
       active: "blog",
       actions: Object.freeze({
         home: "navigateHome",
-        contact: "navigateContact",
+        contact: "openContact",
         search: "openGlobalDiscovery",
         blog: "navigateBlog",
         more: "openMore"
@@ -72,7 +72,7 @@ export const GG_DOCK = Object.freeze({
       active: "blog",
       actions: Object.freeze({
         home: "navigateHome",
-        contact: "navigateContact",
+        contact: "openContact",
         search: "openGlobalDiscovery",
         blog: "navigateBlog",
         more: "openMore"

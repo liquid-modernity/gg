@@ -109,6 +109,7 @@ const worker = read("worker.js");
 [
   [indexXml, "gg-comments-sheet", { origin: "bottom", surface: "comments" }],
   [indexXml, "gg-command-panel", { origin: "bottom", surface: "discovery" }],
+  [indexXml, "gg-contact-panel", { origin: "bottom", surface: "contact" }],
   [indexXml, "gg-more-panel", { origin: "bottom", surface: "more" }],
   [indexXml, "gg-preview-sheet", { origin: "top", surface: "preview" }],
   [landingHtml, "gg-command-panel", { origin: "bottom", surface: "discovery" }],
@@ -127,6 +128,7 @@ requireIncludes("src/js/gg-app.source.js", appJs, "function setSheetState(root, 
 requireIncludes("src/js/gg-app.source.js", appJs, "root.setAttribute('data-gg-sheet-state', value)", "syncs normalized sheet state");
 requireIncludes("src/js/gg-app.source.js", appJs, "panelDefs = {", "uses one root panel registry");
 requireIncludes("src/js/gg-app.source.js", appJs, "command:", "registers discovery sheet");
+requireIncludes("src/js/gg-app.source.js", appJs, "contact:", "registers Contact sheet");
 requireIncludes("src/js/gg-app.source.js", appJs, "preview:", "registers root preview sheet");
 requireIncludes("src/js/gg-app.source.js", appJs, "more:", "registers More sheet");
 requireIncludes("src/js/gg-app.source.js", appJs, "comments:", "registers comments sheet");

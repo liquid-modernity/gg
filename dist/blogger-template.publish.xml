@@ -15,7 +15,7 @@
     </b:if>
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='768d291bd3f2' name='gg-template-fingerprint'/>
+<meta content='016a9f178131' name='gg-template-fingerprint'/>
     <b:if cond='data:view.description'>
     <b:else/>
       <b:if cond='data:blog.metaDescription'>
@@ -245,7 +245,7 @@ img{max-width:100%;height:auto;display:block}
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='768d291bd3f2' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='016a9f178131' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -1336,16 +1336,22 @@ img{max-width:100%;height:auto;display:block}
       </main>
     </div>
 
+    <div aria-hidden='true' class='gg-contact-native-plumbing' data-gg-contact-native-plumbing='true' hidden='hidden'>
+      <b:section class='gg-contact-native-section' id='gg_contact_native_plumbing' maxwidgets='1' name='GG Contact Plumbing' showaddelement='false'>
+        <b:widget id='ContactForm1' locked='true' title='Contact PakRPP' type='ContactForm' version='2' visible='true'/>
+      </b:section>
+    </div>
+
     <nav aria-labelledby='gg-dock-title' class='gg-dock' data-gg-module='gg-dock' id='gg-dock'>
       <span class='gg-visually-hidden' data-gg-copy='navigation.primary' id='gg-dock-title'>Primary navigation</span>
       <a class='gg-dock__item' data-gg-nav='home' href='/landing'>
         <span aria-hidden='true' class='gg-icon'>home_app_logo</span>
         <span class='gg-dock__label' data-gg-copy='nav.home'>Home</span>
       </a>
-      <a class='gg-dock__item' data-gg-nav='contact' href='/landing#contact'>
+      <button aria-controls='gg-contact-panel' aria-expanded='false' class='gg-dock__item' data-gg-nav='contact' data-gg-open='contact' type='button'>
         <span aria-hidden='true' class='gg-icon'>calendar_add_on</span>
         <span class='gg-dock__label' data-gg-copy='nav.contact'>Contact</span>
-      </a>
+      </button>
       <button aria-controls='gg-command-panel' aria-expanded='false' class='gg-dock__item' data-gg-focus='command' data-gg-nav='search' data-gg-panel-trigger='command' type='button'>
         <span aria-hidden='true' class='gg-icon'>explore</span>
         <span class='gg-dock__label' data-gg-copy='nav.search'>Search</span>
@@ -1444,6 +1450,49 @@ img{max-width:100%;height:auto;display:block}
       </section>
     </div>
 
+    <div aria-hidden='true' class='gg-sheet gg-sheet--bottom gg-contact-sheet' data-gg-contact-state='missing-native-plumbing' data-gg-edge='bottom' data-gg-panel='contact' data-gg-panel-family='utility-sheet' data-gg-sheet-origin='bottom' data-gg-sheet-state='closed' data-gg-sheet-surface='contact' data-gg-state='closed' hidden='hidden' id='gg-contact-panel' inert=''>
+      <button class='gg-sheet__scrim' data-gg-close='contact' type='button'>
+        <span class='gg-visually-hidden'>Dismiss contact sheet</span>
+      </button>
+      <section aria-labelledby='gg-contact-title' aria-modal='true' class='gg-contact-sheet__panel gg-sheet__panel' role='dialog' tabindex='-1'>
+        <div class='gg-sheet__head' data-gg-drag-zone='sheet-head' data-gg-sheet-drag-zone='head'>
+          <button class='gg-sheet__handle' data-gg-close='contact' data-gg-drag-handle='contact' data-gg-sheet-drag-zone='handle' type='button'>
+            <span class='gg-visually-hidden'>Dismiss contact sheet</span>
+          </button>
+          <h2 class='gg-sheet__title' id='gg-contact-title'>Contact</h2>
+        </div>
+        <div class='gg-contact-sheet__body' data-gg-scroll-container=''>
+          <div class='gg-contact-form__intro'>
+            <p class='gg-contact-form__eyebrow'>WRITE MESSAGE</p>
+            <p class='gg-contact-form__destination'>chat@pakrpp.com</p>
+          </div>
+          <form class='gg-contact-form' data-gg-contact-state='missing-native-plumbing' id='gg-contact-form' novalidate='novalidate'>
+            <p class='gg-contact-form__status' data-gg-contact-status='true' id='gg-contact-status'>Blogger contact plumbing is not available in this static preview. Use the fallback contact route.</p>
+            <label class='gg-contact-form__field' for='gg-contact-subject'>
+              <span>Subject</span>
+              <input autocomplete='off' data-gg-contact-subject='true' id='gg-contact-subject' name='subject' type='text'/>
+            </label>
+            <label class='gg-contact-form__field' for='gg-contact-message'>
+              <span>Message</span>
+              <textarea class='gg-contact-form__textarea' data-gg-contact-message='true' id='gg-contact-message' name='message' rows='6'></textarea>
+            </label>
+            <label class='gg-contact-form__field' for='gg-contact-email'>
+              <span>Your email</span>
+              <input autocomplete='email' data-gg-contact-email='true' id='gg-contact-email' inputmode='email' name='email' type='email'/>
+            </label>
+            <div class='gg-contact-form__native' data-gg-contact-native-status='true'>Native Blogger validation or captcha appears here when required.</div>
+            <button class='gg-contact-form__submit' data-gg-contact-submit='true' type='button'>Send message</button>
+            <p class='gg-contact-form__fallback'>Fallback: <a data-gg-contact-fallback='true' href='/p/contact.html'>open the contact page</a>.</p>
+          </form>
+          <div aria-label='Contact links' class='gg-contact-form__social'>
+            <a href='mailto:chat@pakrpp.com'>Email</a>
+            <a expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank'>X</a>
+            <a expr:href='&quot;https://api.whatsapp.com/send?text=&quot; + data:blog.homepageUrl' rel='noopener noreferrer' target='_blank'>WhatsApp</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
     <div aria-hidden='true' class='gg-content-sheet gg-preview gg-sheet gg-sheet--top' data-gg-edge='top' data-gg-panel='preview' data-gg-panel-family='content-sheet' data-gg-sheet-origin='top' data-gg-sheet-state='closed' data-gg-sheet-surface='preview' data-gg-state='closed' hidden='hidden' id='gg-preview-sheet' inert=''>
       <button class='gg-content-sheet__scrim gg-sheet__scrim' data-gg-close='preview' type='button'>
         <span class='gg-visually-hidden' data-gg-copy='preview.dismiss'>Dismiss article preview</span>
@@ -1535,39 +1584,39 @@ img{max-width:100%;height:auto;display:block}
           <section aria-labelledby='gg-more-navigation-title' class='gg-more-section gg-more-section--navigation'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.navigation' id='gg-more-navigation-title'>Navigation</h3>
             <div class='gg-more-grid'>
-              <a class='gg-more-list__link' data-gg-more-route='home' href='/landing'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>home</span><span class='gg-more-row__label' data-gg-copy='nav.home'>Home</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>article</span><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='store' href='/store'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shopping_bag</span><span class='gg-more-row__label' data-gg-copy='nav.store'>Store</span></a>
-              <a class='gg-more-list__link' data-gg-more-route='contact' href='/landing#contact'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>mail</span><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='home' href='/landing'><span class='gg-more-row__label' data-gg-copy='nav.home'>Home</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>home</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='blog' href='/'><span class='gg-more-row__label' data-gg-copy='nav.blog'>Blog</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>article</span></a>
+              <a class='gg-more-list__link' data-gg-more-route='store' href='/store'><span class='gg-more-row__label' data-gg-copy='nav.store'>Store</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shopping_bag</span></a>
+              <a aria-controls='gg-contact-panel' aria-expanded='false' class='gg-more-list__link' data-gg-more-route='contact' data-gg-open='contact' href='/landing#contact'><span class='gg-more-row__label' data-gg-copy='nav.contact'>Contact</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>mail</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-discover-title' class='gg-more-section gg-more-section--discover'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.discover' id='gg-more-discover-title'>Discover</h3>
             <div class='gg-more-list'>
-              <button class='gg-more-list__link' data-gg-focus='command' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>search</span><span class='gg-more-row__label' data-gg-copy='more.search'>Search</span></button>
-              <a class='gg-more-list__link' href='/sitemap.xml'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>account_tree</span><span class='gg-more-row__label' data-gg-copy='more.sitemap'>Sitemap</span></a>
-              <a class='gg-more-list__link' href='/feeds/posts/default?alt=rss'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>rss_feed</span><span class='gg-more-row__label' data-gg-copy='more.rss'>RSS</span></a>
+              <button class='gg-more-list__link' data-gg-focus='command' type='button'><span class='gg-more-row__label' data-gg-copy='more.search'>Search</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>search</span></button>
+              <a class='gg-more-list__link' href='/sitemap.xml'><span class='gg-more-row__label' data-gg-copy='more.sitemap'>Sitemap</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>account_tree</span></a>
+              <a class='gg-more-list__link' href='/feeds/posts/default?alt=rss'><span class='gg-more-row__label' data-gg-copy='more.rss'>RSS</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>rss_feed</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-info-title' class='gg-more-section gg-more-section--info'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.info' id='gg-more-info-title'>Info</h3>
             <div class='gg-more-list'>
-              <a class='gg-more-list__link' href='/p/about.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>info</span><span class='gg-more-row__label' data-gg-copy='more.about'>About PakRPP</span></a>
-              <a class='gg-more-list__link' href='/p/privacy-policy.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shield</span><span class='gg-more-row__label' data-gg-copy='more.privacy'>Privacy Policy</span></a>
-              <a class='gg-more-list__link' href='/p/terms-of-use.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>description</span><span class='gg-more-row__label' data-gg-copy='more.terms'>Terms of Use</span></a>
-              <a class='gg-more-list__link' href='/p/disclaimer.html'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>warning</span><span class='gg-more-row__label' data-gg-copy='more.disclaimer'>Disclaimer</span></a>
+              <a class='gg-more-list__link' href='/p/about.html'><span class='gg-more-row__label' data-gg-copy='more.about'>About PakRPP</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>info</span></a>
+              <a class='gg-more-list__link' href='/p/privacy-policy.html'><span class='gg-more-row__label' data-gg-copy='more.privacy'>Privacy Policy</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>shield</span></a>
+              <a class='gg-more-list__link' href='/p/terms-of-use.html'><span class='gg-more-row__label' data-gg-copy='more.terms'>Terms of Use</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>description</span></a>
+              <a class='gg-more-list__link' href='/p/disclaimer.html'><span class='gg-more-row__label' data-gg-copy='more.disclaimer'>Disclaimer</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>warning</span></a>
             </div>
           </section>
 
           <section aria-labelledby='gg-more-preferences-title' class='gg-more-section gg-more-section--preferences'>
             <h3 class='gg-more-section__title' data-gg-copy='more.section.preferences' id='gg-more-preferences-title'>Preferences</h3>
             <div class='gg-more-list gg-more-preferences-list'>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>Light</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span></button>
-              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='language' type='button'><span class='gg-more-row__label' data-gg-copy='more.section.language'>Language</span><span class='gg-more-row__value' data-gg-pref-value='language'>English</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>language</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='appearance' type='button'><span class='gg-more-row__label' data-gg-copy='more.section.appearance'>Appearance</span><span class='gg-more-row__value' data-gg-pref-value='appearance'>Light</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>contrast</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='reading' type='button'><span class='gg-more-row__label' data-gg-copy='more.section.reading'>Reading</span><span class='gg-more-row__value' data-gg-pref-value='reading'>Comfortable</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>format_size</span></button>
+              <button class='gg-more-list__link gg-more-pref-row' data-gg-pref-open='motion' type='button'><span class='gg-more-row__label' data-gg-copy='more.section.motion'>Motion</span><span class='gg-more-row__value' data-gg-pref-value='motion'>Balanced</span><span aria-hidden='true' class='gg-more-row__icon gg-icon'>animation</span></button>
             </div>
           </section>
 

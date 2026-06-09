@@ -5,6 +5,7 @@ export const GG_ACTIONS = Object.freeze({
   navigateBlog: Object.freeze({ id: "navigateBlog", kind: "navigate", route: "blog" }),
   navigateStore: Object.freeze({ id: "navigateStore", kind: "navigate", route: "store" }),
   navigateContact: Object.freeze({ id: "navigateContact", kind: "navigate", route: "contact" }),
+  openContact: Object.freeze({ id: "openContact", kind: "panel", panel: "contact" }),
   openMore: Object.freeze({ id: "openMore", kind: "panel", panel: "more" }),
   openGlobalDiscovery: Object.freeze({ id: "openGlobalDiscovery", kind: "panel", panel: "globalDiscovery" }),
   openStoreDiscovery: Object.freeze({ id: "openStoreDiscovery", kind: "panel", panel: "storeDiscovery" }),

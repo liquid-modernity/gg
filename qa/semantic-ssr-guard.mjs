@@ -81,7 +81,9 @@ if (countMatches(indexXml, /\bid=['"]gg-preview-taxonomy['"]/g) === 1 && countMa
 requirePattern(indexXml, /<article\b[^>]*class=['"]gg-article['"][^>]*expr:data-gg-post-url=['"]data:post\.url['"][^>]*>/is, "post/page detail uses article semantics with canonical post URL data", "index.xml");
 requirePattern(indexXml, /<link\s+expr:href=['"]data:view\.url\.canonical \?: data:blog\.homepageUrl['"]\s+rel=['"]canonical['"]\/>/i, "canonical link remains Blogger view-owned", "index.xml");
 requireIncludes(indexXml, "data-gg-comment-engine='blogger-native'", "native Blogger comments marker", "index.xml");
-requireIncludes(indexXml, "href='/landing#contact'", "contact route is a real link", "index.xml");
+requirePattern(indexXml, /<button\b(?=[^>]*class=['"]gg-dock__item['"])(?=[^>]*data-gg-nav=['"]contact['"])(?=[^>]*data-gg-open=['"]contact['"])(?=[^>]*aria-controls=['"]gg-contact-panel['"])(?=[^>]*aria-expanded=['"]false['"])[^>]*>/is, "root contact dock opens Contact sheet", "index.xml");
+requirePattern(indexXml, /<div\b(?=[^>]*id=['"]gg-contact-panel['"])(?=[^>]*data-gg-sheet-surface=['"]contact['"])(?=[^>]*data-gg-contact-state=['"]missing-native-plumbing['"])[^>]*>/is, "root contact sheet exposes guarded Blogger plumbing state", "index.xml");
+requireIncludes(indexXml, "type='ContactForm'", "Blogger ContactForm plumbing widget is present", "index.xml");
 requireIncludes(indexXml, "href='/store'", "Store appears as navigation route", "index.xml");
 requireNoPublicLandingLabel(indexXml, "index.xml");
 

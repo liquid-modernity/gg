@@ -23,6 +23,8 @@ Do not redirect `/` to `/landing`, do not rebrand `/` as Home in schema/breadcru
 
 `/landing` may use its own static copy and structured data, but it must preserve route truth: Home is `/landing`; Blog is `/`.
 
+Static landing contact actions use the in-page `/landing#contact` fallback. They must not assume Blogger ContactForm plumbing is present.
+
 ## `/store` Route Contract
 
 `/store` is the Yellow Cart commerce surface. It is static-prerendered from Store source and served through Cloudflare Worker/static assets. Canonical Store routes are:
@@ -34,6 +36,8 @@ Do not redirect `/` to `/landing`, do not rebrand `/` as Home in schema/breadcru
 Store category and pagination truth comes from `src/store/store-categories.config.mjs`, `src/store/lib/store-routes.mjs`, and `store/data/build-report.json`. Worker aliases may normalize legacy Store paths to canonical Store paths, but generated public category output must not be hand-authored.
 
 The public canonical Store base is `https://www.pakrpp.com/store/`. Store product/content CMS input is separate from the root/editorial CMS: `pakrppstore.blogspot.com` is the Store Blogger source and `https://store.pakrpp.com/` is optional source-only/backend host. Neither source host is a competing public SEO destination. Source URLs belong in the source boundary registry/config, while Worker remains static route governance and must not become an HTMLRewriter/CMS/schema/readability repair path.
+
+Static Store contact actions use a safe route fallback such as `/landing#contact` or `/p/contact.html` until a shared static contact adapter exists. Store must not fake Blogger ContactForm submission.
 
 ## Post Detail Contract
 

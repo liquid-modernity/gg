@@ -135,11 +135,12 @@
 .gg-more-grid .gg-more-list__link {
   position: relative;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 10px;
   align-items: center;
   min-height: 52px;
   width: 100%;
-  padding: 0 38px 0 15px;
+  padding: 0 15px;
   border: 0;
   border-bottom: 1px solid var(--gg-divider);
   border-radius: 0;
@@ -156,18 +157,6 @@
 .gg-more-list__link:last-child,
 .gg-more-grid .gg-more-list__link:last-child {
   border-bottom: 0;
-}
-
-.gg-more-list__link::after,
-.gg-more-grid .gg-more-list__link::after {
-  content: "›";
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  color: var(--gg-accent-soft);
-  font: 400 23px/1 var(--gg-font-sans);
-  opacity: .82;
-  transform: translateY(-52%);
 }
 
 .gg-more-list__link[aria-current='page'],
@@ -197,6 +186,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  justify-self: end;
   width: 24px;
   color: var(--gg-accent-soft);
   font-size: 19px;

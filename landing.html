@@ -645,6 +645,7 @@ body,
 .gg-preview__sheet,
 .gg-comments__content,
 .gg-discovery__body,
+.gg-contact-sheet__body,
 .gg-more-body,
 .store-preview-sheet .gg-sheet__panel,
 .store-bottom-sheet .gg-sheet__panel,
@@ -661,6 +662,7 @@ body::-webkit-scrollbar,
 .gg-preview__sheet::-webkit-scrollbar,
 .gg-comments__content::-webkit-scrollbar,
 .gg-discovery__body::-webkit-scrollbar,
+.gg-contact-sheet__body::-webkit-scrollbar,
 .gg-more-body::-webkit-scrollbar,
 .store-preview-sheet .gg-sheet__panel::-webkit-scrollbar,
 .store-bottom-sheet .gg-sheet__panel::-webkit-scrollbar,
@@ -741,6 +743,143 @@ body::-webkit-scrollbar,
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: var(--gg-panel-command-min-height, var(--gg-panel-min-height));
   overflow: hidden;
+}
+
+#gg-contact-panel .gg-sheet__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.gg-contact-native-plumbing {
+  display: none !important;
+}
+
+.gg-contact-sheet__body {
+  display: grid;
+  gap: 16px;
+  padding: 14px 16px calc(18px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.gg-contact-form__intro {
+  display: grid;
+  gap: 4px;
+  padding: 2px 3px 0;
+}
+
+.gg-contact-form__eyebrow,
+.gg-contact-form__destination {
+  margin: 0;
+}
+
+.gg-contact-form__eyebrow {
+  color: var(--gg-accent-soft);
+  font: 700 12px/1.2 var(--gg-font-sans);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.gg-contact-form__destination {
+  color: var(--gg-ink);
+  font: 650 18px/1.25 var(--gg-font-sans);
+}
+
+.gg-contact-form {
+  display: grid;
+  gap: 12px;
+}
+
+.gg-contact-form__field {
+  display: grid;
+  gap: 7px;
+  color: var(--gg-ink);
+  font: 650 13px/1.25 var(--gg-font-sans);
+}
+
+.gg-contact-form__field input,
+.gg-contact-form__textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1px solid var(--gg-divider);
+  border-radius: 14px;
+  background: var(--gg-surface-interactive);
+  color: var(--gg-ink);
+  font: 500 15px/1.35 var(--gg-font-sans);
+  outline: 0;
+}
+
+.gg-contact-form__textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.gg-contact-form__field input:focus-visible,
+.gg-contact-form__textarea:focus-visible {
+  border-color: color-mix(in srgb, var(--gg-accent) 62%, var(--gg-divider));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 24%, transparent);
+}
+
+.gg-contact-form__status,
+.gg-contact-form__native,
+.gg-contact-form__fallback {
+  margin: 0;
+  color: var(--gg-muted);
+  font: 500 13px/1.45 var(--gg-font-sans);
+}
+
+.gg-contact-form__native {
+  min-height: 38px;
+  padding: 10px 12px;
+  border: 1px dashed var(--gg-divider);
+  border-radius: 14px;
+  background: var(--gg-surface-quiet);
+}
+
+.gg-contact-form__submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--gg-accent);
+  color: var(--gg-accent-ink);
+  font: 750 15px/1 var(--gg-font-sans);
+  cursor: pointer;
+}
+
+.gg-contact-form__submit:hover,
+.gg-contact-form__submit:focus-visible {
+  filter: brightness(.98);
+  outline: 0;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gg-accent) 28%, transparent);
+}
+
+.gg-contact-form__submit[disabled] {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.gg-contact-form__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gg-contact-form__social a,
+.gg-contact-form__fallback a {
+  color: var(--gg-accent);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.gg-contact-form__social a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--gg-divider);
+  border-radius: 999px;
+  background: var(--gg-surface-interactive);
 }
 
 #gg-comments-sheet .gg-sheet__panel,
@@ -1376,11 +1515,12 @@ body::-webkit-scrollbar,
 .gg-more-grid .gg-more-list__link {
   position: relative;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 10px;
   align-items: center;
   min-height: 52px;
   width: 100%;
-  padding: 0 38px 0 15px;
+  padding: 0 15px;
   border: 0;
   border-bottom: 1px solid var(--gg-divider);
   border-radius: 0;
@@ -1397,18 +1537,6 @@ body::-webkit-scrollbar,
 .gg-more-list__link:last-child,
 .gg-more-grid .gg-more-list__link:last-child {
   border-bottom: 0;
-}
-
-.gg-more-list__link::after,
-.gg-more-grid .gg-more-list__link::after {
-  content: "›";
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  color: var(--gg-accent-soft);
-  font: 400 23px/1 var(--gg-font-sans);
-  opacity: .82;
-  transform: translateY(-52%);
 }
 
 .gg-more-list__link[aria-current='page'],
@@ -1438,6 +1566,7 @@ body::-webkit-scrollbar,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  justify-self: end;
   width: 24px;
   color: var(--gg-accent-soft);
   font-size: 19px;
@@ -2695,10 +2824,10 @@ html[data-gg-reading='focus'] .gg-main[data-landing-module="personal-notes-surfa
       <div class="gg-sheet__body">
         <div class="gg-more-body" data-gg-scroll-container>
           <section class="gg-more-profile" data-gg-module="profile"><a class="gg-more-profile__card" href="/p/about.html" aria-label="Open profile"><span class="gg-more-profile__avatar" aria-hidden="true"><img class="gg-more-profile__image" src="/gg-pwa-icon/icon-192.png" alt="" width="96" height="96" loading="lazy" /></span><span class="gg-more-profile__copy"><span class="gg-more-profile__name" data-copy="more.profile.name">PakRPP</span><span class="gg-more-profile__meta" data-copy="more.profile.meta">Notes on systems, value, culture, and words</span></span><span class="gg-more-profile__chevron" aria-hidden="true">›</span></a></section>
-          <section class="gg-more-section gg-more-section--navigation" aria-labelledby="landing-more-navigation-title"><h3 class="gg-more-section__title" id="landing-more-navigation-title" data-copy="more.section.navigation">Navigation</h3><div class="gg-more-grid"><a class="gg-more-list__link" href="/landing" data-copy-key="nav.home" data-landing-route="home" data-gg-more-route="home"><span class="gg-more-row__icon gg-icon" aria-hidden="true">home</span><span class="gg-more-row__label" data-copy="nav.home">Home</span></a><a class="gg-more-list__link" href="/" data-copy-key="nav.blog" data-landing-route="blog" data-gg-more-route="blog"><span class="gg-more-row__icon gg-icon" aria-hidden="true">article</span><span class="gg-more-row__label" data-copy="nav.blog">Blog</span></a><a class="gg-more-list__link" href="/store" data-copy-key="nav.store" data-landing-route="store" data-gg-more-route="store"><span class="gg-more-row__icon gg-icon" aria-hidden="true">shopping_bag</span><span class="gg-more-row__label" data-copy="nav.store">Store</span></a><a class="gg-more-list__link" href="/landing#contact" data-copy-key="nav.contact" data-landing-route="contact" data-gg-more-route="contact"><span class="gg-more-row__icon gg-icon" aria-hidden="true">mail</span><span class="gg-more-row__label" data-copy="nav.contact">Contact</span></a></div></section>
-          <section class="gg-more-section gg-more-section--discover" aria-labelledby="landing-more-discover-title"><h3 class="gg-more-section__title" id="landing-more-discover-title" data-copy="more.section.discover">Discover</h3><div class="gg-more-list"><button class="gg-more-list__link" type="button" data-open-command><span class="gg-more-row__icon gg-icon" aria-hidden="true">search</span><span class="gg-more-row__label" data-copy="more.search">Search</span></button><a class="gg-more-list__link" href="/sitemap.xml"><span class="gg-more-row__icon gg-icon" aria-hidden="true">account_tree</span><span class="gg-more-row__label" data-copy="more.sitemap">Sitemap</span></a><a class="gg-more-list__link" href="/feeds/posts/default?alt=rss"><span class="gg-more-row__icon gg-icon" aria-hidden="true">rss_feed</span><span class="gg-more-row__label" data-copy="more.rss">RSS</span></a></div></section>
-          <section class="gg-more-section gg-more-section--info" aria-labelledby="landing-more-info-title"><h3 class="gg-more-section__title" id="landing-more-info-title" data-copy="more.section.info">Info</h3><div class="gg-more-list"><a class="gg-more-list__link" href="/p/about.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">info</span><span class="gg-more-row__label" data-copy="more.about">About PakRPP</span></a><a class="gg-more-list__link" href="/p/privacy-policy.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">shield</span><span class="gg-more-row__label" data-copy="more.privacy">Privacy Policy</span></a><a class="gg-more-list__link" href="/p/terms-of-use.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">description</span><span class="gg-more-row__label" data-copy="more.terms">Terms of Use</span></a><a class="gg-more-list__link" href="/p/disclaimer.html"><span class="gg-more-row__icon gg-icon" aria-hidden="true">warning</span><span class="gg-more-row__label" data-copy="more.disclaimer">Disclaimer</span></a></div></section>
-          <section class="gg-more-section gg-more-section--preferences" aria-labelledby="landing-more-preferences-title"><h3 class="gg-more-section__title" id="landing-more-preferences-title" data-copy="more.section.preferences">Preferences</h3><div class="gg-more-list gg-more-preferences-list"><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="language"><span class="gg-more-row__icon gg-icon" aria-hidden="true">language</span><span class="gg-more-row__label" data-copy="more.section.language">Language</span><span class="gg-more-row__value" data-gg-pref-value="language">English</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="appearance"><span class="gg-more-row__icon gg-icon" aria-hidden="true">contrast</span><span class="gg-more-row__label" data-copy="more.section.appearance">Appearance</span><span class="gg-more-row__value" data-gg-pref-value="appearance">Light</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="reading"><span class="gg-more-row__icon gg-icon" aria-hidden="true">format_size</span><span class="gg-more-row__label" data-copy="more.section.reading">Reading</span><span class="gg-more-row__value" data-gg-pref-value="reading">Comfortable</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="motion"><span class="gg-more-row__icon gg-icon" aria-hidden="true">animation</span><span class="gg-more-row__label" data-copy="more.section.motion">Motion</span><span class="gg-more-row__value" data-gg-pref-value="motion">Balanced</span></button></div></section>
+          <section class="gg-more-section gg-more-section--navigation" aria-labelledby="landing-more-navigation-title"><h3 class="gg-more-section__title" id="landing-more-navigation-title" data-copy="more.section.navigation">Navigation</h3><div class="gg-more-grid"><a class="gg-more-list__link" href="/landing" data-copy-key="nav.home" data-landing-route="home" data-gg-more-route="home"><span class="gg-more-row__label" data-copy="nav.home">Home</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">home</span></a><a class="gg-more-list__link" href="/" data-copy-key="nav.blog" data-landing-route="blog" data-gg-more-route="blog"><span class="gg-more-row__label" data-copy="nav.blog">Blog</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">article</span></a><a class="gg-more-list__link" href="/store" data-copy-key="nav.store" data-landing-route="store" data-gg-more-route="store"><span class="gg-more-row__label" data-copy="nav.store">Store</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">shopping_bag</span></a><a class="gg-more-list__link" href="/landing#contact" data-copy-key="nav.contact" data-landing-route="contact" data-gg-more-route="contact"><span class="gg-more-row__label" data-copy="nav.contact">Contact</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">mail</span></a></div></section>
+          <section class="gg-more-section gg-more-section--discover" aria-labelledby="landing-more-discover-title"><h3 class="gg-more-section__title" id="landing-more-discover-title" data-copy="more.section.discover">Discover</h3><div class="gg-more-list"><button class="gg-more-list__link" type="button" data-open-command><span class="gg-more-row__label" data-copy="more.search">Search</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">search</span></button><a class="gg-more-list__link" href="/sitemap.xml"><span class="gg-more-row__label" data-copy="more.sitemap">Sitemap</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">account_tree</span></a><a class="gg-more-list__link" href="/feeds/posts/default?alt=rss"><span class="gg-more-row__label" data-copy="more.rss">RSS</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">rss_feed</span></a></div></section>
+          <section class="gg-more-section gg-more-section--info" aria-labelledby="landing-more-info-title"><h3 class="gg-more-section__title" id="landing-more-info-title" data-copy="more.section.info">Info</h3><div class="gg-more-list"><a class="gg-more-list__link" href="/p/about.html"><span class="gg-more-row__label" data-copy="more.about">About PakRPP</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">info</span></a><a class="gg-more-list__link" href="/p/privacy-policy.html"><span class="gg-more-row__label" data-copy="more.privacy">Privacy Policy</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">shield</span></a><a class="gg-more-list__link" href="/p/terms-of-use.html"><span class="gg-more-row__label" data-copy="more.terms">Terms of Use</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">description</span></a><a class="gg-more-list__link" href="/p/disclaimer.html"><span class="gg-more-row__label" data-copy="more.disclaimer">Disclaimer</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">warning</span></a></div></section>
+          <section class="gg-more-section gg-more-section--preferences" aria-labelledby="landing-more-preferences-title"><h3 class="gg-more-section__title" id="landing-more-preferences-title" data-copy="more.section.preferences">Preferences</h3><div class="gg-more-list gg-more-preferences-list"><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="language"><span class="gg-more-row__label" data-copy="more.section.language">Language</span><span class="gg-more-row__value" data-gg-pref-value="language">English</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">language</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="appearance"><span class="gg-more-row__label" data-copy="more.section.appearance">Appearance</span><span class="gg-more-row__value" data-gg-pref-value="appearance">Light</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">contrast</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="reading"><span class="gg-more-row__label" data-copy="more.section.reading">Reading</span><span class="gg-more-row__value" data-gg-pref-value="reading">Comfortable</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">format_size</span></button><button class="gg-more-list__link gg-more-pref-row" type="button" data-gg-pref-open="motion"><span class="gg-more-row__label" data-copy="more.section.motion">Motion</span><span class="gg-more-row__value" data-gg-pref-value="motion">Balanced</span><span class="gg-more-row__icon gg-icon" aria-hidden="true">animation</span></button></div></section>
           <div class="gg-more-pref-panels" data-gg-pref-panels hidden><button class="gg-more-pref-scrim" type="button" data-gg-pref-back aria-label="Close preferences"><span class="gg-visually-hidden">Close preferences</span></button><section class="gg-more-pref-panel" data-gg-pref-panel="language" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.language">Language</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Language"><button class="gg-more-pref-option" type="button" data-gg-lang="en" data-gg-lang-option="en" data-copy="language.english" aria-pressed="false">English</button><button class="gg-more-pref-option" type="button" data-gg-lang="id" data-gg-lang-option="id" data-copy="language.indonesia" aria-pressed="false">Indonesia</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="appearance" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.appearance">Appearance</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Appearance"><button class="gg-more-pref-option" type="button" data-gg-theme-option="light" data-copy="appearance.light" aria-pressed="false">Light</button><button class="gg-more-pref-option" type="button" data-gg-theme-option="dark" data-copy="appearance.dark" aria-pressed="false">Dark</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="reading" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.reading">Reading</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Reading"><button class="gg-more-pref-option" type="button" data-gg-reading-option="comfortable" data-copy="reading.comfortable" aria-pressed="false">Comfortable</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="compact" data-copy="reading.compact" aria-pressed="false">Compact</button><button class="gg-more-pref-option" type="button" data-gg-reading-option="focus" data-copy="reading.focus" aria-pressed="false">Focus</button></div></section><section class="gg-more-pref-panel" data-gg-pref-panel="motion" hidden><header class="gg-more-pref-panel__head"><button class="gg-more-pref-panel__back" type="button" data-gg-pref-back aria-label="Back">‹</button><h4 class="gg-more-pref-panel__title" data-copy="more.section.motion">Motion</h4><span></span></header><div class="gg-more-pref-panel__options" role="group" aria-label="Motion"><button class="gg-more-pref-option" type="button" data-gg-motion-option="balanced" data-copy="motion.balanced" aria-pressed="false">Balanced</button><button class="gg-more-pref-option" type="button" data-gg-motion-option="reduced" data-copy="motion.reduced" aria-pressed="false">Reduced</button></div></section></div>
         </div>
         <div class="gg-more-bottom"><div class="gg-more-local-search" data-gg-module="more-local-search"><label class="gg-more-local-search__label" for="landing-more-local-search-input" data-copy="more.localSearch.label">Search More</label><div class="gg-more-local-search__field"><span class="gg-more-local-search__icon gg-icon" aria-hidden="true">search</span><input class="gg-more-local-search__input" id="landing-more-local-search-input" data-gg-more-search-input type="search" autocomplete="off" placeholder="Search" data-copy-placeholder="more.localSearch.placeholder" /></div></div><footer class="gg-more-footer"><span class="gg-more-footer__label" id="gg-more-footer-social-title" data-copy="more.shareSite">Share site</span><div class="gg-more-footer__social" aria-labelledby="gg-more-footer-social-title"><a class="gg-more-footer__link" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareX;title:more.shareX" aria-label="Share on X" title="Share on X"><span aria-hidden="true">𝕏</span><span data-copy="more.shareXShort">X</span></a><a class="gg-more-footer__link" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareFacebook;title:more.shareFacebook" aria-label="Share on Facebook" title="Share on Facebook"><span aria-hidden="true">f</span><span data-copy="more.shareFacebookShort">Facebook</span></a><a class="gg-more-footer__link" href="https://api.whatsapp.com/send?text=https%3A%2F%2Fwww.pakrpp.com%2Flanding" target="_blank" rel="noopener noreferrer" data-copy-attr="aria-label:more.shareWhatsApp;title:more.shareWhatsApp" aria-label="Share on WhatsApp" title="Share on WhatsApp"><span aria-hidden="true">◌</span><span data-copy="more.shareWhatsAppShort">WhatsApp</span></a></div><small class="gg-more-footer__legal" data-copy="footer.copyright">Copyright © 2026 PakRPP. All rights reserved.</small></footer></div>

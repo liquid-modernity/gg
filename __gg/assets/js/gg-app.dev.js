@@ -1005,6 +1005,18 @@ window.GG = window.GG || {};
           discoveryEmptyTemplate: document.getElementById('gg-discovery-empty-template'),
           discoveryTopicTemplate: document.getElementById('gg-discovery-topic-template'),
           discoveryTopicGroupTemplate: document.getElementById('gg-discovery-topic-group-template'),
+          contact: document.getElementById('gg-contact-panel'),
+          contactPanel: document.querySelector('#gg-contact-panel .gg-sheet__panel'),
+          contactScrim: document.querySelector('#gg-contact-panel .gg-sheet__scrim'),
+          contactHandle: document.querySelector('[data-gg-drag-handle="contact"]'),
+          contactForm: document.getElementById('gg-contact-form'),
+          contactSubject: document.getElementById('gg-contact-subject'),
+          contactMessage: document.getElementById('gg-contact-message'),
+          contactEmail: document.getElementById('gg-contact-email'),
+          contactSubmit: document.querySelector('[data-gg-contact-submit]'),
+          contactStatus: document.getElementById('gg-contact-status'),
+          contactNativeStatus: document.querySelector('[data-gg-contact-native-status]'),
+          contactNativePlumbing: document.querySelector('[data-gg-contact-native-plumbing]'),
           preview: document.getElementById('gg-preview-sheet'),
           previewPanel: document.querySelector('#gg-preview-sheet .gg-sheet__panel'),
           previewScrim: document.querySelector('#gg-preview-sheet .gg-sheet__scrim'),
@@ -3125,6 +3137,24 @@ window.GG = window.GG || {};
               openDuration: 220,
               closeDuration: 170
             },
+            contact: {
+              name: 'contact',
+              family: 'utility-sheet',
+              edge: 'bottom',
+              root: ui.contact,
+              panel: ui.contactPanel,
+              scrim: ui.contactScrim,
+              lockScroll: true,
+              trapFocus: true,
+              returnFocus: true,
+              scrollReset: {
+                openBeforeRender: true,
+                openAfterRender: true,
+                closeAfterHide: true
+              },
+              openDuration: 220,
+              closeDuration: 170
+            },
             preview: {
               name: 'preview',
               family: 'content-sheet',
@@ -3438,6 +3468,10 @@ window.GG = window.GG || {};
             focusCommandSheet(false);
             return;
           }
+          if (panel.name === 'contact' && ui.contactSubject) {
+            ui.contactSubject.focus();
+            return;
+          }
           focusFirst(panel.panel || panel.root);
         }
 
@@ -3545,7 +3579,7 @@ window.GG = window.GG || {};
             state.panelTimers[panel.name] = window.setTimeout(function () {
               clearPanelTimer(panel.name);
               panel.root.hidden = true;
-              if (panel.name === 'comments') panel.root.setAttribute('inert', '');
+              panel.root.setAttribute('inert', '');
               panel.root.setAttribute('aria-hidden', 'true');
               setSheetState(panel.root, 'closed');
               panel.root.removeAttribute('data-gg-active');
@@ -3603,6 +3637,121 @@ window.GG = window.GG || {};
             }
             return panel;
           });
+        }
+
+        function setContactState(value, message) {
+          var stateValue = value || 'missing-native-plumbing';
+          if (ui.contact) ui.contact.setAttribute('data-gg-contact-state', stateValue);
+          if (ui.contactForm) ui.contactForm.setAttribute('data-gg-contact-state', stateValue);
+          if (ui.contactStatus && message) ui.contactStatus.textContent = message;
+          if (ui.contactSubmit) ui.contactSubmit.disabled = stateValue === 'submitting';
+        }
+
+        function findNativeContactControls() {
+          var scope = ui.contactNativePlumbing || document;
+          var root = scope.querySelector('#ContactForm1, .contact-form-widget, form[name="contact-form"]') || document.querySelector('#ContactForm1, .contact-form-widget, form[name="contact-form"]');
+          var controls;
+
+          if (!root) return null;
+
+          controls = {
+            root: root,
+            name: root.querySelector('.contact-form-name, [name="name"]'),
+            email: root.querySelector('.contact-form-email, [name="email"]'),
+            message: root.querySelector('.contact-form-email-message, [name="email-message"], textarea'),
+            submit: root.querySelector('.contact-form-button-submit, [type="button"][id*="contact-form-submit"], [type="submit"]'),
+            success: root.querySelector('.contact-form-success-message'),
+            error: root.querySelector('.contact-form-error-message')
+          };
+
+          if (!controls.email || !controls.message || !controls.submit) return null;
+          return controls;
+        }
+
+        function nativeContactText(node) {
+          return node ? String(node.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        }
+
+        function isNativeContactResultActive(node) {
+          var style;
+          var className;
+
+          if (!node) return false;
+          style = String(node.getAttribute('style') || '').toLowerCase();
+          className = String(node.className || '').toLowerCase();
+          if (node.hidden || node.getAttribute('aria-hidden') === 'true') return false;
+          if (/display\s*:\s*none|visibility\s*:\s*hidden/.test(style)) return false;
+          if (/\bhidden\b/.test(className)) return false;
+          return !!nativeContactText(node);
+        }
+
+        function refreshNativeContactState(nativeControls) {
+          var native = nativeControls || findNativeContactControls();
+          var successText;
+          var errorText;
+
+          if (!native) {
+            setContactState('missing-native-plumbing', 'Blogger contact plumbing is not available in this static preview. Use the fallback contact route.');
+            if (ui.contactNativeStatus) ui.contactNativeStatus.textContent = 'Native Blogger ContactForm fields were not found.';
+            return null;
+          }
+
+          successText = isNativeContactResultActive(native.success) ? nativeContactText(native.success) : '';
+          errorText = isNativeContactResultActive(native.error) ? nativeContactText(native.error) : '';
+
+          if (successText) {
+            setContactState('sent', successText);
+          } else if (errorText) {
+            setContactState('error', errorText);
+          } else {
+            setContactState('available', 'Ready to send through Blogger contact form plumbing.');
+          }
+
+          if (ui.contactNativeStatus) ui.contactNativeStatus.textContent = 'Native Blogger ContactForm plumbing detected.';
+          return native;
+        }
+
+        function composeNativeContactMessage() {
+          var subject = ui.contactSubject ? String(ui.contactSubject.value || '').trim() : '';
+          var message = ui.contactMessage ? String(ui.contactMessage.value || '').trim() : '';
+          if (!subject) return message;
+          return 'Subject: ' + subject + '\n\n' + message;
+        }
+
+        function submitContactForm(event) {
+          var native;
+          var email;
+          var message;
+
+          if (event) event.preventDefault();
+
+          native = refreshNativeContactState();
+          if (!native) return false;
+
+          email = ui.contactEmail ? String(ui.contactEmail.value || '').trim() : '';
+          message = composeNativeContactMessage();
+
+          if (!email || !message) {
+            setContactState('error', 'Enter your email and message before sending.');
+            return false;
+          }
+
+          if (native.name && !native.name.value) native.name.value = email.split('@')[0] || 'PakRPP reader';
+          native.email.value = email;
+          native.message.value = message;
+
+          setContactState('submitting', 'Sending through Blogger contact form plumbing...');
+          native.submit.click();
+          window.setTimeout(function () {
+            refreshNativeContactState(native);
+          }, 900);
+          return true;
+        }
+
+        function initContactForm() {
+          refreshNativeContactState();
+          if (ui.contactForm) ui.contactForm.addEventListener('submit', submitContactForm);
+          if (ui.contactSubmit) ui.contactSubmit.addEventListener('click', submitContactForm);
         }
 
         function hasCommentsSurface() {
@@ -8450,7 +8599,14 @@ window.GG = window.GG || {};
           }
 
           if (nextAction === 'navigateContact') {
-            if (isCurrentLanding() && scrollLandingSectionIfPresent('contact')) {
+            if (getPanel('contact') && !isCurrentLanding()) {
+              closeCommandPanel('discovery-open-contact', { returnFocus: false }).then(function () {
+                openPanel('contact', {
+                  trigger: document.querySelector('[data-gg-open="contact"]') || document.querySelector('[data-gg-nav="contact"]') || document.activeElement,
+                  reason: 'discovery-open-contact'
+                });
+              });
+            } else if (isCurrentLanding() && scrollLandingSectionIfPresent('contact')) {
               closeCommandPanel('discovery-scroll-contact', { returnFocus: false });
             } else {
               navigateAfterCommandClose(makeHomeUrl('landing#contact'));
@@ -8707,6 +8863,7 @@ window.GG = window.GG || {};
           checks.push(makeCheck('dock-current', 'Dock current state matches current surface', expectedDock ? (activeDock.length === 1 && activeDock[0] === expectedDock) : activeDock.length === 0, activeDock.length ? 'Active dock items: ' + activeDock.join(', ') : 'No dock item marked current'));
           checks.push(makeCheck('language-switcher', 'Language switcher exposes only EN and ID', ui.langButtons.length === 2 && (state.locale === 'en' || state.locale === 'id'), 'Locale=' + state.locale + ', buttons=' + ui.langButtons.length));
           checks.push(makeCheck('panel-command', 'Command discovery sheet is registered in the unified controller', !!commandPanel && commandPanel.family === 'utility-sheet', commandPanel ? commandPanel.family + ' / ' + panelSnapshot().panels.command.state : 'Command sheet missing'));
+          checks.push(makeCheck('panel-contact', 'Contact sheet is registered in unified controller', !!getPanel('contact'), getPanel('contact') ? panelSnapshot().panels.contact.state : 'Contact sheet missing'));
           checks.push(makeCheck('panel-preview', 'Preview sheet is registered in unified controller', !!getPanel('preview'), getPanel('preview') ? panelSnapshot().panels.preview.state : 'Preview sheet missing'));
           checks.push(makeCheck('panel-more', 'More sheet is registered in unified controller', !!getPanel('more'), getPanel('more') ? panelSnapshot().panels.more.state : 'More sheet missing'));
           checks.push(makeCheck('panel-comments', 'Comments sheet is registered in unified controller', !!commentsPanel, commentsPanel ? panelSnapshot().panels.comments.state : 'Comments sheet missing on current surface', state.surfaceContext && state.surfaceContext.surface !== 'post'));
@@ -9398,6 +9555,7 @@ window.GG = window.GG || {};
           var focusTrigger;
           var primaryRouteTrigger;
           var previewTrigger;
+          var contactTrigger;
           var moreTrigger;
           var commentsTrigger;
           var commentsComposerTrigger;
@@ -9439,6 +9597,7 @@ window.GG = window.GG || {};
           focusTrigger = event.target.closest('[data-gg-focus="command"]');
           primaryRouteTrigger = event.target.closest('[data-gg-more-route], [data-gg-nav]');
           previewTrigger = event.target.closest('[data-gg-open="preview"]');
+          contactTrigger = event.target.closest('[data-gg-open="contact"]');
           moreTrigger = event.target.closest('[data-gg-open="more"]');
           commentsTrigger = event.target.closest('[data-gg-action="comments-open"], [data-gg-open="comments"], [data-gg-postbar="comments"]');
           commentsComposerTrigger = event.target.closest('[data-gg-action="comments-open-composer"]');
@@ -9470,7 +9629,7 @@ window.GG = window.GG || {};
           detailOutlineToggle = event.target.closest('[data-gg-outline-toggle]');
           detailOutlineTarget = event.target.closest('[data-gg-outline-target]');
 
-          if (primaryRouteTrigger && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
+          if (primaryRouteTrigger && !primaryRouteTrigger.hasAttribute('data-gg-open') && handlePrimaryRouteTrigger(primaryRouteTrigger)) {
             event.preventDefault();
             return;
           }
@@ -9539,6 +9698,19 @@ window.GG = window.GG || {};
           if (previewTrigger) {
             event.preventDefault();
             openPreview(previewTrigger.closest(LISTING_ROW_BASE_SELECTOR), previewTrigger, 'preview-trigger');
+            return;
+          }
+
+          if (contactTrigger) {
+            event.preventDefault();
+            if (state.panelActive === 'contact') {
+              closePanel('contact', { reason: 'contact-toggle' });
+            } else {
+              openPanel('contact', {
+                trigger: contactTrigger,
+                reason: 'contact-trigger'
+              });
+            }
             return;
           }
 
@@ -10151,6 +10323,7 @@ window.GG = window.GG || {};
         setLocale(readPreferredLocale(), true);
         setReading(readPreferredReading(), true);
         setMotion(readPreferredMotion(), true);
+        initContactForm();
         initMoreLocalSearch();
         initListingFilter();
         initMorePreferences();

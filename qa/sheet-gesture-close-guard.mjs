@@ -97,6 +97,7 @@ const worker = read("worker.js");
   [indexXml, "gg-comments-sheet", "comments"],
   [indexXml, "gg-comment-replies-sheet", "comment-replies"],
   [indexXml, "gg-command-panel", "command"],
+  [indexXml, "gg-contact-panel", "contact"],
   [indexXml, "gg-more-panel", "more"],
   [landingHtml, "gg-command-panel", "command"],
   [landingHtml, "gg-more-panel", "more"],
