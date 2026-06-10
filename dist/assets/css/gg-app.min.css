@@ -9,7 +9,7 @@
   --gg-icon-weight-active: 400;
   --gg-icon-grade-active: 0;
   --gg-surface-page: #f3efe4;
-  --gg-surface-article: rgba(255, 255, 255, .16);
+  --gg-surface-article: transparent;
   --gg-surface-panel: #f6f1e6;
   --gg-toolbar-surface-fallback: var(--gg-surface-panel);
   --gg-detail-outline-surface-fallback: var(--gg-surface-panel);
@@ -3857,7 +3857,7 @@ body::-webkit-scrollbar,
   gap: 10px;
   flex: 1 1 0;
   width: auto;
-  min-height: 46px;
+  min-height: 52px;
   padding: 0 16px;
   border: 1px solid var(--gg-divider);
   border-radius: 16px;
@@ -3886,7 +3886,7 @@ body::-webkit-scrollbar,
   gap: 10px;
   flex: 1.15 1 0;
   width: auto;
-  min-height: 52px;
+  min-height: 46px;
   padding: 0 18px;
   border: 1px solid var(--gg-accent);
   border-radius: 18px;
@@ -4044,7 +4044,6 @@ body::-webkit-scrollbar,
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  column-gap: 10px;
   align-items: center;
   min-height: 52px;
   width: 100%;

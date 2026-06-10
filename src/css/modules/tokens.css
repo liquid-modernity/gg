@@ -9,7 +9,7 @@
   --gg-icon-weight-active: 400;
   --gg-icon-grade-active: 0;
   --gg-surface-page: #f3efe4;
-  --gg-surface-article: rgba(255, 255, 255, .18);
+  --gg-surface-article: transparent;
   --gg-surface-panel: #f6f1e6;
   --gg-toolbar-surface-fallback: var(--gg-surface-panel);
   --gg-detail-outline-surface-fallback: var(--gg-surface-panel);

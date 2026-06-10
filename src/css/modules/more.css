@@ -136,7 +136,6 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
-  column-gap: 10px;
   align-items: center;
   min-height: 52px;
   width: 100%;
