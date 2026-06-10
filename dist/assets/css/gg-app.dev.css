@@ -669,7 +669,7 @@ body[data-gg-page='listing'] .gg-entry-list {
 
 .gg-entry-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0,1fr) auto;
   align-items: center;
   gap: var(--gg-entry-row-gap);
   padding: var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);
@@ -699,6 +699,7 @@ body[data-gg-page='listing'] .gg-entry-list {
   color: var(--gg-ink);
   font: var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans);
   letter-spacing: 0;
+  display: inline-flex;
 }
 
 .gg-entry-row__title-trigger {
@@ -3846,6 +3847,7 @@ body::-webkit-scrollbar,
   gap: 10px;
   padding: var(--gg-preview-cta-gap) 0 var(--gg-preview-cta-bottom);
   background: linear-gradient(to top, var(--gg-surface) 82%, rgba(255, 255, 255, 0));
+  width: min(100% - 32px, 34rem);
 }
 
 .gg-preview__save {

@@ -9,7 +9,7 @@
 
 .gg-entry-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0,1fr) auto;
   align-items: center;
   gap: var(--gg-entry-row-gap);
   padding: var(--gg-entry-row-pad-y) var(--gg-entry-row-pad-x);
@@ -39,6 +39,7 @@
   color: var(--gg-ink);
   font: var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans);
   letter-spacing: 0;
+  display: inline-flex;
 }
 
 .gg-entry-row__title-trigger {
