@@ -556,6 +556,8 @@ body[data-gg-page='listing'] .gg-entry-list {
   max-height: calc(100svh - var(--gg-dock-clearance) - 168px);
   overflow: auto;
   overscroll-behavior: contain;
+  border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
+  scrollbar-width: none;
 }
 
 .gg-site-head {
@@ -661,7 +663,6 @@ body[data-gg-page='listing'] .gg-entry-list {
 .gg-entry-list {
   display: grid;
   gap: 0;
-  border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
   border-radius: 0 0 14px 14px;
   background: var(--gg-entry-list-bg);
   overflow: clip;

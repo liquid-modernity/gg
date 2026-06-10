@@ -1,7 +1,6 @@
 .gg-entry-list {
   display: grid;
   gap: 0;
-  border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
   border-radius: 0 0 14px 14px;
   background: var(--gg-entry-list-bg);
   overflow: clip;
