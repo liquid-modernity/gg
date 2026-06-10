@@ -207,6 +207,7 @@
   color: var(--gg-accent-soft);
   font: 500 14px/1.25 var(--gg-font-sans);
   white-space: nowrap;
+  padding: 0px 10px;
 }
 
 .gg-more-pref-panels {
