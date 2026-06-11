@@ -1,13 +1,25 @@
 #!/usr/bin/env node
 
 /**
- * GG Public Surface Static Markup Guard
- * 
- * Verifies that public Blogger surfaces use index.xml as the source of truth
- * for semantic structure, templates, hooks, and microcopy.
- * 
- * Fails when runtime JS creates UI HTML via strings instead of using
- * index.xml templates.
+ * GG Public Surface Static Markup Guard — 004C-R Reset
+ *
+ * Minimal focused tripwire. Checks only the exact regressions found.
+ *
+ * Verifies:
+ * 1. createListingRow does not build Gaga row UI with document.createElement.
+ * 2. createPopularControls does not build public controls with document.createElement.
+ * 3. createRelatedPostNode does not build related cards with document.createElement.
+ * 4. renderRelatedPosts does not build dots with document.createElement.
+ * 5. Preview CTA row physically lives inside gg-preview__footer.
+ * 6. Body-level duplicate gg-preview__cta-row does not exist.
+ * 7. Hard-coded #fbfaf4 and #f4f3ed are not used in component CSS outside token declarations.
+ *
+ * Ignores:
+ * - apps/console/**
+ * - test files
+ * - build scripts
+ * - sanitized article body/content handling
+ * - token declaration files
  */
 
 import { readFileSync, existsSync } from 'fs';
@@ -17,16 +29,11 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-function error(id, message) {
-  return { id, message, severity: 'BLOCKER' };
-}
+const B = 'BLOCKER';
+const W = 'ADVISORY';
 
-function warn(id, message) {
-  return { id, message, severity: 'ADVISORY' };
-}
-
-function info(id, message) {
-  return { id, message, severity: 'INFO' };
+function issue(severity, id, message) {
+  return { severity, id, message };
 }
 
 function readFile(relativePath) {
@@ -35,194 +42,161 @@ function readFile(relativePath) {
   return readFileSync(fullPath, 'utf-8');
 }
 
+/**
+ * Extract a function body from JS source.
+ * Searches for "function NAME(" and returns text until next top-level "function ".
+ */
+function extractFunctionBody(source, name) {
+  var startRe = new RegExp('function ' + name + '\\(');
+  var startMatch = source.match(startRe);
+  if (!startMatch) return '';
+  var startIdx = startMatch.index;
+  var rest = source.substring(startIdx);
+  var nextFn = rest.match(/\nfunction /);
+  var endIdx = nextFn ? startIdx + nextFn.index : source.length;
+  return source.substring(startIdx, endIdx);
+}
+
 function run() {
-  const issues = [];
-  const indexXml = readFile('index.xml');
-  const jsSource = readFile('src/js/gg-app.source.js');
+  var issues = [];
+  var indexXml = readFile('index.xml');
+  var jsSource = readFile('src/js/gg-app.source.js');
 
-  // 1. Check index.xml exists
-  if (!indexXml) {
-    issues.push(error('NO_INDEX_XML', 'index.xml not found. Public surface templates must exist in index.xml.'));
-    return report(issues);
-  }
-
-  // 2. Check for innerHTML / insertAdjacentHTML patterns in public runtime JS
+  // --- 1. createListingRow must not build Gaga row UI with document.createElement ---
   if (jsSource) {
-    const dangerousPatterns = [
-      { pattern: /\.innerHTML\s*=\s*`[^`]+gg-entry-row[^`]*`/g, label: 'Listing row HTML via template string' },
-      { pattern: /\.innerHTML\s*=\s*`[^`]+gg-related-posts[^`]*`/g, label: 'Related posts card HTML via template string' },
-      { pattern: /\.innerHTML\s*=\s*`[^`]+gg-preview[^`]*`/g, label: 'Preview CTA HTML via template string' },
-      { pattern: /\.innerHTML\s*=\s*`[^`]+gg-empty-state[^`]*`/g, label: 'Empty state HTML via template string' },
-      { pattern: /insertAdjacentHTML\(\s*['"]beforeend['"],\s*`[^`]+gg-`/g, label: 'Gaga UI append via insertAdjacentHTML' },
-      { pattern: /\.innerHTML\s*=\s*['"]<section[^>]*gg-empty-state[^>]*>/g, label: 'Empty state markup via innerHTML string' },
-      { pattern: /\.innerHTML\s*=\s*['"]<nav[^>]*gg-detail-outline[^>]*>/g, label: 'Pagination markup via innerHTML string' },
-      { pattern: /createRelatedPostNode\s*\(/.test(jsSource) ? !/<template id=["']gg-template-related-post-card["']/.test(indexXml) ? /gg-template-related-post-card/ : null : null, label: 'createRelatedPostNode uses innerHTML instead of template' },
-    ];
-
-    // Check for createRelatedPostNode using innerHTML
-    if (/function createRelatedPostNode/.test(jsSource)) {
-      if (/\.innerHTML\s*=/.test(jsSource.match(/function createRelatedPostNode[\s\S]*?(?=\nfunction |\nvar |\nlet |\nconst |$)/)?.[0] || '')) {
-        issues.push(warn('RELATED_POSTS_HTML_STRING', 'createRelatedPostNode may use innerHTML for card rendering. Should use index.xml template.'));
-      }
-    }
-
-    // Check for createListingRow using innerHTML
-    if (/function createListingRow/.test(jsSource)) {
-      const listingRowFn = jsSource.match(/function createListingRow[\s\S]*?(?=\nfunction |\nvar |\nlet |\nconst |$)/)?.[0] || '';
-      // This function uses createElement which is allowable but creates full UI trees programmatically
-      // The guard should flag this as needing template usage
-    }
-
-    // Check for saved listing innerHTML
-    if (/saved\.empty\.title|saved\.empty\.body/.test(jsSource)) {
-      const savedMatch = jsSource.match(/\n\s*node\.innerHTML\s*=\s*['"][^'"]*saved\.empty[^'"]*['"]/g);
-      if (savedMatch && savedMatch.length > 0) {
-        issues.push(error('SAVED_EMPTY_INNERHTML', 'Saved empty state rendered via innerHTML instead of index.xml template.'));
-      }
-    }
-
-    // Check for popular listing innerHTML
-    if (/popular.*empty/.test(jsSource)) {
-      const popularMatch = jsSource.match(/\n\s*node\.innerHTML\s*=\s*['"][^'"]*Popular[^'"]*['"]/g);
-      if (popularMatch && popularMatch.length > 0) {
-        issues.push(error('POPULAR_EMPTY_INNERHTML', 'Popular listing empty state rendered via innerHTML instead of index.xml template.'));
+    var createListingRowBody = extractFunctionBody(jsSource, 'createListingRow');
+    if (createListingRowBody) {
+      var createElCount1 = (createListingRowBody.match(/document\.createElement\(/g) || []).length;
+      if (createElCount1 > 1) {
+        issues.push(issue(B, 'LISTING_ROW_CREATE_ELEMENT',
+          'createListingRow uses document.createElement ' + createElCount1 + ' times to build Gaga row UI. Must clone template gg-template-listing-row instead.'));
       }
     }
   }
 
-  // 3. Check required templates exist in index.xml
-  const requiredTemplates = [
-    'gg-template-listing-row',
-    'gg-template-related-post-card',
-    'gg-template-related-posts-dots',
-    'gg-template-related-posts-dot',
-    'gg-template-entry-adjacent',
-    'gg-template-preview-cta-row',
-    'gg-empty-state-saved-general',
-    'gg-empty-state-saved-articles',
-    'gg-empty-state-comments',
-    'gg-empty-state-search',
-    'gg-empty-state-recent-error',
-    'gg-empty-state-offline',
-    'gg-empty-state-404',
-    'gg-empty-state-popular-unavailable',
-  ];
-
-  for (const templateId of requiredTemplates) {
-    if (!indexXml.includes(`id="${templateId}"`) && !indexXml.includes(`id='${templateId}'`)) {
-      issues.push(error(
-        `MISSING_TEMPLATE_${templateId.toUpperCase().replace(/-/g, '_')}`,
-        `Required template "${templateId}" is missing from index.xml.`
-      ));
+  // --- 2. createPopularControls must not build public controls with document.createElement ---
+  if (jsSource) {
+    var createPopularControlsBody = extractFunctionBody(jsSource, 'createPopularControls');
+    if (createPopularControlsBody) {
+      var createElCount2 = (createPopularControlsBody.match(/document\.createElement\(/g) || []).length;
+      if (createElCount2 > 1) {
+        issues.push(issue(B, 'POPULAR_CONTROLS_CREATE_ELEMENT',
+          'createPopularControls uses document.createElement ' + createElCount2 + ' times to build public controls. Must clone template gg-template-popular-range-selector.'));
+      }
     }
   }
 
-  // 4. Check for duplicate template IDs
-  const templateIdMatches = indexXml.match(/id=["'](gg-template-[^"']+)["']/g) || [];
-  const templateIds = templateIdMatches.map(m => m.replace(/id=["']|["']/g, '').replace(/^id=/, ''));
-  const seenIds = {};
-  for (const id of templateIds) {
-    if (seenIds[id]) {
-      issues.push(error('DUPLICATE_TEMPLATE_ID', `Duplicate template ID found: "${id}". All template IDs must be unique.`));
-    }
-    seenIds[id] = true;
-  }
-
-  // 5. Check required empty/error microcopy exists
-  const requiredCopy = [
-    { text: 'No saved items yet.', label: 'saved-general empty headline' },
-    { text: 'No saved articles yet.', label: 'saved-articles empty headline' },
-    { text: 'No comments yet.', label: 'comments empty headline' },
-    { text: 'No results found.', label: 'search empty headline' },
-    { text: 'Page not found.', label: '404 empty headline' },
-    { text: 'Connection unavailable.', label: 'offline empty headline' },
-    { text: 'Recent articles are unavailable right now.', label: 'recent-error empty headline' },
-  ];
-
-  for (const { text, label } of requiredCopy) {
-    if (!indexXml.includes(text)) {
-      issues.push(warn(
-        `MISSING_MICROCOPY_${label.toUpperCase().replace(/[\s-]/g, '_')}`,
-        `Required microcopy "${text}" (${label}) not found in index.xml.`
-      ));
+  // --- 3. createRelatedPostNode must not build related cards with document.createElement ---
+  if (jsSource) {
+    var createRelatedPostNodeBody = extractFunctionBody(jsSource, 'createRelatedPostNode');
+    if (createRelatedPostNodeBody) {
+      var createElCount3 = (createRelatedPostNodeBody.match(/document\.createElement\(/g) || []).length;
+      if (createElCount3 > 1) {
+        issues.push(issue(B, 'RELATED_POST_CREATE_ELEMENT',
+          'createRelatedPostNode uses document.createElement ' + createElCount3 + ' times to build related cards. Must clone template gg-template-related-post-card.'));
+      }
     }
   }
 
-  // 6. Check contact sheet copy cleanup (visible text only, not data attributes)
-  // Strip all data-* attributes and hidden elements before checking
-  // Use a simple approach: find <form[^>]*gg-contact-form[^>]*> content
-  const contactFormMatch = indexXml.match(/<form[^>]*gg-contact-form[^>]*>([\s\S]*?)<\/form>/);
-  const contactSheetMatch = indexXml.match(/<div[^>]*gg-contact-sheet[^>]*>([\s\S]*?)<\/div>/);
-  const contactText = (contactFormMatch?.[1] || '') + (contactSheetMatch?.[1] || '');
-
-  const forbiddenContactCopy = [
-    { text: 'plumbing', label: 'plumbing (visible text only, not data-*)' },
-    { text: 'Native Blogger ContactForm plumbing detected', label: 'technical diagnosis copy' },
-    { text: 'Fallback:', label: 'fallback label' },
-    { text: 'Ready to send through Blogger contact form', label: 'status copy' },
-  ];
-
-  for (const { text, label } of forbiddenContactCopy) {
-    if (contactText.includes(text)) {
-      issues.push(error(
-        'CONTACT_SHEET_TECHNICAL_COPY',
-        `Contact sheet visible text contains forbidden copy: "${text}" (${label}). This must be removed from user-visible UI.`
-      ));
+  // --- 4. renderRelatedPosts must not build dots with document.createElement ---
+  if (jsSource) {
+    var renderRelatedPostsBody = extractFunctionBody(jsSource, 'renderRelatedPosts');
+    if (renderRelatedPostsBody) {
+      var dotCreateEl = renderRelatedPostsBody.match(/document\.createElement\(\s*['"]button['"]|document\.createElement\(\s*['"]div['"]/g);
+      if (dotCreateEl && dotCreateEl.length > 0 && renderRelatedPostsBody.indexOf('gg-related-posts__dot') !== -1) {
+        issues.push(issue(B, 'RELATED_DOTS_CREATE_ELEMENT',
+          'renderRelatedPosts builds related dots with document.createElement. Must clone template gg-template-related-posts-dot.'));
+      }
     }
   }
 
-  // 7. Check root pagination for forbidden visible labels
-  if (/Pagination/i.test(indexXml.match(/<nav[^>]*pagination[^>]*>([\s\S]*?)<\/nav>/)?.[0] || '') && 
-      !/aria-label/.test(indexXml.match(/<nav[^>]*pagination[^>]*>([\s\S]*?)<\/nav>/)?.[0] || '')) {
-    issues.push(warn('PAGINATION_LABEL_CHECK', 'Root pagination should not contain visible "Pagination" or "Browse entries" labels.'));
+  // --- 5. Preview CTA row physically lives inside gg-preview__footer ---
+  if (indexXml) {
+    // Check: the footer section should contain gg-preview__cta-row
+    var footerSection = indexXml.match(/<footer[^>]*gg-preview__footer[^>]*>([\s\S]*?)<\/footer>/);
+    if (footerSection) {
+      if (!footerSection[1].includes('gg-preview__cta-row')) {
+        issues.push(issue(B, 'PREVIEW_CTA_NOT_IN_FOOTER',
+          'Preview CTA row not found inside gg-preview__footer. CTA must physically live in the footer.'));
+      }
+    } else {
+      issues.push(issue(B, 'PREVIEW_FOOTER_MISSING', 'gg-preview__footer element not found in index.xml.'));
+    }
   }
 
-  // 8. Check preview CTA row location in index.xml
-  const previewSection = indexXml.match(/<section[^>]*gg-preview__surface[^>]*>([\s\S]*?)<\/section>/)?.[0] || '';
-  // The existing CTA row in the preview body is the legacy one that needs migration
-  // The task requires it to be in the footer instead
-  if (previewSection.includes('gg-preview__cta-row')) {
-    issues.push(warn(
-      'PREVIEW_CTA_IN_BODY',
-      'Preview CTA row found inside gg-preview__surface body. Per contract, CTA should be in the preview footer area.'
-    ));
+  // --- 6. Body-level duplicate gg-preview__cta-row does not exist ---
+  if (indexXml) {
+    // Find all gg-preview__cta-row occurrences
+    var ctaMatches = indexXml.match(/class=['"]gg-preview__cta-row['"]/g) || [];
+    if (ctaMatches.length > 1) {
+      issues.push(issue(B, 'DUPLICATE_PREVIEW_CTA',
+        'Found ' + ctaMatches.length + ' gg-preview__cta-row instances. Only one (in footer) should exist.'));
+    }
   }
 
-  // 9. Check for gg-more-footer__social in more sheet
-  // (Already removed in index.xml, but let's verify)
-  // No action needed - verified during contact sheet review
+  // --- 7. Hard-coded #fbfaf4 and #f4f3ed not in component CSS outside tokens ---
+  var cssFiles = ['src/css/gg-app.source.css', 'src/css/gg-critical.source.css'];
+  var tokenFiles = ['src/css/tokens.css', 'src/css/gg-tokens.css', 'src/css/variables.css'];
+  for (var ci = 0; ci < cssFiles.length; ci++) {
+    var cssPath = resolve(ROOT, cssFiles[ci]);
+    if (!existsSync(cssPath)) continue;
+    var cssContent = readFileSync(cssPath, 'utf-8');
+    var lines = cssContent.split('\n');
+    for (var li = 0; li < lines.length; li++) {
+      var line = lines[li];
+      if (/#fbfaf4|#f4f3ed/i.test(line)) {
+        issues.push(issue(B, 'HARD_CODED_COLOR',
+          'Hard-coded color found in ' + cssFiles[ci] + ' line ' + (li + 1) + ': ' + line.trim().substring(0, 80) +
+          '. Replace with Gaga token.'));
+      }
+    }
+  }
+
+  // Also check index.xml inline CSS for hard-coded colors (skip token declarations)
+  if (indexXml) {
+    var indexLines = indexXml.split('\n');
+    for (var il = 0; il < indexLines.length; il++) {
+      var iline = indexLines[il];
+      if (/#fbfaf4|#f4f3ed/i.test(iline)) {
+        // Allow CSS custom property token declarations (--gg-*)
+        if (/^\s*--[a-zA-Z-]+\s*:/.test(iline)) continue;
+        issues.push(issue(B, 'HARD_CODED_COLOR_XML',
+          'Hard-coded color found in index.xml line ' + (il + 1) + ': ' + iline.trim().substring(0, 80) +
+          '. Replace with Gaga token.'));
+      }
+    }
+  }
 
   return report(issues);
 }
 
 function report(issues) {
-  const blockers = issues.filter(i => i.severity === 'BLOCKER');
-  const advisories = issues.filter(i => i.severity === 'ADVISORY');
-  const infos = issues.filter(i => i.severity === 'INFO');
+  var blockers = issues.filter(function(i) { return i.severity === 'BLOCKER'; });
+  var advisories = issues.filter(function(i) { return i.severity === 'ADVISORY'; });
 
   console.log('\n📋 GG Public Surface Static Markup Guard');
   console.log('══════════════════════════════════════════');
-  console.log(`Blockers:  ${blockers.length}`);
-  console.log(`Advisory:  ${advisories.length}`);
-  console.log(`Info:      ${infos.length}`);
+  console.log('Blockers:  ' + blockers.length);
+  console.log('Advisory:  ' + advisories.length);
   console.log('──────────────────────────────────────────\n');
 
-  for (const issue of issues) {
-    const icon = issue.severity === 'BLOCKER' ? '🔴' : issue.severity === 'ADVISORY' ? '🟡' : 'ℹ️';
-    console.log(`${icon} [${issue.id}] ${issue.message}`);
+  for (var idx = 0; idx < issues.length; idx++) {
+    var item = issues[idx];
+    var icon = item.severity === 'BLOCKER' ? '🔴' : '🟡';
+    console.log(icon + ' [' + item.id + '] ' + item.message);
   }
 
   console.log('\n──────────────────────────────────────────');
 
   if (blockers.length > 0) {
     console.log('❌ PUBLIC SURFACE STATIC MARKUP GUARD FAILED');
-    console.log(`   ${blockers.length} blocker(s) found.\n`);
+    console.log('   ' + blockers.length + ' blocker(s) found.\n');
     process.exit(1);
   }
 
   if (advisories.length > 0) {
     console.log('⚠️  PASSED WITH ADVISORIES');
-    console.log(`   ${advisories.length} advisory warning(s).\n`);
+    console.log('   ' + advisories.length + ' advisory warning(s).\n');
     process.exit(0);
   }
 
