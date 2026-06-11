@@ -104,7 +104,7 @@ forbidIncludes("root runtime", appJs, "pakrppstore.blogspot.com/feeds/posts", "d
 forbidIncludes("Store runtime", storeDiscoveryJs, "pakrpp.blogspot.com/feeds/posts", "does not fetch Root feed on Store");
 forbidIncludes("Store runtime", storeDiscoveryJs, "https://pakrppstore.blogspot.com/feeds/posts", "does not hardcode Store Blogspot feed in controller");
 
-const rootRowTag = firstTag(indexXml, /<article\b[^>]*class='gg-entry-row'[^>]*>/is);
+const rootRowTag = firstTag(indexXml, /<article\b[^>]*class='gg-entry-row'[^>]*expr:data-gg-type[^>]*>/is);
 const detailArticleTag = firstTag(indexXml, /<article\b[^>]*class='gg-article'[^>]*>/is);
 const storeCardTag = firstTag(storeHtml, /<article\b[^>]*class="store-card"[^>]*data-store-product-id="[^"]+"[^>]*>/is);
 

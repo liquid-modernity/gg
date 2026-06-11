@@ -64,7 +64,7 @@ requireIncludes(files.index, "top_panel_open", "index.xml: Details top_panel_ope
   requireIncludes(files.app, range, `src/js: popular range ${range} missing`);
 });
 requireIncludes(files.app, "function extractPopularItems", "src/js: PopularPosts extraction missing");
-requireIncludes(files.app, "Popular posts are unavailable.", "src/js: popular unavailable state missing");
+requireIncludes(files.app, "Popular posts are unavailable right now.", "src/js: popular unavailable state missing");
 requireIncludes(files.app, "syncPopularListingFromHash", "src/js: popular hash mode missing");
 requireIncludes(files.app, "syncSavedListingFromHash", "src/js: saved hash mode missing");
 

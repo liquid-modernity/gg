@@ -6908,12 +6908,18 @@ window.GG = window.GG || {};
           items = getSavedArticles();
 
           if (!items.length) {
-            node = document.createElement('section');
-            node.className = 'gg-saved-listing-empty';
-            node.setAttribute('data-gg-saved-empty', 'true');
-            node.setAttribute('role', 'status');
-            node.setAttribute('aria-live', 'polite');
-            node.innerHTML = '<h2>' + escapeHtml(getCopy('saved.empty.title')) + '</h2><p>' + escapeHtml(getCopy('saved.empty.body')) + '</p>';
+            node = document.getElementById('gg-empty-state-saved-articles');
+            if (node && node.content) {
+              node = node.content.cloneNode(true).firstElementChild;
+              node.hidden = false;
+            } else {
+              node = document.createElement('section');
+              node.className = 'gg-saved-listing-empty';
+              node.setAttribute('data-gg-saved-empty', 'true');
+              node.setAttribute('role', 'status');
+              node.setAttribute('aria-live', 'polite');
+              node.textContent = (getCopy('saved.empty.title') || 'No saved articles yet.') + '. ' + (getCopy('saved.empty.body') || 'Save articles from previews or article pages to find them here.');
+            }
             fragment.appendChild(node);
             ui.listing.appendChild(fragment);
             return;
@@ -7053,12 +7059,20 @@ window.GG = window.GG || {};
           state.popularItems = items;
 
           if (!items.length) {
-            node = document.createElement('section');
-            node.className = 'gg-saved-listing-empty gg-popular-empty';
-            node.setAttribute('data-gg-popular-empty', 'true');
-            node.setAttribute('role', 'status');
-            node.setAttribute('aria-live', 'polite');
-            node.innerHTML = '<h2>Popular posts are unavailable.</h2><p>Native Blogger PopularPosts data did not render for this range.</p>';
+            node = document.getElementById('gg-empty-state-popular-unavailable');
+            if (node && node.content) {
+              node = node.content.cloneNode(true).firstElementChild;
+              node.className = 'gg-popular-empty';
+              node.setAttribute('data-gg-popular-empty', 'true');
+              node.hidden = false;
+            } else {
+              node = document.createElement('section');
+              node.className = 'gg-popular-empty';
+              node.setAttribute('data-gg-popular-empty', 'true');
+              node.setAttribute('role', 'status');
+              node.setAttribute('aria-live', 'polite');
+              node.textContent = 'Popular posts are unavailable right now. Please try again later or browse recent articles.';
+            }
             fragment.appendChild(node);
             ui.listing.appendChild(fragment);
             return;

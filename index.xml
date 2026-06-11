@@ -15,7 +15,7 @@
     </b:if>
     <meta content='development' name='gg-env'/>
 <meta content='ac33998' name='gg-release'/>
-<meta content='c563ac29b1a9' name='gg-template-fingerprint'/>
+<meta content='50a939327f73' name='gg-template-fingerprint'/>
     <b:if cond='data:view.description'>
     <b:else/>
       <b:if cond='data:blog.metaDescription'>
@@ -245,7 +245,7 @@ img{max-width:100%;height:auto;display:block}
       }());
       //]]>
       </script>
-    <div data-env='prod' data-gg-template-fingerprint='c563ac29b1a9' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
+    <div data-env='prod' data-gg-template-fingerprint='50a939327f73' data-release='ac33998' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' hidden='hidden' id='gg-fingerprint'/>
     <b:include name='skipNavigation'/>
 
     <div class='gg-shell' data-gg-feed-contract='pending' data-gg-lang='en' data-gg-root-listing='pending' data-gg-surface-source='pending' data-gg-surface-variant='default' expr:data-gg-blog-title='data:blog.title.escaped' expr:data-gg-home-url='data:blog.homepageUrl' expr:data-gg-page='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-search-url='data:blog.searchUrl' expr:data-gg-surface='data:view.isError ? &quot;error404&quot; : (data:view.isPost ? &quot;post&quot; : (data:view.isPage ? &quot;page&quot; : &quot;listing&quot;))' expr:data-gg-view-error='data:view.isError ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-multiple='data:view.isMultipleItems ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-page='data:view.isPage ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-post='data:view.isPost ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-single='data:view.isSingleItem ? &quot;true&quot; : &quot;false&quot;' expr:data-gg-view-url='data:view.url.canonical ?: data:view.url' id='gg-shell'>
@@ -398,6 +398,114 @@ img{max-width:100%;height:auto;display:block}
                   <strong class='gg-discovery-result__title'/>
                   <span class='gg-discovery-result__meta'/>
                 </a>
+              </template>
+
+              <!-- Gaga empty/error state templates -->
+              <template id='gg-empty-state-saved-general'>
+                <section class='gg-empty-state' data-gg-empty-state='saved-general' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>No saved items yet.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Save articles or products to find them here.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-saved-articles'>
+                <section class='gg-empty-state' data-gg-empty-state='saved-articles' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>No saved articles yet.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Save articles from previews or article pages to find them here.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-comments'>
+                <section class='gg-empty-state' data-gg-empty-state='comments' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>No comments yet.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Be the first to comment.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-search'>
+                <section class='gg-empty-state' data-gg-empty-state='search' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>No results found.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Try another keyword.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-recent-error'>
+                <section class='gg-empty-state' data-gg-empty-state='recent-error' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>Recent articles are unavailable right now.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Please try again later.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-offline'>
+                <section class='gg-empty-state' data-gg-empty-state='offline' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>Connection unavailable.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>The requested page cannot be loaded because the network is unavailable. Saved pages may still be available.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-404'>
+                <section class='gg-empty-state' data-gg-empty-state='404' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>Page not found.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>The page may have been moved, deleted, or is no longer available.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-popular-unavailable'>
+                <section class='gg-empty-state' data-gg-empty-state='popular-unavailable' hidden='hidden'>
+                  <strong class='gg-empty-state__headline' data-gg-template-part='headline'>Popular posts are unavailable right now.</strong>
+                  <p class='gg-empty-state__copy' data-gg-template-part='copy'>Please try again later or browse recent articles.</p>
+                </section>
+              </template>
+
+              <!-- Gaga listing row template for saved/popular modes -->
+              <template id='gg-template-listing-row'>
+                <article class='gg-entry-row' role='listitem'>
+                  <h3 class='gg-entry-row__title'>
+                    <button class='gg-entry-row__title-trigger' data-gg-template-part='title-trigger' type='button'></button>
+                  </h3>
+                  <button class='gg-entry-row__action' data-gg-template-part='action' type='button'>
+                    <span data-gg-template-part='action-label'></span>
+                    <span aria-hidden='true' class='gg-icon' data-gg-template-part='action-icon'>label</span>
+                  </button>
+                </article>
+              </template>
+
+              <!-- Gaga related posts card template -->
+              <template id='gg-template-related-post-card'>
+                <article class='gg-related-posts__card' role='listitem'>
+                  <div class='gg-related-posts__card-body'>
+                    <span class='gg-related-posts__card-label' data-gg-template-part='label'></span>
+                    <h4 class='gg-related-posts__card-title' data-gg-template-part='title'></h4>
+                  </div>
+                  <div class='gg-related-posts__card-thumb' data-gg-template-part='thumb-wrapper' hidden='hidden'>
+                    <img alt='' class='gg-related-posts__card-img' data-gg-template-part='thumb' loading='lazy' src=''/>
+                  </div>
+                </article>
+              </template>
+
+              <!-- Gaga related posts dots template -->
+              <template id='gg-template-related-posts-dots'>
+                <div class='gg-related-posts__dots' role='list'></div>
+              </template>
+
+              <template id='gg-template-related-posts-dot'>
+                <button class='gg-related-posts__dot' data-gg-template-part='dot' role='listitem' type='button'></button>
+              </template>
+
+              <!-- Gaga entry adjacent pagination template for detail pages -->
+              <template id='gg-template-entry-adjacent'>
+                <nav class='gg-entry-adjacent' aria-label='Adjacent articles'>
+                  <a class='gg-entry-adjacent__link gg-entry-adjacent__link--prev' data-gg-template-part='prev' href='#'><span aria-hidden='true' class='gg-icon'>arrow_back</span><span>Newer article</span></a>
+                  <a class='gg-entry-adjacent__link gg-entry-adjacent__link--next' data-gg-template-part='next' href='#'><span>Older article</span><span aria-hidden='true' class='gg-icon'>arrow_forward</span></a>
+                </nav>
+              </template>
+
+              <!-- Gaga preview footer CTA shell (for migration from body) -->
+              <template id='gg-template-preview-cta-row'>
+                <div class='gg-preview__cta-row'>
+                  <button aria-pressed='false' class='gg-preview__save' data-gg-copy='saved.action.save' data-gg-save-article='true' type='button'><span data-gg-save-label='true'>Save</span><span aria-hidden='true' class='gg-preview__button-icon gg-icon' data-gg-save-icon='true'>bookmark_border</span></button>
+                  <a class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#'><span>Open full article</span><span aria-hidden='true' class='gg-preview__button-icon gg-icon'>read_more</span></a>
+                </div>
               </template>
 
               <nav aria-label='Blog pagination' class='gg-detail-outline gg-listing-pagination' data-gg-module='listing-pagination-dock-tail' data-gg-outline-mode='pagination' data-gg-outline-state='peek' id='gg-listing-pagination'>
@@ -1531,7 +1639,7 @@ img{max-width:100%;height:auto;display:block}
             <p class='gg-contact-form__destination'>chat@pakrpp.com</p>
           </div>
           <form class='gg-contact-form' data-gg-contact-state='missing-native-plumbing' id='gg-contact-form' novalidate='novalidate'>
-            <p class='gg-contact-form__status' data-gg-contact-status='true' id='gg-contact-status'>Blogger contact plumbing is not available in this static preview. Use the fallback contact route.</p>
+            <p class='gg-contact-form__status' data-gg-contact-status='true' hidden='hidden' id='gg-contact-status'>Send your message through the available contact options.</p>
             <label class='gg-contact-form__field' for='gg-contact-subject'>
               <span>Subject</span>
               <input autocomplete='off' data-gg-contact-subject='true' id='gg-contact-subject' name='subject' type='text'/>
@@ -1546,7 +1654,6 @@ img{max-width:100%;height:auto;display:block}
             </label>
             <div class='gg-contact-form__native' data-gg-contact-native-status='true'>Native Blogger validation or captcha appears here when required.</div>
             <button class='gg-contact-form__submit' data-gg-contact-submit='true' type='button'>Send message</button>
-            <p class='gg-contact-form__fallback'>Fallback: <a data-gg-contact-fallback='true' href='/p/contact.html'>open the contact page</a>.</p>
           </form>
           <div aria-label='Contact links' class='gg-contact-social'>
             <a class='gg-contact-social__link' href='mailto:chat@pakrpp.com'><span>Email</span><span aria-hidden='true' class='gg-icon'>mail</span></a>
