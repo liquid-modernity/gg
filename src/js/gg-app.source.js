@@ -6803,64 +6803,58 @@ window.GG = window.GG || {};
         function createListingRow(item, options) {
           var source = item || {};
           var config = options || {};
-          var tpl = document.getElementById('gg-template-listing-row');
-          var node, icon, titleTrigger, action, actionLabel, actionIcon;
+          var node = document.createElement('article');
+          var icon = document.createElement('span');
+          var title = document.createElement('h2');
+          var link = document.createElement('a');
+          var action = document.createElement('button');
+          var actionText = document.createElement('span');
+          var actionIcon = document.createElement('span');
           var labelKey = config.labelKey || source.labelKey || 'article';
-          var url = source.url || source.href || '#';
-
-          if (!tpl || !tpl.content) {
-            // Minimal safe fallback — never builds UI from scratch
-            var fallback = document.createElement('article');
-            fallback.className = 'gg-entry-row';
-            fallback.setAttribute('role', 'listitem');
-            fallback.setAttribute('data-gg-post-url', url);
-            fallback.textContent = source.title || '';
-            return fallback;
-          }
-
-          node = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
-          if (!node) return null;
-
-          icon = node.querySelector('[data-gg-template-part="icon"]');
-          titleTrigger = node.querySelector('[data-gg-template-part="title-trigger"]');
-          action = node.querySelector('[data-gg-template-part="action"]');
-          actionLabel = action ? action.querySelector('[data-gg-template-part="action-label"]') : null;
-          actionIcon = action ? action.querySelector('[data-gg-template-part="action-icon"]') : null;
 
           node.className = 'gg-entry-row' + (config.className ? ' ' + config.className : '');
           node.setAttribute('data-gg-label-key', labelKey);
-          node.setAttribute('data-gg-post-url', url);
-          node.setAttribute('data-gg-url', url);
+          node.setAttribute('data-gg-post-url', source.url || source.href || '');
+          node.setAttribute('data-gg-url', source.url || source.href || '');
           node.setAttribute('data-gg-title', source.title || '');
           node.setAttribute('data-gg-summary', source.summary || '');
           node.setAttribute('data-gg-date', source.date || '');
           node.setAttribute('data-gg-source', source.source || 'rootSource');
           node.setAttribute('data-gg-surface', config.surface || source.surface || 'root-listing');
           node.setAttribute('data-gg-type', source.type || 'post');
+          node.setAttribute('role', 'listitem');
           if (config.markerName) node.setAttribute(config.markerName, config.markerValue || 'true');
 
-          if (icon) {
-            icon.setAttribute('data-gg-listing-icon', labelKey);
-            icon.textContent = getListingIcon(labelKey);
-          }
+          icon.className = 'gg-entry-row__icon gg-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.setAttribute('data-gg-listing-icon', labelKey);
+          icon.textContent = getListingIcon(labelKey);
 
-          if (titleTrigger) {
-            titleTrigger.setAttribute('aria-controls', 'gg-preview-sheet');
-            titleTrigger.setAttribute('aria-expanded', 'false');
-            titleTrigger.setAttribute('data-gg-open', 'preview');
-            titleTrigger.href = url;
-            titleTrigger.textContent = source.title || getCopy('preview.titleFallback');
-          }
+          title.className = 'gg-entry-row__title';
+          link.className = 'gg-entry-row__title-trigger';
+          link.setAttribute('aria-controls', 'gg-preview-sheet');
+          link.setAttribute('aria-expanded', 'false');
+          link.setAttribute('data-gg-open', 'preview');
+          link.href = source.url || source.href || '#';
+          link.textContent = source.title || getCopy('preview.titleFallback');
+          title.appendChild(link);
 
-          if (action) {
-            action.setAttribute('aria-controls', 'gg-preview-sheet');
-            action.setAttribute('aria-expanded', 'false');
-            action.setAttribute('data-gg-copy', 'listing.details');
-            action.setAttribute('data-gg-open', 'preview');
-          }
-          if (actionLabel) actionLabel.textContent = getCopy('listing.details');
-          if (actionIcon) actionIcon.textContent = getListingIcon('details');
+          action.className = 'gg-entry-row__action';
+          action.setAttribute('aria-controls', 'gg-preview-sheet');
+          action.setAttribute('aria-expanded', 'false');
+          action.setAttribute('data-gg-copy', 'listing.details');
+          action.setAttribute('data-gg-open', 'preview');
+          action.type = 'button';
+          actionText.textContent = getCopy('listing.details');
+          actionIcon.className = 'gg-entry-row__action-icon gg-icon';
+          actionIcon.setAttribute('aria-hidden', 'true');
+          actionIcon.textContent = getListingIcon('details');
+          action.appendChild(actionText);
+          action.appendChild(actionIcon);
 
+          node.appendChild(icon);
+          node.appendChild(title);
+          node.appendChild(action);
           return node;
         }
 
@@ -7009,8 +7003,9 @@ window.GG = window.GG || {};
         }
 
         function createPopularControls(range) {
-          var tpl = document.getElementById('gg-template-popular-range-selector');
-          var section, title, group;
+          var section = document.createElement('section');
+          var title = document.createElement('h2');
+          var group = document.createElement('div');
           var labels = {
             ALL_TIME: 'All time',
             LAST_YEAR: 'Last year',
@@ -7018,41 +7013,15 @@ window.GG = window.GG || {};
             LAST_WEEK: 'Last 7 days'
           };
 
-          if (tpl && tpl.content) {
-            section = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
-            if (section) {
-              title = section.querySelector('[data-gg-template-part="title"]');
-              group = section.querySelector('[data-gg-template-part="ranges"]');
-              if (title) title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
-              if (group) {
-                var links = group.querySelectorAll('[data-gg-template-part="range"]');
-                var linkArr = Array.prototype.slice.call(links);
-                linkArr.forEach(function(link) {
-                  var key = link.getAttribute('data-gg-popular-range-key');
-                  if (key) {
-                    link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + key;
-                    link.setAttribute('aria-current', key === range ? 'true' : 'false');
-                    link.textContent = labels[key] || key;
-                  }
-                });
-              }
-              return section;
-            }
-          }
-
-          // Safe fallback: minimal shell from existing contract
-          section = document.createElement('section');
           section.className = 'gg-popular-controls';
           section.setAttribute('data-gg-popular-controls', 'true');
           section.setAttribute('aria-labelledby', 'gg-popular-controls-title');
-          title = document.createElement('h2');
           title.id = 'gg-popular-controls-title';
           title.className = 'gg-popular-controls__title';
           title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
-          section.appendChild(title);
-          group = document.createElement('div');
           group.className = 'gg-popular-controls__ranges';
           group.setAttribute('role', 'list');
+
           BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
             var link = document.createElement('a');
             link.className = 'gg-popular-controls__range';
@@ -7062,6 +7031,8 @@ window.GG = window.GG || {};
             link.textContent = labels[item] || item;
             group.appendChild(link);
           });
+
+          section.appendChild(title);
           section.appendChild(group);
           return section;
         }
@@ -8843,44 +8814,40 @@ window.GG = window.GG || {};
         }
 
         function createRelatedPostNode(item) {
-          var tpl = document.getElementById('gg-template-related-post-card');
-          var link, type, title, meta, thumb;
+          var link = document.createElement('a');
+          var type = document.createElement('span');
+          var title = document.createElement('strong');
+          var meta = document.createElement('span');
+          var thumb = document.createElement('span');
 
           if (!item || !item.href || !item.title) return null;
 
-          if (!tpl || !tpl.content) {
-            // Safe fallback — never builds UI from scratch
-            var fb = document.createElement('a');
-            fb.className = 'gg-related-posts__item';
-            fb.href = item.href;
-            fb.textContent = item.title;
-            return fb;
-          }
-
-          link = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
-          if (!link) return null;
-
-          type = link.querySelector('[data-gg-template-part="type"]');
-          title = link.querySelector('[data-gg-template-part="title"]');
-          meta = link.querySelector('[data-gg-template-part="meta"]');
-          thumb = link.querySelector('[data-gg-template-part="thumb"]');
-
+          link.className = 'gg-related-posts__item';
+          link.setAttribute('role', 'listitem');
           link.href = item.href;
 
-          if (type) type.textContent = getCopy('discovery.type.article');
-          if (title) title.textContent = item.title;
-          if (meta) meta.textContent = item.labelTexts && item.labelTexts.length ? item.labelTexts.slice(0, 2).join(' · ') : (item.summary || '');
+          type.className = 'gg-related-posts__type';
+          type.textContent = getCopy('discovery.type.article');
 
-          if (thumb) {
-            thumb.setAttribute('aria-hidden', 'true');
-            if (item.image) {
-              thumb.style.backgroundImage = 'url("' + String(item.image).replace(/"/g, '') + '")';
-              thumb.setAttribute('data-gg-related-thumb', 'image');
-            } else {
-              thumb.setAttribute('data-gg-related-thumb', 'placeholder');
-            }
+          title.className = 'gg-related-posts__title-text';
+          title.textContent = item.title;
+
+          meta.className = 'gg-related-posts__meta';
+          meta.textContent = item.labelTexts && item.labelTexts.length ? item.labelTexts.slice(0, 2).join(' · ') : (item.summary || '');
+
+          thumb.className = 'gg-related-posts__thumb';
+          thumb.setAttribute('aria-hidden', 'true');
+          if (item.image) {
+            thumb.style.backgroundImage = 'url("' + String(item.image).replace(/"/g, '') + '")';
+            thumb.setAttribute('data-gg-related-thumb', 'image');
+          } else {
+            thumb.setAttribute('data-gg-related-thumb', 'placeholder');
           }
 
+          link.appendChild(type);
+          link.appendChild(title);
+          link.appendChild(meta);
+          link.appendChild(thumb);
           return link;
         }
 
@@ -8918,35 +8885,14 @@ window.GG = window.GG || {};
           }
 
           if (list.length > BLOG_RETENTION_CONTRACT.relatedVisibleMax) {
-            var dotsTpl = document.getElementById('gg-template-related-posts-dot');
-            if (dotsTpl && dotsTpl.content) {
-              dots = /** @type {Element} */ (dotsTpl.content.cloneNode(true).firstElementChild);
-            }
-            if (!dots) {
-              dots = document.createElement('div');
-              dots.className = 'gg-related-posts__dots';
-              dots.setAttribute('role', 'list');
-            }
+            dots = document.createElement('div');
+            dots.className = 'gg-related-posts__dots';
             dots.setAttribute('role', 'list');
-            var dotProto = dots.querySelector('[data-gg-template-part="dot"]');
-            var existingDots = dots.querySelectorAll('[data-gg-template-part="dot"]');
-            // Remove any pre-existing dot children from template to start fresh
-            for (var di = 0; di < existingDots.length; di += 1) {
-              existingDots[di].parentNode.removeChild(existingDots[di]);
-            }
-            var totalPages = Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax);
-            for (i = 0; i < totalPages; i += 1) {
-              if (dotProto) {
-                node = dotProto.cloneNode(true);
-              } else {
-                node = document.createElement('button');
-                node.className = 'gg-related-posts__dot';
-                node.type = 'button';
-              }
-              if (node.tagName === 'BUTTON' || node.getAttribute('role') === 'listitem') {
-                node.type = 'button';
-                node.setAttribute('role', 'listitem');
-              }
+            for (i = 0; i < Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax); i += 1) {
+              node = document.createElement('button');
+              node.className = 'gg-related-posts__dot';
+              node.type = 'button';
+              node.setAttribute('role', 'listitem');
               node.setAttribute('aria-label', 'Related posts group ' + String(i + 1));
               node.setAttribute('aria-current', i === page ? 'true' : 'false');
               node.setAttribute('data-gg-related-page', String(i));

@@ -839,7 +839,7 @@ body[data-gg-page='listing'] .gg-entry-list {
   padding: 0 12px;
   border: 0;
   border-radius: 999px;
-  background: var(--gg-surface-filter);
+  background: #fbfaf4;
   color: var(--gg-ink);
   font: 650 13px/1.2 var(--gg-font-sans);
   letter-spacing: 0;
@@ -866,7 +866,7 @@ body[data-gg-page='listing'] .gg-entry-list {
   padding: 6px;
   border: 1px solid var(--gg-divider);
   border-radius: 12px;
-  background: var(--gg-surface-filter);
+  background: #fbfaf4;
   box-shadow: var(--gg-shadow-soft);
   opacity: 0;
   visibility: hidden;
@@ -939,7 +939,7 @@ body[data-gg-page='listing'] .gg-entry-list {
 
 .gg-listing-filter__item:hover,
 .gg-listing-filter__item:focus-visible {
-  background: var(--gg-surface-filter-hover);
+  background: #f4f3ed;
 }
 
 .gg-loadmore-wrap {
