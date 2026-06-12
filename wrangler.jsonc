@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gg-vnext",
+  "name": "gg",
   "main": ".cloudflare-build/worker.js",
   "compatibility_date": "2026-06-12",
   "assets": {
