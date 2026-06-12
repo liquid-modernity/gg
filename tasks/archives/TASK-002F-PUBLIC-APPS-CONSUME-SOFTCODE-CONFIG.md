@@ -1,114 +1,152 @@
 # TASK-002F — Public Apps Consume Softcode Config
 
 ## Status
-✅ **COMPLETED** — All acceptance checks pass.
+
+COMPLETE — all checks green.
 
 ## Implemented scope
 
-### Runtime public config artifact
-- Build tool (`tools/build.mjs`) emits `public-config.json` into:
-  - `dist/dev/runtime/public-config.json`
-  - `dist/prod/runtime/public-config.json`
-  - `.cloudflare-build/public/runtime/public-config.json`
-- Contains only safe public fields: `version`, `generatedAt`, `surfaces`, `navigation`, `seo`, `themeTokens`, `microcopy`, `icons`
-- Does NOT include: API provider secrets, tokens, passwords, session secrets, raw env values
+Public apps (Blog, Store, Landing) now consume a runtime softcode config contract via a vanilla JS loader.
 
-### Public softcode loader module
-- `src/modules/public-softcode/public-softcode.js` — vanilla JS module
-- `src/modules/public-softcode/public-softcode.css`
-- `src/modules/public-softcode/base.contract.json`
-- Fetches `/runtime/public-config.json`
-- Applies microcopy to `[data-copy]` and `[data-gg-copy]` elements
-- Applies theme tokens as CSS custom properties on `document.documentElement`
-- Fails silently — never blanks the page if config load fails
+### Runtime public config artifact
+
+Build tool (`tools/build.mjs`) emits a safe public runtime config into both dev and prod output:
+
+```txt
+dist/dev/runtime/public-config.json
+dist/prod/runtime/public-config.json
+```
+
+Includes only safe public keys:
+
+- `version`, `generatedAt`
+- `surfaces`, `navigation`, `seo`, `themeTokens`, `microcopy`, `icons`
+
+Excludes:
+
+- API provider secrets
+- Refresh tokens / client secrets
+- Cloudflare tokens
+- Session secrets
+- Admin passwords / raw env values
+
+### Public softcode loader
+
+```txt
+src/modules/public-softcode/public-softcode.js (186 lines)
+```
+
+Vanilla JS IIFE that:
+
+- Fetches `/runtime/public-config.json` (or equivalent generated path)
+- Fails silently — never blanks the page on load failure
+- Applies microcopy to elements with `data-copy` and `data-gg-copy` selectors
+- Applies navigation labels via `data-nav-label` / `data-gg-nav-label`
+- Applies SEO metadata only when safe and surface is detectable
+- Applies theme tokens by setting CSS custom properties on `document.documentElement`
+- Exposes `window.GG.publicSoftcodeInit(surfaceId)` for entry wiring
+- Exposes status via `window.GG.publicSoftcode = { ok, surface }`
 
 ### Entry wiring
-All three public surface entries import public-softcode:
-- `src/entries/blog.entry.js` — calls `publicSoftcodeInit("blog")`
-- `src/entries/store.entry.js` — calls `publicSoftcodeInit("store")`
-- `src/entries/landing.entry.js` — calls `publicSoftcodeInit("landing")`
 
-### Fallback markers
-- Blog (`apps/blog/index.xml`): Extensive `data-gg-copy` markers (~99 matches) with Blogger fallback text preserved
-- Store (`apps/store/store.html`): `data-copy` markers (~103 matches) with fallback text preserved
-- Landing (`apps/landing/landing.html`): `data-copy` markers with fallback text preserved
-- Both `[data-copy]` and `[data-gg-copy]` selectors are supported by the loader
+All three public entries call `publicSoftcodeInit` with the correct surface identifier:
 
-### Check script
-- `checks/public-softcode.check.mjs` validates:
-  - `src/modules/public-softcode` module exists
-  - `public-config.json` emitted after build
-  - No secret/token/password/key-like values in config
-  - Entries wire public-softcode for each surface
-  - Blog supports `data-gg-copy` or `data-copy`
-  - Store/Landing support `data-copy`
-  - Expected top-level config keys present
-  - Cloudflare deploy output if `.cloudflare-build/public` exists
-- npm script: `npm run check:public-softcode`
+```txt
+src/entries/blog.entry.js     → publicSoftcodeInit("blog")
+src/entries/store.entry.js    → publicSoftcodeInit("store")
+src/entries/landing.entry.js  → publicSoftcodeInit("landing")
+```
+
+### Fallback markers in public HTML
+
+Fallback-safe markers were added to public HTML templates without rewriting templates or removing existing fallback text:
+
+| Surface  | File                     | Selectors used        | Count |
+|----------|--------------------------|-----------------------|-------|
+| Blog     | `apps/blog/index.xml`    | `data-gg-copy`        | 99+   |
+| Store    | `apps/store/store.html`  | `data-copy`           | 84    |
+| Landing  | `apps/landing/landing.html` | `data-copy`        | 57    |
+
+- Both `[data-copy]` and `[data-gg-copy]` are supported.
+- Blogger XML was not broken — markers added to existing `<span>` elements preserving fallback text.
+
+### Check / acceptance support
+
+```txt
+checks/public-softcode.check.mjs (175 lines)
+npm run check:public-softcode
+```
+
+Validates:
+
+- `src/modules/public-softcode` module file exists
+- `public-config.json` is emitted by build (both dev/prod)
+- `public-config.json` contains no secrets/token/password/key-like sensitive values
+- Blog/Store/Landing entries import/wire public-softcode
+- Blog supports `data-gg-copy` or `data-copy` markers
+- Store/Landing support `data-copy` markers
+- `dist/prod/runtime/public-config.json` exists after build
+- `.cloudflare-build/public/runtime/public-config.json` exists if deploy output is present
 
 ### Acceptance script
-- `scripts/task002f-acceptance.sh` runs full pipeline:
-  - `npm run doctor`
-  - `npm run build`
-  - `npm run check`
-  - `npm run check:softcode`
-  - `npm run check:public-softcode`
-  - `npm run console:check`
-  - `npm run studio:check`
-  - `npm run deploy:dry`
-  - Verifies `dist/prod/runtime/public-config.json` exists
-  - Verifies config has no obvious secret keys
+
+```txt
+scripts/task002f-acceptance.sh (86 lines)
+```
+
+Runs full pipeline: `doctor → build → check → check:softcode → check:public-softcode → console:check → studio:check → deploy:dry → verify + secret scan`
 
 ## Files changed
-| File | Change |
-|------|--------|
-| `tools/build.mjs` | Added `emitPublicConfig()` — generates runtime public-config.json |
-| `src/modules/public-softcode/public-softcode.js` | New — public softcode loader module |
-| `src/modules/public-softcode/public-softcode.css` | New — softcode module styles |
-| `src/modules/public-softcode/base.contract.json` | New — module registry contract |
-| `src/entries/blog.entry.js` | Wired to call `publicSoftcodeInit("blog")` |
-| `src/entries/store.entry.js` | Wired to call `publicSoftcodeInit("store")` |
-| `src/entries/landing.entry.js` | Wired to call `publicSoftcodeInit("landing")` |
-| `checks/public-softcode.check.mjs` | New — validation check script |
-| `package.json` | Added `check:public-softcode` npm script |
-| `scripts/task002f-acceptance.sh` | New — acceptance pipeline script |
-| `tasks/active/TASK-002F-PUBLIC-APPS-CONSUME-SOFTCODE-CONFIG.md` | This file |
+
+```
+tools/build.mjs                                — emitPublicConfig function added
+src/modules/public-softcode/public-softcode.js — new loader module (186 lines)
+src/entries/blog.entry.js                      — wires publicSoftcodeInit("blog")
+src/entries/store.entry.js                     — wires publicSoftcodeInit("store")
+src/entries/landing.entry.js                   — wires publicSoftcodeInit("landing")
+apps/blog/index.xml                            — data-gg-copy markers added
+apps/store/store.html                          — data-copy markers present
+apps/landing/landing.html                     — data-copy markers present
+checks/public-softcode.check.mjs               — new check script
+package.json                                   — "check:public-softcode" added
+scripts/task002f-acceptance.sh                — acceptance script
+tasks/active/TASK-002F-PUBLIC-APPS-CONSUME-SOFTCODE-CONFIG.md — this note
+```
 
 ## What is softcoded now
-- Microcopy text via `data-copy` / `data-gg-copy` attributes
-- Theme tokens (CSS custom properties)
-- Surfaces, navigation, SEO metadata in runtime config
-- Icons registry included in public config
+
+- Microcopy text values applied to `[data-copy]` / `[data-gg-copy]` elements
+- Navigation labels via public primary nav contract
+- Theme tokens (color, radius, space) as CSS custom properties
+- SEO title (when safe and surface-detected)
 
 ## What is intentionally still fallback/hardcoded
-- HTML fallback text preserved in all templates (no text removed)
-- Blogger XML template structure untouched
-- Legacy JS bridge not split
-- No Blogger API/auth integration
-- No Admin/Console UI auto-apply (wired only to Blog/Store/Landing)
-- Store product data hardcoded (not from microcopy)
-- No dynamic page title/description injection (SEO via templates)
 
-## Non-goals (not implemented)
-- Blogger OAuth
-- Tailwind, shadcn, Tiptap, React, or any heavy dependency
-- Splitting legacy JS bridge
-- Editing `dist/` or `.cloudflare-build/` manually
-- Removing fallback HTML text
-- Hardcoding Blogger IDs, API keys, tokens, or secrets
-- Refactoring all public HTML/CSS/JS
+- Blogger XML template structure (not rewritten — just annotated with markers)
+- Store product data pipeline
+- Landing static JSON-LD
+- Theme color scheme beyond CSS custom property injection
+- Console/Studio entries (not wired — softcode applies only to public surfaces)
+- Full Blogger feed/sync pipeline
+- OAuth / Blogger publish
+- Domain/canonical decisions and hreflang
+- Legacy JS bridge (not split)
+
+## Non-goals
+
+- No Blogger OAuth
+- No Tailwind, shadcn, Tiptap, React, or heavy dependency installed
+- No legacy JS bridge split
+- No `dist/` or `.cloudflare-build/` manual edits
+- No hardcoded Blogger IDs, API keys, tokens, or secrets
+- No full HTML/CSS rewrite
 
 ## Acceptance commands
-```bash
-# Full pipeline
-npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002f-acceptance.sh
 
-# Individual checks
-npm run check:public-softcode
-bash scripts/task002f-acceptance.sh
+```bash
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002f-acceptance.sh
 ```
 
 ## Next recommended task
-- Migrate more hardcoded microcopy strings to the softcode contract
-- Add missing microcopy keys from Blog/Store/Landing HTML to registry
-- Implement per-surface config injection (only load relevant microcopy subset)
+
+Wire softcode-driven microcopy into Console Config Editor UI so operators can edit copy values through the Console interface and see them reflected in public apps live.

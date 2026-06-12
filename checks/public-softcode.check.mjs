@@ -165,6 +165,105 @@ if (await exists('.cloudflare-build/public')) {
   console.log('skip: .cloudflare-build/public not found (build may not have run)');
 }
 
+// (h) Verify required runtime assets exist under .cloudflare-build/public after build
+console.log('\n--- runtime asset verification ---');
+const REQUIRED_CF_ASSETS = [
+  '.cloudflare-build/public/assets/gg-app.min.js',
+  '.cloudflare-build/public/assets/gg-app.min.css',
+  '.cloudflare-build/public/assets/store/store.css',
+  '.cloudflare-build/public/assets/store/store-core.js',
+  '.cloudflare-build/public/assets/store/store-discovery.js',
+  '.cloudflare-build/public/__gg/assets/css/gg-app.min.css',
+  '.cloudflare-build/public/__gg/assets/js/gg-app.min.js',
+  '.cloudflare-build/public/__gg/assets/js/gg-app.dev.js',
+  '.cloudflare-build/public/runtime/public-config.json',
+];
+
+if (await exists('.cloudflare-build/public')) {
+  for (const relPath of REQUIRED_CF_ASSETS) {
+    if (await exists(relPath)) {
+      console.log(`ok: ${relPath} exists`);
+    } else {
+      fail(`Missing ${relPath} — build must emit this runtime asset`);
+    }
+  }
+} else {
+  // Not a failure if .cloudflare-build hasn't been built yet
+  console.log('skip: .cloudflare-build/public not found (build may not have run)');
+}
+
+// (i) Verify Blog/Store/Landing local references resolve to files under .cloudflare-build/public
+async function checkPageAssetRefs(pagePath, refs) {
+  if (!(await exists(pagePath))) {
+    fail(`Missing ${pagePath} for reference check`);
+    return;
+  }
+  const content = await readText(pagePath);
+  for (const ref of refs) {
+    if (typeof ref === 'string') {
+      if (!content.includes(ref)) {
+        console.log(`warn: ${pagePath} does not reference ${ref}`);
+      }
+    }
+  }
+}
+
+// Blog references GG assets
+if (await exists('apps/blog/index.xml')) {
+  const blogXml = await readText('apps/blog/index.xml');
+  const blogRefs = ['/__gg/assets/css/gg-app.min.css', '/__gg/assets/js/gg-app.min.js'];
+  for (const ref of blogRefs) {
+    if (blogXml.includes(ref)) {
+      console.log(`ok: blog/index.xml references ${ref}`);
+      // Verify the referenced CF path exists
+      const cfPath = '.cloudflare-build/public' + ref;
+      if (await exists('.cloudflare-build/public')) {
+        if (await exists(cfPath)) {
+          console.log(`ok: ${cfPath} exists`);
+        } else {
+          fail(`Missing ${cfPath} — referenced by blog/index.xml`);
+        }
+      }
+    } else {
+      console.log(`warn: blog/index.xml does not reference ${ref}`);
+    }
+  }
+}
+
+// Store references
+if (await exists('apps/store/store.html')) {
+  const storeHtml = await readText('apps/store/store.html');
+  const storeRefs = ['/assets/store/store-core.js', '/assets/store/store-discovery.js', '/assets/store/store.css'];
+  for (const ref of storeRefs) {
+    if (storeHtml.includes(ref)) {
+      console.log(`ok: store/store.html references ${ref}`);
+      const cfPath = '.cloudflare-build/public' + ref;
+      if (await exists('.cloudflare-build/public')) {
+        if (await exists(cfPath)) {
+          console.log(`ok: ${cfPath} exists`);
+        } else {
+          fail(`Missing ${cfPath} — referenced by store/store.html`);
+        }
+      }
+    } else {
+      console.log(`warn: store/store.html does not reference ${ref}`);
+    }
+  }
+}
+
+// Landing references (shared assets)
+if (await exists('apps/landing/landing.html')) {
+  const landingHtml = await readText('apps/landing/landing.html');
+  const landingRefs = ['/assets/gg-app.min.css', '/assets/gg-app.min.js'];
+  for (const ref of landingRefs) {
+    if (landingHtml.includes(ref)) {
+      console.log(`ok: landing/landing.html references ${ref}`);
+    } else {
+      console.log(`warn: landing/landing.html does not reference ${ref} (may use bundle names)`);
+    }
+  }
+}
+
 // --- final ---
 if (errors.length) {
   console.error(`\n${errors.length} error(s):`);

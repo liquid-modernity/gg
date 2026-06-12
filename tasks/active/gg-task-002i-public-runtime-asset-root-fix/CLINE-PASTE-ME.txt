@@ -1,0 +1,13 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002I-RUNTIME-ASSET-ROOT-FIX.md` and execute it exactly.
+
+Work in sniper mode:
+- minimal file reads
+- minimal edits
+- no broad refactor
+- no OAuth
+- no legacy JS split
+- no store app restructure beyond copying runtime assets to the public output root
+
+Stop only when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002i-acceptance.sh

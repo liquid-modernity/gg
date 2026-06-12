@@ -44,21 +44,84 @@ for (const mode of modes) await buildMode(mode);
 await fs.rm(join(ROOT,'.cloudflare-build'), { recursive:true, force:true });
 await copyDir(join(ROOT,'dist/prod/public'), join(ROOT,'.cloudflare-build/public'));
 await copyDir(join(ROOT,'dist/prod/runtime'), join(ROOT,'.cloudflare-build/public/runtime'));
-// Copy deployed assets that public pages reference
-await copyDir(join(ROOT,'dist/prod/assets'), join(ROOT,'.cloudflare-build/assets'));
-// Copy store.css to assets/store/ path referenced by store.html
-if (existsSync(join(ROOT,'dist/prod/apps/store/store.css'))) {
-  await fs.mkdir(join(ROOT,'.cloudflare-build/assets/store'), { recursive: true });
-  await copyFile(join(ROOT,'dist/prod/apps/store/store.css'), join(ROOT,'.cloudflare-build/assets/store/store.css'));
+// Copy deployed assets into public root so they are served under /assets/
+await copyDir(join(ROOT,'dist/prod/assets'), join(ROOT,'.cloudflare-build/public/assets'));
+// Copy store runtime assets (store.css, store-core.js, store-discovery.js) to public/assets/store/
+if (existsSync(join(ROOT,'src/modules/store/store.css'))) {
+  await fs.mkdir(join(ROOT,'.cloudflare-build/public/assets/store'), { recursive: true });
+  await copyFile(join(ROOT,'src/modules/store/store.css'), join(ROOT,'.cloudflare-build/public/assets/store/store.css'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-core.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-core.js'), join(ROOT,'.cloudflare-build/public/assets/store/store-core.js'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-discovery.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-discovery.js'), join(ROOT,'.cloudflare-build/public/assets/store/store-discovery.js'));
 }
 // __gg prefix path for blog (Blogger XML uses /__gg/assets/...)
 if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.css'))) {
-  await fs.mkdir(join(ROOT,'.cloudflare-build/__gg/assets/css'), { recursive: true });
-  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.css'), join(ROOT,'.cloudflare-build/__gg/assets/css/gg-app.min.css'));
+  await fs.mkdir(join(ROOT,'.cloudflare-build/public/__gg/assets/css'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.css'), join(ROOT,'.cloudflare-build/public/__gg/assets/css/gg-app.min.css'));
 }
 if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.js'))) {
-  await fs.mkdir(join(ROOT,'.cloudflare-build/__gg/assets/js'), { recursive: true });
-  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'.cloudflare-build/__gg/assets/js/gg-app.min.js'));
+  await fs.mkdir(join(ROOT,'.cloudflare-build/public/__gg/assets/js'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'.cloudflare-build/public/__gg/assets/js/gg-app.min.js'));
+  // gg-app.dev.js alias for Blogger compatibility
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'.cloudflare-build/public/__gg/assets/js/gg-app.dev.js'));
+}
+// Also mirror assets into dist/prod/public/assets for consistency
+await copyDir(join(ROOT,'dist/prod/assets'), join(ROOT,'dist/prod/public/assets'));
+// Mirror store runtime assets into dist/prod/public/assets/store
+if (existsSync(join(ROOT,'src/modules/store/store.css'))) {
+  await fs.mkdir(join(ROOT,'dist/prod/public/assets/store'), { recursive: true });
+  await copyFile(join(ROOT,'src/modules/store/store.css'), join(ROOT,'dist/prod/public/assets/store/store.css'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-core.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-core.js'), join(ROOT,'dist/prod/public/assets/store/store-core.js'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-discovery.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-discovery.js'), join(ROOT,'dist/prod/public/assets/store/store-discovery.js'));
+}
+// __gg alias in dist/prod/public
+if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.css'))) {
+  await fs.mkdir(join(ROOT,'dist/prod/public/__gg/assets/css'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.css'), join(ROOT,'dist/prod/public/__gg/assets/css/gg-app.min.css'));
+}
+if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.js'))) {
+  await fs.mkdir(join(ROOT,'dist/prod/public/__gg/assets/js'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'dist/prod/public/__gg/assets/js/gg-app.min.js'));
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'dist/prod/public/__gg/assets/js/gg-app.dev.js'));
+}
+// Mirror public/assets into dev too
+if (existsSync(join(ROOT,'dist/dev/assets'))) {
+  await copyDir(join(ROOT,'dist/dev/assets'), join(ROOT,'dist/dev/public/assets'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store.css'))) {
+  await fs.mkdir(join(ROOT,'dist/dev/public/assets/store'), { recursive: true });
+  await copyFile(join(ROOT,'src/modules/store/store.css'), join(ROOT,'dist/dev/public/assets/store/store.css'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-core.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-core.js'), join(ROOT,'dist/dev/public/assets/store/store-core.js'));
+}
+if (existsSync(join(ROOT,'src/modules/store/store-discovery.js'))) {
+  await copyFile(join(ROOT,'src/modules/store/store-discovery.js'), join(ROOT,'dist/dev/public/assets/store/store-discovery.js'));
+}
+// __gg alias in dist/dev/public
+if (existsSync(join(ROOT,'dist/dev/assets/gg-app.bundle.css'))) {
+  await fs.mkdir(join(ROOT,'dist/dev/public/__gg/assets/css'), { recursive: true });
+  await copyFile(join(ROOT,'dist/dev/assets/gg-app.bundle.css'), join(ROOT,'dist/dev/public/__gg/assets/css/gg-app.bundle.css'));
+}
+if (existsSync(join(ROOT,'dist/dev/assets/gg-app.bundle.js'))) {
+  await fs.mkdir(join(ROOT,'dist/dev/public/__gg/assets/js'), { recursive: true });
+  await copyFile(join(ROOT,'dist/dev/assets/gg-app.bundle.js'), join(ROOT,'dist/dev/public/__gg/assets/js/gg-app.bundle.js'));
+}
+// Copy runtime public-config into dist/public for both modes
+for (const mode of modes) {
+  const srcRuntime = join(ROOT, 'dist', mode, 'runtime', 'public-config.json');
+  const dstRuntimeDir = join(ROOT, 'dist', mode, 'public', 'runtime');
+  if (existsSync(srcRuntime)) {
+    await fs.mkdir(dstRuntimeDir, { recursive: true });
+    await copyFile(srcRuntime, join(dstRuntimeDir, 'public-config.json'));
+  }
 }
 if (existsSync(join(ROOT,'dist/prod/apps/landing/landing.html'))) await copyFile(join(ROOT,'dist/prod/apps/landing/landing.html'), join(ROOT,'.cloudflare-build/public/landing.html'));
 if (existsSync(join(ROOT,'dist/prod/apps/store/store.html'))) await copyFile(join(ROOT,'dist/prod/apps/store/store.html'), join(ROOT,'.cloudflare-build/public/store.html'));

@@ -611,6 +611,8 @@ function classifyRoute(request) {
   if (path.startsWith("/assets/latest/")) return "latest-asset";
   if (path.startsWith(STORE_ASSET_PREFIX)) return "asset";
   if (path.startsWith("/assets/")) return "asset";
+  if (path.startsWith("/runtime/")) return "asset";
+  if (path.startsWith("/icons/")) return "asset";
   if (path.startsWith("/gg-pwa-icon/")) return "icon";
   if (path.startsWith("/feeds/")) return "feed";
   if (path.startsWith("/search/label/")) return "label";
@@ -636,6 +638,8 @@ function shouldServeStaticFromAssets(pathname) {
   if (pathname.startsWith(GG_ASSET_PREFIX)) return true;
   if (pathname.startsWith("/gg-pwa-icon/")) return true;
   if (pathname.startsWith("/assets/")) return true;
+  if (pathname.startsWith("/runtime/")) return true;
+  if (pathname.startsWith("/icons/")) return true;
   return false;
 }
 
