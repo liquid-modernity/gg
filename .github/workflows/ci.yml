@@ -17,17 +17,14 @@ concurrency:
 
 jobs:
   verify:
-    name: Run Store and Cloudflare CI checks
+    name: Verify GG vNext
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     env:
       CI: '1'
-      STORE_CI: '1'
-      GG_STORE_MODE: ci
-      STORE_REQUIRE_LIVE_FEED: '0'
-      STORE_STRICT_IMAGES: '0'
-      GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN: '0'
+      CONSOLE_MODE: local
+      STUDIO_MODE: local
 
     steps:
       - name: Checkout repository
@@ -42,8 +39,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Store and Cloudflare CI checks
-        run: npm run ci:cloudflare
+      - name: Run vNext validation pipeline
+        run: |
+          npm run doctor
+          npm run build
+          npm run check
+          npm run check:softcode
+          npm run check:public-softcode
+          npm run console:check
+          npm run studio:check
+          npm run deploy:dry
 
       - name: Upload CI diagnostics
         if: failure()
@@ -54,5 +59,5 @@ jobs:
           path: |
             dist/
             .cloudflare-build/
-            store/data/build-report.json
-            store/data/manifest.json
+            npm-debug.log*
+            /home/runner/.npm/_logs/

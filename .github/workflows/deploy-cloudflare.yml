@@ -10,30 +10,20 @@ on:
 permissions:
   contents: read
 
-env:
-  GG_LIVE_BASE_URL: https://www.pakrpp.com
-  GG_LIVE_RETRIES: '4'
-  GG_LIVE_RETRY_DELAY_SECONDS: '5'
-  GG_LIVE_TIMEOUT_SECONDS: '30'
-  GG_LIVE_CONNECT_TIMEOUT_SECONDS: '15'
-  GG_LIVE_ALLOW_GLOBAL_TIMEOUT_WARN: '0'
-
 concurrency:
   group: cloudflare-deploy-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Verify before deploy, deploy, and live-smoke
+    name: Build and deploy GG vNext
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     env:
       CI: '1'
-      STORE_CI: '1'
-      GG_STORE_MODE: ci
-      STORE_REQUIRE_LIVE_FEED: '0'
-      STORE_STRICT_IMAGES: '0'
+      CONSOLE_MODE: production
+      STUDIO_MODE: production
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
@@ -50,14 +40,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify before deploy
-        run: npm run ci:cloudflare
+      - name: Run pre-deploy validation
+        run: |
+          npm run doctor
+          npm run build
+          npm run check
+          npm run check:softcode
+          npm run check:public-softcode
+          npm run console:check
+          npm run studio:check
+          npm run deploy:dry
+
+      - name: Verify Cloudflare secrets
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || (echo "Missing GitHub secret: CLOUDFLARE_API_TOKEN" && exit 1)
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo "Missing GitHub secret: CLOUDFLARE_ACCOUNT_ID" && exit 1)
 
       - name: Deploy to Cloudflare Workers
-        run: npm run deploy:cloudflare:prepared
-
-      - name: Live smoke test
-        run: npm run gaga:verify-worker-live:strict
+        run: npm run deploy
 
       - name: Upload deploy diagnostics
         if: failure()
@@ -68,5 +68,5 @@ jobs:
           path: |
             dist/
             .cloudflare-build/
-            store/data/build-report.json
-            store/data/manifest.json
+            npm-debug.log*
+            /home/runner/.npm/_logs/

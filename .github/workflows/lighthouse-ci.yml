@@ -2,41 +2,41 @@ name: Lighthouse CI
 
 on:
   schedule:
-    - cron: "17 3 * * 1"
+    - cron: '17 3 * * 1'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   lighthouse:
+    name: Lighthouse advisory check
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 20
+
     env:
       GG_LIVE_BASE_URL: ${{ vars.GG_LIVE_BASE_URL }}
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Resolve Lighthouse routes
         run: |
           base_url="${GG_LIVE_BASE_URL:-https://www.pakrpp.com}"
           {
-            echo "### Lighthouse Scope Truth"
-            echo "- This workflow checks performance only."
-            echo "- This workflow does **not** deploy anything."
-            echo "- This workflow does **not** publish Blogger template."
-            echo "- Fixed route set:"
-            echo "  - ${base_url}/"
-            echo "  - ${base_url}/landing"
-            echo "  - ${base_url}/search"
-            echo "  - ${base_url}/store"
-          } >> "$GITHUB_STEP_SUMMARY"
-          {
             echo "GG_LIGHTHOUSE_URL_1=${base_url}/"
             echo "GG_LIGHTHOUSE_URL_2=${base_url}/landing"
-            echo "GG_LIGHTHOUSE_URL_3=${base_url}/search"
-            echo "GG_LIGHTHOUSE_URL_4=${base_url}/store"
+            echo "GG_LIGHTHOUSE_URL_3=${base_url}/store"
           } >> "$GITHUB_ENV"
+          {
+            echo "### Lighthouse Scope Truth"
+            echo "- Advisory only; this workflow does not deploy."
+            echo "- Routes checked:"
+            echo "  - ${base_url}/"
+            echo "  - ${base_url}/landing"
+            echo "  - ${base_url}/store"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run Lighthouse CI
         continue-on-error: true
@@ -46,7 +46,6 @@ jobs:
             ${{ env.GG_LIGHTHOUSE_URL_1 }}
             ${{ env.GG_LIGHTHOUSE_URL_2 }}
             ${{ env.GG_LIGHTHOUSE_URL_3 }}
-            ${{ env.GG_LIGHTHOUSE_URL_4 }}
           runs: 1
           uploadArtifacts: true
           temporaryPublicStorage: true
@@ -55,6 +54,6 @@ jobs:
         run: |
           {
             echo "### Lighthouse Advisory"
-            echo "- Lighthouse is non-blocking during development."
-            echo "- Failures here do not deploy or publish Blogger template."
+            echo "- Lighthouse is non-blocking during vNext development."
+            echo "- Failures here do not deploy or publish Blogger templates."
           } >> "$GITHUB_STEP_SUMMARY"
