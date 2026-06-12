@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "status": "planned",
+  "seo": {
+    "blog": {
+      "titleKey": "seo.blog.title",
+      "descriptionKey": "seo.blog.description",
+      "canonicalRef": "config/blogger.targets.json#/targets/mainBlog/canonicalUrl",
+      "robots": "index,follow",
+      "jsonLdEnabled": true
+    },
+    "landing": {
+      "titleKey": "seo.landing.title",
+      "descriptionKey": "seo.landing.description",
+      "canonicalRef": "config/domains.config.json",
+      "robots": "index,follow",
+      "jsonLdEnabled": false
+    },
+    "store": {
+      "titleKey": "seo.store.title",
+      "descriptionKey": "seo.store.description",
+      "canonicalRef": "config/blogger.targets.json#/targets/storeBlog/canonicalUrl",
+      "robots": "index,follow",
+      "jsonLdEnabled": true
+    }
+  }
+}

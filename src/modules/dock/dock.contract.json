@@ -1,0 +1,13 @@
+{
+  "id": "dock",
+  "type": "style-module",
+  "sourceOfTruth": true,
+  "css": "dock.css",
+  "js": "dock.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Migrated from legacy src/modules flat CSS. Humans and AI may edit this file directly."
+}

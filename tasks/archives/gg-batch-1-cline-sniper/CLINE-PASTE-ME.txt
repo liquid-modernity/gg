@@ -1,0 +1,3 @@
+Paste this into Cline:
+
+Read `ai/agent/prompts/CLINE-SNIPER-BATCH-1.md` and execute it exactly. Work in sniper mode: minimal file reads, minimal edits, no broad refactor. Stop when these pass: `npm run doctor && npm run build && npm run check && npm run console:check && npm run studio:check && npm run deploy:dry`.

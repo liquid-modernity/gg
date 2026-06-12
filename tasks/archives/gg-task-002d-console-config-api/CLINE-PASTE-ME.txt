@@ -1,0 +1,6 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002D-CONFIG-API.md` and execute it exactly.
+
+Work in sniper mode: minimal reads, minimal edits, no broad refactor.
+Stop when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002d-acceptance.sh

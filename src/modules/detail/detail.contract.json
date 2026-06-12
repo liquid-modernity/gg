@@ -1,0 +1,13 @@
+{
+  "id": "detail",
+  "type": "style-module",
+  "sourceOfTruth": true,
+  "css": "detail.css",
+  "js": "detail.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Migrated from legacy src/modules flat CSS. Humans and AI may edit this file directly."
+}

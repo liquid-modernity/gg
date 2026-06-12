@@ -48,13 +48,12 @@ playwright-report/
 *.tar.gz
 *.zip
 
-# Dist temporary/archive output
-dist/*.zip
-dist/*.tar
-dist/*.tgz
-dist/handoff/
-dist/tmp/
-
-# Wrangler / Cloudflare staging
-.wrangler/
+# Dist / Cloudflare build output
+dist/
 .cloudflare-build/
+
+# Wrangler staging
+.wrangler/
+
+# Temp / scratch
+tmp/

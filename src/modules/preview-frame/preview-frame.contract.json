@@ -1,0 +1,13 @@
+{
+  "id": "preview-frame",
+  "type": "style-module",
+  "sourceOfTruth": true,
+  "css": "preview-frame.css",
+  "js": "preview-frame.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Migrated from legacy src/modules flat CSS. Humans and AI may edit this file directly."
+}

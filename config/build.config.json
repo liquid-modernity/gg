@@ -1,0 +1,12 @@
+{
+  "dev": {
+    "minify": false,
+    "sourcemap": false,
+    "outDir": "dist/dev"
+  },
+  "prod": {
+    "minify": true,
+    "sourcemap": false,
+    "outDir": "dist/prod"
+  }
+}

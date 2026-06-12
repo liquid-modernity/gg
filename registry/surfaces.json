@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "surfaces": [
+    {
+      "id": "blog",
+      "label": "Pak RPP Blog",
+      "kind": "public",
+      "hosts": ["pakrpp.com", "pakrpp.blogspot.com"],
+      "routes": ["/"],
+      "entry": "src/entries/blog.entry.js",
+      "configRefs": ["config/blogger.targets.json#/targets/mainBlog", "config/cache-policy.json", "registry/microcopy.en.json"],
+      "cacheProfile": "public-blog-default",
+      "status": "active"
+    },
+    {
+      "id": "landing",
+      "label": "GG Landing",
+      "kind": "public",
+      "hosts": ["pakrpp.com"],
+      "routes": ["/landing"],
+      "entry": "src/entries/landing.entry.js",
+      "configRefs": ["registry/microcopy.en.json", "config/cache-policy.json"],
+      "cacheProfile": "public-landing-default",
+      "status": "active"
+    },
+    {
+      "id": "store",
+      "label": "Pak RPP Store",
+      "kind": "public",
+      "hosts": ["store.pakrpp.com", "pakrppstore.blogspot.com"],
+      "routes": ["/store"],
+      "entry": "src/entries/store.entry.js",
+      "configRefs": ["config/blogger.targets.json#/targets/storeBlog", "apps/store/store-categories.config.mjs", "config/cache-policy.json"],
+      "cacheProfile": "public-store-default",
+      "status": "active"
+    },
+    {
+      "id": "console",
+      "label": "GG Console",
+      "kind": "private",
+      "hosts": ["console.pakrpp.com"],
+      "routes": ["/console"],
+      "entry": "src/entries/console.entry.js",
+      "configRefs": ["registry/.json", "config/.json", "config/secrets.schema.json"],
+      "cacheProfile": "no-store",
+      "status": "active"
+    },
+    {
+      "id": "studio",
+      "label": "GG Studio",
+      "kind": "private",
+      "hosts": ["studio.pakrpp.com"],
+      "routes": ["/studio"],
+      "entry": "src/entries/studio.entry.js",
+      "configRefs": ["config/blogger.targets.json"],
+      "cacheProfile": "no-store",
+      "status": "active"
+    }
+  ]
+}

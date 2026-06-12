@@ -1,0 +1,13 @@
+{
+  "id": "public-softcode",
+  "type": "runtime-loader",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/public-softcode/public-softcode.js",
+  "description": "Vanilla JS loader that fetches /runtime/public-config.json and applies microcopy, theme tokens, nav labels, and SEO metadata. Fails silently with fallback preserved.",
+  "markers": {
+    "microcopy": "data-copy=\"key\"",
+    "navLabel": "data-nav-label=\"key\"",
+    "surface": "data-gg-surface=\"id\""
+  }
+}

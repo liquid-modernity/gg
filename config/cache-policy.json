@@ -1,0 +1,99 @@
+{
+  "version": "0.1.0",
+  "comment": "Cloudflare CDN / Browser cache policy contract. Used by _headers and wrangler configuration.",
+  "rules": {
+    "assets": {
+      "pattern": "*.{js,css,png,jpg,svg,ico,woff2}",
+      "comment": "Fingerprinted/minified build assets",
+      "browser": {
+        "maxAgeSeconds": 31536000,
+        "immutable": true
+      },
+      "cdn": {
+        "cacheTtlSeconds": 31536000,
+        "cacheEverything": true
+      }
+    },
+    "registryJson": {
+      "pattern": "registry/*.json",
+      "comment": "Registry configuration files",
+      "browser": {
+        "maxAgeSeconds": 60,
+        "staleWhileRevalidateSeconds": 300
+      },
+      "cdn": {
+        "cacheTtlSeconds": 60,
+        "staleWhileRevalidateSeconds": 300
+      }
+    },
+    "publicHtml": {
+      "pattern": "*.html",
+      "comment": "Public surface HTML (Blog, Store, Landing)",
+      "browser": {
+        "maxAgeSeconds": 3600,
+        "staleWhileRevalidateSeconds": 86400
+      },
+      "cdn": {
+        "cacheTtlSeconds": 3600,
+        "staleWhileRevalidateSeconds": 86400
+      }
+    },
+    "publicXml": {
+      "pattern": "*.xml",
+      "comment": "Blogger XML feeds",
+      "browser": {
+        "maxAgeSeconds": 300,
+        "staleWhileRevalidateSeconds": 3600
+      },
+      "cdn": {
+        "cacheTtlSeconds": 300,
+        "staleWhileRevalidateSeconds": 3600
+      }
+    },
+    "staticFiles": {
+      "pattern": "{ads.txt,robots.txt,llms.txt,manifest.webmanifest,sw.js,offline.html}",
+      "comment": "Static public files",
+      "browser": {
+        "maxAgeSeconds": 86400,
+        "staleWhileRevalidateSeconds": 604800
+      },
+      "cdn": {
+        "cacheTtlSeconds": 86400,
+        "staleWhileRevalidateSeconds": 604800
+      }
+    },
+    "privateNoStore": {
+      "pattern": "{/api/*,/console/*,/studio/*}",
+      "comment": "Console, Studio, and API routes",
+      "browser": {
+        "noStore": true
+      },
+      "cdn": {
+        "noStore": true,
+        "cacheEverything": false
+      }
+    }
+  },
+  "surfaces": {
+    "blog": {
+      "type": "public",
+      "policy": "cacheFirst"
+    },
+    "store": {
+      "type": "public",
+      "policy": "cacheFirst"
+    },
+    "landing": {
+      "type": "public",
+      "policy": "cacheFirst"
+    },
+    "console": {
+      "type": "private",
+      "policy": "noStore"
+    },
+    "studio": {
+      "type": "private",
+      "policy": "noStore"
+    }
+  }
+}

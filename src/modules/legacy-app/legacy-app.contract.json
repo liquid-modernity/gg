@@ -1,0 +1,13 @@
+{
+  "id": "legacy-app",
+  "type": "temporary-js-bridge",
+  "sourceOfTruth": true,
+  "css": "legacy-app.css",
+  "js": "legacy-app.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Temporary valid JS bridge from legacy aggregate bundle. Split into per-module JS before deleting."
+}

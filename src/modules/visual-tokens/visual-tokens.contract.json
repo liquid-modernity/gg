@@ -1,0 +1,13 @@
+{
+  "id": "visual-tokens",
+  "type": "style-module",
+  "sourceOfTruth": true,
+  "css": "visual-tokens.css",
+  "js": "visual-tokens.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Migrated from legacy src/modules flat CSS. Humans and AI may edit this file directly."
+}

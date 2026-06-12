@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "status": "planned",
+  "tokens": {
+    "color": {
+      "bg": "#f8f5f0",
+      "surface": "#ffffff",
+      "surfaceAlt": "#f3efe9",
+      "text": "#222",
+      "textDim": "#666",
+      "accent": "#b3000a",
+      "accentAlt": "#d43040",
+      "border": "#ddd",
+      "borderFocus": "#b3000a"
+    },
+    "radius": {
+      "sm": "4px",
+      "md": "8px",
+      "lg": "16px",
+      "pill": "9999px"
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "40px"
+    },
+    "typography": {
+      "familySans": "Inter, system-ui, sans-serif",
+      "familySerif": "Georgia, serif",
+      "familyMono": "Fira Code, monospace",
+      "sizeXs": "0.75rem",
+      "sizeSm": "0.875rem",
+      "sizeMd": "1rem",
+      "sizeLg": "1.25rem",
+      "sizeXl": "1.75rem",
+      "sizeH1": "2.25rem",
+      "lineHeight": "1.6",
+      "weightNormal": "400",
+      "weightBold": "700"
+    },
+    "motion": {
+      "fast": "150ms ease",
+      "normal": "250ms ease",
+      "slow": "400ms ease"
+    },
+    "shadow": {
+      "sm": "0 1px 3px rgba(0,0,0,0.08)",
+      "md": "0 4px 12px rgba(0,0,0,0.1)",
+      "lg": "0 8px 24px rgba(0,0,0,0.12)"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "blogger": {
+    "enabled": true,
+    "provider": "google-blogger",
+    "clientIdEnv": "GOOGLE_BLOGGER_CLIENT_ID",
+    "clientSecretEnv": "GOOGLE_BLOGGER_CLIENT_SECRET",
+    "refreshTokenEnv": "GOOGLE_BLOGGER_REFRESH_TOKEN",
+    "scopes": [
+      "https://www.googleapis.com/auth/blogger"
+    ]
+  },
+  "cloudflare": {
+    "enabled": true,
+    "accountIdEnv": "CLOUDFLARE_ACCOUNT_ID",
+    "apiTokenEnv": "CLOUDFLARE_API_TOKEN",
+    "zoneIdEnv": "CLOUDFLARE_ZONE_ID"
+  }
+}

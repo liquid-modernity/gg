@@ -1,0 +1,37 @@
+{
+  "blog": {
+    "id": "blog",
+    "canonical": "https://pakrpp.com",
+    "source": "https://pakrpp.blogspot.com",
+    "surface": "blog",
+    "entry": "blog"
+  },
+  "landing": {
+    "id": "landing",
+    "canonical": "https://pakrpp.com/landing",
+    "surface": "landing",
+    "entry": "landing"
+  },
+  "store": {
+    "id": "store",
+    "canonical": "https://pakrpp.com/store",
+    "alias": "https://store.pakrpp.com",
+    "source": "https://pakrppstore.blogspot.com",
+    "surface": "store",
+    "entry": "store"
+  },
+  "console": {
+    "id": "console",
+    "canonical": "https://console.pakrpp.com",
+    "surface": "admin",
+    "entry": "console",
+    "private": true
+  },
+  "studio": {
+    "id": "studio",
+    "canonical": "https://studio.pakrpp.com",
+    "surface": "editor",
+    "entry": "studio",
+    "private": true
+  }
+}

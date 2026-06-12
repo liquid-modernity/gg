@@ -1,0 +1,12 @@
+{
+  "name": "GG vNext",
+  "localeDefault": "id",
+  "localeFallback": "en",
+  "consoleModeEnv": "CONSOLE_MODE",
+  "studioModeEnv": "STUDIO_MODE",
+  "bundleSource": "src/modules",
+  "bundleOutput": [
+    "dist/dev",
+    "dist/prod"
+  ]
+}

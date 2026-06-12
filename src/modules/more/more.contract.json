@@ -1,0 +1,13 @@
+{
+  "id": "more",
+  "type": "style-module",
+  "sourceOfTruth": true,
+  "css": "more.css",
+  "js": "more.js",
+  "surfaces": [
+    "blog",
+    "landing",
+    "store"
+  ],
+  "notes": "Migrated from legacy src/modules flat CSS. Humans and AI may edit this file directly."
+}

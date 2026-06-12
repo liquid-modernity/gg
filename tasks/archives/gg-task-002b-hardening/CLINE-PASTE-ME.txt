@@ -1,0 +1,16 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002B-HARDENING.md` and execute it exactly.
+
+Work in sniper mode:
+- Minimal file reads.
+- Minimal edits.
+- No broad refactor.
+- No new UI framework.
+- No full Console UI.
+- No full Studio editor.
+- No Blogger OAuth/publish implementation.
+- No legacy JS split.
+- Do not edit generated output.
+
+Stop when these pass:
+
+npm run doctor && npm run build && npm run check && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002b-acceptance.sh

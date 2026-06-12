@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "status": "planned",
+  "purpose": "Track hardcoded HTML/CSS/JS areas that should become Console-managed softcode over time.",
+  "categories": {
+    "microcopy": {
+      "status": "active",
+      "owner": "console",
+      "sourceOfTruth": [
+        "registry/microcopy.en.json",
+        "registry/microcopy.id.json"
+      ],
+      "surfaces": ["blog", "store", "landing", "console", "studio"],
+      "notes": "Active. Console can edit microcopy keys. Runtime reads from registry."
+    },
+    "routesDomains": {
+      "status": "planned",
+      "owner": "console",
+      "sourceOfTruth": [
+        "registry/routes.json",
+        "config/domains.config.json"
+      ],
+      "surfaces": ["blog", "store", "landing", "console", "studio"],
+      "notes": "Planned. Domain/host values still partially hardcoded in HTML/JS."
+    },
+    "themeTokens": {
+      "status": "planned",
+      "owner": "console",
+      "sourceOfTruth": "registry/theme-tokens.json",
+      "surfaces": ["blog", "store", "landing"],
+      "notes": "Planned. CSS token values still hardcoded in src/modules/theme and src/modules/tokens."
+    },
+    "navigation": {
+      "status": "planned",
+      "owner": "console",
+      "sourceOfTruth": "registry/navigation.json",
+      "surfaces": ["blog", "store", "landing"],
+      "notes": "Planned. Nav links still partially hardcoded in HTML/JS fragments."
+    },
+    "seo": {
+      "status": "planned",
+      "owner": "console",
+      "sourceOfTruth": "registry/seo.json",
+      "surfaces": ["blog", "landing", "store"],
+      "notes": "Planned. Title/meta/OG/JSON-LD still partially hardcoded."
+    },
+    "storeCategories": {
+      "status": "active",
+      "owner": "console",
+      "sourceOfTruth": "apps/store/store-categories.config.mjs",
+      "surfaces": ["store"],
+      "notes": "Active. Store categories driven by config module."
+    },
+    "featureFlags": {
+      "status": "planned",
+      "owner": "console",
+      "sourceOfTruth": "config/softcode.inventory.json (future: registry/feature-flags.json)",
+      "surfaces": ["blog", "store", "landing", "console"],
+      "notes": "Planned. Feature toggles not yet extracted to registry."
+    },
+    "icons": {
+      "status": "active",
+      "owner": "console",
+      "sourceOfTruth": "registry/icons.json",
+      "surfaces": ["blog", "store", "landing"],
+      "notes": "Active. Icon registry exists. Icons served from public/icons/."
+    },
+    "bloggerTargets": {
+      "status": "active",
+      "owner": "console",
+      "sourceOfTruth": "config/blogger.targets.json",
+      "surfaces": ["console", "studio"],
+      "notes": "Active. Blogger target config is the single source of truth."
+    },
+    "cachePolicy": {
+      "status": "active",
+      "owner": "console",
+      "sourceOfTruth": "config/cache-policy.json",
+      "surfaces": ["blog", "store", "landing"],
+      "notes": "Active. Cache policy config exists."
+    }
+  }
+}

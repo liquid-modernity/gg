@@ -1,0 +1,15 @@
+Read `ai/agent/prompts/CLINE-SNIPER-BATCH-2A-BLOGGER-CONFIG.md` and execute it exactly.
+
+Work in sniper mode:
+- minimal file reads
+- minimal edits
+- no broad refactor
+- no full Console UI
+- no full Studio editor
+- no Tailwind/shadcn/Tiptap install
+- no real Blogger OAuth/publish
+- no editing generated outputs
+
+Stop when this passes:
+
+npm run doctor && npm run build && npm run check && npm run console:check && npm run studio:check && npm run deploy:dry

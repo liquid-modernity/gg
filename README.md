@@ -1,34 +1,61 @@
-# GG Agent Skills Pack
+# GG vNext — unified dev + product repo
 
-Private project skills and an updated `AGENTS.md` contract for the PakRPP / GG product workspace.
+This repository is a clean handoff-ready rebuild of the PakRPP / GG stack.
+It intentionally combines development and product code in one repo while keeping a strict source/output boundary.
 
-Use this pack to make AI agents safer and more consistent when the owner requests feature additions, revisions, deletions, UI reconciliation, Blogger XML edits, repo restructuring, release packaging, CI recovery, production optimization, and GG Console / GG Studio integration.
-
-## Recommended placement
-
-For the current repo before repo-structure reconciliation:
+## Core rule
 
 ```txt
-AGENTS.md
-skills/
-  gg-feature-change/SKILL.md
-  gg-ui-reconciliation/SKILL.md
-  gg-blogger-template-safe-edit/SKILL.md
-  gg-release-packaging/SKILL.md
-  gg-repo-structure-reconciliation/SKILL.md
-  gg-console-studio-cms-integration/SKILL.md
-  gg-ci-green-reconciliation/SKILL.md
-  gg-safe-delete-cleanup/SKILL.md
-  gg-production-build-optimization/SKILL.md
-  gg-agent-handoff/SKILL.md
+Human + AI edit: src/modules/*, apps/*, registry/*, config/*, public/*
+Generated output: dist/*, .cloudflare-build/*
+Never edit generated bundles as source.
 ```
 
-After dev/product split, keep these in the **dev repo root** unless a future task explicitly packages selected buyer-safe skills into `product/`.
+## Surfaces
 
-## Important rule
+| Surface | URL | Purpose |
+|---|---|---|
+| Blog | `pakrpp.com` / `pakrpp.blogspot.com` | Public blog/root surface |
+| Landing | `pakrpp.com/landing` | Marketing/landing surface |
+| Store | `pakrpp.com/store`, `store.pakrpp.com`, `pakrppstore.blogspot.com` | Public store + Blogger source |
+| Console | `console.pakrpp.com` or local | Admin/config/control plane |
+| Studio | `studio.pakrpp.com` or local | Content/editor/publishing workspace |
 
-Do not let an AI agent run repo-structure reconciliation before the root blog UX tasks are green. The skills support both phases, but the active task remains the source of scope.
+## Quick start
 
-## Included diagram
+```bash
+npm install
+npm run doctor
+npm run build
+npm run check
+npm run console
+npm run studio
+```
 
-`docs-internal/architecture-decisions/production-deploy-sequence.puml` contains the production-focused PlantUML sequence diagram.
+Local Console: `http://127.0.0.1:8789`  
+Local Studio: `http://127.0.0.1:8790`
+
+## Source model
+
+- `src/modules/<module>/` is the shared source edit area for both human and AI.
+- `registry/modules.json` declares which module files are bundled.
+- `registry/microcopy.*.json`, `registry/icons.json`, `config/blogger.targets.json`, and `config/domains.config.json` are Console-owned configuration files.
+- `apps/console` is the control plane.
+- `apps/studio` consumes Console config for Blogger Blog ID / Store Blog ID and publishing target selection.
+
+## Build model
+
+```txt
+src/modules + apps + registry + config + public
+  -> tools/build.mjs
+  -> dist/dev       readable bundle
+  -> dist/prod      minified bundle
+  -> .cloudflare-build/public
+```
+
+## Important note about legacy JS
+
+The uploaded legacy repo had many `*.fragment.js` files that are not standalone syntax-valid modules.
+To keep this repo immediately green for npm checks, the valid legacy aggregate app is preserved as `src/modules/legacy-app/legacy-app.js`.
+Code Agent should gradually extract that bridge into proper per-module JS files under `src/modules/*`.
+See `tasks/active/TASK-001-split-legacy-js-bridge.md`.

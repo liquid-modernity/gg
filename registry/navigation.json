@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "status": "planned",
+  "nav": {
+    "publicPrimary": [
+      {
+        "labelKey": "nav.home",
+        "href": "/",
+        "surface": "blog"
+      },
+      {
+        "labelKey": "nav.store",
+        "href": "/store",
+        "surface": "store"
+      },
+      {
+        "labelKey": "nav.about",
+        "href": "/landing",
+        "surface": "landing"
+      }
+    ],
+    "storePrimary": [
+      {
+        "labelKey": "nav.home",
+        "href": "/",
+        "surface": "blog"
+      },
+      {
+        "labelKey": "nav.store",
+        "href": "/store",
+        "surface": "store"
+      },
+      {
+        "labelKey": "nav.categories",
+        "href": "/store/categories",
+        "surface": "store"
+      }
+    ],
+    "adminPrimary": [
+      {
+        "labelKey": "nav.console",
+        "href": "/console",
+        "surface": "console"
+      },
+      {
+        "labelKey": "nav.studio",
+        "href": "/studio",
+        "surface": "studio"
+      }
+    ]
+  }
+}

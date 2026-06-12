@@ -1,0 +1,9 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002F-PUBLIC-SOFTCODE.md` and execute it exactly.
+
+Work in sniper mode: minimal reads, minimal edits, no broad refactor.
+
+Goal: Blog / Store / Landing must consume the existing softcode config contracts safely, with fallback HTML preserved.
+
+Stop when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002f-acceptance.sh

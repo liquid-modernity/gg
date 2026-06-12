@@ -1,27 +1,15 @@
 {
-  "name": "gg",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gg-vnext",
   "main": ".cloudflare-build/worker.js",
-  "compatibility_date": "2026-01-27",
-
-  "workers_dev": false,
-
+  "compatibility_date": "2026-06-12",
   "assets": {
-    "directory": "./.cloudflare-build/public",
-    "binding": "ASSETS",
-    "html_handling": "none",
-    "run_worker_first": true
+    "directory": ".cloudflare-build/public"
   },
-
   "routes": [
-    { "pattern": "www.pakrpp.com/assets/*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/api/telemetry*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/api/proxy*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/__gg_worker_ping*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/sw.js*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/gg-flags.json*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/manifest.webmanifest*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/offline.html*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/gg-pwa-icon/*", "zone_name": "pakrpp.com" },
-    { "pattern": "www.pakrpp.com/*", "zone_name": "pakrpp.com" }
+    { "pattern": "pakrpp.com/*", "zone_name": "pakrpp.com" },
+    { "pattern": "store.pakrpp.com/*", "zone_name": "pakrpp.com" },
+    { "pattern": "console.pakrpp.com/*", "zone_name": "pakrpp.com" },
+    { "pattern": "studio.pakrpp.com/*", "zone_name": "pakrpp.com" }
   ]
 }

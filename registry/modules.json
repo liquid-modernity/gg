@@ -1,0 +1,148 @@
+{
+  "version": "0.1.0",
+  "sourceBoundary": "src/modules/* is the shared source edit path for human and AI. Bundles are generated only.",
+  "bundleOrder": [
+    "legacy-app",
+    "public-softcode",
+    "base",
+    "comments",
+    "detail-outline",
+    "detail-toolbar",
+    "detail",
+    "discovery",
+    "dock",
+    "feedback",
+    "listing",
+    "more",
+    "motion",
+    "preview-frame",
+    "responsive",
+    "sheets",
+    "shell",
+    "theme",
+    "tokens",
+    "visual-tokens"
+  ],
+  "modules": {
+    "legacy-app": {
+      "enabled": true,
+      "css": "src/modules/legacy-app/legacy-app.css",
+      "js": "src/modules/legacy-app/legacy-app.js",
+      "type": "temporary-js-bridge"
+    },
+    "public-softcode": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/public-softcode/public-softcode.js",
+      "type": "runtime-loader"
+    },
+    "base": {
+      "enabled": true,
+      "css": "src/modules/base/base.css",
+      "js": "src/modules/base/base.js",
+      "type": "style-module"
+    },
+    "comments": {
+      "enabled": true,
+      "css": "src/modules/comments/comments.css",
+      "js": "src/modules/comments/comments.js",
+      "type": "style-module"
+    },
+    "detail-outline": {
+      "enabled": true,
+      "css": "src/modules/detail-outline/detail-outline.css",
+      "js": "src/modules/detail-outline/detail-outline.js",
+      "type": "style-module"
+    },
+    "detail-toolbar": {
+      "enabled": true,
+      "css": "src/modules/detail-toolbar/detail-toolbar.css",
+      "js": "src/modules/detail-toolbar/detail-toolbar.js",
+      "type": "style-module"
+    },
+    "detail": {
+      "enabled": true,
+      "css": "src/modules/detail/detail.css",
+      "js": "src/modules/detail/detail.js",
+      "type": "style-module"
+    },
+    "discovery": {
+      "enabled": true,
+      "css": "src/modules/discovery/discovery.css",
+      "js": "src/modules/discovery/discovery.js",
+      "type": "style-module"
+    },
+    "dock": {
+      "enabled": true,
+      "css": "src/modules/dock/dock.css",
+      "js": "src/modules/dock/dock.js",
+      "type": "style-module"
+    },
+    "feedback": {
+      "enabled": true,
+      "css": "src/modules/feedback/feedback.css",
+      "js": "src/modules/feedback/feedback.js",
+      "type": "style-module"
+    },
+    "listing": {
+      "enabled": true,
+      "css": "src/modules/listing/listing.css",
+      "js": "src/modules/listing/listing.js",
+      "type": "style-module"
+    },
+    "more": {
+      "enabled": true,
+      "css": "src/modules/more/more.css",
+      "js": "src/modules/more/more.js",
+      "type": "style-module"
+    },
+    "motion": {
+      "enabled": true,
+      "css": "src/modules/motion/motion.css",
+      "js": "src/modules/motion/motion.js",
+      "type": "style-module"
+    },
+    "preview-frame": {
+      "enabled": true,
+      "css": "src/modules/preview-frame/preview-frame.css",
+      "js": "src/modules/preview-frame/preview-frame.js",
+      "type": "style-module"
+    },
+    "responsive": {
+      "enabled": true,
+      "css": "src/modules/responsive/responsive.css",
+      "js": "src/modules/responsive/responsive.js",
+      "type": "style-module"
+    },
+    "sheets": {
+      "enabled": true,
+      "css": "src/modules/sheets/sheets.css",
+      "js": "src/modules/sheets/sheets.js",
+      "type": "style-module"
+    },
+    "shell": {
+      "enabled": true,
+      "css": "src/modules/shell/shell.css",
+      "js": "src/modules/shell/shell.js",
+      "type": "style-module"
+    },
+    "theme": {
+      "enabled": true,
+      "css": "src/modules/theme/theme.css",
+      "js": "src/modules/theme/theme.js",
+      "type": "style-module"
+    },
+    "tokens": {
+      "enabled": true,
+      "css": "src/modules/tokens/tokens.css",
+      "js": "src/modules/tokens/tokens.js",
+      "type": "style-module"
+    },
+    "visual-tokens": {
+      "enabled": true,
+      "css": "src/modules/visual-tokens/visual-tokens.css",
+      "js": "src/modules/visual-tokens/visual-tokens.js",
+      "type": "style-module"
+    }
+  }
+}

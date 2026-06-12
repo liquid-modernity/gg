@@ -1,0 +1,9 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002D-PATCH.md` and execute it exactly.
+
+Work in sniper mode:
+- Fix only TASK-002D acceptance + repo hygiene.
+- Do not add OAuth, UI, Tailwind, shadcn, Tiptap, React, full Console UI, full Studio editor, or legacy JS split.
+- Do not edit generated output: `dist/**`, `.cloudflare-build/**`, `*.bundle.*`, `*.min.*`.
+- Stop when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002d-acceptance.sh && bash scripts/task002d-patch-acceptance.sh

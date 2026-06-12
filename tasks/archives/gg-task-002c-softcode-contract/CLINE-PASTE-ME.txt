@@ -1,0 +1,1 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002C-SOFTCODE-CONTRACT.md` and execute it exactly. Work in sniper mode: minimal file reads, minimal edits, no broad refactor. Stop when this passes: `npm run doctor && npm run build && npm run check && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002c-acceptance.sh`.
