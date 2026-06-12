@@ -70,29 +70,39 @@ if (!(await exists('src/modules/public-softcode/public-softcode.js'))) {
   console.log('ok: public-softcode module exists');
 }
 
-// (b) public-config.json emitted by build
-const PROD_RUNTIME = 'dist/prod/runtime/public-config.json';
-if (!(await exists(PROD_RUNTIME))) {
-  fail(`Missing ${PROD_RUNTIME} — run npm run build first`);
-} else {
-  console.log(`ok: ${PROD_RUNTIME} exists`);
-
-  // (c) no secrets
-  const config = await readJson(PROD_RUNTIME);
-  const topKeys = Object.keys(config);
-  for (const k of topKeys) {
-    if (SAFE_TOP_LEVEL_KEYS.includes(k)) continue;
-    const clean = k.toLowerCase().replace(/[_\-\s]/g, '');
-    for (const kw of SECRET_KEYWORDS) {
-      if (clean.includes(kw)) {
-        fail(`public-config.json top-level key "${k}" looks secret-like`);
+// (b) public-config.json emitted by build (both dev and prod)
+for (let mode of ['dev', 'prod']) {
+  const runtimePath = `dist/${mode}/runtime/public-config.json`;
+  if (!(await exists(runtimePath))) {
+    fail(`Missing ${runtimePath} — run npm run build first`);
+  } else {
+    console.log(`ok: dist/${mode}/runtime/public-config.json exists`);
+    // Verify content is valid JSON
+    const config = await readJson(runtimePath);
+    const topKeys = Object.keys(config);
+    for (const k of topKeys) {
+      if (SAFE_TOP_LEVEL_KEYS.includes(k)) continue;
+      const clean = k.toLowerCase().replace(/[_\-\s]/g, '');
+      for (const kw of SECRET_KEYWORDS) {
+        if (clean.includes(kw)) {
+          fail(`public-config.json (${mode}) top-level key "${k}" looks secret-like`);
+        }
       }
     }
+    deepCheckSecrets(config, `dist/${mode}`);
+    const expectedKeys = ['version', 'surfaces', 'navigation', 'seo', 'themeTokens', 'microcopy'];
+    for (const k of expectedKeys) {
+      if (!(k in config)) {
+        fail(`public-config.json (${mode}) missing expected key: ${k}`);
+      }
+    }
+    if (expectedKeys.every(k => k in config)) {
+      console.log(`ok: public-config.json (${mode}) has all expected top-level keys`);
+    }
   }
-  deepCheckSecrets(config, 'root');
-  if (!errors.some(e => e.includes('secret') || e.includes('suspicious'))) {
-    console.log('ok: public-config.json has no secret-like values');
-  }
+}
+if (!errors.some(e => e.includes('secret') || e.includes('suspicious'))) {
+  console.log('ok: public-config.json has no secret-like values');
 }
 
 // (d) entries wire public-softcode
@@ -142,20 +152,7 @@ try {
   fail('Missing apps/landing/landing.html');
 }
 
-// (g) dist/prod/runtime/public-config.json exists after build (already checked above)
-// but verify content is valid JSON with expected fields
-const prodConfig = await readJson(PROD_RUNTIME);
-const expectedKeys = ['version', 'surfaces', 'navigation', 'seo', 'themeTokens', 'microcopy'];
-for (const k of expectedKeys) {
-  if (!(k in prodConfig)) {
-    fail(`public-config.json missing expected key: ${k}`);
-  }
-}
-if (expectedKeys.every(k => k in prodConfig)) {
-  console.log('ok: public-config.json has all expected top-level keys');
-}
-
-// (h) .cloudflare-build/runtime/public-config.json if deploy output expected
+// (g) .cloudflare-build/runtime/public-config.json if deploy output expected
 // deploy output goes to .cloudflare-build/public/, so runtime config would be there
 const CF_RUNTIME = '.cloudflare-build/public/runtime/public-config.json';
 if (await exists('.cloudflare-build/public')) {

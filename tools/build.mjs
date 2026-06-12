@@ -44,6 +44,22 @@ for (const mode of modes) await buildMode(mode);
 await fs.rm(join(ROOT,'.cloudflare-build'), { recursive:true, force:true });
 await copyDir(join(ROOT,'dist/prod/public'), join(ROOT,'.cloudflare-build/public'));
 await copyDir(join(ROOT,'dist/prod/runtime'), join(ROOT,'.cloudflare-build/public/runtime'));
+// Copy deployed assets that public pages reference
+await copyDir(join(ROOT,'dist/prod/assets'), join(ROOT,'.cloudflare-build/assets'));
+// Copy store.css to assets/store/ path referenced by store.html
+if (existsSync(join(ROOT,'dist/prod/apps/store/store.css'))) {
+  await fs.mkdir(join(ROOT,'.cloudflare-build/assets/store'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/apps/store/store.css'), join(ROOT,'.cloudflare-build/assets/store/store.css'));
+}
+// __gg prefix path for blog (Blogger XML uses /__gg/assets/...)
+if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.css'))) {
+  await fs.mkdir(join(ROOT,'.cloudflare-build/__gg/assets/css'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.css'), join(ROOT,'.cloudflare-build/__gg/assets/css/gg-app.min.css'));
+}
+if (existsSync(join(ROOT,'dist/prod/assets/gg-app.min.js'))) {
+  await fs.mkdir(join(ROOT,'.cloudflare-build/__gg/assets/js'), { recursive: true });
+  await copyFile(join(ROOT,'dist/prod/assets/gg-app.min.js'), join(ROOT,'.cloudflare-build/__gg/assets/js/gg-app.min.js'));
+}
 if (existsSync(join(ROOT,'dist/prod/apps/landing/landing.html'))) await copyFile(join(ROOT,'dist/prod/apps/landing/landing.html'), join(ROOT,'.cloudflare-build/public/landing.html'));
 if (existsSync(join(ROOT,'dist/prod/apps/store/store.html'))) await copyFile(join(ROOT,'dist/prod/apps/store/store.html'), join(ROOT,'.cloudflare-build/public/store.html'));
 if (existsSync(join(ROOT,'dist/prod/apps/blog/offline.html'))) await copyFile(join(ROOT,'dist/prod/apps/blog/offline.html'), join(ROOT,'.cloudflare-build/public/offline.html'));
