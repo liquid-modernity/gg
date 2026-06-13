@@ -41,7 +41,7 @@ The `check:public-dom` check scans all `src/**/*.js` and `src/**/*.mjs` files fo
 | `needsTemplate` | Tag name in `needsTemplateTags` (e.g., `section`, `article`, `button`, `nav`, `header`, `footer`, `dialog`, `form`, `aside`, `main`, `ul`, `ol`, `li`). Large chrome/UI structure — migration candidate. |
 | `unclassified` | Tag not in either list (e.g., `div`, `p`, `h2`, `a`, `img`, `textarea`, `strong`, `iframe`, `script`). Warned but not failed. |
 
-### Current Findings (post TASK-002M-C)
+### Current Findings (post TASK-002M-D)
 
 | Count | Classification |
 |-------|----------------|
@@ -49,7 +49,7 @@ The `check:public-dom` check scans all `src/**/*.js` and `src/**/*.mjs` files fo
 | 0 | `needsTemplate` (button) — MIGRATED ✓ |
 | 0 | `needsTemplate` (section) — MIGRATED ✓ |
 | 0 | `needsTemplate` (article) — MIGRATED ✓ |
-| 2 | `needsTemplate` (button, Store discovery only) |
+| 0 | `needsTemplate` (button, Store discovery) — MIGRATED ✓ |
 | 21 | `unclassified` (div, strong, textarea, img, p, h2, a, iframe, script) |
 
 ### TASK-002M-B Migrated Items
@@ -82,18 +82,24 @@ Related posts dots fallback was also migrated from `createElement('a')` to `gg-t
 
 **Result:** `createElement('button')` count in `src/modules/legacy-app/legacy-app.js`: 8 → 0 (zero).
 
+### TASK-002M-D Migrated Items
+
+**Before:** `createElement('button')` (2 occurrences) in `src/modules/store/store-discovery.js` generated semantic category chip buttons and semantic "more" buttons.
+
+**After:** All Store discovery button chrome generation in store-discovery.js now uses template cloning from `<template>` elements defined in `apps/store/store.html`:
+- `store-semantic-category-chip-template` — semantic category rail chip button
+- `store-semantic-more-button-template` — semantic "more/see more" reveal button
+
+**Result:** `createElement('button')` count in `src/modules/store/store-discovery.js`: 2 → 0 (zero).
+
 ### Remaining needsTemplate Candidates
 
-| File | Tag | Count | Context |
-|------|-----|-------|---------|
-| `src/modules/store/store-discovery.js` | `button` | 2 | Store discovery result buttons — intentionally left for later task |
-
-Store discovery button templates should be a later task (TASK-002M-D or similar).
+None. All `needsTemplate` tags (section, article, button, nav, header, footer, dialog, form, aside, main, ul, ol, li) have been migrated from public JS source files.
 
 ### Recommended Next Migration Tasks
 
-1. **TASK-002M-D:** Migrate legacy Blogger HTML stripping/parsing from `innerHTML`-based helpers to `DOMParser` or template-based extraction.
-2. **TASK-002M-E:** Migrate `createElement('button')` in Store discovery (`store-discovery.js`) to templates.
+1. **TASK-002M-E:** Migrate legacy Blogger HTML stripping/parsing from `innerHTML`-based helpers to `DOMParser` or template-based extraction.
+2. **TASK-002M-F:** Migrate Landing discovery command panel `innerHTML` patterns to template-based rendering.
 
 ## Restricted APIs Found (current)
 

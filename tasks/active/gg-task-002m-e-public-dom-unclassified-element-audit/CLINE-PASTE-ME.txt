@@ -1,0 +1,18 @@
+Please execute TASK-002M-E.
+
+Read first:
+- tasks/active/TASK-002M-E-PUBLIC-DOM-UNCLASSIFIED-ELEMENT-AUDIT.md
+- ai/agent/prompts/CLINE-SNIPER-TASK-002M-E-PUBLIC-DOM-UNCLASSIFIED-ELEMENT-AUDIT.md
+
+Hard boundaries:
+- Do not migrate UI templates in this task.
+- Do not delete createElement usages.
+- Do not blanket-allow tags without occurrence-level reasons.
+- Do not edit generated output under dist/** or .cloudflare-build/**.
+- Do not restructure Store folders.
+- Do not implement OAuth/Blogger API.
+- Do not add dependencies.
+
+Target final command:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-e-acceptance.sh

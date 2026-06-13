@@ -2420,37 +2420,27 @@
       var fragment = document.createDocumentFragment();
       if (!semanticRail) return;
       order.forEach(function (key) {
-        var button = document.createElement('button');
-        var icon = document.createElement('span');
-        var label = document.createElement('span');
-        var count = document.createElement('span');
+        var button = cloneTemplate('store-semantic-category-chip-template');
+        var icon = button.querySelector('.store-semantic-category-chip__icon');
+        var label = button.querySelector('[data-store-semantic-category-label]');
+        var count = button.querySelector('[data-store-semantic-category-count]');
         var selected = key === activeKey;
-        button.type = 'button';
-        button.className = 'store-semantic-category-chip';
         button.id = semanticChipId(key);
-        button.setAttribute('role', 'tab');
         button.setAttribute('aria-selected', selected ? 'true' : 'false');
         button.setAttribute('aria-controls', semanticPanelId(key));
         button.setAttribute('data-store-semantic-category', key);
-        icon.className = 'gg-icon store-semantic-category-chip__icon';
-        icon.setAttribute('aria-hidden', 'true');
         icon.textContent = semanticCategoryIcon(key);
         label.textContent = semanticCategoryTitle(key);
-        count.className = 'store-semantic-category-chip__count';
         count.textContent = String((groups[key] || []).length);
-        button.appendChild(icon);
-        button.appendChild(label);
-        button.appendChild(count);
         fragment.appendChild(button);
       });
       semanticRail.replaceChildren(fragment);
     }
     function renderSemanticMoreButton(extraCount) {
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'store-button store-semantic-more';
+      var button = cloneTemplate('store-semantic-more-button-template');
+      var label = button.querySelector('[data-store-semantic-more-label]');
       button.setAttribute('data-store-semantic-more', String(extraCount));
-      button.textContent = copy('semanticMoreLabel').replace('{count}', String(extraCount));
+      label.textContent = copy('semanticMoreLabel').replace('{count}', String(extraCount));
       return button;
     }
     function renderSemanticProducts() {

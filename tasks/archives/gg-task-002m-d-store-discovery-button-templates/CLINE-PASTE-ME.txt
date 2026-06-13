@@ -1,0 +1,29 @@
+You are working inside the GG vNext repo.
+
+Execute: TASK-002M-D — Store Discovery Button Templates.
+
+Read and follow exactly:
+- tasks/active/TASK-002M-D-STORE-DISCOVERY-BUTTON-TEMPLATES.md
+- ai/agent/prompts/CLINE-SNIPER-TASK-002M-D-STORE-DISCOVERY-BUTTON-TEMPLATES.md
+
+Scope:
+- Store public runtime only.
+- Target `src/modules/store/store-discovery.js` button chrome generation.
+- Add purpose-specific Store templates to `apps/store/store.html`.
+- Remove `document.createElement('button')` usage from `src/modules/store/store-discovery.js` by cloning templates.
+- Keep state/aria/text/icon/count mutation in JS.
+
+Do not:
+- create one universal `store-button-template` or `gg-template-button`.
+- touch Blog `apps/blog/index.xml` or `src/modules/legacy-app/legacy-app.js` unless a check line reference must be updated and you justify it.
+- restructure Store folders.
+- rewrite Store/Landing/Console/Studio.
+- implement OAuth.
+- split `legacy-app` broadly.
+- delete `legacy-donor/`.
+- edit `dist/**` or `.cloudflare-build/**` manually.
+- install dependencies.
+
+Final validation:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-d-acceptance.sh
