@@ -404,6 +404,22 @@ body[data-gg-comments-layer='replies'] #gg-comments-sheet .continue:not([data-gg
   align-items: center;
 }
 
+.gg-comment-more__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--gg-comment-action-tone);
+  font: 700 18px/1 var(--gg-font-sans);
+  cursor: pointer;
+}
+
 .gg-comment-more__button:hover,
 .gg-comment-more__button[aria-expanded='true'] {
   background: var(--gg-comment-action-hover-bg);

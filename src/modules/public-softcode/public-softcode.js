@@ -50,6 +50,32 @@
     }
     return null;
   }
+  function hasIconOrCompositeChildren(el) {
+    // Returns true if this element contains .gg-icon, [data-gg-icon], or any non-trivial child markup
+    var children = el.children;
+    if (!children || children.length === 0) return false;
+    for (var i = 0; i < children.length; i++) {
+      var c = children[i];
+      if (c.classList && (c.classList.contains('gg-icon') || c.hasAttribute('data-gg-icon'))) return true;
+      // allow label-only targets
+      if (c.hasAttribute('data-copy-label') || c.hasAttribute('data-gg-copy-label')) continue;
+      // non-text element child means composite
+      if (c.tagName !== 'SPAN' && c.tagName !== 'LABEL') continue;
+    }
+    return false;
+  }
+
+  function findLabelChild(el) {
+    var children = el.children;
+    if (!children) return null;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].hasAttribute('data-copy-label') || children[i].hasAttribute('data-gg-copy-label')) {
+        return children[i];
+      }
+    }
+    return null;
+  }
+
   function applyMicrocopy(data) {
     if (!data || !data.microcopy) return;
     const lang = document.documentElement.lang || 'id';
@@ -59,9 +85,20 @@
     els.forEach(function (el) {
       const key = getAttr(el, cfg.selectors.microcopy);
       if (!key) return;
-      if (mc[key] !== undefined && mc[key] !== null) {
-        el.textContent = mc[key];
+      if (mc[key] === undefined || mc[key] === null) return;
+
+      // Guard: skip composite elements that contain icons
+      if (hasIconOrCompositeChildren(el)) {
+        // Try to update a label child instead
+        var labelChild = findLabelChild(el);
+        if (labelChild) {
+          labelChild.textContent = mc[key];
+        }
+        // Otherwise skip — leave fallback intact
+        return;
       }
+
+      el.textContent = mc[key];
     });
   }
 

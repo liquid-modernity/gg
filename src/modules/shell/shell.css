@@ -7,7 +7,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: "Material Symbols Outlined";
+  font-family: "Material Symbols Rounded", "Material Symbols Outlined", sans-serif;
   font-feature-settings: "liga";
   text-transform: none;
   font-size: var(--gg-icon-size);
@@ -21,6 +21,8 @@
   direction: ltr;
   font-variation-settings: 'FILL' 0, 'wght' var(--gg-icon-weight), 'GRAD' var(--gg-icon-grade), 'opsz' 24;
 }
+
+.gg-icon[data-gg-icon]::before { content: attr(data-gg-icon); }
 
 [aria-current='page'] .gg-icon,
 [aria-pressed='true'] .gg-icon,

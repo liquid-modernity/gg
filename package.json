@@ -18,6 +18,7 @@
     "check:syntax": "node checks/syntax.check.mjs",
     "check:softcode": "node checks/softcode.check.mjs",
     "check:public-softcode": "node checks/public-softcode.check.mjs",
+    "check:public-ui": "node checks/public-ui-contract.check.mjs",
     "console": "node apps/console/server.mjs",
     "console:check": "node apps/console/server.mjs --check",
     "studio": "node apps/studio/server.mjs",

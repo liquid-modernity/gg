@@ -1,0 +1,7 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002K-PUBLIC-UI-ICON-BUTTON-CONTRACT.md` and execute it exactly.
+
+Work in sniper mode: inspect only the named files first, patch only the issue, and stop after acceptance is green.
+
+Final command:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002k-acceptance.sh

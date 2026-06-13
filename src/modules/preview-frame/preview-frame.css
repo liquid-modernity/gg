@@ -198,6 +198,81 @@
   transform: none;
 }
 
+/* BEGIN gg-preview-cta-contract */
+
+.gg-preview__cta-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: var(--gg-preview-cta-gap, 10px) 0 var(--gg-preview-cta-bottom, 10px);
+  background: linear-gradient(to top, var(--gg-surface, #fff) 82%, rgba(255, 255, 255, 0));
+  width: min(100% - 32px, 34rem);
+}
+
+.gg-preview__save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1 1 0;
+  width: auto;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--gg-divider, rgba(32, 26, 28, .12));
+  border-radius: 16px;
+  background: var(--gg-surface, #fff);
+  color: var(--gg-ink, #171512);
+  font: 700 13px/1.2 var(--gg-font-sans, system-ui);
+  cursor: pointer;
+  transition: transform var(--gg-motion-press, 0.15s), background-color var(--gg-motion-inline-open, 0.2s), border-color var(--gg-motion-inline-open, 0.2s);
+}
+
+.gg-preview__save[aria-pressed='true'] {
+  border-color: var(--gg-accent, #171512);
+  background: rgba(32, 26, 28, .08);
+  color: var(--gg-accent, #171512);
+}
+
+.gg-preview__save:hover,
+.gg-preview__save:focus-visible {
+  border-color: var(--gg-accent, #171512);
+}
+
+.gg-preview__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1.15 1 0;
+  width: auto;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid var(--gg-accent, #171512);
+  border-radius: 18px;
+  background: var(--gg-accent, #171512);
+  color: var(--gg-accent-contrast, #fff);
+  font: 700 14px/1.2 var(--gg-font-sans, system-ui);
+  text-decoration: none;
+  transition: transform var(--gg-motion-press, 0.15s), background-color var(--gg-motion-inline-open, 0.2s), border-color var(--gg-motion-inline-open, 0.2s);
+}
+
+.gg-preview__cta:hover,
+.gg-preview__cta:focus-visible {
+  border-color: var(--gg-accent-hover, #241d21);
+  background: var(--gg-accent-hover, #241d21);
+  color: var(--gg-accent-contrast, #fff);
+}
+
+.gg-preview__button-icon {
+  font-size: 20px;
+}
+
+/* END gg-preview-cta-contract */
+
 /* BEGIN gg-preview-scrollbar-hidden-contract */
 .gg-preview__sheet::-webkit-scrollbar,
 .store-preview-sheet .gg-sheet__panel::-webkit-scrollbar {

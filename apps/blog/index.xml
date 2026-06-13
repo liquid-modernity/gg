@@ -124,7 +124,7 @@
     <link href='https://googleapis.com' rel='stylesheet'/>
     <link href='https://fonts.googleapis.com' rel='preconnect'/>
     <link crossorigin='anonymous' href='https://fonts.gstatic.com' rel='preconnect'/>
-    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=account_tree,add_comment,animation,article,bookmark,bookmark_add,bookmark_border,bookmark_remove,calendar_add_on,category,chat,checkroom,chevron_right,clinical_notes,comment,comments_disabled,content_copy,contrast,delete,description,desktop_windows,expand_more,explore,filter_list,format_size,home,home_app_logo,info,keyboard_arrow_down,keyboard_arrow_up,language,link,local_fire_department,mail,menu,newsmode,psychology,read_more,reply,rss_feed,science,search,shield,shopping_bag,spa,top_panel_open,update,visibility,warning&amp;display=block' rel='stylesheet'/>    
+    <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;icon_names=account_tree,add_comment,animation,arrow_back_ios_new,article,bookmark,bookmark_add,bookmark_border,bookmark_remove,calendar_add_on,category,chat,checkroom,chevron_right,clinical_notes,comment,comments_disabled,content_copy,contrast,delete,description,desktop_windows,expand_more,explore,filter_list,format_size,home,home_app_logo,info,ios_share,keyboard_arrow_down,keyboard_arrow_up,language,link,local_fire_department,mail,menu,newsmode,psychology,read_more,reply,rss_feed,science,search,shield,shopping_bag,spa,top_panel_open,update,visibility,warning&amp;display=block' rel='stylesheet'/>    
 
     <b:skin><![CDATA[
 :root {
@@ -1178,8 +1178,8 @@ img{max-width:100%;height:auto;display:block}
                   <span aria-hidden='true' class='gg-entry-row__icon gg-icon' data-gg-listing-icon='article'>article</span>
                   <a aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__title-trigger' data-gg-open='preview' expr:href='data:post.url'><data:post.title/></a>
                 </h2>
-                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-copy='listing.details' data-gg-open='preview' type='button'>
-                  <span>Details </span>
+                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-open='preview' type='button'>
+                  <span data-gg-copy='listing.details'>Details </span>
                   <span aria-hidden='true' class='gg-entry-row__action-icon gg-icon' data-gg-listing-icon='top_panel_open'>top_panel_open</span>
                 </button>
               </article>
@@ -1607,14 +1607,14 @@ img{max-width:100%;height:auto;display:block}
         </div>
         <footer class='gg-content-sheet__affordance gg-preview__footer gg-preview__affordance' data-gg-drag-zone='preview-affordance' data-gg-sheet-drag-zone='footer'>
            <div class='gg-preview__cta-row'> 
-  <button aria-pressed='false' class='gg-preview__save' data-gg-copy='saved.action.save' data-gg-save-article='true' type='button'> 
-    <span class='gg-preview__button-text'>Save</span> 
-    <span aria-hidden='true' class='gg-preview__button-icon gg-icon material-symbols-outlined' data-gg-save-icon='true'>bookmark_add</span> 
+  <button aria-pressed='false' class='gg-preview__save' data-gg-save-article='true' type='button'> 
+    <span class='gg-preview__button-text' data-gg-copy='saved.action.save'>Save</span> 
+    <span aria-hidden='true' class='gg-preview__button-icon gg-icon' data-gg-save-icon='true'>bookmark_add</span> 
   </button> 
-  <a aria-hidden='true' class='gg-preview__cta' data-gg-copy='preview.openArticle' href='#' id='gg-preview-cta'>
-    <span>Open full article</span>
-    <span aria-hidden='true' class='gg-preview__button-icon gg-icon material-symbols-outlined'>read_more</span>
-  </a> 
+  <a aria-hidden='true' class='gg-preview__cta' href='#' id='gg-preview-cta'>
+    <span data-gg-copy='preview.openArticle'>Open full article</span>
+    <span aria-hidden='true' class='gg-preview__button-icon gg-icon'>read_more</span>
+  </a>
 </div>
 
           <button aria-label='Drag to close preview' class='gg-sheet__handle gg-preview__handle' data-gg-close='preview' data-gg-drag-handle='preview' data-gg-sheet-drag-zone='handle' type='button'>
