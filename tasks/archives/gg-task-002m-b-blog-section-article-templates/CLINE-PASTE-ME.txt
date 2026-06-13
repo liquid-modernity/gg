@@ -1,0 +1,3 @@
+Read `ai/agent/prompts/CLINE-SNIPER-TASK-002M-B-BLOG-SECTION-ARTICLE-TEMPLATES.md` and execute it exactly. Work in sniper mode. Do not do broad refactors. Stop only when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-b-acceptance.sh

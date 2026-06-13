@@ -1,0 +1,27 @@
+You are working inside the GG vNext repo.
+
+Execute: TASK-002M-C — Blog Button Chrome Templates.
+
+Read and follow exactly:
+- tasks/active/TASK-002M-C-BLOG-BUTTON-CHROME-TEMPLATES.md
+- ai/agent/prompts/CLINE-SNIPER-TASK-002M-C-BLOG-BUTTON-CHROME-TEMPLATES.md
+
+Scope:
+- Blog public runtime only.
+- Target `src/modules/legacy-app/legacy-app.js` button chrome generation.
+- Add purpose-specific button templates to `apps/blog/index.xml`.
+- Remove `document.createElement('button')` usage from `src/modules/legacy-app/legacy-app.js` by cloning templates.
+- Keep state/aria/text/icon mutation in JS.
+
+Do not:
+- create one universal `gg-template-button`.
+- migrate Store discovery buttons in this task.
+- rewrite Store/Landing/Console/Studio.
+- implement OAuth.
+- split `legacy-app` broadly.
+- edit `dist/**` or `.cloudflare-build/**` manually.
+- install dependencies.
+
+Final validation:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-c-acceptance.sh

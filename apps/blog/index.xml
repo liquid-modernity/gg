@@ -407,6 +407,85 @@ img{max-width:100%;height:auto;display:block}
                 </a>
               </template>
 
+              <template id='gg-template-listing-row'>
+                <article class='gg-entry-row' role='listitem'>
+                  <span aria-hidden='true' class='gg-entry-row__icon gg-icon' data-gg-template-part='icon'>description</span>
+                  <h3 class='gg-entry-row__title'>
+                    <a class='gg-entry-row__title-trigger' data-gg-template-part='title-trigger' href='#'>Article title</a>
+                  </h3>
+                  <div class='gg-entry-row__action' data-gg-template-part='action' role='group'>
+                    <span class='gg-entry-row__action-label' data-gg-template-part='action-label'>Details</span>
+                    <span aria-hidden='true' class='gg-entry-row__action-icon gg-icon' data-gg-template-part='action-icon'>read_more</span>
+                  </div>
+                </article>
+              </template>
+
+              <template id='gg-template-popular-range-selector'>
+                <section class='gg-popular-controls' data-gg-popular-controls='true'>
+                  <h2 class='gg-popular-controls__title' data-gg-template-part='title' id='gg-popular-controls-title'>Popular</h2>
+                  <div class='gg-popular-controls__ranges' data-gg-template-part='ranges' role='list'/>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-saved-articles'>
+                <section class='gg-saved-listing-empty' data-gg-saved-empty='true'>
+                  <p data-gg-copy='saved.empty.title'>No saved articles yet.</p>
+                  <p data-gg-copy='saved.empty.body'>Save articles from previews or article pages to find them here.</p>
+                </section>
+              </template>
+
+              <template id='gg-empty-state-popular-unavailable'>
+                <section class='gg-popular-empty' data-gg-popular-empty='true'>
+                  <p>Popular posts are unavailable right now. Please try again later or browse recent articles.</p>
+                </section>
+              </template>
+
+              <template id='gg-template-comments-sheet-handle'>
+                <button class='gg-comments-sheet__handle gg-sheet__handle' data-gg-drag-handle='comment-replies' type='button'>
+                  <span class='gg-visually-hidden' data-gg-copy='comments.replies.drag'>Drag replies sheet</span>
+                </button>
+              </template>
+
+              <template id='gg-template-comment-replies-toggle'>
+                <button data-gg-action='comments-open-replies' type='button'/>
+              </template>
+
+              <template id='gg-template-comment-reply-clear'>
+                <button class='gg-comments__reply-clear' data-gg-action='comments-reply-context-clear' type='button'>×</button>
+              </template>
+
+              <template id='gg-template-comment-copy-link-button'>
+                <button class='gg-comment-more__item' data-gg-action='comment-copy-link' data-gg-comment-action='copy' role='menuitem' type='button'>
+                  <span aria-hidden='true' class='gg-comment-more__icon gg-comment-more__item-icon gg-icon'>link</span>
+                  <span class='gg-comment-more__label gg-comment-more__item-label' data-gg-copy='comments.action.copyLink'>Copy link</span>
+                </button>
+              </template>
+
+              <template id='gg-template-comment-delete-button'>
+                <button class='gg-comment-more__item gg-comment-more__item--danger' data-gg-action='comment-native-delete' data-gg-comment-action='delete' role='menuitem' type='button'>
+                  <span aria-hidden='true' class='gg-comment-more__icon gg-comment-more__item-icon gg-icon'>delete</span>
+                  <span class='gg-comment-more__label gg-comment-more__item-label' data-gg-copy='comments.action.delete'>Delete</span>
+                </button>
+              </template>
+
+              <template id='gg-template-comment-more-button'>
+                <button class='gg-comment-more__button' data-gg-action='comment-more' aria-haspopup='menu' aria-expanded='false' type='button'>...</button>
+              </template>
+
+              <template id='gg-template-comment-reply-button'>
+                <button class='gg-comment-replies__context-reply' data-gg-action='comments-reply-parent' type='button'/>
+              </template>
+
+              <template id='gg-template-comment-add-reply-button'>
+                <button data-gg-action='comments-add-reply' type='button'/>
+              </template>
+
+              <template id='gg-template-related-posts-dot'>
+                <div class='gg-related-posts__dots' role='list'>
+                  <button class='gg-related-posts__dot' data-gg-template-part='dot' role='listitem' type='button'/>
+                </div>
+              </template>
+
               <nav aria-label='Blog pagination' class='gg-detail-outline gg-listing-pagination' data-gg-module='listing-pagination-dock-tail' data-gg-outline-mode='pagination' data-gg-outline-state='peek' id='gg-listing-pagination'>
                 <div class='gg-detail-outline__peek gg-listing-pagination__peek'>
                   <div aria-label='Pagination pages' class='gg-listing-pagination__pages' role='list'>

@@ -1,0 +1,101 @@
+{
+  "version": "1.0.0",
+  "policyPhrase": "largePublicUiMustLiveInHtmlOrTemplate",
+  "allowedSmallBehaviorApis": [
+    "createElement",
+    "textContent",
+    "setAttribute",
+    "appendChild",
+    "classList",
+    "dataset"
+  ],
+  "restrictedHtmlGenerationApis": [
+    "innerHTML",
+    "insertAdjacentHTML",
+    "outerHTML"
+  ],
+  "createElementAudit": {
+    "scope": [
+      "src/**/*.js",
+      "src/**/*.mjs"
+    ],
+    "principle": "Large public UI structure must live in HTML/XML or template. Small state/behavior may use JS.",
+    "allowedSmallTags": [
+      "span",
+      "option"
+    ],
+    "needsTemplateTags": [
+      "section",
+      "article",
+      "button",
+      "nav",
+      "header",
+      "footer",
+      "dialog",
+      "form",
+      "aside",
+      "main",
+      "ul",
+      "ol",
+      "li"
+    ],
+    "allowlist": []
+  },
+  "publicSurfaces": [
+    "apps/blog/index.xml",
+    "apps/store/**/*.html",
+    "apps/landing/**/*.html"
+  ],
+  "sourceGlobs": [
+    "src/modules/**/*.js",
+    "src/entries/**/*.js",
+    "apps/blog/**/*.xml",
+    "apps/blog/**/*.html",
+    "apps/store/**/*.html",
+    "apps/landing/**/*.html"
+  ],
+  "allowlist": [
+    {
+      "file": "src/modules/legacy-app/legacy-app.js",
+      "line": 1787,
+      "api": "innerHTML",
+      "reason": "Legacy HTML strip helper: div.innerHTML set then read textContent — used to strip markup from Blogger feed content. Temporary legacy bridge.",
+      "status": "allowlisted-legacy-bridge"
+    },
+    {
+      "file": "src/modules/legacy-app/legacy-app.js",
+      "line": 6264,
+      "api": "innerHTML",
+      "reason": "Legacy HTML parsing fallback for Blogger post body extraction — fallbackDoc.documentElement.innerHTML = html. Temporary legacy bridge.",
+      "status": "allowlisted-legacy-bridge"
+    },
+    {
+      "file": "src/modules/legacy-app/legacy-app.js",
+      "line": 7610,
+      "api": "innerHTML",
+      "reason": "Legacy outline preview text extraction reads innerHTML from already-parsed DOM nodes (fallback after textContent). Read-only, not generation. Temporary legacy bridge.",
+      "status": "allowlisted-legacy-bridge"
+    },
+    {
+      "file": "apps/studio/app.js",
+      "line": 1,
+      "api": "insertAdjacentHTML",
+      "reason": "Studio error display: single-line error message insertion on catastrophic failure. Small error text, not large public UI chrome.",
+      "status": "allowlisted-error-display"
+    },
+    {
+      "file": "apps/landing/landing.html",
+      "line": 3302,
+      "api": "innerHTML",
+      "reason": "Legacy HTML strip helper in landing inline script: div.innerHTML set then read textContent — used to strip markup from feed labels. Same pattern as legacy-app bridge.",
+      "status": "allowlisted-legacy-bridge"
+    },
+    {
+      "file": "apps/landing/landing.html",
+      "line": 3362,
+      "api": "innerHTML",
+      "reason": "Landing discovery command panel render: commandResults.innerHTML='' (clear) and button.innerHTML for discovery result template with gg- class names. Legacy inline script pattern. Migration candidate for TASK-002M.",
+      "status": "allowlisted-legacy-bridge"
+    }
+  ]
+}

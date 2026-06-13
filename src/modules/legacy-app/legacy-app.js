@@ -4049,15 +4049,11 @@ window.GG = window.GG || {};
           handle = head.querySelector('.gg-sheet__handle');
           if (handle) return true;
 
-          handle = document.createElement('button');
-          handle.type = 'button';
-          handle.className = 'gg-comments-sheet__handle gg-sheet__handle';
-          handle.setAttribute('data-gg-drag-handle', 'comment-replies');
+          handle = cloneTemplateElement('gg-template-comments-sheet-handle');
+          if (!handle) return false;
           handle.setAttribute('aria-label', getCopy('comments.replies.drag'));
-          label = document.createElement('span');
-          label.className = 'gg-visually-hidden';
-          label.textContent = getCopy('comments.replies.drag');
-          handle.appendChild(label);
+          label = handle.querySelector('.gg-visually-hidden');
+          if (label) label.textContent = getCopy('comments.replies.drag');
           head.insertBefore(handle, back || head.firstChild);
           return true;
         }
@@ -4370,9 +4366,8 @@ window.GG = window.GG || {};
 
             button = repliesNode.__ggRepliesButton || null;
             if (!button || !button.parentNode) {
-              button = document.createElement('button');
-              button.type = 'button';
-              button.setAttribute('data-gg-action', 'comments-open-replies');
+              button = cloneTemplateElement('gg-template-comment-replies-toggle');
+              if (!button) continue;
               repliesNode.__ggRepliesButton = button;
               repliesNode.parentNode.insertBefore(button, repliesNode.nextSibling);
             }
@@ -4496,12 +4491,9 @@ window.GG = window.GG || {};
           textWrap.appendChild(strong);
           label.appendChild(icon);
           label.appendChild(textWrap);
-          clearButton = document.createElement('button');
-          clearButton.type = 'button';
-          clearButton.className = 'gg-comments__reply-clear';
-          clearButton.setAttribute('data-gg-action', 'comments-reply-context-clear');
+          clearButton = cloneTemplateElement('gg-template-comment-reply-clear');
+          if (!clearButton) return;
           clearButton.setAttribute('aria-label', getCopy('comments.action.cancelReply'));
-          clearButton.textContent = '×';
           banner.appendChild(label);
           banner.appendChild(clearButton);
           ui.commentsReplySlot.appendChild(banner);
@@ -4940,33 +4932,24 @@ window.GG = window.GG || {};
 
         function buildCommentMoreMenu(commentNode) {
           var menu = document.createElement('div');
-          var copyButton = document.createElement('button');
+          var copyButton = cloneTemplateElement('gg-template-comment-copy-link-button');
           var deleteButton;
 
           menu.className = 'gg-comment-more__menu';
           menu.setAttribute('role', 'menu');
 
-          copyButton.type = 'button';
-          copyButton.className = 'gg-comment-more__item';
-          copyButton.setAttribute('role', 'menuitem');
-          copyButton.setAttribute('data-gg-action', 'comment-copy-link');
-          copyButton.setAttribute('data-gg-comment-action', 'copy');
-          copyButton.appendChild(buildCommentMoreMenuIcon('link'));
-          copyButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.copyLink')));
-          menu.appendChild(copyButton);
-
-          if (commentHasNativeDelete(commentNode)) {
-            deleteButton = document.createElement('button');
-            deleteButton.type = 'button';
-            deleteButton.className = 'gg-comment-more__item gg-comment-more__item--danger';
-            deleteButton.setAttribute('role', 'menuitem');
-            deleteButton.setAttribute('data-gg-action', 'comment-native-delete');
-            deleteButton.setAttribute('data-gg-comment-action', 'delete');
-            deleteButton.appendChild(buildCommentMoreMenuIcon('delete'));
-            deleteButton.appendChild(buildCommentMoreMenuLabel(getCopy('comments.action.delete')));
-            menu.appendChild(deleteButton);
+          if (copyButton) {
+            menu.appendChild(copyButton);
           }
 
+          if (commentHasNativeDelete(commentNode)) {
+            deleteButton = cloneTemplateElement('gg-template-comment-delete-button');
+            if (deleteButton) {
+              menu.appendChild(deleteButton);
+            }
+          }
+
+          if (copyButton || deleteButton) applyCopy(menu);
           return menu;
         }
 
@@ -5097,14 +5080,9 @@ window.GG = window.GG || {};
             if (!wrapper) {
               wrapper = document.createElement('span');
               wrapper.className = 'gg-comment-more';
-              button = document.createElement('button');
-              button.type = 'button';
-              button.className = 'gg-comment-more__button';
-              button.setAttribute('data-gg-action', 'comment-more');
-              button.setAttribute('aria-haspopup', 'menu');
-              button.setAttribute('aria-expanded', 'false');
+              button = cloneTemplateElement('gg-template-comment-more-button');
+              if (!button) continue;
               button.setAttribute('aria-label', getCopy('comments.action.more'));
-              button.textContent = '...';
               wrapper.appendChild(button);
               enhanced += 1;
             }
@@ -5204,10 +5182,8 @@ window.GG = window.GG || {};
           countNode.textContent = formatRepliesSummary(count);
           copyNode.appendChild(countNode);
 
-          replyNode = document.createElement('button');
-          replyNode.type = 'button';
-          replyNode.className = 'gg-comment-replies__context-reply';
-          replyNode.setAttribute('data-gg-action', 'comments-reply-parent');
+          replyNode = cloneTemplateElement('gg-template-comment-reply-button');
+          if (!replyNode) return;
           replyNode.setAttribute('aria-label', getCopy('comments.action.replyToOriginal'));
           replyNode.textContent = getCopy('comments.action.reply');
           if (commentNode) replyNode.setAttribute('data-gg-reply-target', getCommentNodeId(commentNode));
@@ -5225,9 +5201,8 @@ window.GG = window.GG || {};
 
           button = ui.commentRepliesFooter.querySelector('[data-gg-action="comments-add-reply"]');
           if (!button) {
-            button = document.createElement('button');
-            button.type = 'button';
-            button.setAttribute('data-gg-action', 'comments-add-reply');
+            button = cloneTemplateElement('gg-template-comment-add-reply-button');
+            if (!button) return null;
             button.textContent = getCopy('comments.action.addReply');
             ui.commentRepliesFooter.insertBefore(button, ui.commentRepliesFooter.firstChild);
           }
@@ -6795,6 +6770,13 @@ window.GG = window.GG || {};
           if (ui.articleSave) syncSaveButton(ui.articleSave, getCurrentArticlePayload());
         }
 
+        function cloneTemplateElement(id) {
+          var template = document.getElementById(id);
+          if (!template || !template.content) return null;
+          var node = template.content.cloneNode(true).firstElementChild;
+          return node || null;
+        }
+
         function getListingIcon(key) {
           var entry = ROOT_LISTING_ICON_REGISTRY[key] || ROOT_LISTING_ICON_REGISTRY.article;
           return entry.icon || ROOT_LISTING_ICON_REGISTRY.article.icon;
@@ -6809,13 +6791,8 @@ window.GG = window.GG || {};
           var url = source.url || source.href || '#';
 
           if (!tpl || !tpl.content) {
-            // Minimal safe fallback — never builds UI from scratch
-            var fallback = document.createElement('article');
-            fallback.className = 'gg-entry-row';
-            fallback.setAttribute('role', 'listitem');
-            fallback.setAttribute('data-gg-post-url', url);
-            fallback.textContent = source.title || '';
-            return fallback;
+            // Safe fallback: return null so caller renders nothing
+            return null;
           }
 
           node = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
@@ -6901,10 +6878,13 @@ window.GG = window.GG || {};
           fragment = document.createDocumentFragment();
 
           if (!state.savedStorageAvailable) {
-            node = document.createElement('p');
-            node.className = 'gg-saved-listing-empty';
-            node.setAttribute('data-gg-saved-empty', 'unavailable');
-            node.setAttribute('role', 'status');
+            node = cloneTemplateElement('gg-empty-state-saved-articles');
+            if (!node) {
+              node = document.createElement('p');
+              node.className = 'gg-saved-listing-empty';
+              node.setAttribute('data-gg-saved-empty', 'unavailable');
+              node.setAttribute('role', 'status');
+            }
             node.textContent = getCopy('saved.empty.unavailable');
             fragment.appendChild(node);
             ui.listing.appendChild(fragment);
@@ -6914,18 +6894,12 @@ window.GG = window.GG || {};
           items = getSavedArticles();
 
           if (!items.length) {
-            node = document.getElementById('gg-empty-state-saved-articles');
-            if (node && node.content) {
-              node = node.content.cloneNode(true).firstElementChild;
-              node.hidden = false;
-            } else {
-              node = document.createElement('section');
-              node.className = 'gg-saved-listing-empty';
-              node.setAttribute('data-gg-saved-empty', 'true');
-              node.setAttribute('role', 'status');
-              node.setAttribute('aria-live', 'polite');
-              node.textContent = (getCopy('saved.empty.title') || 'No saved articles yet.') + '. ' + (getCopy('saved.empty.body') || 'Save articles from previews or article pages to find them here.');
+            node = cloneTemplateElement('gg-empty-state-saved-articles');
+            if (!node) {
+              // Safe fallback: silently skip if template is missing
+              return;
             }
+            node.hidden = false;
             fragment.appendChild(node);
             ui.listing.appendChild(fragment);
             return;
@@ -7040,29 +7014,27 @@ window.GG = window.GG || {};
             }
           }
 
-          // Safe fallback: minimal shell from existing contract
-          section = document.createElement('section');
-          section.className = 'gg-popular-controls';
-          section.setAttribute('data-gg-popular-controls', 'true');
-          section.setAttribute('aria-labelledby', 'gg-popular-controls-title');
-          title = document.createElement('h2');
-          title.id = 'gg-popular-controls-title';
-          title.className = 'gg-popular-controls__title';
-          title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
-          section.appendChild(title);
-          group = document.createElement('div');
-          group.className = 'gg-popular-controls__ranges';
-          group.setAttribute('role', 'list');
-          BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
-            var link = document.createElement('a');
-            link.className = 'gg-popular-controls__range';
-            link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
-            link.setAttribute('role', 'listitem');
-            link.setAttribute('aria-current', item === range ? 'true' : 'false');
-            link.textContent = labels[item] || item;
-            group.appendChild(link);
-          });
-          section.appendChild(group);
+          // Safe fallback: clone from template, or minimal shell from existing contract
+          section = cloneTemplateElement('gg-template-popular-range-selector');
+          if (section) {
+            title = section.querySelector('[data-gg-template-part="title"]');
+            group = section.querySelector('[data-gg-template-part="ranges"]');
+            if (title) title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
+            if (group) {
+              BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
+                var link = document.createElement('a');
+                link.className = 'gg-popular-controls__range';
+                link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
+                link.setAttribute('role', 'listitem');
+                link.setAttribute('aria-current', item === range ? 'true' : 'false');
+                link.textContent = labels[item] || item;
+                group.appendChild(link);
+              });
+            }
+          } else {
+            // Safe fallback: return null so caller silently skips
+            return null;
+          }
           return section;
         }
 
@@ -7088,20 +7060,14 @@ window.GG = window.GG || {};
           state.popularItems = items;
 
           if (!items.length) {
-            node = document.getElementById('gg-empty-state-popular-unavailable');
-            if (node && node.content) {
-              node = node.content.cloneNode(true).firstElementChild;
-              node.className = 'gg-popular-empty';
-              node.setAttribute('data-gg-popular-empty', 'true');
-              node.hidden = false;
-            } else {
-              node = document.createElement('section');
-              node.className = 'gg-popular-empty';
-              node.setAttribute('data-gg-popular-empty', 'true');
-              node.setAttribute('role', 'status');
-              node.setAttribute('aria-live', 'polite');
-              node.textContent = 'Popular posts are unavailable right now. Please try again later or browse recent articles.';
+            node = cloneTemplateElement('gg-empty-state-popular-unavailable');
+            if (!node) {
+              // Safe fallback: silently skip if template is missing
+              return;
             }
+            node.className = 'gg-popular-empty';
+            node.setAttribute('data-gg-popular-empty', 'true');
+            node.hidden = false;
             fragment.appendChild(node);
             ui.listing.appendChild(fragment);
             return;
@@ -8939,9 +8905,13 @@ window.GG = window.GG || {};
               if (dotProto) {
                 node = dotProto.cloneNode(true);
               } else {
-                node = document.createElement('button');
-                node.className = 'gg-related-posts__dot';
-                node.type = 'button';
+                var dotTplFallback = document.getElementById('gg-template-related-posts-dot');
+                if (dotTplFallback && dotTplFallback.content) {
+                  var dotProtoFallback = dotTplFallback.content.querySelector('[data-gg-template-part="dot"]');
+                  node = dotProtoFallback ? dotProtoFallback.cloneNode(true) : document.createElement('span');
+                } else {
+                  node = document.createElement('span');
+                }
               }
               if (node.tagName === 'BUTTON' || node.getAttribute('role') === 'listitem') {
                 node.type = 'button';

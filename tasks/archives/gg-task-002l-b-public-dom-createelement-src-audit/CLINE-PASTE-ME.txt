@@ -1,0 +1,5 @@
+Read and execute exactly: `ai/agent/prompts/CLINE-SNIPER-TASK-002L-B-CREATEELEMENT-SRC-AUDIT.md`.
+
+Work in sniper mode. Scope is all `src/**`, not only legacy. Do not migrate UI yet. Stop when acceptance passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002l-b-acceptance.sh

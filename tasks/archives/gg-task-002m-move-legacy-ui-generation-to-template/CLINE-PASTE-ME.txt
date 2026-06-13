@@ -1,0 +1,7 @@
+Read and execute `ai/agent/prompts/CLINE-SNIPER-TASK-002M-MOVE-LEGACY-UI-GENERATION-TO-TEMPLATE.md` exactly.
+
+Work in sniper mode. Do not rediscover the whole repo. Do not refactor broadly. Focus on moving public UI/chrome generation out of JS and into HTML/XML `<template>` or static fallback markup.
+
+Stop only when this passes:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-acceptance.sh
