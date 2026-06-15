@@ -1,0 +1,8 @@
+{
+  "id": "template-hydration",
+  "type": "runtime-helper",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/template-hydration/template-hydration.js",
+  "description": "Small public runtime helper for template lookup and first-element cloning. Visible UI structure remains in HTML/XML templates."
+}

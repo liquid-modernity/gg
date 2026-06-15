@@ -1,0 +1,25 @@
+Run TASK-002N-D exactly as described in:
+
+ai/agent/prompts/CLINE-SNIPER-TASK-002N-D-EXTRACT-SAVED-LISTING-BRIDGE-SEAM.md
+
+Important constraints:
+- This is a small seam extraction, not a saved listing rewrite.
+- Keep `legacy-app.js` as orchestrator for now.
+- Create `src/modules/saved-listing-bridge/saved-listing-bridge.js` and contract JSON.
+- Expose helpers under `GG.savedListingBridge` for the classic browser bundle.
+- Update `tools/build.mjs` so saved-listing-bridge is bundled before legacy-app.
+- Do not add static ESM imports inside `legacy-app.js` if the public bundle is still classic concat.
+- Do not touch comments/replies, popular controls, related posts, Store restructure, OAuth, `legacy-donor`, or generated outputs.
+- No generic UI templates. No DOM template migration in this task.
+
+After implementation, run:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-d-acceptance.sh
+
+Return a concise report with:
+- files changed
+- helpers exposed in `GG.savedListingBridge`
+- legacy-app bytes/lines before vs after
+- check:public-dom summary
+- check:legacy-bridge summary
+- confirmation no runtime UI behavior was intentionally changed

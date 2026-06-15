@@ -1,0 +1,8 @@
+{
+  "id": "saved-listing-bridge",
+  "type": "runtime-helper",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/saved-listing-bridge/saved-listing-bridge.js",
+  "description": "Small saved listing bridge helper seam for saved article normalization, storage parsing, storage writing, lookup, and list toggling. It does not generate public UI."
+}

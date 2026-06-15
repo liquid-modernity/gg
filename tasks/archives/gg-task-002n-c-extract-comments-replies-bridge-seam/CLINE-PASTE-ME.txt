@@ -1,0 +1,88 @@
+TASK-002N-C — Extract Comments/Replies Bridge Seam
+
+Context:
+- TASK-002N-B is complete.
+- `src/modules/template-hydration/template-hydration.js` exists and is used by `legacy-app.js` through the current classic bundle/global pattern.
+- Public DOM is template-first:
+  createElement=6 allowedSmall=0 allowedReviewed=6 needsTemplate=0 unclassified=0
+- `legacy-app.js` is still large, but TASK-002N added bridge policy/inventory/check.
+
+Goal:
+Extract a small comments/replies helper seam from `src/modules/legacy-app/legacy-app.js` into:
+
+src/modules/comments-bridge/comments-bridge.js
+src/modules/comments-bridge/comments-bridge.contract.json
+
+This is a seam extraction task, not a full comments rewrite.
+
+Read first:
+- src/modules/legacy-app/legacy-app.js
+- src/modules/legacy-app/bridge-map.json
+- src/modules/legacy-app/README.md
+- src/modules/template-hydration/template-hydration.js
+- config/legacy-app-bridge-policy.json
+- docs/legacy-app-bridge-inventory.md
+- checks/legacy-bridge.check.mjs
+- checks/public-dom.check.mjs
+- registry/modules.json
+- tools/build.mjs
+- package.json
+
+Then search narrowly for comments/replies helpers:
+- comment
+- reply
+- replies
+- commentId
+- parentId
+- hash
+- permalink
+- comment URL
+- replies context
+- comment sheet
+
+Strict scope:
+- Move only small, stable, low-risk comments/replies helper functions.
+- Good candidates: ID normalization, permalink/hash helper, selector helper, class/aria helper, safe text helper, state-shape helper.
+- Keep business flow/orchestration inside legacy-app.js.
+- Keep event lifecycle, sheet open/close orchestration, Blogger comment behavior, direct link resolver behavior, and mutation-heavy UI flows in legacy-app.js for now.
+- Do not split saved listing, popular controls, related posts, Store, or Landing.
+- Do not delete legacy-app.js.
+- Do not delete legacy-donor/.
+- Do not install dependencies.
+- Do not edit dist/** or .cloudflare-build/**.
+
+Build/runtime rule:
+- Follow the existing template-hydration pattern.
+- The new module must be available before legacy-app in the public bundle.
+- Prefer `GG.commentsBridge.*` global namespace for legacy-app usage if the bundle is classic.
+- Do not force static ESM imports into legacy-app.js if the bundle cannot support them.
+
+Required extraction signal:
+- legacy-app.js must call at least two distinct helpers through `GG.commentsBridge.*`.
+- comments-bridge module must be small and must not generate user-visible DOM.
+- No new innerHTML/insertAdjacentHTML/outerHTML.
+- No new user-visible createElement.
+- check:public-dom must remain needsTemplate=0 and unclassified=0.
+- check:legacy-bridge must remain green.
+
+Docs/metadata updates:
+- src/modules/legacy-app/bridge-map.json
+- src/modules/legacy-app/README.md
+- config/legacy-app-bridge-policy.json
+- docs/legacy-app-bridge-inventory.md
+- registry/modules.json and/or tools/build.mjs if needed for bundle order
+
+Create acceptance:
+- scripts/task002n-c-acceptance.sh
+
+Run final command:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-c-acceptance.sh
+
+Final response:
+- List files changed.
+- List helpers moved/exposed.
+- Report legacy-app bytes/lines before/after if available.
+- Report check:public-dom summary.
+- Report check:legacy-bridge summary.
+- Confirm no runtime UI behavior was intentionally changed.

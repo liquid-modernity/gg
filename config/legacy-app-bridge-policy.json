@@ -5,6 +5,51 @@
   "legacyAppPath": "src/modules/legacy-app/legacy-app.js",
   "legacyDonorPath": "legacy-donor",
   "doNotDeleteYet": true,
+  "extractedSeams": [
+    {
+      "id": "template-dom-hydration",
+      "status": "extracted",
+      "modulePath": "src/modules/template-hydration/template-hydration.js",
+      "exportedHelpers": [
+        "getTemplateElement",
+        "cloneTemplateElement"
+      ],
+      "consumer": "src/modules/legacy-app/legacy-app.js"
+    },
+    {
+      "id": "comments-sheet-replies",
+      "status": "helper-seam-extracted",
+      "modulePath": "src/modules/comments-bridge/comments-bridge.js",
+      "exportedHelpers": [
+        "stripParentIdFromCommentSrc",
+        "commentSrcHasParentId",
+        "withCommentParentId",
+        "normalizeReplyHandle",
+        "normalizeHashId",
+        "isCommentsHash",
+        "getCommentPermalink"
+      ],
+      "consumer": "src/modules/legacy-app/legacy-app.js",
+      "notes": "Only low-risk URL/hash/permalink/reply-handle helpers moved. Comments sheet orchestration and Blogger behavior remain in legacy-app."
+    },
+    {
+      "id": "saved-listing-state",
+      "status": "helper-seam-extracted",
+      "modulePath": "src/modules/saved-listing-bridge/saved-listing-bridge.js",
+      "exportedHelpers": [
+        "normalizeArticleUrl",
+        "sanitizeSavedArticle",
+        "parseSavedArticles",
+        "stringifySavedArticles",
+        "readSavedArticles",
+        "writeSavedArticles",
+        "isArticleSaved",
+        "toggleSavedArticle"
+      ],
+      "consumer": "src/modules/legacy-app/legacy-app.js",
+      "notes": "Only saved data normalization, storage parsing/writing, lookup, and list toggle calculation moved. Saved listing rendering and event orchestration remain in legacy-app."
+    }
+  ],
   "noGrowthPolicy": {
     "enabled": true,
     "reason": "legacy-app should shrink or stay stable while behavior moves into purpose-specific modules"
@@ -40,35 +85,38 @@
       "id": "template-dom-hydration",
       "name": "Template cloning / DOM hydration glue",
       "ownerFiles": [
+        "src/modules/template-hydration/template-hydration.js",
         "src/modules/legacy-app/legacy-app.js",
         "apps/blog/index.xml"
       ],
-      "status": "bridge-owned-template-first",
+      "status": "extracted-helper-consumed-by-bridge",
       "futureTarget": "src/modules/template-hydration/template-hydration.js",
-      "nextTaskRecommendation": "Move cloneTemplateElement and template part hydration helpers after Blog template IDs are locked."
+      "nextTaskRecommendation": "Keep helper small; future tasks may move repeated text/icon/attribute hydration only after call sites are stable."
     },
     {
       "id": "comments-sheet-replies",
       "name": "Comments sheet / replies",
       "ownerFiles": [
+        "src/modules/comments-bridge/comments-bridge.js",
         "src/modules/legacy-app/legacy-app.js",
         "src/modules/comments/comments.css",
         "apps/blog/index.xml"
       ],
-      "status": "largest-runtime-bucket",
+      "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/comments/comments.js",
-      "nextTaskRecommendation": "Extract comments sheet controller, reply context, native Blogger compatibility, and comment menu behavior in one focused task."
+      "nextTaskRecommendation": "Keep URL/hash helper seam stable; extract comments sheet controller only after native Blogger reply behavior has targeted smoke coverage."
     },
     {
       "id": "saved-listing-state",
       "name": "Saved listing / saved state",
       "ownerFiles": [
+        "src/modules/saved-listing-bridge/saved-listing-bridge.js",
         "src/modules/legacy-app/legacy-app.js",
         "apps/blog/index.xml"
       ],
-      "status": "bridge-owned",
+      "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/listing/listing.js",
-      "nextTaskRecommendation": "Move saved storage reads/writes and saved listing render hydration while preserving localStorage failure behavior."
+      "nextTaskRecommendation": "Keep saved listing rendering and save/unsave event lifecycle in legacy-app until a focused listing module extraction has smoke coverage."
     },
     {
       "id": "popular-controls",

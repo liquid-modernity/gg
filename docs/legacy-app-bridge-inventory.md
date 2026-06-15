@@ -14,14 +14,32 @@ Current bridge size at TASK-002N start:
 - `src/modules/legacy-app/legacy-app.css`: 119 bytes, 2 lines.
 - Public DOM status: `createElement=6`, `allowedSmall=0`, `allowedReviewed=6`, `needsTemplate=0`, `unclassified=0`.
 
+TASK-002N-B extracted the first helper seam:
+
+- `src/modules/template-hydration/template-hydration.js` now owns `getTemplateElement()` and `cloneTemplateElement()`.
+- `src/modules/legacy-app/legacy-app.js` consumes `GG.templateHydration.cloneTemplateElement` and no longer defines inline `function cloneTemplateElement`.
+- After extraction, `src/modules/legacy-app/legacy-app.js` is 472631 bytes and 11213 lines.
+
+TASK-002N-C extracted a comments/replies helper seam:
+
+- `src/modules/comments-bridge/comments-bridge.js` owns low-risk URL/hash/permalink/reply-handle helpers.
+- `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.commentsBridge` while keeping comments sheet orchestration, Blogger native reply behavior, event lifecycle, and mutation-heavy UI flows inside the bridge.
+- After extraction, `src/modules/legacy-app/legacy-app.js` is 469827 bytes and 11119 lines.
+
+TASK-002N-D extracted a saved listing helper seam:
+
+- `src/modules/saved-listing-bridge/saved-listing-bridge.js` owns saved article URL normalization, saved item sanitization, JSON parse/stringify, localStorage read/write wrappers, saved lookup, and saved-list toggle calculation.
+- `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.savedListingBridge` while keeping saved listing rendering, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration inside the bridge.
+- After extraction, `src/modules/legacy-app/legacy-app.js` is 468262 bytes and 11063 lines.
+
 ## Domain Buckets
 
 | Bucket | Current owner | Future target | Notes |
 |---|---|---|---|
 | boot/runtime wiring | `legacy-app.js`, `registry/modules.json` | `src/modules/runtime/runtime.js` or existing shell module | Initializes `GG`, state, route contracts, panel APIs, QA exports, and idle boot sequence. |
-| template cloning / DOM hydration glue | `legacy-app.js`, `apps/blog/index.xml` | template hydration helper module | Keeps visible UI template-first through `cloneTemplateElement()` and part mutation. |
-| comments sheet / replies | `legacy-app.js`, comments templates/CSS | `src/modules/comments/comments.js` | Largest runtime bucket: sheet open/close, native Blogger wrapping, replies, composer, copy/delete, status, menus. |
-| saved listing / saved state | `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | LocalStorage reads/writes, saved article state, saved listing route/hash, unavailable fallbacks. |
+| template cloning / DOM hydration glue | `src/modules/template-hydration/template-hydration.js`, `legacy-app.js`, `apps/blog/index.xml` | `src/modules/template-hydration/template-hydration.js` | TASK-002N-B extracted template lookup and first-element cloning. Legacy business logic still calls the helper while hydrating templates. |
+| comments sheet / replies | `src/modules/comments-bridge/comments-bridge.js`, `legacy-app.js`, comments templates/CSS | `src/modules/comments/comments.js` | TASK-002N-C extracted URL/hash/permalink/reply-handle helpers. Sheet open/close, native Blogger wrapping, replies, composer, copy/delete, status, and menus remain in `legacy-app.js`. |
+| saved listing / saved state | `src/modules/saved-listing-bridge/saved-listing-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-D extracted saved data/storage/toggle helpers. Saved listing render, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration remain in `legacy-app.js`. |
 | popular controls | `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | Popular range state, Blogger popular widget parsing, range link hydration. |
 | related posts / prev-next / dots | `legacy-app.js`, detail templates | `src/modules/detail/detail.js` | Related scoring, related card hydration, dot pagination, detail context use. |
 | offline/error/fallback behavior | `legacy-app.js`, feedback/landing templates | `src/modules/feedback/feedback.js` | Search empty, 404 recovery, preview fetch failure, PWA/offline cache helpers. |

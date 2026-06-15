@@ -2,6 +2,9 @@
   "version": "0.1.0",
   "sourceBoundary": "src/modules/* is the shared source edit path for human and AI. Bundles are generated only.",
   "bundleOrder": [
+    "template-hydration",
+    "comments-bridge",
+    "saved-listing-bridge",
     "legacy-app",
     "public-softcode",
     "base",
@@ -24,6 +27,24 @@
     "visual-tokens"
   ],
   "modules": {
+    "template-hydration": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/template-hydration/template-hydration.js",
+      "type": "runtime-helper"
+    },
+    "comments-bridge": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/comments-bridge/comments-bridge.js",
+      "type": "runtime-helper"
+    },
+    "saved-listing-bridge": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/saved-listing-bridge/saved-listing-bridge.js",
+      "type": "runtime-helper"
+    },
     "legacy-app": {
       "enabled": true,
       "css": "src/modules/legacy-app/legacy-app.css",

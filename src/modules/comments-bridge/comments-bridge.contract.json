@@ -1,0 +1,8 @@
+{
+  "id": "comments-bridge",
+  "type": "runtime-helper",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/comments-bridge/comments-bridge.js",
+  "description": "Small comments/replies bridge helper seam for URL, hash, permalink, and reply-handle normalization. It does not generate public UI."
+}

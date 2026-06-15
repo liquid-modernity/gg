@@ -2,6 +2,49 @@
   "version": 1,
   "status": "active-bridge",
   "legacyAppPath": "src/modules/legacy-app/legacy-app.js",
+  "extractedSeams": [
+    {
+      "id": "template-dom-hydration",
+      "modulePath": "src/modules/template-hydration/template-hydration.js",
+      "exports": [
+        "getTemplateElement",
+        "cloneTemplateElement"
+      ],
+      "consumedBy": "src/modules/legacy-app/legacy-app.js",
+      "status": "extracted"
+    },
+    {
+      "id": "comments-sheet-replies",
+      "modulePath": "src/modules/comments-bridge/comments-bridge.js",
+      "exports": [
+        "stripParentIdFromCommentSrc",
+        "commentSrcHasParentId",
+        "withCommentParentId",
+        "normalizeReplyHandle",
+        "normalizeHashId",
+        "isCommentsHash",
+        "getCommentPermalink"
+      ],
+      "consumedBy": "src/modules/legacy-app/legacy-app.js",
+      "status": "helper-seam-extracted"
+    },
+    {
+      "id": "saved-listing-state",
+      "modulePath": "src/modules/saved-listing-bridge/saved-listing-bridge.js",
+      "exports": [
+        "normalizeArticleUrl",
+        "sanitizeSavedArticle",
+        "parseSavedArticles",
+        "stringifySavedArticles",
+        "readSavedArticles",
+        "writeSavedArticles",
+        "isArticleSaved",
+        "toggleSavedArticle"
+      ],
+      "consumedBy": "src/modules/legacy-app/legacy-app.js",
+      "status": "helper-seam-extracted"
+    }
+  ],
   "principle": "Split runtime behavior into purpose-specific modules while keeping visible public UI template-first.",
   "buckets": [
     {
@@ -13,24 +56,24 @@
     },
     {
       "id": "template-dom-hydration",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/template-hydration/template-hydration.js",
       "futureTarget": "src/modules/template-hydration/template-hydration.js",
-      "risk": "medium",
-      "nextStep": "Extract only after template IDs and clone behavior are stable."
+      "risk": "low",
+      "nextStep": "Keep clone helper stable; extract repeated text/icon/attribute hydration only when there is a clear repeated pattern."
     },
     {
       "id": "comments-sheet-replies",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/comments-bridge/comments-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/comments/comments.js",
       "risk": "high",
-      "nextStep": "Split comments sheet, replies, native Blogger compatibility, and menu behavior as a focused task."
+      "nextStep": "Keep native Blogger behavior in legacy-app until smoke coverage is narrower; comments-bridge owns only URL/hash/permalink/reply-handle helpers."
     },
     {
       "id": "saved-listing-state",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/saved-listing-bridge/saved-listing-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/listing/listing.js",
       "risk": "medium",
-      "nextStep": "Move saved storage and saved listing hydration with localStorage failure preservation."
+      "nextStep": "Keep saved listing render and save/unsave orchestration in legacy-app; saved-listing-bridge owns only normalization, storage parsing/writing, lookup, and toggle list calculation."
     },
     {
       "id": "popular-controls",

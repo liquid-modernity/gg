@@ -11,6 +11,7 @@ async function emitPublicConfig(outDir) { const surfaces = await safeReadJson(jo
 const args = new Set(process.argv.slice(2));
 const modeArg = process.argv[process.argv.indexOf('--mode') + 1] || 'all';
 const modes = modeArg === 'all' ? ['dev','prod'] : [modeArg];
+const CLASSIC_RUNTIME_HELPER_MODULES = new Set(['template-hydration', 'comments-bridge', 'saved-listing-bridge']);
 async function concatModules(kind){
   const registry = await readJson(join(ROOT,'registry/modules.json'));
   let out = `/* GG generated ${kind} bundle. Do not edit. Source: src/modules/* */\n`;
@@ -19,7 +20,11 @@ async function concatModules(kind){
     if(!mod?.enabled) continue;
     const rel = kind === 'css' ? mod.css : mod.js;
     if(!rel || !existsSync(join(ROOT, rel))) continue;
-    out += `\n/* @gg-module ${id} */\n` + await fs.readFile(join(ROOT, rel), 'utf8') + '\n';
+    let source = await fs.readFile(join(ROOT, rel), 'utf8');
+    if (kind === 'js' && (mod.type === 'runtime-helper' || CLASSIC_RUNTIME_HELPER_MODULES.has(id))) {
+      source = source.replace(/^export\s+(function|const|let|var|class)\s+/gm, '$1 ');
+    }
+    out += `\n/* @gg-module ${id} */\n` + source + '\n';
   }
   return out;
 }

@@ -145,10 +145,10 @@ createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=
 
 | File | Tag | Decision | Rationale |
 |---|---|---|---|
-| `src/modules/legacy-app/legacy-app.js` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
-| `src/modules/legacy-app/legacy-app.js` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
-| `src/modules/legacy-app/legacy-app.js` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
-| `src/modules/legacy-app/legacy-app.js` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
+| `src/modules/legacy-app/legacy-app.js:1791` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
+| `src/modules/legacy-app/legacy-app.js:4776` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
+| `src/modules/legacy-app/legacy-app.js:5047` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
+| `src/modules/legacy-app/legacy-app.js:9982` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
 | `src/modules/store/store.js` | `script` | `allowedRuntime` | Store compatibility entry dynamically loads the store core runtime script. |
 | `src/modules/store/store-core.js` | `script` | `allowedRuntime` | Store core dynamically loads the discovery runtime script on demand. |
 
@@ -242,9 +242,9 @@ No UI migration was performed. No createElement calls were removed or modified. 
 
 | File | API | Status |
 |------|-----|--------|
-| `src/modules/legacy-app/legacy-app.js:1787` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:6242` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:7584` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:1792` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:6152` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:7430` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/studio/app.js:1` | `insertAdjacentHTML` | allowlisted-error-display |
 | `apps/landing/landing.html:3302` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/landing/landing.html:3362` | `innerHTML` | allowlisted-legacy-bridge |
