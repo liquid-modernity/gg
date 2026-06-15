@@ -20,6 +20,7 @@
     "check:public-softcode": "node checks/public-softcode.check.mjs",
     "check:public-ui": "node checks/public-ui-contract.check.mjs",
     "check:public-dom": "node checks/public-dom.check.mjs",
+    "check:legacy-bridge": "node checks/legacy-bridge.check.mjs",
     "console": "node apps/console/server.mjs",
     "console:check": "node apps/console/server.mjs --check",
     "studio": "node apps/studio/server.mjs",

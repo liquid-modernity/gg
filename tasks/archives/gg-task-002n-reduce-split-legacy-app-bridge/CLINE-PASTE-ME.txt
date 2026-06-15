@@ -1,0 +1,12 @@
+Run TASK-002N exactly from `ai/agent/prompts/CLINE-SNIPER-TASK-002N-REDUCE-SPLIT-LEGACY-APP-BRIDGE.md`.
+
+Hard rules:
+- This is a sniper task. Do not perform a broad rewrite.
+- Do not delete `legacy-donor/` or `src/modules/legacy-app/`.
+- Do not change public behavior.
+- Do not create hidden UI in JS.
+- Keep `npm run check:public-dom` passing with `needsTemplate=0` and `unclassified=0`.
+- Add and pass `npm run check:legacy-bridge`.
+- End with:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-acceptance.sh

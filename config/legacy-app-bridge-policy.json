@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "status": "active-bridge",
+  "principle": "legacy-app is a temporary runtime bridge; visible public UI must be template-first",
+  "legacyAppPath": "src/modules/legacy-app/legacy-app.js",
+  "legacyDonorPath": "legacy-donor",
+  "doNotDeleteYet": true,
+  "noGrowthPolicy": {
+    "enabled": true,
+    "reason": "legacy-app should shrink or stay stable while behavior moves into purpose-specific modules"
+  },
+  "publicDomPolicy": {
+    "requiresNeedsTemplateZero": true,
+    "requiresUnclassifiedZero": true
+  },
+  "forbidden": {
+    "newHiddenUiGeneration": true,
+    "genericTemplates": [
+      "gg-template-div",
+      "gg-template-link",
+      "gg-template-button",
+      "gg-template-element",
+      "gg-template-generic"
+    ],
+    "legacyDonorRuntimeImports": true
+  },
+  "extractionBuckets": [
+    {
+      "id": "boot-runtime-wiring",
+      "name": "Boot/runtime wiring",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "registry/modules.json"
+      ],
+      "status": "bridge-owned",
+      "futureTarget": "src/modules/runtime/runtime.js",
+      "nextTaskRecommendation": "Extract only stable boot sequencing and GG namespace exports after panel and route APIs are mapped."
+    },
+    {
+      "id": "template-dom-hydration",
+      "name": "Template cloning / DOM hydration glue",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "apps/blog/index.xml"
+      ],
+      "status": "bridge-owned-template-first",
+      "futureTarget": "src/modules/template-hydration/template-hydration.js",
+      "nextTaskRecommendation": "Move cloneTemplateElement and template part hydration helpers after Blog template IDs are locked."
+    },
+    {
+      "id": "comments-sheet-replies",
+      "name": "Comments sheet / replies",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "src/modules/comments/comments.css",
+        "apps/blog/index.xml"
+      ],
+      "status": "largest-runtime-bucket",
+      "futureTarget": "src/modules/comments/comments.js",
+      "nextTaskRecommendation": "Extract comments sheet controller, reply context, native Blogger compatibility, and comment menu behavior in one focused task."
+    },
+    {
+      "id": "saved-listing-state",
+      "name": "Saved listing / saved state",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "apps/blog/index.xml"
+      ],
+      "status": "bridge-owned",
+      "futureTarget": "src/modules/listing/listing.js",
+      "nextTaskRecommendation": "Move saved storage reads/writes and saved listing render hydration while preserving localStorage failure behavior."
+    },
+    {
+      "id": "popular-controls",
+      "name": "Popular controls",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "apps/blog/index.xml"
+      ],
+      "status": "bridge-owned-template-first",
+      "futureTarget": "src/modules/listing/listing.js",
+      "nextTaskRecommendation": "Extract popular range state and link hydration after confirming existing template IDs and Blogger widget parsing."
+    },
+    {
+      "id": "related-prev-next-dots",
+      "name": "Related posts / prev-next / dots",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "apps/blog/index.xml"
+      ],
+      "status": "bridge-owned-template-first",
+      "futureTarget": "src/modules/detail/detail.js",
+      "nextTaskRecommendation": "Move related scoring, card hydration, and dot pagination after detail context parsing is isolated."
+    },
+    {
+      "id": "offline-error-fallback",
+      "name": "Offline/error/fallback behavior",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "apps/blog/index.xml",
+        "apps/landing/landing.html"
+      ],
+      "status": "bridge-owned",
+      "futureTarget": "src/modules/feedback/feedback.js",
+      "nextTaskRecommendation": "Extract 404, search-empty, preview fetch failure, and PWA fallback state without changing copy keys."
+    },
+    {
+      "id": "parsing-extraction-helpers",
+      "name": "Parsing/extraction helpers",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js"
+      ],
+      "status": "bridge-owned",
+      "futureTarget": "src/modules/parsing/parsing.js",
+      "nextTaskRecommendation": "Extract pure text, date, label, feed, and Blogger HTML parsing helpers after tests cover current fallback behavior."
+    },
+    {
+      "id": "cross-surface-references",
+      "name": "Store and landing cross-surface references",
+      "ownerFiles": [
+        "src/modules/legacy-app/legacy-app.js",
+        "src/modules/store/store.js",
+        "src/modules/store/store-core.js",
+        "apps/landing/landing.html"
+      ],
+      "status": "bridge-owned-route-vocabulary",
+      "futureTarget": "src/modules/shell/shell.js",
+      "nextTaskRecommendation": "Move route vocabulary and cross-surface navigation contracts after Console-owned target config is stable."
+    }
+  ]
+}

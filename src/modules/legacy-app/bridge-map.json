@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "status": "active-bridge",
+  "legacyAppPath": "src/modules/legacy-app/legacy-app.js",
+  "principle": "Split runtime behavior into purpose-specific modules while keeping visible public UI template-first.",
+  "buckets": [
+    {
+      "id": "boot-runtime-wiring",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/runtime/runtime.js",
+      "risk": "high",
+      "nextStep": "Map public GG exports and boot order before moving code."
+    },
+    {
+      "id": "template-dom-hydration",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/template-hydration/template-hydration.js",
+      "risk": "medium",
+      "nextStep": "Extract only after template IDs and clone behavior are stable."
+    },
+    {
+      "id": "comments-sheet-replies",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/comments/comments.js",
+      "risk": "high",
+      "nextStep": "Split comments sheet, replies, native Blogger compatibility, and menu behavior as a focused task."
+    },
+    {
+      "id": "saved-listing-state",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/listing/listing.js",
+      "risk": "medium",
+      "nextStep": "Move saved storage and saved listing hydration with localStorage failure preservation."
+    },
+    {
+      "id": "popular-controls",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/listing/listing.js",
+      "risk": "medium",
+      "nextStep": "Move popular range state after Blogger popular widget parsing is covered."
+    },
+    {
+      "id": "related-prev-next-dots",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/detail/detail.js",
+      "risk": "medium",
+      "nextStep": "Move related scoring, cards, and dots after detail context helpers are isolated."
+    },
+    {
+      "id": "offline-error-fallback",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/feedback/feedback.js",
+      "risk": "medium",
+      "nextStep": "Move fallback behavior without changing copy keys or route semantics."
+    },
+    {
+      "id": "parsing-extraction-helpers",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/parsing/parsing.js",
+      "risk": "low",
+      "nextStep": "Extract pure parsing/text helpers first once fallback fixtures exist."
+    },
+    {
+      "id": "cross-surface-references",
+      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "futureTarget": "src/modules/shell/shell.js",
+      "risk": "medium",
+      "nextStep": "Move route vocabulary for landing/store after Console-owned config boundaries are stable."
+    }
+  ]
+}

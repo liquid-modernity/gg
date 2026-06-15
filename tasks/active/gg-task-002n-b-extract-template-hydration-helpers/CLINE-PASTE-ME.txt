@@ -1,0 +1,55 @@
+TASK-002N-B — Extract Template Hydration Helpers from legacy-app
+
+Context:
+- TASK-002M-G is complete.
+- Public DOM is template-first:
+  createElement=6 allowedSmall=0 allowedReviewed=6 needsTemplate=0 unclassified=0
+- TASK-002N is complete.
+- `legacy-app.js` is still large, but bridge policy/inventory/check are now in place.
+- This task is the first low-risk split.
+
+Goal:
+Extract template hydration helpers from `src/modules/legacy-app/legacy-app.js` into a focused helper module without changing public runtime behavior.
+
+Preferred new module:
+`src/modules/template-hydration/template-hydration.js`
+
+Strict scope:
+- Move only stable helper code related to template lookup, template cloning, first-element extraction, and simple text/icon/attribute hydration if already repeated/obvious.
+- Keep comments/replies business logic inside `legacy-app.js`.
+- Keep saved listing/popular/related logic inside `legacy-app.js`.
+- Keep parsing helpers inside `legacy-app.js`.
+- Do not delete `legacy-app.js`.
+- Do not delete `legacy-donor/`.
+- Do not restructure Store.
+- Do not implement OAuth.
+- Do not install dependencies.
+- Do not edit `dist/**` or `.cloudflare-build/**`.
+
+Required behavior:
+- Existing template IDs in `apps/blog/index.xml` and `apps/store/store.html` must continue to work.
+- `legacy-app.js` should import/use the helper module.
+- Public DOM guard must remain:
+  `needsTemplate=0` and `unclassified=0`.
+- No new `innerHTML`, `insertAdjacentHTML`, `outerHTML`.
+- No new user-visible UI generation with `createElement`.
+- Runtime behavior must remain unchanged.
+
+Acceptance requirements:
+1. Create `src/modules/template-hydration/template-hydration.js`.
+2. Export at least `cloneTemplateElement`.
+3. Remove the inline `function cloneTemplateElement` definition from `legacy-app.js` or convert it into an import alias/wrapper only if absolutely necessary.
+4. Update `src/modules/legacy-app/bridge-map.json`.
+5. Update `docs/legacy-app-bridge-inventory.md`.
+6. Update `config/legacy-app-bridge-policy.json` if baseline/allowed seam changes.
+7. Add or keep `scripts/task002n-b-acceptance.sh`.
+8. Run:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-b-acceptance.sh
+
+Final response:
+- List files changed.
+- Report legacy-app byte/line count before/after if available.
+- Report `check:public-dom` summary.
+- Report `check:legacy-bridge` summary.
+- Confirm no runtime UI behavior was intentionally changed.
