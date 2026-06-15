@@ -1,0 +1,8 @@
+{
+  "id": "popular-related-bridge",
+  "type": "runtime-helper",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/popular-related-bridge/popular-related-bridge.js",
+  "description": "Small Popular/Related bridge helper seam for popular range normalization, related post normalization, related date scoring, and related pagination/dot state. It does not generate public UI."
+}

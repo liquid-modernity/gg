@@ -43,6 +43,22 @@
       ],
       "consumedBy": "src/modules/legacy-app/legacy-app.js",
       "status": "helper-seam-extracted"
+    },
+    {
+      "id": "popular-related-state",
+      "modulePath": "src/modules/popular-related-bridge/popular-related-bridge.js",
+      "exports": [
+        "normalizePopularRange",
+        "getPopularRangeFromHash",
+        "getPopularRangeHref",
+        "getPopularRangeLabel",
+        "getRelatedDateScore",
+        "normalizeRelatedPost",
+        "getRelatedPageState",
+        "getRelatedDotState"
+      ],
+      "consumedBy": "src/modules/legacy-app/legacy-app.js",
+      "status": "helper-seam-extracted"
     }
   ],
   "principle": "Split runtime behavior into purpose-specific modules while keeping visible public UI template-first.",
@@ -77,17 +93,17 @@
     },
     {
       "id": "popular-controls",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/popular-related-bridge/popular-related-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/listing/listing.js",
       "risk": "medium",
-      "nextStep": "Move popular range state after Blogger popular widget parsing is covered."
+      "nextStep": "Keep Popular rendering and Blogger widget parsing in legacy-app; popular-related-bridge owns only range normalization, href, and label helpers."
     },
     {
       "id": "related-prev-next-dots",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/popular-related-bridge/popular-related-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/detail/detail.js",
       "risk": "medium",
-      "nextStep": "Move related scoring, cards, and dots after detail context helpers are isolated."
+      "nextStep": "Keep Related rendering and template hydration in legacy-app; popular-related-bridge owns only date score, related normalization, page state, and dot state helpers."
     },
     {
       "id": "offline-error-fallback",

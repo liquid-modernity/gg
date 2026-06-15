@@ -1,0 +1,83 @@
+You are working in the GG vNext repo.
+
+Implement TASK-002N-E — Extract Popular/Related Bridge Seam.
+
+Read these files first, in this order:
+1. `AGENTS.md`
+2. `src/modules/legacy-app/README.md`
+3. `src/modules/legacy-app/bridge-map.json`
+4. `config/legacy-app-bridge-policy.json`
+5. `docs/legacy-app-bridge-inventory.md`
+6. `src/modules/legacy-app/legacy-app.js` only around the Popular controls / Related posts / dots navigation bucket
+7. Existing bridge modules for pattern reference:
+   - `src/modules/template-hydration/template-hydration.js`
+   - `src/modules/comments-bridge/comments-bridge.js`
+   - `src/modules/saved-listing-bridge/saved-listing-bridge.js`
+
+Goal:
+Create a new bridge module for small, stable Popular/Related helper logic and wire `legacy-app.js` to use it through `GG.popularRelatedBridge`.
+
+Create:
+- `src/modules/popular-related-bridge/popular-related-bridge.js`
+- `src/modules/popular-related-bridge/popular-related-bridge.contract.json`
+- `scripts/task002n-e-acceptance.sh`
+
+Update as needed:
+- `src/modules/legacy-app/legacy-app.js`
+- `registry/modules.json`
+- `tools/build.mjs`
+- `src/modules/legacy-app/bridge-map.json`
+- `src/modules/legacy-app/README.md`
+- `config/legacy-app-bridge-policy.json`
+- `config/public-dom-generation-policy.json`
+- `docs/legacy-app-bridge-inventory.md`
+- `docs/public-dom-generation-audit.md`
+
+Scope allowed:
+- Extract small/non-stateful helpers from the Popular controls and Related posts/dots bucket.
+- Candidate helper families may include:
+  - popular range normalization
+  - popular range key/label helpers
+  - popular range href/state helpers
+  - related post normalization
+  - related post key/href/title fallback helpers
+  - related dots navigation helper/data helpers
+  - safe list slicing/count helpers used by related/popular rendering
+- Keep `legacy-app.js` as the orchestrator.
+- Keep template cloning/hydration patterns unchanged.
+- Keep runtime behavior unchanged.
+- Use the existing classic bundle pattern: expose helpers through `GG.popularRelatedBridge`. If the repo still concatenates classic browser modules, follow the existing `template-hydration`, `comments-bridge`, and `saved-listing-bridge` build pattern rather than adding a static ESM import inside `legacy-app.js`.
+
+Hard boundaries:
+- Do NOT rewrite Popular rendering.
+- Do NOT rewrite Related posts rendering.
+- Do NOT change Blog XML templates unless there is a small metadata/contract comment required; prefer no template change.
+- Do NOT touch saved listing logic except for shared docs/policy counts if necessary.
+- Do NOT touch comments/replies orchestration.
+- Do NOT touch Store/Landing.
+- Do NOT delete `legacy-donor/`.
+- Do NOT delete `src/modules/legacy-app/`.
+- Do NOT add dependencies.
+- Do NOT edit generated `dist/**` or `.cloudflare-build/**` manually.
+
+Acceptance expectations:
+- `src/modules/popular-related-bridge/popular-related-bridge.js` exists.
+- `src/modules/popular-related-bridge/popular-related-bridge.contract.json` exists.
+- `legacy-app.js` references `GG.popularRelatedBridge`.
+- `registry/modules.json` includes the new module.
+- `tools/build.mjs` bundles the new bridge before `legacy-app` if bundle order is required.
+- `check:public-dom` still reports `needsTemplate=0` and `unclassified=0`.
+- `check:legacy-bridge` still passes and reports the updated bytes/lines.
+- Full command passes:
+
+```bash
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-e-acceptance.sh
+```
+
+After implementation, report:
+- files changed
+- exports added to `GG.popularRelatedBridge`
+- before/after `legacy-app.js` bytes and lines
+- `check:public-dom` summary
+- `check:legacy-bridge` summary
+- confirmation that Popular/Related runtime behavior was not intentionally changed

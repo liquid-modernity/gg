@@ -39,6 +39,12 @@ TASK-002N-D-PATCH-2 tightened the saved listing runtime presentation contract:
 - The listing toolbar label is synchronized to `Saved` while Saved mode is active so the visible mode control no longer remains on `Latest`.
 - After PATCH-2, `src/modules/legacy-app/legacy-app.js` is 471418 bytes and 11131 lines.
 
+TASK-002N-E extracted a Popular/Related helper seam:
+
+- `src/modules/popular-related-bridge/popular-related-bridge.js` owns low-risk Popular range normalization, href, label helpers, Related date scoring, related post normalization, page state, and dot state helpers.
+- `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.popularRelatedBridge` while keeping Popular rendering, Blogger widget parsing, Related rendering, template hydration, and event orchestration inside the bridge.
+- After extraction, `src/modules/legacy-app/legacy-app.js` is 471314 bytes and 11128 lines.
+
 ## Domain Buckets
 
 | Bucket | Current owner | Future target | Notes |
@@ -47,8 +53,8 @@ TASK-002N-D-PATCH-2 tightened the saved listing runtime presentation contract:
 | template cloning / DOM hydration glue | `src/modules/template-hydration/template-hydration.js`, `legacy-app.js`, `apps/blog/index.xml` | `src/modules/template-hydration/template-hydration.js` | TASK-002N-B extracted template lookup and first-element cloning. Legacy business logic still calls the helper while hydrating templates. |
 | comments sheet / replies | `src/modules/comments-bridge/comments-bridge.js`, `legacy-app.js`, comments templates/CSS | `src/modules/comments/comments.js` | TASK-002N-C extracted URL/hash/permalink/reply-handle helpers. Sheet open/close, native Blogger wrapping, replies, composer, copy/delete, status, and menus remain in `legacy-app.js`. |
 | saved listing / saved state | `src/modules/saved-listing-bridge/saved-listing-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-D extracted saved data/storage/toggle helpers. PATCH-2 keeps saved listing render, mode exclusivity, native row hiding, toolbar label sync, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration in `legacy-app.js`. |
-| popular controls | `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | Popular range state, Blogger popular widget parsing, range link hydration. |
-| related posts / prev-next / dots | `legacy-app.js`, detail templates | `src/modules/detail/detail.js` | Related scoring, related card hydration, dot pagination, detail context use. |
+| popular controls | `src/modules/popular-related-bridge/popular-related-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-E extracted range normalization, href, and label helpers. Popular rendering, Blogger popular widget parsing, and range template hydration remain in `legacy-app.js`. |
+| related posts / prev-next / dots | `src/modules/popular-related-bridge/popular-related-bridge.js`, `legacy-app.js`, detail templates | `src/modules/detail/detail.js` | TASK-002N-E extracted related date scoring, post normalization, page state, and dot state helpers. Related rendering, card hydration, and detail context use remain in `legacy-app.js`. |
 | offline/error/fallback behavior | `legacy-app.js`, feedback/landing templates | `src/modules/feedback/feedback.js` | Search empty, 404 recovery, preview fetch failure, PWA/offline cache helpers. |
 | parsing/extraction helpers | `legacy-app.js` | `src/modules/parsing/parsing.js` | HTML strip/read helpers, feed parsing, date/label extraction, text normalization. |
 | store or landing cross-surface references if any | `legacy-app.js`, store runtime loaders, landing HTML | `src/modules/shell/shell.js` | Route vocabulary includes `/store`, `/landing`, contact anchors, store exclusion, and cross-surface discovery actions. |

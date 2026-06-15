@@ -48,6 +48,23 @@
       ],
       "consumer": "src/modules/legacy-app/legacy-app.js",
       "notes": "Only saved data normalization, storage parsing/writing, lookup, and list toggle calculation moved. Saved listing rendering, exclusive mode handling, native row hiding, toolbar label sync, and event orchestration remain in legacy-app."
+    },
+    {
+      "id": "popular-related-state",
+      "status": "helper-seam-extracted",
+      "modulePath": "src/modules/popular-related-bridge/popular-related-bridge.js",
+      "exportedHelpers": [
+        "normalizePopularRange",
+        "getPopularRangeFromHash",
+        "getPopularRangeHref",
+        "getPopularRangeLabel",
+        "getRelatedDateScore",
+        "normalizeRelatedPost",
+        "getRelatedPageState",
+        "getRelatedDotState"
+      ],
+      "consumer": "src/modules/legacy-app/legacy-app.js",
+      "notes": "Only Popular range normalization/href/label and Related normalization/pagination/dot state helpers moved. Popular rendering, Blogger widget parsing, Related rendering, and template hydration remain in legacy-app."
     }
   ],
   "noGrowthPolicy": {
@@ -122,23 +139,25 @@
       "id": "popular-controls",
       "name": "Popular controls",
       "ownerFiles": [
+        "src/modules/popular-related-bridge/popular-related-bridge.js",
         "src/modules/legacy-app/legacy-app.js",
         "apps/blog/index.xml"
       ],
-      "status": "bridge-owned-template-first",
+      "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/listing/listing.js",
-      "nextTaskRecommendation": "Extract popular range state and link hydration after confirming existing template IDs and Blogger widget parsing."
+      "nextTaskRecommendation": "Keep Popular rendering and Blogger widget parsing in legacy-app until a focused listing module extraction has smoke coverage."
     },
     {
       "id": "related-prev-next-dots",
       "name": "Related posts / prev-next / dots",
       "ownerFiles": [
+        "src/modules/popular-related-bridge/popular-related-bridge.js",
         "src/modules/legacy-app/legacy-app.js",
         "apps/blog/index.xml"
       ],
-      "status": "bridge-owned-template-first",
+      "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/detail/detail.js",
-      "nextTaskRecommendation": "Move related scoring, card hydration, and dot pagination after detail context parsing is isolated."
+      "nextTaskRecommendation": "Keep Related rendering and template hydration in legacy-app until detail context parsing and smoke coverage are narrower."
     },
     {
       "id": "offline-error-fallback",

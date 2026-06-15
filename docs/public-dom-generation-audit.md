@@ -145,10 +145,10 @@ createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=
 
 | File | Tag | Decision | Rationale |
 |---|---|---|---|
-| `src/modules/legacy-app/legacy-app.js:1796` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
-| `src/modules/legacy-app/legacy-app.js:4781` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
-| `src/modules/legacy-app/legacy-app.js:5052` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
-| `src/modules/legacy-app/legacy-app.js:10050` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
+| `src/modules/legacy-app/legacy-app.js:1797` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
+| `src/modules/legacy-app/legacy-app.js:4782` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
+| `src/modules/legacy-app/legacy-app.js:5053` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
+| `src/modules/legacy-app/legacy-app.js:10047` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
 | `src/modules/store/store.js` | `script` | `allowedRuntime` | Store compatibility entry dynamically loads the store core runtime script. |
 | `src/modules/store/store-core.js` | `script` | `allowedRuntime` | Store core dynamically loads the discovery runtime script on demand. |
 
@@ -167,6 +167,14 @@ PATCH-2 did not add new public DOM generation. Saved listing exclusivity is hand
 - Native listing children are marked with `data-gg-native-row="true"` and hidden while Saved or Popular mode is active.
 - Saved rows continue to clone `gg-template-listing-row`; empty state continues to clone `gg-empty-state-saved-articles`.
 - Load-more/pagination visibility and the listing toolbar label are updated by state, not by new structural UI creation.
+
+### TASK-002N-E Popular/Related Bridge Seam
+
+TASK-002N-E did not add new public DOM generation. It moved small Popular/Related data helpers into `src/modules/popular-related-bridge/popular-related-bridge.js`:
+
+- Popular range hash normalization, range href, and range label helpers.
+- Related date score, post normalization, page state, and dot state helpers.
+- Popular and Related visible structures still come from existing Blog templates and are cloned/hydrated by `legacy-app.js`.
 
 ### Remaining needsTemplate Candidates
 
@@ -250,9 +258,9 @@ No UI migration was performed. No createElement calls were removed or modified. 
 
 | File | API | Status |
 |------|-----|--------|
-| `src/modules/legacy-app/legacy-app.js:1797` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:6157` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:7498` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:1798` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:6158` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:7503` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/studio/app.js:1` | `insertAdjacentHTML` | allowlisted-error-display |
 | `apps/landing/landing.html:3302` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/landing/landing.html:3362` | `innerHTML` | allowlisted-legacy-bridge |

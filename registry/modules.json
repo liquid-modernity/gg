@@ -5,6 +5,7 @@
     "template-hydration",
     "comments-bridge",
     "saved-listing-bridge",
+    "popular-related-bridge",
     "legacy-app",
     "public-softcode",
     "base",
@@ -43,6 +44,12 @@
       "enabled": true,
       "css": null,
       "js": "src/modules/saved-listing-bridge/saved-listing-bridge.js",
+      "type": "runtime-helper"
+    },
+    "popular-related-bridge": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/popular-related-bridge/popular-related-bridge.js",
       "type": "runtime-helper"
     },
     "legacy-app": {

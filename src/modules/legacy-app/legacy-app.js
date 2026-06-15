@@ -3,6 +3,7 @@ window.GG = window.GG || {};
         var templateHydration = GG.templateHydration || {};
         var commentsBridge = GG.commentsBridge || {};
         var savedListingBridge = GG.savedListingBridge || {};
+        var popularRelatedBridge = GG.popularRelatedBridge || {};
         var cloneTemplateElement = templateHydration.cloneTemplateElement;
 
         var COPY = {
@@ -6831,11 +6832,11 @@ window.GG = window.GG || {};
         }
 
         function getPopularRangeFromHash() {
-          var hash = window.location.hash || '';
-          var range = '';
-          if (hash.indexOf(BLOG_RETENTION_CONTRACT.popularRouteHash) !== 0) return '';
-          range = hash.split(':')[1] || 'ALL_TIME';
-          return BLOG_RETENTION_CONTRACT.popularRanges.indexOf(range) === -1 ? 'ALL_TIME' : range;
+          return popularRelatedBridge.getPopularRangeFromHash(window.location.hash || '', {
+            routeHash: BLOG_RETENTION_CONTRACT.popularRouteHash,
+            ranges: BLOG_RETENTION_CONTRACT.popularRanges,
+            fallback: 'ALL_TIME'
+          });
         }
 
         function extractPopularItems(range) {
@@ -6885,12 +6886,6 @@ window.GG = window.GG || {};
         function createPopularControls(range) {
           var tpl = document.getElementById('gg-template-popular-range-selector');
           var section, title, group;
-          var labels = {
-            ALL_TIME: 'All time',
-            LAST_YEAR: 'Last year',
-            LAST_MONTH: 'Last 30 days',
-            LAST_WEEK: 'Last 7 days'
-          };
 
           if (tpl && tpl.content) {
             section = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
@@ -6904,9 +6899,14 @@ window.GG = window.GG || {};
                 linkArr.forEach(function(link) {
                   var key = link.getAttribute('data-gg-popular-range-key');
                   if (key) {
-                    link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + key;
+                    link.href = popularRelatedBridge.getPopularRangeHref(key, {
+                      routeHash: BLOG_RETENTION_CONTRACT.popularRouteHash,
+                      ranges: BLOG_RETENTION_CONTRACT.popularRanges
+                    });
                     link.setAttribute('aria-current', key === range ? 'true' : 'false');
-                    link.textContent = labels[key] || key;
+                    link.textContent = popularRelatedBridge.getPopularRangeLabel(key, {
+                      ranges: BLOG_RETENTION_CONTRACT.popularRanges
+                    });
                   }
                 });
               }
@@ -6924,9 +6924,14 @@ window.GG = window.GG || {};
 	              BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
 	                var link = cloneTemplateElement('gg-template-popular-range-link');
 	                if (!link) return;
-	                link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
+	                link.href = popularRelatedBridge.getPopularRangeHref(item, {
+	                  routeHash: BLOG_RETENTION_CONTRACT.popularRouteHash,
+	                  ranges: BLOG_RETENTION_CONTRACT.popularRanges
+	                });
 	                link.setAttribute('aria-current', item === range ? 'true' : 'false');
-	                link.textContent = labels[item] || item;
+	                link.textContent = popularRelatedBridge.getPopularRangeLabel(item, {
+	                  ranges: BLOG_RETENTION_CONTRACT.popularRanges
+	                });
 	                group.appendChild(link);
 	              });
             }
@@ -8624,12 +8629,6 @@ window.GG = window.GG || {};
           }).slice(0, 14);
         }
 
-        function relatedDateScore(value) {
-          var time = Date.parse(value || '');
-          if (isNaN(time)) return 0;
-          return Math.max(0, Math.min(6, Math.round((time - Date.now() + (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 60))));
-        }
-
         function getCurrentRelatedContext() {
           var payload = getCurrentArticlePayload();
           if (!payload) return null;
@@ -8659,7 +8658,7 @@ window.GG = window.GG || {};
           }
 
           if (shared) score += 3;
-          score += relatedDateScore(candidate.date || candidate.published || '');
+          score += popularRelatedBridge.getRelatedDateScore(candidate.date || candidate.published || '');
           if (!score) score += 1;
           return score;
         }
@@ -8678,19 +8677,15 @@ window.GG = window.GG || {};
             post = posts[i];
             score = scoreRelatedPost(post, context);
             if (score <= -100) continue;
-            scored.push({
-              title: stripHtml(post.title || ''),
-              href: post.href || '',
-              summary: stripHtml(post.summary || ''),
-              labelTexts: sanitizeTopicTexts(post.labelTexts || []),
-              image: post.image || post.thumbnail || '',
-              date: post.date || post.published || '',
-              score: score
-            });
+            scored.push(popularRelatedBridge.normalizeRelatedPost(post, {
+              score: score,
+              stripText: stripHtml,
+              sanitizeTopics: sanitizeTopicTexts
+            }));
           }
 
           scored.sort(function (a, b) {
-            return b.score - a.score || relatedDateScore(b.date) - relatedDateScore(a.date) || a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+            return b.score - a.score || popularRelatedBridge.getRelatedDateScore(b.date) - popularRelatedBridge.getRelatedDateScore(a.date) || a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
           });
 
           return scored.slice(0, BLOG_RETENTION_CONTRACT.relatedMax);
@@ -8730,11 +8725,12 @@ window.GG = window.GG || {};
 
         function renderRelatedPosts(items, source) {
           var list = Array.isArray(items) ? items : [];
-          var pageCount = Math.max(1, Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax));
-          var page = Math.min(Math.max(0, state.relatedPage || 0), pageCount - 1);
-          var visible = list.slice(page * BLOG_RETENTION_CONTRACT.relatedVisibleMax, (page + 1) * BLOG_RETENTION_CONTRACT.relatedVisibleMax);
+          var pageState = popularRelatedBridge.getRelatedPageState(list, state.relatedPage || 0, BLOG_RETENTION_CONTRACT.relatedVisibleMax);
+          var page = pageState.page;
+          var visible = pageState.visible;
           var nodes = [];
           var dots;
+          var dotState;
           var i;
           var node;
 
@@ -8761,7 +8757,7 @@ window.GG = window.GG || {};
             if (node) nodes.push(node);
           }
 
-          if (list.length > BLOG_RETENTION_CONTRACT.relatedVisibleMax) {
+          if (pageState.hasPagination) {
             var dotsTpl = document.getElementById('gg-template-related-posts-dot');
             if (dotsTpl && dotsTpl.content) {
               dots = /** @type {Element} */ (dotsTpl.content.cloneNode(true).firstElementChild);
@@ -8776,7 +8772,7 @@ window.GG = window.GG || {};
             for (var di = 0; di < existingDots.length; di += 1) {
               existingDots[di].parentNode.removeChild(existingDots[di]);
             }
-            var totalPages = Math.ceil(list.length / BLOG_RETENTION_CONTRACT.relatedVisibleMax);
+            var totalPages = pageState.pageCount;
             for (i = 0; i < totalPages; i += 1) {
               if (dotProto) {
                 node = dotProto.cloneNode(true);
@@ -8794,9 +8790,10 @@ window.GG = window.GG || {};
                 node.type = 'button';
                 node.setAttribute('role', 'listitem');
               }
-              node.setAttribute('aria-label', 'Related posts group ' + String(i + 1));
-              node.setAttribute('aria-current', i === page ? 'true' : 'false');
-              node.setAttribute('data-gg-related-page', String(i));
+              dotState = popularRelatedBridge.getRelatedDotState(i, page);
+              node.setAttribute('aria-label', dotState.label);
+              node.setAttribute('aria-current', dotState.current ? 'true' : 'false');
+              node.setAttribute('data-gg-related-page', dotState.pageAttribute);
               dots.appendChild(node);
             }
             nodes.push(dots);
