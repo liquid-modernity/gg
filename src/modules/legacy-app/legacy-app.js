@@ -4473,29 +4473,19 @@ window.GG = window.GG || {};
             return;
           }
 
-          banner = document.createElement('div');
-          banner.className = 'gg-comments__reply-banner';
-          banner.setAttribute('role', 'status');
-          label = document.createElement('span');
-          label.className = 'gg-comments__reply-context gg-comments__reply-label';
-          icon = document.createElement('span');
-          icon.className = 'gg-icon gg-comments__reply-icon';
-          icon.setAttribute('aria-hidden', 'true');
-          icon.textContent = 'reply';
-          textWrap = document.createElement('span');
-          textWrap.className = 'gg-comments__reply-text';
-          text = document.createTextNode(getCopy('comments.replyingTo') + ' ');
-          strong = document.createElement('strong');
-          strong.textContent = state.commentReplyContext.handle;
-          textWrap.appendChild(text);
-          textWrap.appendChild(strong);
-          label.appendChild(icon);
-          label.appendChild(textWrap);
-          clearButton = cloneTemplateElement('gg-template-comment-reply-clear');
-          if (!clearButton) return;
+          banner = cloneTemplateElement('gg-template-comment-reply-banner');
+          if (!banner) return;
+          clearButton = banner.querySelector('[data-gg-template-part="reply-clear"]');
+          if (!clearButton) {
+            clearButton = cloneTemplateElement('gg-template-comment-reply-clear');
+            if (!clearButton) return;
+            banner.appendChild(clearButton);
+          }
           clearButton.setAttribute('aria-label', getCopy('comments.action.cancelReply'));
-          banner.appendChild(label);
-          banner.appendChild(clearButton);
+          var prefixNode = banner.querySelector('[data-gg-template-part="reply-prefix"]');
+          var handleNode = banner.querySelector('[data-gg-template-part="reply-handle"]');
+          if (prefixNode) prefixNode.textContent = getCopy('comments.replyingTo') + ' ';
+          if (handleNode) handleNode.textContent = state.commentReplyContext.handle;
           ui.commentsReplySlot.appendChild(banner);
           syncCommentComposerMode();
         }
@@ -4931,10 +4921,10 @@ window.GG = window.GG || {};
         }
 
         function buildCommentMoreMenu(commentNode) {
-          var menu = document.createElement('div');
+          var menu = cloneTemplateElement('gg-template-comment-more-menu');
           var copyButton = cloneTemplateElement('gg-template-comment-copy-link-button');
           var deleteButton;
-
+          if (!menu) return null;
           menu.className = 'gg-comment-more__menu';
           menu.setAttribute('role', 'menu');
 
@@ -5114,9 +5104,8 @@ window.GG = window.GG || {};
           var avatarSrc;
           var labelNode;
           var rowNode;
-          var avatarNode;
-          var copyNode;
-          var metaNode;
+          var avatarSlot;
+          var avatarImg;
           var authorNode;
           var timeNode;
           var bodyNode;
@@ -5133,62 +5122,68 @@ window.GG = window.GG || {};
           avatar = commentNode ? commentNode.querySelector('.avatar-image-container img, img.author-avatar, .comment-author img, .comment-header img') : null;
           avatarSrc = avatar ? (avatar.currentSrc || avatar.src || avatar.getAttribute('src') || '') : '';
 
-          labelNode = document.createElement('div');
-          labelNode.className = 'gg-comment-replies__context-label';
-          labelNode.textContent = getCopy('comments.originalComment');
-          ui.commentRepliesContext.appendChild(labelNode);
+          // Clone label from template
+          labelNode = cloneTemplateElement('gg-template-comment-replies-context-label');
+          if (labelNode) {
+            labelNode.textContent = getCopy('comments.originalComment');
+            ui.commentRepliesContext.appendChild(labelNode);
+          }
 
-          rowNode = document.createElement('div');
-          rowNode.className = 'gg-comment-replies__context-row';
+          // Clone row from template
+          rowNode = cloneTemplateElement('gg-template-comment-replies-context-row');
+          if (!rowNode) return;
 
-          if (avatarSrc) {
-            avatarNode = document.createElement('img');
-            avatarNode.className = 'gg-comment-replies__context-avatar';
-            avatarNode.alt = '';
-            avatarNode.src = avatarSrc;
-            rowNode.appendChild(avatarNode);
-          } else {
+          // Avatar: replace placeholder div with img if we have a src
+          avatarSlot = rowNode.querySelector('[data-gg-template-part="context-avatar"]');
+          if (avatarSrc && avatarSlot) {
+            avatarImg = document.createElement('img');
+            avatarImg.className = 'gg-comment-replies__context-avatar';
+            avatarImg.alt = '';
+            avatarImg.src = avatarSrc;
+            avatarSlot.parentNode.replaceChild(avatarImg, avatarSlot);
+          } else if (!avatarSrc) {
             rowNode.classList.add('gg-comment-replies__context-row--no-avatar');
           }
 
-          copyNode = document.createElement('div');
-          copyNode.className = 'gg-comment-replies__context-copy';
+          // Author
+          authorNode = rowNode.querySelector('[data-gg-template-part="context-author"]');
+          if (authorNode) authorNode.textContent = author;
 
-          metaNode = document.createElement('div');
-          metaNode.className = 'gg-comment-replies__context-meta';
-
-          authorNode = document.createElement('strong');
-          authorNode.className = 'gg-comment-replies__context-author';
-          authorNode.textContent = author;
-          metaNode.appendChild(authorNode);
-
-          if (timestamp) {
-            timeNode = document.createElement('span');
-            timeNode.textContent = timestamp;
-            metaNode.appendChild(timeNode);
+          // Timestamp
+          timeNode = rowNode.querySelector('[data-gg-template-part="context-timestamp"]');
+          if (timeNode) {
+            if (timestamp) {
+              timeNode.textContent = timestamp;
+            } else {
+              timeNode.parentNode.removeChild(timeNode);
+            }
           }
 
-          copyNode.appendChild(metaNode);
-
-          if (body) {
-            bodyNode = document.createElement('div');
-            bodyNode.className = 'gg-comment-replies__context-body';
-            bodyNode.textContent = body;
-            copyNode.appendChild(bodyNode);
+          // Body
+          bodyNode = rowNode.querySelector('[data-gg-template-part="context-body"]');
+          if (bodyNode) {
+            if (body) {
+              bodyNode.textContent = body;
+            } else {
+              bodyNode.parentNode.removeChild(bodyNode);
+            }
           }
 
-          countNode = document.createElement('div');
-          countNode.className = 'gg-comment-replies__context-count';
-          countNode.textContent = formatRepliesSummary(count);
-          copyNode.appendChild(countNode);
+          // Count
+          countNode = rowNode.querySelector('[data-gg-template-part="context-count"]');
+          if (countNode) countNode.textContent = formatRepliesSummary(count);
 
+          // Reply button
           replyNode = cloneTemplateElement('gg-template-comment-reply-button');
           if (!replyNode) return;
           replyNode.setAttribute('aria-label', getCopy('comments.action.replyToOriginal'));
           replyNode.textContent = getCopy('comments.action.reply');
           if (commentNode) replyNode.setAttribute('data-gg-reply-target', getCommentNodeId(commentNode));
-          copyNode.appendChild(replyNode);
-          rowNode.appendChild(copyNode);
+
+          // Append reply button to copy wrapper
+          var copyWrap = rowNode.querySelector('[data-gg-template-part="context-copy"]');
+          if (copyWrap) copyWrap.appendChild(replyNode);
+
           ui.commentRepliesContext.appendChild(rowNode);
         }
 
@@ -7020,16 +7015,15 @@ window.GG = window.GG || {};
             title = section.querySelector('[data-gg-template-part="title"]');
             group = section.querySelector('[data-gg-template-part="ranges"]');
             if (title) title.textContent = ROOT_LISTING_ICON_REGISTRY['popular-posts'].label;
-            if (group) {
-              BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
-                var link = document.createElement('a');
-                link.className = 'gg-popular-controls__range';
-                link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
-                link.setAttribute('role', 'listitem');
-                link.setAttribute('aria-current', item === range ? 'true' : 'false');
-                link.textContent = labels[item] || item;
-                group.appendChild(link);
-              });
+	            if (group) {
+	              BLOG_RETENTION_CONTRACT.popularRanges.forEach(function (item) {
+	                var link = cloneTemplateElement('gg-template-popular-range-link');
+	                if (!link) return;
+	                link.href = BLOG_RETENTION_CONTRACT.popularRouteHash + ':' + item;
+	                link.setAttribute('aria-current', item === range ? 'true' : 'false');
+	                link.textContent = labels[item] || item;
+	                group.appendChild(link);
+	              });
             }
           } else {
             // Safe fallback: return null so caller silently skips

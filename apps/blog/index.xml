@@ -265,7 +265,7 @@ img{max-width:100%;height:auto;display:block}
           <div class='gg-site-head__menu gg-listing-toolbar' data-gg-module='listing-toolbar'>
             <a aria-label='Open profile' class='gg-site-head__profile gg-root-profile__card' href='/p/about.html'>
               <span aria-hidden='true' class='gg-site-head__avatar gg-root-profile__avatar'>
-                <img alt='' class='gg-site-head__avatar-image gg-root-profile__image' height='96' loading='lazy' src='/gg-pwa-icon/icon-192.png' width='96'/>
+                <img alt='' class='gg-site-head__avatar-image gg-root-profile__image' height='96' loading='lazy' src='/icons/icon-192.png' width='96'/>
               </span>
               <span class='gg-site-head__identity gg-root-profile__copy'>
                 <span class='gg-site-head__name gg-root-profile__name' data-gg-copy='more.profile.name'>PakRPP</span>
@@ -423,7 +423,12 @@ img{max-width:100%;height:auto;display:block}
               <template id='gg-template-popular-range-selector'>
                 <section class='gg-popular-controls' data-gg-popular-controls='true'>
                   <h2 class='gg-popular-controls__title' data-gg-template-part='title' id='gg-popular-controls-title'>Popular</h2>
-                  <div class='gg-popular-controls__ranges' data-gg-template-part='ranges' role='list'/>
+                  <div class='gg-popular-controls__ranges' data-gg-template-part='ranges' role='list'>
+                    <a class='gg-popular-controls__range' data-gg-template-part='range' data-gg-popular-range-key='ALL_TIME' role='listitem'>All time</a>
+                    <a class='gg-popular-controls__range' data-gg-template-part='range' data-gg-popular-range-key='LAST_YEAR' role='listitem'>Last year</a>
+                    <a class='gg-popular-controls__range' data-gg-template-part='range' data-gg-popular-range-key='LAST_MONTH' role='listitem'>Last 30 days</a>
+                    <a class='gg-popular-controls__range' data-gg-template-part='range' data-gg-popular-range-key='LAST_WEEK' role='listitem'>Last 7 days</a>
+                  </div>
                 </section>
               </template>
 
@@ -478,6 +483,44 @@ img{max-width:100%;height:auto;display:block}
 
               <template id='gg-template-comment-add-reply-button'>
                 <button data-gg-action='comments-add-reply' type='button'/>
+              </template>
+
+              <template id='gg-template-comment-reply-banner'>
+                <div class='gg-comments__reply-banner' role='status'>
+                  <span class='gg-comments__reply-context gg-comments__reply-label'>
+                    <span aria-hidden='true' class='gg-icon gg-comments__reply-icon'>reply</span>
+                    <span class='gg-comments__reply-text'>
+                      <span data-gg-template-part='reply-prefix'></span>
+                      <strong data-gg-template-part='reply-handle'></strong>
+                    </span>
+                  </span>
+                </div>
+              </template>
+
+              <template id='gg-template-comment-more-menu'>
+                <div class='gg-comment-more__menu' role='menu'></div>
+              </template>
+
+              <template id='gg-template-comment-replies-context-label'>
+                <div class='gg-comment-replies__context-label' data-gg-template-part='context-label'></div>
+              </template>
+
+              <template id='gg-template-comment-replies-context-row'>
+                <div class='gg-comment-replies__context-row' data-gg-template-part='context-row'>
+                  <div class='gg-comment-replies__context-avatar' data-gg-template-part='context-avatar'></div>
+                  <div class='gg-comment-replies__context-copy' data-gg-template-part='context-copy'>
+                    <div class='gg-comment-replies__context-meta' data-gg-template-part='context-meta'>
+                      <strong class='gg-comment-replies__context-author' data-gg-template-part='context-author'></strong>
+                      <span data-gg-template-part='context-timestamp'></span>
+                    </div>
+                    <div class='gg-comment-replies__context-body' data-gg-template-part='context-body'></div>
+                    <div class='gg-comment-replies__context-count' data-gg-template-part='context-count'></div>
+                  </div>
+                </div>
+              </template>
+
+              <template id='gg-template-popular-range-link'>
+                <a class='gg-popular-controls__range' data-gg-template-part='range' role='listitem'></a>
               </template>
 
               <template id='gg-template-related-posts-dot'>
@@ -1257,9 +1300,9 @@ img{max-width:100%;height:auto;display:block}
                   <span aria-hidden='true' class='gg-entry-row__icon gg-icon' data-gg-listing-icon='article'>article</span>
                   <a aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__title-trigger' data-gg-open='preview' expr:href='data:post.url'><data:post.title/></a>
                 </h2>
-                <button aria-controls='gg-preview-sheet' aria-expanded='false' class='gg-entry-row__action' data-gg-open='preview' type='button'>
-                  <span data-gg-copy='listing.details'>Details </span>
+                <button aria-controls='gg-preview-sheet' aria-expanded='false' aria-label='Details' class='gg-entry-row__action' data-gg-open='preview' type='button'>
                   <span aria-hidden='true' class='gg-entry-row__action-icon gg-icon' data-gg-listing-icon='top_panel_open'>top_panel_open</span>
+                  <span class='gg-visually-hidden' data-gg-copy='listing.details'>Details</span>
                 </button>
               </article>
             </b:includable>
@@ -1719,7 +1762,7 @@ img{max-width:100%;height:auto;display:block}
           <section class='gg-more-profile' data-gg-module='profile'>
             <a aria-label='Open profile' class='gg-more-profile__card' href='/p/about.html'>
               <span aria-hidden='true' class='gg-more-profile__avatar'>
-                <img alt='' class='gg-more-profile__image' height='96' loading='lazy' src='/gg-pwa-icon/icon-192.png' width='96'/>
+                <img alt='' class='gg-more-profile__image' height='96' loading='lazy' src='/icons/icon-192.png' width='96'/>
               </span>
               <span class='gg-more-profile__copy'>
                 <span class='gg-more-profile__name' data-gg-copy='more.profile.name'>PakRPP</span>

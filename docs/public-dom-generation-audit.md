@@ -41,16 +41,20 @@ The `check:public-dom` check scans all `src/**/*.js` and `src/**/*.mjs` files fo
 | `needsTemplate` | Tag name in `needsTemplateTags` (e.g., `section`, `article`, `button`, `nav`, `header`, `footer`, `dialog`, `form`, `aside`, `main`, `ul`, `ol`, `li`). Large chrome/UI structure — migration candidate. |
 | `unclassified` | Tag not in either list (e.g., `div`, `p`, `h2`, `a`, `img`, `textarea`, `strong`, `iframe`, `script`). Warned but not failed. |
 
-### Current Findings (post TASK-002M-D)
+### Current Findings (post TASK-002M-F)
 
 | Count | Classification |
 |-------|----------------|
-| 12 | `allowedSmall` (span, option) |
-| 0 | `needsTemplate` (button) — MIGRATED ✓ |
-| 0 | `needsTemplate` (section) — MIGRATED ✓ |
-| 0 | `needsTemplate` (article) — MIGRATED ✓ |
-| 0 | `needsTemplate` (button, Store discovery) — MIGRATED ✓ |
-| 21 | `unclassified` (div, strong, textarea, img, p, h2, a, iframe, script) |
+| 6 | `allowedSmall` (span, option) |
+| 10 | `allowedReviewed` (div, textarea, img, p, a, iframe, script) |
+| 0 | `needsTemplate` |
+| 0 | `unclassified` |
+
+Current `npm run check:public-dom` summary:
+
+```txt
+public-dom ok: restricted=5 allowlisted=5 createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=0
+```
 
 ### TASK-002M-B Migrated Items
 
@@ -92,22 +96,116 @@ Related posts dots fallback was also migrated from `createElement('a')` to `gg-t
 
 **Result:** `createElement('button')` count in `src/modules/store/store-discovery.js`: 2 → 0 (zero).
 
+### TASK-002M-F Migrated Items
+
+**Before:** TASK-002M-E identified nine Blog structural `div`/`a` `needsTemplate` candidates in `src/modules/legacy-app/legacy-app.js`:
+
+- Reply banner `div` — `gg-comments__reply-banner`
+- Comment more menu `div` — `gg-comment-more__menu`
+- Replies context label `div`
+- Replies context row `div`
+- Replies context copy `div`
+- Replies context meta `div`
+- Replies context body `div`
+- Replies context count `div`
+- Popular range navigation link `a` — `gg-popular-controls__range`
+
+**After:** These Blog structural UI nodes now live in purpose-specific `<template>` elements in `apps/blog/index.xml`, and `legacy-app.js` clones those templates before applying runtime state/text/aria/href/data:
+
+- `gg-template-comment-reply-banner`
+- `gg-template-comment-more-menu`
+- `gg-template-comment-replies-context-label`
+- `gg-template-comment-replies-context-row`
+- `gg-template-popular-range-link`
+
+No generic/universal template such as `gg-template-div`, `gg-template-link`, `gg-template-button`, `gg-template-element`, or `gg-template-generic` was introduced.
+
+**Result:** Known Blog `div`/`a` structural `needsTemplate` candidates: 9 → 0.
+
 ### Remaining needsTemplate Candidates
 
 None. All `needsTemplate` tags (section, article, button, nav, header, footer, dialog, form, aside, main, ul, ol, li) have been migrated from public JS source files.
 
 ### Recommended Next Migration Tasks
 
-1. **TASK-002M-E:** Migrate legacy Blogger HTML stripping/parsing from `innerHTML`-based helpers to `DOMParser` or template-based extraction.
-2. **TASK-002M-F:** Migrate Landing discovery command panel `innerHTML` patterns to template-based rendering.
+1. **TASK-002M-E:** Completed — Public DOM Unclassified Element Audit. All 21 previously unclassified createElement calls reviewed and classified by occurrence. See section below.
+2. **TASK-002M-F:** Completed — Blog div/link structural UI template migration.
+
+## TASK-002M-E — Public DOM Unclassified Element Audit
+
+### Summary
+
+All 21 previously unclassified `document.createElement()` calls across `src/**/*.js` and `src/**/*.mjs` have been reviewed and classified by occurrence. No migration was performed in this task.
+
+### Tags Reviewed
+
+`div`, `strong`, `textarea`, `img`, `p`, `a`, `iframe`, `script`
+
+### Classification Results
+
+| Count | Classification |
+|-------|----------------|
+| 10 | `allowedSmall` (span, option) |
+| 9 | `needsTemplate` (div, a) |
+| 7 | `allowedRuntimeConstruct` (div, textarea, img, p, a, script) |
+| 1 | `allowedSmallBehavior` (strong x2) |
+| 1 | `allowedLegacyParsing` (div) |
+| 1 | `allowedNonChromeInfrastructure` (iframe) |
+| 0 | `unclassified` ✓ |
+
+### Occurrence Classification Table
+
+| File | Line | Tag | Classification | Context |
+|------|------|-----|----------------|---------|
+| `src/modules/legacy-app/legacy-app.js` | 1786 | div | `allowedLegacyParsing` | HTML strip helper — parsing only, never visible |
+| `src/modules/legacy-app/legacy-app.js` | 4476 | div | `needsTemplate` | Reply banner (gg-comments__reply-banner) |
+| `src/modules/legacy-app/legacy-app.js` | 4488 | strong | `allowedSmallBehavior` | Inline handle name emphasis |
+| `src/modules/legacy-app/legacy-app.js` | 4845 | div | `allowedRuntimeConstruct` | Dynamic comment status (runtime-driven) |
+| `src/modules/legacy-app/legacy-app.js` | 4863 | textarea | `allowedRuntimeConstruct` | Off-screen clipboard fallback |
+| `src/modules/legacy-app/legacy-app.js` | 4934 | div | `needsTemplate` | Comment more menu popover (gg-comment-more__menu) |
+| `src/modules/legacy-app/legacy-app.js` | 5136 | div | `needsTemplate` | Replies context label container |
+| `src/modules/legacy-app/legacy-app.js` | 5141 | div | `needsTemplate` | Replies context row container |
+| `src/modules/legacy-app/legacy-app.js` | 5145 | img | `allowedRuntimeConstruct` | Runtime-driven avatar image |
+| `src/modules/legacy-app/legacy-app.js` | 5154 | div | `needsTemplate` | Replies context copy container |
+| `src/modules/legacy-app/legacy-app.js` | 5157 | div | `needsTemplate` | Replies context meta container |
+| `src/modules/legacy-app/legacy-app.js` | 5160 | strong | `allowedSmallBehavior` | Inline author name emphasis |
+| `src/modules/legacy-app/legacy-app.js` | 5174 | div | `needsTemplate` | Replies context body container |
+| `src/modules/legacy-app/legacy-app.js` | 5180 | div | `needsTemplate` | Replies context count container |
+| `src/modules/legacy-app/legacy-app.js` | 6883 | p | `allowedRuntimeConstruct` | Template fallback — graceful degradation |
+| `src/modules/legacy-app/legacy-app.js` | 7025 | a | `needsTemplate` | Popular range navigation link |
+| `src/modules/legacy-app/legacy-app.js` | 8819 | a | `allowedRuntimeConstruct` | Template fallback — graceful degradation |
+| `src/modules/legacy-app/legacy-app.js` | 8892 | div | `allowedRuntimeConstruct` | Template fallback — graceful degradation |
+| `src/modules/legacy-app/legacy-app.js` | 10173 | iframe | `allowedNonChromeInfrastructure` | Hidden measurement iframe |
+| `src/modules/store/store-core.js` | 61 | script | `allowedRuntimeConstruct` | Dynamic JS bundle loader |
+| `src/modules/store/store.js` | 7 | script | `allowedRuntimeConstruct` | Entry-point JS loader |
+
+### needsTemplate Follow-Up Candidates
+
+Nine (9) `needsTemplate` candidates were identified for **TASK-002M-F** and have now been migrated:
+
+1. Comment reply banner `div` — `gg-comments__reply-banner`
+2. Comment more menu `div` — `gg-comment-more__menu`
+3. Comment replies context label `div` — `gg-comment-replies__context-label`
+4. Comment replies context row `div` — `gg-comment-replies__context-row`
+5. Comment replies context copy `div` — `gg-comment-replies__context-copy`
+6. Comment replies context meta `div` — `gg-comment-replies__context-meta`
+7. Comment replies context body `div` — `gg-comment-replies__context-body`
+8. Comment replies context count `div` — `gg-comment-replies__context-count`
+9. Popular range navigation link `a` — `gg-popular-controls__range`
+
+These structural public UI elements are now represented by purpose-specific templates in `apps/blog/index.xml`.
+
+### Statement
+
+No UI migration was performed. No createElement calls were removed or modified. This was purely an audit, policy, and guardrail pass. All unclassified occurrences are now reviewed and classified in the policy.
 
 ## Restricted APIs Found (current)
 
 | File | API | Status |
 |------|-----|--------|
 | `src/modules/legacy-app/legacy-app.js:1787` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:6264` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:7610` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:6259` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:7604` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/studio/app.js:1` | `insertAdjacentHTML` | allowlisted-error-display |
 | `apps/landing/landing.html:3302` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/landing/landing.html:3362` | `innerHTML` | allowlisted-legacy-bridge |

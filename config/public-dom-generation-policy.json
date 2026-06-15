@@ -39,7 +39,124 @@
       "ol",
       "li"
     ],
-    "allowlist": []
+    "allowlist": [],
+    "unclassifiedElementAudit": {
+      "scope": [
+        "src/**/*.js",
+        "src/**/*.mjs"
+      ],
+      "principle": "Unclassified createElement usage must be reviewed by occurrence. Small behavior/runtime construction may stay in JS; public chrome/UI structure should move to HTML/XML or purpose-specific templates.",
+      "classificationRequired": true,
+      "reviewedTags": [
+        "div",
+        "strong",
+        "textarea",
+        "img",
+        "p",
+        "a",
+        "iframe",
+        "script"
+      ],
+      "classifications": [
+        "allowedSmallBehavior",
+        "allowedRuntimeConstruct",
+        "allowedLegacyParsing",
+        "allowedNonChromeInfrastructure",
+        "needsTemplate"
+      ],
+      "reviewedOccurrences": [
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 1786,
+          "tag": "div",
+          "classification": "allowedLegacyParsing",
+          "context": "legacy HTML strip helper: div used for innerHTML set then textContent extraction",
+          "reason": "Temporary div created only for parsing/stripping Blogger feed HTML content. Never inserted as visible public UI chrome. Legacy bridge pattern.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 4835,
+          "tag": "div",
+          "classification": "allowedRuntimeConstruct",
+          "context": "dynamic comment status element with role=status and aria-live=polite",
+          "reason": "Dynamically created status message area that only appears when status updates are needed. Content is entirely runtime-driven.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 4853,
+          "tag": "textarea",
+          "classification": "allowedRuntimeConstruct",
+          "context": "off-screen clipboard copy fallback element",
+          "reason": "Temporary off-screen textarea for copy-to-clipboard fallback. Positioned off-screen, removed after use. Not visible UI chrome.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 5139,
+          "tag": "img",
+          "classification": "allowedRuntimeConstruct",
+          "context": "comment replies context avatar image with runtime-driven src",
+          "reason": "The image src and alt are data-driven runtime values from the comment author. Not static public chrome structure.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 6878,
+          "tag": "p",
+          "classification": "allowedRuntimeConstruct",
+          "context": "graceful fallback when saved-listing-empty template is unavailable",
+          "reason": "Only created when cloneTemplateElement('gg-empty-state-saved-articles') fails. Not the primary UI generation path; template cloning is attempted first.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 8813,
+          "tag": "a",
+          "classification": "allowedRuntimeConstruct",
+          "context": "graceful fallback when related-posts-item template is unavailable",
+          "reason": "Only created when cloneTemplateElement for related posts template fails. Not the primary UI generation path.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 8886,
+          "tag": "div",
+          "classification": "allowedRuntimeConstruct",
+          "context": "graceful fallback when related-posts dots template is unavailable",
+          "reason": "Only created when cloneTemplateElement for dots template fails. Not the primary UI generation path.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 10167,
+          "tag": "iframe",
+          "classification": "allowedNonChromeInfrastructure",
+          "context": "hidden measurement iframe for route preloading/performance matrix",
+          "reason": "Hidden iframe (hidden=true, aria-hidden=true, tabindex=-1) used for infrastructure performance measurement. Not visible public chrome.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/store/store-core.js",
+          "line": 61,
+          "tag": "script",
+          "classification": "allowedRuntimeConstruct",
+          "context": "dynamic script loader for store discovery runtime module",
+          "reason": "Lazy-loads the store discovery JS bundle at runtime. Not UI chrome; this is infrastructure script loading.",
+          "templateRequired": false
+        },
+        {
+          "file": "src/modules/store/store.js",
+          "line": 7,
+          "tag": "script",
+          "classification": "allowedRuntimeConstruct",
+          "context": "dynamic script loader for store core compat entry",
+          "reason": "Bootstraps the store core JS bundle. Not UI chrome; this is entry-point script loading infrastructure.",
+          "templateRequired": false
+        }
+      ]
+    }
   },
   "publicSurfaces": [
     "apps/blog/index.xml",
@@ -64,14 +181,14 @@
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 6264,
+      "line": 6259,
       "api": "innerHTML",
       "reason": "Legacy HTML parsing fallback for Blogger post body extraction — fallbackDoc.documentElement.innerHTML = html. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 7610,
+      "line": 7604,
       "api": "innerHTML",
       "reason": "Legacy outline preview text extraction reads innerHTML from already-parsed DOM nodes (fallback after textContent). Read-only, not generation. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"

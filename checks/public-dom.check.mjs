@@ -14,6 +14,7 @@ let findingCount = 0;
 let ceTotalCount = 0;
 let ceAllowedSmall = 0;
 let ceNeedsTemplate = 0;
+let ceAllowedReviewed = 0;
 let ceUnclassified = 0;
 const ceFindings = []; // { file, line, tag, classification }
 
@@ -193,6 +194,15 @@ console.log(`scanning ${deduped.size} src files for createElement usage...`);
 
 const cePattern = /document\.createElement\s*\(\s*(['"])([a-zA-Z0-9-]+)\1\s*\)/g;
 
+// Build reviewed occurrence lookup map from policy
+const reviewedMap = new Map();
+const unclassifiedAudit = ceAudit.unclassifiedElementAudit || {};
+const reviewedOccurrences = unclassifiedAudit.reviewedOccurrences || [];
+for (const occ of reviewedOccurrences) {
+  const key = `${occ.file}:${occ.line}:${occ.tag}`;
+  reviewedMap.set(key, occ);
+}
+
 for (const file of deduped) {
   let content;
   try {
@@ -206,6 +216,7 @@ for (const file of deduped) {
     let m;
     while ((m = pattern.exec(line)) !== null) {
       const tag = m[2].toLowerCase();
+      const lineNum = i + 1;
       ceTotalCount++;
 
       let classification;
@@ -216,16 +227,28 @@ for (const file of deduped) {
         classification = 'needsTemplate';
         ceNeedsTemplate++;
       } else {
-        classification = 'unclassified';
-        ceUnclassified++;
+        // Check reviewed occurrences
+        const reviewKey = `${file}:${lineNum}:${tag}`;
+        const reviewed = reviewedMap.get(reviewKey);
+        if (reviewed) {
+          classification = reviewed.classification;
+          if (classification === 'needsTemplate') {
+            ceNeedsTemplate++;
+          } else {
+            ceAllowedReviewed++;
+          }
+        } else {
+          classification = 'unclassified';
+          ceUnclassified++;
+        }
       }
 
-      ceFindings.push({ file, line: i + 1, tag, classification });
+      ceFindings.push({ file, line: lineNum, tag, classification });
 
       if (classification === 'needsTemplate') {
-        warn(`needsTemplate candidate: ${file}:${i + 1} createElement('${tag}')`);
+        warn(`needsTemplate candidate: ${file}:${lineNum} createElement('${tag}')`);
       } else if (classification === 'unclassified') {
-        warn(`unclassified createElement: ${file}:${i + 1} createElement('${tag}')`);
+        warn(`unclassified createElement: ${file}:${lineNum} createElement('${tag}')`);
       }
     }
   }
@@ -235,7 +258,7 @@ for (const file of deduped) {
 console.log('');
 const ok = errors.length === 0;
 const status = ok ? 'ok' : 'FAIL';
-console.log(`public-dom ${status}: restricted=${restrictedCount} allowlisted=${allowlistedCount} createElement=${ceTotalCount} allowedSmall=${ceAllowedSmall} needsTemplate=${ceNeedsTemplate} unclassified=${ceUnclassified}`);
+console.log(`public-dom ${status}: restricted=${restrictedCount} allowlisted=${allowlistedCount} createElement=${ceTotalCount} allowedSmall=${ceAllowedSmall} allowedReviewed=${ceAllowedReviewed} needsTemplate=${ceNeedsTemplate} unclassified=${ceUnclassified}`);
 
 if (warnings.length > 0) {
   console.log(`\n${warnings.length} warning(s):`);

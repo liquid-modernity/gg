@@ -1,0 +1,13 @@
+Execute TASK-002M-F using ai/agent/prompts/CLINE-SNIPER-TASK-002M-F-BLOG-DIV-LINK-STRUCTURAL-UI-TEMPLATES.md.
+
+Important:
+- Scope is Blog only.
+- Migrate only the 9 needsTemplate div/a structural UI candidates from legacy-app.js identified by TASK-002M-E.
+- Add purpose-specific templates in apps/blog/index.xml.
+- Replace JS structural creation with cloneTemplateElement() and JS mutation only for state/aria/text/icon/href/data.
+- Do not create generic/universal templates such as gg-template-div, gg-template-link, gg-template-button, gg-template-element.
+- Do not touch Store/Console/Studio/OAuth/folder restructure.
+- Do not edit dist/** or .cloudflare-build/** manually.
+
+Run and make green:
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-f-acceptance.sh
