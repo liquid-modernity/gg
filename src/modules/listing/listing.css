@@ -319,3 +319,20 @@
 .gg-loadmore-wrap[data-gg-listing-growth='loading'] .gg-listing-sentinel {
   display: block;
 }
+[data-gg-listing-mode="saved"] [data-gg-native-row="true"] {
+  display: none !important;
+}
+
+[data-gg-listing-mode="saved"] [data-gg-load-more],
+[data-gg-listing-mode="saved"] [data-gg-pagination] {
+  display: none !important;
+}
+
+.gg-entry-row--saved .gg-entry-row__details-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
