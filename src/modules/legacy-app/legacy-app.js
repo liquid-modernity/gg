@@ -910,6 +910,7 @@ window.GG = window.GG || {};
 
         var LISTING_ROOT_ID = 'gg-entry-list';
         var LISTING_ROW_SELECTOR = '.gg-entry-row[data-gg-post-url]';
+        var LISTING_NATIVE_ROW_SELECTOR = LISTING_ROW_SELECTOR + ':not([data-gg-saved-row]):not([data-gg-popular-row])';
         var LISTING_ROW_BASE_SELECTOR = '.gg-entry-row';
         var DISCOVERY_RESULT_SELECTOR = '.gg-discovery-result';
         var DISCOVERY_TOPIC_SELECTOR = '.gg-discovery-topic__apply, .gg-discovery-topic__archive, .gg-discovery-topic-group__toggle';
@@ -1067,6 +1068,7 @@ window.GG = window.GG || {};
           loadMoreWrap: document.getElementById('gg-loadmore-wrap'),
           loadMore: document.getElementById('gg-loadmore-fallback'),
           listingSentinel: document.getElementById('gg-listing-sentinel'),
+          listingPagination: document.getElementById('gg-listing-pagination'),
           commandPanel: document.getElementById('gg-command-panel'),
           commandPanelSheet: document.querySelector('#gg-command-panel .gg-sheet__panel'),
           commandPanelScrim: document.querySelector('#gg-command-panel .gg-sheet__scrim'),
@@ -6670,11 +6672,29 @@ window.GG = window.GG || {};
             action.setAttribute('aria-expanded', 'false');
             action.setAttribute('data-gg-copy', 'listing.details');
             action.setAttribute('data-gg-open', 'preview');
+            action.setAttribute('aria-label', getCopy('listing.details'));
+            action.setAttribute('title', getCopy('listing.details'));
           }
-          if (actionLabel) actionLabel.textContent = getCopy('listing.details');
+          if (actionLabel) {
+            actionLabel.textContent = getCopy('listing.details');
+            if (config.iconOnlyAction) actionLabel.classList.add('gg-visually-hidden');
+            else actionLabel.classList.remove('gg-visually-hidden');
+          }
           if (actionIcon) actionIcon.textContent = getListingIcon('details');
 
           return node;
+        }
+
+        function setListingAuxiliaryHidden(hidden) {
+          if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = !!hidden;
+          if (ui.listingPagination) ui.listingPagination.hidden = !!hidden;
+        }
+
+        function setSavedListingMode(active) {
+          if (!ui.listing) return;
+          ui.listing.setAttribute('data-gg-listing-mode', active ? 'saved' : (state.popularListingActive ? 'popular' : 'latest'));
+          if (ui.shell) ui.shell.setAttribute('data-gg-saved-listing', active ? 'active' : 'inactive');
+          setListingAuxiliaryHidden(!!active || !!state.popularListingActive);
         }
 
         function clearDynamicListingRows() {
@@ -6689,7 +6709,7 @@ window.GG = window.GG || {};
           var rows;
           var i;
           if (!ui.listing) return;
-          rows = ui.listing.querySelectorAll(LISTING_ROW_SELECTOR);
+          rows = ui.listing.querySelectorAll(LISTING_NATIVE_ROW_SELECTOR);
           for (i = 0; i < rows.length; i += 1) rows[i].hidden = !!hidden;
         }
 
@@ -6704,13 +6724,14 @@ window.GG = window.GG || {};
 
           clearDynamicListingRows();
           setNativeListingRowsHidden(state.savedListingActive || state.popularListingActive);
+          setSavedListingMode(state.savedListingActive);
 
           if (!state.savedListingActive) {
-            if (!state.popularListingActive && ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
+            if (!state.popularListingActive) setListingAuxiliaryHidden(false);
             return;
           }
 
-          if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = true;
+          setListingAuxiliaryHidden(true);
           fragment = document.createDocumentFragment();
 
           if (!state.savedStorageAvailable) {
@@ -6743,7 +6764,8 @@ window.GG = window.GG || {};
               className: 'gg-entry-row--saved',
               labelKey: 'saved',
               surface: 'saved-listing',
-              markerName: 'data-gg-saved-row'
+              markerName: 'data-gg-saved-row',
+              iconOnlyAction: true
             });
             fragment.appendChild(node);
           }
@@ -6759,7 +6781,7 @@ window.GG = window.GG || {};
             return;
           }
           state.savedListingActive = active;
-          if (ui.shell) ui.shell.setAttribute('data-gg-saved-listing', active ? 'active' : 'inactive');
+          setSavedListingMode(active);
           renderSavedListing();
         }
 

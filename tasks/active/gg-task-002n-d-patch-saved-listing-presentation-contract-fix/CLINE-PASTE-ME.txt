@@ -1,0 +1,21 @@
+Run this task now:
+
+`tasks/active/TASK-002N-D-PATCH-SAVED-LISTING-PRESENTATION-CONTRACT-FIX.md`
+
+Hard constraints:
+
+- Treat saved mode as an exclusive listing mode.
+- When saved mode is active, only saved articles may be visible in the listing.
+- Native/latest rows must be hidden while saved mode is active.
+- Load more/pagination must be hidden while saved mode is active.
+- Saved rows must use the same listing row template/visual contract as normal listing rows.
+- Do not leave raw visible `Details` text in saved rows. Use icon-only action, visually-hidden accessible label, or the existing normal row detail affordance.
+- Empty saved state must come from template, not JS-created large UI.
+- If an article is unsaved while saved mode is active, the saved listing must immediately refresh/remove that row.
+- Keep JS responsible only for mode/state/clone/hydration/aria/icon/text wiring.
+- Do not create generic templates like `gg-template-row`, `gg-template-link`, `gg-template-button`, or `gg-template-element`.
+- Do not start TASK-002N-E. Do not extract popular/related. Do not touch OAuth. Do not delete `legacy-app` or `legacy-donor`.
+
+Finish by running:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-d-patch-acceptance.sh

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "savedModeExclusive": true,
+  "hideNativeRowsWhenSavedActive": true,
+  "hideLoadMoreWhenSavedActive": true,
+  "hidePaginationWhenSavedActive": true,
+  "savedRowsUseCanonicalListingTemplate": true,
+  "rawDetailsTextVisible": false,
+  "unsaveRefreshesSavedListing": true,
+  "emptyStateTemplateId": "gg-empty-state-saved-articles",
+  "rowTemplateId": "gg-template-listing-row",
+  "forbiddenGenericTemplates": [
+    "gg-template-row",
+    "gg-template-link",
+    "gg-template-button",
+    "gg-template-element"
+  ],
+  "notes": "Saved mode is an exclusive listing mode. legacy-app remains the orchestrator; JS may clone and hydrate templates but must not generate large visible saved UI."
+}
