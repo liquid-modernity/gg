@@ -477,6 +477,18 @@ img{max-width:100%;height:auto;display:block}
                 <button class='gg-comment-more__button' data-gg-action='comment-more' aria-haspopup='menu' aria-expanded='false' type='button'>...</button>
               </template>
 
+              <template id='gg-template-comment-more-wrapper'>
+                <span class='gg-comment-more'></span>
+              </template>
+
+              <template id='gg-template-comment-reply-prefix'>
+                <span class='gg-comment-reply-prefix'></span>
+              </template>
+
+              <template id='gg-template-comment-status'>
+                <div aria-live='polite' class='gg-comments__status' role='status'></div>
+              </template>
+
               <template id='gg-template-comment-reply-button'>
                 <button class='gg-comment-replies__context-reply' data-gg-action='comments-reply-parent' type='button'/>
               </template>
@@ -527,6 +539,17 @@ img{max-width:100%;height:auto;display:block}
                 <div class='gg-related-posts__dots' role='list'>
                   <button class='gg-related-posts__dot' data-gg-template-part='dot' role='listitem' type='button'/>
                 </div>
+              </template>
+
+              <template id='gg-template-related-post-card'>
+                <a class='gg-related-posts__item' href='#' role='listitem'>
+                  <span class='gg-related-posts__thumb' data-gg-template-part='thumb'></span>
+                  <span class='gg-related-posts__copy'>
+                    <span class='gg-related-posts__type' data-gg-template-part='type'></span>
+                    <strong class='gg-related-posts__title-text' data-gg-template-part='title'></strong>
+                    <span class='gg-related-posts__meta' data-gg-template-part='meta'></span>
+                  </span>
+                </a>
               </template>
 
               <nav aria-label='Blog pagination' class='gg-detail-outline gg-listing-pagination' data-gg-module='listing-pagination-dock-tail' data-gg-outline-mode='pagination' data-gg-outline-state='peek' id='gg-listing-pagination'>

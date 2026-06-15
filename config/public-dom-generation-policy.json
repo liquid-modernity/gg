@@ -76,16 +76,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 4835,
-          "tag": "div",
-          "classification": "allowedRuntimeConstruct",
-          "context": "dynamic comment status element with role=status and aria-live=polite",
-          "reason": "Dynamically created status message area that only appears when status updates are needed. Content is entirely runtime-driven.",
-          "templateRequired": false
-        },
-        {
-          "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 4853,
+          "line": 4851,
           "tag": "textarea",
           "classification": "allowedRuntimeConstruct",
           "context": "off-screen clipboard copy fallback element",
@@ -94,7 +85,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 5139,
+          "line": 5122,
           "tag": "img",
           "classification": "allowedRuntimeConstruct",
           "context": "comment replies context avatar image with runtime-driven src",
@@ -103,34 +94,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 6878,
-          "tag": "p",
-          "classification": "allowedRuntimeConstruct",
-          "context": "graceful fallback when saved-listing-empty template is unavailable",
-          "reason": "Only created when cloneTemplateElement('gg-empty-state-saved-articles') fails. Not the primary UI generation path; template cloning is attempted first.",
-          "templateRequired": false
-        },
-        {
-          "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 8813,
-          "tag": "a",
-          "classification": "allowedRuntimeConstruct",
-          "context": "graceful fallback when related-posts-item template is unavailable",
-          "reason": "Only created when cloneTemplateElement for related posts template fails. Not the primary UI generation path.",
-          "templateRequired": false
-        },
-        {
-          "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 8886,
-          "tag": "div",
-          "classification": "allowedRuntimeConstruct",
-          "context": "graceful fallback when related-posts dots template is unavailable",
-          "reason": "Only created when cloneTemplateElement for dots template fails. Not the primary UI generation path.",
-          "templateRequired": false
-        },
-        {
-          "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 10167,
+          "line": 10136,
           "tag": "iframe",
           "classification": "allowedNonChromeInfrastructure",
           "context": "hidden measurement iframe for route preloading/performance matrix",
@@ -155,6 +119,141 @@
           "reason": "Bootstraps the store core JS bundle. Not UI chrome; this is entry-point script loading infrastructure.",
           "templateRequired": false
         }
+      ]
+    },
+    "templateCompletenessAudit": {
+      "version": "TASK-002M-G",
+      "principle": "Allowed createElement usage is reviewed for editability. User-visible/chrome structure should live in purpose-specific templates when that improves human and AI maintainability.",
+      "before": {
+        "createElement": 16,
+        "allowedSmall": 6,
+        "allowedReviewed": 10,
+        "needsTemplate": 0,
+        "unclassified": 0
+      },
+      "after": {
+        "createElement": 6,
+        "allowedSmall": 0,
+        "allowedReviewed": 6,
+        "needsTemplate": 0,
+        "unclassified": 0
+      },
+      "migrated": [
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 4644,
+          "tag": "span",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-comment-reply-prefix",
+          "rationale": "Visible reply-prefix chip in native Blogger comment text is easier to edit as a Blog template."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 4835,
+          "tag": "div",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-comment-status",
+          "rationale": "Visible comments status node belongs with Blog comment templates; JS only fills message text and timer state."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 5071,
+          "tag": "span",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-comment-more-wrapper",
+          "rationale": "Visible comment more wrapper is part of comment action chrome; JS still attaches the existing more button behavior."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 6878,
+          "tag": "p",
+          "decision": "templateMigrated",
+          "templateId": "gg-empty-state-saved-articles",
+          "rationale": "Saved empty/unavailable state already has a purpose template; JS no longer creates a fallback paragraph."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 8813,
+          "tag": "a",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-related-post-card",
+          "rationale": "Related post card is visible article chrome and now lives in a purpose-specific template."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 8886,
+          "tag": "div",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-related-posts-dot",
+          "rationale": "Related pagination dots use the existing related-posts dot template instead of JS container/span fallbacks."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 8905,
+          "tag": "span",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-related-posts-dot",
+          "rationale": "Dot fallback span removed; button prototype now comes from the related-posts dot template."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "previousLine": 8907,
+          "tag": "span",
+          "decision": "templateMigrated",
+          "templateId": "gg-template-related-posts-dot",
+          "rationale": "Dot fallback span removed; missing template now skips dot construction instead of creating UI in JS."
+        }
+      ],
+      "kept": [
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 1786,
+          "tag": "div",
+          "decision": "allowedParsing",
+          "rationale": "Temporary HTML strip helper used only for text extraction; never inserted into visible DOM."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 4851,
+          "tag": "textarea",
+          "decision": "allowedRuntime",
+          "rationale": "Temporary off-screen clipboard fallback, removed immediately after copy attempt."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 5122,
+          "tag": "img",
+          "decision": "allowedDynamicData",
+          "rationale": "Avatar image is created only when runtime comment data supplies a source; structural context is templated."
+        },
+        {
+          "file": "src/modules/legacy-app/legacy-app.js",
+          "line": 10136,
+          "tag": "iframe",
+          "decision": "allowedRuntime",
+          "rationale": "Hidden route-matrix measurement iframe used for diagnostics infrastructure, not user-visible chrome."
+        },
+        {
+          "file": "src/modules/store/store.js",
+          "line": 7,
+          "tag": "script",
+          "decision": "allowedRuntime",
+          "rationale": "Store compatibility entry dynamically loads the store core runtime script."
+        },
+        {
+          "file": "src/modules/store/store-core.js",
+          "line": 61,
+          "tag": "script",
+          "decision": "allowedRuntime",
+          "rationale": "Store core dynamically loads the discovery runtime script on demand."
+        }
+      ],
+      "forbiddenGenericTemplates": [
+        "gg-template-div",
+        "gg-template-link",
+        "gg-template-element",
+        "gg-template-button",
+        "gg-template-generic"
       ]
     }
   },
@@ -181,14 +280,14 @@
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 6259,
+      "line": 6242,
       "api": "innerHTML",
       "reason": "Legacy HTML parsing fallback for Blogger post body extraction — fallbackDoc.documentElement.innerHTML = html. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 7604,
+      "line": 7584,
       "api": "innerHTML",
       "reason": "Legacy outline preview text extraction reads innerHTML from already-parsed DOM nodes (fallback after textContent). Read-only, not generation. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"

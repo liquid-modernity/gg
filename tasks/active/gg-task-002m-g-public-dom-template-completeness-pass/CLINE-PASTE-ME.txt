@@ -1,0 +1,34 @@
+Run TASK-002M-G — Public DOM Template Completeness Pass.
+
+Read first:
+- tasks/active/TASK-002M-G-PUBLIC-DOM-TEMPLATE-COMPLETENESS-PASS.md
+- ai/agent/prompts/CLINE-SNIPER-TASK-002M-G-PUBLIC-DOM-TEMPLATE-COMPLETENESS-PASS.md
+- config/public-dom-generation-policy.json
+- docs/public-dom-generation-audit.md
+- checks/public-dom.check.mjs
+
+Task principle:
+Public UI should be template-first, editability-aware, scalability-aware, AI-agent-friendly, and friendly to humans who do not understand JavaScript.
+
+Scope:
+- Review all remaining `allowedSmall` and `allowedReviewed` createElement occurrences reported by `npm run check:public-dom`.
+- If a remaining element is user-visible UI/chrome and naturally belongs inside an existing or purpose-specific template, migrate it into the template.
+- If the element is truly runtime-only, parsing-only, infrastructure-only, dynamic data-only, or temporary DOM, keep it in JS and document the reason.
+- Keep JS responsible for cloning template, textContent, attributes, aria, icon state, class/state toggles, and behavior wiring.
+
+Important:
+- Do NOT create one universal template for unrelated elements.
+- Do NOT create generic templates named like `gg-template-div`, `gg-template-link`, `gg-template-element`, `gg-template-button`, or `gg-template-generic`.
+- Do NOT widen into OAuth, auth, Store restructure, Console redesign, Studio redesign, generated output edits, or dependency installs.
+- Do NOT delete `legacy-donor/`.
+
+Acceptance:
+Run:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002m-g-acceptance.sh
+
+Final response should include:
+- before/after createElement counts
+- which remaining `allowedSmall`/`allowedReviewed` were migrated, if any
+- which remaining ones were kept and why
+- confirmation `needsTemplate=0` and `unclassified=0`

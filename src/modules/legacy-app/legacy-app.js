@@ -4641,8 +4641,8 @@ window.GG = window.GG || {};
             }
 
             if (!prefixNode) {
-              prefixNode = document.createElement('span');
-              prefixNode.className = 'gg-comment-reply-prefix';
+              prefixNode = cloneTemplateElement('gg-template-comment-reply-prefix');
+              if (!prefixNode) continue;
               bodyNode.insertBefore(prefixNode, bodyNode.firstChild);
             }
 
@@ -4832,10 +4832,8 @@ window.GG = window.GG || {};
 
           status = root.querySelector('.gg-comments__status');
           if (!status) {
-            status = document.createElement('div');
-            status.className = 'gg-comments__status';
-            status.setAttribute('role', 'status');
-            status.setAttribute('aria-live', 'polite');
+            status = cloneTemplateElement('gg-template-comment-status');
+            if (!status) return;
             root.appendChild(status);
           }
 
@@ -4903,21 +4901,6 @@ window.GG = window.GG || {};
           if (closeOptions.returnFocus && active.button && typeof active.button.focus === 'function') active.button.focus();
           state.commentMoreMenu = null;
           return true;
-        }
-
-        function buildCommentMoreMenuIcon(name) {
-          var icon = document.createElement('span');
-          icon.className = 'gg-comment-more__icon gg-comment-more__item-icon gg-icon';
-          icon.setAttribute('aria-hidden', 'true');
-          icon.textContent = name;
-          return icon;
-        }
-
-        function buildCommentMoreMenuLabel(text) {
-          var label = document.createElement('span');
-          label.className = 'gg-comment-more__label gg-comment-more__item-label';
-          label.textContent = text;
-          return label;
         }
 
         function buildCommentMoreMenu(commentNode) {
@@ -5068,8 +5051,8 @@ window.GG = window.GG || {};
 
             wrapper = commentNode.querySelector(':scope .gg-comment-more');
             if (!wrapper) {
-              wrapper = document.createElement('span');
-              wrapper.className = 'gg-comment-more';
+              wrapper = cloneTemplateElement('gg-template-comment-more-wrapper');
+              if (!wrapper) continue;
               button = cloneTemplateElement('gg-template-comment-more-button');
               if (!button) continue;
               button.setAttribute('aria-label', getCopy('comments.action.more'));
@@ -6875,10 +6858,7 @@ window.GG = window.GG || {};
           if (!state.savedStorageAvailable) {
             node = cloneTemplateElement('gg-empty-state-saved-articles');
             if (!node) {
-              node = document.createElement('p');
-              node.className = 'gg-saved-listing-empty';
-              node.setAttribute('data-gg-saved-empty', 'unavailable');
-              node.setAttribute('role', 'status');
+              return;
             }
             node.textContent = getCopy('saved.empty.unavailable');
             fragment.appendChild(node);
@@ -8803,21 +8783,11 @@ window.GG = window.GG || {};
         }
 
         function createRelatedPostNode(item) {
-          var tpl = document.getElementById('gg-template-related-post-card');
           var link, type, title, meta, thumb;
 
           if (!item || !item.href || !item.title) return null;
 
-          if (!tpl || !tpl.content) {
-            // Safe fallback — never builds UI from scratch
-            var fb = document.createElement('a');
-            fb.className = 'gg-related-posts__item';
-            fb.href = item.href;
-            fb.textContent = item.title;
-            return fb;
-          }
-
-          link = /** @type {Element} */ (tpl.content.cloneNode(true).firstElementChild);
+          link = cloneTemplateElement('gg-template-related-post-card');
           if (!link) return null;
 
           type = link.querySelector('[data-gg-template-part="type"]');
@@ -8883,9 +8853,7 @@ window.GG = window.GG || {};
               dots = /** @type {Element} */ (dotsTpl.content.cloneNode(true).firstElementChild);
             }
             if (!dots) {
-              dots = document.createElement('div');
-              dots.className = 'gg-related-posts__dots';
-              dots.setAttribute('role', 'list');
+              return;
             }
             dots.setAttribute('role', 'list');
             var dotProto = dots.querySelector('[data-gg-template-part="dot"]');
@@ -8902,11 +8870,12 @@ window.GG = window.GG || {};
                 var dotTplFallback = document.getElementById('gg-template-related-posts-dot');
                 if (dotTplFallback && dotTplFallback.content) {
                   var dotProtoFallback = dotTplFallback.content.querySelector('[data-gg-template-part="dot"]');
-                  node = dotProtoFallback ? dotProtoFallback.cloneNode(true) : document.createElement('span');
+                  node = dotProtoFallback ? dotProtoFallback.cloneNode(true) : null;
                 } else {
-                  node = document.createElement('span');
+                  node = null;
                 }
               }
+              if (!node) continue;
               if (node.tagName === 'BUTTON' || node.getAttribute('role') === 'listitem') {
                 node.type = 'button';
                 node.setAttribute('role', 'listitem');

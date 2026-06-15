@@ -41,19 +41,19 @@ The `check:public-dom` check scans all `src/**/*.js` and `src/**/*.mjs` files fo
 | `needsTemplate` | Tag name in `needsTemplateTags` (e.g., `section`, `article`, `button`, `nav`, `header`, `footer`, `dialog`, `form`, `aside`, `main`, `ul`, `ol`, `li`). Large chrome/UI structure — migration candidate. |
 | `unclassified` | Tag not in either list (e.g., `div`, `p`, `h2`, `a`, `img`, `textarea`, `strong`, `iframe`, `script`). Warned but not failed. |
 
-### Current Findings (post TASK-002M-F)
+### Current Findings (post TASK-002M-G)
 
 | Count | Classification |
 |-------|----------------|
-| 6 | `allowedSmall` (span, option) |
-| 10 | `allowedReviewed` (div, textarea, img, p, a, iframe, script) |
+| 0 | `allowedSmall` |
+| 6 | `allowedReviewed` (div, textarea, img, iframe, script) |
 | 0 | `needsTemplate` |
 | 0 | `unclassified` |
 
 Current `npm run check:public-dom` summary:
 
 ```txt
-public-dom ok: restricted=5 allowlisted=5 createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=0
+public-dom ok: restricted=5 allowlisted=5 createElement=6 allowedSmall=0 allowedReviewed=6 needsTemplate=0 unclassified=0
 ```
 
 ### TASK-002M-B Migrated Items
@@ -122,6 +122,44 @@ No generic/universal template such as `gg-template-div`, `gg-template-link`, `gg
 
 **Result:** Known Blog `div`/`a` structural `needsTemplate` candidates: 9 → 0.
 
+### TASK-002M-G Template Completeness Pass
+
+**Before:** `npm run check:public-dom` reported:
+
+```txt
+createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=0
+```
+
+**Template migrated:** Remaining allowed/user-visible UI nodes that improved human and AI editability were moved into purpose-specific Blog templates:
+
+| Previous JS element | Decision | Template |
+|---|---|---|
+| comment reply prefix `span` | `templateMigrated` | `gg-template-comment-reply-prefix` |
+| comment status `div` | `templateMigrated` | `gg-template-comment-status` |
+| comment more wrapper `span` | `templateMigrated` | `gg-template-comment-more-wrapper` |
+| saved empty unavailable fallback `p` | `templateMigrated` | `gg-empty-state-saved-articles` |
+| related post card fallback `a` | `templateMigrated` | `gg-template-related-post-card` |
+| related posts dots fallback `div`/`span` | `templateMigrated` | `gg-template-related-posts-dot` |
+
+**Kept in JS:** The remaining occurrences are not templateable public chrome:
+
+| File | Tag | Decision | Rationale |
+|---|---|---|---|
+| `src/modules/legacy-app/legacy-app.js` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
+| `src/modules/legacy-app/legacy-app.js` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
+| `src/modules/legacy-app/legacy-app.js` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
+| `src/modules/legacy-app/legacy-app.js` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
+| `src/modules/store/store.js` | `script` | `allowedRuntime` | Store compatibility entry dynamically loads the store core runtime script. |
+| `src/modules/store/store-core.js` | `script` | `allowedRuntime` | Store core dynamically loads the discovery runtime script on demand. |
+
+**After:** `npm run check:public-dom` reports:
+
+```txt
+createElement=6 allowedSmall=0 allowedReviewed=6 needsTemplate=0 unclassified=0
+```
+
+No generic/universal template such as `gg-template-div`, `gg-template-link`, `gg-template-button`, `gg-template-element`, or `gg-template-generic` was introduced.
+
 ### Remaining needsTemplate Candidates
 
 None. All `needsTemplate` tags (section, article, button, nav, header, footer, dialog, form, aside, main, ul, ol, li) have been migrated from public JS source files.
@@ -130,6 +168,7 @@ None. All `needsTemplate` tags (section, article, button, nav, header, footer, d
 
 1. **TASK-002M-E:** Completed — Public DOM Unclassified Element Audit. All 21 previously unclassified createElement calls reviewed and classified by occurrence. See section below.
 2. **TASK-002M-F:** Completed — Blog div/link structural UI template migration.
+3. **TASK-002M-G:** Completed — Public DOM template completeness pass.
 
 ## TASK-002M-E — Public DOM Unclassified Element Audit
 
@@ -204,8 +243,8 @@ No UI migration was performed. No createElement calls were removed or modified. 
 | File | API | Status |
 |------|-----|--------|
 | `src/modules/legacy-app/legacy-app.js:1787` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:6259` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:7604` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:6242` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:7584` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/studio/app.js:1` | `insertAdjacentHTML` | allowlisted-error-display |
 | `apps/landing/landing.html:3302` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/landing/landing.html:3362` | `innerHTML` | allowlisted-legacy-bridge |
