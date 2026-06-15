@@ -129,13 +129,17 @@ console.log('=== legacy-bridge check ===\n');
 const policy = await readJson('config/legacy-app-bridge-policy.json');
 const publicDomPolicy = await readJson('config/public-dom-generation-policy.json');
 const packageJson = await readJson('package.json');
+const registry = await readJson('registry/modules.json');
 
-if (!policy || !publicDomPolicy || !packageJson) process.exit(1);
+if (!policy || !publicDomPolicy || !packageJson || !registry) process.exit(1);
 
 const legacyAppPath = policy.legacyAppPath || 'src/modules/legacy-app/legacy-app.js';
 const legacyDonorPath = policy.legacyDonorPath || 'legacy-donor';
 const genericTemplates = policy.forbidden?.genericTemplates || [];
 const extractionBuckets = policy.extractionBuckets || [];
+const legacyBudget = policy.legacyAppBudget || {};
+const requiredBridgeModules = policy.requiredBridgeModules || [];
+const classicRuntimeHelperModules = policy.classicRuntimeHelperModules || [];
 
 if (policy.status !== 'active-bridge') fail('legacy bridge policy status must be active-bridge');
 if (policy.doNotDeleteYet !== true) fail('legacy bridge policy must set doNotDeleteYet=true');
@@ -153,7 +157,16 @@ if (packageJson.scripts?.['check:legacy-bridge'] !== 'node checks/legacy-bridge.
   fail('package.json missing script check:legacy-bridge');
 }
 
-if (extractionBuckets.length < 8) {
+if (typeof legacyBudget.maxBytes === 'number' && legacyStat.size > legacyBudget.maxBytes) {
+  fail(`${legacyAppPath} exceeds byte budget: ${legacyStat.size} > ${legacyBudget.maxBytes} (baseline ${legacyBudget.baselineBytes ?? 'unknown'})`);
+}
+if (typeof legacyBudget.maxLines === 'number' && legacyLines > legacyBudget.maxLines) {
+  fail(`${legacyAppPath} exceeds line budget: ${legacyLines} > ${legacyBudget.maxLines} (baseline ${legacyBudget.baselineLines ?? 'unknown'})`);
+}
+
+if (typeof legacyBudget.buckets === 'number' && extractionBuckets.length !== legacyBudget.buckets) {
+  fail(`config/legacy-app-bridge-policy.json extraction bucket count must be ${legacyBudget.buckets}, got ${extractionBuckets.length}`);
+} else if (extractionBuckets.length < 8) {
   fail('config/legacy-app-bridge-policy.json must define at least 8 extraction buckets');
 }
 
@@ -179,6 +192,43 @@ const requiredHeadings = [
 ];
 for (const heading of requiredHeadings) {
   if (!inventory.includes(heading)) fail(`${inventoryPath} missing heading: ${heading}`);
+}
+
+const legacyBundleIndex = registry.bundleOrder?.indexOf('legacy-app') ?? -1;
+if (legacyBundleIndex < 0) fail('registry/modules.json bundleOrder must include legacy-app');
+for (const required of requiredBridgeModules) {
+  const id = required.id;
+  const moduleConfig = registry.modules?.[id];
+  const moduleIndex = registry.bundleOrder?.indexOf(id) ?? -1;
+
+  if (!id) {
+    fail(`required bridge module entry missing id: ${JSON.stringify(required)}`);
+    continue;
+  }
+  if (!moduleConfig) {
+    fail(`registry/modules.json missing required bridge module: ${id}`);
+    continue;
+  }
+  if (moduleConfig.enabled !== true) fail(`required bridge module must be enabled: ${id}`);
+  if (required.type && moduleConfig.type !== required.type) fail(`required bridge module ${id} type must be ${required.type}, got ${moduleConfig.type || 'missing'}`);
+  if (required.js && moduleConfig.js !== required.js) fail(`required bridge module ${id} js must be ${required.js}, got ${moduleConfig.js || 'missing'}`);
+  if (moduleIndex < 0) fail(`registry/modules.json bundleOrder missing required bridge module: ${id}`);
+  if (legacyBundleIndex >= 0 && moduleIndex >= legacyBundleIndex) fail(`required bridge module must bundle before legacy-app: ${id}`);
+}
+
+const buildSource = await readText('tools/build.mjs').catch((error) => {
+  fail(`tools/build.mjs is missing or unreadable: ${error.message}`);
+  return '';
+});
+const helperSetMatch = buildSource.match(/CLASSIC_RUNTIME_HELPER_MODULES\s*=\s*new Set\(\s*\[([\s\S]*?)\]\s*\)/);
+if (!helperSetMatch) {
+  fail('tools/build.mjs must declare CLASSIC_RUNTIME_HELPER_MODULES as an auditable literal Set');
+} else {
+  const actualHelpers = Array.from(helperSetMatch[1].matchAll(/['"]([^'"]+)['"]/g)).map((match) => match[1]).sort();
+  const expectedHelpers = classicRuntimeHelperModules.slice().sort();
+  if (JSON.stringify(actualHelpers) !== JSON.stringify(expectedHelpers)) {
+    fail(`tools/build.mjs CLASSIC_RUNTIME_HELPER_MODULES must match policy exactly. expected=${expectedHelpers.join(',')} actual=${actualHelpers.join(',')}`);
+  }
 }
 
 const publicSurfaceFiles = [
@@ -247,6 +297,21 @@ for (const file of srcFiles) {
 }
 const ceSummary = countCreateElementFindings(srcFiles, publicDomPolicy, fileContents);
 
+if (typeof legacyBudget.createElement === 'number' && ceSummary.createElement > legacyBudget.createElement) {
+  fail(`public DOM createElement count exceeds budget: ${ceSummary.createElement} > ${legacyBudget.createElement}`);
+}
+if (typeof legacyBudget.allowedSmall === 'number' && ceSummary.allowedSmall !== legacyBudget.allowedSmall) {
+  fail(`public DOM allowedSmall must be ${legacyBudget.allowedSmall}, got ${ceSummary.allowedSmall}`);
+}
+if (typeof legacyBudget.allowedReviewed === 'number' && ceSummary.allowedReviewed !== legacyBudget.allowedReviewed) {
+  fail(`public DOM allowedReviewed must be ${legacyBudget.allowedReviewed}, got ${ceSummary.allowedReviewed}`);
+}
+if (typeof legacyBudget.needsTemplate === 'number' && ceSummary.needsTemplate !== legacyBudget.needsTemplate) {
+  fail(`public DOM needsTemplate must be ${legacyBudget.needsTemplate}, got ${ceSummary.needsTemplate}`);
+}
+if (typeof legacyBudget.unclassified === 'number' && ceSummary.unclassified !== legacyBudget.unclassified) {
+  fail(`public DOM unclassified must be ${legacyBudget.unclassified}, got ${ceSummary.unclassified}`);
+}
 if (policy.publicDomPolicy?.requiresNeedsTemplateZero && ceSummary.needsTemplate !== 0) {
   fail(`public DOM needsTemplate must be 0, got ${ceSummary.needsTemplate}`);
 }
@@ -260,5 +325,5 @@ if (errors.length) {
 }
 
 console.log(
-  `legacy-bridge ok: bytes=${legacyStat.size} lines=${legacyLines} createElement=${ceSummary.createElement} allowedSmall=${ceSummary.allowedSmall} allowedReviewed=${ceSummary.allowedReviewed} needsTemplate=${ceSummary.needsTemplate} unclassified=${ceSummary.unclassified} buckets=${extractionBuckets.length}`
+  `legacy-bridge ok: bytes=${legacyStat.size}/${legacyBudget.maxBytes ?? 'unbudgeted'} lines=${legacyLines}/${legacyBudget.maxLines ?? 'unbudgeted'} createElement=${ceSummary.createElement}/${legacyBudget.createElement ?? 'unbudgeted'} allowedSmall=${ceSummary.allowedSmall} allowedReviewed=${ceSummary.allowedReviewed} needsTemplate=${ceSummary.needsTemplate} unclassified=${ceSummary.unclassified} buckets=${extractionBuckets.length}/${legacyBudget.buckets ?? 'unbudgeted'} bridgeModules=${requiredBridgeModules.length}`
 );

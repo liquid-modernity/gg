@@ -89,10 +89,58 @@
     "enabled": true,
     "reason": "legacy-app should shrink or stay stable while behavior moves into purpose-specific modules"
   },
+  "legacyAppBudget": {
+    "baselineTask": "TASK-002N-F",
+    "baselineBytes": 471126,
+    "maxBytes": 471126,
+    "baselineLines": 11116,
+    "maxLines": 11116,
+    "createElement": 6,
+    "allowedSmall": 0,
+    "allowedReviewed": 6,
+    "needsTemplate": 0,
+    "unclassified": 0,
+    "buckets": 9,
+    "policy": "No feature work may grow src/modules/legacy-app/legacy-app.js. New runtime behavior must move into purpose-specific modules or update this budget through an explicit bridge-budget task."
+  },
   "publicDomPolicy": {
     "requiresNeedsTemplateZero": true,
     "requiresUnclassifiedZero": true
   },
+  "requiredBridgeModules": [
+    {
+      "id": "template-hydration",
+      "type": "runtime-helper",
+      "js": "src/modules/template-hydration/template-hydration.js"
+    },
+    {
+      "id": "comments-bridge",
+      "type": "runtime-helper",
+      "js": "src/modules/comments-bridge/comments-bridge.js"
+    },
+    {
+      "id": "saved-listing-bridge",
+      "type": "runtime-helper",
+      "js": "src/modules/saved-listing-bridge/saved-listing-bridge.js"
+    },
+    {
+      "id": "popular-related-bridge",
+      "type": "runtime-helper",
+      "js": "src/modules/popular-related-bridge/popular-related-bridge.js"
+    },
+    {
+      "id": "offline-fallback-bridge",
+      "type": "runtime-helper",
+      "js": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js"
+    }
+  ],
+  "classicRuntimeHelperModules": [
+    "template-hydration",
+    "comments-bridge",
+    "saved-listing-bridge",
+    "popular-related-bridge",
+    "offline-fallback-bridge"
+  ],
   "forbidden": {
     "newHiddenUiGeneration": true,
     "genericTemplates": [

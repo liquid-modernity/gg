@@ -1,0 +1,68 @@
+TASK-002N-G — Legacy Bridge Budget Tightening
+
+You are working in the GG/PakRPP repo. Implement the active task from:
+
+tasks/active/TASK-002N-G-LEGACY-BRIDGE-BUDGET-TIGHTENING.md
+
+This task is a guard/baseline task. Do not implement features. Do not do broad refactor.
+
+Goals:
+1. Tighten the legacy bridge budget using the latest post-002N-F baseline.
+2. Prevent `src/modules/legacy-app/legacy-app.js` from growing silently.
+3. Ensure public DOM remains template-first: `needsTemplate=0` and `unclassified=0` must remain true.
+4. Ensure the six remaining `createElement` occurrences remain reviewed exceptions only.
+5. Ensure all extracted bridge modules are registered and bundled before `legacy-app`.
+6. Add or update acceptance documentation and script.
+
+Current expected baseline from TASK-002N-F:
+- legacy-app bytes: 471126
+- legacy-app lines: 11116
+- createElement: 6
+- allowedSmall: 0
+- allowedReviewed: 6
+- needsTemplate: 0
+- unclassified: 0
+- buckets: 9
+
+Use a tiny tolerance only if needed for docs/comment updates in this task. Do not set a loose budget. Prefer current baseline + very small headroom.
+
+Required bridge modules that must be in registry/modules.json and build order before legacy-app:
+- template-hydration
+- comments-bridge
+- saved-listing-bridge
+- popular-related-bridge
+- offline-fallback-bridge
+
+Required checks:
+- `npm run check:legacy-bridge` must fail if legacy-app exceeds budget.
+- `npm run check:legacy-bridge` must fail if public DOM count regresses for legacy-app: createElement > 6, allowedReviewed != 6, needsTemplate != 0, unclassified != 0.
+- `npm run check:legacy-bridge` must fail if required bridge modules are missing from registry or not bundled before legacy-app.
+- `npm run check:legacy-bridge` must fail if a new unapproved bridge module treatment is added to tools/build.mjs.
+- `npm run check:legacy-bridge` must report baseline summary clearly.
+
+Allowed files:
+- checks/legacy-bridge.check.mjs
+- config/legacy-app-bridge-policy.json
+- docs/legacy-app-bridge-inventory.md
+- src/modules/legacy-app/README.md
+- src/modules/legacy-app/bridge-map.json
+- scripts/task002n-g-acceptance.sh
+- tasks/active/TASK-002N-G-LEGACY-BRIDGE-BUDGET-TIGHTENING.md
+- package.json only if needed, but check:legacy-bridge already exists.
+
+Do not edit:
+- apps/blog/index.xml unless absolutely necessary; this should not be needed.
+- src/modules/legacy-app/legacy-app.js unless only to update a comment/header marker; avoid changing runtime code.
+- tools/build.mjs unless a check requires metadata; avoid build changes.
+- generated output under dist/** or .cloudflare-build/**.
+
+Final command must pass:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-g-acceptance.sh
+
+Report:
+- files changed
+- final legacy-app bytes/lines
+- final createElement/allowedReviewed/needsTemplate/unclassified counts
+- bridge modules verified
+- whether any runtime code changed; ideally no

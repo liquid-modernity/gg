@@ -2,6 +2,24 @@
   "version": 1,
   "status": "active-bridge",
   "legacyAppPath": "src/modules/legacy-app/legacy-app.js",
+  "budgetBaseline": {
+    "task": "TASK-002N-F",
+    "bytes": 471126,
+    "lines": 11116,
+    "createElement": 6,
+    "allowedSmall": 0,
+    "allowedReviewed": 6,
+    "needsTemplate": 0,
+    "unclassified": 0,
+    "buckets": 9
+  },
+  "requiredBridgeModules": [
+    "template-hydration",
+    "comments-bridge",
+    "saved-listing-bridge",
+    "popular-related-bridge",
+    "offline-fallback-bridge"
+  ],
   "extractedSeams": [
     {
       "id": "template-dom-hydration",

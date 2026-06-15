@@ -51,6 +51,29 @@ TASK-002N-F extracted an Offline/Error/Fallback helper seam:
 - `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.offlineFallbackBridge` while keeping search-empty, 404, listing growth, timers, rendering, fetch orchestration, and route semantics inside the bridge.
 - After extraction, `src/modules/legacy-app/legacy-app.js` is 471126 bytes and 11116 lines.
 
+TASK-002N-G tightened the bridge budget:
+
+- `npm run check:legacy-bridge` now enforces the post-002N-F `legacy-app.js` budget: 471126 bytes, 11116 lines, `createElement=6`, `allowedSmall=0`, `allowedReviewed=6`, `needsTemplate=0`, `unclassified=0`, and 9 extraction buckets.
+- Required helper bridge modules must remain registered and bundled before `legacy-app`: `template-hydration`, `comments-bridge`, `saved-listing-bridge`, `popular-related-bridge`, and `offline-fallback-bridge`.
+- `tools/build.mjs` classic runtime helper treatment is locked to the same approved helper module list so new helper treatment cannot be added silently.
+
+## Bridge Budget
+
+The active budget source of truth is `config/legacy-app-bridge-policy.json`. Feature work must not grow `src/modules/legacy-app/legacy-app.js`; new behavior should move into purpose-specific modules. Budget changes require an explicit bridge-budget task that updates the policy, this inventory, and acceptance coverage together.
+
+Current enforced baseline:
+
+| Metric | Budget |
+|---|---:|
+| `legacy-app.js` bytes | 471126 |
+| `legacy-app.js` lines | 11116 |
+| `createElement` | 6 |
+| `allowedSmall` | 0 |
+| `allowedReviewed` | 6 |
+| `needsTemplate` | 0 |
+| `unclassified` | 0 |
+| extraction buckets | 9 |
+
 ## Domain Buckets
 
 | Bucket | Current owner | Future target | Notes |

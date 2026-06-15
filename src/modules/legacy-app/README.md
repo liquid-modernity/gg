@@ -8,6 +8,7 @@ Rules for this directory:
 - Use JavaScript for cloning templates, text, attributes, ARIA, state toggles, and behavior wiring.
 - Do not import from `legacy-donor/`; that directory is reference-only.
 - Prefer shrinking this bridge. New behavior should go into the smallest appropriate module.
+- Do not grow this bridge for feature work. `npm run check:legacy-bridge` enforces the TASK-002N-F baseline budget: 471126 bytes, 11116 lines, 6 reviewed `createElement` exceptions, `needsTemplate=0`, and `unclassified=0`.
 - Keep `npm run check:public-dom` at `needsTemplate=0` and `unclassified=0`.
 - Keep `npm run check:legacy-bridge` passing.
 
