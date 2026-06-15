@@ -347,3 +347,8 @@
   text-underline-offset: 3px;
 }
 /* END gg-preview-toc-polish-contract */
+@media (max-width: 480px) {
+  .gg-preview__cta-row{
+  padding: 0 clamp(24px,5.6vw,34px);
+  }
+  }

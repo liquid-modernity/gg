@@ -11,7 +11,7 @@ async function emitPublicConfig(outDir) { const surfaces = await safeReadJson(jo
 const args = new Set(process.argv.slice(2));
 const modeArg = process.argv[process.argv.indexOf('--mode') + 1] || 'all';
 const modes = modeArg === 'all' ? ['dev','prod'] : [modeArg];
-const CLASSIC_RUNTIME_HELPER_MODULES = new Set(['template-hydration', 'comments-bridge', 'saved-listing-bridge', 'popular-related-bridge']);
+const CLASSIC_RUNTIME_HELPER_MODULES = new Set(['template-hydration', 'comments-bridge', 'saved-listing-bridge', 'popular-related-bridge', 'offline-fallback-bridge']);
 async function concatModules(kind){
   const registry = await readJson(join(ROOT,'registry/modules.json'));
   let out = `/* GG generated ${kind} bundle. Do not edit. Source: src/modules/* */\n`;

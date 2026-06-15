@@ -4,6 +4,7 @@ window.GG = window.GG || {};
         var commentsBridge = GG.commentsBridge || {};
         var savedListingBridge = GG.savedListingBridge || {};
         var popularRelatedBridge = GG.popularRelatedBridge || {};
+        var offlineFallbackBridge = GG.offlineFallbackBridge || {};
         var cloneTemplateElement = templateHydration.cloneTemplateElement;
 
         var COPY = {
@@ -2572,7 +2573,7 @@ window.GG = window.GG || {};
         }
 
         function syncNetworkState() {
-          writeBodyState('data-gg-network', window.navigator && window.navigator.onLine === false ? 'offline' : 'online');
+          writeBodyState('data-gg-network', offlineFallbackBridge.getNetworkState(window.navigator));
         }
 
         function syncLaunchPathState() {
@@ -5816,9 +5817,7 @@ window.GG = window.GG || {};
           var posts = state.discoveryIndex && state.discoveryIndex.posts ? state.discoveryIndex.posts : [];
           var max = typeof limit === 'number' ? limit : SEARCH_EMPTY_FALLBACK_CONTRACT.limit;
 
-          return posts.filter(function (post) {
-            return !!(post && post.href && post.title);
-          }).slice(0, max);
+          return offlineFallbackBridge.getFallbackPosts(posts, max);
         }
 
         function clearSearchEmptyFallbackTimer() {
@@ -5836,31 +5835,28 @@ window.GG = window.GG || {};
         function getSearchEmptyFallbackUiState(posts) {
           var items = Array.isArray(posts) ? posts : getSearchEmptyFallbackPosts(SEARCH_EMPTY_FALLBACK_CONTRACT.limit);
 
-          if (items.length) return 'success';
-          if (state.searchEmptyFallbackState === 'loading') return 'loading';
-          if (state.searchEmptyFallbackState === 'failure') return 'failure';
-          return 'idle';
+          return offlineFallbackBridge.getFallbackUiState(items, state.searchEmptyFallbackState);
         }
 
         function searchEmptySnapshot() {
           var searchState = detectSearchEmptyState();
           var fallbackPosts = getSearchEmptyFallbackPosts(SEARCH_EMPTY_FALLBACK_CONTRACT.limit);
 
-          return {
+          return offlineFallbackBridge.getSearchEmptyStatusPayload({
             active: searchState.active,
             query: searchState.query,
             resultCount: searchState.resultCount,
             fallbackState: getSearchEmptyFallbackUiState(fallbackPosts),
             fallbackCount: fallbackPosts.length,
             timeoutMs: SEARCH_EMPTY_FALLBACK_CONTRACT.timeoutMs
-          };
+          });
         }
 
         function finalizeSearchEmptyFallbackLoad(requestId) {
           if (requestId !== state.searchEmptyFallbackRequestId) return;
           clearSearchEmptyFallbackTimer();
           if (!detectSearchEmptyState().active) return;
-          state.searchEmptyFallbackState = getSearchEmptyFallbackPosts(SEARCH_EMPTY_FALLBACK_CONTRACT.limit).length ? 'success' : 'failure';
+          state.searchEmptyFallbackState = offlineFallbackBridge.getFallbackLoadState(getSearchEmptyFallbackPosts(SEARCH_EMPTY_FALLBACK_CONTRACT.limit));
           syncSearchEmptyState();
         }
 
@@ -5902,28 +5898,25 @@ window.GG = window.GG || {};
         function getError404FallbackUiState(posts) {
           var items = Array.isArray(posts) ? posts : getError404FallbackPosts(ERROR404_SURFACE_CONTRACT.limit);
 
-          if (items.length) return 'success';
-          if (state.error404FallbackState === 'loading') return 'loading';
-          if (state.error404FallbackState === 'failure') return 'failure';
-          return 'idle';
+          return offlineFallbackBridge.getFallbackUiState(items, state.error404FallbackState);
         }
 
         function error404Snapshot() {
           var fallbackPosts = getError404FallbackPosts(ERROR404_SURFACE_CONTRACT.limit);
 
-          return {
+          return offlineFallbackBridge.getErrorStatusPayload({
             active: isError404SurfaceActive(),
             fallbackState: getError404FallbackUiState(fallbackPosts),
             fallbackCount: fallbackPosts.length,
             timeoutMs: ERROR404_SURFACE_CONTRACT.timeoutMs
-          };
+          });
         }
 
         function finalizeError404FallbackLoad(requestId) {
           if (requestId !== state.error404FallbackRequestId) return;
           clearError404FallbackTimer();
           if (!isError404SurfaceActive()) return;
-          state.error404FallbackState = getError404FallbackPosts(ERROR404_SURFACE_CONTRACT.limit).length ? 'success' : 'failure';
+          state.error404FallbackState = offlineFallbackBridge.getFallbackLoadState(getError404FallbackPosts(ERROR404_SURFACE_CONTRACT.limit));
           syncError404State();
         }
 
@@ -6044,6 +6037,7 @@ window.GG = window.GG || {};
         }
 
         function syncFeedbackFallbackPresentation(fallbackNode, resultsNode, statusNode, fallbackState, posts, loadingCopyKey, failureCopyKey) {
+          var statusPayload;
           if (!fallbackNode || !resultsNode || !statusNode) return;
 
           if (fallbackState === 'success') {
@@ -6056,17 +6050,11 @@ window.GG = window.GG || {};
           replaceNodeChildren(resultsNode, []);
           fallbackNode.hidden = true;
 
-          if (fallbackState === 'loading') {
-            setFeedbackStatus(statusNode, loadingCopyKey, true);
-            return;
-          }
-
-          if (fallbackState === 'failure') {
-            setFeedbackStatus(statusNode, failureCopyKey, true);
-            return;
-          }
-
-          setFeedbackStatus(statusNode, '', false);
+          statusPayload = offlineFallbackBridge.getFeedbackStatusPayload(fallbackState, {
+            loading: loadingCopyKey,
+            failure: failureCopyKey
+          });
+          setFeedbackStatus(statusNode, statusPayload.copyKey, statusPayload.visible);
         }
 
         function syncSearchEmptyState() {
@@ -6330,7 +6318,7 @@ window.GG = window.GG || {};
               rowCount: getListingRowCount(),
               olderPageUrl: getCurrentOlderPageUrl(),
               state: state.listingGrowthState,
-              error: error && error.message ? error.message : 'listing-growth-failed'
+              error: offlineFallbackBridge.safeErrorMessage(error, 'listing-growth-failed')
             };
           });
         }

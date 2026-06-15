@@ -1,0 +1,15 @@
+Run TASK-002N-F exactly.
+
+Read first:
+- tasks/active/TASK-002N-F-EXTRACT-OFFLINE-ERROR-FALLBACK-BRIDGE-SEAM.md
+- ai/agent/prompts/CLINE-SNIPER-TASK-002N-F-EXTRACT-OFFLINE-ERROR-FALLBACK-BRIDGE-SEAM.md
+
+Goal: extract a small Offline/Error/Fallback helper seam from `src/modules/legacy-app/legacy-app.js` into:
+- `src/modules/offline-fallback-bridge/offline-fallback-bridge.js`
+- `src/modules/offline-fallback-bridge/offline-fallback-bridge.contract.json`
+
+Do not rewrite runtime behavior. Do not rewrite UI rendering. Keep `legacy-app.js` as orchestrator.
+
+Required final command:
+
+npm run doctor && npm run build && npm run check && npm run check:softcode && npm run check:public-softcode && npm run check:public-ui && npm run check:public-dom && npm run check:legacy-bridge && npm run console:check && npm run studio:check && npm run deploy:dry && bash scripts/task002n-f-acceptance.sh

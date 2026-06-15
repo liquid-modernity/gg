@@ -1,0 +1,8 @@
+{
+  "id": "offline-fallback-bridge",
+  "type": "runtime-helper",
+  "enabled": true,
+  "css": null,
+  "js": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js",
+  "description": "Small Offline/Error/Fallback bridge helper seam for network state, fallback posts, fallback UI/load states, status payloads, and safe error messages. It does not generate public UI."
+}

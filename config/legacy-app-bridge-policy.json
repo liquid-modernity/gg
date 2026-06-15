@@ -65,6 +65,24 @@
       ],
       "consumer": "src/modules/legacy-app/legacy-app.js",
       "notes": "Only Popular range normalization/href/label and Related normalization/pagination/dot state helpers moved. Popular rendering, Blogger widget parsing, Related rendering, and template hydration remain in legacy-app."
+    },
+    {
+      "id": "offline-error-fallback-state",
+      "status": "helper-seam-extracted",
+      "modulePath": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js",
+      "exportedHelpers": [
+        "getNetworkState",
+        "isNetworkUnavailable",
+        "getFallbackPosts",
+        "getFallbackUiState",
+        "getFallbackLoadState",
+        "getFeedbackStatusPayload",
+        "getSearchEmptyStatusPayload",
+        "getErrorStatusPayload",
+        "safeErrorMessage"
+      ],
+      "consumer": "src/modules/legacy-app/legacy-app.js",
+      "notes": "Only low-risk network/fallback state helpers and fallback status payload helpers moved. Search-empty, 404, listing growth, timers, rendering, and fetch orchestration remain in legacy-app."
     }
   ],
   "noGrowthPolicy": {
@@ -163,13 +181,14 @@
       "id": "offline-error-fallback",
       "name": "Offline/error/fallback behavior",
       "ownerFiles": [
+        "src/modules/offline-fallback-bridge/offline-fallback-bridge.js",
         "src/modules/legacy-app/legacy-app.js",
         "apps/blog/index.xml",
         "apps/landing/landing.html"
       ],
-      "status": "bridge-owned",
+      "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/feedback/feedback.js",
-      "nextTaskRecommendation": "Extract 404, search-empty, preview fetch failure, and PWA fallback state without changing copy keys."
+      "nextTaskRecommendation": "Keep search-empty, 404, listing growth, timers, rendering, and fetch orchestration in legacy-app until feedback flow smoke coverage is narrower."
     },
     {
       "id": "parsing-extraction-helpers",

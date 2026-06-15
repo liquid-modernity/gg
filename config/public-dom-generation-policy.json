@@ -67,7 +67,7 @@
       "reviewedOccurrences": [
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 1797,
+          "line": 1798,
           "tag": "div",
           "classification": "allowedLegacyParsing",
           "context": "legacy HTML strip helper: div used for innerHTML set then textContent extraction",
@@ -76,7 +76,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 4782,
+          "line": 4783,
           "tag": "textarea",
           "classification": "allowedRuntimeConstruct",
           "context": "off-screen clipboard copy fallback element",
@@ -85,7 +85,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 5053,
+          "line": 5054,
           "tag": "img",
           "classification": "allowedRuntimeConstruct",
           "context": "comment replies context avatar image with runtime-driven src",
@@ -94,7 +94,7 @@
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 10047,
+          "line": 10035,
           "tag": "iframe",
           "classification": "allowedNonChromeInfrastructure",
           "context": "hidden measurement iframe for route preloading/performance matrix",
@@ -207,28 +207,28 @@
       "kept": [
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 1797,
+          "line": 1798,
           "tag": "div",
           "decision": "allowedParsing",
           "rationale": "Temporary HTML strip helper used only for text extraction; never inserted into visible DOM."
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 4782,
+          "line": 4783,
           "tag": "textarea",
           "decision": "allowedRuntime",
           "rationale": "Temporary off-screen clipboard fallback, removed immediately after copy attempt."
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 5053,
+          "line": 5054,
           "tag": "img",
           "decision": "allowedDynamicData",
           "rationale": "Avatar image is created only when runtime comment data supplies a source; structural context is templated."
         },
         {
           "file": "src/modules/legacy-app/legacy-app.js",
-          "line": 10047,
+          "line": 10035,
           "tag": "iframe",
           "decision": "allowedRuntime",
           "rationale": "Hidden route-matrix measurement iframe used for diagnostics infrastructure, not user-visible chrome."
@@ -273,21 +273,21 @@
   "allowlist": [
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 1798,
+      "line": 1799,
       "api": "innerHTML",
       "reason": "Legacy HTML strip helper: div.innerHTML set then read textContent — used to strip markup from Blogger feed content. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 6158,
+      "line": 6146,
       "api": "innerHTML",
       "reason": "Legacy HTML parsing fallback for Blogger post body extraction — fallbackDoc.documentElement.innerHTML = html. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"
     },
     {
       "file": "src/modules/legacy-app/legacy-app.js",
-      "line": 7503,
+      "line": 7491,
       "api": "innerHTML",
       "reason": "Legacy outline preview text extraction reads innerHTML from already-parsed DOM nodes (fallback after textContent). Read-only, not generation. Temporary legacy bridge.",
       "status": "allowlisted-legacy-bridge"

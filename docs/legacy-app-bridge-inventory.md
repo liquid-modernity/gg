@@ -45,6 +45,12 @@ TASK-002N-E extracted a Popular/Related helper seam:
 - `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.popularRelatedBridge` while keeping Popular rendering, Blogger widget parsing, Related rendering, template hydration, and event orchestration inside the bridge.
 - After extraction, `src/modules/legacy-app/legacy-app.js` is 471314 bytes and 11128 lines.
 
+TASK-002N-F extracted an Offline/Error/Fallback helper seam:
+
+- `src/modules/offline-fallback-bridge/offline-fallback-bridge.js` owns low-risk network state, fallback post filtering, fallback UI/load state, status payload, and safe error message helpers.
+- `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.offlineFallbackBridge` while keeping search-empty, 404, listing growth, timers, rendering, fetch orchestration, and route semantics inside the bridge.
+- After extraction, `src/modules/legacy-app/legacy-app.js` is 471126 bytes and 11116 lines.
+
 ## Domain Buckets
 
 | Bucket | Current owner | Future target | Notes |
@@ -55,7 +61,7 @@ TASK-002N-E extracted a Popular/Related helper seam:
 | saved listing / saved state | `src/modules/saved-listing-bridge/saved-listing-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-D extracted saved data/storage/toggle helpers. PATCH-2 keeps saved listing render, mode exclusivity, native row hiding, toolbar label sync, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration in `legacy-app.js`. |
 | popular controls | `src/modules/popular-related-bridge/popular-related-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-E extracted range normalization, href, and label helpers. Popular rendering, Blogger popular widget parsing, and range template hydration remain in `legacy-app.js`. |
 | related posts / prev-next / dots | `src/modules/popular-related-bridge/popular-related-bridge.js`, `legacy-app.js`, detail templates | `src/modules/detail/detail.js` | TASK-002N-E extracted related date scoring, post normalization, page state, and dot state helpers. Related rendering, card hydration, and detail context use remain in `legacy-app.js`. |
-| offline/error/fallback behavior | `legacy-app.js`, feedback/landing templates | `src/modules/feedback/feedback.js` | Search empty, 404 recovery, preview fetch failure, PWA/offline cache helpers. |
+| offline/error/fallback behavior | `src/modules/offline-fallback-bridge/offline-fallback-bridge.js`, `legacy-app.js`, feedback/landing templates | `src/modules/feedback/feedback.js` | TASK-002N-F extracted network/fallback state helpers and status payload helpers. Search-empty, 404 recovery, listing growth, timers, rendering, fetch orchestration, and route semantics remain in `legacy-app.js`. |
 | parsing/extraction helpers | `legacy-app.js` | `src/modules/parsing/parsing.js` | HTML strip/read helpers, feed parsing, date/label extraction, text normalization. |
 | store or landing cross-surface references if any | `legacy-app.js`, store runtime loaders, landing HTML | `src/modules/shell/shell.js` | Route vocabulary includes `/store`, `/landing`, contact anchors, store exclusion, and cross-surface discovery actions. |
 

@@ -145,10 +145,10 @@ createElement=16 allowedSmall=6 allowedReviewed=10 needsTemplate=0 unclassified=
 
 | File | Tag | Decision | Rationale |
 |---|---|---|---|
-| `src/modules/legacy-app/legacy-app.js:1797` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
-| `src/modules/legacy-app/legacy-app.js:4782` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
-| `src/modules/legacy-app/legacy-app.js:5053` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
-| `src/modules/legacy-app/legacy-app.js:10047` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
+| `src/modules/legacy-app/legacy-app.js:1798` | `div` | `allowedParsing` | Temporary HTML strip helper used only for text extraction; never inserted into visible DOM. |
+| `src/modules/legacy-app/legacy-app.js:4783` | `textarea` | `allowedRuntime` | Temporary off-screen clipboard fallback, removed immediately after copy attempt. |
+| `src/modules/legacy-app/legacy-app.js:5054` | `img` | `allowedDynamicData` | Runtime comment avatar image created only when comment data supplies a source; structural context is templated. |
+| `src/modules/legacy-app/legacy-app.js:10035` | `iframe` | `allowedRuntime` | Hidden route-matrix measurement iframe used for diagnostics infrastructure, not public chrome. |
 | `src/modules/store/store.js` | `script` | `allowedRuntime` | Store compatibility entry dynamically loads the store core runtime script. |
 | `src/modules/store/store-core.js` | `script` | `allowedRuntime` | Store core dynamically loads the discovery runtime script on demand. |
 
@@ -175,6 +175,14 @@ TASK-002N-E did not add new public DOM generation. It moved small Popular/Relate
 - Popular range hash normalization, range href, and range label helpers.
 - Related date score, post normalization, page state, and dot state helpers.
 - Popular and Related visible structures still come from existing Blog templates and are cloned/hydrated by `legacy-app.js`.
+
+### TASK-002N-F Offline/Error/Fallback Bridge Seam
+
+TASK-002N-F did not add new public DOM generation. It moved small Offline/Error/Fallback data helpers into `src/modules/offline-fallback-bridge/offline-fallback-bridge.js`:
+
+- Network state and fallback post filtering helpers.
+- Fallback UI/load state and status payload helpers for search-empty and 404 surfaces.
+- Search-empty, 404, listing growth, timers, rendering, and fetch orchestration still stay in `legacy-app.js` and existing Blog templates.
 
 ### Remaining needsTemplate Candidates
 
@@ -258,9 +266,9 @@ No UI migration was performed. No createElement calls were removed or modified. 
 
 | File | API | Status |
 |------|-----|--------|
-| `src/modules/legacy-app/legacy-app.js:1798` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:6158` | `innerHTML` | allowlisted-legacy-bridge |
-| `src/modules/legacy-app/legacy-app.js:7503` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:1799` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:6146` | `innerHTML` | allowlisted-legacy-bridge |
+| `src/modules/legacy-app/legacy-app.js:7491` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/studio/app.js:1` | `insertAdjacentHTML` | allowlisted-error-display |
 | `apps/landing/landing.html:3302` | `innerHTML` | allowlisted-legacy-bridge |
 | `apps/landing/landing.html:3362` | `innerHTML` | allowlisted-legacy-bridge |

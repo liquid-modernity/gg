@@ -59,6 +59,23 @@
       ],
       "consumedBy": "src/modules/legacy-app/legacy-app.js",
       "status": "helper-seam-extracted"
+    },
+    {
+      "id": "offline-error-fallback-state",
+      "modulePath": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js",
+      "exports": [
+        "getNetworkState",
+        "isNetworkUnavailable",
+        "getFallbackPosts",
+        "getFallbackUiState",
+        "getFallbackLoadState",
+        "getFeedbackStatusPayload",
+        "getSearchEmptyStatusPayload",
+        "getErrorStatusPayload",
+        "safeErrorMessage"
+      ],
+      "consumedBy": "src/modules/legacy-app/legacy-app.js",
+      "status": "helper-seam-extracted"
     }
   ],
   "principle": "Split runtime behavior into purpose-specific modules while keeping visible public UI template-first.",
@@ -107,10 +124,10 @@
     },
     {
       "id": "offline-error-fallback",
-      "currentOwner": "src/modules/legacy-app/legacy-app.js",
+      "currentOwner": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/feedback/feedback.js",
       "risk": "medium",
-      "nextStep": "Move fallback behavior without changing copy keys or route semantics."
+      "nextStep": "Keep search-empty, 404, listing growth, timers, rendering, and fetch orchestration in legacy-app; offline-fallback-bridge owns only network/fallback state helpers and status payload helpers."
     },
     {
       "id": "parsing-extraction-helpers",

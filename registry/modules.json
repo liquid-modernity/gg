@@ -6,6 +6,7 @@
     "comments-bridge",
     "saved-listing-bridge",
     "popular-related-bridge",
+    "offline-fallback-bridge",
     "legacy-app",
     "public-softcode",
     "base",
@@ -50,6 +51,12 @@
       "enabled": true,
       "css": null,
       "js": "src/modules/popular-related-bridge/popular-related-bridge.js",
+      "type": "runtime-helper"
+    },
+    "offline-fallback-bridge": {
+      "enabled": true,
+      "css": null,
+      "js": "src/modules/offline-fallback-bridge/offline-fallback-bridge.js",
       "type": "runtime-helper"
     },
     "legacy-app": {
