@@ -39,6 +39,7 @@
   font: var(--gg-entry-row-title-weight) var(--gg-entry-row-title-size)/var(--gg-entry-row-title-line) var(--gg-font-sans);
   letter-spacing: 0;
   display: inline-flex;
+  gap: 6px;
 }
 
 .gg-entry-row__title-trigger {
@@ -48,7 +49,7 @@
   border: 0;
   background: transparent;
   color: inherit;
-  font: inherit;
+  font: -webkit-control;
   letter-spacing: inherit;
   line-height: inherit;
   overflow-wrap: anywhere;
@@ -327,12 +328,47 @@
 [data-gg-listing-mode="saved"] [data-gg-pagination] {
   display: none !important;
 }
-
 .gg-entry-row--saved .gg-entry-row__details-label {
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
   overflow: hidden;
+  clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
 }
+[data-gg-listing-mode="saved"] [data-gg-native-row="true"],
+[data-gg-listing-mode="popular"] [data-gg-native-row="true"] {
+  display: none !important;
+}
+
+[data-gg-listing-mode="saved"] [data-gg-load-more],
+[data-gg-listing-mode="saved"] [data-gg-pagination],
+[data-gg-listing-mode="popular"] [data-gg-load-more],
+[data-gg-listing-mode="popular"] [data-gg-pagination] {
+  display: none !important;
+}
+  [data-gg-page="index"] [data-gg-listing],
+  [data-gg-page="index"] .gg-entry-list {
+    border: 1px solid var(--gg-border, rgba(20, 20, 20, 0.14));
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--gg-entry-list-bg);
+  }
+  
+  [data-gg-page="index"] [data-gg-listing] > .gg-entry-row,
+  [data-gg-page="index"] [data-gg-listing] > [data-gg-saved-row],
+  [data-gg-page="index"] [data-gg-listing] > [data-gg-popular-row],
+  [data-gg-page="index"] [data-gg-listing] > [data-gg-native-row],
+  [data-gg-page="index"] .gg-entry-list > .gg-entry-row,
+  [data-gg-page="index"] .gg-entry-list > [data-gg-saved-row],
+  [data-gg-page="index"] .gg-entry-list > [data-gg-popular-row],
+  [data-gg-page="index"] .gg-entry-list > [data-gg-native-row] {
+    border-bottom: 1px solid var(--gg-border, rgba(20, 20, 20, 0.14));
+  }
+  
+  [data-gg-page="index"] [data-gg-listing] > :last-child,
+  [data-gg-page="index"] .gg-entry-list > :last-child {
+    border-bottom: 0;
+  }
