@@ -106,7 +106,6 @@
   align-items: center;
   gap: 12px;
   min-height: 68px;
-  margin-top: 10px;
   padding: 8px 10px;
   border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
   border-bottom: 0;
@@ -356,6 +355,7 @@
   border-radius: 0 0 14px 14px;
   overflow: hidden;
   background: var(--gg-entry-list-bg);
+  margin-top: 67px;
 }
 .gg-entry-list[data-gg-page="listing"] > .gg-entry-row,
 .gg-main[data-gg-page="listing"] .gg-entry-list > .gg-entry-row {

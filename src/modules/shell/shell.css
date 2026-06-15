@@ -50,7 +50,10 @@
 .gg-site-head {
   display: grid;
   gap: 0;
-  margin-bottom: var(--gg-site-head-bottom);
+  position: fixed;
+  top: var(--gg-dock-offset-bottom);
+  max-width: none;
+  width: var(--gg-dock-width);
 }
 
 .gg-site-head__eyebrow {
