@@ -47,7 +47,7 @@
         "toggleSavedArticle"
       ],
       "consumer": "src/modules/legacy-app/legacy-app.js",
-      "notes": "Only saved data normalization, storage parsing/writing, lookup, and list toggle calculation moved. Saved listing rendering and event orchestration remain in legacy-app."
+      "notes": "Only saved data normalization, storage parsing/writing, lookup, and list toggle calculation moved. Saved listing rendering, exclusive mode handling, native row hiding, toolbar label sync, and event orchestration remain in legacy-app."
     }
   ],
   "noGrowthPolicy": {
@@ -116,7 +116,7 @@
       ],
       "status": "helper-seam-extracted-flow-still-bridge-owned",
       "futureTarget": "src/modules/listing/listing.js",
-      "nextTaskRecommendation": "Keep saved listing rendering and save/unsave event lifecycle in legacy-app until a focused listing module extraction has smoke coverage."
+      "nextTaskRecommendation": "Keep saved listing rendering, exclusive mode handling, native row hiding, toolbar label sync, and save/unsave event lifecycle in legacy-app until a focused listing module extraction has smoke coverage."
     },
     {
       "id": "popular-controls",

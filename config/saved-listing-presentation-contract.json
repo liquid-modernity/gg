@@ -1,9 +1,13 @@
 {
   "version": 1,
   "savedModeExclusive": true,
+  "listingModeAttributeWhenSavedActive": "saved",
+  "nativeRowsMarkedBeforeModeHide": true,
   "hideNativeRowsWhenSavedActive": true,
+  "savedRowsOccupyActiveListingSurface": true,
   "hideLoadMoreWhenSavedActive": true,
   "hidePaginationWhenSavedActive": true,
+  "visibleModeLabelWhenSavedActive": "Saved",
   "savedRowsUseCanonicalListingTemplate": true,
   "rawDetailsTextVisible": false,
   "unsaveRefreshesSavedListing": true,

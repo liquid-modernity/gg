@@ -32,6 +32,13 @@ TASK-002N-D extracted a saved listing helper seam:
 - `src/modules/legacy-app/legacy-app.js` consumes the seam through `GG.savedListingBridge` while keeping saved listing rendering, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration inside the bridge.
 - After extraction, `src/modules/legacy-app/legacy-app.js` is 468262 bytes and 11063 lines.
 
+TASK-002N-D-PATCH-2 tightened the saved listing runtime presentation contract:
+
+- `src/modules/legacy-app/legacy-app.js` still owns saved listing orchestration, but now marks native listing rows with `data-gg-native-row="true"` before hiding them.
+- Saved and Popular listing modes set `data-gg-listing-mode` on the listing root, hide native rows, hide load-more/pagination, and render dynamic rows as the active listing surface.
+- The listing toolbar label is synchronized to `Saved` while Saved mode is active so the visible mode control no longer remains on `Latest`.
+- After PATCH-2, `src/modules/legacy-app/legacy-app.js` is 471418 bytes and 11131 lines.
+
 ## Domain Buckets
 
 | Bucket | Current owner | Future target | Notes |
@@ -39,7 +46,7 @@ TASK-002N-D extracted a saved listing helper seam:
 | boot/runtime wiring | `legacy-app.js`, `registry/modules.json` | `src/modules/runtime/runtime.js` or existing shell module | Initializes `GG`, state, route contracts, panel APIs, QA exports, and idle boot sequence. |
 | template cloning / DOM hydration glue | `src/modules/template-hydration/template-hydration.js`, `legacy-app.js`, `apps/blog/index.xml` | `src/modules/template-hydration/template-hydration.js` | TASK-002N-B extracted template lookup and first-element cloning. Legacy business logic still calls the helper while hydrating templates. |
 | comments sheet / replies | `src/modules/comments-bridge/comments-bridge.js`, `legacy-app.js`, comments templates/CSS | `src/modules/comments/comments.js` | TASK-002N-C extracted URL/hash/permalink/reply-handle helpers. Sheet open/close, native Blogger wrapping, replies, composer, copy/delete, status, and menus remain in `legacy-app.js`. |
-| saved listing / saved state | `src/modules/saved-listing-bridge/saved-listing-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-D extracted saved data/storage/toggle helpers. Saved listing render, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration remain in `legacy-app.js`. |
+| saved listing / saved state | `src/modules/saved-listing-bridge/saved-listing-bridge.js`, `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | TASK-002N-D extracted saved data/storage/toggle helpers. PATCH-2 keeps saved listing render, mode exclusivity, native row hiding, toolbar label sync, save/unsave event lifecycle, preview/detail payload sourcing, and route orchestration in `legacy-app.js`. |
 | popular controls | `legacy-app.js`, listing templates | `src/modules/listing/listing.js` | Popular range state, Blogger popular widget parsing, range link hydration. |
 | related posts / prev-next / dots | `legacy-app.js`, detail templates | `src/modules/detail/detail.js` | Related scoring, related card hydration, dot pagination, detail context use. |
 | offline/error/fallback behavior | `legacy-app.js`, feedback/landing templates | `src/modules/feedback/feedback.js` | Search empty, 404 recovery, preview fetch failure, PWA/offline cache helpers. |

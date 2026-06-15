@@ -256,7 +256,7 @@ body[data-gg-panel-active='true'] .gg-detail-outline[data-gg-outline-mode='pagin
   bottom: auto;
   width: 100%;
   border-radius: 18px;
-  opacity: 1;
+  opacity: 0;
   pointer-events: auto;
   transform: none;
 }

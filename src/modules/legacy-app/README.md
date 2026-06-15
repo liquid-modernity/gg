@@ -17,4 +17,4 @@ Extracted seams:
 
 - `src/modules/template-hydration/template-hydration.js` owns template lookup and `cloneTemplateElement()`.
 - `src/modules/comments-bridge/comments-bridge.js` owns low-risk comments URL/hash/permalink/reply-handle helpers. Comments sheet orchestration stays in `legacy-app.js`.
-- `src/modules/saved-listing-bridge/saved-listing-bridge.js` owns saved data normalization, storage parsing/writing, lookup, and toggle list calculation. Saved listing rendering and event orchestration stay in `legacy-app.js`.
+- `src/modules/saved-listing-bridge/saved-listing-bridge.js` owns saved data normalization, storage parsing/writing, lookup, and toggle list calculation. Saved listing rendering, exclusive listing mode, native row hiding, toolbar label sync, and event orchestration stay in `legacy-app.js`.

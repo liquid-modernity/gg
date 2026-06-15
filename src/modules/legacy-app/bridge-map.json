@@ -73,7 +73,7 @@
       "currentOwner": "src/modules/saved-listing-bridge/saved-listing-bridge.js + src/modules/legacy-app/legacy-app.js",
       "futureTarget": "src/modules/listing/listing.js",
       "risk": "medium",
-      "nextStep": "Keep saved listing render and save/unsave orchestration in legacy-app; saved-listing-bridge owns only normalization, storage parsing/writing, lookup, and toggle list calculation."
+      "nextStep": "Keep saved listing render, exclusive mode handling, native row hiding, toolbar label sync, and save/unsave orchestration in legacy-app; saved-listing-bridge owns only normalization, storage parsing/writing, lookup, and toggle list calculation."
     },
     {
       "id": "popular-controls",

@@ -910,7 +910,8 @@ window.GG = window.GG || {};
 
         var LISTING_ROOT_ID = 'gg-entry-list';
         var LISTING_ROW_SELECTOR = '.gg-entry-row[data-gg-post-url]';
-        var LISTING_NATIVE_ROW_SELECTOR = LISTING_ROW_SELECTOR + ':not([data-gg-saved-row]):not([data-gg-popular-row])';
+        var LISTING_NATIVE_ROW_SELECTOR = '[data-gg-native-row="true"]';
+        var LISTING_DYNAMIC_ROW_SELECTOR = '[data-gg-saved-row], [data-gg-saved-empty], [data-gg-popular-row], [data-gg-popular-empty], [data-gg-popular-controls], [data-gg-dynamic-listing-row]';
         var LISTING_ROW_BASE_SELECTOR = '.gg-entry-row';
         var DISCOVERY_RESULT_SELECTOR = '.gg-discovery-result';
         var DISCOVERY_TOPIC_SELECTOR = '.gg-discovery-topic__apply, .gg-discovery-topic__archive, .gg-discovery-topic-group__toggle';
@@ -1056,6 +1057,8 @@ window.GG = window.GG || {};
           siteHeadSummary: document.getElementById('gg-site-head-summary'),
           dock: document.getElementById('gg-dock'),
           listing: document.getElementById(LISTING_ROOT_ID),
+          listingFilterTrigger: document.querySelector('[data-gg-listing-filter-trigger]'),
+          listingFilterLabel: document.querySelector('.gg-listing-toolbar__filter-label'),
           searchEmpty: document.getElementById('gg-search-empty'),
           searchEmptyFallback: document.getElementById('gg-search-empty-fallback'),
           searchEmptyResults: document.getElementById('gg-search-empty-results'),
@@ -1182,7 +1185,7 @@ window.GG = window.GG || {};
           savedArticles: [],
           savedStorageAvailable: true,
           savedListingActive: false,
-          savedListingOriginalHidden: false,
+          listingFilterDefaultLabel: '',
           popularListingActive: false,
           popularRange: 'ALL_TIME',
           popularItems: [],
@@ -6690,10 +6693,51 @@ window.GG = window.GG || {};
           if (ui.listingPagination) ui.listingPagination.hidden = !!hidden;
         }
 
-        function setSavedListingMode(active) {
+        function getListingModeLabel(mode) {
+          var key = mode === 'popular' ? 'popular-posts' : mode;
+          var entry = ROOT_LISTING_ICON_REGISTRY[key] || ROOT_LISTING_ICON_REGISTRY.latest;
+          return entry.label || ROOT_LISTING_ICON_REGISTRY.latest.label;
+        }
+
+        function syncListingModeLabel(mode) {
+          var label = ui.listingFilterLabel;
+          var text;
+          if (!label) return;
+          if (!state.listingFilterDefaultLabel) state.listingFilterDefaultLabel = stripHtml(label.textContent || '').trim();
+          text = mode === 'latest' ? state.listingFilterDefaultLabel : getListingModeLabel(mode);
+          label.textContent = text || getListingModeLabel('latest');
+          if (ui.listingFilterTrigger) {
+            ui.listingFilterTrigger.setAttribute('aria-label', label.textContent.trim());
+          }
+        }
+
+        function isDynamicListingNode(node) {
+          return !!(node && node.nodeType === 1 && node.matches && node.matches(LISTING_DYNAMIC_ROW_SELECTOR));
+        }
+
+        function markNativeListingRows() {
+          var rows;
+          var i;
+          var row;
           if (!ui.listing) return;
-          ui.listing.setAttribute('data-gg-listing-mode', active ? 'saved' : (state.popularListingActive ? 'popular' : 'latest'));
+          rows = ui.listing.children || [];
+          for (i = 0; i < rows.length; i += 1) {
+            row = rows[i];
+            if (!row || row.nodeType !== 1 || isDynamicListingNode(row)) continue;
+            if (row.matches && row.matches('template, script, style')) continue;
+            if (row.hasAttribute('data-gg-native-row')) continue;
+            row.setAttribute('data-gg-native-row', 'true');
+          }
+        }
+
+        function setSavedListingMode(active) {
+          var mode;
+          if (!ui.listing) return;
+          mode = active ? 'saved' : (state.popularListingActive ? 'popular' : 'latest');
+          markNativeListingRows();
+          ui.listing.setAttribute('data-gg-listing-mode', mode);
           if (ui.shell) ui.shell.setAttribute('data-gg-saved-listing', active ? 'active' : 'inactive');
+          syncListingModeLabel(mode);
           setListingAuxiliaryHidden(!!active || !!state.popularListingActive);
         }
 
@@ -6701,7 +6745,7 @@ window.GG = window.GG || {};
           var rows;
           var i;
           if (!ui.listing) return;
-          rows = ui.listing.querySelectorAll('[data-gg-saved-row], [data-gg-saved-empty], [data-gg-popular-row], [data-gg-popular-empty], [data-gg-popular-controls]');
+          rows = ui.listing.querySelectorAll(LISTING_DYNAMIC_ROW_SELECTOR);
           for (i = 0; i < rows.length; i += 1) rows[i].remove();
         }
 
@@ -6709,6 +6753,7 @@ window.GG = window.GG || {};
           var rows;
           var i;
           if (!ui.listing) return;
+          markNativeListingRows();
           rows = ui.listing.querySelectorAll(LISTING_NATIVE_ROW_SELECTOR);
           for (i = 0; i < rows.length; i += 1) rows[i].hidden = !!hidden;
         }
@@ -6901,13 +6946,14 @@ window.GG = window.GG || {};
           if (!ui.listing) return;
           clearDynamicListingRows();
           setNativeListingRowsHidden(state.savedListingActive || state.popularListingActive);
+          setSavedListingMode(state.savedListingActive);
 
           if (!state.popularListingActive) {
-            if (!state.savedListingActive && ui.loadMoreWrap) ui.loadMoreWrap.hidden = false;
+            if (!state.savedListingActive) setListingAuxiliaryHidden(false);
             return;
           }
 
-          if (ui.loadMoreWrap) ui.loadMoreWrap.hidden = true;
+          setListingAuxiliaryHidden(true);
           fragment = document.createDocumentFragment();
           fragment.appendChild(createPopularControls(state.popularRange));
           items = extractPopularItems(state.popularRange);
