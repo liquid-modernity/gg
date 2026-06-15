@@ -351,7 +351,6 @@
 .gg-entry-list[data-gg-page="listing"],
 .gg-main[data-gg-page="listing"] .gg-entry-list {
   border: var(--gg-entry-row-divider-size) solid var(--gg-entry-row-divider);
-  border-top: 0;
   border-radius: 0 0 14px 14px;
   overflow: hidden;
   background: var(--gg-entry-list-bg);
